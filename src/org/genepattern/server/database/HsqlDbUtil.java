@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Properties;
+import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -20,16 +21,26 @@ public class HsqlDbUtil {
     private static Logger log = Logger.getLogger(HsqlDbUtil.class);
 
     /**
-     * 
+     * HSQL.args= -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb
      */
     public static void startDatabase() {
         // @todo - get from properites file
-        String port = System.getProperty("HSQL_port", "9001");
-        String dbFile = System.getProperty("HSQL.dbfile", "../resources/GenePatternDB");
-        String dbUrl = "file:" + dbFile;
-        String dbName = System.getProperty("HSQL.dbName", "xdb");
-        String[] args = new String[] { "-port", port, "-database.0", dbUrl, "-dbname.0", dbName };
-        org.hsqldb.Server.main(args);
+      //  String port = System.getProperty("HSQL_port", "9001");
+      //  String dbFile = System.getProperty("HSQL.dbfile", "../resources/GenePatternDB");
+      //  String dbUrl = "file:" + dbFile;
+      //  String dbName = System.getProperty("HSQL.dbName", "xdb");
+      //  String[] args = new String[] { "-port", port, "-database.0", dbUrl, "-dbname.0", dbName };
+		      
+
+		String args = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
+		String argsArray[] = new String[6];
+		StringTokenizer strTok = new StringTokenizer(args);
+		int i=0;
+		while (strTok.hasMoreTokens()){
+			String tok = strTok.nextToken();
+			argsArray[i++] = tok;
+		}
+		org.hsqldb.Server.main(argsArray);
 
         HibernateUtil.getSession().beginTransaction();
         updateSchema();
