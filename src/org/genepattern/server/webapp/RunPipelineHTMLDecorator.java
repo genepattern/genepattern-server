@@ -150,7 +150,8 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
         out.println("<td valign=top>" + jobSubmission.getName() + "</td></tr>");
         out.println("<tr id=\"fileRow" + idx + "_0\"class=\"files\"><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>");
-        out.println("<td class=\"description\">(");
+        //out.println("<td class=\"description\">(");
+		out.println("<td>");
         ParameterInfo[] parameterInfo = jobSubmission.giveParameterInfoArray();
         for (int i = 0; i < parameterInfo.length; i++) {
             ParameterInfo aParam = parameterInfo[i];
@@ -201,7 +202,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
             if (i != (parameterInfo.length - 1))
                 out.print(", ");
         }
-        out.println(")");
+       // out.println(")");
         if (jobSubmission.isVisualizer())
             writeVisualizerAppletTag(jobSubmission);
 
