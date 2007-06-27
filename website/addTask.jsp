@@ -744,7 +744,7 @@ function addNewDomainType(name, desc){
 	  </td>
 	  <td >
 	<font size=-1>
-	  The actual program plus any required libraries will will be accessible to your command line as
+	  The actual program plus any required libraries will be accessible to your command line as
 	  &lt;<%= GPConstants.LIBDIR %>&gt;<file.separator><i>filename</i></font><a href='help.jsp#SupportFiles' target='help'><img border='0' src='images/help2.jpg'/></a>
 	<br>
 
