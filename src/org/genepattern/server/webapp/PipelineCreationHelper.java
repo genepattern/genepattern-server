@@ -56,7 +56,8 @@ public class PipelineCreationHelper {
             tia.put(GPConstants.SERIALIZED_MODEL, model.toXML());
             tia.put(GPConstants.USERID, model.getUserID());
 
-            Vector probs = GenePatternAnalysisTask.installTask(model.getName() + "."+ GPConstants.TASK_TYPE_PIPELINE, 
+            // bug 1555 // Vector probs = GenePatternAnalysisTask.installTask(model.getName() + "."+ GPConstants.TASK_TYPE_PIPELINE, 
+             Vector probs = GenePatternAnalysisTask.installTask(model.getName(), 
                     ""+model.getDescription(), 
                     params, 
                     tia, 

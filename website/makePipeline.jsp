@@ -123,6 +123,8 @@ try {
 
 
 	String pipelineName = requestParameters.getProperty("pipeline_name");
+
+
 	if (bDelete) {
 		try {
 			TaskInfo taskInfo = GenePatternAnalysisTask.getTaskInfo(requestParameters.getProperty("changePipeline"), userID);
@@ -161,10 +163,10 @@ try {
 	}
 
 	if (pipelineName.endsWith("." + GPConstants.TASK_TYPE_PIPELINE)) pipelineName = pipelineName.substring(0, pipelineName.lastIndexOf("."));
-
 	if (bRun && (pipelineName == null || pipelineName.trim().length() == 0)) {
 		pipelineName = "unnamed" + "." + GPConstants.TASK_TYPE_PIPELINE;
 	}
+	
 
 	if (!bRun && (pipelineName == null || pipelineName.trim().length() == 0)) {
 %>
@@ -492,7 +494,9 @@ try {
 			String attachmentName = null;
 
 			if (!isTemp) {
-				attachmentDir = DirectoryManager.getTaskLibDir(modelName + "." + GPConstants.TASK_TYPE_PIPELINE, lsid, userID);
+
+				attachmentDir = DirectoryManager.getTaskLibDir(modelName, lsid, userID);
+				// bug 1555 // attachmentDir = DirectoryManager.getTaskLibDir(modelName + "." + GPConstants.TASK_TYPE_PIPELINE, lsid, userID);
 				dir = new File(attachmentDir);
 				dir.mkdir();
 			} else {
@@ -625,7 +629,10 @@ try {
 		return;
 	} else {
 		// delete the legacy R file for the pipeline, if it exists
-		pipelineName = model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE;
+
+		pipelineName = model.getName();
+		// bug 1555 // pipelineName = model.getName() + "." + GPConstants.TASK_TYPE_PIPELINE;
+
 		String dir = DirectoryManager.getTaskLibDir(pipelineName, lsid, userID);
       	out.println(model.getName() + " version " + new org.genepattern.util.LSID(model.getLsid()).getVersion()  + " has been saved.<br><br>");
 		new File(dir, model.getName() + ".r").delete();
