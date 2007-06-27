@@ -14,9 +14,9 @@
 	} catch(UnsupportedEncodingException x) {}
 	
     if (taskName == null) {
-        out.println("no such module: " + taskName);
-        return;
+        taskName = "";
     }
+
     String filename = request.getParameter("file");
     try {
         filename = URLDecoder.decode(filename, "UTF-8");
@@ -38,6 +38,7 @@
 		return;
 	}
     try {
+
         if (taskName.length() > 0) {
             in = new File(DirectoryManager.getTaskLibDir(taskName, taskName, userID), filename);
         } else {
