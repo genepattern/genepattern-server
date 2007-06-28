@@ -83,7 +83,7 @@ public class ServerSettingsBean {
                     "HSQL.schema", "hibernate.connection.driver_class", "hibernate.connection.shutdown",
                     "hibernate.connection.url", "hibernate.connection.username", "hibernate.connection.password",
                     "hibernate.dialect", "hibernate.default_schema", "hibernate.connection.SetBigStringTryClob" });
-            modes.put("LSID", new String[] { "lsid.authority", "lsid.show" });
+           // modes.put("LSID", new String[] { "lsid.authority", "lsid.show" }); // remove show LSID for 3.1 per bug 1654
             modes.put("Programming Languages", new String[] { "perl", "java", "R", "run_r_path" });
             // modes.put("Documentation Attibutes", new String[]{"files.doc",
             // "files.binary", "files.code"});
