@@ -181,7 +181,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
             out.print(aParam.getName().replace('.', ' '));
             out.print("=");
 
-            if (isInputFile || (value.indexOf("<GenePatternURL>") >= 0)) {
+            if (isInputFile || (value.indexOf("<GenePatternURL>") >= 0) || (value.startsWith("http:"))) {
                 // convert from "localhost" to the actual host name so that
                 // it can be referenced from anywhere (eg. visualizer on
                 // non-local client)
@@ -191,14 +191,13 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
                 out.print("\">");
 
                 value = getFileUrlDisplayValue(value);
-            }
+				out.print(htmlEncode(value));
+				out.println("</a>");
 
-            out.print(htmlEncode(value));
-
-            if (isInputFile) {
-                out.println("</a>");
-            }
-
+            } else {
+            	out.print(htmlEncode(value));
+			}
+            
             if (i != (parameterInfo.length - 1))
                 out.print(", ");
         }
@@ -581,9 +580,12 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
             String queryPart = original;
             int idx = queryPart.indexOf("file=");
-            if (idx == -1)
+            if (idx == -1){
+				// not a getFile URL, return just the end of the url after the last '/'
+				idx = original.lastIndexOf("/");
+				if ((idx >= 1) && (idx < original.length())) return original.substring(idx+1);
                 return original;
-
+			}
             idx = idx + 5;
             int endIdx = queryPart.indexOf("&", idx);
             if (endIdx == -1)
