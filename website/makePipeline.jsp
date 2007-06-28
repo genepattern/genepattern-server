@@ -62,12 +62,11 @@
 
    Properties requestParameters = new Properties();
 	HashMap  requestFiles = new HashMap();
-
         DiskFileUpload fub = new DiskFileUpload();
         boolean isEncodedPost = FileUpload.isMultipartContent(request);
         List rParams = fub.parseRequest(request);
 	  int fileCount = 0;
-
+try {
         for (Iterator iter = rParams.iterator(); iter.hasNext();) {
             FileItem fi = (FileItem) iter.next();
 
@@ -82,10 +81,17 @@
                 // it is the file
                 fileCount++;
                 String name = fi.getName();
-
+		
                 if (name == null || name.equals("")) {
                     continue;
-                }
+                } 
+				// strip out paths on IE -- BUG 1819
+				int idx =  name.lastIndexOf('/');
+				if (idx >=0) name = name.substring(idx+1);
+				idx =  name.lastIndexOf('\\');
+				if (idx >=0) name = name.substring(idx+1);
+
+		
 
                 File aFile = new File(System.getProperty("java.io.tmpdir"), name);
                 requestFiles.put(fi.getFieldName(), aFile);
@@ -94,6 +100,9 @@
 
            }
         }
+} catch (Exception eee){
+	eee.printStackTrace();
+}
 
 String serverPort = System.getProperty("GENEPATTERN_PORT");
 String userID = null;
