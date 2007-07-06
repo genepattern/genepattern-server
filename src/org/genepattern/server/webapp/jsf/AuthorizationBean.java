@@ -51,12 +51,29 @@ public class AuthorizationBean {
         return authManager.checkPermission("createModule", UIBeanHelper.getUserId());
     }
 
+
+    public boolean isCreatePrivateSuiteAllowed() {
+        return authManager.checkPermission("createPrivateSuite", UIBeanHelper.getUserId());
+    }
+    public boolean isCreatePublicSuiteAllowed() {
+        return authManager.checkPermission("createPublicSuite", UIBeanHelper.getUserId());
+    }
     public boolean isCreateSuiteAllowed() {
-        return authManager.checkPermission("createSuite", UIBeanHelper.getUserId());
+        return isCreatePrivateSuiteAllowed() || isCreatePublicSuiteAllowed();
+    }
+
+
+
+    public boolean isCreatePublicPipelineAllowed() {
+        return authManager.checkPermission("createPublicPipeline", UIBeanHelper.getUserId());
+    }
+
+    public boolean isCreatePrivatePipelineAllowed() {
+        return authManager.checkPermission("createPrivatePipeline", UIBeanHelper.getUserId());
     }
 
     public boolean isCreatePipelineAllowed() {
-        return authManager.checkPermission("createPipeline", UIBeanHelper.getUserId());
+        return isCreatePrivatePipelineAllowed() || isCreatePublicPipelineAllowed();
     }
 
  

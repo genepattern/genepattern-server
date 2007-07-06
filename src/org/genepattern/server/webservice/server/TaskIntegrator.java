@@ -657,6 +657,23 @@ public class TaskIntegrator {
         return (new TaskIntegratorDAO()).saveOrUpdate(suiteInfo);
     }
 
+	public int getPermittedAccessId(int access_id){
+        
+        int access = GPConstants.ACCESS_PRIVATE;
+		IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
+        if (!authManager.checkPermission("createPublicSuite", getUserName())) {
+			access = GPConstants.ACCESS_PRIVATE;
+		} else {
+			access =  access_id;
+		}
+        System.out.println("Perm=" + authManager.checkPermission("createPublicSuite", getUserName()));
+        System.out.println("TI installSuite  priv in=" + access_id + "  set to=" + access);  
+        return access;
+    }
+    
+
+
+
     /**
      * Create a new suite from the SuiteInfo object.
      *
@@ -671,7 +688,7 @@ public class TaskIntegrator {
                 if (suiteInfo.getLSID().trim().length() == 0)
                     suiteInfo.setLSID(null);
             }
-            suiteInfo.setAccessId(privacy);
+            suiteInfo.setAccessId(getPermittedAccessId(privacy));
             (new TaskIntegratorDAO()).saveOrUpdate(suiteInfo);
 
             String suiteDir = DirectoryManager.getSuiteLibDir(suiteInfo.getName(), suiteInfo.getLSID(), suiteInfo

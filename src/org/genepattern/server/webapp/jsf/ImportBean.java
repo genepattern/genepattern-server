@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.ArrayList;
+
 
 import javax.faces.application.FacesMessage;
 import javax.faces.model.SelectItem;
@@ -22,6 +25,8 @@ import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.WebServiceErrorMessageException;
 import org.genepattern.webservice.WebServiceException;
+import org.genepattern.server.util.AuthorizationManagerFactory;
+import org.genepattern.server.util.IAuthorizationManager;
 
 public class ImportBean {
     private String url;
@@ -30,9 +35,11 @@ public class ImportBean {
 
     private static Logger log = Logger.getLogger(ImportBean.class);
 
-    private SelectItem[] filePrivacyItems;
+    private List<SelectItem> suitePrivacyItems;
 
-    private SelectItem[] urlPrivacyItems;
+    private List<SelectItem> modulePrivacyItems;
+
+    private List<SelectItem> pipelinePrivacyItems;
 
     private String selectedFilePrivacy;
 
@@ -45,15 +52,28 @@ public class ImportBean {
     private String statusMessage = "";
 
     public ImportBean() {
-        filePrivacyItems = new SelectItem[2];
-        filePrivacyItems[0] = new SelectItem(UIBeanHelper.getUserId());
-        filePrivacyItems[1] = new SelectItem(ALL_USERS);
-        selectedFilePrivacy = ALL_USERS;
+		IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
+        
+		
+		suitePrivacyItems = new ArrayList<SelectItem>();
+	    suitePrivacyItems.add(new SelectItem(UIBeanHelper.getUserId()));
+	    if (authManager.checkPermission("createPublicSuite", UIBeanHelper.getUserId()))
+			suitePrivacyItems.add(new SelectItem(ALL_USERS));
+	    
+		modulePrivacyItems = new ArrayList<SelectItem>();
+	    modulePrivacyItems.add(new SelectItem(UIBeanHelper.getUserId()));
+        modulePrivacyItems.add(new SelectItem(ALL_USERS));
 
-        urlPrivacyItems = new SelectItem[2];
-        urlPrivacyItems[0] = new SelectItem(UIBeanHelper.getUserId());
-        urlPrivacyItems[1] = new SelectItem(ALL_USERS);
-        selectedUrlPrivacy = ALL_USERS;
+        pipelinePrivacyItems = new ArrayList<SelectItem>();
+	    pipelinePrivacyItems.add(new SelectItem(UIBeanHelper.getUserId()));
+	    if (authManager.checkPermission("createPublicPipeline", UIBeanHelper.getUserId()))
+			pipelinePrivacyItems.add(new SelectItem(ALL_USERS));
+	    
+
+		selectedFilePrivacy = ALL_USERS;
+
+		selectedUrlPrivacy = ALL_USERS;
+		
     }
 
     public String importUrl() {
@@ -296,21 +316,19 @@ public class ImportBean {
         this.zipFile = zipFile;
     }
 
-    public SelectItem[] getUrlPrivacyItems() {
-        return urlPrivacyItems;
+    public List<SelectItem> getModulePrivacyItems() {
+        return modulePrivacyItems;
+    }
+    public List<SelectItem> getSuitePrivacyItems() {
+        return suitePrivacyItems;
     }
 
-    public void setUrlPrivacyItems(SelectItem[] urlPrivacyItems) {
-        this.urlPrivacyItems = urlPrivacyItems;
+    public List<SelectItem> getPipelinePrivacyItems() {
+        return pipelinePrivacyItems;
     }
 
-    public SelectItem[] getFilePrivacyItems() {
-        return filePrivacyItems;
-    }
 
-    public void setFilePrivacyItems(SelectItem[] filePrivacyItems) {
-        this.filePrivacyItems = filePrivacyItems;
-    }
+    
 
     public String getSelectedFilePrivacy() {
         return selectedFilePrivacy;

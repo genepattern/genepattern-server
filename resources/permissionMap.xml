@@ -24,11 +24,21 @@
 <permission name="createModule">
 	<group name="administrators"/>
 </permission>
-<permission name="createPipeline">
+
+<permission name="createPrivatePipeline">
 	<group name="*"/>
 </permission>
-<permission name="createSuite">
+
+<permission name="createPrivateSuite">
 	<group name="*"/>
+</permission>
+
+<permission name="createPublicPipeline">
+	<group name="*"/>
+</permission>
+
+<permission name="createPublicSuite">
+	<group name="administrators"/>
 </permission>
 
 </permissionMap>

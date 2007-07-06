@@ -29,6 +29,7 @@ import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.WebServiceException;
+import javax.faces.model.SelectItem;
 
 /**
  * @author jrobinso
@@ -44,7 +45,7 @@ public class CreateSuiteBean implements java.io.Serializable {
 
     private String author;
 
-    private int accessId = GPConstants.ACCESS_PUBLIC;
+    private int accessId = GPConstants.ACCESS_PRIVATE;
 
     private UploadedFile supportFile1;
 
@@ -83,12 +84,16 @@ public class CreateSuiteBean implements java.io.Serializable {
         this.success = success;
     }
 
-    public int getAccessId() {
+    public int getAccessId() { 
+        
+        System.out.println("Get access id " + accessId + "  ");
+        if (currentSuite != null)  System.out.println("Get access id X " + currentSuite.getAccessId());
         return (currentSuite == null) ? accessId : currentSuite.getAccessId();
     }
 
-    public void setAccessId(int accessId) {
-        this.accessId = accessId;
+    public void setAccessId(int accessID) {
+        System.out.println("Set access id " + accessID);
+        this.accessId = accessID;
     }
 
     public String getAuthor() {
@@ -114,6 +119,18 @@ public class CreateSuiteBean implements java.io.Serializable {
     public void setName(String name) {
         this.name = name;
     }
+
+	public List<SelectItem> getAllowedPrivacies(){
+		ArrayList<SelectItem> all = new ArrayList<SelectItem>();
+		all.add(new SelectItem( GPConstants.ACCESS_PRIVATE, UIBeanHelper.getUserId()));
+
+		IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
+        
+		if (authManager.checkPermission("createPublicSuite", UIBeanHelper.getUserId())){
+		    all.add(new SelectItem( GPConstants.ACCESS_PUBLIC, "all users"));
+	    }
+		return all;    
+	}
 
     public static List<List<ModuleCategory>> layoutSuiteCategories(List<ModuleCategory> categories) {
         List<List<ModuleCategory>> cols = new ArrayList<List<ModuleCategory>>();
@@ -173,25 +190,43 @@ public class CreateSuiteBean implements java.io.Serializable {
         this.supportFile3 = supportFile3;
     }
 
+	public int getPermittedAccessId(){
+        int access = GPConstants.ACCESS_PRIVATE;
+        IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
+        if (!authManager.checkPermission("createPublicSuite", UIBeanHelper.getUserId())) {
+            access =  GPConstants.ACCESS_PRIVATE;;
+		} else {
+            access =  getAccessId();
+		}
+        System.out.println("Perm=" + authManager.checkPermission("createPublicSuite", UIBeanHelper.getUserId()));
+        System.out.println("TI installSuite  priv in=" + getAccessId() + "  set to=" + access + "   priv="+ GPConstants.ACCESS_PRIVATE + " pub="+ GPConstants.ACCESS_PUBLIC);  
+        return access;
+	}
+
+    
+    
     public String save() {
         IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
         if (!authManager.checkPermission("createSuite", UIBeanHelper.getUserId())) {
             UIBeanHelper.setErrorMessage("You don't have the required permissions to perform the requested operation.");
         }
         try {
-
+            
+             SuiteInfo theSuite;
             if (currentSuite == null) {
-                currentSuite = new SuiteInfo();
-                currentSuite.setLsid(LSIDManager.getInstance().createNewID(SUITE_NAMESPACE).toString());
+                theSuite = new SuiteInfo();
+                theSuite.setLsid(LSIDManager.getInstance().createNewID(SUITE_NAMESPACE).toString());
+            } else {
+                theSuite = currentSuite;
             }
 
             // Save or update database record
 
-            currentSuite.setOwner(getUserId());
-            currentSuite.setName(name);
-            currentSuite.setDescription(description);
-            currentSuite.setAccessId(new Integer(accessId));
-            currentSuite.setAuthor(author);
+            theSuite.setOwner(getUserId());
+            theSuite.setName(name);
+            theSuite.setDescription(description);
+            theSuite.setAccessId( new Integer(getPermittedAccessId()));
+            theSuite.setAuthor(author);
 
             List<String> selectedLSIDs = new ArrayList<String>();
             for (ModuleCategory cat : categories) {
@@ -205,13 +240,13 @@ public class CreateSuiteBean implements java.io.Serializable {
                     }
                 }
             }
-            currentSuite.setModuleLsids(selectedLSIDs);
+            theSuite.setModuleLsids(selectedLSIDs);
             LocalTaskIntegratorClient ti = new LocalTaskIntegratorClient(UIBeanHelper.getUserId());
-            ti.saveOrUpdateSuite(currentSuite);
+            ti.saveOrUpdateSuite(theSuite);
 
             // Save uploaded files, if any
-            String suiteDir = DirectoryManager.getSuiteLibDir(currentSuite.getName(), currentSuite.getLsid(),
-                    currentSuite.getOwner());
+            String suiteDir = DirectoryManager.getSuiteLibDir(theSuite.getName(), theSuite.getLsid(),
+                    theSuite.getOwner());
             if (supportFile1 != null) {
                 saveUploadedFile(supportFile1, suiteDir);
             }
@@ -223,7 +258,8 @@ public class CreateSuiteBean implements java.io.Serializable {
             }
 
             ManageSuiteBean manageSuiteBean = (ManageSuiteBean) UIBeanHelper.getManagedBean("#{manageSuiteBean}");
-            manageSuiteBean.setCurrentSuite((new SuiteDAO()).findById(currentSuite.getLsid()));
+            manageSuiteBean.setCurrentSuite((new SuiteDAO()).findById(theSuite.getLsid()));
+            currentSuite = theSuite;
             return "view suite";
         } catch (Exception e) {
             HibernateUtil.rollbackTransaction(); // This shouldn't be

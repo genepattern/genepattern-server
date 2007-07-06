@@ -53,8 +53,7 @@
             <td>Privacy:</td>
             <td>
               <h:selectOneMenu id="privacySelect" value="#{createSuiteBean.accessId}">
-                <f:selectItem itemLabel="public" itemValue="1" />
-                <f:selectItem itemLabel="private" itemValue="2"/>
+					<f:selectItems value="#{createSuiteBean.allowedPrivacies}" />
               </h:selectOneMenu>
               <h:message for="privacySelect"/>
             </td>
