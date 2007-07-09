@@ -754,10 +754,10 @@ public class JobModel extends AbstractSortableTreeTableModel {
                     this.removeAllChildren();
                     numOutputFiles = addOutputFiles(jobParameterInfo);
                 }
-
-            } else {
-                numOutputFiles = addOutputFiles(jobParameterInfo);
             }
+
+            numOutputFiles = addOutputFiles(jobParameterInfo);
+
             if (children != null) {
                 Collections.sort(children, JobModel.getInstance().fileComparator);
             }
