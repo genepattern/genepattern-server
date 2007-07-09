@@ -16,8 +16,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -88,38 +92,60 @@ public class AnalysisWebServiceProxy {
      * Submits a job to be processed. The job is a child job of the supplied
      * parent job.
      *
+     *
      * @param taskID
-     *            Description of the Parameter
+     *            The task id on the server.
      * @param parameters
-     *            Description of the Parameter
-     * @return Description of the Return Value
+     *            The array of parameters.
+     * @param parentJobNumber
+     *            The parent job number.
+     * @return A <tt>JobInfo</tt> object.
      * @exception WebServiceException
-     *                Description of the Exception
+     *                If an error occurs.
      */
     public JobInfo submitJob(int taskID, ParameterInfo[] parameters, int parentJobNumber) throws WebServiceException {
         try {
-            HashMap files = null;
-            // loop through parameters array looking for any parm of type FILE
-            for (int x = 0; x < parameters.length; x++) {
-                final ParameterInfo param = parameters[x];
-                if (parameters[x].isInputFile()) {
-                    String filename = parameters[x].getValue();
-                    DataHandler dataHandler = new DataHandler(new FileDataSource(filename));
-                    if (filename != null) {
-                        if (files == null) {
-                            files = new HashMap();
+            HashMap<String, DataHandler> files = null;
+            Set<String> dataHandlerNames = new HashSet<String>();
+            // look for parameters of type file
+            if (parameters != null) {
+                for (ParameterInfo p : parameters) {
+                    if (p.isInputFile()) {
+                        String filename = p.getValue();
+                        if (filename != null) {
+                            String name = new File(filename).getName();
+                            int counter = 1;
+                            while (dataHandlerNames.contains(name)) {
+                                int dotIndex = name.lastIndexOf('.');
+                                if (dotIndex > 0) {
+                                    String prefix = name.substring(0, dotIndex) + "-" + counter;
+                                    String suffix = name.substring(dotIndex);
+                                    name = prefix + suffix;
+                                }
+                            }
+                            final String _name = name;
+                            FileDataSource fds = new FileDataSource(filename) {
+                                @Override
+                                public String getName() {
+                                    return _name;
+                                }
+                            };
+                            DataHandler dataHandler = new DataHandler(fds);
+                            if (files == null) {
+                                files = new HashMap<String, DataHandler>();
+                            }
+
+                            // set value to name and not path
+                            p.setValue(dataHandler.getName());
+                            files.put(dataHandler.getName(), dataHandler);
+                            dataHandlerNames.add(dataHandler.getName());
                         }
-                        parameters[x].setValue(dataHandler.getName());// pass
-                        // only
-                        // name &
-                        // not
-                        // path
-                        files.put(dataHandler.getName(), dataHandler);
                     }
                 }
             }
 
-            return stub.submitJob(taskID, parameters, files, parentJobNumber);
+            return parentJobNumber == -1 ? stub.submitJob(taskID, parameters, files) : stub.submitJob(taskID,
+                    parameters, files, parentJobNumber);
         } catch (RemoteException re) {
             throw new WebServiceException(re);
         }
@@ -129,40 +155,15 @@ public class AnalysisWebServiceProxy {
      * Submits a job to be processed.
      *
      * @param taskID
-     *            Description of the Parameter
+     *            The task id on the server.
      * @param parameters
-     *            Description of the Parameter
-     * @return Description of the Return Value
+     *            The array of parameters
+     * @return A <tt>JobInfo</tt> object.
      * @exception WebServiceException
-     *                Description of the Exception
+     *                If an error occurs.
      */
     public JobInfo submitJob(int taskID, ParameterInfo[] parameters) throws WebServiceException {
-        try {
-            HashMap files = null;
-            // loop through parameters array looking for any parm of type FILE
-            for (int x = 0; x < parameters.length; x++) {
-                final ParameterInfo param = parameters[x];
-                if (parameters[x].isInputFile()) {
-                    String filename = parameters[x].getValue();
-                    DataHandler dataHandler = new DataHandler(new FileDataSource(filename));
-                    if (filename != null) {
-                        if (files == null) {
-                            files = new HashMap();
-                        }
-                        parameters[x].setValue(dataHandler.getName());// pass
-                        // only
-                        // name &
-                        // not
-                        // path
-                        files.put(dataHandler.getName(), dataHandler);
-                    }
-                }
-            }
-
-            return stub.submitJob(taskID, parameters, files);
-        } catch (RemoteException re) {
-            throw new WebServiceException(re);
-        }
+        return submitJob(taskID, parameters, -1);
     }
 
     /**
@@ -325,19 +326,19 @@ public class AnalysisWebServiceProxy {
 
     public JobInfo[] getJobs(String username, boolean getAll) throws WebServiceException {
         try {
-            java.util.List results = new java.util.ArrayList();
+            List<JobInfo> results = new ArrayList<JobInfo>();
             int maxJobNumber = -1;
             final int querySize = 100;
             int numRetrieved = querySize;
             while (numRetrieved == querySize) {
                 JobInfo[] jobs = stub.getJobs(username, maxJobNumber, querySize, getAll);
                 numRetrieved = jobs.length;
-                results.addAll(java.util.Arrays.asList(jobs));
+                results.addAll(Arrays.asList(jobs));
                 if (jobs.length > 1) {
                     maxJobNumber = jobs[jobs.length - 1].getJobNumber() - 1;
                 }
             }
-            return (JobInfo[]) results.toArray(new JobInfo[0]);
+            return results.toArray(new JobInfo[0]);
         } catch (RemoteException re) {
             throw new WebServiceException(re);
         }
