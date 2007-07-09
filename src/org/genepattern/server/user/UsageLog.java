@@ -18,7 +18,6 @@ public class UsageLog {
         event.setTaskName(jobInfo.getTaskName());
         event.setCompletionStatus(jobInfo.getStatus());
         if (parentJobInfo == null) {
-            ;
             event.setType("TASK");
         }
         else {
