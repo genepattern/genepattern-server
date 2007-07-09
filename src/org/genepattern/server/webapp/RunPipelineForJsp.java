@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.fileupload.FileItem;
+import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.database.HibernateUtil;
@@ -43,6 +44,7 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 
 public class RunPipelineForJsp {
+    private static Logger log = Logger.getLogger(RunPipelineForJsp.class);
     public static int jobID = -1;
 
     public RunPipelineForJsp() {
@@ -387,14 +389,19 @@ public class RunPipelineForJsp {
                 baseURL, taskInfo, commandLineParams, tempDir, decorator);
 
         // spawn the command
+        log.debug("Spawning pipeline process");
         final Process process = Runtime.getRuntime().exec(commandLine, null, tempDir);
         GenePatternAnalysisTask.startPipeline(Integer.toString(jobID), process);
+        
+        log.debug("Wait for pipeline completion");
         WaitForPipelineCompletionThread waiter = new WaitForPipelineCompletionThread(process, jobID);
         waiter.start();
         if (deleteDirAfterRun) {
             DeleteUnsavedTasklibDirThread delThread = new DeleteUnsavedTasklibDirThread(taskInfo, process);
             delThread.start();
         }
+        
+        log.debug("Commit this transaction and start a new one");
         HibernateUtil.commitTransaction(); // ensure this is in the DB
         HibernateUtil.beginTransaction();
 

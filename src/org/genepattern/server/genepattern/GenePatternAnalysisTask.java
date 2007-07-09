@@ -1201,7 +1201,7 @@ public class GenePatternAnalysisTask {
      * @param jobStatus
      */
     private void updateJobInfo(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, Date completionDate) {
-
+        log.debug("Updating jobInfo");
         AnalysisJobDAO home = new AnalysisJobDAO();
 
         AnalysisJob aJob = home.findById(jobInfo.getJobNumber());
@@ -1222,6 +1222,9 @@ public class GenePatternAnalysisTask {
             AnalysisJob parentJob = home.findById(parentJobInfo.getJobNumber());
             parentJob.setCompletedDate(completionDate);
         }
+        
+       
+        log.debug("Finished updating jobInfo");
 
     }
 
@@ -4011,9 +4014,12 @@ public class GenePatternAnalysisTask {
     public static JobInfo createPipelineJob(String userID, String parameter_info, String pipelineName, String lsid)
             throws OmnigeneException, RemoteException {
 
+        log.debug("Creating pipeline job");
         Integer jobNo = getDS().addNewJob(BaseDAO.UNPROCESSABLE_TASKID, userID, parameter_info, pipelineName, null,
                 lsid);
+        log.debug("New job #: " + jobNo);
         JobInfo job = getDS().getJobInfo(jobNo);
+        log.debug("New job task: " + job.getTaskID());
 
         return job;
     }
