@@ -26,8 +26,6 @@ import static org.genepattern.util.GPConstants.INPUT_PATH;
 import static org.genepattern.util.GPConstants.INSTALLED_PATCH_LSIDS;
 import static org.genepattern.util.GPConstants.JAVA;
 import static org.genepattern.util.GPConstants.JOB_ID;
-import static org.genepattern.util.GPConstants.JVM_LEVEL;
-import static org.genepattern.util.GPConstants.LANGUAGE;
 import static org.genepattern.util.GPConstants.LEFT_DELIMITER;
 import static org.genepattern.util.GPConstants.LIBDIR;
 import static org.genepattern.util.GPConstants.LSID;
@@ -65,7 +63,6 @@ import static org.genepattern.util.GPConstants.STDOUT_REDIRECT;
 import static org.genepattern.util.GPConstants.TASKLOG;
 import static org.genepattern.util.GPConstants.TASK_ID;
 import static org.genepattern.util.GPConstants.TASK_NAMESPACE;
-import static org.genepattern.util.GPConstants.TASK_TYPE;
 import static org.genepattern.util.GPConstants.TASK_TYPE_VISUALIZER;
 import static org.genepattern.util.GPConstants.TOMCAT;
 import static org.genepattern.util.GPConstants.UNREQUIRED_PARAMETER_NAMES;
@@ -465,7 +462,6 @@ public class GenePatternAnalysisTask {
      *
      * @param o
      *            JobInfo object
-     * @author Jim Lerner
      */
     public void onJob(Object o) {
         JobInfo jobInfo = (JobInfo) o;
@@ -560,52 +556,53 @@ public class GenePatternAnalysisTask {
 
                     if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null
                             && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
-                        log.debug("in: mode=" + mode + ", fileType=" + fileType + ", name=" + params[i].getValue()
-                                + ", origValue=" + params[i].getValue());
                         if (originalPath == null) {
-                            if (isOptional)
+                            if (isOptional) {
                                 continue;
-                            throw new IOException(params[i].getName() + " has not been assigned a filename");
+                            }
+                            throw new IOException("Non-optional parameter " + params[i].getName()
+                                    + " has not been assigned a filename.");
                         }
-                        if (mode.equals("CACHED_IN")) {
+                        if (mode.equals("CACHED_IN")) { // param is job output
+                            // file
                             originalPath = System.getProperty("jobs") + "/" + originalPath;
                         }
 
                         File inFile = new File(originalPath);
-                        // TODO: strip Axisnnnnnaxis_ from name
-                        int j;
-                        String baseName = inFile.getName();
-                        j = baseName.indexOf("Axis");
+                        String inFilename = inFile.getName();
                         // strip off the AxisNNNNNaxis_ prefix
-                        if (j == 0 && baseName.indexOf("_") != -1) {
-                            baseName = baseName.substring(baseName.indexOf("_") + 1);
-                            log.debug("name without Axis is " + baseName);
+                        int underscoreIndex = -1;
+                        if (inFilename.startsWith("Axis") && (underscoreIndex = inFilename.indexOf("_")) != -1) {
+                            inFilename = inFilename.substring(underscoreIndex + 1);
                         }
-                        File outFile = new File(outDirName, baseName);
+                        File outFile = new File(outDirName, inFilename);
 
+                        int counter = 1;
+                        while (outFile.exists()) { // in case two input files
+                            // have the same name
+                            outFile = new File(outDirName, inFilename + "-" + counter);
+                            counter++;
+                        }
                         // borrow input file and put it into the job's directory
                         log.debug("borrowing " + inFile.getCanonicalPath() + " to " + outFile.getCanonicalPath());
-                        if (!inFile.exists()
-                                || (!outFile.exists() && (bCopyInputFiles ? !copyFile(inFile, outFile) : !rename(
-                                        inFile, outFile, true)))) {
-                            throw new Exception("FAILURE: " + inFile.toString() + " (exists " + inFile.exists()
-                                    + ") rename to " + outFile.toString() + " (exists " + outFile.exists() + ")");
-                        } else {
-                            if (bCopyInputFiles) {
-                                outFile.deleteOnExit(); // mark for delete, just
-                            }
-                            // in case
-                            params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
-                            params[i].setValue(outFile.getCanonicalPath());
-                            inputLastModified[i] = outFile.lastModified();
-                            inputLength[i] = outFile.length();
-                            log.debug("inherited input file " + outFile.getCanonicalPath() + " before run: length="
-                                    + inputLength[i] + ", lastModified=" + inputLastModified[i]);
-                            // outFile.setReadOnly();
+                        if (!inFile.exists()) {
+                            log.error("Input file " + inFile + " does not exist.");
+                        } else if (bCopyInputFiles ? !copyFile(inFile, outFile) : !rename(inFile, outFile, true)) {
+                            log.error("Unable to " + (bCopyInputFiles ? "copy " : "rename ") + inFile + " to "
+                                    + outFile);
+
                         }
+                        if (bCopyInputFiles) {
+                            outFile.deleteOnExit(); // mark for delete, just in
+                            // case
+                        }
+                        params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
+                        params[i].setValue(outFile.getCanonicalPath());
+                        inputLastModified[i] = outFile.lastModified();
+                        inputLength[i] = outFile.length();
+
                     } else if (i >= formalParamsLength) {
-                        // _cat.debug("params[" + i + "]=" + params[i].getName()
-                        // + " has no formal defined");
+                        log.debug("params[" + i + "]=" + params[i].getName() + " has no formal parameter defined");
                     } else {
                         // check formal parameters for a file input type that
                         // was in fact sent as a string (ie. cached or http)
@@ -2542,7 +2539,6 @@ public class GenePatternAnalysisTask {
             // not
             // critical anyway
             String[] envp = hashTableToStringArray(env);
-
             // spawn the command
             process = Runtime.getRuntime().exec(commandLine, envp, runDir);
 
@@ -2552,7 +2548,7 @@ public class GenePatternAnalysisTask {
             // possible for an application
             // to imagine that there might be useful input coming from stdin.
             // This seemed to be
-            // the case for Perl 5.0.1 on Wilkins, and might be a problem in
+            // the case for Perl 5.0.1, and might be a problem in
             // other applications as well.
             OutputStream standardInStream = process.getOutputStream();
             if (stdin == null) {
@@ -4138,13 +4134,13 @@ public class GenePatternAnalysisTask {
     }
 
     public static void terminateAll(String message) {
-        log.warn(message);
+        log.debug(message);
         String jobID;
         Enumeration eJobs;
         int numTerminated = 0;
         for (eJobs = htRunningPipelines.keys(); eJobs.hasMoreElements();) {
             jobID = (String) eJobs.nextElement();
-            log.warn("Terminating job " + jobID);
+            log.info("Terminating job " + jobID);
             Process p = terminatePipeline(jobID);
             if (p != null) {
                 try {
@@ -4156,7 +4152,7 @@ public class GenePatternAnalysisTask {
         }
         for (eJobs = htRunningJobs.keys(); eJobs.hasMoreElements();) {
             jobID = (String) eJobs.nextElement();
-            log.warn("Terminating job " + jobID);
+            log.info("Terminating job " + jobID);
             terminateJob(jobID, htRunningJobs);
             numTerminated++;
         }
@@ -4361,8 +4357,6 @@ public class GenePatternAnalysisTask {
      */
 
     public static boolean rename(File from, File to, boolean deleteIfCopied) {
-        // try { _cat.debug("renaming " + from.getCanonicalPath() + " to " +
-        // to.getCanonicalPath()); } catch (IOException ioe) { }
         if (!from.exists()) {
             log.error(from.toString() + " doesn't exist for rename");
             return false;
@@ -4375,7 +4369,7 @@ public class GenePatternAnalysisTask {
             return true;
         }
         if (to.exists()) {
-            log.info(to.toString() + " already exists for rename");
+            log.info(to.toString() + " already exists for rename.");
             if (!from.equals(to)) {
                 to.delete();
             }
@@ -4384,8 +4378,6 @@ public class GenePatternAnalysisTask {
             if (from.renameTo(to)) {
                 return true;
             }
-            log.info("GenePatternAnalysisTask.rename: sleeping before retrying rename from " + from.toString() + " to "
-                    + to.toString());
             // sleep and retry in case Indexer is busy with this file right now
             try {
                 Thread.sleep(100 * retries);
@@ -4393,7 +4385,7 @@ public class GenePatternAnalysisTask {
             }
         }
         try {
-            log.info("Have to copy, renameTo failed: " + from.getCanonicalPath() + " -> " + to.getCanonicalPath());
+            log.info("Have to copy, rename failed: " + from.getCanonicalPath() + " -> " + to.getCanonicalPath());
         } catch (IOException ioe) {
         }
         // if can't rename, then copy to destination and delete original
@@ -4410,150 +4402,45 @@ public class GenePatternAnalysisTask {
     }
 
     public static boolean copyFile(File from, File to) {
+        if (!from.exists()) {
+            log.error(from + " doesn't exist to copy.");
+            return false;
+        }
+        if (to.exists()) {
+            to.delete();
+        }
         FileInputStream is = null;
         FileOutputStream os = null;
         try {
-            if (to.exists()) {
-                to.delete();
-            }
             is = new FileInputStream(from);
             os = new FileOutputStream(to);
             byte[] buf = new byte[100000];
             int i;
-            while ((i = is.read(buf, 0, buf.length)) > 0) {
+            while ((i = is.read(buf, 0, buf.length)) != -1) {
                 os.write(buf, 0, i);
             }
-            is.close();
-            is = null;
-            os.close();
-            os = null;
             to.setLastModified(from.lastModified());
+
             return true;
-        } catch (Exception e) {
+        } catch (IOException e) {
             log
                     .error("Error copying " + from.getAbsolutePath() + " to " + to.getAbsolutePath() + ": "
                             + e.getMessage());
-            try {
-                if (is != null) {
-                    is.close();
-                }
-                if (os != null) {
-                    os.close();
-                }
-            } catch (IOException ioe) {
-            }
             return false;
-        }
-    }
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e1) {
 
-    public static void main(String args[]) {
-        try {
-            if (args.length == 2 && args[0].equals("deleteTask")) {
-                String lsid = args[1];
-                GenePatternAnalysisTask.deleteTask(lsid);
-            } else if (args.length == 0) {
-                GenePatternAnalysisTask.test();
-                GenePatternAnalysisTask.installNewTask("c:/temp/echo.zip", "jlerner@broad.mit.edu", 1, null);
-            } else {
-                System.err.println("GenePatternAnalysisTask: Don't know what input arguments mean");
+                }
             }
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            e.printStackTrace();
-        }
-    }
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e1) {
 
-    /**
-     * Test method for the GenePatternAnalysisTask class. Currently tests
-     * installation of several tasks.
-     *
-     * @throws OmnigeneException
-     * @throws RemoteException
-     * @author Jim Lerner
-     */
-    private static void test() throws OmnigeneException, RemoteException {
-        /*
-         * select 'new TaskInfo("' || task_name || '","' || description || '","' ||
-         * classname || '",\n"' || parameter_info || '",\nnew
-         * TaskInfoAttributes("' || commandline || '",\n"' ||
-         * '",null,null,null,null,null,"Java"))' from task_master;
-         */
-        Vector vProblems;
-        Enumeration eProblems;
-        TaskInfoAttributes tia = new TaskInfoAttributes();
-        tia.clear();
-        tia.put(COMMAND_LINE, "cmd /c copy <input_filename> <output_pattern>");
-        tia.put(OS, "Windows NT");
-        vProblems = installTask("echo", "echo input", new ParameterInfo[] { /*
-                                                                             * no
-                                                                             * input
-                                                                             * parameters
-                                                                             */}, tia, "jlerner@broad.mit.edu", 1, null);
-        if (vProblems != null) {
-            for (eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
-                log.error(eProblems.nextElement());
-            }
-        }
-        tia.clear();
-        tia
-                .put(COMMAND_LINE,
-                        "<java> -cp <libdir>TransposeFilter.jar edu.mit.wi.gp.executers.RunTransposePreprocess <input_filename>");
-        tia.put(LANGUAGE, "Java");
-        tia.put(TASK_TYPE, "filter");
-        tia.put(JVM_LEVEL, "1.3");
-        vProblems = installTask("Transpose", "transpose a res or gct file",
-                new ParameterInfo[] { /* no input parameters */}, tia, "jlerner@broad.mit.edu", 1, null);
-        if (vProblems != null) {
-            for (eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
-                log.error(eProblems.nextElement());
-            }
-        }
-        tia.clear();
-        tia
-                .put(
-                        COMMAND_LINE,
-                        "<java> -cp <libdir>ExcldRowsFilter.jar edu.mit.wi.gp.executers.RunExcludeRowsPreprocess <input_filename> <low> <high> <min_fold> <min_difference>");
-        tia.put(LANGUAGE, "Java");
-        tia.put(TASK_TYPE, "filter");
-        tia.put(JVM_LEVEL, "1.3");
-        vProblems = installTask("ExcludeRows", "exclude rows from a res or gct file", new ParameterInfo[] {
-                new ParameterInfo("low", null, "low"), new ParameterInfo("high", null, "high"),
-                new ParameterInfo("min_fold", null, "minimum fold"),
-                new ParameterInfo("min_difference", null, "minimum difference") }, tia, "jlerner@broad.mit.edu", 1,
-                null);
-        if (vProblems != null) {
-            for (eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
-                log.error(eProblems.nextElement());
-            }
-        }
-        tia.clear();
-        tia
-                .put(COMMAND_LINE,
-                        "<java> -cp <libdir>ThresholdFilter.jar edu.mit.wi.gp.executers.RunThresholdPreprocess <input_filename> <min> <max>");
-        tia.put(LANGUAGE, "Java");
-        tia.put(TASK_TYPE, "filter");
-        tia.put(JVM_LEVEL, "1.3");
-        vProblems = installTask("Threshold", "threshold a res or gct file", new ParameterInfo[] {
-                new ParameterInfo("min", null, "minimum"), new ParameterInfo("max", null, "maximum") }, tia,
-                "jlerner@broad.mit.edu", 1, null);
-        if (vProblems != null) {
-            for (eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
-                log.error(eProblems.nextElement());
-            }
-        }
-        tia.clear();
-        tia
-                .put(
-                        COMMAND_LINE,
-                        "<java> -cp <libdir>gp.jar;<libdir>trove.jar;<libdir>openide.jar edu.mit.wi.gp.ui.pinkogram.BpogPanel <input_path> <input_basename>");
-        tia.put(LANGUAGE, "Java");
-        tia.put(TASK_TYPE, "visualizer");
-        tia.put(JVM_LEVEL, "1.3");
-        vProblems = installTask("BluePinkOGram", "display a BPOG of a RES or GCT file",
-                new ParameterInfo[] { /* no input parameters */}, tia, "jlerner@broad.mit.edu", 1, null);
-        if (vProblems != null) {
-            for (eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
-                log.error(eProblems.nextElement());
+                }
             }
         }
     }
