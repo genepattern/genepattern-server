@@ -30,6 +30,7 @@ import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,12 +45,11 @@ import javax.swing.JProgressBar;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.methods.GetMethod;
 
 public class RunVisualizer {
 
-    private boolean DEBUG = false;
+    private boolean debug = false;
 
     private Map params = null;
 
@@ -138,28 +138,33 @@ public class RunVisualizer {
     }
 
     private void _exec() {
-        if (DEBUG) {
-            System.out.println("runVisualizer: " + (String) params.get(RunVisualizerConstants.NAME) + " starting");
-        }
         // download all of the files locally, preferably checking against a
         // cache
 
         File libdirFile = null;
         try {
             libdirFile = downloadSupportFiles();
+            if (!libdirFile.exists()) {
+                throw new IOException();
+            }
         } catch (IOException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(applet, "Unable to download module files to "
                     + System.getProperty("java.io.tmpdir"));
             return;
         }
+
         String libdir = null;
         try {
             libdir = libdirFile.getCanonicalPath();
         } catch (IOException e) {
+            e.printStackTrace();
             libdir = libdirFile.getPath();
         }
 
+        if (debug) {
+            System.out.println("libdir " + libdir);
+        }
         // libdir is where all of the support files will be found on the client
         // computer
         params.put(RunVisualizerConstants.LIBDIR, libdir + File.separator);
@@ -252,7 +257,7 @@ public class RunVisualizer {
                 if (hmDownloadables != null && hmDownloadables.containsKey(variableName)) {
                     try {
                         argValue = ((File) hmDownloadables.get(variableName)).getCanonicalPath();
-                        if (DEBUG)
+                        if (debug)
                             System.out.println("replacing URL " + (String) params.get(variableName) + " with "
                                     + argValue);
                     } catch (IOException ioe) {
@@ -276,12 +281,8 @@ public class RunVisualizer {
         Thread stdoutReader = null;
         Thread stderrReader = null;
 
-        if (DEBUG) {
-            System.out.print("executing ");
-            for (int i = 0; i < commandLine.length; i++) {
-                System.out.print(commandLine[i] + " ");
-            }
-            System.out.println();
+        if (debug) {
+            System.out.println(Arrays.asList(commandLine));
         }
         p = Runtime.getRuntime().exec(commandLine);
 
@@ -325,14 +326,14 @@ public class RunVisualizer {
             }
             if (!found) {
                 // delete extraneous file
-                if (DEBUG) {
+                if (debug) {
                     System.out.println("deleting extraneous file " + currentFiles[curf].getCanonicalPath());
                 }
                 currentFiles[curf].delete();
             } else {
                 if (currentFiles[curf].lastModified() != supportFileDates[supf]) {
                     // delete out-of-date file (either more recent or older)
-                    if (DEBUG) {
+                    if (debug) {
                         System.out.println("deleting out-of-date file " + currentFiles[curf].getCanonicalPath());
                     }
                     currentFiles[curf].delete();
@@ -345,27 +346,15 @@ public class RunVisualizer {
         for (supf = 0; supf < supportFileNames.length; supf++) {
             if (!new File(libdir, supportFileNames[supf]).exists()) {
                 // need to download it
-                if (DEBUG) {
+                if (debug) {
                     System.out.print("downloading missing file " + supportFileNames[supf] + "...");
                 }
-                Date startTime = new Date();
 
                 URL urlFile = new URL(server + contextPath + "/getFile.jsp?task=" + encode(lsid) + "&file="
                         + encode(supportFileNames[supf]));
                 File file = downloadFile(urlFile, libdir, supportFileNames[supf]);
                 file.setLastModified(supportFileDates[supf]);
-
-                if (DEBUG) {
-                    long downloadTime = new Date().getTime() - startTime.getTime();
-                    System.out
-                            .println(" received " + file.length() + " bytes in " + downloadTime / 1000.0 + " seconds");
-                }
             }
-        }
-
-        if (DEBUG) {
-            System.out.println("Total download time " + (new Date().getTime() - startDLTime.getTime()) / 1000.0
-                    + " seconds");
         }
         return libdir;
     }
@@ -388,22 +377,22 @@ public class RunVisualizer {
         GetMethod get = null;
         try {
             if (url.getHost().equals(documentBase.getHost()) && url.getPort() == documentBase.getPort()) {
-                if (DEBUG) {
-                    System.out.println("Downloading " + url + " using HttpClient");
-                }
                 HttpClient client = new HttpClient();
                 client.setState(new HttpState());
-                client.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
-                get = new GetMethod(url.toString());
+                // client.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
+                get = new GetMethod(decode(url.toString()));
+                if (debug) {
+                    System.out.println("Downloading " + get.getURI() + " using HttpClient");
+                }
+
                 get.addRequestHeader("Cookie", cookie);
                 int statusCode = client.executeMethod(get);
                 if (statusCode != HttpStatus.SC_OK) {
                     System.err.println("Method failed: " + get.getStatusLine());
                 }
                 is = get.getResponseBodyAsStream();
-
             } else {
-                if (DEBUG) {
+                if (debug) {
                     System.out.println("Downloading " + url + " using Java classes");
                 }
                 URLConnection conn = url.openConnection();
@@ -566,10 +555,7 @@ public class RunVisualizer {
         HashMap hmDownloadables = new HashMap();
         StringTokenizer stDownloadables = new StringTokenizer((String) params
                 .get(RunVisualizerConstants.DOWNLOAD_FILES), ",");
-        if (DEBUG) {
-            System.out.println(RunVisualizerConstants.DOWNLOAD_FILES + ": "
-                    + params.get(RunVisualizerConstants.DOWNLOAD_FILES));
-        }
+
         String name = (String) params.get(RunVisualizerConstants.NAME);
         String prefix = (name.length() < 3 ? "dl" + name : name);
         File tempdir = null;
@@ -600,7 +586,7 @@ public class RunVisualizer {
                 System.out.println(paramURL + " is malformed.");
                 continue;
             }
-            if (DEBUG) {
+            if (debug) {
                 System.out.println("downloading URL " + paramURL + " to directory " + tempdir + " as " + filename);
             }
             try {
