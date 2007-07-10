@@ -40,7 +40,7 @@ public class RunVisualizerApplet extends Applet {
     public void init() {
         try {
             Class.forName("java.lang.ProcessBuilder"); // ProcessBuilder is new
-                                                        // in java 1.5
+            // in java 1.5
         } catch (Throwable t) {
             JOptionPane
                     .showMessageDialog(this,
@@ -64,7 +64,7 @@ public class RunVisualizerApplet extends Applet {
 
             setSupportFileNames(getParameter(RunVisualizerConstants.SUPPORT_FILE_NAMES));
             setSupportFileDates(getParameter(RunVisualizerConstants.SUPPORT_FILE_DATES));
-            run();
+            exec();
         } catch (Throwable t) {
             t.printStackTrace();
             JOptionPane.showMessageDialog(this, "An error occurred while launching "
@@ -108,10 +108,10 @@ public class RunVisualizerApplet extends Applet {
         }
     }
 
-    public void run() throws Exception {
+    public void exec() throws Exception {
         validateInputs();
         RunVisualizer visualizer = new RunVisualizer(params, supportFileNames, supportFileDates, this);
-        visualizer.run();
+        visualizer.exec();
     }
 
     protected void validateInputs() throws Exception {
