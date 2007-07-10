@@ -119,7 +119,7 @@ public class RunVisualizer {
 
     public void exec() {
         JDialog dialog = new JDialog();
-        JLabel label = new JLabel("Launching module...");
+        JLabel label = new JLabel("Launching visualizer...");
         JProgressBar progressBar = new JProgressBar();
         dialog.setTitle("GenePattern");
         progressBar.setIndeterminate(true);
@@ -143,13 +143,23 @@ public class RunVisualizer {
         }
         // download all of the files locally, preferably checking against a
         // cache
-        String libdir = null;
+
+        File libdirFile = null;
         try {
-            libdir = downloadSupportFiles().getCanonicalPath();
-        } catch (IOException x) {
+            libdirFile = downloadSupportFiles();
+        } catch (IOException e) {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(applet, "Unable to download module files to "
                     + System.getProperty("java.io.tmpdir"));
+            return;
         }
+        String libdir = null;
+        try {
+            libdir = libdirFile.getCanonicalPath();
+        } catch (IOException e) {
+            libdir = libdirFile.getPath();
+        }
+
         // libdir is where all of the support files will be found on the client
         // computer
         params.put(RunVisualizerConstants.LIBDIR, libdir + File.separator);
@@ -171,6 +181,7 @@ public class RunVisualizer {
             validateCPU();
             validateOS();
         } catch (IOException e) {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(applet, e.getMessage());
             return;
         }
@@ -178,18 +189,18 @@ public class RunVisualizer {
         String[] commandLine = null;
         try {
             commandLine = doCommandLineSubstitutions();
-        } catch (IOException x) {
+        } catch (IOException e) {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(applet, "An error occurred while downloading the input files.");
             return;
         }
         try {
             runCommand(commandLine);
         } catch (IOException e) {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(applet, "An error occurred while trying to run "
                     + params.get(RunVisualizerConstants.NAME) + ".");
         }
-        if (DEBUG)
-            System.out.println("runVisualizer: " + (String) params.get(RunVisualizerConstants.NAME) + " done");
     }
 
     protected String[] doCommandLineSubstitutions() throws IOException {
@@ -292,8 +303,10 @@ public class RunVisualizer {
 
         Date startDLTime = new Date();
         File libdir = new File(System.getProperty("java.io.tmpdir"), name + ".libdir");
-        if (!libdir.mkdirs()) {
-            throw new IOException("Unable to create module directory.");
+        if (!libdir.exists()) {
+            if (!libdir.mkdirs()) {
+                throw new IOException("Unable to create module directory.");
+            }
         }
 
         File[] currentFiles = libdir.listFiles();
