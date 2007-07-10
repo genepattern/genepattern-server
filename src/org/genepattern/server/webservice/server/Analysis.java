@@ -33,9 +33,6 @@ import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.handler.AddNewJobHandler;
-import org.genepattern.server.util.AuthorizationManager;
-import org.genepattern.server.util.AuthorizationManagerFactory;
-import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.GenericWebService;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -54,8 +51,6 @@ import org.genepattern.webservice.WebServiceException;
 public class Analysis extends GenericWebService {
 
     private static Logger log = Logger.getLogger(Analysis.class);
-
-    private IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
 
     /**
      * Default constructor. Constructs a <code>Analysis</code> web service
@@ -374,9 +369,7 @@ public class Analysis extends GenericWebService {
      *                If an error occurs
      */
     public TaskInfo[] getTasks() throws WebServiceException {
-        isAuthorized(getUsernameFromContext(), "Analysis.getTasks");
         return new AdminService() {
-
             protected String getUserName() {
                 return getUsernameFromContext();
             }
@@ -425,7 +418,6 @@ public class Analysis extends GenericWebService {
      */
 
     public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters) throws WebServiceException {
-        isAuthorized(getUsernameFromContext(), "Analysis.recordClientJob");
 
         try {
             AnalysisDAO dao = new AnalysisDAO();
@@ -451,7 +443,6 @@ public class Analysis extends GenericWebService {
 
     public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters, int parentJobNumber)
             throws WebServiceException {
-        isAuthorized(getUsernameFromContext(), "Analysis.recordClientJob");
         try {
             AnalysisDAO dao = new AnalysisDAO();
             int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(),
@@ -502,8 +493,6 @@ public class Analysis extends GenericWebService {
      *                thrown if problems are encountered
      */
     public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files) throws WebServiceException {
-        isAuthorized(getUsernameFromContext(), "Analysis.submitJob");
-
         String username = getUsernameFromContext();
 
         JobInfo jobInfo = null;
@@ -518,13 +507,6 @@ public class Analysis extends GenericWebService {
         }
 
         return jobInfo;
-    }
-
-    private void isAuthorized(String username, String permission) throws WebServiceException {
-        if (!AuthorizationManagerFactory.getAuthorizationManager().checkPermission(permission, username)) {
-            throw new WebServiceException(
-                    "You do not have the required permissions to perform the requested operation.");
-        }
     }
 
     /**
@@ -546,8 +528,6 @@ public class Analysis extends GenericWebService {
 
     public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files, int parentJobId)
             throws WebServiceException {
-        isAuthorized(getUsernameFromContext(), "Analysis.submitJob");
-
         try {
             renameInputFiles(parameters, files);
             AddNewJobHandler req = new AddNewJobHandler(taskID, getUsernameFromContext(), parameters, parentJobId);
