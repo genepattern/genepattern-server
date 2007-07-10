@@ -39,27 +39,14 @@ public class RunVisualizerApplet extends Applet {
 
     public void init() {
         try {
-            String[] version = System.getProperty("java.version").split("\\.");
-            int majorVersion = Integer.parseInt(version[0]);
-            if (majorVersion < 2) {
-                boolean updateJava = false;
-                if (version.length > 1) {
-                    int minorVersion = Integer.parseInt(version[1]);
-                    if (minorVersion < 5) {
-                        updateJava = true;
-                    }
-                } else {
-                    updateJava = true;
-                }
-                if (updateJava) {
-                    JOptionPane
-                            .showMessageDialog(this,
-                                    "Your browser is not using the correct version of Java for GenePattern. Java version 1.5 or higher is required.");
-                    return;
-                }
-
-            }
+            Class.forName("java.lang.ProcessBuilder"); // ProcessBuilder is new
+                                                        // in java 1.5
         } catch (Throwable t) {
+            JOptionPane
+                    .showMessageDialog(this,
+                            "Your browser is not using the correct version of Java for GenePattern. Java version 1.5 or higher is required.");
+            return;
+
         }
 
         for (int i = 0; i < wellKnownNames.length; i++) {
