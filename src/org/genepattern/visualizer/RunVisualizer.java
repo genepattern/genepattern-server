@@ -13,6 +13,10 @@
 package org.genepattern.visualizer;
 
 import java.applet.Applet;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Toolkit;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -31,6 +35,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import javax.swing.BorderFactory;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JProgressBar;
+
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.HttpStatus;
@@ -39,7 +49,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 
 public class RunVisualizer {
 
-    private boolean DEBUG = true;
+    private boolean DEBUG = false;
 
     private Map params = null;
 
@@ -54,6 +64,8 @@ public class RunVisualizer {
     private String server;
 
     private String contextPath;
+
+    private Applet applet;
 
     private static final String JAVA = "java";
 
@@ -97,6 +109,7 @@ public class RunVisualizer {
         this.supportFileDates = supportFileDates;
         this.cookie = applet.getParameter("browserCookie");
         this.documentBase = applet.getDocumentBase();
+        this.applet = applet;
         this.server = documentBase.getProtocol() + "://" + documentBase.getHost() + ":" + documentBase.getPort();
         this.contextPath = applet.getParameter(RunVisualizerConstants.CONTEXT_PATH);
         if (contextPath == null) {
@@ -104,15 +117,39 @@ public class RunVisualizer {
         }
     }
 
-    public void run() throws IOException, Exception {
+    public void exec() {
+        JDialog dialog = new JDialog();
+        JLabel label = new JLabel("Launching module...");
+        JProgressBar progressBar = new JProgressBar();
+        dialog.setTitle("GenePattern");
+        progressBar.setIndeterminate(true);
+        label.setFont(new Font("Dialog", Font.BOLD, 14));
+        label.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        dialog.getContentPane().add(label);
+        dialog.getContentPane().add(progressBar, BorderLayout.SOUTH);
+        dialog.setResizable(false);
+        dialog.pack();
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        dialog.setLocation((screenSize.width - dialog.getWidth()) / 2, (screenSize.height - dialog.getHeight()) / 2);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setVisible(true);
+        _exec();
+        dialog.dispose();
+    }
 
+    private void _exec() {
         if (DEBUG) {
             System.out.println("runVisualizer: " + (String) params.get(RunVisualizerConstants.NAME) + " starting");
         }
         // download all of the files locally, preferably checking against a
         // cache
-        String libdir = downloadSupportFiles();
-
+        String libdir = null;
+        try {
+            libdir = downloadSupportFiles().getCanonicalPath();
+        } catch (IOException x) {
+            JOptionPane.showMessageDialog(applet, "Unable to download module files to "
+                    + System.getProperty("java.io.tmpdir"));
+        }
         // libdir is where all of the support files will be found on the client
         // computer
         params.put(RunVisualizerConstants.LIBDIR, libdir + File.separator);
@@ -121,21 +158,36 @@ public class RunVisualizer {
                 + (System.getProperty("os.name").startsWith("Windows") ? ".exe" : "");
         params.put(JAVA, java);
         String javaFlags = (String) params.get(JAVA_FLAGS);
-        if (javaFlags == null)
+        if (javaFlags == null) {
             javaFlags = "";
+        }
 
         params.put(JAVA_FLAGS, javaFlags);
         params.put("GENEPATTERN_PORT", "" + documentBase.getPort());
 
         // check OS and CPU restrictions of TaskInfoAttributes against this
         // server
-        validateCPU(); // eg. "x86", "ppc", "alpha", "sparc"
-        validateOS(); // eg. "Windows", "linux", "Mac OS X", "OSF1", "Solaris"
+        try {
+            validateCPU();
+            validateOS();
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(applet, e.getMessage());
+            return;
+        }
 
-        String[] commandLine = doCommandLineSubstitutions();
-
-        runCommand(commandLine);
-
+        String[] commandLine = null;
+        try {
+            commandLine = doCommandLineSubstitutions();
+        } catch (IOException x) {
+            JOptionPane.showMessageDialog(applet, "An error occurred while downloading the input files.");
+            return;
+        }
+        try {
+            runCommand(commandLine);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(applet, "An error occurred while trying to run "
+                    + params.get(RunVisualizerConstants.NAME) + ".");
+        }
         if (DEBUG)
             System.out.println("runVisualizer: " + (String) params.get(RunVisualizerConstants.NAME) + " done");
     }
@@ -230,7 +282,7 @@ public class RunVisualizer {
         stderrReader.start();
     }
 
-    protected String downloadSupportFiles() throws IOException {
+    protected File downloadSupportFiles() throws IOException {
 
         String name = (String) params.get(RunVisualizerConstants.NAME);
         String lsid = (String) params.get(RunVisualizerConstants.LSID);
@@ -239,10 +291,12 @@ public class RunVisualizer {
         // and the caching is conservative
 
         Date startDLTime = new Date();
-        File fLibdir = new File(getTempDir(), name + ".libdir");
-        fLibdir.mkdirs();
+        File libdir = new File(System.getProperty("java.io.tmpdir"), name + ".libdir");
+        if (!libdir.mkdirs()) {
+            throw new IOException("Unable to create module directory.");
+        }
 
-        File[] currentFiles = fLibdir.listFiles();
+        File[] currentFiles = libdir.listFiles();
         int supf;
 
         // delete any currently downloaded files that are extraneous or
@@ -276,7 +330,7 @@ public class RunVisualizer {
         // figure out which support files are not in the currently downloaded
         // set and download them
         for (supf = 0; supf < supportFileNames.length; supf++) {
-            if (!new File(fLibdir, supportFileNames[supf]).exists()) {
+            if (!new File(libdir, supportFileNames[supf]).exists()) {
                 // need to download it
                 if (DEBUG) {
                     System.out.print("downloading missing file " + supportFileNames[supf] + "...");
@@ -285,7 +339,7 @@ public class RunVisualizer {
 
                 URL urlFile = new URL(server + contextPath + "/getFile.jsp?task=" + encode(lsid) + "&file="
                         + encode(supportFileNames[supf]));
-                File file = downloadFile(urlFile, fLibdir, supportFileNames[supf]);
+                File file = downloadFile(urlFile, libdir, supportFileNames[supf]);
                 file.setLastModified(supportFileDates[supf]);
 
                 if (DEBUG) {
@@ -300,7 +354,7 @@ public class RunVisualizer {
             System.out.println("Total download time " + (new Date().getTime() - startDLTime.getTime()) / 1000.0
                     + " seconds");
         }
-        return fLibdir.getCanonicalPath();
+        return libdir;
     }
 
     /**
@@ -374,7 +428,7 @@ public class RunVisualizer {
         return file;
     }
 
-    protected boolean validateCPU() throws Exception {
+    protected boolean validateCPU() throws IOException {
         String expected = (String) params.get(RunVisualizerConstants.CPU_TYPE);
         String taskName = (String) params.get(RunVisualizerConstants.NAME);
         String actual = System.getProperty("os.arch");
@@ -394,11 +448,11 @@ public class RunVisualizer {
         if (expected.endsWith(intelEnding) && actual.endsWith(intelEnding))
             return true;
 
-        throw new Exception("Cannot run on this platform.  " + taskName + " requires a " + expected
+        throw new IOException("Cannot run on this platform.  " + taskName + " requires a " + expected
                 + " CPU, but this is a " + actual);
     }
 
-    protected boolean validateOS() throws Exception {
+    protected boolean validateOS() throws IOException {
         String expected = (String) params.get(RunVisualizerConstants.OS);
         String taskName = (String) params.get(RunVisualizerConstants.NAME);
         String actual = System.getProperty("os.name");
@@ -416,7 +470,7 @@ public class RunVisualizer {
         if (expected.startsWith(MicrosoftBeginning) && actual.startsWith(MicrosoftBeginning))
             return true;
 
-        throw new Exception("Cannot run on this platform.  " + taskName + " requires " + expected
+        throw new IOException("Cannot run on this platform.  " + taskName + " requires " + expected
                 + " operating system, but this computer is running " + actual);
     }
 
@@ -493,7 +547,7 @@ public class RunVisualizer {
     // local filename for the command
     // line substitution
 
-    protected HashMap downloadInputURLs() {
+    protected HashMap downloadInputURLs() throws IOException {
         // create a mapping between downloadable files and their actual
         // (post-download) filenames
         HashMap hmDownloadables = new HashMap();
@@ -509,8 +563,8 @@ public class RunVisualizer {
         try {
             tempdir = File.createTempFile(prefix, ".tmp");
         } catch (IOException e1) {
-            System.out.println("Unable to create temp directory.");
-            throw new RuntimeException(e1);
+            JOptionPane.showMessageDialog(applet, "Unable to create temp directory.");
+            throw e1;
         }
         tempdir.delete();
         tempdir.mkdir();
@@ -580,7 +634,7 @@ public class RunVisualizer {
         return res.toString();
     }
 
-    protected Thread copyStream(final InputStream is, final PrintStream out) throws IOException {
+    protected Thread copyStream(final InputStream is, final PrintStream out) {
         // create thread to read from the a process' output or error stream
         Thread copyThread = new Thread(new Runnable() {
             public void run() {
@@ -589,7 +643,6 @@ public class RunVisualizer {
                 // copy inputstream to outputstream
 
                 try {
-
                     while ((line = in.readLine()) != null) {
                         out.println(line);
                     }
@@ -600,78 +653,5 @@ public class RunVisualizer {
         });
         copyThread.setDaemon(true);
         return copyThread;
-    }
-
-    protected File getTempDir() throws IOException {
-        File tempdir = File.createTempFile("foo", ".libdir");
-        tempdir.delete();
-        return tempdir.getParentFile();
-    }
-
-    /**
-     * args[0] = visualizer task name args[1] = command line args[2] = debug
-     * flag args[3] = OS required for running args[4] = CPU type required for
-     * running args[5] = libdir on server for this task args[6] = CSV list of
-     * downloadable files for inputs args[7] = CSV list of input parameter names
-     * args[8] = CSV list of support file names args[9] = CSV list of support
-     * file modification dates args[10] = server URL args[11] = LSID of task
-     * args[12...n] = optional input parameter arguments
-     */
-    public static void main(String[] args) {
-        String[] wellKnownNames = { RunVisualizerConstants.NAME, RunVisualizerConstants.COMMAND_LINE,
-                RunVisualizerConstants.DEBUG, RunVisualizerConstants.OS, RunVisualizerConstants.CPU_TYPE,
-                RunVisualizerConstants.DOWNLOAD_FILES, RunVisualizerConstants.LSID };
-        int PARAM_NAMES = 7;
-        int SUPPORT_FILE_NAMES = PARAM_NAMES + 1;
-        int SUPPORT_FILE_DATES = SUPPORT_FILE_NAMES + 1;
-        int SERVER = SUPPORT_FILE_DATES + 1;
-        int LSID = SERVER + 1;
-        int TASK_ARGS = LSID + 1;
-
-        try {
-            HashMap params = new HashMap();
-            for (int i = 0; i < wellKnownNames.length; i++) {
-                params.put(wellKnownNames[i], args[i]);
-            }
-
-            String name = (String) params.get(RunVisualizerConstants.NAME);
-            StringTokenizer stParameterNames = new StringTokenizer(args[PARAM_NAMES], ", ");
-            int argNum = TASK_ARGS;
-            // when pulling parameters from the command line, don't assume that
-            // all were provided.
-            // some could be missing!
-            while (stParameterNames.hasMoreTokens()) {
-                String paramName = stParameterNames.nextToken();
-                if (argNum < args.length) {
-                    String paramValue = args[argNum++];
-                    params.put(paramName, paramValue);
-                } else {
-                    System.err.println("No value specified for " + paramName);
-                }
-            }
-            URL source = new URL(args[SERVER]);
-
-            StringTokenizer stFileNames = new StringTokenizer(args[SUPPORT_FILE_NAMES], ",");
-            StringTokenizer stFileDates = new StringTokenizer(args[SUPPORT_FILE_DATES], ",");
-            String[] supportFileNames = new String[stFileNames.countTokens()];
-            long[] supportFileDates = new long[supportFileNames.length];
-            String filename = null;
-            String fileDate = null;
-            int f = 0;
-            while (stFileNames.hasMoreTokens()) {
-                supportFileNames[f] = stFileNames.nextToken();
-                if (stFileDates.hasMoreTokens()) {
-                    supportFileDates[f] = Long.parseLong(stFileDates.nextToken());
-                } else {
-                    supportFileDates[f] = -1;
-                }
-                f++;
-            }
-
-            RunVisualizer visualizer = new RunVisualizer(params, supportFileNames, supportFileDates, new Applet());
-            visualizer.run();
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
     }
 }
