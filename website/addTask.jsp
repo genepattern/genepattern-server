@@ -24,24 +24,7 @@
  		 org.genepattern.util.StringUtils,
 		 org.genepattern.util.LSIDUtil,
 		 org.genepattern.util.GPConstants,
-		 org.genepattern.data.pipeline.PipelineModel,
-		 java.io.File,
-		 java.io.FilenameFilter,
-		 java.net.MalformedURLException,
-		 java.net.URLEncoder,
-		 java.util.Arrays,
-		 java.util.Collection,
-		 java.util.Collections,
-		 java.util.Comparator,
-		 java.util.HashMap,
-		 java.util.HashSet,
-		 java.util.Iterator,
-		 java.util.Properties,
-		 java.util.List,
-		 java.util.Set,
-		 java.util.TreeSet,
-		 java.util.TreeMap,
-		 java.util.Vector"
+		 org.genepattern.data.pipeline.PipelineModel,org.genepattern.server.webapp.jsf.AuthorizationHelper,java.io.File,java.io.FilenameFilter,java.net.MalformedURLException,java.net.URLEncoder,java.util.Arrays,java.util.Collection,java.util.Collections,java.util.Comparator,java.util.HashMap,java.util.HashSet,java.util.Iterator,java.util.Properties,java.util.List,java.util.Set,java.util.TreeSet,java.util.TreeMap,java.util.Vector"
 	session="false" contentType="text/html" language="Java" buffer="50kb" %>
 <jsp:useBean id="messages" class="org.genepattern.server.util.MessageUtils" scope="page"/>
 
@@ -53,8 +36,8 @@ response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
 
 String userID= (String)request.getAttribute("userID");
-IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-boolean createModuleAllowed = authManager.checkPermission("createModule", userID);
+
+boolean createModuleAllowed = AuthorizationHelper.createModule(userID);
 
 LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, out);
 LocalAdminClient adminClient = new LocalAdminClient(userID);
@@ -95,14 +78,13 @@ if(errors!=null) {
 	try {
 		taskInfo = GenePatternAnalysisTask.getTaskInfo(taskName, userID);
 		if (taskInfo != null) {
-			taskName = taskInfo.getName();
+	taskName = taskInfo.getName();
 		   parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
-			tia = taskInfo.giveTaskInfoAttributes();
-			LSID lsid = new LSID((String)tia.get(GPConstants.LSID));
-			boolean editable = createModuleAllowed && taskInfo.getUserId().equals(userID) && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
-			viewOnly = !editable;
+	tia = taskInfo.giveTaskInfoAttributes();
+	LSID lsid = new LSID((String)tia.get(GPConstants.LSID));
+	boolean editable = createModuleAllowed && taskInfo.getUserId().equals(userID) && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
+	viewOnly = !editable;
 } else {
-
 %>
 <script language="javascript">
 	window.alert("<%= taskName %> does not exist");
@@ -895,7 +877,7 @@ function addNewDomainType(name, desc){
 	t.printStackTrace(new java.io.PrintWriter(out));
    }
 %>
-<%! public String createSelection(TaskInfoAttributes tia, String name, String[] values, String eventHandlers, boolean viewOnly) {
+<%!public String createSelection(TaskInfoAttributes tia, String name, String[] values, String eventHandlers, boolean viewOnly) {
 	StringBuffer sbOut = new StringBuffer();
 	String value = (tia != null ? tia.get(name) : "");
 	boolean found = false;
@@ -945,9 +927,8 @@ function addNewDomainType(name, desc){
 	        sbOut.append("</select>");
 	}
 	return sbOut.toString();
-    }
-%>
-<%! public String createParameterEntries(int from, int to, ParameterInfo[] parameterInfoArray, TaskInfo taskInfo, boolean viewOnly) throws Exception {
+    }%>
+<%!public String createParameterEntries(int from, int to, ParameterInfo[] parameterInfoArray, TaskInfo taskInfo, boolean viewOnly) throws Exception {
 
 StringBuffer out = new StringBuffer();
 ParameterInfo p = null;
@@ -1061,7 +1042,6 @@ for (int i = from; i < to; i++) {
 	out.append("</tr>\n");
  } // end for each parameter
  return out.toString();
-} // end of method
-%>
+} // end of method%>
 </div>
 

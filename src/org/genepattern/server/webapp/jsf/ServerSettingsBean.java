@@ -18,13 +18,10 @@ import java.util.Properties;
 import java.util.TreeMap;
 import java.util.Vector;
 
-import javax.faces.FacesException;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.util.AuthorizationManagerFactory;
-import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.util.PropertiesManager;
 import org.genepattern.server.webapp.StartupServlet;
 
@@ -62,9 +59,8 @@ public class ServerSettingsBean {
      *
      */
     public ServerSettingsBean() {
-        IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-        if (!authManager.checkPermission("adminServer", UIBeanHelper.getUserId())) {
-            log.error(new FacesException("You don' have the required permissions to administer the server."));
+        if (!AuthorizationHelper.adminServer()) {
+            throw new SecurityException("You don't have the required permissions to administer the server.");
         }
 
         if (modes == null) {
@@ -83,7 +79,8 @@ public class ServerSettingsBean {
                     "HSQL.schema", "hibernate.connection.driver_class", "hibernate.connection.shutdown",
                     "hibernate.connection.url", "hibernate.connection.username", "hibernate.connection.password",
                     "hibernate.dialect", "hibernate.default_schema", "hibernate.connection.SetBigStringTryClob" });
-           // modes.put("LSID", new String[] { "lsid.authority", "lsid.show" }); // remove show LSID for 3.1 per bug 1654
+            // modes.put("LSID", new String[] { "lsid.authority", "lsid.show"
+            // }); // remove show LSID for 3.1 per bug 1654
             modes.put("Programming Languages", new String[] { "perl", "java", "R", "run_r_path" });
             // modes.put("Documentation Attibutes", new String[]{"files.doc",
             // "files.binary", "files.code"});

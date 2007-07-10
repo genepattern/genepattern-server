@@ -1,18 +1,16 @@
 
 <%@ page
-        import="org.genepattern.server.webservice.server.DirectoryManager, 
-        org.genepattern.util.GPConstants, java.io.BufferedInputStream, java.io.File, 
-        java.io.FileInputStream, org.genepattern.server.util.IAuthorizationManager, org.genepattern.server.util.AuthorizationManagerFactory,
-        java.io.InputStream, java.io.OutputStream, java.net.URLDecoder, java.io.UnsupportedEncodingException, java.net.MalformedURLException" %>
+        import="org.genepattern.server.webservice.server.DirectoryManager,
+        org.genepattern.util.GPConstants, java.io.BufferedInputStream, java.io.File,
+        java.io.FileInputStream,org.genepattern.server.webapp.jsf.AuthorizationHelper,java.io.InputStream,java.io.OutputStream,java.net.URLDecoder,java.io.UnsupportedEncodingException,java.net.MalformedURLException" %>
 <%
-
-    String taskName = request.getParameter("task");
+	String taskName = request.getParameter("task");
 	try {
 		if(taskName!= null) {
 	    	taskName = URLDecoder.decode(taskName, "UTF-8");
 		}
 	} catch(UnsupportedEncodingException x) {}
-	
+
     if (taskName == null) {
         taskName = "";
     }
@@ -21,7 +19,7 @@
     try {
         filename = URLDecoder.decode(filename, "UTF-8");
     } catch(UnsupportedEncodingException x){}
-    
+
     if (filename == null) {
         out.println("no such file: " + filename);
         return;
@@ -32,8 +30,8 @@
     }
     File in = null;
 	String userID = (String) request.getAttribute(GPConstants.USERID);
-	
-	if (userID == null){ // no anonymous files 
+
+	if (userID == null){ // no anonymous files
 	    ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
 		return;
 	}
@@ -45,20 +43,19 @@
             // look in temp for pipelines run without saving
             in = new File(System.getProperty("java.io.tmpdir"), filename);
 
-			// now we need to check whether this is the user or an admin trying
-			// to look at the file if it exists
-			if (in.exists()){
-			    String prefix = userID + "_";
-				if (!filename.startsWith(prefix)){
-					IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-					boolean isAdmin = authManager.checkPermission("adminJobs",userID );
-					if (!isAdmin){
-						System.out.println("SECURITY ALERT: " + userID +" tried to access someone else's file: " + filename);
-						((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
-						return;
-					}
-				} 			
-			}	
+	// now we need to check whether this is the user or an admin trying
+	// to look at the file if it exists
+	if (in.exists()){
+	    String prefix = userID + "_";
+		if (!filename.startsWith(prefix)){
+			boolean isAdmin = AuthorizationHelper.adminJobs(userID);
+			if (!isAdmin){
+		System.out.println("SECURITY ALERT: " + userID +" tried to access someone else's file: " + filename);
+		((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
+		return;
+			}
+		}
+	}
         }
     } catch (Exception e) {
         try {
@@ -96,5 +93,5 @@
         }
     }
     out.clear();
-    out = pageContext.pushBody(); 
+    out = pageContext.pushBody();
 %>

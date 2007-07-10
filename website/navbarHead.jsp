@@ -1,15 +1,15 @@
-<jsp:useBean id="authorizationBean" scope="request" class="org.genepattern.server.webapp.jsf.AuthorizationBean" /> 
-<jsp:useBean id="genepatternProperties" scope="application" class="org.genepattern.server.webapp.jsf.GenepatternProperties" /> 
+<%@ page import="org.genepattern.server.webapp.jsf.AuthorizationHelper" %>
+<jsp:useBean id="genepatternProperties" scope="application" class="org.genepattern.server.webapp.jsf.GenepatternProperties" />
 <link href="<%=request.getContextPath()%>/css/style.css" rel="stylesheet" type="text/css" />
-<script type="text/javascript" language="javascript"> 
+<script type="text/javascript" language="javascript">
   var contextRoot = "<%=request.getContextPath()%>/";
   <% String username = (String) request.getAttribute("userid"); %>
   var javaGEInstallerURL = '<%= genepatternProperties.getProperties().get("JavaGEInstallerURL") %>';
-  var createTaskAllowed = <%= authorizationBean.isCreateModuleAllowed(username) %>;
-  var createPipelineAllowed = <%= authorizationBean.isCreatePipelineAllowed(username) %>;
-  var createSuiteAllowed = <%= authorizationBean.isCreateSuiteAllowed(username) %>;
+  var createTaskAllowed = <%= AuthorizationHelper.createModule(username) %>;
+  var createPipelineAllowed = <%= AuthorizationHelper.createPipeline(username) %>;
+  var createSuiteAllowed = <%= AuthorizationHelper.createSuite(username) %>;
 
-      
+
 </script>
 <script language="JavaScript" src="<%=request.getContextPath()%>/js/mainMenu.js"></script>
 <script language="JavaScript" src="<%=request.getContextPath()%>/js/mm_menu.js"></script>

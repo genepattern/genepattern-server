@@ -6,7 +6,6 @@ package org.genepattern.server.webapp.jsf;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +21,6 @@ import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.process.MissingTaskException;
 import org.genepattern.server.process.ZipSuite;
 import org.genepattern.server.process.ZipSuiteWithDependents;
-import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.LSIDUtil;
@@ -57,8 +55,7 @@ public class ManageSuiteBean {
      *
      */
     private void resetSuites() {
-        if (AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminSuites",
-                UIBeanHelper.getUserId())) {
+        if (AuthorizationHelper.adminSuites()) {
             suites = (new SuiteDAO()).findAll();
         } else {
             suites = (new SuiteDAO()).findByOwnerOrPublic(UIBeanHelper.getUserId());
@@ -208,8 +205,7 @@ public class ManageSuiteBean {
      */
     private void deleteSuites(String[] suiteLsids) {
         String user = UIBeanHelper.getUserId();
-        boolean admin = AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminSuites",
-                UIBeanHelper.getUserId());
+        boolean admin = AuthorizationHelper.adminSuites();
         if (suiteLsids != null) {
             for (String lsid : suiteLsids) {
                 Suite s = (Suite) HibernateUtil.getSession().get(org.genepattern.server.domain.Suite.class, lsid);

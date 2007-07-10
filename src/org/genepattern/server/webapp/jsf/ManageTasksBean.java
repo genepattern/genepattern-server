@@ -21,7 +21,6 @@ import javax.faces.event.ActionEvent;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.user.UserDAO;
-import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
@@ -47,11 +46,9 @@ public class ManageTasksBean {
             String userId = UIBeanHelper.getUserId();
             this.showEveryonesTasks = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showEveryonesTasks",
                     String.valueOf(this.showEveryonesTasks)))
-                    && AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminModules",
-                            UIBeanHelper.getUserId());
+                    && AuthorizationHelper.adminModules();
 
-            if (this.showEveryonesTasks
-                    && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminModules", userId)) {
+            if (this.showEveryonesTasks && !AuthorizationHelper.adminModules()) {
                 this.showEveryonesTasks = false;
             }
             if (tasks == null) {
@@ -116,9 +113,7 @@ public class ManageTasksBean {
     }
 
     public void setShowEveryonesTasks(boolean showEveryonesTasks) {
-        if (showEveryonesTasks
-                && !AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminModules",
-                        UIBeanHelper.getUserId())) {
+        if (showEveryonesTasks && !AuthorizationHelper.adminModules()) {
             showEveryonesTasks = false;
 
         }
@@ -317,8 +312,7 @@ public class ManageTasksBean {
         public VersionInfo(TaskInfo ti) {
             this.ti = ti;
             String userId = UIBeanHelper.getUserId();
-            deleteAuthorized = ti.getUserId().equals(userId)
-                    || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminModules", userId);
+            deleteAuthorized = ti.getUserId().equals(userId) || AuthorizationHelper.adminModules();
             editAuthorized = ti.getUserId().equals(userId) && LSIDUtil.getInstance().isAuthorityMine(ti.getLsid());
         }
 

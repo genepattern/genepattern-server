@@ -15,21 +15,20 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.faces.model.SelectItem;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.apache.myfaces.custom.fileupload.UploadedFile;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.genepattern.LSIDManager;
-import org.genepattern.server.util.AuthorizationManagerFactory;
-import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.WebServiceException;
-import javax.faces.model.SelectItem;
 
 /**
  * @author jrobinso
@@ -45,7 +44,7 @@ public class CreateSuiteBean implements java.io.Serializable {
 
     private String author;
 
-    private int accessId = GPConstants.ACCESS_PRIVATE;
+    private int accessId;
 
     private UploadedFile supportFile1;
 
@@ -60,7 +59,11 @@ public class CreateSuiteBean implements java.io.Serializable {
     private SuiteInfo currentSuite = null;
 
     public CreateSuiteBean() throws WebServiceException {
+        if (!AuthorizationHelper.createSuite()) {
+            throw new SecurityException();
+        }
         if (currentSuite == null) {
+            accessId = AuthorizationHelper.createPublicSuite() ? GPConstants.ACCESS_PUBLIC : GPConstants.ACCESS_PRIVATE;
             String lsid = UIBeanHelper.getRequest().getParameter("lsid");
             if (lsid != null) {
                 try {
@@ -84,15 +87,11 @@ public class CreateSuiteBean implements java.io.Serializable {
         this.success = success;
     }
 
-    public int getAccessId() { 
-        
-        System.out.println("Get access id " + accessId + "  ");
-        if (currentSuite != null)  System.out.println("Get access id X " + currentSuite.getAccessId());
+    public int getAccessId() {
         return (currentSuite == null) ? accessId : currentSuite.getAccessId();
     }
 
     public void setAccessId(int accessID) {
-        System.out.println("Set access id " + accessID);
         this.accessId = accessID;
     }
 
@@ -120,17 +119,18 @@ public class CreateSuiteBean implements java.io.Serializable {
         this.name = name;
     }
 
-	public List<SelectItem> getAllowedPrivacies(){
-		ArrayList<SelectItem> all = new ArrayList<SelectItem>();
-		all.add(new SelectItem( GPConstants.ACCESS_PRIVATE, UIBeanHelper.getUserId()));
+    public List<SelectItem> getAllowedPrivacies() {
+        ArrayList<SelectItem> all = new ArrayList<SelectItem>();
 
-		IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-        
-		if (authManager.checkPermission("createPublicSuite", UIBeanHelper.getUserId())){
-		    all.add(new SelectItem( GPConstants.ACCESS_PUBLIC, "all users"));
-	    }
-		return all;    
-	}
+        if (AuthorizationHelper.createPublicSuite()) {
+            all.add(new SelectItem(GPConstants.ACCESS_PUBLIC, "all users"));
+        }
+        if (AuthorizationHelper.createPrivateSuite()) {
+            all.add(new SelectItem(GPConstants.ACCESS_PRIVATE, UIBeanHelper.getUserId()));
+        }
+
+        return all;
+    }
 
     public static List<List<ModuleCategory>> layoutSuiteCategories(List<ModuleCategory> categories) {
         List<List<ModuleCategory>> cols = new ArrayList<List<ModuleCategory>>();
@@ -190,29 +190,13 @@ public class CreateSuiteBean implements java.io.Serializable {
         this.supportFile3 = supportFile3;
     }
 
-	public int getPermittedAccessId(){
-        int access = GPConstants.ACCESS_PRIVATE;
-        IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-        if (!authManager.checkPermission("createPublicSuite", UIBeanHelper.getUserId())) {
-            access =  GPConstants.ACCESS_PRIVATE;;
-		} else {
-            access =  getAccessId();
-		}
-        System.out.println("Perm=" + authManager.checkPermission("createPublicSuite", UIBeanHelper.getUserId()));
-        System.out.println("TI installSuite  priv in=" + getAccessId() + "  set to=" + access + "   priv="+ GPConstants.ACCESS_PRIVATE + " pub="+ GPConstants.ACCESS_PUBLIC);  
-        return access;
-	}
-
-    
-    
     public String save() {
-        IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-        if (!authManager.checkPermission("createSuite", UIBeanHelper.getUserId())) {
-            UIBeanHelper.setErrorMessage("You don't have the required permissions to perform the requested operation.");
+        if (!AuthorizationHelper.createSuite()) {
+            throw new SecurityException();
         }
         try {
-            
-             SuiteInfo theSuite;
+
+            SuiteInfo theSuite;
             if (currentSuite == null) {
                 theSuite = new SuiteInfo();
                 theSuite.setLsid(LSIDManager.getInstance().createNewID(SUITE_NAMESPACE).toString());
@@ -225,7 +209,8 @@ public class CreateSuiteBean implements java.io.Serializable {
             theSuite.setOwner(getUserId());
             theSuite.setName(name);
             theSuite.setDescription(description);
-            theSuite.setAccessId( new Integer(getPermittedAccessId()));
+            accessId = AuthorizationHelper.checkSuiteAccessId(accessId);
+            theSuite.setAccessId(accessId);
             theSuite.setAuthor(author);
 
             List<String> selectedLSIDs = new ArrayList<String>();
@@ -245,8 +230,8 @@ public class CreateSuiteBean implements java.io.Serializable {
             ti.saveOrUpdateSuite(theSuite);
 
             // Save uploaded files, if any
-            String suiteDir = DirectoryManager.getSuiteLibDir(theSuite.getName(), theSuite.getLsid(),
-                    theSuite.getOwner());
+            String suiteDir = DirectoryManager.getSuiteLibDir(theSuite.getName(), theSuite.getLsid(), theSuite
+                    .getOwner());
             if (supportFile1 != null) {
                 saveUploadedFile(supportFile1, suiteDir);
             }

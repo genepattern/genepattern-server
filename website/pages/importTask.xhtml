@@ -37,7 +37,12 @@
 			class="barhead-other">
 			<tr><td>
 				<h:outputText rendered="#{empty param.suite}">
-					<ui:define name="pageTitle">Install Modules &amp; Pipelines</ui:define>
+					<h:outputText rendered="#{importBean.createModuleAllowed}">
+						<ui:define name="pageTitle">Install Modules &amp; Pipelines</ui:define>
+					</h:outputText>
+					<h:outputText rendered="#{!importBean.createModuleAllowed}">
+						<ui:define name="pageTitle">Install Pipelines</ui:define>
+					</h:outputText>
 				</h:outputText>
 				<h:outputText rendered="#{! empty param.suite}">
 					<ui:define name="pageTitle">Install Suites</ui:define>
@@ -54,7 +59,7 @@
 						storage="file" size="60" value="#{importBean.zipFile}" id="zipfile" /></p>
 					<p>Visible to: &nbsp;&nbsp; <t:selectOneRadio
 						value="#{importBean.selectedFilePrivacy}">
-						<f:selectItems value="#{importBean.filePrivacyItems}" />
+						<f:selectItems value="#{importBean.privacyItems}" />
 					</t:selectOneRadio></p>
 					<h:commandButton action="#{importBean.importFile}"
 						value="Install" />&nbsp;&nbsp;
@@ -66,7 +71,7 @@
 					value="#{importBean.url}" size="60" id="url" forceId="true"/>
 				<p>Visible to: &nbsp;&nbsp; <t:selectOneRadio
 					value="#{importBean.selectedUrlPrivacy}">
-					<f:selectItems value="#{importBean.urlPrivacyItems}" />
+					<f:selectItems value="#{importBean.privacyItems}" />
 				</t:selectOneRadio></p>
 				<h:commandButton action="#{importBean.importUrl}"
 					value="Install" /></h:form> &nbsp;&nbsp;</td>

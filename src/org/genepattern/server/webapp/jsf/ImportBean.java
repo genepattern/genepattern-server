@@ -4,9 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.ArrayList;
-
+import java.util.List;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.model.SelectItem;
@@ -19,14 +18,11 @@ import org.genepattern.server.TaskUtil;
 import org.genepattern.server.TaskUtil.ZipFileType;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.util.AuthorizationManager;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.WebServiceErrorMessageException;
 import org.genepattern.webservice.WebServiceException;
-import org.genepattern.server.util.AuthorizationManagerFactory;
-import org.genepattern.server.util.IAuthorizationManager;
 
 public class ImportBean {
     private String url;
@@ -35,11 +31,7 @@ public class ImportBean {
 
     private static Logger log = Logger.getLogger(ImportBean.class);
 
-    private List<SelectItem> suitePrivacyItems;
-
-    private List<SelectItem> modulePrivacyItems;
-
-    private List<SelectItem> pipelinePrivacyItems;
+    private List<SelectItem> privacyItems;
 
     private String selectedFilePrivacy;
 
@@ -49,31 +41,34 @@ public class ImportBean {
 
     private String installName;
 
-    private String statusMessage = "";
+    private boolean createModuleAllowed;
 
     public ImportBean() {
-		IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-        
-		
-		suitePrivacyItems = new ArrayList<SelectItem>();
-	    suitePrivacyItems.add(new SelectItem(UIBeanHelper.getUserId()));
-	    if (authManager.checkPermission("createPublicSuite", UIBeanHelper.getUserId()))
-			suitePrivacyItems.add(new SelectItem(ALL_USERS));
-	    
-		modulePrivacyItems = new ArrayList<SelectItem>();
-	    modulePrivacyItems.add(new SelectItem(UIBeanHelper.getUserId()));
-        modulePrivacyItems.add(new SelectItem(ALL_USERS));
+        privacyItems = new ArrayList<SelectItem>();
+        selectedFilePrivacy = UIBeanHelper.getUserId();
+        selectedUrlPrivacy = UIBeanHelper.getUserId();
+        if (UIBeanHelper.getRequest().getParameter("suite") != null) {
+            if (AuthorizationHelper.createPrivateSuite()) {
+                privacyItems.add(new SelectItem(UIBeanHelper.getUserId()));
+            }
+            if (AuthorizationHelper.createPublicSuite()) {
+                privacyItems.add(new SelectItem(ALL_USERS));
+                selectedFilePrivacy = ALL_USERS;
+                selectedUrlPrivacy = ALL_USERS;
+            }
+        } else {
+            createModuleAllowed = AuthorizationHelper.createModule();
+            privacyItems = new ArrayList<SelectItem>();
+            if (AuthorizationHelper.createPrivatePipeline()) {
+                privacyItems.add(new SelectItem(UIBeanHelper.getUserId()));
+            }
+            if (AuthorizationHelper.createPublicPipeline()) {
+                privacyItems.add(new SelectItem(ALL_USERS));
+                selectedFilePrivacy = ALL_USERS;
+                selectedUrlPrivacy = ALL_USERS;
+            }
+        }
 
-        pipelinePrivacyItems = new ArrayList<SelectItem>();
-	    pipelinePrivacyItems.add(new SelectItem(UIBeanHelper.getUserId()));
-	    if (authManager.checkPermission("createPublicPipeline", UIBeanHelper.getUserId()))
-			pipelinePrivacyItems.add(new SelectItem(ALL_USERS));
-	    
-
-		selectedFilePrivacy = ALL_USERS;
-
-		selectedUrlPrivacy = ALL_USERS;
-		
     }
 
     public String importUrl() {
@@ -132,14 +127,14 @@ public class ImportBean {
         }
     }
 
-    private String doTaskImport(final String path, final int privacy, ZipFileType zipFileType) {
-        AuthorizationManager authManager = new AuthorizationManager();
+    private String doTaskImport(final String path, int privacy, ZipFileType zipFileType) {
         final String username = UIBeanHelper.getUserId();
-        boolean createModuleAllowed = authManager.checkPermission("createModule", username);
-        boolean createPipelineAllowed = authManager.checkPermission("createPipeline", username);
+        boolean createPipelineAllowed = AuthorizationHelper.createPipeline();
+        boolean createModuleAllowed = AuthorizationHelper.createSuite();
         final LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
 
         if (zipFileType.equals(ZipFileType.PIPELINE_ZIP) || zipFileType.equals(ZipFileType.PIPELINE_ZIP_OF_ZIPS)) {
+            privacy = AuthorizationHelper.checkPipelineAccessId(privacy);
             if (!createPipelineAllowed) {
                 UIBeanHelper.setInfoMessage("You do not have permission to install pipelines on this server.");
                 return "error";
@@ -155,13 +150,13 @@ public class ImportBean {
         final String lsid = "" + System.currentTimeMillis();
         String name = new File(path).getName();
         installBean.setTasks(new String[] { lsid }, new String[] { name });
-
+        final int _privacy = privacy;
         new Thread() {
             public void run() {
                 try {
                     HibernateUtil.beginTransaction();
 
-                    taskIntegratorClient.importZipFromURL(path, privacy, doRecursive, new Status() {
+                    taskIntegratorClient.importZipFromURL(path, _privacy, doRecursive, new Status() {
 
                         public void beginProgress(String message) {
                             if (message != null) {
@@ -206,28 +201,28 @@ public class ImportBean {
         return "install task results";
     }
 
-    private String doSuiteImport(final String path, final int privacy) {
-        final AuthorizationManager authManager = new AuthorizationManager();
+    private String doSuiteImport(final String path, int privacy) {
         final String username = UIBeanHelper.getUserId();
 
-        boolean suiteInstallAllowed = authManager.checkPermission("createSuite", username);
+        boolean suiteInstallAllowed = AuthorizationHelper.createSuite();
         if (!suiteInstallAllowed) {
             UIBeanHelper.setErrorMessage("You do not have permission to install suites on this server.");
             return "error";
         }
+        privacy = AuthorizationHelper.checkSuiteAccessId(privacy);
         final LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
 
         final SuiteInstallBean installBean = (SuiteInstallBean) UIBeanHelper.getManagedBean("#{suiteInstallBean}");
         final String lsid = "" + System.currentTimeMillis();
         final String name = new File(path).getName();
         installBean.setSuites(new String[] { lsid }, new String[] { name });
-
+        final int _privacy = privacy;
+        final boolean createModuleAllowed = AuthorizationHelper.createModule();
         new Thread() {
             public void run() {
                 try {
                     HibernateUtil.beginTransaction();
-                    taskIntegratorClient.importZipFromURL(path, privacy, authManager.checkPermission("createModule",
-                            username), new Status() {
+                    taskIntegratorClient.importZipFromURL(path, _privacy, createModuleAllowed, new Status() {
 
                         public void beginProgress(String string) {
                         }
@@ -316,19 +311,9 @@ public class ImportBean {
         this.zipFile = zipFile;
     }
 
-    public List<SelectItem> getModulePrivacyItems() {
-        return modulePrivacyItems;
+    public List<SelectItem> getPrivacyItems() {
+        return privacyItems;
     }
-    public List<SelectItem> getSuitePrivacyItems() {
-        return suitePrivacyItems;
-    }
-
-    public List<SelectItem> getPipelinePrivacyItems() {
-        return pipelinePrivacyItems;
-    }
-
-
-    
 
     public String getSelectedFilePrivacy() {
         return selectedFilePrivacy;
@@ -352,6 +337,10 @@ public class ImportBean {
 
     public void setInstallName(String installName) {
         this.installName = installName;
+    }
+
+    public boolean isCreateModuleAllowed() {
+        return createModuleAllowed;
     }
 
 }

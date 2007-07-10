@@ -137,9 +137,8 @@ import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.indexer.Indexer;
 import org.genepattern.server.indexer.IndexerDaemon;
 import org.genepattern.server.user.UsageLog;
-import org.genepattern.server.util.AuthorizationManagerFactory;
-import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.util.PropertiesManager;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -377,8 +376,7 @@ public class GenePatternAnalysisTask {
                     if (in.exists()) {
                         String prefix = userId + "_";
                         if (!filename.startsWith(prefix)) {
-                            IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-                            if (!authManager.checkPermission("adminJobs", userId)) {
+                            if (!AuthorizationHelper.adminJobs(userId)) {
                                 return null;
                             }
                         }
@@ -417,7 +415,7 @@ public class GenePatternAnalysisTask {
                 }
                 log.info("requestedFilename " + requestedFilename);
                 if (isJobOwner(userId, job)
-                        || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs", userId)) {
+                        || AuthorizationHelper.adminJobs(userId)) {
                     File jobDir = new File(jobsDir, job);
                     log.info("jobDir " + jobDir.getCanonicalPath());
                     File file = new File(jobDir, requestedFilename);
@@ -1219,8 +1217,8 @@ public class GenePatternAnalysisTask {
             AnalysisJob parentJob = home.findById(parentJobInfo.getJobNumber());
             parentJob.setCompletedDate(completionDate);
         }
-        
-       
+
+
         log.debug("Finished updating jobInfo");
 
     }

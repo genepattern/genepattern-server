@@ -27,13 +27,9 @@ import javax.activation.FileDataSource;
 
 import org.apache.axis.MessageContext;
 import org.apache.log4j.Logger;
-import org.genepattern.server.domain.Suite;
-import org.genepattern.server.domain.SuiteDAO;
-import org.genepattern.server.domain.TaskMaster;
-import org.genepattern.server.domain.TaskMasterDAO;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
-import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AdminDAOSysException;
 import org.genepattern.util.GPConstants;
@@ -44,9 +40,8 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
 /**
- * AdminService Web Service. Do a Thread.yield at beginning of each method- fixes BUG in which responses from
- * AxisServlet are sometimes empty
- * 
+ * AdminService Web Service.
+ *
  * @author Joshua Gould
  */
 
@@ -70,12 +65,6 @@ public class AdminService implements IAdminService {
         localUserName = localUser;
     }
 
-    private void isAuthorized(String user, String permissionName) throws WebServiceException {
-        if (!authManager.checkPermission(permissionName, user)) {
-            throw new WebServiceException("You are not authorized to perform this action.");
-        }
-    }
-
     protected String getUserName() {
         MessageContext context = MessageContext.getCurrentContext();
         if (context == null)
@@ -89,19 +78,21 @@ public class AdminService implements IAdminService {
     }
 
     public Map getServiceInfo() throws WebServiceException {
-        Thread.yield();
+
         return serviceInfoMap;
     }
 
     public DataHandler getServerLog() throws WebServiceException {
-        isAuthorized(getUserName(), "adminServer");
-        Thread.yield();
+        if (!AuthorizationHelper.adminServer(getUserName())) {
+            throw new WebServiceException("You are not authorized to perform this action.");
+        }
         return getLog(false);
     }
 
     public DataHandler getGenePatternLog() throws WebServiceException {
-        isAuthorized(getUserName(), "adminServer");
-        Thread.yield();
+        if (!AuthorizationHelper.adminServer(getUserName())) {
+            throw new WebServiceException("You are not authorized to perform this action.");
+        }
         return getLog(true);
     }
 
@@ -137,7 +128,7 @@ public class AdminService implements IAdminService {
      * Returns all tasks that are owned by the user, or are public.
      */
     public TaskInfo[] getAllTasks() throws WebServiceException {
-        Thread.yield();
+
         try {
             return adminDAO.getAllTasksForUser(getUserName());
         } catch (OmnigeneException e) {
@@ -146,12 +137,15 @@ public class AdminService implements IAdminService {
     }
 
     public TaskInfo getTask(String lsidOrTaskName) throws WebServiceException {
-        Thread.yield();
+
         try {
             TaskInfo taskInfo = adminDAO.getTask(lsidOrTaskName, getUserName());
             if (taskInfo != null) {
                 if (!(taskInfo.getAccessId() == GPConstants.ACCESS_PUBLIC || taskInfo.getUserId().equals(getUserName()))) {
-                    isAuthorized(getUserName(), "adminModules");
+                    if (!AuthorizationHelper.adminModules(getUserName())) {
+                        throw new WebServiceException(
+                                "You do not have the required permissions to get the requested module.");
+                    }
                 }
             }
             return taskInfo;
@@ -160,19 +154,14 @@ public class AdminService implements IAdminService {
         }
     }
 
-    private void isTaskOwnerOrAuthorized(TaskInfo taskInfo) throws WebServiceException {
-        if (!(taskInfo.getAccessId() == GPConstants.ACCESS_PUBLIC) || (taskInfo.getUserId().equals(getUserName()))) {
-            isAuthorized(getUserName(), "adminModules");
-        }
-    }
-
     /**
-     * Return the latest version of each task accessible to the user sorted by task name. Tasks are groupd by LSID minus
-     * the version, so tasks with the same nambe but different authority are treated as distinct by this method. To
-     * group tasks by name use getLatestTasksByName().
+     * Return the latest version of each task accessible to the user sorted by
+     * task name. Tasks are groupd by LSID minus the version, so tasks with the
+     * same nambe but different authority are treated as distinct by this
+     * method. To group tasks by name use getLatestTasksByName().
      */
     public TaskInfo[] getLatestTasks() throws WebServiceException {
-        Thread.yield();
+
         try {
             return adminDAO.getLatestTasks(getUserName());
         } catch (Exception e) {
@@ -181,11 +170,13 @@ public class AdminService implements IAdminService {
     }
 
     /**
-     * Returns an array of the latest tasks for the current user. The returned array will not contain tasks with the
-     * same name. If more than one task with the same name exists on the server, the returned array will contain the one
-     * task with the name that is closest to the server LSID authority. The closest authority is the first match in the
-     * sequence: local server authority, Broad authority, other authority.
-     * 
+     * Returns an array of the latest tasks for the current user. The returned
+     * array will not contain tasks with the same name. If more than one task
+     * with the same name exists on the server, the returned array will contain
+     * the one task with the name that is closest to the server LSID authority.
+     * The closest authority is the first match in the sequence: local server
+     * authority, Broad authority, other authority.
+     *
      * @param username
      *            The username to get the tasks for.
      * @return The array of tasks.
@@ -194,7 +185,7 @@ public class AdminService implements IAdminService {
      */
 
     public TaskInfo[] getLatestTasksByName() throws WebServiceException {
-        Thread.yield();
+
         try {
             return adminDAO.getLatestTasksByName(getUserName());
         } catch (AdminDAOSysException e) {
@@ -233,7 +224,7 @@ public class AdminService implements IAdminService {
     }
 
     public Map<String, List<String>> getLSIDToVersionsMap() throws WebServiceException {
-        Thread.yield();
+
         Map<String, List<String>> lsid2VersionsMap = new HashMap<String, List<String>>();
         TaskInfo[] tasks = null;
         try {
@@ -273,13 +264,16 @@ public class AdminService implements IAdminService {
 
     private void isSuiteOwnerOrAuthorized(SuiteInfo suite) throws WebServiceException {
         if (!(suite.getAccessId() == GPConstants.ACCESS_PUBLIC || suite.getOwner().equals(getUserName()))) {
-            isAuthorized(getUserName(), "adminSuites");
+            if (!AuthorizationHelper.adminSuites(getUserName())) {
+                throw new WebServiceException("You do not have the required permissions to get the requested suite.");
+            }
         }
     }
 
     /**
-     * Gets the latest versions of all suites that are either public, or owned by the current user.
-     * 
+     * Gets the latest versions of all suites that are either public, or owned
+     * by the current user.
+     *
      * @return The latest suites
      * @exception WebServiceException
      *                If an error occurs
@@ -295,14 +289,14 @@ public class AdminService implements IAdminService {
 
     /**
      * Gets all versions of all suites that are visible to the current user.
-     * 
+     *
      * @return The suites
      * @exception WebServiceException
      *                if an error occurs
      */
     public SuiteInfo[] getAllSuites() throws WebServiceException {
         try {
-            if (AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminSuites", getUserName())) {
+            if (AuthorizationHelper.adminSuites(getUserName())) {
                 return adminDAO.getAllSuites();
             } else {
                 return adminDAO.getAllSuites();
@@ -316,7 +310,7 @@ public class AdminService implements IAdminService {
 
     /**
      * Gets all suites this task is a part of
-     * 
+     *
      * @return The suites
      * @exception WebServiceException
      *                If an error occurs

@@ -32,8 +32,6 @@ import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.process.InstallTask;
 import org.genepattern.server.process.InstallTasksCollectionUtils;
 import org.genepattern.server.process.ModuleRepository;
-import org.genepattern.server.util.AuthorizationManagerFactory;
-import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -94,6 +92,9 @@ public class TaskCatalogBean {
     }
 
     public TaskCatalogBean() {
+        if (!AuthorizationHelper.createModule()) {
+            throw new SecurityException();
+        }
         collection = new InstallTasksCollectionUtils(UIBeanHelper.getUserId(), false);
         try {
             this.tasks = collection.getAvailableModules();
@@ -204,7 +205,6 @@ public class TaskCatalogBean {
         if (installedPatchLSIDsString != null) {
             installedPatches.addAll(Arrays.asList(installedPatchLSIDsString.split(",")));
         }
-        System.out.println("lsids in repos " + Arrays.asList(lsidToPatchMap.keySet().toArray()));
         if (tasks != null) {
 
             for (MyTask t : tasks) {
@@ -266,8 +266,7 @@ public class TaskCatalogBean {
 
     public String install() {
         filter();
-        IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-        final boolean taskInstallAllowed = authManager.checkPermission("createModule", UIBeanHelper.getUserId());
+        final boolean taskInstallAllowed = AuthorizationHelper.createModule();
         if (!taskInstallAllowed) {
             UIBeanHelper.setErrorMessage("You don't have the required permissions to install modules.");
             return "failure";

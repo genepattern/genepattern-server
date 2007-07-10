@@ -4,11 +4,11 @@
  * This software and its documentation are copyright (2003-2006) by the
  * Broad Institute/Massachusetts Institute of Technology. All rights are
  * reserved.
- *  
+ *
  * This software is supplied without any warranty or guaranteed support
  * whatsoever. Neither the Broad Institute nor MIT can be responsible for its
  * use, misuse, or functionality.
- *  
+ *
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf;
 
@@ -22,7 +22,6 @@ import java.util.Map;
 import javax.faces.FacesException;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
@@ -33,9 +32,9 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
 /**
- * 
+ *
  * @author Joshua Gould
- * 
+ *
  */
 public class JobInfoBean {
     private ArrayList<OutputParameter> outputFiles;
@@ -44,7 +43,7 @@ public class JobInfoBean {
 
     private static Logger log = Logger.getLogger(JobInfoBean.class);
 
-    int requestedJobNumber = -1;
+    private int requestedJobNumber = -1;
 
     private String taskName;
 
@@ -66,10 +65,8 @@ public class JobInfoBean {
             throw new FacesException("Job " + requestedJobNumber + " not found.");
         }
 
-        if (!AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
-                UIBeanHelper.getUserId())
-                && !job.getUserId().equals(UIBeanHelper.getUserId())) {
-            throw new FacesException("You don' have the required permissions to access the requested job.");
+        if (!AuthorizationHelper.adminJobs() && !job.getUserId().equals(UIBeanHelper.getUserId())) {
+            throw new FacesException("You don't have the required permissions to access the requested job.");
         }
 
         Map<String, ParameterInfo> parameterMap = new HashMap<String, ParameterInfo>();

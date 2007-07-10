@@ -26,7 +26,6 @@ import javax.faces.model.SelectItem;
 import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
-import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
@@ -341,8 +340,7 @@ public class RunTaskBean {
                 File outputDir = new File(GenePatternAnalysisTask.getJobDir("" + matchJobInfo.getJobNumber()));
 
                 if (UIBeanHelper.getUserId().equals(matchJobInfo.getUserId())
-                        || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
-                                UIBeanHelper.getUserId())) {
+                        || AuthorizationHelper.adminJobs()) {
                     ParameterInfo[] params = matchJobInfo.getParameterInfoArray();
                     if (params != null) {
                         List<ParameterInfo> outputFileParameters = new ArrayList<ParameterInfo>();
@@ -401,8 +399,7 @@ public class RunTaskBean {
                 JobInfo reloadJob = ac.getJob(Integer.parseInt(reloadJobNumberString));
 
                 if (UIBeanHelper.getUserId().equals(reloadJob.getUserId())
-                        || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
-                                UIBeanHelper.getUserId())) {
+                        || AuthorizationHelper.adminJobs()) {
                     ParameterInfo[] reloadParams = reloadJob.getParameterInfoArray();
                     if (reloadParams != null) {
                         for (int i = 0; i < reloadParams.length; i++) {

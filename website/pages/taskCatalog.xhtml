@@ -14,11 +14,11 @@
 		<script type="text/javascript" language="javascript">
 
 /* <![CDATA[ */
-	
-	
-	function toggleAllCheckboxes(node) {	
+
+
+	function toggleAllCheckboxes(node) {
 		var maincheckboxes = document.getElementsByName("installLsid");
-	
+
 	    var isChecked = node.checked;
 	    for (var i=0; i<maincheckboxes.length; i++) {
 	        if(maincheckboxes[i].type == "checkbox" && !maincheckboxes[i].disabled) {
@@ -26,10 +26,10 @@
 	        }
 	    }
 	}
-	
-	
-	
-    
+
+
+
+
 /* ]]> */
 	</script>
 	</ui:define>
@@ -47,7 +47,7 @@
 		<c:choose>
 			<c:when test="#{taskCatalogBean.error}">
 				<p>Sorry, the module repository is not currently available.</p>
-				<c:if test="#{authorizationBean.adminServer}">
+				<c:if test="#{authorizationBean.adminServerAllowed}">
 					<p>If you use a web proxy to connect to the internet, please
 					ensure your <a href="#{facesContext.externalContext.requestContextPath}/pages/serverSettings.jsf">web proxy settings</a> are
 					correct</p>
@@ -56,9 +56,9 @@
 			<c:otherwise>
 				<h:form id="taskCatalogForm">
 				<h:inputHidden id="taskCatalogSubmit" value="1" />
-		
+
 						<table border="0" cellpadding="5" cellspacing="0">
-							
+
 							<tr valign="top">
 							<td valign="top">
 							<br />
@@ -73,7 +73,7 @@
 							</t:dataList>
 							</td>
 							<td valign="top">
-					
+
 							Operating System:
 							<br />
 							<t:dataList var="t" value="#{taskCatalogBean.operatingSystems}" >
@@ -85,11 +85,11 @@
 								</h:outputText>
 								<br />
 							</t:dataList>
-			
+
 							</td>
-							
-						
-							
+
+
+
 							</tr>
 							<tr>
 							<td>
@@ -97,9 +97,9 @@
 								action="#{taskCatalogBean.filter}" value="Search" />
 								</td>
 							</tr>
-						
+
 						</table>
-					
+
 
 					<table width="100%" border="0" cellpadding="0" cellspacing="0"
 						class="barhead-task">
@@ -110,7 +110,7 @@
 					</table>
 
 					<c:if test="#{taskCatalogBean.numberOfTasks > 0}">
-						
+
 						<p><h:commandButton action="#{taskCatalogBean.install}"
 							value="Install Checked" /></p>
 
@@ -128,7 +128,7 @@
 
 							<t:dataList var="t" value="#{taskCatalogBean.tasks}"
 								rowIndexVar="taskIndex">
-								
+
 								<tr>
 									<td rowspan="2" valign="top"><input type="checkbox" id="install#{taskIndex}"
 										name="installLsid" value="#{t.lsid}" checked="checked" /></td>
@@ -136,8 +136,8 @@
 									</span> <select name="lsid_version"
 										onchange="javascript:document.forms['taskCatalogForm'].install#{taskIndex}.value=this.options[this.selectedIndex].value"
 										class="tasks-broad">
-										
-										
+
+
 										<option value="#{t.lsid}">#{t.lsidVersion}<h:outputText rendered="#{!empty t.versionComment}"> - </h:outputText>
 										#{t.versionComment}</option>
 										<t:dataList var="l" value="#{t.laterVersions}">
@@ -160,7 +160,7 @@
 											<td valign="top" align="right">size:</td>
 											<td valign="top"><nobr>#{t.formattedSize}</nobr></td>
 										</tr>
-										
+
 										<h:outputText rendered="#{!empty t.patches}">
 										<tr>
 											<td valign="top" align="right">required patches:</td>
@@ -177,7 +177,7 @@
 											<td valign="top"><nobr>#{t.requirements}</nobr></td>
 
 										</tr>
-								
+
 									</table>
 									</td>
 								</tr>

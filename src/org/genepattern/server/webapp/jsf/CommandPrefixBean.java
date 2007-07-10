@@ -15,8 +15,6 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.util.AuthorizationManagerFactory;
-import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.util.PropertiesManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.LSID;
@@ -42,8 +40,7 @@ public class CommandPrefixBean {
     PropertiesManager pm = null;
 
     public CommandPrefixBean() {
-        IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-        if (!authManager.checkPermission("adminServer", UIBeanHelper.getUserId())) {
+        if (!AuthorizationHelper.adminServer()) {
             throw new FacesException("You don' have the required permissions to administer the server.");
         }
         admin = new LocalAdminClient(UIBeanHelper.getUserId());
@@ -58,21 +55,21 @@ public class CommandPrefixBean {
 
     public void setDefaultCommandPrefix(String defaultCommandPrefix) {
         this.defaultCommandPrefix = defaultCommandPrefix;
-        if(defaultCommandPrefix==null) {
+        if (defaultCommandPrefix == null) {
             defaultCommandPrefix = "";
         }
     }
-    
+
     public void saveDefaultCommandPrefix(ActionEvent event) {
-	UIBeanHelper.setInfoMessage("Property successfully updated");
-    	setDefault();
+        UIBeanHelper.setInfoMessage("Property successfully updated");
+        setDefault();
         System.setProperty(COMMAND_PREFIX, defaultCommandPrefix);
     }
-    
+
     private void setDefault() {
-    	Properties p = pm.getCommandPrefixes();
-    	p.setProperty("default", defaultCommandPrefix);
-    	pm.saveProperties(COMMAND_PREFIX, p);
+        Properties p = pm.getCommandPrefixes();
+        p.setProperty("default", defaultCommandPrefix);
+        pm.saveProperties(COMMAND_PREFIX, p);
     }
 
     public List getCommandPrefixes() {
@@ -91,7 +88,7 @@ public class CommandPrefixBean {
     /**
      * We store the mapping with LSIDs (unique) but display with names (not
      * unique)
-     * 
+     *
      * @return
      */
     public List getTaskPrefixMapping() throws WebServiceException {
@@ -140,7 +137,7 @@ public class CommandPrefixBean {
 
     /**
      * Save a new set of prefixes for use in mappings
-     * 
+     *
      * @param event --
      *            ignored
      */
@@ -178,7 +175,7 @@ public class CommandPrefixBean {
 
     /**
      * Save the mappings between a task and a prefix
-     * 
+     *
      * @param event --
      *            ignored
      */

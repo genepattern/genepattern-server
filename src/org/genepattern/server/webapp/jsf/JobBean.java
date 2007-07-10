@@ -35,7 +35,6 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserPropKey;
-import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
@@ -102,8 +101,7 @@ public class JobBean {
         this.fileSortColumn = new UserDAO().getPropertyValue(userId, "fileSortColumn", fileSortColumn);
         this.showEveryonesJobs = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showEveryonesJobs", String
                 .valueOf(showEveryonesJobs)))
-                && AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
-                        UIBeanHelper.getUserId());
+                && AuthorizationHelper.adminJobs();
         this.jobSortColumn = new UserDAO().getPropertyValue(userId, "jobSortColumn", jobSortColumn);
         this.jobSortAscending = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "jobSortAscending", String
                 .valueOf(jobSortAscending)));
@@ -599,8 +597,7 @@ public class JobBean {
     public void setShowEveryonesJobs(boolean showEveryonesJobs) {
 
         this.showEveryonesJobs = showEveryonesJobs
-                && AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
-                        UIBeanHelper.getUserId());
+                && AuthorizationHelper.adminJobs();
         new UserDAO().setProperty(UIBeanHelper.getUserId(), "showEveryonesJobs", String.valueOf(showEveryonesJobs));
         this.resetJobs();
     }
@@ -776,8 +773,7 @@ public class JobBean {
             this.sequence = sequence;
 
             deleteAllowed = jobInfo.getUserId().equals(UIBeanHelper.getUserId())
-                    || AuthorizationManagerFactory.getAuthorizationManager().checkPermission("adminJobs",
-                            UIBeanHelper.getUserId());
+                    || AuthorizationHelper.adminJobs();
 
             // Build the list of output files from the parameter info array.
 

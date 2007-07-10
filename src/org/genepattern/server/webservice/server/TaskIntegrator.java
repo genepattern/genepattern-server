@@ -62,6 +62,7 @@ import org.genepattern.server.process.SuiteRepository;
 import org.genepattern.server.process.ZipSuite;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.dao.TaskIntegratorDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
@@ -75,8 +76,7 @@ import org.genepattern.webservice.WebServiceErrorMessageException;
 import org.genepattern.webservice.WebServiceException;
 
 /**
- * TaskIntegrator Web Service. Do a Thread.yield at beginning of each method-
- * fixes BUG in which responses from AxisServlet are sometimes empty
+ * TaskIntegrator Web Service.
  *
  * @author Joshua Gould
  */
@@ -280,7 +280,7 @@ public class TaskIntegrator {
 
     public DataHandler exportToZip(String lsid, boolean recursive) throws WebServiceException {
         try {
-            Thread.yield();
+
             String username = getUserName();
             org.genepattern.server.process.ZipTask zt;
             if (recursive) {
@@ -312,7 +312,7 @@ public class TaskIntegrator {
         }
 
         try {
-            Thread.yield();
+
             String taskLibDir = DirectoryManager.getLibDir(lsid);
             String[] docFiles = new File(taskLibDir).list(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
@@ -422,7 +422,7 @@ public class TaskIntegrator {
         }
 
         try {
-            Thread.yield();
+
             String attachmentDir = DirectoryManager.getTaskLibDir(null, lsid, getUserName());
             File dir = new File(attachmentDir);
             String[] oldFiles = dir.list(new FilenameFilter() {
@@ -474,7 +474,7 @@ public class TaskIntegrator {
         }
 
         try {
-            Thread.yield();
+
             String attachmentDir = DirectoryManager.getTaskLibDir(null, lsid, this.getUserName());
             File dir = new File(attachmentDir);
             File f = new File(dir, fileName);
@@ -539,7 +539,7 @@ public class TaskIntegrator {
 
     private String importZip(DataHandler handler, int privacy, boolean recursive, Status status)
             throws WebServiceException {
-        Thread.yield();
+
         File axisFile = Util.getAxisFile(handler);
         File zipFile = new File(handler.getName() + ".zip");
         axisFile.renameTo(zipFile);
@@ -572,7 +572,7 @@ public class TaskIntegrator {
         File zipFile = null;
         if (recursive) {
             // recursive install only allowed if createModule permission granted
-            recursive = authManager.checkPermission("createModule", getUserName());
+            recursive = AuthorizationHelper.createModule(getUserName());
         }
         try {
             String username = getUserName();
@@ -657,22 +657,19 @@ public class TaskIntegrator {
         return (new TaskIntegratorDAO()).saveOrUpdate(suiteInfo);
     }
 
-	public int getPermittedAccessId(int access_id){
-        
+    public int getPermittedAccessId(int access_id) {
+
         int access = GPConstants.ACCESS_PRIVATE;
-		IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
+        IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
         if (!authManager.checkPermission("createPublicSuite", getUserName())) {
-			access = GPConstants.ACCESS_PRIVATE;
-		} else {
-			access =  access_id;
-		}
+            access = GPConstants.ACCESS_PRIVATE;
+        } else {
+            access = access_id;
+        }
         System.out.println("Perm=" + authManager.checkPermission("createPublicSuite", getUserName()));
-        System.out.println("TI installSuite  priv in=" + access_id + "  set to=" + access);  
+        System.out.println("TI installSuite  priv in=" + access_id + "  set to=" + access);
         return access;
     }
-    
-
-
 
     /**
      * Create a new suite from the SuiteInfo object.
@@ -845,7 +842,6 @@ public class TaskIntegrator {
         }
     }
 
-
     private File unzip(File unzipDirectory, ZipFile zipFile, ZipEntry zipEntry) throws IOException {
         InputStream is = null;
         FileOutputStream os = null;
@@ -918,7 +914,7 @@ public class TaskIntegrator {
     }
 
     /**
-     * 
+     *
      *
      * Modifies the suite with the given name. If the suite does not exist, it
      * will be created.
@@ -948,10 +944,10 @@ public class TaskIntegrator {
      * @exception WebServiceException
      *                If an error occurs
      */
-    private String modifySuite(int access_id, String lsid, String name, String description, String author, String owner,
-            ArrayList moduleLsids, ArrayList<File> files) throws WebServiceException {
+    private String modifySuite(int access_id, String lsid, String name, String description, String author,
+            String owner, ArrayList moduleLsids, ArrayList<File> files) throws WebServiceException {
 
-         ArrayList<String> docs = new ArrayList<String>();
+        ArrayList<String> docs = new ArrayList<String>();
 
         if ((lsid != null) && (lsid.length() > 0)) {
             try {
@@ -971,7 +967,7 @@ public class TaskIntegrator {
                 log.error(e);
                 throw new WebServiceException(e);
             }
-        } 
+        }
 
         for (int i = 0; i < files.size(); i++) {
             File f = files.get(i);
@@ -980,11 +976,11 @@ public class TaskIntegrator {
 
         SuiteInfo si = new SuiteInfo(lsid, name, description, author, owner, moduleLsids, access_id, docs);
         return saveOrUpdateSuite(si);
-//        return installSuite(si, access_id);
+        // return installSuite(si, access_id);
     }
 
     /**
-     * 
+     *
      * @param access_id
      * @param lsid
      * @param name
@@ -1084,7 +1080,7 @@ public class TaskIntegrator {
         String username = getUserName();
         String oldLSID = null;
         try {
-            Thread.yield();
+
             if (taskAttributes == null) {
                 taskAttributes = new HashMap();
             }

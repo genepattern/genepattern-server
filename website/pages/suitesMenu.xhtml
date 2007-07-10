@@ -17,8 +17,8 @@
           </tr>
           <tr>
             <td>
-              <h:commandLink value="Delete" action="#{manageSuiteBean.delete}" onclick="if (!confirmDelete()) return false" 
-                             rendered="#{(suiteInfo.userId == requestScope.userID) or authorizationBean.adminSuites}">
+              <h:commandLink value="Delete" action="#{manageSuiteBean.delete}" onclick="if (!confirmDelete()) return false"
+                             rendered="#{(suiteInfo.userId == requestScope.userID) or authorizationBean.adminSuitesAllowed}">
                 <f:param name="selectedSuites" value="#{suiteInfo.lsid}"/>
               </h:commandLink>
             </td>

@@ -20,8 +20,6 @@ import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.process.InstallSuite;
 import org.genepattern.server.process.InstallTask;
 import org.genepattern.server.process.SuiteRepository;
-import org.genepattern.server.util.AuthorizationManagerFactory;
-import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.SuiteInfo;
@@ -59,7 +57,9 @@ public class SuiteCatalogBean {
     private HashMap<String, Map> lsidToSuiteMap;
 
     public SuiteCatalogBean() {
-
+        if (!AuthorizationHelper.createPublicSuite() || !AuthorizationHelper.createModule()) {
+            throw new SecurityException();
+        }
         try {
             baseLsid2InstalledSuites = createBaseLsidToSuitesMap(new LocalAdminClient(UIBeanHelper.getUserId())
                     .getAllSuites());
@@ -137,8 +137,7 @@ public class SuiteCatalogBean {
         if (lsids != null) {
             final String username = UIBeanHelper.getUserId();
             final InstallSuite s = new InstallSuite(username);
-            IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-            boolean suiteInstallAllowed = authManager.checkPermission("createSuite", username);
+            boolean suiteInstallAllowed = AuthorizationHelper.createSuite();
             if (!suiteInstallAllowed) {
                 UIBeanHelper.setErrorMessage("You don't have the required permissions to install suites.");
                 return "failure";

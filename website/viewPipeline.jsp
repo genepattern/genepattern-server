@@ -30,15 +30,9 @@
 		 org.genepattern.util.LSIDUtil,
 		 java.io.File,
 		 java.util.Map,
-		 java.util.HashMap,
-		 org.genepattern.server.util.IAuthorizationManager,
-		 org.genepattern.server.util.AuthorizationManagerFactory,
-		 java.util.*,
-		 java.util.Collection,
-		 java.util.Iterator"
+		 java.util.HashMap,org.genepattern.server.webapp.jsf.AuthorizationHelper,java.util.*,java.util.Collection,java.util.Iterator"
 	session="true" contentType="text/html" language="Java" %>
 <%
-
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
 response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
 response.setDateHeader("Expires", 0);
@@ -54,7 +48,7 @@ String pipelineName = request.getParameter("name");
 if (pipelineName == null) {
 %>	Must specify a name parameter
 <%
-	return;
+return;
 }
 PipelineModel model = null;
 
@@ -67,13 +61,13 @@ if (task != null) {
 	if (tia != null) {
 		 String serializedModel = (String)tia.get(GPConstants.SERIALIZED_MODEL);
 		 if (serializedModel != null && serializedModel.length() > 0) {
-			 try {
-			 	 model = PipelineModel.toPipelineModel(serializedModel);
-			} catch (Throwable x) {
-				System.out.println("exception loading serialized model " + x);
+	 try {
+	 	 model = PipelineModel.toPipelineModel(serializedModel);
+	} catch (Throwable x) {
+		System.out.println("exception loading serialized model " + x);
 
-				x.printStackTrace(System.out);
-			}
+		x.printStackTrace(System.out);
+	}
 		}
 		String lsidStr = tia.get("LSID");
 		LSID pipeLSID = new LSID(lsidStr);
@@ -172,7 +166,7 @@ if(showEdit) {
 	out.println("  <input type=\"button\" value=\"Edit\" name=\"edit\" class=\"little\" onclick=\"window.location='" + editURL + "'\"; />");
 }
 
-if (authManager.checkPermission("createPipeline", userID)){
+if (AuthorizationHelper.createPipeline(userID)){
 out.println("  <input type=\"button\" value=\"Clone...\" name=\"clone\" class=\"little\" onclick=\"cloneTask('"+displayName+"', '" + pipelineName + "', '" + userID + "')\"; />");
 }
 
@@ -196,8 +190,8 @@ if (docFiles != null){
 	if (docFiles.length > 0){
 		out.println("<br>Documentation: ");
 		for (int i = 0; i < docFiles.length; i++) {
-			if (i > 0) out.println("  ,");
-			out.println("<a href='getTaskDoc.jsp?name="+pipelineName+"'&file="+docFiles[i].getName()+" target='_new'>"+docFiles[i].getName()+"</a>");
+	if (i > 0) out.println("  ,");
+	out.println("<a href='getTaskDoc.jsp?name="+pipelineName+"'&file="+docFiles[i].getName()+" target='_new'>"+docFiles[i].getName()+"</a>");
 		}
 
 	}
