@@ -99,7 +99,6 @@
 	if (parameterInfoArray == null) parameterInfoArray = new ParameterInfo[0];
 	File[] supportFiles = new File(libdir).listFiles();
 	int i;
-	String appletName = "a" + ("" + Math.random()).substring(2); // unique name so that multiple instances of applet on a single page will not collide
 	String javaFlags = new LocalAdminClient(userID).getUserProperty(UserPropKey.VISUALIZER_JAVA_FLAGS);
 	if(javaFlags==null) {
 	    javaFlags = System.getProperty(RunVisualizerConstants.JAVA_FLAGS_VALUE);
@@ -107,12 +106,10 @@
 
 
 java.io.StringWriter app = new java.io.StringWriter();
-app.append("<applet code=\"" + org.genepattern.visualizer.RunVisualizerApplet.class.getName() + "\" archive=\"runVisualizer.jar,commons-httpclient.jar,commons-codec-1.3.jar\" codebase=\"downloads\" width=\"1\" height=\"1\" alt=\"Your browser refuses to run applets\" name=\"" + appletName + "\" >");
+app.append("<applet code=\"" + org.genepattern.visualizer.RunVisualizerApplet.class.getName() + "\" archive=\"runVisualizer.jar,commons-httpclient.jar,commons-codec-1.3.jar\" codebase=\"downloads/\" width=\"1\" height=\"1\" alt=\"Your browser refuses to run applets\">");
+
 app.append("<param name=\"" + RunVisualizerConstants.NAME + "\" value=\"" + name + "\" >");
-
-
 app.append("<param name=\"" + RunVisualizerConstants.OS + "\" value=\"" + StringUtils.htmlEncode(tia.get(GPConstants.OS)) + "\">");
-
 app.append("<param name=\"" + RunVisualizerConstants.CPU_TYPE + "\" value=\"" + StringUtils.htmlEncode(tia.get(GPConstants.CPU_TYPE)) + "\">");
 app.append("<param name=\"" + RunVisualizerConstants.JAVA_FLAGS_VALUE + "\" value=\"" + StringUtils.htmlEncode(javaFlags) + "\">");
 app.append("<param name=\"" + RunVisualizerConstants.CONTEXT_PATH + "\" value=\"" + StringUtils.htmlEncode(request.getContextPath()) + "\">");
@@ -124,7 +121,6 @@ for (i = 0; i < parameterInfoArray.length; i++) {
 
 app.append("<param name=\"" + RunVisualizerConstants.PARAM_NAMES + "\" value=\"" + paramValue.toString() + "\" >");
 
-
 for (i = 0; i < parameterInfoArray.length; i++) {
 	String paramName = parameterInfoArray[i].getName();
 	String value = params.getProperty(paramName);
@@ -132,7 +128,6 @@ for (i = 0; i < parameterInfoArray.length; i++) {
 		value = value.replace("\\", "\\\\");
 	}
 	app.append("<param name=\"" + StringUtils.htmlEncode(paramName) + "\" value=\"" + URLEncoder.encode(value, "UTF-8") + "\">");
-
 }
 
 StringBuffer vis = new StringBuffer();
@@ -157,27 +152,24 @@ app.append("<param name=\"" + RunVisualizerConstants.COMMAND_LINE + "\" value=\"
 app.append("<param name=\"" + RunVisualizerConstants.DEBUG + "\" value=\"1\">");
 
 StringBuffer fileNamesBuf = new StringBuffer();
-
-	for (i = 0; i < supportFiles.length; i++) {
-		if (i > 0) fileNamesBuf.append(",");
+for (i = 0; i < supportFiles.length; i++) {
+	if (i > 0) fileNamesBuf.append(",");
 		fileNamesBuf.append(StringUtils.htmlEncode(supportFiles[i].getName()));
-	}
+}
 app.append("<param name=\"" + RunVisualizerConstants.SUPPORT_FILE_NAMES + "\" value=\"" + fileNamesBuf.toString() + "\" >");
 
-    StringBuffer fileDatesBuf = new StringBuffer();
-	for (i = 0; i < supportFiles.length; i++) {
-		if (i > 0) fileDatesBuf.append(",");
+StringBuffer fileDatesBuf = new StringBuffer();
+for (i = 0; i < supportFiles.length; i++) {
+	if (i > 0) fileDatesBuf.append(",");
 		fileDatesBuf.append(supportFiles[i].lastModified());
-	}
+}
 app.append("<param name=\"" + RunVisualizerConstants.SUPPORT_FILE_DATES + "\" value=\"" + fileDatesBuf.toString() + "\" >");
 app.append("<param name=\"" + RunVisualizerConstants.LSID + "\" value=\"" + lsid + "\" >");
-
-
-
-
 %>
+
 <SCRIPT LANGUAGE="JavaScript">
 document.writeln('<%=app.toString() %>');
 document.writeln("<PARAM name=\"browserCookie\" value=\"" + document.cookie + "\">");
 document.writeln('</applet>');
+
 </SCRIPT>
