@@ -17,14 +17,12 @@ public class HibernateSessionRequestFilter implements Filter {
             ServletException {
 
         try {
-            log.debug("Starting a database transaction");
             HibernateUtil.beginTransaction();
 
             // Call the next filter (continue request processing)
             chain.doFilter(request, response);
 
             // Commit and cleanup
-            log.debug("Committing the database transaction");
             HibernateUtil.commitTransaction();
             
 

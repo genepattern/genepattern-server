@@ -21,7 +21,6 @@ public class UserDAO extends BaseDAO {
     public static final Logger log = Logger.getLogger(UserDAO.class);
 
     public User findById(String id) {
-        log.debug("getting User instance with id: " + id);
         if (id == null) {
             return null;
         }
