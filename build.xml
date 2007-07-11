@@ -382,7 +382,7 @@
 		 <javac
                 destdir="applet-build"
                 srcdir="src"
-                classpathref="library.classpath" includes="org/genepattern/visualizer/*.java" target="1.4" source="1.4" />
+                classpathref="library.classpath" includes="org/genepattern/visualizer/*.java" target="1.1" source="1.1" />
 
         <jar basedir="applet-build"
              defaultexcludes="true"
