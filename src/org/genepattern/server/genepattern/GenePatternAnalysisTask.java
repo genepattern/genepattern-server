@@ -4,7 +4,7 @@
  This software and its documentation are copyright (2003-2006) by the
  Broad Institute/Massachusetts Institute of Technology. All rights are
  reserved.
-
+ 
  This software is supplied without any warranty or guaranteed support
  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
  use, misuse, or functionality.
@@ -235,7 +235,7 @@ import org.w3c.dom.NodeList;
  */
 
 public class GenePatternAnalysisTask {
-
+    
     /** used by log4j logging */
     /*
      * static { String log4jConfiguration =
@@ -248,28 +248,28 @@ public class GenePatternAnalysisTask {
      * l4jconf.length()); if (l4jconf.exists()) {
      * PropertyConfigurator.configure(log4jConfiguration); } }
      */
-
+    
     private static Logger log = Logger.getLogger(GenePatternAnalysisTask.class);
-
+    
     protected static final String CLASSPATH = "classpath";
-
+    
     protected static final String OUTPUT_FILENAME = "output_filename";
-
+    
     protected static final String ORIGINAL_PATH = "originalPath";
-
+    
     public static final String TASK_NAME = "GenePatternAnalysisTask";
-
+    
     /**
      * milliseconds between polls for work to do when idle
      */
     protected static int POLL_INTERVAL = 1000;
-
+    
     /**
      * maximum number of concurrent tasks to run before next one will have to
      * wait
      */
     public static int NUM_THREADS = 20;
-
+    
     static {
         try {
             NUM_THREADS = Integer.parseInt(System.getProperty(GPConstants.NUM_THREADS, "20"));
@@ -277,27 +277,27 @@ public class GenePatternAnalysisTask {
             e.printStackTrace();
         }
     }
-
+    
     /**
      * hashtable of running jobs. key=jobID (as String), value=Process
      */
     protected static Hashtable htRunningJobs = new Hashtable();
-
+    
     /**
      * hashtable of running pipelines. key=jobID (as String), value=Process
      */
     protected static Hashtable htRunningPipelines = new Hashtable();
-
+    
     /**
      * indicates whether version string has been displayed by init already
      */
     protected static boolean bAnnounced = false;
-
+    
     /**
      * use rename or copy for input files
      */
     protected boolean bCopyInputFiles = (System.getProperty("copyInputFiles") != null);
-
+    
     /**
      * Tests whether the specified URL referes to the local host.
      *
@@ -317,21 +317,21 @@ public class GenePatternAnalysisTask {
         } catch (MalformedURLException mfe) {
         } catch (UnknownHostException uhe) {
         }
-
+        
         String requestedHost = url.getHost();
         try {
             return (url.toString().startsWith("<GenePatternURL>") || requestedHost.equals("localhost")
-                    || requestedHost.equals("127.0.0.1")
-                    || requestedHost.equals(InetAddress.getLocalHost().getCanonicalHostName())
-                    || requestedHost.equals(gpHost) || InetAddress.getByName(requestedHost).getHostAddress().equals(
+            || requestedHost.equals("127.0.0.1")
+            || requestedHost.equals(InetAddress.getLocalHost().getCanonicalHostName())
+            || requestedHost.equals(gpHost) || InetAddress.getByName(requestedHost).getHostAddress().equals(
                     hostAddress));
-
+            
         } catch (UnknownHostException x) {
             log.error("Unknown host", x);
             return false;
         }
     }
-
+    
     /**
      * Returns a local URL as a File object or <tt>null</tt> if the URL can
      * not be represented as a File
@@ -342,12 +342,12 @@ public class GenePatternAnalysisTask {
      *            The user id of the user running the job.
      * @return The file or <tt>null</tt>
      */
-
+    
     protected File inputUrlToFile(URL url, String userId) {
         try {
             String path = url.getPath();
             path = URLDecoder.decode(path, "UTF-8");
-
+            
             if (path.endsWith("getFile.jsp")) {
                 // request parameters are: task=lsid & file=filename
                 String params = url.getQuery();
@@ -384,7 +384,7 @@ public class GenePatternAnalysisTask {
                     } else {
                         return null;
                     }
-
+                    
                 }
                 // check that user can access requested module
                 if (new LocalAdminClient(userId).getTask(lsid) != null) {
@@ -402,7 +402,7 @@ public class GenePatternAnalysisTask {
                 path = path.substring(jobDirIndex + jobDirName.length());
                 StringTokenizer strtok = new StringTokenizer(path, "/");
                 String job = null;
-
+                
                 if (strtok.hasMoreTokens()) {
                     job = strtok.nextToken();
                 }
@@ -415,7 +415,7 @@ public class GenePatternAnalysisTask {
                 }
                 log.info("requestedFilename " + requestedFilename);
                 if (isJobOwner(userId, job)
-                        || AuthorizationHelper.adminJobs(userId)) {
+                || AuthorizationHelper.adminJobs(userId)) {
                     File jobDir = new File(jobsDir, job);
                     log.info("jobDir " + jobDir.getCanonicalPath());
                     File file = new File(jobDir, requestedFilename);
@@ -424,15 +424,15 @@ public class GenePatternAnalysisTask {
                         return file;
                     }
                 }
-
+                
             }
-
+            
         } catch (Exception e) {
             log.error("Error getting file", e);
         }
         return null;
     }
-
+    
     private boolean isJobOwner(String user, String jobId) {
         try {
             if (user == null) {
@@ -445,9 +445,9 @@ public class GenePatternAnalysisTask {
         } catch (NumberFormatException nfe) {
             return false;
         }
-
+        
     }
-
+    
     /**
      * Called by Omnigene Analysis engine to run a single analysis job, wait for
      * completion, then report the results to the analysis_job database table.
@@ -463,14 +463,18 @@ public class GenePatternAnalysisTask {
      */
     public void onJob(Object o) {
         JobInfo jobInfo = (JobInfo) o;
-
+        
+        if(log.isDebugEnabled()) {
+            log.debug("Start onJob id=" + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName());
+        }
+        
         // pipelines run from the webapp show up as BaseDAO.UNPROCESSABLE_TASKID
         // and are being
         // run by other means so bail out now
-
+        
         if (jobInfo.getTaskID() == BaseDAO.UNPROCESSABLE_TASKID)
             return;
-
+        
         JobInfo parentJobInfo = null;
         int jobStatus = JobStatus.JOB_ERROR;
         String outDirName = getJobDir(Integer.toString(jobInfo.getJobNumber()));
@@ -489,27 +493,33 @@ public class GenePatternAnalysisTask {
                 }
             } else {
                 // clean out existing directory
+                if(log.isDebugEnabled()) {
+                    log.debug("clean out existing directory");
+                }
                 File[] old = outDir.listFiles();
                 for (int i = 0; old != null && i < old.length; i++) {
                     old[i].delete();
                 }
             }
-
+            
             TaskInfo taskInfo = getTaskInfo(jobInfo);
-
+            
             taskName = taskInfo.getName();
-
+            if(log.isDebugEnabled()) {
+              log.debug("taskName=" + taskName);
+            }
+             
             int formalParamsLength = 0;
             ParameterInfo[] formalParams = taskInfo.getParameterInfoArray();
             if (formalParams != null) {
                 formalParamsLength = formalParams.length;
             }
-
+            
             TaskInfoAttributes taskInfoAttributes = taskInfo.giveTaskInfoAttributes();
             if (taskInfoAttributes == null || taskInfoAttributes.size() == 0) {
                 throw new Exception(taskName + ": missing all TaskInfoAttributes!");
             }
-
+            
             // check OS and CPU restrictions of TaskInfoAttributes against this
             // server
             validateCPU(taskInfoAttributes.get(CPU_TYPE)); // eg. "x86", "ppc",
@@ -520,11 +530,11 @@ public class GenePatternAnalysisTask {
             // "Mac OS X", "OSF1",
             // "Solaris"
             validatePatches(taskInfo, null);
-
+            
             // get environment variables
             Hashtable env = getEnv();
             addTaskLibToPath(taskName, env, taskInfoAttributes.get(LSID));
-
+            
             JobInfo parentJI = getParentJobInfo(jobInfo.getJobNumber());
             int parent = -1;
             if (parentJI != null) {
@@ -533,7 +543,7 @@ public class GenePatternAnalysisTask {
             ParameterInfo[] params = jobInfo.getParameterInfoArray();
             Properties props = setupProps(taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(),
                     taskInfoAttributes, params, env, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
-
+            
             // move input files into temp directory
             long inputLastModified[] = new long[0];
             long inputLength[] = new long[0];
@@ -545,13 +555,13 @@ public class GenePatternAnalysisTask {
                     String fileType = (attrsActual != null ? (String) attrsActual.get(ParameterInfo.TYPE) : null);
                     String mode = (attrsActual != null ? (String) attrsActual.get(ParameterInfo.MODE) : null);
                     String originalPath = params[i].getValue();
-
+                    
                     boolean isOptional = "on".equals(attrsActual.get("optional"));
-
+                    
                     // allow parameter value substitutions within file input
                     // parameters
                     originalPath = substitute(originalPath, props, params);
-
+                    
                     if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null
                             && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
                         if (originalPath == null) {
@@ -559,13 +569,13 @@ public class GenePatternAnalysisTask {
                                 continue;
                             }
                             throw new IOException("Non-optional parameter " + params[i].getName()
-                                    + " has not been assigned a filename.");
+                            + " has not been assigned a filename.");
                         }
                         if (mode.equals("CACHED_IN")) { // param is job output
                             // file
                             originalPath = System.getProperty("jobs") + "/" + originalPath;
                         }
-
+                        
                         File inFile = new File(originalPath);
                         String inFilename = inFile.getName();
                         // strip off the AxisNNNNNaxis_ prefix
@@ -574,7 +584,7 @@ public class GenePatternAnalysisTask {
                             inFilename = inFilename.substring(underscoreIndex + 1);
                         }
                         File outFile = new File(outDirName, inFilename);
-
+                        
                         int counter = 1;
                         while (outFile.exists()) { // in case two input files
                             // have the same name
@@ -588,7 +598,7 @@ public class GenePatternAnalysisTask {
                         } else if (bCopyInputFiles ? !copyFile(inFile, outFile) : !rename(inFile, outFile, true)) {
                             log.error("Unable to " + (bCopyInputFiles ? "copy " : "rename ") + inFile + " to "
                                     + outFile);
-
+                            
                         }
                         if (bCopyInputFiles) {
                             outFile.deleteOnExit(); // mark for delete, just in
@@ -598,13 +608,13 @@ public class GenePatternAnalysisTask {
                         params[i].setValue(outFile.getCanonicalPath());
                         inputLastModified[i] = outFile.lastModified();
                         inputLength[i] = outFile.length();
-
+                        
                     } else if (i >= formalParamsLength) {
                         log.debug("params[" + i + "]=" + params[i].getName() + " has no formal parameter defined");
                     } else {
                         // check formal parameters for a file input type that
                         // was in fact sent as a string (ie. cached or http)
-
+                        
                         // find the formal parameter corresponding to this
                         // actual parameter
                         ParameterInfo[] formals = taskInfo.getParameterInfoArray();
@@ -632,7 +642,7 @@ public class GenePatternAnalysisTask {
                         }
                         if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null
                                 && !mode.equals(ParameterInfo.OUTPUT_MODE) && originalPath != null && isURL) {
-
+                            
                             URI uri = new URI(originalPath);
                             final String userInfo = uri.getUserInfo();
                             if (userInfo != null) {
@@ -648,7 +658,7 @@ public class GenePatternAnalysisTask {
                             }
                             InputStream is = null;
                             FileOutputStream os = null;
-
+                            
                             File outFile = null;
                             try {
                                 String name = null;
@@ -660,24 +670,24 @@ public class GenePatternAnalysisTask {
                                     URL url = uri.toURL();
                                     String gpHost = null;
                                     String hostAddress = null;
-
+                                    
                                     if (isLocalHost(url)) {
                                         File file = inputUrlToFile(url, jobInfo.getUserId());
-
+                                        
                                         if (file != null) {
                                             name = file.getName();
                                             is = new BufferedInputStream(new FileInputStream(file));
                                         }
-
+                                        
                                     }
                                     if (is == null) {
                                         URLConnection conn = url.openConnection();
                                         name = getDownloadFileName(conn, url);
                                         is = conn.getInputStream();
                                     }
-
+                                    
                                 }
-
+                                
                                 outFile = new File(outDirName, name);
                                 if (outFile.exists()) { // ensure that 2 file
                                     // downloads for a job
@@ -694,12 +704,12 @@ public class GenePatternAnalysisTask {
                                 while ((bytesRead = is.read(buf, 0, buf.length)) != -1) {
                                     os.write(buf, 0, bytesRead);
                                 }
-
+                                
                                 params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
                                 params[i].setValue(outFile.getCanonicalPath());
                                 inputLastModified[i] = outFile.lastModified();
                                 inputLength[i] = outFile.length();
-
+                                
                             } catch (IOException ioe) {
                                 log.error("An error occurred while downloading " + uri, ioe);
                                 os.write(("An error occurred while downloading " + uri).getBytes());
@@ -723,13 +733,13 @@ public class GenePatternAnalysisTask {
                                 if (outFile != null) {
                                     inputLastModified[i] = outFile.lastModified();
                                 }
-
+                                
                             }
                         }
                     }
                 } // end for each parameter
             } // end if parameters not null
-
+            
             // build the command line, replacing <variableName> with the same
             // name from the properties
             // (ParameterInfo[], System properties, environment variables, and
@@ -737,7 +747,7 @@ public class GenePatternAnalysisTask {
             // build props again, now that downloaded files are set
             props = setupProps(taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(), taskInfoAttributes,
                     params, env, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
-
+            
             params = stripOutSpecialParams(params);
             // check that all parameters are used in the command line
             // and that all non-optional parameters that are cited actually
@@ -750,9 +760,9 @@ public class GenePatternAnalysisTask {
             if (c == null || c.trim().length() == 0) {
                 vProblems.add("Command line not defined");
             }
-
+            
             setCommandPrefix(taskInfoAttributes, props);
-
+            
             // create an array of Strings for Runtime.exec to fix bug 55
             // (filenames in spaces cause invalid command line)
             String cmdLine = taskInfoAttributes.get(COMMAND_LINE);
@@ -761,10 +771,10 @@ public class GenePatternAnalysisTask {
             String firstToken;
             String token;
             File taskLof = null;
-
+            
             // TODO: handle quoted arguments within the command line (eg. echo
             // "<p1> <p2>" as a single token)
-
+            
             // check that the user didn't quote the program name
             if (!cmdLine.startsWith("\"")) {
                 // since we could have a definition like "<perl>=perl -Ifoo", we
@@ -818,7 +828,7 @@ public class GenePatternAnalysisTask {
                     }
                 }
             }
-
+            
             // do the substitutions one more time to allow, for example,
             // p2=<p1>.res
             for (int i = 1; i < commandTokens.length; i++) {
@@ -925,7 +935,7 @@ public class GenePatternAnalysisTask {
                     taskLog = writeProvenanceFile(outDirName, jobInfo, formalParameters, params, props);
                 }
             }
-
+            
             // move input files back into Axis attachments directory
             if (params != null) {
                 for (int i = 0; i < params.length; i++) {
@@ -950,20 +960,20 @@ public class GenePatternAnalysisTask {
                         // un-borrow the input file, moving it from the job's
                         // directory back to where it came from
                         if (inFile.exists() && !outFile.exists()
-                                && (bCopyInputFiles ? !inFile.delete() : !rename(inFile, outFile, true))) {
+                        && (bCopyInputFiles ? !inFile.delete() : !rename(inFile, outFile, true))) {
                             log.info("FAILURE: " + inFile.toString() + " (exists " + inFile.exists() + ") rename to "
                                     + outFile.toString() + " (exists " + outFile.exists() + ")");
                         } else {
-
+                            
                             if (inputLastModified[i] != outFile.lastModified() || inputLength[i] != outFile.length()) {
                                 log.debug("inherited input file " + outFile.getCanonicalPath() + " after run: length="
                                         + inputLength[i] + ", lastModified=" + inputLastModified[i]);
                                 String errorMessage = "WARNING: " + outFile.toString()
-                                        + " may have been overwritten during execution of task " + taskName
+                                + " may have been overwritten during execution of task " + taskName
                                         + ", job number " + jobInfo.getJobNumber() + "\n";
                                 if (inputLastModified[i] != outFile.lastModified()) {
                                     errorMessage = errorMessage + "original date: " + new Date(inputLastModified[i])
-                                            + ", current date: " + new Date(outFile.lastModified()) + " diff="
+                                    + ", current date: " + new Date(outFile.lastModified()) + " diff="
                                             + (inputLastModified[i] - outFile.lastModified()) + "ms. \n";
                                 }
                                 if (inputLength[i] != outFile.length()) {
@@ -995,16 +1005,16 @@ public class GenePatternAnalysisTask {
                             File outFile = new File(params[i].getValue());
                             log
                                     .debug("out: mode=" + mode + ", fileType=" + fileType + ", name="
-                                            + params[i].getValue());
+                                    + params[i].getValue());
                             if (inputLastModified[i] != outFile.lastModified() || inputLength[i] != outFile.length()) {
                                 log.debug("inherited input file " + outFile.getCanonicalPath() + " after run: length="
                                         + inputLength[i] + ", lastModified=" + inputLastModified[i]);
                                 String errorMessage = "WARNING: " + outFile.toString()
-                                        + " may have been overwritten during execution of task " + taskName
+                                + " may have been overwritten during execution of task " + taskName
                                         + ", job number " + jobInfo.getJobNumber() + "\n";
                                 if (inputLastModified[i] != outFile.lastModified()) {
                                     errorMessage = errorMessage + "original date: " + new Date(inputLastModified[i])
-                                            + ", current date: " + new Date(outFile.lastModified()) + "\n";
+                                    + ", current date: " + new Date(outFile.lastModified()) + "\n";
                                 }
                                 if (inputLength[i] != outFile.length()) {
                                     errorMessage = errorMessage + "original size: " + inputLength[i]
@@ -1024,26 +1034,26 @@ public class GenePatternAnalysisTask {
                     }
                 } // end for each parameter
             } // end if parameters not null
-
+            
             // reload jobInfo to pick up any output parameters were added by the
             // job explicitly (eg. pipelines)
             jobInfo = (new AnalysisDAO()).getJobInfo(jobInfo.getJobNumber());
-
+            
             // touch the taskLog file to make sure it is the oldest/last file
             if (taskLog != null) {
                 taskLog.setLastModified(System.currentTimeMillis() + 500);
             }
-
+            
             // any files that are left in outDir are output files
             final String _stdoutFilename = stdoutFilename;
             final String _stderrFilename = stderrFilename;
             File[] outputFiles = new File(outDirName).listFiles(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
                     return !name.equals(STDERR) && !name.equals(STDOUT) && !name.equals(TASKLOG)
-                            && !name.equals(_stdoutFilename) && !name.equals(_stderrFilename);
+                    && !name.equals(_stdoutFilename) && !name.equals(_stderrFilename);
                 }
             });
-
+            
             // create a sorted list of files by lastModified() date
             Arrays.sort(outputFiles, new Comparator() {
                 public int compare(Object o1, Object o2) {
@@ -1058,19 +1068,19 @@ public class GenePatternAnalysisTask {
                     return 1;
                 }
             });
-
+            
             parentJobInfo = getParentJobInfo(jobInfo.getJobNumber());
             for (int i = 0; i < outputFiles.length; i++) {
                 File f = outputFiles[i];
                 log.debug("adding output file to output parameters " + f.getName() + " from " + outDirName);
                 addFileToOutputParameters(jobInfo, f.getName(), f.getName(), parentJobInfo);
             }
-
+            
             if (stdoutFilename == null)
                 stdoutFilename = STDOUT;
             if (stderrFilename == null)
                 stderrFilename = STDERR;
-
+            
             if (new File(outDir, stdoutFilename).exists()) {
                 addFileToOutputParameters(jobInfo, stdoutFilename, stdoutFilename, parentJobInfo);
             }
@@ -1084,11 +1094,11 @@ public class GenePatternAnalysisTask {
             if (taskLog != null) {
                 addFileToOutputParameters(jobInfo, TASKLOG, TASKLOG, parentJobInfo);
             }
-
+            
             recordJobCompletion(jobInfo, parentJobInfo, jobStatus, jobStartTime);
-
+            
             if (outputFiles.length == 0 && !new File(outDir, stderrFilename).exists()
-                    && !new File(outDir, stdoutFilename).exists()) {
+            && !new File(outDir, stdoutFilename).exists()) {
                 log.error("no output for " + taskName + " (job " + jobInfo.getJobNumber() + ").");
             }
             IndexerDaemon.notifyJobComplete(jobInfo.getJobNumber());
@@ -1102,7 +1112,7 @@ public class GenePatternAnalysisTask {
             try {
                 File outFile = writeStringToFile(outDirName, STDERR, e.getMessage() + "\n\n");
                 addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
-
+                
                 recordJobCompletion(jobInfo, parentJobInfo, JobStatus.JOB_ERROR, jobStartTime);
             } catch (Exception e2) {
                 // System.err.println(taskName + " error: unable to update job
@@ -1112,7 +1122,7 @@ public class GenePatternAnalysisTask {
             IndexerDaemon.notifyJobComplete(jobInfo.getJobNumber());
         }
     }
-
+    
     /**
      * Record job completion status in the database.
      *
@@ -1122,21 +1132,27 @@ public class GenePatternAnalysisTask {
      * @param jobStartTime
      */
     private void recordJobCompletion(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, long jobStartTime) {
-        try {
-            HibernateUtil.getSession().beginTransaction();
+       try {
+            if(log.isDebugEnabled()) {
+                log.debug("Recording job completion for job: " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
+            }
+            HibernateUtil.beginTransaction();
             long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
             Date now = new Date(Calendar.getInstance().getTimeInMillis());
             updateJobInfo(jobInfo, parentJobInfo, jobStatus, now);
             UsageLog.logJobCompletion(jobInfo, parentJobInfo, now, elapsedTime);
-            HibernateUtil.getSession().getTransaction().commit();
+            if(log.isDebugEnabled()) {
+                log.debug("Recording job completion complete " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
+            }
+            HibernateUtil.commitTransaction();
         } catch (RuntimeException e) {
-            log.error(e);
-            HibernateUtil.getSession().getTransaction().rollback();
+            log.error("Rolling back transaction", e);
+            HibernateUtil.rollbackTransaction();
         } finally {
             HibernateUtil.closeCurrentSession();
         }
     }
-
+    
     /**
      * Get the appropriate command prefix to use for this module. The hierarchy
      * goes like this; 1. task version specific entry in task prefix mapping 2.
@@ -1146,34 +1162,34 @@ public class GenePatternAnalysisTask {
      * @param props
      */
     protected void setCommandPrefix(TaskInfoAttributes taskInfoAttributes, Properties props)
-            throws MalformedURLException {
+    throws MalformedURLException {
         String lsidStr = taskInfoAttributes.get(LSID);
         PropertiesManager pm = PropertiesManager.getInstance();
         Properties tpm = pm.getTaskPrefixMapping();
         Properties prefixes = pm.getCommandPrefixes();
-
+        
         String commandPrefixName = tpm.getProperty(lsidStr);
         String commandPrefix = null;
-
+        
         if (commandPrefixName == null) {
             LSID lsid = new LSID(lsidStr);
             lsidStr = lsid.toStringNoVersion();
             commandPrefixName = tpm.getProperty(lsidStr);
-
+            
         }
         if (commandPrefixName != null) {
             commandPrefix = prefixes.getProperty(commandPrefixName);
         }
-
+        
         if (commandPrefix == null) {
             commandPrefix = props.getProperty(COMMAND_PREFIX, null);
         }
-
+        
         if (commandPrefix != null && commandPrefix.length() > 0) {
             taskInfoAttributes.put(COMMAND_LINE, commandPrefix + " " + taskInfoAttributes.get(COMMAND_LINE));
         }
     }
-
+    
     private TaskInfo getTaskInfo(JobInfo jobInfo) throws Exception {
         try {
             HibernateUtil.getSession().beginTransaction();
@@ -1187,7 +1203,7 @@ public class GenePatternAnalysisTask {
             HibernateUtil.closeCurrentSession();
         }
     }
-
+    
     /**
      * Update AnalysisJob
      *
@@ -1198,31 +1214,31 @@ public class GenePatternAnalysisTask {
     private void updateJobInfo(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, Date completionDate) {
         log.debug("Updating jobInfo");
         AnalysisJobDAO home = new AnalysisJobDAO();
-
+        
         AnalysisJob aJob = home.findById(jobInfo.getJobNumber());
         aJob.setJobNo(jobInfo.getJobNumber());
-
+        
         String paramString = jobInfo.getParameterInfo();
         if (jobStatus == JobStatus.JOB_ERROR || jobStatus == JobStatus.JOB_FINISHED
                 || jobStatus == JobStatus.JOB_PROCESSING) {
             paramString = ParameterFormatConverter.stripPasswords(paramString);
         }
-
+        
         JobStatus newJobStatus = (new JobStatusDAO()).findById(jobStatus);
         aJob.setParameterInfo(paramString);
         aJob.setJobStatus(newJobStatus);
         aJob.setCompletedDate(completionDate);
-
+        
         if (parentJobInfo != null) {
             AnalysisJob parentJob = home.findById(parentJobInfo.getJobNumber());
             parentJob.setCompletedDate(completionDate);
         }
-
-
+        
+        
         log.debug("Finished updating jobInfo");
-
+        
     }
-
+    
     private JobInfo getParentJobInfo(int jobNumber) {
         try {
             HibernateUtil.getSession().beginTransaction();
@@ -1232,27 +1248,27 @@ public class GenePatternAnalysisTask {
             HibernateUtil.closeCurrentSession();
         }
     }
-
+    
     /**
      * remove special params that should not be added
      */
     public static ParameterInfo[] stripOutSpecialParams(ParameterInfo[] inParams) {
         ArrayList<ParameterInfo> strippedParams = new ArrayList<ParameterInfo>();
-
+        
         if (inParams != null) {
             for (int i = 0; i < inParams.length; i++) {
                 ParameterInfo pi = inParams[i];
-
+                
                 if (pi.getName().equals(PIPELINE_ARG_STOP_AFTER_TASK_NUM))
                     continue;
-
+                
                 strippedParams.add(pi);
             }
         }
         return (ParameterInfo[]) strippedParams.toArray(new ParameterInfo[strippedParams.size()]);
-
+        
     }
-
+    
     /**
      * Gets a filename that is as similar as possible to the given url
      *
@@ -1330,7 +1346,7 @@ public class GenePatternAnalysisTask {
         }
         return value;
     }
-
+    
     protected static ParameterInfo getParam(String name, ParameterInfo[] params) {
         for (int i = 0; i < params.length; i++) {
             if ((params[i].getName()).equals(name)) {
@@ -1339,7 +1355,7 @@ public class GenePatternAnalysisTask {
         }
         return null;
     }
-
+    
     protected static File writeProvenanceFile(String outDirName, JobInfo jobInfo, ParameterInfo[] formalParameters,
             ParameterInfo[] actualParams, Properties props) {
         BufferedWriter bw = null;
@@ -1371,7 +1387,7 @@ public class GenePatternAnalysisTask {
                         if (value.startsWith("Axis") && value.indexOf("_") != -1) {
                             value = value.substring(value.indexOf("_") + 1);
                         }
-
+                        
                         // follow the input filename with the URL to fetch it if
                         // available
                         if ((origFullPath != null) && (origFullPath.length() > 0)) {
@@ -1431,7 +1447,7 @@ public class GenePatternAnalysisTask {
             }
         }
     }
-
+    
     protected static boolean validateCPU(String expected) throws Exception {
         String actual = System.getProperty("os.arch");
         // eg. "x86", "i386", "ppc", "alpha", "sparc"
@@ -1454,7 +1470,7 @@ public class GenePatternAnalysisTask {
         throw new Exception("Cannot run on this platform.  Task requires a " + expected + " CPU, but this is a "
                 + actual);
     }
-
+    
     protected static boolean validateOS(String expected, String action) throws Exception {
         String actual = System.getProperty("os.name");
         // eg. "Windows XP", "Linux", "Mac OS X", "OSF1"
@@ -1478,7 +1494,7 @@ public class GenePatternAnalysisTask {
         throw new Exception("Cannot " + action + " on this platform. Task requires a " + expected
                 + " operating system, but this server is running " + actual);
     }
-
+    
     // check that each patch listed in the TaskInfoAttributes for this task is
     // installed.
     // if not, download and install it.
@@ -1490,12 +1506,12 @@ public class GenePatternAnalysisTask {
         if (requiredPatchLSID == null || requiredPatchLSID.length() == 0) {
             return true;
         }
-
+        
         // some patches required, check which are already installed
         String[] requiredPatchLSIDs = requiredPatchLSID.split(",");
         String requiredPatchURL = tia.get(REQUIRED_PATCH_URLS);
         String[] patchURLs = (requiredPatchURL != null && requiredPatchURL.length() > 0 ? requiredPatchURL.split(",")
-                : new String[requiredPatchLSIDs.length]);
+        : new String[requiredPatchLSIDs.length]);
         if (patchURLs != null && patchURLs.length != requiredPatchLSIDs.length) {
             throw new Exception(taskInfo.getName() + " has " + requiredPatchLSIDs.length + " patch LSIDs but "
                     + patchURLs.length + " URLs");
@@ -1518,13 +1534,13 @@ public class GenePatternAnalysisTask {
                     continue eachRequiredPatch;
                 }
             }
-
+            
             // download and install this patch
             installPatch(requiredPatchLSIDs[requiredPatchNum], patchURLs[requiredPatchNum], taskIntegrator);
         } // end of loop for each patch LSID for the task
         return true;
     }
-
+    
     public static void installPatch(String requiredPatchLSID, String requiredPatchURL) throws Exception {
         String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
         String[] installedPatchLSIDs = new String[0];
@@ -1544,13 +1560,13 @@ public class GenePatternAnalysisTask {
         }
         installPatch(requiredPatchLSID, requiredPatchURL, null);
     }
-
+    
     // install a specific patch, downloading a zip file with a manifest
     // containing a command line,
     // running that command line after substitutions, and recording the result
     // in the genepattern.properties patch registry
     public static void installPatch(String requiredPatchLSID, String requiredPatchURL, Status taskIntegrator)
-            throws Exception {
+    throws Exception {
         LSID patchLSID = new LSID(requiredPatchLSID);
         boolean wasNullURL = (requiredPatchURL == null || requiredPatchURL.length() == 0);
         if (wasNullURL) {
@@ -1592,7 +1608,7 @@ public class GenePatternAnalysisTask {
         String zipFilename = downloadPatch(requiredPatchURL, taskIntegrator, (String) hmProps
                 .get("site_module.zipfilesize"));
         String patchName = patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier()
-                + "." + patchLSID.getVersion();
+        + "." + patchLSID.getVersion();
         File patchDirectory = new File(System.getProperty("patches"), patchName);
         // if (taskIntegrator != null) taskIntegrator.statusMessage("Download
         // complete. Installing patch from " + zipFilename + " to " +
@@ -1602,7 +1618,7 @@ public class GenePatternAnalysisTask {
         }
         explodePatch(zipFilename, patchDirectory, taskIntegrator);
         new File(zipFilename).delete();
-
+        
         // entire zip file has been exploded, now load the manifest, get the
         // command line, and execute it
         Properties props = loadManifest(patchDirectory);
@@ -1624,7 +1640,7 @@ public class GenePatternAnalysisTask {
             if (taskIntegrator != null) {
                 taskIntegrator.statusMessage("Patch LSID recorded");
             }
-
+            
             // keep the manifest file around for future reference
             if (!new File(patchDirectory, MANIFEST_FILENAME).exists()) {
                 explodePatch(zipFilename, patchDirectory, null, MANIFEST_FILENAME);
@@ -1638,7 +1654,7 @@ public class GenePatternAnalysisTask {
                     } catch (IOException ioe) {
                         ioe.printStackTrace();
                     }
-
+                    
                     // Properties properties = readPropertiesFile(f);
                     // properties = addProperty(properties, REQUIRED_PATCH_URLS,
                     // requiredPatchURL);
@@ -1658,7 +1674,7 @@ public class GenePatternAnalysisTask {
             throw new Exception("Could not install required patch: " + props.get("name") + "  " + props.get("LSID"));
         }
     }
-
+    
     // download the patch zip file from a URL
     protected static String downloadPatch(String url, Status taskIntegrator, String contentLength) throws IOException {
         try {
@@ -1680,13 +1696,13 @@ public class GenePatternAnalysisTask {
             throw new IOException(ioe.toString() + " while downloading " + url);
         }
     }
-
+    
     // unzip the patch files into their own directory
     protected static void explodePatch(String zipFilename, File patchDirectory, Status taskIntegrator)
-            throws IOException {
+    throws IOException {
         explodePatch(zipFilename, patchDirectory, taskIntegrator, null);
     }
-
+    
     // unzip the patch files into their own directory
     protected static void explodePatch(String zipFilename, File patchDirectory, Status taskIntegrator,
             String zipEntryName) throws IOException {
@@ -1730,13 +1746,13 @@ public class GenePatternAnalysisTask {
             os = null;
             if (numRead != fileLength) {
                 throw new IOException("only read " + numRead + " of " + fileLength + " bytes in " + zipFile.getName()
-                        + "'s " + zipEntry.getName());
+                + "'s " + zipEntry.getName());
             }
             is.close();
         } // end of loop for each file in zip file
         zipFile.close();
     }
-
+    
     // retrieve the command line from the patch manifest file and perform
     // <substitutions>
     protected static String getPatchCommandLine(Properties props) throws Exception {
@@ -1752,13 +1768,13 @@ public class GenePatternAnalysisTask {
         if (commandLine == null || commandLine.length() == 0) {
             throw new Exception("No command line defined in " + MANIFEST_FILENAME);
         }
-
+        
         // command line substitutions for <ant>, etc.
         commandLine = substitute(commandLine, systemProps, null);
         commandLine = substitute(commandLine, systemProps, null);
         return commandLine;
     }
-
+    
     // load the patch manifest file into a Properties object
     protected static Properties loadManifest(File patchDirectory) throws IOException {
         File manifestFile = new File(patchDirectory, MANIFEST_FILENAME);
@@ -1771,13 +1787,13 @@ public class GenePatternAnalysisTask {
         manifest.close();
         return props;
     }
-
+    
     // run the patch command line in the patch directory, returning the exit
     // code from the executable
     protected static int executePatch(String commandLine, File patchDirectory, Status taskIntegrator) throws Exception {
         // spawn the command
         Process process = Runtime.getRuntime().exec(commandLine, null, patchDirectory);
-
+        
         // BUG: there is race condition during a tiny time window between
         // the exec and the close
         // (the lines above and below this comment) during which it is
@@ -1789,29 +1805,29 @@ public class GenePatternAnalysisTask {
         process.getOutputStream().close(); // there is no stdin to feed to
         // the program. So if it asks,
         // let it see EOF!
-
+        
         // create threads to read from the command's stdout and stderr
         // streams
-
+        
         Thread outputReader = (taskIntegrator != null) ? antStreamCopier(process.getInputStream(), taskIntegrator)
-                : streamCopier(process.getInputStream(), System.out);
+        : streamCopier(process.getInputStream(), System.out);
         Thread errorReader = (taskIntegrator != null) ? antStreamCopier(process.getErrorStream(), taskIntegrator)
-                : streamCopier(process.getInputStream(), System.err);
-
+        : streamCopier(process.getInputStream(), System.err);
+        
         // drain the output and error streams
         outputReader.start();
         errorReader.start();
-
+        
         // wait for all output
         outputReader.join();
         errorReader.join();
-
+        
         // the process will be dead by now
         process.waitFor();
         int exitValue = process.exitValue();
         return exitValue;
     }
-
+    
     // record the patch LSID in the genepattern.properties file
     public static synchronized void recordPatch(String patchLSID) throws IOException {
         // add this LSID to the installed patches repository
@@ -1829,20 +1845,20 @@ public class GenePatternAnalysisTask {
         System.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
         Properties props = new Properties();
         props.load(new FileInputStream(new File(System.getProperty("resources"), "genepattern.properties")));
-
+        
         // make sure any changes are properly set in the System props
         props.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
         props.store(new FileOutputStream(new File(System.getProperty("resources"), "genepattern.properties")),
                 "added installed patch LSID");
-
+        
         for (Iterator iter = props.keySet().iterator(); iter.hasNext();) {
             String k = (String) iter.next();
             String v = (String) props.get(k);
             System.setProperty(k, v);
         }
-
+        
     }
-
+    
     /**
      * // read the genepattern.properties file into a String (preserving
      * comments!) public static String readGenePatternProperties() throws
@@ -1873,7 +1889,7 @@ public class GenePatternAnalysisTask {
      * "=".length()) + value; if (ipEnd != -1) properties = properties + "," +
      * properties.substring(ipEnd); } return properties; }
      */
-
+    
     protected static void processNode(Node node, HashMap hmProps) {
         if (node.getNodeType() == Node.ELEMENT_NODE) {
             Element c_elt = (Element) node;
@@ -1897,7 +1913,7 @@ public class GenePatternAnalysisTask {
             processNode(childNodes.item(i), hmProps);
         }
     }
-
+    
     // copy an InputStream to a PrintStream until EOF
     public static Thread streamCopier(final InputStream is, final PrintStream ps) throws IOException {
         // create thread to read from the a process' output or error stream
@@ -1916,7 +1932,7 @@ public class GenePatternAnalysisTask {
             }
         });
     }
-
+    
     // copy an InputStream to a PrintStream until EOF
     public static Thread streamCopier(final InputStream is, final Status taskIntegrator) throws IOException {
         // create thread to read from the a process' output or error stream
@@ -1936,7 +1952,7 @@ public class GenePatternAnalysisTask {
             }
         });
     }
-
+    
     // copy an InputStream to a PrintStream until EOF
     public static Thread antStreamCopier(final InputStream is, final Status taskIntegrator) throws IOException {
         // create thread to read from the a process' output or error stream
@@ -1960,7 +1976,7 @@ public class GenePatternAnalysisTask {
             }
         });
     }
-
+    
     /**
      * Performs substitutions of parameters within the commandLine string where
      * there is a &lt;variable&gt; whose substitution value is defined as a key
@@ -1980,7 +1996,7 @@ public class GenePatternAnalysisTask {
      * @return String command line with all substitutions made
      * @author Jim Lerner
      */
-
+    
     public static String substitute(String commandLine, Properties props, ParameterInfo[] params) {
         if (commandLine == null) {
             return null;
@@ -2000,7 +2016,7 @@ public class GenePatternAnalysisTask {
             start += LEFT_DELIMITER.length();
             int index = start - LEFT_DELIMITER.length() - 1;
             if ((index > 0 && index <= newString.length() && newString.substring(index).startsWith(STDIN_REDIRECT))
-                    || commandLine.equals(STDIN_REDIRECT)) {
+            || commandLine.equals(STDIN_REDIRECT)) {
                 continue;
             }
             end = newString.toString().indexOf(RIGHT_DELIMITER, start);
@@ -2066,7 +2082,7 @@ public class GenePatternAnalysisTask {
         }
         return newString.toString();
     }
-
+    
     /**
      * Deletes a task, by name, from the Omnigene task_master database.
      *
@@ -2080,7 +2096,7 @@ public class GenePatternAnalysisTask {
         File libdir = null;
         try {
             libdir = new File(DirectoryManager.getTaskLibDir(ti.getName(), (String) ti.getTaskInfoAttributes()
-                    .get(LSID), username));
+            .get(LSID), username));
         } catch (Exception e) {
             // ignore
         }
@@ -2098,7 +2114,7 @@ public class GenePatternAnalysisTask {
             System.err.println(ioe + " while deleting taskLib and search index for task " + ti.getName());
         }
     }
-
+    
     /**
      * Provides a TreeMap, sorted by case-insensitive task name, of all of the
      * tasks registered in the task_master table that are handled by the
@@ -2111,11 +2127,11 @@ public class GenePatternAnalysisTask {
     public static Collection getTasks() throws OmnigeneException, RemoteException {
         return getTasks(null);
     }
-
+    
     public static AnalysisDAO getDS() {
         return new AnalysisDAO();
     }
-
+    
     /**
      * getTasks for a specific userID returns a TreeMap of all of the
      * GenePatternAnalysisTask-supported tasks that are visible to a particular
@@ -2129,7 +2145,7 @@ public class GenePatternAnalysisTask {
      *         object (with nested TaskInfoAttributes and ParameterInfo[]).
      * @author Jim Lerner
      */
-
+    
     public static List getTasksSorted(String userID) throws OmnigeneException, RemoteException {
         List vTasks = getTasks(userID); // get vector of TaskInfos
         if (vTasks != null) {
@@ -2156,14 +2172,14 @@ public class GenePatternAnalysisTask {
         }
         return vTasks;
     }
-
+    
     public static List getTasks(String userID) throws OmnigeneException, RemoteException {
         AdminDAO adminDAO = new AdminDAO();
         TaskInfo[] taskArray = (userID == null ? adminDAO.getAllTasks() : adminDAO.getAllTasksForUser(userID));
         return Arrays.asList(taskArray);
-
+        
     }
-
+    
     /**
      * For a given taskName, look up the TaskInfo object in the database and
      * return it to the caller. TODO: involve userID in the search!
@@ -2178,12 +2194,12 @@ public class GenePatternAnalysisTask {
         TaskInfo taskInfo = null;
         try {
             int taskID = -1;
-
+            
             try {
                 if (org.genepattern.util.LSID.isLSID(taskName)) {
                     taskName = new LSID(taskName).toString();
                 }
-
+                
                 // search for an existing task with the same name
                 GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(taskName, null, null, null, username, 0);
                 taskID = loader.getTaskIDByName(taskName, username);
@@ -2202,7 +2218,7 @@ public class GenePatternAnalysisTask {
         }
         return taskInfo;
     }
-
+    
     /**
      * Given a task name and a Hashtable of environment variables, find the path
      * in the environment and add the named task's directory to the path,
@@ -2243,7 +2259,7 @@ public class GenePatternAnalysisTask {
         }
         // _cat.debug("path for " + taskName + " set to " + path);
     }
-
+    
     /**
      * Fill returned Properties with everything that the user can get a
      * substitution for, including all System.getProperties() properties plus
@@ -2321,17 +2337,17 @@ public class GenePatternAnalysisTask {
             // overridden by
             // actuals if
             // provided
-
+            
             String sLSID = taskInfoAttributes.get(LSID);
             props.put(LSID, sLSID);
-
+            
             // as a convenience to the user, create a <libdir> property which is
             // where DLLs, JARs, EXEs, etc. are dumped to when adding tasks
             String taskLibDir = (taskID != -1 ? new File(DirectoryManager.getTaskLibDir(taskName, sLSID, userID))
-                    .getPath()
-                    + System.getProperty("file.separator") : "taskLibDir");
+            .getPath()
+            + System.getProperty("file.separator") : "taskLibDir");
             props.put(LIBDIR, taskLibDir);
-
+            
             // as a convenience to the user, create a <java> property which will
             // invoke java programs without requiring java.exe on the path
             if (System.getProperty(JAVA, null) == null) {
@@ -2341,11 +2357,11 @@ public class GenePatternAnalysisTask {
                 props.put(JAVA, System.getProperty(JAVA) + System.getProperty("file.separator") + "bin"
                         + System.getProperty("file.separator") + "java");
             }
-
+            
             // add Perl if it isn't already defined
             if (props.getProperty(PERL, null) == null) {
                 props.put(PERL, new File(props.getProperty("user.dir")).getParentFile().getAbsolutePath()
-                        + System.getProperty("file.separator") + "perl" + System.getProperty("file.separator") + "bin"
+                + System.getProperty("file.separator") + "perl" + System.getProperty("file.separator") + "bin"
                         + System.getProperty("file.separator") + "perl");
             }
             // File GenePatternPM = new File(props.get(TOMCAT) + File.separator
@@ -2353,14 +2369,14 @@ public class GenePatternAnalysisTask {
             String perl = (String) props.get(PERL); // + " -I" +
             // GenePatternPM.getCanonicalPath();
             props.put(PERL, perl);
-
+            
             // add R if it isn't already defined
             if (props.getProperty(R, null) == null) {
                 props.put(R, new File(props.getProperty("user.dir")).getParentFile().getAbsolutePath()
-                        + System.getProperty("file.separator") + "R" + System.getProperty("file.separator") + "bin"
+                + System.getProperty("file.separator") + "R" + System.getProperty("file.separator") + "bin"
                         + System.getProperty("file.separator") + "R");
                 props.put(R.toLowerCase(), new File(props.getProperty("user.dir")).getParentFile().getAbsolutePath()
-                        + System.getProperty("file.separator") + "R" + System.getProperty("file.separator") + "bin"
+                + System.getProperty("file.separator") + "R" + System.getProperty("file.separator") + "bin"
                         + System.getProperty("file.separator") + "R");
             }
             // BUG: this is NOT R_HOME! This is R_HOME/bin/R
@@ -2369,7 +2385,7 @@ public class GenePatternAnalysisTask {
             props.put(R, LEFT_DELIMITER + JAVA + RIGHT_DELIMITER + " -cp " + LEFT_DELIMITER + "run_r_path"
                     + RIGHT_DELIMITER + " -DR_HOME=" + LEFT_DELIMITER + "R_HOME" + RIGHT_DELIMITER + " -Dr_flags="
                     + LEFT_DELIMITER + "r_flags" + RIGHT_DELIMITER + " RunR ");
-
+            
             // populate props with the input parameters so that they can be
             // looked up by name
             if (actuals != null) {
@@ -2378,9 +2394,9 @@ public class GenePatternAnalysisTask {
                     if (value == null) {
                         value = "";
                     }
-
+                    
                     props.put(actuals[i].getName(), value);
-
+                    
                 }
             }
             String inputFilename = null;
@@ -2395,7 +2411,7 @@ public class GenePatternAnalysisTask {
                     for (int f = 0; f < formalParamsLength; f++) {
                         if (actuals[i].getName().equals(formalParameters[f].getName())) {
                             if (formalParameters[f].isInputFile()) {
-
+                                
                                 inputFilename = actuals[i].getValue();
                                 if (inputFilename == null || inputFilename.length() == 0) {
                                     continue;
@@ -2423,7 +2439,7 @@ public class GenePatternAnalysisTask {
                                     // extension
                                 }
                                 if (inputFilename.startsWith("http:") || inputFilename.startsWith("https:")
-                                        || inputFilename.startsWith("ftp:")) {
+                                || inputFilename.startsWith("ftp:")) {
                                     j = baseName.lastIndexOf("?");
                                     if (j != -1) {
                                         baseName = baseName.substring(j + 1);
@@ -2452,7 +2468,7 @@ public class GenePatternAnalysisTask {
             throw npe;
         }
     }
-
+    
     /**
      * Takes care of quotes in command line. Ensures that quoted arguments are
      * placed into a single element in the command array
@@ -2491,7 +2507,7 @@ public class GenePatternAnalysisTask {
         }
         return (String[]) v.toArray(new String[0]);
     }
-
+    
     /**
      * Spawns a separate process to execute the requested analysis task. It
      * copies the stdout and stderr output streams to StringBuffers so that they
@@ -2539,7 +2555,7 @@ public class GenePatternAnalysisTask {
             String[] envp = hashTableToStringArray(env);
             // spawn the command
             process = Runtime.getRuntime().exec(commandLine, envp, runDir);
-
+            
             // BUG: there is race condition during a tiny time window between
             // the exec and the close
             // (the lines above and below this comment) during which it is
@@ -2569,24 +2585,24 @@ public class GenePatternAnalysisTask {
             }
             jobID = "" + jobInfo.getJobNumber();
             htRunningJobs.put(jobID, process);
-
+            
             // create threads to read from the command's stdout and stderr
             // streams
             Thread outputReader = streamToFile(process.getInputStream(), stdoutFile);
             Thread errorReader = streamToFile(process.getErrorStream(), stderrFile);
-
+            
             // drain the output and error streams
             outputReader.start();
             errorReader.start();
-
+            
             // wait for all output before attempting to send it back to the
             // client
             outputReader.join();
             errorReader.join();
-
+            
             // the process will be dead by now
             process.waitFor();
-
+            
             // TODO: cleanup input file(s)
         } catch (Throwable t) {
             log.error(t + " in runCommand, reporting to stderr");
@@ -2597,7 +2613,7 @@ public class GenePatternAnalysisTask {
             }
         }
     }
-
+    
     /**
      * takes a filename, "short name" of a file, and JobInfo object and adds the
      * descriptor of the file to the JobInfo as an output file.
@@ -2627,7 +2643,7 @@ public class GenePatternAnalysisTask {
             parentJobInfo.addParameterInfo(paramOut);
         }
     }
-
+    
     /**
      * takes a jobID and a Hashtable in which the jobID is putatively listed,
      * and attempts to terminate the job. Note that Process.destroy() is not
@@ -2648,7 +2664,7 @@ public class GenePatternAnalysisTask {
         }
         return (p != null);
     }
-
+    
     /**
      * checks that all task parameters are used in the command line and that all
      * parameters that are cited actually exist. Optional parameters need not be
@@ -2687,13 +2703,13 @@ public class GenePatternAnalysisTask {
         if (!isRSafe(taskName)) {
             vProblems
                     .add("'"
-                            + taskName
-                            + "' is not a legal task name.  It must contain only letters, digits, and periods, and may not begin with a period or digit.\n It must not be a reserved keyword in R ('if', 'else', 'repeat', 'while', 'function', 'for', 'in', 'next', 'break', 'true', 'false', 'null', 'na', 'inf', 'nan').");
+                    + taskName
+                    + "' is not a legal task name.  It must contain only letters, digits, and periods, and may not begin with a period or digit.\n It must not be a reserved keyword in R ('if', 'else', 'repeat', 'while', 'function', 'for', 'in', 'next', 'break', 'true', 'false', 'null', 'na', 'inf', 'nan').");
         }
         if (commandLine.trim().length() == 0) {
             vProblems.add("Command line not defined");
         }
-
+        
         // check that each parameter is cited in either the command line or the
         // output filename pattern
         if (actualParams != null) {
@@ -2702,7 +2718,7 @@ public class GenePatternAnalysisTask {
                 name = LEFT_DELIMITER + actualParams[actual].getName() + RIGHT_DELIMITER;
                 if (paramNames.contains(actualParams[actual].getName())) {
                     vProblems.add(taskName + ": " + actualParams[actual].getName()
-                            + " has been declared as a parameter more than once");
+                    + " has been declared as a parameter more than once");
                 }
                 paramNames.add(actualParams[actual].getName());
                 /*
@@ -2727,12 +2743,12 @@ public class GenePatternAnalysisTask {
                         break;
                     }
                 }
-
+                
                 if (!foundFormal) {
                     vProblems.add(taskName + ": supplied parameter " + name + " is not part of the definition.");
                     continue;
                 }
-
+                
                 // for non-optional parameters, make sure they are mentioned in
                 // the command line
                 if (hmAttributes == null || hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET]) == null
@@ -2754,7 +2770,7 @@ public class GenePatternAnalysisTask {
                                 + " is a reserved name and cannot be used as a parameter name.");
                     }
                 }
-
+                
                 // if the parameter is part of a choice list, verify that the
                 // default is on the list
                 String dflt = (String) hmAttributes.get(PARAM_INFO_DEFAULT_VALUE[PARAM_INFO_NAME_OFFSET]);
@@ -2785,7 +2801,7 @@ public class GenePatternAnalysisTask {
                                 + " was not found in the choice list '" + choices + "'.");
                     }
                 }
-
+                
                 // check for valid choice selection
                 if (runtimeValidation && formalParams[formal].hasChoices(PARAM_INFO_CHOICE_DELIMITER)) {
                     boolean foundActual = false;
@@ -2812,11 +2828,11 @@ public class GenePatternAnalysisTask {
                 }
             }
         }
-
+        
         vProblems = validateSubstitutions(props, taskName, commandLine, "command line", vProblems, formalParams);
         return vProblems;
     }
-
+    
     /**
      * checks that each substition variable listed in the task command line
      * actually exists in the ParameterInfo array for the task.
@@ -2861,7 +2877,7 @@ public class GenePatternAnalysisTask {
                 continue;
             }
             varName = commandLine.substring(start + LEFT_DELIMITER.length(), end);
-
+            
             if (!varName.endsWith(INPUT_PATH)) {
                 if (!props.containsKey(varName)) {
                     boolean isOptional = false;
@@ -2887,7 +2903,7 @@ public class GenePatternAnalysisTask {
         }
         return vProblems;
     }
-
+    
     /**
      * takes a taskInfoAttributes and ParameterInfo array for a new task and
      * validates that the input parameters are all accounted for. It returns a
@@ -2917,7 +2933,7 @@ public class GenePatternAnalysisTask {
         }
         return vProblems;
     }
-
+    
     /**
      * Determine whether a proposed method or identifier name is a legal
      * identifier. Although there are many possible standards, the R language
@@ -2940,7 +2956,7 @@ public class GenePatternAnalysisTask {
         // that must be quoted
         String validCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._";
         String[] reservedNames = new String[] { "if", "else", "repeat", "while", "function", "for", "in", "next",
-                "break", "true", "false", "null", "na", "inf", "nan" };
+        "break", "true", "false", "null", "na", "inf", "nan" };
         boolean isReservedName = false;
         for (int i = 0; i < reservedNames.length; i++) {
             if (varName.equals(reservedNames[i])) {
@@ -2957,7 +2973,7 @@ public class GenePatternAnalysisTask {
                 !isReservedName; // it isn't a reserved name
         return ret;
     }
-
+    
     /**
      * encapsulate an invalid R identifier name in quotes if necessary
      *
@@ -2975,7 +2991,7 @@ public class GenePatternAnalysisTask {
             return "\"" + replace(varName, "\"", "\\\"") + "\"";
         }
     }
-
+    
     /**
      * marshalls all of the attributes which make up a task (name, description,
      * TaskInfoAttributes, ParameterInfo[]), validates that they will ostensibly
@@ -3013,7 +3029,7 @@ public class GenePatternAnalysisTask {
         taskInfo.setTaskInfoAttributes(taskInfoAttributes);
         taskInfo.setParameterInfoArray(params);
         Vector vProblems = GenePatternAnalysisTask.validateInputs(taskInfo, name, taskInfoAttributes, params);
-
+        
         try {
             String expected = taskInfoAttributes.get(OS);
             if (validateOS(expected, "install " + name)) {
@@ -3029,10 +3045,10 @@ public class GenePatternAnalysisTask {
         if (vProblems.size() > 0) {
             return vProblems;
         }
-
+        
         // System.out.println("GPAT.installTask: installing " + name + " with
         // LSID " + taskInfoAttributes.get(LSID));
-
+        
         // privacy is stored both in the task_master table as a field, and in
         // the taskInfoAttributes
         taskInfoAttributes.put(PRIVACY, access_id == ACCESS_PRIVATE ? PRIVATE : PUBLIC);
@@ -3045,7 +3061,7 @@ public class GenePatternAnalysisTask {
             lsid = LSIDManager.getInstance().createNewID(TASK_NAMESPACE).toString();
             taskInfoAttributes.put(LSID, lsid);
         }
-
+        
         // TODO: if the task is a pipeline, generate the serialized model right
         // now too
         GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(name, description, params, taskInfoAttributes
@@ -3068,7 +3084,7 @@ public class GenePatternAnalysisTask {
         IndexerDaemon.notifyTaskUpdate(loader.getTaskIDByName(LSID != null ? lsid : name, username));
         return null;
     }
-
+    
     public static LSID getNextTaskLsid(String requestedLSID) throws java.rmi.RemoteException {
         LSID taskLSID = null;
         if (requestedLSID != null && requestedLSID.length() > 0) {
@@ -3088,10 +3104,10 @@ public class GenePatternAnalysisTask {
         } else {
             taskLSID = lsidManager.createNewID(TASK_NAMESPACE);
         }
-
+        
         return taskLSID;
     }
-
+    
     /**
      * use installTask but first manage the LSID. if it has one, keep it
      * unchanged. If not, create a new one to be used when creating a new task
@@ -3102,9 +3118,9 @@ public class GenePatternAnalysisTask {
             throws OmnigeneException, RemoteException, TaskInstallationException {
         LSID taskLSID = null;
         String requestedLSID = taskInfoAttributes.get(LSID);
-
+        
         taskLSID = getNextTaskLsid(requestedLSID);
-
+        
         taskInfoAttributes.put(GPConstants.LSID, taskLSID.toString());
         // System.out.println("GPAT.installNewTask: new LSID=" +
         // taskLSID.toString());
@@ -3114,7 +3130,7 @@ public class GenePatternAnalysisTask {
         }
         return taskLSID.toString();
     }
-
+    
     /**
      * use installTask but first manage LSID, If it has a local one, update the
      * version. If it has an external LSID create a new one. Used when modifying
@@ -3133,24 +3149,24 @@ public class GenePatternAnalysisTask {
             // XXX what to do here?
             System.err.println("updateTask: " + mue);
         }
-
+        
         LSID taskLSID = getNextTaskLsid(requestedLSID.toString());
         LSIDManager lsidManager = LSIDManager.getInstance();
         if (!lsidManager.getAuthority().equalsIgnoreCase(taskLSID.getAuthority())) {
-
+            
             String provenance = taskInfoAttributes.get(GPConstants.LSID_PROVENANCE);
             provenance = provenance + "  " + taskLSID.toString();
             taskInfoAttributes.put(GPConstants.LSID_PROVENANCE, provenance);
         }
         taskInfoAttributes.put(LSID, taskLSID.toString());
-
+        
         Vector probs = installTask(name, description, params, taskInfoAttributes, username, access_id, null);
         if ((probs != null) && (probs.size() > 0)) {
             throw new TaskInstallationException(probs);
         }
         return taskLSID.toString();
     }
-
+    
     public static boolean taskExists(String taskName, String user) throws OmnigeneException {
         TaskInfo existingTaskInfo = null;
         try {
@@ -3160,7 +3176,7 @@ public class GenePatternAnalysisTask {
         }
         return (existingTaskInfo != null);
     }
-
+    
     /**
      * takes a job number and returns the directory where output files from that
      * job are/will be stored. <b>This routine depends on having the System
@@ -3180,9 +3196,9 @@ public class GenePatternAnalysisTask {
         tmpDir = tmpDir + jobNumber;
         return tmpDir;
     }
-
+    
     // SourceForge support:
-
+    
     /**
      * returns a TreeMap of downloadable GenePattern tasks in the repository at
      * SourceForge.net Each task in the "genepattern" project and with a ".zip"
@@ -3200,7 +3216,7 @@ public class GenePatternAnalysisTask {
     public static TreeMap getSourceForgeTasks() throws IOException {
         return getSourceForgeTasks("genepattern", ".zip");
     }
-
+    
     /**
      * returns a TreeMap of downloadable GenePattern tasks in the repository at
      * SourceForge.net Each task in the named project and with a matching file
@@ -3301,9 +3317,9 @@ public class GenePatternAnalysisTask {
         }
         return tmOut;
     }
-
+    
     // zip file support:
-
+    
     /**
      * inspects a GenePattern-packaged task in a zip file and returns the name
      * of the task contained therein
@@ -3319,7 +3335,7 @@ public class GenePatternAnalysisTask {
         Properties props = getPropsFromZipFile(zipFilename);
         return props.getProperty(NAME);
     }
-
+    
     /**
      * opens a GenePattern-packaged task and returns a Properties object
      * containing all of the TaskInfo, TaskInfoAttributes, and ParameterInfo[]
@@ -3356,7 +3372,7 @@ public class GenePatternAnalysisTask {
         }
         return props;
     }
-
+    
     /**
      * opens a GenePattern-packaged task in the form of a remote URL and returns
      * a Properties object containing all of the TaskInfo, TaskInfoAttributes,
@@ -3416,7 +3432,7 @@ public class GenePatternAnalysisTask {
             throw e;
         }
     }
-
+    
     /**
      * accepts the filename of a GenePattern-packaged task in the form of a zip
      * file, unpacks it, and installs the task in the Omnigene task database.
@@ -3508,7 +3524,7 @@ public class GenePatternAnalysisTask {
                 throw new TaskInstallationException(vProblems); // abandon ship!
             }
             String taskDescription = (String) props.remove(DESCRIPTION);
-
+            
             // ParameterInfo entries consist of name/value/description triplets,
             // of which the value and description are optional
             // It is assumed that the names are p[1-n]_name, p[1-n]_value, and
@@ -3568,7 +3584,7 @@ public class GenePatternAnalysisTask {
             }
             ParameterInfo[] params = new ParameterInfo[vParams.size()];
             vParams.copyInto(params);
-
+            
             // all remaining properties are assumed to be TaskInfoAttributes
             TaskInfoAttributes tia = new TaskInfoAttributes();
             for (Enumeration eProps = props.propertyNames(); eProps.hasMoreElements();) {
@@ -3576,7 +3592,7 @@ public class GenePatternAnalysisTask {
                 value = props.getProperty(name);
                 tia.put(name, value);
             }
-
+            
             // System.out.println("installTask (zip): username=" + username + ",
             // access_id=" + access_id + ", tia.owner=" + tia.get(USERID) + ",
             // tia.privacy=" + tia.get(PRIVACY));
@@ -3590,11 +3606,11 @@ public class GenePatternAnalysisTask {
                 if (vProblems.size() == 0) {
                     // get the newly assigned LSID
                     lsid = (String) tia.get(GPConstants.LSID);
-
+                    
                     // extract files from zip file
                     String taskDir = DirectoryManager.getTaskLibDir(null, (String) tia.get(GPConstants.LSID), username);
                     File dir = new File(taskDir);
-
+                    
                     // if there are any existing files from a previous
                     // installation
                     // of this task,
@@ -3603,7 +3619,7 @@ public class GenePatternAnalysisTask {
                     for (i = 0; i < fileList.length; i++) {
                         fileList[i].delete();
                     }
-
+                    
                     // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                     String folder = null;
                     for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
@@ -3618,13 +3634,13 @@ public class GenePatternAnalysisTask {
                             log.warn("installTask: skipping hierarchically-entered name: " + name);
                             continue;
                         }
-
+                        
                         // copy attachments to the taskLib BEFORE installing the
                         // task, so that there is no time window when
                         // the task is installed in Omnigene's database but the
                         // files aren't decoded and so the task can't yet
                         // be properly invoked
-
+                        
                         // TODO: allow names to have paths, so long as they are
                         // below the current point and not above or a peer
                         // strip absolute or ../relative path names from zip
@@ -3706,7 +3722,7 @@ public class GenePatternAnalysisTask {
                         expander.setDest(new File(taskDir));
                         expander.execute();
                     }
-
+                    
                     // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
                 }
             }
@@ -3731,16 +3747,16 @@ public class GenePatternAnalysisTask {
         // _cat.debug("installTask: done.");
         return lsid;
     }
-
+    
     public static String installNewTask(String zipFilename, String username, int access_id, Status taskIntegrator)
-            throws TaskInstallationException {
+    throws TaskInstallationException {
         return installNewTask(zipFilename, username, access_id, true, taskIntegrator);
     }
-
+    
     public static String downloadTask(String zipURL) throws IOException {
         return downloadTask(zipURL, null, -1);
     }
-
+    
     /**
      * downloads a file from a URL and returns the path to the local file to the
      * caller.
@@ -3756,9 +3772,9 @@ public class GenePatternAnalysisTask {
     public static String downloadTask(String zipURL, Status statusMonitor, long expectedLength) throws IOException {
         return downloadTask(zipURL, statusMonitor, expectedLength, true);
     }
-
+    
     public static String downloadTask(String zipURL, Status statusMonitor, long expectedLength, boolean verbose)
-            throws IOException {
+    throws IOException {
         File zipFile = null;
         long downloadedBytes = 0;
         try {
@@ -3829,7 +3845,7 @@ public class GenePatternAnalysisTask {
             }
         }
     }
-
+    
     /**
      * returns a Vector of TaskInfos of the contents of zip-of-zips file. The
      * 0th index of the returned vector holds the TaskInfo for the pipeline
@@ -3875,7 +3891,7 @@ public class GenePatternAnalysisTask {
                     TaskInfo ti = new TaskInfo();
                     ti.setName((String) props.remove(NAME));
                     ti.setDescription((String) props.remove(DESCRIPTION));
-
+                    
                     // ParameterInfo entries consist of name/value/description
                     // triplets,
                     // of which the value and description are optional
@@ -3886,7 +3902,7 @@ public class GenePatternAnalysisTask {
                     // and that the numbering runs consecutively. When there is
                     // no
                     // p[m]_name value, then there are m-1 ParameterInfos
-
+                    
                     // count ParameterInfo entries
                     String name;
                     String value;
@@ -3939,7 +3955,7 @@ public class GenePatternAnalysisTask {
                     }
                     ParameterInfo[] params = new ParameterInfo[vParams.size()];
                     ti.setParameterInfoArray((ParameterInfo[]) vParams.toArray(new ParameterInfo[0]));
-
+                    
                     // all remaining properties are assumed to be
                     // TaskInfoAttributes
                     TaskInfoAttributes tia = new TaskInfoAttributes();
@@ -3964,9 +3980,9 @@ public class GenePatternAnalysisTask {
         }
         return vTaskInfos;
     }
-
+    
     // pipeline support:
-
+    
     /**
      * accepts a jobID and Process object, logging them in the
      * htRunningPipelines Hashtable. When the pipeline terminates, they will be
@@ -3983,7 +3999,7 @@ public class GenePatternAnalysisTask {
     public static void startPipeline(String jobID, Process p) {
         htRunningPipelines.put(jobID, p);
     }
-
+    
     /**
      * Creates an Omnigene database entry in the analysis_job table. Unlike
      * other entries, this one is not dispatchable to any known analysis task
@@ -4006,31 +4022,31 @@ public class GenePatternAnalysisTask {
      * @see #terminatePipeline(String)
      */
     public static JobInfo createPipelineJob(String userID, String parameter_info, String pipelineName, String lsid)
-            throws OmnigeneException, RemoteException {
-
+    throws OmnigeneException, RemoteException {
+        
         log.debug("Creating pipeline job");
         Integer jobNo = getDS().addNewJob(BaseDAO.UNPROCESSABLE_TASKID, userID, parameter_info, pipelineName, null,
                 lsid);
         log.debug("New job #: " + jobNo);
         JobInfo job = getDS().getJobInfo(jobNo);
         log.debug("New job task: " + job.getTaskID());
-
+        
         return job;
     }
-
+    
     public static JobInfo createVisualizerJob(String userID, String parameter_info, String visualizerName, String lsid)
-            throws OmnigeneException, RemoteException {
+    throws OmnigeneException, RemoteException {
         try {
             int taskId = new org.genepattern.server.webservice.server.local.LocalAdminClient(userID).getTask(lsid)
-                    .getID();
+            .getID();
             Integer jobNo = getDS().recordClientJob(taskId, userID, parameter_info, -1);
             return getDS().getJobInfo(jobNo);
-
+            
         } catch (org.genepattern.webservice.WebServiceException wse) {
             throw new OmnigeneException("Unable to record job");
         }
     }
-
+    
     /**
      * Changes the JobStatus of a pipeline job, and appends zero or more output
      * parameters (output filenames) to the JobInfo ParameterInfo array for
@@ -4053,8 +4069,8 @@ public class GenePatternAnalysisTask {
      * @see org.genepattern.webservice.JobStatus
      */
     public static void updatePipelineStatus(int jobNumber, int jobStatus, ParameterInfo[] additionalParams)
-            throws OmnigeneException, RemoteException {
-
+    throws OmnigeneException, RemoteException {
+        
         JobInfo jobInfo = getDS().getJobInfo(jobNumber);
         if (additionalParams != null) {
             for (int i = 0; i < additionalParams.length; i++) {
@@ -4066,7 +4082,7 @@ public class GenePatternAnalysisTask {
         }
         getDS().updateJob(jobNumber, jobInfo.getParameterInfo(), jobStatus);
     }
-
+    
     /**
      * Changes the JobStatus of a pipeline job, and appends zero or one output
      * parameters (output filenames) to the jobs's JobInfo ParameterInfo array
@@ -4091,7 +4107,7 @@ public class GenePatternAnalysisTask {
      * @see org.genepattern.webservice.JobStatus
      */
     public static void updatePipelineStatus(int jobNumber, int jobStatus, String name, String additionalFilename)
-            throws OmnigeneException, RemoteException {
+    throws OmnigeneException, RemoteException {
         if (name != null && additionalFilename != null) {
             ParameterInfo additionalParam = new ParameterInfo();
             additionalParam.setAsOutputFile();
@@ -4102,7 +4118,7 @@ public class GenePatternAnalysisTask {
             updatePipelineStatus(jobNumber, jobStatus, null);
         }
     }
-
+    
     /**
      * accepts a jobID and attempts to terminate the running pipeline process.
      * Pipelines are notable only in that they are sometimes run not as Omnigene
@@ -4130,7 +4146,7 @@ public class GenePatternAnalysisTask {
         }
         return p;
     }
-
+    
     public static void terminateAll(String message) {
         log.debug(message);
         String jobID;
@@ -4160,9 +4176,9 @@ public class GenePatternAnalysisTask {
             Thread.yield();
         }
     }
-
+    
     // utility methods:
-
+    
     /**
      * Here's a tricky/nasty way of getting the environment variables despite
      * System.getenv() being deprecated. TODO: find a better (no-deprecated)
@@ -4203,7 +4219,7 @@ public class GenePatternAnalysisTask {
         }
         return envVariables;
     }
-
+    
     /**
      * Creates a new Thread which blocks on reads to an InputStream, appends
      * their output to the given file. The thread terminates upon EOF from the
@@ -4248,7 +4264,7 @@ public class GenePatternAnalysisTask {
             }
         };
     }
-
+    
     /**
      * writes a string to a file
      *
@@ -4283,7 +4299,7 @@ public class GenePatternAnalysisTask {
         }
         return outFile;
     }
-
+    
     /**
      * Utility function to convert a HashTable to a String[]. Used because the
      * Runtime.exec() method requires a String[] of environment variables, which
@@ -4305,7 +4321,7 @@ public class GenePatternAnalysisTask {
         }
         return envp;
     }
-
+    
     /**
      * replace all instances of "find" in "original" string and substitute
      * "replace" for them
@@ -4337,7 +4353,7 @@ public class GenePatternAnalysisTask {
         }
         return res.toString();
     }
-
+    
     /**
      * renames a file, even across filesystems. If the underlying Java rename()
      * fails because the source and destination are not on the same filesystem,
@@ -4353,7 +4369,7 @@ public class GenePatternAnalysisTask {
      * @return true if the rename was accomplished
      * @author Jim Lerner
      */
-
+    
     public static boolean rename(File from, File to, boolean deleteIfCopied) {
         if (!from.exists()) {
             log.error(from.toString() + " doesn't exist for rename");
@@ -4398,7 +4414,7 @@ public class GenePatternAnalysisTask {
             return false;
         }
     }
-
+    
     public static boolean copyFile(File from, File to) {
         if (!from.exists()) {
             log.error(from + " doesn't exist to copy.");
@@ -4418,37 +4434,37 @@ public class GenePatternAnalysisTask {
                 os.write(buf, 0, i);
             }
             to.setLastModified(from.lastModified());
-
+            
             return true;
         } catch (IOException e) {
             log
                     .error("Error copying " + from.getAbsolutePath() + " to " + to.getAbsolutePath() + ": "
-                            + e.getMessage());
+                    + e.getMessage());
             return false;
         } finally {
             if (is != null) {
                 try {
                     is.close();
                 } catch (IOException e1) {
-
+                    
                 }
             }
             if (os != null) {
                 try {
                     os.close();
                 } catch (IOException e1) {
-
+                    
                 }
             }
         }
     }
-
+    
     // really boring stuff: constructors and concrete methods overriding
     // abstract AnalysisTask methods:
-
+    
     // series of constructors which add default values for important input
     // parameters
-
+    
     public GenePatternAnalysisTask() {
         if (System.getProperty("GenePatternVersion") == null) {
             // System properties are already loaded by StartupServlet
@@ -4501,16 +4517,16 @@ public class GenePatternAnalysisTask {
         }
         if (!bAnnounced) {
             log.info("GenePattern version " + props.get("GenePatternVersion") + " build " + props.get("tag")
-                    + " loaded");
+            + " loaded");
             bAnnounced = true;
         }
     }
-
+    
     public static void announceReady() {
         GenePatternAnalysisTask gpat = new GenePatternAnalysisTask();
         log.info("GenePattern server version " + System.getProperty("GenePatternVersion") + " is ready.");
     }
-
+    
     /**
      * loads the request into queue
      *
@@ -4527,14 +4543,14 @@ public class GenePatternAnalysisTask {
         }
         return jobVector;
     }
-
+    
     /**
      * return boolean indicating whether a filename represents a code file
      */
     public static boolean isCodeFile(String filename) {
         return hasEnding(filename, "code");
     }
-
+    
     /**
      * return boolean indicating whether a filename represents a documentation
      * file
@@ -4542,14 +4558,14 @@ public class GenePatternAnalysisTask {
     public static boolean isDocFile(String filename) {
         return hasEnding(filename, "doc");
     }
-
+    
     /**
      * return boolean indicating whether a filename represents a binary file
      */
     public static boolean isBinaryFile(String filename) {
         return hasEnding(filename, "binary");
     }
-
+    
     /**
      * return boolean indicating whether a filename represents a file type (as
      * found in System.getProperties(files.{code,doc,binary}))
@@ -4567,7 +4583,7 @@ public class GenePatternAnalysisTask {
         }
         return ret;
     }
-
+    
     /**
      * convert a CSV list into a Vector
      */
@@ -4579,22 +4595,22 @@ public class GenePatternAnalysisTask {
         }
         return vEntries;
     }
-
+    
     // implements FilenameFilter, but static
     public static boolean accept(File dir, String name) {
         return isDocFile(name);
     }
-
+    
     public static Properties loadGenePatternProperties(ServletContext application, String filename) throws IOException {
         return appendProperties(application, filename, new Properties());
     }
-
+    
     public static Properties appendProperties(ServletContext application, String filename, Properties props)
-            throws IOException {
+    throws IOException {
         // append build.properties to the genepattern properties
         return appendProperties((String) application.getAttribute("genepattern.properties"), filename, props);
     }
-
+    
     public static Properties appendProperties(String propsDir, String filename, Properties props) throws IOException {
         // append build.properties to the genepattern properties
         File propFile = new File(propsDir + File.separatorChar + filename);
@@ -4615,30 +4631,30 @@ public class GenePatternAnalysisTask {
         }
         return props;
     }
-
+    
     /* TODO: put all of this stuff in database and look it up when requested */
-
+    
     // LHS is what is presented to user, RHS is what java System.getProperty()
     // returns
     public static String[] getCPUTypes() {
         return new String[] { ANY, "Alpha=alpha", "Intel=x86", "PowerPC=ppc", "Sparc=sparc" };
     }
-
+    
     // LHS=show to user, RHS=what System.getProperty("os.name") returns
     public static String[] getOSTypes() {
         return new String[] { ANY, "Linux=linux", "MacOS=Mac OS X", "Solaris=solaris", "Tru64=OSF1", "Windows=Windows" };
     }
-
+    
     public static String[] getTaskTypes() {
         return new String[] { "", "Clustering", "Gene List Selection", "Image Creator", "Method",
-                GPConstants.TASK_TYPE_PIPELINE, "Prediction", "Preprocess & Utilities", "Projection",
-                "Statistical Methods", "Sequence Analysis", TASK_TYPE_VISUALIZER };
+        GPConstants.TASK_TYPE_PIPELINE, "Prediction", "Preprocess & Utilities", "Projection",
+        "Statistical Methods", "Sequence Analysis", TASK_TYPE_VISUALIZER };
     }
-
+    
     public static String[] getLanguages() {
         return new String[] { ANY, "C", "C++", "Java", "MATLAB", "Perl", "Python", "R" };
     }
-
+    
     /**
      * The Expander uses ant's unzip instead of Java's to preserve file
      * permissions
@@ -4652,7 +4668,7 @@ public class GenePatternAnalysisTask {
             target = new Target();
         }
     }
-
+    
     /**
      * The GenePatternTaskDBLoader dynamically creates Omnigene TASK_MASTER
      * table entries for new or modified GenePatternAnalysisTasks. Each task has
@@ -4663,11 +4679,11 @@ public class GenePatternAnalysisTask {
      * @author Jim Lerner
      * @see DBLoader;
      */
-
+    
     private static class GenePatternTaskDBLoader extends DBLoader {
         public void setup() {
         }
-
+        
         public GenePatternTaskDBLoader(String name, String description, ParameterInfo[] params,
                 String taskInfoAttributes, String username, int access_id) {
             this._name = name;
@@ -4677,7 +4693,7 @@ public class GenePatternAnalysisTask {
             this.access_id = access_id;
             this.user_id = username;
         }
-
+        
         public void updateTaskInfoAttributes(String taskInfoAttributes) {
             this._taskInfoAttributes = taskInfoAttributes;
         }
