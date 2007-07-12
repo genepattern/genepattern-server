@@ -40,10 +40,6 @@ response.setDateHeader("Expires", 0);
 
 String userID= (String)request.getAttribute("userID"); // will force login if necessary
 
-IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-
-
-
 String pipelineName = request.getParameter("name");
 if (pipelineName == null) {
 %>	Must specify a name parameter
