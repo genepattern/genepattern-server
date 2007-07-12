@@ -56,7 +56,7 @@ AnalysisDAO extends BaseDAO {
      * @throws RemoteException
      * @return JobInfo Vector
      */
-    public Vector getWaitingJob(int maxJobCount) throws OmnigeneException {
+    public Vector getWaitingJobs(int maxJobCount) throws OmnigeneException {
         Vector jobVector = new Vector();
 
         // initializing maxJobCount, if it has invalid value

@@ -506,9 +506,9 @@ public class GenePatternAnalysisTask {
             
             taskName = taskInfo.getName();
             if(log.isDebugEnabled()) {
-              log.debug("taskName=" + taskName);
+                log.debug("taskName=" + taskName);
             }
-             
+            
             int formalParamsLength = 0;
             ParameterInfo[] formalParams = taskInfo.getParameterInfoArray();
             if (formalParams != null) {
@@ -1132,7 +1132,7 @@ public class GenePatternAnalysisTask {
      * @param jobStartTime
      */
     private void recordJobCompletion(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, long jobStartTime) {
-       try {
+        try {
             if(log.isDebugEnabled()) {
                 log.debug("Recording job completion for job: " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
             }
@@ -1191,8 +1191,12 @@ public class GenePatternAnalysisTask {
     }
     
     private TaskInfo getTaskInfo(JobInfo jobInfo) throws Exception {
+        if(log.isDebugEnabled()) {
+            log.debug("getTaskInfo for job: " + jobInfo.getJobNumber());
+        }
+        
         try {
-            HibernateUtil.getSession().beginTransaction();
+            HibernateUtil.beginTransaction();
             AdminDAO ds = new AdminDAO();
             TaskInfo taskInfo = ds.getTask(jobInfo.getTaskID());
             if (taskInfo == null) {
@@ -2556,6 +2560,10 @@ public class GenePatternAnalysisTask {
             // spawn the command
             process = Runtime.getRuntime().exec(commandLine, envp, runDir);
             
+            if(log.isDebugEnabled()) {
+                log.debug("Process spawned for command line: " + commandLine);
+            }
+            
             // BUG: there is race condition during a tiny time window between
             // the exec and the close
             // (the lines above and below this comment) during which it is
@@ -2601,7 +2609,15 @@ public class GenePatternAnalysisTask {
             errorReader.join();
             
             // the process will be dead by now
+            if(log.isDebugEnabled()) {
+                log.debug("Waiting for process to complete: " + commandLine);
+            }
+
             process.waitFor();
+ 
+            if(log.isDebugEnabled()) {
+                log.debug("Process completed: " + commandLine);
+            }
             
             // TODO: cleanup input file(s)
         } catch (Throwable t) {
@@ -3996,7 +4012,7 @@ public class GenePatternAnalysisTask {
      * @see #terminateJob(String,Hashtable)
      * @see #terminatePipeline(String)
      */
-    public static void startPipeline(String jobID, Process p) {
+    public static void storeProcessInHash(String jobID, Process p) {
         htRunningPipelines.put(jobID, p);
     }
     
@@ -4134,7 +4150,7 @@ public class GenePatternAnalysisTask {
      * @return Process of the pipeline if running, else null
      * @author Jim Lerner
      */
-    public static Process terminatePipeline(String jobID) {
+    public static Process removeProcessFromHash(String jobID) {
         Process p = (Process) htRunningPipelines.remove(jobID);
         if (p != null) {
             p.destroy();
@@ -4155,7 +4171,7 @@ public class GenePatternAnalysisTask {
         for (eJobs = htRunningPipelines.keys(); eJobs.hasMoreElements();) {
             jobID = (String) eJobs.nextElement();
             log.info("Terminating job " + jobID);
-            Process p = terminatePipeline(jobID);
+            Process p = removeProcessFromHash(jobID);
             if (p != null) {
                 try {
                     updatePipelineStatus(Integer.parseInt(jobID), JobStatus.JOB_ERROR, null);
@@ -4536,7 +4552,7 @@ public class GenePatternAnalysisTask {
     public Vector getWaitingJobs() {
         Vector jobVector = null;
         try {
-            jobVector = getDS().getWaitingJob(NUM_THREADS);
+            jobVector = getDS().getWaitingJobs(NUM_THREADS);
         } catch (Exception e) {
             log.error(getClass().getName() + ": getWaitingJobs " + e.getMessage());
             jobVector = new Vector();

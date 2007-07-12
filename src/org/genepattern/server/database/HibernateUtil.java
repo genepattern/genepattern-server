@@ -97,6 +97,7 @@ public class HibernateUtil {
      * @return
      */
     public static void beginTransaction() {
+
         if (!getSession().getTransaction().isActive()) {
             getSession().beginTransaction();
         }

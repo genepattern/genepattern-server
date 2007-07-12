@@ -12,14 +12,13 @@
 
 package org.genepattern.server;
 
-import java.rmi.RemoteException;
 import java.util.Vector;
 
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
-import org.hibernate.HibernateException;
 
 /**
  * Runnable AnalysisTask - Adapts a Runnable to run within a pre-created thread.
@@ -96,12 +95,12 @@ public class AnalysisTask implements Runnable {
                 
                 if (jobQueue.isEmpty()) {
                     try {
-                        HibernateUtil.getSession().beginTransaction();
+                        HibernateUtil.beginTransaction();
                         jobQueue = genePattern.getWaitingJobs();
-                        HibernateUtil.getSession().getTransaction().commit();
+                        HibernateUtil.commitTransaction();
                     } finally {
                         HibernateUtil.closeCurrentSession();
-                    }  
+                    }
                 }
                 
                 if (jobQueue.isEmpty()) {
@@ -166,7 +165,9 @@ public class AnalysisTask implements Runnable {
     
     private void doAcquire() {
         if (sem != null) {
-            log.debug("Acquiring semaphore");
+            if(log.isDebugEnabled()) {
+                log.debug("Acquiring semaphore");
+            }
             sem.acquire();
         }
     }
@@ -191,6 +192,10 @@ public class AnalysisTask implements Runnable {
         }
         
         public void run() {
+            if(log.isDebugEnabled()) {
+                JobInfo ji = (JobInfo) obj;
+                log.debug("Starting job thread for: " + ji.getJobNumber() + " (" + ji.getTaskName() + ")");
+            }
             genePattern.onJob(obj);// run job
             doRelease();// signal completion of thread
         }

@@ -4,7 +4,7 @@
  This software and its documentation are copyright (2003-2006) by the
  Broad Institute/Massachusetts Institute of Technology. All rights are
  reserved.
-
+ 
  This software is supplied without any warranty or guaranteed support
  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
  use, misuse, or functionality.
@@ -12,6 +12,7 @@
 
 package org.genepattern.server.handler;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -24,33 +25,34 @@ import org.genepattern.webservice.ParameterInfo;
 
 /**
  * AddNewJobHandler to submit a job request and get back <CODE>JobInfo</CODE>
- * 
+ *
  * @author rajesh kuttan
  * @version 1.0
  */
 
 public class AddNewJobHandler extends RequestHandler {
-
+    
+    private static Logger log = Logger.getLogger(AddNewJobHandler.class);
     protected int taskID = 1;
-
+    
     protected String parameter_info = "", inputFileName = "";
-
+    
     protected ParameterInfo[] parameterInfoArray = null;
-
+    
     protected String userID;
-
+    
     protected int parentJobID;
-
+    
     protected boolean hasParent = false;
-
+    
     /** Creates new GetAvailableTasksHandler */
     public AddNewJobHandler() {
         super();
     }
-
+    
     /**
      * Constructor with taskID, ParameterInfo[] and inputFileName
-     * 
+     *
      * @param taskID
      *            taskID from <CODE>TaskInfo</CODE>
      * @param parameterInfoArray
@@ -63,10 +65,10 @@ public class AddNewJobHandler extends RequestHandler {
         this.userID = userID;
         this.parameterInfoArray = parameterInfoArray;
     }
-
+    
     /**
      * Constructor with taskID, ParameterInfo[], inputFileName, and parentJobID
-     * 
+     *
      * @param taskID
      *            taskID from <CODE>TaskInfo</CODE>
      * @param parameterInfoArray
@@ -83,10 +85,10 @@ public class AddNewJobHandler extends RequestHandler {
         this.parentJobID = parentJobID;
         hasParent = true;
     }
-
+    
     /**
      * Creates job. Call this fun. if you need JobInfo object
-     * 
+     *
      * @throws TaskIDNotFoundException
      *             TaskIDNotFoundException
      * @throws OmnigeneException
@@ -95,6 +97,9 @@ public class AddNewJobHandler extends RequestHandler {
     public JobInfo executeRequest() throws OmnigeneException, TaskIDNotFoundException {
         JobInfo ji = null;
         try {
+            if(log.isDebugEnabled()) {
+                log.debug("executeRequest");
+            }
             ParameterFormatConverter pfc = new ParameterFormatConverter();
             parameter_info = pfc.getJaxbString(parameterInfoArray);
             // Get EJB reference
@@ -102,29 +107,32 @@ public class AddNewJobHandler extends RequestHandler {
             // Invoke EJB function
             if (hasParent) {
                 ji = ds.addNewJob(taskID, userID, parameter_info, parentJobID);
-            }
-            else {
+            } else {
                 ji = ds.addNewJob(taskID, userID, parameter_info, -1);
             }
             // Checking for null
             if (ji == null) throw new OmnigeneException(
                     "AddNewJobRequest:executeRequest Operation failed, null value returned for JobInfo");
-
-           AnalysisTask.getInstance().wakeupJobQueue();
-           
+            if(log.isDebugEnabled()) {
+                log.debug("Waking up job queue");
+            }
+            AnalysisTask.getInstance().wakeupJobQueue();
+            
             // Reparse parameter_info before sending to client
             ji.setParameterInfoArray(pfc.getParameterInfoArray(parameter_info));
-        }
-        catch (TaskIDNotFoundException taskEx) {
+        } catch (TaskIDNotFoundException taskEx) {
             System.out.println("AddNewJob(executeRequest): TaskIDNotFoundException " + taskID);
             throw taskEx;
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             System.out.println("AddNewJob(executeRequest): Error " + ex.getMessage());
             ex.printStackTrace();
             throw new OmnigeneException(ex.getMessage());
         }
-
+        
         return ji;
+    }
+    
+    public String getInputFileName() {
+        return inputFileName;
     }
 }

@@ -4,7 +4,7 @@
  This software and its documentation are copyright (2003-2006) by the
  Broad Institute/Massachusetts Institute of Technology. All rights are
  reserved.
-
+ 
  This software is supplied without any warranty or guaranteed support
  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
  use, misuse, or functionality.
@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
@@ -38,13 +37,13 @@ import java.util.Vector;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
+import org.apache.log4j.Logger;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
-import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
@@ -71,45 +70,47 @@ import org.xml.sax.InputSource;
  */
 
 public class RunPipeline {
-
+    
+    private static Logger log = Logger.getLogger(RunPipeline.class);
+    
     public static final String STDOUT = GPConstants.STDOUT;
-
+    
     public static final String STDERR = GPConstants.STDERR;
-
+    
     RunPipelineOutputDecoratorIF decorator;
-
+    
     PipelineModel model;
-
+    
     /** server to run the pipeline on */
     String server;
-
+    
     /** job id for the pipeline */
     int jobId;
-
+    
     // AnalysisWebServiceProxy analysisProxy;
     LocalAnalysisClient analysisClient;
-
+    
     // AdminProxy adminProxy;
     LocalAdminClient adminClient;
-
+    
     public RunPipeline(String server, String userID, int jobId, PipelineModel model,
             RunPipelineOutputDecoratorIF decorator) throws Exception {
-
+        
         // this.analysisProxy = new AnalysisWebServiceProxy(server, userID);
         this.analysisClient = new LocalAnalysisClient(userID);
         // this.adminProxy = new AdminProxy(server, userID);
         this.adminClient = new LocalAdminClient(userID);
-
+        
         this.server = server;
         System.setProperty("userID", userID);
         this.jobId = jobId;
-
+        
         this.model = model;
         this.decorator = decorator == null ? new RunPipelineBasicDecorator() : decorator;
     }
-
+    
     public static String logFile = "../../../../logs/pipelineErrors.log";
-
+    
     public static void setupLog4jConfig() {
         String override = System.getProperty("log4j.properties");
         if (override != null)
@@ -124,10 +125,10 @@ public class RunPipeline {
         log4jconfig.setProperty("log4j.appender.R.layout", "org.apache.log4j.PatternLayout");
         log4jconfig.setProperty("log4j.appender.R.layout.ConversionPattern",
                 "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] (%F:%L) - %m%n");
-
+        
         PropertyConfigurator.configure(log4jconfig);
     }
-
+    
     /**
      * expects minimum of two args. pipeline name, username, args to pipeline
      * Additionally the system properties jobID, LSID, genepattern.properties
@@ -136,7 +137,7 @@ public class RunPipeline {
     public static void main(String args[]) throws Exception {
         try {
             setupLog4jConfig();
-
+            
             Properties additionalArguments = new Properties();
             String genePatternPropertiesFile = System.getProperty("genepattern.properties") + java.io.File.separator
                     + "genepattern.properties";
@@ -157,16 +158,16 @@ public class RunPipeline {
                 String val = genepatternProps.getProperty(key);
                 System.setProperty(key, val);
             }
-
+            
             String trustStore = genepatternProps.getProperty("javax.net.ssl.trustStore");
             if (trustStore != null)
                 System.setProperty("javax.net.ssl.trustStore", trustStore);
-
+            
             String GP_Path = genepatternProps.getProperty("GP_Path");
             if (GP_Path != null)
                 System.setProperty("GP_Path", GP_Path);
             Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-
+            
             //
             // Probably best to put this code in a function somewhere...
             //
@@ -177,9 +178,9 @@ public class RunPipeline {
                     return true;
                 }
             };
-
+            
             HttpsURLConnection.setDefaultHostnameVerifier(hv);
-
+            
             if (args.length < 2) {
                 System.out.println("usage: RunPipeline pipelineFile username args");
                 System.out.println(java.util.Arrays.asList(args));
@@ -189,7 +190,7 @@ public class RunPipeline {
                 for (int i = 2; i < args.length; i++) {
                     // assume args are in the form name=value
                     String arg = args[i];
-
+                    
                     StringTokenizer strtok = new StringTokenizer(arg, "=");
                     String key = strtok.nextToken();
                     StringBuffer valbuff = new StringBuffer("");
@@ -201,7 +202,7 @@ public class RunPipeline {
                         count++;
                     }
                     additionalArguments.put(key, valbuff.toString());
-
+                    
                 }
             }
             String pipelineLSID = System.getProperty(GPConstants.LSID);
@@ -217,11 +218,11 @@ public class RunPipeline {
                 taskLib = "../../../../" + taskLib;
             }
             System.setProperty("tasklib", taskLib);
-
+            
             String pipelineFileName = args[0];
             String userId = args[1];
             System.setProperty("userId", userId);
-
+            
             int jobId = -1;
             if (System.getProperty("jobID") == null) { // null when run using
                 // java
@@ -238,7 +239,7 @@ public class RunPipeline {
                 decorator = (RunPipelineOutputDecoratorIF) (Class.forName(decoratorClass)).newInstance();
             }
             URL serverFromFile = null;
-
+            
             try {
                 serverFromFile = new URL(System.getProperty("GenePatternURL"));
             } catch (Exception x) {
@@ -249,16 +250,16 @@ public class RunPipeline {
                 }
                 String protocol = serverFromFile != null ? serverFromFile.getProtocol() : "http";
                 serverFromFile = new URL(protocol + "://" + host + ":" + System.getProperty("GENEPATTERN_PORT"));
-
+                
                 System.setProperty("GenePatternURL", serverFromFile.toString() + "/gp/");
             }
-
+            
             String host = serverFromFile.getHost();
             String server = serverFromFile.getProtocol() + "://" + host + ":" + serverFromFile.getPort();
             PipelineModel pipelineModel = getPipelineModel(pipelineFileName, pipelineLSID, server);
             RunPipeline rp = new RunPipeline(server, userId, jobId, pipelineModel, decorator);
             rp.runPipeline(additionalArguments);
-
+            
         } finally {
             if ((System.getProperty("DEBUG", null)) == null) {
                 File log = new File(logFile);
@@ -267,9 +268,9 @@ public class RunPipeline {
                 }
             }
         }
-
+        
     }
-
+    
     /**
      * the pipelineFileName may be either a local file or a URL. Figure out
      * which it is and get it either way
@@ -286,7 +287,7 @@ public class RunPipeline {
                 // idx = pipelineFileName.indexOf(":", idx+1);
                 // String pfn = server.toLowerCase() +
                 // pipelineFileName.substring(idx+5);
-
+                
                 // URL url = new URL(pfn);
                 // URLConnection uconn = url.openConnection();
                 // reader = new BufferedReader(new
@@ -295,33 +296,33 @@ public class RunPipeline {
                 TaskInfo ti = adminClient.getTask(lsid);
                 Map tia = ti.getTaskInfoAttributes();
                 String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
-
+                
                 reader = new BufferedReader(new StringReader(serializedModel));
-
+                
             } else {
                 reader = new BufferedReader(new FileReader(pipelineFileName));
                 // file.deleteOnExit();
             }
             model = PipelineModel.toPipelineModel(new InputSource(reader), false);
             model.setLsid(lsid);
-
+            
             return model;
         } finally {
             if (reader != null) {
                 reader.close();
             }
         }
-
+        
     }
-
+    
     /**
      * @param args
      *            maps parameter name to parameter value
      */
     public void runPipeline(Map args) throws Exception {
-
+        
         HibernateUtil.beginTransaction();
-
+        
         setStatus(JobStatus.PROCESSING);
         String stopAfterTaskStr = System.getProperty(GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM);
         int stopAfterTask = Integer.MAX_VALUE;
@@ -347,47 +348,47 @@ public class RunPipeline {
                 okayToRun = false;
                 System.err.println("No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID() + ")");
                 decorator.error(model, "No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID()
-                        + ")");
+                + ")");
             }
-
+            
         }
         if (!okayToRun) {
             setStatus(JobStatus.ERROR);
             return;
         }
-
+        
         taskNum = 0;
         JobInfo results[] = new JobInfo[vTasks.size()];
-
+        
         decorator.beforePipelineRuns(model);
         try {
             for (Enumeration eTasks = vTasks.elements(); eTasks.hasMoreElements(); taskNum++) {
                 jobSubmission = (JobSubmission) eTasks.nextElement();
                 if (taskNum >= stopAfterTask)
                     break; // stop and execute no further
-
+                
                 try {
                     parameterInfo = jobSubmission.giveParameterInfoArray();
-
+                    
                     ParameterInfo[] params = setInheritedJobParameters(parameterInfo, results);
-
+                    
                     params = setJobParametersFromArgs(jobSubmission.getName(), taskNum + 1, params, results, args);
-
+                    
                     decorator.recordTaskExecution(jobSubmission, taskNum + 1, vTasks.size());
-
+                    
                     JobInfo taskResult = executeTask(jobSubmission, params, taskNum, results);
-
+                    
                     // handle the special case where a task is a pipeline by
                     // adding
                     // all output files of the pipeline's children (recursively)
                     // to its
                     // taskResult so that they can be used downstream
                     taskResult = collectChildJobResults(taskResult);
-
+                    
                     decorator.recordTaskCompletion(taskResult, jobSubmission.getName() + (taskNum + 1));
-
+                    
                     results[taskNum] = taskResult;
-
+                    
                 } catch (Exception e) {
                     System.err.println("Execution for " + jobSubmission.getName() + " module failed.");
                     if (e.getMessage() != null) {
@@ -398,20 +399,23 @@ public class RunPipeline {
         } finally {
             decorator.afterPipelineRan(model);
         }
-
+        
         HibernateUtil.commitTransaction();
         HibernateUtil.beginTransaction();
         setStatus(JobStatus.FINISHED);
         HibernateUtil.commitTransaction();
     }
-
+    
     /**
      * Notify the server of the pipeline's status (Process, Finished, etc)
      */
-    protected void setStatus(String status) throws Exception {
+    protected void setStatus(String status) throws Exception {  
+        if(log.isDebugEnabled()) {
+            log.debug(("Setting job# " + jobId + " status to " + status));
+        }
         analysisClient.setJobStatus(jobId, status);
     }
-
+    
     /**
      * handle the special case where a task is a pipeline by adding all output
      * files of the pipeline's children (recursively) to its taskResult so that
@@ -420,10 +424,10 @@ public class RunPipeline {
     protected JobInfo collectChildJobResults(JobInfo taskResult) {
         try {
             List<ParameterInfo> outs = new ArrayList<ParameterInfo>();
-
+            
             HibernateUtil.beginTransaction();
             JobInfo[] children = analysisClient.getChildren(taskResult.getJobNumber());
-
+            
             if (children.length == 0)
                 return taskResult;
             for (int i = 0; i < children.length; i++) {
@@ -442,12 +446,12 @@ public class RunPipeline {
         }
         return taskResult;
     }
-
+    
     // recurse through the children and add all output params to the parent
-
+    
     protected void collectChildJobResults(JobInfo taskResult, List<ParameterInfo> outs) throws WebServiceException {
         JobInfo[] children = analysisClient.getChildren(taskResult.getJobNumber());
-
+        
         if (children.length == 0)
             return;
         for (int i = 0; i < children.length; i++) {
@@ -455,7 +459,7 @@ public class RunPipeline {
             collectChildJobResults(children[i], outs); // recurse on down
         }
     }
-
+    
     protected void getChildJobOutputs(JobInfo child, List<ParameterInfo> outs) {
         ParameterInfo[] childParams = child.getParameterInfoArray();
         for (int i = 0; i < childParams.length; i++) {
@@ -467,7 +471,7 @@ public class RunPipeline {
             }
         }
     }
-
+    
     protected JobInfo executeVisualizer(AnalysisService svc, ParameterInfo[] params) {
         try {
             if (params != null) {
@@ -476,10 +480,10 @@ public class RunPipeline {
                     String val = params[i].getValue();
                     if (val.startsWith("<GenePatternURL>")) {
                         val = val.replaceAll("<GenePatternURL>", server + context + "/");
-
+                        
                         params[i].setValue(val);
                     }
-
+                    
                 }
             }
             return analysisClient.recordClientJob(svc.getTaskInfo().getID(), params, jobId);
@@ -488,19 +492,23 @@ public class RunPipeline {
         }
         return new JobInfo();
     }
-
+    
     /**
      * submit the job and wait for it to complete
      */
     protected JobInfo executeTask(JobSubmission jobSubmission, ParameterInfo[] params, int taskNum, JobInfo[] results)
-            throws Exception {
-
+    throws Exception {
+        
+        if(log.isDebugEnabled()) {
+            log.debug("Begin executeTask");
+        }
+        
         String lsidOrTaskName = jobSubmission.getLSID();
         if (lsidOrTaskName == null || lsidOrTaskName.equals("")) {
             lsidOrTaskName = jobSubmission.getName();
         }
         TaskInfo task = adminClient.getTask(lsidOrTaskName);
-
+        
         if (task == null) {
             System.err.println("Module " + lsidOrTaskName + " not found."); // write
             // to
@@ -508,7 +516,7 @@ public class RunPipeline {
             // file
             return new JobInfo();
         }
-
+        
         AnalysisService svc = new AnalysisService(server, task);
         if (jobSubmission.isVisualizer()) {
             return executeVisualizer(svc, params);
@@ -517,12 +525,12 @@ public class RunPipeline {
         JobInfo jobInfo = waitForErrorOrCompletion(job);
         return jobInfo;
     }
-
+    
     protected ParameterInfo[] setInheritedJobParameters(ParameterInfo[] parameterInfo, JobInfo[] results)
-            throws FileNotFoundException {
+    throws FileNotFoundException {
         for (int i = 0; i < parameterInfo.length; i++) {
             ParameterInfo aParam = parameterInfo[i];
-
+            
             if (aParam.getAttributes() != null) {
                 if (aParam.getAttributes().get(PipelineModel.INHERIT_TASKNAME) != null) {
                     String url = getInheritedFilename(aParam.getAttributes(), results);
@@ -535,15 +543,15 @@ public class RunPipeline {
                 }
                 try {
                     String value = aParam.getValue();
-
+                    
                     if (value != null) {
                         if (value.startsWith("<GenePatternURL>")) {
                             // substitute <LSID> flags for pipeline files
-
+                            
                             if (value.startsWith("<GenePatternURL>")) {
                                 String lsidTag = "<LSID>";
                                 String lsidValue = System.getProperty("LSID");
-
+                                
                                 value = value.replace(lsidTag, lsidValue);
                                 aParam.setValue(value);
                             }
@@ -556,7 +564,7 @@ public class RunPipeline {
         }
         return parameterInfo;
     }
-
+    
     protected String getInheritedFilename(Map attributes, JobInfo[] results) throws FileNotFoundException {
         // these params must be removed so that the soap lib doesn't try to send
         // the
@@ -565,7 +573,7 @@ public class RunPipeline {
         String fileStr = (String) attributes.get(PipelineModel.INHERIT_FILENAME);
         attributes.remove("TYPE");
         attributes.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
-
+        
         int task = Integer.parseInt(taskStr);
         JobInfo job = results[task];
         String fileName = getOutputFileName(job, fileStr);
@@ -577,11 +585,11 @@ public class RunPipeline {
             // ignore
         }
         String context = System.getProperty("GP_Path", "/gp");
-
+        
         String url = server + context + "/jobResults/" + job.getJobNumber() + "/" + fileName;
         return url;
     }
-
+    
     /**
      * Look for parameters that are passed in on the command line and put them
      * into the ParameterInfo array
@@ -601,25 +609,25 @@ public class RunPipeline {
             }
         }
         return parameterInfo;
-
+        
     }
-
+    
     /**
      * return the file name for the previously run job by index or name
      */
     public static String getOutputFileName(org.genepattern.webservice.JobInfo job, String fileStr)
-            throws FileNotFoundException {
+    throws FileNotFoundException {
         String fileName = null;
         String fn = null;
         int j;
         ParameterInfo[] jobParams = job.getParameterInfoArray();
         String jobDir = System.getProperty("jobs");
         // try semantic match on output files first
-
+        
         try {
         } catch (Exception e) {
         }
-
+        
         // For now, just match on filename extension
         semantic_search_loop: for (j = 0; j < jobParams.length; j++) {
             if (jobParams[j].isOutputFile()) {
@@ -631,14 +639,14 @@ public class RunPipeline {
                 if (!aFile.exists()) {
                     aFile = new File("../" + jobDir + "/", fn);
                 }
-
+                
                 if (isFileType(aFile, fileStr)) {
                     fileName = fn;
                     break semantic_search_loop;
                 }
             }
         }
-
+        
         if (fileName == null) {
             // no match on extension, try assuming that it is an integer number
             // (1..5)
@@ -657,14 +665,14 @@ public class RunPipeline {
                 }
             } catch (NumberFormatException nfe) {
                 // not an extension, not a number, look for stdout or stderr
-
+                
                 // fileStr is stderr or stdout instead of an index
                 if (fileStr.equals(STDOUT) || fileStr.equals(STDERR)) {
                     fileName = fileStr;
                 }
             }
         }
-
+        
         if (fileName != null) {
             int lastIdx = fileName.lastIndexOf(File.separator);
             if (lastIdx != -1) {
@@ -686,11 +694,11 @@ public class RunPipeline {
              * ioe.printStackTrace(); } } }
              */
             throw new FileNotFoundException("Unable to find output file from job " + job.getJobNumber()
-                    + " that matches " + fileStr + ".");
+            + " that matches " + fileStr + ".");
         }
         return fileName;
     }
-
+    
     public static boolean isFileType(File file, String fileFormat) {
         if (file.getName().toLowerCase().endsWith(".odf")) {
             return ODFModelType(file).equalsIgnoreCase(fileFormat);
@@ -710,7 +718,7 @@ public class RunPipeline {
             return file.getName().toLowerCase().endsWith(fileFormat.toLowerCase());
         }
     }
-
+    
     public static String getFileType(File file) {
         // ODF
         if (file.getName().toLowerCase().endsWith("." + GPConstants.ODF.toLowerCase())) {
@@ -720,7 +728,7 @@ public class RunPipeline {
             return filename.substring(filename.lastIndexOf(".") + 1);
         }
     }
-
+    
     public static String ODFModelType(File file) {
         String model = "";
         BufferedReader inputB = null;
@@ -734,7 +742,7 @@ public class RunPipeline {
             while (modelLine != null && !modelLine.startsWith("Model")) {
                 modelLine = inputB.readLine();
             }
-
+            
             if (modelLine != null) {
                 model = modelLine.substring(modelLine.indexOf("=") + 1).trim();
             }
@@ -750,19 +758,22 @@ public class RunPipeline {
         }
         return model;
     }
-
+    
     /**
      * submit a job based on a service and its parameters
      */
     protected AnalysisJob submitJob(AnalysisService svc, ParameterInfo[] parmInfos) throws Exception {
+        if(log.isDebugEnabled()) {
+            log.debug("Submit job");
+        }
         if (parmInfos != null) {
             for (int i = 0; i < parmInfos.length; i++) {
-
+                
                 if (parmInfos[i].isInputFile()) {
-
+                    
                     String file = parmInfos[i].getValue(); // bug 724
                     if (file.trim().length() != 0) {
-
+                        
                         String val = file;
                         if (!(file.startsWith("http:") || file.startsWith("ftp:") || file.startsWith("file:"))) {
                             val = new File(file).toURI().toString();
@@ -774,19 +785,19 @@ public class RunPipeline {
                 }
             }
         }
-
+        
         TaskInfo tinfo = svc.getTaskInfo();
         final JobInfo job = analysisClient.submitJobNoWakeup(tinfo.getID(), parmInfos, jobId);
         HibernateUtil.commitTransaction();
         HibernateUtil.beginTransaction();
-
+        
         final AnalysisJob aJob = new AnalysisJob(svc.getServer(), job);
         HibernateUtil.commitTransaction();
         HibernateUtil.beginTransaction();
-
+        
         return aJob;
     }
-
+    
     /**
      * Wait for a job to end or error. This loop will wait for a max of 36
      * seconds for 10 tries doubling the wait time each time after 6 seconds to
@@ -797,28 +808,33 @@ public class RunPipeline {
         int sleep = 1000;
         return waitForErrorOrCompletion(job, maxtries, sleep);
     }
-
+    
     protected JobInfo waitForErrorOrCompletion(AnalysisJob job, int maxTries, int initialSleep) throws Exception {
+        
+        if(log.isDebugEnabled()) {
+            log.debug("WaitForErrorOrCompletion jobId= " + job.getJobInfo().getJobNumber() + " taskName= " +
+                    job.getTaskName());
+        }
         String status = "";
         JobInfo info = null;
         int count = 0;
         int sleep = initialSleep;
-
+        
         while (!(status.equalsIgnoreCase("ERROR") || (status.equalsIgnoreCase("Finished")))) {
             count++;
             Thread.currentThread().sleep(sleep);
-
+            
             HibernateUtil.commitTransaction();
             HibernateUtil.beginTransaction();
             info = analysisClient.checkStatus(job.getJobInfo().getJobNumber());
             status = info.getStatus();
-
+            
             // if (count > maxTries) break;
             sleep = incrementSleep(initialSleep, maxTries, count);
         }
         return info;
     }
-
+    
     /**
      * make the sleep time go up as it takes longer to exec. eg for 100 tries of
      * 1000ms (1 sec) first 20 are 1 sec each next 20 are 2 sec each next 20 are
@@ -835,7 +851,7 @@ public class RunPipeline {
             return init * 8;
         return init * 16;
     }
-
+    
     protected static void dumpParameters(ParameterInfo[] params, String where) {
         System.out.println("");
         System.out.println(where);
@@ -843,5 +859,5 @@ public class RunPipeline {
             System.out.println("RunPipeline.executeTask: " + params[i].getName() + "=" + params[i].toString());
         }
     }
-
+    
 }
