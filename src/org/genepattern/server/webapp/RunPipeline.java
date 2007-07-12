@@ -117,6 +117,7 @@ public class RunPipeline {
             return;
         Properties log4jconfig = new Properties();
         log4jconfig.setProperty("log4j.rootLogger", "error, R");
+        log4jconfig.setProperty("log4j.logger.org.genepattern", "DEBUG, R");
         log4jconfig.setProperty("log4j.threshold", "OFF");
         log4jconfig.setProperty("log4j.appender.R", "org.apache.log4j.RollingFileAppender");
         log4jconfig.setProperty("log4j.appender.R.File", logFile);
@@ -147,7 +148,7 @@ public class RunPipeline {
                 fis = new FileInputStream(genePatternPropertiesFile);
                 genepatternProps.load(fis);
             } catch (IOException x) {
-                System.err.println("Unable to open properties file.");
+                log.error("Unable to open properties file.");
             } finally {
                 if (fis != null) {
                     fis.close();
@@ -346,7 +347,7 @@ public class RunPipeline {
             taskInfo = adminClient.getTask(jobSubmission.getLSID());
             if (taskInfo == null) {
                 okayToRun = false;
-                System.err.println("No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID() + ")");
+                log.error("No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID() + ")");
                 decorator.error(model, "No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID()
                 + ")");
             }
@@ -390,9 +391,9 @@ public class RunPipeline {
                     results[taskNum] = taskResult;
                     
                 } catch (Exception e) {
-                    System.err.println("Execution for " + jobSubmission.getName() + " module failed.");
+                    log.error("Execution for " + jobSubmission.getName() + " module failed.");
                     if (e.getMessage() != null) {
-                        System.err.println(e.getMessage());
+                        log.error(e.getMessage());
                     }
                 }
             }
@@ -409,7 +410,7 @@ public class RunPipeline {
     /**
      * Notify the server of the pipeline's status (Process, Finished, etc)
      */
-    protected void setStatus(String status) throws Exception {  
+    protected void setStatus(String status) throws Exception {
         if(log.isDebugEnabled()) {
             log.debug(("Setting job# " + jobId + " status to " + status));
         }
@@ -510,10 +511,7 @@ public class RunPipeline {
         TaskInfo task = adminClient.getTask(lsidOrTaskName);
         
         if (task == null) {
-            System.err.println("Module " + lsidOrTaskName + " not found."); // write
-            // to
-            // stderr
-            // file
+            log.error("Module " + lsidOrTaskName + " not found."); // write
             return new JobInfo();
         }
         
@@ -685,11 +683,11 @@ public class RunPipeline {
         }
         if (fileName == null) {
             /*
-             * System.err.println("output files from job " + job.getJobNumber() +
+             * log.error("output files from job " + job.getJobNumber() +
              * ":"); for (j = 0; j < jobParams.length; j++) { if
              * (jobParams[j].isOutputFile()) { fn = jobParams[j].getValue(); //
              * get the filename File f = new File(jobDir, fn); try {
-             * System.err.println(f.getCanonicalPath() + " is a " +
+             * log.error(f.getCanonicalPath() + " is a " +
              * getFileType(f)); } catch (IOException ioe) {
              * ioe.printStackTrace(); } } }
              */
@@ -734,7 +732,7 @@ public class RunPipeline {
         BufferedReader inputB = null;
         try {
             if (!file.exists()) {
-                System.err.println("Can't find " + file.getCanonicalPath());
+                log.error("Can't find " + file.getCanonicalPath());
             }
             // System.out.println(file.getCanonicalPath());
             inputB = new BufferedReader(new FileReader(file));
@@ -747,7 +745,7 @@ public class RunPipeline {
                 model = modelLine.substring(modelLine.indexOf("=") + 1).trim();
             }
         } catch (IOException e) {
-            System.err.println("Error reading " + file);
+            log.error("Error reading " + file);
         } finally {
             if (inputB != null) {
                 try {

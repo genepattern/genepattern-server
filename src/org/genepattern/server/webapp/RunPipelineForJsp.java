@@ -225,6 +225,7 @@ public class RunPipelineForJsp {
         // commons-logging.jar; commons-discovery.jar;
         String tomcatLibDir = System.getProperty("tomcatCommonLib") + "/";
         String webappLibDir = System.getProperty("webappDir") + "/" + "WEB-INF" + "/" + "lib" + "/";
+        String webappClassesDir = System.getProperty("webappDir") + "/WEB-INF/classes";
         String resourcesDir = null;
         resourcesDir = new File(System.getProperty("resources"))
         .getAbsolutePath() + "/";
@@ -232,6 +233,7 @@ public class RunPipelineForJsp {
         cmdLine.add(JAVA_HOME + File.separator + "bin" + File.separator + "java");
         cmdLine.add("-cp");
         StringBuffer classPath = new StringBuffer();
+        classPath.append(webappClassesDir + File.pathSeparator);
         classPath.append(tomcatLibDir + "activation.jar" + File.pathSeparator);
         classPath.append(tomcatLibDir + "xerces.jar" + File.pathSeparator);
         classPath.append(tomcatLibDir + "saaj.jar" + File.pathSeparator);
