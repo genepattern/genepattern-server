@@ -153,6 +153,7 @@ import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
+import org.hibernate.HibernateException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -2612,9 +2613,9 @@ public class GenePatternAnalysisTask {
             if(log.isDebugEnabled()) {
                 log.debug("Waiting for process to complete: " + commandLine);
             }
-
+            
             process.waitFor();
- 
+            
             if(log.isDebugEnabled()) {
                 log.debug("Process completed: " + commandLine);
             }
@@ -4106,6 +4107,10 @@ public class GenePatternAnalysisTask {
      * updatePipelineStatus.jsp. The jobStatus constants are those defined in
      * edu.mit.wi.omnigene.framework.analysis.JobStatus
      *
+     * This method is called from runPipeline.jsp.  This is a long running jsp, it
+     * actually does not return a response until the pipeline completes.   We do not want
+     * to hold the update transaction open that long, so an explicit commit is done here.
+     *
      * @param jobNumber
      *            jobID of the pipeline whose status is to be updated
      * @param jobStatus
@@ -4124,14 +4129,40 @@ public class GenePatternAnalysisTask {
      */
     public static void updatePipelineStatus(int jobNumber, int jobStatus, String name, String additionalFilename)
     throws OmnigeneException, RemoteException {
-        if (name != null && additionalFilename != null) {
-            ParameterInfo additionalParam = new ParameterInfo();
-            additionalParam.setAsOutputFile();
-            additionalParam.setName(name);
-            additionalParam.setValue(additionalFilename);
-            updatePipelineStatus(jobNumber, jobStatus, new ParameterInfo[] { additionalParam });
-        } else {
-            updatePipelineStatus(jobNumber, jobStatus, null);
+        try {
+            if(log.isDebugEnabled()) {
+                log.debug("Updating pipeline status.  job# = " + jobNumber + "  status= " + jobStatus + " name= " + name);
+            }
+            if(!HibernateUtil.getSession().getTransaction().isActive()) {
+                HibernateUtil.beginTransaction();
+            }
+            
+            if (name != null && additionalFilename != null) {
+                ParameterInfo additionalParam = new ParameterInfo();
+                additionalParam.setAsOutputFile();
+                additionalParam.setName(name);
+                additionalParam.setValue(additionalFilename);
+                updatePipelineStatus(jobNumber, jobStatus, new ParameterInfo[] { additionalParam });
+            } else {
+                updatePipelineStatus(jobNumber, jobStatus, null);
+            }
+
+            HibernateUtil.commitTransaction();
+        } catch (HibernateException ex) {
+            log.error("Error updating status.   job# = " + jobNumber + "  status= " + jobStatus + " name= " + name, ex);
+            HibernateUtil.rollbackTransaction();
+            HibernateUtil.closeCurrentSession();
+            throw ex;
+        } catch (OmnigeneException ex) {
+            log.error("Error updating status.   job# = " + jobNumber + "  status= " + jobStatus + " name= " + name, ex);
+            HibernateUtil.rollbackTransaction();
+            HibernateUtil.closeCurrentSession();
+            throw ex;
+        } catch (RemoteException ex) {
+            log.error("Error updating status.   job# = " + jobNumber + "  status= " + jobStatus + " name= " + name, ex);
+            HibernateUtil.rollbackTransaction();
+            HibernateUtil.closeCurrentSession();
+            throw ex;
         }
     }
     

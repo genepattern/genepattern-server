@@ -20,7 +20,7 @@
     <property name="parameterInfo" type="string"> 
       <column name="PARAMETER_INFO" sql-type="LONGVARCHAR"/>
     </property>
-    <many-to-one name="jobStatus" lazy="false" entity-name="org.genepattern.server.domain.JobStatus" cascade="none" foreign-key="SYS_C00155799"> 
+    <many-to-one name="jobStatus" lazy="false" entity-name="org.genepattern.server.domain.JobStatus" cascade="none"> 
       <column name="STATUS_ID" precision="10" scale="0"/>
     </many-to-one>
   </class>
