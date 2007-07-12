@@ -25,9 +25,7 @@
 		 org.genepattern.util.LSIDUtil,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.data.pipeline.PipelineModel,org.genepattern.server.webapp.jsf.AuthorizationHelper,java.io.File,java.io.FilenameFilter,java.net.MalformedURLException,java.net.URLEncoder,java.util.Arrays,java.util.Collection,java.util.Collections,java.util.Comparator,java.util.HashMap,java.util.HashSet,java.util.Iterator,java.util.Properties,java.util.List,java.util.Set,java.util.TreeSet,java.util.TreeMap,java.util.Vector"
-	session="false" contentType="text/html" language="Java" buffer="50kb" %>
-<jsp:useBean id="messages" class="org.genepattern.server.util.MessageUtils" scope="page"/>
-
+	session="false" contentType="text/html" language="Java" %>
 
 <%
 try {

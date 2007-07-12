@@ -1,5 +1,4 @@
 <%@ page import="org.genepattern.server.webapp.jsf.AuthorizationHelper" %>
-<jsp:useBean id="genepatternProperties" scope="application" class="org.genepattern.server.webapp.jsf.GenepatternProperties" />
 <link href="<%=request.getContextPath()%>/css/style.css" rel="stylesheet" type="text/css" />
 <script type="text/javascript" language="javascript">
   var contextRoot = "<%=request.getContextPath()%>/";

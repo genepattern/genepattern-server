@@ -9,7 +9,7 @@
   whatsoever. Neither the Broad Institute nor MIT can be responsible for its
   use, misuse, or functionality.
 */ -->
-
+<%@ page import="org.genepattern.server.util.MessageUtils" %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -21,9 +21,11 @@
 .example { font-family: Courier, Courier New, serif; font-size: 10pt; }
 .exampleLink { font-family: Courier, Courier New, serif; font-size: 10pt; color: blue; text-decoration: underline}
 </style>
+<%
+MessageUtils messages = new MessageUtils();
+%>
 <jsp:include page="navbarHead.jsp"/>
 </head>
-<jsp:useBean id="messages" class="org.genepattern.server.util.MessageUtils" scope="page"/>
 
 <body>
 <jsp:include page="navbar.jsp"/>
