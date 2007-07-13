@@ -470,9 +470,6 @@ everyone's jobs <input type="checkbox" name="<%= SHOW_LOGS %>"
 </html>
 <%!public void writeParameters(String encodedUserId, List params, boolean showAll, String prefix, String serverURL,
             JspWriter out) throws java.io.IOException {
-
-        IAuthorizationManager authorizationManager = AuthorizationManagerFactory.getAuthorizationManager();
-
         for (int i = 0; i < params.size(); i++) {
             ParameterInfo parameterInfo = (ParameterInfo) params.get(i);
             String value = parameterInfo.getValue();
