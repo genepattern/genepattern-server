@@ -112,9 +112,9 @@ public class RunPipeline {
     public static String logFile = "../../../../logs/pipelineErrors.log";
     
     public static void setupLog4jConfig() {
-        String override = System.getProperty("log4j.properties");
-        if (override != null)
-            return;
+        //String override = System.getProperty("log4j.properties");
+        //if (override != null)
+        //    return;
         Properties log4jconfig = new Properties();
         log4jconfig.setProperty("log4j.rootLogger", "error, R");
         log4jconfig.setProperty("log4j.logger.org.genepattern", "DEBUG, R");
