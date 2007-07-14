@@ -465,6 +465,7 @@ public class Analysis extends GenericWebService {
      */
     public void setJobStatus(int jobId, String status) throws WebServiceException {
         try {
+            
             isJobOwnerOrAuthorized(getUsernameFromContext(), jobId);
 
             AnalysisDAO ds = new AnalysisDAO();
@@ -551,7 +552,7 @@ public class Analysis extends GenericWebService {
             isJobOwnerOrAuthorized(getUsernameFromContext(), jobId);
             AnalysisDAO ds = new AnalysisDAO();
 
-            Process p = org.genepattern.server.genepattern.GenePatternAnalysisTask.removeProcessFromHash("" + jobId);
+            Process p = org.genepattern.server.genepattern.GenePatternAnalysisTask.terminatePipeline("" + jobId);
             if (p != null) {
                 setJobStatus(jobId, JobStatus.ERROR);
             }

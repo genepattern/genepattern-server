@@ -518,7 +518,7 @@ function toggleTask(idx, visibility) {
 
                     if (jobID != UNDEFINED) {
                         GenePatternAnalysisTask.updatePipelineStatus(jobID, JobStatus.JOB_ERROR, null);
-                        GenePatternAnalysisTask.removeProcessFromHash(Integer.toString(jobID));
+                        GenePatternAnalysisTask.terminatePipeline(Integer.toString(jobID));
                     }
                     return;
                 } finally {
@@ -536,7 +536,7 @@ function toggleTask(idx, visibility) {
                 out.println("</pre><br>");
                 if (jobID != UNDEFINED) {
                     GenePatternAnalysisTask.updatePipelineStatus(jobID, JobStatus.JOB_ERROR, null);
-                    GenePatternAnalysisTask.removeProcessFromHash(Integer.toString(jobID));
+                    GenePatternAnalysisTask.terminatePipeline(Integer.toString(jobID));
                 }
             }
 %>

@@ -321,9 +321,7 @@ public class RunPipeline {
      *            maps parameter name to parameter value
      */
     public void runPipeline(Map args) throws Exception {
-        
-        HibernateUtil.beginTransaction();
-        
+                
         setStatus(JobStatus.PROCESSING);
         String stopAfterTaskStr = System.getProperty(GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM);
         int stopAfterTask = Integer.MAX_VALUE;
@@ -786,13 +784,9 @@ public class RunPipeline {
         
         TaskInfo tinfo = svc.getTaskInfo();
         final JobInfo job = analysisClient.submitJobNoWakeup(tinfo.getID(), parmInfos, jobId);
-        HibernateUtil.commitTransaction();
-        HibernateUtil.beginTransaction();
-        
+         
         final AnalysisJob aJob = new AnalysisJob(svc.getServer(), job);
-        HibernateUtil.commitTransaction();
-        HibernateUtil.beginTransaction();
-        
+         
         return aJob;
     }
     
@@ -822,10 +816,10 @@ public class RunPipeline {
             count++;
             Thread.currentThread().sleep(sleep);
             
-            HibernateUtil.commitTransaction();
             HibernateUtil.beginTransaction();
             info = analysisClient.checkStatus(job.getJobInfo().getJobNumber());
             status = info.getStatus();
+            HibernateUtil.commitTransaction();
             
             // if (count > maxTries) break;
             sleep = incrementSleep(initialSleep, maxTries, count);

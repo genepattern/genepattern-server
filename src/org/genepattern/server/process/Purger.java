@@ -43,7 +43,7 @@ public class Purger extends TimerTask {
     public void run() {
         if (purgeInterval != -1) {
             try {
-                HibernateUtil.getSession().beginTransaction();
+                HibernateUtil.beginTransaction();
 
                 // find all purgeable jobs
                 GregorianCalendar gcPurgeDate = new GregorianCalendar();
@@ -93,7 +93,7 @@ public class Purger extends TimerTask {
                     }
                 }
 
-                HibernateUtil.getSession().getTransaction().commit();
+                HibernateUtil.commitTransaction();
 
                 try {
                     Indexer.optimize(Indexer.getIndexDir());
@@ -108,7 +108,7 @@ public class Purger extends TimerTask {
 
             }
             catch (Exception e) {
-                HibernateUtil.getSession().getTransaction().rollback();
+                HibernateUtil.rollbackTransaction();
                 log.error("Error while purging jobs", e);
             }
             finally {

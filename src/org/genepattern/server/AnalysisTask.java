@@ -94,12 +94,14 @@ public class AnalysisTask implements Runnable {
             synchronized (jobQueueWaitObject) {
                 
                 if (jobQueue.isEmpty()) {
+                    // Fetch another batch of jobs.
                     try {
                         HibernateUtil.beginTransaction();
                         jobQueue = genePattern.getWaitingJobs();
                         HibernateUtil.commitTransaction();
-                    } finally {
-                        HibernateUtil.closeCurrentSession();
+                    } catch(RuntimeException e) {
+                        HibernateUtil.rollbackTransaction();
+                        log.error("Error getting waiting jobs" , e);
                     }
                 }
                 
@@ -192,12 +194,14 @@ public class AnalysisTask implements Runnable {
         }
         
         public void run() {
+            
             if(log.isDebugEnabled()) {
                 JobInfo ji = (JobInfo) obj;
                 log.debug("Starting job thread for: " + ji.getJobNumber() + " (" + ji.getTaskName() + ")");
             }
             genePattern.onJob(obj);// run job
             doRelease();// signal completion of thread
+            
         }
     }
     

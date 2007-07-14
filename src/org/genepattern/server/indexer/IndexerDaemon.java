@@ -112,7 +112,7 @@ public class IndexerDaemon implements Runnable {
                 do {
                     didWork = false;
 
-                    HibernateUtil.getSession().beginTransaction();
+                    HibernateUtil.beginTransaction();
                     ResultSet rs = null;
                     
                     
@@ -158,11 +158,11 @@ public class IndexerDaemon implements Runnable {
                         }
                         rs.close();
                         rs = null;
-                        HibernateUtil.getSession().getTransaction().commit();
+                        HibernateUtil.commitTransaction();
                     }
                     catch (Exception e) {
                         log.error(e);
-                        HibernateUtil.getSession().getTransaction().rollback();
+                        HibernateUtil.rollbackTransaction();
                     }
                     finally {
                         if(rs != null) rs.close();

@@ -1038,7 +1038,9 @@ public class GenePatternAnalysisTask {
             
             // reload jobInfo to pick up any output parameters were added by the
             // job explicitly (eg. pipelines)
+            HibernateUtil.beginTransaction();
             jobInfo = (new AnalysisDAO()).getJobInfo(jobInfo.getJobNumber());
+            HibernateUtil.commitTransaction();
             
             // touch the taskLog file to make sure it is the oldest/last file
             if (taskLog != null) {
@@ -1071,6 +1073,7 @@ public class GenePatternAnalysisTask {
             });
             
             parentJobInfo = getParentJobInfo(jobInfo.getJobNumber());
+           
             for (int i = 0; i < outputFiles.length; i++) {
                 File f = outputFiles[i];
                 log.debug("adding output file to output parameters " + f.getName() + " from " + outDirName);
@@ -1149,8 +1152,6 @@ public class GenePatternAnalysisTask {
         } catch (RuntimeException e) {
             log.error("Rolling back transaction", e);
             HibernateUtil.rollbackTransaction();
-        } finally {
-            HibernateUtil.closeCurrentSession();
         }
     }
     
@@ -1203,9 +1204,12 @@ public class GenePatternAnalysisTask {
             if (taskInfo == null) {
                 throw new Exception("No such taskID (" + jobInfo.getTaskID() + " for job " + jobInfo.getJobNumber());
             }
+            HibernateUtil.commitTransaction();
             return taskInfo;
-        } finally {
-            HibernateUtil.closeCurrentSession();
+        } catch(RuntimeException e) {
+            log.error("Error getting taskInfo for job: " + jobInfo.getJobNumber());
+            HibernateUtil.rollbackTransaction();
+            throw e;
         }
     }
     
@@ -1218,6 +1222,7 @@ public class GenePatternAnalysisTask {
      */
     private void updateJobInfo(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, Date completionDate) {
         log.debug("Updating jobInfo");
+        
         AnalysisJobDAO home = new AnalysisJobDAO();
         
         AnalysisJob aJob = home.findById(jobInfo.getJobNumber());
@@ -1239,18 +1244,17 @@ public class GenePatternAnalysisTask {
             parentJob.setCompletedDate(completionDate);
         }
         
-        
-        log.debug("Finished updating jobInfo");
-        
     }
     
     private JobInfo getParentJobInfo(int jobNumber) {
         try {
-            HibernateUtil.getSession().beginTransaction();
+            HibernateUtil.beginTransaction();
             JobInfo parentJI = getDS().getParent(jobNumber);
+            HibernateUtil.commitTransaction();
             return parentJI;
-        } finally {
-            HibernateUtil.closeCurrentSession();
+        } catch (RuntimeException e) {
+           HibernateUtil.rollbackTransaction();
+           throw e;
         }
     }
     
@@ -4038,15 +4042,26 @@ public class GenePatternAnalysisTask {
      * @see #startPipeline(String,Process)
      * @see #terminatePipeline(String)
      */
-    public static JobInfo createPipelineJob(String userID, String parameter_info, String pipelineName, String lsid)
-    throws OmnigeneException, RemoteException {
-        
-        log.debug("Creating pipeline job");
-        Integer jobNo = getDS().addNewJob(BaseDAO.UNPROCESSABLE_TASKID, userID, parameter_info, pipelineName, null,
-                lsid);
-        log.debug("New job #: " + jobNo);
-        JobInfo job = getDS().getJobInfo(jobNo);
-        log.debug("New job task: " + job.getTaskID());
+    public static JobInfo createPipelineJob(String userID, String parameter_info, String pipelineName, String lsid) {
+        JobInfo job;
+        try {
+            HibernateUtil.beginTransaction();
+            if(log.isDebugEnabled()) {
+                log.debug("Creating pipeline job");
+            }
+            Integer jobNo = getDS().addNewJob(BaseDAO.UNPROCESSABLE_TASKID, userID, parameter_info, pipelineName, null,
+                    lsid);
+            job = getDS().getJobInfo(jobNo);
+            
+            if(log.isDebugEnabled()) {
+                log.debug("New pipeline jobNo= " + jobNo);
+            }
+            HibernateUtil.commitTransaction();
+        } catch(RuntimeException e) {
+            log.error("Error creating pipeline.", e);
+            HibernateUtil.rollbackTransaction();
+            throw e;
+        }
         
         return job;
     }
@@ -4067,9 +4082,12 @@ public class GenePatternAnalysisTask {
     /**
      * Changes the JobStatus of a pipeline job, and appends zero or more output
      * parameters (output filenames) to the JobInfo ParameterInfo array for
-     * eventual return to the invoker. This routine is actually invoked from
-     * updatePipelineStatus.jsp. The jobStatus constants are those defined in
+     * eventual return to the invoker. The jobStatus constants are those defined in
      * edu.mit.wi.omnigene.framework.analysis.JobStatus
+     *
+     * This method gets called from many threads which might or might not
+     * be wrapped in transactions.  This needs to be committed immediately
+     * since other threads or processes might be waiting on the update.
      *
      * @param jobNumber
      *            jobID of the pipeline whose status is to be updated
@@ -4087,17 +4105,26 @@ public class GenePatternAnalysisTask {
      */
     public static void updatePipelineStatus(int jobNumber, int jobStatus, ParameterInfo[] additionalParams)
     throws OmnigeneException, RemoteException {
-        
-        JobInfo jobInfo = getDS().getJobInfo(jobNumber);
-        if (additionalParams != null) {
-            for (int i = 0; i < additionalParams.length; i++) {
-                jobInfo.addParameterInfo(additionalParams[i]);
+        if(log.isDebugEnabled()) {
+            log.debug("Updating pipeline status.  job# = " + jobNumber);
+        }
+        try {
+            HibernateUtil.beginTransaction();
+            JobInfo jobInfo = getDS().getJobInfo(jobNumber);
+            if (additionalParams != null) {
+                for (int i = 0; i < additionalParams.length; i++) {
+                    jobInfo.addParameterInfo(additionalParams[i]);
+                }
             }
+            if (jobStatus < JobStatus.JOB_PENDING) {
+                jobStatus = ((Integer) JobStatus.STATUS_MAP.get(jobInfo.getStatus())).intValue();
+            }
+            getDS().updateJob(jobNumber, jobInfo.getParameterInfo(), jobStatus);
+            HibernateUtil.commitTransaction();
+        } catch (OmnigeneException ex) {
+            log.error("Error updating pipeline status.  jobNumber=" + jobNumber);
+            HibernateUtil.rollbackTransaction();
         }
-        if (jobStatus < JobStatus.JOB_PENDING) {
-            jobStatus = ((Integer) JobStatus.STATUS_MAP.get(jobInfo.getStatus())).intValue();
-        }
-        getDS().updateJob(jobNumber, jobInfo.getParameterInfo(), jobStatus);
     }
     
     /**
@@ -4106,10 +4133,6 @@ public class GenePatternAnalysisTask {
      * for eventual return to the invoker. This routine is actually invoked from
      * updatePipelineStatus.jsp. The jobStatus constants are those defined in
      * edu.mit.wi.omnigene.framework.analysis.JobStatus
-     *
-     * This method is called from runPipeline.jsp.  This is a long running jsp, it
-     * actually does not return a response until the pipeline completes.   We do not want
-     * to hold the update transaction open that long, so an explicit commit is done here.
      *
      * @param jobNumber
      *            jobID of the pipeline whose status is to be updated
@@ -4129,40 +4152,15 @@ public class GenePatternAnalysisTask {
      */
     public static void updatePipelineStatus(int jobNumber, int jobStatus, String name, String additionalFilename)
     throws OmnigeneException, RemoteException {
-        try {
-            if(log.isDebugEnabled()) {
-                log.debug("Updating pipeline status.  job# = " + jobNumber + "  status= " + jobStatus + " name= " + name);
-            }
-            if(!HibernateUtil.getSession().getTransaction().isActive()) {
-                HibernateUtil.beginTransaction();
-            }
-            
-            if (name != null && additionalFilename != null) {
-                ParameterInfo additionalParam = new ParameterInfo();
-                additionalParam.setAsOutputFile();
-                additionalParam.setName(name);
-                additionalParam.setValue(additionalFilename);
-                updatePipelineStatus(jobNumber, jobStatus, new ParameterInfo[] { additionalParam });
-            } else {
-                updatePipelineStatus(jobNumber, jobStatus, null);
-            }
-
-            HibernateUtil.commitTransaction();
-        } catch (HibernateException ex) {
-            log.error("Error updating status.   job# = " + jobNumber + "  status= " + jobStatus + " name= " + name, ex);
-            HibernateUtil.rollbackTransaction();
-            HibernateUtil.closeCurrentSession();
-            throw ex;
-        } catch (OmnigeneException ex) {
-            log.error("Error updating status.   job# = " + jobNumber + "  status= " + jobStatus + " name= " + name, ex);
-            HibernateUtil.rollbackTransaction();
-            HibernateUtil.closeCurrentSession();
-            throw ex;
-        } catch (RemoteException ex) {
-            log.error("Error updating status.   job# = " + jobNumber + "  status= " + jobStatus + " name= " + name, ex);
-            HibernateUtil.rollbackTransaction();
-            HibernateUtil.closeCurrentSession();
-            throw ex;
+        
+        if (name != null && additionalFilename != null) {
+            ParameterInfo additionalParam = new ParameterInfo();
+            additionalParam.setAsOutputFile();
+            additionalParam.setName(name);
+            additionalParam.setValue(additionalFilename);
+            updatePipelineStatus(jobNumber, jobStatus, new ParameterInfo[] { additionalParam });
+        } else {
+            updatePipelineStatus(jobNumber, jobStatus, null);
         }
     }
     
@@ -4181,7 +4179,7 @@ public class GenePatternAnalysisTask {
      * @return Process of the pipeline if running, else null
      * @author Jim Lerner
      */
-    public static Process removeProcessFromHash(String jobID) {
+    public static Process terminatePipeline(String jobID) {
         Process p = (Process) htRunningPipelines.remove(jobID);
         if (p != null) {
             p.destroy();
@@ -4202,7 +4200,7 @@ public class GenePatternAnalysisTask {
         for (eJobs = htRunningPipelines.keys(); eJobs.hasMoreElements();) {
             jobID = (String) eJobs.nextElement();
             log.info("Terminating job " + jobID);
-            Process p = removeProcessFromHash(jobID);
+            Process p = terminatePipeline(jobID);
             if (p != null) {
                 try {
                     updatePipelineStatus(Integer.parseInt(jobID), JobStatus.JOB_ERROR, null);

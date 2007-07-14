@@ -104,7 +104,7 @@ public class AdminDAO extends BaseDAO {
         try {
 
             if (!HibernateUtil.getSession().getTransaction().isActive()) {
-                HibernateUtil.getSession().beginTransaction();
+                HibernateUtil.beginTransaction();
             }
 
             LSID lsid = new LSID(lsidOrTaskName);
@@ -222,7 +222,7 @@ public class AdminDAO extends BaseDAO {
             }
 
             if (startTransaction) {
-                HibernateUtil.getSession().getTransaction().commit();
+                HibernateUtil.commitTransaction();
             }
 
             return latestTask;

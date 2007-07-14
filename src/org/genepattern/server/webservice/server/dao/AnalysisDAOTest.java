@@ -27,7 +27,7 @@ public class AnalysisDAOTest extends DAOTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         System.out.println("start");
-        HibernateUtil.getSession().beginTransaction();
+        HibernateUtil.beginTransaction();
         System.out.println(HibernateUtil.getSession().getTransaction().isActive());
     }
 
@@ -36,7 +36,7 @@ public class AnalysisDAOTest extends DAOTestCase {
         super.tearDown();
         System.out.println("rollback");
         System.out.println(HibernateUtil.getSession().getTransaction().isActive());
-        HibernateUtil.getSession().getTransaction().rollback();
+        HibernateUtil.rollbackTransaction();
     }
 
     /**

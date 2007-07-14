@@ -159,8 +159,6 @@ public class LocalAnalysisClient {
             if(log.isDebugEnabled()) {
                 log.debug("submitJobNoWakeup.  parentJobNumber= " + parentJobNumber + " taskId= " + taskID);
             }
-            HibernateUtil.commitTransaction();
-            HibernateUtil.beginTransaction();
             
             Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
             // sometimes empty
@@ -174,7 +172,6 @@ public class LocalAnalysisClient {
             AddNewJobHandler req = new AddNewJobHandlerNoWakeup(taskID, userName, parameters, parentJobNumber);
             jobInfo = req.executeRequest();
             
-            HibernateUtil.commitTransaction();
             if(log.isDebugEnabled()) {
                 log.debug("Returning jobInfo  jobNumber= " + jobInfo.getJobNumber() + " taskName= " + jobInfo.getTaskName());
             }
@@ -183,7 +180,7 @@ public class LocalAnalysisClient {
             e.printStackTrace();
             throw new WebServiceException(e);
         } finally {
-            HibernateUtil.closeCurrentSession();
+            //HibernateUtil.closeCurrentSession();
         }
     }
     
@@ -222,7 +219,9 @@ public class LocalAnalysisClient {
     public void setJobStatus(int parentJobId, String status) throws WebServiceException {
         
         try {
-            HibernateUtil.commitTransaction();
+            if(log.isDebugEnabled()) {
+                log.debug("setJobStatus   parentJobId= " + parentJobId + " status= " + status);
+            }
             HibernateUtil.beginTransaction();
             
             service.setJobStatus(parentJobId, status);
@@ -230,11 +229,10 @@ public class LocalAnalysisClient {
             HibernateUtil.commitTransaction();
             
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error setting job status.  parentJobId= " + parentJobId);
+            HibernateUtil.rollbackTransaction();
             throw new WebServiceException(e);
-        } finally {
-            HibernateUtil.closeCurrentSession();
-        }
+        } 
     }
     
     public Analysis getService() {

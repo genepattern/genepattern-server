@@ -199,7 +199,7 @@ public class RunPipelineForJsp {
     public static void stopPipeline(String jobID) throws Exception {
         Process p = null;
         for (int i = 0; i < 10; i++) {
-            p = GenePatternAnalysisTask.removeProcessFromHash(jobID);
+            p = GenePatternAnalysisTask.terminatePipeline(jobID);
             if (p != null) {
                 break;
             }
@@ -363,6 +363,10 @@ public class RunPipelineForJsp {
     
     public static Process runPipeline(TaskInfo taskInfo, String name, String baseURL, String decorator, String userID,
             HashMap commandLineParams) throws Exception {
+        
+        if(log.isDebugEnabled()) {
+            log.debug("Begin runPipeline.  name= " + name);
+        }
         Map tia = taskInfo.getTaskInfoAttributes();
         String lsid = (String) tia.get(GPConstants.LSID);
         
@@ -371,8 +375,6 @@ public class RunPipelineForJsp {
         // Create the job record.  The transaction is commited here because the jsp response is not completed
         // until the pipeline terminates.  Thus we can't wait for the request filter to do the commit.
         JobInfo jobInfo = GenePatternAnalysisTask.createPipelineJob(userID, params, taskInfo.getName(), lsid);
-        HibernateUtil.commitTransaction();
-        HibernateUtil.beginTransaction();
         
         jobID = jobInfo.getJobNumber();
         String pipelineShortName = taskInfo.getName();
@@ -731,7 +733,7 @@ public class RunPipelineForJsp {
                     log.debug("Start WaitForCompletionThread");
                 }
                 process.waitFor();
-                GenePatternAnalysisTask.removeProcessFromHash(Integer.toString(jobID));
+                GenePatternAnalysisTask.terminatePipeline(Integer.toString(jobID));
                 if(log.isDebugEnabled()) {
                     log.debug("Finish WaitForCompletionThread");
                 }
@@ -739,11 +741,17 @@ public class RunPipelineForJsp {
                 try {
                     log.error("Error in WaitForCompletionThread", e);
                     GenePatternAnalysisTask.updatePipelineStatus(jobID, JobStatus.JOB_ERROR, null);
-                    GenePatternAnalysisTask.removeProcessFromHash(Integer
+                    GenePatternAnalysisTask.terminatePipeline(Integer
                             .toString(jobID));
                 } catch (Exception ee) {
                     // ignore
                 }
+            }
+            finally {
+                // Close the session for this thread.  This should be in the 
+                // finally block of every thread that might open a 
+                // hibernate session.
+                HibernateUtil.closeCurrentSession();
             }
         }
     }

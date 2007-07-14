@@ -15,6 +15,7 @@ package org.genepattern.server.handler;
 import org.apache.log4j.Logger;
 import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.TaskIDNotFoundException;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
@@ -102,7 +103,9 @@ public class AddNewJobHandler extends RequestHandler {
             }
             ParameterFormatConverter pfc = new ParameterFormatConverter();
             parameter_info = pfc.getJaxbString(parameterInfoArray);
-            // Get EJB reference
+            
+            // Insert job record.  Transaction is committed to avoid deadlock.
+            HibernateUtil.beginTransaction();
             AnalysisDAO ds = new AnalysisDAO();
             // Invoke EJB function
             if (hasParent) {
@@ -110,6 +113,8 @@ public class AddNewJobHandler extends RequestHandler {
             } else {
                 ji = ds.addNewJob(taskID, userID, parameter_info, -1);
             }
+            HibernateUtil.commitTransaction();
+            
             // Checking for null
             if (ji == null) throw new OmnigeneException(
                     "AddNewJobRequest:executeRequest Operation failed, null value returned for JobInfo");
@@ -121,11 +126,12 @@ public class AddNewJobHandler extends RequestHandler {
             // Reparse parameter_info before sending to client
             ji.setParameterInfoArray(pfc.getParameterInfoArray(parameter_info));
         } catch (TaskIDNotFoundException taskEx) {
-            System.out.println("AddNewJob(executeRequest): TaskIDNotFoundException " + taskID);
+            HibernateUtil.rollbackTransaction();
+            log.error("AddNewJob(executeRequest) " + taskID, taskEx);
             throw taskEx;
         } catch (Exception ex) {
-            System.out.println("AddNewJob(executeRequest): Error " + ex.getMessage());
-            ex.printStackTrace();
+            HibernateUtil.rollbackTransaction();
+            log.error("AddNewJob(executeRequest): Error ",  ex);
             throw new OmnigeneException(ex.getMessage());
         }
         

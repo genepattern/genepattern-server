@@ -42,9 +42,9 @@ public class HsqlDbUtil {
 		}
 		org.hsqldb.Server.main(argsArray);
 
-        HibernateUtil.getSession().beginTransaction();
+        HibernateUtil.beginTransaction();
         updateSchema();
-        HibernateUtil.getSession().getTransaction().commit();
+        HibernateUtil.commitTransaction();
     }
 
     public static void shutdownDatabase() {
