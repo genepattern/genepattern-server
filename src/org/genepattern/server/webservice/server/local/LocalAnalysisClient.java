@@ -198,19 +198,13 @@ public class LocalAnalysisClient {
      */
     public JobInfo checkStatus(int jobID) throws WebServiceException {
         try {
-            HibernateUtil.commitTransaction();
-            HibernateUtil.beginTransaction();
             
             JobInfo j = service.checkStatus(jobID);
-            
-            HibernateUtil.commitTransaction();
             return j;
         } catch (Exception e) {
             e.printStackTrace();
             throw new WebServiceException(e);
-        } finally {
-            HibernateUtil.closeCurrentSession();
-        }
+        } 
     }
     public JobInfo recordClientJob(int taskID, ParameterInfo[] params, int parentJobNumber) throws WebServiceException {
         return service.recordClientJob(taskID, params, parentJobNumber);

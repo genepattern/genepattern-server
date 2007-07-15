@@ -44,6 +44,7 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
@@ -817,7 +818,7 @@ public class RunPipeline {
             Thread.currentThread().sleep(sleep);
             
             HibernateUtil.beginTransaction();
-            info = analysisClient.checkStatus(job.getJobInfo().getJobNumber());
+            info = (new AnalysisDAO()).getJobInfo(job.getJobInfo().getJobNumber());
             status = info.getStatus();
             HibernateUtil.commitTransaction();
             
