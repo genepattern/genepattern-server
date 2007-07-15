@@ -1,7 +1,7 @@
 package org.genepattern.server.handler;
 
-import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.TaskIDNotFoundException;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
@@ -60,15 +60,16 @@ public class AddNewJobHandlerNoWakeup extends AddNewJobHandler {
         try {
             ParameterFormatConverter pfc = new ParameterFormatConverter();
             parameter_info = pfc.getJaxbString(parameterInfoArray);
-            // Get EJB reference
+            
+            HibernateUtil.beginTransaction();
             AnalysisDAO ds = new AnalysisDAO();
-            // Invoke EJB function
             if (hasParent) {
                 ji = ds.addNewJob(taskID, userID, parameter_info, parentJobID);
             }
             else {
                 ji = ds.addNewJob(taskID, userID, parameter_info, -1);
             }
+            HibernateUtil.commitTransaction();
             // Checking for null
             if (ji == null) throw new OmnigeneException(
                     "AddNewJobRequest:executeRequest Operation failed, null value returned for JobInfo");
@@ -81,10 +82,12 @@ public class AddNewJobHandlerNoWakeup extends AddNewJobHandler {
             ji.setParameterInfoArray(pfc.getParameterInfoArray(parameter_info));
         }
         catch (TaskIDNotFoundException taskEx) {
+            HibernateUtil.rollbackTransaction();
             System.out.println("AddNewJob(executeRequest): TaskIDNotFoundException " + taskID);
             throw taskEx;
         }
         catch (Exception ex) {
+            HibernateUtil.rollbackTransaction();
             System.out.println("AddNewJob(executeRequest): Error " + ex.getMessage());
             ex.printStackTrace();
             throw new OmnigeneException(ex.getMessage());
