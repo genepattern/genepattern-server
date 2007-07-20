@@ -703,8 +703,8 @@ public class HTMLPipelineView {
 					.write("<input type=\"hidden\" name=\"cmd\" value=\"save\">\n");
 			writer
 					.write("<input type=\"button\" value=\"Save\" name=\"save\" onclick=\"savePipeline(true, 'save')\" class=\"little\">&nbsp;&nbsp");
-			writer
-					.write("<input type=\"button\" value=\"Run\" name=\"run\" onclick=\"savePipeline(false, 'run')\" class=\"little\">");
+//			writer
+//					.write("<input type=\"button\" value=\"Run\" name=\"run\" onclick=\"savePipeline(false, 'run')\" class=\"little\">");
 			writer.write("</center>\n");
 			writer.write("</form>");
 			writer.write("<script language=\"Javascript\">\n");
