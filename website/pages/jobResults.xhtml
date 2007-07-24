@@ -301,6 +301,7 @@ document.location.href=location;
           <td>&#160;</td>
           <td>&#160;</td>
           <td>&#160;</td>
+          <h:outputText rendered="#{jobsBean.showEveryonesJobs}"><td>&#160;</td></h:outputText>
         </tr>
 
         <tr class="tableheader-row">
@@ -318,6 +319,10 @@ document.location.href=location;
           <td>
             <div align="center">&#160;status&#160;</div>
           </td>
+       	  <h:outputText rendered="#{jobsBean.showEveryonesJobs}"><td>username&#160;</td></h:outputText>
+          	
+          
+          
         </tr>
 
         <!--  Loop through job list -->
@@ -362,6 +367,7 @@ document.location.href=location;
           <td>&#160;</td>
           <td>&#160;</td>
           <td>&#160;</td>
+          <h:outputText rendered="#{jobsBean.showEveryonesJobs}"><td>&#160;</td></h:outputText>
         </tr>
       </table>
       <p>&#160;</p>

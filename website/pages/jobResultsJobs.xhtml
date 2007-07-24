@@ -80,6 +80,10 @@
       <td>
         <div align="center" class="status-#{jobWrapper.status}">#{jobWrapper.status}</div>
       </td>
+      
+      <h:outputText rendered="#{jobsBean.showEveryonesJobs}">
+      	<td>#{jobWrapper.userId}</td>
+      </h:outputText>
     </tr>
     <!--  End job row  -->
 
