@@ -29,190 +29,201 @@ public class UIBeanHelper {
     }
 
     public static Map getSessionMap() {
-        return FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
+	return FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
     }
 
     public static Map getRequestMap() {
-        return FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
+	return FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
     }
 
     public static FacesContext getFacesContext() {
-        return FacesContext.getCurrentInstance();
+	return FacesContext.getCurrentInstance();
     }
 
     public static ExternalContext getExternalContext() {
-        return FacesContext.getCurrentInstance().getExternalContext();
+	return FacesContext.getCurrentInstance().getExternalContext();
     }
 
     public static HttpServletRequest getRequest() {
-        HttpServletRequest request = (HttpServletRequest) getExternalContext().getRequest();
-        return request;
+	HttpServletRequest request = (HttpServletRequest) getExternalContext().getRequest();
+	return request;
     }
 
     public static HttpSession getSession() {
-        return getRequest().getSession();
+	return getRequest().getSession();
     }
 
     public static HttpSession getSession(boolean create) {
-        return getRequest().getSession(create);
+	return getRequest().getSession(create);
     }
 
     public static HttpServletResponse getResponse() {
-        return (HttpServletResponse) getExternalContext().getResponse();
+	return (HttpServletResponse) getExternalContext().getResponse();
     }
 
     public static Object getManagedBean(String elExpression) {
-        return getFacesContext().getApplication().createValueBinding(elExpression).getValue(getFacesContext());
+	return getFacesContext().getApplication().createValueBinding(elExpression).getValue(getFacesContext());
     }
 
     public static void setInfoMessage(String summary) {
-        getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
+	getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
     }
 
     public static void setErrorMessage(String summary) {
-        getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, summary, null));
+	getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, summary, null));
     }
 
     public static void setInfoMessage(UIComponent component, String summary) {
-        getFacesContext().addMessage(component.getClientId(getFacesContext()),
-                new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
+	getFacesContext().addMessage(component.getClientId(getFacesContext()),
+		new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
     }
 
     public static void printAttributes() {
-        System.out.println("Attributes:");
-        Enumeration en = getRequest().getAttributeNames();
-        while (en.hasMoreElements()) {
-            String name = (String) en.nextElement();
-            System.out.print(name + " -> ");
-            System.out.println(getRequest().getAttribute(name));
+	System.out.println("Attributes:");
+	Enumeration en = getRequest().getAttributeNames();
+	while (en.hasMoreElements()) {
+	    String name = (String) en.nextElement();
+	    System.out.print(name + " -> ");
+	    System.out.println(getRequest().getAttribute(name));
 
-        }
+	}
     }
 
     public static void printParameters() {
-        System.out.println("Parameters: ");
-        Enumeration en = getRequest().getParameterNames();
-        while (en.hasMoreElements()) {
-            String name = (String) en.nextElement();
-            System.out.print(name + " -> ");
-            for (String value : getRequest().getParameterValues(name)) {
-                System.out.print(value + " ");
-            }
-            System.out.println();
-        }
+	System.out.println("Parameters: ");
+	Enumeration en = getRequest().getParameterNames();
+	while (en.hasMoreElements()) {
+	    String name = (String) en.nextElement();
+	    System.out.print(name + " -> ");
+	    for (String value : getRequest().getParameterValues(name)) {
+		System.out.print(value + " ");
+	    }
+	    System.out.println();
+	}
     }
 
     public static String getReferrer(HttpServletRequest request) {
-        String referrer = (String) request.getSession().getAttribute("origin");
-        request.getSession().removeAttribute("origin");
-        if (referrer == null || referrer.length() == 0) {
-            referrer = request.getParameter("origin");
-        }
+	String referrer = (String) request.getSession().getAttribute("origin");
+	request.getSession().removeAttribute("origin");
+	if (referrer == null || referrer.length() == 0) {
+	    referrer = request.getParameter("origin");
+	}
 
-        if (referrer == null || referrer.length() == 0) {
-            referrer = request.getContextPath() + "/pages/index.jsf";
-        }
-        return referrer;
+	if (referrer == null || referrer.length() == 0) {
+	    referrer = request.getContextPath() + "/pages/index.jsf";
+	}
+	return referrer;
     }
 
     public static String getUserId() {
-        return (String) getRequest().getAttribute(GPConstants.USERID);
+	return (String) getRequest().getAttribute(GPConstants.USERID);
     }
 
     public static boolean isLoggedIn() {
-        return getUserId() != null;
+	return getUserId() != null;
     }
 
     public static void logout(HttpServletRequest request, HttpServletResponse response, HttpSession session) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie c : cookies) {
-                if (GPConstants.USERID.equals(c.getName())) {
-                    c.setMaxAge(0);
-                    c.setPath(request.getContextPath());
-                    response.addCookie(c);
-                    break;
-                }
-            }
-        }
-        request.removeAttribute(GPConstants.USERID);
-        request.removeAttribute("userID");
-        session.invalidate();
+	Cookie[] cookies = request.getCookies();
+	if (cookies != null) {
+	    for (Cookie c : cookies) {
+		if (GPConstants.USERID.equals(c.getName())) {
+		    c.setMaxAge(0);
+		    c.setPath(request.getContextPath());
+		    response.addCookie(c);
+		    break;
+		}
+	    }
+	}
+	request.removeAttribute(GPConstants.USERID);
+	request.removeAttribute("userID");
+	session.invalidate();
     }
 
     public static void logout() {
-        logout(getRequest(), getResponse(), getSession());
+	logout(getRequest(), getResponse(), getSession());
     }
 
     /**
-     *
+     * 
      * @param username
      * @param sessionOnly
-     *            whether the login cookie should be set for the session only
+     *                whether the login cookie should be set for the session only
      * @throws UnsupportedEncodingException
      * @throws IOException
      */
     public static void login(String username, boolean sessionOnly) throws UnsupportedEncodingException, IOException {
-        UIBeanHelper.login(username, sessionOnly, true, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
+	UIBeanHelper.login(username, sessionOnly, true, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
     }
 
     /**
-     *
+     * 
      * @param username
      * @param sessionOnly
-     *            whether the login cookie should be set for the session only
+     *                whether the login cookie should be set for the session only
      * @param redirect
-     *            Whether to perform a redirect after login
+     *                Whether to perform a redirect after login
      * @throws UnsupportedEncodingException
      * @throws IOException
      */
     public static void login(String username, boolean sessionOnly, boolean redirect, HttpServletRequest request,
-            HttpServletResponse response) throws UnsupportedEncodingException, IOException {
-        HttpSession session = request.getSession();
-        User user = new UserDAO().findById(username);
-        assert user != null;
-        user.incrementLoginCount();
-        user.setLastLoginDate(new Date());
-        user.setLastLoginIP(request.getRemoteAddr());
-        request.setAttribute(GPConstants.USERID, username);
-        request.setAttribute("userID", username);
+	    HttpServletResponse response) throws UnsupportedEncodingException, IOException {
+	HttpSession session = request.getSession();
+	User user = new UserDAO().findById(username);
+	assert user != null;
+	user.incrementLoginCount();
+	user.setLastLoginDate(new Date());
+	user.setLastLoginIP(request.getRemoteAddr());
+	request.setAttribute(GPConstants.USERID, username);
+	request.setAttribute("userID", username);
 
-        Cookie cookie = new Cookie(GPConstants.USERID, username);
-        cookie.setPath(request.getContextPath());
-        if (!sessionOnly) {
-            cookie.setMaxAge(Integer.MAX_VALUE);
-            session.setMaxInactiveInterval(-1);
-        }
-        response.addCookie(cookie);
+	Cookie cookie = new Cookie(GPConstants.USERID, username);
+	cookie.setPath(request.getContextPath());
+	if (!sessionOnly) {
+	    cookie.setMaxAge(Integer.MAX_VALUE);
+	    session.setMaxInactiveInterval(-1);
+	}
+	response.addCookie(cookie);
 
-        if (redirect) {
-            String referrer = UIBeanHelper.getReferrer(request);
-            response.sendRedirect(referrer);
-        }
+	if (redirect) {
+	    String referrer = UIBeanHelper.getReferrer(request);
+	    response.sendRedirect(referrer);
+	}
     }
 
     public static String encode(String s) {
-        if (s == null) {
-            return null;
-        }
-        try {
-            return URLEncoder.encode(s, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            log.error(e);
-            return s;
-        }
+	if (s == null) {
+	    return null;
+	}
+	try {
+	    return URLEncoder.encode(s, "UTF-8");
+	} catch (UnsupportedEncodingException e) {
+	    log.error(e);
+	    return s;
+	}
     }
 
     public static String decode(String s) {
-        if (s == null) {
-            return null;
-        }
-        try {
-            return URLDecoder.decode(s, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            log.error(e);
-            return s;
-        }
+	if (s == null) {
+	    return null;
+	}
+	try {
+	    return URLDecoder.decode(s, "UTF-8");
+	} catch (UnsupportedEncodingException e) {
+	    log.error(e);
+	    return s;
+	}
+    }
+
+    /**
+     * Gets the server that the request came from. For example, http://localhost:8080/gp.
+     * 
+     * @return The server.
+     */
+    public static String getServer() {
+	HttpServletRequest request = UIBeanHelper.getRequest();
+	return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()
+		+ request.getContextPath();
     }
 
 }
