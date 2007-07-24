@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:c="http://java.sun.com/jstl/core">
+
+<!-- Job section to include for job info page.
+       Inputs: jobInfoWrapper
+   -->
+<ui:composition>
+
+	<h:outputText rendered="#{! empty jobInfoWrapper.inputParameters}">
+		<b>Input Parameters</b>
+		<br />
+		<t:dataList var="p" value="#{jobInfoWrapper.inputParameters}">
+
+			<h:outputText>#{p.name}: </h:outputText>
+			<h:outputText rendered="#{p.url}">
+				<a href="#{p.value}">#{p.displayValue}</a>
+			</h:outputText>
+			<h:outputText rendered="#{!p.url and p.exists}">
+				<h:outputText rendered="#{!empty p.directory}">
+					<a
+						href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.directory}/#{p.value}">#{p.displayValue}</a>
+				</h:outputText>
+				<h:outputText rendered="#{empty p.directory}">
+					<a
+						href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.value}">#{p.displayValue}</a>
+				</h:outputText>
+			</h:outputText>
+			<h:outputText rendered="#{!p.url and !p.exists}">
+		#{p.displayValue}
+	</h:outputText>
+			<br />
+		</t:dataList>
+	</h:outputText>
+
+
+	<h:outputText rendered="#{!empty jobInfoWrapper.outputFiles}">
+		<br />
+		<b>Output Files</b>
+		<ol>
+			<t:dataList var="p" value="#{jobInfoWrapper.outputFiles}">
+				<li><h:outputText>
+					<a
+						href="#{facesContext.externalContext.requestContextPath}/jobResults/#{p.jobNumber}/#{p.name}">#{p.name}</a>
+				</h:outputText></li>
+			</t:dataList>
+		</ol>
+	</h:outputText>
+</ui:composition>
+</html>
