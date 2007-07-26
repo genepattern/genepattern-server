@@ -65,6 +65,11 @@ TaskInfoAttributes tia = null;
 
 if (taskName != null && taskName.length() == 0) taskName = null;
 
+if ((taskName == null) && (!createModuleAllowed)){
+	response.sendRedirect("pages/notPermitted.jsf" );
+	return;	
+}
+
 Vector errors = (Vector) request.getAttribute("errors");
 if(errors!=null) {
 	taskInfo = (TaskInfo) request.getAttribute("taskInfo");
