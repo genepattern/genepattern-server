@@ -63,7 +63,7 @@
             int UNDEFINED = -1;
             int jobID = UNDEFINED;
             String userEmail = null;
-
+            RunPipelineForJsp runPipelineForJsp = new RunPipelineForJsp();
             try {
                 boolean DEBUG = false;
                 if (!DEBUG && requestParamsAndAttributes.get("DEBUG") != null)
@@ -115,7 +115,7 @@
 
                 try {
                     if (command.equals(STOP)) {
-                        RunPipelineForJsp.stopPipeline((String) requestParamsAndAttributes.get(JOBID));
+                        runPipelineForJsp.stopPipeline((String) requestParamsAndAttributes.get(JOBID));
 %>
 <script language="Javascript">
 		self.window.close();
@@ -155,7 +155,7 @@
                     }
 
                     // check all required params present and punt if not
-                    boolean paramsRequired = RunPipelineForJsp.validateAllRequiredParametersPresent(taskInfo,
+                    boolean paramsRequired = runPipelineForJsp.validateAllRequiredParametersPresent(taskInfo,
                             commandLineParams);
                     if (paramsRequired) {
                         request.setAttribute("name", pipelineName);
@@ -229,7 +229,7 @@ var outputFileCount = new Array();
                         }
 
                         try {
-                            if (RunPipelineForJsp.isMissingTasks(model, new java.io.PrintWriter(out), userID)) {
+                            if (runPipelineForJsp.isMissingTasks(model, new java.io.PrintWriter(out), userID)) {
                                 return;
                             }
                         } catch (Exception e) {
@@ -237,9 +237,9 @@ var outputFileCount = new Array();
                             return;
                         }
                         String decorator = (String) requestParamsAndAttributes.get("decorator");
-                        Process process = RunPipelineForJsp.runPipeline(taskInfo, name, baseURL, decorator, userID,
+                        Process process = runPipelineForJsp.runPipeline(taskInfo, name, baseURL, decorator, userID,
                                 commandLineParams);
-                        jobID = RunPipelineForJsp.getJobID();
+                        jobID = runPipelineForJsp.getJobID();
 
                         // stuff to write view file
                         String jobDir = GenePatternAnalysisTask.getJobDir("" + jobID);
