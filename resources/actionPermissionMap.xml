@@ -3,5 +3,5 @@
 
 <actionPermissionMap>
   <url link="sql.jsp" permission="adminServer"/>
-  <url link="addTask.jsp" permission="createModule"/>
+
 </actionPermissionMap>
