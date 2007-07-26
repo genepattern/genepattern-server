@@ -165,8 +165,8 @@ if(showEdit) {
 if (AuthorizationHelper.createPipeline(userID)){
 out.println("  <input type=\"button\" value=\"Clone...\" name=\"clone\" class=\"little\" onclick=\"cloneTask('"+displayName+"', '" + pipelineName + "', '" + userID + "')\"; />");
 }
-
-if (! RunPipelineForJsp.isMissingTasks(model, userID)){
+RunPipelineForJsp runPipelineForJsp = new RunPipelineForJsp();
+if (! runPipelineForJsp.isMissingTasks(model, userID)){
 	out.println("  <input type=\"button\" value=\"Run\" name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('" + request.getContextPath() + "/pages/index.jsf?lsid="+pipelineName + "')\"; />");
 }
 //XXXXXXXXXXXXX
@@ -197,7 +197,7 @@ out.print("<br>");
 //XXXXXXXXXXX
 
 try {
-   RunPipelineForJsp.isMissingTasks(model, new java.io.PrintWriter(out), userID);
+   runPipelineForJsp.isMissingTasks(model, new java.io.PrintWriter(out), userID);
 } catch(Exception e) {
     out.println("An error occurred while processing your request. Please try again.");
    return;
@@ -420,7 +420,7 @@ out.println("<table cellspacing='0' width='100%' class='attribute'>");
 
 
 }
-if (! RunPipelineForJsp.isMissingTasks(model, userID)){
+if (! runPipelineForJsp.isMissingTasks(model, userID)){
 out.println("<table width='100%'><tr><td align='center'><input type=\"button\" value=\"Run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('" + request.getContextPath() + "/pages/index.jsf?lsid="+pipelineName + "')\"; /></td></tr></table>");
 }
 

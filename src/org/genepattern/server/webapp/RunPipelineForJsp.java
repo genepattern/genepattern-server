@@ -45,7 +45,7 @@ import org.genepattern.webservice.TaskInfoAttributes;
 
 public class RunPipelineForJsp {
     private static Logger log = Logger.getLogger(RunPipelineForJsp.class);
-    public static int jobID = -1;
+    public int jobID = -1;
     
     public RunPipelineForJsp() {
     }
@@ -60,7 +60,7 @@ public class RunPipelineForJsp {
      * @param userID the user id
      * @return <code>true</code> if the pipeline is missing tasks
      */
-    public static boolean isMissingTasks(PipelineModel model, java.io.PrintWriter out, String userID) throws Exception {
+    public boolean isMissingTasks(PipelineModel model, java.io.PrintWriter out, String userID) throws Exception {
         boolean isMissingTasks = false;
         java.util.List tasks = model.getTasks();
         HashMap unknownTaskNames = new HashMap();
@@ -142,7 +142,7 @@ public class RunPipelineForJsp {
         return isMissingTasks;
     }
     
-    public static boolean isMissingTasks(PipelineModel model, String userID) {
+    public boolean isMissingTasks(PipelineModel model, String userID) {
         java.util.List tasks = model.getTasks();
         try {
             for (int ii = 0; ii < tasks.size(); ii++) {
@@ -160,7 +160,7 @@ public class RunPipelineForJsp {
         return false;
     }
     
-    public static boolean deletePipelineDirAfterRun(String pipelineName) {
+    public boolean deletePipelineDirAfterRun(String pipelineName) {
         boolean deleteDirAfterRun = false;
         // determine if we want to delete the dir in tasklib after running
         // we do this if there is no pipeline saved by the same name.
@@ -173,7 +173,7 @@ public class RunPipelineForJsp {
         return deleteDirAfterRun;
     }
     
-    public static boolean isSavedModel(TaskInfo taskInfo, String pipelineName, String userID) {
+    public  boolean isSavedModel(TaskInfo taskInfo, String pipelineName, String userID) {
         boolean savedPipeline = true;
         // determine if we want a link to the pipeline. Check if one existis in
         // the DB
@@ -196,7 +196,7 @@ public class RunPipelineForJsp {
         return savedPipeline;
     }
     
-    public static void stopPipeline(String jobID) throws Exception {
+    public  void stopPipeline(String jobID) throws Exception {
         Process p = null;
         for (int i = 0; i < 10; i++) {
             p = GenePatternAnalysisTask.terminatePipeline(jobID);
@@ -212,7 +212,7 @@ public class RunPipelineForJsp {
         return;
     }
     
-    public static String[] generatePipelineCommandLine(String name, String jobID, String userID, String baseURL,
+    public  String[] generatePipelineCommandLine(String name, String jobID, String userID, String baseURL,
             TaskInfo taskInfo, HashMap commandLineParams, File tempDir,
             String decorator) throws Exception {
         String JAVA_HOME = System.getProperty("java.home");
@@ -300,7 +300,7 @@ public class RunPipelineForJsp {
         return (String[]) cmdLine.toArray(new String[0]);
     }
     
-    public static boolean isOptional(final ParameterInfo info) {
+    public boolean isOptional(final ParameterInfo info) {
         final Object optional = info.getAttributes().get("optional");
         return (optional != null && "on".equalsIgnoreCase(optional.toString()));
     }
@@ -312,7 +312,7 @@ public class RunPipelineForJsp {
      * @param taskInfo          the task info object
      * @param commandLineParams maps parameter name to value
      */
-    public static boolean validateAllRequiredParametersPresent(TaskInfo taskInfo, HashMap commandLineParams) {
+    public boolean validateAllRequiredParametersPresent(TaskInfo taskInfo, HashMap commandLineParams) {
         ParameterInfo[] parameterInfoArray = taskInfo.getParameterInfoArray();
         if (parameterInfoArray != null && parameterInfoArray.length > 0) {
             for (int i = 0; i < parameterInfoArray.length; i++) {
@@ -334,12 +334,12 @@ public class RunPipelineForJsp {
         return false;
     }
     
-    public static int getJobID() {
+    public int getJobID() {
         return jobID;
     }
     
     
-    protected static String  paramsAsString(ParameterInfo[] params, HashMap commandLineParams, String baseURL){
+    protected String  paramsAsString(ParameterInfo[] params, HashMap commandLineParams, String baseURL){
         if (params == null) return "";
         if (params.length == 0) return "";
         
@@ -361,7 +361,7 @@ public class RunPipelineForJsp {
         return ParameterFormatConverter.getJaxbString(params);
     }
     
-    public static Process runPipeline(TaskInfo taskInfo, String name, String baseURL, String decorator, String userID,
+    public Process runPipeline(TaskInfo taskInfo, String name, String baseURL, String decorator, String userID,
             HashMap commandLineParams) throws Exception {
         
         if(log.isDebugEnabled()) {
@@ -391,9 +391,9 @@ public class RunPipelineForJsp {
         if (decorator == null) {
             decorator = "org.genepattern.server.webapp.RunPipelineLoggingHTMLDecorator";
         }
-        boolean deleteDirAfterRun = RunPipelineForJsp
+        boolean deleteDirAfterRun = this
                 .deletePipelineDirAfterRun(taskInfo.getName());
-        String[] commandLine = RunPipelineForJsp.generatePipelineCommandLine(taskInfo.getName(), "" + jobID, userID,
+        String[] commandLine = this.generatePipelineCommandLine(taskInfo.getName(), "" + jobID, userID,
                 baseURL, taskInfo, commandLineParams, tempDir, decorator);
         
         // spawn the command
@@ -411,7 +411,7 @@ public class RunPipelineForJsp {
         return process;
     }
     
-    public static void writePipelineBody(PrintWriter outstr, String pipelineName, PipelineModel model, String userID,
+    public void writePipelineBody(PrintWriter outstr, String pipelineName, PipelineModel model, String userID,
             boolean showParams, boolean showLSID, boolean hideButtons) {
         try {
             String paramDisplayStyle = "none";
@@ -528,7 +528,7 @@ public class RunPipelineForJsp {
                         .println(
                         "  <input type=\"button\" value=\"clone...\" name=\"clone\"       class=\"little\" onclick=\"cloneTask('" +
                         displayName + "', '" + pipelineName + "', '" + userID + "')\"; />");
-                if (!RunPipelineForJsp.isMissingTasks(model, userID)) {
+                if (!this.isMissingTasks(model, userID)) {
                     outstr
                             .println(
                             "  <input type=\"button\" value=\"run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('runPipeline.jsp?cmd=run&name=" +
@@ -547,7 +547,7 @@ public class RunPipelineForJsp {
             }
             outstr.println("onClick=toggleLSID();>Show LSIDs</input></form>");
             try {
-                RunPipelineForJsp.isMissingTasks(model, userID);
+                this.isMissingTasks(model, userID);
             } catch (Exception e) {
                 outstr
                         .println("An error occurred while processing your request. Please try again.");
@@ -704,7 +704,7 @@ public class RunPipelineForJsp {
                 outstr.println("</div>");
             }
             outstr.println("<table cellspacing='0' width='100%' frame='box'>");
-            if (!RunPipelineForJsp.isMissingTasks(model, userID)) {
+            if (!this.isMissingTasks(model, userID)) {
                 if (!hideButtons) {
                     outstr
                             .println(
