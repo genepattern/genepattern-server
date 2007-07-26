@@ -38,7 +38,7 @@
 </permission>
 
 <permission name="createPublicSuite">
-	<group name="administrators"/>
+	<group name="*"/>
 </permission>
 
 </permissionMap>
