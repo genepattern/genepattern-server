@@ -5,7 +5,7 @@ function mmLoadMenus() {
   if (window.mm_menu_documentation) return;
 
   window.mm_menu_tasks = new Menu("root",140,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  if(createPipelineAllowed) {
+  if(createPublicPipelineAllowed || createPrivatePipelineAllowed) {
   	mm_menu_tasks.addMenuItem("New&nbsp;Pipeline","location=contextRoot + '/pipelineDesigner.jsp'");
   }
 
@@ -16,7 +16,9 @@ function mmLoadMenus() {
   if(createTaskAllowed) {
   	mm_menu_tasks.addMenuItem("Install&nbsp;from&nbsp;repository","location=contextRoot + '/pages/taskCatalog.jsf'");
   }
+  
   mm_menu_tasks.addMenuItem("Install&nbsp;from&nbsp;zip","location=contextRoot + '/pages/importTask.jsf'");
+  
   mm_menu_tasks.addMenuItem("Manage","location=contextRoot + '/pages/manageTasks.jsf'");
   mm_menu_tasks.hideOnMouseOut=true;
   mm_menu_tasks.bgColor='#CCCC66';
@@ -25,10 +27,12 @@ function mmLoadMenus() {
   mm_menu_tasks.menuBorderBgColor='#CCCC66';
 
   window.mm_menu_suites = new Menu("root",140,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  if(createSuiteAllowed) {
+  if(createPublicSuiteAllowed || createPrivateSuiteAllowed) {
   	mm_menu_suites.addMenuItem("New","location=contextRoot + '/pages/createSuite.jsf'");
-  	mm_menu_suites.addMenuItem("Install&nbsp;from&nbsp;repository","location=contextRoot + '/pages/suiteCatalog.jsf'");
-  	mm_menu_suites.addMenuItem("Install&nbsp;from&nbsp;zip","location=contextRoot + '/pages/importTask.jsf?suite=1'");
+  	if (createPublicSuiteAllowed){
+  		mm_menu_suites.addMenuItem("Install&nbsp;from&nbsp;repository","location=contextRoot + '/pages/suiteCatalog.jsf'");
+    }
+ 	mm_menu_suites.addMenuItem("Install&nbsp;from&nbsp;zip","location=contextRoot + '/pages/importTask.jsf?suite=1'");
     mm_menu_suites.addMenuItem("Manage","location=contextRoot + '/pages/manageSuite.jsf'");
   }
 

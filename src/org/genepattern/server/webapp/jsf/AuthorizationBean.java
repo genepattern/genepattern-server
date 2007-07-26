@@ -17,12 +17,17 @@ public class AuthorizationBean {
         return AuthorizationHelper.createModule();
     }
 
-    public boolean isCreatePipelineAllowed() {
-        return AuthorizationHelper.createPipeline();
+    public boolean isCreatePrivatePipelineAllowed() {
+        return AuthorizationHelper.createPrivatePipeline();
+    }
+    public boolean isCreatePublicPipelineAllowed() {
+        return AuthorizationHelper.createPublicPipeline();
     }
 
-    public boolean isCreateSuiteAllowed() {
-        return AuthorizationHelper.createSuite();
+    public boolean isCreatePrivateSuiteAllowed() {
+        return AuthorizationHelper.createPrivateSuite();
     }
-
+    public boolean isCreatePublicSuiteAllowed() {
+        return AuthorizationHelper.createPublicSuite();
+    }
 }

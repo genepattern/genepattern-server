@@ -15,8 +15,10 @@
       var contextRoot = '#{facesContext.externalContext.requestContextPath}';
       var javaGEInstallerURL = '#{genepatternProperties.properties["JavaGEInstallerURL"]}';
       var createTaskAllowed = #{authorizationBean.createModuleAllowed};
-      var createPipelineAllowed = #{authorizationBean.createPipelineAllowed};
-      var createSuiteAllowed = #{authorizationBean.createSuiteAllowed};
+      var createPublicPipelineAllowed = #{authorizationBean.createPublicPipelineAllowed};
+      var createPrivatePipelineAllowed = #{authorizationBean.createPrivatePipelineAllowed};
+      var createPublicSuiteAllowed = #{authorizationBean.createPublicSuiteAllowed};
+      var createPrivateSuiteAllowed = #{authorizationBean.createPrivateSuiteAllowed};
      </script>
 
     <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
