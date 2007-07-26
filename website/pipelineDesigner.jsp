@@ -1,6 +1,8 @@
 <%@ page import="org.genepattern.server.webapp.*,
 		 org.genepattern.data.pipeline.*,
 		 org.genepattern.server.util.AccessManager,
+		 org.genepattern.server.util.IAuthorizationManager,
+		 org.genepattern.server.util.AuthorizationManagerFactory,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.util.LSID,
@@ -18,6 +20,14 @@
 	if (request.getParameter(GPConstants.NAME) != null && !request.getParameter(GPConstants.NAME).equals("") && !LSIDManager.getInstance().getAuthorityType(new LSID(request.getParameter(GPConstants.NAME))).equals(LSIDUtil.AUTHORITY_MINE)) {
 		response.sendRedirect("viewPipeline.jsp?" + GPConstants.NAME + "=" + request.getParameter(GPConstants.NAME));
 	}
+	IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
+    	
+	if (!(authManager.checkPermission("createPublicPipeline", userID) || authManager.checkPermission("createPrivatePipeline", userID))) {
+		response.sendRedirect("pages/notPermitted.jsf" );
+		return;	
+	}
+	
+	
 %>
 
 <!doctype HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">

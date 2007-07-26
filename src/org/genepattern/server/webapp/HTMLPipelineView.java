@@ -35,6 +35,10 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
+import org.genepattern.server.util.AuthorizationManagerFactory;
+import org.genepattern.server.util.IAuthorizationManager;
+import org.genepattern.server.webapp.jsf.AuthorizationBean;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
@@ -444,7 +448,16 @@ public class HTMLPipelineView {
         writer
                 .write("<tr class=\"pipelineperameter\"><td>Privacy:</td><td width=\"*\"><select name=\""
                         + GPConstants.PRIVACY + "\">");
-        String[] privacies = GPConstants.PRIVACY_LEVELS;
+        IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
+
+        String[] privacies = null;
+        if (authManager.checkPermission("createPublicPipeline", userID))
+        	privacies = GPConstants.PRIVACY_LEVELS;
+        else {
+        	privacies = new String[1];
+        	privacies[0] = GPConstants.PRIVATE;
+        }
+        
         for (int i = 0; i < privacies.length; i++) {
             writer.write("<option value=\"" + privacies[i] + "\">"
                     + privacies[i] + "</option>");
