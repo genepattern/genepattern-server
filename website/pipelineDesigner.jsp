@@ -33,7 +33,8 @@
 <!doctype HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
-
+<script type="text/javascript" src="<%=request.getContextPath()%>/js/prototype.js"></script>
+<script type="text/javascript" src="<%=request.getContextPath()%>/js/genepattern.js"></script>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link href="css/style.css" rel="stylesheet" type="text/css">
 <link href="skin/favicon.ico" rel="shortcut icon">
@@ -135,7 +136,7 @@ function addAnother(taskNum, scrollTo) {
 	   	var taskLSID = document.forms["pipeline"]['t' + oldTaskNum + '_taskLSID'].value;
 	   	var task = TaskInfos[taskLSID];
 		writeToLayer(newTaskNum, changeTaskHTML(taskLSID, newTaskNum, true));
-	   	for (param in task.parameterInfoArray) {
+		for (var param = 0; param < task.parameterInfoArray.length; param++) {
 			var pi = task.parameterInfoArray[param];
 			if (pi.isInputFile) {
 				if (document.forms["pipeline"]['t' + oldTaskNum + '_shadow' + param].value != '') {
@@ -172,7 +173,7 @@ function addAnother(taskNum, scrollTo) {
 			continue;
 		}
 	   	var task = TaskInfos[taskLSID];
-	   	for (param in task.parameterInfoArray) {
+	   	for (var param = 0; param < task.parameterInfoArray.length; param++) {
 			var pi = task.parameterInfoArray[param];
 			if (pi.isInputFile) {
 				var selector = document.forms["pipeline"]['t' + i + '_i_' + param];
@@ -211,7 +212,7 @@ function deleteTask(taskNum) {
 		writeToLayer(newTaskNum, changeTaskHTML(taskLSID, newTaskNum, true));
 
 		// adjust inheritance task numbers
-	   	for (param in task.parameterInfoArray) {
+		for (var param = 0; param < task.parameterInfoArray.length; param++) {
 			var pi = task.parameterInfoArray[param];
 			if (pi.isInputFile) {
 				if (document.forms["pipeline"]['t' + oldTaskNum + '_shadow' + param].value != '') {
@@ -297,7 +298,7 @@ function isRSafe(varName) {
 function isUniqueName(varName, pipeLsid){
 	var versionlessLsid = LSIDNoVersion(pipeLsid);
 
-	for (task in TaskInfos) {
+	for (var task = 0; task < TaskInfos.length; task++) {
 		if (TaskInfos[task].name == varName) {
 			// don't error if the LSIDs match
 			var taskLsid = LSIDNoVersion(TaskInfos[task].lsid);
@@ -369,7 +370,7 @@ function promptOnRunChecked(checkbox, taskNum, param, paramName) {
 			if (ctl.type == 'text') {
 				ctl.value = '';
 			} else if (ctl.type == 'select-one') {
-				for (option in ctl.options) {
+				for (var option = 0; option < ctl.options.length; option++) {
 					ctl.options[option].selected = ctl.options[option].defaultSelected;
 				}
 			} else {
@@ -404,7 +405,7 @@ function promptOnRunChecked(checkbox, taskNum, param, paramName) {
 			if (ctl.type == 'text') {
 				ctl.value = ctl.defaultValue;
 			} else if (ctl.type == 'select-one') {
-				for (option in ctl.options) {
+				for (var option = 0; option < ctl.options.length; option++) {
 					ctl.options[option].selected = ctl.options[option].defaultSelected;
 				}
 			} else {
@@ -560,7 +561,7 @@ function changeTaskType(selectorTaskType, taskNum) {
 	taskSelector.options[0] = new Option("- Module -", "");
 	taskSelector.options[0].style['fontWeight'] = "bold";
 	var versionlessLSIDs = new Array();
- 	for (i in TaskTypes[type]) {
+	for (var i = 0; i < TaskTypes[type].length; i++) {
 		taskLSID = new LSID(TaskTypes[type][i]);
 		var taskLSIDnoVersion = taskLSID.authority + '<%= LSID.DELIMITER %>' + taskLSID.namespace + '<%= LSID.DELIMITER %>' + taskLSID.identifier;
 		if (versionlessLSIDs[taskLSIDnoVersion] != null) {
@@ -644,10 +645,10 @@ function chgLSIDVer(oldTaskNum, selector) {
 
 // XXX: copy runtime prompt settings too
 
-   	for (param in task.parameterInfoArray) {
+   	for (var param = 0; param < task.parameterInfoArray.length; param++) {
 		var pi = task.parameterInfoArray[param];
 		var oldParam;
-	   	for (oldParam in oldTask.parameterInfoArray) {
+		for (var oldParam = 0; oldParam < oldTask.parameterInfoArray.length; oldParam++) {
 			if (oldTask.parameterInfoArray[oldParam].name == pi.name) break;
 		}
 		if (oldTask.parameterInfoArray[oldParam].name != pi.name) {
@@ -696,7 +697,7 @@ function chgLSIDVer(oldTaskNum, selector) {
 	oldTaskNum = newTaskNum;
 	newTaskNum = t;
 
-   	for (param in task.parameterInfoArray) {
+	for (var param = 0; param < task.parameterInfoArray.length; param++) {
 		var pi = task.parameterInfoArray[param];
 		if (pi.isInputFile) {
 			if (document.forms["pipeline"]['t' + oldTaskNum + '_shadow' + param].value != '') {
@@ -755,7 +756,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 	var latestVersion = new LSID(task.lsid).version
 	var wildcard = task.lsid.substring(0, task.lsid.length - latestVersion.length);
 	var sameTasks = new Array();
-	for (t in TaskInfos) {
+	for (var t = 0; t < TaskInfos.length; t++) {
 		if (TaskInfos[t].lsid.indexOf(wildcard) == 0) {
 			sameTasks = sameTasks.concat(new LSID(TaskInfos[t].lsid).version)
 		}
@@ -766,8 +767,8 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 	if (sameTasks.length > 1){
 		taskFields = taskFields + '<select name="t' + taskNum + '_taskLSIDv" onchange="chgLSIDVer(' + taskNum + ', this)">\n';
 
-		for (t in sameTasks) {
-		taskFields = taskFields + '<option value="' + wildcard + sameTasks[t] + '"' +
+		for (var t = 0; t < sameTasks.length; t++) {
+			taskFields = taskFields + '<option value="' + wildcard + sameTasks[t] + '"' +
 			     (sameTasks[t] == latestVersion ? ' selected' : '') +
 			     '>' + sameTasks[t] + (t == 0 ? " (latest)" : "") + '</option>\n';
 		}
@@ -799,7 +800,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 
 	if (task.docs.length > 0 || task.taskType == PIPELINE) {
 		taskFields = taskFields + '<tr><td>&nbsp;</td><td>documentation: </td><td>\n';
-		for (doc in task.docs) {
+		for (var doc = 0; doc < task.docs.length; doc++) {
 			if (task.docs[doc] == "version.txt") continue;
 			taskFields = taskFields + '<a href="getTaskDoc.jsp?name=' + task.lsid + '&file=' + task.docs[doc] + '" target="_new">' + task.docs[doc] + '</a> ';
 		}
@@ -816,8 +817,8 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 	}
 
 	var pnum = -1;
-	for (param in task.parameterInfoArray) {
-		pnum = pnum + 1;
+	for (var param = 0; param < task.parameterInfoArray.length; param++) {
+   		pnum = pnum + 1;
 		var pi = task.parameterInfoArray[param];
 		var choices = ((pi.value != null && pi.value != 'null' && pi.value.length > 0) ? pi.value.split(";") : "");
 		// prompt-when-run
@@ -887,7 +888,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		} else {
 			taskFields = taskFields + "	<select name='t" + taskNum + "_" + pi.name +
 					"' onchange='changeChoice(this, " + taskNum + ", " + param + ")'>\n";
-			for (i in choices) {
+			for (var i = 0; i < choices.length; i++) {
 				var c = choices[i].split('=');
 				if (c.length == 1) c = new Array(c, c);
 				taskFields = taskFields + '		<option value="' + c[0] + '"' + (pi.defaultValue == c[0] || pi.defaultValue == c[1] ? ' selected' : '') + '>' + c[1] + '</option>\n';
@@ -925,7 +926,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 			if (tName == NOT_SET) continue;
 			var tLSID = document.forms['pipeline']['t' + i + '_taskLSID'].value;
 		   	var task = TaskInfos[tLSID];
-		   	for (param in task.parameterInfoArray) {
+		   	for (var param = 0; param < task.parameterInfoArray.length; param++) {
 				var pi = task.parameterInfoArray[param];
 				if (pi.isInputFile) {
 					var selector = document.forms['pipeline']['t' + i + '_i_' + param];
@@ -962,7 +963,7 @@ function chgTask(selectorTask, taskNum) {
 // if task has input files and there is only one possible source, preset the inheritance
 function setDefaultInheritances(taskNum) {
    	var task = TaskInfos[document.forms["pipeline"]['t' + taskNum + '_taskLSID'].value];
-   	for (param in task.parameterInfoArray) {
+   	for (var param = 0; param < task.parameterInfoArray.length; param++) {
 		var pi = task.parameterInfoArray[param];
 		if (pi.isInputFile) {
 			var desiredFileFormats = pi.fileFormats;
@@ -1085,7 +1086,7 @@ function setTaskName(taskNum, taskName, taskLSID) {
 	if (task == null) {
 		// not found by LSID, search by name
 		var requestedLSID = taskLSID;
-		for (task in TaskInfos) {
+		for (var task = 0; task < TaskInfos.length; task++) {
 			if (TaskInfos[task].name == taskLSID) {
 				taskLSID = TaskInfos[task].lsid;
 				found = true;
@@ -1095,7 +1096,7 @@ function setTaskName(taskNum, taskName, taskLSID) {
 		if (!found) {
 			// search for same LSID but different version number
   			var noVersion = LSIDNoVersion(requestedLSID);
-			for (task in TaskInfos) {
+  			for (var task = 0; task < TaskInfos.length; task++) {
 				if (TaskInfos[task].lsidNoVersion == noVersion) {
 					taskLSID = TaskInfos[task].lsid;
 					found = true;
@@ -1225,7 +1226,8 @@ function savePipeline(bMustName, cmd) {
 	   var taskLSID = document.forms['pipeline']['t' + i + '_taskLSID'].value;
 	   var task = TaskInfos[taskLSID];
 	   var j = -1;
-	   for (param in task.parameterInfoArray) {
+	   for (var param = 0; param < task.parameterInfoArray.length; param++) {
+ 
 		j++;
 		var pi = task.parameterInfoArray[param];
 		if (pi.isInputFile) {
@@ -1280,9 +1282,34 @@ function savePipeline(bMustName, cmd) {
 		document.forms['pipeline'].target = "";
 		document.forms['pipeline']['autoSave'].value = "true";
 		<% } %>
-		document.forms['pipeline'].submit();
+		document.body.style.cursor = 'wait';
+		sendAjaxRequest('verifyPipelineBean.verifyPipeline', getFormParameters('pipeline'), callbackFunction, 'post', "<%=request.getContextPath()%>/anyThingAtAll.ajax");
 	}
 	return success;
+}
+
+function callbackFunction(req) {
+	if (req.readyState == 4) {
+		 document.body.style.cursor = 'default';
+          if (req.status == 200) { 
+          	var jsonString = req.responseText;
+          	var errMessages = eval('(' + jsonString + ')');
+       		if(errMessages.length > 0) {
+       			var d = $("errorMessageDiv");
+          		var t = $("errorMessageContent");
+          		d.style.display = "";
+				var messageString = "<ul style=\"font-weight:bold; color:red;\">";
+          		for(var i=0; i<errMessages.length; i++) {
+            		messageString += "<li/>" +  errMessages[i];
+          		}
+          		messageString += "</ul>";
+          		Element.update('errorMessageContent', messageString);
+       		} else {
+       			var d = $("errorMessageDiv").style.display = "none";
+       			document.forms['pipeline'].submit();
+       		}
+          } 
+	}
 }
 
 function deleteDocFiles() {
@@ -1395,11 +1422,11 @@ function newTaskHTML(taskNum) {
 	// now find all tasks which have input parameters that accept file formats from among those possibly output at this stage
 	var suggestedTasks = new Array();
 	var numSuggested = 0;
-	for (t in TaskInfos) {
+	for (var t = 0; t < TaskInfos.length; t++) {
 	   	var task = TaskInfos[t];
 // alert("considering " + task.name + " which has " + task.parameterInfoArray.length + " parameters");
 nextTask:
-	   	for (param in task.parameterInfoArray) {
+		for (var param = 0; param < task.parameterInfoArray.length; param++) {
 			var pi = task.parameterInfoArray[param];
 			if (true || pi.isInputFile) {
 				var fileFormats = pi.fileFormats;
@@ -1422,7 +1449,7 @@ nextTask:
 	// remove all but latest LSID from each entry
 	var LSIDsWithoutVersions = new Array();
 	TaskTypes[suggested] = new Array();
-	for (t in suggestedTasks) {
+	for (var t = 0; t < suggestedTasks.length; t++) {
 		var task = suggestedTasks[t];
 		if (LSIDsWithoutVersions[task.lsidNoVersion] != undefined) {
 			suggestedTasks[t] = undefined; // delete duplicate item
@@ -1444,8 +1471,8 @@ nextTask:
 		newTask = newTask + '<option value="' + suggested + '">' + suggested + '</option>\n';
 	}
 
-	for (taskType in TaskTypesList) {
-		var name = TaskTypesList[taskType];
+	for (var taskType = 0; taskType < TaskTypesList.length; taskType++) {
+   		var name = TaskTypesList[taskType];
 		name = name.substring(0,1).toUpperCase() + name.substring(1);
 		newTask = newTask + '<option value="' + TaskTypesList[taskType] + '">' + name + '</option>\n';
 	}
