@@ -13,6 +13,11 @@
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  <managed-bean>
+  <managed-bean-name>verifyPipelineBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.VerifyPipelineBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+ </managed-bean>
+ <managed-bean>
   <managed-bean-name>jobInfoBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.JobInfoBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
