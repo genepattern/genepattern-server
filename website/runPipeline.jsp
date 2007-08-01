@@ -500,10 +500,7 @@ function toggleTask(idx, visibility) {
 </table>
 
 <%
-                            synchronized (IndexerDaemon.getDaemon().indexLock) {
-                            IndexerDaemon.getDaemon().indexLock.notify();
-                        }
-
+                  
                     } else {
                         out.println("unknown command: " + command + "<br>");
                     }
