@@ -46,6 +46,9 @@ public class LoginBean {
 	if (usernameInRequest != null && !usernameInRequest.equals("")) {
 	    username = usernameInRequest;
 	    password = UIBeanHelper.getRequest().getParameter("password");
+	    if (password == null) {
+		password = "";
+	    }
 	    submitLogin(null);
 	}
     }
