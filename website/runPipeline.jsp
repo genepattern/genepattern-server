@@ -34,9 +34,9 @@
 	org.genepattern.webservice.TaskInfo,
 	org.genepattern.util.StringUtils,
 	org.genepattern.server.genepattern.GenePatternAnalysisTask,
-	org.genepattern.util.GPConstants,org.genepattern.server.indexer.IndexerDaemon,
 	org.genepattern.data.pipeline.PipelineModel,
 	org.genepattern.server.webapp.RunPipelineForJsp,
+	org.genepattern.util.GPConstants,
 	java.net.URLDecoder"
 	session="false" language="Java" buffer="1kb"%>
 <%
