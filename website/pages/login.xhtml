@@ -18,7 +18,7 @@
 					GenePattern</span></td>
 					<td align="right"><h:outputLink
 						value="#{facesContext.externalContext.requestContextPath}/pages/registerUser.jsf"
-						rendered="#{loginBean.passwordRequired}">
+						rendered="#{loginBean.passwordRequired and loginBean.createAccountAllowed}">
 			    Click to register
 			  </h:outputLink></td>
 				</tr>
@@ -27,8 +27,13 @@
 			<h:outputText
 				value="Unknown username.  Click the registration link to create a new account."
 				style="color: red; font-weight: old;"
-				rendered="#{loginBean.unknownUser}" />
-
+				rendered="#{loginBean.unknownUser and loginBean.createAccountAllowed}" />
+		
+			<h:outputText
+				value="Unknown username."
+				style="color: red; font-weight: old;"
+				rendered="#{loginBean.unknownUser and !loginBean.createAccountAllowed}" />
+			
 
 			<h:outputText value="Invalid password"
 				rendered="#{loginBean.invalidPassword}"

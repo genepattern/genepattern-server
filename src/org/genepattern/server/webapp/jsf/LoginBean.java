@@ -31,110 +31,120 @@ public class LoginBean {
 
     private boolean invalidPassword = false;
 
+    private boolean createAccountAllowed;
+
     public LoginBean() {
-        String prop = System.getProperty("require.password", "false").toLowerCase();
-        passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
-        String usernameInRequest = UIBeanHelper.getRequest().getParameter("username");
+	String prop = System.getProperty("require.password", "false").toLowerCase();
+	passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
 
-        if (usernameInRequest != null) {
-            username = usernameInRequest;
-            password = UIBeanHelper.getRequest().getParameter("password");
-            submitLogin(null);
-        }
-    }
+	String createAccountAllowedProp = System.getProperty("create.account.allowed", "true").toLowerCase();
+	createAccountAllowed = (createAccountAllowedProp.equals("true") || createAccountAllowedProp.equals("y") || createAccountAllowedProp
+		.equals("yes"));
 
-    public boolean isPasswordRequired() {
-        return passwordRequired;
-    }
+	String usernameInRequest = UIBeanHelper.getRequest().getParameter("username");
 
-    public void setPassword(String password) {
-        this.password = password;
+	if (usernameInRequest != null) {
+	    username = usernameInRequest;
+	    password = UIBeanHelper.getRequest().getParameter("password");
+	    submitLogin(null);
+	}
     }
 
     public String getPassword() {
-        return this.password;
+	return this.password;
     }
 
     public String getUsername() {
-        return username;
+	return username;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public boolean isUnknownUser() {
-        return unknownUser;
+    public boolean isCreateAccountAllowed() {
+	return createAccountAllowed;
     }
 
     public boolean isInvalidPassword() {
-        return invalidPassword;
+	return invalidPassword;
     }
 
-    public static void createNewUserNoPassword(String username) {
-        User newUser = new User();
-        newUser.setUserId(username);
-        try {
-            newUser.setPassword(EncryptionUtil.encrypt(""));
-        } catch (NoSuchAlgorithmException e) {
-            log.error(e);
-        }
-        (new UserDAO()).save(newUser);
+    public boolean isPasswordRequired() {
+	return passwordRequired;
     }
 
-    /**
-     * Submit the user / password. For now this uses an action listener since we
-     * are redirecting to a page outside of the JSF framework. This should be
-     * changed to an action to use jsf navigation in the future.
-     * 
-     * @param event --
-     *            ignored
-     */
-    public void submitLogin(ActionEvent event) {
-        try {
-            assert username != null;
-            User up = (new UserDAO()).findById(username);
-            if (up == null) {
-                if (passwordRequired) {
-                    unknownUser = true;
-                } else {
-                    createNewUserNoPassword(username);
-                    try {
-                        UIBeanHelper.login(username, false);
-                    } catch (UnsupportedEncodingException e) {
-                        log.error(e);
-                    } catch (IOException e) {
-                        log.error(e);
-                    }
-                }
-            } else if (passwordRequired) {
-                if (!java.util.Arrays.equals(EncryptionUtil.encrypt(password), up.getPassword())) {
-                    invalidPassword = true;
-                } else {
-                    UIBeanHelper.login(username, passwordRequired);
-                }
-            } else {
-                UIBeanHelper.login(username, passwordRequired);
-            }
-        } catch (UnsupportedEncodingException e) {
-            log.error(e);
-            throw new RuntimeException(e); // @TODO -- wrap in gp system
-            // exeception.
-        } catch (IOException e) {
-            log.error(e);
-            throw new RuntimeException(e); // @TODO -- wrap in gp system
-            // exeception.
-        } catch (NoSuchAlgorithmException e) {
-            log.error(e);
-            throw new RuntimeException(e); // @TODO -- wrap in gp system
-            // exeception.
-
-        }
+    public boolean isUnknownUser() {
+	return unknownUser;
     }
 
     public String logout() {
-        UIBeanHelper.logout();
-        return "logout";
+	UIBeanHelper.logout();
+	return "logout";
+    }
+
+    public void setPassword(String password) {
+	this.password = password;
+    }
+
+    public void setUsername(String username) {
+	this.username = username;
+    }
+
+    /**
+     * Submit the user / password. For now this uses an action listener since we are redirecting to a page outside of
+     * the JSF framework. This should be changed to an action to use jsf navigation in the future.
+     * 
+     * @param event --
+     *                ignored
+     */
+    public void submitLogin(ActionEvent event) {
+	try {
+	    assert username != null;
+	    User up = (new UserDAO()).findById(username);
+	    if (up == null) {
+		if (passwordRequired) {
+		    unknownUser = true;
+		} else {
+		    createNewUserNoPassword(username);
+		    try {
+			UIBeanHelper.login(username, false);
+		    } catch (UnsupportedEncodingException e) {
+			log.error(e);
+		    } catch (IOException e) {
+			log.error(e);
+		    }
+		}
+	    } else if (passwordRequired) {
+		if (!java.util.Arrays.equals(EncryptionUtil.encrypt(password), up.getPassword())) {
+		    invalidPassword = true;
+		} else {
+		    UIBeanHelper.login(username, passwordRequired);
+		}
+	    } else {
+		UIBeanHelper.login(username, passwordRequired);
+	    }
+	} catch (UnsupportedEncodingException e) {
+	    log.error(e);
+	    throw new RuntimeException(e); // @TODO -- wrap in gp system
+	    // exeception.
+	} catch (IOException e) {
+	    log.error(e);
+	    throw new RuntimeException(e); // @TODO -- wrap in gp system
+	    // exeception.
+	} catch (NoSuchAlgorithmException e) {
+	    log.error(e);
+	    throw new RuntimeException(e); // @TODO -- wrap in gp system
+	    // exeception.
+
+	}
+    }
+
+    public static void createNewUserNoPassword(String username) {
+	User newUser = new User();
+	newUser.setUserId(username);
+	try {
+	    newUser.setPassword(EncryptionUtil.encrypt(""));
+	} catch (NoSuchAlgorithmException e) {
+	    log.error(e);
+	}
+	(new UserDAO()).save(newUser);
     }
 
 }
