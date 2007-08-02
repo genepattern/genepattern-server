@@ -273,21 +273,6 @@ public class ServerSettingsBean {
     }
 
     /**
-     * @return
-     */
-    public String getSearchEngine() {
-        String searchEngine = (String) settings.get("disable.gp.indexing");
-        return searchEngine;
-    }
-
-    /**
-     * @param searchEngine
-     */
-    public void setSearchEngine(String searchEngine) {
-        settings.put("disable.gp.indexing", searchEngine);
-    }
-
-    /**
      * @param logFile
      * @return
      * @throws IOException
