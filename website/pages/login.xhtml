@@ -7,11 +7,23 @@
 
 
 <ui:composition template="/templates/common.xhtml">
+	<ui:define name="validationInit">
+		<script type="text/javascript" language="javascript"> 
+      /* <![CDATA[ */
+      function onLoad()
+      {
+        var objForm = document.forms["loginForm"];
+        objForm.username.required = 1;
+        objForm.username.err = "Username is required";
+      }
+       /* ]]> */
 
+    </script>
+    </ui:define>
 	<ui:define name="pageTitle">GenePattern sign-in</ui:define>
 	<ui:define name="body">
 
-		<h:form>
+		<h:form onsubmit="return validateForm(this);" id="loginForm">
 			<table width="330">
 				<tr>
 					<td><span style="font-weight: bold;"> Sign-in to
@@ -41,7 +53,7 @@
 
 			<h:panelGrid columns="2">
 				<h:outputLabel value="Username:" for="username"></h:outputLabel>
-				<t:inputText size="50" value="#{loginBean.username}" id="username_field"
+				<t:inputText size="50" value="#{loginBean.username}" id="username"
 				    forceId="true"
 					required="true" requiredMessage="Username is required"/>
 				
