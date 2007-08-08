@@ -37,6 +37,7 @@ import java.util.Vector;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
+
 import org.apache.log4j.Logger;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -72,14 +73,10 @@ import org.xml.sax.InputSource;
 
 public class RunPipeline {
     
-    private static Logger log = Logger.getLogger(RunPipeline.class);
-    
-    public static final String STDOUT = GPConstants.STDOUT;
-    
-    public static final String STDERR = GPConstants.STDERR;
-    
+	private static final String logFile = "pipelineErrors.log";  //one log file per pipeline
+    private static final Logger log = setupLog4jConfig(logFile);
+
     RunPipelineOutputDecoratorIF decorator;
-    
     PipelineModel model;
     
     /** server to run the pipeline on */
@@ -88,18 +85,14 @@ public class RunPipeline {
     /** job id for the pipeline */
     int jobId;
     
-    // AnalysisWebServiceProxy analysisProxy;
     LocalAnalysisClient analysisClient;
     
-    // AdminProxy adminProxy;
     LocalAdminClient adminClient;
     
     public RunPipeline(String server, String userID, int jobId, PipelineModel model,
             RunPipelineOutputDecoratorIF decorator) throws Exception {
         
-        // this.analysisProxy = new AnalysisWebServiceProxy(server, userID);
         this.analysisClient = new LocalAnalysisClient(userID);
-        // this.adminProxy = new AdminProxy(server, userID);
         this.adminClient = new LocalAdminClient(userID);
         
         this.server = server;
@@ -110,16 +103,13 @@ public class RunPipeline {
         this.decorator = decorator == null ? new RunPipelineBasicDecorator() : decorator;
     }
     
-    public static String logFile = "../../../../logs/pipelineErrors.log";
-    
-    public static void setupLog4jConfig() {
-        //String override = System.getProperty("log4j.properties");
-        //if (override != null)
-        //    return;
-        Properties log4jconfig = new Properties();
+    public static Logger setupLog4jConfig(String logFile) {
+    	Properties log4jconfig = new Properties();
+        //log4jconfig.setProperty("log4j.debug", "true"); //uncomment this line to debug Log4j configuration
         log4jconfig.setProperty("log4j.rootLogger", "error, R");
         log4jconfig.setProperty("log4j.logger.org.genepattern", "DEBUG, R");
         log4jconfig.setProperty("log4j.threshold", "OFF");
+        log4jconfig.setProperty("log4j.appender.All.File", logFile);
         log4jconfig.setProperty("log4j.appender.R", "org.apache.log4j.RollingFileAppender");
         log4jconfig.setProperty("log4j.appender.R.File", logFile);
         log4jconfig.setProperty("log4j.appender.R.MaxFileSize", "100KB");
@@ -127,10 +117,12 @@ public class RunPipeline {
         log4jconfig.setProperty("log4j.appender.R.layout", "org.apache.log4j.PatternLayout");
         log4jconfig.setProperty("log4j.appender.R.layout.ConversionPattern",
                 "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] (%F:%L) - %m%n");
-        
+
+        System.setProperty("log4j.defaultInitOverride", "true"); //required to prevent stack trace to System.err
         PropertyConfigurator.configure(log4jconfig);
+        return Logger.getLogger(RunPipeline.class);
     }
-    
+
     /**
      * expects minimum of two args. pipeline name, username, args to pipeline
      * Additionally the system properties jobID, LSID, genepattern.properties
@@ -138,8 +130,6 @@ public class RunPipeline {
      */
     public static void main(String args[]) throws Exception {
         try {
-            setupLog4jConfig();
-            
             Properties additionalArguments = new Properties();
             String genePatternPropertiesFile = System.getProperty("genepattern.properties") + java.io.File.separator
                     + "genepattern.properties";
@@ -160,7 +150,8 @@ public class RunPipeline {
                 String val = genepatternProps.getProperty(key);
                 System.setProperty(key, val);
             }
-            
+
+
             String trustStore = genepatternProps.getProperty("javax.net.ssl.trustStore");
             if (trustStore != null)
                 System.setProperty("javax.net.ssl.trustStore", trustStore);
@@ -664,7 +655,7 @@ public class RunPipeline {
                 // not an extension, not a number, look for stdout or stderr
                 
                 // fileStr is stderr or stdout instead of an index
-                if (fileStr.equals(STDOUT) || fileStr.equals(STDERR)) {
+                if (fileStr.equals(GPConstants.STDOUT) || fileStr.equals(GPConstants.STDERR)) {
                     fileName = fileStr;
                 }
             }
