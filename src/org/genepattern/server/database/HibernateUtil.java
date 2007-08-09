@@ -1,8 +1,6 @@
 package org.genepattern.server.database;
 
 import java.math.BigDecimal;
-import java.sql.*;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.Sequence;
