@@ -80,7 +80,6 @@ public class ZipCatalogUpload {
 	} else {
 	    uploadFile(targetURL, modulePatchOrSuite, devOrProd, aFile);
 	}
-	regenerateCatalog(targetURL);
     }
 
     /**
