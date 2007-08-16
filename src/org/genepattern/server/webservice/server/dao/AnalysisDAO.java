@@ -13,24 +13,31 @@
 package org.genepattern.server.webservice.server.dao;
 
 import java.io.File;
-import java.net.MalformedURLException;
+import java.math.BigInteger;
 import java.rmi.RemoteException;
-import java.sql.*;
-import java.util.*;
-import java.util.Date;
+import java.util.Calendar;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.genepattern.server.*;
+
+import org.genepattern.server.JobIDNotFoundException;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.domain.*;
 import org.genepattern.server.domain.AnalysisJob;
+import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.domain.JobStatusDAO;
+import org.genepattern.server.domain.Lsid;
+import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
-import org.genepattern.webservice.*;
-// import org.genepattern.webservice.JobStatus;
-import org.hibernate.*;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
+
+import org.hibernate.Query;
 
 /**
  * AnalysisHypersonicDAO.java
@@ -96,7 +103,6 @@ AnalysisDAO extends BaseDAO {
      * 
      */
     public String getTemporaryPipelineName(int jobNumber) throws OmnigeneException {
-
         String hql = "select taskName from org.genepattern.server.domain.AnalysisJob where jobNo = :jobNumber";
         Query q = getSession().createQuery(hql);
         q.setInteger("jobNumber", jobNumber);
@@ -643,10 +649,7 @@ AnalysisDAO extends BaseDAO {
         try {
             LSID newLSID = lsid.copy();
             newLSID.setVersion(newLSID.getIncrementedMinorVersion());
-            String sql = "select count(*) from lsids where lsid = :newLSID";
-            Query query = getSession().createSQLQuery(sql);
-            query.setString("newLSID", newLSID.toString());
-            int count = (Integer) query.uniqueResult();
+            int count = this.getLsidCount(newLSID);
 
             String nextVersion = "1";
             if (count > 0) {
@@ -677,32 +680,46 @@ AnalysisDAO extends BaseDAO {
         try {
             LSID newLSID = lsid.copy();
             newLSID.setVersion(newLSID.getIncrementedMinorVersion());
-            String sql = "select count(*) from lsids where lsid = :newLSID";
-            Query query = getSession().createSQLQuery(sql);
-            query.setString("newLSID", newLSID.toString());
-            int count = (Integer) query.uniqueResult();
+            int count = getLsidCount(newLSID);
 
             String nextVersion = "1";
             if (count > 0) {
                 newLSID.setVersion(lsid.getVersion() + ".0");
-                // System.out.println("AHDAO.getNextLSIDVersion: recursing with
-                // " + newLSID.getVersion());
+                // log.debug("getNextSuiteLSIDVersion: recursing with " + newLSID.getVersion());
                 nextVersion = getNextSuiteLSIDVersion(newLSID);
             }
             else {
                 // not found: must be version 1
                 nextVersion = newLSID.getVersion();
-                // System.out.println("AHDAO.getNextLSIDVersion: returning " +
-                // nextVersion);
+                // log.debug("getNextLSIDVersion: returning " + nextVersion);
             }
             return nextVersion;
-
         }
         catch (Exception e) {
-            log.error("AnalysisHypersonicDAO: getNextSuiteLSIDVersion failed: " + e);
+            log.error("getNextSuiteLSIDVersion failed: " + e);
             throw new OmnigeneException(e);
         }
-
     }
+
+    private int getLsidCount(LSID lsid) {
+        int count = 0;
+
+        final String sql = "select count(*) from lsids where lsid = :newLSID";
+        Query query = getSession().createSQLQuery(sql);
+        query.setString("newLSID", lsid.toString());
+        query.setReadOnly(true);
+        Object result = query.uniqueResult();
+        if (result instanceof Integer) {
+            count = (Integer) result;
+        }
+        else if (result instanceof BigInteger) {
+            count = ((BigInteger) result).intValue();
+        }
+        else {
+            log.error("Unknown type returned from query: "+result.getClass().getName());            
+        }
+        return count;
+    }
+    
 
 }
