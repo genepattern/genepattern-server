@@ -17,21 +17,31 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.junit.Test;
 
 public class ZipCatalogUpload {
     public static final String DEV = "dev";
     public static final String PROD = "prod";
     public static final String MODULE = "module";
     public static final String PATCH = "patch";
-    public static final String BROAD_URL = "http://www.broad.mit.edu/webservices/gpModuleRepository/uploadForm.jsp";
+    public static final String BROAD_URL = "http://www.broad.mit.edu/webservices/gpModuleRepository/genepatternmodulerepository";
+
+    @Test
+    public void testUploadToDev() throws Exception {
+	ZipCatalogUpload.main(new String[] { BROAD_URL, "module", "dev",
+		"/Users/jgould/Documents/workspace/modules/release_archive/PredictionResultsViewer.zip" });
+    }
 
     public static void main(String[] args) throws Exception {
+
 	if (args.length != 4) {
 	    System.out.println("Usage: java ZipCatalogUpload url [module|patch] [prod|dev] fileOrDir\n\n");
 	    System.out.println("To load all zips in a directory:");
@@ -106,21 +116,19 @@ public class ZipCatalogUpload {
 
     private static void uploadFile(String targetURL, String modulePatchOrSuite, String devOrProd, File targetFile)
 	    throws IOException {
-	PostMethod filePost = new PostMethod(targetURL);
-	filePost.addParameter("repos", modulePatchOrSuite);
-	filePost.addParameter("env", devOrProd);
-	filePost.addParameter("cmd", "upload");
+	PostMethod filePost = new PostMethod(
+		"http://www.broad.mit.edu/webservices/gpModuleRepository/genepatternmodulerepository");
 	HttpClient client = new HttpClient();
-	Part[] parts = { new FilePart("zipfilename", targetFile) };
+	client.setState(new HttpState());
+	Part[] parts = { new FilePart("zipfilename", targetFile), new StringPart("repos", modulePatchOrSuite),
+		new StringPart("env", devOrProd), new StringPart("cmd", "upload") };
 	filePost.setRequestEntity(new MultipartRequestEntity(parts, filePost.getParams()));
 
-	int status = client.executeMethod(filePost);
-	if (status == HttpStatus.SC_OK) {
-	    System.out.println("Successfully uploaded " + targetFile.getName());
-	} else {
-	    System.out.println("An error occurred while uploading " + targetFile.getName());
-	    System.out.println("Response: " + HttpStatus.getStatusText(status));
+	int code = client.executeMethod(filePost);
+	if (code != HttpStatus.SC_OK) {
+	    System.out.println("Error uploading " + targetFile + ".");
 	}
+	System.out.println("Response: " + filePost.getResponseBodyAsString());
 	filePost.releaseConnection();
     }
 }
