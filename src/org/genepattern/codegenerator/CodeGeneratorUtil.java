@@ -23,7 +23,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.webservice.server.local.LocalAdminClient;
+import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.JobInfo;
@@ -84,11 +84,9 @@ public class CodeGeneratorUtil {
      *             if an error occurs while generating the code.
      */
 
-    public static String getCode(String language, AnalysisJob job) throws Exception {
+    public static String getCode(String language, AnalysisJob job, TaskInfo taskInfo, IAdminClient adminClient) throws Exception {
         TaskCodeGenerator codeGenerator = languageToCodeGenerator.get(language);
         final JobInfo jobInfo = job.getJobInfo();
-        String username = job.getJobInfo().getUserId();
-        LocalAdminClient adminClient = new LocalAdminClient(username);
         List<ParameterInfo> parameterInfoList = new ArrayList<ParameterInfo>();
         ParameterInfo[] params = jobInfo.getParameterInfoArray();
         for (int i = 0; i < params.length; i++) {
@@ -118,11 +116,10 @@ public class CodeGeneratorUtil {
             }
         }
 
-        TaskInfo taskInfo = adminClient.getTask(jobInfo.getTaskLSID());
         String code = null;
         if (taskInfo != null) { // task exists on server
 
-            String serializedModel = (String) taskInfo.getTaskInfoAttributes().get("serializedModel");
+            String serializedModel = taskInfo.getTaskInfoAttributes().get("serializedModel");
             if (serializedModel != null && serializedModel.length() > 0) {
                 Map<String, ParameterInfo> runtimePrompts = new HashMap<String, ParameterInfo>();
                 for (int i = 0; i < parameterInfoList.size(); i++) {
@@ -134,8 +131,7 @@ public class CodeGeneratorUtil {
 
                 PipelineModel model = null;
                 try {
-                    model = PipelineModel.toPipelineModel((String) taskInfo.getTaskInfoAttributes().get(
-                            "serializedModel"));
+                    model = PipelineModel.toPipelineModel(serializedModel);
                 } catch (Exception e) {
                     log.error(e);
                     throw e;
@@ -155,7 +151,7 @@ public class CodeGeneratorUtil {
                         }
                     }
                     model.setLsid((String) taskInfo.getTaskInfoAttributes().get(GPConstants.LSID));
-                    model.setUserID(username);
+                    model.setUserID(jobInfo.getUserId());
 
                     TaskInfo pipelineStep = adminClient.getTask(js.getLSID());
 
@@ -174,7 +170,6 @@ public class CodeGeneratorUtil {
                 }
 
             }
-
         }
 
         if (code == null) {
