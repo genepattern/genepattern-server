@@ -28,15 +28,16 @@ import javax.activation.FileDataSource;
 
 import org.apache.axis.client.Service;
 import org.apache.axis.configuration.BasicClientConfig;
+import org.apache.log4j.Logger;
 
 /**
  * @author Joshua Gould
  */
 public class AnalysisWebServiceProxy {
+    private static final Logger log = Logger.getLogger(AnalysisWebServiceProxy.class);
+
     String endpoint = null;
-
     org.apache.axis.client.Service service = null;
-
     AnalysisSoapBindingStub stub;
 
     public AnalysisWebServiceProxy(String url, String userName, String password) throws WebServiceException {
@@ -144,9 +145,18 @@ public class AnalysisWebServiceProxy {
                 }
             }
 
-            return parentJobNumber == -1 ? stub.submitJob(taskID, parameters, files) : stub.submitJob(taskID,
-                    parameters, files, parentJobNumber);
-        } catch (RemoteException re) {
+            JobInfo jobInfo = null;
+            log.debug("submitJob, taskId="+taskID+", parentJobNumber="+parentJobNumber);
+            if (parentJobNumber == -1) {
+                jobInfo = stub.submitJob(taskID, parameters, files);
+            }
+            else {
+                jobInfo = stub.submitJob(taskID, parameters, files, parentJobNumber);
+            }
+            log.debug("returned jobNumber: "+ (jobInfo == null ? "null" : jobInfo.getJobNumber()));
+            return jobInfo;
+        } 
+        catch (RemoteException re) {
             throw new WebServiceException(re);
         }
     }
