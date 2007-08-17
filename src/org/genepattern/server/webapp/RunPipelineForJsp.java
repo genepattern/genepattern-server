@@ -226,10 +226,9 @@ public class RunPipelineForJsp {
         String tomcatLibDir = System.getProperty("tomcatCommonLib") + "/";
         String webappLibDir = System.getProperty("webappDir") + "/" + "WEB-INF" + "/" + "lib" + "/";
         String webappClassesDir = System.getProperty("webappDir") + "/WEB-INF/classes";
-        String resourcesDir = null;
-        resourcesDir = new File(System.getProperty("resources"))
-        .getAbsolutePath() + "/";
-        ArrayList cmdLine = new ArrayList();
+        String resourcesDir = new File(System.getProperty("resources")).getAbsolutePath() + "/";
+
+        List<String> cmdLine = new ArrayList<String>();
         cmdLine.add(JAVA_HOME + File.separator + "bin" + File.separator + "java");
         cmdLine.add("-cp");
         StringBuffer classPath = new StringBuffer();
@@ -253,7 +252,8 @@ public class RunPipelineForJsp {
         cmdLine.add("-Dgenepattern.properties=" + resourcesDir);
         cmdLine.add("-DGenePatternURL=" + System.getProperty("GenePatternURL"));
         cmdLine.add("-D" + GPConstants.LSID + "=" + (String) taskInfo.getTaskInfoAttributes().get(GPConstants.LSID));
-        cmdLine.add("org.genepattern.server.webapp.RunPipeline");
+        String pipelineMain = System.getProperty("pipeline.main", "org.genepattern.server.webapp.RunPipeline");
+        cmdLine.add(pipelineMain);
         
         // -------------------------------------------------------------
         // ------Serialize the pipeline model for the java executor-----
@@ -397,7 +397,14 @@ public class RunPipelineForJsp {
                 baseURL, taskInfo, commandLineParams, tempDir, decorator);
         
         // spawn the command
-        log.debug("Spawning pipeline process: " + commandLine);
+        if (log.isDebugEnabled()) {
+            log.debug("Spawning pipeline process: ");
+            StringBuffer buf = new StringBuffer();
+            for(String str : commandLine) {
+                buf.append(str+"\t\n");
+            }
+            log.debug(buf.toString());
+        }
         final Process process = Runtime.getRuntime().exec(commandLine, null, tempDir);
         GenePatternAnalysisTask.storeProcessInHash(Integer.toString(jobID), process);
         
