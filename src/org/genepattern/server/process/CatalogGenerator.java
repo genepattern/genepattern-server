@@ -27,6 +27,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.StringUtils;
@@ -56,7 +57,7 @@ public class CatalogGenerator {
         StringWriter strwriter = new StringWriter(); // for now just write to
         // the string
         BufferedWriter buff = new BufferedWriter(strwriter);
-        LocalAdminClient adminClient = new LocalAdminClient(userID);
+        IAdminClient adminClient = new LocalAdminClient(userID);
 
         // get the map of module doc files to pass in to the suite
         // so it can link to the module docs as well

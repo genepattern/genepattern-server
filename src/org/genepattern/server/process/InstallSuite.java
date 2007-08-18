@@ -23,6 +23,7 @@ import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.dao.TaskIntegratorDAO;
+import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -112,7 +113,7 @@ public class InstallSuite {
     }
 
     public void installTask(String[] lsids) throws WebServiceException, TaskInstallationException {
-        final LocalAdminClient adminClient = new LocalAdminClient(username);
+        final IAdminClient adminClient = new LocalAdminClient(username);
         for (String lsid : lsids) {
             if (adminClient.getTask(lsid) == null) {
                 this.installTask(lsid);
