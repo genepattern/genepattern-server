@@ -31,7 +31,7 @@ import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
-public class LocalAdminClient {
+public class LocalAdminClient implements IAdminClient {
     AdminService service;
 
     String userName;
