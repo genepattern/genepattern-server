@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.OmnigeneException;
@@ -89,6 +90,19 @@ public class PipelineModel implements Serializable {
 	protected String version = null;
 
 	protected String lsid = "";
+	
+	protected IAdminClient adminClient= null;
+
+	public IAdminClient getAdminClient() {
+	    if (adminClient == null) {
+	        adminClient = new LocalAdminClient(getUserID());
+	    }
+	    return adminClient;
+	}
+
+	public void setAdminClient(IAdminClient adminClient) {
+	    this.adminClient = adminClient; 
+ 	}
 
 	public static final String PIPELINE_MODEL = GPConstants.SERIALIZED_MODEL;
 
@@ -420,6 +434,13 @@ public class PipelineModel implements Serializable {
 			IllegalArgumentException, IllegalAccessException,
 			InvocationTargetException, NoSuchMethodException,
 			SecurityException, OmnigeneException, Exception {
+	    return toPipelineModel(inputXMLSource, verify, null);
+	}
+	public static PipelineModel toPipelineModel(InputSource inputXMLSource, boolean verify, IAdminClient adminClient)
+        throws IOException, SAXException, ParserConfigurationException,
+        IllegalArgumentException, IllegalAccessException,
+        InvocationTargetException, NoSuchMethodException,
+        SecurityException, OmnigeneException, Exception {
 
 		Document doc = DocumentBuilderFactory.newInstance()
 				.newDocumentBuilder().parse(inputXMLSource);
@@ -431,6 +452,7 @@ public class PipelineModel implements Serializable {
 		//System.out.println(dumpDOM(root, 0));
 
 		PipelineModel model = new PipelineModel();
+		model.setAdminClient(adminClient);
 		model.init();
 		String name = null;
 		String value = null;
@@ -555,8 +577,7 @@ public class PipelineModel implements Serializable {
 				hmParams.put(paramName, value);
 			}
 
-			LocalAdminClient adminClient = new LocalAdminClient(getUserID());
-			taskInfo = adminClient.getTask((lsid.length() > 0 ? lsid : taskName));
+			taskInfo = getAdminClient().getTask((lsid.length() > 0 ? lsid : taskName));
 			//taskInfo = GenePatternAnalysisTask.getTaskInfo(
 			//		(lsid.length() > 0 ? lsid : taskName), getUserID());
 			if (taskInfo == null) {
@@ -593,8 +614,7 @@ public class PipelineModel implements Serializable {
 			try {
 				//taskInfo = GenePatternAnalysisTask.getTaskInfo(
 				//		(lsid.length() > 0 ? lsid : taskName), getUserID());
-				LocalAdminClient adminClient = new LocalAdminClient(getUserID());
-				taskInfo = adminClient.getTask((lsid.length() > 0 ? lsid : taskName));
+				taskInfo = getAdminClient().getTask((lsid.length() > 0 ? lsid : taskName));
 				
 			} catch (Throwable t) {
 
