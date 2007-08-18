@@ -32,7 +32,13 @@ public class HibernateUtil {
 
         } catch (Throwable ex) {
             // Make sure you log the exception, as it might be swallowed
-            log.error("Initial SessionFactory creation failed.", ex);
+        	if (log != null) {
+        	     log.error("Initial SessionFactory creation failed.", ex);
+        	}
+        	else {
+        	    System.err.println("Initial SessionFactory creation failed: "+ex.getLocalizedMessage());
+        	    ex.printStackTrace(System.err);
+        	}
             throw new ExceptionInInitializerError(ex);
         }
     }
@@ -51,7 +57,6 @@ public class HibernateUtil {
     }
 
     public static Session getSession() {
-
         return getSessionFactory().getCurrentSession();
     }
 
@@ -60,9 +65,15 @@ public class HibernateUtil {
      * 
      */
     public static void closeCurrentSession() {
-        if (getSession().isOpen()) {
-            getSession().close();
+        log.debug("closeCurrentSession...");
+        
+        Session session = getSession();
+        if (session.isOpen()) {
+            log.debug("   session.close...");
+            session.close();
         }
+        
+        log.debug("...closeCurrentSession");
     }
 
     /**
@@ -70,11 +81,17 @@ public class HibernateUtil {
      * 
      */
     public static void commitTransaction() {
+        log.debug("commitTransaction...");
 
-        if (getSession().getTransaction().isActive()) {
-            getSession().getTransaction().commit();
+        Session session = getSession();
+        Transaction tx = session.getTransaction();
+        if (tx.isActive()) {
+            log.debug("   tx.commit...");
+            tx.commit();
             closeCurrentSession();
         }
+        
+        log.debug("...commitTransaction");
     }
 
     /**
@@ -82,11 +99,17 @@ public class HibernateUtil {
      * 
      */
     public static void rollbackTransaction() {
+        log.debug("rollbackTransaction...");
 
-        if (getSession().getTransaction().isActive()) {
-            getSession().getTransaction().rollback();
+        Session session = getSession();
+        Transaction tx = session.getTransaction();
+        if (tx.isActive()) {
+            log.debug("   tx.rollback...");
+            tx.rollback();
             closeCurrentSession();
         }
+        
+        log.debug("...rollbackTransaction");
     }
 
     /**
@@ -95,10 +118,16 @@ public class HibernateUtil {
      * @return
      */
     public static void beginTransaction() {
-
-        if (!getSession().getTransaction().isActive()) {
-            getSession().beginTransaction();
+        log.debug("beginTransaction...");
+        
+        Session session = getSession();
+        Transaction tx = session.getTransaction();
+        if (!tx.isActive()) {
+            log.debug("   session.beginTransaction...");
+            session.beginTransaction();
         }
+        
+        log.debug("...beginTransaction");
     }
 
     public static int getNextSequenceValue(String sequenceName) {
