@@ -121,7 +121,8 @@ public class ParameterFormatConverter {
      */
     public static ParameterInfo[] getParameterInfoArray(String jxbParameterInfoString) throws OmnigeneException {
 
-        ParameterInfo[] parameterInfoArray = null;
+        //ParameterInfo[] parameterInfoArray = null;
+        ParameterInfo[] parameterInfoArray = new ParameterInfo[0];
 
         if (jxbParameterInfoString != null) {
             if (jxbParameterInfoString.trim().length() == 0)
