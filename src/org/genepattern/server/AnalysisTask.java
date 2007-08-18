@@ -14,11 +14,11 @@ package org.genepattern.server;
 
 import java.util.Vector;
 
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.apache.log4j.Logger;
+
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.OmnigeneException;
 
 /**
  * Runnable AnalysisTask - Adapts a Runnable to run within a pre-created thread.
@@ -29,18 +29,13 @@ import org.genepattern.webservice.OmnigeneException;
  */
 
 public class AnalysisTask implements Runnable {
-    
+    private static Logger log = Logger.getLogger(AnalysisTask.class);
+
     private Object jobQueueWaitObject = new Object();
-    
-    AnalysisDAO ds = new AnalysisDAO();
-    
     private Vector jobQueue = new Vector();
     
     // Semaphore to maintain simultaneous job count
     private Semaphore sem = null;
-    
-    private static org.apache.log4j.Category log = org.apache.log4j.Logger
-            .getInstance(AnalysisTask.class);
     
     volatile boolean runFlag = true;
     
@@ -107,7 +102,8 @@ public class AnalysisTask implements Runnable {
                 
                 if (jobQueue.isEmpty()) {
                     try {
-                        jobQueueWaitObject.wait(waitTime);
+                        //jobQueueWaitObject.wait(waitTime);
+                        jobQueueWaitObject.wait();
                     } catch (InterruptedException ie) {
                     }
                 }
@@ -150,19 +146,11 @@ public class AnalysisTask implements Runnable {
         return TASK_NAME;
     }
     
-    private AnalysisTask(int threadCount) {
-        
+    private AnalysisTask(int threadCount) {        
         // create semaphore when thread count >0
         if (threadCount > 0) {
             sem = new Semaphore(threadCount);
         }
-        try {
-            ds = new AnalysisDAO();
-            ;
-        } catch (OmnigeneException oe) {
-            log.error(oe);
-        }
-        
     }
     
     private void doAcquire() {
