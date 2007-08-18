@@ -16,6 +16,7 @@ import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.util.PropertiesManager;
+import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.TaskInfo;
@@ -25,7 +26,7 @@ public class CommandPrefixBean {
 
     private static Logger log = Logger.getLogger(CommandPrefixBean.class);
 
-    private LocalAdminClient admin;
+    private IAdminClient admin;
 
     private String defaultCommandPrefix;
 

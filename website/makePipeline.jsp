@@ -43,6 +43,7 @@
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.webservice.server.local.*,
 		 org.genepattern.server.genepattern.TaskInstallationException,
+		 org.genepattern.server.webservice.server.local.IAdminClient,
 		 org.genepattern.server.webservice.server.local.LocalAdminClient,
 		 org.genepattern.server.webservice.server.DirectoryManager,
  	 	 org.genepattern.data.pipeline.*,
@@ -209,9 +210,11 @@ try {
 	Vector vProblems = new Vector();
 	File tmpDir = new File(System.getProperty("java.io.tmpdir"));
 
-	Map taskCatalog = new LocalAdminClient(requestParameters.getProperty(GPConstants.USERID)).getTaskCatalogByLSID();
+	IAdminClient adminClient = new LocalAdminClient(requestParameters.getProperty(GPConstants.USERID));
+	Map taskCatalog = adminClient.getTaskCatalogByLSID();
 
 	PipelineModel model = new PipelineModel();
+	model.setAdminClient(adminClient);
 	// NB: could use any language Fcode generator here
 	String language = requestParameters.getProperty(GPConstants.LANGUAGE);
 	if (language == null) language = "R";

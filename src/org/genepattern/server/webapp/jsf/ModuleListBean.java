@@ -8,6 +8,7 @@ import java.util.List;
 import javax.faces.model.SelectItem;
 
 import org.genepattern.server.webservice.server.AdminService;
+import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -16,7 +17,7 @@ public class ModuleListBean {
 
     public List getLatestModules() {
 
-        LocalAdminClient admin = new LocalAdminClient(UIBeanHelper.getUserId());
+        IAdminClient admin = new LocalAdminClient(UIBeanHelper.getUserId());
 
         try {
             return asSelectItemList(admin.getLatestTasks());
@@ -31,7 +32,7 @@ public class ModuleListBean {
 
     public List getAllModules() {
 
-        LocalAdminClient admin = new LocalAdminClient(UIBeanHelper.getUserId());
+        IAdminClient admin = new LocalAdminClient(UIBeanHelper.getUserId());
 
         try {
             return asSelectItemList(admin.getTaskCatalog());

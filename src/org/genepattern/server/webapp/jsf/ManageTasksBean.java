@@ -21,6 +21,7 @@ import javax.faces.event.ActionEvent;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
@@ -40,7 +41,7 @@ public class ManageTasksBean {
 
 	private TreeMap<String, VersionInfo> indexedVersions;
 
-	private LocalAdminClient adminClient = null;
+	private IAdminClient adminClient = null;
 
 	private boolean pipeline;
 
@@ -273,7 +274,7 @@ public class ManageTasksBean {
 
     public ManageTasksBean() {
 	adminModules = AuthorizationHelper.adminModules();
-	LocalAdminClient adminClient = new LocalAdminClient(UIBeanHelper.getUserId());
+	IAdminClient adminClient = new LocalAdminClient(UIBeanHelper.getUserId());
 	try {
 	    String userId = UIBeanHelper.getUserId();
 	    this.includeAllPublicModules = Boolean.valueOf(new UserDAO().getPropertyValue(userId,

@@ -17,6 +17,7 @@ import java.io.*;
 import java.util.*;
 
 
+import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 
 import org.genepattern.webservice.TaskInfo;
@@ -143,7 +144,7 @@ public class SuiteInfoManifestXMLGenerator{
 
 	protected static void writeSuiteModules(BufferedWriter bout, SuiteInfo sv) throws IOException{
 		String[] modules = sv.getModuleLSIDs();
-		LocalAdminClient adminClient = new LocalAdminClient(userId);
+		IAdminClient adminClient = new LocalAdminClient(userId);
 
 
 		for (int i=0; i < modules.length; i++ ){

@@ -31,6 +31,7 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.StringUtils;
@@ -218,7 +219,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
         PrintWriter out = new PrintWriter(strOut);
 
         String userId = System.getProperty("userId");
-        LocalAdminClient adminClient = new LocalAdminClient(userId);
+        IAdminClient adminClient = new LocalAdminClient(userId);
         TaskInfo taskInfo = null;
         try {
             taskInfo = adminClient.getTask(jobSubmission.getLSID());

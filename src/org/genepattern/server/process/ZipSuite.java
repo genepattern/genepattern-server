@@ -23,6 +23,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.SuiteInfo;
@@ -128,7 +129,7 @@ public class ZipSuite extends CommandLineAction {
 
 		SuiteInfo suite = null;
 		
-		LocalAdminClient adminClient = new LocalAdminClient(userID);
+		IAdminClient adminClient = new LocalAdminClient(userID);
 		SuiteInfoManifestXMLGenerator.userId = userID;
 
 		suite = adminClient.getSuite(name);

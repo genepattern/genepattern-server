@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
+import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -48,7 +49,7 @@ public class IndexPageBean {
         try {
             String userID = getUserId();
 
-            LocalAdminClient adminClient = new LocalAdminClient(userID);
+            IAdminClient adminClient = new LocalAdminClient(userID);
             Collection latestTmTasks = adminClient.getLatestTasks();
             HashMap latestTaskMap = new HashMap();
             for (Iterator itTasks = latestTmTasks.iterator(); itTasks.hasNext();) {
@@ -80,7 +81,7 @@ public class IndexPageBean {
                 String userID = getUserId();
                 boolean userIDKnown = !(userID == null || userID.length() == 0);
 
-                LocalAdminClient adminClient = new LocalAdminClient(userID);
+                IAdminClient adminClient = new LocalAdminClient(userID);
                 Collection tmTasks = null;
                 Collection latestTmTasks = adminClient.getLatestTasks();
                 ArrayList suiteFilterAttr = (ArrayList) UIBeanHelper.getSessionMap().get("suiteSelection");
@@ -138,7 +139,7 @@ public class IndexPageBean {
             String userID = (String) request.getAttribute("userID");
             boolean userIDKnown = !(userID == null || userID.length() == 0);
 
-            LocalAdminClient adminClient = new LocalAdminClient(userID);
+            IAdminClient adminClient = new LocalAdminClient(userID);
             Collection tmTasks = null;
             Collection latestTmTasks = adminClient.getLatestTasks();
             ArrayList suiteFilterAttr = (ArrayList) request.getSession().getAttribute("suiteSelection");

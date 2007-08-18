@@ -22,6 +22,7 @@ import org.genepattern.server.process.MissingTaskException;
 import org.genepattern.server.process.ZipSuite;
 import org.genepattern.server.process.ZipSuiteWithDependents;
 import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.LSIDUtil;
 import org.genepattern.webservice.SuiteInfo;
@@ -144,7 +145,7 @@ public class ManageSuiteBean {
 
             HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
 
-            LocalAdminClient adminClient = new LocalAdminClient(userID);
+            IAdminClient adminClient = new LocalAdminClient(userID);
             SuiteInfo si = adminClient.getSuite(lsid);
             String contentType = "application/x-zip-compressed" + "; name=\"" + si.getName() + ".zip" + "\";";
             response.addHeader("Content-Disposition", "attachment; filename=\"" + si.getName() + ".zip" + "\";");
