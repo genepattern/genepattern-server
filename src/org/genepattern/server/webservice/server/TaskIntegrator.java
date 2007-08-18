@@ -64,6 +64,7 @@ import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.dao.TaskIntegratorDAO;
+import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -952,7 +953,7 @@ public class TaskIntegrator {
         if ((lsid != null) && (lsid.length() > 0)) {
             try {
 
-                LocalAdminClient adminClient = new LocalAdminClient("GenePattern");
+                IAdminClient adminClient = new LocalAdminClient("GenePattern");
 
                 SuiteInfo oldsi = adminClient.getSuite(lsid);
                 String oldDir = DirectoryManager.getSuiteLibDir(null, lsid, "GenePattern");
@@ -999,7 +1000,7 @@ public class TaskIntegrator {
 
         String newLsid = modifySuite(access_id, lsid, name, description, author, owner, new ArrayList(Arrays
                 .asList(moduleLsids)), new ArrayList());
-        LocalAdminClient adminClient = new LocalAdminClient("GenePattern");
+        IAdminClient adminClient = new LocalAdminClient("GenePattern");
 
         SuiteInfo si = adminClient.getSuite(newLsid);
         ArrayList docFiles = new ArrayList(Arrays.asList(si.getDocFiles()));

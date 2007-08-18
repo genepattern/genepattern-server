@@ -36,6 +36,7 @@ import org.genepattern.server.domain.TaskMasterDAO;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -296,7 +297,7 @@ public class DirectoryManager {
         String ret = null;
         String name = suiteName;
         if (suiteName == null) {
-            LocalAdminClient adminClient = new LocalAdminClient(username);
+            IAdminClient adminClient = new LocalAdminClient(username);
             SuiteInfo si = adminClient.getSuite(sLSID);
             name = si.getName();
         }
