@@ -494,6 +494,7 @@ public class Analysis extends GenericWebService {
      *                thrown if problems are encountered
      */
     public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files) throws WebServiceException {
+        log.debug("submitJob: "+taskID);
         String username = getUsernameFromContext();
 
         JobInfo jobInfo = null;
@@ -530,9 +531,15 @@ public class Analysis extends GenericWebService {
     public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files, int parentJobId)
             throws WebServiceException {
         try {
+            log.debug("submitJob parentJobId="+parentJobId);
             renameInputFiles(parameters, files);
+            log.debug("new AddNewJobHander...");
             AddNewJobHandler req = new AddNewJobHandler(taskID, getUsernameFromContext(), parameters, parentJobId);
-            return req.executeRequest();
+            log.debug("executeRequest...");
+            
+            JobInfo retVal = req.executeRequest();
+            log.debug("returning job "+retVal.getJobNumber());
+            return retVal;
         } catch (Exception e) {
             throw new WebServiceException(e);
         }
