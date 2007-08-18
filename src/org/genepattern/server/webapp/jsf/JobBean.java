@@ -36,6 +36,7 @@ import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
@@ -239,7 +240,8 @@ public class JobBean {
             String language = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("language"));
             String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("taskLSID"));
 
-            TaskInfo taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(lsid);
+            IAdminClient adminClient = new LocalAdminClient(UIBeanHelper.getUserId());
+            TaskInfo taskInfo = adminClient.getTask(lsid);
             if (taskInfo == null) {
                 return "Module not found";
             }
@@ -262,7 +264,7 @@ public class JobBean {
             URL url = new URL(System.getProperty("GenePatternURL"));
             String server = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort();
             AnalysisJob job = new AnalysisJob(server, jobInfo, JobBean.isVisualizer(taskInfo));
-            return CodeGeneratorUtil.getCode(language, job);
+            return CodeGeneratorUtil.getCode(language, job, taskInfo, adminClient);
         } catch (WebServiceException e) {
             log.error("Error getting code.", e);
         } catch (Exception e) {
@@ -385,8 +387,8 @@ public class JobBean {
     }
 
     public void viewCode(String language, AnalysisJob job, String baseName) {
+        OutputStream os = null;
         try {
-            String code = CodeGeneratorUtil.getCode(language, job);
             HttpServletResponse response = UIBeanHelper.getResponse();
             String filename = baseName + CodeGeneratorUtil.getFileExtension(language);
             response.setHeader("Content-disposition", "inline; filename=\"" + filename + "\"");
@@ -397,15 +399,21 @@ public class JobBean {
             response.setHeader("Pragma", "no-cache"); // HTTP 1.0 cache
             // control
             response.setDateHeader("Expires", 0);
+            os = response.getOutputStream();
 
-            OutputStream os = response.getOutputStream();
+            IAdminClient adminClient = new LocalAdminClient(UIBeanHelper.getUserId());
+            TaskInfo taskInfo = adminClient.getTask(job.getLSID());
+            
+            String code = CodeGeneratorUtil.getCode(language, job, taskInfo, adminClient);
+
             PrintWriter pw = new PrintWriter(os);
             pw.println(code);
             pw.flush();
             os.close();
 
             UIBeanHelper.getFacesContext().responseComplete();
-        } catch (Exception e) {
+        } 
+        catch (Exception e) {
             log.error("Error viewing code for job " + job.getJobInfo().getJobNumber(), e);
         }
     }
