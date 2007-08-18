@@ -13,6 +13,7 @@
 package org.genepattern.server.webservice.server.dao;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.util.Calendar;
@@ -714,6 +715,14 @@ AnalysisDAO extends BaseDAO {
         }
         else if (result instanceof BigInteger) {
             count = ((BigInteger) result).intValue();
+        }
+        else if (result instanceof BigDecimal) {
+            try {
+                count = ((BigDecimal) result).intValueExact();
+            }
+            catch (ArithmeticException e) {
+                log.error("Invalid conversion from BigDecimal to int", e);
+            }
         }
         else {
             log.error("Unknown type returned from query: "+result.getClass().getName());            
