@@ -173,6 +173,8 @@ public class RunPipelineSoap {
                 System.setProperty("GP_Path", GP_Path);
             Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
             
+            
+              
             //
             // Probably best to put this code in a function somewhere...
             //
@@ -242,10 +244,15 @@ public class RunPipelineSoap {
             if (System.getProperty("decorator") != null) {
                 String decoratorClass = System.getProperty("decorator");
                 decorator = (RunPipelineOutputDecoratorIF) (Class.forName(decoratorClass)).newInstance();
+             
             }
             URL serverFromFile = null;
             
             try {
+            	 // XXXXXXXXXXXXXXXXXX TODO: JTL DEBUG OVERRIDE
+                // System.setProperty("GenePatternURL", "http://gm970-e5c.broad.mit.edu:6060/");
+                
+             
                 serverFromFile = new URL(System.getProperty("GenePatternURL"));
             } catch (Exception x) {
                 String host = "127.0.0.1";
@@ -322,17 +329,10 @@ public class RunPipelineSoap {
     }
     
     public void runPipeline(Map args) throws Exception {
-        //runPipelineForDebug(args);
         runPipelineForProduction(args);
     }
     
-    public void runPipelineForDebug(Map args) throws Exception {
-        setStatus(JobStatus.PROCESSING);
-        for(JobSubmission jobSubmission : model.getTasks()) {
-            jobSubmission.getTaskInfo().getID();
-        }
-        setStatus(JobStatus.FINISHED);
-    }
+   
 
     /**
      * @param args
@@ -340,6 +340,12 @@ public class RunPipelineSoap {
      */
     public void runPipelineForProduction(Map args) throws Exception {
         setStatus(JobStatus.PROCESSING);
+        //String executionLogFile = decorator.getExecutionLogFile();
+        //if (executionLogFile != null){
+        //	
+        //	
+        //}
+        
         String stopAfterTaskStr = System.getProperty(GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM);
         int stopAfterTask = Integer.MAX_VALUE;
         if (stopAfterTaskStr != null) {
@@ -389,6 +395,8 @@ public class RunPipelineSoap {
                     ParameterInfo[] params = setInheritedJobParameters(parameterInfo, results);
                     
                     params = setJobParametersFromArgs(jobSubmission.getName(), taskNum + 1, params, results, args);
+                    
+                    params = removeEmptyOptionalParams(parameterInfo);
                     
                     decorator.recordTaskExecution(jobSubmission, taskNum + 1, vTasks.size());
                     
@@ -449,8 +457,7 @@ public class RunPipelineSoap {
         try {
             List<ParameterInfo> outs = new ArrayList<ParameterInfo>();
             
-            //HibernateUtil.beginTransaction();
-            //JobInfo[] children = analysisClient.getChildren(taskResult.getJobNumber());
+                        
             if (taskResult == null) {
                 log.error("taskResult == null");
             }
@@ -494,6 +501,8 @@ public class RunPipelineSoap {
     protected void getChildJobOutputs(int jobID, List<ParameterInfo> outs) {
         log.error("not implemented");
         //analysisClient.getResultFiles(jobID);
+        
+        
     }
     protected void getChildJobOutputs(JobInfo child, List<ParameterInfo> outs) {
         ParameterInfo[] childParams = child.getParameterInfoArray();
@@ -562,6 +571,7 @@ public class RunPipelineSoap {
     
     protected ParameterInfo[] setInheritedJobParameters(ParameterInfo[] parameterInfo, JobInfo[] results)
     throws FileNotFoundException {
+    	
         for (int i = 0; i < parameterInfo.length; i++) {
             ParameterInfo aParam = parameterInfo[i];
             
@@ -579,7 +589,8 @@ public class RunPipelineSoap {
                     String value = aParam.getValue();
                     
                     if (value != null) {
-                        if (value.startsWith("<GenePatternURL>")) {
+                    	
+                    	if (value.startsWith("<GenePatternURL>")) {
                             // substitute <LSID> flags for pipeline files
                             
                             if (value.startsWith("<GenePatternURL>")) {
@@ -598,6 +609,35 @@ public class RunPipelineSoap {
         }
         return parameterInfo;
     }
+    
+    protected ParameterInfo[] removeEmptyOptionalParams(ParameterInfo[] parameterInfo)
+    throws FileNotFoundException {
+    	ArrayList<ParameterInfo> params = new ArrayList<ParameterInfo>();
+    	
+        for (int i = 0; i < parameterInfo.length; i++) {
+            ParameterInfo aParam = parameterInfo[i];
+            
+            if (aParam.getAttributes() != null) {
+                try {
+                    String value = aParam.getValue();
+                    
+                    if (value != null) {
+                    	if ((value.trim().length() ==0) && aParam.isOptional() ) {
+                        	System.out.println("Removing Param " + aParam.getName() + " has null value. Opt= " + aParam.isOptional());
+                   
+                        } else {
+                        	params.add(aParam);
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        //return parameterInfo;
+        return params.toArray(new ParameterInfo[params.size()]);
+    }
+    
     
     protected String getInheritedFilename(Map attributes, JobInfo[] results) throws FileNotFoundException {
         // these params must be removed so that the soap lib doesn't try to send
