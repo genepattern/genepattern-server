@@ -406,6 +406,9 @@ public class RunPipelineForJsp {
             log.debug(buf.toString());
         }
         final Process process = Runtime.getRuntime().exec(commandLine, null, tempDir);
+
+        HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
+
         GenePatternAnalysisTask.storeProcessInHash(Integer.toString(jobID), process);
         
         WaitForPipelineCompletionThread waiter = new WaitForPipelineCompletionThread(process, jobID);
