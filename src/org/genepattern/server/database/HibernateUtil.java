@@ -130,6 +130,20 @@ public class HibernateUtil {
         log.debug("...beginTransaction");
     }
 
+    public static boolean isInTransaction() {
+       
+        Session session = getSession();
+        Transaction tx = session.getTransaction();
+        
+        log.debug("   session.isInTransaction " + tx.isActive());
+        if (!tx.isActive()) {
+	          return false;
+        }
+        
+        return true;
+    }
+
+    
     public static int getNextSequenceValue(String sequenceName) {
 
         String dbVendor = System.getProperty("database.vendor", "UNKNOWN");
