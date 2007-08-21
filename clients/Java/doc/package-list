@@ -1,0 +1,13 @@
+org.genepattern.client
+org.genepattern.io
+org.genepattern.io.cls
+org.genepattern.io.featureset
+org.genepattern.io.gct
+org.genepattern.io.mage
+org.genepattern.io.odf
+org.genepattern.io.res
+org.genepattern.io.snp
+org.genepattern.io.stanford
+org.genepattern.matrix
+org.genepattern.module
+org.genepattern.webservice
