@@ -1112,10 +1112,14 @@ public class GenePatternAnalysisTask {
 		log.debug("Recording job completion for job: " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName()
 			+ ")");
 	    }
+	    HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
 	    HibernateUtil.beginTransaction();
 	    long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
 	    Date now = new Date(Calendar.getInstance().getTimeInMillis());
 	    updateJobInfo(jobInfo, parentJobInfo, jobStatus, now);
+	    HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
+	    HibernateUtil.beginTransaction();  // TODO: JTL 8/21/07 oracle
+	   
 	    UsageLog.logJobCompletion(jobInfo, parentJobInfo, now, elapsedTime);
 	    if (log.isDebugEnabled()) {
 		log.debug("Recording job completion complete " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName()
@@ -1211,11 +1215,20 @@ public class GenePatternAnalysisTask {
 	aJob.setJobStatus(newJobStatus);
 	aJob.setCompletedDate(completionDate);
 
+	// TODO: JTL 8/21/07 oracle begin 
+	HibernateUtil.commitTransaction();
+	HibernateUtil.isInTransaction();
+	HibernateUtil.beginTransaction();
+	// TODO: JTL 8/21/07 oracle end 
 	if (parentJobInfo != null) {
 	    AnalysisJob parentJob = home.findById(parentJobInfo.getJobNumber());
 	    parentJob.setCompletedDate(completionDate);
 	}
-
+	// TODO: JTL 8/21/07 oracle begin 
+	HibernateUtil.commitTransaction();
+	HibernateUtil.isInTransaction();
+	HibernateUtil.beginTransaction();
+	// TODO: JTL 8/21/07 oracle end 
     }
 
     private JobInfo getParentJobInfo(int jobNumber) {
