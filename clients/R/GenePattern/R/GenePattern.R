@@ -31,7 +31,7 @@ gp.login <-
 #
 function(server.name, user.name, password = NULL)
 {
-    gp.server <- .jnew("org/genepattern/client/GPServer", server.name,  user.name, password, check = FALSE)
+    gp.client <- .jnew("org/genepattern/client/GPClient", server.name,  user.name, password, check = FALSE)
 
     if (!is.null(e <-.jgetEx(clear = TRUE)))
     {
@@ -39,7 +39,7 @@ function(server.name, user.name, password = NULL)
     	stop(e.message)
     }
 
-    return(gp.server)
+    return(gp.client)
 }
 #------------------------------------------------------------------------------------------------------
 run.analysis <-
@@ -47,11 +47,11 @@ run.analysis <-
 # Submits the given module with the given parameters and waits for the job to
 # complete and returns a list of output files or NULL.
 #
-function(gp.server, module.name.or.lsid, ...)
+function(gp.client, module.name.or.lsid, ...)
 {
-	if(is.null(gp.server))
+	if(is.null(gp.client))
 	{
-		stop("gp.server is NULL")
+		stop("gp.client is NULL")
 	}
 
 	parameters <- list()
@@ -66,7 +66,7 @@ function(gp.server, module.name.or.lsid, ...)
 
 	parameter.array <- .jarray(parameters, contents.class="org/genepattern/webservice/Parameter")
 
-	job.result <- .jcall(gp.server, "Lorg/genepattern/webservice/JobResult;", "runAnalysis", module.name.or.lsid, parameter.array, check = FALSE)
+	job.result <- .jcall(gp.client, "Lorg/genepattern/webservice/JobResult;", "runAnalysis", module.name.or.lsid, parameter.array, check = FALSE)
 
     if (!is.null(e <-.jgetEx(clear = TRUE)))
     {
@@ -82,11 +82,11 @@ run.analysis.no.wait <-
 # Submits the given module with the given parameters and does not wait for
 # the job to complete.
 #
-function(gp.server, module.name.or.lsid, ...)
+function(gp.client, module.name.or.lsid, ...)
 {
-	if(is.null(gp.server))
+	if(is.null(gp.client))
 	{
-		stop("gp.server is NULL")
+		stop("gp.client is NULL")
 	}
 
 	parameters <- list()
@@ -101,7 +101,7 @@ function(gp.server, module.name.or.lsid, ...)
 
 	parameter.array <- .jarray(parameters, contents.class="org/genepattern/webservice/Parameter")
 
-	result <- .jcall(gp.server, "I", "runAnalysisNoWait", module.name.or.lsid, parameter.array, check = FALSE)
+	result <- .jcall(gp.client, "I", "runAnalysisNoWait", module.name.or.lsid, parameter.array, check = FALSE)
 
     if (!is.null(e <-.jgetEx(clear = TRUE)))
     {
@@ -113,19 +113,19 @@ function(gp.server, module.name.or.lsid, ...)
 }
 #------------------------------------------------------------------------------------------------------
 create.job.result <-
-function(gp.server, job.number)
+function(gp.client, job.number)
 {
-	if(is.null(gp.server))
+	if(is.null(gp.client))
 	{
-		stop("gp.server is NULL")
+		stop("gp.client is NULL")
 	}
 
 	job.number <- as.integer(job.number)
 
-	if(!is.complete(gp.server, job.number))
+	if(!is.complete(gp.client, job.number))
 		stop(paste("Cannot create JobResult: Job ", job.number, " has not completed"))
 
-	job.result <- .jcall(gp.server, "Lorg/genepattern/webservice/JobResult;", "createJobResult", job.number, check = FALSE)
+	job.result <- .jcall(gp.client, "Lorg/genepattern/webservice/JobResult;", "createJobResult", job.number, check = FALSE)
 
     if (!is.null(e <-.jgetEx(clear = TRUE)))
     {
@@ -140,16 +140,16 @@ is.complete <-
 #
 # Checks if the given job is complete.
 #
-function(gp.server, job.number)
+function(gp.client, job.number)
 {
-	if(is.null(gp.server))
+	if(is.null(gp.client))
 	{
-		stop("gp.server is NULL")
+		stop("gp.client is NULL")
 	}
 
 	job.number <- as.integer(job.number)
 
-	complete <- .jcall(gp.server, "Z", "isComplete", job.number, check = FALSE)
+	complete <- .jcall(gp.client, "Z", "isComplete", job.number, check = FALSE)
 
     if (!is.null(e <-.jgetEx(clear = TRUE)))
     {
@@ -165,11 +165,11 @@ run.visualizer <-
 # Submits the given visualizer with the given parameters and does not wait for
 # the job to complete.
 #
-function(gp.server, module.name.or.lsid, ...)
+function(gp.client, module.name.or.lsid, ...)
 {
-	if(is.null(gp.server))
+	if(is.null(gp.client))
 	{
-		stop("gp.server is NULL")
+		stop("gp.client is NULL")
 	}
 
 	parameters <- list()
@@ -184,7 +184,7 @@ function(gp.server, module.name.or.lsid, ...)
 
 	parameter.array <- .jarray(parameters, contents.class="org/genepattern/webservice/Parameter")
 
-	.jcall(gp.server,"V", "runVisualizer", module.name.or.lsid, parameter.array, check = FALSE)
+	.jcall(gp.client,"V", "runVisualizer", module.name.or.lsid, parameter.array, check = FALSE)
 
 	if (!is.null(e <-.jgetEx(clear = TRUE)))
     {
@@ -197,14 +197,14 @@ get.parameters <-
 #
 # Returns a list of parameters for the specified module name or lsid.
 #
-function(gp.server, module.name.or.lsid)
+function(gp.client, module.name.or.lsid)
 {
-	if(is.null(gp.server))
+	if(is.null(gp.client))
 	{
-		stop("gp.server is NULL")
+		stop("gp.client is NULL")
 	}
 
-	parameter.info.array <- .jcall(gp.server,"[Lorg/genepattern/webservice/ParameterInfo;", "getParameters", module.name.or.lsid, check = FALSE)
+	parameter.info.array <- .jcall(gp.client,"[Lorg/genepattern/webservice/ParameterInfo;", "getParameters", module.name.or.lsid, check = FALSE)
 
     if (!is.null(e <-.jgetEx(clear = TRUE)))
     {
@@ -251,14 +251,14 @@ gp.get.module.file.url <-
 #
 #Returns the url to retrieve the given file as part of the given module.
 #
-function(gp.server, module.name.or.lsid, filename)
+function(gp.client, module.name.or.lsid, filename)
 {
-	if(is.null(gp.server))
+	if(is.null(gp.client))
 	{
-		stop("gp.server is NULL")
+		stop("gp.client is NULL")
 	}
 
-	url <- .jcall(gp.server,"Ljava/net/URL;", "getModuleFileUrl", module.name.or.lsid, filename, check = FALSE)
+	url <- .jcall(gp.client,"Ljava/net/URL;", "getModuleFileUrl", module.name.or.lsid, filename, check = FALSE)
 
     if (!is.null(e <-.jgetEx(clear = TRUE)))
     {

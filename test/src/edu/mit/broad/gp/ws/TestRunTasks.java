@@ -121,7 +121,7 @@ public class TestRunTasks
          }
       }
       String lsid = installTask(task);
-      JobResult jr = gpServer.runAnalysis(lsid, params);
+      JobResult jr = gpClient.runAnalysis(lsid, params);
       assertNotNull(jr);
       if(failIfStandardErr) {
          assertTrue("" + jr.getJobNumber(), !jr.hasStandardError());

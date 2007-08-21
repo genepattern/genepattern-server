@@ -21,7 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests the GPServer class.
+ * Tests the GPClient class.
  * 
  * @author Joshua Gould
  */
@@ -40,10 +40,9 @@ public class TestGPServer extends Helper {
      */
 
     /*
-     * public void testMultipleConnections() { int numConnections = 100; for(int
-     * i = 0; i < numConnections; i++) { new GPServer(server, userName); }
-     * JobResult r = runPreprocess(new Parameter[]{new
-     * Parameter("input.filename", ALL_AML_TRAIN)}); }
+     * public void testMultipleConnections() { int numConnections = 100; for(int i = 0; i < numConnections; i++) { new
+     * GPClient(server, userName); } JobResult r = runPreprocess(new Parameter[]{new Parameter("input.filename",
+     * ALL_AML_TRAIN)}); }
      */
 
     @Test
@@ -77,7 +76,7 @@ public class TestGPServer extends Helper {
     @Test
     public void testDownloadOutputFiles() throws Exception {
         String outputFile = "test.html";
-        JobResult r = gpServer.runAnalysis("ConvertLineEndings", new Parameter[] {
+        JobResult r = gpClient.runAnalysis("ConvertLineEndings", new Parameter[] {
                 new Parameter("input.filename", "http://www.google.com"), new Parameter("output.file", outputFile) });
         r.downloadFiles("download");
     }
@@ -92,7 +91,7 @@ public class TestGPServer extends Helper {
 
     private JobResult _runPreprocess(Parameter[] params, boolean shouldFail) {
         try {
-            JobResult r = gpServer.runAnalysis("PreprocessDataset", params);
+            JobResult r = gpClient.runAnalysis("PreprocessDataset", params);
             return r;
         } catch (Exception wse) {
             if (!shouldFail) {

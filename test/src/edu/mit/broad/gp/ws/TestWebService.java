@@ -32,7 +32,7 @@ import junit.framework.*;
 public abstract class TestWebService extends TestCase {
    protected AdminProxy adminProxy;
    protected TaskIntegratorProxy taskIntegratorProxy;
-   protected GPServer gpServer;
+   protected GPClient gpClient;
    
    protected final static Task PREPROCESS_ZERO = new Task("PreprocessDataset", "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:0");
    protected final static String[] PREPROCESS_ZERO_FILE_NAMES = {"broad-cg.jar", "jakarta-oro-2.0.8.jar", "Jama-1.0.1.jar", "Preprocess.jar", "PreprocessDataset.pdf", "trove.jar"};
@@ -150,7 +150,7 @@ public abstract class TestWebService extends TestCase {
    protected void setUp() throws Exception {
       adminProxy = new AdminProxy(server, userName, password);
       taskIntegratorProxy = new TaskIntegratorProxy(server, userName, password);
-      gpServer = new GPServer(server, userName, password);
+      gpClient = new GPClient(server, userName, password);
    }
 
 

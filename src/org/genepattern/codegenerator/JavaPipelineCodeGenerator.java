@@ -118,7 +118,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
         }
 
         StringBuffer prolog = new StringBuffer();
-        prolog.append("import org.genepattern.client.GPServer;\n");
+        prolog.append("import org.genepattern.client.GPClient;\n");
         prolog.append("import org.genepattern.webservice.JobResult;\n");
         prolog.append("import org.genepattern.webservice.Parameter;\n");
         if (prompts.size() > 0) {
@@ -151,7 +151,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
         prolog.append("public class " + javaEncodeName(model.getName()) + " {\n");
         prolog.append("\tpublic static void main(String[] args) throws Exception {\n");
 
-        prolog.append("\t\tGPServer gpServer = new GPServer(\"" + server + "\", \"" + model.getUserID() + "\");\n");
+        prolog.append("\t\tGPServer gpClient = new GPClient(\"" + server + "\", \"" + model.getUserID() + "\");\n");
 
         if (prompts.size() > 0) {
             prolog.append("\t\tString[] prompts = new String[" + prompts.size() + "];\n");
@@ -177,7 +177,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
         if (!visualizer) {
             invocation.append("JobResult result = ");
         }
-        invocation.append("gpServer.");
+        invocation.append("gpClient.");
         if (visualizer) {
             invocation.append("runVisualizer(");
         } else {
@@ -225,7 +225,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
         String tName = javaEncodeName(jobSubmission.getName());
         TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
         StringBuffer invocation = new StringBuffer();
-        invocation.append("gpServer.");
+        invocation.append("gpClient.");
 
         if (jobSubmission.isVisualizer()) {
             invocation.append("runVisualizer(\"" + jobSubmission.getLSID() + "\", new Parameter[]{");
@@ -387,7 +387,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
                 }
             }
             if (task != null && file != null) {
-                invocation.append("new Parameter(\"" + actual.getName() + "\", gpServer.getModuleFileUrl(\"" + task
+                invocation.append("new Parameter(\"" + actual.getName() + "\", gpClient.getModuleFileUrl(\"" + task
                         + "\", \"" + file + "\").toString())");
             } else {
                 invocation.append("new Parameter(\"" + actual.getName() + "\", \"" + val + "\")");

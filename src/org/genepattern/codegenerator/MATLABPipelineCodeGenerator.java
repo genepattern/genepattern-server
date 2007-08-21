@@ -150,7 +150,7 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator
             }
         }
 
-        prolog.append("gpServer =  GenePatternServer('" + server + "', '"
+        prolog.append("gpClient =  GenePatternServer('" + server + "', '"
                 + model.getUserID() + "');\n");
 
         if (prompts.size() > 0) {
@@ -175,7 +175,7 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator
         String taskName = jobInfo.getTaskName();
         String lsid = jobInfo.getTaskLSID();
         StringBuffer sb = new StringBuffer();
-        sb.append("params = getMethodParameters(gpServer,'" + lsid + "');\n");
+        sb.append("params = getMethodParameters(gpClient,'" + lsid + "');\n");
         if (params != null) {
             for (int i = 0; i < params.length; i++) {
                 sb.append("params." + matlabEncodeName(params[i].getName())
@@ -185,7 +185,7 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator
         if (!visualizer) {
             sb.append("results = ");
         }
-        sb.append("runAnalysis(gpServer,'" + taskName + "', params, '" + lsid
+        sb.append("runAnalysis(gpClient,'" + taskName + "', params, '" + lsid
                 + "');");
         return sb.toString();
     }
@@ -220,7 +220,7 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator
         StringBuffer invocation = new StringBuffer();
         String lsid = tia.get(GPConstants.LSID);
         String paramVar = "params" + taskNum;
-        invocation.append("\n" + paramVar + " = getMethodParameters(gpServer,'"
+        invocation.append("\n" + paramVar + " = getMethodParameters(gpClient,'"
                 + lsid + "');\n");
 
         HashMap paramName2ActaulParam = new HashMap();
@@ -340,12 +340,12 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator
                         if (task != null && file != null) {
                             // invocation.append("new Parameter(\"" +
                             // formal.getName() + "\",
-                            // gpServer.getTaskFileURL(\"" + task + "\", \"" +
+                            // gpClient.getTaskFileURL(\"" + task + "\", \"" +
                             // file + "\").toString())");
                             // XXX - file from tasklib
                             invocation.append(paramVar + "."
                                     + matlabEncodeName(formal.getName())
-                                    + "= getModuleFileUrl(gpServer, '" + task
+                                    + "= getModuleFileUrl(gpClient, '" + task
                                     + "', '" + file + "');");
                         } else {
                             invocation.append(paramVar + "."
@@ -372,13 +372,13 @@ public class MATLABPipelineCodeGenerator extends AbstractPipelineCodeGenerator
         if (!jobSubmission.isVisualizer()) {
 
             invocation.append("results" + numNonVisualizersSeen
-                    + " = runAnalysis(gpServer,'");
+                    + " = runAnalysis(gpClient,'");
             invocation.append(jobSubmission.getName() + "'," + paramVar + ", '"
                     + lsid + "');  \n");
             out.append(invocation.toString() + "\n");
             numNonVisualizersSeen++;
         } else {
-            invocation.append("runAnalysis(gpServer,'");
+            invocation.append("runAnalysis(gpClient,'");
             invocation.append(jobSubmission.getName() + "'," + paramVar + ", '"
                     + lsid + "');  \n");
 

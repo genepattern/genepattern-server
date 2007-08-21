@@ -12,7 +12,7 @@
 
 package edu.mit.broad.gp.ws;
 
-import org.genepattern.client.GPServer;
+import org.genepattern.client.GPClient;
 import org.genepattern.webservice.AdminProxy;
 import org.genepattern.webservice.TaskIntegratorProxy;
 import org.genepattern.webservice.WebServiceException;
@@ -22,7 +22,7 @@ public class Helper {
 
     protected TaskIntegratorProxy taskIntegratorProxy;
 
-    protected GPServer gpServer;
+    protected GPClient gpClient;
 
     protected String userName = "test";
 
@@ -34,7 +34,7 @@ public class Helper {
         try {
             adminProxy = new AdminProxy(server, userName, password);
             taskIntegratorProxy = new TaskIntegratorProxy(server, userName, password);
-            gpServer = new GPServer(server, userName, password);
+            gpClient = new GPClient(server, userName, password);
         } catch (WebServiceException e) {
             e.printStackTrace();
         }

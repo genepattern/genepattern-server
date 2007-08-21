@@ -29,36 +29,33 @@ public class RunJobsInParallelExample {
      * Runs the program
      * 
      * @param args
-     *            command line arguments
+     *                command line arguments
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        List submittedJobs = new LinkedList();
-        List completedJobs = new ArrayList();
+	List<Integer> submittedJobs = new LinkedList<Integer>();
+	List<JobResult> completedJobs = new ArrayList<JobResult>();
 
-        GPServer gpServer = new GPServer("http://localhost:8080", "jgould");
+	GPClient gpServer = new GPClient("http://localhost:8080", "GenePattern");
 
-        for (int i = 0; i < 10; i++) {
-            int jobNumber = gpServer
-                    .runAnalysisNoWait("ComparativeMarkerSelection",
-                            new Parameter[] { new Parameter("input.filename",
-                                    "foo.txt") });
-            submittedJobs.add(new Integer(jobNumber));
-        }
+	for (int i = 0; i < 10; i++) {
+	    int jobNumber = gpServer.runAnalysisNoWait("ConvertLineEndings", new Parameter[] { new Parameter(
+		    "input.filename", "foo.txt") });
+	    submittedJobs.add(new Integer(jobNumber));
+	}
 
-        Thread.sleep(1000 * 60 * 10); // wait a while before we start asking
-        // server if jobs have finished
-        while (submittedJobs.size() > 0) {
-            for (int i = 0; i < submittedJobs.size(); i++) {
-                Integer jobNumber = (Integer) submittedJobs.get(i);
-                if (gpServer.isComplete(jobNumber.intValue())) {
-                    submittedJobs.remove(i--);
-                    JobResult jr = gpServer.createJobResult(jobNumber
-                            .intValue());
-                    completedJobs.add(jr);
-                }
-            }
-            Thread.sleep(2000);
-        }
+	Thread.sleep(1000 * 60 * 10); // wait a while before we start asking
+	// server if jobs have finished
+	while (submittedJobs.size() > 0) {
+	    for (int i = 0; i < submittedJobs.size(); i++) {
+		Integer jobNumber = submittedJobs.get(i);
+		if (gpServer.isComplete(jobNumber.intValue())) {
+		    submittedJobs.remove(i--);
+		    JobResult jr = gpServer.createJobResult(jobNumber.intValue());
+		    completedJobs.add(jr);
+		}
+	    }
+	    Thread.sleep(2000);
+	}
     }
 }
