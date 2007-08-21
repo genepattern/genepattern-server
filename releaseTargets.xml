@@ -5,7 +5,7 @@
 		making build number: ${build.number} 
 	</echo>
 	<property name="cvsTag" value="gp_b${build.number}" />
-<!-- ensure these are called after setting the build number and cvsTag -->
+	<!-- ensure these are called after setting the build number and cvsTag -->
 	<echo>
 		STARTING tagging module gp2 in CVS with: ${cvsTag} 
 	</echo>
@@ -43,11 +43,11 @@
 		build number is ${build.number} tag is ${cvsTag} 
 	</echo>
 </target>
-<target name="release" depends="getBuildNumber, website,gp-library, broad-cg, GPGE,installers" />
-<target name="nightlyrelease" depends="nightlyLabel, website, gp-library, broad-cg, GPGE,installers, createWar" />
+<target name="release" depends="getBuildNumber, website,gp-library, GPGE,installers" />
+<target name="nightlyrelease" depends="nightlyLabel, website, gp-library, GPGE,installers, createWar" />
 <!-- Create a war file to use for platforms without an installer -->
-<target name="createWar" depends="getBuildNumber, website,gp-library, broad-cg, GPGE, GPGEinstaller">
-<!-- target name="createWar" depends="" -->
+<target name="createWar" depends="getBuildNumber, website,gp-library, GPGE, GPGEinstaller">
+	<!-- target name="createWar" depends="" -->
 	<delete dir="wartemp" />
 	<mkdir dir="wartemp" />
 	<delete dir="ziptemp" />
