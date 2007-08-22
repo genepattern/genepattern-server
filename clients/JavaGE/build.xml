@@ -26,7 +26,7 @@
 				<include name="*.jar" />
 				<include name="*.zip" />
 			</fileset>
-			<fileset dir="${root_dir}/build" id="jar.dir.3" includes="gpwebservice.jar broad-cg.jar ui_support.jar, runMain.jar" />
+			<fileset dir="${root_dir}/build" id="jar.dir.3" includes="gpwebservice.jar ui_support.jar, runMain.jar" />
 		</path>
 
 	</target>
