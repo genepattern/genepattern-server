@@ -19,6 +19,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URL;
@@ -73,7 +74,7 @@ public class RunPipelineSoap {
     private static final String logFile = "pipelineErrors.log";  //one log file per pipeline
         
     public static Logger setupLog4jConfig(String logFile) {
-        System.setProperty("DEBUG", "true"); //don't delete logfile
+        //System.setProperty("DEBUG", "true"); //don't delete logfile
 
         Properties log4jconfig = new Properties();
         //log4jconfig.setProperty("log4j.debug", "true"); //uncomment this line to debug Log4j configuration
@@ -249,10 +250,6 @@ public class RunPipelineSoap {
             URL serverFromFile = null;
             
             try {
-            	 // XXXXXXXXXXXXXXXXXX TODO: JTL DEBUG OVERRIDE
-                // System.setProperty("GenePatternURL", "http://gm970-e5c.broad.mit.edu:6060/");
-                
-             
                 serverFromFile = new URL(System.getProperty("GenePatternURL"));
             } catch (Exception x) {
                 String host = "127.0.0.1";
@@ -292,31 +289,28 @@ public class RunPipelineSoap {
         File file = new File(pipelineFileName);
         BufferedReader reader = null;
         PipelineModel model = null;
+        
+        
         try {
+        	   
+            AdminProxy adminClient = new AdminProxy(server, userId, null);
+            
             if (!file.exists()) {
-                // must be a URL, try to retrieve it
-                // first convert 127.0.0.1 or localhost to server
-                 int idx = pipelineFileName.indexOf(":");
-                 idx = pipelineFileName.indexOf(":", idx+1);
-                 String pfn = server.toLowerCase() +
-                 pipelineFileName.substring(idx+5);
+              
+                TaskInfo ti = adminClient.getTask(lsid);
+                Map tia = ti.getTaskInfoAttributes();
+                String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
                 
-                 URL url = new URL(pfn);
-                 URLConnection uconn = url.openConnection();
-                 reader = new BufferedReader(new InputStreamReader(uconn.getInputStream()));
-                //LocalAdminClient adminClient = new LocalAdminClient(System.getProperty("userId"));
-                //TaskInfo ti = adminClient.getTask(lsid);
-                //Map tia = ti.getTaskInfoAttributes();
-                //String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
-                
-                //reader = new BufferedReader(new StringReader(serializedModel));
+                reader = new BufferedReader(new StringReader(serializedModel));
                 
             } else {
                 reader = new BufferedReader(new FileReader(pipelineFileName));
                 // file.deleteOnExit();
             }
-            AdminProxy adminClient = new AdminProxy(server, userId, null);
+            
             model = PipelineModel.toPipelineModel(new InputSource(reader), false, adminClient);
+            
+             
             model.setLsid(lsid);
             
             return model;
@@ -340,11 +334,7 @@ public class RunPipelineSoap {
      */
     public void runPipelineForProduction(Map args) throws Exception {
         setStatus(JobStatus.PROCESSING);
-        //String executionLogFile = decorator.getExecutionLogFile();
-        //if (executionLogFile != null){
-        //	
-        //	
-        //}
+        
         
         String stopAfterTaskStr = System.getProperty(GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM);
         int stopAfterTask = Integer.MAX_VALUE;
@@ -414,7 +404,7 @@ public class RunPipelineSoap {
                     results[taskNum] = taskResult;
                     
                 } catch (Exception e) {
-                    System.out.println("Execution for " + jobSubmission.getName() + " module failed.");
+                    System.err.println("Execution for " + jobSubmission.getName() + " module failed.");
                     e.printStackTrace();
                     log.error("Execution for " + jobSubmission.getName() + " module failed.");
                     if (e.getMessage() != null) {
@@ -436,7 +426,6 @@ public class RunPipelineSoap {
      * Notify the server of the pipeline's status (Process, Finished, etc)
      */
     protected void setStatus(String status) throws Exception {
-        System.out.println(("Setting job# " + jobId + " status to " + status));
         if(log.isDebugEnabled()) {
             log.debug(("Setting job# " + jobId + " status to " + status));
         }
@@ -447,6 +436,8 @@ public class RunPipelineSoap {
      * handle the special case where a task is a pipeline by adding all output
      * files of the pipeline's children (recursively) to its taskResult so that
      * they can be used downstream
+     *  
+     * recurse through the children and add all output params to the parent
      */
     protected JobInfo collectChildJobResults(JobInfo taskResult) {
         if (taskResult == null) {
@@ -466,7 +457,6 @@ public class RunPipelineSoap {
                 return taskResult;
             }
             for (int i = 0; i < children.length; i++) {
-                //getChildJobOutputs(children[i], outs);
                 getChildJobOutputs(children[i], outs);
             }
             // now add them to the parent
@@ -483,27 +473,24 @@ public class RunPipelineSoap {
         return taskResult;
     }
     
-    // recurse through the children and add all output params to the parent
+ 
     
-    protected void collectChildJobResults(JobInfo taskResult, List<ParameterInfo> outs) throws WebServiceException {
-        log.error("not implemented");
-//        JobInfo[] children = analysisClient.getChildren(taskResult.getJobNumber());
-//        
-//        if (children.length == 0) {
-//        	return;
-//        }
-//        for (int i = 0; i < children.length; i++) {
-//            getChildJobOutputs(children[i], outs); // local leaves
-//            collectChildJobResults(children[i], outs); // recurse on down
-//        }
-    }
+
     
-    protected void getChildJobOutputs(int jobID, List<ParameterInfo> outs) {
-        log.error("not implemented");
+    protected void getChildJobOutputs(int childJobID, List<ParameterInfo> outs) {
+        
         //analysisClient.getResultFiles(jobID);
+        try {
+			JobInfo childJobInfo = analysisClient.checkStatus(childJobID);
+			getChildJobOutputs(childJobInfo, outs);
+		} catch (WebServiceException e) {
+			// TODO Auto-generated catch block
+			log.error(e);
+		}
         
         
     }
+    
     protected void getChildJobOutputs(JobInfo child, List<ParameterInfo> outs) {
         ParameterInfo[] childParams = child.getParameterInfoArray();
         for (int i = 0; i < childParams.length; i++) {
@@ -623,7 +610,7 @@ public class RunPipelineSoap {
                     
                     if (value != null) {
                     	if ((value.trim().length() ==0) && aParam.isOptional() ) {
-                        	System.out.println("Removing Param " + aParam.getName() + " has null value. Opt= " + aParam.isOptional());
+                        	log.debug("Removing Param " + aParam.getName() + " has null value. Opt= " + aParam.isOptional());
                    
                         } else {
                         	params.add(aParam);
@@ -882,8 +869,6 @@ public class RunPipelineSoap {
     
     private JobInfo waitForErrorOrCompletion(AnalysisJob job, int maxTries, int initialSleep) throws Exception {
         
-        System.out.println("WaitForErrorOrCompletion jobId= " + job.getJobInfo().getJobNumber() + " taskName= " +
-                job.getTaskName());
         if(log.isDebugEnabled()) {
             log.debug("WaitForErrorOrCompletion jobId= " + job.getJobInfo().getJobNumber() + " taskName= " +
                     job.getTaskName());
