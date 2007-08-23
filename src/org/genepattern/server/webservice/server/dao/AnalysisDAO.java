@@ -169,8 +169,11 @@ AnalysisDAO extends BaseDAO {
      * @throws RemoteException
      * @return Job ID
      */
+    public Integer addNewJob(int taskID, String user_id, String parameter_info, String taskName,Integer parentJobNumber, String task_lsid) {
+    	    return this.addNewJob(taskID, user_id, parameter_info, taskName, parentJobNumber, task_lsid, JobStatus.JOB_PENDING);
+	}	
     public Integer addNewJob(int taskID, String user_id, String parameter_info, String taskName,
-            Integer parentJobNumber, String task_lsid) {
+            Integer parentJobNumber, String task_lsid, int status) {
         int updatedRecord = 0;
 
         String lsid = null;
@@ -197,7 +200,7 @@ AnalysisDAO extends BaseDAO {
         aJob.setParent(parentJobNumber);
         aJob.setTaskLsid(lsid);
         
-        JobStatus js = (new JobStatusDAO()).findById(JobStatus.JOB_PENDING);
+        JobStatus js = (new JobStatusDAO()).findById(status);
         aJob.setJobStatus(js);
 
 

@@ -3836,6 +3836,9 @@ public class GenePatternAnalysisTask {
      * @see #terminatePipeline(String)
      */
     public static JobInfo createPipelineJob(String userID, String parameter_info, String pipelineName, String lsid) {
+    		return createPipelineJob( userID,  parameter_info,  pipelineName,  lsid, JobStatus.JOB_PENDING);
+    }	
+    public static JobInfo createPipelineJob(String userID, String parameter_info, String pipelineName, String lsid, int status) {
 	JobInfo job;
 	try {
 	    HibernateUtil.beginTransaction();
@@ -3843,7 +3846,7 @@ public class GenePatternAnalysisTask {
 		log.debug("Creating pipeline job");
 	    }
 	    Integer jobNo = getDS().addNewJob(BaseDAO.UNPROCESSABLE_TASKID, userID, parameter_info, pipelineName, null,
-		    lsid);
+		    lsid, status);
 	    job = getDS().getJobInfo(jobNo);
 
 	    if (log.isDebugEnabled()) {

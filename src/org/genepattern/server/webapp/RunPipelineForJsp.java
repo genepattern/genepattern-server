@@ -374,7 +374,9 @@ public class RunPipelineForJsp {
         
         // Create the job record.  The transaction is commited here because the jsp response is not completed
         // until the pipeline terminates.  Thus we can't wait for the request filter to do the commit.
-        JobInfo jobInfo = GenePatternAnalysisTask.createPipelineJob(userID, params, taskInfo.getName(), lsid);
+        JobInfo jobInfo = GenePatternAnalysisTask.createPipelineJob(userID, params, taskInfo.getName(), lsid, JobStatus.JOB_PROCESSING);
+        
+        
         
         jobID = jobInfo.getJobNumber();
         String pipelineShortName = taskInfo.getName();
@@ -405,7 +407,7 @@ public class RunPipelineForJsp {
             }
             log.debug(buf.toString());
         }
-        HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
+       
 
         final Process process = Runtime.getRuntime().exec(commandLine, null, tempDir);
 
