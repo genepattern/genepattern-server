@@ -333,7 +333,7 @@ public class RunPipelineSoap {
      *            maps parameter name to parameter value
      */
     public void runPipelineForProduction(Map args) throws Exception {
-        setStatus(JobStatus.PROCESSING);
+        //setStatus(JobStatus.PROCESSING);
         
         
         String stopAfterTaskStr = System.getProperty(GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM);
@@ -365,8 +365,8 @@ public class RunPipelineSoap {
             
         }
         if (!okayToRun) {
-            setStatus(JobStatus.ERROR);
-            return;
+           // setStatus(JobStatus.ERROR);
+            throw new Exception("Module not found");
         }
         
         taskNum = 0;
