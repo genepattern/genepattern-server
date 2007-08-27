@@ -215,7 +215,12 @@ public class RunPipelineForJsp {
     public  String[] generatePipelineCommandLine(String name, String jobID, String userID, String baseURL,
             TaskInfo taskInfo, HashMap commandLineParams, File tempDir,
             String decorator) throws Exception {
-        String JAVA_HOME = System.getProperty("java.home");
+        
+    	
+    	String JAVA = System.getProperty("java");
+    	String JAVA_HOME = System.getProperty("java.home");
+        if (JAVA != null) JAVA_HOME =JAVA;
+        
         boolean savedPipeline = isSavedModel(taskInfo, name, userID);
         // these jar files are required to execute
         // gp-full.jar;
