@@ -1,19 +1,23 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:t="http://myfaces.apache.org/tomahawk"
-      xmlns:c="http://java.sun.com/jstl/core">
-  <ui:composition template="/templates/common.xhtml">
-    <ui:define name="pageTitle">
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:c="http://java.sun.com/jstl/core">
+<ui:composition template="/templates/common.xhtml">
+	<ui:define name="pageTitle">
 		GenePattern | Job Results
 	</ui:define>
-    <ui:define name="headText">
-      <link href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css" rel="stylesheet" type="text/css"/>
-      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/jobResults.js"/>
-      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/collapsiblePanel.js"/>
-      <script type="text/javascript" language="javascript">
+	<ui:define name="headText">
+		<link
+			href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css"
+			rel="stylesheet" type="text/css" />
+		<script type="text/javascript"
+			src="#{facesContext.externalContext.requestContextPath}/js/jobResults.js" />
+		<script type="text/javascript"
+			src="#{facesContext.externalContext.requestContextPath}/js/collapsiblePanel.js" />
+		<script type="text/javascript" language="javascript">
 
 /* <![CDATA[ */
 
@@ -209,172 +213,174 @@ document.location.href=location;
 /* ]]> */
 
 	</script>
-    </ui:define>
+	</ui:define>
 
-    <ui:define name="body">
-      <h:form id="jobsForm">
-      <table width="100%"  border="0" cellspacing="0" cellpadding="0">
-        <tr>
-          <td valign="top" class="maintasknav" id="maintasknav" align="right" width="100%">
-          	<h:outputText rendered="#{authorizationBean.adminJobsAllowed}">
-              <h:selectBooleanCheckbox  value="#{jobsBean.showEveryonesJobs}" onclick="this.form.submit();"/>show everyone's jobs&#160;&#160;&#160;&#160;
-            </h:outputText>
-            <h:selectBooleanCheckbox  value="#{jobsBean.showExecutionLogs}" onclick="this.form.submit();" />show execution logs
-          </td>
-        </tr>
-      </table>
-      <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
-        <tr>
-          <td>Job Results</td>
-        </tr>
-      </table>
-      <div class="sorting_text">
+	<ui:define name="body">
+		<h:form id="jobsForm">
+			<table width="100%" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td valign="top" class="maintasknav" id="maintasknav" align="right"
+						width="100%"><h:outputText
+						rendered="#{authorizationBean.adminJobsAllowed}">
+						<h:selectBooleanCheckbox value="#{jobsBean.showEveryonesJobs}"
+							onclick="this.form.submit();" />show everyone's jobs&#160;&#160;&#160;&#160;
+            </h:outputText> <h:selectBooleanCheckbox
+						value="#{jobsBean.showExecutionLogs}"
+						onclick="this.form.submit();" />show execution logs</td>
+				</tr>
+			</table>
+			<table width="100%" border="0" cellpadding="0" cellspacing="0"
+				class="barhead-other">
+				<tr>
+					<td>Job Results</td>
+				</tr>
+			</table>
+			<div class="sorting_text"><!-- Job sort column --> <strong>sort
+			jobs by: </strong> <h:selectOneMenu value="#{jobsBean.jobSortColumn}">
+				<f:selectItem itemLabel="job id number" itemValue="jobNumber" />
+				<f:selectItem itemLabel="name" itemValue="taskName" />
+				<f:selectItem itemLabel="date submitted" itemValue="dateSubmitted" />
+				<f:selectItem itemLabel="date completed" itemValue="dateCompleted" />
+				<f:selectItem itemLabel="status" itemValue="status" />
+			</h:selectOneMenu> &#160; <!-- Job sort direction --> <img style="cursor: pointer;"
+				src="#{facesContext.externalContext.requestContextPath}#{jobsBean.jobSortAscending == true ? '/images/sort-up.gif' : '/images/sort-down.gif'}"
+				alt="jobs order" width="11" height="16" border="0" align="absmiddle"
+				id="jobSortOrder" name="jobSortOrder"
+				onclick="toggleSortOrder('jobSortOrder')"
+				onmouseover="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-down-over.gif'"
+				onmouseout="setSortOrderImage('jobSortOrder')" /> <t:inputHidden
+				id="jobSortOrder_field" forceId="true"
+				value="#{jobsBean.jobSortAscending}" /> <!-- File sort column -->
+			&#160; &#160; &#160; &#160; <strong>sort files by:</strong> <h:selectOneMenu
+				value="#{jobsBean.fileSortColumn}">
+				<f:selectItem itemLabel="name" itemValue="name" />
+				<f:selectItem itemLabel="size" itemValue="size" />
+				<f:selectItem itemLabel="date completed" itemValue="lastModified" />
+			</h:selectOneMenu> &#160; <!-- File sort direction --> <img style="cursor: pointer;"
+				src="#{facesContext.externalContext.requestContextPath}#{jobsBean.fileSortAscending == true ? '/images/sort-up.gif' : '/images/sort-down.gif'}"
+				alt="files order" width="11" height="16" border="0"
+				align="absmiddle" id="fileSortOrder" name="fileSortOrder"
+				onclick="toggleSortOrder('fileSortOrder')"
+				onmouseover="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-down-over.gif'"
+				onmouseout="setSortOrderImage('fileSortOrder')" /> <t:inputHidden
+				id="fileSortOrder_field" forceId="true"
+				value="#{jobsBean.fileSortAscending}" /> &#160;&#160; <h:commandButton
+				value="Sort" action="#{jobsBean.sort}" /></div>
 
-        <!-- Job sort column -->
-        <strong>sort jobs by: </strong>
-        <h:selectOneMenu value="#{jobsBean.jobSortColumn}">
-          <f:selectItem itemLabel="job id number" itemValue="jobNumber"/>
-          <f:selectItem itemLabel="name" itemValue="taskName"/>
-          <f:selectItem itemLabel="date submitted" itemValue="dateSubmitted"/>
-          <f:selectItem itemLabel="date completed" itemValue="dateCompleted"/>
-          <f:selectItem itemLabel="status" itemValue="status"/>
-        </h:selectOneMenu> &#160;
+			<!-- Job results table -->
+			<table width="100%" border="0" cellspacing="0" cellpadding="0">
 
-        <!-- Job sort direction -->
-        <img style="cursor: pointer;"
-             src="#{facesContext.externalContext.requestContextPath}#{jobsBean.jobSortAscending == true ? '/images/sort-up.gif' : '/images/sort-down.gif'}"
-             alt="jobs order" width="11" height="16" border="0" align="absmiddle"
-             id="jobSortOrder" name="jobSortOrder"
-             onclick="toggleSortOrder('jobSortOrder')"
-	         onmouseover="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-down-over.gif'"
-	         onmouseout="setSortOrderImage('jobSortOrder')"/>
-	    <t:inputHidden
-             id="jobSortOrder_field"
-             forceId="true"
-             value="#{jobsBean.jobSortAscending}"/>
+				<tr class="smalltype">
+					<td>&#160;</td>
+					<td valign="top"><nobr>
+					<div align="center"><h:commandLink
+						action="#{jobsBean.delete}"
+						onclick="if (!confirmDelete()) return false">delete</h:commandLink>
+					</div>
+					</nobr></td>
+					<td>&#160;</td>
+					<td><a style="cursor: pointer;" onclick="openAll();">open
+					all</a> | <a style="cursor: pointer;" onclick="closeAll();">close
+					all</a></td>
+					<td>&#160;</td>
+					<td>&#160;</td>
+					<td>&#160;</td>
+					<td>&#160;</td>
+					<h:outputText rendered="#{jobsBean.showEveryonesJobs}">
+						<td>&#160;</td>
+					</h:outputText>
+				</tr>
 
-		 <!-- File sort column -->
-		 &#160; &#160; &#160; &#160;
-		<strong>sort files by:</strong>
-        <h:selectOneMenu value="#{jobsBean.fileSortColumn}">
-          <f:selectItem itemLabel="name" itemValue="name"/>
-          <f:selectItem itemLabel="size" itemValue="size"/>
-          <f:selectItem itemLabel="date completed" itemValue="lastModified"/>
-        </h:selectOneMenu> &#160;
-
-        <!-- File sort direction -->
-        <img style="cursor: pointer;"
-             src="#{facesContext.externalContext.requestContextPath}#{jobsBean.fileSortAscending == true ? '/images/sort-up.gif' : '/images/sort-down.gif'}"
-             alt="files order" width="11" height="16" border="0" align="absmiddle"
-             id="fileSortOrder" name="fileSortOrder"
-             onclick="toggleSortOrder('fileSortOrder')"
-	         onmouseover="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-down-over.gif'"
-	         onmouseout="setSortOrderImage('fileSortOrder')"/>
-	    <t:inputHidden
-             id="fileSortOrder_field"
-             forceId="true"
-             value="#{jobsBean.fileSortAscending}"/> &#160;&#160;
+				<tr class="tableheader-row">
+					<td>job</td>
+					<td>
+					<div align="center"><input type="checkbox"
+						onclick="toggleAllCheckboxes(this);" /></div>
+					</td>
+					<td>&#160;</td>
+					<td>module/file</td>
+					<td>size&#160;</td>
+					<td>submitted &#160;</td>
+					<td>completed &#160;</td>
+					<td>
+					<div align="center">&#160;status&#160;</div>
+					</td>
+					<h:outputText rendered="#{jobsBean.showEveryonesJobs}">
+						<td>username&#160;</td>
+					</h:outputText>
 
 
-       <h:commandButton value="Sort" action="#{jobsBean.sort}" />
 
-      </div>
+				</tr>
 
-      <!-- Job results table -->
-      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+				<!--  Loop through job list -->
+				<t:dataList var="rootJobWrapper" value="#{jobsBean.pagedJobs}"
+					rowIndexVar="jobIndex">
 
-        <tr class="smalltype">
-          <td>&#160;</td>
-          <td valign="top">
-            <nobr>
-              <div align="center">
-                <h:commandLink action="#{jobsBean.delete}"
-                               onclick="if (!confirmDelete()) return false">delete</h:commandLink>
-              </div>
-            </nobr>
-          </td>
-          <td>&#160;</td>
-          <td>
-            <a style="cursor: pointer;" onclick="openAll();">open all</a> | <a style="cursor: pointer;" onclick="closeAll();">close all</a>
-          </td>
-          <td>&#160;</td>
-          <td>&#160;</td>
-          <td>&#160;</td>
-          <td>&#160;</td>
-          <h:outputText rendered="#{jobsBean.showEveryonesJobs}"><td>&#160;</td></h:outputText>
-        </tr>
-
-        <tr class="tableheader-row">
-          <td>job</td>
-          <td>
-            <div align="center">
-              <input type="checkbox" onclick="toggleAllCheckboxes(this);"/>
-            </div>
-          </td>
-          <td>&#160;</td>
-          <td>module/file</td>
-          <td>size&#160;</td>
-          <td>submitted &#160;</td>
-          <td>completed &#160;</td>
-          <td>
-            <div align="center">&#160;status&#160;</div>
-          </td>
-       	  <h:outputText rendered="#{jobsBean.showEveryonesJobs}"><td>username&#160;</td></h:outputText>
-          	
-          
-          
-        </tr>
-
-        <!--  Loop through job list -->
-         <t:dataList var="rootJobWrapper" value="#{jobsBean.allJobs}" rowIndexVar="jobIndex">
-
-          <script type="text/javascript" language="javascript">
+					<script type="text/javascript" language="javascript">
             jobNumbers[#{jobIndex}]='#{rootJobWrapper.jobNumber}';
           </script>
 
-          <ui:include src="jobResultsJobs.xhtml">
-            <ui:param name="jobWrapper" value="#{rootJobWrapper}"/>
-            <ui:param name="parentJobNumber" value="#{rootJobWrapper.jobNumber}"/>
-          </ui:include>
+					<ui:include src="jobResultsJobs.xhtml">
+						<ui:param name="jobWrapper" value="#{rootJobWrapper}" />
+						<ui:param name="parentJobNumber"
+							value="#{rootJobWrapper.jobNumber}" />
+					</ui:include>
 
-          <!--  Loop through descendants  -->
-          <t:dataList var="childJob" value="#{rootJobWrapper.descendantJobs}">
+					<!--  Loop through descendants  -->
+					<t:dataList var="childJob" value="#{rootJobWrapper.descendantJobs}">
 
-            <script type="text/javascript" language="javascript">
+						<script type="text/javascript" language="javascript">
  	           var rowId = "job_row_" + #{childJob.jobNumber};
 	           addFileRow('#{rootJobWrapper.jobNumber}', rowId);
 	        </script>
 
-            <ui:include src="jobResultsJobs.xhtml">
-              <ui:param name="jobWrapper" value="#{childJob}"/>
-              <ui:param name="parentJobNumber" value="#{rootJobWrapper.jobNumber}"/>
-            </ui:include>
-          </t:dataList>
-        </t:dataList>
+						<ui:include src="jobResultsJobs.xhtml">
+							<ui:param name="jobWrapper" value="#{childJob}" />
+							<ui:param name="parentJobNumber"
+								value="#{rootJobWrapper.jobNumber}" />
+						</ui:include>
+					</t:dataList>
+				</t:dataList>
 
-        <tr>
-          <td class="smalltype">&#160;</td>
-          <td valign="top" class="smalltype">
-            <nobr>
-              <div align="center">
-                <h:commandLink action="#{jobsBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink>
-              </div>
-            </nobr>
-          </td>
-          <td>&#160;</td>
-          <td>&#160;</td>
-          <td>&#160;</td>
-          <td>&#160;</td>
-          <td>&#160;</td>
-          <td>&#160;</td>
-          <h:outputText rendered="#{jobsBean.showEveryonesJobs}"><td>&#160;</td></h:outputText>
-        </tr>
-      </table>
-      <p>&#160;</p>
-    </h:form>
+				<tr>
+					<td class="smalltype">&#160;</td>
+					<td valign="top" class="smalltype"><nobr>
+					<div align="center"><h:commandLink
+						action="#{jobsBean.delete}"
+						onclick="if (!confirmDelete()) return false">delete</h:commandLink>
+					</div>
+					</nobr></td>
+					<td>&#160;</td>
+					<td>&#160;</td>
+					<td>&#160;</td>
+					<td>&#160;</td>
+					<td>&#160;</td>
+					<td>&#160;</td>
+					<h:outputText rendered="#{jobsBean.showEveryonesJobs}">
+						<td>&#160;</td>
+					</h:outputText>
+				</tr>
+			</table>
 
-    <!-- Set initial visibility state  -->
-    <script type="text/javascript" language="javascript">
+			<div align="center"><h:commandLink
+				rendered="#{jobsBean.pageNumber > 1}"
+				action="#{jobsBean.previousPage}">Previous</h:commandLink> <t:dataList
+				var="p" value="#{jobsBean.pages}">
+				<h:commandLink rendered="#{p != jobsBean.pageNumber}"
+					action="#{jobsBean.goToPage}">#{p}<f:param
+						name="page" value="#{p}" />
+				</h:commandLink>
+				<h:outputText rendered="#{p == jobsBean.pageNumber}">
+					<span>#{p}</span>
+				</h:outputText>
+			</t:dataList> <h:commandLink
+				rendered="#{jobsBean.pageCount gt 1 and jobsBean.pageNumber lt jobsBean.pageCount}"
+				action="#{jobsBean.nextPage}">Next</h:commandLink></div>
+		</h:form>
+
+		<!-- Set initial visibility state  -->
+		<script type="text/javascript" language="javascript">
       <t:dataList var="jobInfo" value="#{jobsBean.allJobs}">
         <h:outputText rendered="#{!jobInfo.expanded}">
             hideCategory('#{jobInfo.jobNumber}');
@@ -382,24 +388,24 @@ document.location.href=location;
       </t:dataList>
     </script>
 
-    </ui:define>
+	</ui:define>
 
-    <!-- Create menus  -->
-    <ui:define name="popupMenus">
-      <h:form>
-        <t:dataList var="jobInfo" value="#{jobsBean.allJobs}">
-          <ui:include src="jobsMenu.xhtml">
-            <ui:param name="job" value="#{jobInfo}"/>
-          </ui:include>
-          <t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}">
-            <ui:include src="jobFileMenu.xhtml">
-              <ui:param name="job" value="#{jobInfo}"/>
-              <ui:param name="fileInfo" value="#{fileInfo}"/>
-            </ui:include>
-          </t:dataList>
-        </t:dataList>
-      </h:form>
-    </ui:define>
+	<!-- Create menus  -->
+	<ui:define name="popupMenus">
+		<h:form>
+			<t:dataList var="jobInfo" value="#{jobsBean.allJobs}">
+				<ui:include src="jobsMenu.xhtml">
+					<ui:param name="job" value="#{jobInfo}" />
+				</ui:include>
+				<t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}">
+					<ui:include src="jobFileMenu.xhtml">
+						<ui:param name="job" value="#{jobInfo}" />
+						<ui:param name="fileInfo" value="#{fileInfo}" />
+					</ui:include>
+				</t:dataList>
+			</t:dataList>
+		</h:form>
+	</ui:define>
 
 
 </ui:composition>
