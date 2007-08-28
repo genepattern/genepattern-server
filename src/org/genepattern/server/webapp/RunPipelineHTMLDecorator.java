@@ -192,7 +192,11 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
                 out.print("\">");
 
                 value = getFileUrlDisplayValue(value);
-				out.print(htmlEncode(value));
+               
+                
+                //out.println(URLDecoder.decode(value));
+                
+				out.print(htmlEncode(URLDecoder.decode(value)));
 				out.println("</a>");
 
             } else {

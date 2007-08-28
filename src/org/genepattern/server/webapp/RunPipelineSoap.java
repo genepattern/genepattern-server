@@ -498,6 +498,7 @@ public class RunPipelineSoap {
                 File f = new File(childParams[i].getValue());
                 if (!f.getName().equals(GPConstants.TASKLOG)) {
                     outs.add(childParams[i]);
+                   // System.out.println("Adding child output: "+ childParams[i].getValue());
                 }
             }
         }
@@ -638,6 +639,9 @@ public class RunPipelineSoap {
         int task = Integer.parseInt(taskStr);
         JobInfo job = results[task];
         String fileName = getOutputFileName(job, fileStr);
+        
+ // System.out.println("GIF: filename=" + fileName + "  " + job.getJobNumber());
+  
         try {
             if (fileName != null) {
                 fileName = URLEncoder.encode(fileName, "UTF-8");
@@ -646,8 +650,10 @@ public class RunPipelineSoap {
             // ignore
         }
         String context = System.getProperty("GP_Path", "/gp");
+
         
-        String url = server + context + "/jobResults/" + job.getJobNumber() + "/" + fileName;
+        
+        String url = server + context + "/jobResults/" + fileName;
         return url;
     }
     
@@ -684,10 +690,6 @@ public class RunPipelineSoap {
         ParameterInfo[] jobParams = job.getParameterInfoArray();
         String jobDir = System.getProperty("jobs");
         // try semantic match on output files first
-        
-        try {
-        } catch (Exception e) {
-        }
         
         // For now, just match on filename extension
         semantic_search_loop: for (j = 0; j < jobParams.length; j++) {
@@ -736,13 +738,16 @@ public class RunPipelineSoap {
         
         if (fileName != null) {
             int lastIdx = fileName.lastIndexOf(File.separator);
+            lastIdx = fileName.lastIndexOf(File.separator, lastIdx -1); // get the job # too
+            
             if (lastIdx != -1) {
                 fileName = fileName.substring(lastIdx + 1);
             }
-            lastIdx = fileName.lastIndexOf("/");
-            if (lastIdx != -1) {
-                fileName = fileName.substring(lastIdx + 1);
-            }
+            //System.out.println("Filename="+ fileName);
+            //lastIdx = fileName.lastIndexOf("/");
+            //if (lastIdx != -1) {
+            //    fileName = fileName.substring(lastIdx + 1);
+            //}
         }
         if (fileName == null) {
             /*
