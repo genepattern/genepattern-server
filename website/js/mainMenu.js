@@ -60,6 +60,7 @@ function mmLoadMenus() {
   mm_menu_documentation.addMenuItem("File Formats","window.open('http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_fileformats.html', '_blank');");
   mm_menu_documentation.addMenuItem("Release&nbsp;Notes","window.open('http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/', '_blank')");
   mm_menu_documentation.addMenuItem("FAQ","window.open('http://www.broad.mit.edu/cancer/software/genepattern/doc/faq/', '_blank')");
+  mm_menu_documentation.addMenuItem("About","location=contextRoot + '/pages/about.jsf'");
   mm_menu_documentation.hideOnMouseOut=true;
   mm_menu_documentation.bgColor='#CCCC66';
   mm_menu_documentation.menuBorder=0;
@@ -70,6 +71,8 @@ function mmLoadMenus() {
   mm_menu_resources.addMenuItem("Mailing&nbsp;List","window.open('http://www.broad.mit.edu/cancer/software/genepattern/gp_mail.html', '_blank')");
   mm_menu_resources.addMenuItem("Report&nbsp;Bugs","location=contextRoot + '/pages/contactUs.jsf'");
   mm_menu_resources.addMenuItem("User&nbsp;Forum","window.open('http://www.broad.mit.edu/cancer/software/genepattern/forum/', '_blank')");
+  mm_menu_resources.addMenuItem("Contact Us","location=contextRoot + '/pages/contactUs.jsf'");
+ 
   mm_menu_resources.hideOnMouseOut=true;
   mm_menu_resources.bgColor='#CCCC66';
   mm_menu_resources.menuBorder=0;
