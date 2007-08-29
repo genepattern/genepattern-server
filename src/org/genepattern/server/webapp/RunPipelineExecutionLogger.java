@@ -79,12 +79,7 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
             if (model != null) {
                 logFile = new File(jobDir, model.getName() + "_execution_log.html");
                 logWriter = new PrintWriter(new FileWriter(logFile));
-//                String updateUrl = URL + "updatePipelineStatus.jsp?jobID=" + System.getProperty("jobID") + "&"
-//                        + GPConstants.NAME + "=";
-//                updateUrl += "&filename=" + jobDir.getName() + "/" + logFile.getName();
-//                URL url = new URL(updateUrl);
-//                HttpURLConnection uconn = (HttpURLConnection) url.openConnection();
-//                int rc = uconn.getResponseCode();
+
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -356,6 +351,12 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
 
         logWriter.flush();
         logWriter.close();
+        
+        
+        // try to make this the last output file
+        logFile.setLastModified(System.currentTimeMillis()+1000);
+    
+        
     }
 
     public String getElapsedTime(Date startTime, Date endTime) {
