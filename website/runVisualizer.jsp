@@ -90,7 +90,6 @@
 <%
 		return;
 	}
-
 	name = taskInfo.getName();
 	TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
 	String lsid = (String)tia.get(GPConstants.LSID);
@@ -103,7 +102,6 @@
 	if(javaFlags==null) {
 	    javaFlags = System.getProperty(RunVisualizerConstants.JAVA_FLAGS_VALUE);
 	}
-
 
 java.io.StringWriter app = new java.io.StringWriter();
 app.append("<applet code=\"" + org.genepattern.visualizer.RunVisualizerApplet.class.getName() + "\" archive=\"runVisualizer.jar,commons-httpclient.jar,commons-codec-1.3.jar\" codebase=\"downloads\" width=\"1\" height=\"1\" alt=\"Your browser can not run applets\">");
@@ -126,7 +124,11 @@ for (i = 0; i < parameterInfoArray.length; i++) {
 	String value = params.getProperty(paramName);
 	if(value != null) {
 		value = value.replace("\\", "\\\\");
+	} else {
+		value = "";
 	}
+	
+	
 	app.append("<param name=\"" + StringUtils.htmlEncode(paramName) + "\" value=\"" + URLEncoder.encode(value, "UTF-8") + "\">");
 }
 
