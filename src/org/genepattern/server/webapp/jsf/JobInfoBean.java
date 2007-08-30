@@ -66,7 +66,6 @@ public class JobInfoBean {
     }
 
     public JobInfoBean() {
-
 	if (System.getProperty("GenePatternURL") != null) {
 	    genePatternUrl = System.getProperty("GenePatternURL");
 	} else {
@@ -81,11 +80,20 @@ public class JobInfoBean {
 	    throw new FacesException("Requested job not found.");
 	}
 	LocalAnalysisClient client = new LocalAnalysisClient(UIBeanHelper.getUserId());
-
 	try {
 	    JobInfo job = client.getJob(requestedJobNumber);
+	    
 	    jobInfoWrapper = createJobInfoWrapper(job);
-	    JobInfo[] children = client.getChildren(job.getJobNumber());
+	    JobInfo[] children = new JobInfo[0];
+	    try {
+	    	children = client.getChildren(job.getJobNumber());
+	    } catch (Exception e){
+	    	
+	    	log.error(e.getMessage(), e);
+	    	
+	    }
+	    
+	    
 	    childJobs = new JobInfoWrapper[children != null ? children.length : 0];
 	    if (children != null) {
 		for (int i = 0, length = children.length; i < length; i++) {
@@ -97,9 +105,9 @@ public class JobInfoBean {
 	    throw new FacesException("Job " + requestedJobNumber + " not found.");
 	}
     }
-
+    
     private JobInfoWrapper createJobInfoWrapper(JobInfo job) {
-
+    	
 	if (!AuthorizationHelper.adminJobs() && !job.getUserId().equals(UIBeanHelper.getUserId())) {
 	    throw new FacesException("You don't have the required permissions to access the requested job.");
 	}
@@ -110,6 +118,7 @@ public class JobInfoBean {
 	    TaskInfo task = new LocalAdminClient(job.getUserId()).getTask(job.getTaskLSID());
 
 	    formalParameters = task.getParameterInfoArray();
+		
 	} catch (WebServiceException e) {
 	    log.error(e);
 	}
@@ -121,17 +130,19 @@ public class JobInfoBean {
 		parameterMap.put(p.getName(), p);
 	    }
 	}
-
+	
 	if (formalParameters != null) {
 	    for (ParameterInfo formalParameter : formalParameters) {
 		ParameterInfo param = parameterMap.get(formalParameter.getName());
+		if (param == null) continue;
+		
 		String value = param.getUIValue(formalParameter);
 		// skip parameters that the user did not give a value for
 		if (value == null || value.equals("")) {
 		    continue;
 		}
 		String displayValue = value;
-
+		
 		boolean isUrl = false;
 		boolean exists = false;
 		String directory = null;
@@ -148,6 +159,7 @@ public class JobInfoBean {
 			}
 
 		    }
+			
 		    if (!isUrl) {
 			File f = new File(value);
 			exists = f.exists();
@@ -160,6 +172,7 @@ public class JobInfoBean {
 			}
 		    }
 		}
+		
 		InputParameter p = new InputParameter();
 		String name = (String) formalParameter.getAttributes().get("altName");
 		if (name == null) {
@@ -172,8 +185,10 @@ public class JobInfoBean {
 		p.setValue(value);
 		p.setUrl(isUrl);
 		p.setExists(exists);
+		
 		inputs.add(p);
 	    }
+		
 	}
 
 	if (parameterInfoArray != null) {
