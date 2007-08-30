@@ -379,6 +379,35 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
         this.out.flush();
     }
 
+    
+    
+    public void reportErrorFilePresence(ParameterInfo[] jobParams){
+    	 boolean hasStdErrFile = false;
+    	 String realJobId = "";
+    	 
+    	 for (int j = 0; j < jobParams.length; j++) {
+             if (!jobParams[j].isOutputFile()) {
+                 continue;
+             }
+             String fileName = new File("../../" + jobParams[j].getValue()).getName();
+             if ("stderr.txt".equals(fileName)){
+             	hasStdErrFile = true;
+             	String fileJobDirAndName = jobParams[j].getValue();
+                int idx = fileJobDirAndName.indexOf("/");
+                realJobId = fileJobDirAndName.substring(0, idx);
+
+             	break;
+             }
+         }
+    	 if (!hasStdErrFile) return;
+    	 
+    	 out.append("<tr class=\"purge_notice\"><td></td><td></td><td colspan=\"2\">");
+    	 out.append("An error was reported during execution of this module. Click <a href=\"pages/moduleExecutionError.jsf?jobNumber="+realJobId+"\" target=\"_error\">here</a> for details.");
+    	 out.append("</td></tr>");
+    	 
+    	 
+    }
+    
     /**
      * called after a task execution is complete
      *
@@ -389,8 +418,8 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
         ParameterInfo[] jobParams = jobInfo.getParameterInfoArray();
         StringBuffer sbOut = new StringBuffer();
         int numOutputFiles = 0;
-        // out.println("<tr><td colspan=5><div id=\"taskDiv"+ currentIndex
-        // +"\"><table>");
+       
+        reportErrorFilePresence(jobParams);
 
         for (int j = 0; j < jobParams.length; j++) {
             if (!jobParams[j].isOutputFile()) {

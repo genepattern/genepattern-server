@@ -369,6 +369,34 @@ show execution logs</td>
         ParameterInfo[] jobParams = jobInfo.getParameterInfoArray();
            
 
+        //=================== Warn on presence of error file =============
+        boolean hasStdErrFile = false;
+    	String realJobId = ""; 
+    	 for (int j = 0; j < jobParams.length; j++) {
+             if (!jobParams[j].isOutputFile()) {
+                 continue;
+             }
+             String fileName = new File("../../" + jobParams[j].getValue()).getName();
+             if ("stderr.txt".equals(fileName)){
+             	hasStdErrFile = true;
+             	String fileJobDirAndName = jobParams[j].getValue();
+                int idx = fileJobDirAndName.indexOf("/");
+                realJobId = fileJobDirAndName.substring(0, idx);
+
+             	break;
+             }
+         }
+    	 if (hasStdErrFile){
+    	 
+    	 	out.println("<tr class=\"purge_notice\"><td></td><td></td><td colspan=\"2\">");
+    	 	out.println("An error was reported during execution of this module. Click ");
+    	 	out.println("<a href=\"pages/moduleExecutionError.jsf?jobNumber="+realJobId+"\" target=\"_error\">here</a> for details.");
+    	 	out.println("</td></tr>");
+    	 }
+       	//=====================
+        
+        
+        
         StringBuffer sbOut = new StringBuffer();
         for (int j = 0; j < jobParams.length; j++) {
             if (!jobParams[j].isOutputFile()) {
