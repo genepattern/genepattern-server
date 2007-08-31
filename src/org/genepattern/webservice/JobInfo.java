@@ -46,6 +46,9 @@ public class JobInfo implements Serializable {
         parameterInfoArray = new ParameterInfo[0];
     }
 
+    
+  
+    
     /**
      * @param jobNo
      * @param taskID
@@ -68,8 +71,11 @@ public class JobInfo implements Serializable {
         this.userId = userId;
         this.lsid = lsid;
         this.taskName = taskName;
+
     }
 
+  
+    
     /**
      * Construct a JobInfo object from an AnalysisJob
      * @param aJob

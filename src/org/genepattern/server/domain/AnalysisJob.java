@@ -4,9 +4,11 @@ package org.genepattern.server.domain;
 
 import java.util.Date;
 
-import org.genepattern.webservice.ParameterInfo;
+import org.apache.log4j.Logger;
+
 
 public class AnalysisJob {
+	private static Logger log = Logger.getLogger(AnalysisJob.class);
 
     private Integer jobNo;
     private JobStatus jobStatus;
@@ -75,9 +77,21 @@ public class AnalysisJob {
      * @es_generated
      */
     public void setStatus(JobStatus value) {
-        this.jobStatus = value;
+     	log.debug("\tSetting status on " + this.getJobNo() +" to " + value.getStatusName());
+           this.jobStatus = value;
     }
 
+    
+
+    public JobStatus getJobStatus() {
+        return getStatus();
+    }
+
+    public void setJobStatus(JobStatus jobStatus) {
+    	setStatus(jobStatus);
+    }
+
+    
     /**
      * auto generated
      * 
@@ -274,14 +288,6 @@ public class AnalysisJob {
      */
     public void setDeleted(Boolean value) {
         this.deleted = value;
-    }
-
-    public JobStatus getJobStatus() {
-        return jobStatus;
-    }
-
-    public void setJobStatus(JobStatus jobStatus) {
-        this.jobStatus = jobStatus;
     }
 
 }

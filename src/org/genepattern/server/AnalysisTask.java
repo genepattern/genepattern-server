@@ -12,13 +12,21 @@
 
 package org.genepattern.server;
 
+import java.util.List;
 import java.util.Vector;
+import java.util.Iterator; 
 
 import org.apache.log4j.Logger;
 
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.domain.AnalysisJob;
+import org.genepattern.server.domain.AnalysisJobDAO;
+import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.OmnigeneException;
+import org.hibernate.Query;
 
 /**
  * Runnable AnalysisTask - Adapts a Runnable to run within a pre-created thread.
@@ -44,6 +52,21 @@ public class AnalysisTask implements Runnable {
     private GenePatternAnalysisTask genePattern = new GenePatternAnalysisTask();
     
     private static AnalysisTask instance;
+    
+    
+    /**
+     * maximum number of concurrent tasks to run before next one will have to wait
+     */
+    public static int NUM_THREADS = 20;
+
+    static {
+	try {
+	    NUM_THREADS = Integer.parseInt(System.getProperty(GPConstants.NUM_THREADS, "20"));
+	} catch (Exception e) {
+	    e.printStackTrace();
+	}
+    }
+    
     
     private AnalysisTask() {
     }
@@ -77,6 +100,96 @@ public class AnalysisTask implements Runnable {
         }
     }
     
+    
+    private AnalysisJobDAO dao = new AnalysisJobDAO();
+	
+    public void updateJobStatusToProcessing(Vector<JobInfo> jobs){
+    	int maxJobCount = 20;
+    	int i=0;
+    	
+    	JobStatus newStatus = (JobStatus) HibernateUtil.getSession().get(JobStatus.class, JobStatus.JOB_PROCESSING);
+    	Iterator iter = jobs.iterator();
+        while (iter.hasNext() && i++ <= maxJobCount) {
+            JobInfo jobby = (JobInfo) iter.next();
+            
+            AnalysisJob aJob = dao.findById(jobby.getJobNumber());
+            aJob.setStatus(newStatus);
+        }
+    }
+    
+    
+    /**
+     * this is the old version that can cause a deadlock when we commit (damned if I know why...
+     * 
+     * @param maxJobCount
+     * @return
+     * @throws OmnigeneException
+     */
+    public Vector getWaitingJobs_LOCKSUP(int maxJobCount) throws OmnigeneException {
+        Vector jobVector = new Vector();
+
+        // initializing maxJobCount, if it has invalid value
+        if (maxJobCount <= 0) {
+            maxJobCount = 1;
+        }
+
+        // Validating taskID is not done here bcos.
+        // assuming once job is submitted, it should be executed even if
+        // taskid is removed from task master
+
+        String hql = "from org.genepattern.server.domain.AnalysisJob "
+                + " where jobStatus.statusId = :statusId order by submittedDate ";
+        Query query = HibernateUtil.getSession().createQuery(hql);
+        query.setInteger("statusId", JobStatus.JOB_PENDING);
+
+        List results = query.list();
+        int i = 1;
+        Iterator iter = results.iterator();
+        JobStatus newStatus = (JobStatus) HibernateUtil.getSession().get(JobStatus.class, JobStatus.JOB_PROCESSING);
+        
+        while (iter.hasNext() && i++ <= maxJobCount) {
+            AnalysisJob aJob = (AnalysisJob) iter.next();
+            JobInfo singleJobInfo = new JobInfo(aJob);
+            // Add waiting job info to vector, for AnalysisTask
+            jobVector.add(singleJobInfo);
+            aJob.setStatus(newStatus);
+        }
+        return jobVector;
+    }
+    
+    
+    public Vector getWaitingJobs(int maxJobCount) throws OmnigeneException {
+        Vector jobVector = new Vector();
+
+        // initializing maxJobCount, if it has invalid value
+        if (maxJobCount <= 0) {
+            maxJobCount = 1;
+        }
+
+        // Validating taskID is not done here bcos.
+        // assuming once job is submitted, it should be executed even if
+        // taskid is removed from task master
+
+        String hql = "from org.genepattern.server.domain.AnalysisJob "
+                + " where jobStatus.statusId = :statusId order by submittedDate ";
+        Query query = HibernateUtil.getSession().createQuery(hql);
+        query.setInteger("statusId", JobStatus.JOB_PENDING);
+
+        List results = query.list();
+
+        int i = 1;
+        Iterator iter = results.iterator();
+        
+        while (iter.hasNext() && i++ <= maxJobCount) {
+            AnalysisJob aJob = (AnalysisJob) iter.next();
+            JobInfo singleJobInfo = new JobInfo(aJob);
+            // Add waiting job info to vector, for AnalysisTask
+            jobVector.add(singleJobInfo);
+        }
+
+        return jobVector;
+
+    }
     /** Main AnalysisTask's thread method. */
     public void run() {
         log.debug("Starting AnalysisTask thread");
@@ -92,8 +205,12 @@ public class AnalysisTask implements Runnable {
                     // Fetch another batch of jobs.
                     try {
                         HibernateUtil.beginTransaction();
-                        jobQueue = genePattern.getWaitingJobs();
+                        
+                        jobQueue = this.getWaitingJobs(NUM_THREADS);
+                        this.updateJobStatusToProcessing(jobQueue);
+                     //   this.getWaitingJobs_LOCKSUP(NUM_THREADS);
                         HibernateUtil.commitTransaction();
+                    
                     } catch(RuntimeException e) {
                         HibernateUtil.rollbackTransaction();
                         log.error("Error getting waiting jobs" , e);
@@ -120,7 +237,7 @@ public class AnalysisTask implements Runnable {
             }
             
             try {
-                onJobProcessFrameWork(o);
+           //     onJobProcessFrameWork(o);
                 
             } catch (Exception ex) {
                 log.error(ex);
@@ -146,7 +263,7 @@ public class AnalysisTask implements Runnable {
         return TASK_NAME;
     }
     
-    private AnalysisTask(int threadCount) {        
+    public AnalysisTask(int threadCount) {        
         // create semaphore when thread count >0
         if (threadCount > 0) {
             sem = new Semaphore(threadCount);
@@ -195,7 +312,7 @@ public class AnalysisTask implements Runnable {
     
     public static void startQueue() {
         if (instance == null) {
-            instance = new AnalysisTask(GenePatternAnalysisTask.NUM_THREADS);
+        	instance = new AnalysisTask(NUM_THREADS);
             Thread runner = new Thread(instance);
             runner.start();
         }

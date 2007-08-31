@@ -38,6 +38,7 @@ import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 
+import org.hibernate.LockMode;
 import org.hibernate.Query;
 
 /**
@@ -56,49 +57,7 @@ AnalysisDAO extends BaseDAO {
     public AnalysisDAO() {
     }
 
-    /**
-     * 
-     * @param maxJobCount
-     *            max. job count
-     * @throws OmnigeneException
-     * @throws RemoteException
-     * @return JobInfo Vector
-     */
-    public Vector getWaitingJobs(int maxJobCount) throws OmnigeneException {
-        Vector jobVector = new Vector();
-
-        // initializing maxJobCount, if it has invalid value
-        if (maxJobCount <= 0) {
-            maxJobCount = 1;
-        }
-
-        // Validating taskID is not done here bcos.
-        // assuming once job is submitted, it should be executed even if
-        // taskid is removed from task master
-
-        String hql = "from org.genepattern.server.domain.AnalysisJob "
-                + " where jobStatus.statusId = :statusId order by submittedDate ";
-        Query query = getSession().createQuery(hql);
-        query.setInteger("statusId", JOB_WAITING_STATUS);
-
-        List results = query.list();
-
-        int i = 1;
-        Iterator iter = results.iterator();
-        JobStatus newStatus = (JobStatus) getSession().get(JobStatus.class, PROCESSING_STATUS);
-        while (iter.hasNext() && i++ <= maxJobCount) {
-            AnalysisJob aJob = (AnalysisJob) iter.next();
-            JobInfo singleJobInfo = this.jobInfoFromAnalysisJob(aJob);
-            // Add waiting job info to vector, for AnalysisTask
-            jobVector.add(singleJobInfo);
-
-            aJob.setStatus(newStatus);
-
-        }
-
-        return jobVector;
-
-    }
+ 
 
     /**
      * 
@@ -220,9 +179,12 @@ AnalysisDAO extends BaseDAO {
      */
     public int updateJobStatus(Integer jobNo, Integer jobStatusID) throws OmnigeneException {
 
-        AnalysisJob job = (AnalysisJob) getSession().get(AnalysisJob.class, jobNo);
+        AnalysisJob job = (AnalysisJob) getSession().get(AnalysisJob.class, jobNo, LockMode.UPGRADE_NOWAIT);
         org.genepattern.server.domain.JobStatus js = (org.genepattern.server.domain.JobStatus) getSession()
                 .get(JobStatus.class, jobStatusID);
+        
+        log.debug("/tSetting job status");
+        
         job.setJobStatus(js);
         getSession().update(job); // Not really neccessary
         return 1;
@@ -284,7 +246,7 @@ AnalysisDAO extends BaseDAO {
         query.setInteger("jobNo", jobId);
         AnalysisJob parent = (AnalysisJob) query.uniqueResult();
         if (parent != null) {
-            return jobInfoFromAnalysisJob(parent);
+            return new JobInfo(parent);
         }
         return null;
 
@@ -303,7 +265,7 @@ AnalysisDAO extends BaseDAO {
         query.setFetchSize(50);
         List<AnalysisJob> aJobs = query.list();
         for (AnalysisJob aJob : aJobs) {
-            JobInfo ji = jobInfoFromAnalysisJob(aJob);
+            JobInfo ji = new JobInfo(aJob);
             results.add(ji);
         }
         return (JobInfo[]) results.toArray(new JobInfo[0]);
@@ -353,7 +315,7 @@ AnalysisDAO extends BaseDAO {
         java.util.List results = new java.util.ArrayList();
         List<AnalysisJob> aJobs = query.list();
         for (AnalysisJob aJob : aJobs) {
-            JobInfo ji = this.jobInfoFromAnalysisJob(aJob);
+            JobInfo ji = new JobInfo(aJob);
             results.add(ji);
         }
         return (JobInfo[]) results.toArray(new JobInfo[] {});
@@ -380,7 +342,7 @@ AnalysisDAO extends BaseDAO {
 
         List<AnalysisJob> aJobs = query.list();
         for (AnalysisJob aJob : aJobs) {
-            JobInfo ji = this.jobInfoFromAnalysisJob(aJob);
+            JobInfo ji = new JobInfo(aJob);
             jobVector.add(ji);
         }
         return (JobInfo[]) jobVector.toArray(new JobInfo[] {});

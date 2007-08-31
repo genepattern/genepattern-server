@@ -242,18 +242,7 @@ public class GenePatternAnalysisTask {
      */
     protected static int POLL_INTERVAL = 1000;
 
-    /**
-     * maximum number of concurrent tasks to run before next one will have to wait
-     */
-    public static int NUM_THREADS = 20;
-
-    static {
-	try {
-	    NUM_THREADS = Integer.parseInt(System.getProperty(GPConstants.NUM_THREADS, "20"));
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
-    }
+   
 
     /**
      * hashtable of running jobs. key=jobID (as String), value=Process
@@ -4349,23 +4338,7 @@ public class GenePatternAnalysisTask {
 	log.info("GenePattern server version " + System.getProperty("GenePatternVersion") + " is ready.");
     }
 
-    /**
-     * loads the request into queue
-     * 
-     * @return Vector of JobInfo
-     * @author Raj Kuttan
-     */
-    public Vector getWaitingJobs() {
-	Vector jobVector = null;
-	try {
-	    jobVector = getDS().getWaitingJobs(NUM_THREADS);
-	} catch (Exception e) {
-	    log.error(getClass().getName() + ": getWaitingJobs " + e.getMessage());
-	    jobVector = new Vector();
-	}
-	return jobVector;
-    }
-
+    
     /**
      * return boolean indicating whether a filename represents a code file
      */

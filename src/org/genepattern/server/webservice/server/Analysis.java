@@ -466,6 +466,8 @@ public class Analysis extends GenericWebService {
     public void setJobStatus(int jobId, String status) throws WebServiceException {
         try {
             
+      log.debug("Analysis.SetStatus "+ jobId);
+      
             isJobOwnerOrAuthorized(getUsernameFromContext(), jobId);
 
             AnalysisDAO ds = new AnalysisDAO();
