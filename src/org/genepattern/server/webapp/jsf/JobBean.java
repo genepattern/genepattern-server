@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -264,9 +263,7 @@ public class JobBean {
 	    JobInfo jobInfo = new JobInfo(-1, -1, null, null, null, jobParameters, UIBeanHelper.getUserId(), lsid,
 		    taskInfo.getName());
 
-	    URL url = new URL(System.getProperty("GenePatternURL"));
-	    String server = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort();
-	    AnalysisJob job = new AnalysisJob(server, jobInfo, JobBean.isVisualizer(taskInfo));
+	    AnalysisJob job = new AnalysisJob(UIBeanHelper.getServer(), jobInfo, JobBean.isVisualizer(taskInfo));
 	    return CodeGeneratorUtil.getCode(language, job, taskInfo, adminClient);
 	} catch (WebServiceException e) {
 	    log.error("Error getting code.", e);
