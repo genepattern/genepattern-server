@@ -174,9 +174,14 @@ public class JobInfoBean {
 		    name = formalParameter.getName();
 		}
 		name = name.replaceAll("\\.", " ");
+
 		p.setDirectory(directory);
 		p.setName(name);
-		p.setDisplayValue(displayValue);
+		if (formalParameter.isPassword()) {
+		    p.setDisplayValue(displayValue != null ? "*****" : null);
+		} else {
+		    p.setDisplayValue(displayValue);
+		}
 		p.setValue(value);
 		p.setUrl(isUrl);
 		p.setExists(exists);
@@ -242,6 +247,8 @@ public class JobInfoBean {
 	private boolean exists;
 
 	private String directory;
+
+	private boolean password;
 
 	public String getName() {
 	    return name;
