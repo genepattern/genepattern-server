@@ -331,6 +331,10 @@ show execution logs</td>
                     }
                 } else if (isURL) {
                     out.println("<a href='" + value + "'>" + value + "</a>");
+                } else if(formalPinfo.isPassword()) {
+                    String display = pinfo.getValue();
+                    display = display != null ? "*****" : null;
+                    out.println(StringUtils.htmlEncode(display));
                 } else {
                     String display = pinfo.getUIValue(formalPinfo);
                     out.println(StringUtils.htmlEncode(display));
