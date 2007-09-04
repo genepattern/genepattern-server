@@ -45,8 +45,8 @@ public class UIBeanHelper {
     }
 
     public static HttpServletRequest getRequest() {
-	HttpServletRequest request = (HttpServletRequest) getExternalContext().getRequest();
-	return request;
+	FacesContext fc = FacesContext.getCurrentInstance();
+	return fc != null ? (HttpServletRequest) getExternalContext().getRequest() : null;
     }
 
     public static HttpSession getSession() {
