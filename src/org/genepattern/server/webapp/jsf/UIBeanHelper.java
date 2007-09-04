@@ -222,6 +222,9 @@ public class UIBeanHelper {
      */
     public static String getServer() {
 	HttpServletRequest request = UIBeanHelper.getRequest();
+	if (request == null) {
+	    return System.getProperty("GenePatternURL");
+	}
 	return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()
 		+ request.getContextPath();
     }

@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.Map.Entry;
 
 import javax.mail.Message;
+import javax.mail.SendFailedException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
@@ -19,16 +20,15 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webapp.DNSClient;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
-import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.webservice.JobInfo;
 
 public class EmailNotificationManager {
 
-    protected static EmailNotificationManager instance = null;
+    private static EmailNotificationManager instance = null;
 
-    protected ArrayList<JobWaitThread> threads = new ArrayList<JobWaitThread>();
+    private ArrayList<JobWaitThread> threads = new ArrayList<JobWaitThread>();
 
-    protected EmailNotificationManager() {
+    private EmailNotificationManager() {
 
     }
 
@@ -63,12 +63,9 @@ public class EmailNotificationManager {
 	String status = "status unknown";
 	String moduleName = "";
 	try {
-	    LocalAnalysisClient analysis = new LocalAnalysisClient(user);
-
 	    HibernateUtil.beginTransaction();
 	    JobInfo jobInfo = (new AnalysisDAO()).getJobInfo(Integer.parseInt(jobId));
 	    HibernateUtil.commitTransaction();
-
 	    status = jobInfo.getStatus();
 	    moduleName = jobInfo.getTaskName();
 	} catch (Exception e) {
@@ -89,7 +86,7 @@ public class EmailNotificationManager {
 
     }
 
-    public HashMap emailToAddresses(String addresses, String from, String subject, String msg) {
+    public HashMap<String, String> emailToAddresses(String addresses, String from, String subject, String msg) {
 	DNSClient dnsClient = new DNSClient();
 
 	StringTokenizer stTo = new StringTokenizer(addresses, ",; ");
@@ -107,7 +104,7 @@ public class EmailNotificationManager {
 		}
 		String domain = to.substring(at + 1);
 		String mailServer = System.getProperty("smtp.server");
-		TreeMap tmHosts = null;
+		TreeMap<Integer, String> tmHosts = null;
 		if (mailServer == null) {
 		    tmHosts = dnsClient.findMXServers(domain);
 		} else {
@@ -123,9 +120,9 @@ public class EmailNotificationManager {
 
 		boolean success = false;
 		StringBuffer sb = new StringBuffer();
-		for (Iterator eHosts = tmHosts.entrySet().iterator(); eHosts.hasNext();) {
+		for (Iterator<Entry<Integer, String>> eHosts = tmHosts.entrySet().iterator(); eHosts.hasNext();) {
 		    // get the next MX server name, in priority order
-		    host = (String) ((Map.Entry) eHosts.next()).getValue(); // eg.
+		    host = eHosts.next().getValue(); // eg.
 		    // "genome.wi.mit.edu";
 		    // Setup mail server
 		    props.put("mail.smtp.host", host);
@@ -145,10 +142,10 @@ public class EmailNotificationManager {
 		    // Send message
 		    try {
 			Transport.send(message);
-			System.out.println("Message sent to " + to);
+
 			success = true;
 			break;
-		    } catch (javax.mail.SendFailedException sfe) {
+		    } catch (SendFailedException sfe) {
 			// underlying errors are defined in RFC821
 			Exception underlyingException = sfe.getNextException();
 			if (underlyingException == null)
@@ -167,14 +164,12 @@ public class EmailNotificationManager {
 		    failures.put(to, "Unable to send message to " + to + "\n" + sb.toString());
 		}
 	    } catch (Exception e) {
-		System.out.println(e + " while attempting to send to " + to + " via " + host + "<br>");
 		e.printStackTrace();
 	    }
 	}// end while more addresses
 	if (failures.size() > 0)
 	    return failures;
-	else
-	    return null;
+	return null;
 
     }// end emailAddresses
 
@@ -204,8 +199,6 @@ class JobWaitThread extends Thread {
 
     public void run() {
 	try {
-	    LocalAnalysisClient analysis = new LocalAnalysisClient(user);
-
 	    String status = "";
 	    JobInfo info = null;
 	    int count = 0;

@@ -242,8 +242,6 @@ public class GenePatternAnalysisTask {
      */
     protected static int POLL_INTERVAL = 1000;
 
-   
-
     /**
      * hashtable of running jobs. key=jobID (as String), value=Process
      */
@@ -1107,8 +1105,8 @@ public class GenePatternAnalysisTask {
 	    Date now = new Date(Calendar.getInstance().getTimeInMillis());
 	    updateJobInfo(jobInfo, parentJobInfo, jobStatus, now);
 	    HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
-	    HibernateUtil.beginTransaction();  // TODO: JTL 8/21/07 oracle
-	   
+	    HibernateUtil.beginTransaction(); // TODO: JTL 8/21/07 oracle
+
 	    UsageLog.logJobCompletion(jobInfo, parentJobInfo, now, elapsedTime);
 	    if (log.isDebugEnabled()) {
 		log.debug("Recording job completion complete " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName()
@@ -1204,20 +1202,20 @@ public class GenePatternAnalysisTask {
 	aJob.setJobStatus(newJobStatus);
 	aJob.setCompletedDate(completionDate);
 
-	// TODO: JTL 8/21/07 oracle begin 
+	// TODO: JTL 8/21/07 oracle begin
 	HibernateUtil.commitTransaction();
 	HibernateUtil.isInTransaction();
 	HibernateUtil.beginTransaction();
-	// TODO: JTL 8/21/07 oracle end 
+	// TODO: JTL 8/21/07 oracle end
 	if (parentJobInfo != null) {
 	    AnalysisJob parentJob = home.findById(parentJobInfo.getJobNumber());
 	    parentJob.setCompletedDate(completionDate);
 	}
-	// TODO: JTL 8/21/07 oracle begin 
+	// TODO: JTL 8/21/07 oracle begin
 	HibernateUtil.commitTransaction();
 	HibernateUtil.isInTransaction();
 	HibernateUtil.beginTransaction();
-	// TODO: JTL 8/21/07 oracle end 
+	// TODO: JTL 8/21/07 oracle end
     }
 
     private JobInfo getParentJobInfo(int jobNumber) {
@@ -1352,9 +1350,12 @@ public class GenePatternAnalysisTask {
 	    bw = new BufferedWriter(new FileWriter(f));
 	    bw.write("# Created: " + new Date(f.lastModified()) + " by " + jobInfo.getUserId());
 	    bw.write("\n# Job: " + jobInfo.getJobNumber());
-	    bw.write("    server:  ");
+
 	    String GP_URL = System.getProperty("GenePatternURL");
-	    bw.write(GP_URL);
+	    if (GP_URL != null) {
+		bw.write("    server:  ");
+		bw.write(GP_URL);
+	    }
 	    bw.write("\n# Module: " + jobInfo.getTaskName() + " " + jobInfo.getTaskLSID());
 	    bw.write("\n# Parameters: ");
 	    ParameterInfo pinfos[] = jobInfo.getParameterInfoArray();
@@ -3825,9 +3826,11 @@ public class GenePatternAnalysisTask {
      * @see #terminatePipeline(String)
      */
     public static JobInfo createPipelineJob(String userID, String parameter_info, String pipelineName, String lsid) {
-    		return createPipelineJob( userID,  parameter_info,  pipelineName,  lsid, JobStatus.JOB_PENDING);
-    }	
-    public static JobInfo createPipelineJob(String userID, String parameter_info, String pipelineName, String lsid, int status) {
+	return createPipelineJob(userID, parameter_info, pipelineName, lsid, JobStatus.JOB_PENDING);
+    }
+
+    public static JobInfo createPipelineJob(String userID, String parameter_info, String pipelineName, String lsid,
+	    int status) {
 	JobInfo job;
 	try {
 	    HibernateUtil.beginTransaction();
@@ -4338,7 +4341,6 @@ public class GenePatternAnalysisTask {
 	log.info("GenePattern server version " + System.getProperty("GenePatternVersion") + " is ready.");
     }
 
-    
     /**
      * return boolean indicating whether a filename represents a code file
      */

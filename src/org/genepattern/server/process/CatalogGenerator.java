@@ -274,7 +274,6 @@ public class CatalogGenerator {
             if (fqHostName.equals("localhost"))
                 fqHostName = "127.0.0.1";
             fqHostName = fqHostName + ":" + port + "/gp/";
-            ;
         }
         if (!fqHostName.startsWith("http://"))
             fqHostName = "http://" + fqHostName;
