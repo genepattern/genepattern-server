@@ -26,6 +26,7 @@ import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
+import org.hibernate.HibernateException;
 import org.hibernate.Query;
 
 /**
@@ -40,7 +41,7 @@ public class AnalysisTask implements Runnable {
     private static Logger log = Logger.getLogger(AnalysisTask.class);
 
     private Object jobQueueWaitObject = new Object();
-    private Vector jobQueue = new Vector();
+    private Vector jobQueue = new Vector<JobInfo>();
     
     // Semaphore to maintain simultaneous job count
     private Semaphore sem = null;
@@ -103,29 +104,42 @@ public class AnalysisTask implements Runnable {
     
     private AnalysisJobDAO dao = new AnalysisJobDAO();
 	
-    public void updateJobStatusToProcessing(Vector<JobInfo> jobs){
+    private Vector<JobInfo>  updateJobStatusToProcessing(Vector<JobInfo> jobs){
     	int maxJobCount = 20;
     	int i=0;
+    	Vector<JobInfo> updatedJobs = new Vector<JobInfo>();
     	
     	JobStatus newStatus = (JobStatus) HibernateUtil.getSession().get(JobStatus.class, JobStatus.JOB_PROCESSING);
     	Iterator iter = jobs.iterator();
+    	
         while (iter.hasNext() && i++ <= maxJobCount) {
-            JobInfo jobby = (JobInfo) iter.next();
+            HibernateUtil.beginTransaction();
+            try {
+            	JobInfo jobby = (JobInfo) iter.next();
+                
+            	AnalysisJob aJob = dao.findById(jobby.getJobNumber());
+            	aJob.setStatus(newStatus);
+            	/**
+            	 * Commit each time through since any large CLOBs (>4k) will fail if
+            	 * they are committed inside a transaction with ANY other object
+            	 */
+            	log.debug("ONE LITTLE COMMIT\n\n");
+            	HibernateUtil.commitTransaction();
+            	HibernateUtil.beginTransaction();
             
-            AnalysisJob aJob = dao.findById(jobby.getJobNumber());
-            aJob.setStatus(newStatus);
+            	updatedJobs.add(jobby);
+            }catch (HibernateException he){
+            	 HibernateUtil.rollbackTransaction();
+            	// don't add it to updated jobs, record the failure and move on
+            	log.error("Error updating job status to processing in AnalysisTask", he);
+            }
         }
+        return updatedJobs;
     }
     
     
-    /**
-     * this is the old version that can cause a deadlock when we commit (damned if I know why...
-     * 
-     * @param maxJobCount
-     * @return
-     * @throws OmnigeneException
-     */
-    public Vector getWaitingJobs_LOCKSUP(int maxJobCount) throws OmnigeneException {
+    
+    private Vector getWaitingJobs(int maxJobCount) throws OmnigeneException {
         Vector jobVector = new Vector();
 
         // initializing maxJobCount, if it has invalid value
@@ -136,40 +150,8 @@ public class AnalysisTask implements Runnable {
         // Validating taskID is not done here bcos.
         // assuming once job is submitted, it should be executed even if
         // taskid is removed from task master
-
-        String hql = "from org.genepattern.server.domain.AnalysisJob "
-                + " where jobStatus.statusId = :statusId order by submittedDate ";
-        Query query = HibernateUtil.getSession().createQuery(hql);
-        query.setInteger("statusId", JobStatus.JOB_PENDING);
-
-        List results = query.list();
-        int i = 1;
-        Iterator iter = results.iterator();
-        JobStatus newStatus = (JobStatus) HibernateUtil.getSession().get(JobStatus.class, JobStatus.JOB_PROCESSING);
+        HibernateUtil.beginTransaction();
         
-        while (iter.hasNext() && i++ <= maxJobCount) {
-            AnalysisJob aJob = (AnalysisJob) iter.next();
-            JobInfo singleJobInfo = new JobInfo(aJob);
-            // Add waiting job info to vector, for AnalysisTask
-            jobVector.add(singleJobInfo);
-            aJob.setStatus(newStatus);
-        }
-        return jobVector;
-    }
-    
-    
-    public Vector getWaitingJobs(int maxJobCount) throws OmnigeneException {
-        Vector jobVector = new Vector();
-
-        // initializing maxJobCount, if it has invalid value
-        if (maxJobCount <= 0) {
-            maxJobCount = 1;
-        }
-
-        // Validating taskID is not done here bcos.
-        // assuming once job is submitted, it should be executed even if
-        // taskid is removed from task master
-
         String hql = "from org.genepattern.server.domain.AnalysisJob "
                 + " where jobStatus.statusId = :statusId order by submittedDate ";
         Query query = HibernateUtil.getSession().createQuery(hql);
@@ -190,6 +172,8 @@ public class AnalysisTask implements Runnable {
         return jobVector;
 
     }
+    
+    
     /** Main AnalysisTask's thread method. */
     public void run() {
         log.debug("Starting AnalysisTask thread");
@@ -203,18 +187,8 @@ public class AnalysisTask implements Runnable {
                 
                 if (jobQueue.isEmpty()) {
                     // Fetch another batch of jobs.
-                    try {
-                        HibernateUtil.beginTransaction();
-                        
-                        jobQueue = this.getWaitingJobs(NUM_THREADS);
-                        this.updateJobStatusToProcessing(jobQueue);
-                     //   this.getWaitingJobs_LOCKSUP(NUM_THREADS);
-                        HibernateUtil.commitTransaction();
-                    
-                    } catch(RuntimeException e) {
-                        HibernateUtil.rollbackTransaction();
-                        log.error("Error getting waiting jobs" , e);
-                    }
+                	jobQueue =  this.getWaitingJobs(NUM_THREADS);
+                	jobQueue = this.updateJobStatusToProcessing(jobQueue);
                 }
                 
                 if (jobQueue.isEmpty()) {
@@ -237,7 +211,7 @@ public class AnalysisTask implements Runnable {
             }
             
             try {
-           //     onJobProcessFrameWork(o);
+                onJobProcessFrameWork(o);
                 
             } catch (Exception ex) {
                 log.error(ex);
