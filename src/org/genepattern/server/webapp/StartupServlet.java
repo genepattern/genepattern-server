@@ -125,28 +125,23 @@ public class StartupServlet extends HttpServlet {
 	    pathRoot = (new File(config.getServletContext().getRealPath("/"))).getName();
 	}
 
-	InetAddress addr;
-	try {
-	    addr = InetAddress.getLocalHost();
-	    String host_address = addr.getCanonicalHostName();
-	    String port = System.getProperty("GENEPATTERN_PORT");
-
-	    String GenePatternServerURL = "http://" + host_address + ":" + port + "/" + pathRoot + "/";
-
-	    // set the GenePatternURL to the current IP adresss unless specified in the
-	    // properties file in which case we leave it alone
-
-	    String myUrl = System.getProperty("GenePatternURL", "");
-	    if (myUrl.length() == 0) {
-		System.setProperty("GenePatternURL", GenePatternServerURL);
+	// set the GenePatternURL to the current IP adresss unless specified in the
+	// properties file in which case we leave it alone
+	String myUrl = System.getProperty("GenePatternURL", "");
+	if (myUrl.length() == 0) {
+	    try {
+		InetAddress addr = InetAddress.getLocalHost();
+		String host_address = addr.getCanonicalHostName();
+		String port = System.getProperty("GENEPATTERN_PORT");
+		String genePatternServerURL = "http://" + host_address + ":" + port + "/" + pathRoot;
+		System.setProperty("GenePatternURL", genePatternServerURL);
+	    } catch (UnknownHostException e) {
+		e.printStackTrace();
 	    }
-
-	} catch (UnknownHostException e) {
-	    e.printStackTrace();
 	}
     }
 
-    protected void startDaemons(Properties props, ServletContext application) throws ServletException {
+    protected void startDaemons(Properties props, ServletContext application) {
 	startJobPurger(props);
 	// startIndexerDaemon(props);
 	Thread.yield(); // allow a bit of runtime to the
@@ -364,9 +359,9 @@ public class StartupServlet extends HttpServlet {
 	    }
 
 	    // copy all of the new properties to System properties
-	    for (Iterator iter = props.keySet().iterator(); iter.hasNext();) {
+	    for (Iterator<?> iter = props.keySet().iterator(); iter.hasNext();) {
 		String key = (String) iter.next();
-		String val = (String) props.getProperty(key);
+		String val = props.getProperty(key);
 		if (val.startsWith(".")) {
 		    val = new File(val).getAbsolutePath();
 		}
@@ -379,9 +374,9 @@ public class StartupServlet extends HttpServlet {
 	    fis.close();
 	    fis = null;
 	    // copy all of the new properties to System properties
-	    for (Iterator iter = props.keySet().iterator(); iter.hasNext();) {
+	    for (Iterator<?> iter = props.keySet().iterator(); iter.hasNext();) {
 		String key = (String) iter.next();
-		String val = (String) props.getProperty(key);
+		String val = props.getProperty(key);
 		if (val.startsWith(".")) {
 		    val = new File(val).getCanonicalPath();
 		}
@@ -389,12 +384,9 @@ public class StartupServlet extends HttpServlet {
 	    }
 
 	    System.setProperty("serverInfo", config.getServletContext().getServerInfo());
-	    // parse Tomcat's server.xml file to get definitive GenePatternURL
-	    // and GENEPATTERN_PORT settings
-	    setupWebserverProps(config, sysProps);
 
 	    TreeMap tmProps = new TreeMap(sysProps);
-	    for (Iterator iProps = tmProps.keySet().iterator(); iProps.hasNext();) {
+	    for (Iterator<?> iProps = tmProps.keySet().iterator(); iProps.hasNext();) {
 		String propName = (String) iProps.next();
 		String propValue = (String) tmProps.get(propName);
 		log(propName + "=" + propValue);
@@ -420,28 +412,27 @@ public class StartupServlet extends HttpServlet {
     // GENEPATTERN_PORT properties according to the actual configuration
 
     // Why are we doing this? This is weird. JTR.
-    protected void setupWebserverProps(ServletConfig config, Properties props) {
+    // protected void setupWebserverProps(ServletConfig config, Properties props) {
 
-	/*
-	 * if (config.getServletContext().getServerInfo().indexOf("Apache Tomcat") != -1) { try { File tomcatConf = new
-	 * File(System.getProperty("tomcat"), "conf"); File fileServerXml = new File(tomcatConf, "server.xml"); Document
-	 * doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( new InputSource(new
-	 * FileReader(fileServerXml))); Element root = doc.getDocumentElement();
-	 * 
-	 * HashMap hmProps = new HashMap(); processNode(root, hmProps); if (hmProps.containsKey("port") &&
-	 * hmProps.containsKey("path")) { String scheme = "http"; if (hmProps.containsKey("scheme")) scheme = (String)
-	 * hmProps.get("scheme");
-	 * 
-	 * props.setProperty("GenePatternURL", scheme + "://127.0.0.1:" + hmProps.get("port") + hmProps.get("path") +
-	 * "/"); } if (hmProps.containsKey("port")) { props.setProperty("GENEPATTERN_PORT", (String)
-	 * hmProps.get("port")); } if (hmProps.containsKey("path")) { props.setProperty("GP_Path", (String)
-	 * hmProps.get("path")); } if (hmProps.containsKey("docBase")) { props.setProperty("GP_docBase", (String)
-	 * hmProps.get("docBase")); } } catch (Exception e) { System.err.println(e.getMessage() + " in
-	 * StartupServlet.parseTomcatServerXml"); } } else { // unknown server }
-	 */
+    /*
+     * if (config.getServletContext().getServerInfo().indexOf("Apache Tomcat") != -1) { try { File tomcatConf = new
+     * File(System.getProperty("tomcat"), "conf"); File fileServerXml = new File(tomcatConf, "server.xml"); Document doc =
+     * DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( new InputSource(new FileReader(fileServerXml)));
+     * Element root = doc.getDocumentElement();
+     * 
+     * HashMap hmProps = new HashMap(); processNode(root, hmProps); if (hmProps.containsKey("port") &&
+     * hmProps.containsKey("path")) { String scheme = "http"; if (hmProps.containsKey("scheme")) scheme = (String)
+     * hmProps.get("scheme");
+     * 
+     * props.setProperty("GenePatternURL", scheme + "://127.0.0.1:" + hmProps.get("port") + hmProps.get("path") + "/"); }
+     * if (hmProps.containsKey("port")) { props.setProperty("GENEPATTERN_PORT", (String) hmProps.get("port")); } if
+     * (hmProps.containsKey("path")) { props.setProperty("GP_Path", (String) hmProps.get("path")); } if
+     * (hmProps.containsKey("docBase")) { props.setProperty("GP_docBase", (String) hmProps.get("docBase")); } } catch
+     * (Exception e) { System.err.println(e.getMessage() + " in StartupServlet.parseTomcatServerXml"); } } else { //
+     * unknown server }
+     */
 
-    }
-
+    // }
     protected void processNode(Node node, HashMap<String, String> hmProps) {
 	if (node.getNodeType() == Node.ELEMENT_NODE) {
 	    Element c_elt = (Element) node;
