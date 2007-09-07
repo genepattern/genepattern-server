@@ -69,9 +69,16 @@
                      binding="#{registrationBean.emailConfirmComponent}">
           <t:validateEmail/>
         </t:inputText>
+        &#160;
+        <h:panelGroup>
+        <h:selectBooleanCheckbox title="emailUpdates"  value="#{registrationBean.joinMailingList}" >
+		</h:selectBooleanCheckbox>
+		<h:outputText value="Add me to the GenePattern users mailing list"/>
+        </h:panelGroup>
+		&#160;
+      <h:commandButton value="Create Account" class="little" actionListener="#{registrationBean.registerUser}"/>
         
       </h:panelGrid>
-      <h:commandButton value="Create Account" class="little" actionListener="#{registrationBean.registerUser}"/>
     </h:form>
   </ui:define>
 </ui:composition>
