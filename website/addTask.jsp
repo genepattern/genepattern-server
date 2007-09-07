@@ -471,17 +471,28 @@ function addNewDomainType(name, desc){
 		  value="<%= taskInfo != null ? taskInfo.getName() : "" %>" xonblur="onTaskNameLostFocus(this)"> * (required, no spaces)<a href='help.jsp#Name' target='help'><img border='0' src='images/help2.jpg'/></a><% } else { %><%= taskInfo.getName() %><% } %>
 		&nbsp;&nbsp;&nbsp;&nbsp;
 
+		
+		
 		<% if (taskInfo != null && !viewOnly) { %>
-		  <input type="button" value="<%= DELETE %>..." name="<%= DELETE %>" class="little"
+		  <div title="Delete <%=taskInfo.getName() %> " style="display:inline"> 
+		  		  <input type="button" value="<%= DELETE %>..." name="<%= DELETE %>" class="little"
 		   onclick="if (window.confirm('Really delete the ' + document.forms['task'].<%= GPConstants.NAME %>.value + ' task?')) { window.location='saveTask.jsp?delete=1&<%= GPConstants.NAME %>=' + document.forms['task'].<%= GPConstants.NAME %>.value + '&<%= GPConstants.LSID %>=' + document.forms['task'].<%= GPConstants.LSID %>.value; }">
+		  </div>
 		<% }
 		if (taskInfo != null) { %>
+			<div title="Run <%=taskInfo.getName() %>" style="display:inline">
 			<input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
+			</div>
 			<%
 		  	if(createModuleAllowed) { %>
+				<div title="Create a copy (clone) of <%=taskInfo.getName() %> you can edit" style="display:inline">
 				<input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
+		 		</div>
 		 <%	}
 		 } %>
+		 
+		 
+		 
 		 &nbsp;&nbsp;&nbsp;
 	</td>
   </tr>
