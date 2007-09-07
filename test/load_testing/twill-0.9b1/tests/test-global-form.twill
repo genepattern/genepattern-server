@@ -1,0 +1,4 @@
+go /test_global_form
+
+## this will break if the global form cannot be 'clicked on' by mechanize
+fv 1 hello hi

@@ -1,0 +1,20 @@
+#! /util/bin/python
+#
+# This file is part of the twill source distribution.
+#
+# twill is a extensible scriptlet language for testing Web apps,
+# available at http://www.idyll.org/~t/www-tools/twill.html.
+#
+# Contact author: C. Titus Brown, titus@caltech.edu.
+#
+# This program and all associated source code files are Copyright (C)
+# 2005 by C. Titus Brown.  It is under the Lesser GNU Public License;
+# please see the included LICENSE.txt file for more information, or
+# contact Titus directly.
+
+"""
+twill shell.
+"""
+
+import twill.shell
+twill.shell.main()
