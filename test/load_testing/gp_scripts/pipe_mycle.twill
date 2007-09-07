@@ -1,0 +1,24 @@
+#
+# Run pipeline 'MyConvertLineEndings' as user 'pcarr@broad.mit.edu'
+#
+
+#login
+timer
+go /gp
+fv loginForm username pcarr@broad.mit.edu
+submit
+timer
+code 200
+url /gp/pages/index.jsf
+
+#run MyConvertLineEndings pipeline
+timer
+go /gp/pages/index.jsf?lsid=urn:lsid:7070.genepatt.node255.broad.mit.edu:genepatternmodules:145:3
+find MyConvertLineEndings
+submit cmd 4
+timer
+find '1 of 1'
+find 'all_aml_train.cvt.cls'
+
+#logout
+go /gp/logout.jsp

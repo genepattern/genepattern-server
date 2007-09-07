@@ -1,0 +1,32 @@
+#
+# Run module 'ExtractComparativeMarkerResults' as user 'test'
+#
+
+setlocal gp_data /home/radon01/pcarr/gp_data
+setlocal res_file /home/radon01/pcarr/gp_data/all_aml/all_aml_train.res
+setlocal cls_file /home/radon01/pcarr/gp_data/all_aml/all_aml_train.cls
+
+#login
+timer
+go /gp
+fv loginForm username test
+submit
+code 200
+url /gp/pages/index.jsf
+
+#run ExtractComparativeMarkerResults
+go /gp/pages/index.jsf?lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00046:3
+fv 4 comparative.marker.selection.filename_url http://node255.broad.mit.edu:7070/gp/jobResults/1165/all_aml_train.comp.marker.odf
+fv 4 comparative.marker.selection.filename_cb url
+formfile 4 dataset.filename $res_file
+fv 4 field Rank
+fv 4 max 100
+timer
+submit cmd 4
+timer
+notfind Exception
+code 200
+
+#logout
+go /gp/logout.jsp
+#timer log

@@ -1,0 +1,30 @@
+#
+# Run module 'ComparativeMarkerSelection' as user 'test'
+#
+
+setlocal gp_data /home/radon01/pcarr/gp_data
+setlocal res_file /home/radon01/pcarr/gp_data/all_aml/all_aml_train.res
+setlocal cls_file /home/radon01/pcarr/gp_data/all_aml/all_aml_train.cls
+
+#login
+go /gp
+fv loginForm username test
+submit
+code 200
+url /gp/pages/index.jsf
+timer
+
+#run MyComparativeMarkerSelection pipeline
+go /gp/pages/index.jsf?lsid=urn:lsid:7070.genepatt.node255.broad.mit.edu:genepatternmodules:144:2
+find MyComparativeMarkerSelection
+timer
+submit cmd 4
+timer
+find '1 of 2'
+find '2 of 2'
+find 'all_aml_train.comp.marker.odf'
+find 'all_aml_train.comp.marker.filt.txt'
+
+#logout
+go /gp/logout.jsp
+#timer log
