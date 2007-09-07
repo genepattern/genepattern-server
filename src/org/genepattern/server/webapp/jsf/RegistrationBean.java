@@ -35,7 +35,7 @@ public class RegistrationBean {
     private String emailConfirm;
     private UIInput passwordConfirmComponent;
     private UIInput emailConfirmComponent;
-    private boolean joinMailingList;
+    private boolean joinMailingList = true;
     
     public RegistrationBean() {
 	String createAccountAllowedProp = System.getProperty("create.account.allowed", "true").toLowerCase();
