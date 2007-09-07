@@ -55,6 +55,7 @@ function Menu(label, mw, mh, fnt, fs, fclr, fhclr, bg, bgh, halgn, valgn, pad, s
 	this.hideChildMenu = hideChildMenu;
 	if (!window.menus) window.menus = new Array();
 	this.label = " " + label;
+//	this.style.cursor="hand";
 	window.menus[this.label] = this;
 	window.menus[window.menus.length] = this;
 	if (!window.activeMenus) window.activeMenus = new Array();
@@ -377,7 +378,13 @@ function writeMenus(container) {
 					childItem.style.top = childItem.style.pixelTop + 'px';
 					l.Menu.childMenus[l.Menu.childMenus.length] = l.childMenu;
 				}
-				l.style.cursor = "hand";
+
+				// l.style.cursor = "hand";
+				// ### fix for cursor in firefox ###
+				l.style.cursor = "pointer";
+				if (document.getElementById && (!document.all) ) l.style.cursor = "hand";  // IE 5
+
+
 				menuCount++;
 			}
 			if( menu.vertical ) {
