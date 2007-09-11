@@ -46,7 +46,7 @@
 <target name="release" depends="getBuildNumber, website,gp-library, GPGE,installers" />
 <target name="nightlyrelease" depends="nightlyLabel, website, gp-library, GPGE,installers, createWar" />
 <!-- Create a war file to use for platforms without an installer -->
-<target name="createWar" depends="getBuildNumber, website,gp-library, GPGE, GPGEinstaller">
+<target name="createWar" depends="getBuildNumber, website,gp-library">
 	<!-- target name="createWar" depends="" -->
 	<delete dir="wartemp" />
 	<mkdir dir="wartemp" />
@@ -106,6 +106,7 @@
 	</copy>
 	<copy todir="ziptemp" file="installer/customizeWar.xml" />
 	<copy todir="ziptemp" file="installer/runtimeBuild.xml" />
+	<copy todir="ziptemp" file="installer/runtimeBuild.properties" />
 	<move todir="ziptemp" file="gp.war" />
 	<zip destfile="gp_war.zip" basedir="ziptemp" />
 </target>

@@ -15,11 +15,14 @@
  		<replacefilter 
     			token="log4j.appender.R.File=logs/" 
     			value="log4j.appender.R.File=${INSTALL_DIR}/logs/"/>
+    	<replacefilter 
+    			token="log4j.appender.All.File=logs/" 
+    			value="log4j.appender.All.File=${INSTALL_DIR}/logs/"/>
 	</replace>
 
 	<copy file="gp/WEB-INF/classes/log4j.properties" todir="gpinstall/resources"/>
 
-    	<replace file="gpinstall/resources/genepattern.properties">
+    <replace file="gpinstall/resources/genepattern.properties">
  		<replacefilter 
     			token="$purgeTime$" 
     			value="${PURGE_TIME}"/>
@@ -62,6 +65,16 @@
 		<replacefilter 
     			token="HSQL.classPath=webapps/gp/WEB-INF/lib/hsqldb.jar" 
     			value="HSQL.classPath=${INSTALL_DIR}/WEB-INF/lib/hsqldb.jar"/>
+    	
+    	<replacefilter 
+       			token="HSQL.args= -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb" 
+       			value="HSQL.args= -port ${HSQL_PORT}  -database.0 file:${INSTALL_DIR}/resources/GenePatternDB -dbname.0 xdb"/>
+    	
+    	<replacefilter 
+           			token="HSQL.args= -port ${HSQL_PORT}  -database.0 file:../resources/GenePatternDB -dbname.0 xdb" 
+           			value="HSQL.args= -port ${HSQL_PORT}  -database.0 file:${INSTALL_DIR}/resources/GenePatternDB -dbname.0 xdb"/>
+       		
+    		
 		<replacefilter 
     			token="DB.schema=../resources/analysis_hypersonic.sql" 
     			value="DB.schema=./analysis_hypersonic.sql"/>
@@ -123,26 +136,11 @@ fullyQualifiedHostName=${HOST}.${DOMAIN}
   <condition property="R.defined">
     <available file="${R}/library" type="dir"/>
   </condition>
-  	<replace file="GenePattern/R/genepattern.properties" >
- 		
-		<replacefilter 
-    			token="$GENEPATTERN_PORT$" 
-    			value="${GENEPATTERN_PORT}"/>
-		<replacefilter 
-    			token="$HOST_NAME$" 
-    			value="${HOST}"/>
-		<replacefilter 
-    			token="$GENEPATTERN_VERSION$" 
-    			value="${version.major}.${version.minor}"/>
-
-	</replace>
-
+ 
 	<copy todir="${R}/library/GenePattern">
 		<fileset dir="GenePattern"/>
 	</copy>
-	<ant antfile="./runtimeBuild.xml" target="post-install">
-		<property name="output.dir" value="gp"/>
-	</ant>
+	
 
 
 
@@ -163,7 +161,7 @@ smtp.server=${SMTP.SERVER}
 
 <target name="getLocalValues">
 <input
-    message="Host name: "
+    message="Host name: (name only, don't include full domain)"
     addproperty="HOST" />
 <input
     message="Domain: "
@@ -175,8 +173,9 @@ smtp.server=${SMTP.SERVER}
 	defaultvalue="${user.name}@${DOMAIN}" />
 
 <input
-    message="webserver port (no default): "
-    addproperty="GENEPATTERN_PORT"  />
+    message="webserver port (default=8080): "
+    addproperty="GENEPATTERN_PORT"  
+	defaultvalue="8080"/>
 
 <input
     message="HSQL port (default=9001): "
@@ -212,8 +211,9 @@ smtp.server=${SMTP.SERVER}
 	defaultvalue="${GENEPATTERN_PORT}.${user.name}.${HOST}.${DOMAIN}" />
 
 <input
-    message="Installation directory (no default): "
-    addproperty="INSTALL_DIR"  />
+    message="Installation directory (default=${basedir}/gpinstall/): "
+    addproperty="INSTALL_DIR"
+	defaultvalue="${basedir}/gpinstall/"/>
 
 <input
 	message="SMTP Mail server (default=autodetect at runtime)"
