@@ -158,8 +158,12 @@ public abstract class AbstractPipelineCodeGenerator {
             JobSubmission jobSubmission = (JobSubmission) eTasks.nextElement();
             ParameterInfo[] parameterInfo = jobSubmission.giveParameterInfoArray();
             if (parameterInfo != null) {
-                String taskName = jobSubmission.getName().replace('-', '.').replace('_', '.').replace(' ', '.')
-                        + taskNum;
+            	
+            	//String taskName = jobSubmission.getName().replace('-', '.').replace('_', '.').replace(' ', '.')+ taskNum;
+            	
+            	String taskName = jobSubmission.getName().replace(' ', '.')+ taskNum;
+            	
+                System.out.println("APCG  taskName = " + jobSubmission.getName() + " --> " + taskName);
                 for (int i = 0; i < parameterInfo.length; i++) {
                     if (jobSubmission.getRuntimePrompt()[i] && !parameterInfo[i].isOutputFile()) {
                         // TODO: make ParameterInfo Cloneable and then just
