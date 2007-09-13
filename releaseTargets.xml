@@ -73,7 +73,7 @@
 		</fileset>
 	</copy>
 	<copy todir="wartemp/WEB-INF/classes">
-		<fileset dir="website/WEB-INF/classes">
+		<fileset dir="src">
 			<include name="*.xml" />
 		</fileset>
 	</copy>	<copy todir="wartemp/WEB-INF/lib">
