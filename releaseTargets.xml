@@ -72,7 +72,11 @@
 			<include name="Run*.class" />
 		</fileset>
 	</copy>
-	<copy todir="wartemp/WEB-INF/lib">
+	<copy todir="wartemp/WEB-INF/classes">
+		<fileset dir="website/WEB-INF/classes">
+			<include name="*.xml" />
+		</fileset>
+	</copy>	<copy todir="wartemp/WEB-INF/lib">
 		<fileset dir="build/jars">
 			<include name="**.jar" />
 		</fileset>
