@@ -75,6 +75,7 @@
 	<copy todir="wartemp/WEB-INF/classes">
 		<fileset dir="src">
 			<include name="*.xml" />
+			<include name="*.properties" />
 		</fileset>
 	</copy>	<copy todir="wartemp/WEB-INF/lib">
 		<fileset dir="build/jars">
