@@ -25,6 +25,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.log4j.Logger;
+import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 

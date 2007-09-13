@@ -116,13 +116,13 @@ public class RunPipelineSoap {
     AdminProxy adminClient;
     //LocalAdminClient adminClient;
 
-    public RunPipelineSoap(String server, String userID, int jobId, PipelineModel model,
+    public RunPipelineSoap(String server, String userID, String cmdLinePassword, int jobId, PipelineModel model,
             RunPipelineOutputDecoratorIF decorator) throws Exception {
         
         //this.analysisClient = new LocalAnalysisClient(userID);
         //this.adminClient = new LocalAdminClient(userID);
-    	this.analysisClient = new AnalysisWebServiceProxy(server, userID, null);
-        this.adminClient = new AdminProxy(server, userID, null);
+    	this.analysisClient = new AnalysisWebServiceProxy(server, userID, cmdLinePassword);
+        this.adminClient = new AdminProxy(server, userID, cmdLinePassword);
 
         this.server = server;
         System.setProperty("userID", userID);
@@ -230,7 +230,7 @@ public class RunPipelineSoap {
             String pipelineFileName = args[0];
             String userId = args[1];
             System.setProperty("userId", userId);
-            
+            String passwordCmdLineArg = System.getProperty("encryptedPassword", null);
             int jobId = -1;
             if (System.getProperty("jobID") == null) { // null when run using
                 // java
@@ -265,8 +265,8 @@ public class RunPipelineSoap {
             
             String host = serverFromFile.getHost();
             String server = serverFromFile.getProtocol() + "://" + host + ":" + serverFromFile.getPort();
-            PipelineModel pipelineModel = getPipelineModel(pipelineFileName, pipelineLSID, server, userId);
-            RunPipelineSoap rp = new RunPipelineSoap(server, userId, jobId, pipelineModel, decorator);
+            PipelineModel pipelineModel = getPipelineModel(pipelineFileName, pipelineLSID, server, userId, passwordCmdLineArg);
+            RunPipelineSoap rp = new RunPipelineSoap(server, userId, passwordCmdLineArg, jobId, pipelineModel, decorator);
             rp.runPipeline(additionalArguments);
             
         } 
@@ -285,7 +285,7 @@ public class RunPipelineSoap {
      * the pipelineFileName may be either a local file or a URL. Figure out
      * which it is and get it either way
      */
-    private static PipelineModel getPipelineModel(String pipelineFileName, String lsid, String server, String userId) throws Exception {
+    private static PipelineModel getPipelineModel(String pipelineFileName, String lsid, String server, String userId, String password) throws Exception {
         File file = new File(pipelineFileName);
         BufferedReader reader = null;
         PipelineModel model = null;
@@ -293,7 +293,7 @@ public class RunPipelineSoap {
         
         try {
         	   
-            AdminProxy adminClient = new AdminProxy(server, userId, null);
+            AdminProxy adminClient = new AdminProxy(server, userId, password);
             
             if (!file.exists()) {
               

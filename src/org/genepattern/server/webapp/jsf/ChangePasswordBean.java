@@ -22,6 +22,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.validator.ValidatorException;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 

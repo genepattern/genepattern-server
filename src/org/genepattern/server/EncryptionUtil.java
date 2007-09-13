@@ -10,9 +10,10 @@
  use, misuse, or functionality.
  */
 
-package org.genepattern.server.webapp.jsf;
+package org.genepattern.server;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -52,6 +53,36 @@ public class EncryptionUtil {
             encryptedString[i] = digestedString[i];
         }
         return encryptedString;
+    }
+
+    /**
+     * Encode the given array of byte as a String to be passed as an argument 
+     * on the java command line.
+     * 
+     * e.g.
+     * Given byte[] b;
+     * b equals convertToByteArray(convertToString(b));
+     * 
+     * @param byte_arr
+     * @return a String which can be passed as a command line argument.
+     * 
+     * @author pcarr
+     */
+    public static String convertToString(final byte[] byte_arr) {
+        BigInteger bigInteger = new BigInteger(byte_arr);
+        return bigInteger.toString(16);        
+    }
+    
+    /**
+     * Convert the given String representation back to is byte array.
+     * @param arg
+     * @return a byte array matching exactly 
+     * 
+     * @author pcarr
+     */
+    public static byte[] convertToByteArray(String arg) {
+        BigInteger bi = new BigInteger(arg, 16);
+        return bi.toByteArray();
     }
 
     public static void main(String[] args) throws Exception {

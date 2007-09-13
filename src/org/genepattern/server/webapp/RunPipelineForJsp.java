@@ -27,6 +27,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -212,8 +213,15 @@ public class RunPipelineForJsp {
         return;
     }
     
-    public  String[] generatePipelineCommandLine(String name, String jobID, String userID, String baseURL,
-            TaskInfo taskInfo, HashMap commandLineParams, File tempDir,
+    public  String[] generatePipelineCommandLine(
+            String name, 
+            String jobID, 
+            String userID, 
+            byte[] encryptedPassword, //encrypted password
+            String baseURL,
+            TaskInfo taskInfo, 
+            HashMap commandLineParams, 
+            File tempDir,
             String decorator) throws Exception {
         
     	
@@ -257,6 +265,8 @@ public class RunPipelineForJsp {
         cmdLine.add("-Dgenepattern.properties=" + resourcesDir);
         cmdLine.add("-DGenePatternURL=" + System.getProperty("GenePatternURL"));
         cmdLine.add("-D" + GPConstants.LSID + "=" + (String) taskInfo.getTaskInfoAttributes().get(GPConstants.LSID));
+        String passwordArg = EncryptionUtil.convertToString(encryptedPassword);
+        cmdLine.add("-DencryptedPassword="+passwordArg);
         String pipelineMain = System.getProperty("pipeline.main", "org.genepattern.server.webapp.RunPipeline");
         cmdLine.add(pipelineMain);
         
@@ -366,7 +376,7 @@ public class RunPipelineForJsp {
         return ParameterFormatConverter.getJaxbString(params);
     }
     
-    public Process runPipeline(TaskInfo taskInfo, String name, String baseURL, String decorator, String userID,
+    public Process runPipeline(TaskInfo taskInfo, String name, String baseURL, String decorator, String userID, byte[] userPassword,
             HashMap commandLineParams) throws Exception {
         
         if(log.isDebugEnabled()) {
@@ -380,9 +390,7 @@ public class RunPipelineForJsp {
         // Create the job record.  The transaction is commited here because the jsp response is not completed
         // until the pipeline terminates.  Thus we can't wait for the request filter to do the commit.
         JobInfo jobInfo = GenePatternAnalysisTask.createPipelineJob(userID, params, taskInfo.getName(), lsid, JobStatus.JOB_PROCESSING);
-        
-        
-        
+
         jobID = jobInfo.getJobNumber();
         String pipelineShortName = taskInfo.getName();
         if (pipelineShortName != null) {
@@ -400,7 +408,7 @@ public class RunPipelineForJsp {
         }
         boolean deleteDirAfterRun = this
                 .deletePipelineDirAfterRun(taskInfo.getName());
-        String[] commandLine = this.generatePipelineCommandLine(taskInfo.getName(), "" + jobID, userID,
+        String[] commandLine = this.generatePipelineCommandLine(taskInfo.getName(), "" + jobID, userID, userPassword,
                 baseURL, taskInfo, commandLineParams, tempDir, decorator);
         
         // spawn the command
@@ -412,8 +420,7 @@ public class RunPipelineForJsp {
             }
             log.debug(buf.toString());
         }
-       
-
+        
         final Process process = Runtime.getRuntime().exec(commandLine, null, tempDir);
 
         

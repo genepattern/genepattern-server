@@ -12,27 +12,16 @@
 
 package org.genepattern.server.webservice;
 
-import java.lang.reflect.Method;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-import java.util.Vector;
-
-import javax.xml.namespace.QName;
 
 import org.apache.axis.AxisFault;
-import org.apache.axis.Handler;
-import org.apache.axis.Message;
 import org.apache.axis.MessageContext;
-import org.apache.axis.description.OperationDesc;
-import org.apache.axis.description.ServiceDesc;
-import org.apache.axis.handlers.soap.SOAPService;
-import org.apache.axis.i18n.Messages;
-import org.apache.axis.message.MessageElement;
-import org.apache.axis.message.SOAPEnvelope;
 import org.apache.log4j.Logger;
+import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
-import org.genepattern.server.webapp.jsf.EncryptionUtil;
 
 public class AuthenticationHandler extends GenePatternHandlerBase {
     boolean passwordRequired = false;
@@ -75,13 +64,9 @@ public class AuthenticationHandler extends GenePatternHandlerBase {
 
         if (!validateUserPassword(username, password)) {
             throw new AxisFault("Error: Unknown user or invalid password.");
-
         }
-        
-        
     }
 
-    
     /**
      * 
      * @param user
@@ -92,18 +77,23 @@ public class AuthenticationHandler extends GenePatternHandlerBase {
         if (!passwordRequired) {
             return true;
         }
-
         User up = (new UserDAO()).findById(user);
         if (up == null || password == null) {
             return false;
         }
-
         try {
-            return (java.util.Arrays.equals(EncryptionUtil.encrypt(password), up.getPassword()));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+            byte[] encryptedPassword = EncryptionUtil.encrypt(password);
+            if (java.util.Arrays.equals(encryptedPassword, up.getPassword())) {
+                return true;
+            }
         }
-
+        catch (NoSuchAlgorithmException e) {
+            log.error(e);
+        }
+        //if unable to validate the password it could be because the client
+        //   passed in a string representation of the encrypted password
+        //   try that instead
+        byte[] encryptedPassword = EncryptionUtil.convertToByteArray(password);
+        return java.util.Arrays.equals(encryptedPassword, up.getPassword());
     }
 }

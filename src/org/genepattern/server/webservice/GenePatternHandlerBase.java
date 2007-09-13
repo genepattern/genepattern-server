@@ -13,8 +13,6 @@
 package org.genepattern.server.webservice;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.xml.namespace.QName;
@@ -29,14 +27,8 @@ import org.apache.axis.handlers.soap.SOAPService;
 import org.apache.axis.i18n.Messages;
 import org.apache.axis.message.MessageElement;
 import org.apache.axis.message.SOAPEnvelope;
-import org.apache.log4j.Logger;
-import org.genepattern.server.user.User;
-import org.genepattern.server.user.UserDAO;
-import org.genepattern.server.webapp.jsf.EncryptionUtil;
 
 public abstract class GenePatternHandlerBase extends org.apache.axis.handlers.BasicHandler {
-    
-
     
     protected String getOperation(MessageContext msgContext) throws AxisFault{
         Message requestMessage = msgContext.getCurrentMessage();
