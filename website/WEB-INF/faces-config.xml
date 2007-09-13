@@ -58,6 +58,11 @@
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  <managed-bean>
+  <managed-bean-name>registerServerBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.RegisterServerBean</managed-bean-class>
+  <managed-bean-scope>session</managed-bean-scope>
+ </managed-bean>
+ <managed-bean>
   <managed-bean-name>moduleListBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.ModuleListBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
@@ -180,6 +185,19 @@
  </managed-bean>
  <navigation-rule>
   <from-view-id>*</from-view-id>
+  
+  <navigation-case>
+   <from-outcome>registerServer</from-outcome>
+   <to-view-id>/pages/registerServer.xhtml</to-view-id>
+  </navigation-case>
+  <navigation-case>
+   <from-outcome>unregisteredServer</from-outcome>
+   <to-view-id>/pages/unregisteredServer.xhtml</to-view-id>
+  </navigation-case>
+ <navigation-case>
+   <from-outcome>contactUs</from-outcome>
+   <to-view-id>/pages/contactUs.xhtml</to-view-id>
+  </navigation-case>
   <navigation-case>
    <from-outcome>install task results</from-outcome>
    <to-view-id>/pages/installTasks.xhtml</to-view-id>
@@ -199,6 +217,11 @@
   <navigation-case>
    <from-outcome>home</from-outcome>
    <to-view-id>/pages/index.xhtml</to-view-id>
+   <redirect/>
+  </navigation-case>
+  <navigation-case>
+   <from-outcome>unregistered</from-outcome>
+   <to-view-id>/pages/unregisteredServer.xhtml</to-view-id>
    <redirect/>
   </navigation-case>
   <navigation-case>
