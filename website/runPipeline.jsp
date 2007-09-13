@@ -62,6 +62,7 @@
 
             int UNDEFINED = -1;
             int jobID = UNDEFINED;
+            byte[] userPassword = new byte[0];
             String userEmail = null;
             RunPipelineForJsp runPipelineForJsp = new RunPipelineForJsp();
             try {
@@ -75,6 +76,7 @@
 
                 try {
                     User user = (new UserDAO()).findById(userID);
+                    userPassword = user.getPassword();
                     userEmail = user.getEmail();
                     if ((userEmail == null) || (userEmail.length() == 0)) {
                         userEmail = userID;
@@ -237,8 +239,7 @@ var outputFileCount = new Array();
                             return;
                         }
                         String decorator = (String) requestParamsAndAttributes.get("decorator");
-                        Process process = runPipelineForJsp.runPipeline(taskInfo, name, baseURL, decorator, userID,
-                                commandLineParams);
+                        Process process = runPipelineForJsp.runPipeline(taskInfo, name, baseURL, decorator, userID, userPassword, commandLineParams);
                         jobID = runPipelineForJsp.getJobID();
 
                         // stuff to write view file
