@@ -466,7 +466,18 @@ public class TaskCatalogBean {
     private static class DescendingVersionComparator implements Comparator<InstallTask> {
 
         public int compare(InstallTask t1, InstallTask t2) {
-            return new Integer(Integer.parseInt(t2.getLsidVersion())).compareTo(Integer.parseInt(t1.getLsidVersion()));
+        	try {
+        		LSID lsid1 = new LSID(	t1.getLsid());
+        		LSID lsid2 = new LSID(	t2.getLsid());
+        		
+        		return lsid1.compareTo(lsid2);
+        		
+        		
+        	} catch (Exception nfe){
+        		return 0; // let things proceed and make no call on order
+        	
+        	}
+        	
         }
 
     }
