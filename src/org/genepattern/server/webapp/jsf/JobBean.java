@@ -88,12 +88,18 @@ public class JobBean {
     private boolean jobSortAscending = false;
 
     /** Number of job results shown per page */
-    private int pageSize = 50;
+    private int pageSize;
 
     /** Current page displayed */
     private int pageNumber = 1;
 
     public JobBean() {
+	try {
+	    pageSize = Integer.parseInt(System.getProperty("job.results.per.page", "50"));
+	} catch (NumberFormatException nfe) {
+	    pageSize = 50;
+	}
+
 	String userId = UIBeanHelper.getUserId();
 	kindToModules = SemanticUtil.getKindToModulesMap(new AdminDAO().getLatestTasks(userId));
 	this.showExecutionLogs = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showExecutionLogs", String
