@@ -323,19 +323,6 @@ public class RunPipelineSoap {
     }
     
     public void runPipeline(Map args) throws Exception {
-        runPipelineForProduction(args);
-    }
-    
-   
-
-    /**
-     * @param args
-     *            maps parameter name to parameter value
-     */
-    public void runPipelineForProduction(Map args) throws Exception {
-        //setStatus(JobStatus.PROCESSING);
-        
-        
         String stopAfterTaskStr = System.getProperty(GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM);
         int stopAfterTask = Integer.MAX_VALUE;
         if (stopAfterTaskStr != null) {
