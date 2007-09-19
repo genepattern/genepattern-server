@@ -453,17 +453,7 @@
 		<!-- ant antfile="build.xml" dir="." target="nightlyrelease"/  -->
 		<antcall target="nightlyrelease" />
 
-		<replace file="installer\GP_server_Build_Output\Web_Installers\InstData\Linux\VM\GPserver.bin"
-			token="export LD_ASSUME_KERNEL"
-			value="#xport LD_ASSUME_KERNEL"/>
-		<replace file="installer\GP_server_Build_Output\Web_Installers\InstData\Linux\NoVM\GPserver.bin"
-			token="export LD_ASSUME_KERNEL"
-			value="#xport LD_ASSUME_KERNEL"/>
-				
 		
-				
-		
-
 		<mkdir dir="installer\GP_server_Build_Output\Web_Installers\InstData\warfile" />
 		<copy file="gp_war.zip" todir="installer\GP_server_Build_Output\Web_Installers\InstData\warfile" />
 
@@ -475,6 +465,9 @@
 
 
 	</target>
+	
+	
+	
 
 
 	<target name="publishBuild">
