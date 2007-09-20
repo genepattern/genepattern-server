@@ -191,6 +191,11 @@
    <to-view-id>/pages/registerServer.xhtml</to-view-id>
   </navigation-case>
   <navigation-case>
+   <from-outcome>installFrame</from-outcome>
+   <to-view-id>/pages/installFrame.xhtml</to-view-id>
+   <redirect/>
+  </navigation-case>
+  <navigation-case>
    <from-outcome>unregisteredServer</from-outcome>
    <to-view-id>/pages/unregisteredServer.xhtml</to-view-id>
   </navigation-case>
