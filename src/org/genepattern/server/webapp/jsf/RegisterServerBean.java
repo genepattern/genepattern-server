@@ -1,6 +1,7 @@
 package org.genepattern.server.webapp.jsf;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,9 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
+import org.genepattern.server.EncryptionUtil;
+import org.genepattern.server.user.User;
+import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.dao.BaseDAO;
 import org.genepattern.util.GPConstants;
 
@@ -140,6 +144,7 @@ public class RegisterServerBean {
 			   
 			   if (responseCode >= 400) throw new HttpException();
 			   saveIsRegistered();
+			   this.createNewUserNoPassword(this.email);
 			   UIBeanHelper.login(this.email, false, false, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
 			   error = false;			   
 			   return "installFrame";
@@ -185,6 +190,10 @@ public class RegisterServerBean {
 		   // the registration to the DB.  They will be asked to register again
 		   // after each restart
 		   try {
+			   
+			   this.createNewUserNoPassword(this.email);
+			   UIBeanHelper.login(this.email, false, false, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
+			   
 			   int responseCode = client.executeMethod(httppost);
 			   
 			   if (responseCode >= 400) throw new HttpException();
@@ -200,6 +209,22 @@ public class RegisterServerBean {
 		   
 		   return "unregisteredServer";
 	   }
+	   
+	   public static void createNewUserNoPassword(String username) {
+			User newUser = new User();
+			newUser.setUserId(username);
+			try {
+				UserDAO ud = new UserDAO();
+				User u = ud.findById(username);
+				if (u != null) return;
+				
+			    newUser.setPassword(EncryptionUtil.encrypt(""));
+			    (new UserDAO()).save(newUser);
+			} catch (NoSuchAlgorithmException e) {
+			    log.error(e);
+			}
+			
+		}
 	  
 public static boolean isRegisteredOrDeclined(){
 	
