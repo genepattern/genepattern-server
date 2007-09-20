@@ -70,12 +70,14 @@
                 if (!DEBUG && requestParamsAndAttributes.get("DEBUG") != null)
                     DEBUG = true;
 
+                User user = null;
                 String userID = (String) request.getAttribute("userID"); // will force login if necessary
-                if (userID == null || userID.length() == 0)
+                if (userID == null || userID.length() == 0) {
                     return; // come back after login
+                }
 
                 try {
-                    User user = (new UserDAO()).findById(userID);
+                    user = (new UserDAO()).findById(userID);
                     userPassword = user.getPassword();
                     userEmail = user.getEmail();
                     if ((userEmail == null) || (userEmail.length() == 0)) {
@@ -239,7 +241,7 @@ var outputFileCount = new Array();
                             return;
                         }
                         String decorator = (String) requestParamsAndAttributes.get("decorator");
-                        Process process = runPipelineForJsp.runPipeline(taskInfo, name, baseURL, decorator, userID, userPassword, commandLineParams);
+                        Process process = runPipelineForJsp.runPipeline(taskInfo, name, baseURL, decorator, user, commandLineParams);
                         jobID = runPipelineForJsp.getJobID();
 
                         // stuff to write view file

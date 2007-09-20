@@ -50,6 +50,9 @@ public class AuthenticationHandler extends GenePatternHandlerBase {
 
     public void invoke(MessageContext msgContext) throws AxisFault {
         String methodSig = getOperation(msgContext);
+        if (log.isDebugEnabled()) {
+            log.debug("\tmethodSig: "+methodSig);
+       	}
         
         // some methods may be exempted from password protection such as
         // Admin.getServiceInfo
@@ -62,6 +65,17 @@ public class AuthenticationHandler extends GenePatternHandlerBase {
         String username = msgContext.getUsername();
         String password = msgContext.getPassword();
 
+        if (log.isDebugEnabled()) {
+            log.debug("\tusername: "+username);
+            //don't log passwords!!!
+            //log.debug("\tpassword: "+password);
+            //what happened to log.trace()? 
+            //for(StackTraceElement elem : Thread.currentThread().getStackTrace()) {
+            //    log.trace("\tat "+elem.getClassName()+"."+elem.getMethodName()+
+            //        "("+elem.getMethodName()+":"+elem.getLineNumber()+")");
+            //}
+        }
+
         if (!validateUserPassword(username, password)) {
             throw new AxisFault("Error: Unknown user or invalid password.");
         }
@@ -69,31 +83,29 @@ public class AuthenticationHandler extends GenePatternHandlerBase {
 
     /**
      * 
-     * @param user
+     * @param userId
      * @param password
      * @return
      */
-    private boolean validateUserPassword(String user, String password) {
+    private boolean validateUserPassword(String userId, String password) {
         if (!passwordRequired) {
             return true;
         }
-        User up = (new UserDAO()).findById(user);
-        if (up == null || password == null) {
+        User user = (new UserDAO()).findById(userId);
+        if (user == null || password == null) {
             return false;
         }
         try {
             byte[] encryptedPassword = EncryptionUtil.encrypt(password);
-            if (java.util.Arrays.equals(encryptedPassword, up.getPassword())) {
+            if (java.util.Arrays.equals(encryptedPassword, user.getPassword())) {
                 return true;
             }
         }
         catch (NoSuchAlgorithmException e) {
             log.error(e);
         }
-        //if unable to validate the password it could be because the client
-        //   passed in a string representation of the encrypted password
-        //   try that instead
-        byte[] encryptedPassword = EncryptionUtil.convertToByteArray(password);
-        return java.util.Arrays.equals(encryptedPassword, up.getPassword());
+        
+        byte[] encryptedPassword = EncryptionUtil.getInstance().getPipelineUserEncryptedPassword(password);
+        return java.util.Arrays.equals(encryptedPassword, user.getPassword());
     }
 }

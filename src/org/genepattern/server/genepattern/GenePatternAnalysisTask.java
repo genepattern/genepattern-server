@@ -129,12 +129,15 @@ import org.apache.tools.ant.Target;
 import org.apache.tools.ant.taskdefs.Execute;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.genepattern.server.AnalysisServiceException;
+import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.user.UsageLog;
+import org.genepattern.server.user.User;
+import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.util.PropertiesManager;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
@@ -440,6 +443,7 @@ public class GenePatternAnalysisTask {
 	File taskLog = null;
 	String taskName = "";
 	long jobStartTime = System.currentTimeMillis();
+	String userKey = "";
 	try {
 	    /**
 	     * make directory to hold input and output files
@@ -492,6 +496,10 @@ public class GenePatternAnalysisTask {
 
 	    // get environment variables
 	    Hashtable env = getEnv();
+
+	    User user = (new UserDAO()).findById(jobInfo.getUserId());
+	    userKey = EncryptionUtil.getInstance().pushPipelineUserKey(user);
+	    env.put(EncryptionUtil.PROP_PIPELINE_USER_KEY, userKey);
 	    addTaskLibToPath(taskName, env, taskInfoAttributes.get(LSID));
 
 	    JobInfo parentJI = getParentJobInfo(jobInfo.getJobNumber());
@@ -2148,8 +2156,8 @@ public class GenePatternAnalysisTask {
     }
 
     /**
-     * For a given taskName, look up the TaskInfo object in the database and return it to the caller. TODO: involve
-     * userID in the search!
+     * For a given taskName, look up the TaskInfo object in the database and return it to the caller. 
+     * TODO: involve userID in the search!
      * 
      * @param taskName
      *                name of the task to locate

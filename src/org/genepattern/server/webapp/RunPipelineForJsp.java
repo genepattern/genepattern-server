@@ -32,6 +32,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.LSIDManager;
+import org.genepattern.server.user.User;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -64,14 +65,12 @@ public class RunPipelineForJsp {
     public boolean isMissingTasks(PipelineModel model, java.io.PrintWriter out, String userID) throws Exception {
         boolean isMissingTasks = false;
         java.util.List tasks = model.getTasks();
-        HashMap unknownTaskNames = new HashMap();
-        HashMap unknownTaskVersions = new HashMap();
+        HashMap<String,LSID> unknownTaskNames = new HashMap<String,LSID>();
+        HashMap<String,LSID> unknownTaskVersions = new HashMap<String,LSID>();
         for (int ii = 0; ii < tasks.size(); ii++) {
             JobSubmission js = (JobSubmission) tasks.get(ii);
-            TaskInfo formalTask = GenePatternAnalysisTask.getTaskInfo(js
-                    .getName(), userID);
-            boolean unknownTask = !GenePatternAnalysisTask.taskExists(js
-                    .getLSID(), userID);
+            TaskInfo formalTask = GenePatternAnalysisTask.getTaskInfo(js.getName(), userID);
+            boolean unknownTask = !GenePatternAnalysisTask.taskExists(js.getLSID(), userID);
             boolean unknownTaskVersion = false;
             if (unknownTask) {
                 isMissingTasks = true;
@@ -100,9 +99,7 @@ public class RunPipelineForJsp {
             out.println("<form method=\"post\" action=\"pages/taskCatalog.jsf\">");
         }
         if (unknownTaskNames.size() > 0) {
-            for (Iterator iter = unknownTaskNames.keySet().iterator(); iter
-                    .hasNext();) {
-                String name = (String) iter.next();
+            for (String name : unknownTaskNames.keySet()) {
                 LSID absentlsid = (LSID) unknownTaskNames.get(name);
                 out.println("<input type=\"hidden\" name=\"lsid\" value=\"" + absentlsid + "\" /> ");
                 out.println("<tr><td>" + name + "</td><td>" + absentlsid.getVersion() + "</td><td></td><td> " +
@@ -216,20 +213,21 @@ public class RunPipelineForJsp {
     public  String[] generatePipelineCommandLine(
             String name, 
             String jobID, 
-            String userID, 
-            byte[] encryptedPassword, //encrypted password
+            User user,
             String baseURL,
             TaskInfo taskInfo, 
             HashMap commandLineParams, 
             File tempDir,
-            String decorator) throws Exception {
+            String decorator) 
+    throws Exception 
+    {
         
     	
     	String JAVA = System.getProperty("java");
     	String JAVA_HOME = System.getProperty("java.home");
         if (JAVA != null) JAVA_HOME =JAVA;
         
-        boolean savedPipeline = isSavedModel(taskInfo, name, userID);
+        boolean savedPipeline = isSavedModel(taskInfo, name, user.getUserId());
         // these jar files are required to execute
         // gp-full.jar;
         // log4j-1.2.4.jar; xerces.jar;
@@ -243,6 +241,14 @@ public class RunPipelineForJsp {
 
         List<String> cmdLine = new ArrayList<String>();
         cmdLine.add(JAVA_HOME + File.separator + "bin" + File.separator + "java");
+        if (false) {
+            //launch the VM in debug mode
+            //   Use with caution, this will cause the process to suspend
+            //   see Sun's JPDA documentation for details
+            cmdLine.add("-Xdebug");
+            cmdLine.add("-Xnoagent");
+            cmdLine.add("-Xrunjdwp:transport=dt_socket,server=y,address=5000,suspend=y");
+        }
         cmdLine.add("-cp");
         StringBuffer classPath = new StringBuffer();
         classPath.append(webappClassesDir + File.pathSeparator);
@@ -265,8 +271,6 @@ public class RunPipelineForJsp {
         cmdLine.add("-Dgenepattern.properties=" + resourcesDir);
         cmdLine.add("-DGenePatternURL=" + System.getProperty("GenePatternURL"));
         cmdLine.add("-D" + GPConstants.LSID + "=" + (String) taskInfo.getTaskInfoAttributes().get(GPConstants.LSID));
-        String passwordArg = EncryptionUtil.convertToString(encryptedPassword);
-        cmdLine.add("-DencryptedPassword="+passwordArg);
         String pipelineMain = System.getProperty("pipeline.main", "org.genepattern.server.webapp.RunPipeline");
         cmdLine.add(pipelineMain);
         
@@ -288,7 +292,7 @@ public class RunPipelineForJsp {
         writer.close();
         // -------------------------------------------------------------
         cmdLine.add(pipeFile.getName());
-        cmdLine.add(userID);
+        cmdLine.add(user.getUserId());
         
         // add any command line parameters
         // first saving the files locally
@@ -376,8 +380,9 @@ public class RunPipelineForJsp {
         return ParameterFormatConverter.getJaxbString(params);
     }
     
-    public Process runPipeline(TaskInfo taskInfo, String name, String baseURL, String decorator, String userID, byte[] userPassword,
-            HashMap commandLineParams) throws Exception {
+    public Process runPipeline(TaskInfo taskInfo, String name, String baseURL, String decorator, User user, HashMap commandLineParams) 
+    throws Exception 
+    {
         
         if(log.isDebugEnabled()) {
             log.debug("Begin runPipeline.  name= " + name);
@@ -389,7 +394,7 @@ public class RunPipelineForJsp {
         
         // Create the job record.  The transaction is commited here because the jsp response is not completed
         // until the pipeline terminates.  Thus we can't wait for the request filter to do the commit.
-        JobInfo jobInfo = GenePatternAnalysisTask.createPipelineJob(userID, params, taskInfo.getName(), lsid, JobStatus.JOB_PROCESSING);
+        JobInfo jobInfo = GenePatternAnalysisTask.createPipelineJob(user.getUserId(), params, taskInfo.getName(), lsid, JobStatus.JOB_PROCESSING);
 
         jobID = jobInfo.getJobNumber();
         String pipelineShortName = taskInfo.getName();
@@ -408,7 +413,7 @@ public class RunPipelineForJsp {
         }
         boolean deleteDirAfterRun = this
                 .deletePipelineDirAfterRun(taskInfo.getName());
-        String[] commandLine = this.generatePipelineCommandLine(taskInfo.getName(), "" + jobID, userID, userPassword,
+        String[] commandLine = this.generatePipelineCommandLine(taskInfo.getName(), "" + jobID, user,
                 baseURL, taskInfo, commandLineParams, tempDir, decorator);
         
         // spawn the command
@@ -420,12 +425,20 @@ public class RunPipelineForJsp {
             }
             log.debug(buf.toString());
         }
-        
-        final Process process = Runtime.getRuntime().exec(commandLine, null, tempDir);
 
+        //add PROP_PIPELINE_USER_KEY to the runtime environment
+        Map<String,String> currEnv = System.getenv();
+        String[] commandEnv = new String[currEnv.size() + 1];
+        int i = 0;
+        commandEnv[i++] = EncryptionUtil.PROP_PIPELINE_USER_KEY + "=" + EncryptionUtil.getInstance().pushPipelineUserKey(user);
+        for(String key : currEnv.keySet()) {
+            String val = currEnv.get(key);
+            commandEnv[i++] = key + "+" + val;
+        }
+        final Process process = Runtime.getRuntime().exec(commandLine, commandEnv, tempDir);
         
         GenePatternAnalysisTask.storeProcessInHash(Integer.toString(jobID), process);
-        
+
         WaitForPipelineCompletionThread waiter = new WaitForPipelineCompletionThread(process, jobID);
         waiter.start();
         if (deleteDirAfterRun) {

@@ -18,12 +18,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URL;
-import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.security.Security;
@@ -44,6 +42,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AdminProxy;
@@ -74,20 +73,13 @@ public class RunPipelineSoap {
     private static final String logFile = "pipelineErrors.log";  //one log file per pipeline
         
     public static Logger setupLog4jConfig(String logFile) {
-        //System.setProperty("DEBUG", "true"); //don't delete logfile
+        System.setProperty("DEBUG", "false"); //don't delete logfile
 
         Properties log4jconfig = new Properties();
-        //log4jconfig.setProperty("log4j.debug", "true"); //uncomment this line to debug Log4j configuration
+        log4jconfig.setProperty("log4j.debug", "false"); //set this to true to debug Log4j configuration
         log4jconfig.setProperty("log4j.rootLogger", "error, R");
-        log4jconfig.setProperty("log4j.logger.org.genepattern", "debug");
+        log4jconfig.setProperty("log4j.logger.org.genepattern", "error");
 
-        // send debug statements to stdout
-        //log4jconfig.setProperty("log4j.rootLogger", "debug, stdout, R"); 
-        //log4jconfig.setProperty("log4j.appender.stdout", "org.apache.log4j.ConsoleAppender");
-        //log4jconfig.setProperty("log4j.appender.stdout.layout", "org.apache.log4j.PatternLayout");
-        //log4jconfig.setProperty("log4j.appender.stdout.layout.ConversionPattern", "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] (%F:%L) - %m%n");
-
-        //log4jconfig.setProperty("log4j.threshold", "OFF");
         log4jconfig.setProperty("log4j.appender.R", "org.apache.log4j.RollingFileAppender");
         log4jconfig.setProperty("log4j.appender.R.File", logFile);
         log4jconfig.setProperty("log4j.appender.R.MaxFileSize", "256KB");
@@ -112,15 +104,11 @@ public class RunPipelineSoap {
     int jobId;
     
     AnalysisWebServiceProxy analysisClient;
-    //LocalAnalysisClient analysisClient;
     AdminProxy adminClient;
-    //LocalAdminClient adminClient;
 
     public RunPipelineSoap(String server, String userID, String cmdLinePassword, int jobId, PipelineModel model,
             RunPipelineOutputDecoratorIF decorator) throws Exception {
         
-        //this.analysisClient = new LocalAnalysisClient(userID);
-        //this.adminClient = new LocalAdminClient(userID);
     	this.analysisClient = new AnalysisWebServiceProxy(server, userID, cmdLinePassword);
         this.adminClient = new AdminProxy(server, userID, cmdLinePassword);
 
@@ -141,6 +129,7 @@ public class RunPipelineSoap {
     public static void main(String args[]) throws Exception {
         log.debug("working dir: "+new File("test").getAbsolutePath());
 
+        String userKey = "";
         try {
             Properties additionalArguments = new Properties();
             String genePatternPropertiesFile = System.getProperty("genepattern.properties") + java.io.File.separator
@@ -173,8 +162,6 @@ public class RunPipelineSoap {
             if (GP_Path != null)
                 System.setProperty("GP_Path", GP_Path);
             Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-            
-            
               
             //
             // Probably best to put this code in a function somewhere...
@@ -210,7 +197,6 @@ public class RunPipelineSoap {
                         count++;
                     }
                     additionalArguments.put(key, valbuff.toString());
-                    
                 }
             }
             String pipelineLSID = System.getProperty(GPConstants.LSID);
@@ -230,28 +216,33 @@ public class RunPipelineSoap {
             String pipelineFileName = args[0];
             String userId = args[1];
             System.setProperty("userId", userId);
-            String passwordCmdLineArg = System.getProperty("encryptedPassword", null);
+            userKey = System.getProperty(EncryptionUtil.PROP_PIPELINE_USER_KEY, null);
+            if (userKey == null) {
+                userKey = System.getenv().get(EncryptionUtil.PROP_PIPELINE_USER_KEY);
+            }
+            log.debug("EncryptionUtil.PROP_PIPELINE_USER_KEY: "+userKey);
+            
             int jobId = -1;
-            if (System.getProperty("jobID") == null) { // null when run using
-                // java
-                // client
+            if (System.getProperty("jobID") == null) { 
+                // null when run using java client
                 File dir = new File(System.getProperty("user.dir"));
                 jobId = Integer.parseInt(dir.getName());
                 System.setProperty("jobID", "" + jobId);
-            } else {
+            } 
+            else {
                 jobId = Integer.parseInt(System.getProperty("jobID"));
             }
             RunPipelineOutputDecoratorIF decorator = null;
             if (System.getProperty("decorator") != null) {
                 String decoratorClass = System.getProperty("decorator");
                 decorator = (RunPipelineOutputDecoratorIF) (Class.forName(decoratorClass)).newInstance();
-             
             }
             URL serverFromFile = null;
             
             try {
                 serverFromFile = new URL(System.getProperty("GenePatternURL"));
-            } catch (Exception x) {
+            }
+            catch (Exception x) {
                 String host = "127.0.0.1";
                 try {
                     host = InetAddress.getLocalHost().getCanonicalHostName();
@@ -265,12 +256,12 @@ public class RunPipelineSoap {
             
             String host = serverFromFile.getHost();
             String server = serverFromFile.getProtocol() + "://" + host + ":" + serverFromFile.getPort();
-            PipelineModel pipelineModel = getPipelineModel(pipelineFileName, pipelineLSID, server, userId, passwordCmdLineArg);
-            RunPipelineSoap rp = new RunPipelineSoap(server, userId, passwordCmdLineArg, jobId, pipelineModel, decorator);
+            PipelineModel pipelineModel = getPipelineModel(pipelineFileName, pipelineLSID, server, userId, userKey);
+            RunPipelineSoap rp = new RunPipelineSoap(server, userId, userKey, jobId, pipelineModel, decorator);
             rp.runPipeline(additionalArguments);
-            
         } 
         finally {
+            EncryptionUtil.getInstance().removePipelineUserKey(userKey);
             if ((System.getProperty("DEBUG", null)) == null) {
                 File log = new File(logFile);
                 if (log.exists()) {
@@ -290,39 +281,32 @@ public class RunPipelineSoap {
         BufferedReader reader = null;
         PipelineModel model = null;
         
-        
         try {
-        	   
-            AdminProxy adminClient = new AdminProxy(server, userId, password);
-            
-            if (!file.exists()) {
-              
+            AdminProxy adminClient = new AdminProxy(server, userId, password);            
+            if (!file.exists()) { 
                 TaskInfo ti = adminClient.getTask(lsid);
                 Map tia = ti.getTaskInfoAttributes();
-                String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
-                
-                reader = new BufferedReader(new StringReader(serializedModel));
-                
-            } else {
+                String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL); 
+                reader = new BufferedReader(new StringReader(serializedModel)); 
+            } 
+            else {
                 reader = new BufferedReader(new FileReader(pipelineFileName));
                 // file.deleteOnExit();
             }
             
             model = PipelineModel.toPipelineModel(new InputSource(reader), false, adminClient);
-            
-             
             model.setLsid(lsid);
-            
             return model;
-        } finally {
+        } 
+        finally {
             if (reader != null) {
                 reader.close();
             }
         }
-        
     }
     
     public void runPipeline(Map args) throws Exception {
+        log.debug("runPipeline");
         String stopAfterTaskStr = System.getProperty(GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM);
         int stopAfterTask = Integer.MAX_VALUE;
         if (stopAfterTaskStr != null) {
@@ -349,10 +333,8 @@ public class RunPipelineSoap {
                 decorator.error(model, "No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID()
                 + ")");
             }
-            
         }
         if (!okayToRun) {
-           // setStatus(JobStatus.ERROR);
             throw new Exception("Module not found");
         }
         
@@ -389,8 +371,8 @@ public class RunPipelineSoap {
                     decorator.recordTaskCompletion(taskResult, jobSubmission.getName() + (taskNum + 1));
                     
                     results[taskNum] = taskResult;
-                    
-                } catch (Exception e) {
+                } 
+                catch (Exception e) {
                     System.err.println("Execution for " + jobSubmission.getName() + " module failed.");
                     e.printStackTrace();
                     log.error("Execution for " + jobSubmission.getName() + " module failed.");
@@ -399,14 +381,11 @@ public class RunPipelineSoap {
                     }
                 }
             }
-        } finally {
+        } 
+        finally {
             decorator.afterPipelineRan(model);
         }
-        
-        //HibernateUtil.commitTransaction();
-        //HibernateUtil.beginTransaction();
         setStatus(JobStatus.FINISHED);
-        //HibernateUtil.commitTransaction();
     }
     
     /**
