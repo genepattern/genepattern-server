@@ -108,10 +108,16 @@ public class RegisterServerBean {
 	   public String  registerServer() {
 		   
 		   String os = System.getProperty("os.name") + ", "+ System.getProperty("os.version");
-		   
+		   String genepatternVersion = System.getProperty("GenePatternVersion");
+		      
 		   HttpClient client = new HttpClient();
 		   PostMethod httppost = new PostMethod(action);
 		  
+		   httppost.addParameter("component","Server");
+		   httppost.addParameter("version",genepatternVersion);
+		   httppost.addParameter("build",System.getProperty("build.tag"));
+		   httppost.addParameter("os", os);
+			
 		   httppost.addParameter("name",this.name);
 		   if (title != null) httppost.addParameter("title",this.title);
 		   httppost.addParameter("email",this.email);
@@ -154,12 +160,19 @@ public class RegisterServerBean {
 	   public String cancelRegistration() {
 		   System.setProperty(GPConstants.REGISTERED_SERVER, "unregistered");
 		   String os = System.getProperty("os.name") + ", "+ System.getProperty("os.version");
-		   
+		   String genepatternVersion = System.getProperty("GenePatternVersion");
+	        
 		   HttpClient client = new HttpClient();
 		   PostMethod httppost = new PostMethod(action);
 		  
 		   httppost.addParameter("name","Anonymous");
+		   httppost.addParameter("component","Server");
+		   httppost.addParameter("version",genepatternVersion);
+		   httppost.addParameter("build",System.getProperty("build.tag"));
+		   httppost.addParameter("os", os);
+			   
 		   httppost.addParameter("email","");
+		   httppost.addParameter("component","Server");
 		   httppost.addParameter("organization","");
 		   httppost.addParameter("department","");
 		   httppost.addParameter("address1","");
@@ -167,7 +180,6 @@ public class RegisterServerBean {
 		   httppost.addParameter("state","");
 		   httppost.addParameter("country","");
 		   httppost.addParameter("join", "false");
-		   httppost.addParameter("os", os);
 		   
 		   // let them go on in if there was an exception but don't save 
 		   // the registration to the DB.  They will be asked to register again
