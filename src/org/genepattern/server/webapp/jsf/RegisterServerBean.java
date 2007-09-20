@@ -125,9 +125,6 @@ public class RegisterServerBean {
 		   httppost.addParameter("country",this.country);
 		   httppost.addParameter("join", ""+this.joinMailingList);
 		   httppost.addParameter("os", os);
-		  
-		   
-		   
 		   
 		   // let them go on in if there was an exception but don't save 
 		   // the registration to the DB.  They will be asked to register again
@@ -138,10 +135,7 @@ public class RegisterServerBean {
 			   if (responseCode >= 400) throw new HttpException();
 			   saveIsRegistered();
 			   UIBeanHelper.login(this.email, false, false, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
-			   
-			   error = false;
-			   
-			   
+			   error = false;			   
 			   return "installFrame";
 		   } catch (HttpException e) {
 			   System.setProperty(GPConstants.REGISTERED_SERVER, "unregistered");
@@ -159,6 +153,38 @@ public class RegisterServerBean {
 	   }
 	   public String cancelRegistration() {
 		   System.setProperty(GPConstants.REGISTERED_SERVER, "unregistered");
+		   String os = System.getProperty("os.name") + ", "+ System.getProperty("os.version");
+		   
+		   HttpClient client = new HttpClient();
+		   PostMethod httppost = new PostMethod(action);
+		  
+		   httppost.addParameter("name","Anonymous");
+		   httppost.addParameter("email","");
+		   httppost.addParameter("organization","");
+		   httppost.addParameter("department","");
+		   httppost.addParameter("address1","");
+		   httppost.addParameter("city","");
+		   httppost.addParameter("state","");
+		   httppost.addParameter("country","");
+		   httppost.addParameter("join", "false");
+		   httppost.addParameter("os", os);
+		   
+		   // let them go on in if there was an exception but don't save 
+		   // the registration to the DB.  They will be asked to register again
+		   // after each restart
+		   try {
+			   int responseCode = client.executeMethod(httppost);
+			   
+			   if (responseCode >= 400) throw new HttpException();
+			   // we don't know them, but their download is recorded so mark the server as registered
+			   saveIsRegistered();
+			   
+		   } catch (Exception e){
+			   // swallow it and return
+			   // didn't get a record back at the mother ship from the post so
+			   // make the registration only good until restart
+		   }
+		   
 		   
 		   return "unregisteredServer";
 	   }
