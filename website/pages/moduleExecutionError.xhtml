@@ -16,7 +16,7 @@
 			<tr>
 				<td>Module Error Report</td>
 			</tr>
-		</table>
+		</table> 
 		<br/>
 		The execution of job #{jobErrorReporterBean.jobNumber}, #{jobInfoBean.jobInfoWrapper.taskName},  reported an error during execution.
 		<br/><br/>
@@ -30,7 +30,7 @@
 		
 		
 		<br/>
-		The <h:outputLink value="#{facesContext.externalContext.requestContextPath}/jobResults/#{jobErrorReporterBean.errorFileURL}">Error file</h:outputLink> contents are below;<br/>
+		The&#160;<h:outputLink value="#{facesContext.externalContext.requestContextPath}/jobResults/#{jobErrorReporterBean.errorFileURL}">Error file</h:outputLink> contents are below;<br/>
 		<pre>
 		<h:outputText value="#{jobErrorReporterBean.errorFileContentHead}"/>
 		</pre>
