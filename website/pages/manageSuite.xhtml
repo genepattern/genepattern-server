@@ -20,6 +20,11 @@
           <td>Manage Suites</td>
         </tr>
       </table>
+      <h:form>
+      <h:outputText rendered="#{empty manageSuiteBean.suites}"><br/>
+      	No suites are currently installed. <br/><br/></h:outputText>
+      </h:form>
+      
       <!-- Delete suite table -->
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr class="smalltype">
