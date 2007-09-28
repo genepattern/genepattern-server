@@ -1,19 +1,194 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- This script was automatically generated using Macrovision's InstallAnywhere 7.1 Enterprise, Build 2892
-     STATUS: Fully Functional LICENSED Edition
-     DATE:   Thu Sep 20 10:34:11 EDT 2007 -->
-<InstallAnywhere_Deployment_Project increments="10580">
+<!-- This script was automatically generated using Macrovision's InstallAnywhere 8.0.1 Enterprise, Build 3080
+     STATUS: Fully-Functional UNLICENSED Trial Edition
+     DATE:   Fri Sep 28 15:02:21 EDT 2007 -->
+<InstallAnywhere_Deployment_Project increments="10811">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
-		<versionID major="7" minor="1" revision="-1"/>
-		<editionID>55,46,49,32,69,110,116,101,114,112,114,105,115,101,32,66,117,105,108,100,32,50,56,57,50</editionID>
-		<scriptID>12,42,11,77,81,50,48,56,55,70,80,83,77,52,83,52</scriptID>
-		<buildID>3,13,71,87,105,110,100,111,119,115,32,88,80,44,32,53,46,49,44,32,120,56,54,59,32,74,97,118,97,32,49,46,53,46,48,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,67,112,49,50,53,50</buildID>
+		<versionID major="8" minor="0" revision="1"/>
+		<editionID>56,46,48,46,49,32,69,110,116,101,114,112,114,105,115,101,32,66,117,105,108,100,32,51,48,56,48</editionID>
+		<scriptID>12,42,11,85,78,76,73,67,69,78,83,69,68</scriptID>
+		<buildID>3,13,71,87,105,110,100,111,119,115,32,88,80,44,32,53,46,49,44,32,120,56,54,59,32,74,97,118,97,32,49,46,53,46,48,95,49,49,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,67,112,49,50,53,50</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,16,35,82,16,-48,80,112,117,98,89,98,113,97,113,65,81,86,58,65,67,66,70,65,64,69,66,69,48,63,71,5,2,10,9,103,99,5,1,0,0</authorizationID>
+		<authorizationID>1,0,0,16,67,116,112,16,64,99,70,101,125,121,100,96,105,48,48,49,56,52,67,98,113,112,124,44,81,100,99,62,57,15,14,6,11,111,109,5,1,0,0</authorizationID>
 	</essentialScriptInfo>
-	<installationObjects uniqueObjects="606">
+	<installationObjects uniqueObjects="618">
 		<object class="com.zerog.ia.installer.Installer" objectID="72a1c4b4b1bf">
+			<property name="wizardME">
+				<object class="com.zerog.ia.installer.actions.MakeExecutable" objectID="60f55a65a564">
+					<property name="unixPermissions">
+						<string><![CDATA[664]]></string>
+					</property>
+					<property name="overrideUnixPermissions">
+						<boolean>false</boolean>
+					</property>
+					<property name="guiLauncher">
+						<boolean>true</boolean>
+					</property>
+					<property name="propertyList">
+						<object class="java.util.Vector">
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="60f55a65a568">
+									<property name="propertyValue">
+										<string><![CDATA[]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.stderr.redirect]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[leave blank for no input, "console" to read from the console window,
+and any path to a file to read from that file]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="60f55a65a56a">
+									<property name="propertyValue">
+										<string><![CDATA[2750]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="60f55a65a567">
+									<property name="propertyValue">
+										<string><![CDATA[]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.stdin.redirect]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[leave blank for no input, "console" to read from the console window,
+and any path to a file to read from that file]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="60f55a66a565">
+									<property name="propertyValue">
+										<string><![CDATA[.]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.user.dir]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[left blank, this property will cause the native launcher to not
+alter the platform default behavior for setting the user dir.
+To override this you may set this property to a relative or absolute path.
+Relative paths are relative to the launcher.]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="60f55a65a565">
+									<property name="propertyValue">
+										<string><![CDATA[main]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.main.method]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[the method in the main class that will be invoked]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="60f55a65a566">
+									<property name="propertyValue">
+										<string><![CDATA[$USER_INSTALL_DIR$]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.root.install.dir]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[path to the installdir magic folder]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="60f55a66a566">
+									<property name="propertyValue">
+										<string><![CDATA[$CMD_LINE_ARGUMENTS$]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.command.line.args]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[what will be passed to the main method -- be sure to quote arguments with spaces in them]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="60f55a65a569">
+									<property name="propertyValue">
+										<string><![CDATA[$IA_CLASSPATH$]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.class.path]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[the Java classpath necessary to run this application
+Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="60f55a66a568">
+									<property name="propertyValue">
+										<string><![CDATA[J2]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.nl.valid.vm.list]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[a string containing one or more of [ ALL JDK JRE J1 J2 JRE_J1 JDK_J1 JRE_J2 JDK_J2 MSJ ]
+ delimited by spaces or commas.  If the native launcher cannot find the current vm,
+it will search for ones in this list]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="60f55a66a569">
+									<property name="propertyValue">
+										<string><![CDATA[8.0]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.version]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[version of LaunchAnywhere that created this properties file]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="60f55a66a567">
+									<property name="propertyValue">
+										<string><![CDATA[]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.stdout.redirect]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[leave blank for no input, "console" to read from the console window,
+and any path to a file to read from that file]]></string>
+									</property>
+								</object>
+							</method>
+						</object>
+					</property>
+					<property name="shouldUninstall">
+						<boolean>true</boolean>
+					</property>
+					<property name="destinationName">
+						<string><![CDATA[GenePattern]]></string>
+					</property>
+				</object>
+			</property>
 			<property name="classpath">
 				<object class="java.util.Vector">
 					<method name="addElement">
@@ -37,7 +212,7 @@
 								<string><![CDATA[commons-httpclient.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>203835</long>
+								<long>213502</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -377,6 +552,12 @@
 							<property name="varNameForExist">
 								<string><![CDATA[$DOMAIN_NAME_FOUND$]]></string>
 							</property>
+							<property name="overrideInstallerRegView">
+								<boolean>false</boolean>
+							</property>
+							<property name="target64BitRegistry">
+								<boolean>false</boolean>
+							</property>
 							<rules logicalOperation="AND">
 								<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="fb878172a24f">
 									<property name="installOnPlatformList">
@@ -401,6 +582,9 @@
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 										</object>
 									</property>
@@ -477,6 +661,12 @@
 							<property name="varNameForExist">
 								<string><![CDATA[$USERNAME_FOUND$]]></string>
 							</property>
+							<property name="overrideInstallerRegView">
+								<boolean>false</boolean>
+							</property>
+							<property name="target64BitRegistry">
+								<boolean>false</boolean>
+							</property>
 							<rules logicalOperation="AND">
 								<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="fb887037a24f">
 									<property name="installOnPlatformList">
@@ -501,6 +691,9 @@
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 										</object>
 									</property>
@@ -607,6 +800,9 @@
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
@@ -722,6 +918,9 @@
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
 											</method>
 											<method name="addElement">
@@ -804,6 +1003,9 @@
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
@@ -1109,6 +1311,9 @@ R is freely available from http://www.r-project.org/.]]></string>
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
 											</method>
 											<method name="addElement">
@@ -1252,6 +1457,9 @@ R is freely available from http://www.r-project.org/.]]></string>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
 										</object>
 									</property>
 									<property name="doNotInstallOnPlatformList">
@@ -1379,6 +1587,9 @@ R is freely available from http://www.r-project.org/.]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
@@ -1615,6 +1826,9 @@ R is freely available from http://www.r-project.org/.]]></string>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
 										</object>
 									</property>
 									<property name="doNotInstallOnPlatformList">
@@ -1793,6 +2007,9 @@ R is freely available from http://www.r-project.org/.]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
@@ -1979,6 +2196,9 @@ R is freely available from http://www.r-project.org/.]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
@@ -2930,6 +3150,9 @@ If your proxy requires authentication you will need to provide the username and 
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
 											</method>
 											<method name="addElement">
@@ -3314,6 +3537,9 @@ If your proxy requires authentication you will need to provide the username and 
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
 											</method>
 											<method name="addElement">
@@ -3437,6 +3663,9 @@ Alternatively, after installation is complete download and install the GenePatte
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
@@ -3668,6 +3897,9 @@ Alternatively, after installation is complete download and install the GenePatte
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
@@ -4232,6 +4464,9 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
 											</method>
 											<method name="addElement">
@@ -4744,6 +4979,9 @@ chmod -R 775 $Rbase$$/$resources$/$bin$/$*
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
 											</method>
 											<method name="addElement">
@@ -5188,6 +5426,9 @@ chmod -R 775 $Rbase$$/$resources$/$bin$/$*
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
 											</method>
 											<method name="addElement">
@@ -5310,6 +5551,9 @@ chmod -R 775 $Rbase$$/$resources$/$bin$/$*
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
 											</method>
 											<method name="addElement">
@@ -5417,6 +5661,9 @@ chmod -R 775 $Rbase$$/$resources$/$bin$/$*
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
@@ -5957,6 +6204,9 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
 											</method>
 											<method name="addElement">
@@ -6121,6 +6371,9 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
@@ -6330,7 +6583,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 				<object class="java.util.Properties">
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[September 20, 2007 10:34:11 AM EDT]]></string>
+						<string><![CDATA[September 28, 2007 3:02:21 PM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.merge]]></string>
@@ -6390,7 +6643,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.build.last.date]]></string>
-						<string><![CDATA[March 20, 2007 5:39:42 AM EST]]></string>
+						<string><![CDATA[September 28, 2007 2:54:42 PM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.installer.options.stderr.redirect]]></string>
@@ -6447,6 +6700,10 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.macosx.novm]]></string>
 						<string><![CDATA[true]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.installer.options.platform.windows.ui.default]]></string>
+						<string><![CDATA[GUI]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.output.cdrom]]></string>
@@ -6534,6 +6791,18 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					<property name="titleTextColorRGB">
 						<int>-16777216</int>
 					</property>
+					<property name="installFrameWidth">
+						<int>600</int>
+					</property>
+					<property name="installFrameHeight">
+						<int>400</int>
+					</property>
+					<property name="useSystemInstallPanelBackgroundRGB">
+						<boolean>false</boolean>
+					</property>
+					<property name="useSystemTitleTextColorRGB">
+						<boolean>false</boolean>
+					</property>
 				</object>
 			</property>
 			<property name="customInstallSet">
@@ -6573,6 +6842,9 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 							</property>
 							<property name="projectLocation">
 								<string><![CDATA[Same as current product]]></string>
+							</property>
+							<property name="requiresServiceSupport">
+								<boolean>false</boolean>
 							</property>
 						</object>
 					</method>
@@ -6650,6 +6922,9 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 						<object class="java.util.Vector"/>
 					</property>
 				</object>
+			</property>
+			<property name="dIMReferences">
+				<object class="java.util.Vector"/>
 			</property>
 			<property name="help">
 				<object class="com.zerog.ia.installer.util.Help" objectID="72a1c4beb1c0">
@@ -7001,18 +7276,14 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 			<property name="runtimeAccessType">
 				<string><![CDATA[off]]></string>
 			</property>
-			<property name="msiData">
-				<object class="com.zerog.ia.installer.util.MsiData" objectID="6230cdbc8608">
-					<property name="newLocation">
-						<string><![CDATA[$IA_HOME$\resource\IANET\simpleProject.iax]]></string>
-					</property>
-					<property name="update">
-						<boolean>false</boolean>
-					</property>
-					<property name="buildMsi">
-						<boolean>false</boolean>
-					</property>
-				</object>
+			<property name="SolutionInstallPackages">
+				<object class="java.util.Vector"/>
+			</property>
+			<property name="replayVariablesExcluded">
+				<object class="java.util.Vector"/>
+			</property>
+			<property name="responseFileEnabled">
+				<boolean>false</boolean>
 			</property>
 			<visualChildren>
 				<object class="com.zerog.ia.installer.InstallSet" objectID="72a1c57eb1d3">
@@ -7166,7 +7437,7 @@ Relative paths are relative to the launcher.]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="36d590d6a6a0">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="60f555e6a4d6">
 															<property name="propertyValue">
 																<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
 															</property>
@@ -7304,12 +7575,15 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="73b3cce6b4f3">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="72b27ca9b6db">
 															<property name="propertyValue">
-																<string><![CDATA[./temp]]></string>
+																<string><![CDATA[2750]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[java.io.tmpdir]]></string>
+																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+															</property>
+															<property name="propertyComment">
+																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 															</property>
 														</object>
 													</method>
@@ -7328,15 +7602,12 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="72b27ca9b6db">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="73b3cce6b4f3">
 															<property name="propertyValue">
-																<string><![CDATA[2750]]></string>
+																<string><![CDATA[./temp]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
-															</property>
-															<property name="propertyComment">
-																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+																<string><![CDATA[java.io.tmpdir]]></string>
 															</property>
 														</object>
 													</method>
@@ -7391,6 +7662,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
@@ -7819,6 +8093,9 @@ and any path to a file to read from that file]]></string>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
 														</object>
 													</property>
 													<property name="doNotInstallOnPlatformList">
@@ -7881,7 +8158,7 @@ and any path to a file to read from that file]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="totalSize">
-												<long>22719</long>
+												<long>26550</long>
 											</property>
 											<property name="unixPermissions">
 												<string><![CDATA[775]]></string>
@@ -8146,7 +8423,7 @@ and any path to a file to read from that file]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="totalSize">
-												<long>15063503</long>
+												<long>15004171</long>
 											</property>
 											<property name="unixPermissions">
 												<string><![CDATA[775]]></string>
@@ -8380,7 +8657,7 @@ and any path to a file to read from that file]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="totalSize">
-												<long>32407823</long>
+												<long>33467910</long>
 											</property>
 											<property name="unixPermissions">
 												<string><![CDATA[775]]></string>
@@ -9204,16 +9481,6 @@ Relative paths are relative to the launcher.]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfad">
-															<property name="propertyValue">
-																<string><![CDATA[webapps/gp/resources]]></string>
-															</property>
-															<property name="propertyName">
-																<string><![CDATA[omnigene.conf]]></string>
-															</property>
-														</object>
-													</method>
-													<method name="addElement">
 														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="a761ea68af75">
 															<property name="propertyValue">
 																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$;$$IA_CLASSPATH$$;$$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar$;$$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
@@ -9224,6 +9491,16 @@ Relative paths are relative to the launcher.]]></string>
 															<property name="propertyComment">
 																<string><![CDATA[the Java classpath necessary to run this application
 Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
+															</property>
+														</object>
+													</method>
+													<method name="addElement">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfad">
+															<property name="propertyValue">
+																<string><![CDATA[webapps/gp/resources]]></string>
+															</property>
+															<property name="propertyName">
+																<string><![CDATA[omnigene.conf]]></string>
 															</property>
 														</object>
 													</method>
@@ -9276,7 +9553,17 @@ it will search for ones in this list]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="36d59109a6d7">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfa9">
+															<property name="propertyValue">
+																<string><![CDATA[./temp]]></string>
+															</property>
+															<property name="propertyName">
+																<string><![CDATA[java.io.tmpdir]]></string>
+															</property>
+														</object>
+													</method>
+													<method name="addElement">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="60f55636a50d">
 															<property name="propertyValue">
 																<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
 															</property>
@@ -9285,16 +9572,6 @@ it will search for ones in this list]]></string>
 															</property>
 															<property name="propertyComment">
 																<string><![CDATA[the class that contains the main method for the application]]></string>
-															</property>
-														</object>
-													</method>
-													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfa9">
-															<property name="propertyValue">
-																<string><![CDATA[./temp]]></string>
-															</property>
-															<property name="propertyName">
-																<string><![CDATA[java.io.tmpdir]]></string>
 															</property>
 														</object>
 													</method>
@@ -9389,6 +9666,9 @@ and any path to a file to save to the file]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Linux]]></string>
@@ -9507,6 +9787,9 @@ and any path to a file to save to the file]]></string>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
 														</object>
 													</property>
 													<property name="doNotInstallOnPlatformList">
@@ -9624,6 +9907,9 @@ and any path to a file to save to the file]]></string>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
 														</object>
 													</property>
 													<property name="doNotInstallOnPlatformList">
@@ -9724,7 +10010,7 @@ and any path to a file to save to the file]]></string>
 												<boolean>true</boolean>
 											</property>
 											<property name="sizeOfArchive">
-												<long>38841079</long>
+												<long>62336328</long>
 											</property>
 											<rules logicalOperation="AND">
 												<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="d784874d8508">
@@ -9750,6 +10036,9 @@ and any path to a file to save to the file]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 														</object>
 													</property>
@@ -9848,6 +10137,9 @@ and any path to a file to save to the file]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 														</object>
 													</property>
@@ -9985,7 +10277,7 @@ Relative paths are relative to the launcher.]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="36d59112a6ea">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="60f5564ba51f">
 															<property name="propertyValue">
 																<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
 															</property>
@@ -10123,15 +10415,16 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0a435ac9b995">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="d9b5849a97d8">
 															<property name="propertyValue">
-																<string><![CDATA[2750]]></string>
+																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$:$$IA_CLASSPATH$:$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar:$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+																<string><![CDATA[lax.class.path]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+																<string><![CDATA[the Java classpath necessary to run this application
+Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</property>
 														</object>
 													</method>
@@ -10146,16 +10439,15 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="d9b5849a97d8">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0a435ac9b995">
 															<property name="propertyValue">
-																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$:$$IA_CLASSPATH$:$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar:$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
+																<string><![CDATA[2750]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.class.path]]></string>
+																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[the Java classpath necessary to run this application
-Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
+																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 															</property>
 														</object>
 													</method>
@@ -10223,6 +10515,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
@@ -10335,6 +10630,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
 															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
 															</method>
 															<method name="addElement">
@@ -10434,6 +10732,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
@@ -10551,6 +10852,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
@@ -10698,7 +11002,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[gp-full.jar]]></string>
 											</property>
 											<property name="fileSize">
-												<long>930424</long>
+												<long>890621</long>
 											</property>
 											<property name="macBinary">
 												<boolean>false</boolean>
@@ -10741,7 +11045,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="totalSize">
-												<long>7679247</long>
+												<long>7639444</long>
 											</property>
 											<property name="unixPermissions">
 												<string><![CDATA[775]]></string>
@@ -10973,6 +11277,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
 															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
 															</method>
 															<method name="addElement">
@@ -11083,6 +11390,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
 															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
 															</method>
 															<method name="addElement">
@@ -11182,6 +11492,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
@@ -11337,7 +11650,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[GenePattern.zip]]></string>
 											</property>
 											<property name="fileSize">
-												<long>4390565</long>
+												<long>5319122</long>
 											</property>
 											<property name="macBinary">
 												<boolean>false</boolean>
@@ -11545,6 +11858,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -11662,6 +11978,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -11687,7 +12006,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[GenePatternMatlab.zip]]></string>
 											</property>
 											<property name="fileSize">
-												<long>5371166</long>
+												<long>6138445</long>
 											</property>
 											<property name="macBinary">
 												<boolean>false</boolean>
@@ -11745,7 +12064,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[runVisualizer.jar]]></string>
 											</property>
 											<property name="fileSize">
-												<long>14802</long>
+												<long>14438</long>
 											</property>
 											<property name="macBinary">
 												<boolean>false</boolean>
@@ -11884,7 +12203,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>true</boolean>
 											</property>
 											<property name="sizeOfArchive">
-												<long>47515443</long>
+												<long>125492826</long>
 											</property>
 											<rules logicalOperation="AND">
 												<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="2731076f8c32">
@@ -11962,6 +12281,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 														</object>
 													</property>
@@ -12111,6 +12433,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
 															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
 															</method>
 															<method name="addElement">
@@ -12230,6 +12555,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
@@ -12546,7 +12874,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[GenePattern_1.0.0.tar.gz]]></string>
 											</property>
 											<property name="fileSize">
-												<long>4188964</long>
+												<long>4191222</long>
 											</property>
 											<property name="macBinary">
 												<boolean>false</boolean>
@@ -12575,7 +12903,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[GenePattern_1.0.0.tgz]]></string>
 											</property>
 											<property name="fileSize">
-												<long>4184712</long>
+												<long>4189424</long>
 											</property>
 											<property name="macBinary">
 												<boolean>false</boolean>
@@ -12635,7 +12963,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														<string><![CDATA[GenePattern_1.0.0.zip]]></string>
 													</property>
 													<property name="fileSize">
-														<long>4186809</long>
+														<long>4198492</long>
 													</property>
 													<property name="macBinary">
 														<boolean>false</boolean>
@@ -13018,6 +13346,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
 															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
 															</method>
 															<method name="addElement">
@@ -13126,6 +13457,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
@@ -13238,6 +13572,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
 															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
 															</method>
 															<method name="addElement">
@@ -13346,6 +13683,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
@@ -13458,6 +13798,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
 															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
 															</method>
 															<method name="addElement">
@@ -13568,6 +13911,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
 															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
 															</method>
 															<method name="addElement">
@@ -13616,6 +13962,24 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 													</property>
 												</object>
 											</rules>
+										</object>
+										<object refID="60f55a65a564"/>
+										<object class="com.zerog.ia.installer.actions.CreateShortcut" objectID="60f55a66a56a">
+											<property name="targetAction">
+												<object refID="60f55a65a564"/>
+											</property>
+											<property name="useInstalledFile">
+												<boolean>true</boolean>
+											</property>
+											<property name="workingDir">
+												<string><![CDATA[]]></string>
+											</property>
+											<property name="shouldUninstall">
+												<boolean>true</boolean>
+											</property>
+											<property name="args">
+												<string><![CDATA[]]></string>
+											</property>
 										</object>
 									</installChildren>
 								</object>
@@ -14212,6 +14576,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 						<object refID="e36a1c529eff"/>
 						<object refID="1f94aef3ba1c"/>
 						<object refID="e36a51a49f00"/>
+						<object refID="60f55a65a564"/>
 					</visualChildren>
 				</object>
 				<object class="com.zerog.ia.installer.GhostDirectory" objectID="1e6c27aaa1f5">
@@ -14234,6 +14599,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 						<object refID="1e6cee84a1fb"/>
 						<object refID="a6a9e2578cce"/>
 						<object refID="ab0f6a91a55f"/>
+						<object refID="60f55a66a56a"/>
 					</visualChildren>
 				</object>
 				<object refID="72a1c573b1d2"/>
