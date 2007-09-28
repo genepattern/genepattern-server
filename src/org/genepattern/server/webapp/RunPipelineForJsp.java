@@ -433,7 +433,7 @@ public class RunPipelineForJsp {
         commandEnv[i++] = EncryptionUtil.PROP_PIPELINE_USER_KEY + "=" + EncryptionUtil.getInstance().pushPipelineUserKey(user);
         for(String key : currEnv.keySet()) {
             String val = currEnv.get(key);
-            commandEnv[i++] = key + "+" + val;
+            commandEnv[i++] = key + "=" + val;
         }
         final Process process = Runtime.getRuntime().exec(commandLine, commandEnv, tempDir);
         
