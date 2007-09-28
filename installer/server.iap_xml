@@ -402,6 +402,9 @@
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
 										</object>
 									</property>
 									<property name="doNotInstallOnPlatformList">
@@ -501,6 +504,9 @@
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 										</object>
 									</property>
@@ -607,6 +613,9 @@
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
@@ -722,6 +731,9 @@
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
 											</method>
 											<method name="addElement">
@@ -804,6 +816,9 @@
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
@@ -947,6 +962,9 @@
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
@@ -1109,6 +1127,9 @@ R is freely available from http://www.r-project.org/.]]></string>
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
 											</method>
 											<method name="addElement">
@@ -1252,6 +1273,9 @@ R is freely available from http://www.r-project.org/.]]></string>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
 										</object>
 									</property>
 									<property name="doNotInstallOnPlatformList">
@@ -1379,6 +1403,9 @@ R is freely available from http://www.r-project.org/.]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
@@ -1615,6 +1642,9 @@ R is freely available from http://www.r-project.org/.]]></string>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
 										</object>
 									</property>
 									<property name="doNotInstallOnPlatformList">
@@ -1793,6 +1823,9 @@ R is freely available from http://www.r-project.org/.]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
@@ -1979,6 +2012,9 @@ R is freely available from http://www.r-project.org/.]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
@@ -2930,6 +2966,9 @@ If your proxy requires authentication you will need to provide the username and 
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
 											</method>
 											<method name="addElement">
@@ -3314,6 +3353,9 @@ If your proxy requires authentication you will need to provide the username and 
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
 											</method>
 											<method name="addElement">
@@ -3437,6 +3479,9 @@ Alternatively, after installation is complete download and install the GenePatte
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
@@ -3668,6 +3713,9 @@ Alternatively, after installation is complete download and install the GenePatte
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
@@ -4232,6 +4280,9 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
 											</method>
 											<method name="addElement">
@@ -4744,6 +4795,9 @@ chmod -R 775 $Rbase$$/$resources$/$bin$/$*
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
 											</method>
 											<method name="addElement">
@@ -5188,6 +5242,9 @@ chmod -R 775 $Rbase$$/$resources$/$bin$/$*
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
 											</method>
 											<method name="addElement">
@@ -5310,6 +5367,9 @@ chmod -R 775 $Rbase$$/$resources$/$bin$/$*
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[OS/2]]></string>
 											</method>
 											<method name="addElement">
@@ -5417,6 +5477,9 @@ chmod -R 775 $Rbase$$/$resources$/$bin$/$*
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
@@ -5957,6 +6020,9 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[Windows 2003]]></string>
 											</method>
 											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
 											</method>
 											<method name="addElement">
@@ -6121,6 +6187,9 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Windows 2003]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
@@ -7393,6 +7462,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
 															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
 															</method>
 															<method name="addElement">
@@ -7818,6 +7890,9 @@ and any path to a file to read from that file]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 														</object>
 													</property>
@@ -9391,6 +9466,9 @@ and any path to a file to save to the file]]></string>
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
 															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
 																<string><![CDATA[Linux]]></string>
 															</method>
 														</object>
@@ -9506,6 +9584,9 @@ and any path to a file to save to the file]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 														</object>
 													</property>
@@ -9623,6 +9704,9 @@ and any path to a file to save to the file]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 														</object>
 													</property>
@@ -9751,6 +9835,9 @@ and any path to a file to save to the file]]></string>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
 														</object>
 													</property>
 													<property name="doNotInstallOnPlatformList">
@@ -9848,6 +9935,9 @@ and any path to a file to save to the file]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 														</object>
 													</property>
@@ -10225,6 +10315,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
 															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
 															</method>
 															<method name="addElement">
@@ -10335,6 +10428,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
 															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
 															</method>
 															<method name="addElement">
@@ -10434,6 +10530,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
@@ -10551,6 +10650,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
@@ -10973,6 +11075,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
 															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
 															</method>
 															<method name="addElement">
@@ -11083,6 +11188,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
 															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
 															</method>
 															<method name="addElement">
@@ -11182,6 +11290,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
@@ -11545,6 +11656,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -11661,6 +11775,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 														</object>
 													</property>
@@ -11963,6 +12080,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -12111,6 +12231,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
 															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
 															</method>
 															<method name="addElement">
@@ -12230,6 +12353,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
@@ -13018,6 +13144,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
 															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
 															</method>
 															<method name="addElement">
@@ -13126,6 +13255,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
@@ -13238,6 +13370,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
 															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
 															</method>
 															<method name="addElement">
@@ -13346,6 +13481,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
@@ -13458,6 +13596,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 																<string><![CDATA[Windows 2003]]></string>
 															</method>
 															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
 															</method>
 															<method name="addElement">
@@ -13566,6 +13707,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[OS/2]]></string>
