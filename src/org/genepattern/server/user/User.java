@@ -13,6 +13,8 @@ public class User {
 
     Date lastLoginDate;
 
+    Date registrationDate;
+
     String lastLoginIP;
 
     int totalLoginCount;
@@ -60,7 +62,15 @@ public class User {
         this.lastLoginDate = lastLoginDate;
     }
 
-    public String getLastLoginIP() {
+    public Date getRegistrationDate() {
+		return registrationDate;
+	}
+
+	public void setRegistrationDate(Date registrationDate) {
+		this.registrationDate = registrationDate;
+	}
+
+	public String getLastLoginIP() {
         return lastLoginIP;
     }
 

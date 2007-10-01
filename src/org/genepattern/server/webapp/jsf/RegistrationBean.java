@@ -6,6 +6,7 @@ package org.genepattern.server.webapp.jsf;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Date;
 
 import javax.faces.FacesException;
 import javax.faces.application.FacesMessage;
@@ -102,6 +103,7 @@ public class RegistrationBean {
 	    newUser.setUserId(username);
 	    newUser.setEmail(email);
 	    newUser.setPassword(EncryptionUtil.encrypt(password));
+	    newUser.setRegistrationDate(new Date());
 	    (new UserDAO()).save(newUser);
 	    UIBeanHelper.login(username, true);
 	    
