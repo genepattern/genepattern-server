@@ -143,6 +143,7 @@ public class LoginBean {
     public static void createNewUserNoPassword(String username) {
 	User newUser = new User();
 	newUser.setUserId(username);
+	newUser.setRegistrationDate(new Date())
 	try {
 	    newUser.setPassword(EncryptionUtil.encrypt(""));
 	} catch (NoSuchAlgorithmException e) {

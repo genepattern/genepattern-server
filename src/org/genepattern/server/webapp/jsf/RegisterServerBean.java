@@ -217,6 +217,7 @@ public class RegisterServerBean {
 				UserDAO ud = new UserDAO();
 				User u = ud.findById(username);
 				if (u != null) return;
+				newUser.setRegistrationDate(new Date());
 				
 			    newUser.setPassword(EncryptionUtil.encrypt(""));
 			    (new UserDAO()).save(newUser);
