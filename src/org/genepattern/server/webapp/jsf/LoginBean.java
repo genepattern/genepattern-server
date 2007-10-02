@@ -3,6 +3,7 @@ package org.genepattern.server.webapp.jsf;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 
 import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletRequest;
@@ -143,7 +144,7 @@ public class LoginBean {
     public static void createNewUserNoPassword(String username) {
 	User newUser = new User();
 	newUser.setUserId(username);
-	newUser.setRegistrationDate(new Date())
+	newUser.setRegistrationDate(new Date());
 	try {
 	    newUser.setPassword(EncryptionUtil.encrypt(""));
 	} catch (NoSuchAlgorithmException e) {
