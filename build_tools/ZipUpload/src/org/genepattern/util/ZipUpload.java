@@ -21,8 +21,8 @@ import org.genepattern.webservice.WebServiceException;
 public class ZipUpload {
     private TaskIntegratorProxy taskIntegratorProxy;
 
-    public ZipUpload(String server) throws WebServiceException {
-	taskIntegratorProxy = new TaskIntegratorProxy(server, "GenePattern", "");
+    public ZipUpload(String server, String username, String password) throws WebServiceException {
+	taskIntegratorProxy = new TaskIntegratorProxy(server, username, password);
     }
 
     public static void main(String[] args) throws Exception {
@@ -38,7 +38,9 @@ public class ZipUpload {
 	    System.exit(1);
 	}
 
-	ZipUpload zipUpload = new ZipUpload(args[0]);
+	String username = System.getProperty("username");
+	String password = System.getProperty("password");
+	ZipUpload zipUpload = new ZipUpload(args[0], username, password);
 	String fileOrDirName = args[1];
 
 	File aFile = new File(fileOrDirName);
