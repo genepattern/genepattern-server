@@ -68,9 +68,14 @@ public class HsqlDbUtil {
             dao.executeUpdate("CHECKPOINT");
             log.info("Checkpointed.");
             dao.executeUpdate("SHUTDOWN");
-            HibernateUtil.commitTransaction();
-        }
-        catch (Throwable t) {
+            try {
+            	HibernateUtil.commitTransaction();
+            } catch (Exception e){
+            	// swallow the exception here since we expect to get one.  After all the database will
+            	// shut down before the commit returns since that is what we are executing
+            	// bug # 1887
+            }
+        }  catch (Throwable t) {
             t.printStackTrace();
             log.info("checkpoint database in StartupServlet.destroy", t);
         }
