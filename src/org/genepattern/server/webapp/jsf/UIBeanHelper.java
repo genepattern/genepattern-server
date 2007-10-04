@@ -200,6 +200,7 @@ public class UIBeanHelper {
 	if (redirect) {
 	    String referrer = UIBeanHelper.getReferrer(request);
 	    response.sendRedirect(referrer);
+	    getFacesContext().responseComplete();
 	}
     }
 
