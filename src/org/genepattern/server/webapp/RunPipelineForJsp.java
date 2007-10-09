@@ -430,7 +430,8 @@ public class RunPipelineForJsp {
         Map<String,String> currEnv = System.getenv();
         String[] commandEnv = new String[currEnv.size() + 1];
         int i = 0;
-        commandEnv[i++] = EncryptionUtil.PROP_PIPELINE_USER_KEY + "=" + EncryptionUtil.getInstance().pushPipelineUserKey(user);
+        String currPipelineUserKey = EncryptionUtil.getInstance().pushPipelineUserKey(user);
+        commandEnv[i++] = EncryptionUtil.PROP_PIPELINE_USER_KEY + "=" + currPipelineUserKey;
         for(String key : currEnv.keySet()) {
             String val = currEnv.get(key);
             commandEnv[i++] = key + "=" + val;
@@ -439,7 +440,7 @@ public class RunPipelineForJsp {
         
         GenePatternAnalysisTask.storeProcessInHash(Integer.toString(jobID), process);
 
-        WaitForPipelineCompletionThread waiter = new WaitForPipelineCompletionThread(process, jobID);
+        WaitForPipelineCompletionThread waiter = new WaitForPipelineCompletionThread(process, jobID, currPipelineUserKey);
         waiter.start();
         if (deleteDirAfterRun) {
             DeleteUnsavedTasklibDirThread delThread = new DeleteUnsavedTasklibDirThread(taskInfo, process);
@@ -759,10 +760,12 @@ public class RunPipelineForJsp {
         Process process = null;
         
         int jobID = -1;
+        String pipelineUserKey = null;
         
-        WaitForPipelineCompletionThread(Process aProcess, int aJobID) {
+        WaitForPipelineCompletionThread(Process aProcess, int aJobID, String pipelineUserKey) {
             process = aProcess;
             jobID = aJobID;
+            this.pipelineUserKey = pipelineUserKey;
         }
         
         public void run() {
@@ -772,6 +775,9 @@ public class RunPipelineForJsp {
                 }
                 process.waitFor();
                 GenePatternAnalysisTask.terminatePipeline(Integer.toString(jobID));
+                if (pipelineUserKey != null) {
+                    EncryptionUtil.getInstance().removePipelineUserKey(pipelineUserKey);
+                }
                 if(log.isDebugEnabled()) {
                     log.debug("Finish WaitForCompletionThread");
                 }

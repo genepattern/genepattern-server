@@ -261,7 +261,6 @@ public class RunPipelineSoap {
             rp.runPipeline(additionalArguments);
         } 
         finally {
-            EncryptionUtil.getInstance().removePipelineUserKey(userKey);
             if ((System.getProperty("DEBUG", null)) == null) {
                 File log = new File(logFile);
                 if (log.exists()) {
@@ -269,7 +268,6 @@ public class RunPipelineSoap {
                 }
             }
         }
-        
     }
     
     /**

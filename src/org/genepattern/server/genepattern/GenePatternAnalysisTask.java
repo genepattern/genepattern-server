@@ -1091,6 +1091,12 @@ public class GenePatternAnalysisTask {
 	    }
 	    // IndexerDaemon.notifyJobComplete(jobInfo.getJobNumber());
 	}
+	finally {
+	    //remove currPipelineUserKey from system memory
+	    if (userKey != null && !userKey.equals("")) {
+	        EncryptionUtil.getInstance().removePipelineUserKey(userKey);
+	    }
+	}
     }
 
     /**
