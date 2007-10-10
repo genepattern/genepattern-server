@@ -1,4 +1,4 @@
-<!-- /*
+<%--
   The Broad Institute
   SOFTWARE COPYRIGHT NOTICE AGREEMENT
   This software and its documentation are copyright (2003-2008) by the
@@ -8,13 +8,11 @@
   This software is supplied without any warranty or guaranteed support
   whatsoever. Neither the Broad Institute nor MIT can be responsible for its
   use, misuse, or functionality.
-*/ -->
+--%>
 
-
-<%@ page import="org.genepattern.server.util.AccessManager,
+<%@ page import="
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.webservice.server.DirectoryManager,
-		 org.genepattern.util.GPConstants,
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.webservice.ParameterInfo,
@@ -26,6 +24,7 @@
 		 java.util.Enumeration,
 		 java.util.Properties,
 		 java.net.URLEncoder,
+		 org.genepattern.server.user.UserPropKey,
 		 java.io.File"
    session="false" language="Java" %><%
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -54,8 +53,6 @@
 	String message = params.getProperty("message");
    	if (message != null) {
 %>
-		<%@page import="org.genepattern.server.user.UserPropKey"%>
-<%@page import="java.net.URLEncoder;"%>
 <html>
 		<head>
 		<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
@@ -79,7 +76,7 @@
 	}
 
 	if (name == null) { %>
-		must specify module name and input parameters in request
+		Error: must specify module name and input parameters in request.
 <%
 		return;
 	}
@@ -92,7 +89,7 @@
 	}
 	name = taskInfo.getName();
 	TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-	String lsid = (String)tia.get(GPConstants.LSID);
+	String lsid = (String) tia.get(GPConstants.LSID);
 	String libdir = DirectoryManager.getTaskLibDir(null, lsid, userID);
 	ParameterInfo[] parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
 	if (parameterInfoArray == null) parameterInfoArray = new ParameterInfo[0];
