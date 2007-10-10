@@ -1,4 +1,4 @@
-<%--
+<!-- /*
  The Broad Institute
  SOFTWARE COPYRIGHT NOTICE AGREEMENT
  This software and its documentation are copyright (2003-2008) by the
@@ -8,7 +8,7 @@
  This software is supplied without any warranty or guaranteed support
  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
  use, misuse, or functionality.
---%>
+ */ -->
 
 <%@ page import="org.genepattern.server.webapp.*,
 		 org.genepattern.data.pipeline.*,
@@ -1491,7 +1491,7 @@ nextTask:
 	newTask = newTask + '</select></td>\n';
 	newTask = newTask + '<td valign="top"></td>';
 	newTask = newTask + '<td valign="top"><select name="t' + taskNum + '" onchange="chgTask(this, ' + taskNum + ')">\n';
-	<%--
+	<!-- /* newTask = newTask + '<option value="" selected style="font-weight: bold">- Module -</option>'; */ -->
 
 
 	newTask = newTask + '</select></td></tr></table>\n';
