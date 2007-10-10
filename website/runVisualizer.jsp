@@ -103,18 +103,18 @@
 java.io.StringWriter app = new java.io.StringWriter();
 app.append("<applet code=\"" + org.genepattern.visualizer.RunVisualizerApplet.class.getName() + "\" archive=\"runVisualizer.jar,commons-httpclient.jar,commons-codec-1.3.jar\" codebase=\"downloads\" width=\"1\" height=\"1\" alt=\"Your browser can not run applets\">");
 
-app.append("<param name=\"" + RunVisualizerConstants.NAME + "\" value=\"" + name + "\" >");
-app.append("<param name=\"" + RunVisualizerConstants.OS + "\" value=\"" + StringUtils.htmlEncode(tia.get(GPConstants.OS)) + "\">");
-app.append("<param name=\"" + RunVisualizerConstants.CPU_TYPE + "\" value=\"" + StringUtils.htmlEncode(tia.get(GPConstants.CPU_TYPE)) + "\">");
-app.append("<param name=\"" + RunVisualizerConstants.JAVA_FLAGS_VALUE + "\" value=\"" + StringUtils.htmlEncode(javaFlags) + "\">");
-app.append("<param name=\"" + RunVisualizerConstants.CONTEXT_PATH + "\" value=\"" + StringUtils.htmlEncode(request.getContextPath()) + "\">");
+app.append("<param name=\"" + RunVisualizerConstants.NAME + "\" value=\"" + URLEncoder.encode(name, "UTF-8") + "\" >");
+app.append("<param name=\"" + RunVisualizerConstants.OS + "\" value=\"" + URLEncoder.encode(tia.get(GPConstants.OS), "UTF-8") + "\">");
+app.append("<param name=\"" + RunVisualizerConstants.CPU_TYPE + "\" value=\"" + URLEncoder.encode(tia.get(GPConstants.CPU_TYPE), "UTF-8") + "\">");
+app.append("<param name=\"" + RunVisualizerConstants.JAVA_FLAGS_VALUE + "\" value=\"" + URLEncoder.encode(javaFlags, "UTF-8") + "\">");
+app.append("<param name=\"" + RunVisualizerConstants.CONTEXT_PATH + "\" value=\"" + URLEncoder.encode(request.getContextPath(), "UTF-8") + "\">");
 StringBuffer paramValue = new StringBuffer();
 for (i = 0; i < parameterInfoArray.length; i++) {
 	if (i > 0) paramValue.append(",");
-	paramValue.append(StringUtils.htmlEncode(parameterInfoArray[i].getName()));
+	paramValue.append(parameterInfoArray[i].getName());
 }
 
-app.append("<param name=\"" + RunVisualizerConstants.PARAM_NAMES + "\" value=\"" + paramValue.toString() + "\" >");
+app.append("<param name=\"" + RunVisualizerConstants.PARAM_NAMES + "\" value=\"" + URLEncoder.encode(paramValue.toString(), "UTF-8") + "\" >");
 
 for (i = 0; i < parameterInfoArray.length; i++) {
 	String paramName = parameterInfoArray[i].getName();
@@ -126,7 +126,7 @@ for (i = 0; i < parameterInfoArray.length; i++) {
 	}
 	
 	
-	app.append("<param name=\"" + StringUtils.htmlEncode(paramName) + "\" value=\"" + URLEncoder.encode(value, "UTF-8") + "\">");
+	app.append("<param name=\"" + paramName + "\" value=\"" + URLEncoder.encode(value, "UTF-8") + "\">");
 }
 
 StringBuffer vis = new StringBuffer();
@@ -147,23 +147,23 @@ for (i = 0; i < parameterInfoArray.length; i++) {
 	}
 }
 app.append("<param name=\"" + RunVisualizerConstants.DOWNLOAD_FILES + "\" value=\"" + URLEncoder.encode(vis.toString(), "UTF-8") + "\">");
-app.append("<param name=\"" + RunVisualizerConstants.COMMAND_LINE + "\" value=\"" + StringUtils.htmlEncode(tia.get(GPConstants.COMMAND_LINE)) + "\">");
+app.append("<param name=\"" + RunVisualizerConstants.COMMAND_LINE + "\" value=\"" + URLEncoder.encode(tia.get(GPConstants.COMMAND_LINE), "UTF-8") + "\">");
 app.append("<param name=\"" + RunVisualizerConstants.DEBUG + "\" value=\"1\">");
 
 StringBuffer fileNamesBuf = new StringBuffer();
 for (i = 0; i < supportFiles.length; i++) {
 	if (i > 0) fileNamesBuf.append(",");
-		fileNamesBuf.append(StringUtils.htmlEncode(supportFiles[i].getName()));
+		fileNamesBuf.append(supportFiles[i].getName());
 }
-app.append("<param name=\"" + RunVisualizerConstants.SUPPORT_FILE_NAMES + "\" value=\"" + fileNamesBuf.toString() + "\" >");
+app.append("<param name=\"" + RunVisualizerConstants.SUPPORT_FILE_NAMES + "\" value=\"" + URLEncoder.encode(fileNamesBuf.toString(), "UTF-8") + "\" >");
 
 StringBuffer fileDatesBuf = new StringBuffer();
 for (i = 0; i < supportFiles.length; i++) {
 	if (i > 0) fileDatesBuf.append(",");
 		fileDatesBuf.append(supportFiles[i].lastModified());
 }
-app.append("<param name=\"" + RunVisualizerConstants.SUPPORT_FILE_DATES + "\" value=\"" + fileDatesBuf.toString() + "\" >");
-app.append("<param name=\"" + RunVisualizerConstants.LSID + "\" value=\"" + lsid + "\" >");
+app.append("<param name=\"" + RunVisualizerConstants.SUPPORT_FILE_DATES + "\" value=\"" + URLEncoder.encode(fileDatesBuf.toString(), "UTF-8") + "\" >");
+app.append("<param name=\"" + RunVisualizerConstants.LSID + "\" value=\"" + URLEncoder.encode(lsid, "UTF-8") + "\" >");
 %>
 
 <SCRIPT LANGUAGE="JavaScript">

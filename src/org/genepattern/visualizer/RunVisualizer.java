@@ -51,7 +51,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 
 public class RunVisualizer {
 
-    private boolean debug = false;
+    private boolean debug = true;
 
     /** Applet parameters */
     private Map params = null;
@@ -254,9 +254,10 @@ public class RunVisualizer {
 		if (hmDownloadables != null && hmDownloadables.containsKey(variableName)) {
 		    try {
 			argValue = ((File) hmDownloadables.get(variableName)).getCanonicalPath();
-			if (debug)
-			    System.out.println("replacing URL " + (String) params.get(variableName) + " with "
-				    + argValue);
+			if (debug) {
+			    System.out.println("replacing URL " + (String) params.get(variableName)
+				    + " with arg value: " + argValue);
+			}
 		    } catch (IOException ioe) {
 			System.err.println(ioe + " while getting canonical path for "
 				+ ((File) hmDownloadables.get(variableName)).getName());
@@ -346,25 +347,19 @@ public class RunVisualizer {
 	File file = null;
 	GetMethod get = null;
 	try {
+	    // use Http Client if url is a GP server URL
 	    if (url.getHost().equals(documentBase.getHost()) && url.getPort() == documentBase.getPort()) {
 		HttpClient client = new HttpClient();
 		client.setState(new HttpState());
 		// client.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
-		get = new GetMethod(decode(url.toString()));
-		if (debug) {
-		    System.out.println("Downloading " + get.getURI() + " using HttpClient");
-		}
-
+		get = new GetMethod(url.toString());
 		get.addRequestHeader("Cookie", cookie);
 		int statusCode = client.executeMethod(get);
 		if (statusCode != HttpStatus.SC_OK) {
-		    System.err.println("Method failed: " + get.getStatusLine());
+		    System.err.println("Failed to download " + url + ": " + get.getStatusLine());
 		}
 		is = get.getResponseBodyAsStream();
 	    } else {
-		if (debug) {
-		    System.out.println("Downloading " + url + " using Java classes");
-		}
 		URLConnection conn = url.openConnection();
 		is = conn.getInputStream();
 	    }
