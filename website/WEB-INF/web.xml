@@ -93,6 +93,11 @@
    <param-value>../resources</param-value>
   </init-param>
  </filter>
+ <filter>
+  <filter-name>AdminServerFilter</filter-name>
+  <filter-class>org.genepattern.server.webapp.AdminServerFilter</filter-class>
+ 
+ </filter>
 
 
  <filter>
@@ -161,6 +166,10 @@
   <filter-name>AuthenticationFilter</filter-name>
   <url-pattern>*.ajax</url-pattern>
  </filter-mapping>
+<filter-mapping>
+  <filter-name>AuthenticationFilter</filter-name>
+  <url-pattern>/reports/*</url-pattern>
+ </filter-mapping>
 
  <filter-mapping>
   <filter-name>JobResultsFilter</filter-name>
@@ -170,6 +179,10 @@
  <filter-mapping>
   <filter-name>AuthorizationFilter</filter-name>
   <url-pattern>/services/*</url-pattern>
+ </filter-mapping>
+ <filter-mapping>
+  <filter-name>AdminServerFilter</filter-name>
+  <url-pattern>/reports/*</url-pattern>
  </filter-mapping>
  <filter-mapping>
   <filter-name>AuthorizationFilter</filter-name>
