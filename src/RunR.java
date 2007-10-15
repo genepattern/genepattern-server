@@ -46,6 +46,8 @@ public class RunR extends Thread {
 
     private PrintStream os = null;
 
+    private Process process;
+
     /**
      * Invoke the R interpreter, create a few lines of input to feed to the stdin input stream of R, and spawn two
      * threads that copy stdout and stderr from R to this process' version of the same.
@@ -111,9 +113,17 @@ public class RunR extends Thread {
 	commandLineList.addAll(Arrays.asList(rFlags));
 	commandLine = commandLineList.toArray(new String[0]);
 
-	Process process = null;
 	try {
+	    Runtime.getRuntime().addShutdownHook(new Thread() {
+		@Override
+		public void run() {
+		    if (process != null) {
+			process.destroy();
+		    }
+		}
+	    });
 	    process = Runtime.getRuntime().exec(commandLine, null, null);
+
 	    // create threads to read from the command's stdout and stderr streams
 	    Thread outputReader = streamCopier(process.getInputStream(), System.out);
 	    Thread errorReader = streamCopier(process.getErrorStream(), System.err);
@@ -212,9 +222,6 @@ public class RunR extends Thread {
 	String line;
 	try {
 	    while ((line = in.readLine()) != null) {
-
-		if (line.startsWith("> ") || line.startsWith("+ "))
-		    continue;
 		os.print(line);
 		os.flush(); // show it to the user ASAP
 	    }
