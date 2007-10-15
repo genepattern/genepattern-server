@@ -1,0 +1,324 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title>Clustering and Class Discovery</title>
+	<link href="../../css/protocols.css" rel="stylesheet" type="text/css" />
+	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="../../js/protocol.js"/>
+</head>
+
+<body>
+
+<h1>Clustering and Class Discovery</h1>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td align="right">
+              <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=5">comments/suggestions</a>
+            </td>
+          </tr>
+        </table>
+
+<p>Find the innate structure of gene expression data by using various algorithms to 
+group genes and/or samples.</p>
+
+
+<h2>Preliminaries</h2>
+<ul>
+<li><a href="GctResFiles.html">GCT or RES file</a>  that contains the gene expression data.
+
+</ul>
+
+<div class="steps">
+  <h2>Step 1: Run the <a href="javascript:openModuleById('analysis:00020');">PreprocessDataset</a> module to filter the gene expression data.</h2>
+  <h5>What it does</h5>
+  <p>Before clustering gene expression data, preprocess the data 
+      to remove platform noise and genes that have little variation.
+      This module can preprocess the data in one or more ways (in this order):    </p>
+  <ol>
+    <li>Set threshold and ceiling values. Any value lower/higer than the threshold/ceiling
+      value is reset to the threshold/ceiling value. </li>
+    <li>Convert each expression value to the log base 2 of the value (see Considerations). </li>
+    <li>Remove genes (rows) if a given number of its sample values are less than
+      a given threshold. </li>
+    <li>Remove genes (rows) that do not have a minimum fold change or expression
+      variation. </li>
+    <li>Discretize or normalize the data. </li>
+  </ol>
+  <p><a href="javascript:openModuleDocById('analysis:00020')">Module documentation.</a>        </p>
+  <h5>Considerations</h5>
+  <ul>
+    <li>When using ratios to compare gene expression between samples, 
+      convert values to log base 2 of the value to
+      bring up- and down-regulated genes to the same scale. 
+      For example, ratios of 2 and .5 indicating two-fold changes for up- and
+      down-regulated expression, respectively, are converted to +1 and -1. </li>
+    <li>If you did not generate the expression data, 
+      check whether preprocessing steps have already been taken before 
+      running the PreprocessDataset module. </li>
+  </ul>
+</div>
+<div class="steps">
+  <h2>Step 2: Choose an algorithm.</h2>
+  <p>Clustering algorithms fall into several categories. Hierarchical algorithms 
+    view data based on distance; how far one object is from another object.  
+    Stochastic algorithms group objects into a specified number of clusters, 
+    which can be useful when you know or suspect the 
+    number of clusters in the data. Algorithms such as consensus clustering 
+    provide a structure on top of the other clustering algorithms to obtain 
+    a measure of clusters that fit the data base. NMF clusters the data by 
+    breaking it down into metagenes or metasamples,
+    each of which represents a group of genes or samples, respectively.
+  <ul>
+    <li><b>Hierarchical clustering</b> (Eisen et al., 1998) recursively merges items with other items or with the result of 
+        previous merges. Items are merged according to their pair-wise distance with closest pairs being merged 
+        first. The result is a tree structure, referred to as dendrogram. 
+        As discussed by Brunet et al. (2004), this frequently used and valuable
+        approach has a few disadvantages: "it
+        imposes a stringent tree structure on the data, is highly sensitive
+        to the metric used to assess similarity, and typically requires
+        subjective evaluation to define clusters."
+    <li><b>Consensus clustering</b> (Monti et al., 2003) runs a selected clustering algorithm against 
+          perturbations of the original data set. The result is a consensus matrix that assesses the stability 
+          of discovered clusters. Supported clustering methods: hierarchical clustering, K-means clustering, 
+          self-organizing maps (SOM), and non-negative matrix factorization (NMF).
+    <li><b>K-means clustering</b> (MacQueen, 1967) groups elements into a specified number of clusters. 
+            A center data point for each cluster is randomly selected and each data point is assigned to the nearest 
+            cluster center. Each cluster center is then recalculated to be the mean value of its members and all data 
+            points are re-assigned to the cluster with the closest cluster center. This process is repeated until the 
+            distance between consecutive cluster centers converges. The result is <i>k</i> stable clusters. 
+    <li><b>Self-organizing maps (SOM)</b> (Tamayo et al., 1999) create and iteratively adjust 
+              a two-dimensional grid of clusters to reflect the global structure in the expression data set. 
+              The result is a set of clusters organized in a two-dimensional grid where similar clusters lie 
+              near each other and provide an "executive summary" of the data set. 
+              Tamayo et al. indicate that SOMs are best suited to identifying
+              a small number of prominent classes in the data; Brunet et al. (2004) 
+              comment that they "can be unstable, yielding different decompositions of the data
+              depending on the choice of initial conditions.""
+    <li><b>Non-negative matrix factorization (NMF)</b> (Brunet et al., 2004) is an alternative method 
+                for class discovery. Rather than clustering genes, 
+                NMF detects context-dependent patterns of gene expression. 
+                NMF has been successful in various contexts, such as face image recognition and 
+                text mining.
+  </ul>
+</div>
+<div class="steps">
+  <h2>Step 3: Run the module that matches the chosen algorithm:</h2>
+  <p class="resultsInlineSubhead"><a href="javascript:openModuleById('analysis:00009');">HierachicalClustering</a>
+  <h5>What it does</h5>
+  <ul>
+    <li>The module runs hierarchical clustering on genes and/or samples creating 
+      a dendrogram for the clustered genes and/or 
+      a dendrogram for the clustered samples. It also creates a CDT file that 
+      contains the original gene expression data ordered to reflect the clustering. 
+      <a href="javascript:openModuleDocById('analysis:00009');">Module documentation.</a>
+    </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>Best practice is to normalize (<i>row</i>/<i>column normalize</i> parameters) and 
+      center (<i>row</i>/<i>column center</i> parameters) the data being clustered. </li>
+    <li>The CDT output file must be converted to a GCT file before it 
+      can be used as an input file for another GenePattern module (other than
+      HierachicalClusteringViewer). For instructions on converting
+      a CDT file to a GCT file, see <a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_fileformats.html#_Creating_Input_Files">Creating Input Files</a>. </li>
+  </ul>
+  <p class="resultsInlineSubhead"><a href="javascript:openModuleById('analysis:00030');">ConsensusClustering</a>
+  <h5>What it does</h5>
+  <ul>
+    <li>The module runs the selected clustering algorithm 
+      (by default, hierarchical clustering) against perturbations of the gene
+      expression data a selected number of times (by default, 20). It assesses
+      the stability of the resulting clusters by creating a consensus matrix. For
+      every pair of objects, the consensus matrix records the number of times both
+      are assigned to the same cluster divided by the number of times both are
+      in the perturbed data set. A consensus matrix where all values are 0 or 1
+      corresponds to perfect consensus.  </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>The module clusters genes or samples, not both. </li>
+    <li>ConsensusClustering groups objects (genes or samples) into <i>k</i> clusters.
+      It groups objects into two clusters, then three clusters, up to the maximum
+      number of clusters specified by the <i>kmax</i> parameter (by default,
+      5). The module builds a separate consensus matrix for each set of clusters. </li>
+    <li>Best practice is to normalize (<i>normalize type</i>/<i>norm iter</i> parameters)
+      the data being clustered. **REVIEWER: normalize both? the items being clustered?** </li>
+    <li>For considerations specific to the selected clustering algorithm, see
+      the protocol for using that algorithm. </li>
+  </ul>
+  <p class="resultsInlineSubhead"><a href="javascript:openModuleById('analysis:00081');">KMeansClustering</a>
+  <h5>What it does</h5>
+  <ul>
+    <li>The module runs k-means clustering on genes (rows) or samples (columns). It creates 
+      a GCT file for each cluster and a GCT file for all of the expression data file organized by cluster.
+      <a href="javascript:openModuleDocById('analysis:00081');">Module documentation.</a>
+    </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>None.
+    </li>
+  </ul>
+  <p class="resultsInlineSubhead"><a href="javascript:openModuleById('analysis:00029');">SOMClustering</a>
+  <h5>What it does</h5>
+  <ul>
+    <li>The module constructs self-organizing maps (SOMs) for 
+      genes (rows) or samples (columns). Specify the desired number of clusters or a
+      range of clusters to construct SOMs for each set of clusters in that range (by default, 
+      2 and 3 clusters).
+      <a href="javascript:openModuleDocById('analysis:00029');">Module documentation.</a>
+    </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>For faster processing, run SOMClustering with a smaller number of iterations.
+      To find the optimal set of “centroids” for the clusters, use the default
+      value of 50000 iterations. </li>
+  </ul>
+  <p class="resultsInlineSubhead"><a href="javascript:openModuleById('analysis:00057');">NMFConsensus</a>
+  <h5>What it does</h5>
+  <ul>
+    <li>Using the basic principle of dimensionality reduction via non-negative matrix factorization,
+      NMF finds a small number of metagenes, each defined
+      as a positive linear combination of the genes in the expression data. It then 
+      groups samples into clusters based on the gene expression pattern of the samples 
+      as positive linear combinations of these metagenes. As in ConsensusClustering,
+      NMFConsensus repeatedly runs the clustering algorithm against perturbations of the 
+      gene expression data and assesses the stability of the 
+      resulting clusters by creating a consensus matrix.
+      <a href="javascript:openModuleDocById('analysis:00057');">Module documentation.</a>
+    </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>Non-negative matrix factorization (NMF) requires positive gene expression
+      values. To run NMF on data that contains negative values (Kim & Tidor,
+      2003):
+      <ul>
+        <li>Create one dataset with all negative numbers zeroed. </li>
+        <li>Create another dataset with all positive numbers zeroed and the signs
+          of all negative numbers removed. </li>
+        <li>Merge the two (eg. by concatenation), resulting in a dataset twice
+          as large as the original, but with positive values only and zeros,
+          hence appropriate for NMF. </li>
+      </ul>
+      <p>To do this in MATLAB, execute the following statement:    <br>
+        anew=[max(a,0);-min(a,0)];<br>
+        where a is the original data.
+      </p>
+    </li>
+    <li>NMFConsensus groups samples into <i>k</i> classes. 
+      Use the <i>k initial</i> and <i>k final</i> parameters to 
+      specify the desired number of classes (by default, 2-5). NMFConsensus builds
+      a separate consensus matrix for each set of classes. </li>
+    <li> This module executes an R version of NMFConsensus, which is slow and
+      is intended for exploratory use. A faster MATLAB version of NMFConsensus
+      is available on the <a href="http://www.broad.mit.edu/cgi-bin/cancer/publications/pub_paper.cgi?mode=view&paper_id=89">Broad Institute web site</a>. </li>
+  </ul>
+</div>
+<div class="steps">
+  <h2>Step 4: View the results.</h2>
+  <p><span class="resultsInlineSubhead">HierachicalClustering</span> &ndash; View the results with the <a href="javascript:openModuleById('visualizer:00031');">HierarchicalClusteringViewer</a>. </p>
+  <h5>What it does    </h5>
+  <ul>
+    <li>The viewer displays a heat map of the clustered gene expression data, with 
+      dendrograms showing how the genes and/or samples were clustered.
+      <a href="javascript:openModuleDocById('visualizer:00031');">Module documentation.</a>
+    </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>Select File&gt;Save Image to save the heat map and dendrograms to an
+      image file. Supported formats include bmp, eps, jpeg, png, and tiff. </li>
+  </ul>
+  <p><span class="resultsInlineSubhead">ConsensusClustering</span> &ndash; View the consensus matrices with the <a href="javascript:openModuleById('visualizer:00010')">HeatMapViewer</a>.
+    View other output files by clicking them.  </p>
+  <h5>What it does</h5>
+  <ul>
+    <li>The consensus matrix is formatted as a 
+      GCT file. The HeatMapViewer 
+      displays the consensus matrix as a heat map.
+      Rows and columns list the 
+      objects being clustered. Each cell represents the proportion of times 
+      this row-column pair were assigned to the same cluster. 
+      A consensus matrix where all values are 0 (dark blue) or 1 (dark red) corresponds to perfect consensus.
+      To display any other output file (*.clsdist, *.stddev, or *.pdf), click the file.
+    </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>For more about the consensus matrix and its interpretation, see Monti
+      et al., 2003. </li>
+    <li>The *.clsdist output file shows...TBD </li>
+    <li>The *.stdev output file shows... TBD </li>
+    <li>The *.pdf output file shows... TBD </li>
+  </ul>
+  <p><span class="resultsInlineSubhead">KMeansClustering</span> &ndash; View the results with the <a href="javascript:openModuleById('visualizer:00010');">HeatMapViewer</a>.</p>
+  <h5>What it does</h5>
+  <ul>
+    <li>The HeatMapViewer 
+      displays gene expression data as a heat map, which makes it easier to see patterns in the numeric data. 
+      Gene names row labels and sample names are column labels. 
+      <a href="javascript:openModuleDocById('visualizer:00010');">Module documentation.</a>
+    </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>KMeansClustering creates a GCT file that organizes the expression data by cluster, 
+      as well as a GCT file for each cluster. For an overview of the results, use the HeatMapViewer to display 
+      the expression data organized by cluster.
+    </li>
+  </ul>
+  <p><span class="resultsInlineSubhead">SOMClustering</span> &ndash; View the results with the <a href="javascript:openModuleById('visualizer:00023');">SOMClusterViewer</a>.  </p>
+  <h5>What it does</h5>
+  <ul>
+    <li>The SOMClusterViewer displays the SOMClustering results file 
+      (.odf file) in a visualizer. The left panel shows a plot of each cluster. Click 
+      a plot to display the objects in the cluster and their distance from the cluster center.
+      <a href="javascript:openModuleDocById('visualizer:00023');">Module documentation.</a>
+    </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>Select File&gt;Save Image to save the selected plot to an image  file.
+      Supported formats include bmp, jpeg, png, and tiff. </li>
+    <li>**Any way to write the clusters to a GCT file?** TBD... </li>
+    <li>**SOMClusterViewer v5 on node258, all my plots look the same. What's
+      up?** </li>
+  </ul>
+  <p><span class="resultsInlineSubhead">NMFConsensus</span> &ndash; Plots of the results are written to .pdf files. 
+    Cluster membership results are written to GCT files. 
+    View the result files by clicking on them. </p>
+  <h5>What it does</h5>
+  <ul>
+    <li>For an overview of the results, click *.consensus.all.k.plot.pdf. 
+      For a complete listing of cluster membership, click *.membership.gct.  </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>**Need a summary of the "ideal" plot and cophenetic value.** </li>
+    <li>For more about the plots and their interpretation, see Brunet et al., 2004. </li>
+    </ul>
+</div>
+<h2>References</h2>
+<p>Brunet, J-P., Tamayo, P., Golub, T.R., and Mesirov, J.P. 2004. Metagenes and molecular pattern discovery using
+matrix factorization. <i>Proc. Natl. Acad. Sci. USA</i> 101(12):4164–4169.
+
+<p>Eisen, M.B., Spellman, P.T., Brown, P.O., and Botstein, D. 1998. Cluster Analysis and Display of Genome-Wide Expression Patterns. <i>Proc. Natl. Acad. Sci. USA</i> 95:14863-14868.
+<p>Kim, P. M. and Tidor, B. 2003. Subsystem Identification Through Dimensionality Reduction of Large-Scale Gene Expression Data. <i>Genome Research</i> 13:1706-1718.
+<p>MacQueen, J. B. 1967. Some Methods for classification and Analysis of Multivariate Observations. <i>In</i> Proceedings of Fifth Berkeley Symposium on Mathematical Statistics and Probability, Vol. 1. University of California Press, California. pp. 281-297.
+<p>Monti, S., Tamayo, P., Mesirov, J.P., and Golub, T. 2003. Consensus Clustering: A resampling-based method for class discovery and visualization of gene expression microarray data. <i>Machine Learning Journal</i> 52(1-2):91-118.
+<p>Tamayo, P., Slonim, D., Mesirov, J., Zhu, Q., Dmitrovsky, E., Lander, E.S., and Golub, T.R. 1999. Interpreting gene expression with self-organizing maps: Methods and application to hematopoeitic differentiation. <i>Proc. Natl. Acad. Sci. USA</i> 96:2907-2912.
+
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td align="right">
+      <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=5">comments/suggestions</a>
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>

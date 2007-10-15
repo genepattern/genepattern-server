@@ -21,41 +21,61 @@
 
 <div class="barhead-other" style="width:100%;">Welcome to GenePattern</div>
 
-<br/><br/>
-<b>To run an analysis:</b>
-<ol>
-<li>Select a module from the list at the left.
-<br/><i>GenePattern displays the module and its parameters in this center pane.</i></li>
-<br/>
+<div id="homeIndent">
+  <h2>Analyzing genomic data in GenePattern</h2>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td align="right">
+              <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=3">comments/suggestions</a>
+            </td>
+          </tr>
+        </table>
 
-<li>Enter values for the parameters and click <b>Run</b>.
-<br/><i>GenePattern displays the process status page to show analysis progress. </i></li>
-<br/>
+  <p><b class="optionsHead">To run an analysis:</b> Select a module from the list at the left, enter values for the parameters 
+    and click <i>Run</i>. When the analysis completes, the result files are displayed in the Recent Jobs pane 
+    at the right.</p>
+  <p><b class="optionsHead">To view analysis results:</b> 
+    
+    Click the arrow icon next to a result file. A menu lists the 
+    modules most often used to view or analyze this result. Select a module, 
+    enter values for the parameters and click <i>Run</i>.</p>
+  <div id="protocols">
+    <h2>what do you want to do? </h2>
+    <p>Protocols for running common analyses in GenePattern:</p>
+      <ul>
+        <li><b><a href="#" onclick="openProtocolWindow('/gp/pages/protocols/DiffExp.html')" class="optionsHead">Differential Expression Analysis</a></b><br />
+          Find genes that are significantly differentially expressed between classes of samples.</li>
+        <li><b><a href="#" onclick="openProtocolWindow('/gp/pages/protocols/ClassDiscovery.html')" class="optionsHead">Clustering</a></b><br />
+          Group genes and/or samples by similar expression profiles.</li>
+        <li><b><a href="#" onclick="openProtocolWindow('/gp/pages/protocols/Prediction.html')" class="optionsHead">Prediction</a></b><br />
+          Create a model, also referred to as a classifier or class predictor, that
+          correctly classifies unlabeled samples into known classes.</li>
+        <li><b><a href="#" onclick="openProtocolWindow('/gp/pages/protocols/SnpCN.html')" class="optionsHead">SNP Copy Number and Loss of Heterozigosity Determination</a></b><br />
+          Compute SNP copy number (CN) and loss of heterozigosity (LOH) based on 
+          Affymetrix SNP chip data for paired target/normal samples.
+          </li>
+      </ul>
+    </div>
+  <h4>See also:</h4>
+  <div id="seealso">
+    <ul>
+      <li><strong>Demo </strong>&ndash; Flash demo of GenePattern.</li>
+        <li><a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_tutorial.html"><strong>Tutorial</strong></a> &ndash; Hands-on introduction to GenePattern.</li>
+        
+<li><a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_web_client.html"><strong>GenePattern Web Client Guide</strong></a> &ndash; Full description of this web application.</li>
+        <li><a href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp"><strong>Modules</strong></a> &ndash; List of all available modules with links to their documentation.</li>
+        </ul>
+        
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td align="right">
+              <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=3">comments/suggestions</a>
+            </td>
+          </tr>
+        </table>
 
-<li>When the analysis completes, click <b>Return to start</b> to return to this home page.
-<br/><i>The analysis and its result files are displayed in the Recent Jobs pane at the right.</i></li>
-</ol>
-
-<b>To view analysis results, you generally use a GenePattern visualizer:</b>
-<ol>
-<li>Click the arrow icon next to the result file.
-<br/><i>GenePattern lists the modules most often used to view or analyze this result.</i></li>
-<br/>
-
-<li>Select the module with the text <i>viewer</i> or <i>image</i> in the module name.
-<br/><i>GenePattern displays the module and its parameters.</i></li>
-<br/>
-
-<li>Enter values for the parameters and click <b>Run</b>.
-<br/><i>GenePattern displays the analysis results in the visualizer.</i></li>
-</ol>
-
-<b>See also:</b>
-<ul>
-<li><a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_tutorial.html">GenePattern Tutorial</a></li>
-<li><a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_web_client.html">GenePattern Web Client Guide</a></li>
-<li><a href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp">Module Documentation</a></li>
-</ul>
+  </div>
+</div>
 
 </ui:composition>
 </html>

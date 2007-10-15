@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title>SNP Copy Number Determination</title>
+	<link href="../../css/protocols.css" rel="stylesheet" type="text/css" />
+	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="../../js/protocol.js"/>
+</head>
+
+<body>
+
+<h1>SNP Copy Number and Loss of Heterozigosity Determination</h1>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td align="right">
+              <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=7">comments/suggestions</a>
+            </td>
+          </tr>
+        </table>
+
+<p>
+Compute SNP copy number and loss of heterozigosity (LOH) based on 
+Affymetrix SNP chip data for paired target/normal samples. 
+In cancer genomics, copy number change is one of the hallmarks of the genetic instability common 
+    to most human cancers and LOH of tumor suppressor genes is a crucial step in the development of 
+sporadic and hereditary cancer (Monti, 2005).
+
+</p>
+
+
+<h2>Preliminaries</h2>
+<ul>
+<li>CEL files from an Affymetrix high-density SNP array. 
+<li>TXT files containing the genotype calls for the SNP array. Each CEL file has a matching TXT file.
+<li>Sample information file that describes the SNP array. The array must include
+target/normal paired samples for copy number and LOH determination.
+See
+<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_file_formats.html?snpsample">File Formats</a> 
+for a complete description of this GenePattern file format.
+</ul>
+
+<div class="steps">
+  <h2>Step 1: Convert a collection of Affymetrix CEL files to a GenePattern SNP file 
+  by running the <a>SNPFileCreator</a> module.</h2>
+  <h5>What it does</h5>
+  <ul>
+    <li>A CEL file contains the raw data for the probes in the SNP probe sets. 
+    The SNPFileCreator module converts each probe set to a
+    single intensity value per SNP. The conversion is done using one of four modeling algorithms:
+    Average Difference, PM/MM Difference Model (dChip, the default), Median Probe, or Trimmed Mean.
+ <a href="ftp://ftp.broad.mit.edu/pub/genepattern/modules/SNPFileCreator/broad.mit.edu:cancer.software.genepattern.module.analysis/00086/1/SNPFileCreator.pdf">Module documentation.</a>    </li>
+    </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>SNPFileCreator accepts CEL files from the 500K Array Chip Set (250K Sty, 250K NSP) or 
+    100K Array Chip Set (50K Xba, 50K Hind). Each chip set uses two unique high density arrays 
+    to genotype over 500,000 and 100,000 SNPs in one experiment, respectively.
+The module converts the CEL files for one array into a .snp file. 
+To create a .snp file for a chip set,
+    use the MergeRows module to combine the .snp files for the two arrays.
+    <li>SNPFileCreator can transfer the CEL files to the GenePattern server for processing or 
+    read the files from a network directory. Due to the size of the files, best practice is to
+    store the CEL files in a network directory and process them from that directory.</li>
+    <li>SNPFileCreator writes the generated .snp file to a network directory or to the 
+    GenePattern server. Typically, writing the file to the GenePattern server provides 
+    greater flexibility and makes the file available for use in GenePattern pipelines.
+    <li>SNPFileCreator creates a .snp file in one of two formats: 
+    Non Allele-Specific (default) or Allele-Specific.
+    For each sample, the Non Allele-Specific format contains an intensity value 
+    and a genotype call; the Allele-Specific format contains an
+    intensity value for allele A, intensity value for allele B, and genotype call. 
+    All GenePattern modules accept the Non Allele-Specific format; many do not yet accept the Allele-Specific format.
+<li>SNPFileCreator uses the Human Genome of May 2004 (hg17) to include 
+Chromosome and Physical Location columns in the .snp file. By default, it sorts the SNPs
+    by chromosome and physical location, as required by the SnpViewer module.
+    </ul>
+   
+</div>
+
+<div class="steps">
+  <h2>Step 2: Correct intensity values for SNPs on the X chromosome by running the 
+  <a>XChromosomeCorrect</a> module.</h2>
+  <h5>What it does</h5>
+  <ul>
+    <li>For each sample from a male donor, the module doubles the intensity value for SNPs on the X chromosome.
+ <a href="ftp://ftp.broad.mit.edu/pub/genepattern/modules/XChromosomeCorrect/broad.mit.edu:cancer.software.genepattern.module.analysis/00093/3/XChromosomeCorrect.pdf">Module documentation.</a>    </li>
+    </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>Run XChromosomeCorrect only for gender-specific samples. The sample information file must 
+    include a column labeled Gender that contains a value of M or F for each sample.</li>
+    </ul>
+</div>
+
+<div class="steps">
+  <h2>Step 3: Compute raw copy number values by running the <a>CopyNumberDivideByNormals</a> module.</h2>
+  <h5>What it does</h5>
+  <ul>
+    <li>The module computes the raw copy number of each target SNP by dividing its intensity value 
+    by the mean intensity value of all normal SNPs. This calculation is referred to as 
+    copy number normalization or normalization with respect to normals. 
+ <a href="ftp://ftp.broad.mit.edu/pub/genepattern/modules/CopyNumberDivideByNormals/broad.mit.edu:cancer.software.genepattern.module.analysis/00085/1/CopyNumberDivideByNormals.pdf">Module documentation.</a>    </li>
+    </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>Include (default) or omit genotype calls from the output file. Including them creates a .xcn file; 
+    omitting them creates a .cn file. 
+    The SnpViewer module requires genotype calls to detect and display LOH.
+    </li>
+    </ul>
+</div>
+<div class="steps">
+  <h2>Step 4: View SNP copy number and loss of heterozigosity (LOH) data by running the <a>SnpViewer</a> module.</h2>
+  <h5>What it does</h5>
+  <ul>
+    <li>The viewer uses a heat map to display copy number data or LOH calls. 
+    
+      <a href="ftp://ftp.broad.mit.edu/pub/genepattern/modules/SnpViewer/broad.mit.edu:cancer.software.genepattern.module.visualizer/00084/3/SNPViewer.pdf">Module documentation.</a>    </li>
+    </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>To view a .xcn or .cn file that is on your local drive, run the SnpViewer without specifying 
+    any parameters. When the viewer starts, use the File menu to load the file into the viewer. 
+    If you specify a local file as a parameter to the SNPViewer module, 
+    GenePattern copies the file to the GenePattern server, which can be time consuming for a large
+    .xcn or .cn file.</li>
+    <li>To detect and display LOH calls, the 
+    SnpViewer module requires genotype calls (.xcn file format). The LOH calls are: 
+    <ul>
+    <li>Loss: AB in normal and A or B in target.
+    <li>Retained: AB in both normal and target or No Call in normal and AB in target.
+    <li>Conflict: A or B in normal and AB in target.
+    <li>Non-informative/no call: A or B in normal or No Call in normal or target.
+    </ul>
+    <li>By default, the viewer displays all chromosomes. To zoom in on a chromosome, select it from the 
+    Chromosome drop-down list in the viewer tool bar. To zoom in on a region of the chromosome, 
+    select the <i>zoom in</i> tool and click on the heat map.
+    <li>To sort samples by copy number amplification or deletion: zoom in on a chromosome; select the 
+    <i>define a region of interest</i> tool; in the heat map, click the start of the region of interest and
+    then the end of that region; a red bar to the left of the heat map defines the region of interest; 
+    right-click the red bar and select <i>sort of amplification</i> or <i>sort of deletion</i>.
+    </ul>
+</div>
+<h2>Reference</h2>
+<p>Monti, S. 2005. Class slides: SNP microarrays and high-density genotyping. 
+http://www.chip.org/teaching/hst950/slides/class6.pdf.
+
+
+<h2>See also</h2>
+<ul>
+<li>Protocols &ndash; GenePattern welcome page with protocols.</li>
+
+<li><a href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp">Modules</a> &ndash; List of all available modules with links to their documentation.</li>
+<li><a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_web_client.html">GenePattern Web Client Guide</a> &ndash; Full description of this web application.</li>
+<li><a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_tutorial.html">Tutorial</a> &ndash; Hands-on introduction to GenePattern.</li>
+<li>Demo &ndash; Flash demo of GenePattern.</li>
+
+</ul>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td align="right">
+              <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=7">comments/suggestions</a>
+            </td>
+          </tr>
+        </table>
+
+</body>
+</html>

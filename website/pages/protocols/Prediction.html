@@ -1,0 +1,537 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title>Class Prediction</title>
+	<link href="../../css/protocols.css" rel="stylesheet" type="text/css" />
+	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="../../js/protocol.js"/>
+</head>
+
+<body>
+
+<h1>Class Prediction</h1>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td align="right">
+              <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=6">comments/suggestions</a>
+            </td>
+          </tr>
+        </table>
+
+<p>Using a data set that contains known samples, create a model
+(also referred to as a <i>class predictor</i> or <i>classifier</i>) 
+that can be used to predict the class of a previously unknown sample. 
+</p>
+
+<h2>Preliminaries</h2>
+<h3>Training data set:</h3>
+<ul>
+  <li><a href="GctResFiles.html">GCT or RES file</a> that contains gene expression data. 
+  </li>
+  <li><a href="ClsFiles.html">CLS file</a> that identifies the class of each
+    sample in the gene expression data. </li>
+</ul>
+<h3>Optionally, a test data set:</h3>
+<ul>
+  <li><a href="GctResFiles.html">GCT or RES file</a> that contains gene expression data. 
+  </li>
+  <li><a href="ClsFiles.html">CLS file</a> that identifies the class of each
+    sample in the gene expression data. </li>
+</ul>
+<p>Class prediction can be done using one expression data set; ideally, it is 
+done using two. If you have a large expresssion data set, use the <a>SplitDatasetTrainTest</a> module 
+to divide it into two non-overlapping data sets. 
+</ul>
+
+<div class="steps">
+  <h2>Step 1: Run the <a>PreprocessDataset</a> module to filter the gene expression data.</h2>
+  <h5>What it does</h5>
+  <p>Preprocess the data to remove platform noise and
+          genes that have little variation before using it to build a class predictor.
+      This module can preprocess the data in one or more ways (in this order): </p>
+  <ol>
+    <li>Set threshold and ceiling values. Any value lower/higer than the threshold/ceiling
+      value is reset to the threshold/ceiling value. </li>
+    <li>Convert each expression value to the log base 2 of the value (see Considerations). </li>
+    <li>Remove genes (rows) if a given number of its sample values are less
+      than a given threshold. </li>
+    <li>Remove genes (rows) that do not have a minimum fold change or expression
+      variation. </li>
+    <li>Discretize or normalize the data. </li>
+  </ol>
+  <p><a href="ftp://ftp.broad.mit.edu/pub/genepattern/modules/PreprocessDataset/broad.mit.edu:cancer.software.genepattern.module.analysis/00020/2/PreprocessDataset.pdf">Module documentation.</a>    </p>
+  <h5>Considerations</h5>
+  <ul>
+    <li>If you are using two data sets, preprocess both in the same manner; however,
+      do not remove genes from the test data set. Removing genes from the test
+      data set may result in the test and training data sets having different
+      sets of genes. </li>
+    <li>When using ratios to compare gene expression between samples, 
+      convert values to log base 2 of the value to
+      bring up- and down-regulated genes to the same scale. 
+      For example, ratios of 2 and .5 indicating two-fold changes for up- and
+      down-regulated expression, respectively, are converted to +1 and -1. </li>
+    <li>If you did not generate the expression data, 
+      check whether preprocessing steps have already been taken before 
+      running the PreprocessDataset module. </li>
+  </ul>
+</div>
+
+
+<div class="steps">
+  <h2>Step 2: Choose a class prediction method.</h2>
+  <h5>What it does</h5>
+  <p>GenePattern supports several class prediction methods:
+  </p>
+  <ul>
+    <li><b>CART</b> (Breiman et al., 1984) builds <b>C</b>lassification <b>A</b>nd <b>R</b>egression <b>T</b>rees for predicting continuous dependent variables (regression) and categorical predictor variables (classification). It works by recursively splitting the feature space into a set of non-overlapping regions and then predicting the most likely value of the dependent variable within each region. A classification tree represents a set of nested logical if-then conditions on the values of the features variables that allows for the prediction of the value of the dependent categorical variable based on the observed values of the feature variables. A regression tree is similar but allows for the prediction of the value of a continuous dependent variable instead.    </li>
+    <li><b>K-nearest-neighbors (KNN)</b> classifies an unknown sample by assigning
+      it the phenotype label most frequently represented among the k nearest
+      known samples (Golub and Slonim et al., 1999). In GenePattern, the user
+      selects a weighting factor for the 'votes' of the nearest neighbors (unweighted:
+      all votes are equal; weighted by the reciprocal of the rank of the neighbor's
+      distance: the closest neighbor is given weight 1/1, next closest neighbor
+      is given weight 1/2, and so on; or weighted by the reciprocal of the distance). </li>
+    <li><b>Probabilistic Neural Network (PNN)</b> calculates the probability
+      that an unknown sample belongs to a given set of known phenotype classes
+      (Lu et al., 2005; Specht, 1990). The contribution of each known sample
+      to the phenotype class of the unknown sample follows a Gaussian distribution.
+      PNN can be considered as a Gaussian-weighted KNN classifier - known samples
+      close to the unknown sample have a greater influence on the predicted class
+      of the unknown sample. </li>
+    <li><b>Support Vector Machines (SVM)</b> is designed for multiple class classification
+      (Rifkin et al., 2003). The algorithm creates a binary SVM classifier for
+      each class by computing a maximal margin hyperplane that separates the
+      given class from all other classes; that is, the hyperplane with maximal
+      distance to the nearest data point. The binary classifiers are then combined
+      into a multiclass classfier. For an unknown sample, the assigned class
+      is the one with the largest margin. </li>
+    <li><b>Weighted Voting</b> (Slonim et al., 2000) classifies an unknown sample
+      using a simple weighted voting scheme. Each gene in the classifier 'votes'
+      for the phenotype class of the unknown sample. A gene's vote is weighted
+      by how closely its expression correlates with the differentiation between
+      phenotype classes in the training data set. </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>TBD...**add suggestions for when to use which method**
+    </li>
+  </ul>
+</div>
+<div class="steps">
+  <h2>Step 3: Choose an approach for training and testing the class predictor.</h2>
+  <h5>What it does</h5>
+  <p>A typical class prediction method "learns" how to distinguish between members of 
+      different classes by "training" itself on known data. 
+      The method uses known data to create a class predictor, 
+      which can then be used to predict the class of a previously unseen sample.
+      For most class prediction methods, GenePattern provides two modules: a
+      train/test module and a cross-validation module (for example, KNN and KNNXValidation). </p>
+  <ul>
+    <li>The <b>train/test</b> module "trains" 
+      the class predictor on one data set (the training set) and "tests" it 
+      on another independent data set (the test set). 
+      Typically, it creates a model file, which contains the class
+      predictor, and a prediction results file, which shows the accuracy of the
+      predictor. Using the train/test module and a previously generated model
+      file, you can test the predictor on known samples or use the predictor
+      to classify unknown samples. </li>
+    <li> The <b>cross-validation</b> module iteratively runs the class prediction
+      method against one known data set. For each iteration, it leaves one sample
+      out, builds the class predictor using the remaining samples, and then tests
+      it on the sample left out. Typically, it creates a
+      prediction results file that shows the accuracy of the predictors by 
+      averaging the results across all iterations. </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>A two-step approach is generally preferred:
+      (1) use the cross-validation module 
+      with the training data set to determine the best parameter settings;
+      (2) use the train/test module with those parameter settings to build the
+      classifier on the training data set and to test it on the test data set. </li>
+    <li>If you have only one data set, use the cross-validation module to build
+      and test classifiers using that data set. The analysis results show the
+      accuracy of the predictors by averaging the results across all iterations. </li>
+  </ul>
+</div>
+<div class="steps">
+  <h2>Step 4: Run the cross-validation module for the chosen 
+  class prediction method.</h2>
+  <h3>CARTXValidation
+  </h3>
+  <h5>What it does</h5>
+  <ul>
+    <li>The module uses the cross-validation approach to 
+      run CART class prediction  
+      iteratively against a known data set. 
+      <a href="ftp://ftp.broad.mit.edu/pub/genepattern/modules/CARTXValidation/broad.mit.edu:cancer.software.genepattern.module.analysis/00062/1/CARTXValidation.pdf">Module documentation.</a>
+    </li>
+  </ul>
+  <h5>Considerations  </h5>
+  <ul>
+    <li>If you have only one data set, use the CARTXValidation module to build
+      and test classifiers using that data set. </li>
+    <li>The CART prediction method has no parameters; therefore, the CARTXValidation
+      module is not needed to determine the best parameter settings for use with
+      the CART module. </li>
+  </ul>
+  <h3>KNNXValidation
+  </h3>
+  <h5>What it does    </h5>
+  <ul>
+    <li>The module uses the cross-validation approach to run 
+      K-nearest-neighbors (KNN) class prediction iteratively
+      against a known data set. 
+      <a href="ftp://ftp.broad.mit.edu/pub/genepattern/modules/KNNXValidation/broad.mit.edu:cancer.software.genepattern.module.analysis/00013/5/KNNXvalidation.pdf">Module documentation.</a>
+    </li>
+  </ul>
+  <h5>Considerations  </h5>
+  <ul>
+    <li>If you have both a training data set and a test data set, use this module to 
+      determine the best parameter settings for KNN. Run the module multiple times, changing parameter 
+      values to see which give the best results. For example, for the <i>num features</i> parameter,
+      try the values 10, 20 and 30. After selecting the best parameter settings,
+      use the train/test approach with those parameter 
+      settings to build the classifier on the training data set and to test it on a test data set.
+    </li>
+  </ul>
+  <h3>PNNXValidationOptimization
+  </h3>
+  <h5>What it does    </h5>
+  <ul>
+    <li>The module uses the cross-validation approach to run 
+      Probabilistic Neural Network (PNN) class prediction iteratively
+      against a known data set. 
+      <a href="ftp://ftp.broad.mit.edu/pub/genepattern/modules/PNNXValidationOptimization/broad.mit.edu:cancer.software.genepattern.module.analysis/00058/0/PNNXValidationOptimization.pdf">Module documentation.</a>
+    </li>
+  </ul>
+  <h5>Considerations  </h5>
+  <ul>
+    <li>This module creates an analysis result file that contains 
+      recommended PNN parameter settings, which can be used as an input file
+      for the PNN module. (Most cross-validation modules create prediction result
+      files that show the accuracy of the predictor.) </li>
+    <li>Use the <i>num features</i> parameter to specify a range of values to
+      try. The module automatically selects the best parameter settings. You
+      do not need to run it multiple times. </li>
+    <li>To experiment with alternative settings of other parameters, use the
+      PNN module rather than the PNNXValidationOptimization module. </li>
+  </ul>
+  <h3>SVM</h3>
+  <p>The cross-validation approach is not available for the SVM prediction method.</p>
+  <h3>WeightedVotingXValidation
+  </h3>
+  <h5>What it does    </h5>
+  <ul>
+    <li>The module uses the cross-validation approach to run 
+      Weighted Voting class prediction iteratively
+      against a known data set. 
+      <a href="ftp://ftp.broad.mit.edu/pub/genepattern/modules/WeightedVotingXValidation/broad.mit.edu:cancer.software.genepattern.module.analysis/00028/3/WeightedVotingXValidation.pdf">Module documentation.</a>
+    </li>
+  </ul>
+  <h5>Considerations  </h5>
+  <ul>
+    <li>If you have both a training data set and a test data set, use this module to 
+      determine the best parameter settings for WeightedVoting. Run the module multiple times, changing parameter 
+      values to see which give the best results. For example, for the <i>num features</i> parameter,
+      try the values 10, 20 and 30. After selecting the best parameter settings,
+      use the train/test approach with those parameter 
+      settings to build the classifier on the training data set and to test it on a test data set.
+    </li>
+  </ul>
+</div>
+<div class="steps">
+  <h2>Step 5: View cross-validation results.</h2>
+  <h3>CARTXValidation 
+  </h3>
+  <h5>What it does</h5>
+  <ul>
+    <li>CARTXValidation creates a 
+      prediction results file that shows the accuracy of the predictor by 
+      averaging the results across all iterations.
+      To view the prediction results (*.pred.odf file), use the <a href="#">PredictionResultsViewer</a>. 
+      The viewer lists each sample with its actual and predicted class.
+      
+      <a href="TBD">Module documentation.</a>    </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>The PredictionResultsViewer provides an absolute error rate (incorrect cases/total cases) and an
+      ROC error rate (fraction of true positives 
+      versus the fraction of false positives). Use the ROC error rate for comparing results across data sets.
+    </li>
+  </ul>
+  <h3>KNNXValidation
+  </h3>
+  <h5>What it does</h5>
+  <p>KNNXValidation creates two analysis result files: 
+        a prediction results file, which shows the accuracy of the predictor by 
+        averaging the results across all iterations, and a features results file, which 
+        lists all genes used in any class predictor and the number of times that 
+        gene was used in a predictor. 
+  </p>
+  <ul>
+    <li>To view the prediction results file (*.pred.odf file),
+      use the <a href="#">PredictionResultsViewer</a>. The viewer lists each sample with its actual and predicted class.
+      
+      <a href="TBD">Module documentation.</a>    </li>
+    <li>To view the feature result file (*.feat.odf file), use the <a href="#">FeatureSummaryViewer</a>. 
+      The viewer lists each gene used in a class predictor and the number of times 
+      it was used in a predictor.
+      <a href="TBD">Module documentation.</a>    </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>The PredictionResultsViewer provides an absolute error rate (incorrect
+      cases/total cases) and an ROC error rate (fraction of true positives
+      versus the fraction of false positives). Use the ROC error rate for comparing
+      results across data sets. </li>
+    <li>In the FeatureSummaryViewer, the most interesting genes are generally
+      those used by all (or most) of the classifiers. To retrieve gene annotations
+      from a variety of public databases, click the GeneCruiser menu item. </li>
+  </ul>
+  <h3>PNNXValidationOptimization
+  </h3>
+  <h5>What it does</h5>
+  <ul>
+    <li>PNNXValidationOptimization creates an analysis result file (*.xvopt.odf) that contains 
+      recommended PNN parameter settings. It can be used as an input file for the PNN module.
+    </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>None.
+    </li>
+  </ul>
+  <h3>SVM</h3>
+  <p>The cross-validation approach is not available for the SVM prediction method.</p>
+  <h3>WeightedVotingXValidation
+  </h3>
+  <h5>What it does</h5>
+  <p>WeightedVotingXValidation creates two analysis result files: 
+        a prediction results file, which shows the accuracy of the predictor by 
+        averaging the results across all iterations, and a features results file, which 
+        lists all genes used in any class predictor and the number of times that 
+        gene was used in a predictor. 
+  </p>
+  <ul>
+    <li>To view the prediction results file (*.pred.odf file),
+      use the <a href="#">PredictionResultsViewer</a>. The viewer lists each sample with its actual and predicted class.
+      <a href="TBD">Module documentation.</a>    </li>
+    <li>To view the feature result file (*.feat.odf file), use the <a href="#">FeatureSummaryViewer</a>. 
+      The viewer lists each gene used in a class predictor and the number of times 
+      it was used in a predictor.
+      <a href="TBD">Module documentation.</a>    </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>The PredictionResultsViewer provides an absolute error rate (incorrect
+      cases/total cases) and an ROC error rate (fraction of true positives
+      versus the fraction of false positives). Use the ROC error rate for comparing
+      results across data sets. </li>
+    <li>In the FeatureSummaryViewer, the most interesting genes are generally
+      those used by all (or most) of the classifiers. To retrieve gene annotations
+      from a variety of public databases, click the GeneCruiser menu item. </li>
+  </ul>
+</div>
+<div class="steps">
+  <h2>Step 6: Run the train/test module for the chosen class prediction method.</h2>
+  <p><span class="resultsInlineSubhead">CART</span> (<a href="ftp://ftp.broad.mit.edu/pub/genepattern/modules/CART/broad.mit.edu:cancer.software.genepattern.module.analysis/00056/1/CART.pdf">module documentation)</a><br>
+    
+    <span class="resultsInlineSubhead">KNN</span> (<a href="ftp://ftp.broad.mit.edu/pub/genepattern/modules/KNN/broad.mit.edu:cancer.software.genepattern.module.analysis/00012/3/KNN.pdf">module documentation)</a><br>
+    <span class="resultsInlineSubhead">PNN</span> (<a href="ftp://ftp.broad.mit.edu/pub/genepattern/modules/PNN/broad.mit.edu:cancer.software.genepattern.module.analysis/00059/0/PNN.pdf">module documentation)</a><br>
+    <span class="resultsInlineSubhead">SVM</span> (<a href="ftp://ftp.broad.mit.edu/pub/genepattern/modules/SVM/broad.mit.edu:cancer.software.genepattern.module.analysis/00025/3/SVM.pdf">module documentation)</a><br>
+    <span class="resultsInlineSubhead">WeightedVoting</span> (<a href="ftp://ftp.broad.mit.edu/pub/genepattern/modules/WeightedVoting/broad.mit.edu:cancer.software.genepattern.module.analysis/00027/3/WeightedVoting.pdf">module documentation)</a>    </p>
+  <h5>What it does    </h5>
+  <ul>
+    <li>The train/test module builds a class predictor by running 
+      class prediction against a training data set. It tests the class predictor by 
+      running it against a test data set. Optionally, the module can be used to test a 
+      previously generated class predictor against a test data set.
+    </li>
+  </ul>
+  <h5>Considerations  </h5>
+  <ul>
+    <li>To build a class predictor, specify the training data set. The module
+      creates a model file (also referred to as the class predictor). </li>
+    <li>To test a previously built class predictor, specify the model file and
+      the test data set. The module creates a
+      prediction results file that shows accuracy of the predictor. </li>
+    <li>To build and test a class predictor, specify both the training and test
+      data sets. The module creates a class predictor and then tests it. It creates
+      a model file and a prediction results file. </li>
+    <li>PNN: When running the PNN module, select the desired parameter values
+      or use the <i>load params</i> and <i>params filename</i> parameters to
+      select the recommended parameters file generated by the PNNXValidationOptimization
+      module. </li>
+    <li>SVM: When running the SVM module, the training and test data sets must include the same set of genes. If they do not, an error occurs.</li>
+  </ul>
+  <p><b>**REVIWERS:</b> Are there any other prediction-specific considerations?  </div>
+<div class="steps">
+  <h2>Step 7: View train/test results.</h2>
+  <h3>CART 
+  </h3>
+  <h5>What it does </h5>
+  <p>CART creates two analysis result files: a 
+        prediction results file that shows accuracy of the predictor and a pdf file that 
+        shows the classification tree.
+  </p>
+  <ul>
+    <li>To view the prediction results file (*.pred.odf), use the <a>PredictionResultsViewer</a>. 
+      The viewer lists each sample with its actual and predicted class.
+      
+      <a href="TBD">Module documentation.</a>
+    </li>
+    <li>To view the classification tree, click the pdf file.
+    </li>
+  </ul>
+  <h5>Considerations  </h5>
+  <ul>
+    <li>The PredictionResultsViewer provides an absolute error rate (incorrect cases/total cases) and an
+      ROC error rate (fraction of true positives 
+      versus the fraction of false positives). Use the ROC error rate for comparing results across data sets.
+    </li>
+  </ul>
+  <h3>KNN
+  </h3>
+  <h5>What it does </h5>
+  <p>KNN creates two analysis result files:
+        a prediction results file that shows the accuracy of the predictor and 
+        a model file that contains the classifier (or model) created from the training data set.
+  </p>
+  <ul>
+    <li>To view the prediction results file (*.pred.odf),
+      use the <a>PredictionResultsViewer</a>. The viewer lists each sample with its actual and predicted class.
+      <a href="TBD">Module documentation.</a>
+    </li>
+    <li>To view the model file (*.model.odf), click it.
+    </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>The PredictionResultsViewer provides an absolute error rate (incorrect
+      cases/total cases) and an ROC error rate (fraction of true positives
+      versus the fraction of false positives). Use the ROC error rate for comparing
+      results across data sets. </li>
+    <li>The model file lists the gene expression profiles that can be used to
+      classify unknown samples. </li>
+  </ul>
+  <h3>PNN
+  </h3>
+  <h5>What it does </h5>
+  <p>PNN creates two analysis results files:
+        a prediction results file that shows the accuracy of the predictor and an 
+        extended prediction results file that contains additional information. 
+  </p>
+  <ul>
+    <li>To view the prediction results file (*.pred.odf),
+      use the <a>PredictionResultsViewer</a>. The viewer lists each sample with its actual and predicted class.
+      <a href="TBD">Module documentation.</a>
+    </li>
+    <li>To view the extended results file (*.full.pred.odf), save it to disk and view it using Excel.
+    </li>
+  </ul>
+  <h5>Considerations  </h5>
+  <ul>
+    <li>The PredictionResultsViewer provides an absolute error rate (incorrect
+      cases/total cases) and an ROC error rate (fraction of true positives
+      versus the fraction of false positives). Use the ROC error rate for comparing
+      results across data sets. </li>
+    <li>**More information required about the extended results file** </li>
+  </ul>
+  <h3>SVM
+  </h3>
+  <h5>What it does </h5>
+  <p>SVM creates two analysis result files:
+        a prediction results file that shows the accuracy of the predictor and 
+        a model file that contains the classifier (or model) created from the training data set.
+  </p>
+  <ul>
+    <li>To view the prediction results file (*.pred.odf),
+      use the <a>PredictionResultsViewer</a>. The viewer lists each sample with its actual and predicted class.
+      <a href="TBD">Module documentation.</a>
+    </li>
+    <li>The model file (*.model.odf) is a binary file, which can be used as input to the SVM module.
+    </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>The PredictionResultsViewer provides an absolute error rate (incorrect cases/total cases) and an
+      ROC error rate (fraction of true positives 
+      versus the fraction of false positives). Use the ROC error rate for comparing results across data sets.
+    </li>
+  </ul>
+  <h3>WeightedVoting
+  </h3>
+  <h5>What it does</h5>
+  <p>WeightedVoting creates two analysis result files:
+        a prediction results file that shows the accuracy of the predictor and 
+        a model file that contains the classifier (or model) created from the training data set.
+  </p>
+  <ul>
+    <li>To view the prediction results file (*.pred.odf),
+      use the <a>PredictionResultsViewer</a>. The viewer lists each sample with its actual and predicted class.
+      <a href="TBD">Module documentation.</a>
+    </li>
+    <li>To view the model file (*.model.odf), click it.
+    </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>The PredictionResultsViewer provides an absolute error rate (incorrect
+      cases/total cases) and an ROC error rate (fraction of true positives
+      versus the fraction of false positives). Use the ROC error rate for comparing
+      results across data sets. </li>
+    <li>The model file lists the gene expression profiles that can be used to
+      classify unknown samples. </li>
+  </ul>
+</div>
+<div class="steps">
+  <h2>Step 8: Run the train/test module to determine the class of an unknown sample.</h2>
+  <h5>What it does </h5>
+  <p>A train/test module can be used with a previously generated model file to 
+    classify unknown samples. Use the <i>saved model filename</i> parameter to specify the previously
+    generated class predictor and the <i>test filename</i> parameter to specify an expression data set
+    that contains the unknown sample. The module uses the class predictor to predict the class 
+    of each sample. It creates a prediction results file that lists each sample with its predicted class.  </p>
+  <h5>Considerations</h5>
+  <ul>
+    <li>The <i>test class filename</i> is a required parameter. It specifies the
+      class of each sample in the expression data set. For the unknown samples,
+      create a class file that assigns some class (for example, "unknown") to each
+      sample. </li>
+    <li>To view the prediction results file (*.pred.odf),
+      use the <a>PredictionResultsViewer</a>. The viewer lists each sample with
+      its actual and predicted class. Ignore the actual class, which was unknown.
+      Ignore the error rates, which are evaluating the class predictor agains "known" data. </li>
+    </ul>
+</div>
+<h2>References</h2>
+<p>Breiman, L., Friedman, J. H., Olshen, R. A., & Stone, C. J. 1984. Classification and regression trees. Wadsworth & Brooks/Cole Advanced Books & Software, Monterey, CA.
+<p>Golub, T.R., Slonim, D.K., Tamayo, P., Huard, C., Gaasenbeek, M., Mesirov, J.P., Coller, H., Loh, M., Downing, J.R., Caligiuri, M.A., Bloomfield, C.D., and Lander, E.S. 1999. Molecular Classification of Cancer: Class Discovery and Class Prediction by Gene Expression. Science 286:531-537.
+<p>Lu, J., Getz, G., Miska, E.A., Alvarez-Saavedra, E., Lamb, J., Peck, D., Sweet-Cordero, A., Ebert, B.L., Mak, R.H., Ferrando, A.A, Downing, J.R., Jacks, T., Horvitz, H.R., Golub, T.R. 2005. MicroRNA expression profiles classify human cancers. Nature 435:834-838.
+<p>Rifkin, R., Mukherjee, S., Tamayo, P., Ramaswamy, S., Yeang, C-H, Angelo, M., Reich, M., Poggio, T., Lander, E.S., Golub, T.R., Mesirov, J.P. 2003. An Analytical Method for Multiclass Molecular Cancer Classification. SIAM Review 45(4):706-723.
+<p>Slonim, D.K., Tamayo, P., Mesirov, J.P., Golub, T.R., Lander, E.S. 2000. Class prediction and discovery using gene expression data. In Proceedings of the Fourth Annual International Conference on Computational Molecular Biology (RECOMB). ACM Press, New York. pp. 263-272.
+<p>Specht, D. F. 1990. Probabilistic Neural Networks. Neural Networks 3(1):109-118. Elsevier Science Ltd., St. Louis.
+
+<h2>See also</h2>
+<ul>
+<li>Protocols &ndash; GenePattern welcome page with protocols.</li>
+<li><a href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp">Modules</a> &ndash; List of all available modules with links to their documentation.</li>
+<li><a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_web_client.html">GenePattern Web Client Guide</a> &ndash; Full description of this web application.</li>
+<li><a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_tutorial.html">Tutorial</a> &ndash; Hands-on introduction to GenePattern.</li>
+
+<li>Demo &ndash; Flash demo of GenePattern.</li>
+</ul>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td align="right">
+              <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=6">comments/suggestions</a>
+            </td>
+          </tr>
+        </table>
+
+</body>
+</html>

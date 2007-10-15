@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title>Differential Expression Analysis</title>
+	<link href="../../css/protocols.css" rel="stylesheet" type="text/css" />
+	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="../../js/protocol.js"/>
+</head>
+
+<body>
+<h1>Differential Expression Analysis</h1>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td align="right">
+              <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=4">comments/suggestions</a>
+            </td>
+          </tr>
+        </table>
+<p>Find genes that are significantly differentially expressed between classes of samples.</p>
+
+
+<h2>Preliminaries</h2>
+<ul>
+<li><a href="GctResFiles.html">GCT or RES file</a> that contains the gene expression data.
+<li><a href="ClsFiles.html">CLS file</a> that identifies the class of each sample in the gene expression data.
+</ul>
+
+<div class="steps">
+
+  <h2>Step 1: Run the <a href="javascript:openModuleById('analysis:00020');">PreprocessDataset</a> module to filter the gene expression data.</h2>
+  <h5>What it does</h5>
+  <p>Preprocess the data 
+      to remove platform noise and genes that have little variation.
+      This module can preprocess the data in one or more ways (in this order):    </p>
+  <ol>
+    <li>Set threshold and ceiling values. Any value lower/higer than the threshold/ceiling
+      value is reset to the threshold/ceiling value. </li>
+    <li>Convert each expression value to the log base 2 of the value (see Considerations). </li>
+    <li>Remove genes (rows) if a given number of its sample values are less than
+      a given threshold. </li>
+    <li>Remove genes (rows) that do not have a minimum fold change or expression
+      variation. </li>
+    <li>Discretize or normalize the data. </li>
+  </ol>
+  <p><a href="javascript:openModuleDocById('analysis:00020');">Module documentation.</a>        </p>
+  <h5>Considerations</h5>
+  <ul>
+    <li>When using ratios to compare gene expression between samples, 
+      convert values to log base 2 of the value to
+      bring up- and down-regulated genes to the same scale. 
+      For example, ratios of 2 and .5 indicating two-fold changes for up- and
+      down-regulated expression, respectively, are converted to +1 and -1. </li>
+    <li>If you did not generate the expression data, 
+      check whether preprocessing steps have already been taken before 
+      running the PreprocessDataset module. </li>
+  </ul>
+</div>
+
+<div class="steps">
+  <h2>Step 2: Compute differential gene expression by running the <a href="javascript:openModuleById('analysis:00044');">ComparativeMarkerSelection</a> module.</h2>
+  <h5>What it does</h5>
+  <ul>
+    <li>For each gene, the module uses a test statistic to calculate the 
+      difference in gene expression between classes and then computes a p-value to estimate the 
+      significance of the test statistic score. Because testing tens of thousands of genes simultaneously 
+      increases the possibility of mistakenly identifying a non-marker gene as a marker gene (a false positive), 
+      ComparativeMarkerSelection corrects for multiple hypothesis testing by computing both false discovery 
+      rates (FDR) and family-wise error rates (FWER). 
+      Researchers generally identify marker genes based on FDR rather than the more conservative FWER. 
+      <a href="javascript:openModuleDocById('analysis:00044');">Module documentation.</a>    </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>If the data set includes at least 10 samples per class, use the default value of 1000 permutations 
+      to ensure accurate <i>p</i>-values. If the data set includes fewer than 10 samples in any class, permuting the 
+      samples cannot give an accurate <i>p</i>-value; specify 0 permutations to use asymptotic <i>p</i>-values
+      instead. </li>
+    <li>If the data set includes more than two classes, use the <i>phenotype test</i> parameter
+      to analyze each class against all others (one-versus-all) or all class pairs
+      (all pairs). </li>
+  </ul>
+</div>
+
+
+<div class="steps">
+  <h2>Step 3: View the results with the <a href="javascript:openModuleById('visualizer:00045');">ComparativeMarkerSelectionViewer</a> module.</h2>
+  <h5>What it does</h5>
+  <ul>
+    <li>The viewer displays the analysis results including 
+      the test statistic score, its p value, two FDR statistics and three FWER statistics for each gene. 
+      <a href="javascript:openModuleDocById('visualizer:00045');">Module documentation.</a>    </li>
+  </ul>
+  <h5>Considerations</h5>
+  <ul>
+    <li>Often, marker genes are identified based on an FDR cutoff value of .05, which 
+      indicates that a gene identified as a marker gene has a 1 in 20 (5%) chance of being a false positive. 
+      Select <i>Edit&gt;Filter Features&gt;Custom Filter</i> to filter results
+      based on that criteria (or any other). </li>
+    <li>Select <i>File&gt;Save Derived Dataset</i> to create a GCT file that contains
+      a subset of the expression data. </li>
+  </ul>
+ 
+</div>
+
+ <h2>Reference</h2>
+ <p>Gould, J., Getz, G., Monti, S., Reich, M., and Mesirov, J.P. 2006. 
+Comparative gene marker selection suite. <i>Bioinformatics</i> 22(15):1924-1925.
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td align="right">
+      <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=4">comments/suggestions</a>
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>

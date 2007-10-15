@@ -1,0 +1,56 @@
+#protocols {
+	background-color: #e3e3fd;
+	padding: 5px 20px 20px;
+	border: 1px solid #6666FF;
+}
+#protocols h1 {
+	font-size: 18px;
+	color: #333366;
+	font-weight: bold;
+	margin: 0px;
+	padding: 10px 0px 20px;
+}
+#protocols table.options {
+	width: 100%;
+
+}
+#protocols table.options td {
+	width: 50%;
+	vertical-align: top;
+	margin: 0px;
+	padding: 0px 15px 0px 0px;
+
+}
+#protocols ul {
+	margin-top: 0px;
+	margin-bottom: 0px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+
+}
+#protocols li {
+	padding-bottom: 10px;
+
+}
+.optionsHead {
+	font-size: 12px;
+}
+#homeIndent{
+	padding: 0px;
+	margin-top: 0px;
+	margin-right: 10px;
+	margin-bottom: 0px;
+	margin-left: 10px;
+}
+
+#seealso ul {
+	margin-top: 0px;
+	margin-bottom: 0px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+
+}
+#seealso li {
+	padding-bottom: 10px;
+
+}

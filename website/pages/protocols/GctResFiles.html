@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title>GCT and RES Files</title>
+	<link href="../../css/protocols.css" rel="stylesheet" type="text/css" />
+	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="../../js/protocol.js"/>
+</head>
+
+<body>
+<h1>GCT and RES Files</h1>
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td align="right">
+              <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=8">comments/suggestions</a>
+            </td>
+          </tr>
+        </table>
+
+<p>
+GenePattern defines two file formats for gene expression data: GCT and RES. 
+Both are tab-delimited text files that contain a column for each sample, a row for each gene, 
+and an expression value for each gene in each sample. The RES file format also contains the 
+absent (A) versus present (P) calls as generated for each gene by Affymetrix GeneChip software. 
+See <a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_file_formats.html">File Formats</a> 
+for complete descriptions of all GenePattern file formats.
+
+<p>
+Gene expression data from any source can be converted into a GCT file. Gene 
+expression data from Affymetrix can be converted into either a GCT or RES file. Most
+GenePattern modules that require gene expression data accept either GCT or RES file formats. 
+At this time, no GenePattern modules use the A/P calls included in the RES file.  
+
+<table>
+<tr valign="top"><td>
+<b>To convert this data</b></td>
+<td><b>Use this method</b></td>
+</tr>
+<tr valign="top"><td>
+Affymetrix data</td><td>Use the ExpressionFileCreator module to convert a set of 
+Affymetrix CEL files to a GCT or RES file.</td>
+</tr>
+<tr valign="top"><td>
+cDNA data</td><td>Convert the data to a tab-delimited text file that contains 
+a column for each sample, a row for each gene, 
+and expression data for each gene in each sample.
+Expression data can be intensity values or ratios. 
+Open the file in Excel or another text editor and modify the format to match the GCT or RES file format.</td>
+</tr>
+<tr valign="top"><td>
+PCL or CDT files from Stanford Microarray Database (SMD)</td><td>
+Open the file in Excel or another text editor and modify the format to match the GCT or RES file format.</td>
+</tr>
+<tr valign="top"><td>
+Gene Expression Omnibus (GEO) data</td><td>Use the GEOImporter module 
+to create a GCT file based on expression data extracted from GEO.</td>
+</tr>
+<tr valign="top"><td>
+caArray expression data</td><td>Use the caArrayImportViewer module 
+to create a GCT file based on expression data extracted from 
+the caArray microarray expression data repository.</td>
+</tr>
+<tr valign="top"><td>
+MAGE-ML data</td><td>Use the MAGEImportViewer module to convert MAGE-ML format data to a GCT file. 
+The MAGE-ML format, which is popular for both Affymetrix and cDNA microarray data, 
+is the standard format for storing data at the ArrayExpress repository. 
+</td>
+</tr>
+</table>
+
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td align="right">
+              <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=8">comments/suggestions</a>
+            </td>
+          </tr>
+        </table>
+
+</body>
+</html>
