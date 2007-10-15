@@ -22,24 +22,10 @@
 <%@ page import="net.sf.jasperreports.view.*" %>
 <%@ page import="net.sf.jasperreports.engine.*" %>
 <%@ page import="org.genepattern.server.util.DateUtils" %>
-<%@ page import="org.jfree.text.TextUtilities" %>
-<html>
-<head>
-<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
-<link href="skin/favicon.ico" rel="shortcut icon">
-<title>Get Dates for Report</title>
-<style>
-TD.little { font-size: 9pt }
-</style>
-<jsp:include page="navbarHead.jsp"/>
-</head>
 
-<jsp:include page="navbar.jsp"/>
-<h1>Your reports have been created</h1>
-
-<% 
+<%
 	response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
-	response.setHeader("Pragma", "no-cache");		 // HTTP 1.0 cache control
+	response.setHeader("Pragma", "no-cache"); // HTTP 1.0 cache control
 	response.setDateHeader("Expires", 0);
 
 	String startDateStr = request.getParameter("startdate");
@@ -50,21 +36,19 @@ TD.little { font-size: 9pt }
 	String[] reportNames = request.getParameterValues("reportName");
 	boolean htmlFormat = request.getParameter("htmlFormat") != null;
 	boolean pdfFormat = request.getParameter("pdfFormat") != null;
-	
-	org.jfree.text.TextUtilities.setUseDrawRotatedStringWorkaround(false);
-	
-	java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("E dd MMMM, yyyy  HH:mm"); 
-	java.text.SimpleDateFormat filenameFormatter = new java.text.SimpleDateFormat("yyMMdd"); 
-	
-	 String server = request.getScheme() + "://" + InetAddress.getLocalHost().getCanonicalHostName() + ":"
-     + System.getProperty("GENEPATTERN_PORT");
-	
-	/**
-	 *  hard coded connection
-	  */
-	//Class.forName("oracle.jdbc.OracleDriver");
-	//String url = "jdbc:oracle:thin:@cmapdb01.broad.mit.edu:1521:cmap";
-	//Connection con = DriverManager.getConnection(url, "GENEPATTERN", "genepattern");
+	boolean returnDocument = request.getParameter("returnDocument") != null;
+
+	java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat(
+			"E dd MMMM, yyyy  HH:mm");
+	java.text.SimpleDateFormat filenameFormatter = new java.text.SimpleDateFormat(
+			"yyMMdd");
+
+	String server = request.getScheme() + "://"
+			+ InetAddress.getLocalHost().getCanonicalHostName() + ":"
+			+ System.getProperty("GENEPATTERN_PORT");
+
+
+			
 	Connection con = HibernateUtil.getSession().connection();
 
 	/**
@@ -72,92 +56,167 @@ TD.little { font-size: 9pt }
 	 */
 	Date givenStartDate = new Date(startDateStr);
 	Date startDate;
-	if ("week".equals(startDateForm)){
-		startDate = (new Date(DateUtils.getPreviousDay(givenStartDate.getTime(),1)));
-	} else if ("month".equals(startDateForm)){
-		startDate = new Date(DateUtils.getStartOfMonth(givenStartDate.getTime()));
+	if ("week".equals(startDateForm)) {
+		startDate = (new Date(DateUtils.getPreviousDay(givenStartDate
+		.getTime(), 1)));
+	} else if ("month".equals(startDateForm)) {
+		startDate = new Date(DateUtils.getStartOfMonth(givenStartDate
+		.getTime()));
 	} else {
 		startDate = givenStartDate;
 	}
 	Date givenEndDate = new Date(endDateStr);
-	Date endDate;	
-	if ("week".equals(endDateForm)){
-		endDate =  DateUtils.endOfDay(new Date(DateUtils.getNextDay(givenEndDate.getTime(),7)));
-	} else if ("month".equals(endDateForm)){
-		endDate =  new Date(DateUtils.getEndOfMonth(givenEndDate.getTime()));
+	Date endDate;
+	if ("week".equals(endDateForm)) {
+		endDate = DateUtils.endOfDay(new Date(DateUtils.getNextDay(
+		givenEndDate.getTime(), 7)));
+	} else if ("month".equals(endDateForm)) {
+		endDate = new Date(DateUtils.getEndOfMonth(givenEndDate
+		.getTime()));
 	} else {
 		endDate = givenEndDate;
 	}
-	
+
 	//
 	// put the report outputs into a directory called reports in the jobs directory
 	//
 	String jobDirStr = System.getProperty("jobs");
-	File outDir = new File(jobDirStr+ "/../reports/");
-	
-	if (!outDir.exists()) outDir.mkdir();
-	
+	File outDir = new File(jobDirStr + "/../reports/");
+
+	if (!outDir.exists())
+		outDir.mkdir();
+
 	File reportDir = new File("../reports/");
 	ArrayList<JasperReport> reports = new ArrayList<JasperReport>();
 	Map<String, JasperReport> reportMap = new HashMap<String, JasperReport>();
-	for (String name: reportNames){
+	for (String name : reportNames) {
 		File f = new File(reportDir, name);
 		int idx = name.indexOf(".jrxml");
-		String nom =  name.substring(0, idx);
-		
-		JasperDesign jasperDesign = JasperManager.loadXmlDesign(f.getCanonicalPath());
-		JasperReport jasperReport = JasperManager.compileReport(jasperDesign);
+		String nom = name.substring(0, idx);
+
+		JasperDesign jasperDesign = JasperManager.loadXmlDesign(f
+		.getCanonicalPath());
+		JasperReport jasperReport = JasperManager
+		.compileReport(jasperDesign);
 		reports.add(jasperReport);
-		reportMap.put(nom,  jasperReport);
+		reportMap.put(nom, jasperReport);
 	}
-	
+
 	// Second, create a map of parameters to pass to the report.
 	Map parameters = new HashMap();
 	parameters.put("StartDate", startDate);
 	parameters.put("EndDate", endDate);
-	parameters.put("HostName", InetAddress.getLocalHost().getCanonicalHostName());
-	parameters.put("HostUrl", server + request.getContextPath() );
-	parameters.put("SUBREPORT_DIR", reportDir.getCanonicalPath()+"/");
-	
-	
-	for (Iterator iter = reportMap.keySet().iterator(); iter.hasNext(); ){
-		String key = (String)iter.next();
+	parameters.put("HostName", InetAddress.getLocalHost()
+			.getCanonicalHostName());
+	parameters.put("HostUrl", server + request.getContextPath());
+	parameters.put("SUBREPORT_DIR", reportDir.getCanonicalPath() + "/");
+
+	StringBuffer reportLinksBuff = new StringBuffer();
+
+	File firstReportToReturn = null;
+	for (Iterator iter = reportMap.keySet().iterator(); iter.hasNext();) {
+		String key = (String) iter.next();
 		JasperReport aReport = reportMap.get(key);
-	 	JasperPrint jasperPrint = JasperFillManager.fillReport(aReport, parameters, con);
-	 	
-	 	String reportFileName =  key + "_" + filenameFormatter.format(startDate) + "_to_" + filenameFormatter.format(endDate); 
-	 	String htmlReportFilePath =  outDir.getCanonicalPath() + File.separator + reportFileName+".html";
-	 	String pdfReportFilePath =  outDir.getCanonicalPath() + File.separator + reportFileName+".pdf";
-	 	
-	 	if (htmlFormat){
-	 		JasperExportManager.exportReportToHtmlFile(jasperPrint, htmlReportFilePath);
-	 		out.println("Created HTML report  <a href=\"reports/" + reportFileName + ".html\">" + reportFileName + ".html</a><br/>");		
-	 	}
-	 	if (pdfFormat){
-		 	JasperExportManager.exportReportToPdfFile(jasperPrint, pdfReportFilePath);
-    		out.println("Created PDF report  <a href=\"reports/" + reportFileName + ".pdf\">" + reportFileName + ".pdf</a><br/>");
-	 	}
+		JasperPrint jasperPrint = JasperFillManager.fillReport(aReport,
+		parameters, con);
+
+		String reportFileName = key + "_"
+		+ filenameFormatter.format(startDate) + "_to_"
+		+ filenameFormatter.format(endDate);
+		String htmlReportFilePath = outDir.getCanonicalPath()
+		+ File.separator + reportFileName + ".html";
+		String pdfReportFilePath = outDir.getCanonicalPath()
+		+ File.separator + reportFileName + ".pdf";
+
+		if (htmlFormat) {
+			JasperExportManager.exportReportToHtmlFile(jasperPrint,
+			htmlReportFilePath);
+			reportLinksBuff
+			.append("Created HTML report  <a href=\"reports/"
+			+ reportFileName + ".html\">"
+			+ reportFileName + ".html</a><br/>");
+		}
+		if (pdfFormat) {
+			JasperExportManager.exportReportToPdfFile(jasperPrint,
+			pdfReportFilePath);
+			if (firstReportToReturn == null)
+			firstReportToReturn = new File(pdfReportFilePath);
+			reportLinksBuff
+				.append("Created PDF report  <a href=\"reports/"
+				+ reportFileName + ".pdf\">"
+				+ reportFileName + ".pdf</a><br/>");
+			
+	
+			
+		}
 	}
-	
-	
-if (startDateStr != null){
-	
+
+	if (returnDocument) {
+		response.setHeader("Content-disposition", "inline; filename=\""
+		+ firstReportToReturn.getName() + "\"");
+		response.setHeader("Content-Type", "application/pdf");
+		response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
+		response.setHeader("Pragma", "no-cache"); // HTTP 1.0 cache control
+		response.setDateHeader("Expires", 0);
+		response.setDateHeader("Last-Modified", firstReportToReturn
+		.lastModified());
+		response.setHeader("Content-Length", ""
+		+ firstReportToReturn.length());
+
+		OutputStream os = response.getOutputStream();
+		InputStream is = null;
+		try {
+			is = new BufferedInputStream(new FileInputStream(
+			firstReportToReturn));
+			byte[] b = new byte[10000];
+			int bytesRead;
+			while ((bytesRead = is.read(b)) != -1) {
+		os.write(b, 0, bytesRead);
+			}
+		} finally {
+			if (is != null) {
+		is.close();
+			}
+		}
+		out.clear();
+		out = pageContext.pushBody();
+
+		return;
+	} else {
 %>
+	
+	
+<html>
+<head>
+<link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
+<link href="skin/favicon.ico" rel="shortcut icon">
+<title>Get Dates for Report</title>
+<style>
+TD.little { font-size: 9pt }
+</style>
+<jsp:include page="navbarHead.jsp"/>
+</head>
+<body>
+<jsp:include page="navbar.jsp"/>
+<h1>Your reports have been created</h1>
+	
+	<%
+			out.println(reportLinksBuff.toString());
+
+			if (startDateStr != null) {
+		%>
     <br/><br/>
 	Start time is: <%=formatter.format(startDate)%><br/>
 	
 <%
-}
-if (endDateStr != null){
-	
-%>
+		}
+		if (endDateStr != null) {
+	%>
 <br/>
 	End time is:  <%=formatter.format(endDate)%><br/>
 	<%
-}
-
-
-%>
+	}
+	%>
 <a href="viewReports.jsp">See all compiled reports</a><br/><br/>
 
 <br>
@@ -165,4 +224,4 @@ if (endDateStr != null){
 <jsp:include page="footer.jsp"/>
 </body>
 </html>
-
+<% } %>
