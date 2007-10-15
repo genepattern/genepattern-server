@@ -35,7 +35,8 @@
 	ArrayList<String> reportNames = new ArrayList<String>();
 		
 	File reportDir = new File("../reports");
-	System.out.println("Reports dir exists " + reportDir.exists() + "  " + reportDir.getAbsolutePath());
+	if (!reportDir.exists()) reportDir.mkdir();
+	
 	for (String report: reportDir.list()){
 		if (report.endsWith("jrxml")){
 			reportNames.add(report);
@@ -59,6 +60,17 @@ TD.little { font-size: 9pt }
 <h1>Please select one or more reports and the start and end date</h1>
 
 <form method="post" name="dates" action="createReport.jsp">
+	
+	<%
+	if (reportNames.size() == 0) {
+		%>
+	
+		No reports are installed on this server. Install jasper jrxml files to your <pre>GenePatternServer/reports</pre> directory for them to show up here. 
+		For contained sub-reports, place the .jasper files in this directory.
+		
+		<%
+	} else {
+	%>
 	<table>
 	<%
 		for (String name: reportNames){
@@ -111,6 +123,9 @@ TD.little { font-size: 9pt }
 			</td>
 		</tr>
 	</table>
+	<%
+	} //end of if no reports else clause
+	%>
 </form>
 
 <br>
