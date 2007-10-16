@@ -47,6 +47,12 @@
 			+ InetAddress.getLocalHost().getCanonicalHostName() + ":"
 			+ System.getProperty("GENEPATTERN_PORT");
 
+	System.out.println("Start = "+startDateStr + "    " + startDateForm);
+	System.out.println("End = "+endDateStr + "    " + endDateForm);
+	System.out.println("pdf = " +pdfFormat);		
+	System.out.println("html = " +htmlFormat);		
+	System.out.println("ret = " +returnDocument);		
+	System.out.println("Rep = " +reportNames[0]);		
 
 			
 	Connection con = HibernateUtil.getSession().connection();
@@ -54,7 +60,12 @@
 	/**
 	 * Set up the dates 
 	 */
-	Date givenStartDate = new Date(startDateStr);
+	 Date givenStartDate = new Date();
+	 try {
+		givenStartDate = new Date(startDateStr);
+	 } catch (Exception e){
+		 givenStartDate = filenameFormatter.parse(startDateStr); 
+	 }
 	Date startDate;
 	if ("week".equals(startDateForm)) {
 		startDate = (new Date(DateUtils.getPreviousDay(givenStartDate
@@ -65,7 +76,13 @@
 	} else {
 		startDate = givenStartDate;
 	}
-	Date givenEndDate = new Date(endDateStr);
+	Date givenEndDate = new Date();
+	try {
+		 givenEndDate = new Date(endDateStr);
+	} catch (Exception e){
+		givenEndDate = filenameFormatter.parse(endDateStr); 
+	}
+	
 	Date endDate;
 	if ("week".equals(endDateForm)) {
 		endDate = DateUtils.endOfDay(new Date(DateUtils.getNextDay(
@@ -179,8 +196,8 @@
 			}
 		}
 		out.clear();
-		out = pageContext.pushBody();
-
+		//out = pageContext.pushBody();
+		
 		return;
 	} else {
 %>
