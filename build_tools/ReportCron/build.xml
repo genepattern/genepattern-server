@@ -41,7 +41,21 @@
 						
 		</java>
 
+		
+	</target>
 	
+	<target name="mailReport">
+		<mail from="gp-dev@broad.mit.edu" 
+			mailhost="smtp.broad.mit.edu"
+			tolist="liefeld@broad.mit.edu"
+			message="GenePattern Server Report" 
+			subject="GenePattern Server Report">
+			<fileset dir="generatedReports">
+				<include name="*.pdf" />
+				<include name="*.html" />
+			</fileset>
+		</mail>
+			
 	</target>
 	
 	<target name="runWeekly" depends="init, compile">
@@ -55,6 +69,7 @@
 		</java>
 
 	
+		
 	</target>
 	
 	<target name="runMonthly" depends="init, compile">
