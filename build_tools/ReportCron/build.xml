@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!-- Ant build file to perform the nightly builds from ANTHILL -->
+
+
+<project basedir="." name="ReportCron" default="runWeekly">
+
+	<target name="init">
+		<path id="library.classpath">
+			<fileset dir="lib">
+				<include name="*.jar" />
+			</fileset>
+			<pathelement path="classes" />
+			<pathelement path="src" />
+		</path>
+	</target>
+	
+	
+	<target name="compile" depends="init">
+
+	<javac classpathref="library.classpath" 
+		debug="true" 
+		destdir="classes" 
+		srcdir="src" 
+		compiler="javac1.5" 
+		source="1.5"  />
+
+
+	
+	</target>
+	
+	
+	<target name="runWeekly" depends="init, compile">
+	
+		<java classname="GetReport" classpathref="library.classpath" dir="." fork="true">
+			<arg value="week" />
+			<arg value="GenePatternMonthlyReport.jrxml" />
+			<arg value="http://node258.broad.mit.edu:8080/gp" />
+			<arg value="ted"/>
+			<arg value="q"/>
+						
+		</java>
+
+	
+	</target>
+	
+	<target name="runMonthly" depends="init, compile">
+	
+		<java classname="GetReport" classpathref="library.classpath" dir="." fork="true">
+			<arg value="month" />
+			<arg value="GenePatternMonthlyReport.jrxml" />
+			<arg value="http://node258.broad.mit.edu:8080/gp" />
+			<arg value="ted"/>
+			<arg value="q"/>
+		</java>
+
+	
+	</target>
+	
+
+</project>
