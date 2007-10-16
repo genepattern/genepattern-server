@@ -14,8 +14,18 @@
 			<pathelement path="classes" />
 			<pathelement path="src" />
 		</path>
+		<tstamp>
+		    <format property="REPORT_INIT_TIME" pattern="d-MMMM-yyyy, hh:mm aa" locale="en,UK"/>
+		</tstamp>
+		<echo message="time is ${REPORT_INIT_TIME}"/>
 	</target>
 	
+	<target name="clean" depends="init">
+		 <delete>
+		    <fileset dir="generatedReports" includes="**/*.pdf"/>
+		    <fileset dir="generatedReports" includes="**/*.html"/>
+		 </delete>
+	</target>
 	
 	<target name="compile" depends="init">
 
@@ -48,8 +58,8 @@
 		<mail from="gp-dev@broad.mit.edu" 
 			mailhost="smtp.broad.mit.edu"
 			tolist="liefeld@broad.mit.edu"
-			message="GenePattern Server Report" 
-			subject="GenePattern Server Report">
+			message="GenePattern Server Report generated at ${REPORT_INIT_TIME}" 
+			subject="GenePattern Server Report ${REPORT_INIT_TIME}">
 			<fileset dir="generatedReports">
 				<include name="*.pdf" />
 				<include name="*.html" />
