@@ -5,7 +5,7 @@
 <title>Differential Expression Analysis</title>
 	<link href="../../css/protocols.css" rel="stylesheet" type="text/css" />
 	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="../../js/protocol.js"/>
+    <script type="text/javascript" src="../../js/protocol.js"></script>
 </head>
 
 <body>
@@ -23,15 +23,16 @@
 <h2>Preliminaries</h2>
 <ul>
 <li><a href="GctResFiles.html">GCT or RES file</a> that contains the gene expression data.
-Sample file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct">all_aml_train.gct</a>.
+Sample file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct">all_aml_train.gct</a>.</li>
 <li><a href="ClsFiles.html">CLS file</a> that identifies the class of each sample in the gene expression data.
-Sample file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls">all_aml_train.cls</a>.
+Sample file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls">all_aml_train.cls</a>.</li>
 </ul>
 
 <div class="steps">
 
   <h2>Step 1: Run the <a href="javascript:openModuleById('analysis:00020');">PreprocessDataset</a> 
-    (<a href="javascript:openModuleDocById('analysis:00020')"><img src="../../images/pdf.jpg" border="0"></a>)
+    (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020&file=PreprocessDataset.pdf">
+    <img src="../../images/pdf.jpg" border="0"/></a>)
   module to filter the gene expression data.</h2>
   <h5>What it does</h5>
   <p>Preprocess the data 
@@ -62,7 +63,7 @@ Sample file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/a
 
 <div class="steps">
   <h2>Step 2: Run the <a href="javascript:openModuleById('analysis:00044');">ComparativeMarkerSelection</a> 
-      (<a href="javascript:openModuleDocById('analysis:00044')"><img src="../../images/pdf.jpg" border="0"></a>)
+      (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044&file=ComparativeMarkerSelection.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
 module to compute differential gene expression.</h2>
   <h5>What it does</h5>
   <ul>
@@ -72,7 +73,7 @@ module to compute differential gene expression.</h2>
       increases the possibility of mistakenly identifying a non-marker gene as a marker gene (a false positive), 
       ComparativeMarkerSelection corrects for multiple hypothesis testing by computing both false discovery 
       rates (FDR) and family-wise error rates (FWER). 
-      Researchers generally identify marker genes based on FDR rather than the more conservative FWER. 
+      Researchers generally identify marker genes based on FDR rather than the more conservative FWER.</li> 
   </ul>
   <h5>Considerations</h5>
   <ul>
@@ -89,12 +90,12 @@ module to compute differential gene expression.</h2>
 
 <div class="steps">
   <h2>Step 3: Run the <a href="javascript:openModuleById('visualizer:00045');">ComparativeMarkerSelectionViewer</a> 
-        (<a href="javascript:openModuleDocById('visualizer:00045')"><img src="../../images/pdf.jpg" border="0"></a>)
+        (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00045&file=ComparativeMarkerSelectionViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
 module to view the results.</h2>
   <h5>What it does</h5>
   <ul>
     <li>The viewer displays the analysis results including 
-      the test statistic score, its p value, two FDR statistics and three FWER statistics for each gene. 
+      the test statistic score, its p value, two FDR statistics and three FWER statistics for each gene. </li>
   </ul>
   <h5>Considerations</h5>
   <ul>
@@ -110,7 +111,7 @@ module to view the results.</h2>
 
  <h2>Reference</h2>
  <p>Gould, J., Getz, G., Monti, S., Reich, M., and Mesirov, J.P. 2006. 
-Comparative gene marker selection suite. <i>Bioinformatics</i> 22(15):1924-1925.
+Comparative gene marker selection suite. <i>Bioinformatics</i> 22(15):1924-1925.</p>
 
 <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>

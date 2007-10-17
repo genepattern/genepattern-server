@@ -5,7 +5,7 @@
 <title>Class Prediction</title>
 	<link href="../../css/protocols.css" rel="stylesheet" type="text/css" />
 	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="../../js/protocol.js"/>
+    <script type="text/javascript" src="../../js/protocol.js"></script>
 </head>
 
 <body>
@@ -47,13 +47,13 @@ Sample file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/a
 </ul>
 <p>Class prediction can be done using one expression data set; ideally, it is 
 done using two. If you have a large expression data set, use the <a href="javascript:openModuleById('analysis:00024');">SplitDatasetTrainTest</a> 
-  (<a href="javascript:openModuleDocById('analysis:00024')"><img src="../../images/pdf.jpg" border="0"></a>)
+  (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00024&file=SplitDatasetTrainTest.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
 module 
 to divide it into two non-overlapping data sets.</p>
 
 <div class="steps">
   <h2>Step 1: Run the <a href="javascript:openModuleById('analysis:00020');">PreprocessDataset</a> 
-  (<a href="javascript:openModuleDocById('analysis:00020')"><img src="../../images/pdf.jpg" border="0"></a>)
+  (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020&file=PreprocessDataset.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
   module to filter the gene expression data.</h2>
   <h5>What it does</h5>
   <p>Preprocess the data to remove platform noise and
@@ -169,8 +169,8 @@ to divide it into two non-overlapping data sets.</p>
   <h2>Step 4: Run the cross-validation module for the chosen class prediction method.</h2>
   <p><span class="resultsInlineSubhead">CARTXValidation</span> &ndash; Run the 
   <a href="javascript:openModuleById('analysis:00062');">CARTXValidation</a>  
-  (<a href="javascript:openModuleDocById('analysis:00062');"><img src="../../images/pdf.jpg" border="0"></a>)
-  module.
+  (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00062&file=CARTXValidation.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
+  module.</p>
 
   <h5>What it does</h5>
   <ul>
@@ -187,8 +187,8 @@ to divide it into two non-overlapping data sets.</p>
   </ul>
    <p><span class="resultsInlineSubhead">KNNXValidation</span> &ndash; Run the 
   <a href="javascript:openModuleById('analysis:00013');">KNNXValidation</a>  
-  (<a href="javascript:openModuleDocById('analysis:00013');"><img src="../../images/pdf.jpg" border="0"></a>)
-  module.
+  (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00013&file=KNNXvalidation.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
+  module.</p>
  
   <h5>What it does    </h5>
   <ul>
@@ -207,8 +207,8 @@ to divide it into two non-overlapping data sets.</p>
   </ul>
    <p><span class="resultsInlineSubhead">PNNXValidationOptimization</span> &ndash; Run the 
   <a href="javascript:openModuleById('analysis:00058');">PNNXValidationOptimization</a>  
-  (<a href="javascript:openModuleDocById('analysis:00058');"><img src="../../images/pdf.jpg" border="0"></a>)
-  module.
+  (<a href=""><img src="../../images/pdf.jpg" border="0"/></a>)
+  module.</p>
   
   <h5>What it does    </h5>
   <ul>
@@ -233,8 +233,8 @@ to divide it into two non-overlapping data sets.</p>
   The cross-validation approach is not available for the SVM prediction method.</p>
    <p><span class="resultsInlineSubhead">WeightedVotingXValidation</span> &ndash; Run the 
   <a href="javascript:openModuleById('analysis:00028');">WeightedVotingXValidation</a>  
-  (<a href="javascript:openModuleDocById('analysis:00028');"><img src="../../images/pdf.jpg" border="0"></a>)
-  module.
+  (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00028&file=WeightedVotingXValidation.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
+  module.</p>
   
   <h5>What it does    </h5>
   <ul>
@@ -261,11 +261,11 @@ to divide it into two non-overlapping data sets.</p>
   <h5>What it does</h5>
   <p>CARTXValidation creates a 
       prediction results file that shows the accuracy of the predictor by 
-      averaging the results across all iterations.
+      averaging the results across all iterations.</p>
       <ul>
     <li>
       Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
-        (<a href="javascript:openModuleDocById('visualizer:00019');"><img src="../../images/pdf.jpg" border="0"></a>)
+        (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00019&file=PredictionResultsViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
 module to view the prediction results (*.pred.odf) file. 
       The viewer lists each sample with its actual and predicted class.
     </li>
@@ -288,11 +288,11 @@ module to view the prediction results (*.pred.odf) file.
   </p>
   <ul>
     <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
-              (<a href="javascript:openModuleDocById('visualizer:00019');"><img src="../../images/pdf.jpg" border="0"></a>)
+              (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00019&file=PredictionResultsViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
 module to view the prediction results (*.pred.odf) file. The viewer lists each sample with its actual and predicted class.
     </li>
     <li>Run the <a href="javascript:openModuleById('visualizer:00005');">FeatureSummaryViewer</a>
-              (<a href="javascript:openModuleDocById('visualizer:00005');"><img src="../../images/pdf.jpg" border="0"></a>)
+              (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00005&file=FeatureSummaryViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
 module to view the feature result (*.feat.odf) file). 
       The viewer lists each gene used in a class predictor and the number of times 
       it was used in a predictor.</li>
@@ -333,12 +333,12 @@ module to view the feature result (*.feat.odf) file).
   </p>
   <ul>
     <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
-            (<a href="javascript:openModuleDocById('visualizer:00019');"><img src="../../images/pdf.jpg" border="0"></a>)
+            (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00019&file=PredictionResultsViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
       module to view the prediction results (*.pred.odf) file).
       The viewer lists each sample with its actual and predicted class.
  </li>
     <li>Run the <a href="javascript:openModuleById('visualizer:00005');">FeatureSummaryViewer</a>
-            (<a href="javascript:openModuleDocById('visualizer:00005');"><img src="../../images/pdf.jpg" border="0"></a>)
+            (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00005&file=FeatureSummaryViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
     module to view the feature result (*.feat.odf) file. 
       The viewer lists each gene used in a class predictor and the number of times 
       it was used in a predictor.
@@ -358,20 +358,20 @@ module to view the feature result (*.feat.odf) file).
 <div class="steps">
   <h2>Step 6: Run the train/test module for the chosen class prediction method:</h2>
 
-<p>
-  Run the 
-<a href="javascript:openModuleById('analysis:00056');">CART</a> 
-  (<a href="javascript:openModuleDocById('analysis:00056')"><img src="../../images/pdf.jpg" border="0"></a>) module,<br>
+<p>Run the <a href="javascript:openModuleById('analysis:00056');">CART</a>
+  (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00056&file=CART.pdf"><img src="../../images/pdf.jpg" border="0"/></a>) module,
+<br/>
 the <a href="javascript:openModuleById('analysis:00012');">KNN</a> 
-  (<a href="javascript:openModuleDocById('analysis:00012')"><img src="../../images/pdf.jpg" border="0"></a>) module,<br>
+ (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00012&file=KNN.pdf"><img src="../../images/pdf.jpg" border="0"/></a>) module,
+<br/> 
 the <a href="javascript:openModuleById('analysis:00059');">PNN</a> 
-  (<a href="javascript:openModuleDocById('analysis:00059')"><img src="../../images/pdf.jpg" border="0"></a>) module,<br>
+ (<a href=""><img src="../../images/pdf.jpg" border="0"/></a>) module,
+<br/> 
 the <a href="javascript:openModuleById('analysis:00025');">SVM</a> 
-  (<a href="javascript:openModuleDocById('analysis:00025')"><img src="../../images/pdf.jpg" border="0"></a>) module, or<br>
-the <a href="javascript:openModuleById('analysis:00027');">WeightedVoting</a> 
-  (<a href="javascript:openModuleDocById('analysis:00027')"><img src="../../images/pdf.jpg" border="0"></a>) module.
-  </p>
-  <h5>What it does    </h5>
+ (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00025&file=SVM.pdf"><img src="../../images/pdf.jpg" border="0"/></a>) module, or
+<br/> the <a href="javascript:openModuleById('analysis:00027');">WeightedVoting</a>
+ (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00027&file=WeightedVoting.pdf"><img src="../../images/pdf.jpg" border="0"/></a>) module.</p>
+<h5>What it does    </h5>
   <ul>
     <li>The train/test module builds a class predictor by running 
       class prediction against a training data set. It tests the class predictor by 
@@ -395,7 +395,7 @@ the <a href="javascript:openModuleById('analysis:00027');">WeightedVoting</a>
       module. </li>
     <li>SVM: When running the SVM module, the training and test data sets must include the same set of genes. If they do not, an error occurs.</li>
   </ul>
-  <p><b>**REVIWERS:</b> Are there any other prediction-specific considerations?  </div>
+  <p><b>**REVIWERS:</b> Are there any other prediction-specific considerations?</p>  </div>
 <div class="steps">
   <h2>Step 7: View train/test results.</h2>
   <h3>CART 
@@ -407,7 +407,7 @@ the <a href="javascript:openModuleById('analysis:00027');">WeightedVoting</a>
   </p>
   <ul>
     <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
-            (<a href="javascript:openModuleDocById('visualizer:00019');"><img src="../../images/pdf.jpg" border="0"></a>)
+            (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00019&file=PredictionResultsViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
     module to view the prediction results (*.pred.odf) file. 
       The viewer lists each sample with its actual and predicted class.
     </li>
@@ -430,7 +430,7 @@ the <a href="javascript:openModuleById('analysis:00027');">WeightedVoting</a>
   </p>
   <ul>
     <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
-            (<a href="javascript:openModuleDocById('visualizer:00019');"><img src="../../images/pdf.jpg" border="0"></a>)
+            (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00019&file=PredictionResultsViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
       module to view the prediction results (*.pred.odf) file. The viewer lists each sample with its actual and predicted class.
     </li>
     <li>To view the model file (*.model.odf), click it.
@@ -454,7 +454,7 @@ the <a href="javascript:openModuleById('analysis:00027');">WeightedVoting</a>
   </p>
   <ul>
     <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
-            (<a href="javascript:openModuleDocById('visualizer:00019');"><img src="../../images/pdf.jpg" border="0"></a>)
+            (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00019&file=PredictionResultsViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
       module to view the prediction results (*.pred.odf) file. The viewer lists each sample with its actual and predicted class.
     </li>
     <li>To view the extended results file (*.full.pred.odf), save it to disk and view it using Excel.
@@ -477,7 +477,7 @@ the <a href="javascript:openModuleById('analysis:00027');">WeightedVoting</a>
   </p>
   <ul>
     <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
-            (<a href="javascript:openModuleDocById('visualizer:00019');"><img src="../../images/pdf.jpg" border="0"></a>)
+            (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00019&file=PredictionResultsViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
       module to view the prediction results (*.pred.odf) file. The viewer lists each sample with its actual and predicted class.
     </li>
     <li>The model file (*.model.odf) is a binary file, which can be used as input to the SVM module.
@@ -499,7 +499,7 @@ the <a href="javascript:openModuleById('analysis:00027');">WeightedVoting</a>
   </p>
   <ul>
     <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
-            (<a href="javascript:openModuleDocById('visualizer:00019');"><img src="../../images/pdf.jpg" border="0"></a>)      
+            (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00019&file=PredictionResultsViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)      
             module to view the prediction results (*.pred.odf) file. The viewer lists each sample with its actual and predicted class.
     </li>
     <li>To view the model file (*.model.odf), click it.
@@ -530,19 +530,21 @@ the <a href="javascript:openModuleById('analysis:00027');">WeightedVoting</a>
       create a class file that assigns some class (for example, "unknown") to each
       sample. </li>
     <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
-            (<a href="javascript:openModuleDocById('visualizer:00019');"><img src="../../images/pdf.jpg" border="0"></a>)      
+            (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00019&file=PredictionResultsViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)      
       module to view the prediction results (*.pred.odf) file. The viewer lists each sample with
       its actual and predicted class. Ignore the actual class, which was unknown.
       Ignore the error rates, which are evaluating the class predictor agains "known" data. </li>
     </ul>
 </div>
 <h2>References</h2>
-<p>Breiman, L., Friedman, J. H., Olshen, R. A., & Stone, C. J. 1984. Classification and regression trees. Wadsworth & Brooks/Cole Advanced Books & Software, Monterey, CA.
-<p>Golub, T.R., Slonim, D.K., Tamayo, P., Huard, C., Gaasenbeek, M., Mesirov, J.P., Coller, H., Loh, M., Downing, J.R., Caligiuri, M.A., Bloomfield, C.D., and Lander, E.S. 1999. Molecular Classification of Cancer: Class Discovery and Class Prediction by Gene Expression. Science 286:531-537.
-<p>Lu, J., Getz, G., Miska, E.A., Alvarez-Saavedra, E., Lamb, J., Peck, D., Sweet-Cordero, A., Ebert, B.L., Mak, R.H., Ferrando, A.A, Downing, J.R., Jacks, T., Horvitz, H.R., Golub, T.R. 2005. MicroRNA expression profiles classify human cancers. Nature 435:834-838.
-<p>Rifkin, R., Mukherjee, S., Tamayo, P., Ramaswamy, S., Yeang, C-H, Angelo, M., Reich, M., Poggio, T., Lander, E.S., Golub, T.R., Mesirov, J.P. 2003. An Analytical Method for Multiclass Molecular Cancer Classification. SIAM Review 45(4):706-723.
-<p>Slonim, D.K., Tamayo, P., Mesirov, J.P., Golub, T.R., Lander, E.S. 2000. Class prediction and discovery using gene expression data. In Proceedings of the Fourth Annual International Conference on Computational Molecular Biology (RECOMB). ACM Press, New York. pp. 263-272.
-<p>Specht, D. F. 1990. Probabilistic Neural Networks. Neural Networks 3(1):109-118. Elsevier Science Ltd., St. Louis.
+<p>Breiman, L., Friedman, J. H., Olshen, R. A., &amp; Stone, C. J. 1984.
+Classification and regression trees. Wadsworth &amp; Brooks/Cole Advanced
+Books &amp; Software, Monterey, CA.</p>
+<p>Golub, T.R., Slonim, D.K., Tamayo, P., Huard, C., Gaasenbeek, M., Mesirov, J.P., Coller, H., Loh, M., Downing, J.R., Caligiuri, M.A., Bloomfield, C.D., and Lander, E.S. 1999. Molecular Classification of Cancer: Class Discovery and Class Prediction by Gene Expression. Science 286:531-537.</p>
+<p>Lu, J., Getz, G., Miska, E.A., Alvarez-Saavedra, E., Lamb, J., Peck, D., Sweet-Cordero, A., Ebert, B.L., Mak, R.H., Ferrando, A.A, Downing, J.R., Jacks, T., Horvitz, H.R., Golub, T.R. 2005. MicroRNA expression profiles classify human cancers. Nature 435:834-838.</p>
+<p>Rifkin, R., Mukherjee, S., Tamayo, P., Ramaswamy, S., Yeang, C-H, Angelo, M., Reich, M., Poggio, T., Lander, E.S., Golub, T.R., Mesirov, J.P. 2003. An Analytical Method for Multiclass Molecular Cancer Classification. SIAM Review 45(4):706-723.</p>
+<p>Slonim, D.K., Tamayo, P., Mesirov, J.P., Golub, T.R., Lander, E.S. 2000. Class prediction and discovery using gene expression data. In Proceedings of the Fourth Annual International Conference on Computational Molecular Biology (RECOMB). ACM Press, New York. pp. 263-272.</p>
+<p>Specht, D. F. 1990. Probabilistic Neural Networks. Neural Networks 3(1):109-118. Elsevier Science Ltd., St. Louis.</p>
 
 <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>

@@ -5,7 +5,7 @@
 <title>SNP Copy Number Determination</title>
 	<link href="../../css/protocols.css" rel="stylesheet" type="text/css" />
 	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="../../js/protocol.js"/>
+    <script type="text/javascript" src="../../js/protocol.js"></script>
 </head>
 
 <body>
@@ -31,26 +31,26 @@ sporadic and hereditary cancer (Monti, 2005).
 
 <h2>Preliminaries</h2>
 <ul>
-<li>CEL files from an Affymetrix high-density SNP array. 
-<li>TXT files containing the genotype calls for the SNP array. Each CEL file has a matching TXT file.
+<li>CEL files from an Affymetrix high-density SNP array. </li>
+<li>TXT files containing the genotype calls for the SNP array. Each CEL file has a matching TXT file. </li>
 <li>Sample information file that describes the SNP array. The array must include
 target/normal paired samples for copy number and LOH determination.
 See
 <a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_file_formats.html?snpsample">File Formats</a> 
-for a complete description of this GenePattern file format.
+for a complete description of this GenePattern file format.</li>
 </ul>
 
 <div class="steps">
   <h2>Step 1: Run
   the <a href="javascript:openModuleById('analysis:00086');">SNPFileCreator</a> 
-  (<a href="javascript:openModuleDocById('analysis:00086')"><img src="../../images/pdf.jpg" border="0"></a>)
+  (<em>no doc</em><!-- a href=""><img src="../../images/pdf.jpg" border="0"/ --></a>)
   module to convert a collection of Affymetrix CEL files to a GenePattern SNP file.</h2>
   <h5>What it does</h5>
-  <ul>
+   <ul>
     <li>A CEL file contains the raw data for the probes in the SNP probe sets. 
     The SNPFileCreator module converts each probe set to a
     single intensity value per SNP. The conversion is done using one of four modeling algorithms:
-    Average Difference, PM/MM Difference Model (dChip, the default), Median Probe, or Trimmed Mean.
+    Average Difference, PM/MM Difference Model (dChip, the default), Median Probe, or Trimmed Mean.</li>
     </ul>
   <h5>Considerations</h5>
   <ul>
@@ -59,22 +59,22 @@ for a complete description of this GenePattern file format.
     to genotype over 500,000 and 100,000 SNPs in one experiment, respectively.
 The module converts the CEL files for one array into a .snp file. 
 To create a .snp file for a chip set,
-    use the MergeRows module to combine the .snp files for the two arrays.
+    use the MergeRows module to combine the .snp files for the two arrays.</li>
     <li>SNPFileCreator can transfer the CEL files to the GenePattern server for processing or 
     read the files from a network directory. Due to the size of the files, best practice is to
     store the CEL files in a network directory and process them from that directory.</li>
     <li>SNPFileCreator writes the generated .snp file to a network directory or to the 
     GenePattern server. Typically, writing the file to the GenePattern server provides 
-    greater flexibility and makes the file available for use in GenePattern pipelines.
+    greater flexibility and makes the file available for use in GenePattern pipelines.</li>
     <li>SNPFileCreator creates a .snp file in one of two formats: 
     Non Allele-Specific (default) or Allele-Specific.
     For each sample, the Non Allele-Specific format contains an intensity value 
     and a genotype call; the Allele-Specific format contains an
     intensity value for allele A, intensity value for allele B, and genotype call. 
-    All GenePattern modules accept the Non Allele-Specific format; many do not yet accept the Allele-Specific format.
+    All GenePattern modules accept the Non Allele-Specific format; many do not yet accept the Allele-Specific format.</li>
 <li>SNPFileCreator uses the Human Genome of May 2004 (hg17) to include 
 Chromosome and Physical Location columns in the .snp file. By default, it sorts the SNPs
-    by chromosome and physical location, as required by the SnpViewer module.
+    by chromosome and physical location, as required by the SnpViewer module.</li>
     </ul>
    
 </div>
@@ -82,7 +82,7 @@ Chromosome and Physical Location columns in the .snp file. By default, it sorts 
 <div class="steps">
   <h2>Step 2: Run
   the <a href="javascript:openModuleById('analysis:00093');">XChromosomeCorrect</a> 
-  (<a href="javascript:openModuleDocById('analysis:00093')"><img src="../../images/pdf.jpg" border="0"></a>)
+  (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00093&file=XChromosomeCorrect.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
   module to correct intensity values for SNPs on the X chromosome.</h2>
   <h5>What it does</h5>
   <ul>
@@ -99,7 +99,7 @@ Chromosome and Physical Location columns in the .snp file. By default, it sorts 
 <div class="steps">
   <h2>Step 3: Run
   the <a href="javascript:openModuleById('analysis:00085');">CopyNumberDivideByNormals</a> 
-  (<a href="javascript:openModuleDocById('analysis:00085')"><img src="../../images/pdf.jpg" border="0"></a>)
+  (no doc<!-- a href=""><img src="../../images/pdf.jpg" border="0"/></a -->)
   module to compute raw copy number values.</h2>
   <h5>What it does</h5>
   <ul>
@@ -119,7 +119,7 @@ Chromosome and Physical Location columns in the .snp file. By default, it sorts 
 <div class="steps">
   <h2>Step 4: Run
   the <a href="javascript:openModuleById('visualizer:00084');">SnpViewer</a> 
-  (<a href="javascript:openModuleDocById('visualizer:00084')"><img src="../../images/pdf.jpg" border="0"></a>)
+  (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00084&file=SNPViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
   module to 
   view SNP copy number and loss of heterozygosity (LOH) data.</h2>
   <h5>What it does</h5>
@@ -137,36 +137,24 @@ Chromosome and Physical Location columns in the .snp file. By default, it sorts 
     <li>To detect and display LOH calls, the 
     SnpViewer module requires genotype calls (.xcn file format). The LOH calls are: 
     <ul>
-    <li>Loss: AB in normal and A or B in target.
-    <li>Retained: AB in both normal and target or No Call in normal and AB in target.
-    <li>Conflict: A or B in normal and AB in target.
-    <li>Non-informative/no call: A or B in normal or No Call in normal or target.
-    </ul>
+    <li>Loss: AB in normal and A or B in target.</li>
+    <li>Retained: AB in both normal and target or No Call in normal and AB in target.</li>
+    <li>Conflict: A or B in normal and AB in target.</li>
+    <li>Non-informative/no call: A or B in normal or No Call in normal or target.</li>
+    </ul></li>
     <li>By default, the viewer displays all chromosomes. To zoom in on a chromosome, select it from the 
     Chromosome drop-down list in the viewer tool bar. To zoom in on a region of the chromosome, 
-    select the <i>zoom in</i> tool and click on the heat map.
+    select the <i>zoom in</i> tool and click on the heat map.</li>
     <li>To sort samples by copy number amplification or deletion: zoom in on a chromosome; select the 
     <i>define a region of interest</i> tool; in the heat map, click the start of the region of interest and
     then the end of that region; a red bar to the left of the heat map defines the region of interest; 
-    right-click the red bar and select <i>sort of amplification</i> or <i>sort of deletion</i>.
+    right-click the red bar and select <i>sort of amplification</i> or <i>sort of deletion</i>.</li>
     </ul>
 </div>
 <h2>Reference</h2>
 <p>Monti, S. 2005. Class slides: SNP microarrays and high-density genotyping. 
-http://www.chip.org/teaching/hst950/slides/class6.pdf.
+http://www.chip.org/teaching/hst950/slides/class6.pdf.</p>
 
-<!-- 
-<h2>See also</h2>
-<ul>
-<li>Protocols &ndash; GenePattern welcome page with protocols.</li>
-
-<li><a href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp">Modules</a> &ndash; List of all available modules with links to their documentation.</li>
-<li><a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_web_client.html">GenePattern Web Client Guide</a> &ndash; Full description of this web application.</li>
-<li><a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_tutorial.html">Tutorial</a> &ndash; Hands-on introduction to GenePattern.</li>
-<li>Demo &ndash; Flash demo of GenePattern.</li>
-
-</ul>
--->
 <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
     <td align="right">
