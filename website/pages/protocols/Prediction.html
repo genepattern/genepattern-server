@@ -28,23 +28,33 @@ that can be used to predict the class of a previously unknown sample.
 <h3>Training data set:</h3>
 <ul>
   <li><a href="GctResFiles.html">GCT or RES file</a> that contains gene expression data. 
+  Sample file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct">all_aml_train.gct</a>.
   </li>
   <li><a href="ClsFiles.html">CLS file</a> that identifies the class of each
-    sample in the gene expression data. </li>
+    sample in the gene expression data. 
+Sample file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls">all_aml_train.cls</a>.
+    </li>
 </ul>
 <h3>Optionally, a test data set:</h3>
 <ul>
   <li><a href="GctResFiles.html">GCT or RES file</a> that contains gene expression data. 
+Sample file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct">all_aml_test.gct</a>.
   </li>
   <li><a href="ClsFiles.html">CLS file</a> that identifies the class of each
-    sample in the gene expression data. </li>
+    sample in the gene expression data. 
+Sample file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls">all_aml_test.cls</a>.
+    </li>
 </ul>
 <p>Class prediction can be done using one expression data set; ideally, it is 
-done using two. If you have a large expression data set, use the <a href="javascript:openModuleById('analysis:00024');">SplitDatasetTrainTest</a> module 
+done using two. If you have a large expression data set, use the <a href="javascript:openModuleById('analysis:00024');">SplitDatasetTrainTest</a> 
+  (<a href="javascript:openModuleDocById('analysis:00024')"><img src="../../images/pdf.jpg" border="0"></a>)
+module 
 to divide it into two non-overlapping data sets.</p>
 
 <div class="steps">
-  <h2>Step 1: Run the <a href="javascript:openModuleById('analysis:00020');">PreprocessDataset</a> module to filter the gene expression data.</h2>
+  <h2>Step 1: Run the <a href="javascript:openModuleById('analysis:00020');">PreprocessDataset</a> 
+  (<a href="javascript:openModuleDocById('analysis:00020')"><img src="../../images/pdf.jpg" border="0"></a>)
+  module to filter the gene expression data.</h2>
   <h5>What it does</h5>
   <p>Preprocess the data to remove platform noise and
           genes that have little variation before using it to build a class predictor.
@@ -59,7 +69,6 @@ to divide it into two non-overlapping data sets.</p>
       variation. </li>
     <li>Discretize or normalize the data. </li>
   </ol>
-  <p><a href="javascript:openModuleDocById('analysis:00020');">Module documentation.</a>    </p>
   <h5>Considerations</h5>
   <ul>
     <li>If you are using two data sets, preprocess both in the same manner; however,
@@ -84,9 +93,9 @@ to divide it into two non-overlapping data sets.</p>
   <p>GenePattern supports several class prediction methods:
   </p>
   <ul>
-    <li><a href="javascript:openModuleById('analysis:00056');">CART</a> (Breiman et al., 1984) 
+    <li><b>CART</b> (Breiman et al., 1984) 
         builds <b>C</b>lassification <b>A</b>nd <b>R</b>egression <b>T</b>rees for predicting continuous dependent variables (regression) and categorical predictor variables (classification). It works by recursively splitting the feature space into a set of non-overlapping regions and then predicting the most likely value of the dependent variable within each region. A classification tree represents a set of nested logical if-then conditions on the values of the features variables that allows for the prediction of the value of the dependent categorical variable based on the observed values of the feature variables. A regression tree is similar but allows for the prediction of the value of a continuous dependent variable instead.    </li>
-    <li><a href="javascript:openModuleById('analysis:00012');">K-nearest-neighbors (KNN)</a> classifies an unknown sample by assigning
+    <li><b>K-nearest-neighbors (KNN)</b> classifies an unknown sample by assigning
       it the phenotype label most frequently represented among the k nearest
       known samples (Golub and Slonim et al., 1999). In GenePattern, the user
       selects a weighting factor for the 'votes' of the nearest neighbors (unweighted:
@@ -100,14 +109,14 @@ to divide it into two non-overlapping data sets.</p>
       PNN can be considered as a Gaussian-weighted KNN classifier - known samples
       close to the unknown sample have a greater influence on the predicted class
       of the unknown sample. </li>
-    <li><a href="javascript:openModuleById('analysis:00025');">Support Vector Machines (SVM)</a> is designed for multiple class classification
+    <li><b>Support Vector Machines (SVM)</b> is designed for multiple class classification
       (Rifkin et al., 2003). The algorithm creates a binary SVM classifier for
       each class by computing a maximal margin hyperplane that separates the
       given class from all other classes; that is, the hyperplane with maximal
       distance to the nearest data point. The binary classifiers are then combined
       into a multiclass classfier. For an unknown sample, the assigned class
       is the one with the largest margin. </li>
-    <li><a href="javascript:openModuleById('analysis:00027');">Weighted Voting</a> (Slonim et al., 2000) classifies an unknown sample
+    <li><b>Weighted Voting</b> (Slonim et al., 2000) classifies an unknown sample
       using a simple weighted voting scheme. Each gene in the classifier 'votes'
       for the phenotype class of the unknown sample. A gene's vote is weighted
       by how closely its expression correlates with the differentiation between
@@ -158,9 +167,10 @@ to divide it into two non-overlapping data sets.</p>
 </div>
 <div class="steps">
   <h2>Step 4: Run the cross-validation module for the chosen class prediction method.</h2>
-  <h3><a href="javascript:openModuleById('analysis:00062');">CARTXValidation</a>
-  (<a href="javascript:openModuleDocById('analysis:00062');">documentation [PDF]</a>)
-  </h3>
+  <p><span class="resultsInlineSubhead">CARTXValidation</span> &ndash; Run the 
+  <a href="javascript:openModuleById('analysis:00062');">CARTXValidation</a>  
+  (<a href="javascript:openModuleDocById('analysis:00062');"><img src="../../images/pdf.jpg" border="0"></a>)
+  module.
 
   <h5>What it does</h5>
   <ul>
@@ -175,9 +185,11 @@ to divide it into two non-overlapping data sets.</p>
       module is not needed to determine the best parameter settings for use with
       the CART module. </li>
   </ul>
-  <h3><a href="javascript:openModuleById('analysis:00013');">KNNXValidation</a>
-  (<a href="javascript:openModuleDocById('analysis:00013');">documentation [PDF]</a>)
-  </h3>
+   <p><span class="resultsInlineSubhead">KNNXValidation</span> &ndash; Run the 
+  <a href="javascript:openModuleById('analysis:00013');">KNNXValidation</a>  
+  (<a href="javascript:openModuleDocById('analysis:00013');"><img src="../../images/pdf.jpg" border="0"></a>)
+  module.
+ 
   <h5>What it does    </h5>
   <ul>
     <li>The module uses the cross-validation approach to run K-nearest-neighbors (KNN) class prediction iteratively against a known data set. 
@@ -193,9 +205,11 @@ to divide it into two non-overlapping data sets.</p>
       settings to build the classifier on the training data set and to test it on a test data set.
     </li>
   </ul>
-  <h3><a href="javascript:openModuleById('analysis:00058');">PNNXValidationOptimization</a>
-  (<a href="javascript:openModuleDocById('analysis:00058');">documentation [PDF]</a>)
-  </h3>
+   <p><span class="resultsInlineSubhead">PNNXValidationOptimization</span> &ndash; Run the 
+  <a href="javascript:openModuleById('analysis:00058');">PNNXValidationOptimization</a>  
+  (<a href="javascript:openModuleDocById('analysis:00058');"><img src="../../images/pdf.jpg" border="0"></a>)
+  module.
+  
   <h5>What it does    </h5>
   <ul>
     <li>The module uses the cross-validation approach to run 
@@ -215,11 +229,13 @@ to divide it into two non-overlapping data sets.</p>
     <li>To experiment with alternative settings of other parameters, use the
       PNN module rather than the PNNXValidationOptimization module. </li>
   </ul>
-  <h3><a href="javascript:openModuleById('analysis:00025');">SVM</a></h3>
-  <p>The cross-validation approach is not available for the SVM prediction method.</p>
-  <h3><a href="javascript:openModuleById('analysis:00028');">WeightedVotingXValidation</a>
-  (<a href="javascript:openModuleDocById('analysis:00028');">documentation [PDF]</a>)
-  </h3>
+<p><span class="resultsInlineSubhead">SVM</span> &ndash;
+  The cross-validation approach is not available for the SVM prediction method.</p>
+   <p><span class="resultsInlineSubhead">WeightedVotingXValidation</span> &ndash; Run the 
+  <a href="javascript:openModuleById('analysis:00028');">WeightedVotingXValidation</a>  
+  (<a href="javascript:openModuleDocById('analysis:00028');"><img src="../../images/pdf.jpg" border="0"></a>)
+  module.
+  
   <h5>What it does    </h5>
   <ul>
     <li>The module uses the cross-validation approach to run 
@@ -243,11 +259,14 @@ to divide it into two non-overlapping data sets.</p>
   <h3>CARTXValidation
   </h3>
   <h5>What it does</h5>
-  <ul>
-    <li>CARTXValidation creates a 
+  <p>CARTXValidation creates a 
       prediction results file that shows the accuracy of the predictor by 
       averaging the results across all iterations.
-      To view the prediction results (*.pred.odf file), use the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>. 
+      <ul>
+    <li>
+      Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
+        (<a href="javascript:openModuleDocById('visualizer:00019');"><img src="../../images/pdf.jpg" border="0"></a>)
+module to view the prediction results (*.pred.odf) file. 
       The viewer lists each sample with its actual and predicted class.
     </li>
   </ul>
@@ -268,13 +287,15 @@ to divide it into two non-overlapping data sets.</p>
         gene was used in a predictor. 
   </p>
   <ul>
-    <li>To view the prediction results file (*.pred.odf file),
-      use the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>. The viewer lists each sample with its actual and predicted class.
+    <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
+              (<a href="javascript:openModuleDocById('visualizer:00019');"><img src="../../images/pdf.jpg" border="0"></a>)
+module to view the prediction results (*.pred.odf) file. The viewer lists each sample with its actual and predicted class.
     </li>
-    <li>To view the feature result file (*.feat.odf file), use the <a href="javascript:openModuleById('visualizer:00005');">FeatureSummaryViewer</a>. 
+    <li>Run the <a href="javascript:openModuleById('visualizer:00005');">FeatureSummaryViewer</a>
+              (<a href="javascript:openModuleDocById('visualizer:00005');"><img src="../../images/pdf.jpg" border="0"></a>)
+module to view the feature result (*.feat.odf) file). 
       The viewer lists each gene used in a class predictor and the number of times 
-      it was used in a predictor.
-      <a href="javascript:openModuleDocById('visualizer:00005');">Module documentation.</a>    </li>
+      it was used in a predictor.</li>
   </ul>
   <h5>Considerations</h5>
   <ul>
@@ -290,7 +311,7 @@ to divide it into two non-overlapping data sets.</p>
   </h3>
   <h5>What it does</h5>
   <ul>
-    <li>PNNXValidationOptimization creates an analysis result file (*.xvopt.odf) that contains 
+    <li>PNNXValidationOptimization creates an analysis result (*.xvopt.odf) file that contains 
       recommended PNN parameter settings. It can be used as an input file for the PNN module.
     </li>
   </ul>
@@ -311,13 +332,17 @@ to divide it into two non-overlapping data sets.</p>
         gene was used in a predictor. 
   </p>
   <ul>
-    <li>To view the prediction results file (*.pred.odf file),
-      use the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>. The viewer lists each sample with its actual and predicted class.
-      <a href="javascript:openModuleDocById('visualizer:00019');">Module documentation.</a>    </li>
-    <li>To view the feature result file (*.feat.odf file), use the <a href="javascript:openModuleById('visualizer:00005');">FeatureSummaryViewer</a>. 
+    <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
+            (<a href="javascript:openModuleDocById('visualizer:00019');"><img src="../../images/pdf.jpg" border="0"></a>)
+      module to view the prediction results (*.pred.odf) file).
+      The viewer lists each sample with its actual and predicted class.
+ </li>
+    <li>Run the <a href="javascript:openModuleById('visualizer:00005');">FeatureSummaryViewer</a>
+            (<a href="javascript:openModuleDocById('visualizer:00005');"><img src="../../images/pdf.jpg" border="0"></a>)
+    module to view the feature result (*.feat.odf) file. 
       The viewer lists each gene used in a class predictor and the number of times 
       it was used in a predictor.
-      <a href="javascript:openModuleDocById('visualizer:00005');">Module documentation.</a>    </li>
+ </li>
   </ul>
   <h5>Considerations</h5>
   <ul>
@@ -331,12 +356,20 @@ to divide it into two non-overlapping data sets.</p>
   </ul>
 </div>
 <div class="steps">
-  <h2>Step 6: Run the train/test module for the chosen class prediction method.</h2>
-  <p><span class="resultsInlineSubhead"><a href="javascipt:openModuleById('analysis:00056');">CART</a></span> (<a href="javascipt:openModuleDocById('analysis:00056');">documentation [PDF])</a><br>
-     <span class="resultsInlineSubhead"><a href="javascipt:openModuleById('analysis:00012');">KNN</a></span> (<a href="javascipt:openModuleDocById('analysis::00012');">module documentation)</a><br>
-     <span class="resultsInlineSubhead"><a href="javascipt:openModuleById('');">PNN</a></span> (<a href="javascipt:openModuleDocById('analysis:');">module documentation)</a><br>
-     <span class="resultsInlineSubhead"><a href="javascipt:openModuleById('analysis:00025');">SVM</a></span> (<a href="javascipt:openModuleDocById('analysis:00025');">module documentation)</a><br>
-     <span class="resultsInlineSubhead"><a href="javascipt:openModuleById('analysis:00027');">WeightedVoting</a></span> (<a href="javascipt:openModuleDocById('analysis:00027');">module documentation)</a>
+  <h2>Step 6: Run the train/test module for the chosen class prediction method:</h2>
+
+<p>
+  Run the 
+<a href="javascript:openModuleById('analysis:00056');">CART</a> 
+  (<a href="javascript:openModuleDocById('analysis:00056')"><img src="../../images/pdf.jpg" border="0"></a>) module,<br>
+the <a href="javascript:openModuleById('analysis:00012');">KNN</a> 
+  (<a href="javascript:openModuleDocById('analysis:00012')"><img src="../../images/pdf.jpg" border="0"></a>) module,<br>
+the <a href="javascript:openModuleById('analysis:00059');">PNN</a> 
+  (<a href="javascript:openModuleDocById('analysis:00059')"><img src="../../images/pdf.jpg" border="0"></a>) module,<br>
+the <a href="javascript:openModuleById('analysis:00025');">SVM</a> 
+  (<a href="javascript:openModuleDocById('analysis:00025')"><img src="../../images/pdf.jpg" border="0"></a>) module, or<br>
+the <a href="javascript:openModuleById('analysis:00027');">WeightedVoting</a> 
+  (<a href="javascript:openModuleDocById('analysis:00027')"><img src="../../images/pdf.jpg" border="0"></a>) module.
   </p>
   <h5>What it does    </h5>
   <ul>
@@ -373,10 +406,10 @@ to divide it into two non-overlapping data sets.</p>
         shows the classification tree.
   </p>
   <ul>
-    <li>To view the prediction results file (*.pred.odf), use the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>. 
+    <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
+            (<a href="javascript:openModuleDocById('visualizer:00019');"><img src="../../images/pdf.jpg" border="0"></a>)
+    module to view the prediction results (*.pred.odf) file. 
       The viewer lists each sample with its actual and predicted class.
-      
-      <a href="javascript:openModuleDocById('visualizer:00019');">Module documentation.</a>
     </li>
     <li>To view the classification tree, click the pdf file.
     </li>
@@ -396,9 +429,9 @@ to divide it into two non-overlapping data sets.</p>
         a model file that contains the classifier (or model) created from the training data set.
   </p>
   <ul>
-    <li>To view the prediction results file (*.pred.odf),
-      use the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>. The viewer lists each sample with its actual and predicted class.
-      <a href="javascript:openModuleDocById('visualizer:00019');">Module documentation.</a>
+    <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
+            (<a href="javascript:openModuleDocById('visualizer:00019');"><img src="../../images/pdf.jpg" border="0"></a>)
+      module to view the prediction results (*.pred.odf) file. The viewer lists each sample with its actual and predicted class.
     </li>
     <li>To view the model file (*.model.odf), click it.
     </li>
@@ -420,9 +453,9 @@ to divide it into two non-overlapping data sets.</p>
         extended prediction results file that contains additional information. 
   </p>
   <ul>
-    <li>To view the prediction results file (*.pred.odf),
-      use the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>. The viewer lists each sample with its actual and predicted class.
-      <a href="javascript:openModuleDocById('visualizer:00019');">Module documentation.</a>
+    <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
+            (<a href="javascript:openModuleDocById('visualizer:00019');"><img src="../../images/pdf.jpg" border="0"></a>)
+      module to view the prediction results (*.pred.odf) file. The viewer lists each sample with its actual and predicted class.
     </li>
     <li>To view the extended results file (*.full.pred.odf), save it to disk and view it using Excel.
     </li>
@@ -443,9 +476,9 @@ to divide it into two non-overlapping data sets.</p>
         a model file that contains the classifier (or model) created from the training data set.
   </p>
   <ul>
-    <li>To view the prediction results file (*.pred.odf),
-      use the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>. The viewer lists each sample with its actual and predicted class.
-      <a href="javascript:openModuleDocById('visualizer:00019');">Module documentation.</a>
+    <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
+            (<a href="javascript:openModuleDocById('visualizer:00019');"><img src="../../images/pdf.jpg" border="0"></a>)
+      module to view the prediction results (*.pred.odf) file. The viewer lists each sample with its actual and predicted class.
     </li>
     <li>The model file (*.model.odf) is a binary file, which can be used as input to the SVM module.
     </li>
@@ -465,9 +498,9 @@ to divide it into two non-overlapping data sets.</p>
         a model file that contains the classifier (or model) created from the training data set.
   </p>
   <ul>
-    <li>To view the prediction results file (*.pred.odf),
-      use the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>. The viewer lists each sample with its actual and predicted class.
-      <a href="javascript:openModuleDocById('visualizer:00019');">Module documentation.</a>
+    <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
+            (<a href="javascript:openModuleDocById('visualizer:00019');"><img src="../../images/pdf.jpg" border="0"></a>)      
+            module to view the prediction results (*.pred.odf) file. The viewer lists each sample with its actual and predicted class.
     </li>
     <li>To view the model file (*.model.odf), click it.
     </li>
@@ -496,8 +529,9 @@ to divide it into two non-overlapping data sets.</p>
       class of each sample in the expression data set. For the unknown samples,
       create a class file that assigns some class (for example, "unknown") to each
       sample. </li>
-    <li>To view the prediction results file (*.pred.odf),
-      use the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>. The viewer lists each sample with
+    <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
+            (<a href="javascript:openModuleDocById('visualizer:00019');"><img src="../../images/pdf.jpg" border="0"></a>)      
+      module to view the prediction results (*.pred.odf) file. The viewer lists each sample with
       its actual and predicted class. Ignore the actual class, which was unknown.
       Ignore the error rates, which are evaluating the class predictor agains "known" data. </li>
     </ul>

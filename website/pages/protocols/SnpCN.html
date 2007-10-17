@@ -41,15 +41,16 @@ for a complete description of this GenePattern file format.
 </ul>
 
 <div class="steps">
-  <h2>Step 1: Convert a collection of Affymetrix CEL files to a GenePattern SNP file 
-  by running the <a href="javascript:openModuleByLsid('urn:lsid:8080.genepatt.18.103.8.161:genepatternmodules:1');">SNPFileCreator</a> module.</h2>
+  <h2>Step 1: Run
+  the <a href="javascript:openModuleById('analysis:00086');">SNPFileCreator</a> 
+  (<a href="javascript:openModuleDocById('analysis:00086')"><img src="../../images/pdf.jpg" border="0"></a>)
+  module to convert a collection of Affymetrix CEL files to a GenePattern SNP file.</h2>
   <h5>What it does</h5>
   <ul>
     <li>A CEL file contains the raw data for the probes in the SNP probe sets. 
     The SNPFileCreator module converts each probe set to a
     single intensity value per SNP. The conversion is done using one of four modeling algorithms:
     Average Difference, PM/MM Difference Model (dChip, the default), Median Probe, or Trimmed Mean.
- <a href="javascript:openModuleDocByLsid('urn:lsid:8080.genepatt.18.103.8.161:genepatternmodules:1');">Module documentation.</a>    </li>
     </ul>
   <h5>Considerations</h5>
   <ul>
@@ -79,12 +80,14 @@ Chromosome and Physical Location columns in the .snp file. By default, it sorts 
 </div>
 
 <div class="steps">
-  <h2>Step 2: Correct intensity values for SNPs on the X chromosome by running the 
-  <a href="javascript:openModuleById('analysis:00093');">XChromosomeCorrect</a> module.</h2>
+  <h2>Step 2: Run
+  the <a href="javascript:openModuleById('analysis:00093');">XChromosomeCorrect</a> 
+  (<a href="javascript:openModuleDocById('analysis:00093')"><img src="../../images/pdf.jpg" border="0"></a>)
+  module to correct intensity values for SNPs on the X chromosome.</h2>
   <h5>What it does</h5>
   <ul>
     <li>For each sample from a male donor, the module doubles the intensity value for SNPs on the X chromosome.
- <a href="javascript:openModuleDocById('analysis:00093');">Module documentation.</a>    </li>
+</li>
     </ul>
   <h5>Considerations</h5>
   <ul>
@@ -94,13 +97,16 @@ Chromosome and Physical Location columns in the .snp file. By default, it sorts 
 </div>
 
 <div class="steps">
-  <h2>Step 3: Compute raw copy number values by running the <a href="javascript:openModuleByLsid('urn:lsid:8080.genepatt.18.103.8.161:genepatternmodules:3');">CopyNumberDivideByNormals</a> module.</h2>
+  <h2>Step 3: Run
+  the <a href="javascript:openModuleById('analysis:00085');">CopyNumberDivideByNormals</a> 
+  (<a href="javascript:openModuleDocById('analysis:00085')"><img src="../../images/pdf.jpg" border="0"></a>)
+  module to compute raw copy number values.</h2>
   <h5>What it does</h5>
   <ul>
     <li>The module computes the raw copy number of each target SNP by dividing its intensity value 
     by the mean intensity value of all normal SNPs. This calculation is referred to as 
     copy number normalization or normalization with respect to normals. 
- <a href="javascript:openModuleDocByLsid('urn:lsid:8080.genepatt.18.103.8.161:genepatternmodules:3');">Module documentation.</a>    </li>
+</li>
     </ul>
   <h5>Considerations</h5>
   <ul>
@@ -111,12 +117,15 @@ Chromosome and Physical Location columns in the .snp file. By default, it sorts 
     </ul>
 </div>
 <div class="steps">
-  <h2>Step 4: View SNP copy number and loss of heterozygosity (LOH) data by running the <a href="javascript:openModuleById('visualizer:00084');">SnpViewer</a> module.</h2>
+  <h2>Step 4: Run
+  the <a href="javascript:openModuleById('visualizer:00084');">SnpViewer</a> 
+  (<a href="javascript:openModuleDocById('visualizer:00084')"><img src="../../images/pdf.jpg" border="0"></a>)
+  module to 
+  view SNP copy number and loss of heterozygosity (LOH) data.</h2>
   <h5>What it does</h5>
   <ul>
     <li>The viewer uses a heat map to display copy number data or LOH calls. 
-    
-      <a href="javascript:openModuleDocById('visualizer:00084');">Module documentation.</a>    </li>
+</li>
     </ul>
   <h5>Considerations</h5>
   <ul>

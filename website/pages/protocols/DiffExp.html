@@ -23,12 +23,16 @@
 <h2>Preliminaries</h2>
 <ul>
 <li><a href="GctResFiles.html">GCT or RES file</a> that contains the gene expression data.
+Sample file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct">all_aml_train.gct</a>.
 <li><a href="ClsFiles.html">CLS file</a> that identifies the class of each sample in the gene expression data.
+Sample file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls">all_aml_train.cls</a>.
 </ul>
 
 <div class="steps">
 
-  <h2>Step 1: Run the <a href="javascript:openModuleById('analysis:00020');">PreprocessDataset</a> module to filter the gene expression data.</h2>
+  <h2>Step 1: Run the <a href="javascript:openModuleById('analysis:00020');">PreprocessDataset</a> 
+    (<a href="javascript:openModuleDocById('analysis:00020')"><img src="../../images/pdf.jpg" border="0"></a>)
+  module to filter the gene expression data.</h2>
   <h5>What it does</h5>
   <p>Preprocess the data 
       to remove platform noise and genes that have little variation.
@@ -43,7 +47,6 @@
       variation. </li>
     <li>Discretize or normalize the data. </li>
   </ol>
-  <p><a href="javascript:openModuleDocById('analysis:00020');">Module documentation.</a>        </p>
   <h5>Considerations</h5>
   <ul>
     <li>When using ratios to compare gene expression between samples, 
@@ -58,7 +61,9 @@
 </div>
 
 <div class="steps">
-  <h2>Step 2: Compute differential gene expression by running the <a href="javascript:openModuleById('analysis:00044');">ComparativeMarkerSelection</a> module.</h2>
+  <h2>Step 2: Run the <a href="javascript:openModuleById('analysis:00044');">ComparativeMarkerSelection</a> 
+      (<a href="javascript:openModuleDocById('analysis:00044')"><img src="../../images/pdf.jpg" border="0"></a>)
+module to compute differential gene expression.</h2>
   <h5>What it does</h5>
   <ul>
     <li>For each gene, the module uses a test statistic to calculate the 
@@ -68,7 +73,6 @@
       ComparativeMarkerSelection corrects for multiple hypothesis testing by computing both false discovery 
       rates (FDR) and family-wise error rates (FWER). 
       Researchers generally identify marker genes based on FDR rather than the more conservative FWER. 
-      <a href="javascript:openModuleDocById('analysis:00044');">Module documentation.</a>    </li>
   </ul>
   <h5>Considerations</h5>
   <ul>
@@ -84,12 +88,13 @@
 
 
 <div class="steps">
-  <h2>Step 3: View the results with the <a href="javascript:openModuleById('visualizer:00045');">ComparativeMarkerSelectionViewer</a> module.</h2>
+  <h2>Step 3: Run the <a href="javascript:openModuleById('visualizer:00045');">ComparativeMarkerSelectionViewer</a> 
+        (<a href="javascript:openModuleDocById('visualizer:00045')"><img src="../../images/pdf.jpg" border="0"></a>)
+module to view the results.</h2>
   <h5>What it does</h5>
   <ul>
     <li>The viewer displays the analysis results including 
       the test statistic score, its p value, two FDR statistics and three FWER statistics for each gene. 
-      <a href="javascript:openModuleDocById('visualizer:00045');">Module documentation.</a>    </li>
   </ul>
   <h5>Considerations</h5>
   <ul>

@@ -25,12 +25,15 @@ group genes and/or samples.</p>
 
 <h2>Preliminaries</h2>
 <ul>
-<li><a href="GctResFiles.html">GCT or RES file</a>  that contains the gene expression data.
+<li><a href="GctResFiles.html">GCT or RES file</a> that contains the gene expression data. 
+Sample file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct">all_aml_train.gct</a>.
 
 </ul>
 
 <div class="steps">
-  <h2>Step 1: Run the <a href="javascript:openModuleById('analysis:00020');">PreprocessDataset</a> module to filter the gene expression data.</h2>
+  <h2>Step 1: Run the <a href="javascript:openModuleById('analysis:00020');">PreprocessDataset</a> 
+  (<a href="javascript:openModuleDocById('analysis:00020')"><img src="../../images/pdf.jpg" border="0"></a>)
+  module to filter the gene expression data.</h2>
   <h5>What it does</h5>
   <p>Before clustering gene expression data, preprocess the data 
       to remove platform noise and genes that have little variation.
@@ -45,7 +48,7 @@ group genes and/or samples.</p>
       variation. </li>
     <li>Discretize or normalize the data. </li>
   </ol>
-  <p><a href="javascript:openModuleDocById('analysis:00020')">Module documentation.</a>        </p>
+
   <h5>Considerations</h5>
   <ul>
     <li>When using ratios to compare gene expression between samples, 
@@ -104,14 +107,16 @@ group genes and/or samples.</p>
 </div>
 <div class="steps">
   <h2>Step 3: Run the module that matches the chosen algorithm:</h2>
-  <p class="resultsInlineSubhead"><a href="javascript:openModuleById('analysis:00009');">HierachicalClustering</a>
+  <p><span class="resultsInlineSubhead">HierarchicalClustering</span> &ndash; Run the 
+  <a href="javascript:openModuleById('analysis:00009');">HierachicalClustering</a>  
+  (<a href="javascript:openModuleDocById('analysis:00009');"><img src="../../images/pdf.jpg" border="0"></a>)
+  module.
   <h5>What it does</h5>
   <ul>
     <li>The module runs hierarchical clustering on genes and/or samples creating 
       a dendrogram for the clustered genes and/or 
       a dendrogram for the clustered samples. It also creates a CDT file that 
       contains the original gene expression data ordered to reflect the clustering. 
-      <a href="javascript:openModuleDocById('analysis:00009');">Module documentation.</a>
     </li>
   </ul>
   <h5>Considerations</h5>
@@ -123,7 +128,10 @@ group genes and/or samples.</p>
       HierachicalClusteringViewer). For instructions on converting
       a CDT file to a GCT file, see <a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_fileformats.html#_Creating_Input_Files">Creating Input Files</a>. </li>
   </ul>
-  <p class="resultsInlineSubhead"><a href="javascript:openModuleById('analysis:00030');">ConsensusClustering</a>
+    <p><span class="resultsInlineSubhead">ConsensusClustering</span> &ndash; Run the 
+  <a href="javascript:openModuleById('analysis:00030');">ConsensusClustering</a>
+   (<a href="javascript:openModuleDocById('analysis:00030');"><img src="../../images/pdf.jpg" border="0"></a>)
+   module.
   <h5>What it does</h5>
   <ul>
     <li>The module runs the selected clustering algorithm 
@@ -147,12 +155,15 @@ group genes and/or samples.</p>
     <li>For considerations specific to the selected clustering algorithm, see
       the protocol for using that algorithm. </li>
   </ul>
-  <p class="resultsInlineSubhead"><a href="javascript:openModuleById('analysis:00081');">KMeansClustering</a>
+    <p><span class="resultsInlineSubhead">KMeansClustering</span> &ndash; Run the 
+  <a href="javascript:openModuleById('analysis:00081');">KMeansClustering</a>
+   (<a href="javascript:openModuleDocById('analysis:00081');"><img src="../../images/pdf.jpg" border="0"></a>)
+   module.
+
   <h5>What it does</h5>
   <ul>
     <li>The module runs k-means clustering on genes (rows) or samples (columns). It creates 
       a GCT file for each cluster and a GCT file for all of the expression data file organized by cluster.
-      <a href="javascript:openModuleDocById('analysis:00081');">Module documentation.</a>
     </li>
   </ul>
   <h5>Considerations</h5>
@@ -160,14 +171,17 @@ group genes and/or samples.</p>
     <li>None.
     </li>
   </ul>
-  <p class="resultsInlineSubhead"><a href="javascript:openModuleById('analysis:00029');">SOMClustering</a>
+    <p><span class="resultsInlineSubhead">SOMClustering</span> &ndash; Run the 
+  <a href="javascript:openModuleById('analysis:00029');">SOMClustering</a>
+   (<a href="javascript:openModuleDocById('analysis:00029');"><img src="../../images/pdf.jpg" border="0"></a>)
+   module.
+  
   <h5>What it does</h5>
   <ul>
     <li>The module constructs self-organizing maps (SOMs) for 
       genes (rows) or samples (columns). Specify the desired number of clusters or a
       range of clusters to construct SOMs for each set of clusters in that range (by default, 
       2 and 3 clusters).
-      <a href="javascript:openModuleDocById('analysis:00029');">Module documentation.</a>
     </li>
   </ul>
   <h5>Considerations</h5>
@@ -176,7 +190,11 @@ group genes and/or samples.</p>
       To find the optimal set of “centroids” for the clusters, use the default
       value of 50000 iterations. </li>
   </ul>
-  <p class="resultsInlineSubhead"><a href="javascript:openModuleById('analysis:00057');">NMFConsensus</a>
+    <p><span class="resultsInlineSubhead">NMFConsensus</span> &ndash; Run the 
+  <a href="javascript:openModuleById('analysis:00057');">NMFConsensus</a>
+   (<a href="javascript:openModuleDocById('analysis:00057');"><img src="../../images/pdf.jpg" border="0"></a>)
+   module.
+
   <h5>What it does</h5>
   <ul>
     <li>Using the basic principle of dimensionality reduction via non-negative matrix factorization,
@@ -187,7 +205,6 @@ group genes and/or samples.</p>
       NMFConsensus repeatedly runs the clustering algorithm against perturbations of the 
       gene expression data and assesses the stability of the 
       resulting clusters by creating a consensus matrix.
-      <a href="javascript:openModuleDocById('analysis:00057');">Module documentation.</a>
     </li>
   </ul>
   <h5>Considerations</h5>
@@ -219,12 +236,13 @@ group genes and/or samples.</p>
 </div>
 <div class="steps">
   <h2>Step 4: View the results.</h2>
-  <p><span class="resultsInlineSubhead">HierachicalClustering</span> &ndash; View the results with the <a href="javascript:openModuleById('visualizer:00031');">HierarchicalClusteringViewer</a>. </p>
+  <p><span class="resultsInlineSubhead">HierachicalClustering</span> &ndash; Run the <a href="javascript:openModuleById('visualizer:00031');">HierarchicalClusteringViewer</a> 
+  (<a href="javascript:openModuleDocById('visualizer:00031');"><img src="../../images/pdf.jpg" border="0"></a>) module to view the results. </p>
   <h5>What it does    </h5>
   <ul>
     <li>The viewer displays a heat map of the clustered gene expression data, with 
       dendrograms showing how the genes and/or samples were clustered.
-      <a href="javascript:openModuleDocById('visualizer:00031');">Module documentation.</a>
+      
     </li>
   </ul>
   <h5>Considerations</h5>
@@ -232,7 +250,10 @@ group genes and/or samples.</p>
     <li>Select File&gt;Save Image to save the heat map and dendrograms to an
       image file. Supported formats include bmp, eps, jpeg, png, and tiff. </li>
   </ul>
-  <p><span class="resultsInlineSubhead">ConsensusClustering</span> &ndash; View the consensus matrices with the <a href="javascript:openModuleById('visualizer:00010')">HeatMapViewer</a>.
+  <p><span class="resultsInlineSubhead">ConsensusClustering</span> &ndash; 
+  Run the <a href="javascript:openModuleById('visualizer:00010')">HeatMapViewer</a>
+    (<a href="javascript:openModuleDocById('visualizer:00010');"><img src="../../images/pdf.jpg" border="0"></a>) 
+  module to view the consensus matrices.
     View other output files by clicking them.  </p>
   <h5>What it does</h5>
   <ul>
@@ -254,13 +275,15 @@ group genes and/or samples.</p>
     <li>The *.stdev output file shows... TBD </li>
     <li>The *.pdf output file shows... TBD </li>
   </ul>
-  <p><span class="resultsInlineSubhead">KMeansClustering</span> &ndash; View the results with the <a href="javascript:openModuleById('visualizer:00010');">HeatMapViewer</a>.</p>
+  <p><span class="resultsInlineSubhead">KMeansClustering</span> &ndash; 
+  Run the <a href="javascript:openModuleById('visualizer:00010');">HeatMapViewer</a>
+    (<a href="javascript:openModuleDocById('visualizer:00010');"><img src="../../images/pdf.jpg" border="0"></a>) 
+  module to view the results.</p>
   <h5>What it does</h5>
   <ul>
     <li>The HeatMapViewer 
       displays gene expression data as a heat map, which makes it easier to see patterns in the numeric data. 
       Gene names row labels and sample names are column labels. 
-      <a href="javascript:openModuleDocById('visualizer:00010');">Module documentation.</a>
     </li>
   </ul>
   <h5>Considerations</h5>
@@ -270,13 +293,14 @@ group genes and/or samples.</p>
       the expression data organized by cluster.
     </li>
   </ul>
-  <p><span class="resultsInlineSubhead">SOMClustering</span> &ndash; View the results with the <a href="javascript:openModuleById('visualizer:00023');">SOMClusterViewer</a>.  </p>
+  <p><span class="resultsInlineSubhead">SOMClustering</span> &ndash; Run the <a href="javascript:openModuleById('visualizer:00023');">SOMClusterViewer</a>
+    (<a href="javascript:openModuleDocById('visualizer:00023');"><img src="../../images/pdf.jpg" border="0"></a>) 
+    to view the results.  </p>
   <h5>What it does</h5>
   <ul>
     <li>The SOMClusterViewer displays the SOMClustering results file 
       (.odf file) in a visualizer. The left panel shows a plot of each cluster. Click 
       a plot to display the objects in the cluster and their distance from the cluster center.
-      <a href="javascript:openModuleDocById('visualizer:00023');">Module documentation.</a>
     </li>
   </ul>
   <h5>Considerations</h5>
