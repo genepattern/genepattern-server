@@ -10,7 +10,7 @@
 
 <body>
 
-<h1>SNP Copy Number and Loss of Heterozigosity Determination</h1>
+<h1>SNP Copy Number and Loss of Heterozygosity Determination</h1>
         <table width="100%" border="0" cellpadding="0" cellspacing="0">
           <tr>
             <td align="right">
@@ -20,7 +20,7 @@
         </table>
 
 <p>
-Compute SNP copy number and loss of heterozigosity (LOH) based on 
+Compute SNP copy number and loss of heterozygosity (LOH) based on 
 Affymetrix SNP chip data for paired target/normal samples. 
 In cancer genomics, copy number change is one of the hallmarks of the genetic instability common 
     to most human cancers and LOH of tumor suppressor genes is a crucial step in the development of 
@@ -42,14 +42,14 @@ for a complete description of this GenePattern file format.
 
 <div class="steps">
   <h2>Step 1: Convert a collection of Affymetrix CEL files to a GenePattern SNP file 
-  by running the <a>SNPFileCreator</a> module.</h2>
+  by running the <a href="javascript:openModuleByLsid('urn:lsid:8080.genepatt.18.103.8.161:genepatternmodules:1');">SNPFileCreator</a> module.</h2>
   <h5>What it does</h5>
   <ul>
     <li>A CEL file contains the raw data for the probes in the SNP probe sets. 
     The SNPFileCreator module converts each probe set to a
     single intensity value per SNP. The conversion is done using one of four modeling algorithms:
     Average Difference, PM/MM Difference Model (dChip, the default), Median Probe, or Trimmed Mean.
- <a href="ftp://ftp.broad.mit.edu/pub/genepattern/modules/SNPFileCreator/broad.mit.edu:cancer.software.genepattern.module.analysis/00086/1/SNPFileCreator.pdf">Module documentation.</a>    </li>
+ <a href="javascript:openModuleDocByLsid('urn:lsid:8080.genepatt.18.103.8.161:genepatternmodules:1');">Module documentation.</a>    </li>
     </ul>
   <h5>Considerations</h5>
   <ul>
@@ -80,11 +80,11 @@ Chromosome and Physical Location columns in the .snp file. By default, it sorts 
 
 <div class="steps">
   <h2>Step 2: Correct intensity values for SNPs on the X chromosome by running the 
-  <a>XChromosomeCorrect</a> module.</h2>
+  <a href="javascript:openModuleById('analysis:00093');">XChromosomeCorrect</a> module.</h2>
   <h5>What it does</h5>
   <ul>
     <li>For each sample from a male donor, the module doubles the intensity value for SNPs on the X chromosome.
- <a href="ftp://ftp.broad.mit.edu/pub/genepattern/modules/XChromosomeCorrect/broad.mit.edu:cancer.software.genepattern.module.analysis/00093/3/XChromosomeCorrect.pdf">Module documentation.</a>    </li>
+ <a href="javascript:openModuleDocById('analysis:00093');">Module documentation.</a>    </li>
     </ul>
   <h5>Considerations</h5>
   <ul>
@@ -94,13 +94,13 @@ Chromosome and Physical Location columns in the .snp file. By default, it sorts 
 </div>
 
 <div class="steps">
-  <h2>Step 3: Compute raw copy number values by running the <a>CopyNumberDivideByNormals</a> module.</h2>
+  <h2>Step 3: Compute raw copy number values by running the <a href="javascript:openModuleByLsid('urn:lsid:8080.genepatt.18.103.8.161:genepatternmodules:3');">CopyNumberDivideByNormals</a> module.</h2>
   <h5>What it does</h5>
   <ul>
     <li>The module computes the raw copy number of each target SNP by dividing its intensity value 
     by the mean intensity value of all normal SNPs. This calculation is referred to as 
     copy number normalization or normalization with respect to normals. 
- <a href="ftp://ftp.broad.mit.edu/pub/genepattern/modules/CopyNumberDivideByNormals/broad.mit.edu:cancer.software.genepattern.module.analysis/00085/1/CopyNumberDivideByNormals.pdf">Module documentation.</a>    </li>
+ <a href="javascript:openModuleDocByLsid('urn:lsid:8080.genepatt.18.103.8.161:genepatternmodules:3');">Module documentation.</a>    </li>
     </ul>
   <h5>Considerations</h5>
   <ul>
@@ -111,12 +111,12 @@ Chromosome and Physical Location columns in the .snp file. By default, it sorts 
     </ul>
 </div>
 <div class="steps">
-  <h2>Step 4: View SNP copy number and loss of heterozigosity (LOH) data by running the <a>SnpViewer</a> module.</h2>
+  <h2>Step 4: View SNP copy number and loss of heterozygosity (LOH) data by running the <a href="javascript:openModuleById('visualizer:00084');">SnpViewer</a> module.</h2>
   <h5>What it does</h5>
   <ul>
     <li>The viewer uses a heat map to display copy number data or LOH calls. 
     
-      <a href="ftp://ftp.broad.mit.edu/pub/genepattern/modules/SnpViewer/broad.mit.edu:cancer.software.genepattern.module.visualizer/00084/3/SNPViewer.pdf">Module documentation.</a>    </li>
+      <a href="javascript:openModuleDocById('visualizer:00084');">Module documentation.</a>    </li>
     </ul>
   <h5>Considerations</h5>
   <ul>
@@ -146,7 +146,7 @@ Chromosome and Physical Location columns in the .snp file. By default, it sorts 
 <p>Monti, S. 2005. Class slides: SNP microarrays and high-density genotyping. 
 http://www.chip.org/teaching/hst950/slides/class6.pdf.
 
-
+<!-- 
 <h2>See also</h2>
 <ul>
 <li>Protocols &ndash; GenePattern welcome page with protocols.</li>
@@ -157,13 +157,14 @@ http://www.chip.org/teaching/hst950/slides/class6.pdf.
 <li>Demo &ndash; Flash demo of GenePattern.</li>
 
 </ul>
-        <table width="100%" border="0" cellpadding="0" cellspacing="0">
-          <tr>
-            <td align="right">
-              <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=7">comments/suggestions</a>
-            </td>
-          </tr>
-        </table>
+-->
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td align="right">
+      <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=7">comments/suggestions</a>
+    </td>
+  </tr>
+</table>
 
 </body>
 </html>
