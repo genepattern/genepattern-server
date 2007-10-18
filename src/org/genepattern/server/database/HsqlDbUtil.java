@@ -69,7 +69,7 @@ public class HsqlDbUtil {
             log.info("Checkpointed.");
             dao.executeUpdate("SHUTDOWN");
             try {
-            	HibernateUtil.commitTransaction();
+            	// bug 1887 again // HibernateUtil.commitTransaction();
             } catch (Exception e){
             	// swallow the exception here since we expect to get one.  After all the database will
             	// shut down before the commit returns since that is what we are executing
