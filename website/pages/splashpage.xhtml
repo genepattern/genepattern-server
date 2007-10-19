@@ -45,29 +45,47 @@
     Click the arrow icon next to a result file. A menu lists the 
     modules most often used to view or analyze this result. Select a module, 
     enter values for the parameters and click <i>Run</i>.</p>
-  <div id="protocols">
+  <div class="protocols">
     <h2>what do you want to do? </h2>
     <p>Protocols for running common analyses in GenePattern:</p>
-      <ul>
-        <li><b><a href="javascript:openProtocolWindow('/gp/pages/protocols/DiffExp.html')" class="optionsHead">Differential Expression Analysis</a></b><br />
-          Find genes that are significantly differentially expressed between classes of samples.</li>
-        <li><b><a href="javascript:openProtocolWindow('/gp/pages/protocols/ClassDiscovery.html')" class="optionsHead">Clustering</a></b><br />
-          Group genes and/or samples by similar expression profiles.</li>
-        <li><b><a href="javascript:openProtocolWindow('/gp/pages/protocols/Prediction.html')" class="optionsHead">Prediction</a></b><br />
-          Create a model, also referred to as a classifier or class predictor, that
-          correctly classifies unlabeled samples into known classes.</li>
-        <li><b><a href="javascript:openProtocolWindow('/gp/pages/protocols/SnpCN.html')" class="optionsHead">SNP Copy Number and Loss of Heterozygosity Determination</a></b><br />
-          Compute SNP copy number (CN) and loss of heterozygosity (LOH) based on 
-          Affymetrix SNP chip data for paired target/normal samples.
-          </li>
-      </ul>
+    <div class="colLeft">
+      <b><a href="javascript:openProtocolWindow('/gp/pages/protocols/DiffExp.html')">Differential Expression Analysis</a></b>
+      <br />
+      Find genes that are significantly differentially expressed between classes of samples.
+      <br />
+      <div align="center"><img src="/gp/images/DiffExp.jpg"/></div>
     </div>
-  <h4>See also:</h4>
+    <div class="colLeft">
+      <b><a href="javascript:openProtocolWindow('/gp/pages/protocols/ClassDiscovery.html')" class="optionsHead">Clustering</a></b>
+      <br />
+      Group genes and/or samples by similar expression profiles.
+      <br />
+      <div align="center"><img src="/gp/images/Cluster.jpg"/></div>
+    </div>
+    <div class="colLeft">
+      <b><a href="javascript:openProtocolWindow('/gp/pages/protocols/Prediction.html')" class="optionsHead">Prediction</a></b>
+      <br />
+      Create a model, also referred to as a classifier or class predictor, that
+      correctly classifies unlabeled samples into known classes.
+      <br />
+      <div align="center"><img src="/gp/images/Prediction.jpg"/></div>
+    </div>
+    <div class="colLeft">
+      <b><a href="javascript:openProtocolWindow('/gp/pages/protocols/SnpCN.html')" class="optionsHead">SNP Copy Number and Loss of Heterozygosity Determination</a></b>
+      <br />
+      Compute SNP copy number (CN) and loss of heterozygosity (LOH) based on 
+      Affymetrix SNP chip data for paired target/normal samples.
+      <br />
+      <div align="center"><img src="/gp/images/CopyNumber.jpg"/></div>
+    </div>
+    <br clear="all" />
+    </div>
+   <h4>See also:</h4>
   <div id="seealso">
   <ul>
     <li>Tutorial 
       [<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_tutorial.html"><strong>HTML</strong></a> | 
-       <a><strong>Flash</strong></a> |
+       <!--  <a><strong>Flash</strong></a> | -->
        <a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_tutorial.pdf"><strong>PDF</strong></a>] &ndash; Hands-on introduction to GenePattern.</li>
     <li><a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_web_client.html"><strong>GenePattern Web Client Guide</strong></a> &ndash; Full description of this web application.</li>
     <li><a href="#{facesContext.externalContext.requestContextPath}/getTaskDoc.jsp"><strong>Modules</strong></a> &ndash; List of all installed modules with links to their documentation.</li>
