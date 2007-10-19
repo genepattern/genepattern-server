@@ -18,7 +18,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * 
@@ -83,13 +85,14 @@ public class LocalModuleDirectoryManager {
 	    }
 
 	    directoryName = props.getProperty(moduleLsid);
+	    Set directories = new HashSet(props.values());
 	    if (directoryName == null) {
 		if (moduleName.length() > 253) {
 		    moduleName = moduleName.substring(0, 252);
 		}
 		directoryName = moduleName;
 		int counter = 1;
-		while (new File(directoryName).exists()) {
+		while (directories.contains(directoryName)) {
 		    directoryName = moduleName + "-" + counter;
 		    counter++;
 		}
