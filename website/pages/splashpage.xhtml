@@ -27,61 +27,77 @@
 
 <div id="homeIndent">
 
+<h2>Analyzing genomic data in GenePattern</h2>
 
-  <h2>Analyzing genomic data in GenePattern</h2>
-        <table width="100%" border="0" cellpadding="0" cellspacing="0">
-          <tr>
-            <td align="right">
-              <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=3">comments/suggestions</a>
-            </td>
-          </tr>
-        </table>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td align="right">
+      <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=3">comments/suggestions</a>
+    </td>
+  </tr>
+</table>
 
-  <p><b class="optionsHead">To run an analysis:</b> Select a module from the list at the left, enter values for the parameters 
-    and click <i>Run</i>. When the analysis completes, the result files are displayed in the Recent Jobs pane 
-    at the right.</p>
-  <p><b class="optionsHead">To view analysis results:</b> 
-    
-    Click the arrow icon next to a result file. A menu lists the 
-    modules most often used to view or analyze this result. Select a module, 
-    enter values for the parameters and click <i>Run</i>.</p>
-  <div class="protocols">
-    <h2>what do you want to do? </h2>
-    <p>Protocols for running common analyses in GenePattern:</p>
-    <div class="colLeft">
-      <b><a href="javascript:openProtocolWindow('/gp/pages/protocols/DiffExp.html')">Differential Expression Analysis</a></b>
+<p><b class="optionsHead">To run an analysis:</b> 
+   Select a module from the list at the left, enter values for the parameters 
+   and click <i>Run</i>. When the analysis completes, the result files are displayed in the Recent Jobs pane 
+   at the right.</p>
+
+<p><b class="optionsHead">To view analysis results:</b> 
+   Click the arrow icon next to a result file. A menu lists the 
+   modules most often used to view or analyze this result. Select a module, 
+   enter values for the parameters and click <i>Run</i>.</p>
+
+<div class="protocols">
+<h2>what do you want to do? </h2>
+<h3>Protocols for running common analyses in GenePattern:</h3>
+<ul class="protocol_list">
+  <li>
+    <div class="protocol_list_img">
+      <img src="/gp/images/DiffExp.jpg" alt="open Differential Expression Analysis protocol in new window"/>
+    </div>
+    <div class="protocol_list_block">
+      <a href="javascript:openProtocolWindow('/gp/pages/protocols/DiffExp.html')">Differential Expression Analysis</a>
       <br />
       Find genes that are significantly differentially expressed between classes of samples.
-      <br />
-      <div align="center"><img src="/gp/images/DiffExp.jpg"/></div>
     </div>
-    <div class="colLeft">
-      <b><a href="javascript:openProtocolWindow('/gp/pages/protocols/ClassDiscovery.html')" class="optionsHead">Clustering</a></b>
+  </li>
+  <li>
+    <div class="protocol_list_img">
+      <img src="/gp/images/Cluster.jpg"/>
+    </div>
+    <div class="protocol_list_block">
+      <a href="javascript:openProtocolWindow('/gp/pages/protocols/ClassDiscovery.html')" class="optionsHead">Clustering</a>
       <br />
       Group genes and/or samples by similar expression profiles.
-      <br />
-      <div align="center"><img src="/gp/images/Cluster.jpg"/></div>
     </div>
-    <div class="colLeft">
-      <b><a href="javascript:openProtocolWindow('/gp/pages/protocols/Prediction.html')" class="optionsHead">Prediction</a></b>
+  </li>
+  <li>
+    <div class="protocol_list_img">
+      <img src="/gp/images/Prediction.jpg"/>
+    </div>
+    <div class="protocol_list_block">
+      <a href="javascript:openProtocolWindow('/gp/pages/protocols/Prediction.html')" class="optionsHead">Prediction</a>
       <br />
       Create a model, also referred to as a classifier or class predictor, that
       correctly classifies unlabeled samples into known classes.
-      <br />
-      <div align="center"><img src="/gp/images/Prediction.jpg"/></div>
     </div>
-    <div class="colLeft">
-      <b><a href="javascript:openProtocolWindow('/gp/pages/protocols/SnpCN.html')" class="optionsHead">SNP Copy Number and Loss of Heterozygosity Determination</a></b>
+  </li>
+  <li>      
+    <div class="protocol_list_img">
+      <img src="/gp/images/CopyNumber.jpg"/>
+    </div>
+    <div class="protocol_list_block">
+      <a href="javascript:openProtocolWindow('/gp/pages/protocols/SnpCN.html')" class="optionsHead">SNP Copy Number and Loss of Heterozygosity Determination</a>
       <br />
       Compute SNP copy number (CN) and loss of heterozygosity (LOH) based on 
       Affymetrix SNP chip data for paired target/normal samples.
-      <br />
-      <div align="center"><img src="/gp/images/CopyNumber.jpg"/></div>
-    </div>
-    <br clear="all" />
-    </div>
-   <h4>See also:</h4>
-  <div id="seealso">
+      </div>
+  </li>
+</ul>
+</div>
+
+<div id="seealso">
+  <h4>See also:</h4>
   <ul>
     <li>Tutorial 
       [<a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_tutorial.html"><strong>HTML</strong></a> | 

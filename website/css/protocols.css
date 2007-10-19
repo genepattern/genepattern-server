@@ -4,22 +4,7 @@
 	border: 1px solid #6666FF;
 }
 
-.protocols img {
-	align: center;
-	}
-
-.colLeft {
-	float: left;
-	height: 187px;
-	width: 187px;
-	background-image: url(../images/protocolColBevel.gif);
-	background-position: center;
-	background-repeat: no-repeat;
-	margin: 10px;
-	padding: 10px;
-}
-
-#protocols h1 {
+.protocols h1 {
 	font-size: 18px;
 	color: #333366;
 	font-weight: bold;
@@ -27,11 +12,11 @@
 	padding: 10px 0px 20px;
 }
 
-#protocols table.options {
+.protocols table.options {
 	width: 100%;
 }
 
-#protocols table.options td {
+.protocols table.options td {
 	width: 50%;
 	vertical-align: top;
 	margin: 0px;
@@ -39,16 +24,41 @@
 	background-image: url(../images/protocolColBevel.gif);
 }
 
-#protocols ul {
-	margin-top: 0px;
-	margin-bottom: 0px;
-	padding-top: 0px;
-	padding-bottom: 0px;
+.protocol_list {
+	list-style: none;
+	/* margin-left: 40px; */
+    margin-top: 12px;
+	margin-bottom: 12px;
+	padding-top: 12px;
+	padding-bottom: 12px;
 }
 
-#protocols li {
-	padding-bottom: 10px;
+.protocol_list li {
+	clear: both;
 }
+
+.protocol_list img {
+	float: left;
+	padding-right: 12px;
+	padding-bottom: 12px;
+}
+
+.protocol_list_img {
+	float: left;
+	padding-right: 12px;
+	padding-bottom: 12px;
+}
+
+.protocol_list_block {
+	/* aligns text to the right of the image, in case there is a lot of text. */
+	padding-left: 96px;
+	padding-bottom: 12px;
+}
+
+.protocol_list a {
+	font-weight: bold;
+}
+
 .optionsHead {
 	font-size: 12px;
 }
@@ -61,12 +71,3 @@
 	margin-left: 10px;
 }
 
-#seealso ul {
-	margin-top: 0px;
-	margin-bottom: 0px;
-	padding-top: 0px;
-	padding-bottom: 0px;
-}
-#seealso li {
-	padding-bottom: 10px;
-}
