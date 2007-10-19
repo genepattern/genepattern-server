@@ -26,8 +26,6 @@ public class ZipUpload {
     }
 
     public static void main(String[] args) throws Exception {
-	args = new String[] { "http://192.168.2.2:8080",
-		"/Users/jgould/Documents/workspace/modules/build/PredictionResultsViewer.zip" };
 	// get url and file or directory to upload
 	if (args.length != 2) {
 	    System.out.println("Usage: java ZipUpload url fileOrDir");
