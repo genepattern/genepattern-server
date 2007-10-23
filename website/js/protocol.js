@@ -14,3 +14,11 @@ function openModuleByLsid(lsid) {
   window.opener.location = theURL;
   window.opener.focus();
 }
+
+function setInputFile(url) {
+  w = window.opener;
+  w.focus();
+  w.document.forms['taskForm'].elements['input.filename_cb_url'].click();
+  w.document.forms['taskForm'].elements['input.filename_url'].value = url;
+}
+
