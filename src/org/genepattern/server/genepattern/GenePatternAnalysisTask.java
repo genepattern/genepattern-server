@@ -54,7 +54,6 @@ import static org.genepattern.util.GPConstants.REQUIRED_PATCH_LSIDS;
 import static org.genepattern.util.GPConstants.REQUIRED_PATCH_URLS;
 import static org.genepattern.util.GPConstants.RESERVED_PARAMETER_NAMES;
 import static org.genepattern.util.GPConstants.RIGHT_DELIMITER;
-import static org.genepattern.util.GPConstants.R_HOME;
 import static org.genepattern.util.GPConstants.STDERR;
 import static org.genepattern.util.GPConstants.STDERR_REDIRECT;
 import static org.genepattern.util.GPConstants.STDIN_REDIRECT;
@@ -737,7 +736,6 @@ public class GenePatternAnalysisTask {
 	    String[] commandTokens = null;
 	    String firstToken;
 	    String token;
-	    File taskLof = null;
 
 	    // TODO: handle quoted arguments within the command line (eg. echo
 	    // "<p1> <p2>" as a single token)
@@ -1090,11 +1088,10 @@ public class GenePatternAnalysisTask {
 		log.error(taskName + " error: unable to update job error status" + e2);
 	    }
 	    // IndexerDaemon.notifyJobComplete(jobInfo.getJobNumber());
-	}
-	finally {
-	    //remove currPipelineUserKey from system memory
+	} finally {
+	    // remove currPipelineUserKey from system memory
 	    if (userKey != null && !userKey.equals("")) {
-	        EncryptionUtil.getInstance().removePipelineUserKey(userKey);
+		EncryptionUtil.getInstance().removePipelineUserKey(userKey);
 	    }
 	}
     }
@@ -2162,8 +2159,8 @@ public class GenePatternAnalysisTask {
     }
 
     /**
-     * For a given taskName, look up the TaskInfo object in the database and return it to the caller. 
-     * TODO: involve userID in the search!
+     * For a given taskName, look up the TaskInfo object in the database and return it to the caller. TODO: involve
+     * userID in the search!
      * 
      * @param taskName
      *                name of the task to locate
@@ -2335,27 +2332,10 @@ public class GenePatternAnalysisTask {
 			+ System.getProperty("file.separator") + "perl" + System.getProperty("file.separator") + "bin"
 			+ System.getProperty("file.separator") + "perl");
 	    }
-	    // File GenePatternPM = new File(props.get(TOMCAT) + File.separator
-	    // + ".." + File.separator + "resources");
+
 	    String perl = (String) props.get(PERL); // + " -I" +
 	    // GenePatternPM.getCanonicalPath();
 	    props.put(PERL, perl);
-
-	    // add R if it isn't already defined
-	    if (props.getProperty(R, null) == null) {
-		props.put(R, new File(props.getProperty("user.dir")).getParentFile().getAbsolutePath()
-			+ System.getProperty("file.separator") + "R" + System.getProperty("file.separator") + "bin"
-			+ System.getProperty("file.separator") + "R");
-		props.put(R.toLowerCase(), new File(props.getProperty("user.dir")).getParentFile().getAbsolutePath()
-			+ System.getProperty("file.separator") + "R" + System.getProperty("file.separator") + "bin"
-			+ System.getProperty("file.separator") + "R");
-	    }
-	    // BUG: this is NOT R_HOME! This is R_HOME/bin/R
-	    props.put(R_HOME, props.getProperty(R));
-	    // R should be <java> -cp <libdir> -DR_HOME=<R> RunR
-	    props.put(R, LEFT_DELIMITER + JAVA + RIGHT_DELIMITER + " -cp " + LEFT_DELIMITER + "run_r_path"
-		    + RIGHT_DELIMITER + " -DR_HOME=" + LEFT_DELIMITER + "R_HOME" + RIGHT_DELIMITER + " -Dr_flags="
-		    + LEFT_DELIMITER + "r_flags" + RIGHT_DELIMITER + " RunR ");
 
 	    // populate props with the input parameters so that they can be
 	    // looked up by name
@@ -2521,7 +2501,7 @@ public class GenePatternAnalysisTask {
 	    process = Runtime.getRuntime().exec(commandLine, envp, runDir);
 
 	    if (log.isDebugEnabled()) {
-		log.debug("Process spawned for command line: " + commandLine);
+		log.debug("Process spawned for command line: " + Arrays.asList(commandLine));
 	    }
 
 	    // BUG: there is race condition during a tiny time window between
