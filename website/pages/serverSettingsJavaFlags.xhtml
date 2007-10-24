@@ -20,29 +20,24 @@
 <h:form>
     <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-other">
       <tr>
-        <td>Java Flag Settings </td>
+        <td>Java VMOptions</td>
       </tr>
     </table>
     <p/>
     <table width="100%" border="0" cellpadding="5" cellspacing="0">
       <tr valign="top">
-        <td>Java Flags:</td>
+        <td>Java VMOptions:</td>
         <td>
           <h:inputText size="40" value="#{serverSettingsBean.settings['java_flags']}"/>
         </td>
       </tr>
       <tr valign="top">
-        <td>Visualizer Java Flags:</td>
+        <td>Visualizer VMOptions:</td>
         <td>
           <h:inputText size="40" value="#{serverSettingsBean.settings['visualizer_java_flags']}"/>
         </td>
       </tr>
-      <tr valign="top">
-        <td>R Java Flags:</td>
-        <td>
-          <h:inputText size="40" value="#{serverSettingsBean.settings['r_flags']}"/>
-        </td>
-      </tr>
+      
       <tr valign="top">
         <td>&#160;</td>
         <td>
@@ -57,13 +52,13 @@
       <tr valign="top">
         <td>&#160;</td>
         <td>
-          <p>Java flags are passed to the VM of most Java language tasks.
+          <p>Java VMOptions are passed to the VM of most Java language modules.
                   <br/>
-                You can use these flags to increase the amount of memory alotted
+                You can use these options to increase the amount of memory alotted
                 to a <br/>
                 Java language module if you are experiencing OutOfMemory
               errors.</p>
-          <p>For details of potential java flags run<br/>
+          <p>For details of potential java options run<br/>
 &#160;&#160;&#160;                  java
                 -X<br/>
                 at a command line.</p>
