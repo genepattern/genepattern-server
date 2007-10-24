@@ -46,15 +46,6 @@ public class GPConstants {
     /** task ID (task_master ID) of running job */
     public static final String TASK_ID = "task_id";
 
-    /** well known name for command that invoked JVM for Omnigene */
-    public static final String JAVA = "java";
-
-    public static final String PERL = "perl";
-
-    public static final String R = "R";
-
-    public static final String R_HOME = "R_HOME";
-
     public static final String TOMCAT = "tomcat";
 
     public static final String ANT = "ant";
@@ -72,8 +63,7 @@ public class GPConstants {
     public static final String AUTHOR = "author";
 
     /**
-     * when a task is being renamed, this well known parameter describes the
-     * former task name
+     * when a task is being renamed, this well known parameter describes the former task name
      */
     public static final String FORMER_NAME = "formerName";
 
@@ -115,8 +105,7 @@ public class GPConstants {
     public static final String PATCH_ERROR_EXIT_VALUE = "failureExitValue";
 
     /**
-     * TaskInfoAttributes pipeline invocation key (prefixed by language, eg.
-     * RInvoke)
+     * TaskInfoAttributes pipeline invocation key (prefixed by language, eg. RInvoke)
      */
     public static final String INVOKE = "Invoke";
 
@@ -163,14 +152,12 @@ public class GPConstants {
     public static final String[] QUALITY_LEVELS = { QUALITY_DEVELOPMENT, QUALITY_PREPRODUCTION, QUALITY_PRODUCTION };
 
     /**
-     * two levels of privacy defined: public, private. Group is complicated for
-     * users and may not be useful
+     * two levels of privacy defined: public, private. Group is complicated for users and may not be useful
      */
     public static final String PUBLIC = "public";
 
     /**
-     * two levels of privacy defined: public, private. Group is complicated for
-     * users and may not be useful
+     * two levels of privacy defined: public, private. Group is complicated for users and may not be useful
      */
     public static final String PRIVATE = "private";
 
@@ -190,17 +177,14 @@ public class GPConstants {
     // derived
     // from
 
-    public static final String DOMAIN = "domain";
-
     public static final String FILE_FORMAT = "fileFormat";
 
     /**
-     * names of all expected TaskInfoAttributes from manifest file (or other new
-     * task submission)
+     * names of all expected TaskInfoAttributes from manifest file (or other new task submission)
      */
     public static final String[] TASK_INFO_ATTRIBUTES = { COMMAND_LINE, TASK_TYPE, CPU_TYPE, OS, JVM_LEVEL, LANGUAGE,
-            VERSION, AUTHOR, USERID, PRIVACY, QUALITY, PIPELINE_SCRIPT, LSID, SERIALIZED_MODEL, DOMAIN, FILE_FORMAT,
-            REQUIRED_PATCH_LSIDS, REQUIRED_PATCH_URLS };
+	    VERSION, AUTHOR, USERID, PRIVACY, QUALITY, PIPELINE_SCRIPT, LSID, SERIALIZED_MODEL, FILE_FORMAT,
+	    REQUIRED_PATCH_LSIDS, REQUIRED_PATCH_URLS };
 
     public static final char PARAM_INFO_SPACER = '_'; // replace this
 
@@ -240,8 +224,8 @@ public class GPConstants {
     public static final int PARAM_INFO_TYPE_CLASS_OFFSET = 1;
 
     public static final String[][] PARAM_INFO_TYPES = { { "text", PARAM_INFO_TYPE_TEXT },
-            { "integer", PARAM_INFO_TYPE_INTEGER }, { "floating point", PARAM_INFO_TYPE_FLOAT },
-            { "input file", PARAM_INFO_TYPE_INPUT_FILE }, { "password", PARAM_INFO_TYPE_PASSWORD } };
+	    { "integer", PARAM_INFO_TYPE_INTEGER }, { "floating point", PARAM_INFO_TYPE_FLOAT },
+	    { "input file", PARAM_INFO_TYPE_INPUT_FILE }, { "password", PARAM_INFO_TYPE_PASSWORD } };
 
     // well-known ParameterInfo attributes
     public static final int PARAM_INFO_NAME_OFFSET = 0; // offset into one of
@@ -268,10 +252,8 @@ public class GPConstants {
 
     public static Object[] PARAM_INFO_FILE_FORMAT = { FILE_FORMAT, PARAM_INFO_CHOICE, null, MULTIPLE };
 
-    public static Object[] PARAM_INFO_DOMAIN = { DOMAIN, PARAM_INFO_CHOICE, null, MULTIPLE };
-
     public static final Object[][] PARAM_INFO_ATTRIBUTES = { PARAM_INFO_DEFAULT_VALUE, PARAM_INFO_OPTIONAL,
-            PARAM_INFO_PREFIX, PARAM_INFO_TYPE, PARAM_INFO_FILE_FORMAT };
+	    PARAM_INFO_PREFIX, PARAM_INFO_TYPE, PARAM_INFO_FILE_FORMAT };
 
     public static int MAX_PARAMETERS = 20;
 
@@ -282,33 +264,28 @@ public class GPConstants {
     public static final String RIGHT_DELIMITER = ">";
 
     /**
-     * well-known name of manifest file within zip file containing
-     * GenePatternAnalysisTask descriptors and support files
+     * well-known name of manifest file within zip file containing GenePatternAnalysisTask descriptors and support files
      */
     public static final String MANIFEST_FILENAME = "manifest";
-
-    /** request attribute, set when the user has logged off */
-    public static final String USER_LOGGED_OFF = "userLoggedOff";
 
     public static final String[] RESERVED_PARAMETER_NAMES = { JOB_ID, TASK_ID, LIBDIR, NAME };
 
     public static final String[] UNREQUIRED_PARAMETER_NAMES = {};
 
     /**
-     * filename of well-known file that may be output by a job, representing the
-     * output to the stdout stream of the process
+     * filename of well-known file that may be output by a job, representing the output to the stdout stream of the
+     * process
      */
     public static final String STDOUT = "stdout.txt";
 
     /**
-     * filename of well-known file that may be output by a job, representing the
-     * output to the stderr stream of the process
+     * filename of well-known file that may be output by a job, representing the output to the stderr stream of the
+     * process
      */
     public static final String STDERR = "stderr.txt";
 
     /**
-     * filename of well-known file that may be output by a job, representing the
-     * provenance data of the process
+     * filename of well-known file that may be output by a job, representing the provenance data of the process
      */
     public static final String TASKLOG = "gp_execution_log.txt";
 
@@ -335,15 +312,14 @@ public class GPConstants {
     public static final String STDERR_REDIRECT = "\\>&";
 
     /**
-     * maximum number of concurrent jobs to run before next one will have to
-     * wait
+     * maximum number of concurrent jobs to run before next one will have to wait
      */
     public static final String NUM_THREADS = "num.threads";
 
     public static final String PIPELINE_ARG_STOP_AFTER_TASK_NUM = "PIPELINE_ARG.StopAfterTask";
 
     public static final String TASK_PREFIX_MAPPING = "taskPrefixMapping";
-    
-    public static final String REGISTERED_SERVER = "registeredServer"; 
+
+    public static final String REGISTERED_SERVER = "registeredServer";
 
 }
