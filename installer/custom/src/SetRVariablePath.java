@@ -29,7 +29,7 @@ import java.io.*;
 
 /**
 
- * custom class for adding /resources to the value of $R$
+ * custom class for adding /resources to the value of $R25$
  * @author  Liefeld
  */
 
@@ -54,16 +54,16 @@ public class SetRVariablePath extends CustomCodeAction {
     public void install(com.zerog.ia.api.pub.InstallerProxy ip) throws com.zerog.ia.api.pub.InstallException {
 	try {
 		
-		String R_new = ip.substitute("$R$");
+		String R_new = ip.substitute("$R25$");
 
 		String os = System.getProperty("os.name").toLowerCase();
 
 		if (os.indexOf("mac") >= 0){
-	 		ip.setVariable("Rbin",  R_new + "/Resources");
-			ip.setVariable("Rbase",  R_new);
+	 		ip.setVariable("R25bin",  R_new + "/Resources");
+			ip.setVariable("R25base",  R_new);
 		} else {
-	 		ip.setVariable("Rbin",  R_new);
-			ip.setVariable("Rbase",  R_new);
+	 		ip.setVariable("R25bin",  R_new);
+			ip.setVariable("R25base",  R_new);
 		}
 
         
