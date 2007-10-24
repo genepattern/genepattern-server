@@ -2839,11 +2839,7 @@ public class GenePatternAnalysisTask {
     /**
      * Determine whether a proposed method or identifier name is a legal identifier. Although there are many possible
      * standards, the R language defines what seems to be both a strict and reasonable definition, and has the added
-     * bonus of making R scripts work properly. <p/> According to the R language reference manual: <p/> Identifiers
-     * consist of a sequence of letters, digits and the period (‘.’). They must not start with a digit, nor with a
-     * period followed by a digit. The definition of a letter depends on the current locale: the precise set of
-     * characters allowed is given by the C expression (isalnum(c) || c==’.’) and will include accented letters in many
-     * Western European locales.
+     * bonus of making R scripts work properly.
      * 
      * @param varName
      *                proposed variable name
