@@ -24,7 +24,6 @@ import static org.genepattern.util.GPConstants.INPUT_EXTENSION;
 import static org.genepattern.util.GPConstants.INPUT_FILE;
 import static org.genepattern.util.GPConstants.INPUT_PATH;
 import static org.genepattern.util.GPConstants.INSTALLED_PATCH_LSIDS;
-import static org.genepattern.util.GPConstants.JAVA;
 import static org.genepattern.util.GPConstants.JOB_ID;
 import static org.genepattern.util.GPConstants.LEFT_DELIMITER;
 import static org.genepattern.util.GPConstants.LIBDIR;
@@ -44,12 +43,10 @@ import static org.genepattern.util.GPConstants.PARAM_INFO_TYPE_INPUT_FILE;
 import static org.genepattern.util.GPConstants.PARAM_INFO_TYPE_SEPARATOR;
 import static org.genepattern.util.GPConstants.PATCH_ERROR_EXIT_VALUE;
 import static org.genepattern.util.GPConstants.PATCH_SUCCESS_EXIT_VALUE;
-import static org.genepattern.util.GPConstants.PERL;
 import static org.genepattern.util.GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM;
 import static org.genepattern.util.GPConstants.PRIVACY;
 import static org.genepattern.util.GPConstants.PRIVATE;
 import static org.genepattern.util.GPConstants.PUBLIC;
-import static org.genepattern.util.GPConstants.R;
 import static org.genepattern.util.GPConstants.REQUIRED_PATCH_LSIDS;
 import static org.genepattern.util.GPConstants.REQUIRED_PATCH_URLS;
 import static org.genepattern.util.GPConstants.RESERVED_PARAMETER_NAMES;
@@ -219,15 +216,6 @@ import org.w3c.dom.NodeList;
  */
 
 public class GenePatternAnalysisTask {
-
-    /** used by log4j logging */
-    /*
-     * static { String log4jConfiguration = System.getProperty("log4j.configuration"); if (log4jConfiguration == null) {
-     * log4jConfiguration = "/webapps/gp/WEB-INF/classes/log4j.properties"; } File l4jconf = new
-     * File(log4jConfiguration); // System.out.println("GPAT static init: log4j.configuration=" + // log4jConfiguration + ",
-     * user.dir=" + System.getProperty("user.dir") + // ", l4jconf.length=" + l4jconf.length()); if (l4jconf.exists()) {
-     * PropertyConfigurator.configure(log4jConfiguration); } }
-     */
 
     private static Logger log = Logger.getLogger(GenePatternAnalysisTask.class);
 
@@ -1753,13 +1741,6 @@ public class GenePatternAnalysisTask {
     protected static String getPatchCommandLine(Properties props) throws Exception {
 	String commandLine = props.getProperty(COMMAND_LINE);
 	Properties systemProps = new Properties(System.getProperties());
-	if (System.getProperty(JAVA, null) == null) {
-	    systemProps.put(JAVA, System.getProperty("java.home") + System.getProperty("file.separator") + "bin"
-		    + System.getProperty("file.separator") + "java");
-	} else {
-	    systemProps.put(JAVA, System.getProperty(JAVA) + System.getProperty("file.separator") + "bin"
-		    + System.getProperty("file.separator") + "java");
-	}
 	if (commandLine == null || commandLine.length() == 0) {
 	    throw new Exception("No command line defined in " + MANIFEST_FILENAME);
 	}
@@ -2315,27 +2296,6 @@ public class GenePatternAnalysisTask {
 		    .getPath()
 		    + System.getProperty("file.separator") : "taskLibDir");
 	    props.put(LIBDIR, taskLibDir);
-
-	    // as a convenience to the user, create a <java> property which will
-	    // invoke java programs without requiring java.exe on the path
-	    if (System.getProperty(JAVA, null) == null) {
-		props.put(JAVA, System.getProperty("java.home") + System.getProperty("file.separator") + "bin"
-			+ System.getProperty("file.separator") + "java");
-	    } else {
-		props.put(JAVA, System.getProperty(JAVA) + System.getProperty("file.separator") + "bin"
-			+ System.getProperty("file.separator") + "java");
-	    }
-
-	    // add Perl if it isn't already defined
-	    if (props.getProperty(PERL, null) == null) {
-		props.put(PERL, new File(props.getProperty("user.dir")).getParentFile().getAbsolutePath()
-			+ System.getProperty("file.separator") + "perl" + System.getProperty("file.separator") + "bin"
-			+ System.getProperty("file.separator") + "perl");
-	    }
-
-	    String perl = (String) props.get(PERL); // + " -I" +
-	    // GenePatternPM.getCanonicalPath();
-	    props.put(PERL, perl);
 
 	    // populate props with the input parameters so that they can be
 	    // looked up by name
@@ -4295,22 +4255,18 @@ public class GenePatternAnalysisTask {
 		}
 	    }
 	}
-	/*
-	 * System.out.println("GPAT.init:"); TreeMap tmProps = new TreeMap(System.getProperties()); for (Iterator iProps =
-	 * tmProps.keySet().iterator(); iProps.hasNext(); ) { String propName = (String)iProps.next(); String propValue =
-	 * (String)tmProps.get(propName); System.out.println(propName + "=" + propValue); }
-	 */
-	String pathNames[] = new String[] { PERL, JAVA, R, TOMCAT };
+
+	String canonicalPathNames[] = new String[] { TOMCAT };
 	String oldName;
 	String newName;
-	for (int i = 0; i < pathNames.length; i++) {
-	    oldName = System.getProperty(pathNames[i]);
+	for (int i = 0; i < canonicalPathNames.length; i++) {
+	    oldName = System.getProperty(canonicalPathNames[i]);
 	    if (oldName == null) {
 		continue;
 	    }
 	    try {
 		newName = new File(oldName).getCanonicalPath();
-		System.setProperty(pathNames[i], newName);
+		System.setProperty(canonicalPathNames[i], newName);
 	    } catch (IOException ioe) {
 		log.error("GenePattern init: " + ioe + " while getting canonical path for " + oldName);
 	    }
