@@ -71,3 +71,17 @@
 	margin-left: 10px;
 }
 
+a.protocolLink:after {
+	content: " " url(../images/new-win-icon.gif);
+}
+
+a.gpWindow:after {
+	content: " " url(../images/new-win-icon.gif);
+}
+
+a.gpDoc:after {
+	content: "View module documentation " url(../images/pdf.jpg);
+}
+
+
+

@@ -15,10 +15,12 @@ function openModuleByLsid(lsid) {
   window.opener.focus();
 }
 
-function setInputFile(url) {
+function setInputFile(cb_name, filename_name, url) {
   w = window.opener;
   w.focus();
-  w.document.forms['taskForm'].elements['input.filename_cb_url'].click();
-  w.document.forms['taskForm'].elements['input.filename_url'].value = url;
+  //w.document.forms['taskForm'].elements['input.filename_cb_url'].click();
+  //w.document.forms['taskForm'].elements['input.filename_url'].value = url;
+  w.document.forms['taskForm'].elements[cb_name].click();
+  w.document.forms['taskForm'].elements[filename_name].value = url;
 }
 
