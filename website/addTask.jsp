@@ -100,15 +100,7 @@ if(errors!=null) {
 }
 
 	TreeMap tmFileFormats = new TreeMap(String.CASE_INSENSITIVE_ORDER);
-	TreeMap tmDomains = new TreeMap(String.CASE_INSENSITIVE_ORDER);
 
-/*	int DOMAIN_PARAM_OFFSET = -1;
-	for (int j = 0; j < GPConstants.PARAM_INFO_ATTRIBUTES.length; j++) {
-		if (GPConstants.PARAM_INFO_ATTRIBUTES[j] == GPConstants.PARAM_INFO_DOMAIN) {
-			DOMAIN_PARAM_OFFSET = j;
-			break;
-		}
-	}*/
 	int FILE_FORMAT_PARAM_OFFSET = -1;
 	for (int j = 0; j < GPConstants.PARAM_INFO_ATTRIBUTES.length; j++) {
 		if (GPConstants.PARAM_INFO_ATTRIBUTES[j] == GPConstants.PARAM_INFO_FILE_FORMAT) {
@@ -241,28 +233,6 @@ function addNewFileType(name, desc){
 	}
 }
 
-function addNewDomainType(name, desc){
-	if (name == null || name == "") return;
-	if (desc == "") desc = name;
-	var frm = document.forms['task'];
-	var fld = frm.<%= GPConstants.DOMAIN %>;
-	var n = fld.options.length;
-	var found = false;
-	for (i = 0; i < n; i++) {
-		if (fld.options[i].text == name) {
-			found = true;
-			fld.options[i].selected = true;
-			break;
-		}
-	}
-	if (!found) {
-		fld.options[n] = new Option(name, desc, true, true);
-		for (i = 0; i < <%= GPConstants.MAX_PARAMETERS %>; i++) {
-			fld = frm["p" + i + "_<%= GPConstants.PARAM_INFO_DOMAIN[GPConstants.PARAM_INFO_NAME_OFFSET] %>"];
-			fld.options[fld.options.length] = new Option(name, desc);
-		}
-	}
-}
 
 </script>
 <jsp:include page="navbarHead.jsp"/>
@@ -313,13 +283,6 @@ function addNewDomainType(name, desc){
 		TaskInfoAttributes tia2 = ti.giveTaskInfoAttributes();
 		if (tia2 == null) continue;
 
-		String domain = tia2.get(GPConstants.DOMAIN);
-		if (domain != null && domain.length() > 0){
-			String[] domains = domain.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-			for(int x = 0; x<domains.length; x++){
-		 		tmDomains.put(domains[x], domains[x]);
-			}
-		}
 		String fileFormat = tia2.get(GPConstants.FILE_FORMAT);
 		if (fileFormat != null && fileFormat.length() > 0){
 		 	String [] fileFormats = fileFormat.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
@@ -331,13 +294,7 @@ function addNewDomainType(name, desc){
 		if (pia != null) {
 			for (int pNum = 0; pNum < pia.length; pNum++) {
 				HashMap pAttributes = pia[pNum].getAttributes();
-				domain = (String)pAttributes.get(GPConstants.DOMAIN);
-				if (domain != null && domain.length() > 0) {
-					String[] domains = domain.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-					for(int x = 0; x<domains.length; x++){
-				 		tmDomains.put(domains[x], domains[x]);
-					}
-				}
+				
 				fileFormat = (String)pAttributes.get(GPConstants.FILE_FORMAT);
 				if (fileFormat != null && fileFormat.length() > 0) {
 				 	String [] fileFormats = fileFormat.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
@@ -402,12 +359,8 @@ function addNewDomainType(name, desc){
 	}
 	GPConstants.PARAM_INFO_ATTRIBUTES[FILE_FORMAT_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET] = fileFormats;
 
-	String[][] domains = new String[tmDomains.size()][2];
 	i = 0;
-	for (Iterator itDomain = tmDomains.keySet().iterator(); itDomain.hasNext(); i++) {
-		String key = (String)itDomain.next();
-		domains[i] = new String[] { key, key};
-	}
+	
 	//GPConstants.PARAM_INFO_ATTRIBUTES[DOMAIN_PARAM_OFFSET][GPConstants.PARAM_INFO_CHOICE_TYPES_OFFSET] = domains;
 
 	if (tia != null) {
@@ -694,7 +647,7 @@ function addNewDomainType(name, desc){
 			//if (attributeValue == null) attributeValue = "";
 	%>
 	  <% //if (!viewOnly) { %>
-		//<select multiple name="<%= GPConstants.DOMAIN %>">
+		
 	<%
 		/*{
 			String[] taskDomains = attributeValue.split(GPConstants.PARAM_INFO_CHOICE_DELIMITER);
