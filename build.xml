@@ -331,8 +331,6 @@
 				<include name="jdom.jar" />
 				<include name="jspsmart.jar" />
 				<include name="log4j-1.2.8.jar" />
-				<include name="lucene-*-final.jar" />
-				<include name="lucene-demos-*-final.jar" />
 				<include name="mail.jar" />
 				<include name="PDFBox*.jar" />
 				<include name="saaj.jar" />
