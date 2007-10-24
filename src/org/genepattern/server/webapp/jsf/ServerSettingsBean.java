@@ -93,9 +93,8 @@ public class ServerSettingsBean {
 		    "hibernate.dialect", "hibernate.default_schema", "hibernate.connection.SetBigStringTryClob" });
 	    // modes.put("LSID", new String[] { "lsid.authority", "lsid.show"
 	    // }); // remove show LSID for 3.1 per bug 1654
-	    modes.put("Programming Languages", new String[] { "perl", "java", "R", "run_r_path" });
-	    // modes.put("Documentation Attibutes", new String[]{"files.doc",
-	    // "files.binary", "files.code"});
+	    modes.put("Programming Languages", new String[] { "perl", "java", "R" });
+
 	    modes.put("Advanced", new String[] { "DefaultPatchRepositoryURL", "DefaultPatchURL", "patchQualifiers",
 		    "patches", "ant", "resources", "index", "tasklib", "jobs", "tomcatCommonLib", "webappDir",
 		    "log4j.appender.R.File", "pipeline.cp", "pipeline.main", "pipeline.vmargs", "pipeline.decorator",
