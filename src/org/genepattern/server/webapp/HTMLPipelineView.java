@@ -219,17 +219,6 @@ public class HTMLPipelineView {
 		    }
 		    writer.write(fileFormats);
 		    writer.write(")"); // close array of file formats
-
-		    writer.write(", new Array("); // create array of domains
-		    String domain = (String) pia.get(GPConstants.DOMAIN);
-		    if (domain == null || domain.length() == 0) {
-			domain = "";
-		    } else {
-			domain = "\"" + domain.replaceAll(GPConstants.PARAM_INFO_CHOICE_DELIMITER, "\", \"") + "\"";
-		    }
-		    writer.write(domain);
-		    writer.write(")"); // close array of domains
-
 		    writer.write(")");
 		}
 		writer.write(")"); // close Array
@@ -257,16 +246,6 @@ public class HTMLPipelineView {
 		}
 		writer.write(fileFormats);
 		writer.write(")"); // close array of file formats
-
-		writer.write(", new Array("); // create array of domains
-		String domain = tia.get(GPConstants.DOMAIN);
-		if (domain == null || domain.length() == 0) {
-		    domain = "";
-		} else {
-		    domain = "\"" + domain.replaceAll(GPConstants.PARAM_INFO_CHOICE_DELIMITER, "\", \"") + "\"";
-		}
-		writer.write(domain);
-		writer.write(")"); // close array of domains
 
 		writer.write(");\n"); // close TaskInfo
 	    }
