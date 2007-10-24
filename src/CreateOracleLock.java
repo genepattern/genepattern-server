@@ -103,9 +103,7 @@ public class CreateOracleLock {
 	    
 	   public void generateLock() {
 	        log.debug("Starting AnalysisTask thread");
-	        int waitTime = Integer.parseInt(System.getProperty(
-	                "AnalysisTaskQueuePollingFrequency", "0"));
-	        
+	         
 	        // Load input data to input queue
 	        synchronized (jobQueueWaitObject) {
 
