@@ -80,7 +80,7 @@ public class ServerSettingsBean {
 	    modes.put("Access", new String[] { "gp.allowed.clients" });
 	    modes.put("Command Line Prefix", new String[] { "gp.allowed.clients" });
 	    modes.put("File Purge", new String[] { "purgeJobsAfter", "purgeTime" });
-	    modes.put("Java Flag", new String[] { "java_flags", "visualizer_java_flags", "r_flags" });
+	    modes.put("Java VMOptions", new String[] { "java_flags", "visualizer_java_flags" });
 	    modes.put("Gene Pattern Log", null);
 	    modes.put("Web Server Log", null);
 	    modes.put("Repositories", new String[] { "ModuleRepositoryURL", "ModuleRepositoryURLs",
@@ -93,7 +93,7 @@ public class ServerSettingsBean {
 		    "hibernate.dialect", "hibernate.default_schema", "hibernate.connection.SetBigStringTryClob" });
 	    // modes.put("LSID", new String[] { "lsid.authority", "lsid.show"
 	    // }); // remove show LSID for 3.1 per bug 1654
-	    modes.put("Programming Languages", new String[] { "perl", "java", "R" });
+	    modes.put("Programming Languages", new String[] { "perl", "java", "R2.5", "R" });
 
 	    modes.put("Advanced", new String[] { "DefaultPatchRepositoryURL", "DefaultPatchURL", "patchQualifiers",
 		    "patches", "ant", "resources", "index", "tasklib", "jobs", "tomcatCommonLib", "webappDir",
@@ -183,7 +183,7 @@ public class ServerSettingsBean {
      * @return
      */
     public String getCurrentClientMode() {
-	currentClientMode = (String) settings.get("gp.allowed.clients");
+	currentClientMode = settings.getProperty("gp.allowed.clients");
 
 	if (!(clientModes[0].equals(currentClientMode) || clientModes[1].equals(currentClientMode))) {
 	    currentClientMode = clientModes[2];
@@ -219,14 +219,14 @@ public class ServerSettingsBean {
     /**
      * @return
      */
-    public List getSpecifiedClientModes() {
+    public List<SelectItem> getSpecifiedClientModes() {
 	return getSelectItems("gp.allowed.clients");
     }
 
     /**
      * @param mode
      */
-    public void setSpecifiedClientModes(List clientModes) {
+    public void setSpecifiedClientModes(List<SelectItem> clientModes) {
 	setSelectItems(clientModes, "gp.allowed.clients");
     }
 
@@ -237,7 +237,7 @@ public class ServerSettingsBean {
 	if (clientModes[2].equals(currentClientMode)) {
 	    removeDomain(clientModes[0]);
 	    removeDomain(clientModes[1]);
-	    String allClientModes = (String) settings.get("gp.allowed.clients");
+	    String allClientModes = settings.getProperty("gp.allowed.clients");
 	    String[] result = allClientModes.split(",");
 	    // avoid adding duplicated domains.
 	    boolean exist = false;
@@ -267,7 +267,7 @@ public class ServerSettingsBean {
     }
 
     private void removeDomain(String mode) {
-	String allClientModes = (String) settings.get("gp.allowed.clients");
+	String allClientModes = settings.getProperty("gp.allowed.clients");
 	String[] result = allClientModes.split(",");
 	StringBuffer newClientModes = new StringBuffer();
 	for (int i = 0; i < result.length; i++) {
@@ -285,7 +285,7 @@ public class ServerSettingsBean {
      * @return
      * @throws IOException
      */
-    public String getLog(File logFile) throws IOException {
+    public String getLog(File logFile) {
 	StringBuffer buf = new StringBuffer();
 	BufferedReader br = null;
 
@@ -302,7 +302,14 @@ public class ServerSettingsBean {
 	    }
 	} catch (IOException exc) {
 	    log.error(exc);
-	    System.exit(1);
+	} finally {
+	    if (br != null) {
+		try {
+		    br.close();
+		} catch (IOException e) {
+		    log.error("Error", e);
+		}
+	    }
 	}
 	return buf.toString();
 
@@ -312,7 +319,7 @@ public class ServerSettingsBean {
      * @return
      * @throws IOException
      */
-    public String getWsLog() throws IOException {
+    public String getWsLog() {
 	return getLog(getWsLogFile());
 
     }
@@ -321,7 +328,7 @@ public class ServerSettingsBean {
      * @return
      * @throws IOException
      */
-    public String getGpLog() throws IOException {
+    public String getGpLog() {
 	return getLog(getGpLogFile());
     }
 
@@ -392,7 +399,7 @@ public class ServerSettingsBean {
      * @return
      */
     private List<SelectItem> getSelectItems(String commaSeparatedValue) {
-	String selectItems = (String) settings.get(commaSeparatedValue);
+	String selectItems = settings.getProperty(commaSeparatedValue);
 	if (selectItems == null) {
 	    return Collections.EMPTY_LIST;
 	}
@@ -408,7 +415,7 @@ public class ServerSettingsBean {
      * @param mrURLs
      * @param repositoryName
      */
-    private void setSelectItems(List values, String Name) {
+    private void setSelectItems(List<SelectItem> values, String Name) {
 	StringBuffer repositoryURLs = new StringBuffer();
 	for (int i = 0; i < values.size(); i++) {
 	    repositoryURLs.append(values.get(i)).append(",");
@@ -421,8 +428,8 @@ public class ServerSettingsBean {
      * @param repositoryNames
      */
     private void addRepositoryURL(String currentRepositoryName, String repositoryNames) {
-	String currentRepositoryURL = (String) settings.get(currentRepositoryName);
-	String repositoryURLs = (String) settings.get(repositoryNames);
+	String currentRepositoryURL = settings.getProperty(currentRepositoryName);
+	String repositoryURLs = settings.getProperty(repositoryNames);
 	String[] result = repositoryURLs.split(",");
 	boolean exist = false;
 	for (int i = 0; i < result.length; i++) {
@@ -444,8 +451,8 @@ public class ServerSettingsBean {
      * @param defaultName
      */
     private void removeRepositoryURL(String currentRepositoryName, String repositoryNames, String defaultName) {
-	String currentRepositoryURL = (String) settings.get(currentRepositoryName);
-	String repositoryURLs = (String) settings.get(repositoryNames);
+	String currentRepositoryURL = settings.getProperty(currentRepositoryName);
+	String repositoryURLs = settings.getProperty(repositoryNames);
 	String[] result = repositoryURLs.split(",");
 	StringBuffer newRepositoryURLs = new StringBuffer(defaultName + ",");
 	if (!defaultName.equals(currentRepositoryURL)) {
@@ -461,7 +468,7 @@ public class ServerSettingsBean {
     /**
      * @return
      */
-    public List getModuleRepositoryURLs() {
+    public List<SelectItem> getModuleRepositoryURLs() {
 	addRepositoryURL("ModuleRepositoryURL", "ModuleRepositoryURLs");
 	return getSelectItems("ModuleRepositoryURLs");
     }
@@ -469,7 +476,7 @@ public class ServerSettingsBean {
     /**
      * @param mrURLs
      */
-    public void setModuleRepositoryURLs(List mrURLs) {
+    public void setModuleRepositoryURLs(List<SelectItem> mrURLs) {
 	setSelectItems(mrURLs, "ModuleRepositoryURLs");
     }
 
@@ -493,7 +500,7 @@ public class ServerSettingsBean {
     /**
      * @return
      */
-    public List getSuiteRepositoryURLs() {
+    public List<SelectItem> getSuiteRepositoryURLs() {
 	addRepositoryURL("SuiteRepositoryURL", "SuiteRepositoryURLs");
 	return getSelectItems("SuiteRepositoryURLs");
     }
@@ -501,7 +508,7 @@ public class ServerSettingsBean {
     /**
      * @param mrURLs
      */
-    public void setSuiteRepositoryURLs(List mrURLs) {
+    public void setSuiteRepositoryURLs(List<SelectItem> mrURLs) {
 	setSelectItems(mrURLs, "SuiteRepositoryURLs");
     }
 
@@ -531,7 +538,7 @@ public class ServerSettingsBean {
     }
 
     public String getProxyHost() {
-	return (String) settings.get("http.proxyHost");
+	return settings.getProperty("http.proxyHost");
     }
 
     public void setProxyPort(String port) {
@@ -540,7 +547,7 @@ public class ServerSettingsBean {
     }
 
     public String getProxyPort() {
-	return (String) settings.get("http.proxyPort");
+	return settings.getProperty("http.proxyPort");
     }
 
     public void setProxyUser(String user) {
@@ -549,14 +556,14 @@ public class ServerSettingsBean {
     }
 
     public String getProxyUser() {
-	return (String) settings.get("http.proxyUser");
+	return settings.getProperty("http.proxyUser");
     }
 
     /**
      * @return
      */
     public String getProxyPassword() {
-	return (String) System.getProperty("http.proxyPassword");
+	return System.getProperty("http.proxyPassword");
     }
 
     /**
@@ -571,8 +578,7 @@ public class ServerSettingsBean {
      * @return
      */
     public String getDb() {
-	String db = (String) settings.get("database.vendor");
-	return db;
+	return settings.getProperty("database.vendor");
     }
 
     /**
@@ -586,7 +592,7 @@ public class ServerSettingsBean {
      * @return
      */
     public String getClobRadio() {
-	String value = (String) settings.get("hibernate.connection.SetBigStringTryClob");
+	String value = settings.getProperty("hibernate.connection.SetBigStringTryClob");
 	return (value == null) ? "" : value;
     }
 
@@ -600,7 +606,7 @@ public class ServerSettingsBean {
     }
 
     public String getDefaultSchema() {
-	String value = (String) settings.get("hibernate.default_schema");
+	String value = settings.getProperty("hibernate.default_schema");
 	return (value == null) ? "" : value;
     }
 
@@ -611,7 +617,7 @@ public class ServerSettingsBean {
     }
 
     public String getHibernatePassword() {
-	String value = (String) settings.get("hibernate.connection.password");
+	String value = settings.getProperty("hibernate.connection.password");
 	return (value == null) ? "" : value;
     }
 
@@ -625,7 +631,7 @@ public class ServerSettingsBean {
      * @return
      */
     public String getLsidShowRadio() {
-	String value = (String) settings.get("lsid.show");
+	String value = settings.getProperty("lsid.show");
 	return (value == null) ? "" : (value.equals("1") ? "true" : "false");
     }
 
@@ -646,7 +652,7 @@ public class ServerSettingsBean {
      * @return
      */
     public String getShutDownRadio() {
-	String value = (String) settings.get("hibernate.connection.shutdown");
+	String value = settings.getProperty("hibernate.connection.shutdown");
 	return (value == null) ? "" : value;
     }
 
@@ -778,7 +784,7 @@ public class ServerSettingsBean {
     }
 
     public String getPurgeJobsAfter() {
-	return (String) settings.get("purgeJobsAfter");
+	return settings.getProperty("purgeJobsAfter");
     }
 
     public void setPurgeJobsAfter(String purgeJobsAfter) {
@@ -786,7 +792,7 @@ public class ServerSettingsBean {
     }
 
     public String getPurgeTime() {
-	return (String) settings.get("purgeTime");
+	return settings.getProperty("purgeTime");
     }
 
     public void setPurgeTime(String purgeTime) {
