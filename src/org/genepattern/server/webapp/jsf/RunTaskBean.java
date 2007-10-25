@@ -73,6 +73,19 @@ public class RunTaskBean {
     private boolean showParameterDescriptions;
 
     /**
+     * True if current request included an 'lsid' parameter which could not be resolved to a module.
+     * Most likely if trying to load a module which is not installed on the server.
+     */
+    private boolean invalidLsid = false;
+    public boolean isInvalidLsid() {
+        return invalidLsid;
+    }
+    private String lsidParam = null;
+    public String getLsidParam() {
+        return lsidParam;
+    }
+
+    /**
      * Initialize the task lsid. This page needs to support redirects from older .jsp pages as well as jsf navigation.
      * JSP pages will pass the lsid in as a request parameter. Look for it there first, if the paramter is null get it
      * from the moduleChooserBean.
@@ -89,6 +102,11 @@ public class RunTaskBean {
 	setTask(taskToRun);
 	this.showParameterDescriptions = Boolean.parseBoolean(new UserDAO().getPropertyValue(UIBeanHelper.getUserId(),
 		"show.parameter.descriptions", "true"));
+
+	if (taskToRun != null && !taskToRun.equals("") && (lsid == null || lsid.equals(""))) {
+	    invalidLsid = true;
+	    lsidParam = taskToRun;
+	}
     }
 
     public boolean isShowParameterDescriptions() {
