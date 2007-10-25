@@ -74,16 +74,11 @@ public class RunR extends Thread {
     public RunR(String[] args) {
 	String[] commandLine = null;
 	boolean bWindows = System.getProperty("os.name").startsWith("Windows");
-	/*
-	 * find R_HOME:
-	 * 
-	 * 1. java -DR_HOME=path_to_R_home 2. environment variable 3. assume it is in the path
-	 * 
-	 */
+
 	String R_HOME = System.getProperty("R_HOME");
 	if (R_HOME == null) {
-	    Hashtable<String, String> htEnv = getEnv();
-	    R_HOME = htEnv.get("R_HOME");
+	    System.err.println("R version 2.0.1 could not be found.");
+	    System.exit(0);
 	}
 
 	String[] rFlags = null;
