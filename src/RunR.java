@@ -76,7 +76,7 @@ public class RunR extends Thread {
 	boolean bWindows = System.getProperty("os.name").startsWith("Windows");
 
 	String R_HOME = System.getProperty("R_HOME");
-	if (R_HOME == null) {
+	if (R_HOME == null || R_HOME.equals("")) {
 	    System.err.println("R version 2.0.1 could not be found.");
 	    System.exit(0);
 	}
