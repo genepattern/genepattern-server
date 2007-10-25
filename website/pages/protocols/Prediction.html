@@ -48,24 +48,30 @@ that can be used to predict the class of a previously unknown sample.
   </li>
 </ul>
 <p>Class prediction can be done using one expression data set; ideally, it is 
-done using two. If you have a large expression data set, use the <a href="javascript:openModuleById('analysis:00024');">SplitDatasetTrainTest</a> 
-  (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00024&file=SplitDatasetTrainTest.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
-module 
-to divide it into two non-overlapping data sets.</p>
+done using two. If you have a large expression data set, use the <a class="gpWindow" href="javascript:openModuleByName('SplitDatasetTrainTest');">SplitDatasetTrainTest</a> 
+  (<a class="gpDocInline" href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00024&file=SplitDatasetTrainTest.pdf"></a>)
+module to divide it into two non-overlapping data sets.</p>
 
 <div class="steps">
-  <h2>Step 1: Run the <a href="javascript:openModuleById('analysis:00020');">PreprocessDataset</a> 
-  (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020&file=PreprocessDataset.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
-  module to filter the gene expression data.</h2>
-
-  <p><em>Use <a href="javascript:setInputFile('ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct')">example file (all_aml_train.gct)</a></em></p>
+  <h2>Step 1: PreprocessDataset</h2>
+  <p>Use this module to filter the gene expression data.</p>
+  <ul>
+  <li><a class="gpWindow" href="javascript:openModuleByName('PreprocessDataset');"
+      >Open the PreprocessDataset module</a> in the GenePattern window.</li>
+  <li><em>Example: </em><a class="gpWindow" 
+       href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct')"
+    >Set the 'input filename'</a> in the GenePattern window.</li>
+  <li><a class="gpDoc" 
+         href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020&file=PreprocessDataset.pdf"
+         ></a>.</li>
+  </ul>
 
   <h5>What it does</h5>
   <p>Preprocess the data to remove platform noise and
           genes that have little variation before using it to build a class predictor.
       This module can preprocess the data in one or more ways (in this order): </p>
   <ol>
-    <li>Set threshold and ceiling values. Any value lower/higer than the threshold/ceiling
+    <li>Set threshold and ceiling values. Any value lower/higher than the threshold/ceiling
       value is reset to the threshold/ceiling value. </li>
     <li>Convert each expression value to the log base 2 of the value (see Considerations). </li>
     <li>Remove genes (rows) if a given number of its sample values are less
@@ -172,10 +178,12 @@ to divide it into two non-overlapping data sets.</p>
 </div>
 <div class="steps">
   <h2>Step 4: Run the cross-validation module for the chosen class prediction method.</h2>
-  <p><span class="resultsInlineSubhead">CARTXValidation</span> &ndash; Run the 
-  <a href="javascript:openModuleById('analysis:00062');">CARTXValidation</a>  
-  (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00062&file=CARTXValidation.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
-  module.</p>
+  <p><span class="resultsInlineSubhead">CARTXValidation</span> &ndash;  
+  <a class="gpWindow" 
+     href="javascript:openModuleByName('CARTXValidation');"
+  >Open the CARTXValidation module</a> in the GenePattern window (<a class="gpDocInline" 
+     href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00062&file=CARTXValidation.pdf"
+     ></a>).</p>
 
   <h5>What it does</h5>
   <ul>
@@ -191,7 +199,7 @@ to divide it into two non-overlapping data sets.</p>
       the CART module. </li>
   </ul>
    <p><span class="resultsInlineSubhead">KNNXValidation</span> &ndash; Run the 
-  <a href="javascript:openModuleById('analysis:00013');">KNNXValidation</a>  
+  <a href="javascript:openModuleByName('KNNXValidation');">KNNXValidation</a>  
   (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00013&file=KNNXvalidation.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
   module.</p>
  
@@ -211,7 +219,7 @@ to divide it into two non-overlapping data sets.</p>
     </li>
   </ul>
    <p><span class="resultsInlineSubhead">PNNXValidationOptimization</span> &ndash; Run the 
-  <a href="javascript:openModuleById('analysis:00058');">PNNXValidationOptimization</a>  
+  <a href="javascript:openModuleByName('PNNXValidationOptimization');">PNNXValidationOptimization</a>  
   (<a href=""><img src="../../images/pdf.jpg" border="0"/></a>)
   module.</p>
   
@@ -237,7 +245,7 @@ to divide it into two non-overlapping data sets.</p>
 <p><span class="resultsInlineSubhead">SVM</span> &ndash;
   The cross-validation approach is not available for the SVM prediction method.</p>
    <p><span class="resultsInlineSubhead">WeightedVotingXValidation</span> &ndash; Run the 
-  <a href="javascript:openModuleById('analysis:00028');">WeightedVotingXValidation</a>  
+  <a href="javascript:openModuleByName('WeightedVotingXValidation');">WeightedVotingXValidation</a>  
   (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00028&file=WeightedVotingXValidation.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
   module.</p>
   
@@ -269,7 +277,7 @@ to divide it into two non-overlapping data sets.</p>
       averaging the results across all iterations.</p>
       <ul>
     <li>
-      Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
+      Run the <a href="javascript:openModuleByName('PredictionResultsViewer');">PredictionResultsViewer</a>
         (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00019&file=PredictionResultsViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
 module to view the prediction results (*.pred.odf) file. 
       The viewer lists each sample with its actual and predicted class.
@@ -292,11 +300,11 @@ module to view the prediction results (*.pred.odf) file.
         gene was used in a predictor. 
   </p>
   <ul>
-    <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
+    <li>Run the <a href="javascript:openModuleByName('PredictionResultsViewer');">PredictionResultsViewer</a>
               (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00019&file=PredictionResultsViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
 module to view the prediction results (*.pred.odf) file. The viewer lists each sample with its actual and predicted class.
     </li>
-    <li>Run the <a href="javascript:openModuleById('visualizer:00005');">FeatureSummaryViewer</a>
+    <li>Run the <a href="javascript:openModuleByName('FeatureSummaryViewer');">FeatureSummaryViewer</a>
               (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00005&file=FeatureSummaryViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
 module to view the feature result (*.feat.odf) file). 
       The viewer lists each gene used in a class predictor and the number of times 
@@ -337,12 +345,12 @@ module to view the feature result (*.feat.odf) file).
         gene was used in a predictor. 
   </p>
   <ul>
-    <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
+    <li>Run the <a href="javascript:openModuleByName('PredictionResultsViewer');">PredictionResultsViewer</a>
             (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00019&file=PredictionResultsViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
       module to view the prediction results (*.pred.odf) file).
       The viewer lists each sample with its actual and predicted class.
  </li>
-    <li>Run the <a href="javascript:openModuleById('visualizer:00005');">FeatureSummaryViewer</a>
+    <li>Run the <a href="javascript:openModuleByName('FeatureSummaryViewer');">FeatureSummaryViewer</a>
             (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00005&file=FeatureSummaryViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
     module to view the feature result (*.feat.odf) file. 
       The viewer lists each gene used in a class predictor and the number of times 
@@ -363,18 +371,18 @@ module to view the feature result (*.feat.odf) file).
 <div class="steps">
   <h2>Step 6: Run the train/test module for the chosen class prediction method:</h2>
 
-<p>Run the <a href="javascript:openModuleById('analysis:00056');">CART</a>
+<p>Run the <a href="javascript:openModuleByName('CART');">CART</a>
   (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00056&file=CART.pdf"><img src="../../images/pdf.jpg" border="0"/></a>) module,
 <br/>
-the <a href="javascript:openModuleById('analysis:00012');">KNN</a> 
+the <a href="javascript:openModuleByName('KNN');">KNN</a> 
  (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00012&file=KNN.pdf"><img src="../../images/pdf.jpg" border="0"/></a>) module,
 <br/> 
-the <a href="javascript:openModuleById('analysis:00059');">PNN</a> 
+the <a href="javascript:openModuleByName('PNN');">PNN</a> 
  (<a href=""><img src="../../images/pdf.jpg" border="0"/></a>) module,
 <br/> 
-the <a href="javascript:openModuleById('analysis:00025');">SVM</a> 
+the <a href="javascript:openModuleByName('SVM');">SVM</a> 
  (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00025&file=SVM.pdf"><img src="../../images/pdf.jpg" border="0"/></a>) module, or
-<br/> the <a href="javascript:openModuleById('analysis:00027');">WeightedVoting</a>
+<br/> the <a href="javascript:openModuleByName('WeightedVoting');">WeightedVoting</a>
  (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00027&file=WeightedVoting.pdf"><img src="../../images/pdf.jpg" border="0"/></a>) module.</p>
 <h5>What it does    </h5>
   <ul>
@@ -411,7 +419,7 @@ the <a href="javascript:openModuleById('analysis:00025');">SVM</a>
         shows the classification tree.
   </p>
   <ul>
-    <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
+    <li>Run the <a href="javascript:openModuleByName('PredictionResultsViewer');">PredictionResultsViewer</a>
             (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00019&file=PredictionResultsViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
     module to view the prediction results (*.pred.odf) file. 
       The viewer lists each sample with its actual and predicted class.
@@ -434,7 +442,7 @@ the <a href="javascript:openModuleById('analysis:00025');">SVM</a>
         a model file that contains the classifier (or model) created from the training data set.
   </p>
   <ul>
-    <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
+    <li>Run the <a href="javascript:openModuleByName('PredictionResultsViewer');">PredictionResultsViewer</a>
             (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00019&file=PredictionResultsViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
       module to view the prediction results (*.pred.odf) file. The viewer lists each sample with its actual and predicted class.
     </li>
@@ -458,7 +466,7 @@ the <a href="javascript:openModuleById('analysis:00025');">SVM</a>
         extended prediction results file that contains additional information. 
   </p>
   <ul>
-    <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
+    <li>Run the <a href="javascript:openModuleByName('PredictionResultsViewer');">PredictionResultsViewer</a>
             (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00019&file=PredictionResultsViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
       module to view the prediction results (*.pred.odf) file. The viewer lists each sample with its actual and predicted class.
     </li>
@@ -481,7 +489,7 @@ the <a href="javascript:openModuleById('analysis:00025');">SVM</a>
         a model file that contains the classifier (or model) created from the training data set.
   </p>
   <ul>
-    <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
+    <li>Run the <a href="javascript:openModuleByName('PredictionResultsViewer');">PredictionResultsViewer</a>
             (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00019&file=PredictionResultsViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)
       module to view the prediction results (*.pred.odf) file. The viewer lists each sample with its actual and predicted class.
     </li>
@@ -503,7 +511,7 @@ the <a href="javascript:openModuleById('analysis:00025');">SVM</a>
         a model file that contains the classifier (or model) created from the training data set.
   </p>
   <ul>
-    <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
+    <li>Run the <a href="javascript:openModuleByName('PredictionResultsViewer');">PredictionResultsViewer</a>
             (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00019&file=PredictionResultsViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)      
             module to view the prediction results (*.pred.odf) file. The viewer lists each sample with its actual and predicted class.
     </li>
@@ -534,7 +542,7 @@ the <a href="javascript:openModuleById('analysis:00025');">SVM</a>
       class of each sample in the expression data set. For the unknown samples,
       create a class file that assigns some class (for example, "unknown") to each
       sample. </li>
-    <li>Run the <a href="javascript:openModuleById('visualizer:00019');">PredictionResultsViewer</a>
+    <li>Run the <a href="javascript:openModuleByName('PredictionResultsViewer');">PredictionResultsViewer</a>
             (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00019&file=PredictionResultsViewer.pdf"><img src="../../images/pdf.jpg" border="0"/></a>)      
       module to view the prediction results (*.pred.odf) file. The viewer lists each sample with
       its actual and predicted class. Ignore the actual class, which was unknown.

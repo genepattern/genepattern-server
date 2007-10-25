@@ -31,11 +31,18 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
 </ul>
 
 <div class="steps">
-  <h2>Step 1: Run the <a href="javascript:openModuleById('analysis:00020');">PreprocessDataset</a> 
-  (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020&file=PreprocessDataset.pdf"><img src="../../images/pdf.jpg" border="0"></a>)
-  module to filter the gene expression data.</h2>
-
-  <p><em>Use <a href="javascript:setInputFile('ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct')">example file (all_aml_train.gct)</a></em></p>
+  <h2>Step 1: PreprocessDataset</h2>
+  <p>Use this module to filter the gene expression data.</p>
+  <ul>
+  <li><a class="gpWindow" href="javascript:openModuleByName('PreprocessDataset');"
+      >Open the PreprocessDataset module</a> in the GenePattern window.</li>
+  <li><em>Example: </em><a class="gpWindow" 
+       href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct')"
+    >Set the 'input filename'</a> in the GenePattern window.</li>
+  <li><a class="gpDoc" 
+         href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020&file=PreprocessDataset.pdf"
+         ></a>.</li>
+  </ul>
 
   <h5>What it does</h5>
   <p>Before clustering gene expression data, preprocess the data 
@@ -110,10 +117,16 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
 </div>
 <div class="steps">
   <h2>Step 3: Run the module that matches the chosen algorithm:</h2>
-  <p><span class="resultsInlineSubhead">HierarchicalClustering</span> &ndash; Run the 
-  <a href="javascript:openModuleById('analysis:00009');">HierachicalClustering</a>  
-  (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00009:2&file=HierarchicalClustering.pdf"><img src="../../images/pdf.jpg" border="0"></a>)
-  module.
+  <p><span class="resultsInlineSubhead">HierarchicalClustering</span></p>
+  <ul>
+  <li><a class="gpWindow" href="javascript:openModuleByName('HierarchicalClustering');"
+  >Open the HierachicalClustering module</a> in the GenePattern window (<a class="gpDocInline" 
+      href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00009:2&file=HierarchicalClustering.pdf"
+   ></a>).</li>
+   <li><em>Example: </em><a class="gpWindow" 
+       href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf')"
+    >Set the 'input filename'</a> in the GenePattern window.</li>
+  </ul>
   <h5>What it does</h5>
   <ul>
     <li>The module runs hierarchical clustering on genes and/or samples creating 
@@ -131,10 +144,18 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
       HierachicalClusteringViewer). For instructions on converting
       a CDT file to a GCT file, see <a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_fileformats.html#_Creating_Input_Files">Creating Input Files</a>. </li>
   </ul>
-    <p><span class="resultsInlineSubhead">ConsensusClustering</span> &ndash; Run the 
-  <a href="javascript:openModuleById('analysis:00030');">ConsensusClustering</a>
-   (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00030&file=ConsensusClustering.pdf"><img src="../../images/pdf.jpg" border="0"></a>)
-   module.
+  <p><span class="resultsInlineSubhead">ConsensusClustering</span></p>
+  <ul> 
+    <li><a class="gpWindow"
+       href="javascript:openModuleByName('ConsensusClustering');"
+       >Open the ConsensusClustering module</a> in the GenePattern window 
+       (<a class="gpDocInline"
+        href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00030&file=ConsensusClustering.pdf"
+        ></a>).</li>
+    <li><em>Example: </em><a class="gpWindow" 
+       href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf')"
+    >Set the 'input filename'</a> in the GenePattern window.</li>
+  </ul>
   <h5>What it does</h5>
   <ul>
     <li>The module runs the selected clustering algorithm 
@@ -158,11 +179,16 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
     <li>For considerations specific to the selected clustering algorithm, see
       the protocol for using that algorithm. </li>
   </ul>
-    <p><span class="resultsInlineSubhead">KMeansClustering</span> &ndash; Run the 
-  <a href="javascript:openModuleById('analysis:00081');">KMeansClustering</a>
-   (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00081&file=KMeansClustering.pdf"><img src="../../images/pdf.jpg" border="0"></a>)
-   module.
-
+  <p><span class="resultsInlineSubhead">KMeansClustering</span></p>
+  <ul>
+    <li><a class="gpWindow" href="javascript:openModuleByName('KMeansClustering');"
+        >Open the KMeansClustering module</a> in the GenePattern window (<a class="gpDocInline" 
+        href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00081&file=KMeansClustering.pdf"
+        ></a>).</li>
+    <li><em>Example: </em><a class="gpWindow" 
+       href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf')"
+    >Set the 'input filename'</a> in the GenePattern window.</li>
+  </ul>
   <h5>What it does</h5>
   <ul>
     <li>The module runs k-means clustering on genes (rows) or samples (columns). It creates 
@@ -174,10 +200,16 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
     <li>None.
     </li>
   </ul>
-    <p><span class="resultsInlineSubhead">SOMClustering</span> &ndash; Run the 
-  <a href="javascript:openModuleById('analysis:00029');">SOMClustering</a>
-   (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00029&file=SOMClustering.pdf"><img src="../../images/pdf.jpg" border="0"></a>)
-   module.
+  <p><span class="resultsInlineSubhead">SOMClustering</span></p>
+  <ul>
+  <li><a class="gpWindow" href="javascript:openModuleByName('SOMClustering');"
+      >Open the SOMClustering module</a> in the GenePattern window (<a class="gpDocInline" 
+      href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00029&file=SOMClustering.pdf"
+      ></a>).</li>
+    <li><em>Example: </em><a class="gpWindow" 
+       href="javascript:setInputFile('dataset.filename_cb_url', 'dataset.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct')"
+    >Set the 'dataset filename'</a> in the GenePattern window.</li>
+  </ul>
   
   <h5>What it does</h5>
   <ul>
@@ -193,10 +225,16 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
       To find the optimal set of “centroids” for the clusters, use the default
       value of 50000 iterations. </li>
   </ul>
-    <p><span class="resultsInlineSubhead">NMFConsensus</span> &ndash; Run the 
-  <a href="javascript:openModuleById('analysis:00057');">NMFConsensus</a>
-   (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00057&file=NMFConsensus.pdf"><img src="../../images/pdf.jpg" border="0"></a>)
-   module.
+  <p><span class="resultsInlineSubhead">NMFConsensus</span></p> 
+  <ul>
+  <li><a class="gpWindow" href="javascript:openModuleByName('NMFConsensus');"
+    >Open the NMFConsensus module</a> in the GenePattern window (<a class="gpDocInline"
+     href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00057&file=NMFConsensus.pdf"
+     ></a>).</li>
+    <li><em>Example: </em><a class="gpWindow" 
+       href="javascript:setInputFile('dataset.filename_cb_url', 'dataset.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct')"
+    >Set the 'dataset filename'</a> in the GenePattern window.</li>
+ </ul>
 
   <h5>What it does</h5>
   <ul>
@@ -239,8 +277,22 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
 </div>
 <div class="steps">
   <h2>Step 4: View the results.</h2>
-  <p><span class="resultsInlineSubhead">HierachicalClustering</span> &ndash; Run the <a href="javascript:openModuleById('visualizer:00031');">HierarchicalClusteringViewer</a> 
-  (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00031&file=HierarchicalClusteringViewer.pdf"><img src="../../images/pdf.jpg" border="0"></a>) module to view the results. </p>
+  <p><span class="resultsInlineSubhead">HierachicalClustering</span></p>
+  <ul>
+    <li><a class="gpWindow" href="javascript:openModuleByName('HierarchicalClusteringViewer');"
+        >Open the HierarchicalClusteringViewer module</a> in the GenePattern window.</li>
+    <li><em>Example: </em><a class="gpWindow" 
+       href="javascript:setInputFile('cdt.file_cb_url', 'cdt.file_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.cdt')"
+    >Set the 'cdt file'</a> in the GenePattern window.</li>
+    <li><em>Example: </em><a class="gpWindow" 
+       href="javascript:setInputFile('gtr.file_cb_url', 'gtr.file_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.gtr')"
+    >Set the 'gtr file'</a> in the GenePattern window.</li>
+    <li><em>Example: </em><a class="gpWindow" 
+       href="javascript:setInputFile('atr.file_cb_url', 'atr.file_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.atr')"
+    >Set the 'atr file'</a> in the GenePattern window.</li>
+    <li><a class="gpDoc" href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00031&file=HierarchicalClusteringViewer.pdf"
+       ></a>.</li>
+  </ul>
   <h5>What it does    </h5>
   <ul>
     <li>The viewer displays a heat map of the clustered gene expression data, with 
@@ -253,11 +305,18 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
     <li>Select File&gt;Save Image to save the heat map and dendrograms to an
       image file. Supported formats include bmp, eps, jpeg, png, and tiff. </li>
   </ul>
-  <p><span class="resultsInlineSubhead">ConsensusClustering</span> &ndash; 
-  Run the <a href="javascript:openModuleById('visualizer:00010')">HeatMapViewer</a>
-    (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00010&file=HeatMapViewer.pdf"><img src="../../images/pdf.jpg" border="0"></a>) 
-  module to view the consensus matrices.
-    View other output files by clicking them.  </p>
+  <p><span class="resultsInlineSubhead">ConsensusClustering</span> &ndash; Run the HeatMapViewer module to view the consensus matrices.
+    View other output files by clicking them.</p>
+  <ul>
+    <li><a class="gpWindow" href="javascript:openModuleByName('HeatMapViewer')"
+        >Open the HeatMapViewer module</a> in the GenePattern window.</li>
+    <li><em>Example: </em><a class="gpWindow" 
+       href="javascript:setInputFile('dataset_cb_url', 'dataset_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.sub30.2.gct')"
+    >Set the 'dataset'</a> in the GenePattern window.</li>
+    <li><a class="gpDoc" href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00010&file=HeatMapViewer.pdf"
+       ></a>.</li>
+  </ul>
+
   <h5>What it does</h5>
   <ul>
     <li>The consensus matrix is formatted as a 
@@ -278,10 +337,13 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
     <li>The *.stdev output file shows... TBD </li>
     <li>The *.pdf output file shows... TBD </li>
   </ul>
-  <p><span class="resultsInlineSubhead">KMeansClustering</span> &ndash; 
-  Run the <a href="javascript:openModuleById('visualizer:00010');">HeatMapViewer</a>
-    (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00010&file=HeatMapViewer.pdf"><img src="../../images/pdf.jpg" border="0"></a>) 
-  module to view the results.</p>
+  <p><span class="resultsInlineSubhead">KMeansClustering</span></p>
+  <ul>
+    <li><a class="gpWindow" href="javascript:openModuleByName('HeatMapViewer');"
+        >Open the HeatMapViewer module</a> in the GenePattern window.</li>
+    <li><a class="gpDoc" href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00010&file=HeatMapViewer.pdf"
+        ></a>.</li>
+  </ul>
   <h5>What it does</h5>
   <ul>
     <li>The HeatMapViewer 
@@ -296,9 +358,13 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
       the expression data organized by cluster.
     </li>
   </ul>
-  <p><span class="resultsInlineSubhead">SOMClustering</span> &ndash; Run the <a href="javascript:openModuleById('visualizer:00023');">SOMClusterViewer</a>
-    (<a href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00023&file=SOMClusterViewer.pdf"><img src="../../images/pdf.jpg" border="0"></a>) 
-    to view the results.  </p>
+  <p><span class="resultsInlineSubhead">SOMClustering</span></p>
+  <ul>
+    <li><a class="gpWindow" href="javascript:openModuleByName('SOMClusterViewer');"
+        >Open the SOMClusterViewer module</a> in the GenePattern window.</li>
+    <li><a class="gpDoc" href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00023&file=SOMClusterViewer.pdf"
+        ></a>.</li>
+  </ul>
   <h5>What it does</h5>
   <ul>
     <li>The SOMClusterViewer displays the SOMClustering results file 
