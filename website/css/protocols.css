@@ -1,3 +1,11 @@
+#homeIndent{
+	padding: 0px;
+	margin-top: 0px;
+	margin-right: 10px;
+	margin-bottom: 0px;
+	margin-left: 10px;
+}
+
 .protocols {
 	background-color: #e3e3fd;
 	padding: 5px 20px 20px;
@@ -12,25 +20,14 @@
 	padding: 10px 0px 20px;
 }
 
-.protocols table.options {
-	width: 100%;
-}
-
-.protocols table.options td {
-	width: 50%;
-	vertical-align: top;
-	margin: 0px;
-	padding: 0px 15px 0px 0px;
-	background-image: url(../images/protocolColBevel.gif);
-}
-
 .protocol_list {
 	list-style: none;
 	/* margin-left: 40px; */
-    margin-top: 12px;
-	margin-bottom: 12px;
-	padding-top: 12px;
-	padding-bottom: 12px;
+    margin-top: 0px;
+	margin-bottom: 0px;
+	margin-left: 0;
+	padding-top: 0px;
+	padding-bottom: 0px;
 }
 
 .protocol_list li {
@@ -41,6 +38,8 @@
 	float: left;
 	padding-right: 12px;
 	padding-bottom: 12px;
+	width: 48px;
+	height: 48px;
 }
 
 .protocol_list_img {
@@ -51,7 +50,7 @@
 
 .protocol_list_block {
 	/* aligns text to the right of the image, in case there is a lot of text. */
-	padding-left: 96px;
+	padding-left: 80px;
 	padding-bottom: 12px;
 }
 
@@ -61,14 +60,6 @@
 }
 .optionsHead {
 	font-size: 12px;
-}
-
-#homeIndent{
-	padding: 0px;
-	margin-top: 0px;
-	margin-right: 10px;
-	margin-bottom: 0px;
-	margin-left: 10px;
 }
 
 a.protocolLink:after {
@@ -83,5 +74,6 @@ a.gpDoc:after {
 	content: "View module documentation " url(../images/pdf.jpg);
 }
 
-
-
+a.gpDocInline:after {
+	content: url(../images/pdf.jpg);
+}
