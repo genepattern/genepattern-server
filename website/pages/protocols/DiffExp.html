@@ -9,13 +9,18 @@
 
 <body>
 <h1>Differential Expression Analysis</h1>
-        <table width="100%" border="0" cellpadding="0" cellspacing="0">
-          <tr>
-            <td align="right">
-              <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=4">comments/suggestions</a>
-            </td>
-          </tr>
-        </table>
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+    <tr>
+<!--  
+      <td align="left">
+        <a href="protocols.xhtml">protocols</a>
+      </td>
+-->
+      <td align="right">
+        <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=4">comments/suggestions</a>
+      </td>
+    </tr>
+  </table>
 <p>Find genes that are significantly differentially expressed between classes of samples.</p>
 
 
@@ -29,20 +34,19 @@
 
 <div class="steps">
   <h2>Step 1: PreprocessDataset</h2>
-  <p>Use this module to filter the gene expression data.</p>
+  <div class="gpLinks">
   <ul>
-  <li><a class="gpWindow" href="javascript:openModuleByName('PreprocessDataset');"
-      >Open the PreprocessDataset module</a> in the GenePattern window.</li>
-  <li><em>Example: </em><a class="gpWindow" 
-       href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct')"
-    >Set the 'input filename'</a> in the GenePattern window.</li>
-  <li><a class="gpDoc" 
-         href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020&file=PreprocessDataset.pdf"
-         ></a>.</li>
+    <li><a href="javascript:openModuleByName('PreprocessDataset');"
+        >Open module</a> in the GenePattern window.</li>
+    <li><a 
+         href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct"
+         onclick="setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct'); return false;"
+        >Use example dataset for 'input_filename'</a></li>
   </ul>
+  </div>
 
   <h5>What it does</h5>
-  <p>Preprocess the data to remove platform noise and genes that have little variation.
+  <p>Use this module to filter the gene expression data. Preprocess the data to remove platform noise and genes that have little variation.
       This module can preprocess the data in one or more ways (in this order):    </p>
   <ol>
     <li>Set threshold and ceiling values. Any value lower/higer than the threshold/ceiling
@@ -54,6 +58,7 @@
       variation. </li>
     <li>Discretize or normalize the data. </li>
   </ol>
+  
   <h5>Considerations</h5>
   <ul>
     <li>When using ratios to compare gene expression between samples, 
@@ -65,28 +70,30 @@
       check whether preprocessing steps have already been taken before 
       running the PreprocessDataset module. </li>
   </ul>
+  <div class="gpDocLinks">
+  <p>
+  <a href="/gp/getTaskDoc.jsp?name=PreprocessDataset">PreprocessDataset.pdf</a>
+  </p>
+  </div>
+
 </div>
 
 <div class="steps">
   <h2>Step 2: ComparativeMarkerSelection</h2>
-  <p>Run the ComparativeMarkerSelection module to compute differential gene expression.
-  </p>
+  
+  <div class="gpLinks">
   <ul>
-  <li><a class="gpWindow" href="javascript:openModuleByName('ComparativeMarkerSelection');"
-  >Open the ComparativeMarkerSelection module</a>  in the GenePattern window.</li>
-  <li><em>Example: </em><a class="gpWindow" 
-    href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.gct')"
-    >Set the 'input filename'</a> in the GenePattern window.
-  </li>
-  <li><em>Example: </em><a class="gpWindow"
-    href="javascript:setInputFile('cls.filename_cb_url', 'cls.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls')"
-    >Set the 'cls filename'</a> in the GenePattern window.
-  </li>
-  <li><a class="gpDoc" 
-  href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044&file=ComparativeMarkerSelection.pdf"
-  ></a>.</li>
+  <li><a href="javascript:openModuleByName('ComparativeMarkerSelection');"
+      >Open module</a></li>
+  <li><a href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.gct')"
+    >Use example 'input filename'</a></li>
+  <li><a href="javascript:setInputFile('cls.filename_cb_url', 'cls.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls')"
+    >Use example 'cls filename'</a></li>
   </ul>
+  </div>
+
   <h5>What it does</h5>
+  <p>Run the ComparativeMarkerSelection module to compute differential gene expression.</p>
   <ul>
     <li>For each gene, the module uses a test statistic to calculate the 
       difference in gene expression between classes and then computes a p-value to estimate the 
@@ -96,6 +103,7 @@
       rates (FDR) and family-wise error rates (FWER). 
       Researchers generally identify marker genes based on FDR rather than the more conservative FWER.</li> 
   </ul>
+
   <h5>Considerations</h5>
   <ul>
     <li>If the data set includes at least 10 samples per class, use the default value of 1000 permutations 
@@ -106,27 +114,28 @@
       to analyze each class against all others (one-versus-all) or all class pairs
       (all pairs). </li>
   </ul>
+
+  <div class="gpDocLinks">
+  <p><a href="/gp/getTaskDoc.jsp?name=ComparativeMarkerSelection">ComparativeMarkerSelection.pdf</a></p>
+  </div>
 </div>
 
 
 <div class="steps">
   <h2>Step 3: ComparativeMarkerSelectionViewer</h2>
-  <p>Run the ComparativeMarkerSelectionViewer module to view the results.</p>
+  <div class="gpLinks">
   <ul>
-     <li><a class="gpWindow" 
-            href="javascript:openModuleByName('ComparativeMarkerSelectionViewer');"
-         >Open the ComparativeMarkerSelectionViewer</a> in the GenePattern window.</li>
-     <li><em>Example: </em><a class="gpWindow"
-         href="javascript:setInputFile('comparative.marker.selection.file_cb_url', 'comparative.marker.selection.file_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf')"
-     >Set the 'comparative marker selection file'</a> in the GenePattern window.</li>
-     <li><em>Example: </em><a class="gpWindow"
-         href="javascript:setInputFile('dataset.file_cb_url', 'dataset.file_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.gct')"
-     >Set the 'dataset file'</a> in the GenePattern window.</li>
-     <li><a class="gpDoc" 
-            href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00045&file=ComparativeMarkerSelectionViewer.pdf"
-         ></a>.</li>
+     <li><a href="javascript:openModuleByName('ComparativeMarkerSelectionViewer');"
+         >Open the ComparativeMarkerSelectionViewer</a></li>
+     <li><a href="javascript:setInputFile('comparative.marker.selection.file_cb_url', 'comparative.marker.selection.file_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf')"
+     >Use example 'comparative marker selection file'</a></li>
+     <li><a href="javascript:setInputFile('dataset.file_cb_url', 'dataset.file_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.gct')"
+     >Use example 'dataset file'</a></li>
   </ul>
+  </div>
+  
   <h5>What it does</h5>
+  <p>Run the ComparativeMarkerSelectionViewer module to view the results.</p>
   <ul>
     <li>The viewer displays the analysis results including 
       the test statistic score, its p value, two FDR statistics and three FWER statistics for each gene. </li>
@@ -140,7 +149,10 @@
     <li>Select <i>File&gt;Save Derived Dataset</i> to create a GCT file that contains
       a subset of the expression data. </li>
   </ul>
- 
+
+  <div class="gpDocLinks">
+  <p><a href="/gp/getTaskDoc.jsp?name=ComparativeMarkerSelectionViewer">ComparativeMarkerSelectionViewer.pdf</a></p>
+  </div>
 </div>
 
  <h2>Reference</h2>

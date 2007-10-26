@@ -1,6 +1,11 @@
-//var lsidPrefix='urn:lsid:broad.mit.edu:cancer.software.genepattern.module.';
+//Note on window names
+//    'genepattern' - the main GenePattern window
+//    'protocol' - the new window which gets created when linking to a protocol from the main GenePattern window
 
 function openProtocolWindow(theURL) {
+  if (window.name != 'protocol') {
+    window.name = 'genepattern';
+  }
   w = window.open(theURL,'protocol','toolbar=1,menubar=1,scrollbars=1,resizable=1,width=500,height=350');
   w.focus();
 }
@@ -12,7 +17,7 @@ function openModuleByName(theName) {
 
 function openURL(theURL) {
   w = window.opener;
-  if (w != null) {
+  if (w != null && w.name != 'protocol') {
     w.location = theURL;
   }
   else {
@@ -25,8 +30,6 @@ function openURL(theURL) {
 function setInputFile(cb_name, filename_name, url) {
   w = window.opener;
   w.focus();
-  //w.document.forms['taskForm'].elements['input.filename_cb_url'].click();
-  //w.document.forms['taskForm'].elements['input.filename_url'].value = url;
   w.document.forms['taskForm'].elements[cb_name].click();
   w.document.forms['taskForm'].elements[filename_name].value = url;
 }

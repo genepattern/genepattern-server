@@ -26,7 +26,6 @@ ul {
 	margin-bottom: 0px;
 	padding-top: 0px;
 	padding-bottom: 0px;
-
 }
 ul li {
 	padding-bottom: 10px;
@@ -37,18 +36,15 @@ ul li ul {
 	margin-bottom: 0px;
 	padding-top: 0px;
 	padding-bottom: 0px;
-
 }
 
 ol {
 }
 
-ol li{
+ol li {
 	margin-bottom: 0px;
 	padding-bottom: 0px;
 }
-
-
 
 h1{
 	color: #333366;
@@ -102,6 +98,47 @@ h5 {
 	margin-right: 0px;
 	margin-bottom: 10px;
 	margin-left: 0px;
+}
+
+.gpLinks {
+	background-color: #ffffee; /* PWY, Pale Weak Yellow */
+	border: 1px solid #cccccc; /* PG, Pale Gray */
+
+    padding: 0px 0px 0px 10px;
+	margin-top: 0px;
+	margin-right: 20px;
+	margin-bottom: 0px;
+	margin-left: 20px;
+}
+
+.gpLinks ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.gpLinks a:after {
+	content: " " url(../images/new-win-icon.gif);
+}
+
+.gpDocLinks p:before {
+	content: "Module documentation: ";
+}
+.gpDocLinks a:after {
+	content: " " url(../images/pdf.jpg);
+}
+
+a.gpWindow:after {
+	content: " " url(../images/new-win-icon.gif);
+}
+
+/* @deprecated */
+a.gpDoc:after {
+	content: "View module documentation " url(../images/pdf.jpg);
+}
+
+a.gpDocInline:after {
+	content: url(../images/pdf.jpg);
 }
 
 
