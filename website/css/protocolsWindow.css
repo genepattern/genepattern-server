@@ -29,7 +29,6 @@ ul {
 }
 ul li {
 	padding-bottom: 10px;
-
 }
 ul li ul {
 	margin-top: 10px;
@@ -103,12 +102,13 @@ h5 {
 .gpLinks {
 	background-color: #ffffee; /* PWY, Pale Weak Yellow */
 	border: 1px solid #cccccc; /* PG, Pale Gray */
+	border-top: 6px solid #cccccc;
 
     padding: 0px 0px 0px 10px;
 	margin-top: 0px;
-	margin-right: 20px;
-	margin-bottom: 0px;
-	margin-left: 20px;
+	margin-bottom: 12px;
+	margin-left: 24px;
+	margin-right: 24px;
 }
 
 .gpLinks ul {
@@ -117,14 +117,27 @@ h5 {
 	margin: 0;
 }
 
+.gpLinks ul li {
+	padding: 0;
+	margin: 0;
+}
+
 .gpLinks a:after {
 	content: " " url(../images/new-win-icon.gif);
 }
 
+/* display list of documentation links as an inline sequence of anchor (<a>) tags. */
+.gpDocLinks p {
+	text-indent: -12px;
+	padding-left: 36px;
+}
 .gpDocLinks p:before {
 	content: "Module documentation: ";
 }
-.gpDocLinks a:after {
+.gpDocLinks a { /* keep text and icon together */
+	white-space: nowrap;
+}
+.gpDocLinks a:after { /* decorate links with a pdf icon */
 	content: " " url(../images/pdf.jpg);
 }
 
@@ -132,14 +145,6 @@ a.gpWindow:after {
 	content: " " url(../images/new-win-icon.gif);
 }
 
-/* @deprecated */
-a.gpDoc:after {
-	content: "View module documentation " url(../images/pdf.jpg);
-}
-
-a.gpDocInline:after {
-	content: url(../images/pdf.jpg);
-}
 
 
 

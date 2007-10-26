@@ -3,25 +3,23 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
 <title>Clustering and Class Discovery</title>
-	<link href="../../css/protocols.css" rel="stylesheet" type="text/css" />
-	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="../../js/protocol.js"></script>
+	<link href="/gp/css/protocolsWindow.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="/gp/js/protocol.js"></script>
 </head>
 
 <body>
 
 <h1>Clustering and Class Discovery</h1>
-        <table width="100%" border="0" cellpadding="0" cellspacing="0">
-          <tr>
-            <td align="right">
-              <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=5">comments/suggestions</a>
-            </td>
-          </tr>
-        </table>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td align="right">
+    <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=5">comments/suggestions</a>
+    </td>
+  </tr>
+</table>
 
 <p>Find the innate structure of gene expression data by using various algorithms to 
 group genes and/or samples.</p>
-
 
 <h2>Preliminaries</h2>
 <ul>
@@ -32,17 +30,15 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
 
 <div class="steps">
   <h2>Step 1: PreprocessDataset</h2>
-  <p>Use this module to filter the gene expression data.</p>
+  <div class="gpLinks">
   <ul>
-  <li><a class="gpWindow" href="javascript:openModuleByName('PreprocessDataset');"
-      >Open the PreprocessDataset module</a> in the GenePattern window.</li>
-  <li><em>Example: </em><a class="gpWindow" 
+  <li><a href="javascript:openModuleByName('PreprocessDataset');"
+      >Open module</a> in the GenePattern window.</li>
+  <li><a class="gpWindow" 
        href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct')"
-    >Set the 'input filename'</a> in the GenePattern window.</li>
-  <li><a class="gpDoc" 
-         href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020&file=PreprocessDataset.pdf"
-         ></a>.</li>
+    >Use example dataset as 'input filename'</a></li>
   </ul>
+  </div>
 
   <h5>What it does</h5>
   <p>Before clustering gene expression data, preprocess the data 
@@ -70,7 +66,14 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
       check whether preprocessing steps have already been taken before 
       running the PreprocessDataset module. </li>
   </ul>
+
+  <div class="gpDocLinks">
+  <p>
+  <a href="/gp/getTaskDoc.jsp?name=PreprocessDataset">PreprocessDataset.pdf</a>
+  </p>
+  </div>
 </div>
+
 <div class="steps">
   <h2>Step 2: Choose an algorithm.</h2>
   <p>Clustering algorithms fall into several categories. Hierarchical algorithms 
@@ -91,10 +94,6 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
         imposes a stringent tree structure on the data, is highly sensitive
         to the metric used to assess similarity, and typically requires
         subjective evaluation to define clusters."
-    <li><b>Consensus clustering</b> (Monti et al., 2003) runs a selected clustering algorithm against 
-          perturbations of the original data set. The result is a consensus matrix that assesses the stability 
-          of discovered clusters. Supported clustering methods: hierarchical clustering, K-means clustering, 
-          self-organizing maps (SOM), and non-negative matrix factorization (NMF).
     <li><b>K-means clustering</b> (MacQueen, 1967) groups elements into a specified number of clusters. 
             A center data point for each cluster is randomly selected and each data point is assigned to the nearest 
             cluster center. Each cluster center is then recalculated to be the mean value of its members and all data 
@@ -113,28 +112,34 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
                 NMF detects context-dependent patterns of gene expression. 
                 NMF has been successful in various contexts, such as face image recognition and 
                 text mining.
+    <li><b>Consensus clustering</b> (Monti et al., 2003) runs a selected clustering algorithm against 
+          perturbations of the original data set. The result is a consensus matrix that assesses the stability 
+          of discovered clusters. Supported clustering methods: hierarchical clustering, K-means clustering, 
+          self-organizing maps (SOM), and non-negative matrix factorization (NMF).
   </ul>
 </div>
+
 <div class="steps">
   <h2>Step 3: Run the module that matches the chosen algorithm:</h2>
+
   <p><span class="resultsInlineSubhead">HierarchicalClustering</span></p>
+  
+  <div class="gpLinks">
   <ul>
-  <li><a class="gpWindow" href="javascript:openModuleByName('HierarchicalClustering');"
-  >Open the HierachicalClustering module</a> in the GenePattern window (<a class="gpDocInline" 
-      href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00009:2&file=HierarchicalClustering.pdf"
-   ></a>).</li>
-   <li><em>Example: </em><a class="gpWindow" 
-       href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf')"
-    >Set the 'input filename'</a> in the GenePattern window.</li>
+  <li><a href="javascript:openModuleByName('HierarchicalClustering');"
+  >Open the HierachicalClustering module</a></li>
+   <li><a href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf')"
+    >Use example dataset for 'input filename'</a></li>
   </ul>
+  </div>
+  
   <h5>What it does</h5>
-  <ul>
-    <li>The module runs hierarchical clustering on genes and/or samples creating 
+  <p>The module runs hierarchical clustering on genes and/or samples creating 
       a dendrogram for the clustered genes and/or 
       a dendrogram for the clustered samples. It also creates a CDT file that 
       contains the original gene expression data ordered to reflect the clustering. 
-    </li>
-  </ul>
+  </p>
+
   <h5>Considerations</h5>
   <ul>
     <li>Best practice is to normalize (<i>row</i>/<i>column normalize</i> parameters) and 
@@ -144,72 +149,43 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
       HierachicalClusteringViewer). For instructions on converting
       a CDT file to a GCT file, see <a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_fileformats.html#_Creating_Input_Files">Creating Input Files</a>. </li>
   </ul>
-  <p><span class="resultsInlineSubhead">ConsensusClustering</span></p>
-  <ul> 
-    <li><a class="gpWindow"
-       href="javascript:openModuleByName('ConsensusClustering');"
-       >Open the ConsensusClustering module</a> in the GenePattern window 
-       (<a class="gpDocInline"
-        href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00030&file=ConsensusClustering.pdf"
-        ></a>).</li>
-    <li><em>Example: </em><a class="gpWindow" 
-       href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf')"
-    >Set the 'input filename'</a> in the GenePattern window.</li>
-  </ul>
-  <h5>What it does</h5>
-  <ul>
-    <li>The module runs the selected clustering algorithm 
-      (by default, hierarchical clustering) against perturbations of the gene
-      expression data a selected number of times (by default, 20). It assesses
-      the stability of the resulting clusters by creating a consensus matrix. For
-      every pair of objects, the consensus matrix records the number of times both
-      are assigned to the same cluster divided by the number of times both are
-      in the perturbed data set. A consensus matrix where all values are 0 or 1
-      corresponds to perfect consensus.  </li>
-  </ul>
-  <h5>Considerations</h5>
-  <ul>
-    <li>The module clusters genes or samples, not both. </li>
-    <li>ConsensusClustering groups objects (genes or samples) into <i>k</i> clusters.
-      It groups objects into two clusters, then three clusters, up to the maximum
-      number of clusters specified by the <i>kmax</i> parameter (by default,
-      5). The module builds a separate consensus matrix for each set of clusters. </li>
-    <li>Best practice is to normalize (<i>normalize type</i>/<i>norm iter</i> parameters)
-      the data being clustered. **REVIEWER: normalize both? the items being clustered?** </li>
-    <li>For considerations specific to the selected clustering algorithm, see
-      the protocol for using that algorithm. </li>
-  </ul>
+  <div class="gpDocLinks">
+    <p><a href="/gp/getTaskDoc.jsp?name=HierarchicalClustering">HierarchicalClustering.pdf</a></p>
+  </div>
+  
   <p><span class="resultsInlineSubhead">KMeansClustering</span></p>
+  <div class="gpLinks">
   <ul>
-    <li><a class="gpWindow" href="javascript:openModuleByName('KMeansClustering');"
-        >Open the KMeansClustering module</a> in the GenePattern window (<a class="gpDocInline" 
-        href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00081&file=KMeansClustering.pdf"
-        ></a>).</li>
-    <li><em>Example: </em><a class="gpWindow" 
-       href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf')"
-    >Set the 'input filename'</a> in the GenePattern window.</li>
+    <li><a href="javascript:openModuleByName('KMeansClustering');"
+        >Open the KMeansClustering module</a></li>
+    <li><a href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf')"
+    >Use example dataset for 'input filename'</a></li>
   </ul>
+  </div>
+  
   <h5>What it does</h5>
-  <ul>
-    <li>The module runs k-means clustering on genes (rows) or samples (columns). It creates 
+  <p>The module runs k-means clustering on genes (rows) or samples (columns). It creates 
       a GCT file for each cluster and a GCT file for all of the expression data file organized by cluster.
-    </li>
-  </ul>
+    </p>
   <h5>Considerations</h5>
   <ul>
     <li>None.
     </li>
   </ul>
+
+  <div class="gpDocLinks">
+  <p><a href="/gp/getTaskDoc.jsp?name=KMeansClustering">KMeansClustering.pdf</a></p>
+  </div>
+  
   <p><span class="resultsInlineSubhead">SOMClustering</span></p>
+  <div class="gpLinks">
   <ul>
-  <li><a class="gpWindow" href="javascript:openModuleByName('SOMClustering');"
-      >Open the SOMClustering module</a> in the GenePattern window (<a class="gpDocInline" 
-      href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00029&file=SOMClustering.pdf"
-      ></a>).</li>
-    <li><em>Example: </em><a class="gpWindow" 
-       href="javascript:setInputFile('dataset.filename_cb_url', 'dataset.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct')"
-    >Set the 'dataset filename'</a> in the GenePattern window.</li>
+  <li><a href="javascript:openModuleByName('SOMClustering');"
+      >Open the SOMClustering module</a></li>
+    <li><a href="javascript:setInputFile('dataset.filename_cb_url', 'dataset.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct')"
+    >Use example dataset for 'dataset filename'</a></li>
   </ul>
+  </div>
   
   <h5>What it does</h5>
   <ul>
@@ -225,20 +201,23 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
       To find the optimal set of “centroids” for the clusters, use the default
       value of 50000 iterations. </li>
   </ul>
+
+  <div class="gpDocLinks">
+  <p><a href="/gp/getTaskDoc.jsp?name=SOMClustering.pdf">SOMClustering.pdf</a></p>
+  </div>
+  
   <p><span class="resultsInlineSubhead">NMFConsensus</span></p> 
+  <div class="gpLinks">
   <ul>
   <li><a class="gpWindow" href="javascript:openModuleByName('NMFConsensus');"
-    >Open the NMFConsensus module</a> in the GenePattern window (<a class="gpDocInline"
-     href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00057&file=NMFConsensus.pdf"
-     ></a>).</li>
-    <li><em>Example: </em><a class="gpWindow" 
-       href="javascript:setInputFile('dataset.filename_cb_url', 'dataset.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct')"
-    >Set the 'dataset filename'</a> in the GenePattern window.</li>
- </ul>
-
+    >Open the NMFConsensus module</a></li>
+    <li><a href="javascript:setInputFile('dataset.filename_cb_url', 'dataset.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct')"
+    >Use example dataset for 'dataset filename'</a></li>
+  </ul>
+  </div>
+  
   <h5>What it does</h5>
-  <ul>
-    <li>Using the basic principle of dimensionality reduction via non-negative matrix factorization,
+  <p>Using the basic principle of dimensionality reduction via non-negative matrix factorization,
       NMF finds a small number of metagenes, each defined
       as a positive linear combination of the genes in the expression data. It then 
       groups samples into clusters based on the gene expression pattern of the samples 
@@ -246,8 +225,7 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
       NMFConsensus repeatedly runs the clustering algorithm against perturbations of the 
       gene expression data and assesses the stability of the 
       resulting clusters by creating a consensus matrix.
-    </li>
-  </ul>
+    </p>
   <h5>Considerations</h5>
   <ul>
     <li>Non-negative matrix factorization (NMF) requires positive gene expression
@@ -274,83 +252,95 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
       is intended for exploratory use. A faster MATLAB version of NMFConsensus
       is available on the <a href="http://www.broad.mit.edu/cgi-bin/cancer/publications/pub_paper.cgi?mode=view&paper_id=89">Broad Institute web site</a>. </li>
   </ul>
+
+  <div class="gpDocLinks">
+  <p><a href="/gp/getTaskDoc.jsp?name=NMFConsensus.pdf">NMFConsensus.pdf</a></p>
+  </div>
+
+  <p><span class="resultsInlineSubhead">ConsensusClustering</span></p>
+  <div class="gpLinks">
+  <ul> 
+    <li><a href="javascript:openModuleByName('ConsensusClustering');"
+       >Open the ConsensusClustering module</a></li>
+    <li><a href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf')"
+    >Use example 'input filename'</a></li>
+  </ul>
+  </div>
+
+  <h5>What it does</h5>
+  <p>The module runs the selected clustering algorithm 
+      (by default, hierarchical clustering) against perturbations of the gene
+      expression data a selected number of times (by default, 20). It assesses
+      the stability of the resulting clusters by creating a consensus matrix. For
+      every pair of objects, the consensus matrix records the number of times both
+      are assigned to the same cluster divided by the number of times both are
+      in the perturbed data set. A consensus matrix where all values are 0 or 1
+      corresponds to perfect consensus.
+  </p>
+
+  <h5>Considerations</h5>
+  <ul>
+    <li>The module clusters genes or samples, not both. </li>
+    <li>ConsensusClustering groups objects (genes or samples) into <i>k</i> clusters.
+      It groups objects into two clusters, then three clusters, up to the maximum
+      number of clusters specified by the <i>kmax</i> parameter (by default,
+      5). The module builds a separate consensus matrix for each set of clusters. </li>
+    <li>Best practice is to normalize (<i>normalize type</i>/<i>norm iter</i> parameters)
+      the data being clustered. **REVIEWER: normalize both? the items being clustered?** </li>
+    <li>For considerations specific to the selected clustering algorithm, see
+      the protocol for using that algorithm. </li>
+  </ul>
+
+  <div class="gpDocLinks">
+  <p><a href="/gp/getTaskDoc.jsp?name=ConsensusClustering">ConsensusClustering.pdf</a></p>
+  </div>
+
 </div>
+
 <div class="steps">
   <h2>Step 4: View the results.</h2>
   <p><span class="resultsInlineSubhead">HierachicalClustering</span></p>
+  <div class="gpLinks">
   <ul>
-    <li><a class="gpWindow" href="javascript:openModuleByName('HierarchicalClusteringViewer');"
-        >Open the HierarchicalClusteringViewer module</a> in the GenePattern window.</li>
-    <li><em>Example: </em><a class="gpWindow" 
-       href="javascript:setInputFile('cdt.file_cb_url', 'cdt.file_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.cdt')"
-    >Set the 'cdt file'</a> in the GenePattern window.</li>
-    <li><em>Example: </em><a class="gpWindow" 
-       href="javascript:setInputFile('gtr.file_cb_url', 'gtr.file_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.gtr')"
-    >Set the 'gtr file'</a> in the GenePattern window.</li>
-    <li><em>Example: </em><a class="gpWindow" 
-       href="javascript:setInputFile('atr.file_cb_url', 'atr.file_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.atr')"
-    >Set the 'atr file'</a> in the GenePattern window.</li>
-    <li><a class="gpDoc" href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00031&file=HierarchicalClusteringViewer.pdf"
-       ></a>.</li>
+    <li><a href="javascript:openModuleByName('HierarchicalClusteringViewer');"
+        >Open the HierarchicalClusteringViewer module</a></li>
+    <li><a href="javascript:setInputFile('cdt.file_cb_url', 'cdt.file_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.cdt')"
+    >Use example 'cdt file'</a></li>
+    <li><a href="javascript:setInputFile('gtr.file_cb_url', 'gtr.file_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.gtr')"
+    >Use example 'gtr file'</a></li>
+    <li><a href="javascript:setInputFile('atr.file_cb_url', 'atr.file_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.atr')"
+    >Use example 'atr file'</a></li>
   </ul>
-  <h5>What it does    </h5>
-  <ul>
-    <li>The viewer displays a heat map of the clustered gene expression data, with 
+  </div>
+  
+  <h5>What it does</h5>
+  <p>The viewer displays a heat map of the clustered gene expression data, with 
       dendrograms showing how the genes and/or samples were clustered.
       
-    </li>
-  </ul>
+  </p>
   <h5>Considerations</h5>
   <ul>
     <li>Select File&gt;Save Image to save the heat map and dendrograms to an
       image file. Supported formats include bmp, eps, jpeg, png, and tiff. </li>
   </ul>
-  <p><span class="resultsInlineSubhead">ConsensusClustering</span> &ndash; Run the HeatMapViewer module to view the consensus matrices.
-    View other output files by clicking them.</p>
-  <ul>
-    <li><a class="gpWindow" href="javascript:openModuleByName('HeatMapViewer')"
-        >Open the HeatMapViewer module</a> in the GenePattern window.</li>
-    <li><em>Example: </em><a class="gpWindow" 
-       href="javascript:setInputFile('dataset_cb_url', 'dataset_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.sub30.2.gct')"
-    >Set the 'dataset'</a> in the GenePattern window.</li>
-    <li><a class="gpDoc" href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00010&file=HeatMapViewer.pdf"
-       ></a>.</li>
-  </ul>
+  <div class="gpDocLinks">
+  <p><a href="/gp/getTaskDoc.jsp?name=HierarchicalClusteringViewer">HierarchicalClusteringViewer.pdf</a></p>
+  </div>
 
-  <h5>What it does</h5>
-  <ul>
-    <li>The consensus matrix is formatted as a 
-      GCT file. The HeatMapViewer 
-      displays the consensus matrix as a heat map.
-      Rows and columns list the 
-      objects being clustered. Each cell represents the proportion of times 
-      this row-column pair were assigned to the same cluster. 
-      A consensus matrix where all values are 0 (dark blue) or 1 (dark red) corresponds to perfect consensus.
-      To display any other output file (*.clsdist, *.stddev, or *.pdf), click the file.
-    </li>
-  </ul>
-  <h5>Considerations</h5>
-  <ul>
-    <li>For more about the consensus matrix and its interpretation, see Monti
-      et al., 2003. </li>
-    <li>The *.clsdist output file shows...TBD </li>
-    <li>The *.stdev output file shows... TBD </li>
-    <li>The *.pdf output file shows... TBD </li>
-  </ul>
   <p><span class="resultsInlineSubhead">KMeansClustering</span></p>
+  <div class="gpLinks">
   <ul>
     <li><a class="gpWindow" href="javascript:openModuleByName('HeatMapViewer');"
-        >Open the HeatMapViewer module</a> in the GenePattern window.</li>
-    <li><a class="gpDoc" href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00010&file=HeatMapViewer.pdf"
-        ></a>.</li>
+        >Open the HeatMapViewer module</a></li>
   </ul>
+  </div>
+
   <h5>What it does</h5>
-  <ul>
-    <li>The HeatMapViewer 
+  <p>The HeatMapViewer 
       displays gene expression data as a heat map, which makes it easier to see patterns in the numeric data. 
       Gene names row labels and sample names are column labels. 
-    </li>
-  </ul>
+  </p>
+
   <h5>Considerations</h5>
   <ul>
     <li>KMeansClustering creates a GCT file that organizes the expression data by cluster, 
@@ -358,20 +348,23 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
       the expression data organized by cluster.
     </li>
   </ul>
+
+  <div class="gpDocLinks">
+  <p><a href="/gp/getTaskDoc.jsp?name=HeatMapViewer">HeatMapViewer.pdf</a></p>
+  </div>
+
   <p><span class="resultsInlineSubhead">SOMClustering</span></p>
+  <div class="gpLinks">
   <ul>
     <li><a class="gpWindow" href="javascript:openModuleByName('SOMClusterViewer');"
-        >Open the SOMClusterViewer module</a> in the GenePattern window.</li>
-    <li><a class="gpDoc" href="/gp/getTaskDoc.jsp?name=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.visualizer:00023&file=SOMClusterViewer.pdf"
-        ></a>.</li>
+        >Open the SOMClusterViewer module</a></li>
   </ul>
+  </div>
   <h5>What it does</h5>
-  <ul>
-    <li>The SOMClusterViewer displays the SOMClustering results file 
+  <p>The SOMClusterViewer displays the SOMClustering results file 
       (.odf file) in a visualizer. The left panel shows a plot of each cluster. Click 
       a plot to display the objects in the cluster and their distance from the cluster center.
-    </li>
-  </ul>
+  </p>
   <h5>Considerations</h5>
   <ul>
     <li>Select File&gt;Save Image to save the selected plot to an image  file.
@@ -380,19 +373,62 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
     <li>**SOMClusterViewer v5 on node258, all my plots look the same. What's
       up?** </li>
   </ul>
-  <p><span class="resultsInlineSubhead">NMFConsensus</span> &ndash; Plots of the results are written to .pdf files. 
-    Cluster membership results are written to GCT files. 
-    View the result files by clicking on them. </p>
-  <h5>What it does</h5>
+  <div class="gpDocLinks">
+  <p><a href="/gp/getTaskDoc.jsp?name=SOMClusterViewer">SOMClusterViewer.pdf</a></p>
+  </div>
+
+  <p><span class="resultsInlineSubhead">NMFConsensus</span></p>
+  <div class="gpLinks">
   <ul>
-    <li>For an overview of the results, click *.consensus.all.k.plot.pdf. 
-      For a complete listing of cluster membership, click *.membership.gct.  </li>
+    <li><a class="gpWindow" href="javascript:openModuleByName('NMFConsensus');"
+        >Open the NMFConsensus module</a></li>
   </ul>
+  </div>
+  <h5>What it does</h5>
+  <p>Plots of the results are written to .pdf files. 
+     Cluster membership results are written to GCT files. 
+     View the result files by clicking on them. 
+     For an overview of the results, click *.consensus.all.k.plot.pdf. 
+     For a complete listing of cluster membership, click *.membership.gct.
+  </p>
   <h5>Considerations</h5>
   <ul>
     <li>**Need a summary of the "ideal" plot and cophenetic value.** </li>
     <li>For more about the plots and their interpretation, see Brunet et al., 2004. </li>
-    </ul>
+  </ul>
+  <div class="gpDocLinks">
+  <p><a href="/gp/getTaskDoc.jsp?name=NMFConsensus">NMFConsensus.pdf</a></p>
+  </div>
+
+  <p><span class="resultsInlineSubhead">ConsensusClustering</span></p>
+  <div class="gpLinks">
+  <ul>
+    <li><a href="javascript:openModuleByName('HeatMapViewer')"
+        >Open the HeatMapViewer module</a></li>
+    <li><a href="javascript:setInputFile('dataset_cb_url', 'dataset_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.sub30.2.gct')"
+    >Use example 'dataset'</a></li>
+  </ul>
+  </div>
+  <h5>What it does</h5>
+  <p>Run the HeatMapViewer module to view the consensus matrices. View other output files by clicking them. 
+     The consensus matrix is formatted as a GCT file. 
+     The HeatMapViewer displays the consensus matrix as a heat map.
+     Rows and columns list the objects being clustered. Each cell represents the proportion of times 
+      this row-column pair were assigned to the same cluster. 
+      A consensus matrix where all values are 0 (dark blue) or 1 (dark red) corresponds to perfect consensus.
+      To display any other output file (*.clsdist, *.stddev, or *.pdf), click the file.
+  </p>
+  <h5>Considerations</h5>
+  <ul>
+    <li>For more about the consensus matrix and its interpretation, see Monti
+      et al., 2003. </li>
+    <li>The *.clsdist output file shows...TBD </li>
+    <li>The *.stdev output file shows... TBD </li>
+    <li>The *.pdf output file shows... TBD </li>
+  </ul>
+  <div class="gpDocLinks">
+  <p><a href="/gp/getTaskDoc.jsp?name=HeatMapViewer">HeatMapViewer.pdf</a></p>
+  </div>
 </div>
 <h2>References</h2>
 <p>Brunet, J-P., Tamayo, P., Golub, T.R., and Mesirov, J.P. 2004. Metagenes and molecular pattern discovery using
