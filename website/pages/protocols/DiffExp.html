@@ -36,12 +36,12 @@
   <h2>Step 1: PreprocessDataset</h2>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('PreprocessDataset');"
+    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset" 
+           onclick="openModuleWindow(this.href); return false;"
         >Open module</a> in the GenePattern window.</li>
-    <li><a 
-         href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct"
-         onclick="setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct'); return false;"
-        >Use example dataset for 'input_filename'</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct" 
+           onclick="openModuleWindow(this.href); return false;"
+        >Open module with example data</a> in the GenePattern window.</li>
   </ul>
   </div>
 
@@ -82,12 +82,13 @@
   
   <div class="gpLinks">
   <ul>
-  <li><a href="javascript:openModuleByName('ComparativeMarkerSelection');"
+  <li><a href="/gp/pages/index.jsf?lsid=ComparativeMarkerSelection" 
+         onclick="openModuleWindow(this.href); return false;"
       >Open module</a></li>
-  <li><a href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.gct')"
-    >Use example 'input filename'</a></li>
-  <li><a href="javascript:setInputFile('cls.filename_cb_url', 'cls.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls')"
-    >Use example 'cls filename'</a></li>
+  <li><a href="/gp/pages/index.jsf?lsid=ComparativeMarkerSelection&input.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.gct&cls.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls"
+         onclick="openModuleWindow(this.href); return false;"
+      >Open module with example data</a>
+  </li>
   </ul>
   </div>
 
@@ -124,12 +125,13 @@
   <h2>Step 3: ComparativeMarkerSelectionViewer</h2>
   <div class="gpLinks">
   <ul>
-     <li><a href="javascript:openModuleByName('ComparativeMarkerSelectionViewer');"
-         >Open the ComparativeMarkerSelectionViewer</a></li>
-     <li><a href="javascript:setInputFile('comparative.marker.selection.file_cb_url', 'comparative.marker.selection.file_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf')"
-     >Use example 'comparative marker selection file'</a></li>
-     <li><a href="javascript:setInputFile('dataset.file_cb_url', 'dataset.file_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.gct')"
-     >Use example 'dataset file'</a></li>
+     <li><a href="/gp/pages/index.jsf?lsid=ComparativeMarkerSelectionViewer"
+            onclick="openModuleWindow(this.href); return false;"
+         >Open module</a></li>
+     <li><a href="/gp/pages/index.jsf?lsid=ComparativeMarkerSelectionViewer&comparative.marker.selection.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf&dataset.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.gct"
+            onclick="openModuleWindow(this.href); return false;"
+         >Open module with example data</a></li>
+     </li>
   </ul>
   </div>
   

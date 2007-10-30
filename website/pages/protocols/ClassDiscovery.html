@@ -32,11 +32,12 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
   <h2>Step 1: PreprocessDataset</h2>
   <div class="gpLinks">
   <ul>
-  <li><a href="javascript:openModuleByName('PreprocessDataset');"
-      >Open module</a> in the GenePattern window.</li>
-  <li><a class="gpWindow" 
-       href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct')"
-    >Use example dataset as 'input filename'</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset" 
+           onclick="openModuleWindow(this.href); return false;"
+        >Open module</a> in the GenePattern window.</li>
+    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct" 
+           onclick="openModuleWindow(this.href); return false;"
+        >Open module with example data</a> in the GenePattern window.</li>
   </ul>
   </div>
 
@@ -126,10 +127,12 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
   
   <div class="gpLinks">
   <ul>
-  <li><a href="javascript:openModuleByName('HierarchicalClustering');"
-  >Open the HierachicalClustering module</a></li>
-   <li><a href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf')"
-    >Use example dataset for 'input filename'</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=HierarchicalClustering" 
+           onclick="openModuleWindow(this.href); return false;"
+        >Open HierarchicalClustering</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=HierarchicalClustering&input.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf" 
+           onclick="openModuleWindow(this.href); return false;"
+        >Open HierarchicalClustering with example data</a></li>
   </ul>
   </div>
   
@@ -156,10 +159,12 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
   <p><span class="resultsInlineSubhead">KMeansClustering</span></p>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('KMeansClustering');"
-        >Open the KMeansClustering module</a></li>
-    <li><a href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf')"
-    >Use example dataset for 'input filename'</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=KMeansClustering"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open KMeansClustering</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=KMeansClustering&input.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open KMeansClustering with example data</a></li>
   </ul>
   </div>
   
@@ -180,10 +185,12 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
   <p><span class="resultsInlineSubhead">SOMClustering</span></p>
   <div class="gpLinks">
   <ul>
-  <li><a href="javascript:openModuleByName('SOMClustering');"
-      >Open the SOMClustering module</a></li>
-    <li><a href="javascript:setInputFile('dataset.filename_cb_url', 'dataset.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct')"
-    >Use example dataset for 'dataset filename'</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=SOMClustering"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open SOMClustering</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=SOMClustering&dataset.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open SOMClustering with example data</a></li>
   </ul>
   </div>
   
@@ -209,10 +216,12 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
   <p><span class="resultsInlineSubhead">NMFConsensus</span></p> 
   <div class="gpLinks">
   <ul>
-  <li><a class="gpWindow" href="javascript:openModuleByName('NMFConsensus');"
-    >Open the NMFConsensus module</a></li>
-    <li><a href="javascript:setInputFile('dataset.filename_cb_url', 'dataset.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct')"
-    >Use example dataset for 'dataset filename'</a></li>
+  <li><a href="/gp/pages/index.jsf?lsid=NMFConsensus" 
+         onclick="openModuleWindow(this.href); return false;"
+    >Open NMFConsensus</a></li>
+  <li><a href="/gp/pages/index.jsf?lsid=NMFConsensus&dataset.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct" 
+         onclick="openModuleWindow(this.href); return false;"
+    >Open NMFConsensus with example data</a></li>
   </ul>
   </div>
   
@@ -260,10 +269,12 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
   <p><span class="resultsInlineSubhead">ConsensusClustering</span></p>
   <div class="gpLinks">
   <ul> 
-    <li><a href="javascript:openModuleByName('ConsensusClustering');"
-       >Open the ConsensusClustering module</a></li>
-    <li><a href="javascript:setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf')"
-    >Use example 'input filename'</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=ConsensusClustering"
+           onclick="openModuleWindow(this.href); return false;"
+       >Open ConsensusClustering</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=ConsensusClustering&input.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.comp.marker.odf"
+           onclick="openModuleWindow(this.href); return false;"
+       >Open ConsensusClustering with example data</a></li>
   </ul>
   </div>
 
@@ -302,14 +313,12 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
   <p><span class="resultsInlineSubhead">HierachicalClustering</span></p>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('HierarchicalClusteringViewer');"
-        >Open the HierarchicalClusteringViewer module</a></li>
-    <li><a href="javascript:setInputFile('cdt.file_cb_url', 'cdt.file_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.cdt')"
-    >Use example 'cdt file'</a></li>
-    <li><a href="javascript:setInputFile('gtr.file_cb_url', 'gtr.file_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.gtr')"
-    >Use example 'gtr file'</a></li>
-    <li><a href="javascript:setInputFile('atr.file_cb_url', 'atr.file_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.atr')"
-    >Use example 'atr file'</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=HierarchicalClusteringViewer"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open HierarchicalClusteringViewer</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=HierarchicalClusteringViewer&cdt.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.cdt&gtr.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.gtr&atr.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.atr"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open HierarchicalClusteringViewer with example data</a></li>
   </ul>
   </div>
   
@@ -330,8 +339,9 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
   <p><span class="resultsInlineSubhead">KMeansClustering</span></p>
   <div class="gpLinks">
   <ul>
-    <li><a class="gpWindow" href="javascript:openModuleByName('HeatMapViewer');"
-        >Open the HeatMapViewer module</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=HeatMapViewer"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open HeatMapViewer</a></li>
   </ul>
   </div>
 
@@ -356,8 +366,9 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
   <p><span class="resultsInlineSubhead">SOMClustering</span></p>
   <div class="gpLinks">
   <ul>
-    <li><a class="gpWindow" href="javascript:openModuleByName('SOMClusterViewer');"
-        >Open the SOMClusterViewer module</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=SOMClusterViewer"
+           onclick="openModuleWindow(this.href); return false"
+        >Open SOMClusterViewer</a></li>
   </ul>
   </div>
   <h5>What it does</h5>
@@ -380,8 +391,9 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
   <p><span class="resultsInlineSubhead">NMFConsensus</span></p>
   <div class="gpLinks">
   <ul>
-    <li><a class="gpWindow" href="javascript:openModuleByName('NMFConsensus');"
-        >Open the NMFConsensus module</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=NMFConsensus"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open NMFConsensus</a></li>
   </ul>
   </div>
   <h5>What it does</h5>
@@ -403,10 +415,12 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
   <p><span class="resultsInlineSubhead">ConsensusClustering</span></p>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('HeatMapViewer')"
-        >Open the HeatMapViewer module</a></li>
-    <li><a href="javascript:setInputFile('dataset_cb_url', 'dataset_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.sub30.2.gct')"
-    >Use example 'dataset'</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=HeatMapViewer"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open HeatMapViewer</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=HeatMapViewer&dataset=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.sub30.2.gct"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open HeatMapViewer with example data</a></li>
   </ul>
   </div>
   <h5>What it does</h5>
