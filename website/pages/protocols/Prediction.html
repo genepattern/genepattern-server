@@ -48,7 +48,8 @@ that can be used to predict the class of a previously unknown sample.
 </ul>
 <p>Class prediction can be done using one expression data set; ideally, it is 
 done using two. If you have a large expression data set, use the 
-<a class="gpWindow" href="javascript:openModuleByName('SplitDatasetTrainTest');">SplitDatasetTrainTest</a> 
+<a class="gpWindow" href="/gp/pages/index.jsf?lsid=SplitDatasetTrainTest" onclick="openModuleWindow(this.href); return false;"
+>SplitDatasetTrainTest</a> 
 module to divide it into two non-overlapping data sets.</p>
 
 <div class="steps">
@@ -56,12 +57,12 @@ module to divide it into two non-overlapping data sets.</p>
   <p>Use this module to filter the gene expression data.</p>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('PreprocessDataset');"
+    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset" 
+           onclick="openModuleWindow(this.href); return false;"
         >Open module</a> in the GenePattern window.</li>
-    <li><a 
-         href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct"
-         onclick="setInputFile('input.filename_cb_url', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct'); return false;"
-        >Use example dataset for 'input_filename'</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct" 
+           onclick="openModuleWindow(this.href); return false;"
+        >Open module with example data</a> in the GenePattern window.</li>
   </ul>
   </div>
   <h5>What it does</h5>
@@ -184,7 +185,9 @@ module to divide it into two non-overlapping data sets.</p>
   <h3>CARTXValidation</h3>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('CARTXValidation');">Open the CARTXValidation module</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=CARTXValidation"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open CARTXValidation</a></li>
   </ul>
   </div>
   <h5>What it does</h5>
@@ -207,8 +210,9 @@ module to divide it into two non-overlapping data sets.</p>
   <h3>KNNXValidation</h3>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('KNNXValidation');">Open the KNNXValidation module</a>
-    </li>
+    <li><a href="/gp/pages/index.jsf?lsid=KNNXValidation"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open KNNXValidation</a></li>
   </ul>
   </div> 
   <h5>What it does</h5>
@@ -233,7 +237,9 @@ module to divide it into two non-overlapping data sets.</p>
   <h3>PNNXValidationOptimization</h3>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('PNNXValidationOptimization');">Open the PNNXValidationOptimization module</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=PNNXValidationOptimization"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open PNNXValidationOptimization</a></li>
   </ul>
   </div>
   <h5>What it does</h5>
@@ -265,8 +271,9 @@ module to divide it into two non-overlapping data sets.</p>
   <h3>WeightedVotingXValidation</h3>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('WeightedVotingXValidation');"
-        >Open the WeightedVotingXValidation module</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=WeightedVotingXValidation"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open WeightedVotingXValidation</a></li>
   </ul>
   </div>
   <h5>What it does</h5>
@@ -293,7 +300,8 @@ module to divide it into two non-overlapping data sets.</p>
   <h3>CARTXValidation</h3>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('PredictionResultsViewer');"
+    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
+           onclick="openModuleWindow(this.href); return false;"
         >Open the PredictionResultsViewer</a></li>
     </li>
   </ul>
@@ -319,10 +327,14 @@ module to divide it into two non-overlapping data sets.</p>
   <h3>KNNXValidation</h3>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('PredictionResultsViewer');"
-        >Open the PredictionResultsViewer module</a></li>
-    <li><a href="javascript:openModuleByName('FeatureSummaryViewer');"
-        >Open the FeatureSummaryViewer module</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open PredictionResultsViewer</a></li>
+    </li>
+    <li><a href="/gp/pages/index.jsf?lsid=FeatureSummaryViewer"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open FeatureSummaryViewer</a></li>
+    </li>
   </ul>
   </div>
   <h5>What it does</h5>
@@ -357,7 +369,8 @@ module to divide it into two non-overlapping data sets.</p>
   <h3>PNNXValidationOptimization</h3>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('PNN');"
+    <li><a href="/gp/pages/index.jsf?lsid=PNN"
+           onclick="openModuleWindow(this.href); return false;"
         >Open the PNN module</a></li>
   </ul>
   </div>
@@ -382,10 +395,14 @@ module to divide it into two non-overlapping data sets.</p>
   <h3>WeightedVotingXValidation</h3>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('PredictionResultsViewer');"
-        >Open the PredictionResultsViewer module</a></li>
-    <li><a href="javascript:openModuleByName('FeatureSummaryViewer');"
-        >Open the FeatureSummaryViewer module</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open the PredictionResultsViewer</a></li>
+    </li>
+    <li><a href="/gp/pages/index.jsf?lsid=FeatureSummaryViewer"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open the FeatureSummaryViewer</a></li>
+    </li>
   </ul>
   </div>
   <h5>What it does</h5>
@@ -422,16 +439,16 @@ module to divide it into two non-overlapping data sets.</p>
   <h2>Step 6: Run the train/test module for the chosen class prediction method:</h2>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('CART');"
-        >Open the CART module</a></li>
-    <li><a href="javascript:openModuleByName('KNN');"
-        >Open the KNN module</a></li>
-    <li><a href="javascript:openModuleByName('PNN');"
-        >Open the PNN module</a></li>
-    <li><a href="javascript:openModuleByName('SVM');"
-        >Open the SVM module</a></li>
-    <li><a href="javascript:openModuleByName('WeightedVoting');"
-        >Open the WeightedVoting module</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=CART" onclick="openModuleWindow(this.href); return false;"
+        >Open CART</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=KNN" onclick="openModuleWindow(this.href); return false;"
+        >Open KNN</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=PNN" onclick="openModuleWindow(this.href); return false;"
+        >Open PNN</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=SVM" onclick="openModuleWindow(this.href); return false;"
+        >Open SVM</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=WeightedVoting" onclick="openModuleWindow(this.href); return false;"
+        >Open WeightedVoting</a></li>
   </ul>
   </div>
   <h5>What it does</h5>
@@ -473,8 +490,9 @@ module to divide it into two non-overlapping data sets.</p>
   <h3>CART</h3>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('PredictionResultsViewer');"
-        >Open the PredictionResultsViewer module</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open PredictionResultsViewer</a></li>
   </ul>
   </div>
   <h5>What it does</h5>
@@ -496,8 +514,9 @@ module to divide it into two non-overlapping data sets.</p>
   <h3>KNN</h3>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('PredictionResultsViewer');"
-        >Open the PredictionResultsViewer module</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open PredictionResultsViewer</a></li>
   </ul>
   </div>
   <h5>What it does</h5>
@@ -525,8 +544,9 @@ module to divide it into two non-overlapping data sets.</p>
   <h3>PNN</h3>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('PredictionResultsViewer');"
-        >Open the PredictionResultsViewer module</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open PredictionResultsViewer</a></li>
   </ul>
   </div>
   <h5>What it does</h5>
@@ -553,8 +573,9 @@ module to divide it into two non-overlapping data sets.</p>
   <h3>SVM</h3>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('PredictionResultsViewer');"
-        >Open the PredictionResultsViewer module</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open PredictionResultsViewer</a></li>
   </ul>
   </div>
   <h5>What it does </h5>
@@ -580,8 +601,9 @@ module to divide it into two non-overlapping data sets.</p>
   <h3>WeightedVoting</h3>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('PredictionResultsViewer');"
-        >Open the PredictionResultsViewer module</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open PredictionResultsViewer</a></li>
   </ul>
   </div>
   <h5>What it does</h5>
@@ -611,8 +633,9 @@ module to divide it into two non-overlapping data sets.</p>
   <h2>Step 8: Run the train/test module to determine the class of an unknown sample.</h2>
   <div class="gpLinks">
   <ul>
-    <li><a href="javascript:openModuleByName('PredictionResultsViewer');"
-        >Open the PredictionResultsViewer module</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open PredictionResultsViewer</a></li>
   </ul>
   </div>
   <h5>What it does </h5>
