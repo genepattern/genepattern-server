@@ -15,15 +15,3 @@ function openModuleWindow(theURL) {
 	w.focus();
 	return w;
 }
-
-function openURL(theURL) {
-  w = window.opener;
-  if (w != null && w.name != 'protocol') {
-    w.location = theURL;
-  }
-  else {
-    w = window.open(theURL,'genepattern','toolbar=1,menubar=1,scrollbars=1,resizable=1,width=800,height=600');
-  }
-  w.focus();
-  return w;
-}
