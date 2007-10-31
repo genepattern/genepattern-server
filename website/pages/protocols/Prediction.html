@@ -60,7 +60,7 @@ module to divide it into two non-overlapping data sets.</p>
     <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset" 
            onclick="openModuleWindow(this.href); return false;"
         >Open module</a> in the GenePattern window.</li>
-    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct" 
+    <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct" 
            onclick="openModuleWindow(this.href); return false;"
         >Open module with example data</a> in the GenePattern window.</li>
   </ul>
@@ -188,6 +188,9 @@ module to divide it into two non-overlapping data sets.</p>
     <li><a href="/gp/pages/index.jsf?lsid=CARTXValidation"
            onclick="openModuleWindow(this.href); return false;"
         >Open CARTXValidation</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=CARTXValidation&data.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct&cls.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open CARTXValidation with example data</a></li>
   </ul>
   </div>
   <h5>What it does</h5>
@@ -213,6 +216,9 @@ module to divide it into two non-overlapping data sets.</p>
     <li><a href="/gp/pages/index.jsf?lsid=KNNXValidation"
            onclick="openModuleWindow(this.href); return false;"
         >Open KNNXValidation</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=KNNXValidation&data.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct&class.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open KNNXValidation with example data</a></li>
   </ul>
   </div> 
   <h5>What it does</h5>
@@ -274,6 +280,9 @@ module to divide it into two non-overlapping data sets.</p>
     <li><a href="/gp/pages/index.jsf?lsid=WeightedVotingXValidation"
            onclick="openModuleWindow(this.href); return false;"
         >Open WeightedVotingXValidation</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=WeightedVotingXValidation&data.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct&class.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open WeightedVotingXValidation with example data</a></li>
   </ul>
   </div>
   <h5>What it does</h5>
@@ -304,6 +313,10 @@ module to divide it into two non-overlapping data sets.</p>
            onclick="openModuleWindow(this.href); return false;"
         >Open the PredictionResultsViewer</a></li>
     </li>
+    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer&prediction.results.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.pred.odf"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open the PredictionResultsViewer with example data</a></li>
+    </li>
   </ul>
   </div>
   <h5>What it does</h5>
@@ -331,9 +344,17 @@ module to divide it into two non-overlapping data sets.</p>
            onclick="openModuleWindow(this.href); return false;"
         >Open PredictionResultsViewer</a></li>
     </li>
+    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer&prediction.results.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.knn.pred.odf"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open PredictionResultsViewer with example data</a></li>
+    </li>
     <li><a href="/gp/pages/index.jsf?lsid=FeatureSummaryViewer"
            onclick="openModuleWindow(this.href); return false;"
         >Open FeatureSummaryViewer</a></li>
+    </li>
+    <li><a href="/gp/pages/index.jsf?lsid=FeatureSummaryViewer&feature.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.knn.pred.feat.odf"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open FeatureSummaryViewer with example data</a></li>
     </li>
   </ul>
   </div>
@@ -399,9 +420,17 @@ module to divide it into two non-overlapping data sets.</p>
            onclick="openModuleWindow(this.href); return false;"
         >Open the PredictionResultsViewer</a></li>
     </li>
+    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer&prediction.results.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.wv.pred.odf"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open the PredictionResultsViewer with example data</a></li>
+    </li>
     <li><a href="/gp/pages/index.jsf?lsid=FeatureSummaryViewer"
            onclick="openModuleWindow(this.href); return false;"
         >Open the FeatureSummaryViewer</a></li>
+    </li>
+    <li><a href="/gp/pages/index.jsf?lsid=FeatureSummaryViewer&feature.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.wv.pred.feat.odf"
+           onclick="openModuleWindow(this.href); return false;"
+        >Open FeatureSummaryViewer with example data</a></li>
     </li>
   </ul>
   </div>
@@ -440,15 +469,27 @@ module to divide it into two non-overlapping data sets.</p>
   <div class="gpLinks">
   <ul>
     <li><a href="/gp/pages/index.jsf?lsid=CART" onclick="openModuleWindow(this.href); return false;"
-        >Open CART</a></li>
+        >Open CART</a>,
+        <a href="/gp/pages/index.jsf?lsid=CART&train.data.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct&train.cls.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls&test.data.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct&test.cls.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls" 
+           onclick="openModuleWindow(this.href); return false;"
+        >with example data</a></li>
     <li><a href="/gp/pages/index.jsf?lsid=KNN" onclick="openModuleWindow(this.href); return false;"
-        >Open KNN</a></li>
+        >Open KNN</a>,
+        <a href="/gp/pages/index.jsf?lsid=KNN&train.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct&train.class.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls&test.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct&test.class.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls"         
+           onclick="openModuleWindow(this.href); return false;"
+        >with example data</a></li>
     <li><a href="/gp/pages/index.jsf?lsid=PNN" onclick="openModuleWindow(this.href); return false;"
         >Open PNN</a></li>
     <li><a href="/gp/pages/index.jsf?lsid=SVM" onclick="openModuleWindow(this.href); return false;"
-        >Open SVM</a></li>
+        >Open SVM</a>,
+        <a href="/gp/pages/index.jsf?lsid=SVM&train.data.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct&train.cls.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls&test.data.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct&test.cls.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls" 
+           onclick="openModuleWindow(this.href); return false;"
+        >with example data</a></li>
     <li><a href="/gp/pages/index.jsf?lsid=WeightedVoting" onclick="openModuleWindow(this.href); return false;"
-        >Open WeightedVoting</a></li>
+        >Open WeightedVoting</a>,
+        <a href="/gp/pages/index.jsf?lsid=WeightedVoting&train.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct&train.class.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls&test.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct&test.class.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls" 
+           onclick="openModuleWindow(this.href); return false;"
+        >with example data</a></li>
   </ul>
   </div>
   <h5>What it does</h5>
