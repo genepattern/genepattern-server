@@ -91,7 +91,7 @@ public class EmailNotificationManager {
 	StringBuffer msg = new StringBuffer();
 	msg.append("The results for job " + jobId + ", " + moduleName + ", are available on the ");
 
-	msg.append("<a href=\"" + UIBeanHelper.getServer() + "/jobResults.jsf?jobNumber=" + jobId
+	msg.append("<a href=\"" + UIBeanHelper.getServer() + "/pages/jobResults.jsf?jobNumber=" + jobId
 		+ "\">GenePattern Job Results Page</a>");
 
 	emailToAddresses(addresses, from, subject, msg.toString());
