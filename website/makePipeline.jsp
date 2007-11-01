@@ -570,8 +570,7 @@ try {
                         pTaskInfo.setTaskInfoAttributes(pTia);
                         pTaskInfo.setParameterInfoArray(controller.giveParameterInfoArray());
 			pTaskInfo.setName(pipelineName + "." + GPConstants.TASK_TYPE_PIPELINE);
-			pTia.put(GPConstants.COMMAND_LINE, GPConstants.LEFT_DELIMITER + GPConstants.R + GPConstants.RIGHT_DELIMITER + " scriptNameNotUsed.r " + pipelineName + "." + GPConstants.TASK_TYPE_PIPELINE);
-
+			
 			pTia.put(GPConstants.CPU_TYPE, GPConstants.ANY);
 			pTia.put(GPConstants.OS, GPConstants.ANY);
 			pTia.put(GPConstants.LANGUAGE, language);
