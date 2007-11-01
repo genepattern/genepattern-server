@@ -21,7 +21,6 @@
 }
 
 .protocol_list {
-	list-style: none;
 	/* margin-left: 40px; */
     margin-top: 0px;
 	margin-bottom: 0px;
@@ -30,16 +29,8 @@
 	padding-bottom: 0px;
 }
 
-.protocol_list li {
+.protocol_list_item {
 	clear: both;
-}
-
-.protocol_list img {
-	float: left;
-	padding-right: 12px;
-	padding-bottom: 12px;
-	width: 48px;
-	height: 48px;
 }
 
 .protocol_list_img {
@@ -50,7 +41,7 @@
 
 .protocol_list_block {
 	/* aligns text to the right of the image, in case there is a lot of text. */
-	padding-left: 80px;
+	padding-left: 72px;
 	padding-bottom: 12px;
 }
 
