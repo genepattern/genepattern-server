@@ -224,9 +224,9 @@ public class RunPipelineForJsp {
         
     	
     	String JAVA = System.getProperty("java");
-    	String JAVA_HOME = System.getProperty("java.home");
-        if (JAVA != null) JAVA_HOME =JAVA;
-        
+        if (JAVA == null) {
+            JAVA = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+        }
         boolean savedPipeline = isSavedModel(taskInfo, name, user.getUserId());
         // these jar files are required to execute
         // gp-full.jar;
@@ -240,7 +240,7 @@ public class RunPipelineForJsp {
         String resourcesDir = new File(System.getProperty("resources")).getAbsolutePath() + "/";
 
         List<String> cmdLine = new ArrayList<String>();
-        cmdLine.add(JAVA_HOME + File.separator + "bin" + File.separator + "java");
+        cmdLine.add(JAVA);
         if (false) {
             //launch the VM in debug mode
             //   Use with caution, this will cause the process to suspend
