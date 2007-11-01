@@ -89,7 +89,7 @@
     <target name="publishGPGEinstallerToWWWDev" depends="setDefaultFTPUser">
 	  <property file="resources/build.properties"/>
 
-        <ftp server="iftp.broad.mit.edu"
+        <ftp server="labftp.broad.mit.edu"
              remotedir="${version.major}.${version.minor}/"
              userid="${user}"
              password="${pass}"
