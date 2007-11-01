@@ -36,22 +36,23 @@ public class RunJobsInParallelExample {
 	List<Integer> submittedJobs = new LinkedList<Integer>();
 	List<JobResult> completedJobs = new ArrayList<JobResult>();
 
-	GPClient gpServer = new GPClient("http://localhost:8080", "GenePattern");
+	GPClient gpClient = new GPClient("http://localhost:8080", "GenePattern");
+	int numJobs = 4;
 
-	for (int i = 0; i < 10; i++) {
-	    int jobNumber = gpServer.runAnalysisNoWait("ConvertLineEndings", new Parameter[] { new Parameter(
+	for (int i = 0; i < numJobs; i++) {
+	    int jobNumber = gpClient.runAnalysisNoWait("ConvertLineEndings", new Parameter[] { new Parameter(
 		    "input.filename", "foo.txt") });
 	    submittedJobs.add(new Integer(jobNumber));
 	}
 
 	Thread.sleep(1000 * 60 * 10); // wait a while before we start asking
-	// server if jobs have finished
+	// server jobs have finished
 	while (submittedJobs.size() > 0) {
 	    for (int i = 0; i < submittedJobs.size(); i++) {
 		Integer jobNumber = submittedJobs.get(i);
-		if (gpServer.isComplete(jobNumber.intValue())) {
+		if (gpClient.isComplete(jobNumber.intValue())) {
 		    submittedJobs.remove(i--);
-		    JobResult jr = gpServer.createJobResult(jobNumber.intValue());
+		    JobResult jr = gpClient.createJobResult(jobNumber.intValue());
 		    completedJobs.add(jr);
 		}
 	    }
