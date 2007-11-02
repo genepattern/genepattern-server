@@ -71,7 +71,7 @@
 	<target name="runWeekly" depends="init, compile">
 	
 		<java classname="GetReport" classpathref="library.classpath" dir="." fork="true">
-			<arg value="week" />
+			<arg value="lastWeek" />
 			<arg value="GenePatternMonthlyReport.jrxml" />
 			<arg value="http://node258.broad.mit.edu:8080/gp" />
 			<arg value="ted"/>
@@ -85,7 +85,7 @@
 	<target name="runMonthly" depends="init, compile">
 	
 		<java classname="GetReport" classpathref="library.classpath" dir="." fork="true">
-			<arg value="month" />
+			<arg value="lastMonth" />
 			<arg value="GenePatternMonthlyReport.jrxml" />
 			<arg value="http://node258.broad.mit.edu:8080/gp" />
 			<arg value="ted"/>
