@@ -1,4 +1,4 @@
 args <- commandArgs(T)
 source(args[1])
-suppressMessages(do.call(args[2], as.list(args[3:length(args)])))
+r <- suppressMessages(do.call(args[2], as.list(args[3:length(args)])))
 q(save='no')
