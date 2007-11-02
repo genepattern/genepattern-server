@@ -45,14 +45,16 @@
 	padding-bottom: 12px;
 }
 
+/* places the new-win-icon.gif to the right of the link */
 .protocol_list a {
 	font-weight: bold;
 	font-size: 12px;
-}
-.optionsHead {
-	font-size: 12px;
+    background-image: url(../images/new-win-icon.gif);
+    background-position: right;
+    background-repeat: no-repeat;
+    padding-right: 14px;
 }
 
-a.protocolLink:after {
-	content: " " url(../images/new-win-icon.gif);
+.optionsHead {
+	font-size: 12px;
 }
