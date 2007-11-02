@@ -37,10 +37,10 @@
   <div class="gpLinks">
   <ul>
     <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset" 
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open module</a> in the GenePattern window.</li>
     <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct" 
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open module with example data</a> in the GenePattern window.</li>
   </ul>
   </div>
@@ -83,10 +83,10 @@
   <div class="gpLinks">
   <ul>
   <li><a href="/gp/pages/index.jsf?lsid=ComparativeMarkerSelection" 
-         onclick="openModuleWindow(this.href); return false;"
+         onclick="return openModuleWindow(this, event);"
       >Open module</a></li>
   <li><a href="/gp/pages/index.jsf?lsid=ComparativeMarkerSelection&input.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct&cls.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls"
-         onclick="openModuleWindow(this.href); return false;"
+         onclick="return openModuleWindow(this, event);"
       >Open module with example data</a>
   </li>
   </ul>
@@ -126,12 +126,11 @@
   <div class="gpLinks">
   <ul>
      <li><a href="/gp/pages/index.jsf?lsid=ComparativeMarkerSelectionViewer"
-            onclick="openModuleWindow(this.href); return false;"
+            onclick="return openModuleWindow(this, event);"
          >Open module</a></li>
      <li><a href="/gp/pages/index.jsf?lsid=ComparativeMarkerSelectionViewer&comparative.marker.selection.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.comp.marker.odf&dataset.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct"
-            onclick="openModuleWindow(this.href); return false;"
+            onclick="return openModuleWindow(this, event);"
          >Open module with example data</a></li>
-     </li>
   </ul>
   </div>
   

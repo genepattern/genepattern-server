@@ -15,9 +15,12 @@ function openProtocolWindow(theTarget, theEvent) {
   return false;
 }
 
-function openModuleWindow(theURL) {
-  //event.returnValue = false; //for IE
+function openModuleWindow(theTarget, theEvent) {
+  var theURL = theTarget.href;
+  if (theEvent != null) { //for IE
+    theEvent.returnValue = false;
+  }
   w = window.open(theURL,'genepattern','toolbar=1,menubar=1,scrollbars=1,resizable=1,width=800,height=600');
   w.focus();
-  return w;
+  return false;
 }

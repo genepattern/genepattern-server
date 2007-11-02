@@ -48,7 +48,7 @@ that can be used to predict the class of a previously unknown sample.
 </ul>
 <p>Class prediction can be done using one expression data set; ideally, it is 
 done using two. If you have a large expression data set, use the 
-<a class="gpWindow" href="/gp/pages/index.jsf?lsid=SplitDatasetTrainTest" onclick="openModuleWindow(this.href); return false;"
+<a class="gpWindow" href="/gp/pages/index.jsf?lsid=SplitDatasetTrainTest" onclick="return openModuleWindow(this, event);"
 >SplitDatasetTrainTest</a> 
 module to divide it into two non-overlapping data sets.</p>
 
@@ -58,10 +58,10 @@ module to divide it into two non-overlapping data sets.</p>
   <div class="gpLinks">
   <ul>
     <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset" 
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open module</a> in the GenePattern window.</li>
     <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct" 
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open module with example data</a> in the GenePattern window.</li>
   </ul>
   </div>
@@ -186,10 +186,10 @@ module to divide it into two non-overlapping data sets.</p>
   <div class="gpLinks">
   <ul>
     <li><a href="/gp/pages/index.jsf?lsid=CARTXValidation"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open CARTXValidation</a></li>
     <li><a href="/gp/pages/index.jsf?lsid=CARTXValidation&data.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct&cls.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open CARTXValidation with example data</a></li>
   </ul>
   </div>
@@ -214,10 +214,10 @@ module to divide it into two non-overlapping data sets.</p>
   <div class="gpLinks">
   <ul>
     <li><a href="/gp/pages/index.jsf?lsid=KNNXValidation"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open KNNXValidation</a></li>
     <li><a href="/gp/pages/index.jsf?lsid=KNNXValidation&data.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct&class.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open KNNXValidation with example data</a></li>
   </ul>
   </div> 
@@ -244,7 +244,7 @@ module to divide it into two non-overlapping data sets.</p>
   <div class="gpLinks">
   <ul>
     <li><a href="/gp/pages/index.jsf?lsid=PNNXValidationOptimization"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open PNNXValidationOptimization</a></li>
   </ul>
   </div>
@@ -278,10 +278,10 @@ module to divide it into two non-overlapping data sets.</p>
   <div class="gpLinks">
   <ul>
     <li><a href="/gp/pages/index.jsf?lsid=WeightedVotingXValidation"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open WeightedVotingXValidation</a></li>
     <li><a href="/gp/pages/index.jsf?lsid=WeightedVotingXValidation&data.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct&class.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open WeightedVotingXValidation with example data</a></li>
   </ul>
   </div>
@@ -310,10 +310,10 @@ module to divide it into two non-overlapping data sets.</p>
   <div class="gpLinks">
   <ul>
     <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open the PredictionResultsViewer</a></li>
     <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer&prediction.results.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.pred.odf"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open the PredictionResultsViewer with example data</a></li>
   </ul>
   </div>
@@ -339,16 +339,16 @@ module to divide it into two non-overlapping data sets.</p>
   <div class="gpLinks">
   <ul>
     <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open PredictionResultsViewer</a></li>
     <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer&prediction.results.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.knn.pred.odf"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open PredictionResultsViewer with example data</a></li>
     <li><a href="/gp/pages/index.jsf?lsid=FeatureSummaryViewer"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open FeatureSummaryViewer</a></li>
     <li><a href="/gp/pages/index.jsf?lsid=FeatureSummaryViewer&feature.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.knn.pred.feat.odf"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open FeatureSummaryViewer with example data</a></li>
   </ul>
   </div>
@@ -385,7 +385,7 @@ module to divide it into two non-overlapping data sets.</p>
   <div class="gpLinks">
   <ul>
     <li><a href="/gp/pages/index.jsf?lsid=PNN"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open the PNN module</a></li>
   </ul>
   </div>
@@ -411,16 +411,16 @@ module to divide it into two non-overlapping data sets.</p>
   <div class="gpLinks">
   <ul>
     <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open the PredictionResultsViewer</a></li>
     <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer&prediction.results.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.wv.pred.odf"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open the PredictionResultsViewer with example data</a></li>
     <li><a href="/gp/pages/index.jsf?lsid=FeatureSummaryViewer"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open the FeatureSummaryViewer</a></li>
     <li><a href="/gp/pages/index.jsf?lsid=FeatureSummaryViewer&feature.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.wv.pred.feat.odf"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open FeatureSummaryViewer with example data</a></li>
   </ul>
   </div>
@@ -458,27 +458,27 @@ module to divide it into two non-overlapping data sets.</p>
   <h2>Step 6: Run the train/test module for the chosen class prediction method:</h2>
   <div class="gpLinks">
   <ul>
-    <li><a href="/gp/pages/index.jsf?lsid=CART" onclick="openModuleWindow(this.href); return false;"
+    <li><a href="/gp/pages/index.jsf?lsid=CART" onclick="return openModuleWindow(this, event);"
         >Open CART</a>,
         <a href="/gp/pages/index.jsf?lsid=CART&train.data.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct&train.cls.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls&test.data.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct&test.cls.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls" 
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >with example data</a></li>
-    <li><a href="/gp/pages/index.jsf?lsid=KNN" onclick="openModuleWindow(this.href); return false;"
+    <li><a href="/gp/pages/index.jsf?lsid=KNN" onclick="return openModuleWindow(this, event);"
         >Open KNN</a>,
         <a href="/gp/pages/index.jsf?lsid=KNN&train.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct&train.class.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls&test.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct&test.class.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls"         
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >with example data</a></li>
-    <li><a href="/gp/pages/index.jsf?lsid=PNN" onclick="openModuleWindow(this.href); return false;"
+    <li><a href="/gp/pages/index.jsf?lsid=PNN" onclick="return openModuleWindow(this, event);"
         >Open PNN</a></li>
-    <li><a href="/gp/pages/index.jsf?lsid=SVM" onclick="openModuleWindow(this.href); return false;"
+    <li><a href="/gp/pages/index.jsf?lsid=SVM" onclick="return openModuleWindow(this, event);"
         >Open SVM</a>,
         <a href="/gp/pages/index.jsf?lsid=SVM&train.data.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct&train.cls.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls&test.data.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct&test.cls.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls" 
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >with example data</a></li>
-    <li><a href="/gp/pages/index.jsf?lsid=WeightedVoting" onclick="openModuleWindow(this.href); return false;"
+    <li><a href="/gp/pages/index.jsf?lsid=WeightedVoting" onclick="return openModuleWindow(this, event);"
         >Open WeightedVoting</a>,
         <a href="/gp/pages/index.jsf?lsid=WeightedVoting&train.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct&train.class.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls&test.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct&test.class.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls" 
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >with example data</a></li>
   </ul>
   </div>
@@ -522,10 +522,10 @@ module to divide it into two non-overlapping data sets.</p>
   <div class="gpLinks">
   <ul>
     <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open PredictionResultsViewer</a></li>
     <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer&prediction.results.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.pred.odf"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open PredictionResultsViewer with example data</a></li>
   </ul>
   </div>
@@ -549,10 +549,10 @@ module to divide it into two non-overlapping data sets.</p>
   <div class="gpLinks">
   <ul>
     <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open PredictionResultsViewer</a></li>
     <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer&prediction.results.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.knn.pred.odf"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open PredictionResultsViewer with example data</a></li>
   </ul>
   </div>
@@ -582,7 +582,7 @@ module to divide it into two non-overlapping data sets.</p>
   <div class="gpLinks">
   <ul>
     <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open PredictionResultsViewer</a></li>
   </ul>
   </div>
@@ -611,10 +611,10 @@ module to divide it into two non-overlapping data sets.</p>
   <div class="gpLinks">
   <ul>
     <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open PredictionResultsViewer</a></li>
     <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer&prediction.results.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.svm.pred.odf"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open PredictionResultsViewer with example data</a></li>
   </ul>
   </div>
@@ -642,10 +642,10 @@ module to divide it into two non-overlapping data sets.</p>
   <div class="gpLinks">
   <ul>
     <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open PredictionResultsViewer</a></li>
     <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer&prediction.results.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.wv.pred.odf"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open PredictionResultsViewer with example data</a></li>
   </ul>
   </div>
@@ -678,7 +678,7 @@ module to divide it into two non-overlapping data sets.</p>
   <div class="gpLinks">
   <ul>
     <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
-           onclick="openModuleWindow(this.href); return false;"
+           onclick="return openModuleWindow(this, event);"
         >Open PredictionResultsViewer</a></li>
   </ul>
   </div>
