@@ -66,7 +66,7 @@
     <div class="protocol_list_block">
       <a class="protocolLink" 
          href="/gp/pages/protocols/DiffExp.html" 
-         onclick="openProtocolWindow(this.href); return false;"
+         onclick="return openProtocolWindow(this, event);"
       >Differential Expression Analysis</a>
       <br />
       Find genes that are significantly differentially expressed between classes of samples.
@@ -79,7 +79,7 @@
     <div class="protocol_list_block">
       <a class="protocolLink" 
          href="/gp/pages/protocols/ClassDiscovery.html" 
-         onclick="openProtocolWindow(this.href); return false;" 
+         onclick="return openProtocolWindow(this, event);" 
       >Clustering</a>
       <br />
       Group genes and/or samples by similar expression profiles.
@@ -92,7 +92,7 @@
     <div class="protocol_list_block">
       <a class="protocolLink" 
          href="/gp/pages/protocols/Prediction.html" 
-         onclick="openProtocolWindow(this.href); return false;" 
+         onclick="return openProtocolWindow(this, event);" 
       >Prediction</a>
       <br />
       Create a model, also referred to as a classifier or class predictor, that
@@ -106,7 +106,7 @@
     <div class="protocol_list_block">
       <a class="protocolLink" 
          href="/gp/pages/protocols/SnpCN.html" 
-         onclick="openProtocolWindow(this.href); return false;" 
+         onclick="return openProtocolWindow(this, event);" 
       >SNP Copy Number and Loss of Heterozygosity Determination</a>
       <br />
       Compute SNP copy number (CN) and loss of heterozygosity (LOH) based on 
