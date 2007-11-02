@@ -50,15 +50,15 @@
 	        </td>
 	  </tr>
       <tr valign="top">
-	        <td>R 2.5: </td>
+	        <td>R 2.5 Home: </td>
 	        <td>
-	        	<h:inputText size="40" value="#{serverSettingsBean.settings['R2.5']}"/>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['R2.5_HOME']}"/>
 	        </td>
 	  </tr>
        <tr valign="top">
-	        <td>R: </td>
+	        <td>R 2.0.1 Home: </td>
 	        <td>
-	        	<h:inputText size="40" value="#{serverSettingsBean.settings['R']}"/>
+	        	<h:inputText size="40" value="#{serverSettingsBean.settings['R_HOME']}"/>
 	        </td>
 	  </tr>
 	  <tr valign="top">
@@ -69,10 +69,73 @@
 	          <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}"/>
 	      </td>
 	  </tr>
-	  <tr valign="top" class="settingperameter">
-        <td colspan="2">&#160;</td>
-      </tr>
+	  
     </table>
     <p/>
   </h:form>
+  
+  <h:form>
+	<table width="100%" border="0" cellpadding="0" cellspacing="0"
+		class="barhead-other">
+		<tr>
+			<td>Programming Language Options</td>
+		</tr>
+	</table>
+	<p />
+	<table width="100%" border="0" cellpadding="5" cellspacing="0">
+		<tr valign="top">
+			<td>Java VMOptions:</td>
+			<td><h:inputText size="40"
+				value="#{serverSettingsBean.settings['java_flags']}" /></td>
+		</tr>
+		<tr valign="top">
+			<td>Java Visualizer VMOptions:</td>
+			<td><h:inputText size="40"
+				value="#{serverSettingsBean.settings['visualizer_java_flags']}" /></td>
+		</tr>
+		<tr valign="top">
+			<td>R Options:</td>
+			<td><h:inputText size="40"
+				value="#{serverSettingsBean.settings['r_flags']}" /></td>
+		</tr>
+
+		<tr valign="top">
+			<td>&#160;</td>
+			<td><h:commandButton value="Save"
+				actionListener="#{serverSettingsBean.saveSettings}" /> &#160; <h:commandButton
+				value="Restore" actionListener="#{serverSettingsBean.restore}" /></td>
+		</tr>
+		<tr valign="top" class="settingperameter">
+			<td colspan="2">&#160;</td>
+		</tr>
+		<tr valign="top">
+			<td>&#160;</td>
+			<td>
+			<p>Java VMOptions are passed to the VM of most Java language
+			modules. <br />
+			You can use these options to increase the amount of memory allotted to
+			a <br />
+			Java language module if you are experiencing OutOfMemory errors.</p>
+			<p>For details of java options run<br />
+			&#160;&#160;&#160; java -X<br />
+			at a command line.</p>
+			</td>
+		</tr>
+
+		<tr valign="top">
+			<td>&#160;</td>
+			<td>
+			<p>R Options are passed to the R interpreter for most R language
+			modules. <br />
+			You can use these options to increase the amount of memory allotted to
+			a <br />
+			R language module if you are vector allocation errors.</p>
+			<p>For details of R options run<br />
+			&#160;&#160;&#160; R --help<br />
+			at a command line.</p>
+			</td>
+		</tr>
+	</table>
+	<p />
+</h:form>
 </html>
