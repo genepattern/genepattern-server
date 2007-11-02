@@ -80,7 +80,6 @@ public class ServerSettingsBean {
 	    modes.put("Access", new String[] { "gp.allowed.clients" });
 	    modes.put("Command Line Prefix", new String[] { "gp.allowed.clients" });
 	    modes.put("File Purge", new String[] { "purgeJobsAfter", "purgeTime" });
-	    modes.put("Java VMOptions", new String[] { "java_flags", "visualizer_java_flags" });
 	    modes.put("Gene Pattern Log", null);
 	    modes.put("Web Server Log", null);
 	    modes.put("Repositories", new String[] { "ModuleRepositoryURL", "ModuleRepositoryURLs",
@@ -94,7 +93,7 @@ public class ServerSettingsBean {
 	    // modes.put("LSID", new String[] { "lsid.authority", "lsid.show"
 	    // }); // remove show LSID for 3.1 per bug 1654
 	    modes.put("Programming Languages", new String[] { "perl", "java", "R2.5", "R" });
-
+	   
 	    modes.put("Advanced", new String[] { "DefaultPatchRepositoryURL", "DefaultPatchURL", "patchQualifiers",
 		    "patches", "ant", "resources", "index", "tasklib", "jobs", "tomcatCommonLib", "webappDir",
 		    "log4j.appender.R.File", "pipeline.cp", "pipeline.main", "pipeline.vmargs", "pipeline.decorator",
