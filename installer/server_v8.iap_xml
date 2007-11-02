@@ -12643,7 +12643,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[664]]></string>
 											</property>
 											<property name="sourceName">
-												<string><![CDATA[RunR$1.class]]></string>
+												<string><![CDATA[RunR$StreamCopier.class]]></string>
 											</property>
 											<property name="overrideUnixPermissions">
 												<boolean>false</boolean>
@@ -12655,7 +12655,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>true</boolean>
 											</property>
 											<property name="destinationName">
-												<string><![CDATA[RunR$1.class]]></string>
+												<string><![CDATA[RunR$StreamCopier.class]]></string>
 											</property>
 											<property name="fileSize">
 												<long>591</long>
