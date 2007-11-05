@@ -262,7 +262,7 @@
 
 	<target name="publishGPGEinstallerToWWWDev" depends="setDefaultFTPUser, version_updater">
 
-		<ftp server="iftp.broad.mit.edu" remotedir="${version.major}.${version.minor}/" userid="${user}" password="${pass}" depends="yes" binary="yes">
+		<ftp server="labftp.broad.mit.edu" remotedir="${version.major}.${version.minor}/" userid="${user}" password="${pass}" depends="yes" binary="yes">
 
 			<fileset dir="build/Web_Installers">
 				<include name="**/*" />
