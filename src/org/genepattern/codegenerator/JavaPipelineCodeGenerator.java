@@ -151,7 +151,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
         prolog.append("public class " + javaEncodeName(model.getName()) + " {\n");
         prolog.append("\tpublic static void main(String[] args) throws Exception {\n");
 
-        prolog.append("\t\tGPServer gpClient = new GPClient(\"" + server + "\", \"" + model.getUserID() + "\");\n");
+        prolog.append("\t\tGPClient gpClient = new GPClient(\"" + server + "\", \"" + model.getUserID() + "\");\n");
 
         if (prompts.size() > 0) {
             prolog.append("\t\tString[] prompts = new String[" + prompts.size() + "];\n");

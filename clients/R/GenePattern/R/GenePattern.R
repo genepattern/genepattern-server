@@ -27,7 +27,7 @@
 #------------------------------------------------------------------------------------------------------
 gp.login <-
 #
-# Connect to gpServer.
+# Connect to GenePattern server
 #
 function(server.name, user.name, password = NULL)
 {

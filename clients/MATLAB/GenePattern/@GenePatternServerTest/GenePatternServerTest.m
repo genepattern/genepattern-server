@@ -1,5 +1,5 @@
-function obj = GenePatternServerTest(GPServer)
+function obj = GenePatternServerTest(GPClient)
 
-obj.server = GPServer;
+obj.server = GPClient;
 
 obj = class(obj, 'GenePatternServerTest');
