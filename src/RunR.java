@@ -18,7 +18,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Hashtable;
 import java.util.List;
 
 /**
@@ -28,9 +27,10 @@ import java.util.List;
  * commands via the standard input stream and copies the results to its own stdout and stderr output streams.
  * 
  * @author Jim Lerner
+ * @author Joshua Gould
  */
 
-public class RunR extends Thread {
+public class RunR {
 
     private static final int R_SOURCE = 0;
 
@@ -42,10 +42,6 @@ public class RunR extends Thread {
 
     private OutputStream stdin = null;
 
-    private InputStream is = null;
-
-    private PrintStream os = null;
-
     private Process process;
 
     /**
@@ -55,11 +51,10 @@ public class RunR extends Thread {
      * @param args
      *                Command line parameters. <br />
      *                args[0] R script file to source <br />
-     *                args[1] method to invoke (usually defined within script file or referring to something within it)
-     *                <br />
-     *                args[2] beginning of zero or more arguments to the method being invoked
-     * 
-     * @author Jim Lerner
+     *                args[1] R method to invoke (usually defined within script file or referring to something within
+     *                it) <br />
+     *                args[2] beginning of zero or more arguments to the method being invoked <br />
+     *                System property R_HOME also needs to point to R_HOME directory
      */
     public static void main(String[] args) {
 	if (args.length < MIN_ARGS) {
@@ -73,7 +68,6 @@ public class RunR extends Thread {
 
     public RunR(String[] args) {
 	String[] commandLine = null;
-	boolean bWindows = System.getProperty("os.name").startsWith("Windows");
 
 	String R_HOME = System.getProperty("R_HOME");
 	if (R_HOME == null || R_HOME.equals("")) {
@@ -89,22 +83,7 @@ public class RunR extends Thread {
 	} else {
 	    rFlags = new String[0];
 	}
-	List<String> commandLineList = null;
-	if (bWindows) {
-	    if (R_HOME == null) { // assume Rterm is in path
-		commandLineList = new ArrayList<String>(Arrays.asList(new String[] { "cmd", "/c", "Rterm" }));
-	    } else {
-		commandLineList = new ArrayList<String>(Arrays.asList(new String[] { "cmd", "/c",
-			R_HOME + "\\bin\\Rterm" }));
-
-	    }
-	} else {
-	    if (R_HOME == null) { // assume R is in path
-		commandLineList = new ArrayList<String>(Arrays.asList(new String[] { "R" }));
-	    } else {
-		commandLineList = new ArrayList<String>(Arrays.asList(new String[] { R_HOME + "/bin/R" }));
-	    }
-	}
+	List<String> commandLineList = new ArrayList<String>(Arrays.asList(new String[] { R_HOME + "/bin/R" }));
 	commandLineList.addAll(Arrays.asList(rFlags));
 	commandLine = commandLineList.toArray(new String[0]);
 
@@ -120,8 +99,8 @@ public class RunR extends Thread {
 	    process = Runtime.getRuntime().exec(commandLine, null, null);
 
 	    // create threads to read from the command's stdout and stderr streams
-	    Thread outputReader = streamCopier(process.getInputStream(), System.out);
-	    Thread errorReader = streamCopier(process.getErrorStream(), System.err);
+	    Thread outputReader = new StreamCopier(process.getInputStream(), System.out);
+	    Thread errorReader = new StreamCopier(process.getErrorStream(), System.err);
 
 	    // drain the output and error streams
 	    outputReader.start();
@@ -134,8 +113,7 @@ public class RunR extends Thread {
 		args[R_SOURCE] = "\"" + fixPath(args[R_SOURCE]) + "\"";
 	    }
 	    sendCmd("source(" + args[R_SOURCE] + ")\n");
-
-	    sendCmd("files <- " + args[R_METHOD]);
+	    sendCmd("result <- suppressMessages(" + args[R_METHOD]);
 	    sendCmd("(");
 	    boolean hasQuotes = false;
 	    for (int i = R_ARGS; i < args.length; i++) {
@@ -145,10 +123,8 @@ public class RunR extends Thread {
 		hasQuotes = (args[i].indexOf("\"") != -1);
 		sendCmd((!hasQuotes ? "\"" : "") + fixPath(args[i]) + (!hasQuotes ? "\"" : ""));
 	    }
-	    sendCmd(")\n");
-
+	    sendCmd("))\n");
 	    sendCmd("q(save=\"no\")\n");
-
 	    stdin.close();
 
 	    // wait for all output before attempting to send it back to the client
@@ -165,11 +141,11 @@ public class RunR extends Thread {
     }
 
     /**
-     * write a string to stdin of the R process
+     * Writes a string to stdin of the R process
      * 
      * @param command
      *                string to send to R
-     * @author Jim Lerner
+     * 
      * 
      */
     protected void sendCmd(String command) throws IOException {
@@ -182,96 +158,39 @@ public class RunR extends Thread {
      * @param path
      *                path to convert to Unix format
      * @return String path with delimiters replaced
-     * @author Jim Lerner
+     * 
      * 
      */
     protected String fixPath(String path) {
 	return path.replace('\\', '/');
     }
 
-    /**
-     * copies one of the output streams from R to this process' output stream
-     * 
-     * @param is
-     *                InputStream to read from (from R)
-     * @param os
-     *                PrintStream to write to (stdout of this process)
-     * @author Jim Lerner
-     * 
-     */
-    protected Thread streamCopier(InputStream is, PrintStream os) {
-	return new RunR(is, os);
-    }
+    static class StreamCopier extends Thread {
+	private InputStream is;
+	private PrintStream os;
 
-    // launch a new thread (an instance of this) that will copy stdout or stderr
-    // to a PrintStream
-    public RunR(InputStream is, PrintStream os) {
-	this.is = is;
-	this.os = os;
-	this.setDaemon(true);
-    }
-
-    // Runnable for streamCopier thread
-    public void run() {
-	BufferedReader in = new BufferedReader(new InputStreamReader(is));
-	String line;
-	try {
-	    while ((line = in.readLine()) != null) {
-		os.print(line);
-		os.flush(); // show it to the user ASAP
-	    }
-
-	} catch (IOException ioe) {
-	    System.err.println(ioe + " while reading from process stream");
+	/**
+	 * Creates a new thread that copies stdout or stderr to a PrintStream.
+	 */
+	public StreamCopier(InputStream is, PrintStream os) {
+	    this.is = is;
+	    this.os = os;
+	    this.setDaemon(true);
 	}
-    }
 
-    /**
-     * Here's a tricky/nasty way of getting the environment variables despite System.getenv() being deprecated. TODO:
-     * find a better (no-deprecated) method of retrieving environment variables in platform-independent fashion. The
-     * environment is used <b>almost </b> as is, except that the directory of the task's files is added to the path to
-     * make execution work transparently. This is equivalent to the <libdir>substitution variable. Some of the
-     * applications will be expecting to find their support files on the path or in the same directory, and this
-     * manipulation makes it transparent to them.
-     * 
-     * <p>
-     * Implementation: spawn a process that performs either a "sh -c set" (on Unix) or "cmd /c set" on Windows.
-     * 
-     * @author Jim Lerner
-     * @return Hashtable of environment variable name/value pairs
-     * 
-     */
-    public Hashtable<String, String> getEnv() {
-	Hashtable<String, String> envVariables = new Hashtable<String, String>();
-	int i;
-	String key;
-	String value;
-	boolean isWindows = System.getProperty("os.name").startsWith("Windows");
-	BufferedReader in = null;
-
-	try {
-	    Process getenv = Runtime.getRuntime().exec(isWindows ? "cmd /c set" : "sh -c set");
-	    in = new BufferedReader(new InputStreamReader(getenv.getInputStream()));
+	@Override
+	public void run() {
+	    BufferedReader in = new BufferedReader(new InputStreamReader(is));
 	    String line;
-	    while ((line = in.readLine()) != null) {
-		i = line.indexOf("=");
-		if (i == -1) {
-		    continue;
+	    try {
+		while ((line = in.readLine()) != null) {
+		    os.print(line);
+		    os.flush(); // show it to the user ASAP
 		}
-		key = line.substring(0, i);
-		value = line.substring(i + 1);
-		envVariables.put(key, value);
-	    }
-	} catch (IOException ioe) {
-	    System.err.println("Error getting environment variables.");
-	} finally {
-	    if (in != null) {
-		try {
-		    in.close();
-		} catch (IOException ioe) {
-		}
+
+	    } catch (IOException ioe) {
+		System.err.println(ioe + " while reading from process stream.");
 	    }
 	}
-	return envVariables;
     }
 }
