@@ -12,6 +12,9 @@
 <h1>Clustering and Class Discovery</h1>
 <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
+    <td align="left">
+      <a href="protocols.html">protocols</a>
+    </td>
     <td align="right">
     <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=5">comments/suggestions</a>
     </td>
@@ -25,7 +28,7 @@ group genes and/or samples.</p>
 <ul>
 <li><a href="GctResFiles.html">GCT or RES file</a> that contains the gene expression data. 
 <br />
-Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct">all_aml_train.gct</a>.
+Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct">all_aml_train.gct</a>.</li>
 </ul>
 
 <div class="steps">
@@ -83,7 +86,7 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
     provide a structure on top of the other clustering algorithms to obtain 
     a measure of clusters that fit the data base. NMF clusters the data by 
     breaking it down into metagenes or metasamples,
-    each of which represents a group of genes or samples, respectively.
+    each of which represents a group of genes or samples, respectively.</p>
   <ul>
     <li><b>Hierarchical clustering</b> (Eisen et al., 1998) recursively merges items with other items or with the result of 
         previous merges. Items are merged according to their pair-wise distance with closest pairs being merged 
@@ -92,12 +95,12 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
         approach has a few disadvantages: "it
         imposes a stringent tree structure on the data, is highly sensitive
         to the metric used to assess similarity, and typically requires
-        subjective evaluation to define clusters."
+        subjective evaluation to define clusters." </li>
     <li><b>K-means clustering</b> (MacQueen, 1967) groups elements into a specified number of clusters. 
             A center data point for each cluster is randomly selected and each data point is assigned to the nearest 
             cluster center. Each cluster center is then recalculated to be the mean value of its members and all data 
             points are re-assigned to the cluster with the closest cluster center. This process is repeated until the 
-            distance between consecutive cluster centers converges. The result is <i>k</i> stable clusters. 
+            distance between consecutive cluster centers converges. The result is <i>k</i> stable clusters. </li>
     <li><b>Self-organizing maps (SOM)</b> (Tamayo et al., 1999) create and iteratively adjust 
               a two-dimensional grid of clusters to reflect the global structure in the expression data set. 
               The result is a set of clusters organized in a two-dimensional grid where similar clusters lie 
@@ -105,16 +108,16 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
               Tamayo et al. indicate that SOMs are best suited to identifying
               a small number of prominent classes in the data; Brunet et al. (2004) 
               comment that they "can be unstable, yielding different decompositions of the data
-              depending on the choice of initial conditions.""
+              depending on the choice of initial conditions."" </li>
     <li><b>Non-negative matrix factorization (NMF)</b> (Brunet et al., 2004) is an alternative method 
                 for class discovery. Rather than clustering genes, 
                 NMF detects context-dependent patterns of gene expression. 
                 NMF has been successful in various contexts, such as face image recognition and 
-                text mining.
+                text mining. </li>
     <li><b>Consensus clustering</b> (Monti et al., 2003) runs a selected clustering algorithm against 
           perturbations of the original data set. The result is a consensus matrix that assesses the stability 
           of discovered clusters. Supported clustering methods: hierarchical clustering, K-means clustering, 
-          self-organizing maps (SOM), and non-negative matrix factorization (NMF).
+          self-organizing maps (SOM), and non-negative matrix factorization (NMF). </li>
   </ul>
 </div>
 
@@ -236,7 +239,7 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
   <h5>Considerations</h5>
   <ul>
     <li>Non-negative matrix factorization (NMF) requires positive gene expression
-      values. To run NMF on data that contains negative values (Kim & Tidor,
+      values. To run NMF on data that contains negative values (Kim &amp; Tidor,
       2003):
       <ul>
         <li>Create one dataset with all negative numbers zeroed. </li>
@@ -246,8 +249,8 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
           as large as the original, but with positive values only and zeros,
           hence appropriate for NMF. </li>
       </ul>
-      <p>To do this in MATLAB, execute the following statement:    <br>
-        anew=[max(a,0);-min(a,0)];<br>
+      <p>To do this in MATLAB, execute the following statement:    <br/>
+        anew=[max(a,0);-min(a,0)];<br/>
         where a is the original data.
       </p>
     </li>
@@ -453,13 +456,13 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
 </div>
 <h2>References</h2>
 <p>Brunet, J-P., Tamayo, P., Golub, T.R., and Mesirov, J.P. 2004. Metagenes and molecular pattern discovery using
-matrix factorization. <i>Proc. Natl. Acad. Sci. USA</i> 101(12):4164–4169.
+matrix factorization. <i>Proc. Natl. Acad. Sci. USA</i> 101(12):4164–4169.</p>
 
-<p>Eisen, M.B., Spellman, P.T., Brown, P.O., and Botstein, D. 1998. Cluster Analysis and Display of Genome-Wide Expression Patterns. <i>Proc. Natl. Acad. Sci. USA</i> 95:14863-14868.
-<p>Kim, P. M. and Tidor, B. 2003. Subsystem Identification Through Dimensionality Reduction of Large-Scale Gene Expression Data. <i>Genome Research</i> 13:1706-1718.
-<p>MacQueen, J. B. 1967. Some Methods for classification and Analysis of Multivariate Observations. <i>In</i> Proceedings of Fifth Berkeley Symposium on Mathematical Statistics and Probability, Vol. 1. University of California Press, California. pp. 281-297.
-<p>Monti, S., Tamayo, P., Mesirov, J.P., and Golub, T. 2003. Consensus Clustering: A resampling-based method for class discovery and visualization of gene expression microarray data. <i>Machine Learning Journal</i> 52(1-2):91-118.
-<p>Tamayo, P., Slonim, D., Mesirov, J., Zhu, Q., Dmitrovsky, E., Lander, E.S., and Golub, T.R. 1999. Interpreting gene expression with self-organizing maps: Methods and application to hematopoeitic differentiation. <i>Proc. Natl. Acad. Sci. USA</i> 96:2907-2912.
+<p>Eisen, M.B., Spellman, P.T., Brown, P.O., and Botstein, D. 1998. Cluster Analysis and Display of Genome-Wide Expression Patterns. <i>Proc. Natl. Acad. Sci. USA</i> 95:14863-14868.</p>
+<p>Kim, P. M. and Tidor, B. 2003. Subsystem Identification Through Dimensionality Reduction of Large-Scale Gene Expression Data. <i>Genome Research</i> 13:1706-1718.</p>
+<p>MacQueen, J. B. 1967. Some Methods for classification and Analysis of Multivariate Observations. <i>In</i> Proceedings of Fifth Berkeley Symposium on Mathematical Statistics and Probability, Vol. 1. University of California Press, California. pp. 281-297.</p>
+<p>Monti, S., Tamayo, P., Mesirov, J.P., and Golub, T. 2003. Consensus Clustering: A resampling-based method for class discovery and visualization of gene expression microarray data. <i>Machine Learning Journal</i> 52(1-2):91-118.</p>
+<p>Tamayo, P., Slonim, D., Mesirov, J., Zhu, Q., Dmitrovsky, E., Lander, E.S., and Golub, T.R. 1999. Interpreting gene expression with self-organizing maps: Methods and application to hematopoeitic differentiation. <i>Proc. Natl. Acad. Sci. USA</i> 96:2907-2912.</p>
 
 
 <table width="100%" border="0" cellpadding="0" cellspacing="0">
