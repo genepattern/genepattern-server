@@ -15,8 +15,6 @@ package org.genepattern.server.webservice.server.dao;
 import java.sql.ResultSet;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.webservice.JobInfo;
@@ -26,14 +24,6 @@ import org.genepattern.webservice.TaskInfoAttributes;
 public class AnalysisDAOTest extends DAOTestCase {
 
     AnalysisDAO dao = new AnalysisDAO();
-
-    private static Map<String, Integer> STATUS_IDS = new HashMap();
-    static {
-        STATUS_IDS.put("Pending", 1);
-        STATUS_IDS.put("Processing", 2);
-        STATUS_IDS.put("Finished", 3);
-        STATUS_IDS.put("Error", 4);
-    }
 
     @Override
     protected void setUp() throws Exception {
