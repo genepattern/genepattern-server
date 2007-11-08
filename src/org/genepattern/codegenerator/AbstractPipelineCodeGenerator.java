@@ -129,7 +129,7 @@ public abstract class AbstractPipelineCodeGenerator {
             commandLine.append(">");
         }
         tia.put(GPConstants.COMMAND_LINE, commandLine.toString());
-        tia.put(GPConstants.JVM_LEVEL, "1.4");
+        tia.put(GPConstants.JVM_LEVEL, "1.5");
         tia.put(GPConstants.VERSION, model.getVersion());
         tia.put(GPConstants.LSID, model.getLsid());
         return tia;
