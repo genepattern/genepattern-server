@@ -113,7 +113,7 @@ public class RunR {
 		args[R_SOURCE] = "\"" + fixPath(args[R_SOURCE]) + "\"";
 	    }
 	    sendCmd("source(" + args[R_SOURCE] + ")\n");
-	    sendCmd("result <- suppressMessages(" + args[R_METHOD]);
+	    sendCmd("result <- " + args[R_METHOD]);
 	    sendCmd("(");
 	    boolean hasQuotes = false;
 	    for (int i = R_ARGS; i < args.length; i++) {
@@ -123,7 +123,7 @@ public class RunR {
 		hasQuotes = (args[i].indexOf("\"") != -1);
 		sendCmd((!hasQuotes ? "\"" : "") + fixPath(args[i]) + (!hasQuotes ? "\"" : ""));
 	    }
-	    sendCmd("))\n");
+	    sendCmd(")\n");
 	    sendCmd("q(save=\"no\")\n");
 	    stdin.close();
 
@@ -184,8 +184,12 @@ public class RunR {
 	    String line;
 	    try {
 		while ((line = in.readLine()) != null) {
+		    // if (!line.startsWith("trying URL") && !line.startsWith("Content type")
+		    // && !line.startsWith("opened URL") && !line.startsWith("====================")
+		    // && !line.startsWith("downloaded")) {
 		    os.print(line);
-		    os.flush(); // show it to the user ASAP
+		    // }
+
 		}
 
 	    } catch (IOException ioe) {
