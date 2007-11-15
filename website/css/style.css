@@ -284,6 +284,7 @@ a:active {
 
 .maincontent {
 	left:242px;
+	min-width: 570px;
 	z-index:4;
 	background-color: #FFFFFF;
 	vertical-align: top;

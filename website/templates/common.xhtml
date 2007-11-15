@@ -165,7 +165,6 @@
           <ui:insert name="leftPanel"/>
 
           <td valign="top" class="maincontent" id="maincontent">
-          <div style="min-width: 570px;" overflow="auto">
 
             <!-- JSF (Server side) errors or messages -->
         <!--    <h:outputText value="Please correct the following errors before proceeding:"
@@ -186,7 +185,6 @@
 
 		    <!-- Main content body -->
      		<ui:insert name="body" />
-     		</div>
            </td>
 
           <ui:insert name="rightPanel"/>
@@ -198,17 +196,16 @@
               <tr>
                 <td>
                   <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/about.jsf">About GenePattern</h:outputLink>&#160;|&#160;<h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/contactUs.jsf">Contact Us</h:outputLink>
-                  <br/>
                 </td>
                 <td>
                   <div align="right">&#169;2003-2007&#160; <h:outputLink value="http://www.broad.mit.edu" target="_blank">Broad Institute, MIT</h:outputLink>
                   </div>
-                  <td width="10">&#160;</td>
-                  <td width="27">
-                    <h:outputLink value="http://www.broad.mit.edu" target="_blank">
-                      <t:graphicImage value="/images/broad-symbol.gif" alt="Broad Institute" width="27" height="30" style="border: 0;" />
-                    </h:outputLink>
-                  </td>
+                </td>
+                <td width="10">&#160;</td>
+                <td width="27">
+                  <h:outputLink value="http://www.broad.mit.edu" target="_blank">
+                    <t:graphicImage value="/images/broad-symbol.gif" alt="Broad Institute" width="27" height="30" style="border: 0;" />
+                  </h:outputLink>
                 </td>
               </tr>
             </table>
@@ -216,7 +213,6 @@
         </tr>
       </table>
     </div>
-
 
     <ui:insert name="popupMenus"/>
 
