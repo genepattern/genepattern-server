@@ -136,7 +136,7 @@ function writeMenus(container) {
 			menu.menuItemHeight = menu.menuItemHeight || defaultHeight;
 			var itemProps = '';
 			if( menu.fontFamily != '' ) itemProps += 'font-family:' + menu.fontFamily +';';
-			itemProps += 'font-weight:' + menu.fontWeight + ';fontSize:' + menu.fontSize + 'px;';
+			itemProps += 'font-weight:' + menu.fontWeight + ';font-size:' + menu.fontSize + 'px;';
 			if (menu.fontStyle) itemProps += 'font-style:' + menu.fontStyle + ';';
 			if (document.all || window.mmIsOpera) 
 				itemProps += 'font-size:' + menu.fontSize + 'px;" onmouseover="onMenuItemOver(null,this);" onclick="onMenuItemAction(null,this);';
