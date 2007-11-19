@@ -68,6 +68,7 @@ a:active {
 	background-color: #666699;
 	vertical-align: top;
 	text-indent: 77px;
+	white-space: nowrap;
 }
 .navband1 a {
 	color: #FFFFFF;
@@ -384,10 +385,10 @@ a:active {
 	left:800px;
 	top:101px;
 	width:203px;
-	z-index:3;
 	font-size: 10px;
 	line-height: 12px;
 	font-weight: normal;
+	z-index:3;
 	color: #333366;
 	text-decoration: none;
 	background-color: #EBEBCE;
@@ -471,10 +472,10 @@ a:active {
 .sidebarhead-bkg2 {
 	background-color: #DFDFB9;
 	height: 32px;
-	valign: middle;
 	border-bottom-color: #CCCC99;
 	border-bottom-style: solid;
 	border-bottom-width: 1px;
+	vertical-align: middle;
 }
 
 
@@ -598,10 +599,7 @@ a:active {
 }
 .pipelineperameterinputFile{
 	width: 425px;
-	size: 90;
 }
-
-
 
 .settingperameter {
 	background-color: #FFFFFF;
