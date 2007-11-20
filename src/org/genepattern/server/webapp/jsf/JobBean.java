@@ -1078,6 +1078,15 @@ public class JobBean {
 	public String getValue() {
 	    return p.getValue();
 	}
+	
+	/**
+	 * @return a valid value to be used for the 'id' attribute of an html div tag.
+	 * The '/' character is not allowed, so replace all '/' with '_'.
+	 */
+	public String getValueId() {
+	    String str = getValue().replace('/', '_');
+	    return str;
+	}
 
 	public boolean hasChoices(String delimiter) {
 	    return p.hasChoices(delimiter);
