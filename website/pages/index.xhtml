@@ -311,11 +311,8 @@ function showFileInput(id) {
               <t:dataList value="#{runTaskBean.parameters}" var="p">
                 <tr>
                   <!-- Parameter label -->
-                  <td valign="top" class="#{p.optional==false ? 'attribute-required' : ''}">
-                    <nobr>
-							#{p.displayName} <h:outputText rendered="#{!p.optional}" value="*"/>
-                    </nobr>
-                  </td>
+                  <td valign="top" class="#{p.optional==false ? 'attribute-required' : ''}" style="white-space: nowrap;"
+                  >#{p.displayName} <h:outputText rendered="#{!p.optional}" value="*"/></td>
                   <td valign="top" id="#{p.name}_td">
                     <!-- File input -->
                     <h:outputText rendered="#{p.inputType=='file'}">

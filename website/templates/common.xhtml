@@ -109,10 +109,8 @@
       </h:outputLink>
     </div>
     <!-- horizontal navigation band -->
-    <div id="navband1" class="navband1">
+    <div id="navband1" class="navband1" style="white-space: nowrap;">
       <c:if test="#{requestScope.userID != null}">
-        <nobr>
-
         <a name="link17" id="link6"
            href="#{facesContext.externalContext.requestContextPath}/pages/index.jsf"
            onclick="MM_showMenu(window.mm_menu_tasks,x,y,null,'link17')"
@@ -150,7 +148,6 @@
            onclick="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')"
            onmouseover="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')"
            onmouseout="MM_startTimeout();">Help</a>
-        </nobr>
      </c:if>
    </div>
 

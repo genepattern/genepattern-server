@@ -19,16 +19,15 @@
 	xmlns:c="http://java.sun.com/jstl/core">
 <ui:composition>
 
- <h:outputText rendered="#{moduleChooserBean.noModulesInstalled}">
+<h:outputText rendered="#{moduleChooserBean.noModulesInstalled}">
   <h2><font color="red">There are no modules installed. Click <a href="#{facesContext.externalContext.requestContextPath}/pages/taskCatalog.jsf">here</a> to install modules from the module repository.</font></h2>
- </h:outputText>
+</h:outputText>
 
- <h:outputText rendered="#{runTaskBean.invalidLsid}"> 
-   
-   <h2><font color="red">Requested module is not installed: #{runTaskBean.lsidParam}</font></h2>
-   <font color="red">Click <a href="#{facesContext.externalContext.requestContextPath}/pages/taskCatalog.jsf">here</a> to install modules from the module repository.
-   </font>
- </h:outputText>
+<h:outputText rendered="#{runTaskBean.invalidLsid}">
+  <h2><font color="red">Requested module is not installed: #{runTaskBean.lsidParam}</font></h2>
+  <font color="red">Click <a href="#{facesContext.externalContext.requestContextPath}/pages/taskCatalog.jsf">here</a> to install modules from the module repository.
+  </font>
+</h:outputText>
   
 <div class="barhead-other" style="width:100%;">Welcome to GenePattern</div>
 
@@ -44,12 +43,12 @@
   </tr>
 </table>
 
-<p><b class="optionsHead">To run an analysis:</b> 
+<p><b>To run an analysis:</b> 
    Select a module from the list at the left, enter values for the parameters 
    and click <i>Run</i>. When the analysis completes, the result files are displayed in the Recent Jobs pane 
    at the right.</p>
 
-<p><b class="optionsHead">To view analysis results:</b> 
+<p><b>To view analysis results:</b> 
    Click the arrow icon next to a result file. A menu lists the 
    modules most often used to view or analyze this result. Select a module, 
    enter values for the parameters and click <i>Run</i>.</p>

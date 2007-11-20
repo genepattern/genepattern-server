@@ -132,7 +132,7 @@ function validateForm() {
             
             if (validate && (value == null || value == "")) {
                	numErrors++;
-               	messageString += "<li/>" +  displayName;
+               	messageString += "<li\/>" +  displayName;
             	e.className = "error";
             	if(urlInput!=null) {
          			urlInput.className = "error";
@@ -154,7 +154,7 @@ function validateForm() {
 				Element.update('errorMessageHeader', "Please provide a value for the following parameter:");
 			}
         	d.style.display = "block";
-   			messageString += "</ul>";
+   			messageString += "<\/ul>";
           	Element.update('errorMessageContent', messageString);
         } 
         return numErrors == 0;
@@ -282,9 +282,8 @@ function showFileInput(id) {
               <tr class="taskperameter">
               
                 <!-- Parameter label -->
-                <td valign="top" class="#{p.optional==false ? 'attribute-required' : ''}">
-                  <nobr> #{p.displayName} <h:outputText rendered="#{!p.optional}" value="*"/> </nobr>
-                </td>
+                <td valign="top" class="#{p.optional==false ? 'attribute-required' : ''}"  style="white-space: nowrap;"
+                >#{p.displayName} <h:outputText rendered="#{!p.optional}" value="*"/></td>
                 <td valign="top" id="#{p.name}_td">
                 
                 <!-- File input -->
@@ -379,11 +378,11 @@ function showFileInput(id) {
     
     <!-- No tasks are selected.  View message if any, or splash page -->
     <t:div rendered="#{empty runTaskBean.lsid}">
-      <h:outputText rendered="#{runTaskBean.splashMessage != null}">
+      <h:outputText>
         <p/>
-        <h3>#{runTaskBean.splashMessage}</h3>
+        <h3>runTaskBean.splashMessage</h3>
       </h:outputText>
-      <h:outputText rendered="#{runTaskBean.splashMessage == null}">
+      <h:outputText rendered="#{empty runTaskBean.lsid}">
         <ui:include src="splashpage.xhtml"/>
       </h:outputText>
     </t:div>

@@ -72,8 +72,7 @@
          <div id="#{category.identifier}_panel" class="category_panel" categoryId='#{category.identifier}'
                style="#{category.expanded == true ? 'display:block;' : 'display:none;'}">
           <t:dataList var="module" value="#{category.modules}" >
-            <span class="#{module.name == moduleChooserBean.selectedModule ? 'tasks_on' : (module.fromBroad == false ? 'task-mine' : '')}">
-              <nobr>
+            <span class="#{module.name == moduleChooserBean.selectedModule ? 'tasks_on' : (module.fromBroad == false ? 'task-mine' : '')}" style="white-space: nowrap;">
               <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="15" height="1" />
               <img src="#{facesContext.externalContext.requestContextPath}/images/bullet-task.gif" width="4" height="4" />
               &#160;
@@ -81,7 +80,6 @@
                   <f:param name="task" value="#{module.selectedLsid}"/>
                 </h:commandLink>
                 <br></br>
-              </nobr>
              </span>
           </t:dataList>
           </div>

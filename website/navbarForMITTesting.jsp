@@ -15,8 +15,7 @@
     	var y =  isSafari ? 10 : 18;
     	mmLoadMenus();
     </script>
-    <div id="navband1" class="navband1" style="cursor: pointer;">
-        <nobr>
+    <div id="navband1" class="navband1" style="cursor: pointer;" style="white-space: nowrap;">
        <a name="link17" id="link6"
            href="<%=request.getContextPath()%>/pages/index.jsf"
            onclick="MM_showMenu(window.mm_menu_tasks,x,y,null,'link17')"
@@ -54,7 +53,6 @@
            onclick="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')"
            onmouseover="MM_showMenu(window.mm_menu_documentation,x,y,null,'link11')"
            onmouseout="MM_startTimeout();">Help</a>
-        </nobr>
    </div>
 
 <!-- begin content area. this area contains three columns in an adjustable table, including tasks & pipeline, the center working space, and recent jobs. -->

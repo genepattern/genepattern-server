@@ -850,8 +850,8 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 
 
 		// label for the field
-		taskFields = taskFields + '<td valign="top"><nobr>';
-		taskFields = taskFields + pi.name.replace(/\./g,' ').replace(/\_/g,' ') + ':</nobr>';
+		taskFields = taskFields + '<td valign="top" style="white-space: nowrap;">';
+		taskFields = taskFields + pi.name.replace(/\./g,' ').replace(/\_/g,' ') + ':';
 		taskFields = taskFields + '</td>\n';
 
 		// input area for the field
@@ -866,7 +866,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 			taskFields = taskFields + '<br><input name="t' + taskNum + '_shadow' + param +
 				     '" type="text" readonly size="60" tabindex="-1" class="shadow">';
 			if (taskNum > 0) {
-				taskFields = taskFields + '<br><nobr>or use output from <select name="t' + taskNum + '_i_' + param +
+				taskFields = taskFields + '<br><span style="white-space: nowrap;">or use output from <select name="t' + taskNum + '_i_' + param +
 							  '" onchange="chooseInheritTask(' + taskNum + ', ' + param + ')"><option value=' + NOT_SET + '" >Choose module</option>\n';
 				for (t = 0; t < taskNum; t++) {
 					taskFields = taskFields + '<option value="' + t + '">' + (t+1) + '.  ' +
@@ -878,7 +878,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 				taskFields = taskFields + '<select name="t' + taskNum + '_if_' + param + '"' +
 					' onChange="changeTaskInheritFile(this, ' + taskNum + ', ' + param + ', \'' + pi.name + '\')" >\n';
 				// this selector will be filled in dynamically by chooseInheritTask when the task is selected
-				taskFields = taskFields + ' </select></nobr>\n';
+				taskFields = taskFields + ' </select></span>\n';
 			}
 		} else if (pi.isOutputFile) {
 			// should never happen

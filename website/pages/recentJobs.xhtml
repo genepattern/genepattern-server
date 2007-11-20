@@ -19,10 +19,11 @@
       xmlns:c="http://java.sun.com/jstl/core">
 
 <ui:composition>
+  <h:form>
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td colspan="5" class="sidebarhead-bkg2">
-        <div class="sidebarhead"><nobr>Recent Jobs</nobr></div>
+        <div class="sidebarhead" style="white-space: nowrap;">Recent Jobs</div>
       </td>
     </tr>
     <tr>
@@ -35,7 +36,6 @@
         <td>No jobs to display</td>
       </tr>
     </h:outputText>
-    <h:form>
 
       <!-- Loop through jobs -->
       <t:dataList var="job" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
@@ -50,7 +50,7 @@
             <img src="images/spacer.gif" width="9" height="1"/>
           </td>
           <td>
-            <font class="recentjobs-sh">#{job.taskName}</font>
+            #{job.taskName}
 
             <!-- Image trigger for jobs menu popup -->
             <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif"
@@ -105,9 +105,8 @@
           </td>
         </tr>
       </t:dataList>
-    </h:form>
-
   </table>
+  </h:form>
   <p>
     <br/>
   </p>

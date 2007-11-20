@@ -128,8 +128,7 @@ may be provided and will be used if the user fails to specify a value when
 invoking the module.<br><br>
 
 In addition to parameter names, you may also use environment variables,
-<a href="http://java.sun.com/docs/books/tutorial/essential/system/properties.html" target="_blank"><nobr>Java
-system properties</nobr></a>,
+<a href="http://java.sun.com/docs/books/tutorial/essential/system/properties.html" target="_blank" style="white-space: nowrap;">Java system properties</a>,
 and any properties defined in the %<%=messages.get("ApplicationName")%>InstallDir%/resources/genepattern.properties file.
 In particular, there are predefined values for &lt;java&gt;, &lt;perl&gt;, and
 &lt;R&gt;, three languages that are used within various modules that may be downloaded from the module catalog at

@@ -159,34 +159,34 @@
 									</select></td>
 
 
-									<td valign="top" height="1"><nobr>#{t.taskType}</nobr></td>
+									<td valign="top" height="1" style="white-space: nowrap;">#{t.taskType}</td>
 									<td valign="top" colspan="4" rowspan="2">
 									<table>
 
 										<tr>
 											<td valign="top" align="right">author:</td>
-											<td valign="top"><nobr>#{t.author}</nobr></td>
+											<td valign="top" style="white-space: nowrap;">#{t.author}</td>
 										</tr>
 
 										<tr>
 											<td valign="top" align="right">size:</td>
-											<td valign="top"><nobr>#{t.formattedSize}</nobr></td>
+											<td valign="top" style="white-space: nowrap;">#{t.formattedSize}</td>
 										</tr>
 
 										<h:outputText rendered="#{!empty t.patches}">
 										<tr>
 											<td valign="top" align="right">required patches:</td>
-											<td valign="top"><nobr>
+											<td valign="top" style="white-space: nowrap;">
 											<t:dataList var="p" value="#{t.patches}">
 												#{p.name} (#{p.formattedSize})
 											</t:dataList>
-											</nobr></td>
+											</td>
 										</tr>
 										</h:outputText>
 
 										<tr>
 											<td valign="top" align="right">requirements:</td>
-											<td valign="top"><nobr>#{t.requirements}</nobr></td>
+											<td valign="top" style="white-space: nowrap;">#{t.requirements}</td>
 
 										</tr>
 

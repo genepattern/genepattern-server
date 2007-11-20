@@ -493,11 +493,11 @@ everyone's jobs <input type="checkbox" name="<%= SHOW_LOGS %>"
 
             if (AuthorizationHelper.createPipeline(encodedUserId)) {
 
-                out.print("<span  onClick=\"createPipeline(\'" + URLEncoder.encode(serverURL + fileURL, "utf-8")
-                        + "\')\" \" ><nobr>");
+                out.print("<span  style=\"white-space: nowrap;\" onClick=\"createPipeline(\'" + URLEncoder.encode(serverURL + fileURL, "utf-8")
+                        + "\')\" \" >");
                 out.print("&nbsp;");
                 out.print("<img src=skin/pipe_obj.jpeg>");
-                out.print("  </nobr></span>");
+                out.print("  </span>");
             }
 
             if (showAll) {

@@ -260,10 +260,9 @@ show execution logs</td>
 <table width="100%"  border="0" cellspacing="0" cellpadding="0">
             <tr class="smalltype">
               <td >&nbsp;</td>
-              <td valign="top"><nobr>
-                <div align="center"><a href="#"  onclick="downloadCheckedFiles()">download</a> | <a href="#"  onclick="deleteCheckedFiles()">delete</a> </div>
-
-              </nobr></td>
+              <td valign="top" style="white-space: nowrap;">
+                <div align="center"><a href="#"  onclick="downloadCheckedFiles()">download</a> | <a href="#"  onclick="deleteCheckedFiles()">delete</a></div>
+              </td>
               <td>&nbsp;</td>
               <td><!-- <a href="link">open all</a> | <a href="link">close all</a> --></td>
             </tr>
@@ -467,7 +466,7 @@ show execution logs</td>
         }
     out.println("<tr><td colspan=4>&nbsp;</td></tr>");
 
-     out.println("<tr class=\"smalltype\"><td/><td colspan=1  valign='top'><nobr><div align='center'><a href='#' onclick=\"downloadCheckedFiles()\">download</a> | <a href='#' onclick=\"deleteCheckedFiles()\" >delete</a> </div></nobr></td><td/><td/></tr>");
+     out.println("<tr class=\"smalltype\"><td/><td colspan=1  valign='top' style=\"white-space: nowrap;\"><div align='center'><a href='#' onclick=\"downloadCheckedFiles()\">download</a> | <a href='#' onclick=\"deleteCheckedFiles()\" >delete</a> </div></td><td/><td/></tr>");
 
 
            out.flush();

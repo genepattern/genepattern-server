@@ -173,7 +173,7 @@ for (Iterator iter = sortedSuiteMap.keySet().iterator(); iter.hasNext(); ) {
 %>
 	<tr>
 	<td valign="top"><div id="<%=firstName%>" style="display:none"><%= indent %>
-		<font size='-2'><a name="<%= si.getName() %>" href=addTask.jsp?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1"><nobr><%= si.getName() %> (<%= lsid.getVersion() %>)</nobr></a></font></div></td>
+		<font size='-2'><a name="<%= si.getName() %>" href=addTask.jsp?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1" style="white-space: nowrap;"><%= si.getName() %> (<%= lsid.getVersion() %>)</a></font></div></td>
 	<td valign="top"><div id="<%=firstName%>" style="display:none"><%= StringUtils.htmlEncode(description) %>
 	<br>
 <%
@@ -192,8 +192,7 @@ out.println("</div></td></tr>");
 %>
 	<tr>
 	<td valign="top"><%= indent %>
-		<a name="<%= si.getName() %>" href="addTask.jsp?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1"><nobr><%= si.getName() %> 
-		(<%= lsid.getVersion() %>)</nobr><a/>
+		<a name="<%= si.getName() %>" href="addTask.jsp?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1"  style="white-space: nowrap;"><%= si.getName() %> (<%= lsid.getVersion() %>)<a/>
 <%
 	if (versions.length > 1){
 %>		
