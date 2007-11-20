@@ -166,6 +166,8 @@
           <ui:insert name="leftPanel"/>
 
           <td valign="top" class="maincontent" id="maincontent">
+            <!-- Spacer used to maintain a minimum width, min-width style is not supported on all browsers (IE7, Opera9) -->
+            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="570" height="0"/>
 
             <!-- JSF (Server side) errors or messages -->
         <!--    <h:outputText value="Please correct the following errors before proceeding:"
