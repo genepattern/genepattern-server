@@ -22,9 +22,9 @@
 <!-- horizontal navigation band -->
     <script language="JavaScript1.2" type="text/javascript">
     	var agt = navigator.userAgent.toLowerCase();
-    	var isSafari = agt.indexOf("safari") != -1;
-    	var x = isSafari ? -90 : 0;
-    	var y =  isSafari ? 10 : 18;
+        var isSafari2 = agt.indexOf("safari/4") != -1;
+    	var x = isSafari2 ? -90 : 0;
+    	var y =  isSafari2 ? 10 : 18;
     	mmLoadMenus();
     </script>
     <div id="navband1" class="navband1" style="cursor: pointer;" style="white-space: nowrap;">
