@@ -39,14 +39,7 @@ function pm_showMenu(id, pos, horizOffset, vertOffset) {
         style.top = Math.max(0, pos[1] - vertOffset) + "px";
       }
       else {
-    //    var agt = navigator.userAgent.toLowerCase();
-    //	var isSafari = agt.indexOf("safari") != -1;
-    //	if(isSafari) { // height is computed incorrectly in Safari
-    //		style.top = Math.max(0, pos[1] - vertOffset) + "px";
-    //	} else {
-           // Menu is on bottom half of page, user bottom align.
            style.bottom = Math.max(-f_scrollTop(), height - pos[1] - vertOffset)+ "px";
-     //   }
        }
     }
     style.display = "";
