@@ -261,8 +261,8 @@ document.location.href=location;
 				onclick="toggleSortOrder('jobSortOrder')"
 				onmouseover="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-down-over.gif'"
 				onmouseout="setSortOrderImage('jobSortOrder')" /> <t:inputHidden
-				id="jobSortOrder_field" forceId="true"
-				value="#{jobsBean.jobSortAscending}" /> <!-- File sort column -->
+				id="jobSortOrder_field"
+				value="#{jobsBean.jobSortAscending}"><f:attribute name="forceId" value="true" /></t:inputHidden> <!-- File sort column -->
 			&#160; &#160; &#160; &#160; <strong>sort files by:</strong> <h:selectOneMenu
 				value="#{jobsBean.fileSortColumn}">
 				<f:selectItem itemLabel="name" itemValue="name" />
@@ -275,8 +275,8 @@ document.location.href=location;
 				onclick="toggleSortOrder('fileSortOrder')"
 				onmouseover="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-down-over.gif'"
 				onmouseout="setSortOrderImage('fileSortOrder')" /> <t:inputHidden
-				id="fileSortOrder_field" forceId="true"
-				value="#{jobsBean.fileSortAscending}" /> &#160;&#160; <h:commandButton
+				id="fileSortOrder_field"
+				value="#{jobsBean.fileSortAscending}"><f:attribute name="forceId" value="true" /></t:inputHidden></t:inputHidden> &#160;&#160; <h:commandButton
 				value="Sort" action="#{jobsBean.sort}" /></div>
 
 			<!-- Job results table -->
