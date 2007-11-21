@@ -1,3 +1,5 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 <!-- /*
  The Broad Institute
  SOFTWARE COPYRIGHT NOTICE AGREEMENT
@@ -10,7 +12,6 @@
  use, misuse, or functionality.
  */ -->
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:h="http://java.sun.com/jsf/html"
@@ -66,8 +67,9 @@
 			<h:panelGrid columns="2">
 				<h:outputLabel value="Username:" for="username"></h:outputLabel>
 				<t:inputText size="50" value="#{loginBean.username}" id="username"
-				    forceId="true"
-					required="true" requiredMessage="Username is required"/>
+					required="true" requiredMessage="Username is required" >
+                  <f:attribute name="forceId" value="true"/>
+                </t:inputText>
 				
 				<h:outputLabel value="Password:" for="password"
 					rendered="#{loginBean.passwordRequired}"></h:outputLabel>

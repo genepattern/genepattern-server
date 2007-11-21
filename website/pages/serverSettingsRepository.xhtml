@@ -29,7 +29,8 @@
       <tr valign="top">
         <td width="33%">Previous Module Repository URLs:</td>
         <td width="67%">
-          <t:selectOneListbox id="select1" forceId="true" size="3" style="width:550px" value="#{serverSettingsBean.settings['ModuleRepositoryURL']}" onclick="$(mrurl).value=this.value">
+          <t:selectOneListbox id="select1" size="3" style="width:550px" value="#{serverSettingsBean.settings['ModuleRepositoryURL']}" onclick="$(mrurl).value=this.value" >
+            <f:attribute name="forceId" value="true" />
   			<f:selectItems value="#{serverSettingsBean.moduleRepositoryURLs}" />
 		  </t:selectOneListbox>        
         </td>
@@ -37,7 +38,9 @@
       <tr valign="top">
         <td width="33%">Module Repository URL:</td>
         <td width="67%">
-          <t:inputText id="mrurl" forceId="true" size="67" value="#{serverSettingsBean.settings['ModuleRepositoryURL']}"/>       
+          <t:inputText id="mrurl" size="67" value="#{serverSettingsBean.settings['ModuleRepositoryURL']}" >
+            <f:attribute name="forceId" value="true" />
+          </t:inputText>
         </td>
       </tr>
       <tr valign="top">
@@ -63,7 +66,8 @@
       <tr valign="top">
         <td width="33%">Previous Suite Repository URLs:</td>
         <td width="67%">
-          <t:selectOneListbox id="select2" forceId="true" size="3" style="width:550px" value="#{serverSettingsBean.settings['SuiteRepositoryURL']}" onclick="$(srurl).value=this.value">
+          <t:selectOneListbox id="select2" size="3" style="width:550px" value="#{serverSettingsBean.settings['SuiteRepositoryURL']}" onclick="$(srurl).value=this.value" >
+            <f:attribute name="forceId" value="true" />
   			<f:selectItems value="#{serverSettingsBean.suiteRepositoryURLs}" />
 		  </t:selectOneListbox>        
         </td>
@@ -71,7 +75,9 @@
       <tr valign="top">
         <td width="33%">Suite Repository URL:</td>
         <td width="67%">
-          <t:inputText id="srurl" forceId="true" size="67" value="#{serverSettingsBean.settings['SuiteRepositoryURL']}"/>       
+          <t:inputText id="srurl" size="67" value="#{serverSettingsBean.settings['SuiteRepositoryURL']}" >
+            <f:attribute name="forceId" value="true" />
+          </t:inputText>
         </td>
       </tr>
       <tr valign="top">

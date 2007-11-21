@@ -73,7 +73,9 @@
 		  	<t:dataList id="commandPrefixTable" forceId="true" value="#{commandPrefixBean.commandPrefixes}" var="aPrefix" width="80%">
 			  	<tr valign="top">
 		            <td width="33%">
-		              <h:outputText size="15" id="key" value="#{aPrefix.key}"/>
+		              <h:outputText id="key" value="#{aPrefix.key}">
+                        <f:attribute name="size" value="15"/>
+                      </h:outputText>
 		            </td>
 		            <td width="57%">
 		              <h:outputText id="value" value="#{aPrefix.value}"/>

@@ -54,7 +54,9 @@
         	<h:outputText value="#{serverSettingsBean.db}"/>
         </td>
         <td>
-	        <t:outputText id="db" forceId="true" size="40" value="Currently, you are using #{serverSettingsBean.settings['database.vendor']}."/>
+	        <t:outputText id="db" value="Currently, you are using #{serverSettingsBean.settings['database.vendor']}." >
+              <f:attribute name="forceId" value="true" />
+            </t:outputText>
 	    </td>
       </tr>
       <tr valign="top">

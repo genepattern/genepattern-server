@@ -62,7 +62,8 @@
       <tr valign="top" class="specified" style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}">
         <td width="20%">Allowed ip addresses:</td>
         <td width="55%" >
-          <t:selectOneListbox id="selectClientMode" forceId="true" style="width:50%" size="3" value="#{serverSettingsBean.specifiedClientMode}" onclick="$(clientMode).value=this.value">
+          <t:selectOneListbox id="selectClientMode" style="width:50%" size="3" value="#{serverSettingsBean.specifiedClientMode}" onclick="$(clientMode).value=this.value">
+            <f:attribute name="forceId" value="true"/>
   			<f:selectItems value="#{serverSettingsBean.specifiedClientModes}" />
 		  </t:selectOneListbox>
         </td>
@@ -73,7 +74,9 @@
       <tr valign="top" class="specified" style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}">
         <td width="20%">Enter an ip address:</td>
         <td width="55%">
-          <t:inputText id="clientMode" forceId="true" style="width:49%" size="40" value="#{serverSettingsBean.specifiedClientMode}" onkeydown="$(save).disabled=false; $(remove).disabled=false"/>
+          <t:inputText id="clientMode" style="width:49%" size="40" value="#{serverSettingsBean.specifiedClientMode}" onkeydown="$(save).disabled=false; $(remove).disabled=false" >
+            <f:attribute name="forceId" value="true"/>
+          </t:inputText>
         </td>
         <td width="25%">
         </td>
@@ -81,14 +84,18 @@
       <tr valign="top">
         <td>&#160;</td>
         <td>
-          <t:commandButton id="save" forceId="true" value="Save" actionListener="#{serverSettingsBean.addSpecifiedClientMode}"/>
+          <t:commandButton id="save" value="Save" actionListener="#{serverSettingsBean.addSpecifiedClientMode}" >
+            <f:attribute name="forceId" value="true"/>
+          </t:commandButton>
           &#160;
           <h:commandButton value="Restore" actionListener="#{serverSettingsBean.restore}">
 	      	<f:attribute name="subtype" value="Module" />
 	      </h:commandButton>
 	      &#160;
-	      <t:commandButton id="remove" forceId="true" styleClass="specified" value="Remove" actionListener="#{serverSettingsBean.removeSpecifiedClientMode}"
-          	style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}" onkeyup="$(clientMode).value=''"/>
+	      <t:commandButton id="remove" styleClass="specified" value="Remove" actionListener="#{serverSettingsBean.removeSpecifiedClientMode}"
+          	style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}" onkeyup="$(clientMode).value=''" >
+            <f:attribute name="forceId" value="true"/>
+          </t:commandButton>
         </td>
       </tr>
 
