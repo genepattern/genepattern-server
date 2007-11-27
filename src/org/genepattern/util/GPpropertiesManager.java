@@ -182,7 +182,7 @@ public class GPpropertiesManager {
 			ioe.printStackTrace();
 			throw new IOException("While trying to create the "
 					+ ((create_parent) ? "application directory"
-							: "properties file") + " an error occured:\n"
+							: "properties file") + " an error occurred:\n"
 					+ ioe.getMessage());
 		}
 		return file;
