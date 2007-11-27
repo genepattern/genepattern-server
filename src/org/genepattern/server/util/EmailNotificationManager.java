@@ -247,7 +247,7 @@ class JobWaitThread extends Thread {
 	    msg.append("There was a problem getting the status for job " + jobID);
 	    msg.append("\nThe job may or may not be finished.  When it is complete you will be able to");
 	    msg.append("get the results from here:\n ");
-	    msg.append("<a href='" + System.getProperty("GenePatternURL")
+	    msg.append("<a href='" + UIBeanHelper.getServer()
 		    + "/pages/jobResults.jsf?jobID=jobID'>GenePattern Results Page</a>");
 	    msg.append("\n\nSee the GenePattern logs for the error details.");
 
