@@ -64,490 +64,500 @@ import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * Used to create/edit a suite
- *
-
- *
+ * 
+ * 
+ * 
  */
 public class SuiteEditor extends JPanel {
 
     public HeaderPanel headerPanel;
 
-    private ArrayList checkBoxes = new ArrayList();
+    private ArrayList<TaskSelector> checkBoxes = new ArrayList<TaskSelector>();
 
     private SuiteInfo suiteInfo;
 
     public SuiteEditor() {
-        MessageManager.addGPGEMessageListener(new GPGEMessageListener() {
+	MessageManager.addGPGEMessageListener(new GPGEMessageListener() {
 
-            public void receiveMessage(GPGEMessage message) {
-                if (message instanceof RefreshMessage && isShowing()) {
-                    String lsid = null;
-                    if (suiteInfo != null) {
-                        lsid = suiteInfo.getLsid();
-                    }
-                    if (lsid != null && !lsid.equals("")) {
-                        try {
-                            final AdminProxy proxy = new AdminProxy(AnalysisServiceManager.getInstance().getServer(),
-                                    AnalysisServiceManager.getInstance().getUsername(), AnalysisServiceManager
-                                            .getInstance().getPassword());
-                            proxy.getSuite(lsid);
+	    public void receiveMessage(GPGEMessage message) {
+		if (message instanceof RefreshMessage && isShowing()) {
+		    String lsid = null;
+		    if (suiteInfo != null) {
+			lsid = suiteInfo.getLsid();
+		    }
+		    if (lsid != null && !lsid.equals("")) {
+			try {
+			    final AdminProxy proxy = new AdminProxy(AnalysisServiceManager.getInstance().getServer(),
+				    AnalysisServiceManager.getInstance().getUsername(), AnalysisServiceManager
+					    .getInstance().getPassword());
+			    proxy.getSuite(lsid);
 
-                        } catch (WebServiceException e) {
-                            GenePattern.showMessageDialog(suiteInfo.getName() + " has been deleted from the server.");
-                        }
-                    }
-                }
-            }
+			} catch (WebServiceException e) {
+			    GenePattern.showMessageDialog(suiteInfo.getName() + " has been deleted from the server.");
+			}
+		    }
+		}
+	    }
 
-        });
+	});
 
     }
 
     private static String createRowSpec(int rows) {
-        StringBuffer rowBuff = new StringBuffer();
-        for (int i = 0; i < rows; i++) {
-            if (i > 0) {
-                rowBuff.append(", ");
-            }
-            rowBuff.append("pref");
+	StringBuffer rowBuff = new StringBuffer();
+	for (int i = 0; i < rows; i++) {
+	    if (i > 0) {
+		rowBuff.append(", ");
+	    }
+	    rowBuff.append("pref");
 
-        }
-        return rowBuff.toString();
+	}
+	return rowBuff.toString();
     }
 
     static class TaskSelector {
 
-        private JCheckBox cb;
+	private JCheckBox cb;
 
-        private LSID lsid;
+	private LSID lsid;
 
-        private JComboBox versionsComboBox;
+	private JComboBox versionsComboBox;
 
-        public TaskSelector(JCheckBox cb, LSID lsid, JComboBox versionsComboBox) {
-            this.cb = cb;
-            this.lsid = lsid;
-            this.versionsComboBox = versionsComboBox;
-        }
+	public TaskSelector(JCheckBox cb, LSID lsid, JComboBox versionsComboBox) {
+	    this.cb = cb;
+	    this.lsid = lsid;
+	    this.versionsComboBox = versionsComboBox;
+	}
 
     }
 
     public void display(SuiteInfo _suiteInfo) {
-        checkBoxes.clear();
-        removeAll();
-        if (_suiteInfo == null) {
-            _suiteInfo = new SuiteInfo();
-            _suiteInfo.setLsid(null);
-            AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
-            _suiteInfo.setAuthor(asm.getUsername());
-            _suiteInfo.setOwner(asm.getUsername());
-        }
-        this.suiteInfo = _suiteInfo;
+	checkBoxes.clear();
+	removeAll();
+	if (_suiteInfo == null) {
+	    _suiteInfo = new SuiteInfo();
+	    _suiteInfo.setLsid(null);
+	    AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
+	    _suiteInfo.setAuthor(asm.getUsername());
+	    _suiteInfo.setOwner(asm.getUsername());
+	}
+	this.suiteInfo = _suiteInfo;
+	boolean view = !suiteInfo.getOwner().equals(AnalysisServiceManager.getInstance().getUsername());
 
-        Set moduleLsids = new HashSet();
-        if (suiteInfo.getModuleLsids() != null) {
-            moduleLsids.addAll(Arrays.asList(suiteInfo.getModuleLsids()));
-        }
-        Map categoryToAnalysisServices = AnalysisServiceUtil.getCategoryToAnalysisServicesMap(AnalysisServiceManager
-                .getInstance().getLatestAnalysisServices(true));
-        Map lsid2VersionsMap = AnalysisServiceManager.getInstance().getLSIDToVersionsMap();
-        CellConstraints cc = new CellConstraints();
+	Set moduleLsids = new HashSet();
+	if (suiteInfo.getModuleLsids() != null) {
+	    moduleLsids.addAll(Arrays.asList(suiteInfo.getModuleLsids()));
+	}
+	Map categoryToAnalysisServices = AnalysisServiceUtil.getCategoryToAnalysisServicesMap(AnalysisServiceManager
+		.getInstance().getLatestAnalysisServices(true));
+	Map lsid2VersionsMap = AnalysisServiceManager.getInstance().getLSIDToVersionsMap();
+	CellConstraints cc = new CellConstraints();
 
-        int[] totals = new int[categoryToAnalysisServices.size()];
-        int index = 0;
-        int numTasks = 0;
-        for (Iterator keys = categoryToAnalysisServices.keySet().iterator(); keys.hasNext();) {
-            String category = (String) keys.next();
-            List services = (List) categoryToAnalysisServices.get(category);
-            numTasks += services.size();
-            if (index > 0) {
-                totals[index] = totals[index - 1] + services.size();
-            } else {
-                totals[index] = services.size();
-            }
-            index++;
+	int[] totals = new int[categoryToAnalysisServices.size()];
+	int index = 0;
+	int numTasks = 0;
+	for (Iterator keys = categoryToAnalysisServices.keySet().iterator(); keys.hasNext();) {
+	    String category = (String) keys.next();
+	    List services = (List) categoryToAnalysisServices.get(category);
+	    numTasks += services.size();
+	    if (index > 0) {
+		totals[index] = totals[index - 1] + services.size();
+	    } else {
+		totals[index] = services.size();
+	    }
+	    index++;
 
-        }
-        int halfway = numTasks / 2;
-        int categoryIndex = -1;
-        for (int i = 0; i < totals.length; i++) {
-            if (totals[i] > halfway) {
-                categoryIndex = i;
-                break;
-            }
-        }
+	}
+	int halfway = numTasks / 2;
+	int categoryIndex = -1;
+	for (int i = 0; i < totals.length; i++) {
+	    if (totals[i] > halfway) {
+		categoryIndex = i;
+		break;
+	    }
+	}
 
-        FormLayout leftLayout = new FormLayout("pref", createRowSpec(categoryIndex + 1));
-        FormLayout rightLayout = new FormLayout("pref", createRowSpec(categoryToAnalysisServices.size() - categoryIndex
-                + 1));
+	FormLayout leftLayout = new FormLayout("pref", createRowSpec(categoryIndex + 1));
+	FormLayout rightLayout = new FormLayout("pref", createRowSpec(categoryToAnalysisServices.size() - categoryIndex
+		+ 1));
 
-        JPanel leftTasksPanel = new JPanel(leftLayout);
-        JPanel rightTasksPanel = new JPanel(rightLayout);
+	JPanel leftTasksPanel = new JPanel(leftLayout);
+	JPanel rightTasksPanel = new JPanel(rightLayout);
 
-        int row = 1;
-        JPanel panel = leftTasksPanel;
-        for (Iterator keys = categoryToAnalysisServices.keySet().iterator(); keys.hasNext();) {
+	int row = 1;
+	JPanel panel = leftTasksPanel;
+	for (Iterator keys = categoryToAnalysisServices.keySet().iterator(); keys.hasNext();) {
 
-            String category = (String) keys.next();
-            List services = (List) categoryToAnalysisServices.get(category);
+	    String category = (String) keys.next();
+	    List services = (List) categoryToAnalysisServices.get(category);
 
-            JPanel categoryPanel = new JPanel(new FormLayout("left:pref:g(0), left:pref:g(1)", createRowSpec(services
-                    .size() + 1)));
+	    JPanel categoryPanel = new JPanel(new FormLayout("left:pref:g(0), left:pref:g(1)", createRowSpec(services
+		    .size() + 1)));
 
-            categoryPanel.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
-            JLabel categoryLabel = new JLabel(category);
-            categoryLabel.setFont(categoryLabel.getFont().deriveFont(Font.BOLD));
+	    categoryPanel.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
+	    JLabel categoryLabel = new JLabel(category);
+	    categoryLabel.setFont(categoryLabel.getFont().deriveFont(Font.BOLD));
+	    categoryPanel.add(categoryLabel, cc.xyw(1, 1, 2));
+	    boolean found = false;
+	    for (int i = 0; i < services.size(); i++) {
+		JCheckBox cb = new JCheckBox();
+		cb.setVisible(!view);
 
-            categoryPanel.add(categoryLabel, cc.xyw(1, 1, 2));
+		AnalysisService svc = (AnalysisService) services.get(i);
 
-            for (int i = 0; i < services.size(); i++) {
-                JCheckBox cb = new JCheckBox();
+		try {
+		    LSID lsid = new LSID((String) svc.getTaskInfo().getTaskInfoAttributes().get(GPConstants.LSID));
+		    if (view && !moduleLsids.contains(lsid.toString())) {
+			continue;
+		    }
+		    found = true;
+		    List versions = (List) lsid2VersionsMap.get(lsid.toStringNoVersion());
 
-                AnalysisService svc = (AnalysisService) services.get(i);
+		    categoryPanel.add(cb, cc.xy(1, i + 2));
 
-                try {
-                    LSID lsid = new LSID((String) svc.getTaskInfo().getTaskInfoAttributes().get(GPConstants.LSID));
+		    JComboBox versionsComboBox = null;
+		    JPanel temp = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		    if (!view && versions != null && versions.size() > 1) {
+			versionsComboBox = new JComboBox();
+			for (int j = 0; j < versions.size(); j++) {
+			    String moduleLsid = lsid.toStringNoVersion() + ":" + versions.get(j);
+			    versionsComboBox.addItem(versions.get(j));
+			    if (moduleLsids.contains(moduleLsid)) {
+				cb.setSelected(true);
+				versionsComboBox.setSelectedItem(moduleLsid);
+			    }
+			}
+			if (versionsComboBox.getSelectedItem() == null) {
+			    versionsComboBox.setSelectedItem(lsid.getVersion());
+			}
+			JLabel taskNameLabel = new JLabel(svc.getName());
+			temp.add(taskNameLabel);
+			temp.add(versionsComboBox);
 
-                    List versions = (List) lsid2VersionsMap.get(lsid.toStringNoVersion());
+		    } else {
+			JLabel taskNameLabel = new JLabel(svc.getName() + " (" + lsid.getVersion() + ")");
+			temp.add(taskNameLabel);
 
-                    categoryPanel.add(cb, cc.xy(1, i + 2));
+			if (moduleLsids.contains(lsid.toString())) {
+			    cb.setSelected(true);
+			}
+		    }
+		    categoryPanel.add(temp, cc.xy(2, i + 2));
+		    checkBoxes.add(new TaskSelector(cb, lsid, versionsComboBox));
 
-                    JComboBox versionsComboBox = null;
-                    JPanel temp = new JPanel(new FlowLayout(FlowLayout.LEFT));
-                    if (versions != null && versions.size() > 1) {
-                        versionsComboBox = new JComboBox();
-                        for (int j = 0; j < versions.size(); j++) {
-                            String moduleLsid = lsid.toStringNoVersion() + ":" + versions.get(j);
-                            versionsComboBox.addItem(versions.get(j));
-                            if (moduleLsids.contains(moduleLsid)) {
-                                cb.setSelected(true);
-                                versionsComboBox.setSelectedItem(moduleLsid);
-                            }
-                        }
-                        if (versionsComboBox.getSelectedItem() == null) {
-                            versionsComboBox.setSelectedItem(lsid.getVersion());
-                        }
-                        JLabel taskNameLabel = new JLabel(svc.getName());
-                        temp.add(taskNameLabel);
-                        temp.add(versionsComboBox);
+		} catch (MalformedURLException e) {
+		    e.printStackTrace();
+		}
 
-                    } else {
-                        JLabel taskNameLabel = new JLabel(svc.getName() + " (" + lsid.getVersion() + ")");
-                        temp.add(taskNameLabel);
-                        if (moduleLsids.contains(lsid.toString())) {
-                            cb.setSelected(true);
-                        }
-                    }
-                    categoryPanel.add(temp, cc.xy(2, i + 2));
-                    checkBoxes.add(new TaskSelector(cb, lsid, versionsComboBox));
+	    }
+	    if (row == (categoryIndex + 1)) {
+		panel = rightTasksPanel;
+		row = 1;
+	    }
+	    if (found) {
+		panel.add(categoryPanel, cc.xy(1, row++));
+	    }
+	}
 
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
+	JPanel tasksPanel = new JPanel(new FormLayout("pref, 10dlu, pref", "pref"));
+	tasksPanel.add(leftTasksPanel, cc.xy(1, 1, "left, top"));
+	tasksPanel.add(rightTasksPanel, cc.xy(3, 1, "left, top"));
 
-            }
-            if (row == (categoryIndex + 1)) {
-                panel = rightTasksPanel;
-                row = 1;
-            }
-            panel.add(categoryPanel, cc.xy(1, row++));
-        }
+	headerPanel = new HeaderPanel(suiteInfo, view);
 
-        JPanel tasksPanel = new JPanel(new FormLayout("pref, 10dlu, pref", "pref"));
-        tasksPanel.add(leftTasksPanel, cc.xy(1, 1, "left, top"));
-        tasksPanel.add(rightTasksPanel, cc.xy(3, 1, "left, top"));
+	JPanel bottomBtnPanel = new JPanel();
+	final JButton saveButton = new JButton("Save");
+	saveButton.setVisible(!view);
+	// helpButton = new JButton("Help");
+	final JButton exportButton = new JButton("Export");
+	bottomBtnPanel.add(saveButton);
+	bottomBtnPanel.add(exportButton);
 
-        headerPanel = new HeaderPanel(suiteInfo);
+	ActionListener btnListener = new ActionListener() {
 
-        JPanel bottomBtnPanel = new JPanel();
-        final JButton saveButton = new JButton("Save");
-        // helpButton = new JButton("Help");
-        final JButton exportButton = new JButton("Export");
-        bottomBtnPanel.add(saveButton);
-        bottomBtnPanel.add(exportButton);
+	    public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == exportButton) {
+		    new CLThread() {
+			public void run() {
 
-        ActionListener btnListener = new ActionListener() {
+			    try {
+				AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
+				final File destination = GUIUtil.showSaveDialog(new File(suiteInfo.getName() + ".zip"),
+					"Select destination zip file");
+				if (destination == null) {
+				    return;
+				}
+				new TaskIntegratorProxy(asm.getServer(), asm.getUsername(), asm.getPassword())
+					.exportSuiteToZip(suiteInfo.getLsid(), destination);
 
-            public void actionPerformed(ActionEvent e) {
-                if (e.getSource() == exportButton) {
-                    new CLThread() {
-                        public void run() {
+			    } catch (WebServiceException e1) {
+				e1.printStackTrace();
+				GenePattern.showErrorDialog("An error occurred while exporting the suite "
+					+ suiteInfo.getName());
+			    }
+			}
+		    }.start();
 
-                            try {
-                                AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
-                                final File destination = GUIUtil.showSaveDialog(new File(suiteInfo.getName() + ".zip"),
-                                        "Select destination zip file");
-                                if (destination == null) {
-                                    return;
-                                }
-                                new TaskIntegratorProxy(asm.getServer(), asm.getUsername(), asm.getPassword())
-                                        .exportSuiteToZip(suiteInfo.getLsid(), destination);
+		} else if (e.getSource() == saveButton) {
+		    int accessId = headerPanel.privacyComboBox.getSelectedItem().equals("Public") ? GPConstants.ACCESS_PUBLIC
+			    : GPConstants.ACCESS_PRIVATE;
+		    suiteInfo.setAccessId(accessId);
+		    suiteInfo.setName(headerPanel.nameField.getText());
+		    if (suiteInfo.getName().trim().equals("")) {
+			GenePattern.showErrorDialog("Please supply a suite name.");
+			return;
+		    }
+		    suiteInfo.setAuthor(headerPanel.authorField.getText());
+		    if (suiteInfo.getAuthor().trim().equals("")) {
+			GenePattern.showErrorDialog("Please supply an author.");
+			return;
+		    }
+		    suiteInfo.setOwner(headerPanel.ownerField.getText());
+		    if (suiteInfo.getOwner().trim().equals("")) {
+			GenePattern.showErrorDialog("Please supply an owner.");
+			return;
+		    }
 
-                            } catch (WebServiceException e1) {
-                                e1.printStackTrace();
-                                GenePattern.showErrorDialog("An error occurred while exporting the suite "
-                                        + suiteInfo.getName());
-                            }
-                        }
-                    }.start();
+		    suiteInfo.setDescription(headerPanel.descriptionField.getText());
+		    JComboBox docComboBox = headerPanel.docComboBox;
+		    final List localDocFiles = new ArrayList();
+		    final List serverDocFiles = new ArrayList();
 
-                } else if (e.getSource() == saveButton) {
-                    int accessId = headerPanel.privacyComboBox.getSelectedItem().equals("Public") ? GPConstants.ACCESS_PUBLIC
-                            : GPConstants.ACCESS_PRIVATE;
-                    suiteInfo.setAccessId(accessId);
-                    suiteInfo.setName(headerPanel.nameField.getText());
-                    if (suiteInfo.getName().trim().equals("")) {
-                        GenePattern.showErrorDialog("Please supply a suite name.");
-                        return;
-                    }
-                    suiteInfo.setAuthor(headerPanel.authorField.getText());
-                    if (suiteInfo.getAuthor().trim().equals("")) {
-                        GenePattern.showErrorDialog("Please supply an author.");
-                        return;
-                    }
-                    suiteInfo.setOwner(headerPanel.ownerField.getText());
-                    if (suiteInfo.getOwner().trim().equals("")) {
-                        GenePattern.showErrorDialog("Please supply an owner.");
-                        return;
-                    }
+		    for (int i = 0; i < docComboBox.getItemCount(); i++) {
+			Object obj = docComboBox.getItemAt(i);
+			if (obj instanceof String) {
+			    String s = (String) obj;
+			    serverDocFiles.add(s);
+			} else {
+			    LocalFileWrapper fw = (LocalFileWrapper) obj;
+			    localDocFiles.add(fw.file);
+			}
+		    }
 
-                    suiteInfo.setDescription(headerPanel.descriptionField.getText());
-                    JComboBox docComboBox = headerPanel.docComboBox;
-                    final List localDocFiles = new ArrayList();
-                    final List serverDocFiles = new ArrayList();
+		    suiteInfo.setDocumentationFiles((String[]) serverDocFiles.toArray(new String[0]));
+		    List moduleLsids = new ArrayList();
+		    for (int i = 0; i < checkBoxes.size(); i++) {
+			TaskSelector ts = (TaskSelector) checkBoxes.get(i);
+			if (ts.cb.isSelected()) {
+			    if (ts.versionsComboBox != null) {
+				moduleLsids.add(ts.lsid.toStringNoVersion() + ":"
+					+ ts.versionsComboBox.getSelectedItem());
+			    } else {
+				moduleLsids.add(ts.lsid.toString());
+			    }
+			}
+		    }
+		    suiteInfo.setModuleLSIDs((String[]) moduleLsids.toArray(new String[0]));
 
-                    for (int i = 0; i < docComboBox.getItemCount(); i++) {
-                        Object obj = docComboBox.getItemAt(i);
-                        if (obj instanceof String) {
-                            String s = (String) obj;
-                            serverDocFiles.add(s);
-                        } else {
-                            LocalFileWrapper fw = (LocalFileWrapper) obj;
-                            localDocFiles.add(fw.file);
-                        }
-                    }
+		    final AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
+		    new CLThread() {
+			public void run() {
+			    try {
 
-                    suiteInfo.setDocumentationFiles((String[]) serverDocFiles.toArray(new String[0]));
-                    List moduleLsids = new ArrayList();
-                    for (int i = 0; i < checkBoxes.size(); i++) {
-                        TaskSelector ts = (TaskSelector) checkBoxes.get(i);
-                        if (ts.cb.isSelected()) {
-                            if (ts.versionsComboBox != null) {
-                                moduleLsids.add(ts.lsid.toStringNoVersion() + ":"
-                                        + ts.versionsComboBox.getSelectedItem());
-                            } else {
-                                moduleLsids.add(ts.lsid.toString());
-                            }
-                        }
-                    }
-                    suiteInfo.setModuleLSIDs((String[]) moduleLsids.toArray(new String[0]));
+				String lsid = new TaskIntegratorProxy(asm.getServer(), asm.getUsername(), asm
+					.getPassword()).modifySuite(suiteInfo, (File[]) localDocFiles
+					.toArray(new File[0]), (String[]) serverDocFiles.toArray(new String[0]));
+				suiteInfo.setLsid(lsid);
 
-                    final AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
-                    new CLThread() {
-                        public void run() {
-                            try {
+				GenePattern.showMessageDialog("Saved " + suiteInfo.getName());
+				try {
+				    MessageManager.notifyListeners(new SuiteInstallMessage(SuiteEditor.this, lsid));
+				} catch (MalformedURLException e) {
+				    e.printStackTrace();
+				}
+				MessageManager.notifyListeners(new ChangeViewMessageRequest(SuiteEditor.this,
+					ChangeViewMessageRequest.SHOW_EDIT_SUITE_REQUEST, new AdminProxy(asm
+						.getServer(), asm.getUsername(), asm.getPassword()).getSuite(lsid)));
+			    } catch (WebServiceException e1) {
+				e1.printStackTrace();
+				GenePattern.showErrorDialog("An error occurred while saving the suite "
+					+ suiteInfo.getName());
+			    }
+			}
+		    }.start();
+		}
+	    }
+	};
+	saveButton.addActionListener(btnListener);
+	exportButton.addActionListener(btnListener);
 
-                                String lsid = new TaskIntegratorProxy(asm.getServer(), asm.getUsername(), asm
-                                        .getPassword()).modifySuite(suiteInfo, (File[]) localDocFiles
-                                        .toArray(new File[0]), (String[]) serverDocFiles.toArray(new String[0]));
-                                suiteInfo.setLsid(lsid);
+	setLayout(new BorderLayout());
+	JScrollPane sp = new JScrollPane(tasksPanel);
+	Border b = sp.getBorder();
+	sp.setBorder(GUIUtil.createBorder(b, 0, -1, -1, -1));
 
-                                GenePattern.showMessageDialog("Saved " + suiteInfo.getName());
-                                try {
-                                    MessageManager.notifyListeners(new SuiteInstallMessage(SuiteEditor.this, lsid));
-                                } catch (MalformedURLException e) {
-                                    e.printStackTrace();
-                                }
-                                MessageManager.notifyListeners(new ChangeViewMessageRequest(SuiteEditor.this,
-                                        ChangeViewMessageRequest.SHOW_EDIT_SUITE_REQUEST, new AdminProxy(asm
-                                                .getServer(), asm.getUsername(), asm.getPassword()).getSuite(lsid)));
-                            } catch (WebServiceException e1) {
-                                e1.printStackTrace();
-                                GenePattern.showErrorDialog("An error occurred while saving the suite "
-                                        + suiteInfo.getName());
-                            }
-                        }
-                    }.start();
-                }
-            }
-        };
-        saveButton.addActionListener(btnListener);
-        exportButton.addActionListener(btnListener);
+	add(sp, BorderLayout.CENTER);
 
-        setLayout(new BorderLayout());
-        JScrollPane sp = new JScrollPane(tasksPanel);
-        Border b = sp.getBorder();
-        sp.setBorder(GUIUtil.createBorder(b, 0, -1, -1, -1));
+	add(headerPanel, BorderLayout.NORTH);
 
-        add(sp, BorderLayout.CENTER);
-
-        add(headerPanel, BorderLayout.NORTH);
-
-        add(bottomBtnPanel, BorderLayout.SOUTH);
-        invalidate();
-        validate();
+	add(bottomBtnPanel, BorderLayout.SOUTH);
+	invalidate();
+	validate();
     }
 
     static class HeaderPanel extends JPanel {
 
-        private JTextField nameField;
+	private JTextField nameField;
 
-        private JTextField descriptionField;
+	private JTextField descriptionField;
 
-        private JTextField authorField;
+	private JTextField authorField;
 
-        private JTextField ownerField;
+	private JTextField ownerField;
 
-        private JComboBox privacyComboBox;
+	private JComboBox privacyComboBox;
 
-        private JComboBox docComboBox;
+	private JComboBox docComboBox;
 
-        public HeaderPanel(final SuiteInfo suiteInfo) {
-            boolean view = false;
-            setLayout(new BorderLayout());
+	public HeaderPanel(final SuiteInfo suiteInfo, boolean view) {
 
-            String name = suiteInfo.getName();
-            JLabel nameLabel = new JLabel("Name:");
-            nameField = view ? GUIUtil.createLabelLikeTextField(name, 40) : new JTextField(name, 40);
+	    setLayout(new BorderLayout());
 
-            JLabel descriptionLabel = new JLabel("Description:");
-            descriptionField = view ? GUIUtil.createLabelLikeTextField(suiteInfo.getDescription(), 40)
-                    : new JTextField(suiteInfo.getDescription(), 40);
+	    String name = suiteInfo.getName();
+	    JLabel nameLabel = new JLabel("Name:");
+	    nameField = view ? GUIUtil.createLabelLikeTextField(name) : new JTextField(name, 40);
 
-            CellConstraints cc = new CellConstraints();
-            JPanel temp = new JPanel(new FormLayout("right:pref:none, 3dlu, pref, pref", "pref, 3dlu, pref, pref"));
+	    JLabel descriptionLabel = new JLabel("Description:");
+	    descriptionField = view ? GUIUtil.createLabelLikeTextField(suiteInfo.getDescription()) : new JTextField(
+		    suiteInfo.getDescription(), 40);
 
-            JLabel icon = new JLabel(GenePattern.getSmallIcon());
-            JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-            p.add(icon);
-            p.add(nameLabel);
+	    CellConstraints cc = new CellConstraints();
+	    JPanel temp = new JPanel(new FormLayout("right:pref:none, 3dlu, pref, pref", "pref, 3dlu, pref, pref"));
 
-            temp.add(p, cc.xy(1, 1));
-            temp.add(nameField, cc.xy(3, 1));
+	    JLabel icon = new JLabel(GenePattern.getSmallIcon());
+	    JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+	    p.add(icon);
+	    p.add(nameLabel);
 
-            temp.add(descriptionLabel, cc.xy(1, 3));
-            temp.add(descriptionField, cc.xy(3, 3));
+	    temp.add(p, cc.xy(1, 1));
+	    temp.add(nameField, cc.xy(3, 1));
 
-            StringBuffer rowSpec = new StringBuffer();
-            for (int i = 0; i < 6; i++) {
-                if (i > 0) {
-                    rowSpec.append(", ");
-                }
-                rowSpec.append("pref, ");
-                rowSpec.append("3dlu");
-            }
-            JPanel detailsPanel = new JPanel(new FormLayout("right:pref:none, 3dlu, left:pref", rowSpec.toString()));
-            // detailsPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-            JLabel authorLabel = new JLabel("Author:");
-            authorField = view ? GUIUtil.createLabelLikeTextField(suiteInfo.getAuthor(), 40) : new JTextField(suiteInfo
-                    .getAuthor(), 40);
-            detailsPanel.add(authorLabel, cc.xy(1, 1));
-            detailsPanel.add(authorField, cc.xy(3, 1));
+	    temp.add(descriptionLabel, cc.xy(1, 3));
+	    temp.add(descriptionField, cc.xy(3, 3));
 
-            JLabel ownerLabel = new JLabel("Owner:");
-            ownerField = view ? GUIUtil.createLabelLikeTextField(suiteInfo.getOwner(), 40) : new JTextField(suiteInfo
-                    .getOwner(), 40);
-            detailsPanel.add(ownerLabel, cc.xy(1, 3));
-            detailsPanel.add(ownerField, cc.xy(3, 3));
+	    StringBuffer rowSpec = new StringBuffer();
+	    for (int i = 0; i < 6; i++) {
+		if (i > 0) {
+		    rowSpec.append(", ");
+		}
+		rowSpec.append("pref, ");
+		rowSpec.append("3dlu");
+	    }
+	    JPanel detailsPanel = new JPanel(new FormLayout("right:pref:none, 3dlu, left:pref", rowSpec.toString()));
+	    // detailsPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+	    JLabel authorLabel = new JLabel("Author:");
+	    authorField = view ? GUIUtil.createLabelLikeTextField(suiteInfo.getAuthor()) : new JTextField(suiteInfo
+		    .getAuthor(), 40);
+	    detailsPanel.add(authorLabel, cc.xy(1, 1));
+	    detailsPanel.add(authorField, cc.xy(3, 1));
 
-            JLabel privacyLabel = new JLabel("Privacy:");
+	    JLabel ownerLabel = new JLabel("Owner:");
+	    ownerField = view ? GUIUtil.createLabelLikeTextField(suiteInfo.getOwner()) : new JTextField(suiteInfo
+		    .getOwner(), 40);
+	    detailsPanel.add(ownerLabel, cc.xy(1, 3));
+	    detailsPanel.add(ownerField, cc.xy(3, 3));
 
-            privacyComboBox = new JComboBox(new String[] { "Public", "Private" });
-            if (suiteInfo.getAccessId() == GPConstants.ACCESS_PUBLIC) {
-                privacyComboBox.setSelectedIndex(0);
-            } else {
-                privacyComboBox.setSelectedIndex(1);
-            }
+	    JLabel privacyLabel = new JLabel("Privacy:");
 
-            detailsPanel.add(privacyLabel, cc.xy(1, 5));
-            if (!view) {
-                detailsPanel.add(privacyComboBox, cc.xy(3, 5));
-            } else {
-                String privacyString = suiteInfo.getAccessId() == GPConstants.ACCESS_PRIVATE ? "Private" : "Public";
-                detailsPanel.add(GUIUtil.createLabelLikeTextField(privacyString), cc.xy(3, 5));
-            }
+	    privacyComboBox = new JComboBox(new String[] { "Public", "Private" });
+	    if (suiteInfo.getAccessId() == GPConstants.ACCESS_PUBLIC) {
+		privacyComboBox.setSelectedIndex(0);
+	    } else {
+		privacyComboBox.setSelectedIndex(1);
+	    }
 
-            JLabel documentationLabel = new JLabel("Documentation:");
-            docComboBox = new JComboBox();
-            if (name != null) {
-                String[] docFiles = suiteInfo.getDocumentationFiles();
-                for (int i = 0; i < docFiles.length; i++) {
-                    docComboBox.addItem(docFiles[i]);
-                }
-            }
+	    detailsPanel.add(privacyLabel, cc.xy(1, 5));
+	    if (!view) {
+		detailsPanel.add(privacyComboBox, cc.xy(3, 5));
+	    } else {
+		String privacyString = suiteInfo.getAccessId() == GPConstants.ACCESS_PRIVATE ? "Private" : "Public";
+		detailsPanel.add(GUIUtil.createLabelLikeTextField(privacyString), cc.xy(3, 5));
+	    }
 
-            JButton deleteDocBtn = new JButton("Delete");
-            deleteDocBtn.setVisible(!view);
-            deleteDocBtn.addActionListener(new ActionListener() {
+	    JLabel documentationLabel = new JLabel("Documentation:");
+	    docComboBox = new JComboBox();
+	    if (name != null) {
+		String[] docFiles = suiteInfo.getDocumentationFiles();
+		for (int i = 0; i < docFiles.length; i++) {
+		    docComboBox.addItem(docFiles[i]);
+		}
+	    }
 
-                public void actionPerformed(ActionEvent e) {
-                    if (docComboBox.getSelectedItem() == null) {
-                        return;
-                    }
-                    if (GUIUtil.showConfirmDialog("Are you sure you want to delete " + docComboBox.getSelectedItem()
-                            + "?")) {
-                        docComboBox.removeItemAt(docComboBox.getSelectedIndex());
-                    }
-                }
-            });
+	    JButton deleteDocBtn = new JButton("Delete");
+	    deleteDocBtn.setVisible(!view);
+	    deleteDocBtn.addActionListener(new ActionListener() {
 
-            JButton addDocBtn = new JButton("Add...");
-            addDocBtn.setVisible(!view);
-            addDocBtn.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    if (docComboBox.getSelectedItem() == null) {
+			return;
+		    }
+		    if (GUIUtil.showConfirmDialog("Are you sure you want to delete " + docComboBox.getSelectedItem()
+			    + "?")) {
+			docComboBox.removeItemAt(docComboBox.getSelectedIndex());
+		    }
+		}
+	    });
 
-                public void actionPerformed(ActionEvent e) {
-                    File f = GUIUtil.showOpenDialog();
-                    if (f != null) {
-                        docComboBox.addItem(new LocalFileWrapper(f));
-                    }
-                }
-            });
+	    JButton addDocBtn = new JButton("Add...");
+	    addDocBtn.setVisible(!view);
+	    addDocBtn.addActionListener(new ActionListener() {
 
-            JButton viewBtn = new JButton("View");
-            viewBtn.setVisible(view && docComboBox.getItemCount() > 0);
-            viewBtn.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    File f = GUIUtil.showOpenDialog();
+		    if (f != null) {
+			docComboBox.addItem(new LocalFileWrapper(f));
+		    }
+		}
+	    });
 
-                public void actionPerformed(ActionEvent e) {
-                    String s = (String) docComboBox.getSelectedItem();
-                    String url = AnalysisServiceManager.getInstance().getServer() + "/gp/getFile.jsp?task="
-                            + suiteInfo.getLSID() + "&file=" + s;
+	    JButton viewBtn = new JButton("View");
+	    viewBtn.setVisible(view && docComboBox.getItemCount() > 0);
+	    viewBtn.addActionListener(new ActionListener() {
 
-                    try {
-                        BrowserLauncher.openURL(url);
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            });
+		public void actionPerformed(ActionEvent e) {
+		    String s = (String) docComboBox.getSelectedItem();
+		    String url = AnalysisServiceManager.getInstance().getServer() + "/gp/getFile.jsp?task="
+			    + suiteInfo.getLSID() + "&file=" + s;
 
-            detailsPanel.add(documentationLabel, cc.xy(1, 9));
-            JPanel docPanel = new JPanel(new FormLayout("pref, 3dlu, pref, 3dlu, pref, 3dlu, pref", "pref"));
-            docPanel.add(docComboBox, cc.xy(1, 1));
-            docPanel.add(deleteDocBtn, cc.xy(3, 1));
-            docPanel.add(addDocBtn, cc.xy(5, 1));
-            docPanel.add(viewBtn, cc.xy(7, 1));
+		    try {
+			BrowserLauncher.openURL(url);
+		    } catch (IOException e1) {
+			e1.printStackTrace();
+		    }
+		}
+	    });
 
-            detailsPanel.add(docPanel, cc.xy(3, 9));
+	    if (!view) {
+		detailsPanel.add(documentationLabel, cc.xy(1, 9));
+		JPanel docPanel = new JPanel(new FormLayout("pref, 3dlu, pref, 3dlu, pref, 3dlu, pref", "pref"));
+		docPanel.add(docComboBox, cc.xy(1, 1));
+		docPanel.add(deleteDocBtn, cc.xy(3, 1));
+		docPanel.add(addDocBtn, cc.xy(5, 1));
+		docPanel.add(viewBtn, cc.xy(7, 1));
 
-            TogglePanel detailsToggle = new TogglePanel("Details", detailsPanel);
+		detailsPanel.add(docPanel, cc.xy(3, 9));
+	    }
 
-            JPanel bottom = new JPanel(new BorderLayout());
-            bottom.add(detailsToggle, BorderLayout.NORTH);
-            // bottom.add(buttonPanel, BorderLayout.SOUTH);
-            add(temp, BorderLayout.CENTER);
-            add(bottom, BorderLayout.SOUTH);
-        }
+	    TogglePanel detailsToggle = new TogglePanel("Details", detailsPanel);
+
+	    JPanel bottom = new JPanel(new BorderLayout());
+	    bottom.add(detailsToggle, BorderLayout.NORTH);
+	    // bottom.add(buttonPanel, BorderLayout.SOUTH);
+	    add(temp, BorderLayout.CENTER);
+	    add(bottom, BorderLayout.SOUTH);
+	}
     }
 
     static class LocalFileWrapper {
-        File file;
+	File file;
 
-        public LocalFileWrapper(File f) {
-            file = f;
-        }
+	public LocalFileWrapper(File f) {
+	    file = f;
+	}
 
-        public String toString() {
-            return file.getName();
-        }
+	public String toString() {
+	    return file.getName();
+	}
     }
 
 }
