@@ -73,7 +73,7 @@ public class RunPipelineSoap {
     private static final String logFile = "pipelineErrors.log";  //one log file per pipeline
         
     public static Logger setupLog4jConfig(String logFile) {
-        System.setProperty("DEBUG", "false"); //don't delete logfile
+        //System.setProperty("DEBUG", "true"); //don't delete logfile
 
         Properties log4jconfig = new Properties();
         log4jconfig.setProperty("log4j.debug", "false"); //set this to true to debug Log4j configuration
@@ -261,10 +261,12 @@ public class RunPipelineSoap {
             rp.runPipeline(additionalArguments);
         } 
         finally {
-            if ((System.getProperty("DEBUG", null)) == null) {
-                File log = new File(logFile);
-                if (log.exists()) {
-                    log.delete();
+            log.debug("DEBUG="+System.getProperty("DEBUG"));
+            if (System.getProperty("DEBUG") == null) {
+                File logFileInstance = new File(logFile);
+                if (logFileInstance.exists()) {
+                    log.debug("deleting: "+logFileInstance.getAbsolutePath());
+                    logFileInstance.delete();
                 }
             }
         }
