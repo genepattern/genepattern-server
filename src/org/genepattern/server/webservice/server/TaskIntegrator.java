@@ -105,13 +105,6 @@ public class TaskIntegrator {
     }
 
     /**
-     * Checks the module repository for any updated modules and installs them.
-     */
-    public void updateModules() {
-
-    }
-
-    /**
      * Clones the given task.
      * 
      * Cloning is a form of task creation and requires teh "createModule" permission
@@ -125,6 +118,7 @@ public class TaskIntegrator {
      *                    If an error occurs
      */
     public String cloneTask(String oldLSID, String cloneName) throws WebServiceException {
+	isAuthorized(getUserName(), "createModule");
 	String userID = getUserName();
 
 	try {
@@ -956,10 +950,10 @@ public class TaskIntegrator {
 	if ((lsid != null) && (lsid.length() > 0)) {
 	    try {
 
-		IAdminClient adminClient = new LocalAdminClient("GenePattern");
+		IAdminClient adminClient = new LocalAdminClient(getUserName());
 
 		SuiteInfo oldsi = adminClient.getSuite(lsid);
-		String oldDir = DirectoryManager.getSuiteLibDir(null, lsid, "GenePattern");
+		String oldDir = DirectoryManager.getSuiteLibDir(null, lsid, getUserName());
 		String[] oldDocs = oldsi.getDocumentationFiles();
 
 		for (int i = 0; i < oldDocs.length; i++) {
@@ -1000,10 +994,10 @@ public class TaskIntegrator {
     public String modifySuite(int access_id, String lsid, String name, String description, String author, String owner,
 	    String[] moduleLsids, javax.activation.DataHandler[] dataHandlers, String[] fileNames)
 	    throws WebServiceException {
-
+	isAuthorized(getUserName(), "createSuite");
 	String newLsid = modifySuite(access_id, lsid, name, description, author, owner, new ArrayList(Arrays
 		.asList(moduleLsids)), new ArrayList());
-	IAdminClient adminClient = new LocalAdminClient("GenePattern");
+	IAdminClient adminClient = new LocalAdminClient(getUserName());
 
 	SuiteInfo si = adminClient.getSuite(newLsid);
 	ArrayList docFiles = new ArrayList(Arrays.asList(si.getDocFiles()));
@@ -1011,7 +1005,7 @@ public class TaskIntegrator {
 	    for (int i = 0; i < dataHandlers.length; i++) {
 		File axisFile = Util.getAxisFile(dataHandlers[i]);
 		try {
-		    File dir = new File(DirectoryManager.getSuiteLibDir(null, newLsid, "GenePattern"));
+		    File dir = new File(DirectoryManager.getSuiteLibDir(null, newLsid, getUserName()));
 		    File newFile = new File(dir, fileNames[i]);
 		    axisFile.renameTo(newFile);
 		    docFiles.add(newFile.getAbsolutePath());
@@ -1024,7 +1018,7 @@ public class TaskIntegrator {
 		int start = dataHandlers != null && dataHandlers.length > 0 ? dataHandlers.length - 1 : 0;
 
 		try {
-		    File oldLibDir = new File(DirectoryManager.getSuiteLibDir(null, lsid, "GenePattern"));
+		    File oldLibDir = new File(DirectoryManager.getSuiteLibDir(null, lsid, getUserName()));
 		    for (int i = start; i < fileNames.length; i++) {
 			String text = fileNames[i];
 			if (oldLibDir != null && oldLibDir.exists()) { // file
@@ -1032,7 +1026,7 @@ public class TaskIntegrator {
 			    // previous version
 			    // of task
 			    File src = new File(oldLibDir, text);
-			    Util.copyFile(src, new File(DirectoryManager.getSuiteLibDir(null, newLsid, "GenePattern"),
+			    Util.copyFile(src, new File(DirectoryManager.getSuiteLibDir(null, newLsid, getUserName()),
 				    text));
 			}
 		    }
@@ -1075,7 +1069,7 @@ public class TaskIntegrator {
      */
     public String modifyTask(int accessId, String taskName, String description, ParameterInfo[] parameterInfoArray,
 	    Map taskAttributes, DataHandler[] dataHandlers, String[] fileNames) throws WebServiceException {
-
+	isAuthorized(getUserName(), "createModule");
 	String lsid = null;
 	String username = getUserName();
 	String oldLSID = null;
@@ -1257,7 +1251,7 @@ public class TaskIntegrator {
 	}
     }
 
-    private boolean isTaskOwner(String user, String lsid) throws WebServiceException {
+    private boolean isTaskOwner(String user, String lsid) {
 	TaskMaster tm = (new TaskMasterDAO()).findByIdLsid(lsid);
 	if (tm == null)
 	    return false; // can't own what you can't see
