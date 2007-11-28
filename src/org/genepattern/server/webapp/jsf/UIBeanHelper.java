@@ -229,14 +229,19 @@ public class UIBeanHelper {
     }
 
     /**
-     * Gets the server that the request came from. For example, http://localhost:8080/gp.
+     * Gets the server that the request came from. For example, http://localhost:8080/gp. Note if the GenePatternURL
+     * system property ends with a trailing '/', the slash is removed.
      * 
      * @return The server.
      */
     public static String getServer() {
 	HttpServletRequest request = UIBeanHelper.getRequest();
 	if (request == null) {
-	    return System.getProperty("GenePatternURL");
+	    String server = System.getProperty("GenePatternURL");
+	    if (server != null && server.length() > 0 && server.charAt(server.length() - 1) == '/') {
+		return server.substring(0, server.length() - 1);
+	    }
+	    return server;
 	}
 	return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()
 		+ request.getContextPath();
