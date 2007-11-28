@@ -36,59 +36,53 @@ public class ForgotPasswordBean {
     private static Logger log = Logger.getLogger(ForgotPasswordBean.class);
 
     public String resetPassword() {
-        User user = new UserDAO().findById(username);
-        if (user == null) {
-            UIBeanHelper
-                    .setErrorMessage("No user with the given username exists.");
-            return "failure";
-        }
-        Properties p = new Properties();
-        String mailServer = System.getProperty("smtp.server",
-                "imap.broad.mit.edu");
+	User user = new UserDAO().findById(username);
+	if (user == null) {
+	    UIBeanHelper.setErrorMessage("No user with the given username exists.");
+	    return "failure";
+	}
+	Properties p = new Properties();
+	String mailServer = System.getProperty("smtp.server", "imap.broad.mit.edu");
 
-        p.put("mail.host", mailServer);
-        Session mailSession = Session.getDefaultInstance(p, null);
-        mailSession.setDebug(false);
-        MimeMessage msg = new MimeMessage(mailSession);
-        String newPassword = RandomStringUtils.randomAlphabetic(8);
-        try {
-            msg.setSubject("Your GenePattern Password");
-            msg
-                    .setText("Your GenePattern password has been reset to "
-                            + newPassword
-                            + ".\nPlease log into GenePattern to update your password.");
-            msg.setFrom(new InternetAddress("no-reply@genepattern.org"));
-            msg.setSentDate(new Date());
-            String email = user.getEmail();
-            if (email == null) {
-                UIBeanHelper.setErrorMessage("No email address found.");
-                return "failure";
-            }
-            msg.addRecipient(Message.RecipientType.TO, new InternetAddress(
-                    email));
-            Transport.send(msg);
-            user.setPassword(EncryptionUtil.encrypt(newPassword));
-            UIBeanHelper.setInfoMessage("Your new password has been sent to "
-                    + email + ".");
-        } catch (MessagingException e) {
-            log.error(e);
-            UIBeanHelper
-                    .setErrorMessage("An error occurred while sending the email.");
-            return "failure";
-        } catch (NoSuchAlgorithmException e) {
-            log.error(e);
-            return "failure";
-        }
+	p.put("mail.host", mailServer);
+	Session mailSession = Session.getDefaultInstance(p, null);
+	mailSession.setDebug(false);
+	MimeMessage msg = new MimeMessage(mailSession);
+	// use numeric instead of alphabetic characters so we accidentally generate a 'naughty' word
+	String newPassword = RandomStringUtils.randomNumeric(8);
+	try {
+	    msg.setSubject("Your GenePattern Password");
+	    msg.setText("Your GenePattern password has been reset to " + newPassword
+		    + ".\nPlease log into GenePattern to update your password.");
+	    msg.setFrom(new InternetAddress("no-reply@genepattern.org"));
+	    msg.setSentDate(new Date());
+	    String email = user.getEmail();
+	    if (email == null) {
+		UIBeanHelper.setErrorMessage("No email address found.");
+		return "failure";
+	    }
+	    msg.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
+	    Transport.send(msg);
+	    user.setPassword(EncryptionUtil.encrypt(newPassword));
+	    UIBeanHelper.setInfoMessage("Your new password has been sent to " + email + ".");
+	} catch (MessagingException e) {
+	    log.error(e);
+	    UIBeanHelper.setErrorMessage("An error occurred while sending the email.");
+	    return "failure";
+	} catch (NoSuchAlgorithmException e) {
+	    log.error(e);
+	    return "failure";
+	}
 
-        return "success";
+	return "success";
 
     }
 
     public String getUsername() {
-        return username;
+	return username;
     }
 
     public void setUsername(String username) {
-        this.username = username;
+	this.username = username;
     }
 }
