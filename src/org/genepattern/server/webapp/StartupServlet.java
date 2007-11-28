@@ -133,7 +133,7 @@ public class StartupServlet extends HttpServlet {
 		InetAddress addr = InetAddress.getLocalHost();
 		String host_address = addr.getCanonicalHostName();
 		String port = System.getProperty("GENEPATTERN_PORT");
-		String genePatternServerURL = "http://" + host_address + ":" + port + "/" + pathRoot;
+		String genePatternServerURL = "http://" + host_address + ":" + port + "/" + pathRoot + "/";
 		System.setProperty("GenePatternURL", genePatternServerURL);
 	    } catch (UnknownHostException e) {
 		e.printStackTrace();
