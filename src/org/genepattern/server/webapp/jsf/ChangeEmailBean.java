@@ -36,66 +36,65 @@ public class ChangeEmailBean {
     private UIInput emailConfirmComponent;
 
     public ChangeEmailBean() {
-        User user = (new UserDAO()).findById(UIBeanHelper.getUserId());
-        assert user != null;
-        // email will be null if server was initially configured not to
-        // require login
-        currentEmail = user.getEmail();
-        if (currentEmail == null || "".equals(currentEmail)) {
-            currentEmail = "No email set";
-        }
+	User user = (new UserDAO()).findById(UIBeanHelper.getUserId());
+	assert user != null;
+	// email will be null if server was initially configured not to
+	// require login
+	currentEmail = user.getEmail();
+	if (currentEmail == null || "".equals(currentEmail)) {
+	    currentEmail = "No email set";
+	}
 
     }
 
-    public void validateEmail(FacesContext context, UIComponent component,
-            Object value) throws ValidatorException {
-        if (!value.equals(emailConfirmComponent.getSubmittedValue())) {
-            String message = "Your new email entries did not match.";
-            FacesMessage facesMessage = new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR, message, message);
-            ((UIInput) component).setValid(false);
-            throw new ValidatorException(facesMessage);
-        }
+    public void validateEmail(FacesContext context, UIComponent component, Object value) throws ValidatorException {
+	if (!value.equals(emailConfirmComponent.getSubmittedValue())) {
+	    String message = "Your new email entries did not match.";
+	    FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
+	    ((UIInput) component).setValid(false);
+	    throw new ValidatorException(facesMessage);
+	}
     }
 
     public String changeEmail() {
-        User user = (new UserDAO()).findById(UIBeanHelper.getUserId());
-        user.setEmail(newEmail);
-        String message = "Your new email has been saved";
-        UIBeanHelper.setInfoMessage(message);
-        return "my settings";
+	User user = (new UserDAO()).findById(UIBeanHelper.getUserId());
+	user.setEmail(newEmail);
+	currentEmail = newEmail;
+	String message = "Your new email has been saved";
+	UIBeanHelper.setInfoMessage(message);
+	return "my settings";
     }
 
     public UIInput getEmailConfirmComponent() {
-        return emailConfirmComponent;
+	return emailConfirmComponent;
     }
 
     public void setEmailConfirmComponent(UIInput emailConfirmComponent) {
-        this.emailConfirmComponent = emailConfirmComponent;
+	this.emailConfirmComponent = emailConfirmComponent;
     }
 
     public String getConfirmNewEmail() {
-        return confirmNewEmail;
+	return confirmNewEmail;
     }
 
     public void setConfirmNewEmail(String confirmNewPassord) {
-        this.confirmNewEmail = confirmNewPassord;
+	this.confirmNewEmail = confirmNewPassord;
     }
 
     public String getCurrentEmail() {
-        return currentEmail;
+	return currentEmail;
     }
 
     public void setCurrentEmail(String currentEmail) {
-        this.currentEmail = currentEmail;
+	this.currentEmail = currentEmail;
     }
 
     public String getNewEmail() {
-        return newEmail;
+	return newEmail;
     }
 
     public void setNewEmail(String newEmail) {
-        this.newEmail = newEmail;
+	this.newEmail = newEmail;
     }
 
 }
