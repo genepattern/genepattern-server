@@ -25,7 +25,7 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
 /**
  * Class used to authenticate with server and download job result files over
@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
  *
  */
 public class JobDownloader {
-    private static Logger log = Logger.getLogger(JobDownloader.class);
+    //private static Logger log = Logger.getLogger(JobDownloader.class);
 
     private HttpClient client = new HttpClient();
 
@@ -62,7 +62,6 @@ public class JobDownloader {
         URL u = new URL(url);
         server = u.getProtocol() + "://" + u.getHost() + ":" + u.getPort();
         login();
-        url = server + u.getPath();
         _download(url, outputFile);
     }
 
