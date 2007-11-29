@@ -11,6 +11,8 @@
  */
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -78,6 +80,30 @@ public class RunR {
 	String[] rFlags = null;
 	String rFlagsProp = System.getProperty("r_flags");
 
+	String rSuppressTxtFile = System.getProperty("R_suppress");
+	List<String> rSuppressLines = new ArrayList<String>();
+	if (rSuppressTxtFile != null && new File(rSuppressTxtFile).exists()) {
+	    BufferedReader br = null;
+	    try {
+		br = new BufferedReader(new FileReader(rSuppressTxtFile));
+		String s;
+		while ((s = br.readLine()) != null) {
+		    if (!s.equals("")) {
+			rSuppressLines.add(s);
+		    }
+		}
+	    } catch (IOException e) {
+		System.err.println("Error reading file " + rSuppressTxtFile + ".");
+	    } finally {
+		if (br != null) {
+		    try {
+			br.close();
+		    } catch (IOException e) {
+		    }
+		}
+	    }
+	}
+
 	if (rFlagsProp != null && !rFlagsProp.equals("")) {
 	    rFlags = System.getProperty("r_flags").split(" ");
 	} else {
@@ -99,8 +125,8 @@ public class RunR {
 	    process = Runtime.getRuntime().exec(commandLine, null, null);
 
 	    // create threads to read from the command's stdout and stderr streams
-	    Thread outputReader = new StreamCopier(process.getInputStream(), System.out);
-	    Thread errorReader = new StreamCopier(process.getErrorStream(), System.err);
+	    Thread outputReader = new StreamCopier(process.getInputStream(), System.out, rSuppressLines);
+	    Thread errorReader = new StreamCopier(process.getErrorStream(), System.err, rSuppressLines);
 
 	    // drain the output and error streams
 	    outputReader.start();
@@ -168,14 +194,17 @@ public class RunR {
     static class StreamCopier extends Thread {
 	private InputStream is;
 	private PrintStream os;
+	private List<String> linesToIgnore;
 
 	/**
 	 * Creates a new thread that copies stdout or stderr to a PrintStream.
 	 */
-	public StreamCopier(InputStream is, PrintStream os) {
+	public StreamCopier(InputStream is, PrintStream os, List<String> linesToIgnore) {
 	    this.is = is;
 	    this.os = os;
 	    this.setDaemon(true);
+	    this.linesToIgnore = linesToIgnore;
+
 	}
 
 	@Override
@@ -184,11 +213,16 @@ public class RunR {
 	    String line;
 	    try {
 		while ((line = in.readLine()) != null) {
-		    // if (!line.startsWith("trying URL") && !line.startsWith("Content type")
-		    // && !line.startsWith("opened URL") && !line.startsWith("====================")
-		    // && !line.startsWith("downloaded")) {
-		    os.print(line);
-		    // }
+		    boolean skip = false;
+		    for (String ignore : linesToIgnore) {
+			if (line.startsWith(ignore)) {
+			    skip = true;
+			    break;
+			}
+		    }
+		    if (!skip) {
+			os.print(line);
+		    }
 
 		}
 
