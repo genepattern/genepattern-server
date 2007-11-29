@@ -55,7 +55,17 @@ public class SetRVariablePath extends CustomCodeAction {
 	try {
 		
 		String R_new = ip.substitute("$R25$");
-
+		
+		// bug 1963
+		// check if we are looking at an install that already has R25 set
+		// as when 3.1 is installed over 3.1
+		if (R_new.startsWith("<java")){
+			
+			R_new = ip.substitute("$R2.5_HOME$");
+			
+		}
+		
+		
 		String os = System.getProperty("os.name").toLowerCase();
 
 		if (os.indexOf("mac") >= 0){
