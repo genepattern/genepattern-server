@@ -2,3 +2,7 @@ Loading required package
 * Installing
 Welcome to Bioconductor
 * DONE (
+** libsgcc
+  Vignettes contain introductory material
+checking for C++ compiler
+** libsg77
