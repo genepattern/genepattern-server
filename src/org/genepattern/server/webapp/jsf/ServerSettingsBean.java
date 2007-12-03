@@ -94,10 +94,25 @@ public class ServerSettingsBean {
 	    // }); // remove show LSID for 3.1 per bug 1654
 	    modes.put("Programming Languages", new String[] { "perl", "java", "R2.5", "R" });
 	   
-	    modes.put("Advanced", new String[] { "DefaultPatchRepositoryURL", "DefaultPatchURL", "patchQualifiers",
-		    "patches", "ant", "resources", "index", "tasklib", "jobs", "tomcatCommonLib", "webappDir",
-		    "log4j.appender.R.File", "pipeline.cp", "pipeline.main", "pipeline.vmargs", "pipeline.decorator",
-		    "installedPatchLSIDs", "JavaGEInstallerURL", "num.threads" });
+	    modes.put("Advanced", new String[] { 
+	            "DefaultPatchRepositoryURL", 
+	            "DefaultPatchURL", 
+	            "patchQualifiers",
+	            "patches", 
+	            "ant", 
+	            "resources", 
+	            "index", 
+	            "tasklib", 
+	            "tomcatCommonLib", 
+	            "webappDir",
+	            "log4j.appender.R.File", 
+	            "pipeline.cp", 
+	            "pipeline.main", 
+	            "pipeline.vmargs", 
+	            "pipeline.decorator",
+	            "installedPatchLSIDs", 
+	            "JavaGEInstallerURL", 
+	            "num.threads" });
 	    modes.put("Custom", null);
 	    modes.put("Shut Down Server", null);
 	}
