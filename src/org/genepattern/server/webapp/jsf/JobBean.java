@@ -385,6 +385,7 @@ public class JobBean {
 	    int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
 	    LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
 	    ac.terminateJob(jobNumber);
+	    resetJobs();
 	} catch (WebServiceException e) {
 	    log.error("Error getting job " + UIBeanHelper.getRequest().getParameter("jobNumber"), e);
 	} catch (NumberFormatException e) {
@@ -1078,10 +1079,10 @@ public class JobBean {
 	public String getValue() {
 	    return p.getValue();
 	}
-	
+
 	/**
-	 * @return a valid value to be used for the 'id' attribute of an html div tag.
-	 * The '/' character is not allowed, so replace all '/' with '_'.
+	 * @return a valid value to be used for the 'id' attribute of an html div tag. The '/' character is not allowed,
+	 *         so replace all '/' with '_'.
 	 */
 	public String getValueId() {
 	    String str = getValue().replace('/', '_');
