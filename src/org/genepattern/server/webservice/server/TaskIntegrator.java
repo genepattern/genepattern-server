@@ -46,6 +46,7 @@ import org.apache.axis.MessageContext;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.taskdefs.Delete;
 import org.apache.tools.ant.types.FileSet;
 import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
@@ -239,20 +240,18 @@ public class TaskIntegrator {
 	try {
 	    TaskInfo taskInfo = new LocalAdminClient(username).getTask(lsid);
 	    if (taskInfo == null) {
-		throw new WebServiceException("no such task " + lsid);
+		throw new WebServiceException("no such module " + lsid);
 	    }
-	    String attachmentDir = DirectoryManager.getTaskLibDir(taskInfo);
+	    String moduleDirectory = DirectoryManager.getTaskLibDir(taskInfo);
 	    GenePatternAnalysisTask.deleteTask(lsid);
-	    File dir = new File(attachmentDir);
-	    // clear out the directory
-	    File[] oldFiles = dir.listFiles();
-	    for (int i = 0, length = oldFiles != null ? oldFiles.length : 0; i < length; i++) {
-		oldFiles[i].delete();
-	    }
-	    dir.delete();
+	    Delete del = new Delete();
+	    del.setDir(new File(moduleDirectory));
+	    del.setIncludeEmptyDirs(true);
+	    del.setProject(new Project());
+	    del.execute();
 	} catch (Throwable e) {
 	    log.error(e);
-	    throw new WebServiceException("while deleting task " + lsid, e);
+	    throw new WebServiceException("while deleting module " + lsid, e);
 	}
     }
 
