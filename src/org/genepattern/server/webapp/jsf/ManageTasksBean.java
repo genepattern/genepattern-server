@@ -45,7 +45,116 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
 
 public class ManageTasksBean {
-    public class TaskGroup implements Serializable {
+    private static Logger log = Logger.getLogger(ManageTasksBean.class);
+
+    private boolean showEveryonesModules = true;
+
+    private boolean adminModules;
+
+    private List<TaskGroup> sortedTasks;
+
+    public ManageTasksBean() {
+	adminModules = AuthorizationHelper.adminModules();
+	this.showEveryonesModules = Boolean.valueOf(new UserDAO().getPropertyValue(UIBeanHelper.getUserId(), "showEveryonesModules",
+		String.valueOf(this.showEveryonesModules)));
+    }
+
+    public void delete(ActionEvent event) {
+	String[] taskLsids = UIBeanHelper.getRequest().getParameterValues("selectedVersions");
+	deleteTasks(taskLsids);
+    }
+
+    public Collection<TaskGroup> getTasks() {
+	if (sortedTasks == null) {
+	    updateModules();
+	}
+	return sortedTasks;
+    }
+
+    public boolean isAdminModules() {
+	return adminModules;
+    }
+
+    public boolean isShowEveryonesModules() {
+	return showEveryonesModules;
+    }
+
+    public void setShowEveryonesModules(boolean b) {
+	showEveryonesModules = b;
+	new UserDAO().setProperty(UIBeanHelper.getUserId(), "showEveryonesModules", String
+		.valueOf(showEveryonesModules));
+	updateModules();
+    }
+
+    private void deleteTasks(String[] taskLsids) {
+	if (taskLsids != null) {
+	    LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(UIBeanHelper.getUserId());
+	    for (String lsid : taskLsids) {
+		try {
+		    taskIntegratorClient.deleteTask(lsid);
+		} catch (Exception e) {
+		    log.error(e);
+		    throw new RuntimeException(e);
+		}
+	    }
+	    updateModules();
+	}
+
+    }
+
+    private Collection<TaskInfo> getModulesFromDatabase() {
+	try {
+	    IAdminClient adminClient = new LocalAdminClient(UIBeanHelper.getUserId());
+	    if (!showEveryonesModules) {
+		return Arrays.asList(adminClient.getTasksOwnedBy());
+	    }
+
+	    return adminModules ? Arrays.asList(adminClient.getAllTasksForModuleAdmin()) : adminClient.getTaskCatalog();
+
+	} catch (WebServiceException e) {
+	    log.error(e);
+	    throw new RuntimeException(e);
+	}
+    }
+
+    private void groupAndSortTasks(Collection<TaskInfo> tasks) {
+
+	HashMap<String, TaskGroup> indexedTasks = new HashMap<String, TaskGroup>();
+	for (Iterator<TaskInfo> itTasks = tasks.iterator(); itTasks.hasNext();) {
+	    TaskInfo ti = itTasks.next();
+	    String lsid = ti.getLsid();
+	    LSID lSID = null;
+	    try {
+		lSID = new LSID(lsid);
+	    } catch (MalformedURLException mue) {
+		log.error("Error creating LSID (Malformed URL): " + lsid, mue);
+		throw new RuntimeException("Error creating LSID (Malformed URL): " + lsid);
+	    }
+
+	    String lsidNoVersion = lSID.toStringNoVersion();
+	    TaskGroup taskGroup = indexedTasks.get(lsidNoVersion);
+	    if (taskGroup == null) {
+		taskGroup = new TaskGroup(ti);
+		indexedTasks.put(lsidNoVersion, taskGroup);
+	    }
+	    taskGroup.addVersionInfo(indexedTasks, ti);
+	}
+
+	sortedTasks = new ArrayList<TaskGroup>(indexedTasks.values());
+	Collections.sort(sortedTasks, new Comparator<TaskGroup>() {
+	    public int compare(TaskGroup o1, TaskGroup o2) {
+		String n1 = o1.getName();
+		String n2 = o2.getName();
+		return n1.compareToIgnoreCase(n2);
+	    }
+	});
+    }
+
+    private void updateModules() {
+	groupAndSortTasks(getModulesFromDatabase());
+    }
+
+    public static class TaskGroup implements Serializable {
 
 	private String lsidNoVersion = null;
 
@@ -60,11 +169,11 @@ public class ManageTasksBean {
 	public TaskGroup(TaskInfo ti) {
 	    pipeline = ti.isPipeline();
 	    adminClient = new LocalAdminClient(UIBeanHelper.getUserId());
-	    indexedVersions = new TreeMap<String, VersionInfo>(new Comparator() {
-		public int compare(Object o1, Object o2) {
+	    indexedVersions = new TreeMap<String, VersionInfo>(new Comparator<String>() {
+		public int compare(String o1, String o2) {
 		    try {
-			LSID lsid1 = new LSID(o1.toString());
-			LSID lsid2 = new LSID(o2.toString());
+			LSID lsid1 = new LSID(o1);
+			LSID lsid2 = new LSID(o2);
 			return LSIDVersionComparator.INSTANCE.compare(lsid2.getVersion(), lsid1.getVersion());
 		    } catch (MalformedURLException e) {
 			log.error(e);
@@ -80,10 +189,11 @@ public class ManageTasksBean {
 	/**
 	 * Add a specific specific versioned task.
 	 * 
+	 * @param indexedTasks
+	 * 
 	 * @param taskInfo
 	 */
-	public void addVersionInfo(TaskInfo taskInfo) {
-
+	public void addVersionInfo(HashMap<String, TaskGroup> indexedTasks, TaskInfo taskInfo) {
 	    String lsid = taskInfo.getLsid();
 	    VersionInfo versionInfo = new VersionInfo(taskInfo);
 	    indexedVersions.put(lsid, versionInfo);
@@ -101,20 +211,18 @@ public class ManageTasksBean {
 		}
 		Map<String, String> mDependencies = model.getLsidDependencies(); // LSID/Vector
 
-		for (Iterator itSubTasks = mDependencies.keySet().iterator(); itSubTasks.hasNext();) {
-		    String keyLsid = (String) itSubTasks.next();
+		for (Iterator<String> itSubTasks = mDependencies.keySet().iterator(); itSubTasks.hasNext();) {
+		    String keyLsid = itSubTasks.next();
 		    String lsidNoVersion = getLSID(keyLsid).toStringNoVersion();
 
 		    try {
 			TaskInfo subTask = adminClient.getTask(keyLsid);
 			if (subTask != null) {
-			    if (includeAllPublicModules || subTask.getUserId().equals(UIBeanHelper.getUserId())) {
-				TaskGroup taskGroup = (indexedTasks.containsKey(lsidNoVersion)) ? indexedTasks
-					.get(lsidNoVersion) : new TaskGroup(subTask);
-				taskGroup.addVersionInfo(subTask);
-				taskGroup.setPipelineName(keyLsid, taskInfo);
-				indexedTasks.put(lsidNoVersion, taskGroup);
-			    }
+			    TaskGroup taskGroup = (indexedTasks.containsKey(lsidNoVersion)) ? indexedTasks
+				    .get(lsidNoVersion) : new TaskGroup(subTask);
+			    taskGroup.addVersionInfo(indexedTasks, subTask);
+			    taskGroup.setPipelineName(keyLsid, taskInfo);
+			    indexedTasks.put(lsidNoVersion, taskGroup);
 			}
 		    } catch (WebServiceException e) {
 			log.error(e);
@@ -132,7 +240,7 @@ public class ManageTasksBean {
 	    return description;
 	}
 
-	public Collection getIndexedVersions() {
+	public Collection<VersionInfo> getIndexedVersions() {
 	    return indexedVersions.values();
 	}
 
@@ -262,8 +370,6 @@ public class ManageTasksBean {
 
     }
 
-    private static Logger log = Logger.getLogger(ManageTasksBean.class);
-
     private static LSID getLSID(String lsid) {
 	LSID lSID = null;
 	try {
@@ -272,144 +378,6 @@ public class ManageTasksBean {
 	    return null;
 	}
 	return lSID;
-    }
-
-    private Collection<TaskInfo> tasks;
-
-    private Map<String, TaskGroup> indexedTasks = null;
-
-    private boolean includeAllPublicModules = true;
-
-    private boolean includeAllPrivateModules;
-
-    private boolean adminModules;
-
-    public ManageTasksBean() {
-	adminModules = AuthorizationHelper.adminModules();
-	IAdminClient adminClient = new LocalAdminClient(UIBeanHelper.getUserId());
-	try {
-	    String userId = UIBeanHelper.getUserId();
-	    this.includeAllPublicModules = Boolean.valueOf(new UserDAO().getPropertyValue(userId,
-		    "includeAllPublicModules", String.valueOf(this.includeAllPublicModules)));
-
-	    this.includeAllPrivateModules = Boolean.valueOf(new UserDAO().getPropertyValue(userId,
-		    "includeAllPrivateModules", String.valueOf(this.includeAllPrivateModules)))
-		    && AuthorizationHelper.adminModules();
-
-	    if (tasks == null) {
-		if (includeAllPrivateModules) {
-		    tasks = Arrays.asList(adminClient.getAllTasksForModuleAdmin());
-		} else if (includeAllPublicModules) {
-		    tasks = adminClient.getTaskCatalog();
-		} else {
-		    tasks = Arrays.asList(adminClient.getTasksOwnedBy());
-		}
-	    }
-	} catch (WebServiceException e) {
-	    log.error(e);
-	    throw new RuntimeException(e);
-	}
-    }
-
-    public void delete(ActionEvent event) {
-	String[] taskLsids = UIBeanHelper.getRequest().getParameterValues("selectedVersions");
-	deleteTasks(taskLsids);
-    }
-
-    /**
-     * @return
-     */
-    public Collection getTasks() {
-	if (indexedTasks == null) {
-	    resetIndexedTasks();
-	}
-	List<TaskGroup> sortedTasks = new ArrayList<TaskGroup>(indexedTasks.values());
-	Collections.sort(sortedTasks, new Comparator<TaskGroup>() {
-	    public int compare(TaskGroup o1, TaskGroup o2) {
-		String n1 = o1.getName();
-		String n2 = o2.getName();
-		return n1.compareToIgnoreCase(n2);
-	    }
-
-	});
-	return sortedTasks;
-    }
-
-    public boolean isAdminModules() {
-	return adminModules;
-    }
-
-    public boolean isIncludeAllPrivateModules() {
-	return includeAllPrivateModules;
-    }
-
-    public boolean isIncludeAllPublicModules() {
-	return includeAllPublicModules;
-    }
-
-    public void setIncludeAllPrivateModules(boolean includeAllPrivateModules) {
-	includeAllPrivateModules = includeAllPrivateModules && AuthorizationHelper.adminModules();
-	new UserDAO().setProperty(UIBeanHelper.getUserId(), "includeAllPrivateModules", String
-		.valueOf(includeAllPrivateModules));
-	this.includeAllPrivateModules = includeAllPrivateModules;
-	resetIndexedTasks();
-    }
-
-    public void setIncludeAllPublicModules(boolean includeAllPublicModules) {
-	new UserDAO().setProperty(UIBeanHelper.getUserId(), "includeAllPublicModules", String
-		.valueOf(includeAllPublicModules));
-	this.includeAllPublicModules = includeAllPublicModules;
-	resetIndexedTasks();
-    }
-
-    private void deleteTasks(String[] taskLsids) {
-	if (taskLsids != null) {
-	    LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(UIBeanHelper.getUserId());
-	    TaskGroup temp = null;
-	    for (String lsid : taskLsids) {
-		try {
-		    taskIntegratorClient.deleteTask(lsid);
-		    LSID lSID = getLSID(lsid);
-		    String lsidNoVersion = lSID.toStringNoVersion();
-		    temp = indexedTasks.get(lsidNoVersion);
-		    temp.deleteVersionInfo(lsid);
-		    if (temp.getIndexedVersions().size() == 0) {
-			indexedTasks.remove(lsidNoVersion);
-		    }
-		} catch (Exception e) {
-		    log.error(e);
-		    throw new RuntimeException(e);
-		}
-	    }
-	}
-    }
-
-    private void resetIndexedTasks() {
-	indexedTasks = new HashMap<String, TaskGroup>();
-
-	for (Iterator<TaskInfo> itTasks = tasks.iterator(); itTasks.hasNext();) {
-	    TaskInfo ti = (TaskInfo) itTasks.next();
-	    if (includeAllPublicModules || ti.getUserId().equals(UIBeanHelper.getUserId())) {
-		String lsid = ti.getLsid();
-		LSID lSID = null;
-		try {
-		    lSID = new LSID(lsid);
-		} catch (MalformedURLException mue) {
-		    log.error("Error creating LSID (Malformed URL): " + lsid, mue);
-		    throw new RuntimeException("Error creating LSID (Malformed URL): " + lsid);
-		}
-
-		String lsidNoVersion = lSID.toStringNoVersion();
-		TaskGroup taskGroup = indexedTasks.get(lsidNoVersion);
-		if (taskGroup == null) {
-		    taskGroup = new TaskGroup(ti);
-		    indexedTasks.put(lsidNoVersion, taskGroup);
-		}
-		taskGroup.addVersionInfo(ti);
-
-	    }
-	}
-
     }
 
 }

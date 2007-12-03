@@ -1,4 +1,4 @@
-<!-- /*
+<!--
  The Broad Institute
  SOFTWARE COPYRIGHT NOTICE AGREEMENT
  This software and its documentation are copyright (2003-2008) by the
@@ -8,7 +8,7 @@
  This software is supplied without any warranty or guaranteed support
  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
  use, misuse, or functionality.
- */ -->
+ -->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -99,19 +99,12 @@
         </tr>
       </table>
       <h:form >
-      <table width="100%"  border="0" cellspacing="0" cellpadding="0">
+      <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr>
           <td valign="top" class="maintasknav" id="maintasknav" align="left" width="100%">
-            <h:selectBooleanCheckbox  value="#{manageTasksBean.includeAllPublicModules}" onclick="this.form.submit();"/>Include all public modules&#160;&#160;&#160;&#160;
+            <h:selectBooleanCheckbox  value="#{manageTasksBean.showEveryonesModules}" onclick="this.form.submit();"/>show everyone's modules&#160;&#160;&#160;&#160;
           </td>
         </tr>
-        <h:outputText rendered="#{manageTasksBean.adminModules}">
-        	<tr>
-          		<td valign="top" class="maintasknav" id="maintasknav" align="left" width="100%">
-            		<h:selectBooleanCheckbox  value="#{manageTasksBean.includeAllPrivateModules}" onclick="this.form.submit();"/>Include all private modules&#160;&#160;&#160;&#160;
-         		 </td>
-        	</tr>
-        </h:outputText>
       </table>
       <table border="0" cellpadding="0" cellspacing="0" width="100%">
         <tbody>
@@ -133,9 +126,7 @@
           </tr>
 
           <!--  Loop through tasklist -->
-          <!--  Something like <t:dataList var="taskObject" value="#{someBean.someMethod}" rowIndexVar="taskIndex">  -->
-
-          <!--  Task title row -->
+        
           <div align="center" id="mainDiv">
           <t:dataList var="taskGroup" value="#{manageTasksBean.tasks}">
             <tr valign="top" class="task-title">
@@ -161,9 +152,7 @@
 		      </td>
 		    </tr>
 
-		    <t:dataList var="versionInfo" value="#{taskGroup.indexedVersions}"  rowIndexVar="index">
-
-
+		    <t:dataList var="versionInfo" value="#{taskGroup.indexedVersions}" rowIndexVar="index">
 		    	<tr valign="top" class="smalltype5">
 		            <td align="center">
 					  	<div align="center" name="div_#{taskGroup.lsidNoVersion}">
@@ -180,7 +169,7 @@
 					  		</t:div>
 				      	</div>
 		            </td>
-		            <td align="center"><h:outputText rendered="#{taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{versionInfo.lsid}">#{versionInfo.version}</a></h:outputText>
+		            <td align="left"><h:outputText rendered="#{taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{versionInfo.lsid}">#{versionInfo.version}</a></h:outputText>
 		            <h:outputText rendered="#{!taskGroup.pipeline}"><a href="#{facesContext.externalContext.requestContextPath}/addTask.jsp?name=#{versionInfo.lsid}">#{versionInfo.version}</a></h:outputText>
 		            </td>
 		            <td>
@@ -198,18 +187,7 @@
 
           </t:dataList>
           </div>
-          <!--  End task title row  -->
-
-          <!--  Versions -->
-          <!--  Loop through versions.  Something like this
-          <t:dataList var="taskInfo" value="#{taskObject.versions}">
-          -->
-
-          <!--  Record id of checkbox.  Makes check all /uncheck all easier -->
-
-          <!--  End through versions.  -->
-          <!--  End loop through tasks  -->
-
+       
           <tr>
             <td class="smalltype" align="center" valign="top">
               <h:commandLink actionListener="#{manageTasksBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink>
