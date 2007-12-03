@@ -1,4 +1,4 @@
-<!-- /*
+<!--
  The Broad Institute
  SOFTWARE COPYRIGHT NOTICE AGREEMENT
  This software and its documentation are copyright (2003-2008) by the
@@ -8,7 +8,7 @@
  This software is supplied without any warranty or guaranteed support
  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
  use, misuse, or functionality.
- */ -->
+-->
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -23,7 +23,15 @@
 	</ui:define>
     <ui:define name="headText">
     <link href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css" rel="stylesheet" type="text/css"/>
-    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/suite.js"/>
+    <script type="text/javascript" language="javascript">
+	/* <![CDATA[ */
+	function confirmDelete() {
+		return confirm('Are you sure you want to delete the selected suites(s)?');
+
+	}
+
+    /* ]]> */
+    </script>
     </ui:define>
     <ui:define name="body">
       <h:form>
@@ -32,16 +40,15 @@
           <td>Manage Suites</td>
         </tr>
       </table>
-      <h:form>
-      <h:outputText rendered="#{empty manageSuiteBean.suites}"><br/>
-      	No suites are currently installed. <br/><br/></h:outputText>
-      </h:form>
-      
-      <!-- Delete suite table -->
+
+      <h:outputText rendered="#{empty manageSuiteBean.suites}">
+      	<br/>No suites are currently installed.<br/><br/> 
+      </h:outputText>
+     
       <table width="100%" border="0" cellspacing="0" cellpadding="0">
         <tr class="smalltype">
           <td valign="top" style="white-space: nowrap;"><div align="center">
-                <h:commandLink value="delete" action="#{manageSuiteBean.delete}" onclick="if (!confirmDelete()) return false"/>
+          	   <h:commandLink value="delete" actionListener="#{manageSuiteBean.delete}" onclick="if (!confirmDelete()) return false"/>
               </div></td>
           <td>&#160;</td>
           <td>&#160;</td>
@@ -56,24 +63,25 @@
         </tr>
 
         <!--  Loop through suite list -->
-        <c:forEach var="suiteInfo" items="#{manageSuiteBean.suites}">
+        <t:dataList var="suiteInfo" value="#{manageSuiteBean.suites}">
+        
           <tr class="task-titlerow">
           	  <td>
-		        <!-- Suite select checkbox -->
-		        <div align="center" id="cb_suite_#{suiteInfo.name}">
-		          <c:choose>
-		            <c:when test="#{!(suiteInfo.userId == requestScope.userID) and !authorizationBean.adminSuitesAllowed}">
-		              <input type="checkbox" name="selectedSuites" disabled="disabled" value="#{suiteInfo.lsid}" onclick="toggleSuiteCheckboxes('#{suiteInfo.lsid}');"/>
-		            </c:when>
-		            <c:when test="#{suiteInfo.selected}">
-		              <input type="checkbox" name="selectedSuites" checked="checked" value="#{suiteInfo.lsid}" onclick="toggleSuiteCheckboxes('#{suiteInfo.lsid}');"/>
-		            </c:when>
-		            <c:otherwise>
-		              <input type="checkbox" name="selectedSuites" value="#{suiteInfo.lsid}" onclick="toggleSuiteCheckboxes('#{suiteInfo.lsid}');"/>
-		            </c:otherwise>
-		          </c:choose>
-		        </div>
-		      </td>
+				<div align="center" id="cb_suite_#{suiteInfo.name}">
+					<t:div
+						rendered="#{!(suiteInfo.userId == requestScope.userID) and !authorizationBean.adminSuitesAllowed}">
+						<input type="checkbox" name="selectedVersions" disabled="true"
+							value="#{suiteInfo.lsid}" />
+					</t:div> 
+					<t:div rendered="#{suiteInfo.selected}">
+						<input type="checkbox" name="selectedVersions" checked="checked"
+							value="#{suiteInfo.lsid}" />
+					</t:div> 
+					<t:div rendered="#{!suiteInfo.selected}">
+						<input type="checkbox" name="selectedVersions"
+							value="#{suiteInfo.lsid}" />
+					</t:div></div>
+				</td>
 		      <td class="task-title">
 		        <h:commandLink value="#{suiteInfo.name}" action="#{manageSuiteBean.view}">
 		        	<f:param name="lsid" value="#{suiteInfo.lsid}"/>
@@ -100,12 +108,14 @@
 		  	  <td>&#160;</td>
 		  	  <td>&#160;</td>
 		  </tr>
-        </c:forEach>
+        </t:dataList>
 
         <tr>
-          <td valign="top" class="smalltype" style="white-space: nowrap;"><div align="center">
-                <h:commandLink value="delete" action="#{manageSuiteBean.delete}" onclick="if (!confirmDelete()) return false"/>
-              </div></td>
+          <td valign="top" class="smalltype" style="white-space: nowrap;">
+          	<div align="center">
+                <h:commandLink value="delete" actionListener="#{manageSuiteBean.delete}" onclick="if (!confirmDelete()) return false"/>
+             </div>
+          </td>
           <td>&#160;</td>
           <td>&#160;</td>
           <td>&#160;</td>
