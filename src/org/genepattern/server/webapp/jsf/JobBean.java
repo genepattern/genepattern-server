@@ -223,7 +223,8 @@ public class JobBean {
 		if (!attachment.exists()) {
 		    continue;
 		}
-		ZipEntry zipEntry = new ZipEntry((jobId.equals("" + jobNumber) ? "" : (jobNumber + "/")) + fileName);
+        String zipEntryName = jobId + "/" + fileName;
+        ZipEntry zipEntry = new ZipEntry(zipEntryName);
 
 		zos.putNextEntry(zipEntry);
 		zipEntry.setTime(attachment.lastModified());
