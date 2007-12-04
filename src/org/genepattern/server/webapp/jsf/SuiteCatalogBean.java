@@ -336,7 +336,6 @@ public class SuiteCatalogBean {
 
         /** URL to download suite zip */
         private String url;
-
         private ModuleInfo[] moduleInfo;
 
         public MySuiteInfo(Map hm, String suiteUrl) {
@@ -354,9 +353,30 @@ public class SuiteCatalogBean {
                 }
                 moduleInfo[i].docUrl = (String) modMap.get("docFile");
                 moduleInfo[i].name = (String) modMap.get("name");
-
             }
-            url = suiteUrl + "/" + getName() + ".zip";
+            String catEnv = "prod";
+            if (suiteUrl.indexOf("env=")>0){
+            	int idx = suiteUrl.indexOf("env=");
+            	catEnv=suiteUrl.substring(idx+4);
+            }
+            //ConsensusClustering/broad.mit.edu:cancer.software.genepattern.module.analysis/1/ConsensusClustering.pdf
+            
+            try {
+				LSID suiteLsid = new LSID(getLsid());
+				String auth = suiteLsid.getAuthority();
+				String ns = suiteLsid.getNamespace();;
+				String id = suiteLsid.getIdentifier();
+				String ver = suiteLsid.getVersion();
+				String name = getName();
+				String filePath = name + "/" + auth+":"+ns+"/"+id+"/"+ver+"/";
+				url = suiteUrl + "/"+ catEnv + "/download/?file=" +filePath + name + ".zip";
+				
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				 url = suiteUrl + "/"+catEnv + "/download/?file=" + getName() + ".zip";
+			}
+            
         }
 
         public String getUrl() {
