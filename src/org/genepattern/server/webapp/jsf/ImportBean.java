@@ -80,7 +80,6 @@ public class ImportBean {
                 selectedUrlPrivacy = ALL_USERS;
             }
         }
-
     }
 
     public String importUrl() {
@@ -115,7 +114,8 @@ public class ImportBean {
             tmpDir = File.createTempFile("upload", "zip");
             tmpDir.delete();
             tmpDir.mkdir();
-            file = saveFile(zipFile, tmpDir);
+            file = saveFile(zipFile, tmpDir);                  
+            
             return doImport(file.getCanonicalPath(), selectedFilePrivacy.equals(ALL_USERS) ? GPConstants.ACCESS_PUBLIC
                     : GPConstants.ACCESS_PRIVATE);
         } catch (IOException e) {
@@ -125,9 +125,12 @@ public class ImportBean {
             return "error";
         }
     }
-
+    
+   
+  
     private String doImport(final String path, final int privacy) {
         ZipFileType zipFileType = TaskUtil.getZipFileType(new File(path));
+        
         if (zipFileType.equals(ZipFileType.INVALID_ZIP)) {
             UIBeanHelper.setInfoMessage(new File(path).getName() + " is not a valid GenePattern zip file.");
             return "error";
@@ -142,17 +145,27 @@ public class ImportBean {
     private String doTaskImport(final String path, int privacy, ZipFileType zipFileType) {
         final String username = UIBeanHelper.getUserId();
         boolean createPipelineAllowed = AuthorizationHelper.createPipeline();
-        boolean createModuleAllowed = AuthorizationHelper.createSuite();
+        boolean createModuleAllowed = AuthorizationHelper.createModule();
         final LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
 
-        if (zipFileType.equals(ZipFileType.PIPELINE_ZIP) || zipFileType.equals(ZipFileType.PIPELINE_ZIP_OF_ZIPS)) {
+        if ( zipFileType.equals(ZipFileType.PIPELINE_ZIP_OF_ZIPS)) {
+        	privacy = AuthorizationHelper.checkPipelineAccessId(privacy);
+            if (!createPipelineAllowed) {
+                UIBeanHelper.setErrorMessage("You do not have permission to install pipelines on this server.");
+                return "error";
+            } else if (!createModuleAllowed){
+            	UIBeanHelper.setErrorMessage("You do not have permission to install modules on this server. Modules included in the pipeline were omitted.");
+                // continue on	
+            }
+        
+        } else if (zipFileType.equals(ZipFileType.PIPELINE_ZIP) ) {
             privacy = AuthorizationHelper.checkPipelineAccessId(privacy);
             if (!createPipelineAllowed) {
-                UIBeanHelper.setInfoMessage("You do not have permission to install pipelines on this server.");
+                UIBeanHelper.setErrorMessage("You do not have permission to install pipelines on this server.");
                 return "error";
             }
         } else if (!createModuleAllowed) {
-            UIBeanHelper.setInfoMessage("You do not have permission to install modules on this server.");
+            UIBeanHelper.setErrorMessage("You do not have permission to install modules on this server.");
             return "error";
         }
 
