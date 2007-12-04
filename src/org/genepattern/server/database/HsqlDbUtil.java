@@ -90,16 +90,17 @@ public class HsqlDbUtil {
 
         try {
             String resourceDir = new File(System.getProperty("resources")).getCanonicalPath();
-            log.debug("resourcesDir=" + new File(resourceDir).getCanonicalPath());
+            
+            log.error("resourcesDir=" + new File(resourceDir).getCanonicalPath());
 
             if (!checkSchema(resourceDir)) {
 
                 createSchema(resourceDir);
 
                 if (!checkSchema(resourceDir)) {
-                    System.err.println("schema didn't check after creating");
+                    log.error("schema didn't have correct version after creating");
 
-                    throw new IOException("unable to successfully create task_master table. Other tables also suspect.");
+                    throw new IOException("Unable to successfully update database tables.");
                 }
             }
         }
@@ -117,7 +118,6 @@ public class HsqlDbUtil {
      * @return
      */
     private static boolean checkSchema(String resourceDir) {
-        log.debug("checking schema");
         boolean upToDate = false;
         String dbSchemaVersion = "";
         String requiredSchemaVersion = System.getProperty("GenePatternVersion");
@@ -126,7 +126,7 @@ public class HsqlDbUtil {
         String sql = "select value from props where key='schemaVersion'";
 
         try {
-            BaseDAO dao = new BaseDAO();
+        	BaseDAO dao = new BaseDAO();
             ResultSet resultSet = dao.executeSQL(sql, false);
             if (resultSet.next()) {
                 dbSchemaVersion = resultSet.getString(1);
@@ -138,13 +138,13 @@ public class HsqlDbUtil {
             }
         }
         catch (Exception e) {
-            // 
+            // 	
             log.info("Database tables not found.  Create new database");
             dbSchemaVersion = "";
         }
 
         System.setProperty("dbSchemaVersion", dbSchemaVersion);
-        System.out.println("schema up-to-date: " + upToDate + ": " + requiredSchemaVersion + " required, "
+        log.info("schema up-to-date: " + upToDate + ": " + requiredSchemaVersion + " required, "
                 + dbSchemaVersion + " current");
         return upToDate;
     }
@@ -216,10 +216,11 @@ public class HsqlDbUtil {
             }
             sql = sql.trim();
             try {
-                log.debug("-> " + sql);
+                log.error("-> " + sql);
                 (new BaseDAO()).executeUpdate(sql);
             }
             catch (Exception se) {
+            	log.error(sql);
                 log.error(se);
             }
         }
