@@ -13,63 +13,65 @@
 package org.genepattern.server.database;
 
 import java.math.BigDecimal;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.Sequence;
 import org.genepattern.webservice.OmnigeneException;
-import org.hibernate.*;
-import org.hibernate.cfg.*;
-import java.util.*;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.StatelessSession;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
 
 public class HibernateUtil {
 
+    private static SessionFactory sessionFactory = null;
     private static Logger log = Logger.getLogger(HibernateUtil.class);
 
-    private static SessionFactory sessionFactory = null;;
-
     public static synchronized SessionFactory getSessionFactory() {
-        if (sessionFactory == null) {
-            createSessionFactory();
-        }
-        return sessionFactory;
+	if (sessionFactory == null) {
+	    createSessionFactory();
+	}
+	return sessionFactory;
     }
 
     static void createSessionFactory() {
-        try {
-            // Create the SessionFactory from hibernate.cfg.xml
-            Configuration config = new Configuration();
-            config.configure("hibernate.cfg.xml");
-            mergeSystemProperties(config);
-            sessionFactory = config.buildSessionFactory();
+	try {
+	    // Create the SessionFactory from hibernate.cfg.xml
+	    Configuration config = new Configuration();
+	    config.configure("hibernate.cfg.xml");
+	    mergeSystemProperties(config);
+	    sessionFactory = config.buildSessionFactory();
 
-        } catch (Throwable ex) {
-            // Make sure you log the exception, as it might be swallowed
-        	if (log != null) {
-        	     log.error("Initial SessionFactory creation failed.", ex);
-        	}
-        	else {
-        	    System.err.println("Initial SessionFactory creation failed: "+ex.getLocalizedMessage());
-        	    ex.printStackTrace(System.err);
-        	}
-            throw new ExceptionInInitializerError(ex);
-        }
+	} catch (Throwable ex) {
+	    // Make sure you log the exception, as it might be swallowed
+	    if (log != null) {
+		log.error("Initial SessionFactory creation failed.", ex);
+	    } else {
+		System.err.println("Initial SessionFactory creation failed: " + ex.getLocalizedMessage());
+		ex.printStackTrace(System.err);
+	    }
+	    throw new ExceptionInInitializerError(ex);
+	}
     }
 
     private static void mergeSystemProperties(Configuration config) {
 
-        Properties props = System.getProperties();
-        for (Object key : props.keySet()) {
-            String name = (String) key;
-            if (name.startsWith("hibernate.")) {
-                config.setProperty(name, (String) props.get(name));
-            }
+	Properties props = System.getProperties();
+	for (Object key : props.keySet()) {
+	    String name = (String) key;
+	    if (name.startsWith("hibernate.")) {
+		config.setProperty(name, (String) props.get(name));
+	    }
 
-        }
+	}
 
     }
 
     public static Session getSession() {
-        return getSessionFactory().getCurrentSession();
+	return getSessionFactory().getCurrentSession();
     }
 
     /**
@@ -77,15 +79,12 @@ public class HibernateUtil {
      * 
      */
     public static void closeCurrentSession() {
-        log.debug("closeCurrentSession...");
-        
-        Session session = getSession();
-        if (session.isOpen()) {
-            log.debug("   session.close...");
-            session.close();
-        }
-        
-        log.debug("...closeCurrentSession");
+
+	Session session = getSession();
+	if (session.isOpen()) {
+	    session.close();
+	}
+
     }
 
     /**
@@ -93,17 +92,15 @@ public class HibernateUtil {
      * 
      */
     public static void commitTransaction() {
-        log.debug("commitTransaction...");
 
-        Session session = getSession();
-        Transaction tx = session.getTransaction();
-        if (tx.isActive()) {
-            log.debug("   tx.commit...");
-            tx.commit();
-            closeCurrentSession();
-        }
-        
-        log.debug("...commitTransaction");
+	Session session = getSession();
+	Transaction tx = session.getTransaction();
+	if (tx.isActive()) {
+
+	    tx.commit();
+	    closeCurrentSession();
+	}
+
     }
 
     /**
@@ -111,17 +108,14 @@ public class HibernateUtil {
      * 
      */
     public static void rollbackTransaction() {
-        log.debug("rollbackTransaction...");
 
-        Session session = getSession();
-        Transaction tx = session.getTransaction();
-        if (tx.isActive()) {
-            log.debug("   tx.rollback...");
-            tx.rollback();
-            closeCurrentSession();
-        }
-        
-        log.debug("...rollbackTransaction");
+	Session session = getSession();
+	Transaction tx = session.getTransaction();
+	if (tx.isActive()) {
+	    tx.rollback();
+	    closeCurrentSession();
+	}
+
     }
 
     /**
@@ -130,45 +124,41 @@ public class HibernateUtil {
      * @return
      */
     public static void beginTransaction() {
-        log.debug("beginTransaction...");
-        
-        Session session = getSession();
-        Transaction tx = session.getTransaction();
-        if (!tx.isActive()) {
-            log.debug("   session.beginTransaction...");
-            session.beginTransaction();
-        }
-        
-        log.debug("...beginTransaction");
+
+	Session session = getSession();
+	Transaction tx = session.getTransaction();
+	if (!tx.isActive()) {
+
+	    session.beginTransaction();
+	}
+
     }
 
     public static boolean isInTransaction() {
-       
-        Session session = getSession();
-        Transaction tx = session.getTransaction();
-        
-        log.debug("   session.isInTransaction " + tx.isActive());
-        if (!tx.isActive()) {
-	          return false;
-        }
-        
-        return true;
+
+	Session session = getSession();
+	Transaction tx = session.getTransaction();
+
+	if (!tx.isActive()) {
+	    return false;
+	}
+
+	return true;
     }
 
-    
     public static int getNextSequenceValue(String sequenceName) {
 
-        String dbVendor = System.getProperty("database.vendor", "UNKNOWN");
+	String dbVendor = System.getProperty("database.vendor", "UNKNOWN");
 
-        if (dbVendor.equals("ORACLE")) {
-            return ((BigDecimal) getSession().createSQLQuery("SELECT " + sequenceName + ".NEXTVAL FROM dual")
-                    .uniqueResult()).intValue();
-        } else if (dbVendor.equals("HSQL")) {
-            return (Integer) getSession().createSQLQuery("SELECT NEXT VALUE FOR " + sequenceName + " FROM dual")
-                    .uniqueResult();
-        } else {
-            return getNextSequenceValueGeneric(sequenceName);
-        }
+	if (dbVendor.equals("ORACLE")) {
+	    return ((BigDecimal) getSession().createSQLQuery("SELECT " + sequenceName + ".NEXTVAL FROM dual")
+		    .uniqueResult()).intValue();
+	} else if (dbVendor.equals("HSQL")) {
+	    return (Integer) getSession().createSQLQuery("SELECT NEXT VALUE FOR " + sequenceName + " FROM dual")
+		    .uniqueResult();
+	} else {
+	    return getNextSequenceValueGeneric(sequenceName);
+	}
     }
 
     /**
@@ -181,39 +171,39 @@ public class HibernateUtil {
      */
     private static synchronized int getNextSequenceValueGeneric(String sequenceName) {
 
-        StatelessSession session = null;
+	StatelessSession session = null;
 
-        try {
-            // Open a new session and transaction. Its neccessary that the
-            // sequence update be
-            // committed prior to exiting this method.
-            session = getSessionFactory().openStatelessSession();
-            session.beginTransaction();
+	try {
+	    // Open a new session and transaction. Its neccessary that the
+	    // sequence update be
+	    // committed prior to exiting this method.
+	    session = getSessionFactory().openStatelessSession();
+	    session.beginTransaction();
 
-            Query query = session.createQuery("from org.genepattern.server.domain.Sequence where name = :name");
-            query.setString("name", sequenceName);
-            Sequence seq = (Sequence) query.uniqueResult();
-            if (seq != null) {
-                int nextValue = seq.getNextValue();
+	    Query query = session.createQuery("from org.genepattern.server.domain.Sequence where name = :name");
+	    query.setString("name", sequenceName);
+	    Sequence seq = (Sequence) query.uniqueResult();
+	    if (seq != null) {
+		int nextValue = seq.getNextValue();
 
-                seq.setNextValue(nextValue + 1);
-                session.update(seq);
-                session.getTransaction().commit();
+		seq.setNextValue(nextValue + 1);
+		session.update(seq);
+		session.getTransaction().commit();
 
-                return nextValue;
-            } else {
-                session.getTransaction().rollback();
-                String errorMsg = "Sequence table does not have an entry for: " + sequenceName;
-                log.error(errorMsg);
-                throw new OmnigeneException(errorMsg);
-            }
-        } catch (Exception e) {
-            session.getTransaction().rollback();
-            log.error(e);
-            throw new OmnigeneException(e);
-        } finally {
-            session.close();
-        }
+		return nextValue;
+	    } else {
+		session.getTransaction().rollback();
+		String errorMsg = "Sequence table does not have an entry for: " + sequenceName;
+		log.error(errorMsg);
+		throw new OmnigeneException(errorMsg);
+	    }
+	} catch (Exception e) {
+	    session.getTransaction().rollback();
+	    log.error(e);
+	    throw new OmnigeneException(e);
+	} finally {
+	    session.close();
+	}
     }
 
 }
