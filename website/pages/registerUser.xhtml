@@ -75,12 +75,14 @@
           <t:validateEmail/>
         </t:inputText>
         
-        <h:outputLabel value="Re-enter email" for="emailConfirm"/>
+        <h:outputLabel value="Re-enter email:" for="emailConfirm"/>
         <t:inputText size="50" value="#{registrationBean.emailConfirm}" id="emailConfirm" 
                      forceId="true" 
                      binding="#{registrationBean.emailConfirmComponent}">
           <t:validateEmail/>
         </t:inputText>
+        <h:outputLabel rendered="#{registrationBean.showTermsOfService}" value="Terms of Service:" for="termsOfService"/>
+        <t:inputTextarea rendered="#{registrationBean.showTermsOfService}" cols="48" rows="8" value="#{registrationBean.termsOfService}" />
         &#160;
         <h:panelGroup>
         <h:selectBooleanCheckbox title="emailUpdates"  value="#{registrationBean.joinMailingList}" >
@@ -89,6 +91,7 @@
         </h:panelGroup>
 		&#160;
       <h:commandButton value="Create Account" class="little" actionListener="#{registrationBean.registerUser}"/>
+      
         
       </h:panelGrid>
     </h:form>

@@ -15,12 +15,10 @@
  */
 package org.genepattern.server.webapp.jsf;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Date;
 
-import javax.faces.FacesException;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
@@ -50,16 +48,33 @@ public class RegistrationBean {
     private UIInput passwordConfirmComponent;
     private UIInput emailConfirmComponent;
     private boolean joinMailingList = true;
-    
-    public RegistrationBean() {
-	String createAccountAllowedProp = System.getProperty("create.account.allowed", "true").toLowerCase();
-	boolean createAccountAllowed = (createAccountAllowedProp.equals("true") || createAccountAllowedProp.equals("y") || createAccountAllowedProp
-		.equals("yes"));
-	if (!createAccountAllowed) {
-	    log.info("Unauthorized attempt to create new user by " + UIBeanHelper.getRequest().getRemoteAddr() + ".");
-	    throw new SecurityException("Unauthorized attempt to create new user.");
-	}
+    private boolean showTermsOfService = false;
+    //private String pathToTerms = "gp/pages/terms.txt";
+    private String termsOfService =
+        "GenePattern Terms of Service\n"+
+        "============================\n"+
+        "\n"+
+        "The hosted GenePattern server is provided free of charge.\n"+
+        "We make no guarantees whatsoever.";
 
+    public RegistrationBean() {
+        String createAccountAllowedProp = System.getProperty("create.account.allowed", "true").toLowerCase();
+        boolean createAccountAllowed = (
+                createAccountAllowedProp.equals("true") || 
+                createAccountAllowedProp.equals("y") || 
+                createAccountAllowedProp.equals("yes"));
+        if (!createAccountAllowed) {
+            log.info("Unauthorized attempt to create new user by " + UIBeanHelper.getRequest().getRemoteAddr() + ".");
+            throw new SecurityException("Unauthorized attempt to create new user.");
+        }
+
+        //show registration agreement?
+        if (System.getProperty("show.terms.of.service", "false").equalsIgnoreCase("false")) {
+            showTermsOfService = false;
+        }
+        else {
+            showTermsOfService = true;
+        }
     }
 
     public String getEmail() {
@@ -153,10 +168,7 @@ public class RegistrationBean {
             e.printStackTrace();
           
         }
-    	
-    	
     }
-    
     
     public void setEmail(String email) {
 	this.email = email;
@@ -214,4 +226,17 @@ public class RegistrationBean {
 	    throw new ValidatorException(facesMessage);
 	}
     }
+    
+    public boolean isShowTermsOfService() {
+        return this.showTermsOfService;
+    }
+    
+    public void setShowTermsOfService(boolean b) {
+        this.showTermsOfService = b;
+    }
+    
+    public String getTermsOfService() {
+        return this.termsOfService;
+    }
+
 }
