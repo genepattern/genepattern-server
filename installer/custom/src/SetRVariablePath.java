@@ -64,6 +64,11 @@ public class SetRVariablePath extends CustomCodeAction {
 			R_new = ip.substitute("$R2.5_HOME$");
 			
 		}
+		// bug 2002 preserve old def for 3.1 on 3.1 with non-standard R25 
+		String oldR25 = ip.substitute("$R2.5_HOME$");// R2.5_HOME already defined in preread genepattern.props
+		if (oldR25 != null){
+			R_new = oldR25;	
+		}
 		
 		
 		String os = System.getProperty("os.name").toLowerCase();
@@ -76,6 +81,8 @@ public class SetRVariablePath extends CustomCodeAction {
 			ip.setVariable("R25base",  R_new);
 		}
 
+		
+		
         
        } catch (Exception e){
        	e.printStackTrace();
