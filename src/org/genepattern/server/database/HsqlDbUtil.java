@@ -216,11 +216,11 @@ public class HsqlDbUtil {
             }
             sql = sql.trim();
             try {
-                log.error("-> " + sql);
+                log.info("apply SQL-> " + sql);
                 (new BaseDAO()).executeUpdate(sql);
             }
             catch (Exception se) {
-            	log.error(sql);
+            	//log.error(sql);
                 log.error(se);
             }
         }
