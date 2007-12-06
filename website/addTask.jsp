@@ -598,13 +598,11 @@ function addNewFileType(name, desc){
 	   </tr>
 
 	   <tr class="taskperameter" >
-	  
+	  <td>	File format(s):<a href='help.jsp#OutputDescription' target='help'><img border='0' src='images/help2.jpg'/></a> </td>
 	   <td>
 		<table>
 		<tr>
-		<td valign="top">
-			File format(s):<a href='help.jsp#OutputDescription' target='help'><img border='0' src='images/help2.jpg'/></a>
-		</td>
+		
 		<td valign="top">
 	<%
 			attributeValue = (tia != null ? tia.get(GPConstants.FILE_FORMAT) : "");
