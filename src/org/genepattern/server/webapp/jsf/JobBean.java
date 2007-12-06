@@ -223,8 +223,8 @@ public class JobBean {
 		if (!attachment.exists()) {
 		    continue;
 		}
-        String zipEntryName = jobId + "/" + fileName;
-        ZipEntry zipEntry = new ZipEntry(zipEntryName);
+		String zipEntryName = jobId + "/" + fileName;
+		ZipEntry zipEntry = new ZipEntry(zipEntryName);
 
 		zos.putNextEntry(zipEntry);
 		zipEntry.setTime(attachment.lastModified());
@@ -720,8 +720,8 @@ public class JobBean {
 		if (column == null) {
 		    return 0;
 		} else if (column.equals("name")) {
-		    return fileSortAscending ? c1.getName().compareTo(c2.getName()) : c2.getName().compareTo(
-			    c1.getName());
+		    return fileSortAscending ? c1.getName().compareToIgnoreCase(c2.getName()) : c2.getName()
+			    .compareToIgnoreCase(c1.getName());
 		} else if (column.equals("size")) {
 		    return fileSortAscending ? new Long(c1.getSize()).compareTo(c2.getSize()) : new Long(c2.getSize())
 			    .compareTo(c1.getSize());
@@ -763,8 +763,8 @@ public class JobBean {
 		    return jobSortAscending ? new Integer(c1.getJobNumber()).compareTo(c2.getJobNumber())
 			    : new Integer(c2.getJobNumber()).compareTo(c1.getJobNumber());
 		} else if (column.equals("taskName")) {
-		    return jobSortAscending ? c1.getTaskName().compareTo(c2.getTaskName()) : c2.getTaskName()
-			    .compareTo(c1.getTaskName());
+		    return jobSortAscending ? c1.getTaskName().compareToIgnoreCase(c2.getTaskName()) : c2.getTaskName()
+			    .compareToIgnoreCase(c1.getTaskName());
 		} else if (column.equals("status")) {
 		    return jobSortAscending ? c1.getStatus().compareTo(c2.getStatus()) : c2.getStatus().compareTo(
 			    c1.getStatus());
