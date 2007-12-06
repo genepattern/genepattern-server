@@ -2,6 +2,7 @@
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.*;
 import java.io.*;
+import java.util.Calendar;
 import java.util.Date;
 
 
@@ -16,7 +17,6 @@ public class GetReport {
 public static void main(String[] args) throws Exception{
 	
 	java.text.SimpleDateFormat dateFormatter = new java.text.SimpleDateFormat("yyMMdd");
-	Date today = new Date();
 	
 	String dateMode = args[0]; // week or month
 	String reportName = args[1];
@@ -24,6 +24,20 @@ public static void main(String[] args) throws Exception{
 	String user = args[3];
 	String password= args[4];
 	
+	Date today = new Date();
+	if (dateMode.equals("lastMonth")){
+		dateMode = "month";
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.MONTH, -1);
+		today = cal.getTime();
+	} else if (dateMode.equals("lastWeek")){
+		dateMode = "week";
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.WEEK_OF_YEAR, -1);
+		today = cal.getTime();
+	}
+	System.out.println("Report Date is " + today);
+
 	
     //create a singular HttpClient object
        HttpClient client = new HttpClient();
