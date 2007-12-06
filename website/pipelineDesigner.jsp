@@ -552,6 +552,10 @@ function sortTaskTypesByName(lsid1, lsid2) {
 		return (lsid1 > lsid2 ? -1 : 1);
 }
 
+//
+// A task type has been selected for the new module.  Create the list of modules using
+// this type
+//
 function changeTaskType(selectorTaskType, taskNum) {
 	var taskSelector = selectorTaskType.form['t' + taskNum];
 	taskSelector.options.length = 0;
@@ -560,22 +564,42 @@ function changeTaskType(selectorTaskType, taskNum) {
 	taskSelector.options[0] = new Option("- Module -", "");
 	taskSelector.options[0].style['fontWeight'] = "bold";
 	var versionlessLSIDs = new Array();
+	var versionedLSIDs = new Array();
+	
  	for (i in TaskTypes[type]) {
 		taskLSID = new LSID(TaskTypes[type][i]);
 		var taskLSIDnoVersion = taskLSID.authority + '<%= LSID.DELIMITER %>' + taskLSID.namespace + '<%= LSID.DELIMITER %>' + taskLSID.identifier;
+		
 		if (versionlessLSIDs[taskLSIDnoVersion] != null) {
-			continue; // already has it
+			// already has it, get the latest name though
+			var heldLSID = new LSID(versionedLSIDs[taskLSIDnoVersion]);
+			
+			if (heldLSID.version <= taskLSID.version){
+				// this one is newer, update descrip and name
+			} else {
+				continue; // already has latest we've seen yet
+			}
 		}
 		versionlessLSIDs[taskLSIDnoVersion] = taskLSIDnoVersion;
+		versionedLSIDs[taskLSIDnoVersion] = taskLSID.lsid;
+	}
+	
+	for (lsidKey in versionedLSIDs) {
+		var taskLSID = versionedLSIDs[lsidKey];
+		taskLSID = new LSID(taskLSID);
 		task = TaskInfos[taskLSID.lsid];
+		
+		
 		var optionText = task.name;
 		if (task.description != "") optionText = optionText + ' - ' + task.description
 		if (optionText.length > MAX_TASK_DESCRIPTION_LENGTH) {
 			optionText = optionText.substring(0,MAX_TASK_DESCRIPTION_LENGTH) + "..."
 		}
+		
 		if (taskLSID.authority != broadAuthority && taskLSID.authority != myAuthority) {
 			optionText = optionText + " (" + taskLSID.authority + ")";
 		}
+		
 		taskSelector.options[taskSelector.options.length] = new Option(optionText, task.lsid);
 		var t = taskSelector.options.length-1;
 		taskSelector.options[t].setAttribute('class', "tasks-" + taskLSID.authorityType);
@@ -753,6 +777,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 
 // create selector showing all versions of this task (same authority/namespace/identifier)
 	var latestVersion = new LSID(task.lsid).version
+	
 	var wildcard = task.lsid.substring(0, task.lsid.length - latestVersion.length);
 	var sameTasks = new Array();
 	for (t in TaskInfos) {
@@ -760,6 +785,9 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 			sameTasks = sameTasks.concat(new LSID(TaskInfos[t].lsid).version)
 		}
 	}
+
+	sameTasks.sort();
+	sameTasks.reverse();
 
 	taskFields = taskFields + '<td align="right">version ';
 
@@ -769,7 +797,7 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		for (t in sameTasks) {
 		taskFields = taskFields + '<option value="' + wildcard + sameTasks[t] + '"' +
 			     (sameTasks[t] == latestVersion ? ' selected' : '') +
-			     '>' + sameTasks[t] + (t == 0 ? " (latest)" : "") + '</option>\n';
+			     '>' + sameTasks[t] + ( t == 0  ? " (latest)" : "") + '</option>\n';
 		}
 
 		taskFields = taskFields + '</select>';
