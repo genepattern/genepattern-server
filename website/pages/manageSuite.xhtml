@@ -109,10 +109,16 @@
 		  	  <td>&#160;</td>
 		  </tr>
         </t:dataList>
-
-        <tr>
+  		<tr class="tableheader-row">
+          <td>&#160;</td>
+          <td>name</td>
+          <td>author&#160;</td>
+          <td>owner&#160;</td>
+        </tr>
+        
+        <tr class="tableheader-row">
           <td valign="top" class="smalltype" style="white-space: nowrap;">
-          	<div align="center">
+          	<div align="center" style="font-weight: normal;">
                 <h:commandLink value="delete" actionListener="#{manageSuiteBean.delete}" onclick="if (!confirmDelete()) return false"/>
              </div>
           </td>
