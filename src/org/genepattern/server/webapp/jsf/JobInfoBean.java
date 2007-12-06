@@ -143,22 +143,32 @@ public class JobInfoBean {
 		String directory = null;
 		if (formalParameter.isInputFile()) {
 		    try {
-			// see if a URL was passed in
-			URL url = new URL(value);
-			
-			// bug 2026 - file:// URLs should not be treated as a URL
-			isUrl = true;
+				// see if a URL was passed in
+				URL url = new URL(value);
 				
-			if ("file".equals(url.getProtocol())){
-				isUrl = false;
-				value = value.substring(5);// strip off the file: part for the next step
-			}
-			} catch (MalformedURLException e) {
-				if (displayValue.startsWith("<GenePatternURL>")) {
-					value = genePatternUrl + value.substring("<GenePatternURL>".length());
-					displayValue = value;
+				// bug 2026 - file:// URLs should not be treated as a URL
+				isUrl = true;
+					
+				if ("file".equals(url.getProtocol())){
+					isUrl = false;
+					value = value.substring(5);// strip off the file: part for the next step
+				} 
+				log.error("val = " + value);
+				log.error("dis = " + displayValue);
+				System.out.println("GP URL = " +genePatternUrl);
+				if (displayValue.startsWith(genePatternUrl)) {			
+					int lastNameIdx = value.lastIndexOf("/");
+					displayValue = value.substring(lastNameIdx+1);		
 					isUrl = true;
 				}
+			} catch (MalformedURLException e) {
+				if (displayValue.startsWith("<GenePatternURL>")) {			
+					int lastNameIdx = value.lastIndexOf("/");
+					displayValue = value.substring(lastNameIdx);		
+					value = genePatternUrl + value.substring("<GenePatternURL>".length());
+					isUrl = true;
+				} 
+				
 		    }
 
 			if (!isUrl) {
