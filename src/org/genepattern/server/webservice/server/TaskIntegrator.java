@@ -119,17 +119,26 @@ public class TaskIntegrator {
      *                    If an error occurs
      */
     public String cloneTask(String oldLSID, String cloneName) throws WebServiceException {
-	isAuthorized(getUserName(), "createModule");
-	String userID = getUserName();
+    	String userID = getUserName();
 
-	try {
-	    TaskInfo taskInfo = null;
+    	TaskInfo taskInfo = null;
 	    try {
-		taskInfo = new LocalAdminClient(userID).getTask(oldLSID);
+	    	taskInfo = new LocalAdminClient(userID).getTask(oldLSID);
 	    } catch (Exception e) {
-		log.error(e);
-		throw new WebServiceException(e);
+	    	log.error(e);
+	    	throw new WebServiceException(e);
 	    }
+    	
+	    String taskType = (String)taskInfo.getAttributes().get("taskType");
+	     if ("pipeline".equals(taskType)){
+	    	isAuthorized(getUserName(), "createPipeline");
+	    } else {
+	    	isAuthorized(getUserName(), "createModule");
+	    }
+	    	
+	    	
+	try {
+	    
 	    taskInfo.setName(cloneName);
 	    taskInfo.setAccessId(ACCESS_PRIVATE);
 	    taskInfo.setUserId(userID);
@@ -149,15 +158,19 @@ public class TaskIntegrator {
 
 		// update the task with the new model and command line
 		TaskInfoAttributes newTIA = AbstractPipelineCodeGenerator.getTaskInfoAttributes(model);
-		tia.put(SERIALIZED_MODEL, model.toXML());
-		tia.put(COMMAND_LINE, newTIA.get(COMMAND_LINE));
+			model.setPrivacy(PRIVATE);
+			tia.put(SERIALIZED_MODEL, model.toXML());
+			tia.put(COMMAND_LINE, newTIA.get(COMMAND_LINE));
+			tia.put(PRIVACY, PRIVATE);
+		    
 	    }
 	    String newLSID = modifyTask(ACCESS_PRIVATE, cloneName, taskInfo.getDescription(), taskInfo
 		    .getParameterInfoArray(), tia, null, null);
 	    cloneTaskLib(taskInfo.getName(), cloneName, oldLSID, newLSID, userID);
 	    return newLSID;
 	} catch (Exception e) {
-	    log.error(e);
+	    log.error("cloning", e);
+	    
 	    throw new WebServiceException(e);
 	}
     }
@@ -1068,7 +1081,15 @@ public class TaskIntegrator {
      */
     public String modifyTask(int accessId, String taskName, String description, ParameterInfo[] parameterInfoArray,
 	    Map taskAttributes, DataHandler[] dataHandlers, String[] fileNames) throws WebServiceException {
-	isAuthorized(getUserName(), "createModule");
+	
+    	
+    	String taskType = (String)taskAttributes.get("taskType");
+	     if ("pipeline".equals(taskType)){
+	    	isAuthorized(getUserName(), "createPipeline");
+	    } else {
+	    	isAuthorized(getUserName(), "createModule");
+	    }
+	
 	String lsid = null;
 	String username = getUserName();
 	String oldLSID = null;
@@ -1110,7 +1131,7 @@ public class TaskIntegrator {
 
 	    TaskInfoAttributes tia = new TaskInfoAttributes(taskAttributes);
 	    isAuthorizedCreateTask(getUserName(), tia);
-
+	    taskAttributes.put(PRIVACY, accessId);
 	    lsid = GenePatternAnalysisTask.installNewTask(taskName, description, parameterInfoArray,
 		    new TaskInfoAttributes(taskAttributes), username, accessId, new Status() {
 
@@ -1227,7 +1248,8 @@ public class TaskIntegrator {
 
     private void isAuthorizedCreateTask(String user, TaskInfoAttributes tia) throws WebServiceException {
 	if (!(authManager.checkPermission("createModule", user) || (authManager.checkPermission("createPipeline", user) && isPipeline(tia)))) {
-	    throw new WebServiceException("You do not have permission to perfom this action.");
+	   
+		throw new WebServiceException("You do not have permission to perfom this action.");
 
 	}
     }
