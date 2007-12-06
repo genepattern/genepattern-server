@@ -144,28 +144,36 @@ public class JobInfoBean {
 		if (formalParameter.isInputFile()) {
 		    try {
 			// see if a URL was passed in
-			new URL(value);
+			URL url = new URL(value);
+			
+			// bug 2026 - file:// URLs should not be treated as a URL
 			isUrl = true;
-		    } catch (MalformedURLException e) {
-			if (displayValue.startsWith("<GenePatternURL>")) {
-			    value = genePatternUrl + value.substring("<GenePatternURL>".length());
-			    displayValue = value;
-			    isUrl = true;
+				
+			if ("file".equals(url.getProtocol())){
+				isUrl = false;
+				value = value.substring(5);// strip off the file: part for the next step
 			}
-
+			} catch (MalformedURLException e) {
+				if (displayValue.startsWith("<GenePatternURL>")) {
+					value = genePatternUrl + value.substring("<GenePatternURL>".length());
+					displayValue = value;
+					isUrl = true;
+				}
 		    }
 
-		    if (!isUrl) {
-			File f = new File(value);
-			exists = f.exists();
-			value = f.getName();
-			displayValue = value;
-			if (displayValue.startsWith("Axis")) {
-			    displayValue = displayValue.substring(displayValue.indexOf('_') + 1);
-			} else if (exists) {
-			    directory = f.getParentFile().getName();
+			if (!isUrl) {
+				
+
+				File f = new File(value);
+				exists = f.exists();
+				value = f.getName();
+				displayValue = value;
+				if (displayValue.startsWith("Axis")) {
+					displayValue = displayValue.substring(displayValue.indexOf('_') + 1);
+				} else if (exists) {
+					directory = f.getParentFile().getName();
+				}
 			}
-		    }
 		}
 
 		InputParameter p = new InputParameter();
