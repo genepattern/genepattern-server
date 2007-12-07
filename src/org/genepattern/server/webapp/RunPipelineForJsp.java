@@ -36,7 +36,6 @@ import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.user.User;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
-import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
@@ -364,7 +363,7 @@ public class RunPipelineForJsp {
     
     public static void addOutFileParameter(int jobId, String filename)
     throws OmnigeneException, RemoteException {
-    	ParameterInfo paramOut = new ParameterInfo(filename, filename, "");
+    	ParameterInfo paramOut = new ParameterInfo(filename, jobId + "/" + filename, "");
     	paramOut.setAsOutputFile();
     	
     	try {
