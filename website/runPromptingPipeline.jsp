@@ -35,7 +35,7 @@ use, misuse, or functionality.
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
     response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
     response.setDateHeader("Expires", 0);
-
+System.out.println("ONE");
 %>
 
 <html>
@@ -65,25 +65,27 @@ use, misuse, or functionality.
 	String lsid = runTaskHelper.getTaskLsid();
 	String taskName = runTaskHelper.getTaskName();
 	String tmpDirName = runTaskHelper.getTempDirectory().getName();
+	
 	Map<String, String> requestParameters = runTaskHelper.getRequestParameters();	
    	
    	ParameterInfo[] parmInfos = task.getParameterInfoArray();
    
     List<ParameterInfo> missingReqParams = runTaskHelper.getMissingParameters();
    	if (missingReqParams.size() > 0) {
-
 %>
 <jsp:include page="navbar.jsp"/>
+
 <%
-    request.setAttribute("missingReqParams", missingReqParams);
-    (request.getRequestDispatcher("runTaskMissingParams.jsp")).include(request, response);
+    request.setAttribute("missingReqParams", missingReqParams);	
 %>
+	<jsp:include page="runTaskMissingParams.jsp"/>
 <jsp:include page="footer.jsp"/>
 </body>
 </html>
 <%
 		return;
 	}
+	System.out.println("dispatching= ");
    	request.setAttribute("parameters", parmInfos);
    	request.setAttribute("name", lsid); //used by runPipeline.jsp to get pipeline to run
 	RequestDispatcher rd = request.getRequestDispatcher("runPipeline.jsp");

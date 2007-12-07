@@ -110,8 +110,8 @@ use, misuse, or functionality.
         if (missingReqParams.size() > 0) {
             System.out.println("" + missingReqParams);
             request.setAttribute("missingReqParams", missingReqParams);
-            (request.getRequestDispatcher("runTaskMissingParams.jsp")).include(request, response);
 %>
+<jsp:include page="runTaskMissingParams.jsp"/>
 <jsp:include page="footer.jsp"/>
 </body>
 </html>
