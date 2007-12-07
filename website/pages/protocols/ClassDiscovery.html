@@ -108,7 +108,7 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
               Tamayo et al. indicate that SOMs are best suited to identifying
               a small number of prominent classes in the data; Brunet et al. (2004) 
               comment that they "can be unstable, yielding different decompositions of the data
-              depending on the choice of initial conditions."" </li>
+              depending on the choice of initial conditions." </li>
     <li><b>Non-negative matrix factorization (NMF)</b> (Brunet et al., 2004) is an alternative method 
                 for class discovery. Rather than clustering genes, 
                 NMF detects context-dependent patterns of gene expression. 
@@ -196,13 +196,11 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
   </div>
   
   <h5>What it does</h5>
-  <ul>
-    <li>The module constructs self-organizing maps (SOMs) for 
+  <p>The module constructs self-organizing maps (SOMs) for 
       genes (rows) or samples (columns). Specify the desired number of clusters or a
       range of clusters to construct SOMs for each set of clusters in that range (by default, 
       2 and 3 clusters).
-    </li>
-  </ul>
+    </p>
   <h5>Considerations</h5>
   <ul>
     <li>For faster processing, run SOMClustering with a smaller number of iterations.
@@ -297,10 +295,7 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
       It groups objects into two clusters, then three clusters, up to the maximum
       number of clusters specified by the <i>kmax</i> parameter (by default,
       5). The module builds a separate consensus matrix for each set of clusters. </li>
-    <li>Best practice is to normalize (<i>normalize type</i>/<i>norm iter</i> parameters)
-      the data being clustered. **REVIEWER: normalize both? the items being clustered?** </li>
-    <li>For considerations specific to the selected clustering algorithm, see
-      the protocol for using that algorithm. </li>
+    <li>Best practice is to normalize the data being clustered (<i>normalize type</i> parameter).</li>
   </ul>
 
   <div class="gpDocLinks">
@@ -330,7 +325,7 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
   </p>
   <h5>Considerations</h5>
   <ul>
-    <li>Select File&gt;Save Image to save the heat map and dendrograms to an
+    <li>Select <i>File&gt;Save Image</i> to save the heat map and dendrograms to an
       image file. Supported formats include bmp, eps, jpeg, png, and tiff. </li>
   </ul>
   <div class="gpDocLinks">
@@ -353,13 +348,13 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
   <h5>What it does</h5>
   <p>The HeatMapViewer 
       displays gene expression data as a heat map, which makes it easier to see patterns in the numeric data. 
-      Gene names row labels and sample names are column labels. 
+      Gene names are row labels and sample names are column labels. 
   </p>
 
   <h5>Considerations</h5>
   <ul>
-    <li>KMeansClustering creates a GCT file that organizes the expression data by cluster, 
-      as well as a GCT file for each cluster. For an overview of the results, use the HeatMapViewer to display 
+    <li>KMeansClustering creates a GCT file that organizes the expression data by cluster and 
+    a GCT file for each cluster. For an overview of the results, use the HeatMapViewer to display 
       the expression data organized by cluster.
     </li>
   </ul>
@@ -386,11 +381,8 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
   </p>
   <h5>Considerations</h5>
   <ul>
-    <li>Select File&gt;Save Image to save the selected plot to an image  file.
+    <li>Select <i>File&gt;Save Image</i> to save the selected plot to an image  file.
       Supported formats include bmp, jpeg, png, and tiff. </li>
-    <li>**Any way to write the clusters to a GCT file?** TBD... </li>
-    <li>**SOMClusterViewer v5 on node258, all my plots look the same. What's
-      up?** </li>
   </ul>
   <div class="gpDocLinks">
   <p>Module documentation: <a href="/gp/getTaskDoc.jsp?name=SOMClusterViewer">SOMClusterViewer.pdf <img src="/gp/images/pdf.jpg"/></a></p>
@@ -415,7 +407,6 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
   </p>
   <h5>Considerations</h5>
   <ul>
-    <li>**Need a summary of the "ideal" plot and cophenetic value.** </li>
     <li>For more about the plots and their interpretation, see Brunet et al., 2004. </li>
   </ul>
   <div class="gpDocLinks">
@@ -446,9 +437,6 @@ Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/
   <ul>
     <li>For more about the consensus matrix and its interpretation, see Monti
       et al., 2003. </li>
-    <li>The *.clsdist output file shows...TBD </li>
-    <li>The *.stdev output file shows... TBD </li>
-    <li>The *.pdf output file shows... TBD </li>
   </ul>
   <div class="gpDocLinks">
   <p>Module documentation: <a href="/gp/getTaskDoc.jsp?name=HeatMapViewer">HeatMapViewer.pdf <img src="/gp/images/pdf.jpg"/></a></p>

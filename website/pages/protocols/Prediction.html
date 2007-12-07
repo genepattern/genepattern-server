@@ -106,12 +106,21 @@ module to divide it into two non-overlapping data sets.</p>
 
 <div class="steps">
   <h2>Step 2: Choose a class prediction method.</h2>
-  <h5>What it does</h5>
+
   <p>GenePattern supports several class prediction methods:
   </p>
   <ul>
     <li><b>CART</b> (Breiman et al., 1984) 
-        builds <b>C</b>lassification <b>A</b>nd <b>R</b>egression <b>T</b>rees for predicting continuous dependent variables (regression) and categorical predictor variables (classification). It works by recursively splitting the feature space into a set of non-overlapping regions and then predicting the most likely value of the dependent variable within each region. A classification tree represents a set of nested logical if-then conditions on the values of the features variables that allows for the prediction of the value of the dependent categorical variable based on the observed values of the feature variables. A regression tree is similar but allows for the prediction of the value of a continuous dependent variable instead.    </li>
+        builds <b>C</b>lassification <b>A</b>nd <b>R</b>egression <b>T</b>rees for 
+        predicting continuous dependent variables (regression) and categorical 
+        predictor variables (classification). It works by recursively splitting the 
+        feature space into a set of non-overlapping regions and then predicting 
+        the most likely value of the dependent variable within each region. A 
+        classification tree represents a set of nested if-then conditions 
+        that allows for the prediction of the value of the categorical dependent variable 
+        based on the observed values of the feature variables. A regression tree is 
+        similar but allows for the prediction of the value of a continuous dependent 
+        variable instead.    </li>
     <li><b>K-nearest-neighbors (KNN)</b> classifies an unknown sample by assigning
       it the phenotype label most frequently represented among the k nearest
       known samples (Golub and Slonim et al., 1999). In GenePattern, the user
@@ -139,15 +148,9 @@ module to divide it into two non-overlapping data sets.</p>
       by how closely its expression correlates with the differentiation between
       phenotype classes in the training data set. </li>
   </ul>
-  <h5>Considerations</h5>
-  <ul>
-    <li>TBD...**add suggestions for when to use which method**
-    </li>
-  </ul>
 </div>
 <div class="steps">
   <h2>Step 3: Choose an approach for training and testing the class predictor.</h2>
-  <h5>What it does</h5>
   <p>A typical class prediction method "learns" how to distinguish between members of 
       different classes by "training" itself on known data. 
       The method uses known data to create a class predictor, 
@@ -196,15 +199,13 @@ module to divide it into two non-overlapping data sets.</p>
   </ul>
   </div>
   <h5>What it does</h5>
-  <ul>
-    <li>The module uses the cross-validation approach to run CART class prediction iteratively against a known data set. 
-    </li>
-  </ul>
+    <p>The module uses the cross-validation approach to run CART class prediction iteratively against a known data set. 
   <h5>Considerations  </h5>
   <ul>
     <li>If you have only one data set, use the CARTXValidation module to build
       and test classifiers using that data set. </li>
-    <li>The CART prediction method has no parameters; therefore, the CARTXValidation
+    <li>If you have both a training data set and test data set, skip this step. 
+    The CART prediction method has no parameters; therefore, the CARTXValidation
       module is not needed to determine the best parameter settings for use with
       the CART module. </li>
   </ul>
@@ -224,10 +225,7 @@ module to divide it into two non-overlapping data sets.</p>
   </ul>
   </div> 
   <h5>What it does</h5>
-  <ul>
-    <li>The module uses the cross-validation approach to run K-nearest-neighbors (KNN) class prediction iteratively against a known data set. 
-    </li>
-  </ul>
+    <p>The module uses the cross-validation approach to run K-nearest-neighbors (KNN) class prediction iteratively against a known data set. 
   <h5>Considerations</h5>
   <ul>
     <li>If you have both a training data set and a test data set, use this module to 
@@ -253,12 +251,9 @@ module to divide it into two non-overlapping data sets.</p>
   </div>
   -->
   <h5>What it does</h5>
-  <ul>
-    <li>The module uses the cross-validation approach to run 
+    <p>The module uses the cross-validation approach to run 
       Probabilistic Neural Network (PNN) class prediction iteratively
       against a known data set. 
-    </li>
-  </ul>
   <h5>Considerations  </h5>
   <ul>
     <li>This module creates an analysis result file that contains 
@@ -268,7 +263,7 @@ module to divide it into two non-overlapping data sets.</p>
     <li>Use the <i>num features</i> parameter to specify a range of values to
       try. The module automatically selects the best parameter settings. You
       do not need to run it multiple times. </li>
-    <li>To experiment with alternative settings of other parameters, use the
+    <li>To experiment with alternative parameter settings, use the
       PNN module rather than the PNNXValidationOptimization module. </li>
   </ul>
   <!--  
@@ -277,7 +272,8 @@ module to divide it into two non-overlapping data sets.</p>
   </div>
   -->
   <h3>SVM</h3>
-  <p>The cross-validation approach is not available for the SVM prediction method.</p>
+  <p>The cross-validation approach is not available for the SVM prediction method.<br>
+  Skip this step for SVM.</p>
 
   <h3>WeightedVotingXValidation</h3>
   <div class="gpLinks">
@@ -396,24 +392,16 @@ module to divide it into two non-overlapping data sets.</p>
   </ul>
   </div>
   -->
-  <h5>What it does</h5>
-  <ul>
-    <li>PNNXValidationOptimization creates an analysis result (*.xvopt.odf) file that contains 
-      recommended PNN parameter settings. It can be used as an input file for the PNN module.
-    </li>
-  </ul>
-  <h5>Considerations</h5>
-  <ul>
-    <li>None.
-    </li>
-  </ul>
+  <p>Typically, you do not view the PNNXValidationOptimization analysis result (*.xvopt.odf) file.
+  This file contains recommended PNN parameter settings. It is used as an input file for the PNN module.
   <!--  
   <div class="gpDocLinks">
     <p>Module documentation: <a href="/gp/getTaskDoc.jsp?name=PNN">PNN.pdf <img src="/gp/images/pdf.jpg"/></a></p>
   </div>
   -->
   <h3>SVM</h3>
-  <p>The cross-validation approach is not available for the SVM prediction method.</p>
+  <p>You do not view cross-validataion results for the SVM prediction method because the cross-validation approach is 
+  not available for SVM.</p>
 
   <h3>WeightedVotingXValidation</h3>
   <div class="gpLinks">
@@ -522,7 +510,6 @@ module to divide it into two non-overlapping data sets.</p>
      <a href="/gp/getTaskDoc.jsp?name=WeightedVoting">WeightedVoting.pdf <img src="/gp/images/pdf.jpg"/></a>
   </p>
   </div>
-  <p><b>**REVIWERS:</b> Are there any other prediction-specific considerations?</p>
 </div>
 
 <div class="steps">
@@ -609,7 +596,6 @@ module to divide it into two non-overlapping data sets.</p>
       cases/total cases) and an ROC error rate (fraction of true positives
       versus the fraction of false positives). Use the ROC error rate for comparing
       results across data sets. </li>
-    <li>**More information required about the extended results file** </li>
   </ul>
   <div class="gpDocLinks">
   <p>Module documentation: <a href="/gp/getTaskDoc.jsp?name=PredictionResultsViewer">PredictionResultsViewer.pdf <img src="/gp/images/pdf.jpg"/></a>
