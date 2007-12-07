@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,6 +35,8 @@ import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.LSIDManager;
 import org.genepattern.server.user.User;
 import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
@@ -47,7 +50,7 @@ import org.genepattern.webservice.TaskInfoAttributes;
 
 public class RunPipelineForJsp {
     private static Logger log = Logger.getLogger(RunPipelineForJsp.class);
-    public int jobID = -1;
+    public static int jobID = -1;
     
     public RunPipelineForJsp() {
     }
@@ -357,7 +360,29 @@ public class RunPipelineForJsp {
         return jobID;
     }
     
+  
     
+    public static void addOutFileParameter(int jobId, String filename)
+    throws OmnigeneException, RemoteException {
+    	ParameterInfo paramOut = new ParameterInfo(filename, filename, "");
+    	paramOut.setAsOutputFile();
+    	
+    	try {
+    		AnalysisDAO ad = new AnalysisDAO();
+    		HibernateUtil.beginTransaction();
+    		JobInfo jobInfo = ad.getJobInfo(jobId);
+    		jobInfo.addParameterInfo(paramOut);
+	
+		    int jobStatus = ((Integer) JobStatus.STATUS_MAP.get(jobInfo.getStatus())).intValue();
+		    
+		    ad.updateJob(jobId, jobInfo.getParameterInfo(), jobStatus);
+		    HibernateUtil.commitTransaction();
+    	} catch (OmnigeneException ex) {
+    		log.error("Error updating pipeline status.  jobNumber=" + jobId);
+    		HibernateUtil.rollbackTransaction();
+    	}
+    }
+
     protected String  paramsAsString(ParameterInfo[] params, HashMap commandLineParams, String baseURL){
         if (params == null) return "";
         if (params.length == 0) return "";

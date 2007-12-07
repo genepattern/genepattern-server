@@ -247,8 +247,10 @@ var outputFileCount = new Array();
                         // stuff to write view file
                         String jobDir = GenePatternAnalysisTask.getJobDir("" + jobID);
                         File jobDirFile = new File(jobDir);
+                        
+                        
                         jobDirFile.mkdirs();
-
+                                          
                         StringBuffer cc = new StringBuffer();
                         // create threads to read from the command's stdout and stderr streams
                         Thread stdoutReader = copyStream(process.getInputStream(), cc, DEBUG, false);
@@ -448,6 +450,18 @@ function toggleTask(idx, visibility) {
                         // wait for all output so that nothing is left buffered at end of process
                         stdoutReader.join();
                         stderrReader.join();
+                        
+                        // *************XXXX********
+                       
+                        File[] outFiles = jobDirFile.listFiles();
+                        for (int g = 0; g < outFiles.length; g++){
+                        	RunPipelineForJsp.addOutFileParameter(jobID, outFiles[g].getName());
+                        }
+                        
+                    	
+                        // *************XXXX********
+                         
+                        
                         out.println("<p>");
                         out.println(cc.toString());
                         out.println("</p>");
