@@ -188,6 +188,7 @@ public class JobBean {
 	    JobInfo[] children = client.getChildren(jobNumber);
 
 	    List<ParameterInfo> outputFileParameters = new ArrayList<ParameterInfo>();
+	    outputFileParameters.addAll(getOutputParameters(job));
 	    if (children.length > 0) {
 		for (JobInfo child : children) {
 		    outputFileParameters.addAll(getOutputParameters(child));
