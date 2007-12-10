@@ -443,6 +443,8 @@ public class JobBean {
 	    int jobNumber = Integer.parseInt(encodedJobFileName.substring(0, index));
 	    // String filename = encodedJobFileName.substring(index + 1);
 	    new LocalAnalysisClient(UIBeanHelper.getUserId()).deleteJobResultFile(jobNumber, encodedJobFileName);
+	} catch (StringIndexOutOfBoundsException e) {
+	    log.error("Error parsing "+encodedJobFileName, e);
 	} catch (NumberFormatException e) {
 	    log.error("Error parsing " + encodedJobFileName, e);
 	} catch (WebServiceException e) {
