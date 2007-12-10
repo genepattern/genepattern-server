@@ -845,17 +845,26 @@ public class JobBean {
 	    if (parameterInfoArray != null) {
 		File outputDir = new File(GenePatternAnalysisTask.getJobDir("" + jobInfo.getJobNumber()));
 		for (int i = 0; i < parameterInfoArray.length; i++) {
-		    if (parameterInfoArray[i].isOutputFile()) {
-			if (showExecutionLogs || !parameterInfoArray[i].getName().equals(GPConstants.TASKLOG)) {
-			    File file = new File(outputDir, parameterInfoArray[i].getName());
-			    String kind = SemanticUtil.getKind(file);
-			    Collection<TaskInfo> modules = kindToModules.get(kind);
-			    OutputFileInfo pInfo = new OutputFileInfo(parameterInfoArray[i], file, modules, jobInfo
-				    .getJobNumber(), kind);
-			    pInfo.setSelected(selectedFiles.contains(pInfo.getValue()));
-			    outputFiles.add(pInfo);
+			if (parameterInfoArray[i].isOutputFile()) {
+				boolean isTaskLog = (parameterInfoArray[i].getName().equals(GPConstants.TASKLOG)
+							|| parameterInfoArray[i].getName().endsWith(GPConstants.PIPELINE_TASKLOG_ENDING));
+				
+				if (showExecutionLogs || !isTaskLog) {
+					File file = new File(outputDir, parameterInfoArray[i].getName());
+					String kind = SemanticUtil.getKind(file);
+					Collection<TaskInfo> modules;
+
+					if (parameterInfoArray[i].getName().equals(GPConstants.TASKLOG)){
+						modules = new ArrayList<TaskInfo>();
+					} else {
+						modules = kindToModules.get(kind);
+					}
+					OutputFileInfo pInfo = new OutputFileInfo(parameterInfoArray[i], file, modules, jobInfo
+							.getJobNumber(), kind);
+					pInfo.setSelected(selectedFiles.contains(pInfo.getValue()));
+					outputFiles.add(pInfo);
+				}
 			}
-		    }
 		}
 	    }
 
@@ -1155,15 +1164,15 @@ public class JobBean {
 		    kvp.setValue(displayValue);
 
 		    if (fileFormats.size() == 0) {
-			unannotatedParameters.add(kvp);
+		    	unannotatedParameters.add(kvp);
 		    }
 		    for (String format : fileFormats) {
-			List<KeyValuePair> inputParameterNames = kindToInputParameters.get(format);
-			if (inputParameterNames == null) {
-			    inputParameterNames = new ArrayList<KeyValuePair>();
-			    kindToInputParameters.put(format, inputParameterNames);
-			}
-			inputParameterNames.add(kvp);
+				List<KeyValuePair> inputParameterNames = kindToInputParameters.get(format);
+				if (inputParameterNames == null) {
+				    inputParameterNames = new ArrayList<KeyValuePair>();
+				    kindToInputParameters.put(format, inputParameterNames);
+				}
+				inputParameterNames.add(kvp);
 		    }
 		}
 	    }
@@ -1180,10 +1189,11 @@ public class JobBean {
 	for (JobResultsWrapper job : recentJobs) {
 	    List<OutputFileInfo> outputFiles = job.getOutputFileParameterInfos();
 	    if (outputFiles != null) {
-		for (OutputFileInfo o : outputFiles) {
+		for (OutputFileInfo o : outputFiles) {	
 		    List<KeyValuePair> moduleInputParameters = kindToInputParameters.get(o.getKind());
+		    
 		    if (moduleInputParameters == null) {
-			moduleInputParameters = unannotatedParameters;
+		    	moduleInputParameters = unannotatedParameters;
 		    }
 		    o.moduleInputParameters = moduleInputParameters;
 		}

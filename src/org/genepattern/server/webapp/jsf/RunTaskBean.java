@@ -340,8 +340,8 @@ public class RunTaskBean {
 			for (String format : fileFormats) {
 			    List<String> inputParameterNames = kindToInputParameters.get(p.getName());
 			    if (inputParameterNames == null) {
-				inputParameterNames = new ArrayList<String>();
-				kindToInputParameters.put(format, inputParameterNames);
+			    	inputParameterNames = new ArrayList<String>();
+			    	kindToInputParameters.put(format, inputParameterNames);
 			    }
 			    inputParameterNames.add(p.getName());
 
@@ -367,7 +367,7 @@ public class RunTaskBean {
 				outputFileParameters.add(0, p);
 			    } else if (!p.getName().equals(GPConstants.STDERR)
 				    && !p.getName().equals(GPConstants.STDOUT)) {
-				outputFileParameters.add(p);
+			    	outputFileParameters.add(p);
 			    }
 			}
 
@@ -382,14 +382,18 @@ public class RunTaskBean {
 				    // XXX use first match if kind matches more
 				    // than one input parameter
 				    String inputParameterName = inputParameterNames.get(0);
+				 
 				    if (!reloadValues.containsKey(inputParameterName)) {
-					String value = outputParameter.getValue();
-					int index = StringUtils.lastIndexOfFileSeparator(value);
-					String jobNumber = value.substring(0, index);
-					String filename = value.substring(index + 1);
+				    	String value = outputParameter.getValue();
+				    	if (value.endsWith(GPConstants.TASKLOG) 
+								|| value.endsWith(GPConstants.PIPELINE_TASKLOG_ENDING)) break;
+						
+				    	int index = StringUtils.lastIndexOfFileSeparator(value);
+				    	String jobNumber = value.substring(0, index);
+				    	String filename = value.substring(index + 1);
 
-					reloadValues.put(inputParameterName, UIBeanHelper.getServer() + "/jobResults/"
-						+ jobNumber + "/" + UIBeanHelper.encode(filename));
+				    	reloadValues.put(inputParameterName, UIBeanHelper.getServer() + "/jobResults/"
+				    			+ jobNumber + "/" + UIBeanHelper.encode(filename));
 				    }
 
 				}

@@ -288,6 +288,7 @@ public class GPConstants {
      * filename of well-known file that may be output by a job, representing the provenance data of the process
      */
     public static final String TASKLOG = "gp_execution_log.txt";
+    public static final String PIPELINE_TASKLOG_ENDING = "_execution_log.html";
 
     /**
      * fileextension of ODF
