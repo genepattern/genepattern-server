@@ -368,7 +368,7 @@ public class SuiteCatalogBean {
 				String id = suiteLsid.getIdentifier();
 				String ver = suiteLsid.getVersion();
 				String name = getName();
-				String filePath = name + "/" + auth+":"+ns+"/"+id+"/"+ver+"/";
+				String filePath = "/"+ name + "/" + auth+":"+ns+"/"+id+"/"+ver+"/";
 				url = suiteUrl + "/"+ catEnv + "/download/?file=" +filePath + name + ".zip";
 				
 			} catch (MalformedURLException e) {
