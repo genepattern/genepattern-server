@@ -18,7 +18,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 
 import javax.faces.event.ActionEvent;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.EncryptionUtil;
@@ -48,60 +47,51 @@ public class LoginBean {
     private boolean createAccountAllowed;
 
     public LoginBean() {
-	String prop = System.getProperty("require.password", "false").toLowerCase();
-	passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
+        String prop = System.getProperty("require.password", "false").toLowerCase();
+        passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
 
-	String createAccountAllowedProp = System.getProperty("create.account.allowed", "true").toLowerCase();
-	createAccountAllowed = (createAccountAllowedProp.equals("true") || createAccountAllowedProp.equals("y") || createAccountAllowedProp
-		.equals("yes"));
-
-	String usernameInRequest = UIBeanHelper.getRequest().getParameter("username");
-
-	if (usernameInRequest != null && !usernameInRequest.equals("")) {
-	    username = usernameInRequest;
-	    password = UIBeanHelper.getRequest().getParameter("password");
-	    if (password == null) {
-		password = "";
-	    }
-	    submitLogin(null);
-	}
+        String createAccountAllowedProp = System.getProperty("create.account.allowed", "true").toLowerCase();
+        createAccountAllowed = 
+            createAccountAllowedProp.equals("true") || 
+            createAccountAllowedProp.equals("y") || 
+            createAccountAllowedProp.equals("yes");
     }
 
     public String getPassword() {
-	return this.password;
+        return this.password;
     }
 
     public String getUsername() {
-	return username;
+        return username;
     }
 
     public boolean isCreateAccountAllowed() {
-	return createAccountAllowed;
+        return createAccountAllowed;
     }
 
     public boolean isInvalidPassword() {
-	return invalidPassword;
+        return invalidPassword;
     }
 
     public boolean isPasswordRequired() {
-	return passwordRequired;
+        return passwordRequired;
     }
 
     public boolean isUnknownUser() {
-	return unknownUser;
+        return unknownUser;
     }
 
     public String logout() {
-	UIBeanHelper.logout();
-	return "logout";
+        UIBeanHelper.logout();
+        return "logout";
     }
 
     public void setPassword(String password) {
-	this.password = password;
+        this.password = password;
     }
 
     public void setUsername(String username) {
-	this.username = username;
+        this.username = username;
     }
 
     /**
@@ -118,38 +108,46 @@ public class LoginBean {
 	    if (up == null) {
 		if (passwordRequired) {
 		    unknownUser = true;
-		} else {
+		} 
+		else {
 		    createNewUserNoPassword(username);
 		    try {
-			UIBeanHelper.login(username, false);
-		    } catch (UnsupportedEncodingException e) {
-			log.error(e);
-		    } catch (IOException e) {
-			log.error(e);
+		        UIBeanHelper.login(username, false);
+		    } 
+		    catch (UnsupportedEncodingException e) {
+		        log.error(e);
+		    } 
+		    catch (IOException e) {
+		        log.error(e);
 		    }
 		}
-	    } else if (passwordRequired) {
-		if (!java.util.Arrays.equals(EncryptionUtil.encrypt(password), up.getPassword())) {
-		    invalidPassword = true;
-		} else {
-		    UIBeanHelper.login(username, passwordRequired);
-		}
-	    } else {
-		UIBeanHelper.login(username, passwordRequired);
+	    } 
+	    else if (passwordRequired) {
+	        if (!java.util.Arrays.equals(EncryptionUtil.encrypt(password), up.getPassword())) {
+	            invalidPassword = true;
+	        } 
+	        else {
+	            UIBeanHelper.login(username, passwordRequired);
+	        }
+	    } 
+	    else {
+	        UIBeanHelper.login(username, passwordRequired);
 	    }
-	} catch (UnsupportedEncodingException e) {
+	} 
+	catch (UnsupportedEncodingException e) {
 	    log.error(e);
 	    throw new RuntimeException(e); // @TODO -- wrap in gp system
 	    // exeception.
-	} catch (IOException e) {
+	} 
+	catch (IOException e) {
 	    log.error(e);
 	    throw new RuntimeException(e); // @TODO -- wrap in gp system
 	    // exeception.
-	} catch (NoSuchAlgorithmException e) {
+	} 
+	catch (NoSuchAlgorithmException e) {
 	    log.error(e);
 	    throw new RuntimeException(e); // @TODO -- wrap in gp system
 	    // exeception.
-
 	}
     }
 
