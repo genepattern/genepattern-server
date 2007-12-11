@@ -29,6 +29,11 @@ public class EncryptionUtil {
      * Property name for the key used to lookup the dynamically generated key for mapping a
      */
     public static final String PROP_PIPELINE_USER_KEY = "pipeline.user.key";
+    
+    /**
+     * Cache the result of encrypted the empty string ("").
+     */
+    private static byte[] EMPTY = new byte[0];
 
     private EncryptionUtil() {
     }
@@ -117,6 +122,26 @@ public class EncryptionUtil {
             encryptedString[i] = digestedString[i];
         }
         return encryptedString;
+    }
+    
+    /**
+     * Check if the given encrypted password was encrypted from the empty string ("").
+     * Note this method is not thread safe because it uses lazy initialization for
+     * the EMPTY test case.
+     * @param encryptedPassword
+     * @return
+     */
+    public static boolean isEmpty(byte[] encryptedPassword) {
+        if (EMPTY.length == 0) {
+            try {
+                EMPTY = encrypt("");
+            }
+            catch (NoSuchAlgorithmException e) {
+                log.error(e.getLocalizedMessage(), e);
+                return false;
+            }
+        }
+        return Arrays.equals(EMPTY, encryptedPassword);
     }
 
     /**

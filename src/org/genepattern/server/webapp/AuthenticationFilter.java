@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
@@ -92,6 +93,15 @@ public class AuthenticationFilter implements Filter {
         }
 
         if (isAuthenticated((HttpServletRequest) request, (HttpServletResponse) response)) {
+            if (isChangePasswordRequired((HttpServletRequest) request, (HttpServletResponse) response)) {
+                if (requestedURI.contains("requireChangePassword")) {
+                    chain.doFilter(request, response);
+                }
+                else {
+                    redirectToPage((HttpServletRequest) request, (HttpServletResponse) response, "/pages/requireChangePassword.jsf");
+                }
+                return;
+            }
             boolean origin = req.getParameter("origin") != null;
             for (int i = 0, length = noAuthorizationRequiredPagesRedirect.length; i < length; i++) {
                 if (requestedURI.contains(noAuthorizationRequiredPagesRedirect[i])) {
@@ -104,7 +114,8 @@ public class AuthenticationFilter implements Filter {
                 }
             }
             chain.doFilter(request, response);
-        } else {
+        }
+        else {
             // escape valve for pages that do not require authentication
             for (int i = 0, length = noAuthorizationRequiredPages.length; i < length; i++) {
                 if (requestedURI.contains(noAuthorizationRequiredPages[i])) {
@@ -169,6 +180,9 @@ public class AuthenticationFilter implements Filter {
     }
 
     public void redirectToLoginPage(HttpServletRequest request, HttpServletResponse response) {
+        redirectToPage(request, response, loginPage);
+    }
+    public void redirectToPage(HttpServletRequest request, HttpServletResponse response, String page) {
         String currentURL = request.getRequestURI();
         // get everything after the context root
         int firstSlash = currentURL.indexOf("/", 1); // jump past the
@@ -194,7 +208,7 @@ public class AuthenticationFilter implements Filter {
 
             String contextPath = request.getContextPath();
             String basePath = request.getScheme() + "://" + fqHostName + ":" + request.getServerPort() + contextPath;
-            String fullQualifiedLoginPage = basePath + loginPage;
+            String fullyQualifiedPage = basePath + page;
 
             if (basePath.charAt(basePath.length() - 1) != '/') {
                 if (targetURL != null && targetURL.length() >= 1 && targetURL.charAt(0) != '/') {
@@ -203,14 +217,11 @@ public class AuthenticationFilter implements Filter {
             }
             targetURL = basePath + targetURL;
 
-            if (targetURL != null && !targetURL.contains(loginPage)) { // don't
-                // redirect
-                // back to
-                // login
-                // page
+            if (targetURL != null && !targetURL.contains(page)) { 
+                // don't redirect back to page
                 request.getSession().setAttribute("origin", targetURL);
             }
-            response.sendRedirect(fullQualifiedLoginPage);
+            response.sendRedirect(fullyQualifiedPage);
         } catch (IOException ioe) {
             ioe.printStackTrace();
         }
@@ -257,9 +268,27 @@ public class AuthenticationFilter implements Filter {
             return true;
         }
         return false;
-
     }
+    
+    protected boolean isChangePasswordRequired(HttpServletRequest request, HttpServletResponse response) {
+        if (!passwordRequired) {
+            return false;
+        }
+        String userId = getUserId(request);
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            HibernateUtil.beginTransaction();
+            User user = new UserDAO().findById(userId);
+            HibernateUtil.commitTransaction();
 
+            //check for users with empty passwords
+            if (user != null && EncryptionUtil.isEmpty(user.getPassword())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /**
      * check whether this is just the servlet engine precompiling jsp pages.
      * This must be a request coming from the localhost, with only the one
