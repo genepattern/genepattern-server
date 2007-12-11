@@ -82,7 +82,7 @@
           <t:validateEmail/>
         </t:inputText>
         <h:outputLabel rendered="#{registrationBean.showTermsOfService}" value="Terms of Service:" for="termsOfService"/>
-        <t:inputTextarea rendered="#{registrationBean.showTermsOfService}" cols="48" rows="8" value="#{registrationBean.termsOfService}" />
+        <t:inputTextarea rendered="#{registrationBean.showTermsOfService}" readonly="true" cols="48" rows="8" value="#{registrationBean.termsOfService}" />
         &#160;
         <h:panelGroup>
         <h:selectBooleanCheckbox title="emailUpdates"  value="#{registrationBean.joinMailingList}" >
