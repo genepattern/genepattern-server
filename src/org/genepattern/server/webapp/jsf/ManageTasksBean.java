@@ -93,6 +93,7 @@ public class ManageTasksBean {
 		try {
 		    taskIntegratorClient.deleteTask(lsid);
 		} catch (Exception e) {
+			e.printStackTrace();
 		    log.error(e);
 		    throw new RuntimeException(e);
 		}
@@ -134,8 +135,8 @@ public class ManageTasksBean {
 	    String lsidNoVersion = lSID.toStringNoVersion();
 	    TaskGroup taskGroup = indexedTasks.get(lsidNoVersion);
 	    if (taskGroup == null) {
-		taskGroup = new TaskGroup(ti);
-		indexedTasks.put(lsidNoVersion, taskGroup);
+	    	taskGroup = new TaskGroup(ti);
+	    	indexedTasks.put(lsidNoVersion, taskGroup);
 	    }
 	    taskGroup.addVersionInfo(indexedTasks, ti);
 	}
@@ -181,6 +182,7 @@ public class ManageTasksBean {
 		    }
 		}
 	    });
+	    
 	    lsidNoVersion = getLSID(ti.getLsid()).toStringNoVersion();
 	    description = ti.getDescription();
 
@@ -194,11 +196,13 @@ public class ManageTasksBean {
 	 * @param taskInfo
 	 */
 	public void addVersionInfo(HashMap<String, TaskGroup> indexedTasks, TaskInfo taskInfo) {
-	    String lsid = taskInfo.getLsid();
+	    String lsid = taskInfo.getLsid();//+ "." + taskInfo.getID();
+	    String key = taskInfo.getLsid() + "." + taskInfo.getID();
 	    VersionInfo versionInfo = new VersionInfo(taskInfo);
-	    indexedVersions.put(lsid, versionInfo);
-
-	    if (taskInfo.isPipeline()) {
+	    indexedVersions.put(key, versionInfo);// changed to include id jtl 12/11/07
+	    
+	    
+if (taskInfo.isPipeline()) {
 		TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
 		String xml = (String) tia.get(GPConstants.SERIALIZED_MODEL);
 		PipelineModel model = null;
@@ -212,8 +216,10 @@ public class ManageTasksBean {
 		Map<String, String> mDependencies = model.getLsidDependencies(); // LSID/Vector
 
 		for (Iterator<String> itSubTasks = mDependencies.keySet().iterator(); itSubTasks.hasNext();) {
-		    String keyLsid = itSubTasks.next();
-		    String lsidNoVersion = getLSID(keyLsid).toStringNoVersion();
+			String keyLsid = itSubTasks.next();
+		    LSID subtaskLsid = getLSID(keyLsid);
+			 
+		    String lsidNoVersion = subtaskLsid.toStringNoVersion();
 
 		    try {
 			TaskInfo subTask = adminClient.getTask(keyLsid);
@@ -221,7 +227,10 @@ public class ManageTasksBean {
 			    TaskGroup taskGroup = (indexedTasks.containsKey(lsidNoVersion)) ? indexedTasks
 				    .get(lsidNoVersion) : new TaskGroup(subTask);
 			    taskGroup.addVersionInfo(indexedTasks, subTask);
-			    taskGroup.setPipelineName(keyLsid, taskInfo);
+			    String itKey = keyLsid + "." + subTask.getID();
+				   
+			    //taskGroup.setPipelineName(keyLsid, taskInfo);
+			    taskGroup.setPipelineName(itKey, taskInfo);
 			    indexedTasks.put(lsidNoVersion, taskGroup);
 			}
 		    } catch (WebServiceException e) {
@@ -283,9 +292,10 @@ public class ManageTasksBean {
 	}
 
 	private void setPipelineName(String lsid, TaskInfo ti) {
-	    indexedVersions.get(lsid).addPipelineName(ti);
-	}
-
+		VersionInfo vi = indexedVersions.get(lsid);
+		if (vi != null)
+			vi.addPipelineName(ti);
+	    }
     }
 
     public static class VersionInfo {

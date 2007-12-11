@@ -245,17 +245,20 @@ public class TaskIntegrator {
      *                    If an error occurs
      */
     public void deleteTask(String lsid) throws WebServiceException {
-	isTaskOwnerOrAuthorized(getUserName(), lsid, "adminModules");
+    	String username = getUserName();
+    	 
+	isTaskOwnerOrAuthorized(username, lsid, "adminModules");
 	if (lsid == null || lsid.equals("")) {
 	    throw new WebServiceException("Invalid LSID");
 	}
-	String username = getUserName();
 	try {
 	    TaskInfo taskInfo = new LocalAdminClient(username).getTask(lsid);
+	    
 	    if (taskInfo == null) {
-		throw new WebServiceException("no such module " + lsid);
+	    	throw new WebServiceException("no such module " + lsid);
 	    }
 	    String moduleDirectory = DirectoryManager.getTaskLibDir(taskInfo);
+	    
 	    GenePatternAnalysisTask.deleteTask(lsid);
 	    Delete del = new Delete();
 	    del.setDir(new File(moduleDirectory));
@@ -263,6 +266,7 @@ public class TaskIntegrator {
 	    del.setProject(new Project());
 	    del.execute();
 	} catch (Throwable e) {
+		e.printStackTrace();
 	    log.error(e);
 	    throw new WebServiceException("while deleting module " + lsid, e);
 	}
@@ -1273,7 +1277,7 @@ public class TaskIntegrator {
     }
 
     private boolean isTaskOwner(String user, String lsid) {
-	TaskMaster tm = (new TaskMasterDAO()).findByIdLsid(lsid);
+	TaskMaster tm = (new TaskMasterDAO()).findByIdLsid(lsid, user);
 	if (tm == null)
 	    return false; // can't own what you can't see
 	return user.equals(tm.getUserId());

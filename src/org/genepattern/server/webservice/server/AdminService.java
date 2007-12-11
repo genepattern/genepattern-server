@@ -140,6 +140,7 @@ public class AdminService implements IAdminService {
 
         try {
             TaskInfo taskInfo = adminDAO.getTask(lsidOrTaskName, getUserName());
+           
             if (taskInfo != null) {
                 if (!(taskInfo.getAccessId() == GPConstants.ACCESS_PUBLIC || taskInfo.getUserId().equals(getUserName()))) {
                     if (!AuthorizationHelper.adminModules(getUserName())) {
@@ -147,6 +148,8 @@ public class AdminService implements IAdminService {
                                 "You do not have the required permissions to get the requested module.");
                     }
                 }
+            } else if (AuthorizationHelper.adminModules(getUserName())){
+            	taskInfo = adminDAO.getTask(lsidOrTaskName, null);
             }
             return taskInfo;
         } catch (OmnigeneException e) {

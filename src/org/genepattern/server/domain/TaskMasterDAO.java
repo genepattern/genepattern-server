@@ -42,11 +42,20 @@ public class TaskMasterDAO extends BaseDAO {
         }
     }
 
-    public TaskMaster findByIdLsid(String lsid) {
+    public TaskMaster findByIdLsid(String lsid, String user) {
         String hql = "from org.genepattern.server.domain.TaskMaster where lsid = :lsid";
         Query query = HibernateUtil.getSession().createQuery(hql);
         query.setString("lsid", lsid);
-        return (TaskMaster) query.uniqueResult();
+        List<TaskMaster> matches = query.list();
+        
+        if (matches.size() ==1) return matches.get(0);
+        
+        for (TaskMaster aTask: matches){
+        	if (aTask.getUserId().equals(user)) return aTask;
+        	
+        }
+        
+        return (TaskMaster) null;
     }
 
     public List<TaskMaster> findAll() {
