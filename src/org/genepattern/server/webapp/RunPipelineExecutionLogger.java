@@ -215,8 +215,16 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
 
 			String pValue = aParam.getValue();
          	boolean hasInputURL = pValue .startsWith("<GenePatternURL>");
-
-            isInputFile = aParam.isInputFile();
+         	boolean isExternalURL = false;
+         	try {
+				URL url = new URL(pValue);
+				if (!url.getProtocol().startsWith("file"))
+					isExternalURL = true;
+			} catch (MalformedURLException e) {
+				isExternalURL = false;
+			}
+         	
+         	isInputFile = aParam.isInputFile();
             if (!isInputFile
 					&& !aParam.isOutputFile()
 					&& paramType != null
@@ -241,6 +249,7 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
                 logWriter.print("<a href=\"");
                 logWriter.print(localizeURL(pValue));
                 logWriter.print("\">");
+           	
 				if (hasInputURL ){
 					int nidx = pValue.indexOf("file=");
 					int endNidx = pValue.indexOf("&", nidx);
@@ -248,9 +257,14 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
 
 					if (nidx > 0) {
 						pValue = pValue.substring(nidx+5, endNidx);
-					}
-				}
-            }
+					} 
+				} else if (isExternalURL){
+	            	int endUrlPathIdx = pValue.lastIndexOf('/');
+					pValue = pValue.substring(endUrlPathIdx+1);
+					 	
+	            }
+            } 
+		   
             logWriter.print(htmlEncode(localizeURL(pValue)));
 
             if (isInputFile) {
