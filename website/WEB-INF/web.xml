@@ -56,7 +56,7 @@
   <init-param>
   <!-- List of jsf pages that user can access if not logged in. If user requests one of these pages while logged in, he goes to the requested page. -->
    <param-name>no.login.required</param-name>
-   <param-value>about.jsf,contactUs.jsf, registerServer.jsf, contactUs.jsf, registerServer.jsf, unregisteredServer.jsf</param-value>
+   <param-value>about.jsf,contactUs.jsf, registerServer.jsf, contactUs.jsf, registerServer.jsf, unregisteredServer.jsf, terms.jsf</param-value>
   </init-param>
   <init-param>
    <param-name>login.page</param-name>

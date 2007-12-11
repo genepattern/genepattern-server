@@ -54,35 +54,42 @@
       <h:panelGrid columns="2">
         <h:outputLabel value="Username:" for="username"/>
         <t:inputText size="50" value="#{registrationBean.username}" id="username"
-                     forceId="true" 
                      required="true" requiredMessage="Username is required" 
-                     validator="#{registrationBean.validateNewUsername}"/>
+                     validator="#{registrationBean.validateNewUsername}">
+           <f:attribute name="forceId" value="true"/>
+        </t:inputText>
                      
         <h:outputLabel value="Password:" for="password"/>
         <t:inputSecret size="50" value="#{registrationBean.password}" id="password" 
-                       forceId="true" 
-                       required="true" requiredMessage="Password is required" validator="#{registrationBean.validatePassword}"/>
+                       required="true" requiredMessage="Password is required" validator="#{registrationBean.validatePassword}">
+           <f:attribute name="forceId" value="true"/>
+        </t:inputSecret>
                        
         <h:outputLabel value="Re-enter password:" for="passwordConfirm"/>
         <t:inputSecret size="50" value="#{registrationBean.passwordConfirm}" id="passwordConfirm" 
-                       forceId="true" 
-                       binding="#{registrationBean.passwordConfirmComponent}"/>
+                       binding="#{registrationBean.passwordConfirmComponent}">
+           <f:attribute name="forceId" value="true"/>
+        </t:inputSecret>
                        
         <h:outputLabel value="Email:" for="email"/>
         <t:inputText size="50" value="#{registrationBean.email}" id="email" 
-                     forceId="true" 
                      required="true" requiredMessage="Email is required" validator="#{registrationBean.validateEmail}">
-          <t:validateEmail/>
+           <t:validateEmail/>
+           <f:attribute name="forceId" value="true"/>
         </t:inputText>
         
         <h:outputLabel value="Re-enter email:" for="emailConfirm"/>
         <t:inputText size="50" value="#{registrationBean.emailConfirm}" id="emailConfirm" 
-                     forceId="true" 
                      binding="#{registrationBean.emailConfirmComponent}">
-          <t:validateEmail/>
+           <t:validateEmail/>
+           <f:attribute name="forceId" value="true"/>
         </t:inputText>
         <h:outputLabel rendered="#{registrationBean.showTermsOfService}" value="Terms of Service:" for="termsOfService"/>
-        <t:inputTextarea rendered="#{registrationBean.showTermsOfService}" readonly="true" cols="48" rows="8" value="#{registrationBean.termsOfService}" />
+        <t:div id="termsOfService" rendered="#{registrationBean.showTermsOfService}" >
+          <h:outputText value="By clicking on 'I accept' below you are agreeing to the " />
+          <h:outputLink target="_blank" value="/gp/pages/terms.jsf"><h:outputText value="Terms of Service and Privacy Statement" /></h:outputLink>
+          <h:outputText value="." />
+        </t:div>
         &#160;
         <h:panelGroup>
         <h:selectBooleanCheckbox title="emailUpdates"  value="#{registrationBean.joinMailingList}" >
@@ -90,8 +97,8 @@
 		<h:outputText value="Add me to the GenePattern users mailing list"/>
         </h:panelGroup>
 		&#160;
-      <h:commandButton value="Create Account" class="little" actionListener="#{registrationBean.registerUser}"/>
-      
+        <h:commandButton rendered="#{registrationBean.showTermsOfService}" value="I accept. Create account." class="little" actionListener="#{registrationBean.registerUser}"/>
+        <h:commandButton rendered="#{not registrationBean.showTermsOfService}" value="Create account." class="little" actionListener="#{registrationBean.registerUser}"/>
         
       </h:panelGrid>
     </h:form>
