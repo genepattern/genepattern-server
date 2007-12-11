@@ -51,18 +51,18 @@
 
 			<h:outputText
 				value="Unknown username.  Click the registration link to create a new account."
-				style="color: red; font-weight: old;"
+				style="color: red; font-weight: bold;"
 				rendered="#{loginBean.unknownUser and loginBean.createAccountAllowed}" />
 		
 			<h:outputText
 				value="Unknown username."
-				style="color: red; font-weight: old;"
+				style="color: red; font-weight: bold;"
 				rendered="#{loginBean.unknownUser and !loginBean.createAccountAllowed}" />
 			
 
 			<h:outputText value="Invalid password"
 				rendered="#{loginBean.invalidPassword}"
-				style="color: red; font-weight: old;" />
+				style="color: red; font-weight: bold;" />
 
 			<h:panelGrid columns="2">
 				<h:outputLabel value="Username:" for="username"></h:outputLabel>
