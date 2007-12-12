@@ -33,6 +33,7 @@ import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.WebServiceErrorMessageException;
 import org.genepattern.webservice.WebServiceException;
 
@@ -209,7 +210,7 @@ public class ImportBean {
                     if (e instanceof WebServiceErrorMessageException) {
                         WebServiceErrorMessageException wseme = (WebServiceErrorMessageException) e;
 
-                        installBean.setStatus(lsid, "error", wseme.getMessage());
+                        installBean.setStatus(lsid, "error", StringUtils.htmlEncode(wseme.getMessage()));
 
                     } else {
                         installBean.setStatus(lsid, "error");
