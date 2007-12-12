@@ -18,7 +18,9 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.genepattern.util.GPConstants;
@@ -40,6 +42,11 @@ import org.genepattern.webservice.WebServiceException;
  * @author Joshua Gould
  */
 public class GPClient {
+    /**
+     * number of modules to cache.
+     */
+    protected final static int MAX_ENTRIES = 50;
+
     protected final String server; // e.g. http://localhost:8080
 
     protected final String username;
@@ -50,11 +57,6 @@ public class GPClient {
      * LRU cache of tasks.
      */
     protected Map<String, TaskInfo> cachedTasks;
-
-    /**
-     * number of modules to cache.
-     */
-    protected final static int MAX_ENTRIES = 50;
 
     protected AdminProxy adminProxy;
 
@@ -100,143 +102,6 @@ public class GPClient {
 	    throw new WebServiceException(e);
 	}
 
-    }
-
-    /**
-     * Gets the server.
-     * 
-     * @return The server
-     */
-    public String getServer() {
-	return server;
-    }
-
-    /**
-     * Gets the username.
-     * 
-     * @return The username.
-     */
-    public String getUsername() {
-	return username;
-    }
-
-    private TaskInfo getTask(String lsid) throws WebServiceException {
-	TaskInfo taskInfo = cachedTasks.get(lsid);
-	if (taskInfo == null) {
-	    try {
-		taskInfo = adminProxy.getTask(lsid);
-	    } catch (Exception e) {
-		throw new WebServiceException(e);
-	    }
-	    if (taskInfo == null) {
-		throw new WebServiceException(lsid + " not found on server.");
-	    }
-	    cachedTasks.put(lsid, taskInfo);
-	}
-	return taskInfo;
-    }
-
-    /**
-     * submit a job based on a service and its parameters
-     * 
-     * @param parmInfos
-     *                Description of the Parameter
-     * @param handler
-     *                Description of the Parameter
-     * @param tinfo
-     *                Description of the Parameter
-     * @return Description of the Return Value
-     * @throws org.genepattern.webservice.WebServiceException
-     *                 Description of the Exception
-     */
-    private AnalysisJob submitJob(AnalysisWebServiceProxy handler, TaskInfo tinfo, ParameterInfo[] parmInfos)
-	    throws org.genepattern.webservice.WebServiceException {
-	final JobInfo job = handler.submitJob(tinfo.getID(), parmInfos);
-	final AnalysisJob aJob = new AnalysisJob(server, job);
-	return aJob;
-    }
-
-    /**
-     * Wait for a job to end or error.
-     * 
-     * @param job
-     *                Description of the Parameter
-     * @param handler
-     *                Description of the Parameter
-     * @throws org.genepattern.webservice.WebServiceException
-     *                 Description of the Exception
-     */
-    private static void waitForErrorOrCompletion(AnalysisWebServiceProxy handler, AnalysisJob job)
-	    throws org.genepattern.webservice.WebServiceException {
-	int maxtries = 20;
-	int sleep = 1000;
-	waitForErrorOrCompletion(handler, job, maxtries, sleep);
-    }
-
-    private static void waitForErrorOrCompletion(AnalysisWebServiceProxy handler, AnalysisJob job, int maxTries,
-	    int initialSleep) throws org.genepattern.webservice.WebServiceException {
-	String status = "";
-	JobInfo info = null;
-	int count = 0;
-	int sleep = initialSleep;
-	while (!(status.equalsIgnoreCase("Error") || (status.equalsIgnoreCase("Finished")))) {
-	    count++;
-	    try {
-		Thread.sleep(sleep);
-	    } catch (InterruptedException ie) {
-	    }
-	    info = handler.checkStatus(job.getJobInfo().getJobNumber());
-	    job.setJobInfo(info);
-	    status = info.getStatus();
-	    sleep = incrementSleep(initialSleep, maxTries, count);
-	}
-    }
-
-    /**
-     * Returns the url to retrieve the given file as part of the given module.
-     * 
-     * @param moduleNameOrLsid
-     *                The module name or LSID of the module that contains the file. When an LSID is provided that does
-     *                not include a version, the latest available version of the module identified by the LSID will be
-     *                used. If a module name is supplied, the latest version of the module with the nearest authority is
-     *                selected. The nearest authority is the first match in the sequence: local authority, Broad
-     *                authority, other authority.
-     * @param fileName
-     *                The file name.
-     * @return The url.
-     */
-    public URL getModuleFileUrl(String moduleNameOrLsid, String fileName) {
-	try {
-	    return new URL(server + "/gp/getFile.jsp?task=" + moduleNameOrLsid + "&file="
-		    + URLEncoder.encode(fileName, "UTF-8"));
-	} catch (java.net.MalformedURLException x) {
-	    throw new Error(x);
-	} catch (UnsupportedEncodingException x) {
-	    throw new Error(x);
-	}
-    }
-
-    /**
-     * Checks if the given job is complete.
-     * 
-     * @param jobNumber
-     *                the job number
-     * @return <tt>true</tt> if the job with the given job number is complete, <tt>false</tt> otherwise
-     * @throws WebServiceException
-     *                 If an error occurs
-     */
-    public boolean isComplete(int jobNumber) throws WebServiceException {
-	try {
-	    AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, username, password, false);
-	    analysisProxy.setTimeout(Integer.MAX_VALUE);
-	    JobInfo ji = analysisProxy.checkStatus(jobNumber);
-	    if (ji == null) {
-		throw new WebServiceException("The job number " + jobNumber + " was not found.");
-	    }
-	    return ji.getStatus().equalsIgnoreCase("finished") || ji.getStatus().equalsIgnoreCase("error");
-	} catch (Exception x) {
-	    throw new WebServiceException(x);
-	}
     }
 
     /**
@@ -301,6 +166,30 @@ public class GPClient {
     }
 
     /**
+     * Returns the url to retrieve the given file as part of the given module.
+     * 
+     * @param moduleNameOrLsid
+     *                The module name or LSID of the module that contains the file. When an LSID is provided that does
+     *                not include a version, the latest available version of the module identified by the LSID will be
+     *                used. If a module name is supplied, the latest version of the module with the nearest authority is
+     *                selected. The nearest authority is the first match in the sequence: local authority, Broad
+     *                authority, other authority.
+     * @param fileName
+     *                The file name.
+     * @return The url.
+     */
+    public URL getModuleFileUrl(String moduleNameOrLsid, String fileName) {
+	try {
+	    return new URL(server + "/gp/getFile.jsp?task=" + moduleNameOrLsid + "&file="
+		    + URLEncoder.encode(fileName, "UTF-8"));
+	} catch (java.net.MalformedURLException x) {
+	    throw new Error(x);
+	} catch (UnsupportedEncodingException x) {
+	    throw new Error(x);
+	}
+    }
+
+    /**
      * Returns the array of parameters for the specified module name or lsid.
      * 
      * @param moduleNameOrLsid
@@ -322,36 +211,43 @@ public class GPClient {
     }
 
     /**
-     * Submits the given module with the given parameters and does not wait for the job to complete.
+     * Gets the server.
      * 
-     * @param moduleNameOrLsid
-     *                The module name or LSID. When an LSID is provided that does not include a version, the latest
-     *                available version of the task identified by the LSID will be used. If a module name is supplied,
-     *                the latest version of the module with the nearest authority is selected. The nearest authority is
-     *                the first match in the sequence: local authority, Broad authority, other authority.
-     * @param parameters
-     *                The parameters to run the module with.
-     * @return The job number.
-     * @throws WebServiceException
-     *                 If an error occurs during the job submission process.
-     * @see #isComplete
-     * @see #createJobResult
+     * @return The server
      */
-    public int runAnalysisNoWait(String moduleNameOrLsid, Parameter[] parameters) throws WebServiceException {
+    public String getServer() {
+	return server;
+    }
+
+    /**
+     * Gets the username.
+     * 
+     * @return The username.
+     */
+    public String getUsername() {
+	return username;
+    }
+
+    /**
+     * Checks if the given job is complete.
+     * 
+     * @param jobNumber
+     *                the job number
+     * @return <tt>true</tt> if the job with the given job number is complete, <tt>false</tt> otherwise
+     * @throws WebServiceException
+     *                 If an error occurs
+     */
+    public boolean isComplete(int jobNumber) throws WebServiceException {
 	try {
-	    TaskInfo taskInfo = getTask(moduleNameOrLsid);
-	    ParameterInfo[] actualParameters = Util.createParameterInfoArray(taskInfo, parameters);
-	    AnalysisWebServiceProxy analysisProxy = null;
-	    try {
-		analysisProxy = new AnalysisWebServiceProxy(server, username, password);
-		analysisProxy.setTimeout(Integer.MAX_VALUE);
-	    } catch (Exception x) {
-		throw new WebServiceException(x);
+	    AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, username, password, false);
+	    analysisProxy.setTimeout(Integer.MAX_VALUE);
+	    JobInfo ji = analysisProxy.checkStatus(jobNumber);
+	    if (ji == null) {
+		throw new WebServiceException("The job number " + jobNumber + " was not found.");
 	    }
-	    AnalysisJob job = submitJob(analysisProxy, taskInfo, actualParameters);
-	    return job.getJobInfo().getJobNumber();
-	} catch (org.genepattern.webservice.WebServiceException wse) {
-	    throw new WebServiceException(wse.getMessage(), wse.getRootCause());
+	    return ji.getStatus().equalsIgnoreCase("finished") || ji.getStatus().equalsIgnoreCase("error");
+	} catch (Exception x) {
+	    throw new WebServiceException(x);
 	}
     }
 
@@ -372,7 +268,7 @@ public class GPClient {
     public JobResult runAnalysis(String moduleNameOrLsid, Parameter[] parameters) throws WebServiceException {
 	try {
 	    TaskInfo taskInfo = getTask(moduleNameOrLsid);
-	    ParameterInfo[] actualParameters = Util.createParameterInfoArray(taskInfo, parameters);
+	    ParameterInfo[] actualParameters = GPClient.createParameterInfoArray(taskInfo, parameters);
 	    AnalysisWebServiceProxy analysisProxy = null;
 	    try {
 		analysisProxy = new AnalysisWebServiceProxy(server, username, password);
@@ -420,6 +316,40 @@ public class GPClient {
     }
 
     /**
+     * Submits the given module with the given parameters and does not wait for the job to complete.
+     * 
+     * @param moduleNameOrLsid
+     *                The module name or LSID. When an LSID is provided that does not include a version, the latest
+     *                available version of the task identified by the LSID will be used. If a module name is supplied,
+     *                the latest version of the module with the nearest authority is selected. The nearest authority is
+     *                the first match in the sequence: local authority, Broad authority, other authority.
+     * @param parameters
+     *                The parameters to run the module with.
+     * @return The job number.
+     * @throws WebServiceException
+     *                 If an error occurs during the job submission process.
+     * @see #isComplete
+     * @see #createJobResult
+     */
+    public int runAnalysisNoWait(String moduleNameOrLsid, Parameter[] parameters) throws WebServiceException {
+	try {
+	    TaskInfo taskInfo = getTask(moduleNameOrLsid);
+	    ParameterInfo[] actualParameters = GPClient.createParameterInfoArray(taskInfo, parameters);
+	    AnalysisWebServiceProxy analysisProxy = null;
+	    try {
+		analysisProxy = new AnalysisWebServiceProxy(server, username, password);
+		analysisProxy.setTimeout(Integer.MAX_VALUE);
+	    } catch (Exception x) {
+		throw new WebServiceException(x);
+	    }
+	    AnalysisJob job = submitJob(analysisProxy, taskInfo, actualParameters);
+	    return job.getJobInfo().getJobNumber();
+	} catch (org.genepattern.webservice.WebServiceException wse) {
+	    throw new WebServiceException(wse.getMessage(), wse.getRootCause());
+	}
+    }
+
+    /**
      * Downloads the support files for the given module from the server and executes the given module locally.
      * 
      * @param moduleNameOrLsid
@@ -434,7 +364,7 @@ public class GPClient {
      */
     public void runVisualizer(String moduleNameOrLsid, Parameter[] parameters) throws WebServiceException {
 	TaskInfo taskInfo = getTask(moduleNameOrLsid);
-	ParameterInfo[] actualParameters = Util.createParameterInfoArray(taskInfo, parameters);
+	ParameterInfo[] actualParameters = GPClient.createParameterInfoArray(taskInfo, parameters);
 	Map<String, String> paramName2ValueMap = new HashMap<String, String>();
 	if (actualParameters != null) {
 	    for (int i = 0; i < actualParameters.length; i++) {
@@ -445,6 +375,7 @@ public class GPClient {
 	    final TaskExecutor executor = new LocalTaskExecutor(taskInfo, paramName2ValueMap, username, password,
 		    server);
 	    new Thread() {
+		@Override
 		public void run() {
 		    try {
 			executor.exec();
@@ -456,6 +387,105 @@ public class GPClient {
 	} catch (Exception x) {
 	    throw new WebServiceException(x);
 	}
+    }
+
+    private TaskInfo getTask(String lsid) throws WebServiceException {
+	TaskInfo taskInfo = cachedTasks.get(lsid);
+	if (taskInfo == null) {
+	    try {
+		taskInfo = adminProxy.getTask(lsid);
+	    } catch (Exception e) {
+		throw new WebServiceException(e);
+	    }
+	    if (taskInfo == null) {
+		throw new WebServiceException(lsid + " not found on server.");
+	    }
+	    cachedTasks.put(lsid, taskInfo);
+	}
+	return taskInfo;
+    }
+
+    /**
+     * submit a job based on a service and its parameters
+     * 
+     * @param parmInfos
+     *                Description of the Parameter
+     * @param handler
+     *                Description of the Parameter
+     * @param tinfo
+     *                Description of the Parameter
+     * @return Description of the Return Value
+     * @throws org.genepattern.webservice.WebServiceException
+     *                 Description of the Exception
+     */
+    private AnalysisJob submitJob(AnalysisWebServiceProxy handler, TaskInfo tinfo, ParameterInfo[] parmInfos)
+	    throws org.genepattern.webservice.WebServiceException {
+	final JobInfo job = handler.submitJob(tinfo.getID(), parmInfos);
+	final AnalysisJob aJob = new AnalysisJob(server, job);
+	return aJob;
+    }
+
+    private static ParameterInfo[] createParameterInfoArray(TaskInfo taskInfo, Parameter[] parameters)
+	    throws WebServiceException {
+
+	ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
+	List<ParameterInfo> actualParameters = new ArrayList<ParameterInfo>();
+
+	Map<String, ParameterInfo> paramName2FormalParam = new HashMap<String, ParameterInfo>();
+	if (formalParameters != null) {
+	    for (int i = 0, length = formalParameters.length; i < length; i++) {
+		paramName2FormalParam.put(formalParameters[i].getName(), formalParameters[i]);
+	    }
+	}
+
+	if (parameters != null) {
+	    for (int i = 0, length = parameters.length; i < length; i++) {
+		ParameterInfo formalParam = paramName2FormalParam.remove(parameters[i].getName());
+		if (formalParam == null) {
+		    if (parameters[i].getName().equals(GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM)) {
+			formalParam = new ParameterInfo(parameters[i].getName(), parameters[i].getValue(), "");
+		    } else {
+			throw new WebServiceException("Unknown parameter: " + parameters[i].getName());
+		    }
+		}
+		Map<?, ?> formalAttributes = formalParam.getAttributes();
+		if (formalAttributes == null) {
+		    formalAttributes = new HashMap<Object, Object>();
+		}
+		String value = parameters[i].getValue();
+
+		if (value == null) {
+		    value = (String) formalAttributes.get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
+		}
+		if (value == null && !isOptional(formalParam)) {
+		    throw new WebServiceException("Missing value for required parameter "
+			    + formalParameters[i].getName());
+
+		}
+		value = sub(formalParam, value);
+		ParameterInfo p = new ParameterInfo(formalParam.getName(), value, "");
+		setAttributes(formalParam, p);
+		actualParameters.add(p);
+	    }
+	}
+
+	// go through parameters that were not provided by user
+	for (Iterator<String> it = paramName2FormalParam.keySet().iterator(); it.hasNext();) {
+	    String name = it.next();
+	    ParameterInfo formalParam = paramName2FormalParam.get(name);
+	    String value = (String) formalParam.getAttributes().get(TaskExecutor.PARAM_INFO_DEFAULT_VALUE[0]);
+	    if (value == null && !isOptional(formalParam)) {
+		throw new WebServiceException("Missing value for required parameter " + formalParam.getName());
+
+	    }
+	    value = sub(formalParam, value);
+	    ParameterInfo actual = new ParameterInfo(formalParam.getName(), value, "");
+	    setAttributes(formalParam, actual);
+	    actualParameters.add(actual);
+
+	}
+
+	return actualParameters.toArray(new ParameterInfo[0]);
     }
 
     /**
@@ -484,5 +514,86 @@ public class GPClient {
 	    return init * 8;
 	}
 	return init * 16;
+    }
+
+    private static boolean isOptional(ParameterInfo formalParameter) {
+	String sOptional = (String) formalParameter.getAttributes().get(GPConstants.PARAM_INFO_OPTIONAL[0]);
+	return (sOptional != null && sOptional.length() > 0);
+
+    }
+
+    private static void setAttributes(ParameterInfo formalParam, ParameterInfo actualParam) {
+	if (formalParam.isInputFile()) {
+	    HashMap<String, String> actualAttributes = new HashMap<String, String>();
+	    actualParam.setAttributes(actualAttributes);
+	    String value = actualParam.getValue();
+	    actualAttributes.put(GPConstants.PARAM_INFO_CLIENT_FILENAME[0], value);
+	    if (value != null && new java.io.File(value).exists()) {
+		actualParam.setAsInputFile();
+	    } else if (value != null) {
+		actualAttributes.remove("TYPE");
+		actualAttributes.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
+	    }
+	}
+    }
+
+    private static String sub(ParameterInfo formalParam, String value) throws WebServiceException {
+	// see if parameter belongs to a set of choices, e.g. 1=T-Test.
+	// If so substitute 1 for T-Test, also check to see if value is
+	// valid
+	String choicesString = formalParam.getValue();
+	if (value != null && choicesString != null && !choicesString.equals("")) {
+	    String[] choices = choicesString.split(";");
+	    boolean validValue = false;
+	    for (int j = 0; j < choices.length && !validValue; j++) {
+		String[] choiceValueAndChoiceUIValue = choices[j].split("=");
+		if (value.equals(choiceValueAndChoiceUIValue[0])) {
+		    validValue = true;
+		} else if (choiceValueAndChoiceUIValue.length == 2 && value.equals(choiceValueAndChoiceUIValue[1])) {
+		    value = choiceValueAndChoiceUIValue[0];
+		    validValue = true;
+		}
+	    }
+	    if (!validValue) {
+		throw new WebServiceException("Illegal value for parameter " + formalParam.getName() + ": " + value);
+	    }
+	}
+	return value;
+    }
+
+    /**
+     * Wait for a job to end or error.
+     * 
+     * @param job
+     *                Description of the Parameter
+     * @param handler
+     *                Description of the Parameter
+     * @throws org.genepattern.webservice.WebServiceException
+     *                 Description of the Exception
+     */
+    private static void waitForErrorOrCompletion(AnalysisWebServiceProxy handler, AnalysisJob job)
+	    throws org.genepattern.webservice.WebServiceException {
+	int maxtries = 20;
+	int sleep = 1000;
+	waitForErrorOrCompletion(handler, job, maxtries, sleep);
+    }
+
+    private static void waitForErrorOrCompletion(AnalysisWebServiceProxy handler, AnalysisJob job, int maxTries,
+	    int initialSleep) throws org.genepattern.webservice.WebServiceException {
+	String status = "";
+	JobInfo info = null;
+	int count = 0;
+	int sleep = initialSleep;
+	while (!(status.equalsIgnoreCase("Error") || (status.equalsIgnoreCase("Finished")))) {
+	    count++;
+	    try {
+		Thread.sleep(sleep);
+	    } catch (InterruptedException ie) {
+	    }
+	    info = handler.checkStatus(job.getJobInfo().getJobNumber());
+	    job.setJobInfo(info);
+	    status = info.getStatus();
+	    sleep = incrementSleep(initialSleep, maxTries, count);
+	}
     }
 }
