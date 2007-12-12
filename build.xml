@@ -473,9 +473,10 @@
 		<!-- ant antfile="anthill-build.xml" dir="${basedir}" target="installLocal" / -->
 		<antcall target="installLocal" />
 
-		<!-- load the modules since the installer doesn't - once we can start the server -->
-		<antcall target="startServer" inheritRefs="true" />
-		<!-- antcall target="loadModules" inheritRefs="true"/  -->
+		<!-- To complete the install -->	
+		<!-- 1. force a server registration -->
+		<!-- 2. load the modules since the installer doesn't - once we can start the server -->
+		
 
 
 	</target>
