@@ -122,7 +122,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
         prolog.append("import org.genepattern.webservice.JobResult;\n");
         prolog.append("import org.genepattern.webservice.Parameter;\n");
         if (prompts.size() > 0) {
-            prolog.append("import org.genepattern.client.Util;\n");
+            prolog.append("import org.genepattern.io.IOUtil;\n");
         }
 
         prolog.append("/**\n");
@@ -156,7 +156,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
         if (prompts.size() > 0) {
             prolog.append("\t\tString[] prompts = new String[" + prompts.size() + "];\n");
             for (int i = 0, size = prompts.size(); i < size; i++) {
-                prolog.append("\t\tprompts[" + i + "] = Util.prompt(\"" + prompts.get(i) + "\");\n");
+                prolog.append("\t\tprompts[" + i + "] = IOUtil.prompt(\"" + prompts.get(i) + "\");\n");
             }
         }
 
