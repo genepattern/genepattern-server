@@ -413,7 +413,7 @@
 	</target>
 
 	<target name="stoprunningserver" depends="checkForOldInstall" if="stopServerPresent">
-		<exec dir="${defaultInstallDir}\" executable="${defaultInstallDir}\StopGenePatternServer.exe -i SILENT" failifexecutionfails="false" failonerror="false" />
+		<exec executable="${defaultInstallDir}\StopGenePatternServer.exe" failifexecutionfails="false" failonerror="false" />
 		<antcall target="shutdownServer" inheritRefs="true" />
 
 	</target>
