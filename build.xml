@@ -438,7 +438,7 @@
 
 
 	<target name="startServer" depends="init">
-		<get src="http://cpb67-896.broad.mit.edu:7080/gpinstalls/restartLocalhost8080.jsp" dest="logs/startup.log" ignoreerrors="true" />
+		<get src="http://gpb67-896.broad.mit.edu:7080/gpinstalls/restartLocalhost8080.jsp" dest="logs/startup.log" ignoreerrors="true" />
 
 	</target>
 
