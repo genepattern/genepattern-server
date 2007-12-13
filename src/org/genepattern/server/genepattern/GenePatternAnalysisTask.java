@@ -999,8 +999,7 @@ public class GenePatternAnalysisTask {
 			    continue;
 			}
 			File outFile = new File(originalPath);
-			// System.out.println("unborrowing " + inFile + " to " +
-			// outFile);
+
 			// un-borrow the input file, moving it from the job's
 			// directory back to where it came from
 			if (inFile.exists()
@@ -1010,28 +1009,19 @@ public class GenePatternAnalysisTask {
 			    log.info("FAILURE: " + inFile.toString() + " (exists " + inFile.exists() + ") rename to "
 				    + outFile.toString() + " (exists " + outFile.exists() + ")");
 			} else {
-
 			    if (inputLastModified[i] != outFile.lastModified() || inputLength[i] != outFile.length()) {
-				log.debug("inherited input file " + outFile.getCanonicalPath() + " after run: length="
-					+ inputLength[i] + ", lastModified=" + inputLastModified[i]);
-				String errorMessage = "WARNING: " + outFile.toString()
-					+ " may have been overwritten during execution of task " + taskName
-					+ ", job number " + jobInfo.getJobNumber() + "\n";
 				if (inputLastModified[i] != outFile.lastModified()) {
-				    errorMessage = errorMessage + "original date: " + new Date(inputLastModified[i])
-					    + ", current date: " + new Date(outFile.lastModified()) + " diff="
-					    + (inputLastModified[i] - outFile.lastModified()) + "ms. \n";
+				    log.warn("File " + outFile + ", job number " + jobInfo.getJobNumber()
+					    + " last modfied date was changed. Original date: "
+					    + new Date(inputLastModified[i]) + ", current date: "
+					    + new Date(outFile.lastModified()));
 				}
 				if (inputLength[i] != outFile.length()) {
-				    errorMessage = errorMessage + "original size: " + inputLength[i]
-					    + ", current size: " + outFile.length() + "\n";
+				    log.warn("File " + outFile + ", job number " + jobInfo.getJobNumber()
+					    + " size was changed. Original size: " + inputLength[i]
+					    + ", current size: " + outFile.length());
 				}
-				if (stderrBuffer.length() > 0) {
-				    stderrBuffer.append("\n");
-				}
-				stderrBuffer.append(errorMessage);
-				// System.err.println(errorMessage);
-				log.error(errorMessage);
+
 			    }
 			    params[i].setValue(originalPath);
 			}
