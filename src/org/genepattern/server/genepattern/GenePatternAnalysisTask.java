@@ -599,12 +599,9 @@ public class GenePatternAnalysisTask {
 			    if (inFilename.startsWith("Axis") && (underscoreIndex = inFilename.indexOf("_")) != -1) {
 				inFilename = inFilename.substring(underscoreIndex + 1);
 			    }
-
 			    File outFile = new File(outDirName, inFilename);
-
 			    int counter = 1;
-			    while (outFile.exists()) { // in case two input files
-				// have the same name
+			    while (outFile.exists()) { // in case two input files have the same name
 				outFile = new File(outDirName, inFilename + "-" + counter);
 				counter++;
 			    }
@@ -619,11 +616,14 @@ public class GenePatternAnalysisTask {
 
 			    }
 			    if (inputFileMode == INPUT_FILE_MODE.COPY) {
-				outFile.deleteOnExit(); // mark for delete, just in
-				// case
+				outFile.deleteOnExit(); // mark for delete, just in case
 			    }
 			    params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
-			    params[i].setValue(outFile.getCanonicalPath());
+			    if (inputFileMode == INPUT_FILE_MODE.PATH) {
+				params[i].setValue(outFile.getCanonicalPath());
+			    } else {
+				params[i].setValue(outFile.getName());
+			    }
 			    inputLastModified[i] = outFile.lastModified();
 			    inputLength[i] = outFile.length();
 			}
