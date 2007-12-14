@@ -29,6 +29,12 @@
 %>
 <html>
 <head>
+<script type="text/javascript">
+  function jobsSql() {
+  	sql.query.value='select * from analysis_job order by job_no desc';
+  	return false;
+  }
+</script>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link href="skin/favicon.ico" rel="shortcut icon">
 <title>SQL - <%= query %></title>
@@ -60,6 +66,10 @@ TD.little { font-size: 9pt }
 			<td colspan="2" valign="top" align="center">
 				<input type="submit" value="submit" name="submit" accesskey="S" class="little"> 
 				<input type="reset" value="reset" class="little">
+			</td>
+		</tr>
+		<tr>
+			<td><input type="button" value="Get Jobs SQL" onClick="javascript:jobsSql();">
 			</td>
 		</tr>
 	</table>
