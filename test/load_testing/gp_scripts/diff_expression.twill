@@ -1,0 +1,27 @@
+# Run all modules in the Differential Expression Analysis protocol
+#
+# requires login.twill
+
+# Step 1: PreprocessDataset
+go /gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+submit cmd 4
+code 200
+notfind Exception
+notfind stderr.txt
+find all_aml_test.preprocessed.gct
+
+# Step 2: ComparativeMarkerSelection
+go /gp/pages/index.jsf?lsid=ComparativeMarkerSelection&input.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct&cls.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
+submit cmd 4
+code 200
+notfind Exception
+notfind stderr.txt
+find all_aml_test.preprocessed.comp.marker.odf
+
+# Step 3: ComparativeMarkerSelectionViewer
+go /gp/pages/index.jsf?lsid=ComparativeMarkerSelectionViewer&comparative.marker.selection.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.comp.marker.odf&dataset.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
+submit cmd 4
+code 200
+url /gp/preRunVisualizer.jsp
+notfind Exception
+find 'Running ComparativeMarkerSelectionViewer'

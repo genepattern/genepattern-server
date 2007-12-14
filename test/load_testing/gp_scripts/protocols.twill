@@ -1,0 +1,15 @@
+# Run all of the protocols as user 'test'
+#
+# pass the server url as an arg, e.g.
+# -u http://node255.broad.mit.edu:7070
+# 
+
+runfile login.twill
+
+# 1. Differential Expression Analysis
+runfile diff_expression.twill
+
+# 2. Clustering and Class Discovery
+runfile class_discovery.twill
+
+
