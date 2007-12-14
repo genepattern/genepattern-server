@@ -619,11 +619,7 @@ public class GenePatternAnalysisTask {
 				outFile.deleteOnExit(); // mark for delete, just in case
 			    }
 			    params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
-			    if (inputFileMode == INPUT_FILE_MODE.PATH) {
-				params[i].setValue(outFile.getCanonicalPath());
-			    } else {
-				params[i].setValue(outFile.getName());
-			    }
+			    params[i].setValue(outFile.getCanonicalPath());
 			    inputLastModified[i] = outFile.lastModified();
 			    inputLength[i] = outFile.length();
 			}
@@ -713,7 +709,6 @@ public class GenePatternAnalysisTask {
 						params[i].setValue(file.getCanonicalPath());
 						attrsActual.remove(ParameterInfo.TYPE);
 						attrsActual.remove(ParameterInfo.INPUT_MODE);
-
 						downloadUrl = false;
 					    } else {
 						name = file.getName();
@@ -891,7 +886,7 @@ public class GenePatternAnalysisTask {
 	    String stderrFilename = STDERR;
 	    String stdinFilename = null;
 	    StringBuffer commandLine = new StringBuffer();
-	    List commandLineList = new ArrayList(commandTokens.length);
+	    List<String> commandLineList = new ArrayList<String>(commandTokens.length);
 	    boolean addLast = true;
 	    for (int j = 0; j < commandTokens.length - 1; j++) {
 		if (commandTokens[j].equals(STDOUT_REDIRECT)) {
@@ -923,7 +918,7 @@ public class GenePatternAnalysisTask {
 		commandLineList.add(commandTokens[commandTokens.length - 1]);
 		commandLine.append(commandTokens[commandTokens.length - 1]);
 	    }
-	    commandTokens = (String[]) commandLineList.toArray(new String[0]);
+	    commandTokens = commandLineList.toArray(new String[0]);
 	    String lastToken = commandTokens[commandTokens.length - 1];
 	    if (lastToken.equals(STDOUT_REDIRECT)) {
 		vProblems.add("Missing name for standard output redirect");
@@ -936,7 +931,7 @@ public class GenePatternAnalysisTask {
 	    if (vProblems.size() > 0) {
 		stderrBuffer.append("Error validating input parameters, command line would be:\n"
 			+ commandLine.toString() + "\n");
-		for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
+		for (Enumeration<String> eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
 		    stderrBuffer.append(eProblems.nextElement() + "\n");
 		}
 		jobStatus = JobStatus.JOB_ERROR;
@@ -993,33 +988,32 @@ public class GenePatternAnalysisTask {
 			}
 			File inFile = new File(params[i].getValue());
 			String originalPath = (String) params[i].getAttributes().remove(ORIGINAL_PATH);
-			log.debug(params[i].getName() + " original path='" + originalPath + "'");
+			log.debug(params[i].getName() + ", original path='" + originalPath + "', inFile "
+				+ params[i].getValue() + ", exists " + inFile.exists());
 			if (originalPath == null || originalPath.length() == 0) {
-			    log.info(params[i].getName() + " original path='" + originalPath + "'");
 			    continue;
 			}
-			File outFile = new File(originalPath);
+			File originalFile = new File(originalPath);
 
-			// un-borrow the input file, moving it from the job's
-			// directory back to where it came from
+			// un-borrow the input file, moving it from the job's directory back to where it came from
 			if (inFile.exists()
-				&& !outFile.exists()
-				&& (inputFileMode == INPUT_FILE_MODE.COPY ? !inFile.delete() : !rename(inFile, outFile,
-					true))) {
-			    log.info("FAILURE: " + inFile.toString() + " (exists " + inFile.exists() + ") rename to "
-				    + outFile.toString() + " (exists " + outFile.exists() + ")");
+				&& !originalFile.exists()
+				&& (inputFileMode == INPUT_FILE_MODE.COPY ? !inFile.delete() : !rename(inFile,
+					originalFile, true))) {
+			    log.warn("Failed to rename " + inFile + " to " + originalFile + ".");
 			} else {
-			    if (inputLastModified[i] != outFile.lastModified() || inputLength[i] != outFile.length()) {
-				if (inputLastModified[i] != outFile.lastModified()) {
-				    log.warn("File " + outFile + ", job number " + jobInfo.getJobNumber()
+			    if (inputLastModified[i] != originalFile.lastModified()
+				    || inputLength[i] != originalFile.length()) {
+				if (inputLastModified[i] != originalFile.lastModified()) {
+				    log.warn("File " + originalFile + ", job number " + jobInfo.getJobNumber()
 					    + " last modfied date was changed. Original date: "
 					    + new Date(inputLastModified[i]) + ", current date: "
-					    + new Date(outFile.lastModified()));
+					    + new Date(originalFile.lastModified()));
 				}
-				if (inputLength[i] != outFile.length()) {
-				    log.warn("File " + outFile + ", job number " + jobInfo.getJobNumber()
+				if (inputLength[i] != originalFile.length()) {
+				    log.warn("File " + originalFile + ", job number " + jobInfo.getJobNumber()
 					    + " size was changed. Original size: " + inputLength[i]
-					    + ", current size: " + outFile.length());
+					    + ", current size: " + originalFile.length());
 				}
 
 			    }
@@ -1039,14 +1033,11 @@ public class GenePatternAnalysisTask {
 			}
 			if (originalPath != null && isURL) {
 			    File outFile = new File(params[i].getValue());
-			    log
-				    .debug("out: mode=" + mode + ", fileType=" + fileType + ", name="
-					    + params[i].getValue());
+
 			    if (inputLastModified[i] != outFile.lastModified() || inputLength[i] != outFile.length()) {
-				log.debug("inherited input file " + outFile.getCanonicalPath() + " after run: length="
-					+ inputLength[i] + ", lastModified=" + inputLastModified[i]);
-				String errorMessage = "WARNING: " + outFile.toString()
-					+ " may have been overwritten during execution of task " + taskName
+
+				String errorMessage = outFile.toString()
+					+ " may have been overwritten during execution of module " + taskName
 					+ ", job number " + jobInfo.getJobNumber() + "\n";
 				if (inputLastModified[i] != outFile.lastModified()) {
 				    errorMessage = errorMessage + "original date: " + new Date(inputLastModified[i])
@@ -1056,12 +1047,7 @@ public class GenePatternAnalysisTask {
 				    errorMessage = errorMessage + "original size: " + inputLength[i]
 					    + ", current size: " + outFile.length() + "\n";
 				}
-				if (stderrBuffer.length() > 0) {
-				    stderrBuffer.append("\n");
-				}
-				stderrBuffer.append(errorMessage);
-				// System.err.println(errorMessage);
-				log.error(errorMessage);
+				log.warn(errorMessage);
 			    }
 			    outFile.delete();
 			    params[i].setValue(originalPath);
