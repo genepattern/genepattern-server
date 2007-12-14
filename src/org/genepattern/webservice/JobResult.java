@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.genepattern.client.Util;
+import org.genepattern.io.IOUtil;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.JobDownloader;
 
@@ -165,7 +165,7 @@ public class JobResult {
 		try {
 		    JobDownloader d = new JobDownloader(server.toString(), username, password);
 		    get = d.getGetMethod(jobNumber, fileName);
-		    String modelType = Util.getOdfModelType(get.getResponseBodyAsStream());
+		    String modelType = IOUtil.getOdfModelType(get.getResponseBodyAsStream());
 		    if (fileType.equalsIgnoreCase(modelType)) {
 			return getURLForFileName(fileName);
 		    }
