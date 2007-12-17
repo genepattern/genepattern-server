@@ -1,0 +1,20 @@
+# Register a new GenePattern server 
+#
+go /gp
+url /gp/pages/registerServer.jsf
+fv registrationForm name test
+fv registrationForm email genepattern@broad.mit.edu
+fv registrationForm j_id40 false
+fv registrationForm organization Broad
+fv registrationForm address1 '7 Cambridge Center'
+fv registrationForm city Cambridge
+fv registrationForm state MA
+fv registrationForm country 'United States of America'
+submit
+code 200
+
+# Follow the 'login and begin using GenePattern' link
+go /gp/pages/login.jsf?referrer=index.jsp
+code 200
+url /gp/pages/index.jsf
+
