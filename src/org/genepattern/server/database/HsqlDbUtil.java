@@ -91,8 +91,6 @@ public class HsqlDbUtil {
         try {
             String resourceDir = new File(System.getProperty("resources")).getCanonicalPath();
             
-            log.error("resourcesDir=" + new File(resourceDir).getCanonicalPath());
-
             if (!checkSchema(resourceDir)) {
 
                 createSchema(resourceDir);
