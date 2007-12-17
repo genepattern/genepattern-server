@@ -71,8 +71,9 @@ public class SetRVariablePath extends CustomCodeAction {
 				R_new = oldR25;	
 			}
 		}
-		
-		
+		ip.setVariable("R_new",  R_new );
+		ip.setVariable("oldR25",  oldR25);
+				
 		String os = System.getProperty("os.name").toLowerCase();
 
 		if (os.indexOf("mac") >= 0){
