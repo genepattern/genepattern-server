@@ -79,6 +79,8 @@ public class SetRVariablePath extends CustomCodeAction {
 		if (os.indexOf("mac") >= 0){
 			if (!R_new.endsWith("/Resources")){
 		 		ip.setVariable("R25bin",  R_new + "/Resources");
+			} else {
+				ip.setVariable("R25bin",  R_new );
 			}
 			ip.setVariable("R25base",  R_new);
 		} else {
