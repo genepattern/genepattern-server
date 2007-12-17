@@ -67,7 +67,9 @@ public class SetRVariablePath extends CustomCodeAction {
 		// bug 2002 preserve old def for 3.1 on 3.1 with non-standard R25 
 		String oldR25 = ip.substitute("$R2.5_HOME$");// R2.5_HOME already defined in preread genepattern.props
 		if (oldR25 != null){
-			R_new = oldR25;	
+			if (oldR25.trim().length() > 0){
+				R_new = oldR25;	
+			}
 		}
 		
 		
