@@ -2,14 +2,14 @@
 #
 go /gp
 url /gp/pages/registerServer.jsf
-fv registrationForm name test
-fv registrationForm email genepattern@broad.mit.edu
-fv registrationForm j_id40 false
-fv registrationForm organization Broad
-fv registrationForm address1 '7 Cambridge Center'
-fv registrationForm city Cambridge
-fv registrationForm state MA
-fv registrationForm country 'United States of America'
+fv registrationForm registrationForm:name test
+fv registrationForm registrationForm:email genepattern@broad.mit.edu
+fv registrationForm registrationForm:emailUpdates false
+fv registrationForm registrationForm:organization Broad
+fv registrationForm registrationForm:address1 '7 Cambridge Center'
+fv registrationForm registrationForm:city Cambridge
+fv registrationForm registrationForm:state MA
+fv registrationForm registrationForm:country 'United States of America'
 submit
 code 200
 
