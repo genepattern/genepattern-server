@@ -1,0 +1,17 @@
+#
+# Install the latest version of each module in the module repository
+#
+
+#login
+runfile login.twill
+
+# This works because the checkbox for each module is selected by default
+# if necessary, uncomment this line to select all modules
+# fv taskCatalogForm ALL 'ALL'
+
+go /gp/pages/taskCatalog.jsf
+submit 'Install Checked' 2
+
+
+
+
