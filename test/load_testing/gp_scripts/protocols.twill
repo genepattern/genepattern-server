@@ -1,9 +1,11 @@
-# Run all of the protocols as user 'test'
+# Run all of the protocols
+#    Make sure to login first (either with login.twill or login_password.twill)
 #
 # pass the server url as an arg, e.g.
 # -u http://node255.broad.mit.edu:7070
 # 
 
+# 0. login without password
 runfile login.twill
 
 # 1. Differential Expression Analysis
@@ -11,5 +13,8 @@ runfile diff_expression.twill
 
 # 2. Clustering and Class Discovery
 runfile class_discovery.twill
+
+# 3. Class Prediction
+runfile prediction.twill 
 
 

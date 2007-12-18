@@ -1,0 +1,166 @@
+# Run all modules in the Class Prediction protocol
+#
+# requires login.twill
+
+# Step 1: PreprocessDataset
+go /gp/pages/index.jsf?lsid=PreprocessDataset
+url /gp/pages/index.jsf
+fv taskForm input.filename_cb url
+fv taskForm input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+submit
+code 200
+notfind Exception
+notfind stderr.txt
+find all_aml_test.preprocessed.gct
+
+#Step 4 (a): CARTXValidation
+go /gp/pages/index.jsf?lsid=CARTXValidation
+url /gp/pages/index.jsf
+fv taskForm data.filename_cb url
+fv taskForm data.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+fv taskForm cls.filename_cb url
+fv taskForm cls.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
+submit
+code 200
+notfind Exception
+notfind stderr.txt
+find all_aml_test.pred.odf
+
+#Step 4 (b) KNNXValidation
+go /gp/pages/index.jsf?lsid=KNNXValidation
+url /gp/pages/index.jsf
+fv taskForm data.filename_cb url
+fv taskForm data.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+fv taskForm class.filename_cb url
+fv taskForm class.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
+submit
+code 200
+notfind Exception
+notfind stderr.txt
+find all_aml_test.pred.odf
+find all_aml_test.feat.odf
+
+#Step 4 (c) PNNXValidationOptimization (NOT AVAILABLE)
+
+#Step 4 (d) WeightedVotingXValidation
+go /gp/pages/index.jsf?lsid=WeightedVotingXValidation
+url /gp/pages/index.jsf
+fv taskForm data.filename_cb url
+fv taskForm data.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+fv taskForm class.filename_cb url
+fv taskForm class.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
+submit
+code 200
+notfind Exception
+notfind stderr.txt
+find all_aml_test.pred.odf
+find all_aml_test.feat.odf
+
+#Step 5 (a) View results of CARTXValidation
+go /gp/pages/index.jsf?lsid=PredictionResultsViewer
+url /gp/pages/index.jsf
+fv taskForm prediction.results.file_cb url
+fv taskForm prediction.results.file_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.pred.odf
+submit
+code 200
+url /gp/preRunVisualizer.jsp
+notfind Exception
+notfind stderr.txt
+find 'Running PredictionResultsViewer'
+
+#Step 5 (b) View results of KNNXValidation
+go /gp/pages/index.jsf?lsid=PredictionResultsViewer
+url /gp/pages/index.jsf
+fv taskForm prediction.results.file_cb url
+fv taskForm prediction.results.file_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.knn.pred.odf
+submit
+code 200
+notfind Exception
+notfind stderr.txt
+url /gp/preRunVisualizer.jsp
+find 'Running PredictionResultsViewer '
+
+go /gp/pages/index.jsf?lsid=FeatureSummaryViewer
+url /gp/pages/index.jsf
+fv taskForm feature.filename_cb url
+fv taskForm feature.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.knn.pred.feat.odf
+submit
+code 200
+notfind Exception
+notfind stderr.txt
+url /gp/preRunVisualizer.jsp
+find 'Running FeatureSummaryViewer '
+
+#Step 6 (a) CART
+go /gp/pages/index.jsf?lsid=CART
+url /gp/pages/index.jsf
+fv taskForm train.data.filename_cb url
+fv taskForm train.data.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct
+fv taskForm train.cls.filename_cb url
+fv taskForm train.cls.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls
+fv taskForm test.data.filename_cb url
+fv taskForm test.data.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+fv taskForm test.cls.filename_cb url
+fv taskForm test.cls.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
+submit
+code 200
+notfind Exception
+notfind stderr.txt
+find all_aml_train.cart.model
+find all_aml_test.tree.pdf
+find all_aml_test.pred.odf
+
+#Step 6 (b) KNN
+go /gp/pages/index.jsf?lsid=KNN
+url /gp/pages/index.jsf
+fv taskForm train.filename_cb url
+fv taskForm train.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct
+fv taskForm train.class.filename_cb url
+fv taskForm train.class.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls
+fv taskForm test.filename_cb url
+fv taskForm test.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+fv taskForm test.class.filename_cb url
+fv taskForm test.class.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
+submit
+code 200
+notfind Exception
+notfind stderr.txt
+find all_aml_train.model.odf
+find all_aml_test.pred.odf
+
+#Step 6 (c) SVM
+go /gp/pages/index.jsf?lsid=SVM
+url /gp/pages/index.jsf
+fv taskForm train.data.filename_cb url
+fv taskForm train.data.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct
+fv taskForm train.cls.filename_cb url
+fv taskForm train.cls.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls
+fv taskForm test.data.filename_cb url
+fv taskForm test.data.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+fv taskForm test.cls.filename_cb url
+fv taskForm test.cls.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
+submit
+code 200
+notfind Exception
+notfind stderr.txt
+find all_aml_train.model
+find all_aml_test.pred.odf
+
+#Step 6 (d) WeightedVoting
+go /gp/pages/index.jsf?lsid=WeightedVoting
+url /gp/pages/index.jsf
+fv taskForm train.filename_cb url
+fv taskForm train.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct
+fv taskForm train.class.filename_cb url
+fv taskForm train.class.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls
+fv taskForm test.filename_cb url
+fv taskForm test.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+fv taskForm test.class.filename_cb url
+fv taskForm test.class.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
+submit
+code 200
+notfind Exception
+notfind stderr.txt
+find all_aml_train.model.odf
+find all_aml_test.pred.odf
+
