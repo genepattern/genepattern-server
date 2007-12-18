@@ -3,24 +3,33 @@
 # requires login.twill
 
 # Step 1: PreprocessDataset
-go /gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
-submit cmd 4
+go /gp/pages/index.jsf?lsid=PreprocessDataset
+fv taskForm input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+submit 'cmd1'
 code 200
 notfind Exception
 notfind stderr.txt
 find all_aml_test.preprocessed.gct
 
 # Step 2: ComparativeMarkerSelection
-go /gp/pages/index.jsf?lsid=ComparativeMarkerSelection&input.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct&cls.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
-submit cmd 4
+go /gp/pages/index.jsf?lsid=ComparativeMarkerSelection
+fv taskForm input.file_cb url
+fv taskForm input.file_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
+fv taskForm cls.file_cb url
+fv taskForm cls.file_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
+submit
 code 200
 notfind Exception
 notfind stderr.txt
 find all_aml_test.preprocessed.comp.marker.odf
 
 # Step 3: ComparativeMarkerSelectionViewer
-go /gp/pages/index.jsf?lsid=ComparativeMarkerSelectionViewer&comparative.marker.selection.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.comp.marker.odf&dataset.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
-submit cmd 4
+go /gp/pages/index.jsf?lsid=ComparativeMarkerSelectionViewer
+fv taskForm comparative.marker.selection.filename_cb url
+fv taskForm comparative.marker.selection.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.comp.marker.odf
+fv taskForm dataset.filename_cb url
+fv taskForm dataset.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
+submit
 code 200
 url /gp/preRunVisualizer.jsp
 notfind Exception

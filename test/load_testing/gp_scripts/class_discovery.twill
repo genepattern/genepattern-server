@@ -9,9 +9,9 @@
 #Step 1: PreprocessDataset
 go /gp/pages/index.jsf?lsid=PreprocessDataset
 url /gp/pages/index.jsf
-fv 4 input.filename_cb url
-fv 4 input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
-submit cmd 4
+fv taskForm input.filename_cb url
+fv taskForm input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+submit
 code 200
 url /gp/runTaskPipeline.jsp
 find 'all_aml_test.preprocessed.gct'
@@ -19,54 +19,78 @@ find 'all_aml_test.preprocessed.gct'
 #Step 2 (a): HierarchicalClustering
 go /gp/pages/index.jsf?lsid=HierarchicalClustering
 url /gp/pages/index.jsf
-fv 4 input.filename_cb_url url
-fv 4 input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
-submit cmd 4
+fv taskForm input.filename_cb_url url
+fv taskForm input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
+submit
+code 200
+url /gp/runTaskPipeline.jsp
+find 'all_aml_test.preprocessed.atr'
+find 'all_aml_test.preprocessed.cdt'
+find 'all_aml_test.preprocessed.gtr'
 
 #Step 2 (b) KMeansClustering
 go /gp/pages/index.jsf?lsid=KMeansClustering
 url /gp/pages/index.jsf
-fv 4 input.filename_cb_url url
-fv 4 input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.res
-fv 4 number.of.clusters 2
-submit cmd 4
+fv taskForm input.filename_cb_url url
+fv taskForm input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.res
+fv taskForm number.of.clusters 2
+submit
+code 200
+url /gp/runTaskPipeline.jsp
+find 'all_aml_test_KMCluster_output.gct'
+find 'all_aml_test_KMCluster_output-1.gct'
+find 'all_aml_test_KMCluster_output-2.gct'
 
 #Step 2 (c) SOMClustering
 go /gp/pages/index.jsf?lsid=SOMClustering
 url /gp/pages/index.jsf
-fv 4 dataset.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
-submit cmd 4
+fv taskForm dataset.filename_cb url
+fv taskForm dataset.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
+submit
+code 200
+find all_aml_test.preprocessed0.odf
+find all_aml_test.preprocessed1.odf
 
 #Step 2 (d) NMFConsensus
 go /gp/pages/index.jsf?lsid=NMFConsensus
 url /gp/pages/index.jsf
-fv 4 dataset.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
-submit cmd 4
+fv taskForm dataset.filename_cb url
+fv taskForm dataset.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
+submit
+code 200
+
 
 #Step 2 (e) ConsensusClustering
 go /gp/pages/index.jsf?lsid=ConsensusClustering
 url /gp/pages/index.jsf
-fv 4 input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
-submit cmd 4
+fv taskForm input.filename_cb url
+fv taskForm input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
+submit
 
 #Step 4 (a): View the results w/ HierarchicalClusteringViewer
 go /gp/pages/index.jsf?lsid=HierarchicalClusteringViewer
-fv 4 cdt.file_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.cdt
-fv 4 gtr.file_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gtr
-fv 4 atr.file_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.atr
-submit cmd 4
+fv taskForm cdt.file_cb url
+fv taskForm cdt.file_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.cdt
+fv taskForm gtr.file_cb url
+fv taskForm gtr.file_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gtr
+fv taskForm atr.file_cb url
+fv taskForm atr.file_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.atr
+submit
 
 #Step 4 (b): View the results w/ HeatMapViewer
 go /gp/pages/index.jsf?lsid=HeatMapViewer
-fv 4 dataset_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test_KMcluster_output.gct
-submit cmd 4
+fv taskForm dataset_cb url
+fv taskForm dataset_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test_KMcluster_output.gct
+submit
 
 #Step 4 (c): View the results w/ SOMClusterViewer
 go /gp/pages/index.jsf?lsid=SOMClusterViewer
-fv 4 som.cluster.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed0.odf
-submit cmd 4
+fv taskForm som.cluster.filename_cb url
+fv taskForm som.cluster.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed0.odf
+submit
 
 #Step 4 (d): View the results w/ HeatMapViewer
 go /gp/pages/index.jsf?lsid=HeatMapViewer
-fv 4 dataset_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.sub28.srt.2.gct
-submit cmd 4
+fv taskForm dataset_cb url
+fv taskForm dataset_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.sub28.srt.2.gct
+submit
