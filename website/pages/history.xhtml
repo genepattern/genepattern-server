@@ -20,9 +20,11 @@
 <h:form onsubmit="return validateForm(this);" id="historyForm">
 	<h:panelGrid columns="2">
 		<h:outputLabel value="Display this many recent jobs:" for="recentJobs"></h:outputLabel>
-		<t:inputText id="recentJobs" forceId="true" size="10"
+		<t:inputText id="recentJobs" size="10"
 			value="#{userPrefsBean.numberOfRecentJobs}"
-			requiredMessage="Number of recents jobs is required." required="true" />
+			requiredMessage="Number of recents jobs is required." required="true">
+          <f:attribute name="forceId" value="true"/>
+        </t:inputText>
 	</h:panelGrid>
 	<h:commandButton value="Save" action="#{userPrefsBean.saveRecentJobs}" />
 </h:form>
