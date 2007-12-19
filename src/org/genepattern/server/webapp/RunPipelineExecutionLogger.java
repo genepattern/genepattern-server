@@ -22,10 +22,12 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -36,6 +38,7 @@ import java.util.SimpleTimeZone;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 
@@ -118,6 +121,38 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
         logWriter.println(htmlEncode(message) + "<br>");
     }
 
+    // expect a file like this;
+    //	   /Applications/GenePatternServer/Tomcat/temp/ted_run36377.tmp/all_aml_train.res
+    // that needs a url like this 
+    //     http://node255.broad.mit.edu:7070/gp/getFile.jsp?task=&file=ted_run41230.tmp/all_aml_train.res
+    protected String getUrlForFile(File f){
+    	StringBuffer urlBuff = new StringBuffer(System.getProperty("GenePatternURL"));
+    	urlBuff.append("getFile.jsp?task=&file=");
+    	urlBuff.append(f.getParentFile().getName());
+    	urlBuff.append(File.separator);
+    	urlBuff.append(f.getName());
+    	return urlBuff.toString();
+    }
+    
+    
+    protected String localizeURL(String original) {
+    	boolean isUrl = false;
+    	boolean isFile = false;
+    	try {
+    		URL url = new URL(original);
+    		isUrl = true;
+    	} catch (MalformedURLException mfe){
+    		File f = new File(original);
+    		if ( f.exists()){
+    			original = getUrlForFile(f);;
+    		}
+    	}
+    	
+    	return super.localizeURL(original);
+    	
+    }
+    
+    
     public void beforePipelineRuns(PipelineModel amodel) {
         model = amodel;
         if (logWriter == null) {
@@ -249,8 +284,7 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
                 logWriter.print("<a href=\"");
                 logWriter.print(localizeURL(pValue));
                 logWriter.print("\">");
-           	
-				if (hasInputURL ){
+           		if (hasInputURL ){
 					int nidx = pValue.indexOf("file=");
 					int endNidx = pValue.indexOf("&", nidx);
 					if (endNidx == -1) endNidx = pValue.length();
@@ -262,6 +296,11 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
 	            	int endUrlPathIdx = pValue.lastIndexOf('/');
 					pValue = pValue.substring(endUrlPathIdx+1);
 					 	
+	            } else {
+	            	
+					int	endNidx = pValue.lastIndexOf('/');
+					pValue = pValue.substring(endNidx+1);		
+					
 	            }
             } 
 		   
