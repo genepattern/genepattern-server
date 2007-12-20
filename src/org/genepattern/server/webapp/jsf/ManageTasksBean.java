@@ -135,7 +135,7 @@ public class ManageTasksBean {
 	    String lsidNoVersion = lSID.toStringNoVersion();
 	    TaskGroup taskGroup = indexedTasks.get(lsidNoVersion);
 	    if (taskGroup == null) {
-	    	taskGroup = new TaskGroup(ti);
+	    	taskGroup = new TaskGroup(ti, showEveryonesModules);
 	    	indexedTasks.put(lsidNoVersion, taskGroup);
 	    }
 	    taskGroup.addVersionInfo(indexedTasks, ti);
@@ -166,8 +166,9 @@ public class ManageTasksBean {
 	private IAdminClient adminClient = null;
 
 	private boolean pipeline;
-
-	public TaskGroup(TaskInfo ti) {
+	private boolean showEveryonesModules = false;
+	
+	public TaskGroup(TaskInfo ti, boolean showEveryonesModules) {
 	    pipeline = ti.isPipeline();
 	    adminClient = new LocalAdminClient(UIBeanHelper.getUserId());
 	    indexedVersions = new TreeMap<String, VersionInfo>(new Comparator<String>() {
@@ -201,8 +202,7 @@ public class ManageTasksBean {
 	    VersionInfo versionInfo = new VersionInfo(taskInfo);
 	    indexedVersions.put(key, versionInfo);// changed to include id jtl 12/11/07
 	    
-	    
-if (taskInfo.isPipeline()) {
+	    if (taskInfo.isPipeline() && showEveryonesModules) {
 		TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
 		String xml = (String) tia.get(GPConstants.SERIALIZED_MODEL);
 		PipelineModel model = null;
@@ -225,7 +225,7 @@ if (taskInfo.isPipeline()) {
 			TaskInfo subTask = adminClient.getTask(keyLsid);
 			if (subTask != null) {
 			    TaskGroup taskGroup = (indexedTasks.containsKey(lsidNoVersion)) ? indexedTasks
-				    .get(lsidNoVersion) : new TaskGroup(subTask);
+				    .get(lsidNoVersion) : new TaskGroup(subTask, showEveryonesModules);
 			    taskGroup.addVersionInfo(indexedTasks, subTask);
 			    String itKey = keyLsid + "." + subTask.getID();
 				   
