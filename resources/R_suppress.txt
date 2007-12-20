@@ -6,3 +6,5 @@ Welcome to Bioconductor
   Vignettes contain introductory material
 checking for C++ compiler
 ** libsg77
+package '
+updating HTML package descriptions
