@@ -2395,6 +2395,10 @@ public class GenePatternAnalysisTask {
 				}
 				inputParamName = actuals[i].getName();
 				File inFile = new File(outDirName, new File(inputFilename).getName());
+				if (inputFileMode != INPUT_FILE_MODE.PATH) {
+				    // file is moved to job directory
+				    props.put(inputParamName, inFile.getName());
+				}
 				props.put(inputParamName + INPUT_PATH, new String(outDirName));
 
 				String baseName = inFile.getName();
