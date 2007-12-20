@@ -272,9 +272,9 @@ if (requestParameters.getProperty("clone") != null) {
 	<a href="addTask.jsp?<%= GPConstants.NAME%>=<%=lsid %>">edit <%= cloneName %></a><br>
 	<script language="javascript">
 	<% if("1".equals(requestParameters.getProperty("pipeline"))) {
-		%> window.location = "pipelineDesigner.jsp?<%= GPConstants.NAME %>=<%= lsid %>"; <%
+		%> window.location = "viewPipeline.jsp?<%= GPConstants.NAME %>=<%= lsid %>"; <%
 	} else { %>
-		window.location = "addTask.jsp?<%= GPConstants.NAME %>=<%= lsid %>";
+		window.location = "addTask.jsp?view=1&<%= GPConstants.NAME %>=<%= lsid %>";
 	<%}
 	%>
 	

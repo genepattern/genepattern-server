@@ -86,7 +86,7 @@ if(errors!=null) {
 	tia = taskInfo.giveTaskInfoAttributes();
 	LSID lsid = new LSID((String)tia.get(GPConstants.LSID));
 	boolean editable = createModuleAllowed && taskInfo.getUserId().equals(userID) && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
-	viewOnly = !editable;
+	viewOnly = viewOnly || !editable;
 } else {
 %>
 <script language="javascript">
