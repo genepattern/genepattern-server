@@ -5,12 +5,13 @@
 #login
 runfile login.twill
 
-# This works because the checkbox for each module is selected by default
-# if necessary, uncomment this line to select all modules
-# fv taskCatalogForm ALL 'ALL'
-
+#go to the modules page
 go /gp/pages/taskCatalog.jsf
-submit 'Install Checked' 2
+
+# select all modules
+fv taskCatalogForm ALL true
+
+submit 'Install Checked'
 
 
 
