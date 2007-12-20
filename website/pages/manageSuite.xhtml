@@ -69,18 +69,23 @@
           	  <td>
 				<div align="center" id="cb_suite_#{suiteInfo.name}">
 					<t:div
-						rendered="#{!(suiteInfo.userId == requestScope.userID) and !authorizationBean.adminSuitesAllowed}">
+						rendered="#{	!(suiteInfo.userId == requestScope.userID) 
+									and !authorizationBean.adminSuitesAllowed	}">
 						<input type="checkbox" name="selectedVersions" disabled="true"
 							value="#{suiteInfo.lsid}" />
 					</t:div> 
-					<t:div rendered="#{suiteInfo.selected}">
+					
+					<t:div rendered="#{suiteInfo.selected and ((suiteInfo.userId == requestScope.userID) || authorizationBean.adminSuitesAllowed)}">
 						<input type="checkbox" name="selectedVersions" checked="checked"
 							value="#{suiteInfo.lsid}" />
 					</t:div> 
-					<t:div rendered="#{!suiteInfo.selected}">
+					<t:div rendered="#{!suiteInfo.selected and ((suiteInfo.userId == requestScope.userID) || authorizationBean.adminSuitesAllowed)}">
 						<input type="checkbox" name="selectedVersions"
 							value="#{suiteInfo.lsid}" />
-					</t:div></div>
+					</t:div>
+					
+					
+					</div>
 				</td>
 		      <td class="task-title">
 		        <h:commandLink value="#{suiteInfo.name}" action="#{manageSuiteBean.view}">
