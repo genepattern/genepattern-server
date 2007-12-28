@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." name="ReportCron" default="runWeekly">
+    <property name="genepattern.url" value="http://genepatterntest.broad.mit.edu:8080" />
+    <property name="genepattern.user" value="ted" />
+    <property name="genepattern.p" value="q" />
+
+    <property name="python" value="python" />
+    <property name="twill.sh" location="/Users/pcarr/twill-0.9b1/twill-sh" />
+    <property name="run.report.dir" location="/Broad/Projects/genepattern/test/load_testing/gp_scripts" />
+    <property name="report.out.dir" location="${run.report.dir}/generatedReports" />
+
+    <target name="init">
+        <path id="library.classpath">
+	  <fileset dir="lib">
+	    <include name="*.jar" />
+	  </fileset>
+	  <pathelement path="classes" />
+	  <pathelement path="src" />
+	</path>
+	<tstamp>
+	  <format property="REPORT_INIT_TIME" pattern="d-MMMM-yyyy, hh:mm aa" locale="en,UK"/>
+	  <format property="report.now" pattern="yyMMdd" />
+	</tstamp>
+	<echo message="time is ${REPORT_INIT_TIME}"/>
+	<echo message="report.now is ${report.now}"/>
+	<mkdir dir="${report.out.dir}" />
+    </target>
+
+    <target name="runWeekly" depends="init">
+      <exec executable="${python}" dir="${run.report.dir}">
+	<arg value="run_weekly_report.py"/>
+	<arg value="${genepattern.url}" />
+	<arg value="${genepattern.user}"/>
+	<arg value="${genepattern.p}"/>
+	<arg value="${report.now}" />
+        <arg value="${report.out.dir}" />
+      </exec>
+    </target>
+
+    <target name="runMonthly" depends="init">
+      <exec executable="${python}" dir="${run.report.dir}">
+	<arg value="run_monthly_report.py"/>
+	<arg value="${genepattern.url}" />
+	<arg value="${genepattern.user}"/>
+	<arg value="${genepattern.p}"/>
+	<arg value="${report.now}" />
+        <arg value="${report.out.dir}" />
+      </exec>
+    </target>
+
+    <target name="clean" depends="init">
+        <delete>
+            <fileset dir="${report.out.dir}" includes="**/*.pdf"/>
+           <fileset dir="${report.out.dir}" includes="**/*.html"/>
+        </delete>
+    </target>
+
+    <target name="compile" depends="init">
+
+      <javac classpathref="library.classpath" 
+	     debug="true" 
+	     destdir="classes" 
+	     srcdir="src" 
+	     compiler="javac1.5" 
+	     source="1.5"  />
+    </target>
+
+    <target name="runTest" depends="init, compile">
+        <java classname="GetReport" classpathref="library.classpath" dir="." fork="true">
+	    <arg value="week" />
+	    <arg value="User_Jobs_run.jrxml" />
+	    <arg value="http://gm970-e5c.broad.mit.edu:8080/gp" />
+	    <arg value="ted"/>
+	    <arg value="q"/>
+	</java>
+    </target>
+
+    <target name="mailReport">
+        <mail from="gp-dev@broad.mit.edu" 
+              mailhost="smtp.broad.mit.edu"
+              tolist="liefeld@broad.mit.edu,michaelr@broad.mit.edu,helga@broad.mit.edu,pcarr@broad.mit.edu"
+              message="GenePattern Server Report generated at ${REPORT_INIT_TIME}" 
+              subject="GenePattern Server Report ${REPORT_INIT_TIME}">
+        <fileset dir="${report.out.dir}">
+          <include name="*.pdf" />
+				<include name="*.html" />
+                        </fileset>
+                </mail>
+
+        </target>
+
+</project>
