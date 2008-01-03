@@ -298,7 +298,7 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
 					 	
 	            } else {
 	            	
-					int	endNidx = pValue.lastIndexOf('/');
+					int	endNidx = pValue.lastIndexOf(File.separator);
 					pValue = pValue.substring(endNidx+1);		
 					
 	            }
