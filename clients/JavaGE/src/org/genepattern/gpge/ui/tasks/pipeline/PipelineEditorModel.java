@@ -128,7 +128,7 @@ public class PipelineEditorModel {
 	}
     }
 
-    public PipelineEditorModel(AnalysisService svc, PipelineModel model) {
+    public PipelineEditorModel(AnalysisService svc, PipelineModel model, boolean edit) {
 	Map attrs = svc.getTaskInfo().getTaskInfoAttributes();
 	this.lsid = (String) attrs.get(GPConstants.LSID);
 	resetDocFiles();
@@ -145,7 +145,7 @@ public class PipelineEditorModel {
 	if (pipelineName.endsWith(".pipeline")) {
 	    pipelineName = pipelineName.substring(0, pipelineName.length() - ".pipeline".length());
 	}
-	if (svc != null && !svc.getTaskInfo().getUserId().equals(loggedInUser)) {
+	if (edit && svc != null && !svc.getTaskInfo().getUserId().equals(loggedInUser)) {
 	    pipelineName = "copyOf" + pipelineName;
 	}
 	listenerList = new EventListenerList();
