@@ -25,7 +25,6 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -47,9 +46,7 @@ import org.genepattern.util.GPConstants;
 public class AuthenticationFilter implements Filter {
 
     private static Logger log = Logger.getLogger(AuthenticationFilter.class);
-
     private String homePage;
-
     private String loginPage;
 
     /**
@@ -71,9 +68,9 @@ public class AuthenticationFilter implements Filter {
     public void destroy() {
     }
 
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
-            ServletException {
-
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) 
+    throws IOException, ServletException 
+    {
         HttpServletRequest req = (HttpServletRequest) request;
         String requestedURI = req.getRequestURI();
 
@@ -83,8 +80,8 @@ public class AuthenticationFilter implements Filter {
             return;
         }
 
-        if (redirectToFqHostName) { // redirect to fqHostName so that only one
-            // cookie needs to be written
+        if (redirectToFqHostName) { 
+            // redirect to fqHostName so that only one cookie needs to be written
             String serverName = request.getServerName();
             if (!getFQHostName().equalsIgnoreCase(serverName)) {
                 redirectToFullyQualifiedHostName((HttpServletRequest) request, (HttpServletResponse) response);
@@ -182,6 +179,7 @@ public class AuthenticationFilter implements Filter {
     public void redirectToLoginPage(HttpServletRequest request, HttpServletResponse response) {
         redirectToPage(request, response, loginPage);
     }
+
     public void redirectToPage(HttpServletRequest request, HttpServletResponse response, String page) {
         String currentURL = request.getRequestURI();
         // get everything after the context root
@@ -222,7 +220,8 @@ public class AuthenticationFilter implements Filter {
                 request.getSession().setAttribute("origin", targetURL);
             }
             response.sendRedirect(fullyQualifiedPage);
-        } catch (IOException ioe) {
+        } 
+        catch (IOException ioe) {
             ioe.printStackTrace();
         }
     }
@@ -244,16 +243,7 @@ public class AuthenticationFilter implements Filter {
     }
 
     protected String getUserId(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie c : cookies) {
-                if (GPConstants.USERID.equals(c.getName())) {
-                    String userId = c.getValue();
-                    return userId;
-                }
-            }
-        }
-        return null;
+        return (String)request.getSession().getAttribute(GPConstants.USERID);
     }
 
     /**
@@ -331,20 +321,21 @@ public class AuthenticationFilter implements Filter {
                 LoginBean.createNewUserNoPassword(userId);
                 try {
                     UIBeanHelper.login(userId, false, false, request, response);
-                } catch (UnsupportedEncodingException e) {
+                } 
+                catch (UnsupportedEncodingException e) {
                     log.error(e);
-                } catch (IOException e) {
+                } 
+                catch (IOException e) {
                     log.error(e);
                 }
             }
             HibernateUtil.commitTransaction();
             return true;
-        } else {
-            if (request.isRequestedSessionIdFromURL()) { // disallow passing
-                // the
-                // session id from the
-                // URL, allow cookie
-                // based sessions only
+        } 
+        else {
+            if (request.isRequestedSessionIdFromURL()) { 
+                // disallow passing the session id from the URL, 
+                // allow cookie based sessions only
                 return false;
             }
 
@@ -365,18 +356,19 @@ public class AuthenticationFilter implements Filter {
             fis = new FileInputStream(propFile);
             props.load(fis);
 
-        } catch (IOException e) {
+        } 
+        catch (IOException e) {
             log.error(e);
-        } finally {
+        } 
+        finally {
             if (fis != null) {
                 try {
                     fis.close();
-                } catch (IOException e) {
-
+                } 
+                catch (IOException e) {
                 }
             }
         }
-
     }
 
 }

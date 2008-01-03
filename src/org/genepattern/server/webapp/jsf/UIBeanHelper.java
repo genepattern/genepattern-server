@@ -24,7 +24,6 @@ import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -136,24 +135,12 @@ public class UIBeanHelper {
     }
 
     public static void logout(HttpServletRequest request, HttpServletResponse response, HttpSession session) {
-	Cookie[] cookies = request.getCookies();
-	if (cookies != null) {
-	    for (Cookie c : cookies) {
-		if (GPConstants.USERID.equals(c.getName())) {
-		    c.setMaxAge(0);
-		    c.setPath(request.getContextPath());
-		    response.addCookie(c);
-		    break;
-		}
-	    }
-	}
-	request.removeAttribute(GPConstants.USERID);
-	request.removeAttribute("userID");
-	session.invalidate();
+        session.removeAttribute(GPConstants.USERID);
+        session.invalidate();
     }
 
     public static void logout() {
-	logout(getRequest(), getResponse(), getSession());
+        logout(getRequest(), getResponse(), getSession());
     }
 
     /**
@@ -165,7 +152,7 @@ public class UIBeanHelper {
      * @throws IOException
      */
     public static void login(String username, boolean sessionOnly) throws UnsupportedEncodingException, IOException {
-	UIBeanHelper.login(username, sessionOnly, true, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
+        UIBeanHelper.login(username, sessionOnly, true, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
     }
 
     /**
@@ -178,30 +165,22 @@ public class UIBeanHelper {
      * @throws UnsupportedEncodingException
      * @throws IOException
      */
-    public static void login(String username, boolean sessionOnly, boolean redirect, HttpServletRequest request,
-	    HttpServletResponse response) throws UnsupportedEncodingException, IOException {
-	HttpSession session = request.getSession();
-	User user = new UserDAO().findById(username);
-	assert user != null;
-	user.incrementLoginCount();
-	user.setLastLoginDate(new Date());
-	user.setLastLoginIP(request.getRemoteAddr());
-	request.setAttribute(GPConstants.USERID, username);
-	request.setAttribute("userID", username);
-
-	Cookie cookie = new Cookie(GPConstants.USERID, username);
-	cookie.setPath(request.getContextPath());
-	if (!sessionOnly) {
-	    cookie.setMaxAge(Integer.MAX_VALUE);
-	    session.setMaxInactiveInterval(-1);
-	}
-	response.addCookie(cookie);
-
-	if (redirect) {
-	    String referrer = UIBeanHelper.getReferrer(request);
-	    response.sendRedirect(referrer);
-	    getFacesContext().responseComplete();
-	}
+    public static void login(String username, boolean sessionOnly, boolean redirect, HttpServletRequest request, HttpServletResponse response) 
+    throws UnsupportedEncodingException, IOException 
+    {
+        User user = new UserDAO().findById(username);
+        assert user != null;
+        user.incrementLoginCount();
+        user.setLastLoginDate(new Date());
+        user.setLastLoginIP(request.getRemoteAddr());
+        request.setAttribute(GPConstants.USERID, username);
+        request.setAttribute("userID", username);
+        request.getSession().setAttribute(GPConstants.USERID, user.getUserId());
+        if (redirect) {
+            String referrer = UIBeanHelper.getReferrer(request);
+            response.sendRedirect(referrer);
+            getFacesContext().responseComplete();
+        }
     }
 
     public static String encode(String s) {
