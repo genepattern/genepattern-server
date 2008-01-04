@@ -66,7 +66,7 @@ public class RunPipelineForJsp {
      */
     public boolean isMissingTasks(PipelineModel model, java.io.PrintWriter out, String userID) throws Exception {
         boolean isMissingTasks = false;
-        java.util.List tasks = model.getTasks();
+        List tasks = model.getTasks();
         HashMap<String,LSID> unknownTaskNames = new HashMap<String,LSID>();
         HashMap<String,LSID> unknownTaskVersions = new HashMap<String,LSID>();
         for (int ii = 0; ii < tasks.size(); ii++) {
@@ -110,8 +110,7 @@ public class RunPipelineForJsp {
             
         }
         if (unknownTaskVersions.size() > 0) {
-            for (Iterator iter = unknownTaskVersions.keySet().iterator(); iter
-                    .hasNext();) {
+            for (Iterator iter = unknownTaskVersions.keySet().iterator(); iter.hasNext();) {
                 String name = (String) iter.next();
                 LSID absentlsid = (LSID) unknownTaskVersions.get(name);
                 out.println("<input type=\"hidden\" name=\"lsid\" value=\"" + absentlsid + "\" /> ");
@@ -126,16 +125,12 @@ public class RunPipelineForJsp {
         
         if ((unknownTaskNames.size() + unknownTaskVersions.size()) > 0) {
             out.println("<tr class=\"paleBackground\" >");
-            out
-                    .println(
+            out.println(
                     "<td colspan='4' align='center' border = 'none'> <a href='pages/importTask.jsf'>Install from zip file </a>");
-            out
-                    .println(
+            out.println(
                     " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ");
-            out
-                    .println("<input type=\"hidden\" name=\"checkAll\" value=\"1\"  >");
-            out
-                    .println("<input type=\"submit\" value=\"Install from repository\"  ></td></form>");
+            out.println("<input type=\"hidden\" name=\"checkAll\" value=\"1\"  >");
+            out.println("<input type=\"submit\" value=\"Install from repository\"  ></td></form>");
             out.println("</tr>");
             out.println("</table>");
         }
@@ -143,7 +138,7 @@ public class RunPipelineForJsp {
     }
     
     public boolean isMissingTasks(PipelineModel model, String userID) {
-        java.util.List tasks = model.getTasks();
+        List tasks = model.getTasks();
         try {
             for (int ii = 0; ii < tasks.size(); ii++) {
                 JobSubmission js = (JobSubmission) tasks.get(ii);
@@ -166,7 +161,8 @@ public class RunPipelineForJsp {
         // we do this if there is no pipeline saved by the same name.
         try {
             TaskInfo savedTaskInfo = GenePatternAnalysisTask.getTaskInfo(pipelineName, null);
-        } catch (Exception e) {
+        } 
+        catch (Exception e) {
             // exception means it isn't in the DB therefore not saved
             deleteDirAfterRun = true;
         }
@@ -176,20 +172,18 @@ public class RunPipelineForJsp {
     public  boolean isSavedModel(TaskInfo taskInfo, String pipelineName, String userID) {
         boolean savedPipeline = true;
         // determine if we want a link to the pipeline. Check if one existis in
-        // the DB
-        // by the same name and that the model matches what we have here
+        // the DB by the same name and that the model matches what we have here
         try {
             TaskInfo savedTaskInfo = GenePatternAnalysisTask.getTaskInfo(pipelineName, userID);
             Map sTia = savedTaskInfo.getTaskInfoAttributes();
-            String savedSerializedModel = (String) sTia
-                    .get(GPConstants.SERIALIZED_MODEL);
+            String savedSerializedModel = (String) sTia.get(GPConstants.SERIALIZED_MODEL);
             Map tia = taskInfo.getTaskInfoAttributes();
-            String serializedModel = (String) tia
-                    .get(GPConstants.SERIALIZED_MODEL);
+            String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
             if (!savedSerializedModel.equals(serializedModel)) {
                 savedPipeline = false;
             }
-        } catch (Exception e) {
+        } 
+        catch (Exception e) {
             // exception means it isn't in the DB therefore not saved
             savedPipeline = false;
         }
@@ -243,8 +237,8 @@ public class RunPipelineForJsp {
 
         List<String> cmdLine = new ArrayList<String>();
         cmdLine.add(JAVA);
-        if (false) {
-            //launch the VM in debug mode
+        if (false) {  
+            //for debugging, launch the VM in debug mode
             //   Use with caution, this will cause the process to suspend
             //   see Sun's JPDA documentation for details
             cmdLine.add("-Xdebug");
