@@ -37,9 +37,9 @@ fv taskForm number.of.clusters 2
 submit
 code 200
 url /gp/runTaskPipeline.jsp
-find 'all_aml_test_KMCluster_output.gct'
-find 'all_aml_test_KMCluster_output-1.gct'
-find 'all_aml_test_KMCluster_output-2.gct'
+find 'all_aml_test_KMcluster_output.gct'
+find 'all_aml_test_KMcluster_output-1.gct'
+find 'all_aml_test_KMcluster_output-2.gct'
 
 #Step 2 (c) SOMClustering
 go /gp/pages/index.jsf?lsid=SOMClustering
