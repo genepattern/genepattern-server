@@ -6,7 +6,7 @@
 # 
 
 # 0. login without password
-runfile login.twill
+runfile login_password.twill
 
 # 1. Differential Expression Analysis
 runfile diff_expression.twill
