@@ -1,0 +1,24 @@
+#
+# Login to the GenePattern server
+#
+# pass the server url as an arg, e.g.
+#   -u http://node255.broad.mit.edu:7070
+#   -u http://gpb67-896.broad.mit.edu:8080
+
+#login
+go /gp
+url /gp/pages/login.jsf
+fv loginForm username ted
+fv loginForm password q
+submit
+code 200
+url /gp/pages/index.jsf
+
+#generate the monthly report
+go /gp/createReport.jsp?returnDocument=true&pdfFormat=true&reportName=GenePatternMonthlyReport.jrxml&findStart=week&findEnd=week&startdate=071221&enddate=071221
+
+#save the report as a PDF
+save_html monthly.pdf
+
+
+
