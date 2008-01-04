@@ -149,6 +149,7 @@ import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.WebServiceException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -350,96 +351,114 @@ public class GenePatternAnalysisTask {
      *                The URL to convert to a File.
      * @param userId
      *                The user id of the user running the job.
+     * @throws IllegalArgumentException
+     *                 If the URL refers to a file that the specified userId does not have permission to access.
      * @return The file or <tt>null</tt>
      */
 
     protected File localInputUrlToFile(URL url, String userId) {
+	String path = url.getPath();
 	try {
-	    String path = url.getPath();
 	    path = URLDecoder.decode(path, "UTF-8");
+	} catch (UnsupportedEncodingException e) {
+	    log.error("Error", e);
+	}
 
-	    if (path.endsWith("getFile.jsp")) {
-		// request parameters are: task=lsid & file=filename
-		String params = url.getQuery();
-		int idx1 = params.indexOf("task=");
-		int endIdx1 = params.indexOf('&', idx1);
-		if (endIdx1 == -1) {
-		    endIdx1 = params.length();
-		}
-		int idx2 = params.indexOf("file=");
-		int endIdx2 = params.indexOf('&', idx2);
-		if (endIdx2 == -1) {
-		    endIdx2 = params.length();
-		}
-		String lsid = params.substring(idx1 + 5, endIdx1);
+	if (path.endsWith("getFile.jsp")) {
+	    // request parameters are: task=lsid & file=filename
+	    String params = url.getQuery();
+	    int idx1 = params.indexOf("task=");
+	    int endIdx1 = params.indexOf('&', idx1);
+	    if (endIdx1 == -1) {
+		endIdx1 = params.length();
+	    }
+	    int idx2 = params.indexOf("file=");
+	    int endIdx2 = params.indexOf('&', idx2);
+	    if (endIdx2 == -1) {
+		endIdx2 = params.length();
+	    }
+	    String lsid = params.substring(idx1 + 5, endIdx1);
+	    try {
 		lsid = URLDecoder.decode(lsid, "UTF-8");
-		String filename = params.substring(idx2 + 5, endIdx2);
-		if (filename == null) {
-		    return null;
-		}
+	    } catch (UnsupportedEncodingException e) {
+		log.error("Error", e);
+	    }
+	    String filename = params.substring(idx2 + 5, endIdx2);
+	    if (filename == null) {
+		return null;
+	    }
+	    try {
 		filename = URLDecoder.decode(filename, "UTF-8");
-		if (lsid == null || lsid.trim().equals("")) { // input file
-		    // look in temp for pipelines run without saving
-		    File in = new File(System.getProperty("java.io.tmpdir"), filename);
-		    // now we need to check whether this is the user or an admin
-		    // trying to look at the file
-		    if (in.exists()) {
-			String prefix = userId + "_";
-			if (!filename.startsWith(prefix)) {
-			    if (!AuthorizationHelper.adminJobs(userId)) {
-				return null;
-			    }
-			}
+	    } catch (UnsupportedEncodingException e) {
+		log.error("Error", e);
+	    }
+	    if (lsid == null || lsid.trim().equals("")) { // input file
+		// look in temp for pipelines run without saving
+		File in = new File(System.getProperty("java.io.tmpdir"), filename);
+		// check whether this is the user or an admin
+		// requesting the file
+		if (in.exists()) {
+		    String prefix = userId + "_";
+		    if (filename.startsWith(prefix) || AuthorizationHelper.adminJobs(userId)) {
 			return in;
-		    } else {
-			return null;
 		    }
-
+		    throw new IllegalArgumentException("You do not have permission to access the requested file.");
 		}
-		// check that user can access requested module
+		return null;
+	    }
+	    // check that user can access requested module
+	    try {
 		if (new LocalAdminClient(userId).getTask(lsid) != null) {
 		    File file = new File(DirectoryManager.getTaskLibDir(lsid, lsid, userId), filename);
 		    if (file.exists()) {
 			return file;
 		    }
+		} else {
+		    throw new IllegalArgumentException("You do not have permission to access the requested file.");
 		}
+	    } catch (WebServiceException e) {
+		log.error("Error", e);
+		throw new IllegalArgumentException("Error connecting to database.");
+	    } catch (MalformedURLException e) {
+		log.error("Error", e);
+		throw new IllegalArgumentException("Invalid LSID.");
+	    } catch (IllegalArgumentException e) {
+		log.error("Error", e);
+		throw new IllegalArgumentException("Module not found.");
 	    }
-	    File jobsDir = new File(System.getProperty("jobs"));
-	    String jobDirName = jobsDir.getName();
-	    int jobDirIndex = -1;
-	    log.info("userid " + userId + " jobDirName " + jobDirName);
-	    if ((jobDirIndex = path.lastIndexOf(jobDirName)) != -1) {
-		path = path.substring(jobDirIndex + jobDirName.length());
-		StringTokenizer strtok = new StringTokenizer(path, "/");
-		String job = null;
-
-		if (strtok.hasMoreTokens()) {
-		    job = strtok.nextToken();
-		}
-		String requestedFilename = null;
-		if (strtok.hasMoreTokens()) {
-		    requestedFilename = strtok.nextToken();
-		}
-		if (job == null || requestedFilename == null) {
-		    return null;
-		}
-		log.info("requestedFilename " + requestedFilename);
-		if (isJobOwner(userId, job) || AuthorizationHelper.adminJobs(userId)) {
-		    File jobDir = new File(jobsDir, job);
-		    log.info("jobDir " + jobDir.getCanonicalPath());
-		    File file = new File(jobDir, requestedFilename);
-		    log.info("file " + file.getCanonicalPath());
-		    if (file.exists()) {
-			return file;
-		    }
-		}
-
-	    }
-
-	} catch (Exception e) {
-	    log.error("Error getting file", e);
 	}
+	File jobsDir = new File(System.getProperty("jobs"));
+	String jobDirName = jobsDir.getName();
+	int jobDirIndex = -1;
+	if ((jobDirIndex = path.lastIndexOf(jobDirName)) != -1) {
+	    path = path.substring(jobDirIndex + jobDirName.length());
+	    StringTokenizer strtok = new StringTokenizer(path, "/");
+	    String job = null;
+
+	    if (strtok.hasMoreTokens()) {
+		job = strtok.nextToken();
+	    }
+	    String requestedFilename = null;
+	    if (strtok.hasMoreTokens()) {
+		requestedFilename = strtok.nextToken();
+	    }
+	    if (job == null || requestedFilename == null) {
+		return null;
+	    }
+	    if (isJobOwner(userId, job) || AuthorizationHelper.adminJobs(userId)) {
+		File jobDir = new File(jobsDir, job);
+		File file = new File(jobDir, requestedFilename);
+		if (file.exists()) {
+		    return file;
+		}
+	    } else {
+		throw new IllegalArgumentException("You do not have permission to access the requested file.");
+	    }
+
+	}
+
 	return null;
+
     }
 
     private boolean isJobOwner(String user, String jobId) {
@@ -554,7 +573,7 @@ public class GenePatternAnalysisTask {
 	    ParameterInfo[] params = jobInfo.getParameterInfoArray();
 	    Properties props = setupProps(taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(),
 		    taskInfoAttributes, params, env, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
-
+	    Vector<String> vProblems = new Vector<String>();
 	    long inputLastModified[] = new long[0];
 	    long inputLength[] = new long[0];
 	    if (params != null) {
@@ -654,7 +673,6 @@ public class GenePatternAnalysisTask {
 				params[i].setValue(new File(originalPath).getCanonicalPath());
 				attrsActual.remove(ParameterInfo.TYPE);
 				attrsActual.remove(ParameterInfo.INPUT_MODE);
-
 			    } else {
 				try {
 				    if (originalPath != null) {
@@ -694,7 +712,6 @@ public class GenePatternAnalysisTask {
 					attrsActual.remove(ParameterInfo.TYPE);
 					attrsActual.remove(ParameterInfo.INPUT_MODE);
 					downloadUrl = false;
-
 				    } else {
 					is = new FileInputStream(f);
 					name = f.getName();
@@ -702,25 +719,34 @@ public class GenePatternAnalysisTask {
 				} else {
 				    URL url = uri.toURL();
 				    if (isLocalHost(url)) {
-					File file = localInputUrlToFile(url, jobInfo.getUserId());
-
-					if (file != null) {
-					    if (inputFileMode == INPUT_FILE_MODE.PATH) {
-						params[i].setValue(file.getCanonicalPath());
-						attrsActual.remove(ParameterInfo.TYPE);
-						attrsActual.remove(ParameterInfo.INPUT_MODE);
-						downloadUrl = false;
-					    } else {
-						name = file.getName();
-						is = new BufferedInputStream(new FileInputStream(file));
+					try {
+					    File file = localInputUrlToFile(url, jobInfo.getUserId());
+					    if (file != null) {
+						if (inputFileMode == INPUT_FILE_MODE.PATH) {
+						    params[i].setValue(file.getCanonicalPath());
+						    attrsActual.remove(ParameterInfo.TYPE);
+						    attrsActual.remove(ParameterInfo.INPUT_MODE);
+						    downloadUrl = false;
+						} else {
+						    name = file.getName();
+						    is = new BufferedInputStream(new FileInputStream(file));
+						}
 					    }
+					} catch (IllegalArgumentException e) {
+					    // user tried to access file that he is not allowed to
+					    vProblems.add(e.getMessage());
+					    downloadUrl = false;
 					}
-
 				    }
 				    if (is == null && downloadUrl) {
-					URLConnection conn = url.openConnection();
-					name = getDownloadFileName(conn, url);
-					is = conn.getInputStream();
+					try {
+					    URLConnection conn = url.openConnection();
+					    name = getDownloadFileName(conn, url);
+					    is = conn.getInputStream();
+					} catch (IOException e) {
+					    vProblems.add("Unable to connect to " + url + ".");
+					    downloadUrl = false;
+					}
 				    }
 
 				}
@@ -750,8 +776,7 @@ public class GenePatternAnalysisTask {
 				}
 
 			    } catch (IOException ioe) {
-				log.error("An error occurred while downloading " + uri, ioe);
-				os.write(("An error occurred while downloading " + uri).getBytes());
+				vProblems.add("An error occurred while downloading " + uri);
 			    } finally {
 				if (userInfo != null) {
 				    Authenticator.setDefault(null);
@@ -793,8 +818,10 @@ public class GenePatternAnalysisTask {
 	    // and that all non-optional parameters that are cited actually
 	    // exist
 	    ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
-	    Vector<String> vProblems = validateParameters(props, taskName, taskInfoAttributes.get(COMMAND_LINE),
-		    params, formalParameters, true);
+	    Vector<String> parameterProblems = validateParameters(props, taskName,
+		    taskInfoAttributes.get(COMMAND_LINE), params, formalParameters, true);
+
+	    vProblems.addAll(parameterProblems);
 	    String c = substitute(substitute(taskInfoAttributes.get(COMMAND_LINE), props, formalParameters), props,
 		    formalParameters);
 	    if (c == null || c.trim().length() == 0) {
@@ -929,8 +956,6 @@ public class GenePatternAnalysisTask {
 	    }
 	    StringBuffer stderrBuffer = new StringBuffer();
 	    if (vProblems.size() > 0) {
-		stderrBuffer.append("Error validating input parameters, command line would be:\n"
-			+ commandLine.toString() + "\n");
 		for (Enumeration<String> eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
 		    stderrBuffer.append(eProblems.nextElement() + "\n");
 		}
