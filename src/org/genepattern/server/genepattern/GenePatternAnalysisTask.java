@@ -2547,6 +2547,17 @@ public class GenePatternAnalysisTask {
 	Process process = null;
 	String jobID = null;
 	try {
+        if (false) { //for debugging only
+            String[] debugCmdLine = new String[commandLine.length + 3];
+            debugCmdLine[0] = commandLine[0];
+            debugCmdLine[1] = "-Xdebug";
+            debugCmdLine[2] = "-Xnoagent";
+            debugCmdLine[3] = "-Xrunjdwp:transport=dt_socket,server=y,address=5001,suspend=y";
+            for(int i=1; i<commandLine.length; ++i) {
+                debugCmdLine[i+3] = commandLine[i];
+            }
+            commandLine = debugCmdLine;
+        }
 	    commandLine = translateCommandline(commandLine);
 	    env.remove("SHELLOPTS"); // readonly variable in tcsh and bash,
 	    // not
