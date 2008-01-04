@@ -22,12 +22,10 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -37,8 +35,6 @@ import java.util.SimpleTimeZone;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.util.GPConstants;
-import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 
@@ -121,35 +117,38 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
         logWriter.println(htmlEncode(message) + "<br>");
     }
 
-    // expect a file like this;
-    //	   /Applications/GenePatternServer/Tomcat/temp/ted_run36377.tmp/all_aml_train.res
-    // that needs a url like this 
-    //     http://node255.broad.mit.edu:7070/gp/getFile.jsp?task=&file=ted_run41230.tmp/all_aml_train.res
+    /**
+     * Expect a file like this:
+     * <pre>
+          /Applications/GenePatternServer/Tomcat/temp/ted_run36377.tmp/all_aml_train.res
+       </pre>
+     *  that needs a url like this 
+     * <pre>
+          http://node255.broad.mit.edu:7070/gp/getFile.jsp?task=&file=ted_run41230.tmp/all_aml_train.res
+       </pre>
+     * @param f - must be a non-null file which exists.
+     * @return
+     */
     protected String getUrlForFile(File f){
-    	StringBuffer urlBuff = new StringBuffer(System.getProperty("GenePatternURL"));
-    	urlBuff.append("getFile.jsp?task=&file=");
-    	urlBuff.append(f.getParentFile().getName());
-    	urlBuff.append(File.separator);
-    	urlBuff.append(f.getName());
-    	return urlBuff.toString();
+        StringBuffer urlBuff = new StringBuffer(System.getProperty("GenePatternURL"));
+        urlBuff.append("getFile.jsp?task=&file=");
+        urlBuff.append(f.getAbsoluteFile().getParentFile().getName());
+        urlBuff.append(File.separator);
+        urlBuff.append(f.getName());
+        return urlBuff.toString();
     }
     
-    
     protected String localizeURL(String original) {
-    	boolean isUrl = false;
-    	boolean isFile = false;
-    	try {
-    		URL url = new URL(original);
-    		isUrl = true;
-    	} catch (MalformedURLException mfe){
-    		File f = new File(original);
-    		if ( f.exists()){
-    			original = getUrlForFile(f);;
-    		}
-    	}
-    	
-    	return super.localizeURL(original);
-    	
+        try {
+            new URL(original);
+        } 
+        catch (MalformedURLException mfe) {
+            File f = new File(original);
+            if (f.exists()) {
+                original = getUrlForFile(f);
+            }
+        }
+        return super.localizeURL(original);
     }
     
     
@@ -225,13 +224,13 @@ public class RunPipelineExecutionLogger extends RunPipelineDecoratorBase impleme
         logWriter.print("<div id=\"lsid" + idx + "\" style=\"display:block;\">");
         logWriter.print("<pre>    " + jobSubmission.getLSID() + "</pre>");
         logWriter.print("</div>");
-
-        logWriter.println("<div id=\"id" + idx + "\" style=\"display:block;\">"); // XXX
+        logWriter.println("<div id=\"id" + idx + "\" style=\"display:block;\">");
         logWriter.flush();
         if (!jobSubmission.isVisualizer()) {
-            lastJobStart = new Date(); // skip execution time summary for
-            // visualizers
-        } else {
+            //skip execution time summary for visualizers
+            lastJobStart = new Date(); 
+        } 
+        else {
             lastJobStart = null;
         }
 
