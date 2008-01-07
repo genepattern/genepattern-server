@@ -155,6 +155,7 @@ public class RunTaskHelper {
 		    FileItem cbItem = (FileItem) nameToFileItemMap.get(parameterName + "_cb");
 		    boolean urlChecked = cbItem != null ? "url".equals(cbItem.getString()) : false;
 		    if (urlChecked) {
+			urlParameters.add(parameterName);
 			inputFileParameters.put(parameterName, fi.getString());
 		    } else {
 			requestParameters.put(fieldName, fi.getString());
