@@ -417,7 +417,7 @@ public class GenePatternAnalysisTask {
 		    if (filename.startsWith(prefix) || AuthorizationHelper.adminJobs(userId)) {
 			return in;
 		    }
-		    throw new IllegalArgumentException("You do not have permission to access the requested file.");
+		    throw new IllegalArgumentException("You are not permitted to access the requested file.");
 		}
 		return null;
 	    }
@@ -429,7 +429,7 @@ public class GenePatternAnalysisTask {
 			return file;
 		    }
 		} else {
-		    throw new IllegalArgumentException("You do not have permission to access the requested file.");
+		    throw new IllegalArgumentException("You are not permitted to access the requested file.");
 		}
 	    } catch (WebServiceException e) {
 		log.error("Error", e);
@@ -467,7 +467,7 @@ public class GenePatternAnalysisTask {
 		    return file;
 		}
 	    } else {
-		throw new IllegalArgumentException("You do not have permission to access the requested file.");
+		throw new IllegalArgumentException("You are not permitted to access the requested file.");
 	    }
 
 	}
@@ -641,18 +641,30 @@ public class GenePatternAnalysisTask {
 				vProblems.add("You are not permitted to access the requested file.");
 				continue;
 			    }
-			} else if (mode.equals(ParameterInfo.INPUT_MODE)) { // file provided via SOAP
-			    // ensure file is in Tomcat/temp/attachments
+			} else if (mode.equals(ParameterInfo.INPUT_MODE)) { // file provided via SOAP or by web form
+									    // upload
+			    // ensure file is in GenePatternServer/temp/attachments or in
+			    // GenePatternServer/Tomcat/temp/username_run[0-9]+.tmp
+			    String webUploadDirectory = new File(System.getProperty("java.io.tmpdir"))
+				    .getCanonicalPath();
 			    String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"))
 				    .getCanonicalPath();
-			    String inputFileDirectory = new File(originalPath).getParentFile().getCanonicalPath();
-			    if (!inputFileDirectory.equals(soapAttachmentDir)) {
+			    File inputFile = new File(originalPath);
+
+			    String inputFileDirectory = inputFile.getParentFile().getCanonicalPath();
+
+			    if (inputFile.getParentFile().getParentFile().getCanonicalPath().equals(webUploadDirectory)) {
+				if (!AuthorizationHelper.adminJobs(jobInfo.getUserId())
+					&& !inputFile.getParentFile().getName().startsWith(jobInfo.getUserId() + "_")) {
+				    vProblems.add("You are not permitted to access the requested file.");
+				    continue;
+				}
+			    } else if (!inputFileDirectory.equals(soapAttachmentDir)) {
+				// TODO ensure that SOAP input file belongs to user.
 				vProblems.add("Input file " + new File(originalPath).getName()
-					+ " must be in SOAP attachment directory when mode is 'IN'.");
+					+ " must be in SOAP attachment directory or web upload directory.");
 				continue;
 			    }
-
-			    // TODO ensure that SOAP input file belongs to user.
 			} else {
 			    vProblems.add("Unknown mode for parameter " + params[i].getName() + ".");
 			    continue;
@@ -2620,17 +2632,17 @@ public class GenePatternAnalysisTask {
 	Process process = null;
 	String jobID = null;
 	try {
-        if (false) { //for debugging only
-            String[] debugCmdLine = new String[commandLine.length + 3];
-            debugCmdLine[0] = commandLine[0];
-            debugCmdLine[1] = "-Xdebug";
-            debugCmdLine[2] = "-Xnoagent";
-            debugCmdLine[3] = "-Xrunjdwp:transport=dt_socket,server=y,address=5001,suspend=y";
-            for(int i=1; i<commandLine.length; ++i) {
-                debugCmdLine[i+3] = commandLine[i];
-            }
-            commandLine = debugCmdLine;
-        }
+	    if (false) { // for debugging only
+		String[] debugCmdLine = new String[commandLine.length + 3];
+		debugCmdLine[0] = commandLine[0];
+		debugCmdLine[1] = "-Xdebug";
+		debugCmdLine[2] = "-Xnoagent";
+		debugCmdLine[3] = "-Xrunjdwp:transport=dt_socket,server=y,address=5001,suspend=y";
+		for (int i = 1; i < commandLine.length; ++i) {
+		    debugCmdLine[i + 3] = commandLine[i];
+		}
+		commandLine = debugCmdLine;
+	    }
 	    commandLine = translateCommandline(commandLine);
 	    env.remove("SHELLOPTS"); // readonly variable in tcsh and bash,
 	    // not
