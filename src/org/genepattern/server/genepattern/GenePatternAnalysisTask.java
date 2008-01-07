@@ -246,7 +246,11 @@ public class GenePatternAnalysisTask {
 	COPY, MOVE, PATH
     };
 
+    /** set with property input.file.mode */
     private INPUT_FILE_MODE inputFileMode = INPUT_FILE_MODE.MOVE;
+
+    /** set with property allow.input.file.paths */
+    private boolean allowInputFilePaths = true;
 
     /**
      * GenePatternAnalysisTask constructor. Loads properties from genepattern.properties
@@ -293,6 +297,17 @@ public class GenePatternAnalysisTask {
 		    + System.getProperty("tag") + " loaded");
 	    bAnnounced = true;
 	}
+
+	String inputFilePathProp = System.getProperty("allow.input.file.paths");
+	if (inputFilePathProp != null) {
+	    if (inputFilePathProp.equalsIgnoreCase("true") || inputFilePathProp.equals("1")) {
+		allowInputFilePaths = true;
+		log.info("Allowing input file paths.");
+	    } else if (inputFilePathProp.equalsIgnoreCase("false") || inputFilePathProp.equals("0")) {
+		allowInputFilePaths = false;
+	    }
+	}
+
 	String inputFileModeProp = System.getProperty("input.file.mode");
 	if (inputFileModeProp != null) {
 	    if (inputFileModeProp.equals("copy")) {
@@ -595,6 +610,7 @@ public class GenePatternAnalysisTask {
 
 		    if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null
 			    && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
+
 			if (originalPath == null) {
 			    if (isOptional) {
 				continue;
@@ -602,40 +618,84 @@ public class GenePatternAnalysisTask {
 			    throw new IOException("Non-optional parameter " + params[i].getName()
 				    + " has not been assigned a filename.");
 			}
-			if (mode.equals("CACHED_IN")) { // param is job output
-			    // file
-			    originalPath = System.getProperty("jobs") + "/" + originalPath;
+			if (mode.equals("CACHED_IN")) {
+			    // param is existing job output file
+			    StringTokenizer strtok = new StringTokenizer(originalPath, "/");
+			    String job = null;
+
+			    if (strtok.hasMoreTokens()) {
+				job = strtok.nextToken();
+			    }
+			    String requestedFilename = null;
+			    if (strtok.hasMoreTokens()) {
+				requestedFilename = strtok.nextToken();
+			    }
+			    if (job == null || requestedFilename == null) {
+				vProblems.add("You are not permitted to access the requested file.");
+				continue;
+			    }
+			    if (isJobOwner(jobInfo.getUserId(), job)
+				    || AuthorizationHelper.adminJobs(jobInfo.getUserId())) {
+				originalPath = System.getProperty("jobs") + "/" + originalPath;
+			    } else {
+				vProblems.add("You are not permitted to access the requested file.");
+				continue;
+			    }
+			} else if (mode.equals(ParameterInfo.INPUT_MODE)) { // file provided via SOAP
+			    // ensure file is in Tomcat/temp/attachments
+			    String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"))
+				    .getCanonicalPath();
+			    String inputFileDirectory = new File(originalPath).getParentFile().getCanonicalPath();
+			    if (!inputFileDirectory.equals(soapAttachmentDir)) {
+				vProblems.add("Input file " + new File(originalPath).getName()
+					+ " must be in SOAP attachment directory when mode is 'IN'.");
+				continue;
+			    }
+
+			    // TODO ensure that SOAP input file belongs to user.
+			} else {
+			    vProblems.add("Unknown mode for parameter " + params[i].getName() + ".");
+			    continue;
 			}
 			File inFile = new File(originalPath);
+			if (!inFile.exists()) {
+			    vProblems.add("Input file " + inFile + " does not exist.");
+			    continue;
+			}
+
 			if (inputFileMode == INPUT_FILE_MODE.PATH) {
 			    params[i].setValue(inFile.getCanonicalPath());
 			    attrsActual.remove(ParameterInfo.TYPE);
 			    attrsActual.remove(ParameterInfo.INPUT_MODE);
 			} else {
-			    String inFilename = inFile.getName();
+			    File outFile = null;
+
+			    String inputFilename = new File(originalPath).getName();
 			    // strip off the AxisNNNNNaxis_ prefix
 			    int underscoreIndex = -1;
-			    if (inFilename.startsWith("Axis") && (underscoreIndex = inFilename.indexOf("_")) != -1) {
-				inFilename = inFilename.substring(underscoreIndex + 1);
+			    if (inputFilename.startsWith("Axis")
+				    && (underscoreIndex = inputFilename.indexOf("_")) != -1) {
+				inputFilename = inputFilename.substring(underscoreIndex + 1);
 			    }
-			    File outFile = new File(outDirName, inFilename);
+			    // outDirName is job directory
+			    outFile = new File(outDirName, inputFilename);
 			    int counter = 1;
 			    while (outFile.exists()) { // in case two input files have the same name
-				outFile = new File(outDirName, inFilename + "-" + counter);
+				outFile = new File(outDirName, inputFilename + "-" + counter);
 				counter++;
 			    }
-			    // borrow input file and put it into the job's directory
-			    log.debug("borrowing " + inFile.getCanonicalPath() + " to " + outFile.getCanonicalPath());
-			    if (!inFile.exists()) {
-				log.error("Input file " + inFile + " does not exist.");
-			    } else if (inputFileMode == INPUT_FILE_MODE.COPY ? !copyFile(inFile, outFile) : !rename(
-				    inFile, outFile, true)) {
-				log.error("Unable to " + (inputFileMode == INPUT_FILE_MODE.COPY ? "copy " : "rename ")
-					+ inFile + " to " + outFile);
 
-			    }
 			    if (inputFileMode == INPUT_FILE_MODE.COPY) {
+				if (!copyFile(inFile, outFile)) {
+				    vProblems.add("Unable to copy " + inFile + " to " + outFile);
+				    continue;
+				}
 				outFile.deleteOnExit(); // mark for delete, just in case
+			    } else if (inputFileMode == INPUT_FILE_MODE.MOVE) {
+				if (!rename(inFile, outFile, true)) {
+				    vProblems.add("Unable to move " + inFile + " to " + outFile);
+				    continue;
+				}
 			    }
 			    params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
 			    params[i].setValue(outFile.getCanonicalPath());
@@ -670,6 +730,10 @@ public class GenePatternAnalysisTask {
 			    // substituting the downloaded filename for the URL in
 			    // the command line.
 			    if (inputFileMode == INPUT_FILE_MODE.PATH && new File(originalPath).exists()) {
+				if (!allowInputFilePaths) {
+				    vProblems.add("You are not permitted to access the requested file.");
+				    continue;
+				}
 				params[i].setValue(new File(originalPath).getCanonicalPath());
 				attrsActual.remove(ParameterInfo.TYPE);
 				attrsActual.remove(ParameterInfo.INPUT_MODE);
@@ -680,6 +744,11 @@ public class GenePatternAnalysisTask {
 					isURL = true;
 				    }
 				} catch (MalformedURLException mfe) {
+				    // path on server
+				    if (!allowInputFilePaths) {
+					vProblems.add("You are not permitted to access the requested file.");
+					continue;
+				    }
 				}
 			    }
 			}
@@ -706,6 +775,10 @@ public class GenePatternAnalysisTask {
 				String name = null;
 				boolean downloadUrl = true;
 				if ("file".equalsIgnoreCase(uri.getScheme())) {
+				    if (!allowInputFilePaths) {
+					vProblems.add("You are not permitted to access the requested file.");
+					continue;
+				    }
 				    File f = new File(uri);
 				    if (inputFileMode == INPUT_FILE_MODE.PATH) {
 					params[i].setValue(f.getCanonicalPath());
