@@ -12,8 +12,7 @@
 
 package org.genepattern.server.util;
 
-import static org.genepattern.util.GPConstants.COMMAND_PREFIX;
-import static org.genepattern.util.GPConstants.TASK_PREFIX_MAPPING;
+import org.genepattern.util.GPConstants;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -42,62 +41,59 @@ public class PropertiesManager {
     }
 
     public synchronized Properties getCommandPrefixes() {
-        return propertiesMap.get(COMMAND_PREFIX);
+        return propertiesMap.get(GPConstants.COMMAND_PREFIX);
 
     }
 
+    public synchronized Properties getJavaFlags() {
+        Properties p = propertiesMap.get(GPConstants.JAVA_FLAGS);
+        if (p == null) p = new Properties();
+        return p;
+    }
+
+    
     public Properties getProperties(String name) {
         return propertiesMap.get(name);
     }
 
     public Properties getTaskPrefixMapping() {
-        return propertiesMap.get(TASK_PREFIX_MAPPING);
+        return propertiesMap.get(GPConstants.TASK_PREFIX_MAPPING);
     }
 
     public void reloadCommandPrefixesFromDisk() {
-        Properties commandPrefixes = new Properties();
-        File cpFile = new File(getPropsDir(), COMMAND_PREFIX + ".properties");
-        if (cpFile.exists()) {
-            FileInputStream fis = null;
-            try {
-                fis = new FileInputStream(cpFile);
-                commandPrefixes.load(fis);
-            } catch (IOException e) {
-                log.error("Error loading " + COMMAND_PREFIX, e);
-            } finally {
-                if (fis != null) {
-                    try {
-                        fis.close();
-                    } catch (IOException e) {
-
-                    }
-                }
-            }
-        }
-        propertiesMap.put(COMMAND_PREFIX, commandPrefixes);
-
-        Properties taskPrefixMapping = new Properties();
-        File tpmFile = new File(getPropsDir(), TASK_PREFIX_MAPPING + ".properties");
-        if (tpmFile.exists()) {
-            FileInputStream fis = null;
-            try {
-                fis = new FileInputStream(tpmFile);
-                taskPrefixMapping.load(fis);
-            } catch (IOException e) {
-                log.error("Error loading " + TASK_PREFIX_MAPPING, e);
-            } finally {
-                if (fis != null) {
-                    try {
-                        fis.close();
-                    } catch (IOException e) {
-
-                    }
-                }
-            }
-        }
-        propertiesMap.put(TASK_PREFIX_MAPPING, taskPrefixMapping);
-
+        reloadFromDisk(GPConstants.COMMAND_PREFIX);
+        reloadFromDisk(GPConstants.TASK_PREFIX_MAPPING);
     }
+    
+    
+    private void reloadFromDisk(String name) {
+        Properties javaFlags = new Properties();
+        File jfFile = new File(getPropsDir(), name + ".properties");
+        if (jfFile.exists()) {
+            FileInputStream fis = null;
+            try {
+                fis = new FileInputStream(jfFile);
+                javaFlags.load(fis);
+            } catch (IOException e) {
+                log.error("Error loading " + name, e);
+            } finally {
+                if (fis != null) {
+                    try {
+                        fis.close();
+                    } catch (IOException e) {
+
+                    }
+                }
+            }
+        }
+        propertiesMap.put(name, javaFlags);
+    }
+    
+    
+    public void reloadJavaFlagsFromDisk() {
+         reloadFromDisk(GPConstants.JAVA_FLAGS);
+    }
+    
 
     public boolean saveProperties(String name, Properties props) {
         boolean storeSuccess = false;
@@ -123,11 +119,15 @@ public class PropertiesManager {
     }
 
     public void setCommandPrefixes(Properties p) {
-        propertiesMap.put(COMMAND_PREFIX, p);
+        propertiesMap.put(GPConstants.COMMAND_PREFIX, p);
+    }
+    
+    public void setJavaFlags(Properties p) {
+        propertiesMap.put(GPConstants.JAVA_FLAGS, p);
     }
 
     public void setTaskPrefixMapping(Properties p) {
-        propertiesMap.put(TASK_PREFIX_MAPPING, p);
+        propertiesMap.put(GPConstants.TASK_PREFIX_MAPPING, p);
     }
 
     public static boolean appendArrayPropertyAndStore(String key, String val, String delimiter, boolean unique,
@@ -185,7 +185,8 @@ public class PropertiesManager {
         return props;
 
     }
-
+    
+  
     public static Properties getDefaultProperties() throws IOException {
         Properties props = new Properties();
         FileInputStream fis = null;
@@ -229,6 +230,7 @@ public class PropertiesManager {
             if (inst == null) {
                 inst = new PropertiesManager();
                 inst.reloadCommandPrefixesFromDisk();
+                inst.reloadJavaFlagsFromDisk();
             }
             return inst;
         }

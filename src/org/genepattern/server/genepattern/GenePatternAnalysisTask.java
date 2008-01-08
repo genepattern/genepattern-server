@@ -2475,6 +2475,17 @@ public class GenePatternAnalysisTask {
 		    + System.getProperty("file.separator") : "taskLibDir");
 	    props.put(LIBDIR, taskLibDir);
 
+	    // set the java flags if they have been overridden in the java_flags.properties file
+	    PropertiesManager pm = PropertiesManager.getInstance();
+	    Properties javaFlagProps = pm.getJavaFlags();
+	    String javaFlags = javaFlagProps.getProperty(sLSID);
+	    if (javaFlags == null){
+	    	LSID lsid = new LSID(sLSID);
+	    	javaFlags = javaFlagProps.getProperty(lsid.toStringNoVersion());
+	    }
+	    if (javaFlags != null) props.put(GPConstants.JAVA_FLAGS,  javaFlags);
+	  	   
+	    
 	    // populate props with the input parameters so that they can be
 	    // looked up by name
 	    if (actuals != null) {
