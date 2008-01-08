@@ -217,6 +217,9 @@ public class GPConstants {
 
     public static final int PARAM_INFO_TYPE_NAME_OFFSET = 0; // offset into
 
+    public static final String JAVA_FLAGS = "java_flags";
+
+    
     // one
     // of the following
     // array entries
