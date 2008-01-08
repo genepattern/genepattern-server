@@ -34,14 +34,14 @@ import org.hibernate.Query;
  * AnalysisManager.
  * 
  * @author Rajesh Kuttan
- * @version
  */
 
 public class AnalysisTask implements Runnable {
     private static Logger log = Logger.getLogger(AnalysisTask.class);
 
     private Object jobQueueWaitObject = new Object();
-    private Vector jobQueue = new Vector<JobInfo>();
+
+    private Vector<JobInfo> jobQueue = new Vector<JobInfo>();
 
     // Semaphore to maintain simultaneous job count
     private Semaphore sem = null;
@@ -67,6 +67,7 @@ public class AnalysisTask implements Runnable {
 	}
     }
 
+    // prevent instantiation
     private AnalysisTask() {
     }
 
@@ -81,7 +82,7 @@ public class AnalysisTask implements Runnable {
      *                The feature to be added to the JobToQueue attribute
      */
     public void addJobToQueue(Object o) {
-	jobQueue.add(o);
+	jobQueue.add((JobInfo) o);
     }
 
     /** Clears the AnalysisTask's queue. */
@@ -106,12 +107,12 @@ public class AnalysisTask implements Runnable {
 	Vector<JobInfo> updatedJobs = new Vector<JobInfo>();
 
 	JobStatus newStatus = (JobStatus) HibernateUtil.getSession().get(JobStatus.class, JobStatus.JOB_PROCESSING);
-	Iterator iter = jobs.iterator();
+	Iterator<JobInfo> iter = jobs.iterator();
 
 	while (iter.hasNext() && i++ <= maxJobCount) {
 	    HibernateUtil.beginTransaction();
 	    try {
-		JobInfo jobby = (JobInfo) iter.next();
+		JobInfo jobby = iter.next();
 
 		AnalysisJob aJob = dao.findById(jobby.getJobNumber());
 		aJob.setStatus(newStatus);
@@ -133,8 +134,8 @@ public class AnalysisTask implements Runnable {
 	return updatedJobs;
     }
 
-    private Vector getWaitingJobs(int maxJobCount) throws OmnigeneException {
-	Vector jobVector = new Vector();
+    private Vector<JobInfo> getWaitingJobs(int maxJobCount) throws OmnigeneException {
+	Vector<JobInfo> jobVector = new Vector<JobInfo>();
 
 	// initializing maxJobCount, if it has invalid value
 	if (maxJobCount <= 0) {
