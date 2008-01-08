@@ -577,9 +577,6 @@ public class Analysis extends GenericWebService {
         }
     }
 
-    public void wakeupQueue() {
-        AnalysisTask.getInstance().wakeupJobQueue();
-    }
 
     /**
      * Returns the username trying to access this service. The username is
