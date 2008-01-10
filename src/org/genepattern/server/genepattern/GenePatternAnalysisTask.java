@@ -641,16 +641,17 @@ public class GenePatternAnalysisTask {
 				vProblems.add("You are not permitted to access the requested file.");
 				continue;
 			    }
-			} else if (mode.equals(ParameterInfo.INPUT_MODE)) { // file provided via SOAP or by web form
-									    // upload
-			    // ensure file is in GenePatternServer/temp/attachments or in
+			} else if (mode.equals(ParameterInfo.INPUT_MODE)) {
+			    // file provided via SOAP or by web form upload
+			    // ensure file is in GenePatternServer/temp/attachments/username or in
 			    // GenePatternServer/Tomcat/temp/username_run[0-9]+.tmp
 			    String webUploadDirectory = new File(System.getProperty("java.io.tmpdir"))
 				    .getCanonicalPath();
-			    String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"))
-				    .getCanonicalPath();
-			    File inputFile = new File(originalPath);
 
+			    String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir")
+				    + File.separator + jobInfo.getUserId()).getCanonicalPath();
+
+			    File inputFile = new File(originalPath);
 			    String inputFileDirectory = inputFile.getParentFile().getCanonicalPath();
 
 			    if (inputFile.getParentFile().getParentFile().getCanonicalPath().equals(webUploadDirectory)) {
@@ -660,7 +661,6 @@ public class GenePatternAnalysisTask {
 				    continue;
 				}
 			    } else if (!inputFileDirectory.equals(soapAttachmentDir)) {
-				// TODO ensure that SOAP input file belongs to user.
 				vProblems.add("Input file " + new File(originalPath).getName()
 					+ " must be in SOAP attachment directory or web upload directory.");
 				continue;
@@ -2479,13 +2479,13 @@ public class GenePatternAnalysisTask {
 	    PropertiesManager pm = PropertiesManager.getInstance();
 	    Properties javaFlagProps = pm.getJavaFlags();
 	    String javaFlags = javaFlagProps.getProperty(sLSID);
-	    if (javaFlags == null){
-	    	LSID lsid = new LSID(sLSID);
-	    	javaFlags = javaFlagProps.getProperty(lsid.toStringNoVersion());
+	    if (javaFlags == null) {
+		LSID lsid = new LSID(sLSID);
+		javaFlags = javaFlagProps.getProperty(lsid.toStringNoVersion());
 	    }
-	    if (javaFlags != null) props.put(GPConstants.JAVA_FLAGS,  javaFlags);
-	  	   
-	    
+	    if (javaFlags != null)
+		props.put(GPConstants.JAVA_FLAGS, javaFlags);
+
 	    // populate props with the input parameters so that they can be
 	    // looked up by name
 	    if (actuals != null) {
