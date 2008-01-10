@@ -13,88 +13,65 @@
 package org.genepattern.server.process;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.GregorianCalendar;
 import java.util.TimerTask;
 
 import org.apache.log4j.Logger;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Delete;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 
 /**
- * Periodically purge jobs that completed some number of days ago.
+ * Periodically purge jobs that completed some number of days ago and input files.
  * 
- * @author Jim Lerner
  */
 public class Purger extends TimerTask {
 
     private static Logger log = Logger.getLogger(Purger.class);
 
     /** number of days back to preserve completed jobs */
-    int purgeInterval = -1;
+    private int purgeInterval = -1;
 
     public Purger(int purgeInterval) {
 	this.purgeInterval = purgeInterval;
     }
 
+    @Override
     public void run() {
 	if (purgeInterval != -1) {
 	    try {
 		HibernateUtil.beginTransaction();
-
 		// find all purgeable jobs
-		GregorianCalendar gcPurgeDate = new GregorianCalendar();
-		gcPurgeDate.add(GregorianCalendar.DATE, -purgeInterval);
-		log.info("Purger: purging jobs completed before " + gcPurgeDate.getTime());
+		GregorianCalendar purgeDate = new GregorianCalendar();
+		purgeDate.add(GregorianCalendar.DATE, -purgeInterval);
+		log.info("Purger: purging jobs completed before " + purgeDate.getTime());
 
 		AnalysisDAO ds = new AnalysisDAO();
-		JobInfo[] purgeableJobs = ds.getJobInfo(gcPurgeDate.getTime());
+		JobInfo[] purgeableJobs = ds.getJobInfo(purgeDate.getTime());
 
-		// purge expired jobs
-
-		for (int jobNum = 0; jobNum < purgeableJobs.length; jobNum++) {
-		    try {
-
-			int jobID = purgeableJobs[jobNum].getJobNumber();
-			log.info("Purger: deleting jobID " + jobID);
-
-			// enumerate output files for this job and delete them
-			File jobDir = new File(GenePatternAnalysisTask.getJobDir(Integer.toString(jobID)));
-			File[] files = jobDir.listFiles();
-			if (files != null) {
-			    for (int i = 0; i < files.length; i++) {
-				files[i].delete();
-			    }
-			}
-
-			// delete the job directory
-			jobDir.delete();
-
-			// TODO: figure out which input files to purge. This is
-			// hard, because an input file could be shared among
-			// numerous jobs, some of which are not old enough to
-			// purge yet
-
-			ds.deleteJob(jobID);
-		    } catch (Exception e) {
-			log.error(" while purging jobs", e);
-		    }
+		for (int i = 0; i < purgeableJobs.length; i++) {
+		    int jobID = purgeableJobs[i].getJobNumber();
+		    ds.deleteJob(jobID); // delete the job from the database and recursively delete the job directory
 		}
 
 		HibernateUtil.commitTransaction();
+		long dateCutoff = purgeDate.getTime().getTime();
+		// remove input files uploaded using web form
+		purge(new File(System.getProperty("java.io.tmpdir")), dateCutoff);
 
-		// try {
-		// Indexer.optimize(Indexer.getIndexDir());
-		// }
-		// catch (IOException ioe) {
-		// log.error(" while optimizing search index", ioe);
-		// }
-
-		long dateCutoff = gcPurgeDate.getTime().getTime();
-		purge(System.getProperty("jobs"), dateCutoff);
-		purge(System.getProperty("java.io.tmpdir"), dateCutoff);
+		File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
+		File[] userDirs = soapAttachmentDir.listFiles();
+		if (userDirs != null) {
+		    for (File f : userDirs) {
+			purge(f, dateCutoff);
+			File[] files = f.listFiles();
+			if (files == null || files.length == 0) {
+			    f.delete();
+			}
+		    }
+		}
 
 	    } catch (Exception e) {
 		HibernateUtil.rollbackTransaction();
@@ -102,47 +79,27 @@ public class Purger extends TimerTask {
 	    } finally {
 		HibernateUtil.closeCurrentSession();
 	    }
-	    log.info("Purger: done");
 	}
     }
 
-    protected void purge(String dirName, long dateCutoff) throws IOException {
-	File[] moreFiles = new File(dirName).listFiles();
-	// log.info("cutoff: " + new Date(dateCutoff).toString());
-	if (moreFiles != null) {
-	    for (int i = 0; i < moreFiles.length; i++) {
-		// log.info(moreFiles[i].getName() + ": " + new
-		// Date(moreFiles[i].lastModified()).toString());
-		if (moreFiles[i].getName().startsWith("Lucene") && moreFiles[i].getName().endsWith(".lock"))
-		    continue;
-		if (/* moreFiles[i].getName().startsWith("pipe") && */
-		moreFiles[i].lastModified() < dateCutoff) {
-		    try {
-			if (moreFiles[i].isDirectory()) {
-			    // log.info("Purger: deleting pipeline " +
-			    // moreFiles[i]);
-			    File[] files = moreFiles[i].listFiles();
-			    if (files != null) {
-				for (int j = 0; j < files.length; j++) {
-				    try {
-					files[j].delete();
-				    } catch (SecurityException se) {
-					log.error("unable to delete " + files[j].getPath());
-				    }
-				}
-			    }
-			}
-			try {
-			    moreFiles[i].delete();
-			} catch (SecurityException se) {
-			    log.error("unable to delete " + moreFiles[i].getPath(), se);
-			}
-		    } catch (SecurityException se) {
-			log.error("unable to browse " + moreFiles[i].getPath(), se);
+    protected void purge(File dir, long dateCutoff) {
+	File[] files = dir.listFiles();
+	if (files != null) {
+	    for (int i = 0; i < files.length; i++) {
+		if (files[i].lastModified() < dateCutoff) {
+		    if (files[i].isDirectory()) {
+			Delete del = new Delete();
+			del.setDir(files[i]);
+			del.setIncludeEmptyDirs(true);
+			del.setProject(new Project());
+			del.execute();
+		    } else {
+			files[i].delete();
 		    }
 		}
 	    }
 	}
+
     }
 
     public static void main(String args[]) {
