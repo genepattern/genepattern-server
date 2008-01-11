@@ -21,11 +21,8 @@ import java.net.URL;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpState;
-import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-//import org.apache.log4j.Logger;
 
 /**
  * Class used to authenticate with server and download job result files over
@@ -39,16 +36,20 @@ public class JobDownloader {
 
     private HttpClient client = new HttpClient();
 
-    private String password;
+    private LoginHttpClient login = new LoginHttpClient();
 
+    //private String password;
     private String server;
-
-    private String username;
+    //private String username;
 
     public JobDownloader(String server, String username, String password) {
-        this.username = username;
-        this.password = password;
+        //this.username = username;
+        //this.password = password;
         this.server = server;
+        login = new LoginHttpClient();
+        login.setUsername(username);
+        login.setPassword(password);
+        login.setServerUrl(server);
         client.setState(new HttpState());
         client.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
     }
@@ -106,23 +107,9 @@ public class JobDownloader {
     }
 
     private void login() throws IOException {
-        GetMethod get = new GetMethod(server + "/gp/pages/login.jsf");
-        client.executeMethod(get);
-
-        URL serverUrl = new URL(server);
-        server = serverUrl.getProtocol() + "://" + get.getURI().getHost() + ":" + serverUrl.getPort();
-        get.releaseConnection();
-
-        String url = server + "/gp/pages/login.jsf";
-        PostMethod postMethod = new PostMethod(url);
-        NameValuePair useridPair = new NameValuePair("username", username);
-        if (password != null) {
-            NameValuePair passwordPair = new NameValuePair("password", password);
-            postMethod.setRequestBody(new NameValuePair[] { useridPair, passwordPair });
-        } else {
-            postMethod.setRequestBody(new NameValuePair[] { useridPair });
+        LoginHttpClient.LoginState state = login.login(client);
+        if (state == LoginHttpClient.LoginState.IO_EXCEPTION) {
+            //TODO: throw an exception
         }
-        client.executeMethod(postMethod);
-        postMethod.releaseConnection();
     }
 }
