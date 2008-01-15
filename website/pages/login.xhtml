@@ -36,7 +36,7 @@
 	<ui:define name="pageTitle">GenePattern sign-in</ui:define>
 	<ui:define name="body">
 
-		<h:form onsubmit="return validateForm(this);" id="loginForm" forceId="true">
+		<h:form onsubmit="return validateForm(this);" id="loginForm">
 			<table width="330">
 				<tr>
 					<td><span style="font-weight: bold;"> Sign-in to
@@ -73,7 +73,7 @@
 				
 				<h:outputLabel value="Password:" for="password"
 					rendered="#{loginBean.passwordRequired}"></h:outputLabel>
-				<h:inputSecret size="50" value="#{loginBean.password}" id="password" forceId="true" rendered="#{loginBean.passwordRequired}" />
+				<h:inputSecret size="50" value="#{loginBean.password}" id="password" rendered="#{loginBean.passwordRequired}" />
 			</h:panelGrid>
 			<h:commandButton id="signIn" actionListener="#{loginBean.submitLogin}" value="Sign In" />
 			<br />
