@@ -73,7 +73,7 @@ public class LoginHttpClient {
      */
     public LoginState login(HttpClient client) {
         GetMethod loginGet = null;
-        LoginFormFields formValues = null;
+        String viewStateValue = "";
         try {
             loginGet = new GetMethod(serverUrl + HOME_PAGE);
             loginGet.setFollowRedirects(true);
@@ -82,7 +82,7 @@ public class LoginHttpClient {
             if (! LOGIN_PAGE.equals(loginGet.getPath())) {
                 return LoginState.SUCCESS;
             }
-            formValues = parseLoginForm(loginGet);
+            viewStateValue = parseLoginForm(loginGet);
             updateServerUrl(loginGet);
         }
         catch (IOException e) {
@@ -100,12 +100,12 @@ public class LoginHttpClient {
             loginPost = new PostMethod(serverUrl + LOGIN_PAGE);
             List<NameValuePair> fields = new ArrayList<NameValuePair>();
             fields.add(new NameValuePair("loginForm", "loginForm"));
-            fields.add(new NameValuePair("javax.faces.ViewState", formValues.viewStateValue));
+            fields.add(new NameValuePair("javax.faces.ViewState", viewStateValue));
             fields.add(new NameValuePair("username", username));
             if (password != null) {
                 fields.add(new NameValuePair("loginForm:password", password));
             }
-            fields.add(new NameValuePair(formValues.submitName, "Sign In"));
+            fields.add(new NameValuePair("loginForm:signIn", "Sign In"));
             NameValuePair[] fieldsArr = new NameValuePair[fields.size()];
             fieldsArr = fields.toArray(fieldsArr);
             loginPost.setRequestBody(fieldsArr);
@@ -123,29 +123,20 @@ public class LoginHttpClient {
         return validateLogin(client);
     }
     
-    private static class LoginFormFields {
-        public String viewStateValue = "";
-        public String submitName = "";
-    }
-
     /**
-     * Parse the contents of the login form to find the rquired dynamically generated form names and values.
-     *
+     * Parse the contents of the login form to find the required dynamically generated ViewState value.
      * Here is an example snippet from the generated login form.
      <pre>
      <input type="hidden" name="javax.faces.ViewState" id="javax.faces.ViewState" value="j_id2006:j_id2007" />
-     <input type="submit" name="loginForm:j_id35" value="Sign In" />
      </pre>
-     This method must find the corresponding value for ViewState and the correct name for the submit button.
      *
      * @param method an HttpGetMethod after requesting the login page.
-     * @return the dynamically generated form names and values to post with the login form.
+     * @return the dynamically generated value for ViewState
      */
-    private static LoginFormFields parseLoginForm(HttpMethod method) {
+    private static String parseLoginForm(HttpMethod method) {
         final String matchViewState = "name=\"javax.faces.ViewState\" id=\"javax.faces.ViewState\" value=\"";
-        final String matchSubmit = "<input type=\"submit\" name=\"";
         
-        LoginFormFields rval = new LoginFormFields();
+        String rval = "";
         try {
             String body = method.getResponseBodyAsString();
             int i = body.indexOf(matchViewState);
@@ -155,16 +146,8 @@ public class LoginHttpClient {
             }
             i += matchViewState.length();
             int j = body.indexOf('"', i);
-            rval.viewStateValue = body.substring(i,j);
+            rval = body.substring(i,j);
             
-            i = body.indexOf(matchSubmit, j);
-            if (i < 0) {
-                System.out.println("login.httpResponse did not contain '"+matchSubmit+"'");
-                return rval;
-            }
-            i += matchSubmit.length();
-            j = body.indexOf('"', i);
-            rval.submitName = body.substring(i,j);
             return rval;
         }
         catch (IOException e) {
