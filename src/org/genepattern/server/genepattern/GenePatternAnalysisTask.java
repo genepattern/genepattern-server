@@ -741,6 +741,7 @@ public class GenePatternAnalysisTask {
 			    // handle http files by downloading them and
 			    // substituting the downloaded filename for the URL in
 			    // the command line.
+
 			    if (inputFileMode == INPUT_FILE_MODE.PATH && new File(originalPath).exists()) {
 				if (!allowInputFilePaths) {
 				    vProblems.add("You are not permitted to access the requested file.");
@@ -754,6 +755,7 @@ public class GenePatternAnalysisTask {
 				    if (originalPath != null) {
 					new URL(originalPath);
 					isURL = true;
+
 				    }
 				} catch (MalformedURLException mfe) {
 				    // path on server
@@ -788,8 +790,20 @@ public class GenePatternAnalysisTask {
 				boolean downloadUrl = true;
 				if ("file".equalsIgnoreCase(uri.getScheme())) {
 				    if (!allowInputFilePaths) {
-					vProblems.add("You are not permitted to access the requested file.");
-					continue;
+					// prompt when run input files in pipelines are saved as
+					// file:/Applications/GenePatternServer/Tomcat/temp/username_run27407.tmp/filename
+					File inputFile = new File(uri);
+					String webUploadDirectory = new File(System.getProperty("java.io.tmpdir"))
+						.getCanonicalPath();
+
+					if (!(inputFile.getParentFile().getParentFile().getCanonicalPath().equals(
+						webUploadDirectory) && (AuthorizationHelper.adminJobs(jobInfo
+						.getUserId()) || !inputFile.getParentFile().getName().startsWith(
+						jobInfo.getUserId() + "_")))) {
+					    vProblems
+						    .add("File input URLs are not allowed on this GenePattern server.");
+					    continue;
+					}
 				    }
 				    File f = new File(uri);
 				    if (inputFileMode == INPUT_FILE_MODE.PATH) {
