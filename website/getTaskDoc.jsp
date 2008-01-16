@@ -264,12 +264,28 @@ if (filename == null) {
 <%
 	return;
 }
-if (filename.indexOf("/") != -1) filename = filename.substring(filename.indexOf("/")+1);
-String taskLibDir = DirectoryManager.getTaskLibDir(ti.getName(), (String)tia.get(GPConstants.LSID), userID);
-int i = filename.lastIndexOf(".");
+if (filename.indexOf("/") != -1) {
+    //filename must be in the taskLibDir
+    // e.g. ignore something like ../../genepattern.properties
+    int i = filename.lastIndexOf('/');
+    if (i >= 0) {
+        filename = filename.substring(i+1,filename.length());
+    }
+}
+String taskLibDirName = DirectoryManager.getTaskLibDir(ti.getName(), (String)tia.get(GPConstants.LSID), userID);
 
-File in = new File(taskLibDir, filename);
-if (!in.exists()) {
+File in = null;
+File taskLibDir = new File(taskLibDirName);
+if (!taskLibDir.exists() || !taskLibDir.isDirectory() || !taskLibDir.canRead()) {
+    //
+}
+else {
+    in = new File(taskLibDir, filename);
+    //really restrict to files in the taskLibDir
+    in = new File(taskLibDir, in.getName());
+}
+
+if (in == null || !in.exists()) {
 %>
 	<html>
 	<head>
@@ -298,7 +314,7 @@ if (contentType == null) {
 	htTypes.put(".pdf", "application/pdf");
 	htTypes.put(".doc", "application/msword");
 
-	i = filename.lastIndexOf(".");
+	int i = filename.lastIndexOf(".");
 	String extension = (i > -1 ? filename.substring(i) : "");
 	contentType = (String)htTypes.get(extension.toLowerCase());
 }
