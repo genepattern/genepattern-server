@@ -798,7 +798,7 @@ public class GenePatternAnalysisTask {
 
 					if (!(inputFile.getParentFile().getParentFile().getCanonicalPath().equals(
 						webUploadDirectory) && (AuthorizationHelper.adminJobs(jobInfo
-						.getUserId()) || !inputFile.getParentFile().getName().startsWith(
+						.getUserId()) || inputFile.getParentFile().getName().startsWith(
 						jobInfo.getUserId() + "_")))) {
 					    vProblems
 						    .add("File input URLs are not allowed on this GenePattern server.");
