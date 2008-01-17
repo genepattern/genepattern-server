@@ -77,8 +77,6 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpState;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.genepattern.gpge.CLThread;
 import org.genepattern.gpge.GenePattern;
 import org.genepattern.gpge.PropertyManager;
@@ -115,6 +113,7 @@ import org.genepattern.gpge.util.BuildProperties;
 import org.genepattern.util.BrowserLauncher;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.util.LoginHttpClient;
 import org.genepattern.webservice.AdminProxy;
 import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.AnalysisService;
@@ -430,19 +429,17 @@ public class GPGE {
 
     public void changeServer(String _server, final String username, final String password) {
         analysisServiceManager = AnalysisServiceManager.getInstance();
-        // get fully qualified host name
-        GetMethod get = new GetMethod(_server + "/gp/pages/login.jsf");
+        
         HttpClient client = new HttpClient();
-        client.setState(new HttpState());
-        try {
-            client.executeMethod(get);
-            URL serverUrl = new URL(_server);
-            _server = serverUrl.getProtocol() + "://" + get.getURI().getHost() + ":" + serverUrl.getPort();
-
-        } catch (Exception e) { // ignore
-
-        } finally {
-            get.releaseConnection();
+        LoginHttpClient login = new LoginHttpClient();
+        login.setUsername(username);
+        login.setPassword(password);
+        login.setServerUrl(_server);
+        LoginHttpClient.LoginState state = login.login(client);
+        if (!LoginHttpClient.LoginState.SUCCESS.equals(state)) {
+            GenePattern.showMessageDialog("Error connecting to server: "+_server);
+            setChangeServerActionsEnabled(true);
+            return;
         }
         final String server = _server;
 
