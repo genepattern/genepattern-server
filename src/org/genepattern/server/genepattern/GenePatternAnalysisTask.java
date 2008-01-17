@@ -788,23 +788,34 @@ public class GenePatternAnalysisTask {
 			    try {
 				String name = null;
 				boolean downloadUrl = true;
-				if ("file".equalsIgnoreCase(uri.getScheme())) {
-				    if (!allowInputFilePaths) {
-					// prompt when run input files in pipelines are saved as
-					// file:/Applications/GenePatternServer/Tomcat/temp/username_run27407.tmp/filename
-					File inputFile = new File(uri);
-					String webUploadDirectory = new File(System.getProperty("java.io.tmpdir"))
-						.getCanonicalPath();
+				if ("file".equalsIgnoreCase(uri.getScheme()) && !allowInputFilePaths) {
+				    // prompt when run input files in pipelines are saved as
+				    // file:/Applications/GenePatternServer/Tomcat/temp/username_run27407.tmp/filename
+				    // through the web client
+				    // and
+				    // file:/Applications/GenePatternServer/Tomcat/webapps/gp/jobResults/jobNumber/filename
+				    // through SOAP
+				    File inputFile = new File(uri);
+				    String webUploadDirectory = new File(System.getProperty("java.io.tmpdir"))
+					    .getCanonicalPath();
+				    
+				    if (!(inputFile.getParentFile().getParentFile().getCanonicalPath().equals(
+					    webUploadDirectory) && (AuthorizationHelper.adminJobs(jobInfo.getUserId()) || inputFile
+					    .getParentFile().getName().startsWith(jobInfo.getUserId() + "_")))) {
 
-					if (!(inputFile.getParentFile().getParentFile().getCanonicalPath().equals(
-						webUploadDirectory) && (AuthorizationHelper.adminJobs(jobInfo
-						.getUserId()) || inputFile.getParentFile().getName().startsWith(
-						jobInfo.getUserId() + "_")))) {
+					String jobsDirectory = new File(System.getProperty("jobs")).getCanonicalPath();
+					String jobNumber = inputFile.getParentFile().getName();
+
+					if (!jobsDirectory.equals(inputFile.getParentFile().getParentFile()
+						.getCanonicalPath())
+						|| (!isJobOwner(jobInfo.getUserId(), jobNumber) && !AuthorizationHelper
+							.adminJobs(jobInfo.getUserId()))) {
 					    vProblems
 						    .add("File input URLs are not allowed on this GenePattern server.");
 					    continue;
 					}
 				    }
+
 				    File f = new File(uri);
 				    if (inputFileMode == INPUT_FILE_MODE.PATH) {
 					params[i].setValue(f.getCanonicalPath());
