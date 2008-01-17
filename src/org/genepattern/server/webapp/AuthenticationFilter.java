@@ -63,7 +63,7 @@ public class AuthenticationFilter implements Filter {
 
     private boolean passwordRequired;
 
-    private boolean redirectToFqHostName;
+    private boolean redirectToFqHostName = false;
 
     public void destroy() {
     }
@@ -150,7 +150,7 @@ public class AuthenticationFilter implements Filter {
         noAuthorizationRequiredPages = csvToArray(filterconfig.getInitParameter("no.login.required"));
         homePage = filterconfig.getInitParameter("home.page").trim();
         loginPage = filterconfig.getInitParameter("login.page").trim();
-        redirectToFqHostName = Boolean.valueOf(props.getProperty("redirect.to.fq.host", "true"));
+        redirectToFqHostName = Boolean.valueOf(props.getProperty("redirect.to.fq.host", "false"));
     }
 
     public void redirectToFullyQualifiedHostName(HttpServletRequest request, HttpServletResponse response) {

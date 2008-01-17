@@ -40,7 +40,7 @@ public class AuthorizationFilter implements Filter {
 
     private IAuthorizationManager authManager = null;
 
-    private boolean redirectToFqHostName;
+    private boolean redirectToFqHostName = false;
 
     public void destroy() {
         authManager = null;
@@ -97,7 +97,7 @@ public class AuthorizationFilter implements Filter {
             }
 
             authManager = AuthorizationManagerFactory.getAuthorizationManager();
-            redirectToFqHostName = Boolean.valueOf(props.getProperty("redirect.to.fq.host", "true"));
+            redirectToFqHostName = Boolean.valueOf(props.getProperty("redirect.to.fq.host", "false"));
 
         } catch (Exception e) {
             throw new ServletException(e);
