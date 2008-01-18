@@ -1,35 +1,10 @@
-<%--
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2008) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
---%>
-
-<!--
-  The Broad Institute
-  SOFTWARE COPYRIGHT NOTICE AGREEMENT
-  This software and its documentation are copyright (2003-2007) by the
-  Broad Institute/Massachusetts Institute of Technology. All rights are
-  reserved.
-
-  This software is supplied without any warranty or guaranteed support
-  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
-  use, misuse, or functionality.
--->
-
 <%@ page
 	import="org.genepattern.webservice.TaskInfo,
 		org.genepattern.server.process.ZipTask,
 		org.genepattern.server.process.ZipTaskWithDependents,
 		org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		java.io.*"
-	session="false" language="Java"%>
-<%
+	session="false" language="Java"%><%
             response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
             response.setHeader("Pragma", "no-cache"); // HTTP 1.0 cache control
             response.setDateHeader("Expires", 0);
@@ -75,4 +50,4 @@
                 }
                 os.flush();
             }
-            %>
+%>
