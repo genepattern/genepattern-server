@@ -123,6 +123,8 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Target;
 import org.apache.tools.ant.taskdefs.Execute;
 import org.apache.tools.ant.taskdefs.Expand;
+import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
+import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.AnalysisServiceException;
 import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.database.HibernateUtil;
@@ -3489,8 +3491,11 @@ public class GenePatternAnalysisTask {
 		}
 		return firstLSID;
 	    }
+	    
+	    //TODO: see TaskUtil.getTaskInfoFromManifest, may be able to get rid of duplicate code
 	    Properties props = new Properties();
-	    props.load(zipFile.getInputStream(manifestEntry));
+	    props.load(zipFile.getInputStream(manifestEntry));        
+
 	    taskName = (String) props.remove(NAME);
 	    lsid = (String) props.get(LSID);
 	    LSID l = new LSID(lsid); // ; throw MalformedURLException if this
@@ -3561,6 +3566,18 @@ public class GenePatternAnalysisTask {
 	    }
 	    ParameterInfo[] params = new ParameterInfo[vParams.size()];
 	    vParams.copyInto(params);
+
+	    //if it's a pipeline, generate the commandLine (bug 2105)
+        String taskType = props.getProperty(GPConstants.TASK_TYPE);
+        if (taskType.toLowerCase().endsWith("pipeline")) {
+            //it is a pipeline
+            //replace command line with generated command line for pipelines
+            String serializedModel = props.getProperty("serializedModel");
+            PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
+            String commandLine = 
+                AbstractPipelineCodeGenerator.generateCommandLine(model);
+            props.setProperty(GPConstants.COMMAND_LINE, commandLine);
+        }
 
 	    // all remaining properties are assumed to be TaskInfoAttributes
 	    TaskInfoAttributes tia = new TaskInfoAttributes();
