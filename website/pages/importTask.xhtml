@@ -80,7 +80,9 @@
 			<tr valign="top" class="settingperameter">
 				<td><strong>Download the zip file from a website:</strong></td>
 				<td><strong>URL of a GenePattern zip file:</strong><h:form id="form2" onsubmit="return validateForm(this);">  <t:inputText
-					value="#{importBean.url}" size="60" id="url" forceId="true"/>
+					value="#{importBean.url}" size="60" id="url" >
+          <f:attribute name="forceId" value="true" />
+          </t:inputText>
 				<p>Visible to: &nbsp;&nbsp; <t:selectOneRadio
 					value="#{importBean.selectedUrlPrivacy}">
 					<f:selectItems value="#{importBean.privacyItems}" />
