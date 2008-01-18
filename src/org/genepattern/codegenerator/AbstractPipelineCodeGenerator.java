@@ -89,14 +89,7 @@ public abstract class AbstractPipelineCodeGenerator {
         return tia;
     }
 
-    public TaskInfoAttributes getTaskInfoAttributes() {
-        return getTaskInfoAttributes(model);
-    }
-
-    public static TaskInfoAttributes getTaskInfoAttributes(PipelineModel model) {
-        TaskInfoAttributes tia = getCommonTaskInfoAttributes(model);
-        tia.put(GPConstants.LANGUAGE, "Java");
-        ParameterInfo[] pia = giveParameterInfoArray(model);
+    public static String generateCommandLine(PipelineModel model) {
         StringBuffer commandLine = new StringBuffer("<java> -cp <pipeline.cp>");
 
         // System properties
@@ -121,6 +114,7 @@ public abstract class AbstractPipelineCodeGenerator {
         // GPConstants.TASK_TYPE_PIPELINE);
 
         // parameters to script
+        ParameterInfo[] pia = giveParameterInfoArray(model);
         for (int i = 0; i < pia.length; i++) {
             commandLine.append(" ");
             commandLine.append(pia[i].getName());
@@ -128,7 +122,20 @@ public abstract class AbstractPipelineCodeGenerator {
             commandLine.append(pia[i].getName());
             commandLine.append(">");
         }
-        tia.put(GPConstants.COMMAND_LINE, commandLine.toString());
+        
+        return commandLine.toString();
+    }
+
+    public TaskInfoAttributes getTaskInfoAttributes() {
+        return getTaskInfoAttributes(model);
+    }
+
+    public static TaskInfoAttributes getTaskInfoAttributes(PipelineModel model) {
+        TaskInfoAttributes tia = getCommonTaskInfoAttributes(model);
+        tia.put(GPConstants.LANGUAGE, "Java");
+        
+        String commandLine = generateCommandLine(model);
+        tia.put(GPConstants.COMMAND_LINE, commandLine);
         tia.put(GPConstants.JVM_LEVEL, "1.5");
         tia.put(GPConstants.VERSION, model.getVersion());
         tia.put(GPConstants.LSID, model.getLsid());
