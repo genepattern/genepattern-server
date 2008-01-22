@@ -5,7 +5,6 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.httpclient.Cookie;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.NameValuePair;
@@ -237,18 +236,10 @@ public class LoginHttpClient {
             log.error("Unable to set server url: "+e.getMessage(),e);
         }
     }
-
-    //just here for unit testing
-    private static void printCookies(PrintStream out, HttpClient httpClient) {
-        out.println("Cookies...");
-        for(Cookie cookie : httpClient.getState().getCookies()) {
-            out.print("\t"+cookie.getName());
-            out.print(": ");
-            out.println(cookie.getValue());
-        }
-    }
     
-    //TODO: This is a unit test
+    /**
+     * Exampe usage can be run as a unit test.
+     */
     public static void main(String[] args) {
         PrintStream out = System.out;
         if (args.length < 2 || args.length > 3) {
@@ -271,7 +262,7 @@ public class LoginHttpClient {
         state = testLogin.login(client);
         out.println(state);
             
-        if (state.equals(LoginState.IO_EXCEPTION)) {
+        if (!state.equals(LoginState.SUCCESS)) {
             out.print("logging in (to 3.0 server)...");
             state = testLogin.login3_0(client);
             out.println(state);
@@ -292,6 +283,5 @@ public class LoginHttpClient {
             e.printStackTrace();
         }
         out.println("path: "+get.getPath());
-        printCookies(out, client);
     }
 }
