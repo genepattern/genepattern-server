@@ -1,7 +1,17 @@
+/*
+  The Broad Institute
+  SOFTWARE COPYRIGHT NOTICE AGREEMENT
+  This software and its documentation are copyright (2003-2008) by the
+  Broad Institute/Massachusetts Institute of Technology. All rights are
+  reserved.
+
+  This software is supplied without any warranty or guaranteed support
+  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+  use, misuse, or functionality.
+*/
 package org.genepattern.util;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -236,52 +246,5 @@ public class LoginHttpClient {
             log.error("Unable to set server url: "+e.getMessage(),e);
         }
     }
-    
-    /**
-     * Exampe usage can be run as a unit test.
-     */
-    public static void main(String[] args) {
-        PrintStream out = System.out;
-        if (args.length < 2 || args.length > 3) {
-            out.println("Usage: TestLogin <url:http://localhost:8080> <username> <password>");
-            return;
-        }
-        final String url = args[0];
-        final String username = args[1];
-        final String password = args.length == 3 ? args[2] : null;
-        
-        LoginHttpClient testLogin = new LoginHttpClient();
-        testLogin.setServerUrl(url);
-        testLogin.setUsername(username);
-        testLogin.setPassword(password);
 
-        HttpClient client = new HttpClient();
-        LoginHttpClient.LoginState state = null;
-
-        out.print("logging in...");
-        state = testLogin.login(client);
-        out.println(state);
-            
-        if (!state.equals(LoginState.SUCCESS)) {
-            out.print("logging in (to 3.0 server)...");
-            state = testLogin.login3_0(client);
-            out.println(state);
-        }
-
-        //duplicate login
-        out.print("logging in...");
-        state = testLogin.login(client);
-        out.println(state);
-
-        //get a page
-        GetMethod get = new GetMethod(url + HOME_PAGE + "?PreprocessDataset");
-        get.setFollowRedirects(true);
-        try {
-            client.executeMethod(get);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        out.println("path: "+get.getPath());
-    }
 }
