@@ -25,19 +25,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
-import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.webapp.PipelineCreationHelper;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
-import org.genepattern.util.LSID;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;
@@ -55,15 +50,17 @@ public class ProvenanceFinder {
     private ArrayList filesToCopy = new ArrayList();
 
     static {
-	try {
-	    serverURL = "http://" + InetAddress.getLocalHost().getCanonicalHostName() + ":"
-		    + System.getProperty("GENEPATTERN_PORT");
-	    serverURL = serverURL.toUpperCase();
-
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
-
+        serverURL = System.getProperty("GenePatternURL");
+        if (serverURL == null || serverURL.length() == 0) {
+            try {
+                serverURL = "http://" + InetAddress.getLocalHost().getCanonicalHostName() + ":"
+                    + System.getProperty("GENEPATTERN_PORT");
+                serverURL = serverURL.toUpperCase();
+            } 
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public ProvenanceFinder(String user) {
@@ -129,10 +126,6 @@ public class ProvenanceFinder {
      * Given a file URL find the Job that created it or return null. Must be a job output file
      */
     public JobInfo findJobThatCreatedFile(String fileURL) {
-  
-    	
-    	
-    	
 	String jobNoStr = getJobNoFromURL(fileURL);
 	if (jobNoStr == null) {
 	    try {
@@ -149,9 +142,6 @@ public class ProvenanceFinder {
 	    	} catch (Exception e){
 	    	}
 	    }
-
-	    
-	    
 	}
 	int jobid = -1;
 	try {
