@@ -97,7 +97,7 @@ public class AuthorizationFilter implements Filter {
             }
 
             authManager = AuthorizationManagerFactory.getAuthorizationManager();
-            redirectToFqHostName = Boolean.valueOf(props.getProperty("redirect.to.fq.host", "false"));
+            redirectToFqHostName = Boolean.valueOf(props.getProperty("redirect.to.fq.host", "true"));
 
         } catch (Exception e) {
             throw new ServletException(e);

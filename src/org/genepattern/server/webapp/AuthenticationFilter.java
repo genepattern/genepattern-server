@@ -150,7 +150,7 @@ public class AuthenticationFilter implements Filter {
         noAuthorizationRequiredPages = csvToArray(filterconfig.getInitParameter("no.login.required"));
         homePage = filterconfig.getInitParameter("home.page").trim();
         loginPage = filterconfig.getInitParameter("login.page").trim();
-        redirectToFqHostName = Boolean.valueOf(props.getProperty("redirect.to.fq.host", "false"));
+        redirectToFqHostName = Boolean.valueOf(props.getProperty("redirect.to.fq.host", "true"));
     }
 
     public void redirectToFullyQualifiedHostName(HttpServletRequest request, HttpServletResponse response) {
