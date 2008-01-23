@@ -23,16 +23,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.genepattern.LSIDManager;
@@ -310,36 +311,52 @@ public class AdminDAO extends BaseDAO {
      */
     public TaskInfo[] getRecentlyRunTasksForUser(String username, int maxResults) {
 
-	String jobHQL = "select aJob from org.genepattern.server.domain.AnalysisJob aJob "
-		+ " where userId = :userId and ((parent = null) OR (parent = -1)) order by jobNo desc";
+	String jobHQL = "select aJob.taskLsid from org.genepattern.server.domain.AnalysisJob aJob "
+		+ " where userId = :userId and ((parent = null) OR (parent = -1)) order by aJob.jobNo desc";
 	Query query = getSession().createQuery(jobHQL);
 	query.setMaxResults(20);
 	query.setString("userId", username);
-	List<AnalysisJob> recentJobs = query.list();
+	List<String> recentLsids = query.list();
 
-	if (recentJobs.isEmpty()) {
+	if (recentLsids.isEmpty()) {
 	    return new TaskInfo[0];
-	} else {
-	    StringBuffer hql = new StringBuffer();
-	    hql.append("select tm  from org.genepattern.server.domain.TaskMaster tm where lsid in (");
-
-	    int maxTasks = Math.min(maxResults, recentJobs.size());
-	    for (int i = 0; i < maxTasks; i++) {
-		hql.append("'" + recentJobs.get(i).getTaskLsid() + "'");
-		if (i < maxTasks - 1)
-		    hql.append(", ");
-	    }
-	    hql.append(")");
-
-	    query = getSession().createQuery(hql.toString());
-	    List<TaskMaster> results = query.list();
-
-	    TaskInfo[] allTasks = new TaskInfo[results.size()];
-	    for (int i = 0; i < allTasks.length; i++) {
-		allTasks[i] = taskInfoFromTaskMaster(results.get(i));
-	    }
-	    return allTasks;
 	}
+	StringBuffer hql = new StringBuffer();
+
+	hql.append("select tm from org.genepattern.server.domain.TaskMaster tm where lsid in (");
+	Set<String> versionlessLsids = new HashSet<String>();
+
+	for (int i = 0, size = recentLsids.size(); i < size; i++) {
+	    String lsid = recentLsids.get(i);
+	    String versionlessLsid;
+	    try {
+		versionlessLsid = new LSID(lsid).toStringNoVersion();
+		if (!versionlessLsids.contains(versionlessLsid)) {
+		    versionlessLsids.add(versionlessLsid);
+		    if (i > 0) {
+			hql.append(", ");
+		    }
+		    hql.append("'" + lsid + "'");
+
+		}
+	    } catch (MalformedURLException e) {
+		log.error("Error", e);
+	    }
+	    if (versionlessLsids.size() == maxResults) {
+		break;
+	    }
+
+	}
+	hql.append(")");
+
+	query = getSession().createQuery(hql.toString());
+	List<TaskMaster> results = query.list();
+
+	TaskInfo[] allTasks = new TaskInfo[results.size()];
+	for (int i = 0; i < allTasks.length; i++) {
+	    allTasks[i] = taskInfoFromTaskMaster(results.get(i));
+	}
+	return allTasks;
     }
 
     /**
