@@ -53,8 +53,6 @@ public class RunTaskHelper {
 
     private File tempDir;
 
-    private String username;
-
     private boolean visualizer;
 
     private List<ParameterInfo> missingParameters;
@@ -77,128 +75,126 @@ public class RunTaskHelper {
      * 
      */
     public RunTaskHelper(String username, HttpServletRequest request) throws IOException, FileUploadException {
+        ServletFileUpload fub = new ServletFileUpload(new DiskFileItemFactory());
+        HashMap<String, FileItem> nameToFileItemMap = new HashMap<String, FileItem>();
 
-	this.username = username;
+        // prefix is used to restrict access to input files based on username
+        String prefix = username + "_";
+        tempDir = File.createTempFile(prefix + "run", null);
+        tempDir.delete();
+        tempDir.mkdir();
 
-	ServletFileUpload fub = new ServletFileUpload(new DiskFileItemFactory());
+        if (ServletFileUpload.isMultipartContent(request)) {
+            List params = fub.parseRequest(request);
 
-	HashMap<String, FileItem> nameToFileItemMap = new HashMap<String, FileItem>();
+            for (Iterator iter = params.iterator(); iter.hasNext();) {
+                FileItem fi = (FileItem) iter.next();
+                nameToFileItemMap.put(fi.getFieldName(), fi);
+            }
 
-	// prefix is used to restrict access to input files based on username
-	String prefix = username + "_";
-	tempDir = File.createTempFile(prefix + "run", null);
-	tempDir.delete();
-	tempDir.mkdir();
+            for (Iterator iter = params.iterator(); iter.hasNext();) {
+                FileItem fi = (FileItem) iter.next();
+                String fieldName = fi.getFieldName();
 
-	if (ServletFileUpload.isMultipartContent(request)) {
-	    List params = fub.parseRequest(request);
+                if (!fi.isFormField()) {
+                    FileItem cbItem = nameToFileItemMap.get(fieldName + "_cb");
+                    boolean urlChecked = cbItem != null ? "url".equals(cbItem.getString()) : false;
+                    String fileName = fi.getName();
+                    if (urlChecked || fileName == null || fileName.trim().equals("")) {
+                        FileItem urlInput = nameToFileItemMap.get(fieldName + "_url");
+                        if (urlInput != null) {
+                            String url = urlInput.getString();
+                            if (url != null && !url.trim().equals("")) {
+                                fileName = url;
+                                urlParameters.add(fieldName);
+                            }
+                        }
+                    }
 
-	    for (Iterator iter = params.iterator(); iter.hasNext();) {
-		FileItem fi = (FileItem) iter.next();
-		nameToFileItemMap.put(fi.getFieldName(), fi);
-	    }
+                    if (fileName != null && !fileName.trim().equals("")) {
+                        if (urlParameters.contains(fieldName)) {
+                            // don't bother trying to save a file that is a URL,
+                            // retrieve it at execution time instead
+                            inputFileParameters.put(fieldName, fileName);
+                        } 
+                        else {
+                            File oldFile = new File(fileName);
+                            fileName = FilenameUtils.getName(fileName);
+                            File file = new File(tempDir, fileName);
+                            if (file.exists()) {
+                                if (fileName.length() < 3) {
+                                    fileName += "tmp";
+                                }
+                                file = File.createTempFile(fileName, FilenameUtils.getExtension(fileName), tempDir);
+                            }
+                            try {
+                                fi.write(file);
+                                // deal with reload files that are not uploaded
+                                // and so for which
+                                // the write leaves an empty file
+                                if (file.length() == 0) {
+                                    file = oldFile;
+                                }
+                            } 
+                            catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            inputFileParameters.put(fieldName, file.getCanonicalPath());
+                        }
+                    }
+                } 
+                else {
+                    int endIndex = Math.max(fieldName.length() - "_url".length(), 1);
+                    String parameterName = fieldName.substring(0, endIndex);
 
-	    for (Iterator iter = params.iterator(); iter.hasNext();) {
-		FileItem fi = (FileItem) iter.next();
-		String fieldName = fi.getFieldName();
+                    FileItem cbItem = (FileItem) nameToFileItemMap.get(parameterName + "_cb");
+                    boolean urlChecked = cbItem != null ? "url".equals(cbItem.getString()) : false;
+                    if (urlChecked) {
+                        urlParameters.add(parameterName);
+                        inputFileParameters.put(parameterName, fi.getString());
+                    } 
+                    else {
+                        requestParameters.put(fieldName, fi.getString());
+                    }
+                }
+            } // loop over files
+        } 
+        else {
+            for (Enumeration en = request.getParameterNames(); en.hasMoreElements();) {
+                String k = (String) en.nextElement();
+                String v = request.getParameter(k);
+                requestParameters.put(k, v);
+            }
+        }
 
-		if (!fi.isFormField()) {
-		    FileItem cbItem = nameToFileItemMap.get(fieldName + "_cb");
-		    boolean urlChecked = cbItem != null ? "url".equals(cbItem.getString()) : false;
-		    String fileName = fi.getName();
-		    if (urlChecked || fileName == null || fileName.trim().equals("")) {
-			FileItem urlInput = nameToFileItemMap.get(fieldName + "_url");
-			if (urlInput != null) {
-			    String url = urlInput.getString();
-			    if (url != null && !url.trim().equals("")) {
-				fileName = url;
-				urlParameters.add(fieldName);
-			    }
+        this.taskLsid = requestParameters.get("taskLSID");
+        this.taskLsid = taskLsid != null ? URLDecoder.decode(taskLsid, "UTF-8") : null;
+        this.taskName = requestParameters.get("taskName");
+        this.taskName = taskName != null ? URLDecoder.decode(taskName, "UTF-8") : null;
 
-			}
-		    }
+        if (taskLsid == null) {
+            if (taskName != null) {
+                taskLsid = taskName;
+            }
+        }
 
-		    if (fileName != null && !fileName.trim().equals("")) {
-			if (urlParameters.contains(fieldName)) {
-			    // don't bother trying to save a file that is a URL,
-			    // retrieve it at execution time instead
-			    inputFileParameters.put(fieldName, fileName);
-			} else {
-			    File oldFile = new File(fileName);
-			    fileName = FilenameUtils.getName(fileName);
-			    File file = new File(tempDir, fileName);
-			    if (file.exists()) {
-				if (fileName.length() < 3) {
-				    fileName += "tmp";
-				}
-				file = File.createTempFile(fileName, FilenameUtils.getExtension(fileName), tempDir);
-			    }
-			    try {
-				fi.write(file);
-				// deal with reload files that are not uploaded
-				// and so for which
-				// the write leaves an empty file
-				if (file.length() == 0) {
-				    file = oldFile;
-				}
-			    } catch (Exception e) {
-				e.printStackTrace();
-			    }
-
-			    inputFileParameters.put(fieldName, file.getCanonicalPath());
-			}
-		    }
-		} else {
-		    int endIndex = Math.max(fieldName.length() - "_url".length(), 1);
-		    String parameterName = fieldName.substring(0, endIndex);
-
-		    FileItem cbItem = (FileItem) nameToFileItemMap.get(parameterName + "_cb");
-		    boolean urlChecked = cbItem != null ? "url".equals(cbItem.getString()) : false;
-		    if (urlChecked) {
-			urlParameters.add(parameterName);
-			inputFileParameters.put(parameterName, fi.getString());
-		    } else {
-			requestParameters.put(fieldName, fi.getString());
-		    }
-		}
-	    } // loop over files
-	} else {
-	    for (Enumeration en = request.getParameterNames(); en.hasMoreElements();) {
-		String k = (String) en.nextElement();
-		String v = request.getParameter(k);
-		requestParameters.put(k, v);
-	    }
-	}
-
-	this.taskLsid = requestParameters.get("taskLSID");
-	this.taskLsid = taskLsid != null ? URLDecoder.decode(taskLsid, "UTF-8") : null;
-	this.taskName = requestParameters.get("taskName");
-	this.taskName = taskName != null ? URLDecoder.decode(taskName, "UTF-8") : null;
-
-	if (taskLsid == null) {
-	    if (taskName != null) {
-		taskLsid = taskName;
-	    }
-
-	}
-	if (taskLsid != null) {
-	    try {
-		this.taskInfo = new LocalAdminClient(username).getTask(taskLsid);
-	    } catch (WebServiceException e) {
-		e.printStackTrace();
-	    }
-	    this.visualizer = "visualizer".equalsIgnoreCase((String) taskInfo.getTaskInfoAttributes().get(
-		    GPConstants.TASK_TYPE));
-	    parameterInfoArray = taskInfo.getParameterInfoArray();
-	    if (parameterInfoArray == null) {
-		parameterInfoArray = new ParameterInfo[0];
-	    }
-
-	} else {
-	    parameterInfoArray = new ParameterInfo[0];
-	}
-	setParameterValues(request);
-
+        if (taskLsid != null) {
+            try {
+                this.taskInfo = new LocalAdminClient(username).getTask(taskLsid);
+            } 
+            catch (WebServiceException e) {
+                e.printStackTrace();
+            }
+            this.visualizer = "visualizer".equalsIgnoreCase((String) taskInfo.getTaskInfoAttributes().get(GPConstants.TASK_TYPE));
+            parameterInfoArray = taskInfo.getParameterInfoArray();
+            if (parameterInfoArray == null) {
+                parameterInfoArray = new ParameterInfo[0];
+            }
+        } 
+        else {
+            parameterInfoArray = new ParameterInfo[0];
+        }
+        setParameterValues(request);
     }
 
     public ParameterInfo[] getParameterInfoArray() {
@@ -207,52 +203,62 @@ public class RunTaskHelper {
     }
 
     private void setParameterValues(HttpServletRequest request) throws IOException {
-	String server = request.getScheme() + "://" + InetAddress.getLocalHost().getCanonicalHostName() + ":"
-		+ System.getProperty("GENEPATTERN_PORT");
-	missingParameters = new ArrayList<ParameterInfo>();
-	for (int i = 0; i < parameterInfoArray.length; i++) {
-	    ParameterInfo pinfo = parameterInfoArray[i];
-	    String value;
-	    if (pinfo.isInputFile()) {
-		value = inputFileParameters.get(pinfo.getName());
-		if (value == null) {
-		    pinfo.getAttributes().put(ParameterInfo.TYPE, "");
-		}
-		if (value != null && !value.equals("")) {
-		    if (urlParameters.contains(pinfo.getName())) {
-			HashMap attrs = pinfo.getAttributes();
-			attrs.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
-			attrs.remove(ParameterInfo.TYPE);
-		    } else {
-			if (visualizer) {
-			    File file = new File(value);
-			    File parent = file.getParentFile();
-			    if (parent != null) {
-				value = server + request.getContextPath() + "/getFile.jsp?task=&file="
-					+ parent.getName() + File.separator + file.getName();
-			    } else {
-				value = "";
-			    }
+        String server = System.getProperty("GenePatternURL");
+        if (server == null || server.length() == 0) {
+            server = request.getScheme() + "://"
+                    + InetAddress.getLocalHost().getCanonicalHostName() + ":"
+                    + System.getProperty("GENEPATTERN_PORT") + request.getContextPath();
+        }
+        if (!server.endsWith("/")) {
+            server += '/';
+        }
+        missingParameters = new ArrayList<ParameterInfo>();
+        for (int i = 0; i < parameterInfoArray.length; i++) {
+            ParameterInfo pinfo = parameterInfoArray[i];
+            String value;
+            if (pinfo.isInputFile()) {
+                value = inputFileParameters.get(pinfo.getName());
+                if (value == null) {
+                    pinfo.getAttributes().put(ParameterInfo.TYPE, "");
+                }
+                if (value != null && !value.equals("")) {
+                    if (urlParameters.contains(pinfo.getName())) {
+                        HashMap attrs = pinfo.getAttributes();
+                        attrs.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
+                        attrs.remove(ParameterInfo.TYPE);
+                    } 
+                    else {
+                        if (visualizer) {
+                            File file = new File(value);
+                            File parent = file.getParentFile();
+                            if (parent != null) {
+                                value = server + "getFile.jsp?task=&file="
+                                        + parent.getName() + File.separator
+                                        + file.getName();
+                            } 
+                            else {
+                                value = "";
+                            }
+                        }
+                    }
+                }
+            } 
+            else {
+                value = requestParameters.get(pinfo.getName());
+            }
 
-			}
-		    }
-		}
-	    } else {
-		value = requestParameters.get(pinfo.getName());
-	    }
-
-	    // look for missing required params
-
-	    if ((value == null) || (value.trim().length() == 0)) {
-		HashMap pia = pinfo.getAttributes();
-		boolean isOptional = ((String) pia
-			.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET])).length() > 0;
-		if (!isOptional) {
-		    missingParameters.add(pinfo);
-		}
-	    }
-	    pinfo.setValue(value);
-	}
+            // look for missing required params
+            if ((value == null) || (value.trim().length() == 0)) {
+                HashMap pia = pinfo.getAttributes();
+                boolean isOptional = ((String) pia
+                        .get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]))
+                        .length() > 0;
+                if (!isOptional) {
+                    missingParameters.add(pinfo);
+                }
+            }
+            pinfo.setValue(value);
+        }
     }
 
     public HashMap<String, String> getInputFileParameters() {
