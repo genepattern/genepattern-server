@@ -12,48 +12,18 @@
 
 
 <%@ page
-	import="java.io.IOException,
-		 java.util.StringTokenizer,
-		 java.util.Enumeration,
-		 java.util.HashMap,
-		 java.io.File,
-		 java.io.FileInputStream,
-		 java.io.FileOutputStream,
-		 java.util.Date,
-		 java.io.UnsupportedEncodingException,
-		 java.net.InetAddress,
+	import="java.net.InetAddress,
  		 java.net.URLEncoder, 
-		 java.net.URLDecoder,
- 		 java.text.SimpleDateFormat,
-		 java.util.Date,
-		 java.util.ArrayList,
-		 java.util.Enumeration, 
-		 java.util.GregorianCalendar,
-		 java.text.ParseException,
-		 java.text.DateFormat,
-		 java.util.Properties,
-		 java.nio.channels.FileChannel,
 		 java.util.List,
 		 java.util.Map,
-		 java.util.Iterator,		
-		 java.util.Enumeration,
-		 org.apache.commons.fileupload.DiskFileUpload,
-         org.apache.commons.fileupload.FileItem,
-         org.apache.commons.fileupload.FileUpload,
  		 org.genepattern.util.StringUtils,
-		 org.genepattern.webservice.TaskInfo,
-		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.webservice.ParameterFormatConverter,
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
-		 org.genepattern.util.LSID,
-		 org.genepattern.webservice.OmnigeneException,
-		 org.genepattern.webservice.AnalysisWebServiceProxy,
 		 org.genepattern.webservice.TaskInfo,
 		 org.genepattern.webservice.JobInfo,
-		 org.genepattern.server.webapp.RunTaskHelper,
-		 org.genepattern.data.pipeline.PipelineModel"
+		 org.genepattern.server.webapp.RunTaskHelper"
 	session="false" contentType="text/html" language="Java"%>
 <%
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -101,9 +71,6 @@ try {
 	String taskName = runTaskHelper.getTaskName();
 	
 	request.setAttribute("name", lsid);
-	String server = request.getScheme() + "://"+ InetAddress.getLocalHost().getCanonicalHostName() + ":"
-					+ System.getProperty("GENEPATTERN_PORT");
-
 	List<ParameterInfo> missingReqParams = runTaskHelper.getMissingParameters();
 	if (missingReqParams.size() > 0){
 		System.out.println(""+missingReqParams);
