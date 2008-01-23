@@ -9,7 +9,7 @@
 </error-page>
 <error-page>
     <error-code>404</error-code>
-    <location>/notFound.jsp</location>
+    <location>/pages/notFound.jsf</location>
 </error-page>
 
  <context-param>
