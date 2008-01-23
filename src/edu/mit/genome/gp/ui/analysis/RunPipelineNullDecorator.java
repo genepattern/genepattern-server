@@ -18,7 +18,6 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.server.webapp.RunPipelineOutputDecoratorIF;
-import org.genepattern.server.webapp.*;
 
 /**
  * Forwards all methods to
