@@ -11,9 +11,9 @@
 */
 package org.genepattern.server.webapp;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
@@ -148,26 +148,53 @@ public abstract class RunPipelineDecoratorBase implements RunPipelineOutputDecor
     }
 
     protected void init() {
+        //load genepattern.properties 
+        FileInputStream fis = null;
         try {
-            String genePatternPropertiesFile = System
-                    .getProperty("genepattern.properties")
-                    + java.io.File.separator + "genepattern.properties";
-            java.io.FileInputStream fis = new java.io.FileInputStream(
-                    genePatternPropertiesFile);
+            String genePatternPropertiesFile = System.getProperty("genepattern.properties") + java.io.File.separator + "genepattern.properties";
+            fis = new FileInputStream(genePatternPropertiesFile);
             genepatternProps = new Properties();
             genepatternProps.load(fis);
             fis.close();
-            URL = localizeURL(System.getProperty("GenePatternURL"));
-
-        } catch (Exception ioe) {
+        }
+        catch (Exception ioe) {
+            //TODO: log exception
             genepatternProps = new Properties();
         }
-
+        finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                }
+                catch (IOException e) {
+                    //TODO: log exception
+                }
+            }
+        }
+            
+        //initialize the URL
+        URL = System.getProperty("GenePatternURL");
+        if (URL == null || URL.trim().length()==0) {
+            String localhost = "127.0.0.1"; //default value in case of exception
+            String port = genepatternProps.getProperty("GENEPATTERN_PORT", "8080");
+            try {
+                localhost = InetAddress.getLocalHost().getCanonicalHostName();
+                if (localhost.equals("localhost")) {
+                    // MacOS X can't resolve localhost when unplugged from network
+                    localhost = "127.0.0.1";
+                }
+            }
+            catch (UnknownHostException e) {
+                //TODO: log exception
+            }
+            URL = "http://" + localhost + ":" + port + "/gp/";
+        }
     }
 
     protected String localizeURL(String original) {
-        if (original == null)
+        if (original == null) {
             return "";
+        }
         String GENEPATTERN_PORT = "GENEPATTERN_PORT";
         String GENEPATTERN_URL = "GenePatternURL";
         String port = genepatternProps.getProperty(GENEPATTERN_PORT);
@@ -179,30 +206,11 @@ public abstract class RunPipelineDecoratorBase implements RunPipelineOutputDecor
         original = StringUtils.replaceAll(original, GPConstants.LEFT_DELIMITER
                 + GENEPATTERN_PORT + GPConstants.RIGHT_DELIMITER, port);
         String gpUrl = System.getProperty("GenePatternURL");
-        if (gpUrl == null)
+        if (gpUrl == null) {
             gpUrl = "unknown";
+        }
         original = StringUtils.replaceAll(original, GPConstants.LEFT_DELIMITER
                 + GENEPATTERN_URL + GPConstants.RIGHT_DELIMITER, gpUrl);
-        try {
-            // one of ours?
-            if (!original.startsWith("http://localhost:" + port)
-                    && !original.startsWith("http://127.0.0.1:" + port)) {
-                return original;
-            }
-            URL org = new URL(original);
-            String localhost = InetAddress.getLocalHost()
-                    .getCanonicalHostName();
-            if (localhost.equals("localhost")) {
-                // MacOS X can't resolve localhost when unplugged from network
-                localhost = "127.0.0.1";
-            }
-            URL url = new URL("http://" + localhost + ":" + port
-                    + org.getFile());
-            return url.toString();
-        } catch (UnknownHostException uhe) {
-            return original;
-        } catch (MalformedURLException mue) {
-            return original;
-        }
+        return original;
     }
 }
