@@ -12,24 +12,13 @@ use, misuse, or functionality.
 
 
 <%@ page import="
-                 org.apache.commons.fileupload.servlet.ServletRequestContext,
-                 org.genepattern.server.genepattern.GenePatternAnalysisTask,
                  org.genepattern.server.webapp.RunTaskHelper,
                  org.genepattern.util.GPConstants,
                  org.genepattern.webservice.ParameterInfo,
                  org.genepattern.webservice.TaskInfo,
                  javax.servlet.RequestDispatcher,
-                 java.io.PrintWriter,
-                 java.io.File,
-                 org.apache.commons.io.FilenameUtils,
-              	 java.net.MalformedURLException,
-                 java.net.URL,
-                 java.util.ArrayList,
-                 java.util.HashMap,
-                 java.util.Iterator,
                  java.util.List,
-                 java.util.Map,
-                 java.net.URLDecoder"
+                 java.util.Map"
          session="false" contentType="text/html" language="Java" %>
 <%
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
