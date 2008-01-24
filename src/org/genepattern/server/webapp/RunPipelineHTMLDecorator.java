@@ -15,17 +15,14 @@ package org.genepattern.server.webapp;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Properties;
-import java.io.StringWriter;
-import java.io.PrintWriter;
 
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
@@ -77,7 +74,7 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
         super.init();
 
         String jobID = System.getProperty("jobID");
-        String isSaved = System.getProperty("savedPipeline");
+        //String isSaved = System.getProperty("savedPipeline");
         // bug 592. Don't give link to pipeline if it is not saved
 
         out.println("<p>");
@@ -193,13 +190,10 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
 
                 value = getFileUrlDisplayValue(value);
                
-                
-                //out.println(URLDecoder.decode(value));
-                
 				out.print(htmlEncode(URLDecoder.decode(value)));
 				out.println("</a>");
-
-            } else {
+            } 
+            else {
             	out.print(htmlEncode(value));
 			}
             
@@ -515,8 +509,9 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
     }
 
     protected String localizeURL(String original) {
-        if (original == null)
+        if (original == null) {
             return "";
+        }
         String GENEPATTERN_PORT = "GENEPATTERN_PORT";
         String GENEPATTERN_URL = "GenePatternURL";
         String port = genepatternProps.getProperty(GENEPATTERN_PORT);
@@ -526,42 +521,24 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
                 + GPConstants.RIGHT_DELIMITER, port);
         original = StringUtils.replaceAll(original, GPConstants.LEFT_DELIMITER + GENEPATTERN_URL
                 + GPConstants.RIGHT_DELIMITER, System.getProperty("GenePatternURL"));
-        try {
-            File f = new File(original);
-            if (f.exists()) {
-                try {
-                    return getFileURL(f);
-                } catch (IOException ioe) {
-                    return original;
-                }
-            }
 
-            // one of ours?
-            if (!original.startsWith("http://localhost:" + port) && !original.startsWith("http://127.0.0.1:" + port)) {
+        File f = new File(original);
+        if (f.exists()) {
+            try {
+                return getFileURL(f);
+            } 
+            catch (IOException ioe) {
+                //TODO: log exception
                 return original;
             }
-            URL org = new URL(original);
-            String localhost = InetAddress.getLocalHost().getCanonicalHostName();
-            if (localhost.equals("localhost")) {
-                // MacOS X can't resolve localhost when unplugged from network
-                localhost = "127.0.0.1";
-            }
-            URL url = new URL(org.getProtocol() + "://" + localhost + ":" + port + org.getFile());
-            return url.toString();
-        } catch (UnknownHostException uhe) {
-            return original;
-        } catch (MalformedURLException mue) {
-            // check if it is local file and write the URL for it
-
-            return original;
         }
+        return original;
     }
 
     public String getFileURL(File theFile) throws IOException {
 
         // if it exists and lives under /jobResults, the parent dir where we are
-        // running, we can
-        // create a getFile link for it
+        // running, we can create a getFile link for it
         File tempDir = new File(System.getProperty("user.dir"), "here");
         tempDir = tempDir.getParentFile().getParentFile();
 
@@ -570,17 +547,16 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
             return GET_FILE + pathBuffer.substring(1); // strip leading slash
 
         // now look again for Tomcat/temp. We know we should be in
-        // Tomcat/webapps/gp/jobResults
-        // so look up the path for the right alternate parent
+        // Tomcat/webapps/gp/jobResults so look up the path for the right alternate parent
         tempDir = tempDir.getParentFile().getParentFile().getParentFile();
         tempDir = new File(tempDir, "temp");
         pathBuffer = new StringBuffer();
-        if (findCommonParentFile(theFile, tempDir, pathBuffer))
+        if (findCommonParentFile(theFile, tempDir, pathBuffer)) {
             return GET_FILE + pathBuffer.substring(1); // strip leading slash
-
-        else
+        }
+        else {
             return theFile.getName();
-
+        }
     }
 
     private boolean findCommonParentFile(File theFile, File tempDir, StringBuffer pathBuffer) {
