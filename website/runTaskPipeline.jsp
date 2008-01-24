@@ -524,7 +524,8 @@ show execution logs</td>
 
     <%
         } catch (Throwable e) {
-            e.printStackTrace();
+            org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(getClass());
+            log.error(e);
             out.println("An error occurred.");
         }
     %>
