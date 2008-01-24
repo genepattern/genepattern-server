@@ -93,7 +93,6 @@ public class ProvenanceFinder {
 
     public Set<JobInfo> findJobsThatCreatedFile(String fileURL) {
 	ArrayList<String> files = new ArrayList<String>();
-	System.out.println("FJsTCF " + fileURL);
 	Set<JobInfo> jobs = new TreeSet<JobInfo>(new Comparator<JobInfo>() {
 	    public int compare(JobInfo j1, JobInfo j2) {
 		if (j1.getJobNumber() > j2.getJobNumber())
@@ -112,11 +111,16 @@ public class ProvenanceFinder {
 	    String aFile = files.get(0);
 	    if (aFile == null)
 		continue;
-	    System.out.println("FJsTCF now " + aFile);
 	    JobInfo job = findJobThatCreatedFile(aFile);
-	    if (job != null)
-		jobs.add(job);
-	    files.addAll(getLocalInputFiles(job));
+	    
+	    
+	    if (job != null){
+	    	if (!jobs.contains(job)) {
+	    		files.addAll(getLocalInputFiles(job));
+	    		jobs.add(job);
+	    	}
+	    }
+	 	  
 	    files.remove(0);
 	}
 	return jobs;
@@ -126,6 +130,7 @@ public class ProvenanceFinder {
      * Given a file URL find the Job that created it or return null. Must be a job output file
      */
     public JobInfo findJobThatCreatedFile(String fileURL) {
+
 	String jobNoStr = getJobNoFromURL(fileURL);
 	if (jobNoStr == null) {
 	    try {
@@ -133,14 +138,7 @@ public class ProvenanceFinder {
 		Integer.parseInt(fileURL);
 		jobNoStr = fileURL;
 	    } catch (NumberFormatException nfe) {
-	    	// maybe a "job#/filename"
-	    	try {
-	    		int idx = fileURL.indexOf(File.separator);
-	    		String jobNumMaybe = fileURL.substring(0,idx-1);
-	    		Integer.parseInt(jobNumMaybe);
-	    		jobNoStr = jobNumMaybe;
-	    	} catch (Exception e){
-	    	}
+
 	    }
 	}
 	int jobid = -1;
@@ -272,7 +270,16 @@ public class ProvenanceFinder {
 
     protected String getJobNoFromURL(String fileURL) {
 	String j = getParamFromURL(fileURL, "job");
-	System.out.println("Getting param from " + fileURL +"  found " + j);
+	if (j == null) {
+		// maybe a "job#/filename"
+    	try {
+    		int idx = fileURL.indexOf(File.separator);
+    		String jobNumMaybe = fileURL.substring(0,idx);
+    		Integer.parseInt(jobNumMaybe);
+    		j = jobNumMaybe;
+    	} catch (Exception e){
+    	}
+	}
 	return j;
     }
 
@@ -331,7 +338,6 @@ public class ProvenanceFinder {
 	    for (int i = 0; i < params.length; i++) {
 
 		String val = getURLFromParam(params[i]);
-
 		if (val != null)
 		    inputFiles.add(val);
 	    }
@@ -342,7 +348,8 @@ public class ProvenanceFinder {
     public String getURLFromParam(ParameterInfo pinfo) {
 	HashMap attributes = pinfo.getAttributes();
 	String pvalue = pinfo.getValue();
-	if (pvalue.toUpperCase().startsWith(serverURL)) {
+	
+	if (pvalue.toUpperCase().startsWith(serverURL) || pvalue.toUpperCase().startsWith("HTTP://LOCALHOST")  || pvalue.toUpperCase().startsWith("HTTP://127.0.0.1")) {
 	    return pvalue;
 	} else if ("FILE".equals(attributes.get("TYPE"))) {
 
@@ -404,8 +411,7 @@ public class ProvenanceFinder {
 		Integer pipeNo = (Integer) jobOrder.get(jobNo);
 
 		attrs.put(PipelineModel.INHERIT_TASKNAME, "" + pipeNo);
-		System.out.println("InheritTask: " + pipeNo);
-
+		
 		JobInfo priorJob = service.getJob(jobNo.intValue());
 		String name = getParamFromURL(value, "filename");
 		//
