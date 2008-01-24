@@ -37,7 +37,7 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
 /**
- * This class is used to communicate with a GenePattern server.
+ * This class is used to run modules on a GenePattern server.
  * 
  * @author Joshua Gould
  */
@@ -316,6 +316,25 @@ public class GPClient {
     }
 
     /**
+     * Submits the given module with the given parameters and waits for the job to complete.
+     * 
+     * @param moduleNameOrLsid
+     *                The module name or LSID. When an LSID is provided that does not include a version, the latest
+     *                available version of the task identified by the LSID will be used. If a module name is supplied,
+     *                the latest version of the module with the nearest authority is selected. The nearest authority is
+     *                the first match in the sequence: local authority, Broad authority, other authority.
+     * @param parameters
+     *                The parameters to run the module with as a String. Format is
+     *                name1=value1;name2=value2;name3=value3;...
+     * @return The job result.
+     * @throws WebServiceException
+     *                 If an error occurs during the job submission or job result retrieval process.
+     */
+    public JobResult runAnalysis(String moduleNameOrLsid, String parameters) throws WebServiceException {
+	return runAnalysis(moduleNameOrLsid, parseParameterString(parameters));
+    }
+
+    /**
      * Submits the given module with the given parameters and does not wait for the job to complete.
      * 
      * @param moduleNameOrLsid
@@ -347,6 +366,28 @@ public class GPClient {
 	} catch (org.genepattern.webservice.WebServiceException wse) {
 	    throw new WebServiceException(wse.getMessage(), wse.getRootCause());
 	}
+
+    }
+
+    /**
+     * Submits the given module with the given parameters and does not wait for the job to complete.
+     * 
+     * @param moduleNameOrLsid
+     *                The module name or LSID. When an LSID is provided that does not include a version, the latest
+     *                available version of the task identified by the LSID will be used. If a module name is supplied,
+     *                the latest version of the module with the nearest authority is selected. The nearest authority is
+     *                the first match in the sequence: local authority, Broad authority, other authority.
+     * @param parameters
+     *                The parameters to run the module with as a String. Format is
+     *                name1=value1;name2=value2;name3=value3;....
+     * @return The job number.
+     * @throws WebServiceException
+     *                 If an error occurs during the job submission process.
+     * @see #isComplete
+     * @see #createJobResult
+     */
+    public int runAnalysisNoWait(String moduleNameOrLsid, String parameters) throws WebServiceException {
+	return runAnalysisNoWait(moduleNameOrLsid, parseParameterString(parameters));
     }
 
     /**
@@ -387,6 +428,24 @@ public class GPClient {
 	} catch (Exception x) {
 	    throw new WebServiceException(x);
 	}
+    }
+
+    /**
+     * Downloads the support files for the given module from the server and executes the given module locally.
+     * 
+     * @param moduleNameOrLsid
+     *                The module name or LSID. When an LSID is provided that does not include a version, the latest
+     *                available version of the task identified by the LSID will be used. If a module name is supplied,
+     *                the latest version of the module with the nearest authority is selected. The nearest authority is
+     *                the first match in the sequence: local authority, Broad authority, other authority.
+     * @param parameters
+     *                The parameters to run the module with as a String. Format is
+     *                name1=value1;name2=value2;name3=value3;...
+     * @throws WebServiceException
+     *                 If an error occurs while launching the visualizer.
+     */
+    public void runVisualizer(String moduleNameOrLsid, String parameters) throws WebServiceException {
+	runVisualizer(moduleNameOrLsid, parseParameterString(parameters));
     }
 
     private TaskInfo getTask(String lsid) throws WebServiceException {
@@ -522,6 +581,20 @@ public class GPClient {
 
     }
 
+    private static Parameter[] parseParameterString(String parameters) throws WebServiceException {
+	String[] tokens = parameters.split(";");
+	Parameter[] params = new Parameter[tokens.length];
+
+	for (int i = 0, length = tokens.length; i < length; i++) {
+	    String[] nameValue = tokens[i].split("=");
+	    if (nameValue.length != 2) {
+		throw new WebServiceException("Error parsing parameters");
+	    }
+	    params[i] = new Parameter(nameValue[0], nameValue[1]);
+	}
+	return params;
+    }
+
     private static void setAttributes(ParameterInfo formalParam, ParameterInfo actualParam) {
 	if (formalParam.isInputFile()) {
 	    HashMap<String, String> actualAttributes = new HashMap<String, String>();
@@ -596,4 +669,5 @@ public class GPClient {
 	    sleep = incrementSleep(initialSleep, maxTries, count);
 	}
     }
+
 }
