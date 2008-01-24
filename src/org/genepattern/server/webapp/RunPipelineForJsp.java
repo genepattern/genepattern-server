@@ -237,7 +237,7 @@ public class RunPipelineForJsp {
 
         List<String> cmdLine = new ArrayList<String>();
         cmdLine.add(JAVA);
-        if (false) {  
+        if (false) {
             //for debugging, launch the VM in debug mode
             //   Use with caution, this will cause the process to suspend
             //   see Sun's JPDA documentation for details
@@ -267,7 +267,7 @@ public class RunPipelineForJsp {
         cmdLine.add("-Dgenepattern.properties=" + resourcesDir);
         cmdLine.add("-DGenePatternURL=" + System.getProperty("GenePatternURL"));
         cmdLine.add("-D" + GPConstants.LSID + "=" + (String) taskInfo.getTaskInfoAttributes().get(GPConstants.LSID));
-        String pipelineMain = System.getProperty("pipeline.main", "org.genepattern.server.webapp.RunPipeline");
+        String pipelineMain = System.getProperty("pipeline.main", "org.genepattern.server.webapp.RunPipelineSoap");
         cmdLine.add(pipelineMain);
         
         // -------------------------------------------------------------
