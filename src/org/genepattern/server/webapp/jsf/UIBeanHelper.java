@@ -208,22 +208,30 @@ public class UIBeanHelper {
     }
 
     /**
-     * Gets the server that the request came from. For example, http://localhost:8080/gp. Note if the GenePatternURL
-     * system property ends with a trailing '/', the slash is removed.
+     * Gets the GenePatternURL or the server that the request came from. 
+     * For example, http://localhost:8080/gp. 
+     * Note if the GenePatternURL system property ends with a trailing '/', the slash is removed.
      * 
      * @return The server.
      */
     public static String getServer() {
-	HttpServletRequest request = UIBeanHelper.getRequest();
-	if (request == null) {
-	    String server = System.getProperty("GenePatternURL");
-	    if (server != null && server.length() > 0 && server.charAt(server.length() - 1) == '/') {
-		return server.substring(0, server.length() - 1);
-	    }
-	    return server;
-	}
-	return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort()
-		+ request.getContextPath();
+        //Use GenePatternURL if it is set
+        String server = System.getProperty("GenePatternURL", "");
+        if (server != null && server.trim().length() > 0) {
+            if (server.endsWith("/")) {
+                server = server.substring(0, server.length() - 1);
+            }
+            return server;
+        }
+        //otherwise use the servlet request
+        HttpServletRequest request = UIBeanHelper.getRequest();
+        if (request != null) {
+            return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+        }
+        
+        //TODO: handle this exception
+        log.error("Invalid servername: GenePatternURL is null and UIBeanHelper.request is null!");
+        return "http://localhost:8080/gp";
     }
 
 }
