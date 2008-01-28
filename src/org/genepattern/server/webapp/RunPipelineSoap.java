@@ -237,25 +237,9 @@ public class RunPipelineSoap {
                 String decoratorClass = System.getProperty("decorator");
                 decorator = (RunPipelineOutputDecoratorIF) (Class.forName(decoratorClass)).newInstance();
             }
-            URL serverFromFile = null;
             
-            try {
-                serverFromFile = new URL(System.getProperty("GenePatternURL"));
-            }
-            catch (Exception x) {
-                String host = "127.0.0.1";
-                try {
-                    host = InetAddress.getLocalHost().getCanonicalHostName();
-                } catch (UnknownHostException uhe) {
-                }
-                String protocol = serverFromFile != null ? serverFromFile.getProtocol() : "http";
-                serverFromFile = new URL(protocol + "://" + host + ":" + System.getProperty("GENEPATTERN_PORT"));
-                
-                System.setProperty("GenePatternURL", serverFromFile.toString() + "/gp/");
-            }
-            
-            String host = serverFromFile.getHost();
-            String server = serverFromFile.getProtocol() + "://" + host + ":" + serverFromFile.getPort();
+            //TODO: GenePatternURL must be set
+            String server = System.getProperty("GenePatternURL");
             PipelineModel pipelineModel = getPipelineModel(pipelineFileName, pipelineLSID, server, userId, userKey);
             RunPipelineSoap rp = new RunPipelineSoap(server, userId, userKey, jobId, pipelineModel, decorator);
             rp.runPipeline(additionalArguments);
