@@ -24,7 +24,6 @@ use, misuse, or functionality.
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
     response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
     response.setDateHeader("Expires", 0);
-System.out.println("ONE");
 %>
 
 <html>
@@ -74,7 +73,6 @@ System.out.println("ONE");
 <%
 		return;
 	}
-	System.out.println("dispatching= ");
    	request.setAttribute("parameters", parmInfos);
    	request.setAttribute("name", lsid); //used by runPipeline.jsp to get pipeline to run
 	RequestDispatcher rd = request.getRequestDispatcher("runPipeline.jsp");
