@@ -61,6 +61,7 @@ public class ProvenanceFinder {
                 e.printStackTrace();
             }
         }
+        serverURL = serverURL.toUpperCase();
     }
 
     public ProvenanceFinder(String user) {
@@ -92,6 +93,9 @@ public class ProvenanceFinder {
     }
 
     public Set<JobInfo> findJobsThatCreatedFile(String fileURL) {
+    	
+    	System.out.println("A. Looking for creators of " + fileURL);
+    	
 	ArrayList<String> files = new ArrayList<String>();
 	Set<JobInfo> jobs = new TreeSet<JobInfo>(new Comparator<JobInfo>() {
 	    public int compare(JobInfo j1, JobInfo j2) {
@@ -280,6 +284,9 @@ public class ProvenanceFinder {
     	} catch (Exception e){
     	}
 	}
+	
+	if (fileURL != null) System.out.println("GJFU "+ fileURL + "  " + j);
+	
 	return j;
     }
 
@@ -290,14 +297,27 @@ public class ProvenanceFinder {
 	if (fileURL == null)
 	    return null;
 
-	if (!(fileURL.toUpperCase().startsWith(serverURL)) && !fileURL.startsWith("http://127.0.0.1")
-		&& !fileURL.startsWith("http://localhost")) {
+	
+	if (!(fileURL.toUpperCase().startsWith(serverURL)) 
+			&& !fileURL.startsWith("http://127.0.0.1")
+			&& !fileURL.startsWith("http://localhost")) {
+		System.out.println("HERE "+ fileURL);
 	    return null;
 	}
 
 	// if it is not a result file do nothing
 	boolean isResultFile = fileURL.indexOf("jobResults") >= 0;
-
+	if (! isResultFile){
+	int idx1 = fileURL.indexOf("/");
+	String jobNoMaybe = fileURL.substring(0,idx1);
+	try {
+		Integer i = new Integer(jobNoMaybe);
+		isResultFile = true;
+	} catch (NumberFormatException nfe){
+	
+	}
+	}
+	
 	if (!((fileURL.indexOf("retrieveResults.jsp") >= 1) || (isResultFile)))
 	    return null;
 
@@ -329,6 +349,9 @@ public class ProvenanceFinder {
     }
 
     protected ArrayList<String> getLocalInputFiles(JobInfo job) {
+    	
+    	System.out.println(" GLIF inputs for " + job.getJobNumber());
+    	
 	ArrayList<String> inputFiles = new ArrayList<String>();
 	if (job == null)
 	    return inputFiles;
@@ -336,7 +359,7 @@ public class ProvenanceFinder {
 	ParameterInfo[] params = job.getParameterInfoArray();
 	if (params != null) {
 	    for (int i = 0; i < params.length; i++) {
-
+	     	
 		String val = getURLFromParam(params[i]);
 		if (val != null)
 		    inputFiles.add(val);
@@ -348,11 +371,14 @@ public class ProvenanceFinder {
     public String getURLFromParam(ParameterInfo pinfo) {
 	HashMap attributes = pinfo.getAttributes();
 	String pvalue = pinfo.getValue();
-	
-	if (pvalue.toUpperCase().startsWith(serverURL) || pvalue.toUpperCase().startsWith("HTTP://LOCALHOST")  || pvalue.toUpperCase().startsWith("HTTP://127.0.0.1")) {
-	    return pvalue;
-	} else if ("FILE".equals(attributes.get("TYPE"))) {
 
+	
+	if (pvalue.toUpperCase().startsWith(serverURL.toUpperCase()) || pvalue.toUpperCase().startsWith(serverURL) || pvalue.toUpperCase().startsWith("HTTP://LOCALHOST")  || pvalue.toUpperCase().startsWith("HTTP://127.0.0.1")) {
+	   	System.out.println("\t\t" + pinfo.getName()+ "=" + pvalue);
+		
+		return pvalue;
+	} else if ("FILE".equals(attributes.get("TYPE"))) {
+	
 	    if ("CACHED_IN".equals(attributes.get("MODE"))) {
 		int idx = pvalue.indexOf("/");
 		String jobstr = pvalue.substring(0, idx);
@@ -360,10 +386,12 @@ public class ProvenanceFinder {
 
 		return serverURL + "/gp/jobResults/" + jobstr + "/" + filename;
 	    } else {
+	    	
 		return pvalue;
 
 	    }
-	}
+	}	   	
+
 	return null;
     }
 
@@ -422,12 +450,16 @@ public class ProvenanceFinder {
 		ParameterInfo[] pjp = priorJob.getParameterInfoArray();
 		int fileIdx = 0;
 		for (int j = 0; j < pjp.length; j++) {
-		    if (pjp[j].isOutputFile()) {
-			fileIdx++;
-			if (pjp[j].getValue().endsWith(name)) {
-			    attrs.put(PipelineModel.INHERIT_FILENAME, "" + fileIdx);
+			if (pjp[j].isOutputFile()) {
+				fileIdx++;
+
+				System.out.println("CPP " + pjp[j].getValue() + " " + name);
+				if (name != null){
+					if (pjp[j].getValue().endsWith(name)) {
+						attrs.put(PipelineModel.INHERIT_FILENAME, "" + fileIdx);
+					}
+				}
 			}
-		    }
 		}
 
 		// now we figure out which file to use from the job
