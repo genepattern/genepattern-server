@@ -74,7 +74,7 @@ public class HTMLPipelineView {
     public HTMLPipelineView(Writer writer, String scheme, String serverName, String serverPort, String contextPath,
 	    String userAgent, String pipelineName, String userID) throws Exception {
 
-	this.submitURL = scheme + "://" + serverName + ":" + serverPort + contextPath + "/makePipeline.jsp";
+	this.submitURL = "makePipeline.jsp";
 	this.writer = writer;
 	this.userAgent = userAgent;
 	this.userID = userID;
