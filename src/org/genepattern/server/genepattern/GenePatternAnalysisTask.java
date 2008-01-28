@@ -1611,6 +1611,18 @@ public class GenePatternAnalysisTask {
                                 String inputfilename = origFullPath.substring(fidx + 6);
                                 value = GP_URL + "getFile.jsp?task=&file=" + inputfilename;
                             }
+                            else {
+                                substr = File.separator + "jobResults" + File.separator;
+                                fidx = origFullPath.indexOf(substr);
+                                if (fidx >= 0) {
+                                    String inputfilename = origFullPath.substring(fidx);
+                                    inputfilename = inputfilename.replace('\\', '/');
+                                    if (GP_URL.endsWith("/")) {
+                                        inputfilename = inputfilename.substring(1);
+                                    }
+                                    value = GP_URL + inputfilename;
+                                }
+                            }
                         } 
                         else {
                             value = pinfo.getUIValue(formalPinfo);
