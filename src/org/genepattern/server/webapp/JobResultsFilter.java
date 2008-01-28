@@ -152,6 +152,8 @@ public class JobResultsFilter implements Filter {
 
         if (allowed) {
             File fileObj = new File(jobsDirectory + File.separator + job + File.separator + file);
+            String lcFileName = fileObj.getName().toLowerCase();
+            
             HttpServletResponse httpServletResponse = (HttpServletResponse) response;
             httpServletResponse.setHeader("Content-disposition", "inline; filename=\"" + fileObj.getName() + "\"");
             httpServletResponse.setHeader("Cache-Control", "no-store");
@@ -160,6 +162,10 @@ public class JobResultsFilter implements Filter {
             httpServletResponse.setDateHeader("Last-Modified", fileObj.lastModified());
             httpServletResponse.setHeader("Content-Length", "" + fileObj.length());
 
+            if (lcFileName.endsWith(".html") || lcFileName.endsWith(".htm")){
+            	httpServletResponse.setHeader("Content-Type", "text/html"); 
+            }
+            
             BufferedInputStream is = null;
             try {
                 OutputStream os = response.getOutputStream();
