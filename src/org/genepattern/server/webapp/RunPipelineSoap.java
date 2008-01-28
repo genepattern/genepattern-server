@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
@@ -126,7 +127,8 @@ public class RunPipelineSoap {
      * Additionally the system properties jobID, LSID, genepattern.properties
      * are required, while the decorator system property is optional
      */
-    public static void main(String args[]) throws Exception {
+    public static void main(String args[]) throws Exception 
+    {
         log.debug("working dir: "+new File("test").getAbsolutePath());
 
         String userKey = "";
@@ -238,8 +240,20 @@ public class RunPipelineSoap {
                 decorator = (RunPipelineOutputDecoratorIF) (Class.forName(decoratorClass)).newInstance();
             }
             
-            //TODO: GenePatternURL must be set
-            String server = System.getProperty("GenePatternURL");
+            String gpUrl = System.getProperty("GenePatternURL", "");
+            if (gpUrl == null || gpUrl.trim().length() == 0) {
+                throw new Exception("System property GenePatternURL must be set");
+            }
+            URL serverFromFile = null;
+            try {
+                serverFromFile = new URL(System.getProperty("GenePatternURL"));
+            }
+            catch (MalformedURLException e) {
+                throw(e);
+            }
+
+            String host = serverFromFile.getHost();
+            String server = serverFromFile.getProtocol() + "://" + host + ":" + serverFromFile.getPort();
             PipelineModel pipelineModel = getPipelineModel(pipelineFileName, pipelineLSID, server, userId, userKey);
             RunPipelineSoap rp = new RunPipelineSoap(server, userId, userKey, jobId, pipelineModel, decorator);
             rp.runPipeline(additionalArguments);
