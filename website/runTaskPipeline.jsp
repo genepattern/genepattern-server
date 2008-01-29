@@ -1,14 +1,3 @@
-<%--
-The Broad Institute
-SOFTWARE COPYRIGHT NOTICE AGREEMENT
-This software and its documentation are copyright (2003-2008) by the
-Broad Institute/Massachusetts Institute of Technology. All rights are
-reserved.
-
-This software is supplied without any warranty or guaranteed support
-whatsoever. Neither the Broad Institute nor MIT can be responsible for its
-use, misuse, or functionality.
---%>
 <%@ page import="
                  org.genepattern.util.GPConstants,
                  org.genepattern.util.StringUtils,
@@ -23,7 +12,6 @@ use, misuse, or functionality.
 				 org.genepattern.server.user.UserDAO,
                  java.io.File,
                  java.io.UnsupportedEncodingException,
-                 java.net.InetAddress,
                  java.net.MalformedURLException,
                  java.net.URL,
                  java.net.URLDecoder,
@@ -31,20 +19,26 @@ use, misuse, or functionality.
                  java.text.DateFormat,
                  java.text.ParseException,
                  java.text.SimpleDateFormat,
-                 java.util.ArrayList,
-                 java.util.Date,
                  java.util.GregorianCalendar,
-                 java.util.HashMap,
                  java.util.Map,
-                 java.util.List,
-                 java.util.Iterator"
+                 java.util.List"
          session="false" contentType="text/html" language="Java" %>
 <%
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
     response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
     response.setDateHeader("Expires", 0);
-
 %>
+<%--
+The Broad Institute
+SOFTWARE COPYRIGHT NOTICE AGREEMENT
+This software and its documentation are copyright (2003-2008) by the
+Broad Institute/Massachusetts Institute of Technology. All rights are
+reserved.
+
+This software is supplied without any warranty or guaranteed support
+whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+use, misuse, or functionality.
+--%>
 <html>
 <head>
     <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
@@ -79,10 +73,6 @@ use, misuse, or functionality.
 	   		return;
 		}
 	        
-		String lsid = runTaskHelper.getTaskLsid();
-		String taskName = runTaskHelper.getTaskName();
-		
-		
 		String tmpDirName = runTaskHelper.getTempDirectory().getName();
 		Map<String, String> requestParameters = runTaskHelper.getRequestParameters();
         
@@ -96,12 +86,6 @@ use, misuse, or functionality.
 		} catch (Exception e){
 			userEmail = userID;
 		}
-
-
-        // set up the call to the analysis engine
-        String server = request.getScheme() + "://" + InetAddress.getLocalHost().getCanonicalHostName() + ":" + System.getProperty("GENEPATTERN_PORT");
-   
-               
         
         ParameterInfo[] parmInfos = task.getParameterInfoArray();
         parmInfos = parmInfos == null ? parmInfos = new ParameterInfo[0] : parmInfos;
