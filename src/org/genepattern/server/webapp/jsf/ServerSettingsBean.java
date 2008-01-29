@@ -373,7 +373,7 @@ public class ServerSettingsBean {
 	    buf.append("Log not found.");
 	} else {
 	    buf.append(name + " log file from ");
-	    buf.append(UIBeanHelper.getRequest().getServerName() + " on ");
+	    buf.append(UIBeanHelper.getServer() + " on ");
 	    buf.append(cal.getTime());
 
 	}
