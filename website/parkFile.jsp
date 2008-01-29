@@ -97,7 +97,7 @@
     	// move file to parking lot            
       attachedFile.renameTo(parkedFile);
 
-	String serverURL = "http://"+ InetAddress.getLocalHost().getCanonicalHostName() + ":"+ System.getProperty("GENEPATTERN_PORT") + request.getContextPath();
+    String serverURL = System.getProperty("GenePatternURL");
 	out.println(serverURL + "/getParkedFile.jsp?filename="+StringUtils.htmlEncode(attachedFile.getName()) +"&uid="+username.hashCode() );
 
 	//out.println("" + parkedFile.getPath());
