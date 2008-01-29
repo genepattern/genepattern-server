@@ -33,10 +33,7 @@
     String[] deleteJob = request.getParameterValues("deleteJob");
     String stopTaskID = request.getParameter(STOP);
     String userID = (String) request.getAttribute("userID"); // get userID but don't force login if not defined
-    String serverURL = "http://"
-            + InetAddress.getLocalHost().getCanonicalHostName() + ":"
-            + System.getProperty("GENEPATTERN_PORT") + "/"
-            + request.getContextPath();
+    String serverURL = System.getProperty("GenePatternURL");
 
     if (isDownload) {
         //HttpServletResponse response = UIBeanHelper.getResponse();
@@ -496,8 +493,7 @@ everyone's jobs <input type="checkbox" name="<%= SHOW_LOGS %>"
                   hasOutputFiles = true;
                   String userId = StringUtils.htmlEncode(" "
                           + job.getUserId());
-                  writeParameters(userId, paramsList, showAll, "",
-                          serverURL, out);
+                  writeParameters(userId, paramsList, showAll, "", serverURL, out);
               }
           }
           if (hasOutputFiles) {
