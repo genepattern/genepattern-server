@@ -325,12 +325,16 @@ public class ProvenanceFinder {
 	    int idx = fileURL.indexOf("jobResults");
 	    idx += 11;
 	    int endidx = fileURL.indexOf('/', idx);
+	    if (endidx == -1) endidx = fileURL.indexOf("%2F", idx);
+	    System.out.println("GPFU "+ key + "  " + fileURL + " " + idx + " " + endidx);
+		
 	    paramString = fileURL.substring(idx, endidx);
 
 	} else if (isResultFile && "filename".equals(key)) {
 	    int idx = fileURL.indexOf("jobResults");
 	    idx += 11;
 	    int endidx = fileURL.indexOf('/', idx);
+	    
 	    paramString = fileURL.substring(endidx + 1);
 
 	} else {
