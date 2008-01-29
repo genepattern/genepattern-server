@@ -204,7 +204,7 @@ public class RunTaskHelper {
 
     private void setParameterValues(HttpServletRequest request) throws IOException {
         String server = System.getProperty("GenePatternURL");
-        if (server == null || server.length() == 0) {
+        if (server == null || server.trim().length() == 0) {
             server = request.getScheme() + "://"
                     + InetAddress.getLocalHost().getCanonicalHostName() + ":"
                     + System.getProperty("GENEPATTERN_PORT") + request.getContextPath();
