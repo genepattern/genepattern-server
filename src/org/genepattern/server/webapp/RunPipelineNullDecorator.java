@@ -13,10 +13,8 @@
 package org.genepattern.server.webapp;
 
 import java.io.PrintStream;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -94,35 +92,17 @@ public class RunPipelineNullDecorator extends RunPipelineBasicDecorator implemen
     }
 
     protected String localizeURL(String original) {
-        if (original == null)
+        if (original == null) {
             return "";
-        String GENEPATTERN_PORT = "GENEPATTERN_PORT";
-        String GENEPATTERN_URL = "GenePatternURL";
-        String port = genepatternProps.getProperty(GENEPATTERN_PORT);
+        }
         original = StringUtils.replaceAll(original, GPConstants.LEFT_DELIMITER + GPConstants.LSID
                 + GPConstants.RIGHT_DELIMITER, model.getLsid());
-        // original = GenePatternAnalysisTask.replace(original,
-        // GPConstants.LEFT_DELIMITER + GENEPATTERN_PORT +
-        // GPConstants.RIGHT_DELIMITER, port);
-        // original = GenePatternAnalysisTask.replace(original,
-        // GPConstants.LEFT_DELIMITER + GENEPATTERN_URL +
-        // GPConstants.RIGHT_DELIMITER, System.getProperty("GenePatternURL"));
         try {
-            // one of ours?
-            if (!original.startsWith("http://localhost:" + port) && !original.startsWith("http://127.0.0.1:" + port)) {
-                return original;
-            }
             URL org = new URL(original);
-            String localhost = InetAddress.getLocalHost().getCanonicalHostName();
-            if (localhost.equals("localhost")) {
-                // MacOS X can't resolve localhost when unplugged from network
-                localhost = "127.0.0.1";
-            }
-            URL url = new URL("http://" + localhost + ":" + port + org.getFile());
+            URL url = new URL(URL + org.getFile());
             return url.toString();
-        } catch (UnknownHostException uhe) {
-            return original;
-        } catch (MalformedURLException mue) {
+        } 
+        catch (MalformedURLException mue) {
             return original;
         }
     }
