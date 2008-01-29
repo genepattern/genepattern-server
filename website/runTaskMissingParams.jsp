@@ -11,34 +11,9 @@
 --%>
 
 
-<%@ page import="java.io.IOException,
-		 java.util.StringTokenizer,
-		 java.util.Enumeration,
-		 java.util.HashMap,
-		 java.io.File,
-		 java.util.Date,
-		 java.io.UnsupportedEncodingException,
-		 java.net.InetAddress,
- 		 java.net.URLEncoder, 
-		 java.net.URLDecoder,
- 		 java.text.SimpleDateFormat,
-		 java.util.Iterator,
-		 java.util.Enumeration, 
-		 java.util.ArrayList, 
-		 java.util.GregorianCalendar,
-		 java.text.ParseException,
-		 java.text.DateFormat,
-		
+<%@ page import="java.util.ArrayList, 
  		 org.genepattern.util.StringUtils,
-		 org.genepattern.webservice.ParameterFormatConverter,
-		 org.genepattern.webservice.ParameterInfo,
-		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
-		 org.genepattern.util.GPConstants,
-		 org.genepattern.webservice.OmnigeneException,
-		 org.genepattern.webservice.AnalysisWebServiceProxy,
-		 org.genepattern.webservice.TaskInfo,
-		 org.genepattern.webservice.JobInfo,
-		 org.genepattern.data.pipeline.PipelineModel"
+		 org.genepattern.webservice.ParameterInfo"
 	session="false" contentType="text/html" language="Java" %>
 
 <font size='+1' color='red'><b> Warning </b></font><br>
