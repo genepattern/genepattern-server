@@ -53,10 +53,17 @@ public class ProvenanceFinder {
 
     static {
         serverURL = System.getProperty("GenePatternURL");
-        if (serverURL == null || serverURL.length() == 0) {
+        if (serverURL == null || serverURL.trim().length() == 0) {
             try {
-                serverURL = "http://" + InetAddress.getLocalHost().getCanonicalHostName() + ":"
-                    + System.getProperty("GENEPATTERN_PORT");
+                String port = System.getProperty("GENEPATTERN_PORT", "");
+                if (port != null && port.trim().length() > 0) {
+                    port = port.trim();
+                    port = ":"+port;
+                }
+                else {
+                    port = "";
+                }
+                serverURL = "http://" + InetAddress.getLocalHost().getCanonicalHostName() + port;
                 serverURL = serverURL.toUpperCase();
             } 
             catch (Exception e) {
@@ -293,65 +300,67 @@ public class ProvenanceFinder {
     }
 
     protected String getParamFromURL(String fileURL, String key) {
-	// if it is null or not a local file we can do nothing
-	String paramString = "";
+        // if it is null or not a local file we can do nothing
+        String paramString = "";
 
-	if (fileURL == null)
-	    return null;
-
+        if (fileURL == null) {
+            return null;
+        }
 	
-	if (!(fileURL.toUpperCase().startsWith(serverURL)) 
-			&& !fileURL.startsWith("http://127.0.0.1")
-			&& !fileURL.startsWith("http://localhost")) {
-		log.debug("HERE "+ fileURL);
-	    return null;
-	}
+        if (!(fileURL.toUpperCase().startsWith(serverURL)) 
+                && !fileURL.startsWith("http://127.0.0.1")
+                && !fileURL.startsWith("http://localhost")) {
+            log.debug("HERE "+ fileURL);
+            return null;
+        }
 
-	// if it is not a result file do nothing
-	boolean isResultFile = fileURL.indexOf("jobResults") >= 0;
-	if (! isResultFile){
-	int idx1 = fileURL.indexOf("/");
-	String jobNoMaybe = fileURL.substring(0,idx1);
-	try {
-		Integer i = new Integer(jobNoMaybe);
-		isResultFile = true;
-	} catch (NumberFormatException nfe){
+        // if it is not a result file do nothing
+        boolean isResultFile = fileURL.indexOf("jobResults") >= 0;
+        if (! isResultFile){
+            int idx1 = fileURL.indexOf("/");
+            String jobNoMaybe = fileURL.substring(0,idx1);
+            try {
+                Integer i = new Integer(jobNoMaybe);
+                isResultFile = true;
+            } 
+            catch (NumberFormatException nfe){
+            }
+        }
 	
-	}
-	}
-	
-	if (!((fileURL.indexOf("retrieveResults.jsp") >= 1) || (isResultFile)))
-	    return null;
+        if (!((fileURL.indexOf("retrieveResults.jsp") >= 1) || (isResultFile))) {
+            return null;
+        }
 
-	if (isResultFile && "job".equals(key)) {
-	    int idx = fileURL.indexOf("jobResults");
-	    idx += 11;
-	    int endidx = fileURL.indexOf('/', idx);
-	    if (endidx == -1) endidx = fileURL.indexOf("%2F", idx);
-	    log.debug("GPFU "+ key + "  " + fileURL + " " + idx + " " + endidx);
+        if (isResultFile && "job".equals(key)) {
+            int idx = fileURL.indexOf("jobResults");
+            idx += 11;
+            int endidx = fileURL.indexOf('/', idx);
+            if (endidx == -1) {
+                endidx = fileURL.indexOf("%2F", idx);
+            }
+            log.debug("GPFU "+ key + "  " + fileURL + " " + idx + " " + endidx);
 		
-	    paramString = fileURL.substring(idx, endidx);
-
-	} else if (isResultFile && "filename".equals(key)) {
-	    int idx = fileURL.indexOf("jobResults");
-	    idx += 11;
-	    int endidx = fileURL.indexOf('/', idx);
-	    
-	    paramString = fileURL.substring(endidx + 1);
-
-	} else {
-	    // now we think we have a local result file url so grab the job #
-	    int idx = fileURL.indexOf(key + "=");
-	    if (idx < 0)
-		return null; // can't find a job #
-
-	    int endIdx = fileURL.indexOf("&", idx);
-	    if (endIdx == -1)
-		endIdx = fileURL.length();
-
-	    paramString = fileURL.substring(idx + 1 + key.length(), endIdx);
-	}
-	return paramString;
+            paramString = fileURL.substring(idx, endidx);
+        } 
+        else if (isResultFile && "filename".equals(key)) {
+            int idx = fileURL.indexOf("jobResults");
+            idx += 11;
+            int endidx = fileURL.indexOf('/', idx);
+            paramString = fileURL.substring(endidx + 1);
+        } 
+        else {
+            // now we think we have a local result file url so grab the job #
+            int idx = fileURL.indexOf(key + "=");
+            if (idx < 0) {
+                return null; // can't find a job #
+            }
+            int endIdx = fileURL.indexOf("&", idx);
+            if (endIdx == -1) {
+                endIdx = fileURL.length();
+            }
+            paramString = fileURL.substring(idx + 1 + key.length(), endIdx);
+        }
+        return paramString;
     }
 
     protected ArrayList<String> getLocalInputFiles(JobInfo job) {
