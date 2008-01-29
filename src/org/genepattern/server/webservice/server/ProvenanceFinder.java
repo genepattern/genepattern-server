@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.webapp.PipelineCreationHelper;
@@ -41,6 +42,7 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
 
 public class ProvenanceFinder {
+    private static Logger log = Logger.getLogger(ProvenanceFinder.class);
     private static String serverURL = null;
 
     private String userID = null;
@@ -58,7 +60,7 @@ public class ProvenanceFinder {
                 serverURL = serverURL.toUpperCase();
             } 
             catch (Exception e) {
-                e.printStackTrace();
+                log.error(e);
             }
         }
         serverURL = serverURL.toUpperCase();
@@ -79,8 +81,7 @@ public class ProvenanceFinder {
 	    model.setLsid(lsid);
 	    copyFilesToPipelineDir(lsid, pipelineName);
 	} catch (Exception e) {
-	    e.printStackTrace();
-
+	    log.error(e);
 	}
 	return lsid;
     }
@@ -93,41 +94,42 @@ public class ProvenanceFinder {
     }
 
     public Set<JobInfo> findJobsThatCreatedFile(String fileURL) {
+        log.debug("A. Looking for creators of " + fileURL);
     	
-    	System.out.println("A. Looking for creators of " + fileURL);
-    	
-	ArrayList<String> files = new ArrayList<String>();
-	Set<JobInfo> jobs = new TreeSet<JobInfo>(new Comparator<JobInfo>() {
-	    public int compare(JobInfo j1, JobInfo j2) {
-		if (j1.getJobNumber() > j2.getJobNumber())
-		    return 1;
-		else if (j1.getJobNumber() < j2.getJobNumber())
-		    return -1;
-		else
-		    return 0;
-	    }
+        ArrayList<String> files = new ArrayList<String>();
+        Set<JobInfo> jobs = new TreeSet<JobInfo>(new Comparator<JobInfo>() {
+            public int compare(JobInfo j1, JobInfo j2) {
+                if (j1.getJobNumber() > j2.getJobNumber()) {
+                    return 1;
+                }
+                else if (j1.getJobNumber() < j2.getJobNumber()) {
+                    return -1;
+                }
+                else {
+                    return 0;
+                }
+            }
+        });
 
-	});
+        files.add(fileURL);
 
-	files.add(fileURL);
+        while (!files.isEmpty()) {
+            String aFile = files.get(0);
+            if (aFile == null) {
+                continue;
+            }
 
-	while (!files.isEmpty()) {
-	    String aFile = files.get(0);
-	    if (aFile == null)
-		continue;
-	    JobInfo job = findJobThatCreatedFile(aFile);
-	    
-	    
-	    if (job != null){
-	    	if (!jobs.contains(job)) {
-	    		files.addAll(getLocalInputFiles(job));
-	    		jobs.add(job);
-	    	}
-	    }
+            JobInfo job = findJobThatCreatedFile(aFile);
+            if (job != null){
+                if (!jobs.contains(job)) {
+                    files.addAll(getLocalInputFiles(job));
+                    jobs.add(job);
+                }
+            }
 	 	  
-	    files.remove(0);
-	}
-	return jobs;
+            files.remove(0);
+        }
+        return jobs;
     }
 
     /**
@@ -226,9 +228,9 @@ public class ProvenanceFinder {
 	String attachmentDir = null;
 	try {
 	    attachmentDir = DirectoryManager.getTaskLibDir(pipelineName, pipelineLSID, userID);
-	} catch (Exception e) {
-	    System.out.println("Could not copy files for pipeline: " + pipelineLSID);
-	    e.printStackTrace();
+	} 
+	catch (Exception e) {
+	    log.error("Could not copy files for pipeline: " + pipelineLSID, e);
 	    return;
 	}
 
@@ -242,31 +244,29 @@ public class ProvenanceFinder {
 	    FileInputStream is = null;
 	    FileOutputStream os = null;
 	    try {
-		is = new FileInputStream(aFile);
-		os = new FileOutputStream(new File(dir, aFile.getName()));
-		while ((j = is.read(buf, 0, buf.length)) > 0) {
-		    os.write(buf, 0, j);
-		}
-
-	    } catch (IOException e) {
-		System.out
-			.println("Could not copy file " + aFile.getAbsolutePath() + " todir " + dir.getAbsolutePath());
-		e.printStackTrace();
-	    } finally {
-		try {
-		    if (is != null) {
-			is.close();
-		    }
-		} catch (IOException e) {
-
-		}
-		try {
-		    if (os != null) {
-			os.close();
-		    }
-		} catch (IOException e) {
-
-		}
+	        is = new FileInputStream(aFile);
+	        os = new FileOutputStream(new File(dir, aFile.getName()));
+	        while ((j = is.read(buf, 0, buf.length)) > 0) {
+	            os.write(buf, 0, j);
+	        }
+	    } 
+	    catch (IOException e) {
+    		log.error("Could not copy file " + aFile.getAbsolutePath() + " todir " + dir.getAbsolutePath(), e);
+	    } 
+	    finally {
+	        try {
+	            if (is != null) {
+	                is.close();
+	            }
+	        } catch (IOException e) {
+	        }
+	        try {
+	            if (os != null) {
+	                os.close();
+	            }
+	        } 
+	        catch (IOException e) {
+	        }
 	    }
 	}
 	filesToCopy.clear();
@@ -285,7 +285,9 @@ public class ProvenanceFinder {
     	}
 	}
 	
-	if (fileURL != null) System.out.println("GJFU "+ fileURL + "  " + j);
+	if (fileURL != null) {
+	    log.debug("GJFU "+ fileURL + "  " + j);
+	}
 	
 	return j;
     }
@@ -301,7 +303,7 @@ public class ProvenanceFinder {
 	if (!(fileURL.toUpperCase().startsWith(serverURL)) 
 			&& !fileURL.startsWith("http://127.0.0.1")
 			&& !fileURL.startsWith("http://localhost")) {
-		System.out.println("HERE "+ fileURL);
+		log.debug("HERE "+ fileURL);
 	    return null;
 	}
 
@@ -326,7 +328,7 @@ public class ProvenanceFinder {
 	    idx += 11;
 	    int endidx = fileURL.indexOf('/', idx);
 	    if (endidx == -1) endidx = fileURL.indexOf("%2F", idx);
-	    System.out.println("GPFU "+ key + "  " + fileURL + " " + idx + " " + endidx);
+	    log.debug("GPFU "+ key + "  " + fileURL + " " + idx + " " + endidx);
 		
 	    paramString = fileURL.substring(idx, endidx);
 
@@ -354,7 +356,7 @@ public class ProvenanceFinder {
 
     protected ArrayList<String> getLocalInputFiles(JobInfo job) {
     	
-    	System.out.println(" GLIF inputs for " + job.getJobNumber());
+    	log.debug(" GLIF inputs for " + job.getJobNumber());
     	
 	ArrayList<String> inputFiles = new ArrayList<String>();
 	if (job == null)
@@ -378,7 +380,7 @@ public class ProvenanceFinder {
 
 	
 	if (pvalue.toUpperCase().startsWith(serverURL.toUpperCase()) || pvalue.toUpperCase().startsWith(serverURL) || pvalue.toUpperCase().startsWith("HTTP://LOCALHOST")  || pvalue.toUpperCase().startsWith("HTTP://127.0.0.1")) {
-	   	System.out.println("\t\t" + pinfo.getName()+ "=" + pvalue);
+	   	log.debug("\t\t" + pinfo.getName()+ "=" + pvalue);
 		
 		return pvalue;
 	} else if ("FILE".equals(attributes.get("TYPE"))) {
@@ -457,7 +459,7 @@ public class ProvenanceFinder {
 			if (pjp[j].isOutputFile()) {
 				fileIdx++;
 
-				System.out.println("CPP " + pjp[j].getValue() + " " + name);
+				log.debug("CPP " + pjp[j].getValue() + " " + name);
 				if (name != null){
 					if (pjp[j].getValue().endsWith(name)) {
 						attrs.put(PipelineModel.INHERIT_FILENAME, "" + fileIdx);
