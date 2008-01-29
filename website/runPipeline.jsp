@@ -19,6 +19,7 @@
 	java.io.InputStreamReader,
 	java.io.IOException,
 	java.io.OutputStream,
+    java.net.URL,
 	java.text.DateFormat,
 	java.text.ParseException,
 	java.text.SimpleDateFormat,
@@ -113,10 +114,16 @@
                 }
                 String pipelineName = (name == null ? ("unnamed" + DOT_PIPELINE) : taskInfo.getName());
 
-                String baseURL = request.getScheme() + "://" + request.getServerName() + ":" + serverPort
-                        + request.getRequestURI();
+                String baseURL = "";
+                String gpURL = System.getProperty("GenePatternURL", "");
+                if (gpURL != null && gpURL.trim().length() > 0) {
+                    URL url = new URL(gpURL);
+                    baseURL = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort() + request.getRequestURI();
+                }
+                else {
+                    baseURL = request.getScheme() + "://" + request.getServerName() + ":" + serverPort + request.getRequestURI();
+                }
                 baseURL = baseURL.substring(0, baseURL.lastIndexOf("/") + 1);
-
                 try {
                     if (command.equals(STOP)) {
                         runPipelineForJsp.stopPipeline((String) requestParamsAndAttributes.get(JOBID));
