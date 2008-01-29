@@ -12,8 +12,7 @@
 
 
 <%@ page
-	import="java.net.InetAddress,
- 		 java.net.URLEncoder, 
+	import="java.net.URLEncoder, 
 		 java.util.List,
 		 java.util.Map,
  		 org.genepattern.util.StringUtils,
