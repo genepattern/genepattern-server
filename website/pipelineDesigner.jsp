@@ -1,9 +1,6 @@
 <%@ page import="org.genepattern.server.webapp.*,
-		 org.genepattern.data.pipeline.*,
-		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.util.IAuthorizationManager,
 		 org.genepattern.server.util.AuthorizationManagerFactory,
-		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.util.LSID,
 		 org.genepattern.util.LSIDUtil,
@@ -1494,10 +1491,8 @@ nextTask:
 
 </script>
 <%
-      String userAgent = request.getHeader("User-Agent");
-
 	try {
-		HTMLPipelineView viewer = new HTMLPipelineView(out, request.getScheme(), request.getServerName(), ""+request.getServerPort(), request.getContextPath(), request.getHeader("User-Agent"), request.getParameter("name"), userID);
+		HTMLPipelineView viewer = new HTMLPipelineView(out, request.getContextPath(), request.getHeader("User-Agent"), request.getParameter("name"), userID);
 
 		viewer.init();
 		viewer.head();

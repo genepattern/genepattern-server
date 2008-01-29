@@ -63,23 +63,21 @@ public class HTMLPipelineView {
 
     Collection tmCatalog = null; // TaskInfo collection.
 
-    String userAgent = null;
-
     String pipelineName = null;
     String contextPath = null;
     String userID = null;
 
     Map tmTasksByLSID = null;
 
-    public HTMLPipelineView(Writer writer, String scheme, String serverName, String serverPort, String contextPath,
-	    String userAgent, String pipelineName, String userID) throws Exception {
-
+    public HTMLPipelineView(Writer writer, String contextPath, String userAgent,  String pipelineName, String userID) 
+        throws Exception 
+    {
 	this.submitURL = "makePipeline.jsp";
 	this.writer = writer;
-	this.userAgent = userAgent;
 	this.userID = userID;
-	if (LSID.isLSID(pipelineName))
+	if (LSID.isLSID(pipelineName)) {
 	    pipelineName = new LSID(pipelineName).toString();
+	}
 	this.pipelineName = pipelineName;
 	this.contextPath = contextPath;
 
