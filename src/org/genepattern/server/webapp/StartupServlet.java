@@ -125,18 +125,19 @@ public class StartupServlet extends HttpServlet {
 	    pathRoot = (new File(config.getServletContext().getRealPath("/"))).getName();
 	}
 
-	// set the GenePatternURL to the current IP adresss unless specified in the
+	// set the GenePatternURL to the current canonical host name unless specified in the
 	// properties file in which case we leave it alone
 	String myUrl = System.getProperty("GenePatternURL", "");
-	if (myUrl.length() == 0) {
+	if (myUrl == null || myUrl.trim().length() == 0) {
 	    try {
-		InetAddress addr = InetAddress.getLocalHost();
-		String host_address = addr.getCanonicalHostName();
-		String port = System.getProperty("GENEPATTERN_PORT");
-		String genePatternServerURL = "http://" + host_address + ":" + port + "/" + pathRoot + "/";
-		System.setProperty("GenePatternURL", genePatternServerURL);
-	    } catch (UnknownHostException e) {
-		e.printStackTrace();
+	        InetAddress addr = InetAddress.getLocalHost();
+	        String host_address = addr.getCanonicalHostName();
+	        String port = System.getProperty("GENEPATTERN_PORT");
+	        String genePatternServerURL = "http://" + host_address + ":" + port + "/" + pathRoot + "/";
+	        System.setProperty("GenePatternURL", genePatternServerURL);
+	    } 
+	    catch (UnknownHostException e) {
+	        e.printStackTrace();
 	    }
 	}
     }
