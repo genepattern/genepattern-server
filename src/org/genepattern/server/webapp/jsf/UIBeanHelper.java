@@ -226,7 +226,12 @@ public class UIBeanHelper {
         //otherwise use the servlet request
         HttpServletRequest request = UIBeanHelper.getRequest();
         if (request != null) {
-            return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath();
+            String portStr = "";
+            int port = request.getServerPort();
+            if (port > 0) {
+                portStr = ":"+port;
+            }
+            return request.getScheme() + "://" + request.getServerName() + portStr + request.getContextPath();
         }
         
         //TODO: handle this exception
