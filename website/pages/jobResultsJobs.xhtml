@@ -23,7 +23,7 @@
     <!--  job row -->
     <tr id="job_row_#{jobWrapper.jobNumber}" class="#{jobWrapper.level == 0 ? 'task-titlerow' : 'pipelinetask-titlerow'}">
       <td>
-        <h:outputText rendered="#{jobWrapper.level == 0}">
+        <h:outputText>
           #{jobWrapper.jobNumber}
         </h:outputText>
         <!--  Hidden field to hold the expansion state.  -->
