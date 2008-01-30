@@ -507,7 +507,12 @@ timeMS dateTime loginId moduleType moduleName  manifest supportFilesChanges URLT
 	log.append(sbAttachments);
 	log.append("\" ");
 
-	String baseURL = request.getScheme()+"://" + request.getServerName() + ":" + request.getServerPort() + request.getRequestURI();
+    String portStr = "";
+    int port = request.getServerPort();
+    if (port > 0) {
+        portStr = ":"+port;
+    }
+	String baseURL = request.getScheme()+"://" + request.getServerName() + portStr + request.getRequestURI();
 	baseURL = baseURL.substring(0, baseURL.lastIndexOf("/")+1);
 	log.append(baseURL + "addTask.jsp?" + GPConstants.NAME + "=" + URLEncoder.encode(lsid, "UTF-8"));
 	log.append(" ");

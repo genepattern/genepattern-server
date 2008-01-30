@@ -168,8 +168,12 @@ public class AuthenticationFilter implements Filter {
             } else {
                 queryString = "?" + queryString;
             }
-            String fqAddress = request.getScheme() + "://" + fqHostName + ":" + request.getServerPort()
-                    + request.getRequestURI() + queryString;
+            String portStr = "";
+            int port = request.getServerPort();
+            if (port > 0) {
+                portStr = ":"+port;
+            }
+            String fqAddress = request.getScheme() + "://" + fqHostName + portStr + request.getRequestURI() + queryString;
             response.sendRedirect(fqAddress);
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -204,8 +208,12 @@ public class AuthenticationFilter implements Filter {
                 }
             }
 
-            String contextPath = request.getContextPath();
-            String basePath = request.getScheme() + "://" + fqHostName + ":" + request.getServerPort() + contextPath;
+            String portStr = "";
+            int port = request.getServerPort();
+            if (port > 0) {
+                portStr = ":"+port;
+            }
+            String basePath = request.getScheme() + "://" + fqHostName + portStr + request.getContextPath();
             String fullyQualifiedPage = basePath + page;
 
             if (basePath.charAt(basePath.length() - 1) != '/') {

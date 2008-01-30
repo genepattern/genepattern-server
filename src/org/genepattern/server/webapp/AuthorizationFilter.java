@@ -122,7 +122,12 @@ public class AuthorizationFilter implements Filter {
             }
         }
 
-        String notPermittedUrl = "http://" + fqHostName + ":" + request.getServerPort() + request.getContextPath()
+        String portStr = "";
+        int port = request.getServerPort();
+        if (port > 0) {
+            portStr = ":"+port;
+        }
+        String notPermittedUrl = "http://" + fqHostName + portStr + request.getContextPath()
                 + "/pages/notPermitted.jsf?link=" + URLEncoder.encode(request.getRequestURI(), GPConstants.UTF8);
         response.sendRedirect(notPermittedUrl);
     }
