@@ -20,9 +20,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -238,20 +240,50 @@ public class RunPipelineSoap {
                 decorator = (RunPipelineOutputDecoratorIF) (Class.forName(decoratorClass)).newInstance();
             }
             
+            //see StartupServlet.java
             String gpUrl = System.getProperty("GenePatternURL", "");
             if (gpUrl == null || gpUrl.trim().length() == 0) {
-                throw new Exception("System property GenePatternURL must be set");
+                //if it is not a system property, check genepattern.properties
+                gpUrl = genepatternProps.getProperty("GenePatternURL", "");
+                //if it is not set in genepattern.properties, then construct the URL using InetAddress
+                if (gpUrl == null || gpUrl.trim().length() == 0) {
+                    try {
+                        InetAddress addr = InetAddress.getLocalHost();
+                        String host_address = addr.getCanonicalHostName();
+                        String port = System.getProperty("GENEPATTERN_PORT", "");
+                        if (port == null) {
+                            port = "";
+                        }
+                        else {
+                            port = port.trim();
+                        }
+                        if (port.length() > 0) {
+                            port = ":"+port;
+                        }
+                        gpUrl = "http://" + host_address + port + "/gp/";
+                    } 
+                    catch (UnknownHostException e) {
+                        throw new Exception("Error constructing GenePatternURL from localhost: "+e.getLocalizedMessage(), e);
+                    }
+                }
+                System.setProperty("GenePatternURL", gpUrl);
             }
+
             URL serverFromFile = null;
             try {
-                serverFromFile = new URL(System.getProperty("GenePatternURL"));
+                serverFromFile = new URL(gpUrl);
             }
             catch (MalformedURLException e) {
-                throw(e);
+                throw new Exception("Invalid GenePatternURL: "+gpUrl, e);
             }
 
             String host = serverFromFile.getHost();
-            String server = serverFromFile.getProtocol() + "://" + host + ":" + serverFromFile.getPort();
+            String port = "";
+            int portNum = serverFromFile.getPort();
+            if (portNum >= 0) {
+                port = ":"+portNum;
+            }
+            String server = serverFromFile.getProtocol() + "://" + host + port;
             PipelineModel pipelineModel = getPipelineModel(pipelineFileName, pipelineLSID, server, userId, userKey);
             RunPipelineSoap rp = new RunPipelineSoap(server, userId, userKey, jobId, pipelineModel, decorator);
             rp.runPipeline(additionalArguments);
