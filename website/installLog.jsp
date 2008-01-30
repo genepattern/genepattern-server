@@ -33,13 +33,13 @@
 <head>
 <link href="skin/stylesheet.css" rel="stylesheet" type="text/css">
 <link rel="SHORTCUT ICON" href="favicon.ico" >
-<title><%= filename %> from <%= request.getServerName() %></title>
+<title><%= filename %></title>
 <jsp:include page="navbarHead.jsp"/>
 </head>
 <body>
 <jsp:include page="navbar.jsp"/>
 <pre>
-<%= f.getCanonicalPath() %> on <%= request.getServerName() %>
+<%= f.getCanonicalPath() %>
 <hr>
 <%
 	// wait for the installer to materialize the log file
