@@ -237,8 +237,12 @@ public class RunPipeline {
 		} catch (UnknownHostException uhe) {
 		}
 		String protocol = serverFromFile != null ? serverFromFile.getProtocol() : "http";
-		serverFromFile = new URL(protocol + "://" + host + ":" + System.getProperty("GENEPATTERN_PORT"));
-
+		String portStr = System.getProperty("GENEPATTERN_PORT", "");
+		portStr = portStr.trim();
+		if (portStr.length()>0) {
+		    portStr = ":"+portStr;
+		}
+		serverFromFile = new URL(protocol + "://" + host + portStr);
 		System.setProperty("GenePatternURL", serverFromFile.toString() + "/gp/");
 	    }
 

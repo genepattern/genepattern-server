@@ -55,15 +55,12 @@ public class ProvenanceFinder {
         serverURL = System.getProperty("GenePatternURL");
         if (serverURL == null || serverURL.trim().length() == 0) {
             try {
-                String port = System.getProperty("GENEPATTERN_PORT", "");
-                if (port != null && port.trim().length() > 0) {
-                    port = port.trim();
-                    port = ":"+port;
+                String portStr = System.getProperty("GENEPATTERN_PORT", "");
+                portStr = portStr.trim();
+                if (portStr.length()>0) {
+                    portStr = ":"+portStr;
                 }
-                else {
-                    port = "";
-                }
-                serverURL = "http://" + InetAddress.getLocalHost().getCanonicalHostName() + port;
+                serverURL = "http://" + InetAddress.getLocalHost().getCanonicalHostName() + portStr;
                 serverURL = serverURL.toUpperCase();
             } 
             catch (Exception e) {

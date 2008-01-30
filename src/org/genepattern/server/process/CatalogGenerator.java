@@ -277,18 +277,24 @@ public class CatalogGenerator {
     String fqHostName = null;
 
     public String getZipDownloadURLBase() throws IOException {
-
         if (fqHostName == null) {
-            String port = System.getProperty("GENEPATTERN_PORT");
+            String portStr = System.getProperty("GENEPATTERN_PORT", "");
+            portStr = portStr.trim();
+            if (portStr.length()>0) {
+                portStr = ":"+portStr;
+            }
             fqHostName = System.getProperty("fullyQualifiedHostName");
-            if (fqHostName == null)
+            if (fqHostName == null) {
                 fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
-            if (fqHostName.equals("localhost"))
+            }
+            if (fqHostName.equals("localhost")) {
                 fqHostName = "127.0.0.1";
-            fqHostName = fqHostName + ":" + port + "/gp/";
+            }
+            fqHostName = fqHostName + portStr + "/gp/";
         }
-        if (!fqHostName.startsWith("http://"))
+        if (!fqHostName.startsWith("http://")) {
             fqHostName = "http://" + fqHostName;
+        }
         return fqHostName;
     }
 

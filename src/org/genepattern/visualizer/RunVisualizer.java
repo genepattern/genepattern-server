@@ -181,7 +181,13 @@ public class RunVisualizer {
 	}
 
 	params.put(JAVA_FLAGS, javaFlags);
-	params.put("GENEPATTERN_PORT", "" + documentBase.getPort());
+	
+	String portStr = "";
+	int port = documentBase.getPort();
+	if (port>0) {
+	    portStr = ""+port;
+	}
+	params.put("GENEPATTERN_PORT", portStr);
 
 	// check OS and CPU restrictions of TaskInfoAttributes against this
 	// server

@@ -176,7 +176,11 @@ public abstract class RunPipelineDecoratorBase implements RunPipelineOutputDecor
         URL = System.getProperty("GenePatternURL");
         if (URL == null || URL.trim().length()==0) {
             String localhost = "127.0.0.1"; //default value in case of exception
-            String port = genepatternProps.getProperty("GENEPATTERN_PORT", "8080");
+            String portStr = genepatternProps.getProperty("GENEPATTERN_PORT");
+            portStr = portStr.trim();
+            if (portStr.length() > 0) {
+                portStr = ":"+portStr;
+            }
             try {
                 localhost = InetAddress.getLocalHost().getCanonicalHostName();
                 if (localhost.equals("localhost")) {
@@ -187,7 +191,7 @@ public abstract class RunPipelineDecoratorBase implements RunPipelineOutputDecor
             catch (UnknownHostException e) {
                 //TODO: log exception
             }
-            URL = "http://" + localhost + ":" + port + "/gp/";
+            URL = "http://" + localhost + portStr + "/gp/";
         }
     }
 
@@ -198,8 +202,9 @@ public abstract class RunPipelineDecoratorBase implements RunPipelineOutputDecor
         String GENEPATTERN_PORT = "GENEPATTERN_PORT";
         String GENEPATTERN_URL = "GenePatternURL";
         String port = genepatternProps.getProperty(GENEPATTERN_PORT);
-        if (port == null)
+        if (port == null) {
             port = "PORT??";
+        }
         original = StringUtils.replaceAll(original, GPConstants.LEFT_DELIMITER
                 + GPConstants.LSID + GPConstants.RIGHT_DELIMITER, model
                 .getLsid());

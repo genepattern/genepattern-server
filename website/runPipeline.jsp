@@ -104,24 +104,34 @@
                 String description = null;
                 boolean isSaved = (requestParamsAndAttributes.get("saved") == null);
                 TaskInfo taskInfo = null;
-                String serverPort = System.getProperty("GENEPATTERN_PORT");
                 if (!isSaved) {
                     description = (String) requestParamsAndAttributes.get("description");
                     taskInfo = (TaskInfo) requestParamsAndAttributes.get("taskInfo");
-                    serverPort = (String) requestParamsAndAttributes.get("serverPort");
-                } else if (!command.equals(STOP) && name != null) {
+                } 
+                else if (!command.equals(STOP) && name != null) {
                     taskInfo = GenePatternAnalysisTask.getTaskInfo(URLDecoder.decode(name, "UTF-8"), userID);
                 }
                 String pipelineName = (name == null ? ("unnamed" + DOT_PIPELINE) : taskInfo.getName());
 
                 String baseURL = "";
                 String gpURL = System.getProperty("GenePatternURL", "");
-                if (gpURL != null && gpURL.trim().length() > 0) {
+                gpURL = gpURL.trim();
+                if (gpURL.length() > 0) {
                     URL url = new URL(gpURL);
-                    baseURL = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort() + request.getRequestURI();
+                    String portStr = "";
+                    int port = url.getPort();
+                    if (port>0) {
+                        portStr = ":"+port;
+                    }
+                    baseURL = url.getProtocol() + "://" + url.getHost() + portStr + request.getRequestURI();
                 }
                 else {
-                    baseURL = request.getScheme() + "://" + request.getServerName() + ":" + serverPort + request.getRequestURI();
+                    String portStr = "";
+                    int port = request.getServerPort();
+                    if (port > 0) {
+                        portStr = ":"+port;
+                    }
+                    baseURL = request.getScheme() + "://" + request.getServerName() + portStr + request.getRequestURI();
                 }
                 baseURL = baseURL.substring(0, baseURL.lastIndexOf("/") + 1);
                 try {

@@ -105,7 +105,6 @@ try {
 	eee.printStackTrace();
 }
 
-String serverPort = System.getProperty("GENEPATTERN_PORT");
 String userID = null;
 boolean bRun = false;
 boolean bClone = false;
@@ -578,7 +577,6 @@ try {
 			pTia.put(GPConstants.LSID, "" /*model.getLsid()*/);
 
 			request.setAttribute("taskInfo", pTaskInfo);
-			request.setAttribute("serverPort", serverPort);
 			taskName = requestParameters.getProperty("taskName");
 			request.setAttribute("taskName", taskName);
 			if (taskName != null) {
