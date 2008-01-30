@@ -12,6 +12,7 @@
 
 package org.genepattern.codegenerator;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Date;
@@ -28,7 +29,6 @@ import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.TaskInfoAttributes;
 
 /**
  * Generate R code to form a pipeline of tasks, complete with
@@ -292,7 +292,7 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
                 invocation.append(actual.getName() + "=\"" + val + "\"");
             }
         } else {
-            invocation.append(actual.getName() + "=\"" + val + "\"");
+            invocation.append(actual.getName() + "=\"" + new File(val).getName() + "\"");
         }
     }
 

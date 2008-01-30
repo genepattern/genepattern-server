@@ -12,6 +12,7 @@
 
 package org.genepattern.codegenerator;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -393,7 +394,7 @@ public class JavaPipelineCodeGenerator extends AbstractPipelineCodeGenerator imp
                 invocation.append("new Parameter(\"" + actual.getName() + "\", \"" + val + "\")");
             }
         } else {
-            invocation.append("new Parameter(\"" + actual.getName() + "\", \"" + val + "\")");
+            invocation.append("new Parameter(\"" + actual.getName() + "\", \"" + new File(val).getName() + "\")");
         }
     }
 
