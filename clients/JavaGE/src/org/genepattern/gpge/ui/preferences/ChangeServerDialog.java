@@ -31,7 +31,6 @@ import com.jgoodies.forms.layout.FormLayout;
 /**
  * Dialog that lets users change server that they're connecting to
  *
-
  */
 public class ChangeServerDialog extends CenteredDialog {
     private JLabel serverLabel, portLabel, usernameLabel;
@@ -68,7 +67,8 @@ public class ChangeServerDialog extends CenteredDialog {
         portLabel = new JLabel("Port: ", javax.swing.SwingConstants.RIGHT);
         portTextField = new JTextField(10);
         if (url != null) {
-            portTextField.setText("" + url.getPort());
+            int port = url.getPort();
+            portTextField.setText(port > 0 ? ""+port : "");
         }
         usernameLabel = new JLabel("Username: ", javax.swing.SwingConstants.RIGHT);
         usernameTextField = new JTextField(20);

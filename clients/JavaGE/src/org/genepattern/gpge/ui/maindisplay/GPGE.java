@@ -2347,19 +2347,22 @@ public class GPGE {
                 String server = dialog.getServer();
                 String username = dialog.getUsername();
                 String password = dialog.getPassword();
-                try {
-                    int port = Integer.parseInt(dialog.getPort());
-
-                    server = server + ":" + port;
-                    if (!server.toLowerCase().startsWith("http://")) {
-                        server = "http://" + server;
+                String portStr = dialog.getPort().trim();
+                if (portStr.length()>0) {
+                    try {
+                        Integer.parseInt(portStr);
+                        portStr = ":" + portStr;
                     }
-
-                    changeServer(server, username, password);
-
-                } catch (NumberFormatException nfe) {
-                    GenePattern.showMessageDialog("Invalid port. Please try again.");
+                    catch (NumberFormatException nfe) {
+                        GenePattern.showMessageDialog("Invalid port. Please try again.");
+                    }
                 }
+                server = server + portStr;
+                if (!server.toLowerCase().startsWith("http://")) {
+                    server = "http://" + server;
+                }
+
+                changeServer(server, username, password);
             }
         });
     }
