@@ -634,8 +634,7 @@ public class RunPipelineSoap {
         JobInfo job = results[task];
         String fileName = getOutputFileName(job, fileStr);
         
- // System.out.println("GIF: filename=" + fileName + "  " + job.getJobNumber());
-  
+        //TODO: why encode the fileName?
         try {
             if (fileName != null) {
                 fileName = URLEncoder.encode(fileName, "UTF-8");
@@ -644,9 +643,6 @@ public class RunPipelineSoap {
             // ignore
         }
         String context = System.getProperty("GP_Path", "/gp");
-
-        
-        
         String url = server + context + "/jobResults/" + fileName;
         return url;
     }
