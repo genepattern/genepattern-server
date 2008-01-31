@@ -84,7 +84,13 @@ public class TaskLauncher {
                     String downloadURL = svc.getServer() + "/gp/jobResults/" + jobNumber + "/"
                             + java.net.URLEncoder.encode(fileName, "UTF-8");
                     substitutions.put(paramInfos[i].getName(), downloadURL);
-                } else {
+                } 
+                else if (attributes != null && ParameterInfo.URL_INPUT_MODE.equals(attributes.get(ParameterInfo.MODE))) {
+                    String value = paramInfos[i].getValue();
+                    value = java.net.URLDecoder.decode(value, "UTF-8");
+                    substitutions.put(paramInfos[i].getName(), value);
+                }
+                else {
                     substitutions.put(paramInfos[i].getName(), paramInfos[i].getValue());
                 }
             }
