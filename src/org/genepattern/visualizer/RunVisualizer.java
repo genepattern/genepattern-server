@@ -109,17 +109,23 @@ public class RunVisualizer {
      */
 
     public RunVisualizer(Map params, String[] supportFileNames, long[] supportFileDates, Applet applet) {
-	this.params = params;
-	this.supportFileNames = supportFileNames;
-	this.supportFileDates = supportFileDates;
-	this.cookie = applet.getParameter("browserCookie");
-	this.documentBase = applet.getDocumentBase();
-	this.applet = applet;
-	this.server = documentBase.getProtocol() + "://" + documentBase.getHost() + ":" + documentBase.getPort();
-	this.contextPath = applet.getParameter(RunVisualizerConstants.CONTEXT_PATH);
-	if (contextPath == null) {
-	    contextPath = "/gp";
-	}
+        this.params = params;
+        this.supportFileNames = supportFileNames;
+        this.supportFileDates = supportFileDates;
+        this.cookie = applet.getParameter("browserCookie");
+        this.documentBase = applet.getDocumentBase();
+        this.applet = applet;
+        
+        String portStr = "";
+        int port = documentBase.getPort();
+        if (port>0) {
+            portStr = ":"+port;
+        }
+        this.server = documentBase.getProtocol() + "://" + documentBase.getHost() + portStr;
+        this.contextPath = applet.getParameter(RunVisualizerConstants.CONTEXT_PATH);
+        if (contextPath == null) {
+            contextPath = "/gp";
+        }
     }
 
     public void exec() {
