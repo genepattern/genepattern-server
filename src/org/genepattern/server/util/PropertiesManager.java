@@ -69,6 +69,8 @@ public class PropertiesManager {
     private void reloadFromDisk(String name) {
         Properties javaFlags = new Properties();
         File jfFile = new File(getPropsDir(), name + ".properties");
+        System.out.println("Loading: " + jfFile.getName());
+        
         if (jfFile.exists()) {
             FileInputStream fis = null;
             try {
@@ -86,6 +88,7 @@ public class PropertiesManager {
                 }
             }
         }
+        System.out.println("Read " + javaFlags);
         propertiesMap.put(name, javaFlags);
     }
     
