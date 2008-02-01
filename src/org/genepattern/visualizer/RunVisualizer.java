@@ -157,7 +157,7 @@ public class RunVisualizer {
 		directoryManager.init();
 	    } catch (IOException e) {
 		e.printStackTrace();
-		JOptionPane.showMessageDialog(applet, "An error occurred while downloading the module support files.");
+		JOptionPane.showMessageDialog(applet, "An error occurred while downloading the module support files: "+e.getLocalizedMessage());
 		return;
 	    }
 	    // libdir is where all of the support files are found on the client computer
@@ -166,7 +166,7 @@ public class RunVisualizer {
 		downloadSupportFiles(libdir);
 	    } catch (IOException e) {
 		e.printStackTrace();
-		JOptionPane.showMessageDialog(applet, "An error occurred while downloading the module support files.");
+		JOptionPane.showMessageDialog(applet, "An error occurred while downloading the module support files: "+e.getLocalizedMessage());
 		return;
 	    }
 	}
@@ -195,8 +195,7 @@ public class RunVisualizer {
 	}
 	params.put("GENEPATTERN_PORT", portStr);
 
-	// check OS and CPU restrictions of TaskInfoAttributes against this
-	// server
+	// check OS and CPU restrictions of TaskInfoAttributes against this server
 	try {
 	    validateCPU();
 	    validateOS();
@@ -209,9 +208,10 @@ public class RunVisualizer {
 	try {
 	    String[] commandLine = doCommandLineSubstitutions();
 	    runCommand(commandLine);
-	} catch (IOException e) {
+	} 
+	catch (IOException e) {
 	    e.printStackTrace();
-	    JOptionPane.showMessageDialog(applet, "An error occurred while running the visualizer.");
+	    JOptionPane.showMessageDialog(applet, "An error occurred while running the visualizer: "+e.getLocalizedMessage());
 	    return;
 	}
 
@@ -303,7 +303,7 @@ public class RunVisualizer {
 		    p = Runtime.getRuntime().exec(commandLine);
 		} catch (IOException e1) {
 		    e1.printStackTrace();
-		    JOptionPane.showMessageDialog(applet, "An error occurred while running the visualizer.");
+		    JOptionPane.showMessageDialog(applet, "An error occurred while running the visualizer: "+e1.getLocalizedMessage());
 		    return;
 		}
 		// drain the output and error streams
