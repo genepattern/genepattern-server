@@ -252,6 +252,8 @@ public class AnalysisDAO extends BaseDAO {
 	java.util.List results = new java.util.ArrayList();
 
 	String hql = " from org.genepattern.server.domain.AnalysisJob  where parent = :jobNo ";
+	hql += " ORDER BY jobNo ASC";
+
 	Query query = getSession().createQuery(hql);
 	query.setInteger("jobNo", jobId);
 	query.setFetchSize(50);
@@ -322,6 +324,7 @@ public class AnalysisDAO extends BaseDAO {
      */
     public JobInfo[] getJobInfo(java.util.Date date) {
 	String hql = "from org.genepattern.server.domain.AnalysisJob as j where j.completedDate < :completedDate";
+	hql += " ORDER BY jobNo ASC";
 	Query query = getSession().createQuery(hql);
 	Calendar cal = Calendar.getInstance();
 	cal.setTime(date);
