@@ -130,6 +130,12 @@ h5 {
     padding-right: 14px;
 }
 
+/* for links within the gpLinks div which don't open in the GenePattern window. */
+a.notGpLinks {
+    background-image: none;
+    padding-right: 0px;
+}
+
 /* display list of documentation links as an inline sequence of anchor (<a>) tags. */
 .gpDocLinks p {
 	text-indent: -12px;
