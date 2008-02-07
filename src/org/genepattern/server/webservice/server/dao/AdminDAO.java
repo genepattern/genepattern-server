@@ -37,6 +37,8 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.genepattern.LSIDManager;
+import org.genepattern.server.util.AuthorizationManagerFactory;
+import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.OmnigeneException;
@@ -114,12 +116,19 @@ public class AdminDAO extends BaseDAO {
 	    Query query = null;
 	    if (version != null && !version.equals("")) {
 		if (username != null) {
-		    String hql = "from org.genepattern.server.domain.TaskMaster where lsid = :lsid"
-			    + " and (userId = :userId or accessId = :accessId)";
+			IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
+			boolean isAdmin = (authManager.checkPermission("adminServer", username) || authManager.checkPermission("adminModules", username));
+			String hql = "from org.genepattern.server.domain.TaskMaster where lsid = :lsid";
+			if (!isAdmin) {
+				 hql += " and (userId = :userId or accessId = :accessId)";
+			} 
+		    
 		    query = getSession().createQuery(hql);
 		    query.setString("lsid", lsidOrTaskName);
-		    query.setString("userId", username);
-		    query.setInteger("accessId", GPConstants.ACCESS_PUBLIC);
+		    if (!isAdmin){
+		    	query.setString("userId", username);
+		    	query.setInteger("accessId", GPConstants.ACCESS_PUBLIC);
+		    }
 		} else {
 		    // sql = "SELECT * FROM task_Master WHERE lsid='" +
 		    // lsidOrTaskName + "'";
