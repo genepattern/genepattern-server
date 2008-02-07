@@ -278,38 +278,7 @@ public class GPClient {
 	    }
 	    AnalysisJob job = submitJob(analysisProxy, taskInfo, actualParameters);
 	    waitForErrorOrCompletion(analysisProxy, job);
-	    ArrayList<String> resultFiles = new ArrayList<String>();
-	    ParameterInfo[] jobParameterInfo = job.getJobInfo().getParameterInfoArray();
-	    boolean stderr = false;
-	    boolean stdout = false;
-	    ArrayList<Parameter> jobParameters = new ArrayList<Parameter>();
-	    for (int j = 0; j < jobParameterInfo.length; j++) {
-		if (jobParameterInfo[j].isOutputFile()) {
-		    String fileName = jobParameterInfo[j].getValue();
-		    int index1 = fileName.lastIndexOf('/');
-		    int index2 = fileName.lastIndexOf('\\');
-		    int index = (index1 > index2 ? index1 : index2);
-		    if (index != -1) {
-			fileName = fileName.substring(index + 1, fileName.length());
-		    }
-		    if (fileName.equals(GPConstants.STDOUT)) {
-			stdout = true;
-		    } else if (fileName.equals(GPConstants.STDERR)) {
-			stderr = true;
-		    } else {
-			resultFiles.add(fileName);
-		    }
-		} else {
-		    jobParameters.add(new Parameter(jobParameterInfo[j].getName(), jobParameterInfo[j].getValue()));
-		}
-	    }
-	    try {
-		return new JobResult(new URL(job.getServer()), job.getJobInfo().getJobNumber(), resultFiles
-			.toArray(new String[0]), stdout, stderr, jobParameters.toArray(new Parameter[0]), taskInfo
-			.getTaskInfoAttributes().get(GPConstants.LSID), username, password);
-	    } catch (MalformedURLException mfe) {
-		throw new Error(mfe);
-	    }
+	    return createJobResult(job.getJobInfo().getJobNumber());
 	} catch (org.genepattern.webservice.WebServiceException wse) {
 	    throw new WebServiceException(wse.getMessage(), wse.getRootCause());
 	}
