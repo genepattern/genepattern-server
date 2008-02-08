@@ -392,11 +392,13 @@ public class JobModel extends AbstractSortableTreeTableModel {
             for (int i = 0; i < jobs.length; i++) {
                 AnalysisJob job = new AnalysisJob(server, jobs[i]);
                 JobNode child = new JobNode(job);
+                
                 boolean waitUntilCompletion = false;
-                if (job.getJobInfo().getStatus().equals(JobStatus.FINISHED)
-                        || job.getJobInfo().getStatus().equals(JobStatus.ERROR)) {
+                String jobStatus = job.getJobInfo().getStatus();
+                if (JobStatus.FINISHED.equals(jobStatus) || JobStatus.ERROR.equals(jobStatus)) {
                     child.getOutputFiles();
-                } else {
+                }
+                else {
                     waitUntilCompletion = true;
                 }
 
@@ -524,22 +526,42 @@ public class JobModel extends AbstractSortableTreeTableModel {
         }
 
         void updateFileInfo() {
+            //by default, don't download the file
+            updateFileInfo(false);
+        }
+
+        /**
+         * Update the file info, optionally downloading the content from the server in order to get more information,
+         * such as the length of the file.
+         * It takes about 4 times longer (informal measure) to download the file.
+         * @param downloadFile - if true download the content from the server.
+         */
+        void updateFileInfo(boolean downloadFile) {
             String displayString = displayPrefix != null ? displayPrefix + name : name;
-            AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
-            String username = asm.getUsername();
-            String password = asm.getPassword();
-            String server = asm.getServer();
-            GetMethod get = null;
-            try {
-                get = new JobDownloader(server, username, password).getGetMethod(getJobNumber(), name);
-                fileInfo = FileInfoUtil.getInfo(get.getResponseBodyAsStream(), displayString, get
-                        .getResponseContentLength());
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (get != null) {
-                    get.releaseConnection();
+            if (downloadFile) { 
+                //do http get to download the file as an InputStream
+                AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
+                String username = asm.getUsername();
+                String password = asm.getPassword();
+                String server = asm.getServer();
+                GetMethod get = null;
+                try {
+                    get = new JobDownloader(server, username, password).getGetMethod(getJobNumber(), name);
+                    fileInfo = FileInfoUtil.getInfo(get.getResponseBodyAsStream(), displayString, get.getResponseContentLength());
+                    //NOTE: calling get.getResponseContentLength and not calling get.getResponseBodyAsStream didn't appear to speed things up that much
                 }
+                catch (IOException e) {
+                    e.printStackTrace();
+                } 
+                finally {
+                    if (get != null) {
+                        get.releaseConnection();
+                    }
+                }
+            }
+            else {
+                //otherwise just get the basics, which is about 4 times faster
+                fileInfo = FileInfoUtil.getInfo(displayString, -1);
             }
         }
 

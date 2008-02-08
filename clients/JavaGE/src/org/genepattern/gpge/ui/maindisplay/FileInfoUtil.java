@@ -158,6 +158,28 @@ public class FileInfoUtil {
 	return null;
     }
 
+    /**
+     * Create FileInfo when the content of the file is not available.
+     * @param name - the name of the file
+     * @param length - best guess of the size of the file in bytes (-1 if not known).
+     * @return
+     */
+    public static FileInfo getInfo(String name, long length) {
+        FileInfo fileInfo = new FileInfo();
+        String size = getSize(length);
+        fileInfo.setSize(size);
+
+        // see if file has an extension
+        int dotIndex = name.lastIndexOf(".");
+        if (dotIndex != -1) {
+            String suffix = name.substring(dotIndex + 1, name.length());
+            suffix = suffix.toLowerCase();
+            fileInfo.setKind(suffix);
+        }
+        return fileInfo;
+    }
+    
+
     public static FileInfo getInfo(InputStream is, String name, long length) {
 	try {
 	    if (length == -1) {
