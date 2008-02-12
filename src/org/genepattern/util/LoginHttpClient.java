@@ -234,13 +234,9 @@ public class LoginHttpClient {
     private void updateServerUrl(HttpMethod method) {
         try {
             URI uri = method.getURI();
-            String newUrl = 
-                uri.getScheme() + 
-                "://" +
-                uri.getHost() + 
-                ":" + 
-                uri.getPort();
-            this.serverUrl = newUrl;
+            int port = uri.getPort();
+            String portStr = port > 0 ? ":" + port : "";
+            this.serverUrl = uri.getScheme() +  "://" + uri.getHost() + portStr;
         }
         catch (IOException e) {
             log.error("Unable to set server url: "+e.getMessage(),e);
