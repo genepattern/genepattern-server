@@ -441,7 +441,10 @@ public class GPGE {
             setChangeServerActionsEnabled(true);
             return;
         }
-        final String server = _server;
+        
+        //rename the server, 
+        //   to handle server redirects when connecting to localhost or 127.0.0.1
+        final String server = login.getServerUrl();
 
         analysisServiceManager.changeServer(server, username, password);
         MessageManager.notifyListeners(new ChangeViewMessageRequest(this,
