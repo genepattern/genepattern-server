@@ -5,9 +5,6 @@
 # -u http://node255.broad.mit.edu:7070
 # 
 
-# 0. login without password
-runfile login_password.twill
-
 # 1. Differential Expression Analysis
 runfile diff_expression.twill
 
@@ -16,5 +13,9 @@ runfile class_discovery.twill
 
 # 3. Class Prediction
 runfile prediction.twill 
+
+# 4. SNP Copy Number and Loss of Heterozygosity Estimation Protocol
+#    [this is optional because it takes a lot of RAM]
+#runfile snp.twill
 
 
