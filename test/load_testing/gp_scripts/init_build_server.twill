@@ -1,0 +1,17 @@
+#
+# Register the latest build server and then install the modules
+#
+
+# Register a new GenePattern server 
+go http://gpb67-896.broad.mit.edu:8080/gp
+runfile register.twill
+
+# Install all modules
+go /gp/pages/taskCatalog.jsf
+
+# select all modules
+fv taskCatalogForm ALL true
+
+submit 'Install Checked'
+
+
