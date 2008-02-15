@@ -1,29 +1,17 @@
+# Run module 'ComparativeMarkerSelection' 
 #
-# Run module 'ComparativeMarkerSelection' as user 'test'
+# depends on login.twill
 #
 
-setlocal gp_data /home/radon01/pcarr/gp_data
-setlocal res_file /home/radon01/pcarr/gp_data/all_aml/all_aml_train.res
-setlocal cls_file /home/radon01/pcarr/gp_data/all_aml/all_aml_train.cls
-
-#login
-timer
-go /gp
-fv loginForm username test
-submit
-code 200
-url /gp/pages/index.jsf
-
-#run ComparativeMarkerSelection
-go /gp/pages/index.jsf?lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:3
-formfile taskForm input.filename $res_file
-formfile taskForm cls.filename $cls_file
-timer
+go /gp/pages/index.jsf?lsid=ComparativeMarkerSelection&input.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct&cls.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
 submit cmd 4
-timer
-notfind Exception
-code 200
 
-#logout
-go /gp/logout.jsp
-#timer log
+#go /gp/pages/index.jsf?lsid=ComparativeMarkerSelection
+#formfile taskForm input.file $res_file
+#formfile taskForm cls.file $cls_file
+#timer
+#submit cmd 4
+#timer
+#notfind Exception
+#code 200
+
