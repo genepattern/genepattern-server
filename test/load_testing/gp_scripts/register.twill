@@ -2,7 +2,7 @@
 #
 go /gp
 url /gp/pages/registerServer.jsf
-fv registrationForm registrationForm:name test
+fv registrationForm registrationForm:name admin
 fv registrationForm registrationForm:email genepattern@broad.mit.edu
 fv registrationForm registrationForm:emailUpdates false
 fv registrationForm registrationForm:organization Broad
