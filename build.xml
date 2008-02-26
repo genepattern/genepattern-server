@@ -291,7 +291,7 @@
 
 	<target name="build-visualizer-applet" depends="init, makeKeystore">
 		<mkdir dir="applet-build" />
-		<javac destdir="applet-build" srcdir="src" classpathref="library.classpath" includes="org/genepattern/visualizer/*.java" target="1.1" source="1.1" />
+		<javac destdir="applet-build" srcdir="src" classpathref="library.classpath" includes="org/genepattern/visualizer/*.java" target="1.1" source="1.2" />
 
 		<jar basedir="applet-build" defaultexcludes="true" includes="org/genepattern/visualizer/*.class" jarfile="${genepattern.build}/${runVisualizer-jarname}">
 		</jar>
