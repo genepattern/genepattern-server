@@ -444,7 +444,9 @@
 
 
 	<target name="nightlyBuild">
+	    <!--
 		<antcall target="pruneOldDirs" inheritRefs="true" />
+		-->
 
 		<mkdir dir="logs" />
 		<!-- checkout sandbox, build & install -->
