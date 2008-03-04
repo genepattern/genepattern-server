@@ -451,19 +451,19 @@
 		<mkdir dir="logs" />
 		<!-- checkout sandbox, build & install -->
 		<!-- ant antfile="build.xml" dir="." target="nightlyrelease"/  -->
-	    <!--
         <antcall target="nightlyrelease" />
-        -->
 	    <!--
         <target name="nightlyrelease" depends="nightlyLabel, , , ,, " />
         -->
+	    <!--
         <antcall target="website" />
         <antcall target="gp-library" />
         <antcall target="GPGE" />
         <antcall target="installers" />
         <antcall target="createWar" />
+        -->
 
-		<mkdir dir="installer\GP_server_Build_Output\Web_Installers\InstData\warfile" />
+	    <mkdir dir="installer\GP_server_Build_Output\Web_Installers\InstData\warfile" />
 		<copy file="gp_war.zip" todir="installer\GP_server_Build_Output\Web_Installers\InstData\warfile" />
 
 		<copy overwrite="true" todir="e:/GPInstalls/Tomcat/webapps/gpinstalls/nightlybuild">
