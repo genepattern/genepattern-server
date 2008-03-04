@@ -2,7 +2,7 @@
 <project basedir="." default="installer" name="GPGEInstaller">
     <taskdef name="buildinstaller" classname="com.zerog.ia.integration.ant.InstallAnywhereAntTask">
 	<classpath>   
-		<pathelement location="../../../installer/ant/iaant.jar"/>
+        <pathelement location="/xchip/genepattern/tools/InstallAnywhere2008/resource/build/iaant.jar"/>
 	</classpath>
     </taskdef>
 
@@ -19,8 +19,8 @@
    		</filterset>
 	</copy>
 	
- 	<exec dir="." executable="c:\\progra~1\\macrovision\\instal~1.0en\\build.exe" >
-	  <arg line="${basedir}/GP_client.iap_xml +x +lv +j +wv"/>
+    <exec dir="." executable="/xchip/genepattern/tools/InstallAnywhere2008/build" >
+ 	    <arg line="${basedir}/GP_client.iap_xml +x +lv +j +wv"/>
 	</exec>
 
       <!-- buildinstaller IAProjectFile="${basedir}/GP_client.iap_xml" 		
