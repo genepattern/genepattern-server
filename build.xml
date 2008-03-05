@@ -411,7 +411,6 @@
 	<target name="stoprunningserver" depends="checkForOldInstall" if="stopServerPresent">
 		<exec executable="${defaultInstallDir}\StopGenePatternServer.exe" failifexecutionfails="false" failonerror="false" />
 		<antcall target="shutdownServer" inheritRefs="true" />
-
 	</target>
 
 	<target name="uninstall" if="uninstallerPresent" depends="init, checkForOldInstall, stoprunningserver">
@@ -421,88 +420,45 @@
 
 	</target>
 
-
 	<target name="installLocal" depends="init, uninstall">
-
 		<!-- install the new one -->
-		<exec dir="." executable="${basedir}\installer\GP_server_Build_Output\Web_Installers\InstData\Windows\VM\GPServer">
+		<exec dir="." executable="${basedir}/installer/GP_server_Build_Output/Web_Installers/InstData/Windows/VM/GPServer">
 			<arg line="-i SILENT" />
 		</exec>
-
-
 	</target>
-
 
 	<target name="startServer" depends="init">
 		<get src="http://gpb67-896.broad.mit.edu:7080/gpinstalls/restartLocalhost8080.jsp" dest="logs/startup.log" ignoreerrors="true" />
-
 	</target>
-
 
 	<target name="nightlyBuild">
-        <!--
-        <antcall target="pruneOldDirs" inheritRefs="true" />
-        -->
-
 		<mkdir dir="logs" />
-		<!-- checkout sandbox, build & install -->
-		<!-- ant antfile="build.xml" dir="." target="nightlyrelease"/  -->
         <antcall target="nightlyrelease" />
-	    <!--
-        <target name="nightlyrelease" depends="nightlyLabel, , , ,, " />
-        -->
-	    <!--
-        <antcall target="website" />
-        <antcall target="gp-library" />
-        <antcall target="GPGE" />
-        <antcall target="installers" />
-        <antcall target="createWar" />
-        -->
 
-	    <mkdir dir="installer\GP_server_Build_Output\Web_Installers\InstData\warfile" />
-		<copy file="gp_war.zip" todir="installer\GP_server_Build_Output\Web_Installers\InstData\warfile" />
+	    <mkdir dir="installer/GP_server_Build_Output/Web_Installers/InstData/warfile" />
+		<copy file="gp_war.zip" todir="installer/GP_server_Build_Output/Web_Installers/InstData/warfile" />
 
-		<copy overwrite="true" todir="e:/GPInstalls/Tomcat/webapps/gpinstalls/nightlybuild">
+		<copy overwrite="true" todir="/xchip/genepattern/anthill3/server/opt/tomcat/webapps/gpinstalls/nightlyBuild">
 			<fileset dir="installer/GP_server_Build_Output/Web_Installers" />
 		</copy>
-		<!-- ant antfile="build.xml" dir="." target="publishGPGEinstallerToWWWDev"/  -->
+
 		<antcall target="publishGPGEinstallerToWWWDev" />
-
-
 	</target>
-	
-	
-	
-
 
 	<target name="publishBuild">
-
 		<!-- ant antfile="anthill-build.xml" dir="${basedir}" target="installLocal" / -->
 		<antcall target="installLocal" />
 
 		<!-- To complete the install -->	
 		<!-- 1. force a server registration -->
 		<!-- 2. load the modules since the installer doesn't - once we can start the server -->
-		
-
-
 	</target>
-
 
 	<target name="shutdownServer">
 		<!-- note this will generate an error as the server shuts down while connected -->
 
 		<get src="http://127.0.0.1:8080/gp/shutdownServer.jsp" dest="logs/shutdown.log" ignoreerrors="true" />
 	</target>
-
-	<target name="pruneOldDirs">
-		<cvs cvsRoot=":ext:gold:/xchip/software/mprcvs/" failonerror="true">
-			<commandline>
-				<argument line="update -P" />
-			</commandline>
-		</cvs>
-	</target>
-
 
 	<target name="jspc">
 		<property name="webapp.path" value="website" />
@@ -533,5 +489,3 @@
 		<jasper2 validateXml="false" uriroot="${webapp.path}" webXmlFragment="${webapp.path}/WEB-INF/generated_web.xml" outputDir="${output.dir}" />
 	</target>
 </project>
-
-
