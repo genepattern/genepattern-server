@@ -260,15 +260,11 @@
 		<property name="user" value="genepattern" />
 	</target>
 
-	<target name="publishGPGEinstallerToWWWDev" depends="setDefaultFTPUser, version_updater">
-
-		<ftp server="labftp.broad.mit.edu" remotedir="${version.major}.${version.minor}/" userid="${user}" password="${pass}" depends="yes" binary="yes">
-
-			<fileset dir="build/Web_Installers">
-				<include name="**/*" />
-			</fileset>
-		</ftp>
-
+	<target name="publishGPGEinstallerToWWWDev" depends="version_updater">
+        <!-- copy todir="/web/wwwdev/htdocs/cancer/software/genepattern/download/gpge/${version.major}.${version.minor}" -->
+        <copy todir="/web/wwwdev/htdocs/cancer/software/genepattern/download/gpge/3.1">
+            <fileset dir="build/Web_Installers" />
+        </copy>
 	</target>
 
 	<target name="test" depends="version_updater">
