@@ -325,9 +325,12 @@ function showFileInput(id) {
                         <div id="#{p.name}_div_url" style="display:none">
                           <input id="#{p.name}_url" name="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}"/>
                         </div>
-                        <input type="radio" id="#{p.name}_cb_url" name="#{p.name}_cb" value="url" onclick="showUrlInput('#{p.name}');">Specify URL</input>
-                        <input type="radio" id="#{p.name}_cb_file" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');" checked="yes">Upload
-									File</input>
+                        <span class="description" style="display:inline">
+                        	<input type="radio" id="#{p.name}_cb_url" name="#{p.name}_cb" value="url" 
+                        		onclick="showUrlInput('#{p.name}');">Specify URL<h:outputText 
+                        			rendered="#{runTaskBean.allowInputFilePaths}" value=" or network directory" /></input></span>
+                        <span class="description" style="display:inline"><input type="radio" id="#{p.name}_cb_file" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');" checked="yes">Upload
+									File</input></span>
                       </h:outputText>
                       <h:outputText rendered="#{!empty p.defaultValue}">
                         <div id="#{p.name}_div_file" style="display:none">
@@ -336,9 +339,13 @@ function showFileInput(id) {
                         <div id="#{p.name}_div_url">
                           <input id="#{p.name}_url" name="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}"/>
                         </div>
-                        <input type="radio" id="#{p.name}_cb_url" name="#{p.name}_cb" value="url" onclick="showUrlInput('#{p.name}');" checked="yes">Specify
-									URL</input>
-                        <input type="radio" id="#{p.name}_cb_file" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');">Upload File</input>
+                        <span class="description" style="display:inline">
+                        	<input type="radio" id="#{p.name}_cb_url" name="#{p.name}_cb" value="url" onclick="showUrlInput('#{p.name}');" 
+                        		checked="yes">Specify URL<h:outputText rendered="#{runTaskBean.allowInputFilePaths}" value=" or network directory" /></input>
+                        </span>
+                        <span class="description" style="display:inline">
+                        	<input type="radio" id="#{p.name}_cb_file" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');">Upload File</input>
+                        </span>
                       </h:outputText>
                     </h:outputText>
                     <!-- Select list input -->
