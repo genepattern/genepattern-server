@@ -421,10 +421,16 @@
 
     <target name="installLocal" depends="init, uninstall">
         <!-- install the new one -->
-        <exec dir="." executable="${basedir}/installer/GP_server_Build_Output/Web_Installers/InstData/Linux/NoVM/GPserver.bin">
-			<arg line="-f gp3.1.dev_node256.properties" />
-		</exec>
-	</target>
+        <copy overwrite="true" 
+              file="./installer/GP_server_Build_Output/Web_Installers/InstData/Linux/NoVM/GPserver.bin"
+              todir="./" />
+
+        <chmod file="./GPserver.bin" perm="a+rwx" />
+
+        <exec dir="./" executable="./GPserver.bin">
+            <arg line="-f gp3.1.dev_node256.properties" />
+        </exec>
+    </target>
 
 	<target name="nightlyBuild">
 		<mkdir dir="logs" />
