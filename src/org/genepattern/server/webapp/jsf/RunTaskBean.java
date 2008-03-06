@@ -42,6 +42,8 @@ import org.genepattern.webservice.WebServiceException;
 
 public class RunTaskBean {
 
+    private static Logger log = Logger.getLogger(RunTaskBean.class);
+
     private boolean visualizer;
 
     private boolean pipeline;
@@ -56,9 +58,9 @@ public class RunTaskBean {
 
     private String version;
 
-    private static Logger log = Logger.getLogger(RunTaskBean.class);
-
     private List<String> versions;
+
+    private boolean allowInputFilePaths = false;
 
     /**
      * True if current user is allowed to edit the current module.
@@ -73,17 +75,12 @@ public class RunTaskBean {
     private boolean showParameterDescriptions;
 
     /**
-     * True if current request included an 'lsid' parameter which could not be resolved to a module.
-     * Most likely if trying to load a module which is not installed on the server.
+     * True if current request included an 'lsid' parameter which could not be resolved to a module. Most likely if
+     * trying to load a module which is not installed on the server.
      */
     private boolean invalidLsid = false;
-    public boolean isInvalidLsid() {
-        return invalidLsid;
-    }
+
     private String lsidParam = null;
-    public String getLsidParam() {
-        return lsidParam;
-    }
 
     /**
      * Initialize the task lsid. This page needs to support redirects from older .jsp pages as well as jsf navigation.
@@ -107,25 +104,28 @@ public class RunTaskBean {
 	    invalidLsid = true;
 	    lsidParam = taskToRun;
 	}
+	allowInputFilePaths = "true".equalsIgnoreCase(System.getProperty("allow.input.file.paths"));
     }
 
-    public boolean isShowParameterDescriptions() {
-	return showParameterDescriptions;
+    public void changeVersion(ActionEvent event) {
+	ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper.getManagedBean("#{moduleChooserBean}");
+	assert chooser != null;
+	String version = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("version"));
+
+	try {
+	    chooser.setSelectedModule(new LSID(lsid).toStringNoVersion() + ":" + version);
+	    setTask(chooser.getSelectedModule());
+	} catch (MalformedURLException e) {
+	    log.error("Bad LSID:" + lsid, e);
+	}
     }
 
-    /**
-     * Update the show parameter descriptions property using AJAX
-     * 
-     * @return
-     */
-    public String getUpdateShowParameterDescriptions() {
-	setShowParameterDescriptions(Boolean.parseBoolean(UIBeanHelper.getRequest().getParameter("value")));
-	return "";
+    public String[] getDocumentationFilenames() {
+	return documentationFilenames;
     }
 
-    public void setShowParameterDescriptions(boolean b) {
-	showParameterDescriptions = b;
-	new UserDAO().setProperty(UIBeanHelper.getUserId(), "show.parameter.descriptions", String.valueOf(b));
+    public String getEncodedLsid() {
+	return UIBeanHelper.encode(lsid);
     }
 
     public String getFormAction() {
@@ -136,10 +136,6 @@ public class RunTaskBean {
 	    return "runPromptingPipeline.jsp";
 	}
 	return "runTaskPipeline.jsp";
-    }
-
-    public String[] getDocumentationFilenames() {
-	return documentationFilenames;
     }
 
     public String getLsid() {
@@ -155,152 +151,75 @@ public class RunTaskBean {
 	}
     }
 
-    public String getEncodedLsid() {
-	return UIBeanHelper.encode(lsid);
+    public String getLsidParam() {
+	return lsidParam;
     }
 
     public String getName() {
 	return name;
     }
 
+    public Parameter[] getParameters() {
+	return parameters;
+    }
+
+    public String getSplashPage() {
+	return splashPage;
+    }
+
+    /**
+     * Update the show parameter descriptions property using AJAX
+     * 
+     * @return
+     */
+    public String getUpdateShowParameterDescriptions() {
+	setShowParameterDescriptions(Boolean.parseBoolean(UIBeanHelper.getRequest().getParameter("value")));
+	return "";
+    }
+
+    public String getVersion() {
+	return version;
+    }
+
+    public List<String> getVersions() {
+	return versions;
+    }
+
+    public boolean isAllowInputFilePaths() {
+	return allowInputFilePaths;
+    }
+
+    public boolean isEditAllowed() {
+	return editAllowed;
+    }
+
     public boolean isInputParametersExist() {
 	return parameters != null && parameters.length > 0;
+    }
+
+    public boolean isInvalidLsid() {
+	return invalidLsid;
     }
 
     public boolean isPipeline() {
 	return pipeline;
     }
 
+    public boolean isShowParameterDescriptions() {
+	return showParameterDescriptions;
+    }
+
     public boolean isVisualizer() {
 	return visualizer;
-    }
-
-    public static class DefaultValueSelectItem extends SelectItem {
-	private boolean defaultOption;
-
-	public DefaultValueSelectItem(String value, String label, boolean defaultOption) {
-	    super(value, label);
-	    this.defaultOption = defaultOption;
-	}
-
-	public boolean isSelected() {
-	    return defaultOption;
-	}
-    }
-
-    public static class Parameter {
-
-	private DefaultValueSelectItem[] choices;
-
-	private boolean optional;
-
-	private String displayDesc;
-
-	private String displayName;
-
-	private String defaultValue;
-
-	private String inputType;
-
-	private String name;
-
-	private Parameter(ParameterInfo pi, String passedDefaultValue) {
-	    HashMap pia = pi.getAttributes();
-	    this.optional = ((String) pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]))
-		    .length() > 0;
-
-	    this.defaultValue = passedDefaultValue != null ? passedDefaultValue : (String) pia
-		    .get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
-
-	    if (defaultValue == null) {
-		defaultValue = "";
-	    }
-	    defaultValue = defaultValue.trim();
-
-	    String[] choicesArray = pi.hasChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER) ? pi
-		    .getChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER) : null;
-	    if (choicesArray != null) {
-		choices = new DefaultValueSelectItem[choicesArray.length];
-		for (int i = 0; i < choicesArray.length; i++) {
-		    String choice = choicesArray[i];
-		    String display, option;
-
-		    int equalsCharIndex = choice.indexOf(GPConstants.PARAM_INFO_TYPE_SEPARATOR);
-		    if (equalsCharIndex == -1) {
-			display = choice;
-			option = choice;
-		    } else {
-			option = choice.substring(0, equalsCharIndex);
-			display = choice.substring(equalsCharIndex + 1);
-		    }
-		    display = display.trim();
-		    option = option.trim();
-		    boolean defaultOption = defaultValue.equals(display) || defaultValue.equals(option);
-		    choices[i] = new DefaultValueSelectItem(option, display, defaultOption);
-		}
-	    }
-	    if (pi.isPassword()) {
-		inputType = "password";
-	    } else if (pi.isInputFile()) {
-		inputType = "file";
-	    } else if (choices != null && choices.length > 0) {
-		inputType = "select";
-	    } else {
-		inputType = "text";
-	    }
-
-	    this.displayDesc = (String) pia.get("altDescription");
-	    if (displayDesc == null) {
-		displayDesc = pi.getDescription();
-	    }
-	    this.displayName = (String) pia.get("altName");
-	    if (displayName == null) {
-		displayName = pi.getName();
-	    }
-	    displayName = displayName.replaceAll("\\.", " ");
-	    this.name = pi.getName();
-	}
-
-	public DefaultValueSelectItem[] getChoices() {
-	    return choices;
-	}
-
-	public String getDefaultValue() {
-	    return defaultValue;
-	}
-
-	public String getName() {
-	    return name;
-	}
-
-	public String getDisplayDescription() {
-	    return displayDesc;
-	}
-
-	public String getDisplayName() {
-	    return displayName;
-	}
-
-	public boolean isOptional() {
-	    return optional;
-	}
-
-	public String getInputType() {
-	    return inputType;
-	}
-
-    }
-
-    public Parameter[] getParameters() {
-	return parameters;
     }
 
     public void setParameters(Parameter[] parameters) {
 	this.parameters = parameters;
     }
 
-    public String getVersion() {
-	return version;
+    public void setShowParameterDescriptions(boolean b) {
+	showParameterDescriptions = b;
+	new UserDAO().setProperty(UIBeanHelper.getUserId(), "show.parameter.descriptions", String.valueOf(b));
     }
 
     public void setTask(String taskNameOrLsid) {
@@ -340,8 +259,8 @@ public class RunTaskBean {
 			for (String format : fileFormats) {
 			    List<String> inputParameterNames = kindToInputParameters.get(p.getName());
 			    if (inputParameterNames == null) {
-			    	inputParameterNames = new ArrayList<String>();
-			    	kindToInputParameters.put(format, inputParameterNames);
+				inputParameterNames = new ArrayList<String>();
+				kindToInputParameters.put(format, inputParameterNames);
 			    }
 			    inputParameterNames.add(p.getName());
 
@@ -367,7 +286,7 @@ public class RunTaskBean {
 				outputFileParameters.add(0, p);
 			    } else if (!p.getName().equals(GPConstants.STDERR)
 				    && !p.getName().equals(GPConstants.STDOUT)) {
-			    	outputFileParameters.add(p);
+				outputFileParameters.add(p);
 			    }
 			}
 
@@ -382,18 +301,19 @@ public class RunTaskBean {
 				    // XXX use first match if kind matches more
 				    // than one input parameter
 				    String inputParameterName = inputParameterNames.get(0);
-				 
-				    if (!reloadValues.containsKey(inputParameterName)) {
-				    	String value = outputParameter.getValue();
-				    	if (value.endsWith(GPConstants.TASKLOG) 
-								|| value.endsWith(GPConstants.PIPELINE_TASKLOG_ENDING)) break;
-						
-				    	int index = StringUtils.lastIndexOfFileSeparator(value);
-				    	String jobNumber = value.substring(0, index);
-				    	String filename = value.substring(index + 1);
 
-				    	reloadValues.put(inputParameterName, UIBeanHelper.getServer() + "/jobResults/"
-				    			+ jobNumber + "/" + UIBeanHelper.encode(filename));
+				    if (!reloadValues.containsKey(inputParameterName)) {
+					String value = outputParameter.getValue();
+					if (value.endsWith(GPConstants.TASKLOG)
+						|| value.endsWith(GPConstants.PIPELINE_TASKLOG_ENDING))
+					    break;
+
+					int index = StringUtils.lastIndexOfFileSeparator(value);
+					String jobNumber = value.substring(0, index);
+					String filename = value.substring(index + 1);
+
+					reloadValues.put(inputParameterName, UIBeanHelper.getServer() + "/jobResults/"
+						+ jobNumber + "/" + UIBeanHelper.encode(filename));
 				    }
 
 				}
@@ -491,33 +411,124 @@ public class RunTaskBean {
 
     }
 
-    public void changeVersion(ActionEvent event) {
-	ModuleChooserBean chooser = (ModuleChooserBean) UIBeanHelper.getManagedBean("#{moduleChooserBean}");
-	assert chooser != null;
-	String version = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("version"));
-
-	try {
-	    chooser.setSelectedModule(new LSID(lsid).toStringNoVersion() + ":" + version);
-	    setTask(chooser.getSelectedModule());
-	} catch (MalformedURLException e) {
-	    log.error("Bad LSID:" + lsid, e);
-	}
-    }
-
-    public String getSplashPage() {
-	return splashPage;
-    }
-
-    public List<String> getVersions() {
-	return versions;
-    }
-
     public void setVersions(List<String> versions) {
 	this.versions = versions;
     }
 
-    public boolean isEditAllowed() {
-	return editAllowed;
+    public static class DefaultValueSelectItem extends SelectItem {
+	private boolean defaultOption;
+
+	public DefaultValueSelectItem(String value, String label, boolean defaultOption) {
+	    super(value, label);
+	    this.defaultOption = defaultOption;
+	}
+
+	public boolean isSelected() {
+	    return defaultOption;
+	}
+    }
+
+    public static class Parameter {
+
+	private DefaultValueSelectItem[] choices;
+
+	private boolean optional;
+
+	private String displayDesc;
+
+	private String displayName;
+
+	private String defaultValue;
+
+	private String inputType;
+
+	private String name;
+
+	private Parameter(ParameterInfo pi, String passedDefaultValue) {
+	    HashMap pia = pi.getAttributes();
+	    this.optional = ((String) pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]))
+		    .length() > 0;
+
+	    this.defaultValue = passedDefaultValue != null ? passedDefaultValue : (String) pia
+		    .get(GPConstants.PARAM_INFO_DEFAULT_VALUE[0]);
+
+	    if (defaultValue == null) {
+		defaultValue = "";
+	    }
+	    defaultValue = defaultValue.trim();
+
+	    String[] choicesArray = pi.hasChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER) ? pi
+		    .getChoices(GPConstants.PARAM_INFO_CHOICE_DELIMITER) : null;
+	    if (choicesArray != null) {
+		choices = new DefaultValueSelectItem[choicesArray.length];
+		for (int i = 0; i < choicesArray.length; i++) {
+		    String choice = choicesArray[i];
+		    String display, option;
+
+		    int equalsCharIndex = choice.indexOf(GPConstants.PARAM_INFO_TYPE_SEPARATOR);
+		    if (equalsCharIndex == -1) {
+			display = choice;
+			option = choice;
+		    } else {
+			option = choice.substring(0, equalsCharIndex);
+			display = choice.substring(equalsCharIndex + 1);
+		    }
+		    display = display.trim();
+		    option = option.trim();
+		    boolean defaultOption = defaultValue.equals(display) || defaultValue.equals(option);
+		    choices[i] = new DefaultValueSelectItem(option, display, defaultOption);
+		}
+	    }
+	    if (pi.isPassword()) {
+		inputType = "password";
+	    } else if (pi.isInputFile()) {
+		inputType = "file";
+	    } else if (choices != null && choices.length > 0) {
+		inputType = "select";
+	    } else {
+		inputType = "text";
+	    }
+
+	    this.displayDesc = (String) pia.get("altDescription");
+	    if (displayDesc == null) {
+		displayDesc = pi.getDescription();
+	    }
+	    this.displayName = (String) pia.get("altName");
+	    if (displayName == null) {
+		displayName = pi.getName();
+	    }
+	    displayName = displayName.replaceAll("\\.", " ");
+	    this.name = pi.getName();
+	}
+
+	public DefaultValueSelectItem[] getChoices() {
+	    return choices;
+	}
+
+	public String getDefaultValue() {
+	    return defaultValue;
+	}
+
+	public String getDisplayDescription() {
+	    return displayDesc;
+	}
+
+	public String getDisplayName() {
+	    return displayName;
+	}
+
+	public String getInputType() {
+	    return inputType;
+	}
+
+	public String getName() {
+	    return name;
+	}
+
+	public boolean isOptional() {
+	    return optional;
+	}
+
     }
 
 }
