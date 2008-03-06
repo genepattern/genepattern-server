@@ -59,7 +59,7 @@
 		<property name="genepattern.common" value="${genepattern.root}" />
 		<property name="genepattern.graphical.environment" value="${genepattern.clients}/JavaGE" />
 		<property name="genepattern.build" value="${genepattern.root}/build" />
-		<property name="defaultInstallDir" value="c:\progra~1\genepatternserver" />
+		<property name="defaultInstallDir" value="/xchip/genepattern/node256/gp-3.1-dev" />
 
 		<property name="genepattern.installer" value="${genepattern.root}/installer" />
 		<property name="genepattern.gpge.installer" value="${genepattern.graphical.environment}/installer" />
@@ -394,41 +394,36 @@
 
 
 	<!-- **************** ANTHILL TARGETS *************-->
-
 	<target name="loadModules" depends="">
 		<ant antfile="build.xml" dir="build_tools/ZipUpload" target="compile" />
 		<ant antfile="build.xml" dir="build_tools/ZipUpload" target="uploadModulesFromDir" />
 	</target>
 
-
 	<target name="checkForOldInstall" depends="init">
 		<available property="oldInstallpresent" value="true" file="${defaultInstallDir}" />
-		<available file="${defaultInstallDir}\StopGenePatternServer.exe" property="stopServerPresent" />
-		<available file="${defaultInstallDir}\UninstallerData\uninst~1.exe" property="uninstallerPresent" />
-
+		<available file="${defaultInstallDir}/StopGenePatternServer" property="stopServerPresent" />
+		<available file="${defaultInstallDir}/UninstallerData/Uninstall_GenePattern" property="uninstallerPresent" />
 	</target>
 
-	<target name="stoprunningserver" depends="checkForOldInstall" if="stopServerPresent">
-		<exec executable="${defaultInstallDir}\StopGenePatternServer.exe" failifexecutionfails="false" failonerror="false" />
-		<antcall target="shutdownServer" inheritRefs="true" />
-	</target>
+    <target name="startServer" depends="init">
+        <exec executable="${defaultInstallDir}/StartGenePatternServer" failifexecutionfails="false" failonerror="false" />
+    </target>
 
-	<target name="uninstall" if="uninstallerPresent" depends="init, checkForOldInstall, stoprunningserver">
-		<exec failifexecutionfails="false" dir="${defaultInstallDir}\UninstallerData" executable="${defaultInstallDir}\UninstallerData\uninst~1.exe">
-			<arg line="-i SILENT" />
+    <target name="stopServer" depends="checkForOldInstall" if="stopServerPresent">
+        <exec executable="${defaultInstallDir}/StopGenePatternServer" failifexecutionfails="false" failonerror="false" />
+    </target>
+
+    <target name="uninstall" if="uninstallerPresent" depends="init, checkForOldInstall, stopServer">
+        <exec failifexecutionfails="false" dir="${defaultInstallDir}/UninstallerData" executable="${defaultInstallDir}/UninstallerData/Uninstall_GenePattern">
+            <arg line="-i SILENT" />
+        </exec>
+    </target>
+
+    <target name="installLocal" depends="init, uninstall">
+        <!-- install the new one -->
+        <exec dir="." executable="${basedir}/installer/GP_server_Build_Output/Web_Installers/InstData/Linux/NoVM/GPserver.bin">
+			<arg line="-f gp3.1.dev_node256.properties" />
 		</exec>
-
-	</target>
-
-	<target name="installLocal" depends="init, uninstall">
-		<!-- install the new one -->
-		<exec dir="." executable="${basedir}/installer/GP_server_Build_Output/Web_Installers/InstData/Windows/VM/GPServer">
-			<arg line="-i SILENT" />
-		</exec>
-	</target>
-
-	<target name="startServer" depends="init">
-		<get src="http://gpb67-896.broad.mit.edu:7080/gpinstalls/restartLocalhost8080.jsp" dest="logs/startup.log" ignoreerrors="true" />
 	</target>
 
 	<target name="nightlyBuild">
@@ -452,12 +447,6 @@
 		<!-- To complete the install -->	
 		<!-- 1. force a server registration -->
 		<!-- 2. load the modules since the installer doesn't - once we can start the server -->
-	</target>
-
-	<target name="shutdownServer">
-		<!-- note this will generate an error as the server shuts down while connected -->
-
-		<get src="http://127.0.0.1:8080/gp/shutdownServer.jsp" dest="logs/shutdown.log" ignoreerrors="true" />
 	</target>
 
 	<target name="jspc">
