@@ -42,7 +42,7 @@
 	</target>
 
 	<target name="clean">
-		<delete>
+		<delete quiet="true">
 			<fileset dir="build" includes="**/*.class" />
 		</delete>
 	</target>
