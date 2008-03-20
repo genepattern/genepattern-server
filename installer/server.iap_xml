@@ -495,7 +495,7 @@ and any path to a file to read from that file]]></string>
 									<method name="addElement">
 										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="3fa64fdd8792">
 											<property name="propertyValue">
-												<string><![CDATA[$version.major$.$version.minor$]]></string>
+												<string><![CDATA[@version.major@.@version.minor@]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[GENEPATTERN_VERSION]]></string>
