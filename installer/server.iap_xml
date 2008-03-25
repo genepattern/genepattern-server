@@ -203,7 +203,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[F:\tools\anthill\work\genepattern\external-src\commons-httpclient-3.0.1\dist\]]></string>
+								<string><![CDATA[../external-src/commons-httpclient-3.0.1/dist/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -495,7 +495,7 @@ and any path to a file to read from that file]]></string>
 									<method name="addElement">
 										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="3fa64fdd8792">
 											<property name="propertyValue">
-												<string><![CDATA[$version.major$.$version.minor$]]></string>
+												<string><![CDATA[@version.major@.@version.minor@]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[GENEPATTERN_VERSION]]></string>
@@ -7232,7 +7232,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.vmpack.unix.path]]></string>
-						<string><![CDATA[SunJRE150_03LinuxINTEL.vm]]></string>
+						<string><![CDATA[SunJRE150_11LinuxINTEL.vm]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.linux.vm]]></string>
@@ -7320,7 +7320,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.vmpack.windows.path]]></string>
-						<string><![CDATA[SunJRE150_06iWin32.vm]]></string>
+						<string><![CDATA[SunJRE150_11iWin32.vm]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.installer.options.valid.vm.list]]></string>
@@ -13244,7 +13244,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[F:\tools\anthill\work\genepattern\clients\R\downloads\]]></string>
+												<string><![CDATA[../clients/R/downloads/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
