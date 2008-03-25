@@ -7288,7 +7288,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.vmpack.linux.path]]></string>
-						<string><![CDATA[SunJRE150_03LinuxINTEL.vm]]></string>
+						<string><![CDATA[SunJRE150_11LinuxINTEL.vm]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.vmpack.aix.path]]></string>
@@ -13273,7 +13273,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[F:\tools\anthill\work\genepattern\clients\R\downloads\]]></string>
+												<string><![CDATA[../clients/R/downloads/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
