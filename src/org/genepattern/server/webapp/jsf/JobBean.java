@@ -493,7 +493,7 @@ public class JobBean {
 	    String userId = UIBeanHelper.getUserId();
 	    assert userId != null;
 	    int recentJobsToShow = Integer.parseInt(new UserDAO().getPropertyValue(userId,
-		    UserPropKey.RECENT_JOBS_TO_SHOW, "4"));
+		    UserPropKey.RECENT_JOBS_TO_SHOW, "10"));
 	    LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
 	    try {
 		recentJobs = wrapJobs(analysisClient.getJobs(userId, -1, recentJobsToShow, false));
