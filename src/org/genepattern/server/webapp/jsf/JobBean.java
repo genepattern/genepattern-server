@@ -508,9 +508,8 @@ public class JobBean {
 		    UserPropKey.RECENT_JOBS_TO_SHOW, "10"));
 	    LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
 	    try {
-		recentJobs = wrapJobs(analysisClient.getJobs(userId, -1, recentJobsToShow, false, getJobSortOrder(),
-			jobSortAscending));
-
+		recentJobs = wrapJobs(analysisClient.getJobs(userId, -1, recentJobsToShow, false,
+			JobSortOrder.JOB_NUMBER, false));
 	    } catch (WebServiceException wse) {
 		log.error(wse);
 		recentJobs = new ArrayList<JobResultsWrapper>();
@@ -774,7 +773,6 @@ public class JobBean {
 
     }
 
-    
     public boolean isJobSortAscending() {
 	return jobSortAscending;
     }
