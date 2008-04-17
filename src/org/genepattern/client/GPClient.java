@@ -509,7 +509,7 @@ public class GPClient {
 		throw new WebServiceException("Missing value for required parameter " + formalParam.getName());
 
 	    }
-	    if (value != null) {
+	    if (value != null && !value.equals("")) {
 		value = sub(formalParam, value);
 		ParameterInfo actual = new ParameterInfo(formalParam.getName(), value, "");
 		setAttributes(formalParam, actual);
