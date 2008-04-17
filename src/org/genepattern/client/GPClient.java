@@ -12,8 +12,8 @@
 
 package org.genepattern.client;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -575,7 +575,7 @@ public class GPClient {
 	    actualParam.setAttributes(actualAttributes);
 	    String value = actualParam.getValue();
 	    actualAttributes.put(GPConstants.PARAM_INFO_CLIENT_FILENAME[0], value);
-	    if (value != null && new java.io.File(value).exists()) {
+	    if (value != null && new File(value).exists() && !new File(value).isDirectory()) {
 		actualParam.setAsInputFile();
 	    } else if (value != null) {
 		actualAttributes.remove("TYPE");
