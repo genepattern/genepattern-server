@@ -598,7 +598,7 @@ public class GPClient {
 		}
 	    }
 	    if (!validValue) {
-		throw new WebServiceException("Illegal value for parameter " + formalParam.getName() + ": " + value);
+		throw new WebServiceException("Illegal value for parameter " + formalParam.getName() + ". Value: " + value);
 	    }
 	}
 	return value;
