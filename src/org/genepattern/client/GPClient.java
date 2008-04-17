@@ -491,10 +491,12 @@ public class GPClient {
 			    + formalParameters[i].getName());
 
 		}
-		value = sub(formalParam, value);
-		ParameterInfo p = new ParameterInfo(formalParam.getName(), value, "");
-		setAttributes(formalParam, p);
-		actualParameters.add(p);
+		if (value != null) {
+		    value = sub(formalParam, value);
+		    ParameterInfo p = new ParameterInfo(formalParam.getName(), value, "");
+		    setAttributes(formalParam, p);
+		    actualParameters.add(p);
+		}
 	    }
 	}
 
@@ -598,7 +600,8 @@ public class GPClient {
 		}
 	    }
 	    if (!validValue) {
-		throw new WebServiceException("Illegal value for parameter " + formalParam.getName() + ". Value: " + value);
+		throw new WebServiceException("Illegal value for parameter " + formalParam.getName() + ". Value: "
+			+ value);
 	    }
 	}
 	return value;
