@@ -1,32 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <target name="tag">
 	<buildnumber file="build.number" />
-	<echo>
-		making build number: ${build.number} 
-	</echo>
+	<echo>making build number: ${build.number}</echo>
 	<property name="cvsTag" value="gp_b${build.number}" />
 	<!-- ensure these are called after setting the build number and cvsTag -->
-	<echo>
-		STARTING tagging module gp2 in CVS with: ${cvsTag} 
-	</echo>
+	<echo>STARTING tagging module gp2 in CVS with: ${cvsTag}</echo>
 	<cvs command="rtag -RF ${cvsTag} gp2" failonerror="true" />
-	<echo>
-		FINISHED tagging module gp2 in CVS with: ${cvsTag} 
-	</echo>
+	<echo>FINISHED tagging module gp2 in CVS with: ${cvsTag}</echo>
 	<cvs command="commit -m ${cvsTag} build.number" failonerror="true" />
 </target>
 <target name="tag2">
 	<buildnumber file="build.number" />
-	<echo>
-		making build number: ${build.number} 
-	</echo>
+	<echo>making build number: ${build.number}</echo>
 	<property name="cvsTag" value="gp_b${build.number}" />
-	<cvs cvsRoot=":ext:gold:/xchip/software/mprcvs/" failonerror="true">
+	<cvs cvsRoot=":ext:gold:/xchip/software/mprcvs/"
+		failonerror="true">
 		<commandline>
 			<argument line="rtag -RF ${cvsTag} gp2" />
 		</commandline>
 	</cvs>
-	<cvs cvsRoot=":ext:gold:/xchip/software/mprcvs/" failonerror="true">
+	<cvs cvsRoot=":ext:gold:/xchip/software/mprcvs/"
+		failonerror="true">
 		<commandline>
 			<argument line="commit -m ${cvsTag} build.number" />
 		</commandline>
@@ -39,15 +33,15 @@
 <target name="getBuildNumber">
 	<property file="build.number" />
 	<property name="cvsTag" value="gp_b${build.number}" />
-	<echo>
-		build number is ${build.number} tag is ${cvsTag} 
-	</echo>
+	<echo>build number is ${build.number} tag is ${cvsTag}</echo>
 </target>
-<target name="release" depends="getBuildNumber, website,gp-library, GPGE,installers" />
-<target name="nightlyrelease" depends="nightlyLabel, website, gp-library, GPGE,installers, createWar" />
+<target name="release"
+	depends="getBuildNumber, website,gp-library, GPGE,installers" />
+<target name="nightlyrelease"
+	depends="nightlyLabel, website, gp-library, GPGE,installers, createWar" />
 <!-- Create a war file to use for platforms without an installer -->
-<target name="createWar" depends="getBuildNumber, website,gp-library">
-	<!-- target name="createWar" depends="" -->
+<target name="createWar"
+	depends="getBuildNumber, website, gp-library">
 	<delete dir="wartemp" />
 	<mkdir dir="wartemp" />
 	<delete dir="ziptemp" />
@@ -58,7 +52,6 @@
 	</copy>
 	<mkdir dir="ziptemp/gpinstall/taskLib" />
 	<mkdir dir="ziptemp/gpinstall/temp" />
-	<mkdir dir="ziptemp/gpinstall/index" />
 	<mkdir dir="ziptemp/gpinstall/logs" />
 	<mkdir dir="ziptemp/gpinstall/iotemp" />
 	<copy todir="wartemp">
@@ -77,7 +70,8 @@
 			<include name="*.xml" />
 			<include name="*.properties" />
 		</fileset>
-	</copy>	<copy todir="wartemp/WEB-INF/lib">
+	</copy>
+	<copy todir="wartemp/WEB-INF/lib">
 		<fileset dir="build/jars">
 			<include name="**.jar" />
 		</fileset>
@@ -99,16 +93,9 @@
 			<include name="runVisualizer.jar" />
 		</fileset>
 	</copy>
-	<copy todir="ziptemp/GenePattern">
-		<fileset dir="clients/R/GenePattern" />
-	</copy>
-	<war destfile="gp.war" basedir="wartemp" webxml="wartemp/WEB-INF/web.xml">
+	<war destfile="gp.war" basedir="wartemp"
+		webxml="wartemp/WEB-INF/web.xml">
 	</war>
-	<copy todir="ziptemp/gpinstall/WEB-INF/lib">
-		<fileset dir="wartemp/WEB-INF/lib">
-			<include name="*.jar" />
-		</fileset>
-	</copy>
 	<copy todir="ziptemp" file="installer/customizeWar.xml" />
 	<copy todir="ziptemp" file="installer/runtimeBuild.xml" />
 	<copy todir="ziptemp" file="installer/runtimeBuild.properties" />
