@@ -14,32 +14,38 @@ package org.genepattern.server.webapp.jsf;
 
 public class AuthorizationBean {
     public boolean isAdminJobsAllowed() {
-        return AuthorizationHelper.adminJobs();
+	return AuthorizationHelper.adminJobs();
     }
 
     public boolean isAdminSuitesAllowed() {
-        return AuthorizationHelper.adminSuites();
+	return AuthorizationHelper.adminSuites();
+    }
+
+    public boolean isBrowseServerFileSystemAllowed() {
+	return "true".equals(System.getProperty("allow.input.file.paths")) && AuthorizationHelper.adminServer();
     }
 
     public boolean isAdminServerAllowed() {
-        return AuthorizationHelper.adminServer();
+	return AuthorizationHelper.adminServer();
     }
 
     public boolean isCreateModuleAllowed() {
-        return AuthorizationHelper.createModule();
+	return AuthorizationHelper.createModule();
     }
 
     public boolean isCreatePrivatePipelineAllowed() {
-        return AuthorizationHelper.createPrivatePipeline();
+	return AuthorizationHelper.createPrivatePipeline();
     }
+
     public boolean isCreatePublicPipelineAllowed() {
-        return AuthorizationHelper.createPublicPipeline();
+	return AuthorizationHelper.createPublicPipeline();
     }
 
     public boolean isCreatePrivateSuiteAllowed() {
-        return AuthorizationHelper.createPrivateSuite();
+	return AuthorizationHelper.createPrivateSuite();
     }
+
     public boolean isCreatePublicSuiteAllowed() {
-        return AuthorizationHelper.createPublicSuite();
+	return AuthorizationHelper.createPublicSuite();
     }
 }
