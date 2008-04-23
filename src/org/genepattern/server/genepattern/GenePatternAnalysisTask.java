@@ -444,6 +444,7 @@ public class GenePatternAnalysisTask {
 		throw new IllegalArgumentException("Module not found.");
 	    }
 	}
+
 	File jobsDir = new File(System.getProperty("jobs"));
 	String jobDirName = jobsDir.getName();
 	int jobDirIndex = -1;
@@ -609,7 +610,7 @@ public class GenePatternAnalysisTask {
 
 		    // allow parameter value substitutions within file input parameters
 		    originalPath = substitute(originalPath, props, params);
-
+		   
 		    if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null
 			    && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
 
@@ -621,6 +622,7 @@ public class GenePatternAnalysisTask {
 				    + " has not been assigned a filename.");
 			}
 			if (mode.equals("CACHED_IN")) {
+
 			    // param is existing job output file
 			    StringTokenizer strtok = new StringTokenizer(originalPath, "/");
 			    String job = null;
@@ -644,6 +646,7 @@ public class GenePatternAnalysisTask {
 				continue;
 			    }
 			} else if (mode.equals(ParameterInfo.INPUT_MODE)) {
+			    log.error("IN " + params[i].getName() + "=" + originalPath);
 			    // file provided via SOAP or by web form upload
 			    // ensure file is in GenePatternServer/temp/attachments/username or in
 			    // GenePatternServer/Tomcat/temp/username_run[0-9]+.tmp
@@ -783,6 +786,7 @@ public class GenePatternAnalysisTask {
 				    });
 				}
 			    }
+
 			    InputStream is = null;
 			    FileOutputStream os = null;
 
@@ -790,7 +794,18 @@ public class GenePatternAnalysisTask {
 			    try {
 				String name = null;
 				boolean downloadUrl = true;
-				if ("file".equalsIgnoreCase(uri.getScheme()) && !allowInputFilePaths) {
+				if ("file".equalsIgnoreCase(uri.getScheme()) && allowInputFilePaths) {
+				    File f = new File(uri);
+				    if (inputFileMode == INPUT_FILE_MODE.PATH) {
+					params[i].setValue(f.getCanonicalPath());
+					attrsActual.remove(ParameterInfo.TYPE);
+					attrsActual.remove(ParameterInfo.INPUT_MODE);
+					downloadUrl = false;
+				    } else {
+					is = new FileInputStream(f);
+					name = f.getName();
+				    }
+				} else if ("file".equalsIgnoreCase(uri.getScheme()) && !allowInputFilePaths) {
 				    // prompt when run input files in pipelines are saved as
 				    // file:/Applications/GenePatternServer/Tomcat/temp/username_run27407.tmp/filename
 				    // through the web client
@@ -800,7 +815,7 @@ public class GenePatternAnalysisTask {
 				    File inputFile = new File(uri);
 				    String webUploadDirectory = new File(System.getProperty("java.io.tmpdir"))
 					    .getCanonicalPath();
-				    
+
 				    if (!(inputFile.getParentFile().getParentFile().getCanonicalPath().equals(
 					    webUploadDirectory) && (AuthorizationHelper.adminJobs(jobInfo.getUserId()) || inputFile
 					    .getParentFile().getName().startsWith(jobInfo.getUserId() + "_")))) {
@@ -1542,118 +1557,112 @@ public class GenePatternAnalysisTask {
 	return null;
     }
 
-    protected static File writeProvenanceFile(String outDirName, JobInfo jobInfo, ParameterInfo[] formalParameters, ParameterInfo[] actualParams, Properties props) {
-        BufferedWriter bw = null;
-        int formalParamsLength = 0;
-        if (formalParameters != null) {
-            formalParamsLength = formalParameters.length;
-        }
-        try {
-            File outDir = new File(outDirName);
-            File f = new File(outDir, TASKLOG);
-            bw = new BufferedWriter(new FileWriter(f));
-            bw.write("# Created: " + new Date(f.lastModified()) + " by " + jobInfo.getUserId());
-            bw.write("\n# Job: " + jobInfo.getJobNumber());
+    protected static File writeProvenanceFile(String outDirName, JobInfo jobInfo, ParameterInfo[] formalParameters,
+	    ParameterInfo[] actualParams, Properties props) {
+	BufferedWriter bw = null;
+	int formalParamsLength = 0;
+	if (formalParameters != null) {
+	    formalParamsLength = formalParameters.length;
+	}
+	try {
+	    File outDir = new File(outDirName);
+	    File f = new File(outDir, TASKLOG);
+	    bw = new BufferedWriter(new FileWriter(f));
+	    bw.write("# Created: " + new Date(f.lastModified()) + " by " + jobInfo.getUserId());
+	    bw.write("\n# Job: " + jobInfo.getJobNumber());
 
-            String GP_URL = System.getProperty("GenePatternURL");
-            if (GP_URL != null) {
-                bw.write("    server:  ");
-                bw.write(GP_URL);
-            }
-            bw.write("\n# Module: " + jobInfo.getTaskName() + " " + jobInfo.getTaskLSID());
-            bw.write("\n# Parameters: ");
-            ParameterInfo pinfos[] = jobInfo.getParameterInfoArray();
-            for (int pi = 0; pinfos != null && pi < pinfos.length; pi++) {
-                ParameterInfo pinfo = pinfos[pi];
-                if (!pinfo.isOutputFile()) {
-                    String value = null;
-                    if (pinfo.isInputFile()) {
-                        File ifn = new File(pinfo.getValue());
-                        ParameterInfo actp = getParam(pinfo.getName(), actualParams);
-                        String origFullPath = (String) actp.getAttributes().get(ORIGINAL_PATH);
-                        value = ifn.getName();
-                        if (value.startsWith("Axis") && value.indexOf("_") != -1) {
-                            value = value.substring(value.indexOf("_") + 1);
-                        }
+	    String GP_URL = System.getProperty("GenePatternURL");
+	    if (GP_URL != null) {
+		bw.write("    server:  ");
+		bw.write(GP_URL);
+	    }
+	    bw.write("\n# Module: " + jobInfo.getTaskName() + " " + jobInfo.getTaskLSID());
+	    bw.write("\n# Parameters: ");
+	    ParameterInfo pinfos[] = jobInfo.getParameterInfoArray();
+	    for (int pi = 0; pinfos != null && pi < pinfos.length; pi++) {
+		ParameterInfo pinfo = pinfos[pi];
+		if (!pinfo.isOutputFile()) {
+		    String value = null;
+		    if (pinfo.isInputFile()) {
+			File ifn = new File(pinfo.getValue());
+			ParameterInfo actp = getParam(pinfo.getName(), actualParams);
+			String origFullPath = (String) actp.getAttributes().get(ORIGINAL_PATH);
+			value = ifn.getName();
+			if (value.startsWith("Axis") && value.indexOf("_") != -1) {
+			    value = value.substring(value.indexOf("_") + 1);
+			}
 
-                        // follow the input filename with the URL to fetch it if available
-                        if ((origFullPath != null)
-                                && (origFullPath.length() > 0)) {
-                            // expect something that looks like this;
-                            // C:\Program Files\GenePatternServer\Tomcat\..\temp\attachments\Axis39088.att_all_aml_500.gct
-                            // we want everything from ..\temp on
-                            String substr = File.separator + "temp" + File.separator;
-                            int fidx = origFullPath.indexOf(substr);
-                            String inputfilename = origFullPath.substring(fidx + 6);
-                            value = value + "    " + GP_URL + "getFile.jsp?task=&file=" + inputfilename;
-                        }
-                    } 
-                    else {
-                        ParameterInfo formalPinfo = null;
-                        for (int fpidx = 0; fpidx < formalParamsLength; fpidx++) {
-                            if (formalParameters[fpidx].getName().equals(
-                                    pinfo.getName())) {
-                                formalPinfo = formalParameters[fpidx];
-                                break;
-                            }
-                        }
-                        ParameterInfo actp = getParam(pinfo.getName(), actualParams);
-                        String origFullPath = null;
-                        if (actp != null) {
-                            origFullPath = (String) actp.getAttributes().get(ORIGINAL_PATH);
-                        }
-                        if (origFullPath != null) {
-                            value = origFullPath;
-                            // follow the input filename with the URL to fetch it if available
-                            String substr = File.separator + "temp" + File.separator;
-                            int fidx = origFullPath.indexOf(substr);
-                            if (fidx >= 0) {
-                                String inputfilename = origFullPath.substring(fidx + 6);
-                                value = GP_URL + "getFile.jsp?task=&file=" + inputfilename;
-                            }
-                            else {
-                                substr = File.separator + "jobResults" + File.separator;
-                                fidx = origFullPath.indexOf(substr);
-                                if (fidx >= 0) {
-                                    String inputfilename = origFullPath.substring(fidx);
-                                    inputfilename = inputfilename.replace('\\', '/');
-                                    if (GP_URL.endsWith("/")) {
-                                        inputfilename = inputfilename.substring(1);
-                                    }
-                                    value = GP_URL + inputfilename;
-                                }
-                            }
-                        } 
-                        else {
-                            value = pinfo.getUIValue(formalPinfo);
-                        }
-                    }
-                    
-                    String substitutedValue = substitute(value, props, null); 
-                    // bug 899 perform command line substitutions
-                    if (substitutedValue != null && !(value.equals(substitutedValue))) {
-                        value = substitutedValue + " (" + value + ")";
-                    }
-                    bw.write("\n#    " + pinfo.getName() + " = " + value);
-                }
-            }
-            bw.write("\n");
-            return f;
-        } 
-        catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        } 
-        finally {
-            if (bw != null) {
-                try {
-                    bw.close();
-                } 
-                catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+			// follow the input filename with the URL to fetch it if available
+			if ((origFullPath != null) && (origFullPath.length() > 0)) {
+			    // expect something that looks like this;
+			    // C:\Program
+			    // Files\GenePatternServer\Tomcat\..\temp\attachments\Axis39088.att_all_aml_500.gct
+			    // we want everything from ..\temp on
+			    String substr = File.separator + "temp" + File.separator;
+			    int fidx = origFullPath.indexOf(substr);
+			    String inputfilename = origFullPath.substring(fidx + 6);
+			    value = value + "    " + GP_URL + "getFile.jsp?task=&file=" + inputfilename;
+			}
+		    } else {
+			ParameterInfo formalPinfo = null;
+			for (int fpidx = 0; fpidx < formalParamsLength; fpidx++) {
+			    if (formalParameters[fpidx].getName().equals(pinfo.getName())) {
+				formalPinfo = formalParameters[fpidx];
+				break;
+			    }
+			}
+			ParameterInfo actp = getParam(pinfo.getName(), actualParams);
+			String origFullPath = null;
+			if (actp != null) {
+			    origFullPath = (String) actp.getAttributes().get(ORIGINAL_PATH);
+			}
+			if (origFullPath != null) {
+			    value = origFullPath;
+			    // follow the input filename with the URL to fetch it if available
+			    String substr = File.separator + "temp" + File.separator;
+			    int fidx = origFullPath.indexOf(substr);
+			    if (fidx >= 0) {
+				String inputfilename = origFullPath.substring(fidx + 6);
+				value = GP_URL + "getFile.jsp?task=&file=" + inputfilename;
+			    } else {
+				substr = File.separator + "jobResults" + File.separator;
+				fidx = origFullPath.indexOf(substr);
+				if (fidx >= 0) {
+				    String inputfilename = origFullPath.substring(fidx);
+				    inputfilename = inputfilename.replace('\\', '/');
+				    if (GP_URL.endsWith("/")) {
+					inputfilename = inputfilename.substring(1);
+				    }
+				    value = GP_URL + inputfilename;
+				}
+			    }
+			} else {
+			    value = pinfo.getUIValue(formalPinfo);
+			}
+		    }
+
+		    String substitutedValue = substitute(value, props, null);
+		    // bug 899 perform command line substitutions
+		    if (substitutedValue != null && !(value.equals(substitutedValue))) {
+			value = substitutedValue + " (" + value + ")";
+		    }
+		    bw.write("\n#    " + pinfo.getName() + " = " + value);
+		}
+	    }
+	    bw.write("\n");
+	    return f;
+	} catch (Exception e) {
+	    e.printStackTrace();
+	    return null;
+	} finally {
+	    if (bw != null) {
+		try {
+		    bw.close();
+		} catch (IOException e) {
+		    e.printStackTrace();
+		}
+	    }
+	}
     }
 
     protected static boolean validateCPU(String expected) throws Exception {
@@ -2707,11 +2716,6 @@ public class GenePatternAnalysisTask {
 	    String[] envp = hashTableToStringArray(env);
 	    // spawn the command
 	    process = Runtime.getRuntime().exec(commandLine, envp, runDir);
-
-	    if (log.isDebugEnabled()) {
-		log.debug(Arrays.asList(commandLine));
-	    }
-
 	    // BUG: there is race condition during a tiny time window between
 	    // the exec and the close
 	    // (the lines above and below this comment) during which it is
@@ -3510,10 +3514,10 @@ public class GenePatternAnalysisTask {
 		}
 		return firstLSID;
 	    }
-	    
-	    //TODO: see TaskUtil.getTaskInfoFromManifest, may be able to get rid of duplicate code
+
+	    // TODO: see TaskUtil.getTaskInfoFromManifest, may be able to get rid of duplicate code
 	    Properties props = new Properties();
-	    props.load(zipFile.getInputStream(manifestEntry));        
+	    props.load(zipFile.getInputStream(manifestEntry));
 
 	    taskName = (String) props.remove(NAME);
 	    lsid = (String) props.get(LSID);
@@ -3586,17 +3590,16 @@ public class GenePatternAnalysisTask {
 	    ParameterInfo[] params = new ParameterInfo[vParams.size()];
 	    vParams.copyInto(params);
 
-	    //if it's a pipeline, generate the commandLine (bug 2105)
-        String taskType = props.getProperty(GPConstants.TASK_TYPE);
-        if (taskType.toLowerCase().endsWith("pipeline")) {
-            //it is a pipeline
-            //replace command line with generated command line for pipelines
-            String serializedModel = props.getProperty("serializedModel");
-            PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
-            String commandLine = 
-                AbstractPipelineCodeGenerator.generateCommandLine(model);
-            props.setProperty(GPConstants.COMMAND_LINE, commandLine);
-        }
+	    // if it's a pipeline, generate the commandLine (bug 2105)
+	    String taskType = props.getProperty(GPConstants.TASK_TYPE);
+	    if (taskType.toLowerCase().endsWith("pipeline")) {
+		// it is a pipeline
+		// replace command line with generated command line for pipelines
+		String serializedModel = props.getProperty("serializedModel");
+		PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
+		String commandLine = AbstractPipelineCodeGenerator.generateCommandLine(model);
+		props.setProperty(GPConstants.COMMAND_LINE, commandLine);
+	    }
 
 	    // all remaining properties are assumed to be TaskInfoAttributes
 	    TaskInfoAttributes tia = new TaskInfoAttributes();
