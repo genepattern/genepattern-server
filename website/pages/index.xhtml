@@ -21,7 +21,13 @@
     <ui:define name="headText">
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
       <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/moduleChooser.js"/>
+      <script type="text/javascript"
+		src="#{facesContext.externalContext.requestContextPath}/lytebox/lytebox.js" />
+		<link
+		href="#{facesContext.externalContext.requestContextPath}/lytebox/lytebox.css"
+		rel="stylesheet" type="text/css" />
       <script type="text/javascript" language="javascript">
+      
         <h:outputText>
 	var requiredIds = new Array();
 	var requiredNames = new Array();
@@ -34,6 +40,11 @@
         </t:dataList>
 
 /* <![CDATA[ */
+	
+	function setServerFileValue(parameterName, file) {
+		myLytebox.end();
+		setInputField(parameterName, file);
+	}
 
 	function callManagedBean(elExpression, parameters) {
         var opt = {
@@ -316,6 +327,7 @@ function showFileInput(id) {
                   <td valign="top" class="#{p.optional==false ? 'attribute-required' : ''}" style="white-space: nowrap;"
                   >#{p.displayName} <h:outputText rendered="#{!p.optional}" value="*"/></td>
                   <td valign="top" id="#{p.name}_td">
+                  
                     <!-- File input -->
                     <h:outputText rendered="#{p.inputType=='file'}">
                       <h:outputText rendered="#{empty p.defaultValue}">
@@ -324,24 +336,32 @@ function showFileInput(id) {
                         </div>
                         <div id="#{p.name}_div_url" style="display:none">
                           <input id="#{p.name}_url" name="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}"/>
+                          <h:outputText rendered="#{runTaskBean.allowInputFilePaths}">
+                          		<a rel="lyteframe" title="Browse for #{p.name}" rev="width: 400px; height: 300px; scrolling: auto" 
+                          			href="#{facesContext.externalContext.requestContextPath}/jqueryFileTree/index.jsf?p=#{p.name}">Browse Server File System...</a>
+ 						</h:outputText>
                         </div>
                         <span class="description" style="display:inline">
                         	<input type="radio" id="#{p.name}_cb_url" name="#{p.name}_cb" value="url" 
-                        		onclick="showUrlInput('#{p.name}');">Specify URL<h:outputText 
-                        			rendered="#{runTaskBean.allowInputFilePaths}" value=" or network directory" /></input></span>
+                        		onclick="showUrlInput('#{p.name}');">Specify URL</input></span>
                         <span class="description" style="display:inline"><input type="radio" id="#{p.name}_cb_file" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');" checked="yes">Upload
 									File</input></span>
                       </h:outputText>
+                      
                       <h:outputText rendered="#{!empty p.defaultValue}">
                         <div id="#{p.name}_div_file" style="display:none">
                           <input name="#{p.name}" id="#{p.name}" size="30" type="file"/>
                         </div>
                         <div id="#{p.name}_div_url">
                           <input id="#{p.name}_url" name="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}"/>
+                          <h:outputText rendered="#{runTaskBean.allowInputFilePaths}">
+                          		<a rel="lyteframe" title="Browse for #{p.name}" rev="width: 400px; height: 300px; scrolling: auto" 
+                          			href="#{facesContext.externalContext.requestContextPath}/jqueryFileTree/index.jsf?p=#{p.name}">Browse Server File System...</a>
+ 						</h:outputText>
                         </div>
                         <span class="description" style="display:inline">
                         	<input type="radio" id="#{p.name}_cb_url" name="#{p.name}_cb" value="url" onclick="showUrlInput('#{p.name}');" 
-                        		checked="yes">Specify URL<h:outputText rendered="#{runTaskBean.allowInputFilePaths}" value=" or network directory" /></input>
+                        		checked="yes">Specify URL</input>
                         </span>
                         <span class="description" style="display:inline">
                         	<input type="radio" id="#{p.name}_cb_file" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');">Upload File</input>
