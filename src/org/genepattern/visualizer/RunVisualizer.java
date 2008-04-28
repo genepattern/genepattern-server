@@ -51,43 +51,43 @@ import org.apache.commons.httpclient.methods.GetMethod;
 
 public class RunVisualizer {
 
-    private boolean debug = true;
+    protected boolean debug = true;
 
     /** Applet parameters */
-    private Map params = null;
+    protected Map params = null;
 
     /** array of module support files */
-    private String[] supportFileNames = null;
+    protected String[] supportFileNames = null;
 
     /** array of last modified times for module support files */
-    private long[] supportFileDates = null;
+    protected long[] supportFileDates = null;
 
     /** cookie to authenticate with GP server */
-    private String cookie;
+    protected String cookie;
 
-    private URL documentBase;
+    protected URL documentBase;
 
-    private String server;
+    protected String server;
 
-    private String contextPath;
+    protected String contextPath;
 
-    private Applet applet;
+    protected Applet applet;
 
     /** files to delete on process exit */
-    private List filesToDelete = new ArrayList();
+    protected List filesToDelete = new ArrayList();
 
     /** directory for downloaded input files */
-    private File tempdir;
+    protected File tempdir;
 
-    private static final String JAVA = "java";
+    protected static final String JAVA = "java";
 
-    private static final String JAVA_FLAGS = "java_flags";
+    protected static final String JAVA_FLAGS = "java_flags";
 
-    private static final String ANY = "any";
+    protected static final String ANY = "any";
 
-    private static final String leftDelimiter = "<";
+    protected static final String leftDelimiter = "<";
 
-    private static final String rightDelimiter = ">";
+    protected static final String rightDelimiter = ">";
 
     /**
      * @param params
