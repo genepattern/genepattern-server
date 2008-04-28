@@ -1352,7 +1352,8 @@ public class GenePatternAnalysisTask {
 	}
 
 	if (commandPrefix == null) {
-	    commandPrefix = props.getProperty(COMMAND_PREFIX, null);
+	    //check for default prefix
+        commandPrefix = prefixes.getProperty("default", null);
 	}
 
 	if (commandPrefix != null && commandPrefix.length() > 0) {
