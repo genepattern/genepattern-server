@@ -85,12 +85,10 @@ function toggleJobVisibility(jobNo) {
       	<!--  <input type="hidden" id="expansion_state_#{job.jobNumber}"
                name="expansion_state_#{job.jobNumber}" value="#{job.expanded}"/>  -->
         <tr>
-          <td width="9">
-            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
+          <td width="0">
+            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="0" height="1"/>
           </td>
-          <td valign="top" class="recentjobs-sh">
-            #{job.jobNumber}
-          </td>
+          <td valign="top" class="recentjobs-sh"></td>
           <td width="9">
             <img src="images/spacer.gif" width="9" height="1"/>
           </td>
@@ -117,6 +115,7 @@ function toggleJobVisibility(jobNo) {
             <br/>
 
 			<div id="#{job.jobNumber}_div" style="#{job.expanded ? 'display:inline;' : 'display:none;'}">
+            <h:outputText value="(#{job.jobNumber}) " /> 
             <h:outputText value="#{job.dateCompleted}" converter="gp" />
             <br/>
             <!--  Loop through output files -->
