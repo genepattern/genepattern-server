@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This script was automatically generated using Macrovision InstallAnywhere 2008 VP1 Enterprise, Build 3532
-     STATUS: Fully-Functional UNLICENSED Trial Edition
-     DATE:   Thu May 01 07:32:12 EDT 2008 -->
-<InstallAnywhere_Deployment_Project increments="6579">
+     STATUS: Fully Functional LICENSED Edition
+     DATE:   Fri May 02 16:32:37 EDT 2008 -->
+<InstallAnywhere_Deployment_Project increments="6485">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
 		<versionID major="9" minor="5" revision="0"/>
 		<editionID>57,46,53,32,69,110,116,101,114,112,114,105,115,101,32,66,117,105,108,100,32,51,53,51,50</editionID>
-		<scriptID>12,42,11,85,78,76,73,67,69,78,83,69,68</scriptID>
+		<scriptID>12,42,11,69,50,48,55,57,68,68,87,52,78,55,86,82,81,86,81,55,68,78,89,85,76,87</scriptID>
 		<buildID>3,13,71,76,105,110,117,120,44,32,50,46,54,46,56,45,50,52,46,50,52,45,115,109,112,44,32,97,109,100,54,52,59,32,74,97,118,97,32,49,46,53,46,48,95,48,57,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,65,78,83,73,95,88,51,46,52,45,49,57,54,56</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,16,-93,78,-16,112,64,99,70,101,125,121,100,96,105,48,48,49,56,52,67,98,113,112,124,44,81,100,99,62,57,15,14,10,11,48,100,9,1,0,0</authorizationID>
+		<authorizationID>1,0,0,16,-93,89,16,-80,80,112,118,100,85,99,113,97,113,65,81,84,74,67,70,68,72,74,64,69,66,69,64,95,71,5,2,15,12,54,107,9,1,0,0</authorizationID>
 	</essentialScriptInfo>
-	<installationObjects uniqueObjects="459">
+	<installationObjects uniqueObjects="454">
 		<object class="com.zerog.ia.installer.Installer" objectID="7daeb2feafa5">
 			<property name="wizardME">
 				<object class="com.zerog.ia.installer.actions.MakeExecutable" objectID="7e4c8205afeb">
@@ -121,19 +121,6 @@ Relative paths are relative to the launcher.]]></string>
 								</object>
 							</method>
 							<method name="addElement">
-								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1d780265afc0">
-									<property name="propertyValue">
-										<string><![CDATA[true]]></string>
-									</property>
-									<property name="propertyName">
-										<string><![CDATA[gp.graphical]]></string>
-									</property>
-									<property name="propertyComment">
-										<string><![CDATA[Indicates that the client will display graphics]]></string>
-									</property>
-								</object>
-							</method>
-							<method name="addElement">
 								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="7e4dd08dafec">
 									<property name="propertyValue">
 										<string><![CDATA[$CMD_LINE_ARGUMENTS$]]></string>
@@ -143,6 +130,19 @@ Relative paths are relative to the launcher.]]></string>
 									</property>
 									<property name="propertyComment">
 										<string><![CDATA[what will be passed to the main method -- be sure to quote arguments with spaces in them]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1d780265afc0">
+									<property name="propertyValue">
+										<string><![CDATA[true]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[gp.graphical]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[Indicates that the client will display graphics]]></string>
 									</property>
 								</object>
 							</method>
@@ -202,19 +202,6 @@ it will search for ones in this list]]></string>
 								</object>
 							</method>
 							<method name="addElement">
-								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="ebe843eda34f">
-									<property name="propertyValue">
-										<string><![CDATA[128m]]></string>
-									</property>
-									<property name="propertyName">
-										<string><![CDATA[lax.nl.java.option.java.heap.size.initial]]></string>
-									</property>
-									<property name="propertyComment">
-										<string><![CDATA[initial heap memory size]]></string>
-									</property>
-								</object>
-							</method>
-							<method name="addElement">
 								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="dbd9aa8da74d">
 									<property name="propertyValue">
 										<string><![CDATA[org.genepattern.gpge.GenePattern]]></string>
@@ -224,6 +211,19 @@ it will search for ones in this list]]></string>
 									</property>
 									<property name="propertyComment">
 										<string><![CDATA[the class that contains the main method for the application]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="ebe843eda34f">
+									<property name="propertyValue">
+										<string><![CDATA[128m]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.nl.java.option.java.heap.size.initial]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[initial heap memory size]]></string>
 									</property>
 								</object>
 							</method>
@@ -302,7 +302,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[gpge.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>620532</long>
+								<long>620538</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -488,7 +488,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[runMain.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>3629</long>
+								<long>3635</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -1046,7 +1046,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[ui_support.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>5839</long>
+								<long>5845</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -1077,7 +1077,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[gpwebservice.jar]]></string>
 							</property>
 							<property name="fileSize">
-								<long>835698</long>
+								<long>832741</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -1171,6 +1171,99 @@ and any path to a file to read from that file]]></string>
 							</property>
 							<property name="fileSize">
 								<long>85502</long>
+							</property>
+							<property name="macBinary">
+								<boolean>false</boolean>
+							</property>
+							<property name="targetCheckKind">
+								<int>0</int>
+							</property>
+						</object>
+					</method>
+					<method name="addElement">
+						<object class="com.zerog.ia.installer.actions.InstallZipfile" objectID="16a65b2e9262">
+							<property name="unixPermissions">
+								<string><![CDATA[664]]></string>
+							</property>
+							<property name="sourceName">
+								<string><![CDATA[commons-codec-1.3.jar]]></string>
+							</property>
+							<property name="overrideUnixPermissions">
+								<boolean>false</boolean>
+							</property>
+							<property name="sourcePath">
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
+							</property>
+							<property name="shouldUninstall">
+								<boolean>true</boolean>
+							</property>
+							<property name="destinationName">
+								<string><![CDATA[commons-codec-1.3.jar]]></string>
+							</property>
+							<property name="fileSize">
+								<long>46725</long>
+							</property>
+							<property name="macBinary">
+								<boolean>false</boolean>
+							</property>
+							<property name="targetCheckKind">
+								<int>0</int>
+							</property>
+						</object>
+					</method>
+					<method name="addElement">
+						<object class="com.zerog.ia.installer.actions.InstallZipfile" objectID="16a65b2f9262">
+							<property name="unixPermissions">
+								<string><![CDATA[664]]></string>
+							</property>
+							<property name="sourceName">
+								<string><![CDATA[commons-httpclient-3.0.1.jar]]></string>
+							</property>
+							<property name="overrideUnixPermissions">
+								<boolean>false</boolean>
+							</property>
+							<property name="sourcePath">
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
+							</property>
+							<property name="shouldUninstall">
+								<boolean>true</boolean>
+							</property>
+							<property name="destinationName">
+								<string><![CDATA[commons-httpclient-3.0.1.jar]]></string>
+							</property>
+							<property name="fileSize">
+								<long>279781</long>
+							</property>
+							<property name="macBinary">
+								<boolean>false</boolean>
+							</property>
+							<property name="targetCheckKind">
+								<int>0</int>
+							</property>
+						</object>
+					</method>
+					<method name="addElement">
+						<object class="com.zerog.ia.installer.actions.InstallZipfile" objectID="dbdab8aba828">
+							<property name="unixPermissions">
+								<string><![CDATA[664]]></string>
+							</property>
+							<property name="sourceName">
+								<string><![CDATA[gp-modules.jar]]></string>
+							</property>
+							<property name="overrideUnixPermissions">
+								<boolean>false</boolean>
+							</property>
+							<property name="sourcePath">
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
+							</property>
+							<property name="shouldUninstall">
+								<boolean>true</boolean>
+							</property>
+							<property name="destinationName">
+								<string><![CDATA[gp-modules.jar]]></string>
+							</property>
+							<property name="fileSize">
+								<long>1193366</long>
 							</property>
 							<property name="macBinary">
 								<boolean>false</boolean>
@@ -1327,7 +1420,7 @@ and any path to a file to read from that file]]></string>
 							<property name="propertyList">
 								<object class="java.util.Vector">
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="b7be5e2aad5b">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8c8a0f">
 											<property name="propertyValue">
 												<string><![CDATA[8080]]></string>
 											</property>
@@ -1340,7 +1433,7 @@ and any path to a file to read from that file]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="b7be5e2bad5b">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8d8a0f">
 											<property name="propertyValue">
 												<string><![CDATA[http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_client_license.cgi]]></string>
 											</property>
@@ -1353,7 +1446,7 @@ and any path to a file to read from that file]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="b7be5e2cad5b">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8c8a10">
 											<property name="propertyValue">
 												<string><![CDATA[@version.major@]]></string>
 											</property>
@@ -1366,7 +1459,7 @@ and any path to a file to read from that file]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="b7be5e2bad5c">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8d8a10">
 											<property name="propertyValue">
 												<string><![CDATA[@version.minor@]]></string>
 											</property>
@@ -1379,7 +1472,7 @@ and any path to a file to read from that file]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="b7be5e2cad5c">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8c8a11">
 											<property name="propertyValue">
 												<string><![CDATA[@buildrelease@]]></string>
 											</property>
@@ -1392,7 +1485,7 @@ and any path to a file to read from that file]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="b7be5e2bad5d">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8d8a11">
 											<property name="propertyValue">
 												<string><![CDATA[@builddate@]]></string>
 											</property>
@@ -1405,7 +1498,7 @@ and any path to a file to read from that file]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="b7be5e2cad5d">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8f8a11">
 											<property name="propertyValue">
 												<string><![CDATA[@buildtag@]]></string>
 											</property>
@@ -1418,7 +1511,7 @@ and any path to a file to read from that file]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="b7be5e2dad5d">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8d8a12">
 											<property name="propertyValue">
 												<string><![CDATA[127.0.0.1]]></string>
 											</property>
@@ -1431,7 +1524,7 @@ and any path to a file to read from that file]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="b7be5e2cad5e">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8e8a12">
 											<property name="propertyValue">
 												<string><![CDATA[If you quit now you will be left with an unusable version of GenePattern!]]></string>
 											</property>
@@ -1444,7 +1537,7 @@ and any path to a file to read from that file]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="b7be5e2dad5e">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8d8a13">
 											<property name="propertyValue">
 												<string><![CDATA[]]></string>
 											</property>
@@ -7207,11 +7300,11 @@ The installation log will open after the installer with the details.  Press ""Do
 			<property name="buildConfigurations">
 				<object class="java.util.Vector">
 					<method name="addElement">
-						<object class="com.zerog.ia.designer.build.BuildConfiguration" objectID="b7bde5e2ad46">
+						<object class="com.zerog.ia.designer.build.BuildConfiguration" objectID="beab622689f7">
 							<property name="buildTargets">
 								<object class="java.util.Vector">
 									<method name="addElement">
-										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="b7bde5e3ad46">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="beab622789f7">
 											<property name="type">
 												<int>2</int>
 											</property>
@@ -7227,7 +7320,7 @@ The installation log will open after the installer with the details.  Press ""Do
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="b7bde5e2ad47">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="beab622689f8">
 											<property name="type">
 												<int>0</int>
 											</property>
@@ -7246,7 +7339,7 @@ The installation log will open after the installer with the details.  Press ""Do
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="b7bde5e3ad47">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="beab622789f8">
 											<property name="type">
 												<int>3</int>
 											</property>
@@ -7265,7 +7358,7 @@ The installation log will open after the installer with the details.  Press ""Do
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="b7bde5e4ad47">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="beab622889f8">
 											<property name="type">
 												<int>5</int>
 											</property>
@@ -7284,7 +7377,7 @@ The installation log will open after the installer with the details.  Press ""Do
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="b7bde5e3ad48">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="beab622789f9">
 											<property name="type">
 												<int>1</int>
 											</property>
@@ -7303,7 +7396,7 @@ The installation log will open after the installer with the details.  Press ""Do
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="b7bde5e4ad48">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="beab622889f9">
 											<property name="type">
 												<int>4</int>
 											</property>
@@ -7322,7 +7415,7 @@ The installation log will open after the installer with the details.  Press ""Do
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="b7bde5e6ad48">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="beab622989f9">
 											<property name="type">
 												<int>8</int>
 											</property>
@@ -7338,7 +7431,7 @@ The installation log will open after the installer with the details.  Press ""Do
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="b7bde5e4ad49">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="beab622889fa">
 											<property name="type">
 												<int>6</int>
 											</property>
@@ -7357,7 +7450,7 @@ The installation log will open after the installer with the details.  Press ""Do
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="b7bde5e5ad49">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="beab622989fa">
 											<property name="type">
 												<int>7</int>
 											</property>
@@ -7454,7 +7547,7 @@ The installation log will open after the installer with the details.  Press ""Do
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.build.last.date]]></string>
-						<string><![CDATA[May 1, 2008 7:32:12 AM EDT]]></string>
+						<string><![CDATA[May 2, 2008 4:32:37 PM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.windows.vm]]></string>
@@ -7518,7 +7611,7 @@ The installation log will open after the installer with the details.  Press ""Do
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[May 1, 2008 7:32:12 AM EDT]]></string>
+						<string><![CDATA[May 2, 2008 4:32:37 PM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.cdrom]]></string>
@@ -7726,7 +7819,7 @@ The installation log will open after the installer with the details.  Press ""Do
 						<string><![CDATA[The Graphical Environment is a client of GenePattern.]]></string>
 					</property>
 					<property name="productVersion">
-						<object class="com.zerog.ia.installer.util.Version" objectID="b7bde5eaad4a">
+						<object class="com.zerog.ia.installer.util.Version" objectID="beab622f89fa">
 							<property name="major">
 								<int>1</int>
 							</property>
@@ -8776,180 +8869,9 @@ and any path to a file to read from that file]]></string>
 										<object refID="81065aeeb8a3"/>
 										<object refID="dd2baf2abad1"/>
 										<object refID="e3e4d89ea88c"/>
-										<object class="com.zerog.ia.installer.actions.InstallZipfile" objectID="16a65b2e9262">
-											<property name="unixPermissions">
-												<string><![CDATA[664]]></string>
-											</property>
-											<property name="sourceName">
-												<string><![CDATA[commons-codec-1.3.jar]]></string>
-											</property>
-											<property name="overrideUnixPermissions">
-												<boolean>false</boolean>
-											</property>
-											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
-											</property>
-											<property name="shouldUninstall">
-												<boolean>true</boolean>
-											</property>
-											<property name="destinationName">
-												<string><![CDATA[commons-codec-1.3.jar]]></string>
-											</property>
-											<property name="fileSize">
-												<long>46725</long>
-											</property>
-											<property name="macBinary">
-												<boolean>false</boolean>
-											</property>
-											<property name="targetCheckKind">
-												<int>0</int>
-											</property>
-										</object>
-										<object class="com.zerog.ia.installer.actions.InstallZipfile" objectID="16a65b2f9262">
-											<property name="unixPermissions">
-												<string><![CDATA[664]]></string>
-											</property>
-											<property name="sourceName">
-												<string><![CDATA[commons-httpclient-3.0.1.jar]]></string>
-											</property>
-											<property name="overrideUnixPermissions">
-												<boolean>false</boolean>
-											</property>
-											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
-											</property>
-											<property name="shouldUninstall">
-												<boolean>true</boolean>
-											</property>
-											<property name="destinationName">
-												<string><![CDATA[commons-httpclient-3.0.1.jar]]></string>
-											</property>
-											<property name="fileSize">
-												<long>279781</long>
-											</property>
-											<property name="macBinary">
-												<boolean>false</boolean>
-											</property>
-											<property name="targetCheckKind">
-												<int>0</int>
-											</property>
-										</object>
-										<object class="com.zerog.ia.installer.actions.InstallZipfile" objectID="16a65b2e9263">
-											<property name="unixPermissions">
-												<string><![CDATA[664]]></string>
-											</property>
-											<property name="sourceName">
-												<string><![CDATA[commons-logging-1.0.4.jar]]></string>
-											</property>
-											<property name="overrideUnixPermissions">
-												<boolean>false</boolean>
-											</property>
-											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
-											</property>
-											<property name="shouldUninstall">
-												<boolean>true</boolean>
-											</property>
-											<property name="destinationName">
-												<string><![CDATA[commons-logging-1.0.4.jar]]></string>
-											</property>
-											<property name="fileSize">
-												<long>38015</long>
-											</property>
-											<property name="macBinary">
-												<boolean>false</boolean>
-											</property>
-											<property name="targetCheckKind">
-												<int>0</int>
-											</property>
-										</object>
-										<object class="com.zerog.ia.installer.actions.MoveFileAction" objectID="16a6bf0e9264">
-											<property name="targetAction">
-												<object refID="16a65b2e9263"/>
-											</property>
-											<property name="useInstalledFile">
-												<boolean>true</boolean>
-											</property>
-											<property name="destination">
-												<string><![CDATA[$USER_INSTALL_DIR$$/$lib]]></string>
-											</property>
-											<property name="uninstallFlag">
-												<boolean>true</boolean>
-											</property>
-											<property name="folderOptions">
-												<int>90</int>
-											</property>
-											<property name="renames">
-												<boolean>false</boolean>
-											</property>
-											<property name="overrideUnixPermissions">
-												<boolean>false</boolean>
-											</property>
-											<property name="unixPermissions">
-												<string><![CDATA[777]]></string>
-											</property>
-											<property name="targetCheckKind">
-												<int>0</int>
-											</property>
-										</object>
-										<object class="com.zerog.ia.installer.actions.MoveFileAction" objectID="16a727829266">
-											<property name="targetAction">
-												<object refID="16a65b2f9262"/>
-											</property>
-											<property name="useInstalledFile">
-												<boolean>true</boolean>
-											</property>
-											<property name="destination">
-												<string><![CDATA[$USER_INSTALL_DIR$$/$lib]]></string>
-											</property>
-											<property name="uninstallFlag">
-												<boolean>true</boolean>
-											</property>
-											<property name="folderOptions">
-												<int>90</int>
-											</property>
-											<property name="renames">
-												<boolean>false</boolean>
-											</property>
-											<property name="overrideUnixPermissions">
-												<boolean>false</boolean>
-											</property>
-											<property name="unixPermissions">
-												<string><![CDATA[777]]></string>
-											</property>
-											<property name="targetCheckKind">
-												<int>0</int>
-											</property>
-										</object>
-										<object class="com.zerog.ia.installer.actions.MoveFileAction" objectID="16a730279267">
-											<property name="targetAction">
-												<object refID="16a65b2e9262"/>
-											</property>
-											<property name="useInstalledFile">
-												<boolean>true</boolean>
-											</property>
-											<property name="destination">
-												<string><![CDATA[$USER_INSTALL_DIR$$/$lib]]></string>
-											</property>
-											<property name="uninstallFlag">
-												<boolean>true</boolean>
-											</property>
-											<property name="folderOptions">
-												<int>90</int>
-											</property>
-											<property name="renames">
-												<boolean>false</boolean>
-											</property>
-											<property name="overrideUnixPermissions">
-												<boolean>false</boolean>
-											</property>
-											<property name="unixPermissions">
-												<string><![CDATA[777]]></string>
-											</property>
-											<property name="targetCheckKind">
-												<int>0</int>
-											</property>
-										</object>
+										<object refID="16a65b2e9262"/>
+										<object refID="16a65b2f9262"/>
+										<object refID="dbdab8aba828"/>
 										<object class="com.zerog.ia.installer.actions.InstallDirectory" objectID="9f797bd2afa5">
 											<property name="unixPermissions">
 												<string><![CDATA[775]]></string>
@@ -8997,8 +8919,11 @@ and any path to a file to read from that file]]></string>
 												<object refID="9f797bf0afa6"/>
 												<object refID="9fa88594afa6"/>
 												<object refID="9fa88596afa6"/>
+												<object refID="16a65b2e9262"/>
 												<object refID="9fa88597afa6"/>
 												<object refID="9fa88598afa6"/>
+												<object refID="16a65b2f9262"/>
+												<object refID="dbdab8aba828"/>
 												<object refID="9fa88599afa6"/>
 												<object refID="9fa8859eafa6"/>
 												<object refID="9fa8859fafa6"/>
@@ -9008,64 +8933,6 @@ and any path to a file to read from that file]]></string>
 												<object refID="9fa885a9afa6"/>
 												<object refID="2efbbb1bb088"/>
 											</visualChildren>
-										</object>
-										<object class="com.zerog.ia.installer.actions.InstallZipfile" objectID="dbdab8aba828">
-											<property name="unixPermissions">
-												<string><![CDATA[664]]></string>
-											</property>
-											<property name="sourceName">
-												<string><![CDATA[gp-modules.jar]]></string>
-											</property>
-											<property name="overrideUnixPermissions">
-												<boolean>false</boolean>
-											</property>
-											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
-											</property>
-											<property name="shouldUninstall">
-												<boolean>true</boolean>
-											</property>
-											<property name="destinationName">
-												<string><![CDATA[gp-modules.jar]]></string>
-											</property>
-											<property name="fileSize">
-												<long>1193366</long>
-											</property>
-											<property name="macBinary">
-												<boolean>false</boolean>
-											</property>
-											<property name="targetCheckKind">
-												<int>0</int>
-											</property>
-										</object>
-										<object class="com.zerog.ia.installer.actions.MoveFileAction" objectID="dbdaf7dca828">
-											<property name="targetAction">
-												<object refID="dbdab8aba828"/>
-											</property>
-											<property name="useInstalledFile">
-												<boolean>true</boolean>
-											</property>
-											<property name="destination">
-												<string><![CDATA[$USER_INSTALL_DIR$$/$lib]]></string>
-											</property>
-											<property name="uninstallFlag">
-												<boolean>true</boolean>
-											</property>
-											<property name="folderOptions">
-												<int>90</int>
-											</property>
-											<property name="renames">
-												<boolean>false</boolean>
-											</property>
-											<property name="overrideUnixPermissions">
-												<boolean>false</boolean>
-											</property>
-											<property name="unixPermissions">
-												<string><![CDATA[777]]></string>
-											</property>
-											<property name="targetCheckKind">
-												<int>0</int>
-											</property>
 										</object>
 									</installChildren>
 								</object>
@@ -9314,7 +9181,7 @@ and any path to a file to read from that file]]></string>
 				<object refID="7daeb44eafa5"/>
 				<object refID="7daeb454afa5"/>
 				<object refID="c2c9743886ec"/>
-				<object class="com.zerog.ia.installer.hosts.OSHost" objectID="b7bde669ad5b">
+				<object class="com.zerog.ia.installer.hosts.OSHost" objectID="beab628b8a0f">
 					<visualChildren>
 						<object class="com.zerog.ia.installer.GhostDirectory" objectID="7daeb42eafa5">
 							<property name="destinationFolder">
@@ -9330,14 +9197,6 @@ and any path to a file to read from that file]]></string>
 								<object refID="7daeb4a8afa5"/>
 								<object refID="85fe62ecafb9"/>
 								<object refID="9f797bd2afa5"/>
-								<object refID="16a65b2e9263"/>
-								<object refID="16a65b2f9262"/>
-								<object refID="16a65b2e9262"/>
-								<object refID="dbdab8aba828"/>
-								<object refID="16a6bf0e9264"/>
-								<object refID="16a727829266"/>
-								<object refID="16a730279267"/>
-								<object refID="dbdaf7dca828"/>
 								<object refID="7e1329cdafa7"/>
 								<object refID="7e4c8205afeb"/>
 								<object refID="7e18de70afa7"/>
