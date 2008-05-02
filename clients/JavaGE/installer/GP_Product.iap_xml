@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- This script was automatically generated using Macrovision's InstallAnywhere 8.0.1 Enterprise, Build 3081
+<!-- This script was automatically generated using Macrovision InstallAnywhere 2008 VP1 Enterprise, Build 3532
      STATUS: Fully Functional LICENSED Edition
-     DATE:   Mon Oct 22 11:34:36 EDT 2007 -->
-<InstallAnywhere_Deployment_Project increments="5824">
+     DATE:   Fri May 02 15:48:43 EDT 2008 -->
+<InstallAnywhere_Deployment_Project increments="6579">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
-		<versionID major="8" minor="0" revision="1"/>
-		<editionID>56,46,48,46,49,32,69,110,116,101,114,112,114,105,115,101,32,66,117,105,108,100,32,51,48,56,49</editionID>
-		<scriptID>12,42,11,81,55,51,53,56,69,87,52,80,76,55,84,86</scriptID>
-		<buildID>3,13,71,87,105,110,100,111,119,115,32,88,80,44,32,53,46,49,44,32,120,56,54,59,32,74,97,118,97,32,49,46,53,46,48,95,49,49,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,67,112,49,50,53,50</buildID>
+		<versionID major="9" minor="5" revision="0"/>
+		<editionID>57,46,53,32,69,110,116,101,114,112,114,105,115,101,32,66,117,105,108,100,32,51,53,51,50</editionID>
+		<scriptID>12,42,11,69,50,48,55,57,68,68,87,52,78,55,86,82,81,86,81,55,68,78,89,85,76,87</scriptID>
+		<buildID>3,13,71,76,105,110,117,120,44,32,50,46,54,46,56,45,50,52,46,50,52,45,115,109,112,44,32,97,109,100,54,52,59,32,74,97,118,97,32,49,46,53,46,48,95,48,57,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,65,78,83,73,95,88,51,46,52,45,49,57,54,56</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,16,-61,93,-32,-48,80,112,117,106,83,99,113,97,113,65,67,66,74,67,78,70,91,65,64,69,66,69,64,95,87,5,2,2,9,57,104,5,1,0,0</authorizationID>
+		<authorizationID>1,0,0,16,-93,46,-32,64,80,112,118,100,85,99,113,97,113,65,81,84,74,67,70,68,72,74,64,69,66,69,64,95,71,5,2,4,12,61,107,9,1,0,0</authorizationID>
 	</essentialScriptInfo>
-	<installationObjects uniqueObjects="447">
+	<installationObjects uniqueObjects="459">
 		<object class="com.zerog.ia.installer.Installer" objectID="7daeb2feafa5">
 			<property name="wizardME">
 				<object class="com.zerog.ia.installer.actions.MakeExecutable" objectID="7e4c8205afeb">
@@ -121,19 +121,6 @@ Relative paths are relative to the launcher.]]></string>
 								</object>
 							</method>
 							<method name="addElement">
-								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="7e4dd08dafec">
-									<property name="propertyValue">
-										<string><![CDATA[$CMD_LINE_ARGUMENTS$]]></string>
-									</property>
-									<property name="propertyName">
-										<string><![CDATA[lax.command.line.args]]></string>
-									</property>
-									<property name="propertyComment">
-										<string><![CDATA[what will be passed to the main method -- be sure to quote arguments with spaces in them]]></string>
-									</property>
-								</object>
-							</method>
-							<method name="addElement">
 								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1d780265afc0">
 									<property name="propertyValue">
 										<string><![CDATA[true]]></string>
@@ -143,6 +130,19 @@ Relative paths are relative to the launcher.]]></string>
 									</property>
 									<property name="propertyComment">
 										<string><![CDATA[Indicates that the client will display graphics]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="7e4dd08dafec">
+									<property name="propertyValue">
+										<string><![CDATA[$CMD_LINE_ARGUMENTS$]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.command.line.args]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[what will be passed to the main method -- be sure to quote arguments with spaces in them]]></string>
 									</property>
 								</object>
 							</method>
@@ -202,19 +202,6 @@ it will search for ones in this list]]></string>
 								</object>
 							</method>
 							<method name="addElement">
-								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="dbd9aa8da74d">
-									<property name="propertyValue">
-										<string><![CDATA[org.genepattern.gpge.GenePattern]]></string>
-									</property>
-									<property name="propertyName">
-										<string><![CDATA[lax.main.class]]></string>
-									</property>
-									<property name="propertyComment">
-										<string><![CDATA[the class that contains the main method for the application]]></string>
-									</property>
-								</object>
-							</method>
-							<method name="addElement">
 								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="ebe843eda34f">
 									<property name="propertyValue">
 										<string><![CDATA[128m]]></string>
@@ -224,6 +211,19 @@ it will search for ones in this list]]></string>
 									</property>
 									<property name="propertyComment">
 										<string><![CDATA[initial heap memory size]]></string>
+									</property>
+								</object>
+							</method>
+							<method name="addElement">
+								<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="dbd9aa8da74d">
+									<property name="propertyValue">
+										<string><![CDATA[org.genepattern.gpge.GenePattern]]></string>
+									</property>
+									<property name="propertyName">
+										<string><![CDATA[lax.main.class]]></string>
+									</property>
+									<property name="propertyComment">
+										<string><![CDATA[the class that contains the main method for the application]]></string>
 									</property>
 								</object>
 							</method>
@@ -258,13 +258,13 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[client32.GIF]]></string>
 							</property>
 							<property name="smallIconPath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="largeIconPath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="macOSXIconPath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="macOSXIconName">
 								<string><![CDATA[GPGEMacIcons.icns]]></string>
@@ -273,6 +273,9 @@ and any path to a file to read from that file]]></string>
 					</property>
 					<property name="mainClass">
 						<string><![CDATA[org.genepattern.gpge.GenePattern]]></string>
+					</property>
+					<property name="execLevel">
+						<int>0</int>
 					</property>
 				</object>
 			</property>
@@ -290,7 +293,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -321,7 +324,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -352,7 +355,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -383,7 +386,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -414,7 +417,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -445,7 +448,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -476,7 +479,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\build\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../build/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -507,7 +510,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -538,7 +541,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -569,7 +572,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -600,7 +603,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -631,7 +634,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -662,7 +665,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -693,7 +696,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -724,7 +727,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -755,7 +758,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -786,7 +789,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -817,7 +820,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -848,7 +851,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -879,7 +882,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -910,7 +913,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -941,7 +944,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -972,7 +975,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -1003,7 +1006,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -1034,7 +1037,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\build\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../build/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -1065,7 +1068,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\build\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../build/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -1096,7 +1099,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -1127,7 +1130,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -1158,7 +1161,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -1195,6 +1198,37 @@ and any path to a file to read from that file]]></string>
 					</method>
 				</object>
 			</property>
+			<property name="installLabelsOrder">
+				<object class="java.util.Vector">
+					<method name="addElement">
+						<string><![CDATA[0]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[1]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[2]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[3]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[4]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[5]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[6]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[7]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[8]]></string>
+					</method>
+				</object>
+			</property>
 			<property name="installLabels">
 				<object class="java.util.Vector">
 					<method name="addElement">
@@ -1210,7 +1244,7 @@ and any path to a file to read from that file]]></string>
 						<string><![CDATA[Choose Install Folder]]></string>
 					</method>
 					<method name="addElement">
-						<string><![CDATA[Choose $SHORTCUT_NAME$ Folder]]></string>
+						<string><![CDATA[Choose Link Folder]]></string>
 					</method>
 					<method name="addElement">
 						<string><![CDATA[Server and Port]]></string>
@@ -1232,11 +1266,8 @@ and any path to a file to read from that file]]></string>
 			<property name="installProgressLabelOption">
 				<int>2</int>
 			</property>
-			<property name="preferredGUIMode">
-				<int>2</int>
-			</property>
 			<property name="supportsAWTUI">
-				<boolean>true</boolean>
+				<boolean>false</boolean>
 			</property>
 			<property name="supportsSwingUI">
 				<boolean>true</boolean>
@@ -1296,102 +1327,132 @@ and any path to a file to read from that file]]></string>
 							<property name="propertyList">
 								<object class="java.util.Vector">
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="4bbdd3e9818b">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8c8a0f">
 											<property name="propertyValue">
 												<string><![CDATA[8080]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[GENEPATTERN_PORT]]></string>
 											</property>
+											<property name="passByValue">
+												<boolean>false</boolean>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="b79317bd80c1">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8d8a0f">
 											<property name="propertyValue">
 												<string><![CDATA[http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_client_license.cgi]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[GP_REG_REGISTRATION_URL]]></string>
 											</property>
+											<property name="passByValue">
+												<boolean>false</boolean>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="af23a089b9a6">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8c8a10">
 											<property name="propertyValue">
 												<string><![CDATA[@version.major@]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[version.major]]></string>
 											</property>
+											<property name="passByValue">
+												<boolean>false</boolean>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="af23e3dcb9a6">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8d8a10">
 											<property name="propertyValue">
 												<string><![CDATA[@version.minor@]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[version.minor]]></string>
 											</property>
+											<property name="passByValue">
+												<boolean>false</boolean>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="af2411f1b9a6">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8c8a11">
 											<property name="propertyValue">
 												<string><![CDATA[@buildrelease@]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[buildrelease]]></string>
 											</property>
+											<property name="passByValue">
+												<boolean>false</boolean>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="af2461e6b9a6">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8d8a11">
 											<property name="propertyValue">
 												<string><![CDATA[@builddate@]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[builddate]]></string>
 											</property>
+											<property name="passByValue">
+												<boolean>false</boolean>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="af2faddfba9b">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8f8a11">
 											<property name="propertyValue">
 												<string><![CDATA[@buildtag@]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[buildtag]]></string>
 											</property>
+											<property name="passByValue">
+												<boolean>false</boolean>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="abb19ab583cc">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8d8a12">
 											<property name="propertyValue">
 												<string><![CDATA[127.0.0.1]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[GenePatternServer]]></string>
 											</property>
+											<property name="passByValue">
+												<boolean>false</boolean>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="b33ced85b9fb">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8e8a12">
 											<property name="propertyValue">
 												<string><![CDATA[If you quit now you will be left with an unusable version of GenePattern!]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[ExitDialog.uninstall.narrative]]></string>
 											</property>
+											<property name="passByValue">
+												<boolean>false</boolean>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="b90e284ebb59">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8d8a13">
 											<property name="propertyValue">
 												<string><![CDATA[]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[gp.project.dirs]]></string>
+											</property>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
@@ -1414,7 +1475,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[com.zerog.ia.customcode.action.PropertiesFileReader]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_HOME$\plugins]]></string>
+								<string><![CDATA[$IA_HOME$/plugins]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[PropertiesFileReader.jar]]></string>
@@ -1438,6 +1499,9 @@ and any path to a file to read from that file]]></string>
 											<property name="propertyName">
 												<string><![CDATA[SUBSTITUTE_VARIABLES]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>0</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -1447,6 +1511,9 @@ and any path to a file to read from that file]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[OVERRIDE_EXISTING_VARIABLES]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -1458,6 +1525,9 @@ and any path to a file to read from that file]]></string>
 											<property name="propertyName">
 												<string><![CDATA[PROPERTIES_FILE_LOCATION]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -1467,6 +1537,9 @@ and any path to a file to read from that file]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[PROPERTIES_TO_IGNORE]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -1532,7 +1605,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[com.zerog.ia.customcode.action.PropertiesFileReader]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_HOME$\plugins]]></string>
+								<string><![CDATA[$IA_HOME$/plugins]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[PropertiesFileReader.jar]]></string>
@@ -1556,6 +1629,9 @@ and any path to a file to read from that file]]></string>
 											<property name="propertyName">
 												<string><![CDATA[SUBSTITUTE_VARIABLES]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>0</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -1565,6 +1641,9 @@ and any path to a file to read from that file]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[OVERRIDE_EXISTING_VARIABLES]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -1576,6 +1655,9 @@ and any path to a file to read from that file]]></string>
 											<property name="propertyName">
 												<string><![CDATA[PROPERTIES_FILE_LOCATION]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -1585,6 +1667,9 @@ and any path to a file to read from that file]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[PROPERTIES_TO_IGNORE]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -1650,7 +1735,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[edu.mit.broad.genepattern.installer.RegisterStringUtil]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[reggp.jar]]></string>
@@ -1735,6 +1820,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$GP_REG_NAME$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -1744,6 +1832,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -1768,6 +1859,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$GP_REG_TITLE$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -1777,6 +1871,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -1801,6 +1898,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$GP_REG_EMAIL$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -1810,6 +1910,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -1834,6 +1937,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$GP_REG_JOIN_GPUSERS$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -1843,6 +1949,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">1</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -1867,6 +1976,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$GP_REG_ORGANIZATION$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -1876,6 +1988,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -1900,6 +2015,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$GP_REG_ADDRESS1$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -1909,6 +2027,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -1933,6 +2054,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$GP_REG_ADDRESS2$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -1942,6 +2066,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -1966,6 +2093,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$GP_REG_CITY$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -1975,6 +2105,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -1999,6 +2132,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$GP_REG_STATE$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -2008,6 +2144,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -2032,6 +2171,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$GP_REG_ZIP$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -2041,6 +2183,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -2065,6 +2210,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_999999$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2077,6 +2225,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_44$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2091,6 +2242,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_45$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2103,6 +2257,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_46$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2117,6 +2274,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_47$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2129,6 +2289,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_48$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2143,6 +2306,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_49$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2155,6 +2321,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_50$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2169,6 +2338,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_51$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2181,6 +2353,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_52$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2195,6 +2370,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_53$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2207,6 +2385,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_54$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2221,6 +2402,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_55$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2233,6 +2417,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_56$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2247,6 +2434,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_57$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2259,6 +2449,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_58$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2273,6 +2466,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_59$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2285,6 +2481,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_60$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2299,6 +2498,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_61$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2311,6 +2513,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_62$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2325,6 +2530,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_63$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2337,6 +2545,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_64$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2351,6 +2562,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_65$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2363,6 +2577,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_66$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2377,6 +2594,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_67$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2389,6 +2609,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_68$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2403,6 +2626,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_69$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2415,6 +2641,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_70$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2429,6 +2658,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_71$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2441,6 +2673,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_72$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2455,6 +2690,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_73$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2467,6 +2705,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_74$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2481,6 +2722,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_75$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2493,6 +2737,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_76$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2507,6 +2754,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_77$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2519,6 +2769,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_78$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2533,6 +2786,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_79$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2545,6 +2801,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_80$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2559,6 +2818,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_81$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2571,6 +2833,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_82$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2585,6 +2850,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_83$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2597,6 +2865,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_84$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2611,6 +2882,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_85$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2623,6 +2897,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_86$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2637,6 +2914,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_87$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2649,6 +2929,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_88$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2663,6 +2946,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_89$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2675,6 +2961,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_90$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2689,6 +2978,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_91$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2701,6 +2993,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_92$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2715,6 +3010,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_93$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2727,6 +3025,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_94$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2741,6 +3042,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_95$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2753,6 +3057,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_96$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2767,6 +3074,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_97$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2779,6 +3089,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_98$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2793,6 +3106,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_99$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2805,6 +3121,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_100$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2819,6 +3138,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_101$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2831,6 +3153,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_102$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2845,6 +3170,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_103$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2857,6 +3185,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_104$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2871,6 +3202,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_105$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2883,6 +3217,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_106$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2897,6 +3234,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_107$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2909,6 +3249,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_108$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2923,6 +3266,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_109$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2935,6 +3281,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_110$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2949,6 +3298,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_111$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2961,6 +3313,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_112$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -2975,6 +3330,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_113$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -2987,6 +3345,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_114$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3001,6 +3362,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_115$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3013,6 +3377,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_116$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3027,6 +3394,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_117$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3039,6 +3409,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_118$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3053,6 +3426,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_119$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3065,6 +3441,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_120$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3079,6 +3458,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_121$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3091,6 +3473,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_122$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3105,6 +3490,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_123$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3117,6 +3505,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_124$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3131,6 +3522,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_125$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3143,6 +3537,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_126$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3157,6 +3554,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_127$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3169,6 +3569,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_128$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3183,6 +3586,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_129$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3195,6 +3601,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_130$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3209,6 +3618,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_131$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3221,6 +3633,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_132$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3235,6 +3650,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_133$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3247,6 +3665,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_134$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3261,6 +3682,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_135$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3273,6 +3697,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_136$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3287,6 +3714,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_137$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3299,6 +3729,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_138$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3313,6 +3746,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_139$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3325,6 +3761,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_140$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3339,6 +3778,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_141$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3351,6 +3793,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_142$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3365,6 +3810,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_143$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3377,6 +3825,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_144$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3391,6 +3842,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_145$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3403,6 +3857,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_146$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3417,6 +3874,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_147$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3429,6 +3889,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_148$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3443,6 +3906,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_149$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3455,6 +3921,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_150$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3469,6 +3938,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_151$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3481,6 +3953,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_152$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3495,6 +3970,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_153$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3507,6 +3985,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_154$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3521,6 +4002,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_155$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3533,6 +4017,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_156$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3547,6 +4034,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_157$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3559,6 +4049,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_158$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3573,6 +4066,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_159$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3585,6 +4081,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_160$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3599,6 +4098,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_161$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3611,6 +4113,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_162$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3625,6 +4130,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_163$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3637,6 +4145,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_164$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3651,6 +4162,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_165$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3663,6 +4177,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_166$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3677,6 +4194,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_167$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3689,6 +4209,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_168$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3703,6 +4226,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_169$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3715,6 +4241,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_170$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3729,6 +4258,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_171$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3741,6 +4273,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_172$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3755,6 +4290,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_173$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3767,6 +4305,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_174$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3781,6 +4322,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_175$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3793,6 +4337,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_176$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3807,6 +4354,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_177$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3819,6 +4369,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_178$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3833,6 +4386,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_179$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3845,6 +4401,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_180$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3859,6 +4418,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_181$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3871,6 +4433,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_182$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3885,6 +4450,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_183$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3897,6 +4465,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_184$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3911,6 +4482,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_185$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3923,6 +4497,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_186$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3937,6 +4514,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_187$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3949,6 +4529,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_188$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3963,6 +4546,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_189$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -3975,6 +4561,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_190$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -3989,6 +4578,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_191$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4001,6 +4593,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_192$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4015,6 +4610,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_193$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4027,6 +4625,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_194$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4041,6 +4642,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_195$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4053,6 +4657,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_196$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4067,6 +4674,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_197$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4079,6 +4689,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_198$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4093,6 +4706,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_199$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4105,6 +4721,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_200$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4119,6 +4738,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_201$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4131,6 +4753,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_202$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4145,6 +4770,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_203$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4157,6 +4785,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_204$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4171,6 +4802,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_205$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4183,6 +4817,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_206$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4197,6 +4834,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_207$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4209,6 +4849,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_208$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4223,6 +4866,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_209$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4235,6 +4881,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_210$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4249,6 +4898,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_211$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4261,6 +4913,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_212$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4275,6 +4930,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_213$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4287,6 +4945,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_214$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4301,6 +4962,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_215$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4313,6 +4977,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_216$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4327,6 +4994,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_217$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4339,6 +5009,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_218$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4353,6 +5026,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_219$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4365,6 +5041,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_220$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4379,6 +5058,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_221$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4391,6 +5073,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_222$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4405,6 +5090,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_223$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4417,6 +5105,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_224$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4431,6 +5122,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_225$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4443,6 +5137,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_226$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4457,6 +5154,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_227$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4469,6 +5169,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_228$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4483,6 +5186,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_229$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4495,6 +5201,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_230$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4509,6 +5218,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_231$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4521,6 +5233,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_232$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4535,6 +5250,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_233$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4547,6 +5265,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_234$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4561,6 +5282,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_235$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4573,6 +5297,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_236$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4587,6 +5314,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_237$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4599,6 +5329,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_238$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4613,6 +5346,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_239$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4625,6 +5361,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_240$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4639,6 +5378,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_241$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4651,6 +5393,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_242$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4665,6 +5410,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_243$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4677,6 +5425,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_244$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4691,6 +5442,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_245$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4703,6 +5457,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_246$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4717,6 +5474,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_247$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4729,6 +5489,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_248$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4743,6 +5506,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_249$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4755,6 +5521,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_250$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4769,6 +5538,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_251$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4781,6 +5553,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_252$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4795,6 +5570,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_253$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4807,6 +5585,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_254$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4821,6 +5602,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_255$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4833,6 +5617,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_256$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4847,6 +5634,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_257$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4859,6 +5649,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_258$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4873,6 +5666,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_259$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4885,6 +5681,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_260$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4899,6 +5698,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_261$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4911,6 +5713,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_262$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4925,6 +5730,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_263$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4937,6 +5745,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_264$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4951,6 +5762,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_265$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4963,6 +5777,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_266$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -4977,6 +5794,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_267$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -4989,6 +5809,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_268$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -5003,6 +5826,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_269$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -5015,6 +5841,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_270$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -5029,6 +5858,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_271$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -5041,6 +5873,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_272$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -5055,6 +5890,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_273$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -5067,6 +5905,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_274$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -5081,6 +5922,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_275$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 													<method name="addElement">
@@ -5093,6 +5937,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															</property>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_276$]]></string>
+															</property>
+															<property name="bidiOption">
+																<int>0</int>
 															</property>
 														</object>
 													</method>
@@ -5107,6 +5954,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 															<property name="variableName">
 																<string><![CDATA[$USER_INPUT_RESULT_277$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -5116,6 +5966,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -5151,6 +6004,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 											<property name="propertyName">
 												<string><![CDATA[GP_REG_COUNTRY_IDX_START]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -5161,6 +6017,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 											<property name="propertyName">
 												<string><![CDATA[GP_REG_COUNTRY_IDX_END]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -5170,6 +6029,9 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[GP_REG_COUNTRY_PREFIX]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -5192,7 +6054,7 @@ You may cancel this installation at any time by clicking the 'Cancel' button.]]>
 								<string><![CDATA[edu.mit.broad.genepattern.installer.RegisterGenePattern]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[reggp.jar]]></string>
@@ -5457,6 +6319,9 @@ $GP_REG_INVALIDFIELDS$]]></string>
 															<property name="variableName">
 																<string><![CDATA[$GenePatternServer$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -5466,6 +6331,9 @@ $GP_REG_INVALIDFIELDS$]]></string>
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -5490,6 +6358,9 @@ $GP_REG_INVALIDFIELDS$]]></string>
 															<property name="variableName">
 																<string><![CDATA[$GENEPATTERN_PORT$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -5499,6 +6370,9 @@ $GP_REG_INVALIDFIELDS$]]></string>
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -5526,6 +6400,9 @@ $GP_REG_INVALIDFIELDS$]]></string>
 							</property>
 							<property name="value">
 								<string><![CDATA[$GenePatternServer$:$GENEPATTERN_PORT$]]></string>
+							</property>
+							<property name="passByValue">
+								<boolean>false</boolean>
 							</property>
 						</object>
 					</method>
@@ -5579,6 +6456,9 @@ $GP_REG_INVALIDFIELDS$]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[default server:]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -5747,6 +6627,12 @@ gp.server=$GenePatternServer$:$GENEPATTERN_PORT$
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -5881,6 +6767,12 @@ gp.server=$GenePatternServer$:$GENEPATTERN_PORT$
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -6005,6 +6897,12 @@ gp.server=$GenePatternServer$:$GENEPATTERN_PORT$
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -6128,6 +7026,12 @@ gp.server=$GenePatternServer$:$GENEPATTERN_PORT$
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[Windows Vista]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -6237,9 +7141,6 @@ The installation log will open after the installer with the details.  Press ""Do
 					<property name="solarisMagicFolder">
 						<object class="com.zerog.ia.installer.util.magicfolders.ProgramsDirMF" factoryID="159" objectID="7dacc0c4afa5"/>
 					</property>
-					<property name="macMagicFolder">
-						<object refID="7dacc0c4afa5"/>
-					</property>
 					<property name="macXMagicFolder">
 						<object refID="7dacc0c4afa5"/>
 					</property>
@@ -6249,14 +7150,14 @@ The installation log will open after the installer with the details.  Press ""Do
 					<property name="solarisMagicFolderPath">
 						<string><![CDATA[GenePatternClient]]></string>
 					</property>
-					<property name="macMagicFolderPath">
-						<string><![CDATA[GenePatternClient]]></string>
-					</property>
 					<property name="macXMagicFolderPath">
 						<string><![CDATA[GenePatternClient]]></string>
 					</property>
 					<property name="win32MagicFolderPath">
 						<string><![CDATA[GenePatternClient]]></string>
+					</property>
+					<property name="os400MagicFolderPath">
+						<string><![CDATA[$PRODUCT_NAME$]]></string>
 					</property>
 				</object>
 			</property>
@@ -6286,6 +7187,9 @@ The installation log will open after the installer with the details.  Press ""Do
 					<property name="win32MagicFolderPath">
 						<string><![CDATA[]]></string>
 					</property>
+					<property name="os400MagicFolderPath">
+						<string><![CDATA[]]></string>
+					</property>
 				</object>
 			</property>
 			<property name="bundledJREInstall">
@@ -6299,6 +7203,204 @@ The installation log will open after the installer with the details.  Press ""Do
 			</property>
 			<property name="JREDirectoryName">
 				<string><![CDATA[jre]]></string>
+			</property>
+			<property name="buildConfigurations">
+				<object class="java.util.Vector">
+					<method name="addElement">
+						<object class="com.zerog.ia.designer.build.BuildConfiguration" objectID="beab622689f7">
+							<property name="buildTargets">
+								<object class="java.util.Vector">
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="beab622789f7">
+											<property name="type">
+												<int>2</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[MacOSX]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>true</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>false</boolean>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="beab622689f8">
+											<property name="type">
+												<int>0</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[Windows]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>true</boolean>
+											</property>
+											<property name="bundledVM">
+												<string><![CDATA[SunJRE150_09iWinAMD64.vm]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="beab622789f8">
+											<property name="type">
+												<int>3</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[AIX]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="bundledVM">
+												<string><![CDATA[IBMJRE141AIX_ca1411-20030930.vm]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="beab622889f8">
+											<property name="type">
+												<int>5</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[HPUX]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="bundledVM">
+												<string><![CDATA[HPJRE131_12HP-UX11PA-RISC.vm]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="beab622789f9">
+											<property name="type">
+												<int>1</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[Linux]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>true</boolean>
+											</property>
+											<property name="bundledVM">
+												<string><![CDATA[SunJRE160_02LinuxINTEL.vm]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="beab622889f9">
+											<property name="type">
+												<int>4</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[Solaris]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="bundledVM">
+												<string><![CDATA[SunJRE131_11SolarisSPARC.vm]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="beab622989f9">
+											<property name="type">
+												<int>8</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[GenericUnix]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>false</boolean>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="beab622889fa">
+											<property name="type">
+												<int>6</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[UNIX_with_VM]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="bundledVM">
+												<string><![CDATA[SunJRE160_02LinuxINTEL.vm]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="beab622989fa">
+											<property name="type">
+												<int>7</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[Java]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>false</boolean>
+											</property>
+										</object>
+									</method>
+								</object>
+							</property>
+							<property name="wantCdRom">
+								<boolean>false</boolean>
+							</property>
+							<property name="wantWeb">
+								<boolean>true</boolean>
+							</property>
+							<property name="wantOptimizationByPlatformCdRom">
+								<boolean>false</boolean>
+							</property>
+							<property name="wantOptimizationByPlatformWeb">
+								<boolean>true</boolean>
+							</property>
+							<property name="wantOptimizationByPlatformMerge">
+								<boolean>false</boolean>
+							</property>
+							<property name="buildOutputLocation">
+								<string><![CDATA[$IA_PROJECT_DIR$/../../../build]]></string>
+							</property>
+							<property name="defaultWindowsUIMode">
+								<string><![CDATA[GUI]]></string>
+							</property>
+							<property name="defaultUnixUIMode">
+								<string><![CDATA[GUI]]></string>
+							</property>
+						</object>
+					</method>
+				</object>
 			</property>
 			<property name="buildSettings">
 				<object class="java.util.Properties">
@@ -6348,7 +7450,7 @@ The installation log will open after the installer with the details.  Press ""Do
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.installer.options.valid.vm.list]]></string>
-						<string><![CDATA[J2 MRJ]]></string>
+						<string><![CDATA[1.4+]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.build.last.date]]></string>
@@ -6356,6 +7458,10 @@ The installation log will open after the installer with the details.  Press ""Do
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.windows.vm]]></string>
+						<string><![CDATA[true]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.project.ImportedToBuildConfiguration]]></string>
 						<string><![CDATA[true]]></string>
 					</method>
 					<method name="put">
@@ -6412,7 +7518,7 @@ The installation log will open after the installer with the details.  Press ""Do
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[October 22, 2007 11:34:36 AM EDT]]></string>
+						<string><![CDATA[May 2, 2008 3:48:43 PM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.cdrom]]></string>
@@ -6481,6 +7587,9 @@ The installation log will open after the installer with the details.  Press ""Do
 					</property>
 					<property name="backgroundImageName">
 						<string><![CDATA[backgroundImage.gif]]></string>
+					</property>
+					<property name="mirrorBidiImage">
+						<string><![CDATA[2]]></string>
 					</property>
 					<property name="currentLabelIconPath">
 						<string><![CDATA[com/zerog/ia/installer/images/]]></string>
@@ -6616,17 +7725,21 @@ The installation log will open after the installer with the details.  Press ""Do
 					<property name="productDescription">
 						<string><![CDATA[The Graphical Environment is a client of GenePattern.]]></string>
 					</property>
-					<property name="productVersionMajor">
-						<int>1</int>
-					</property>
-					<property name="productVersionMinor">
-						<int>0</int>
-					</property>
-					<property name="productVersionRevision">
-						<int>0</int>
-					</property>
-					<property name="productVersionSubRevision">
-						<int>0</int>
+					<property name="productVersion">
+						<object class="com.zerog.ia.installer.util.Version" objectID="beab622f89fa">
+							<property name="major">
+								<int>1</int>
+							</property>
+							<property name="minor">
+								<int>0</int>
+							</property>
+							<property name="revision">
+								<int>0</int>
+							</property>
+							<property name="subRevision">
+								<int>0</int>
+							</property>
+						</object>
 					</property>
 					<property name="supportURL">
 						<string><![CDATA[http://www.broad.mit.edu/cancer/software/genepattern/FAQ.html]]></string>
@@ -6755,6 +7868,9 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 							<property name="uninstallIncompleteMessage">
 								<string><![CDATA[The following items could not be removed:]]></string>
 							</property>
+							<property name="rebootNotNeededMessage">
+								<string><![CDATA[]]></string>
+							</property>
 							<property name="rebootRecommendedMessage">
 								<string><![CDATA[You should restart the system to complete the uninstallation.]]></string>
 							</property>
@@ -6818,6 +7934,18 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 				<object class="java.util.Vector"/>
 			</property>
 			<property name="responseFileEnabled">
+				<boolean>false</boolean>
+			</property>
+			<property name="useJCEEncryption">
+				<boolean>false</boolean>
+			</property>
+			<property name="sortLocaleKeys">
+				<boolean>true</boolean>
+			</property>
+			<property name="removeUnreferencedLocaleKeys">
+				<boolean>false</boolean>
+			</property>
+			<property name="notUpdateGlobalRegistry">
 				<boolean>false</boolean>
 			</property>
 			<visualChildren>
@@ -6904,7 +8032,7 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\files\gp\]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/files/gp/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>false</boolean>
@@ -6988,7 +8116,20 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 														</object>
 													</property>
 													<property name="doNotInstallOnPlatformList">
-														<object class="java.util.Vector"/>
+														<object class="java.util.Vector">
+															<method name="addElement">
+																<string><![CDATA[Windows 2003]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Windows Vista]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[NetWare]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
+														</object>
 													</property>
 												</object>
 											</rules>
@@ -7266,6 +8407,9 @@ and any path to a file to read from that file]]></string>
 													</property>
 													<property name="neverRestarts">
 														<boolean>false</boolean>
+													</property>
+													<property name="execLevel">
+														<int>1</int>
 													</property>
 													<property name="asksUserAboutRestart">
 														<boolean>true</boolean>
@@ -7549,7 +8693,7 @@ and any path to a file to read from that file]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\resources\]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../../../resources/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -7578,7 +8722,7 @@ and any path to a file to read from that file]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\files\gp]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/files/gp]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -7643,7 +8787,7 @@ and any path to a file to read from that file]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[F:\tools\anthill\work\genepattern\website\WEB-INF\lib\]]></string>
+												<string><![CDATA[$USER_HOME$/projects/genepattern/v3_1_0/website/WEB-INF/lib/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -7672,7 +8816,7 @@ and any path to a file to read from that file]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[F:\tools\anthill\work\genepattern\website\WEB-INF\lib\]]></string>
+												<string><![CDATA[$USER_HOME$/projects/genepattern/v3_1_0/website/WEB-INF/lib/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -7701,7 +8845,7 @@ and any path to a file to read from that file]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[F:\tools\anthill\work\genepattern\website\WEB-INF\lib\]]></string>
+												<string><![CDATA[$USER_HOME$/projects/genepattern/v3_1_0/website/WEB-INF/lib/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -7817,7 +8961,7 @@ and any path to a file to read from that file]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\..\..\..\website\WEB-INF\lib\]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../../../website/WEB-INF/lib/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -7876,7 +9020,7 @@ and any path to a file to read from that file]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[F:\tools\anthill\work\genepattern\website\WEB-INF\lib\]]></string>
+												<string><![CDATA[$USER_HOME$/projects/genepattern/v3_1_0/website/WEB-INF/lib/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -8170,49 +9314,53 @@ and any path to a file to read from that file]]></string>
 				<object refID="7daeb44eafa5"/>
 				<object refID="7daeb454afa5"/>
 				<object refID="c2c9743886ec"/>
-				<object class="com.zerog.ia.installer.GhostDirectory" objectID="7daeb42eafa5">
-					<property name="destinationFolder">
-						<object refID="7dacc07fafa5"/>
-					</property>
-					<property name="overrideUnixPermissions">
-						<boolean>false</boolean>
-					</property>
-					<property name="unixPermissions">
-						<string><![CDATA[775]]></string>
-					</property>
+				<object class="com.zerog.ia.installer.hosts.OSHost" objectID="beab628b8a0f">
 					<visualChildren>
-						<object refID="7daeb4a8afa5"/>
-						<object refID="85fe62ecafb9"/>
-						<object refID="9f797bd2afa5"/>
-						<object refID="16a65b2e9263"/>
-						<object refID="16a65b2f9262"/>
-						<object refID="16a65b2e9262"/>
-						<object refID="dbdab8aba828"/>
-						<object refID="16a6bf0e9264"/>
-						<object refID="16a727829266"/>
-						<object refID="16a730279267"/>
-						<object refID="dbdaf7dca828"/>
-						<object refID="7e1329cdafa7"/>
-						<object refID="7e4c8205afeb"/>
-						<object refID="7e18de70afa7"/>
-						<object refID="7e1723c3afa7"/>
-						<object refID="2d03fef29b5e"/>
-						<object refID="bbc7acd6be34"/>
-						<object refID="1dacb4fbafa6"/>
-					</visualChildren>
-				</object>
-				<object class="com.zerog.ia.installer.GhostDirectory" objectID="7e4dd091afee">
-					<property name="destinationFolder">
-						<object refID="7daeb370afa5"/>
-					</property>
-					<property name="overrideUnixPermissions">
-						<boolean>false</boolean>
-					</property>
-					<property name="unixPermissions">
-						<string><![CDATA[775]]></string>
-					</property>
-					<visualChildren>
-						<object refID="7e4c8206afeb"/>
+						<object class="com.zerog.ia.installer.GhostDirectory" objectID="7daeb42eafa5">
+							<property name="destinationFolder">
+								<object refID="7dacc07fafa5"/>
+							</property>
+							<property name="overrideUnixPermissions">
+								<boolean>false</boolean>
+							</property>
+							<property name="unixPermissions">
+								<string><![CDATA[775]]></string>
+							</property>
+							<visualChildren>
+								<object refID="7daeb4a8afa5"/>
+								<object refID="85fe62ecafb9"/>
+								<object refID="9f797bd2afa5"/>
+								<object refID="16a65b2e9263"/>
+								<object refID="16a65b2f9262"/>
+								<object refID="16a65b2e9262"/>
+								<object refID="dbdab8aba828"/>
+								<object refID="16a6bf0e9264"/>
+								<object refID="16a727829266"/>
+								<object refID="16a730279267"/>
+								<object refID="dbdaf7dca828"/>
+								<object refID="7e1329cdafa7"/>
+								<object refID="7e4c8205afeb"/>
+								<object refID="7e18de70afa7"/>
+								<object refID="7e1723c3afa7"/>
+								<object refID="2d03fef29b5e"/>
+								<object refID="bbc7acd6be34"/>
+								<object refID="1dacb4fbafa6"/>
+							</visualChildren>
+						</object>
+						<object class="com.zerog.ia.installer.GhostDirectory" objectID="7e4dd091afee">
+							<property name="destinationFolder">
+								<object refID="7daeb370afa5"/>
+							</property>
+							<property name="overrideUnixPermissions">
+								<boolean>false</boolean>
+							</property>
+							<property name="unixPermissions">
+								<string><![CDATA[775]]></string>
+							</property>
+							<visualChildren>
+								<object refID="7e4c8206afeb"/>
+							</visualChildren>
+						</object>
 					</visualChildren>
 				</object>
 				<object refID="7daeb434afa5"/>
