@@ -218,6 +218,7 @@
   <navigation-case>
    <from-outcome>logout</from-outcome>
    <to-view-id>/pages/login.xhtml</to-view-id>
+   <redirect />
   </navigation-case>
   <navigation-case>
    <from-outcome>home</from-outcome>
