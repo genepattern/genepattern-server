@@ -1,0 +1,25 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk">
+<head>
+</head>
+<body>
+
+<t:div rendered="#{!empty requestScope.userID and systemMessageBean.isNew}">
+<script type="text/javascript" language="javascript">
+window.addEventListener("load",
+    function () {
+        window.alert('#{systemMessageBean.messageAsJavaScriptString}');
+    }, 
+    false);
+</script>
+</t:div>
+<h:form id="dismissForm" rendered="#{systemMessageBean.isOpen}" >
+    <h:outputText escape="false" value="#{systemMessageBean.messageAsHtmlString} " style="color: red;" />
+    <h:commandLink value=" [ok] " actionListener="#{systemMessageBean.hide}" rendered="#{!empty requestScope.userID}" />
+</h:form>
+
+</body>
+</html>

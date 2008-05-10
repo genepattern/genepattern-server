@@ -99,6 +99,9 @@
       <t:div rendered="#{serverSettingsBean.currentMode == 'Shut Down Server'}">
         <ui:include src="serverSettingsShutDown.xhtml"/>       
       </t:div>
+      <t:div rendered="#{serverSettingsBean.currentMode == 'System Message'}">
+        <ui:include src="serverSettingsSystemMessage.xhtml"/>       
+      </t:div>
 
     </ui:define>
   </ui:composition>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+                                   "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.genepattern.server.message">
+
+ <class name="SystemMessage" table="SYSTEM_MESSAGE">
+
+  <id name="id" type="long" column="id">
+     <generator class="identity" />
+  </id>
+  <property name="message" column="message" />
+  <property name="startTime" type="timestamp" column="start_time" />
+  <property name="endTime" type="timestamp" column="end_time" />
+  <property name="deleteOnRestart" type="boolean" column="deleteOnRestart" />
+
+ </class>
+ 
+</hibernate-mapping>
