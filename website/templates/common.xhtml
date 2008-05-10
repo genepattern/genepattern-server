@@ -89,10 +89,14 @@
     </script>
 
     <!-- User settings area -->
-    <t:div rendered="${!empty requestScope.userID}">
+    <t:div rendered="#{!empty requestScope.userID}">
       <table height="30" border="0" cellpadding="0" cellspacing="0" class="loginsettings">
         <tr valign="top">
           <td>
+            <h:form id="showSystemMessageForm" rendered="#{!systemMessageBean.isOpen}" style="display: inline;" >
+            <h:commandLink value="System Message" actionListener="#{systemMessageBean.show}" style="color: red;" />
+            <h:outputText value=" | " />
+            </h:form>
             <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">
 			My Settings </h:outputLink> | <h:form style="display: inline;">
               <h:commandLink id="logoutLink" action="#{loginBean.logout}"> Sign Out </h:commandLink>
@@ -166,6 +170,11 @@
             <!-- Spacer used to maintain a minimum width, min-width style is not supported on all browsers (IE7, Opera9) -->
             <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="570" height="0"/>
 
+            <!-- Include System Alert Message  -->
+            <t:div id="systemAlertMessage" rendered="#{systemMessageBean.systemMessage != null}">
+                <ui:include src="../pages/systemMessage.xhtml" />
+            </t:div>
+
             <!-- JSF (Server side) errors or messages -->
         <!--    <h:outputText value="Please correct the following errors before proceeding:"
                           rendered="#{empty facesContext.maximumSeverity==FacesMessage.Severity.SEVERITY_ERROR}" style="font-weight:bold"/> -->
@@ -175,7 +184,6 @@
 		    <!-- Javascript validation errors.  The JSF and Javascript error blockss will not
 		         be visible at the same time (if JS validation fails, the form submit will not
 		         occur and thus JSF validation will not be run) -->
-
 		    <div id="errorMessageDiv" style="display:none;">
               <span id="errorMessageHeader" style="font-weight:bold">
                 Please correct the following errors before proceeding:

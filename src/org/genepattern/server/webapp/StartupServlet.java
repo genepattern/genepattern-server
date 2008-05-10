@@ -45,6 +45,7 @@ import org.genepattern.server.AnalysisManager;
 import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.process.JobPurger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -107,6 +108,14 @@ public class StartupServlet extends HttpServlet {
 	    }
 	};
 	HttpsURLConnection.setDefaultHostnameVerifier(hv);
+	
+	//clear system alert messages
+	try {
+	    SystemAlertFactory.getSystemAlert().deleteOnRestart();
+	}
+	catch (Exception e) {
+	    System.err.println("Error clearing system messages on restart: "+e.getLocalizedMessage());
+	}
 	announceReady(System.getProperties());
 
     }

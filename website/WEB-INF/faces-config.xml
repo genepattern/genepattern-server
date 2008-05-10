@@ -154,6 +154,16 @@
   <managed-bean-scope>session</managed-bean-scope>
  </managed-bean>
  <managed-bean>
+  <managed-bean-name>systemMessageAdminBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.SystemMessageAdminBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+ </managed-bean>
+ <managed-bean>
+  <managed-bean-name>systemMessageBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.SystemMessageBean</managed-bean-class>
+  <managed-bean-scope>session</managed-bean-scope>
+ </managed-bean>
+ <managed-bean>
   <managed-bean-name>mySettingsBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.MySettingsBean</managed-bean-class>
   <managed-bean-scope>session</managed-bean-scope>
@@ -183,6 +193,15 @@
   <managed-bean-class>org.genepattern.server.webapp.jsf.GenepatternProperties</managed-bean-class>
   <managed-bean-scope>application</managed-bean-scope>
  </managed-bean>
+ 
+ <navigation-rule>
+  <from-view-id>/pages/serverSettingsSystemMessage.xhtml</from-view-id>
+  <navigation-case>
+   <from-outcome>redirect</from-outcome>
+   <to-view-id>/pages</to-view-id>
+  </navigation-case>
+ </navigation-rule>
+    
  <navigation-rule>
   <from-view-id>*</from-view-id>
   

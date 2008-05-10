@@ -115,6 +115,7 @@ public class ServerSettingsBean {
 	            "num.threads" });
 	    modes.put("Custom", null);
 	    modes.put("Shut Down Server", null);
+	    modes.put("System Message", null);
 	}
 	currentMode = (String) modes.keySet().toArray()[0];
 	if (settings == null) {
