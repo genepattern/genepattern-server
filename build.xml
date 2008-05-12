@@ -439,7 +439,7 @@
         <mkdir dir="installer/GP_server_Build_Output/Web_Installers/InstData/warfile" />
         <copy file="gp_war.zip" todir="installer/GP_server_Build_Output/Web_Installers/InstData/warfile" />
 
-        <copy overwrite="true" todir="/xchip/genepattern/anthill3/server/opt/tomcat/webapps/gpinstalls/release310">
+        <copy overwrite="true" todir="/xchip/genepattern/anthill3/server/opt/tomcat/webapps/gpinstalls/release311">
             <fileset dir="installer/GP_server_Build_Output/Web_Installers" />
         </copy>
 
