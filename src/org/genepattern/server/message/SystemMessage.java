@@ -9,10 +9,10 @@ import java.util.Date;
  * @author pcarr
  */
 public class SystemMessage {
-    private Long id; // INTEGER identity primary key,
-    private String message; // LONGVARCHAR not null,
-    private Date startTime; // TIMESTAMP default now not null,
-    private Date endTime; // TIMESTAMP null,
+    private Long id = new Long(0); // INTEGER identity primary key,
+    private String message = ""; // LONGVARCHAR not null,
+    private Date startTime = null; // TIMESTAMP default now not null,
+    private Date endTime = null; // TIMESTAMP null,
     private boolean deleteOnRestart = false; // BIT default 0 not null
     
     public void setId(Long id) {
