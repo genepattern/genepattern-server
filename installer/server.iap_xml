@@ -13333,7 +13333,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														<boolean>false</boolean>
 													</property>
 													<property name="sourcePath">
-														<string><![CDATA[F:\tools\anthill\work\genepattern\clients\R\downloads\]]></string>
+														<string><![CDATA[../clients/R/downloads/]]></string>
 													</property>
 													<property name="shouldUninstall">
 														<boolean>true</boolean>
