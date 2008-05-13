@@ -1,6 +1,6 @@
 \name{run.analysis}
 \alias{run.analysis}
-\title{Runs an analysis module on a GenePattern server}
+\title{Runs an analysis module on a GenePattern server and waits for the job to complete.}
 
 \description
 {

@@ -1,6 +1,6 @@
 \name{run.analysis.no.wait}
 \alias{run.analysis.no.wait}
-\title{Runs an analysis module on a GenePattern server}
+\title{Runs an analysis module on a GenePattern server and returns immediately.}
 
 \description
 {

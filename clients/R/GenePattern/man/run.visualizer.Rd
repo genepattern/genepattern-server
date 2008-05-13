@@ -1,6 +1,6 @@
 \name{run.visualizer}
 \alias{run.visualizer}
-\title{Runs an visualizer on a GenePattern server}
+\title{Runs a GenePattern visualizer}
 
 \description
 {
