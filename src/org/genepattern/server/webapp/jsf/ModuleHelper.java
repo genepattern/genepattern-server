@@ -14,7 +14,6 @@ package org.genepattern.server.webapp.jsf;
 
 import static org.genepattern.server.webapp.jsf.UIBeanHelper.getUserId;
 
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,7 +27,7 @@ import org.genepattern.server.domain.SuiteDAO;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
-import org.genepattern.util.LSID;
+import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.TaskInfo;
 
 public class ModuleHelper {
@@ -146,12 +145,24 @@ public class ModuleHelper {
      */
     public List<ModuleCategory> getTasksBySuite() {
 	List<Suite> suites = (new SuiteDAO()).findAll();
+	
+	String userId = UIBeanHelper.getUserId();
+	//user must be logged in ...
+	if (userId == null || userId.trim().equals("")) {
+	    return new ArrayList<ModuleCategory>();
+	}
+	
 	List<ModuleCategory> categories = new ArrayList<ModuleCategory>(suites.size());
 	for (Suite suite : suites) {
+	    if (!userId.equals(suite.getUserId()) && suite.getAccessId().intValue() != GPConstants.ACCESS_PUBLIC) {
+	        //don't include private suites unless owned by someone else
+	        continue;
+	    }
+	    
 	    List<String> lsids = suite.getModules();
 	    List<TaskInfo> suiteTasks = new ArrayList<TaskInfo>();
 	    for (String lsid : lsids) {
-		TaskInfo ti = new AdminDAO().getTask(lsid, UIBeanHelper.getUserId());
+		TaskInfo ti = new AdminDAO().getTask(lsid, userId);
 		if (ti != null) {
 		    suiteTasks.add(ti);
 		}
