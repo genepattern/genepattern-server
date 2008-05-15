@@ -21,6 +21,9 @@ function pm_showMenu(id, pos, horizOffset, vertOffset) {
    pm_currentId = id;
    pm_showing = true;
    var style = $(id).style;
+   style.width = 'auto';
+   style.height = 'auto';
+   
    var cDim = clientDim();
    var width = cDim.w; //  f_clientWidth();
    var height = cDim.h; //  f_clientHeight();
@@ -39,10 +42,19 @@ function pm_showMenu(id, pos, horizOffset, vertOffset) {
         style.top = Math.max(0, pos[1] - vertOffset) + "px";
       }
       else {
-           style.bottom = Math.max(-f_scrollTop(), height - pos[1] - vertOffset)+ "px";
-       }
-    }
-    style.display = "";
+        var sBottom = Math.max(-f_scrollTop(), height - pos[1] - vertOffset);
+        var scrollHeight = $(id).scrollHeight;
+        if (sBottom - scrollHeight < 0) {
+          //alert("f_scrollTop: "+f_scrollTop() + ", height: " + height + ", scrollHeight: " + scrollHeight + ", pos[1]: "+pos[1] + ", vertOffset: "+vertOffset);
+          style.top = Math.max(0, pos[1] - vertOffset) + "px";
+        }
+        else {
+          style.bottom = sBottom + "px";
+        }
+      }
+   }
+   //TODO: adjust the menu for better vertical location in the window
+   style.visibility = "visible";
 }
 
 
@@ -50,12 +62,13 @@ function pm_showMenu(id, pos, horizOffset, vertOffset) {
 function pm_hideMenu(id) {
   var menu = $(id);
   if(menu != null) {
-    $(id).style.display = "none";
+    $(id).style.visibility = "hidden";
+    $(id).style.width = '10px';
+    $(id).style.height = '10px';
+
     pm_currentId = null;
   }
 }
-
-
 
 function clientDim() {
   var w = window;
