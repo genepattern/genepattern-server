@@ -20,13 +20,12 @@ function pm_showMenu(id, pos, horizOffset, vertOffset) {
    }
    pm_currentId = id;
    pm_showing = true;
-   var style = $(id).style;
-   style.width = 'auto';
-   style.height = 'auto';
    
    var cDim = clientDim();
    var width = cDim.w; //  f_clientWidth();
    var height = cDim.h; //  f_clientHeight();
+
+   var style = $(id).style;
 
    if(pos) {
       if(pos[0] < (width / 2)) {
@@ -37,26 +36,26 @@ function pm_showMenu(id, pos, horizOffset, vertOffset) {
         // Menu is on right side of page, user right align.
         style.right = Math.max(-f_scrollLeft(), width - pos[0] - horizOffset) + "px";
       }
-      if(pos[1] < (height / 2)) {
-        // Menu is on top half of page, use top align
-        style.top = Math.max(0, pos[1] - vertOffset) + "px";
+      //always use top align
+      var menuTop = pos[1] - vertOffset; //inital guess for the location of the popup menu
+      var menuBottom = menuTop + $(id).scrollHeight;
+      var screenBottom = f_scrollTop() + height;
+      //check to see if the menu extends beyond the bottom of the display area
+      if (menuBottom > screenBottom) {
+        var dv = menuBottom - screenBottom;
+        menuTop = menuTop - dv;
+        menuTop = menuTop - 10; //10 px adjustment to prevent scrollbars
+        //then adjust so that all scrolling is down
+        menuTop = Math.max(f_scrollTop(), menuTop);
       }
-      else {
-        var sBottom = Math.max(-f_scrollTop(), height - pos[1] - vertOffset);
-        var scrollHeight = $(id).scrollHeight;
-        if (sBottom - scrollHeight < 0) {
-          //alert("f_scrollTop: "+f_scrollTop() + ", height: " + height + ", scrollHeight: " + scrollHeight + ", pos[1]: "+pos[1] + ", vertOffset: "+vertOffset);
-          style.top = Math.max(0, pos[1] - vertOffset) + "px";
-        }
-        else {
-          style.bottom = sBottom + "px";
-        }
-      }
+      //make sure the top of the menu is not out of the display area
+      menuTop = Math.max(0, menuTop);
+      style.top = menuTop + "px";
    }
-   //TODO: adjust the menu for better vertical location in the window
+   style.width = 'auto';
+   style.height = 'auto';
    style.visibility = "visible";
 }
-
 
 
 function pm_hideMenu(id) {
@@ -90,7 +89,6 @@ function clientDim() {
 
 
 // Some (hopefully) browser independent functions for size and position
-
 function f_clientWidth() {
 	return f_filterResults (
 		window.innerWidth ? window.innerWidth : 0,
