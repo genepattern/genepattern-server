@@ -7802,7 +7802,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="buildOutputLocation">
-								<string><![CDATA[/xchip/genepattern/anthill3/agent/var/jobs/projects/GenePattern_Trunk/build_dev/installer/server_Build_Output]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../server_Build_Output]]></string>
 							</property>
 							<property name="defaultWindowsUIMode">
 								<string><![CDATA[GUI]]></string>
@@ -13985,7 +13985,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[/xchip/genepattern/anthill3/agent/var/jobs/projects/GenePattern_Trunk/build_dev/clients/R/downloads/]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../clients/R/downloads/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -14045,7 +14045,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														<boolean>false</boolean>
 													</property>
 													<property name="sourcePath">
-														<string><![CDATA[/xchip/genepattern/anthill3/agent/var/jobs/projects/GenePattern_Trunk/build_dev/clients/R/downloads/]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/../clients/R/downloads/]]></string>
 													</property>
 													<property name="shouldUninstall">
 														<boolean>true</boolean>
