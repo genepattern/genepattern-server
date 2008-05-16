@@ -203,7 +203,7 @@ and any path to a file to read from that file]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="sourcePath">
-								<string><![CDATA[../external-src/commons-httpclient-3.0.1/dist/]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../external-src/commons-httpclient-3.0.1/dist/]]></string>
 							</property>
 							<property name="shouldUninstall">
 								<boolean>true</boolean>
@@ -13244,7 +13244,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[../clients/R/downloads/]]></string>
+                                                                                                <string><![CDATA[$IA_PROJECT_DIR$/../clients/R/downloads/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -13273,7 +13273,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[../clients/R/downloads/]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../clients/R/downloads/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -13333,7 +13333,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														<boolean>false</boolean>
 													</property>
 													<property name="sourcePath">
-														<string><![CDATA[../clients/R/downloads/]]></string>
+                                                                                                                <string><![CDATA[$IA_PROJECT_DIR$/../clients/R/downloads/]]></string>
 													</property>
 													<property name="shouldUninstall">
 														<boolean>true</boolean>
