@@ -261,8 +261,8 @@
     </target>
 
     <target name="publishGPGEinstallerToWWWDev" depends="version_updater">
-        <!-- copy todir="/web/wwwdev/htdocs/cancer/software/genepattern/download/gpge/${version.major}.${version.minor}" -->
-        <copy todir="/web/wwwdev/htdocs/cancer/software/genepattern/download/gpge/3.1">
+        <!-- copy todir="/web/wwwdev/htdocs/cancer/software/genepattern/download/gpge/3.1.1" -->
+        <copy todir="/web/wwwdev/htdocs/cancer/software/genepattern/download/gpge/${version.major}.${version.minor}">
             <fileset dir="build/Web_Installers" />
         </copy>
     </target>
