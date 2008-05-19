@@ -59,8 +59,6 @@ public class CommandPrefixBean {
         admin = new LocalAdminClient(UIBeanHelper.getUserId());
         pm = PropertiesManager.getInstance();
         defaultCommandPrefix = pm.getCommandPrefixes().getProperty("default", "");
-        //defaultCommandPrefix = System.getProperty(COMMAND_PREFIX, "");
-        System.out.println("CPB DEF=" + defaultCommandPrefix + "  "+ COMMAND_PREFIX );
         setDefault();
     }
 
