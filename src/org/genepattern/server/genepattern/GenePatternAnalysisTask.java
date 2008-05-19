@@ -135,6 +135,7 @@ import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
@@ -1220,15 +1221,18 @@ public class GenePatternAnalysisTask {
 		taskLog.setLastModified(System.currentTimeMillis() + 500);
 	    }
 
-	    // any files that are left in outDir are output files
-	    final String _stdoutFilename = stdoutFilename;
-	    final String _stderrFilename = stderrFilename;
-	    File[] outputFiles = new File(outDirName).listFiles(new FilenameFilter() {
-		public boolean accept(File dir, String name) {
-		    return !name.equals(STDERR) && !name.equals(STDOUT) && !name.equals(TASKLOG)
-			    && !name.equals(_stdoutFilename) && !name.equals(_stderrFilename);
-		}
-	    });
+        // any files that are left in outDir are output files
+        final String _stdoutFilename = stdoutFilename;
+        final String _stderrFilename = stderrFilename;
+        JobResultsFilenameFilter filenameFilter = new JobResultsFilenameFilter();
+        filenameFilter.addExactMatch(STDERR);
+        filenameFilter.addExactMatch(STDOUT);
+        filenameFilter.addExactMatch(TASKLOG);
+        filenameFilter.addExactMatch(_stdoutFilename);
+        filenameFilter.addExactMatch(_stderrFilename);
+        filenameFilter.setGlob(System.getProperty(JobResultsFilenameFilter.KEY));
+
+        File[] outputFiles = new File(outDirName).listFiles(filenameFilter);
 
 	    // create a sorted list of files by lastModified() date
 	    Arrays.sort(outputFiles, new Comparator() {
