@@ -22,16 +22,12 @@ import java.util.List;
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.component.UIInput;
-import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
 import org.genepattern.server.EncryptionUtil;
@@ -131,7 +127,7 @@ public class RegisterServerBean {
 		   PostMethod httppost = new PostMethod(action);
 		  
 		   httppost.addParameter("component","Server");
-		   httppost.addParameter("version",genepatternVersion);
+           httppost.addParameter("gpversion",genepatternVersion);
 		   httppost.addParameter("build",System.getProperty("build.tag"));
 		   httppost.addParameter("os", os);
 			
@@ -185,7 +181,7 @@ public class RegisterServerBean {
 		  
 		   httppost.addParameter("name","Anonymous");
 		   httppost.addParameter("component","Server");
-		   httppost.addParameter("version",genepatternVersion);
+		   httppost.addParameter("gpversion",genepatternVersion);
 		   httppost.addParameter("build",System.getProperty("build.tag"));
 		   httppost.addParameter("os", os);
 			   
