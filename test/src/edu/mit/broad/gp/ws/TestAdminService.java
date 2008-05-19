@@ -14,6 +14,8 @@
 package edu.mit.broad.gp.ws;
 import java.io.File;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -95,9 +97,9 @@ public class TestAdminService extends TestWebService {
       deleteAllTasks();
       installTask(PREPROCESS_ZERO);
       installTask(PREPROCESS_ONE);
-      TaskInfo[] tasks = adminProxy.getLatestTasks();
-      assertTrue(tasks.length == 1);
-      assertTrue(tasks[0].getTaskInfoAttributes().get(GPConstants.LSID).equals(PREPROCESS_ONE.lsid));
+      Collection<TaskInfo> tasks = adminProxy.getLatestTasks();
+      assertTrue(tasks.size() == 1);
+      assertTrue(tasks.iterator().next().getTaskInfoAttributes().get(GPConstants.LSID).equals(PREPROCESS_ONE.lsid));
    }
 
 
@@ -107,10 +109,12 @@ public class TestAdminService extends TestWebService {
       installTask(PREPROCESS_ZERO);
       installTask(PREPROCESS_ONE);
       installTask(FOREIGN_PREPROCESS);
-      TaskInfo[] tasks = adminProxy.getLatestTasks();
-      assertTrue(tasks.length == 2);
-      assertTrue(containsTask(tasks, FOREIGN_PREPROCESS.lsid));
-      assertTrue(containsTask(tasks, PREPROCESS_ONE.lsid));
+      Collection<TaskInfo> tasks = adminProxy.getLatestTasks();
+      TaskInfo[] taskArray = (TaskInfo[])tasks.toArray();
+      
+      assertTrue(taskArray.length == 2);
+      assertTrue(containsTask(taskArray, FOREIGN_PREPROCESS.lsid));
+      assertTrue(containsTask(taskArray, PREPROCESS_ONE.lsid));
    }
    
     public void testGetLatestTasks3()
@@ -120,7 +124,8 @@ public class TestAdminService extends TestWebService {
       installTask(PREPROCESS_ONE);
       installTask(FOREIGN_PREPROCESS);
       String localLSID = taskIntegratorProxy.cloneTask(FOREIGN_PREPROCESS.lsid, FOREIGN_PREPROCESS.name);
-      TaskInfo[] tasks = adminProxy.getLatestTasks();
+      
+      TaskInfo[] tasks = (TaskInfo[])adminProxy.getLatestTasks().toArray();
       assertTrue(tasks.length == 3);
       assertTrue(containsTask(tasks, FOREIGN_PREPROCESS.lsid));
       assertTrue(containsTask(tasks, PREPROCESS_ONE.lsid));
