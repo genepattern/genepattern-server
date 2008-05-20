@@ -12,18 +12,21 @@
 
 package org.genepattern.server.webservice.server.local;
 
-import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.handler.AddNewJobHandler;
-import org.genepattern.server.handler.AddNewJobHandlerNoWakeup;
-import org.genepattern.server.webservice.server.Analysis;
-
-import org.genepattern.webservice.*;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
+
 import org.apache.log4j.Logger;
+import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.handler.AddNewJobHandler;
+import org.genepattern.server.handler.AddNewJobHandlerNoWakeup;
+import org.genepattern.server.webservice.server.Analysis;
+import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  * local Analysis client
@@ -33,12 +36,13 @@ import org.apache.log4j.Logger;
 public class LocalAnalysisClient {
 
     private static Logger log = Logger.getLogger(LocalAnalysisClient.class);
-    Analysis service;
-    String userName;
+    private Analysis service;
+    private String userName;
 
     public LocalAnalysisClient(final String userName) {
 	this.userName = userName;
 	service = new Analysis() {
+	    @Override
 	    protected String getUsernameFromContext() {
 		return userName;
 	    }
@@ -57,12 +61,12 @@ public class LocalAnalysisClient {
 	service.terminateJob(jobId);
     }
 
-    public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean all) throws WebServiceException {
-	return service.getJobs(username, maxJobNumber, maxEntries, all);
+    public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean all, JobSortOrder jobSortOrder,
+	    boolean asc) throws WebServiceException {
+	return service.getJobs(username, maxJobNumber, maxEntries, all, jobSortOrder, asc);
     }
 
     public JobInfo getJob(int jobId) throws WebServiceException {
-
 	return service.getJob(jobId);
     }
 

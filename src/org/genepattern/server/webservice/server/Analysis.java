@@ -49,6 +49,10 @@ import org.genepattern.webservice.WebServiceException;
 
 public class Analysis extends GenericWebService {
 
+    public enum JobSortOrder {
+	JOB_NUMBER, JOB_STATUS, SUBMITTED_DATE, COMPLETED_DATE, USER, MODULE_NAME
+    }
+
     private static Logger log = Logger.getLogger(Analysis.class);
 
     /**
@@ -263,7 +267,7 @@ public class Analysis extends GenericWebService {
 
     /**
      * 
-     * Gets the jobs for the current user
+     * Gets the jobs for the specifier user.
      * 
      * @param username
      *                the username to retrieve jobs for. If <tt>null</tt> all available jobs are returned.
@@ -280,6 +284,28 @@ public class Analysis extends GenericWebService {
      */
     public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs)
 	    throws WebServiceException {
+	return getJobs(username, maxJobNumber, maxEntries, allJobs, JobSortOrder.JOB_NUMBER, false);
+    }
+
+    /**
+     * 
+     * Gets the jobs for the specified user.
+     * 
+     * @param username
+     *                the username to retrieve jobs for. If <tt>null</tt> all available jobs are returned.
+     * @param maxJobNumber
+     *                the maximum job number to include in the returned jobs or -1, to start at the current maximum job
+     *                number in the database
+     * @param maxEntries
+     *                the maximum number of jobs to return
+     * @param allJobs
+     *                if <tt>true</tt> return all jobs that the given user has run, otherwise return jobs that have
+     *                not been deleted
+     * 
+     * @return the jobs
+     */
+    public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs,
+	    JobSortOrder jobSortOrder, boolean asc) throws WebServiceException {
 	if (username == null || !username.equals(getUsernameFromContext())) {
 	    if (!AuthorizationHelper.adminServer(getUsernameFromContext())) {
 		throw new WebServiceException("You are not authorized to perform this action.");
@@ -288,7 +314,7 @@ public class Analysis extends GenericWebService {
 
 	try {
 	    AnalysisDAO ds = new AnalysisDAO();
-	    return ds.getJobs(username, maxJobNumber, maxEntries, allJobs);
+	    return ds.getJobs(username, maxJobNumber, maxEntries, allJobs, jobSortOrder, asc);
 	} catch (Exception e) {
 	    throw new WebServiceException(e);
 	}

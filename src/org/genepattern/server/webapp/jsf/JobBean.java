@@ -38,7 +38,6 @@ import java.util.zip.ZipOutputStream;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
@@ -47,6 +46,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserPropKey;
+import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -177,93 +177,89 @@ public class JobBean {
     }
 
     public void downloadZip(ActionEvent event) {
-        try {
-            int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
-            LocalAnalysisClient client = new LocalAnalysisClient(UIBeanHelper.getUserId());
-            JobInfo job = client.getJob(jobNumber);
-            if (job == null) {
-                return;
-            }
+	try {
+	    int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
+	    LocalAnalysisClient client = new LocalAnalysisClient(UIBeanHelper.getUserId());
+	    JobInfo job = client.getJob(jobNumber);
+	    if (job == null) {
+		return;
+	    }
 
-            JobInfo[] children = client.getChildren(jobNumber);
+	    JobInfo[] children = client.getChildren(jobNumber);
 
-            List<ParameterInfo> outputFileParameters = new ArrayList<ParameterInfo>();
-            outputFileParameters.addAll(getOutputParameters(job));
-            if (children.length > 0) {
-                for (JobInfo child : children) {
-                    outputFileParameters.addAll(getOutputParameters(child));
-                }
+	    List<ParameterInfo> outputFileParameters = new ArrayList<ParameterInfo>();
+	    outputFileParameters.addAll(getOutputParameters(job));
+	    if (children.length > 0) {
+		for (JobInfo child : children) {
+		    outputFileParameters.addAll(getOutputParameters(child));
+		}
 
-            } else {
-                outputFileParameters.addAll(getOutputParameters(job));
+	    } else {
+		outputFileParameters.addAll(getOutputParameters(job));
 
-            }
+	    }
 
-            HttpServletResponse response = UIBeanHelper.getResponse();
-            response.setHeader("Content-Disposition", "attachment; filename=" + jobNumber + ".zip" + ";");
-            response.setHeader("Content-Type", "application/octet-stream");
-            // response.setHeader("Content-Type", "application/zip");
-            response.setHeader("Cache-Control", "no-store"); // HTTP 1.1
-            // cache
-            // control
-            response.setHeader("Pragma", "no-cache"); // HTTP 1.0 cache
-            // control
-            response.setDateHeader("Expires", 0);
-            OutputStream os = response.getOutputStream();
-            ZipOutputStream zos = new ZipOutputStream(os);
+	    HttpServletResponse response = UIBeanHelper.getResponse();
+	    response.setHeader("Content-Disposition", "attachment; filename=" + jobNumber + ".zip" + ";");
+	    response.setHeader("Content-Type", "application/octet-stream");
+	    // response.setHeader("Content-Type", "application/zip");
+	    response.setHeader("Cache-Control", "no-store"); // HTTP 1.1
+	    // cache
+	    // control
+	    response.setHeader("Pragma", "no-cache"); // HTTP 1.0 cache
+	    // control
+	    response.setDateHeader("Expires", 0);
+	    OutputStream os = response.getOutputStream();
+	    ZipOutputStream zos = new ZipOutputStream(os);
 
-            String jobDir = System.getProperty("jobs");
-            byte[] b = new byte[10000];
-            for (ParameterInfo p : outputFileParameters) {
-                String value = p.getValue();
-                int index = StringUtils.lastIndexOfFileSeparator(value);
+	    String jobDir = System.getProperty("jobs");
+	    byte[] b = new byte[10000];
+	    for (ParameterInfo p : outputFileParameters) {
+		String value = p.getValue();
+		int index = StringUtils.lastIndexOfFileSeparator(value);
 
-                String jobId = value.substring(0, index);
-                String fileName = UIBeanHelper.decode(value.substring(index + 1, value.length()));
-                File attachment = new File(jobDir + File.separator + value);
-                if (!attachment.exists()) {
-                    continue;
-                }
-                String zipEntryName = jobId + "/" + fileName;
-                ZipEntry zipEntry = new ZipEntry(zipEntryName);
+		String jobId = value.substring(0, index);
+		String fileName = UIBeanHelper.decode(value.substring(index + 1, value.length()));
+		File attachment = new File(jobDir + File.separator + value);
+		if (!attachment.exists()) {
+		    continue;
+		}
+		String zipEntryName = jobId + "/" + fileName;
+		ZipEntry zipEntry = new ZipEntry(zipEntryName);
 
-                try {
-                    zos.putNextEntry(zipEntry);
-                }
-                catch (ZipException e) {
-                    //TODO: shouldn't really be duplicate entries in the list of outputFileParameters
-                    log.error("ZipException in JobBean.downloadZip: "+e.getLocalizedMessage(), e);
-                    continue;
-                }
-                zipEntry.setTime(attachment.lastModified());
-                zipEntry.setSize(attachment.length());
-                FileInputStream is = null;
-                try {
-                    is = new FileInputStream(attachment);
-                    int bytesRead;
-                    while ((bytesRead = is.read(b, 0, b.length)) != -1) {
-                        zos.write(b, 0, bytesRead);
-                    }
-                } 
-                finally {
-                    if (is != null) {
-                        is.close();
-                    }
-                }
-                zos.closeEntry();
+		try {
+		    zos.putNextEntry(zipEntry);
+		} catch (ZipException e) {
+		    // TODO: shouldn't really be duplicate entries in the list of outputFileParameters
+		    log.error("ZipException in JobBean.downloadZip: " + e.getLocalizedMessage(), e);
+		    continue;
+		}
+		zipEntry.setTime(attachment.lastModified());
+		zipEntry.setSize(attachment.length());
+		FileInputStream is = null;
+		try {
+		    is = new FileInputStream(attachment);
+		    int bytesRead;
+		    while ((bytesRead = is.read(b, 0, b.length)) != -1) {
+			zos.write(b, 0, bytesRead);
+		    }
+		} finally {
+		    if (is != null) {
+			is.close();
+		    }
+		}
+		zos.closeEntry();
 
-            }
-            zos.flush();
-            zos.close();
-            os.close();
-            UIBeanHelper.getFacesContext().responseComplete();
-        } 
-        catch (IOException e) {
-            log.error("Error downloading zip.", e);
-        }
-        catch (WebServiceException e) {
-            log.error("Error downloading zip.", e);
-        }
+	    }
+	    zos.flush();
+	    zos.close();
+	    os.close();
+	    UIBeanHelper.getFacesContext().responseComplete();
+	} catch (IOException e) {
+	    log.error("Error downloading zip.", e);
+	} catch (WebServiceException e) {
+	    log.error("Error downloading zip.", e);
+	}
     }
 
     public String getTaskCode() {
@@ -454,7 +450,7 @@ public class JobBean {
 	    // String filename = encodedJobFileName.substring(index + 1);
 	    new LocalAnalysisClient(UIBeanHelper.getUserId()).deleteJobResultFile(jobNumber, encodedJobFileName);
 	} catch (StringIndexOutOfBoundsException e) {
-	    log.error("Error parsing "+encodedJobFileName, e);
+	    log.error("Error parsing " + encodedJobFileName, e);
 	} catch (NumberFormatException e) {
 	    log.error("Error parsing " + encodedJobFileName, e);
 	} catch (WebServiceException e) {
@@ -488,16 +484,32 @@ public class JobBean {
 	return wrappedJobs;
     }
 
+    private JobSortOrder getJobSortOrder() {
+	if ("jobNumber".equals(jobSortColumn)) {
+	    return JobSortOrder.JOB_NUMBER;
+	} else if ("taskName".equals(jobSortColumn)) {
+	    return JobSortOrder.MODULE_NAME;
+	} else if ("dateSubmitted".equals(jobSortColumn)) {
+	    return JobSortOrder.SUBMITTED_DATE;
+	} else if ("dateCompleted".equals(jobSortColumn)) {
+	    return JobSortOrder.COMPLETED_DATE;
+	} else if ("status".equals(jobSortColumn)) {
+	    return JobSortOrder.JOB_STATUS;
+	}
+
+	return JobSortOrder.JOB_NUMBER;
+    }
+
     public List<JobResultsWrapper> getRecentJobs() {
 	if (recentJobs == null) {
 	    String userId = UIBeanHelper.getUserId();
 	    assert userId != null;
 	    int recentJobsToShow = Integer.parseInt(new UserDAO().getPropertyValue(userId,
-		    UserPropKey.RECENT_JOBS_TO_SHOW, "4"));
+		    UserPropKey.RECENT_JOBS_TO_SHOW, "10"));
 	    LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
 	    try {
-		recentJobs = wrapJobs(analysisClient.getJobs(userId, -1, recentJobsToShow, false));
-
+		recentJobs = wrapJobs(analysisClient.getJobs(userId, -1, recentJobsToShow, false,
+			JobSortOrder.JOB_NUMBER, false));
 	    } catch (WebServiceException wse) {
 		log.error(wse);
 		recentJobs = new ArrayList<JobResultsWrapper>();
@@ -553,8 +565,7 @@ public class JobBean {
 	    LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
 	    try {
 		allJobs = wrapJobs(analysisClient.getJobs(showEveryonesJobs ? null : userId, -1, Integer.MAX_VALUE,
-			false));
-		sortAllJobs();
+			false, getJobSortOrder(), jobSortAscending));
 		sortFiles();
 	    } catch (WebServiceException wse) {
 		log.error(wse);
@@ -762,48 +773,6 @@ public class JobBean {
 
     }
 
-    private void sortAllJobs() {
-	final String column = getJobSortColumn();
-	Comparator<JobResultsWrapper> comparator = new Comparator<JobResultsWrapper>() {
-
-	    public int compare(JobResultsWrapper o1, JobResultsWrapper o2) {
-		JobResultsWrapper c1 = o1;
-		JobResultsWrapper c2 = o2;
-		if (column == null) {
-		    return 0;
-		} else if (column.equals("jobNumber")) {
-		    return jobSortAscending ? new Integer(c1.getJobNumber()).compareTo(c2.getJobNumber())
-			    : new Integer(c2.getJobNumber()).compareTo(c1.getJobNumber());
-		} else if (column.equals("taskName")) {
-		    return jobSortAscending ? c1.getTaskName().compareToIgnoreCase(c2.getTaskName()) : c2.getTaskName()
-			    .compareToIgnoreCase(c1.getTaskName());
-		} else if (column.equals("status")) {
-		    return jobSortAscending ? c1.getStatus().compareTo(c2.getStatus()) : c2.getStatus().compareTo(
-			    c1.getStatus());
-		} else if (column.equals("dateCompleted")) {
-		    if (c1.getDateCompleted() == null) {
-			if (c2.getDateCompleted() == null) {
-			    return 0;
-			}
-			return jobSortAscending ? -1 : 1;
-		    } else if (c2.getDateCompleted() == null) {
-			return jobSortAscending ? 1 : -1;
-		    }
-
-		    return jobSortAscending ? c1.getDateCompleted().compareTo(c2.getDateCompleted()) : c2
-			    .getDateCompleted().compareTo(c1.getDateCompleted());
-		} else if (column.equals("dateSubmitted")) {
-		    return jobSortAscending ? c1.getDateSubmitted().compareTo(c2.getDateSubmitted()) : c2
-			    .getDateSubmitted().compareTo(c1.getDateSubmitted());
-		} else {
-		    return 0;
-		}
-	    }
-	};
-
-	Collections.sort(allJobs, comparator);
-    }
-
     public boolean isJobSortAscending() {
 	return jobSortAscending;
     }
@@ -857,26 +826,26 @@ public class JobBean {
 	    if (parameterInfoArray != null) {
 		File outputDir = new File(GenePatternAnalysisTask.getJobDir("" + jobInfo.getJobNumber()));
 		for (int i = 0; i < parameterInfoArray.length; i++) {
-			if (parameterInfoArray[i].isOutputFile()) {
-				boolean isTaskLog = (parameterInfoArray[i].getName().equals(GPConstants.TASKLOG)
-							|| parameterInfoArray[i].getName().endsWith(GPConstants.PIPELINE_TASKLOG_ENDING));
-				
-				if (showExecutionLogs || !isTaskLog) {
-					File file = new File(outputDir, parameterInfoArray[i].getName());
-					String kind = SemanticUtil.getKind(file);
-					Collection<TaskInfo> modules;
+		    if (parameterInfoArray[i].isOutputFile()) {
+			boolean isTaskLog = (parameterInfoArray[i].getName().equals(GPConstants.TASKLOG) || parameterInfoArray[i]
+				.getName().endsWith(GPConstants.PIPELINE_TASKLOG_ENDING));
 
-					if (parameterInfoArray[i].getName().equals(GPConstants.TASKLOG)){
-						modules = new ArrayList<TaskInfo>();
-					} else {
-						modules = kindToModules.get(kind);
-					}
-					OutputFileInfo pInfo = new OutputFileInfo(parameterInfoArray[i], file, modules, jobInfo
-							.getJobNumber(), kind);
-					pInfo.setSelected(selectedFiles.contains(pInfo.getValue()));
-					outputFiles.add(pInfo);
-				}
+			if (showExecutionLogs || !isTaskLog) {
+			    File file = new File(outputDir, parameterInfoArray[i].getName());
+			    String kind = SemanticUtil.getKind(file);
+			    Collection<TaskInfo> modules;
+
+			    if (parameterInfoArray[i].getName().equals(GPConstants.TASKLOG)) {
+				modules = new ArrayList<TaskInfo>();
+			    } else {
+				modules = kindToModules.get(kind);
+			    }
+			    OutputFileInfo pInfo = new OutputFileInfo(parameterInfoArray[i], file, modules, jobInfo
+				    .getJobNumber(), kind);
+			    pInfo.setSelected(selectedFiles.contains(pInfo.getValue()));
+			    outputFiles.add(pInfo);
 			}
+		    }
 		}
 	    }
 
@@ -1057,7 +1026,7 @@ public class JobBean {
 	}
 
 	public String getUrl() {
-	    return UIBeanHelper.getServer()+ "/jobResults/" + getValue();
+	    return UIBeanHelper.getServer() + "/jobResults/" + getValue();
 	}
 
 	public int getJobNumber() {
@@ -1174,15 +1143,15 @@ public class JobBean {
 		    kvp.setValue(displayValue);
 
 		    if (fileFormats.size() == 0) {
-		    	unannotatedParameters.add(kvp);
+			unannotatedParameters.add(kvp);
 		    }
 		    for (String format : fileFormats) {
-				List<KeyValuePair> inputParameterNames = kindToInputParameters.get(format);
-				if (inputParameterNames == null) {
-				    inputParameterNames = new ArrayList<KeyValuePair>();
-				    kindToInputParameters.put(format, inputParameterNames);
-				}
-				inputParameterNames.add(kvp);
+			List<KeyValuePair> inputParameterNames = kindToInputParameters.get(format);
+			if (inputParameterNames == null) {
+			    inputParameterNames = new ArrayList<KeyValuePair>();
+			    kindToInputParameters.put(format, inputParameterNames);
+			}
+			inputParameterNames.add(kvp);
 		    }
 		}
 	    }
@@ -1199,11 +1168,11 @@ public class JobBean {
 	for (JobResultsWrapper job : recentJobs) {
 	    List<OutputFileInfo> outputFiles = job.getOutputFileParameterInfos();
 	    if (outputFiles != null) {
-		for (OutputFileInfo o : outputFiles) {	
+		for (OutputFileInfo o : outputFiles) {
 		    List<KeyValuePair> moduleInputParameters = kindToInputParameters.get(o.getKind());
-		    
+
 		    if (moduleInputParameters == null) {
-		    	moduleInputParameters = unannotatedParameters;
+			moduleInputParameters = unannotatedParameters;
 		    }
 		    o.moduleInputParameters = moduleInputParameters;
 		}
