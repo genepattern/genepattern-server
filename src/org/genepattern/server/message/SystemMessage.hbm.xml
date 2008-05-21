@@ -4,15 +4,15 @@
 <hibernate-mapping package="org.genepattern.server.message">
 
  <class name="SystemMessage" table="SYSTEM_MESSAGE">
-
-  <id name="id" type="long" column="id">
-     <generator class="identity" />
+  <id name="id" type="long">
+     <column name="id" not-null="true" unique="true" precision="10" scale="0" />
+     <generator class="native" />
+     
   </id>
   <property name="message" column="message" />
   <property name="startTime" type="timestamp" column="start_time" />
   <property name="endTime" type="timestamp" column="end_time" />
   <property name="deleteOnRestart" type="boolean" column="deleteOnRestart" />
-
  </class>
  
 </hibernate-mapping>
