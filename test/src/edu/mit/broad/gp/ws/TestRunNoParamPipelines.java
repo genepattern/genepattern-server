@@ -106,7 +106,7 @@ public class TestRunNoParamPipelines extends TestCase {
             }
 
             String lsid = installTask(task);
-            JobResult jr = gpClient.runAnalysis(lsid, null);
+            JobResult jr = gpClient.runAnalysis(lsid, (String)null);
             assertNotNull(zipFile.getPath(), jr);
             assertTrue(zipFile.getPath(), !jr.hasStandardError());
          } catch(Exception e) {
