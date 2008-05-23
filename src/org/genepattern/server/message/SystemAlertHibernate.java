@@ -73,6 +73,7 @@ class SystemAlertHibernate implements ISystemAlert {
     }
 
     public SystemMessage getSystemMessage() {
+        HibernateUtil.beginTransaction();
         Query q = HibernateUtil.getSession().createQuery("from SystemMessage as m order by m.startTime");
         List<SystemMessage> l = q.list();
         if (l.size() > 0) {
@@ -82,8 +83,9 @@ class SystemAlertHibernate implements ISystemAlert {
     }
 
     public SystemMessage getSystemMessage(Date date) {
+        HibernateUtil.beginTransaction();
         Query q = HibernateUtil.getSession().createQuery(
-            "from SystemMessage as m where m.startTime <= :now and m.endTime is null or m.endTime >= :now order by m.startTime");
+            "from SystemMessage as m where m.startTime <= :now and (m.endTime is null or m.endTime >= :now) order by m.startTime");
         q.setTimestamp("now", date);
         List<SystemMessage> l = q.list();
         if (l.size() > 0) {

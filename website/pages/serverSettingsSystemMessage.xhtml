@@ -33,7 +33,7 @@
     <h:form onsubmit="return validateForm(this);" id="changeSystemMessageForm">
     <table width="100%" border="0" cellpadding="5" cellspacing="0">
       <tr valign="top">
-	        <td>Message:</td>
+	        <td>Message*</td>
 	        <td>
 	        <h:inputTextarea rows="4" cols="60" id="message" 
 	            value="#{systemMessageAdminBean.systemMessage.message}" >
@@ -41,23 +41,23 @@
 	        </td>
 	  </tr>
       <tr valign="top">
-            <td>Start Date:</td>
+            <td>Start Date*</td>
             <td>
             <h:inputText value="#{systemMessageAdminBean.systemMessage.startTime}" size="16" >
                 <f:convertDateTime pattern="yyyy-MM-dd HH:mm" timeZone="#{systemMessageAdminBean.timeZone}" />
             </h:inputText>
-            <h:outputText value=" (yyyy-MM-dd HH:mm) " />
+            <h:outputText value=" (e.g. 2003-04-11 23:00)" />
             </td>
       </tr>
       <tr valign="top">
-            <td>End Date:</td>
+            <td>End Date</td>
             <td><h:inputText value="#{systemMessageAdminBean.systemMessage.endTime}" size="16">
                 <f:convertDateTime pattern="yyyy-MM-dd HH:mm" timeZone="#{systemMessageAdminBean.timeZone}" />
             </h:inputText>
             </td>
       </tr>
       <tr valign="top">
-            <td>Delete on restart:</td>
+            <td>Delete on restart</td>
             <td>
             <h:selectBooleanCheckbox value="#{systemMessageAdminBean.systemMessage.deleteOnRestart}" >
             </h:selectBooleanCheckbox>

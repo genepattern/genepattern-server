@@ -57,7 +57,6 @@ public class SystemMessageBean {
         }
         lastLookup = now.getTime();
         
-        //if the message has changed, clear flags
         if (prevMessage == null && systemMessage == null) {
             return;
         }
@@ -66,7 +65,7 @@ public class SystemMessageBean {
                 prevMessage.getMessage().equals(systemMessage.getMessage())) {
             return;
         }
-        //then the message has changed
+        //if the message has changed, clear flags
         isNew = true;
         isOpen = true;
     }
