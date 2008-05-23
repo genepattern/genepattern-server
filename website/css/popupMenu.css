@@ -5,7 +5,7 @@
 	z-index:1000; 
 	white-space: nowrap;
 	visibility:hidden; 
-	overflow:auto;
+	overflow:hidden;
 	width: 10px;
     height: 10px;	
 }

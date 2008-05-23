@@ -26,6 +26,8 @@ function pm_showMenu(id, pos, horizOffset, vertOffset) {
    var height = cDim.h; //  f_clientHeight();
 
    var style = $(id).style;
+   style.width = 'auto';
+   style.height = 'auto';
 
    if(pos) {
       if(pos[0] < (width / 2)) {
@@ -52,8 +54,6 @@ function pm_showMenu(id, pos, horizOffset, vertOffset) {
       menuTop = Math.max(0, menuTop);
       style.top = menuTop + "px";
    }
-   style.width = 'auto';
-   style.height = 'auto';
    style.visibility = "visible";
 }
 
