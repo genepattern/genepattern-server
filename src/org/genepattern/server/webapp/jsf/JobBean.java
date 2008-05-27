@@ -48,6 +48,7 @@ import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
@@ -519,10 +520,8 @@ public class JobBean {
     }
 
     public List<JobResultsWrapper> getPagedJobs() {
-	List<JobResultsWrapper> jobs = getAllJobs();
-	// Calculate the elements offset, for the given pageNumber
-	int offset = (pageNumber - 1) * pageSize;
-	return jobs.subList(offset, Math.min(pageSize + offset, jobs.size()));
+        int offset = (pageNumber - 1) * pageSize;	
+        return this.getJobs(offset, pageSize);
     }
 
     public void setPageNumber(int pageNumber) {
@@ -555,24 +554,35 @@ public class JobBean {
     }
 
     public int getPageCount() {
-	List<JobResultsWrapper> jobs = getAllJobs();
-	return (int) Math.ceil(jobs.size() / (double) pageSize);
+	//List<JobResultsWrapper> jobs = getAllJobs();
+    //return (int) Math.ceil(jobs.size() / (double) pageSize);
+        String userId = UIBeanHelper.getUserId();
+        long jobCount = new AnalysisDAO().getNumJobs(showEveryonesJobs ? null : userId);
+        return (int) Math.ceil(jobCount / (double) pageSize);
     }
 
     public List<JobResultsWrapper> getAllJobs() {
-	if (allJobs == null) {
-	    String userId = UIBeanHelper.getUserId();
-	    LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
-	    try {
-		allJobs = wrapJobs(analysisClient.getJobs(showEveryonesJobs ? null : userId, -1, Integer.MAX_VALUE,
-			false, getJobSortOrder(), jobSortAscending));
-		sortFiles();
-	    } catch (WebServiceException wse) {
-		log.error(wse);
-		allJobs = new ArrayList<JobResultsWrapper>();
-	    }
-	}
-	return allJobs;
+        int maxJobNumber = -1;
+        int maxEntries = Integer.MAX_VALUE;
+        return getJobs(maxJobNumber, maxEntries);
+    }
+
+    private List<JobResultsWrapper> getJobs(int maxJobNumber, int maxEntries) { 
+        if (allJobs == null) {
+            String userId = UIBeanHelper.getUserId();
+            LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
+            try {
+                allJobs = wrapJobs(
+                        analysisClient.getJobs(showEveryonesJobs ? null : userId, 
+                                maxJobNumber, maxEntries, false, getJobSortOrder(), jobSortAscending));
+                sortFiles();
+            } 
+            catch (WebServiceException wse) {
+                log.error(wse);
+                allJobs = new ArrayList<JobResultsWrapper>();
+            }
+        }
+        return allJobs;
     }
 
     private List<ParameterInfo> getOutputParameters(JobInfo job) {

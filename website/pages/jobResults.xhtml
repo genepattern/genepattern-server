@@ -391,7 +391,7 @@ document.location.href=location;
 
 		<!-- Set initial visibility state  -->
 		<script type="text/javascript" language="javascript">
-      <t:dataList var="jobInfo" value="#{jobsBean.allJobs}">
+      <t:dataList var="jobInfo" value="#{jobsBean.pagedJobs}">
         <h:outputText rendered="#{!jobInfo.expanded}">
             hideCategory('#{jobInfo.jobNumber}');
         </h:outputText>
@@ -403,7 +403,7 @@ document.location.href=location;
 	<!-- Create menus  -->
 	<ui:define name="popupMenus">
 		<h:form>
-			<t:dataList var="jobInfo" value="#{jobsBean.allJobs}">
+			<t:dataList var="jobInfo" value="#{jobsBean.pagedJobs}">
 				<ui:include src="jobsMenu.xhtml">
 					<ui:param name="job" value="#{jobInfo}" />
 				</ui:include>
