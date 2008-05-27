@@ -249,6 +249,33 @@ public class AnalysisDAO extends BaseDAO {
 
     }
 
+    /**
+     * Get the total number of job entries in the database.
+     * @return
+     */
+    public long getNumJobs() {
+        return getNumJobs(null);
+    }
+
+    /** 
+     * Get the total number of jobs owned by the given user.
+     * @param userId
+     * @return
+     */
+    public int getNumJobs(String userId) {
+        //if userId is null or empty get all of the jobs
+        String hql = "select count(*) from AnalysisJob";
+        if (userId != null) {
+            hql += " where userId = :userId";
+        }
+        Query query = getSession().createQuery(hql);
+        if (userId != null) {
+            query.setString("userId", userId);
+        }
+        Object rval = query.uniqueResult();
+        return ((Integer) rval).intValue();
+    }
+
     public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs)
 	    throws OmnigeneException {
 	return getJobs(username, maxJobNumber, maxEntries, allJobs, JobSortOrder.JOB_NUMBER, false);
@@ -256,14 +283,19 @@ public class AnalysisDAO extends BaseDAO {
 
     public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs,
 	    JobSortOrder sortOrder, boolean ascending) throws OmnigeneException {
+        return getPagedJobs(username, 1, maxEntries, allJobs, sortOrder, ascending);
+    }
+    public JobInfo[] getPagedJobs(String username, int firstResult, int maxResults, boolean allJobs, JobSortOrder sortOrder, boolean ascending)
+    throws OmnigeneException 
+    {
 	StringBuffer hql = new StringBuffer(
 		" from org.genepattern.server.domain.AnalysisJob where ((parent = null) OR (parent = -1)) ");
 	if (username != null) {
 	    hql.append(" AND userId = :username ");
 	}
-	if (maxJobNumber != -1) {
-	    hql.append(" AND jobNo <= :maxJobNumber ");
-	}
+	//if (maxJobNumber != -1) {
+	//    hql.append(" AND jobNo <= :maxJobNumber ");
+	//}
 	if (!allJobs) {
 	    hql.append(" AND deleted = :deleted ");
 	}
@@ -290,15 +322,16 @@ public class AnalysisDAO extends BaseDAO {
 
 	hql.append(ascending ? " ASC" : " DESC");
 	Query query = getSession().createQuery(hql.toString());
+	query.setFirstResult(firstResult);
 	query.setFetchSize(50);
-	query.setMaxResults(maxEntries);
+	query.setMaxResults(maxResults);
 
 	if (username != null) {
 	    query.setString("username", username);
 	}
-	if (maxJobNumber != -1) {
-	    query.setInteger("maxJobNumber", maxJobNumber);
-	}
+	//if (maxJobNumber != -1) {
+	//    query.setInteger("maxJobNumber", maxJobNumber);
+	//}
 	if (!allJobs) {
 	    query.setBoolean("deleted", false);
 	}
