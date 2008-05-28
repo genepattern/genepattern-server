@@ -48,6 +48,7 @@ import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
@@ -105,6 +106,8 @@ public class JobBean {
 
     /** Current page displayed */
     private int pageNumber = 1;
+    
+    private int jobCount = -1;
 
     public JobBean() {
 	try {
@@ -112,7 +115,7 @@ public class JobBean {
 	} catch (NumberFormatException nfe) {
 	    pageSize = 50;
 	}
-
+	
 	String userId = UIBeanHelper.getUserId();
 	kindToModules = SemanticUtil.getKindToModulesMap(new AdminDAO().getLatestTasks(userId));
 	this.showExecutionLogs = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showExecutionLogs", String
@@ -519,10 +522,8 @@ public class JobBean {
     }
 
     public List<JobResultsWrapper> getPagedJobs() {
-	List<JobResultsWrapper> jobs = getAllJobs();
-	// Calculate the elements offset, for the given pageNumber
-	int offset = (pageNumber - 1) * pageSize;
-	return jobs.subList(offset, Math.min(pageSize + offset, jobs.size()));
+        int offset = (getPageNumber() - 1) * pageSize;	
+        return this.getJobs(offset, pageSize);
     }
 
     public void setPageNumber(int pageNumber) {
@@ -530,7 +531,14 @@ public class JobBean {
     }
 
     public int getPageNumber() {
-	return this.pageNumber;
+        //HACK:
+        try {
+            this.pageNumber = Integer.parseInt(UIBeanHelper.getRequest().getParameter("page"));
+        }
+        catch (NumberFormatException nfe) {
+            this.pageNumber = 1;
+        }
+        return this.pageNumber;
     }
 
     public void goToPage() {
@@ -538,12 +546,33 @@ public class JobBean {
     }
 
     public List<Integer> getPages() {
-	int pageCount = getPageCount();
-	List<Integer> pages = new ArrayList<Integer>();
-	for (int i = 0; i < pageCount; i++) {
-	    pages.add(i + 1);
-	}
-	return pages;
+        final int MAX_PAGES = 25;
+        int pageCount = getPageCount();
+        int startNum = 1;
+        int endNum = pageCount;
+        if (pageCount > MAX_PAGES) {
+            endNum = Math.max(getPageNumber()+(MAX_PAGES/2), MAX_PAGES);
+            endNum = Math.min(endNum, pageCount);
+            startNum = endNum - MAX_PAGES - 1;
+            startNum = Math.max(startNum, 1);
+        }
+        List<Integer> pages = new ArrayList<Integer>();
+        if (startNum > 1) {
+            pages.add(1);
+        }
+        if (startNum > 2) {
+            pages.add(-1); //GAP
+        }
+        for (int i = startNum; i <= endNum; i++) {
+            pages.add(i);
+        }
+        if (endNum < (pageCount-1)) {
+            pages.add(-1);
+        }
+        if (endNum < pageCount) {
+            pages.add(pageCount);
+        }
+        return pages;
     }
 
     public void previousPage() {
@@ -554,25 +583,40 @@ public class JobBean {
 	this.pageNumber++;
     }
 
+    public int getJobCount() {
+        if (jobCount < 0) {
+            String userId = UIBeanHelper.getUserId();
+            this.jobCount = new AnalysisDAO().getNumJobs(showEveryonesJobs ? null : userId);
+        }
+        return jobCount;
+    }
+
     public int getPageCount() {
-	List<JobResultsWrapper> jobs = getAllJobs();
-	return (int) Math.ceil(jobs.size() / (double) pageSize);
+        return (int) Math.ceil(getJobCount() / (double) pageSize);
     }
 
     public List<JobResultsWrapper> getAllJobs() {
-	if (allJobs == null) {
-	    String userId = UIBeanHelper.getUserId();
-	    LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
-	    try {
-		allJobs = wrapJobs(analysisClient.getJobs(showEveryonesJobs ? null : userId, -1, Integer.MAX_VALUE,
-			false, getJobSortOrder(), jobSortAscending));
-		sortFiles();
-	    } catch (WebServiceException wse) {
-		log.error(wse);
-		allJobs = new ArrayList<JobResultsWrapper>();
-	    }
-	}
-	return allJobs;
+        int maxJobNumber = -1;
+        int maxEntries = Integer.MAX_VALUE;
+        return getJobs(maxJobNumber, maxEntries);
+    }
+
+    private List<JobResultsWrapper> getJobs(int maxJobNumber, int maxEntries) { 
+        if (allJobs == null) {
+            String userId = UIBeanHelper.getUserId();
+            LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
+            try {
+                allJobs = wrapJobs(
+                        analysisClient.getJobs(showEveryonesJobs ? null : userId, 
+                                maxJobNumber, maxEntries, false, getJobSortOrder(), jobSortAscending));
+                sortFiles();
+            } 
+            catch (WebServiceException wse) {
+                log.error(wse);
+                allJobs = new ArrayList<JobResultsWrapper>();
+            }
+        }
+        return allJobs;
     }
 
     private List<ParameterInfo> getOutputParameters(JobInfo job) {
@@ -783,6 +827,7 @@ public class JobBean {
     private void resetJobs() {
 	recentJobs = null;
 	allJobs = null;
+	jobCount = -1;
     }
 
     /**
