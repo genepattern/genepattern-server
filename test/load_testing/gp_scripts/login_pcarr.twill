@@ -1,0 +1,10 @@
+setlocal username pcarr@broad.mit.edu
+setlocal password QSAD97
+
+go /gp
+url /gp/pages/login.jsf
+fv loginForm username ${username}
+fv loginForm password ${password}
+submit
+code 200
+url /gp/pages/index.jsf
