@@ -283,7 +283,7 @@ public class AnalysisDAO extends BaseDAO {
 
     public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs,
 	    JobSortOrder sortOrder, boolean ascending) throws OmnigeneException {
-        return getPagedJobs(username, 1, maxEntries, allJobs, sortOrder, ascending);
+        return getPagedJobs(username, maxJobNumber, maxEntries, allJobs, sortOrder, ascending);
     }
     public JobInfo[] getPagedJobs(String username, int firstResult, int maxResults, boolean allJobs, JobSortOrder sortOrder, boolean ascending)
     throws OmnigeneException 
@@ -293,9 +293,6 @@ public class AnalysisDAO extends BaseDAO {
 	if (username != null) {
 	    hql.append(" AND userId = :username ");
 	}
-	//if (maxJobNumber != -1) {
-	//    hql.append(" AND jobNo <= :maxJobNumber ");
-	//}
 	if (!allJobs) {
 	    hql.append(" AND deleted = :deleted ");
 	}
@@ -322,16 +319,15 @@ public class AnalysisDAO extends BaseDAO {
 
 	hql.append(ascending ? " ASC" : " DESC");
 	Query query = getSession().createQuery(hql.toString());
-	query.setFirstResult(firstResult);
-	query.setFetchSize(50);
-	query.setMaxResults(maxResults);
-
+	if (firstResult >= 0) {
+	    query.setFirstResult(firstResult);
+	}
+	if (maxResults < Integer.MAX_VALUE) {
+	    query.setMaxResults(maxResults);
+	}
 	if (username != null) {
 	    query.setString("username", username);
 	}
-	//if (maxJobNumber != -1) {
-	//    query.setInteger("maxJobNumber", maxJobNumber);
-	//}
 	if (!allJobs) {
 	    query.setBoolean("deleted", false);
 	}

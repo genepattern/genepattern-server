@@ -373,20 +373,21 @@ document.location.href=location;
 				</tr>
 			</table>
 
-			<div align="center"><h:commandLink
-				rendered="#{jobsBean.pageNumber > 1}"
-				action="#{jobsBean.previousPage}">Previous</h:commandLink> <t:dataList
-				var="p" value="#{jobsBean.pages}">
-				<h:commandLink rendered="#{p != jobsBean.pageNumber}"
-					action="#{jobsBean.goToPage}">#{p}<f:param
-						name="page" value="#{p}" />
-				</h:commandLink>
-				<h:outputText rendered="#{p == jobsBean.pageNumber}">
-					<span>#{p}</span>
-				</h:outputText>
-			</t:dataList> <h:commandLink
-				rendered="#{jobsBean.pageCount gt 1 and jobsBean.pageNumber lt jobsBean.pageCount}"
-				action="#{jobsBean.nextPage}">Next</h:commandLink></div>
+			<t:div style="text-align: center;" rendered="#{jobsBean.pageCount gt 1}">
+			<h:commandLink rendered="#{jobsBean.pageNumber gt 1}" immediate="true" 
+			   action="#{jobsBean.goToPage}"><h:outputText value="Previous"/><f:param name="page" value="#{jobsBean.pageNumber - 1}" /></h:commandLink>
+			   <t:dataList var="p" value="#{jobsBean.pages}">
+			       <h:outputText rendered="#{p lt 0}" value=" ... " />
+			       <h:commandLink rendered="#{p gt 0 and p != jobsBean.pageNumber}"
+				       action="#{jobsBean.goToPage}"><span style="text-decoration: underline;">#{p}</span>
+				       <f:param name="page" value="#{p}" />
+				   </h:commandLink>
+				   <h:outputText rendered="#{p == jobsBean.pageNumber}"><span  style="font-weight: bold;">#{p}</span></h:outputText>
+			   </t:dataList> <h:commandLink immediate="true" rendered="#{jobsBean.pageCount gt 1 and jobsBean.pageNumber lt jobsBean.pageCount}"
+				action="#{jobsBean.goToPage}">Next<f:param name="page" value="#{jobsBean.pageNumber + 1}" /></h:commandLink>
+				<br clear="all"/>
+				<h:outputText rendered="#{jobsBean.pageCount gt 1}" value="Page #{jobsBean.pageNumber} of #{jobsBean.pageCount} (#{jobsBean.jobCount} jobs)" />
+		    </t:div>
 		</h:form>
 
 		<!-- Set initial visibility state  -->
