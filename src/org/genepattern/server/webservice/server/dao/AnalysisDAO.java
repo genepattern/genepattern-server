@@ -250,7 +250,7 @@ public class AnalysisDAO extends BaseDAO {
     }
 
     /**
-     * Get the total number of job entries in the database.
+     * Get the total number of job entries which aren't deleted.
      * @return
      */
     public long getNumJobs() {
@@ -258,17 +258,19 @@ public class AnalysisDAO extends BaseDAO {
     }
 
     /** 
-     * Get the total number of jobs owned by the given user.
+     * Get the total number of jobs which aren't deleted and which are owned by the given user.
+     * If the userId is null get a count of all non deleted jobs.
      * @param userId
      * @return
      */
     public int getNumJobs(String userId) {
         //if userId is null or empty get all of the jobs
-        String hql = "select count(*) from AnalysisJob";
+        String hql = "select count(*) from AnalysisJob where deleted = :deleted";
         if (userId != null) {
-            hql += " where userId = :userId";
+            hql += " and userId = :userId";
         }
         Query query = getSession().createQuery(hql);
+        query.setBoolean("deleted", false);
         if (userId != null) {
             query.setString("userId", userId);
         }
