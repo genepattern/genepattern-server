@@ -35,13 +35,17 @@
   <ui:define name="pageTitle">Register your GenePattern server</ui:define>
   <ui:define name="body">
     <h:form onsubmit="return validateForm(this);" id="registrationForm">
+    <t:div rendered="#{registerServerBean.isUpdate}">
+    Server update!
+    </t:div>
+    
     <h2>GenePattern Server License</h2>
     <hr size="1"/>
 Instructions to register and activate your copy of GenePattern. Read carefully.
 <ol><li>Fill in the application form below.</li>
 
 <li>Read the license agreement and make sure you agree with the terms of the agreement.<br/> If so click the <b>I AGREE</b> button at the end of the form.</li>
-<li>A copy of the license agreement and registration record will be e-mailed to you for your records.</li>
+<li>A copy of the registration record will be e-mailed to you for your records.</li>
 </ol>
 <hr size="1"/>
 <br/>
