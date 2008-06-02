@@ -254,19 +254,21 @@ public static boolean isRegisteredOrDeclined(){
         }
 
         /**
-         * Is this an update from a previously registered version of GenePattern,
-         * e.g. from 3.1 to 3.1.1
-         * @return
+         * @return true if this is an update from a previously registered version of GenePattern, <code>e.g. from 3.1 to 3.1.1</code>.
          */
         public boolean getIsUpdate() {
+            List<String> dbEntries = getDbRegisteredVersions();
             final String genepatternVersion = System.getProperty("GenePatternVersion");
-            String dbRegisteredVersion = getDbRegisteredVersion();
-            if (dbRegisteredVersion == null || dbRegisteredVersion.equals("")) {
+            if (dbEntries.contains("registeredVersion"+genepatternVersion)) {
+                //already registered
                 return false;
             }
-            return (genepatternVersion.compareTo(dbRegisteredVersion) <= 0);
+            if (dbEntries.size() > 0) {
+                return true;
+            }
+            return false;
         }
-        
+
         /**
          * Lookup the registration key from the database, return an empty string
          * if there is no entry in the database.
@@ -288,6 +290,23 @@ public static boolean isRegisteredOrDeclined(){
                 log.error("Didn't get registration info from database: "+e.getLocalizedMessage(), e);
             }
             return dbRegisteredVersion;
+        }
+
+        private static List<String> getDbRegisteredVersions() {
+            log.debug("getting registration info from database");
+            List<String> dbEntries = new ArrayList<String>();
+            final String sql = "select VALUE from PROPS where key like 'registeredVersion%' order by key";
+            try {
+                BaseDAO dao = new BaseDAO();
+                ResultSet resultSet = dao.executeSQL(sql, false);
+                while(resultSet.next()) {
+                    dbEntries.add(resultSet.getString(1));
+                }
+            } 
+            catch (Exception e) {
+                log.error("Didn't get registration info from database: "+e.getLocalizedMessage(), e);
+            }
+            return dbEntries;
         }
 
 	   private static void saveIsRegistered() {
