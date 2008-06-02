@@ -8,3 +8,6 @@ checking for C++ compiler
 ** libsg77
 package '
 updating HTML package descriptions
+  'openVignette()'
+  'citation("Biobase")'
+Creating a new generic function
