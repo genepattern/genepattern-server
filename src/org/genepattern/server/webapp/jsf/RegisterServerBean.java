@@ -242,34 +242,73 @@ public static boolean isRegisteredOrDeclined(){
 	else return isRegistered();
 	
 }
-	   
-	   
-	   public static boolean isRegistered() {
-	        log.debug("checking registration");
-	        boolean upToDate = false;
-	        String dbRegisteredVersion;
-	        
-	        String genepatternVersion = System.getProperty("GenePatternVersion");
-	        
-	        // check the DB
-	         
-	        String sql = "select value from props where key='registeredVersion"+genepatternVersion+"'";
 
-	        try {
-	            BaseDAO dao = new BaseDAO();
-	            ResultSet resultSet = dao.executeSQL(sql, false);
-	            if (resultSet.next()) {
-	            	dbRegisteredVersion = resultSet.getString(1);
-	                upToDate = (genepatternVersion.compareTo(dbRegisteredVersion) <= 0);
-	            }  else {
-	                upToDate = false;
-	            }
-	        } catch (Exception e) {
-	        	//
-	        }
-	        return upToDate;
-	    }
-	   
+        public static boolean isRegistered() {
+            log.debug("checking registration");
+            final String genepatternVersion = System.getProperty("GenePatternVersion");
+            String dbRegisteredVersion = getDbRegisteredVersion();
+            if (dbRegisteredVersion == null || dbRegisteredVersion.equals("")) {
+                return false;
+            }
+            return (genepatternVersion.compareTo(dbRegisteredVersion) <= 0);
+        }
+
+        /**
+         * @return true if this is an update from a previously registered version of GenePattern, <code>e.g. from 3.1 to 3.1.1</code>.
+         */
+        public boolean getIsUpdate() {
+            List<String> dbEntries = getDbRegisteredVersions();
+            final String genepatternVersion = System.getProperty("GenePatternVersion");
+            if (dbEntries.contains("registeredVersion"+genepatternVersion)) {
+                //already registered
+                return false;
+            }
+            if (dbEntries.size() > 0) {
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * Lookup the registration key from the database, return an empty string
+         * if there is no entry in the database.
+         * @return
+         */
+        private static String getDbRegisteredVersion() {
+            log.debug("getting registration info from database");
+            String dbRegisteredVersion = "";
+            final String genepatternVersion = System.getProperty("GenePatternVersion");
+            final String sql = "select value from props where key='registeredVersion"+genepatternVersion+"'";
+            try {
+                BaseDAO dao = new BaseDAO();
+                ResultSet resultSet = dao.executeSQL(sql, false);
+                if (resultSet.next()) {
+                    dbRegisteredVersion = resultSet.getString(1);
+               }
+            } 
+            catch (Exception e) {
+                log.error("Didn't get registration info from database: "+e.getLocalizedMessage(), e);
+            }
+            return dbRegisteredVersion;
+        }
+
+        private static List<String> getDbRegisteredVersions() {
+            log.debug("getting registration info from database");
+            List<String> dbEntries = new ArrayList<String>();
+            final String sql = "select VALUE from PROPS where key like 'registeredVersion%' order by key";
+            try {
+                BaseDAO dao = new BaseDAO();
+                ResultSet resultSet = dao.executeSQL(sql, false);
+                while(resultSet.next()) {
+                    dbEntries.add(resultSet.getString(1));
+                }
+            } 
+            catch (Exception e) {
+                log.error("Didn't get registration info from database: "+e.getLocalizedMessage(), e);
+            }
+            return dbEntries;
+        }
+
 	   private static void saveIsRegistered() {
 	        log.debug("saving registration");
 	        String dbRegisteredVersion;

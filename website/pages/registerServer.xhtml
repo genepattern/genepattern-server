@@ -35,14 +35,26 @@
   <ui:define name="pageTitle">Register your GenePattern server</ui:define>
   <ui:define name="body">
     <h:form onsubmit="return validateForm(this);" id="registrationForm">
+<t:div rendered="#{registerServerBean.isUpdate}">
+    <h2>GenePattern Server Upgrade</h2> 
+    <hr size="1"/> 
+Thank you for upgrading your GenePattern Server. Please update your registration. 
+<ol><li>Fill in the registration form below.</li> 
+<li>The license agreement has not changed.<br/> 
+ If you still agree with the terms click the <b>I AGREE</b> button at the end of the form.</li> 
+<li>A registration record will be e-mailed to you for your records.</li> 
+</ol> 
+</t:div>
+
+<t:div rendered="#{not registerServerBean.isUpdate}">
     <h2>GenePattern Server License</h2>
     <hr size="1"/>
 Instructions to register and activate your copy of GenePattern. Read carefully.
-<ol><li>Fill in the application form below.</li>
-
+<ol><li>Fill in the registration form below.</li>
 <li>Read the license agreement and make sure you agree with the terms of the agreement.<br/> If so click the <b>I AGREE</b> button at the end of the form.</li>
-<li>A copy of the license agreement and registration record will be e-mailed to you for your records.</li>
+<li>A copy of the registration record will be e-mailed to you for your records.</li>
 </ol>
+</t:div>
 <hr size="1"/>
 <br/>
 Items marked with a&#160;<h:outputText styleClass="purge_notice" value="*"/> are required
