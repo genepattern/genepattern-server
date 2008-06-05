@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- This script was automatically generated using Macrovision's InstallAnywhere 8.0.1 Enterprise, Build 3081
+<!-- This script was automatically generated using Macrovision InstallAnywhere 2008 VP1 Enterprise, Build 3532
      STATUS: Fully Functional LICENSED Edition
-     DATE:   Wed Jan 23 12:17:20 EST 2008 -->
-<InstallAnywhere_Deployment_Project increments="11659">
+     DATE:   Thu Jun 05 13:25:33 EDT 2008 -->
+<InstallAnywhere_Deployment_Project increments="12164">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
-		<versionID major="8" minor="0" revision="1"/>
-		<editionID>56,46,48,46,49,32,69,110,116,101,114,112,114,105,115,101,32,66,117,105,108,100,32,51,48,56,49</editionID>
-		<scriptID>12,42,11,81,55,51,53,56,69,87,52,80,76,55,84,86</scriptID>
-		<buildID>3,13,71,87,105,110,100,111,119,115,32,88,80,44,32,53,46,49,44,32,120,56,54,59,32,74,97,118,97,32,49,46,53,46,48,95,49,49,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,67,112,49,50,53,50</buildID>
+		<versionID major="9" minor="5" revision="0"/>
+		<editionID>57,46,53,32,69,110,116,101,114,112,114,105,115,101,32,66,117,105,108,100,32,51,53,51,50</editionID>
+		<scriptID>12,42,11,69,50,48,55,57,68,68,87,52,78,55,86,82,81,86,81,55,68,78,89,85,76,87</scriptID>
+		<buildID>3,13,71,76,105,110,117,120,44,32,50,46,54,46,56,45,50,52,46,50,52,45,115,109,112,44,32,97,109,100,54,52,59,32,74,97,118,97,32,49,46,53,46,48,95,48,57,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,65,78,83,73,95,88,51,46,52,45,49,57,54,56</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,16,-93,-89,96,-48,80,112,117,106,83,99,113,97,113,65,67,66,74,67,78,70,91,65,64,69,66,69,64,95,87,5,2,6,2,103,103,7,1,0,0</authorizationID>
+		<authorizationID>1,0,0,16,83,-56,0,96,80,112,118,100,85,99,113,97,113,65,81,84,74,67,70,68,72,74,64,69,66,69,64,95,71,5,2,3,15,99,105,10,1,0,0</authorizationID>
 	</essentialScriptInfo>
-	<installationObjects uniqueObjects="670">
+	<installationObjects uniqueObjects="682">
 		<object class="com.zerog.ia.installer.Installer" objectID="72a1c4b4b1bf">
 			<property name="wizardME">
 				<object class="com.zerog.ia.installer.actions.MakeExecutable" objectID="cbe07101a254">
@@ -187,6 +187,9 @@ and any path to a file to read from that file]]></string>
 					<property name="destinationName">
 						<string><![CDATA[GenePattern]]></string>
 					</property>
+					<property name="execLevel">
+						<int>0</int>
+					</property>
 				</object>
 			</property>
 			<property name="classpath">
@@ -228,7 +231,7 @@ and any path to a file to read from that file]]></string>
 				<string><![CDATA[The installer cannot run on your configuration. It will now quit.]]></string>
 			</property>
 			<property name="userSplashPath">
-				<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+				<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 			</property>
 			<property name="userSplashName">
 				<string><![CDATA[GenePatternLogoSmall.JPG]]></string>
@@ -237,6 +240,49 @@ and any path to a file to read from that file]]></string>
 				<object class="java.util.Vector">
 					<method name="addElement">
 						<string><![CDATA[en]]></string>
+					</method>
+				</object>
+			</property>
+			<property name="installLabelsOrder">
+				<object class="java.util.Vector">
+					<method name="addElement">
+						<string><![CDATA[0]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[1]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[2]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[3]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[4]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[5]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[6]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[7]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[8]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[9]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[10]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[11]]></string>
+					</method>
+					<method name="addElement">
+						<string><![CDATA[12]]></string>
 					</method>
 				</object>
 			</property>
@@ -289,11 +335,8 @@ and any path to a file to read from that file]]></string>
 			<property name="installProgressLabelOption">
 				<int>2</int>
 			</property>
-			<property name="preferredGUIMode">
-				<int>2</int>
-			</property>
 			<property name="supportsAWTUI">
-				<boolean>true</boolean>
+				<boolean>false</boolean>
 			</property>
 			<property name="supportsSwingUI">
 				<boolean>true</boolean>
@@ -353,6 +396,9 @@ and any path to a file to read from that file]]></string>
 							<property name="value">
 								<string><![CDATA[8080]]></string>
 							</property>
+							<property name="passByValue">
+								<boolean>false</boolean>
+							</property>
 							<rules logicalOperation="AND">
 								<object class="com.zerog.ia.installer.rules.CompareVariable" objectID="3fa915d3879a">
 									<property name="operation">
@@ -383,6 +429,9 @@ and any path to a file to read from that file]]></string>
 											<property name="propertyName">
 												<string><![CDATA[R_HOME]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 								</object>
@@ -396,6 +445,9 @@ and any path to a file to read from that file]]></string>
 							</property>
 							<property name="value">
 								<string><![CDATA[8005]]></string>
+							</property>
+							<property name="passByValue">
+								<boolean>false</boolean>
 							</property>
 							<rules logicalOperation="AND">
 								<object class="com.zerog.ia.installer.rules.CompareVariable" objectID="3fa8dc8d879a">
@@ -419,6 +471,9 @@ and any path to a file to read from that file]]></string>
 							</property>
 							<property name="value">
 								<string><![CDATA[9001]]></string>
+							</property>
+							<property name="passByValue">
+								<boolean>false</boolean>
 							</property>
 							<rules logicalOperation="AND">
 								<object class="com.zerog.ia.installer.rules.CompareVariable" objectID="3fa818ad879a">
@@ -450,6 +505,9 @@ and any path to a file to read from that file]]></string>
 											<property name="propertyName">
 												<string><![CDATA[purgeJobsAfter]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -459,6 +517,9 @@ and any path to a file to read from that file]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[require.password]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -470,6 +531,9 @@ and any path to a file to read from that file]]></string>
 											<property name="propertyName">
 												<string><![CDATA[CHECK_IP_ADDRESS_URL]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -479,6 +543,9 @@ and any path to a file to read from that file]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[OLD_TASKS_ZIP_DIR]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -490,6 +557,9 @@ and any path to a file to read from that file]]></string>
 											<property name="propertyName">
 												<string><![CDATA[version.minor]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -499,6 +569,9 @@ and any path to a file to read from that file]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[GENEPATTERN_VERSION]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -510,6 +583,9 @@ and any path to a file to read from that file]]></string>
 											<property name="propertyName">
 												<string><![CDATA[purgeTime]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -519,6 +595,9 @@ and any path to a file to read from that file]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[version.major]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -530,6 +609,9 @@ and any path to a file to read from that file]]></string>
 											<property name="propertyName">
 												<string><![CDATA[buildrelease]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -539,6 +621,9 @@ and any path to a file to read from that file]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[builddate]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -550,6 +635,9 @@ and any path to a file to read from that file]]></string>
 											<property name="propertyName">
 												<string><![CDATA[buildtag]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -559,6 +647,9 @@ and any path to a file to read from that file]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[MAC_APPLICATIONS_WRITABLE]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -669,6 +760,9 @@ and any path to a file to read from that file]]></string>
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -778,6 +872,9 @@ and any path to a file to read from that file]]></string>
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -799,7 +896,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[custom.GetHostName]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[gpcustom.jar]]></string>
@@ -887,6 +984,9 @@ and any path to a file to read from that file]]></string>
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -908,7 +1008,7 @@ and any path to a file to read from that file]]></string>
 								<string><![CDATA[custom.GetHostNameMac]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[gpcustom.jar]]></string>
@@ -996,6 +1096,9 @@ and any path to a file to read from that file]]></string>
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -1009,6 +1112,9 @@ and any path to a file to read from that file]]></string>
 							</property>
 							<property name="value">
 								<string><![CDATA[$USERNAME$@$DOMAIN$]]></string>
+							</property>
+							<property name="passByValue">
+								<boolean>false</boolean>
 							</property>
 							<rules logicalOperation="AND">
 								<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="0f7e83c3a5f1">
@@ -1089,6 +1195,9 @@ and any path to a file to read from that file]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
 											</method>
 										</object>
 									</property>
@@ -1204,6 +1313,9 @@ and any path to a file to read from that file]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
 											</method>
 										</object>
 									</property>
@@ -1368,6 +1480,9 @@ R is freely available from http://www.r-project.org/.]]></string>
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -1392,7 +1507,7 @@ R is freely available from http://www.r-project.org/.]]></string>
 								<string><![CDATA[Installation and use of Apache Tomcat requires acceptance of the following license agreement:]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\gpdist\Tomcat\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/gpdist/Tomcat/]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[LICENSE]]></string>
@@ -1439,7 +1554,7 @@ R is freely available from http://www.r-project.org/.]]></string>
 								<string><![CDATA[Installation and use of ActiveState Perl requires acceptance of the following license agreement:]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\resources\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../resources/]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[EULA-Community_License.txt]]></string>
@@ -1546,6 +1661,9 @@ R is freely available from http://www.r-project.org/.]]></string>
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -1570,7 +1688,7 @@ R is freely available from http://www.r-project.org/.]]></string>
 								<string><![CDATA[Installation and use of R requires acceptance of the following license agreement:]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\..\resources\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/../resources/]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[RLicense]]></string>
@@ -1676,6 +1794,9 @@ R is freely available from http://www.r-project.org/.]]></string>
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
 											</method>
 										</object>
 									</property>
@@ -1797,6 +1918,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -1891,6 +2015,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<property name="propertyName">
 												<string><![CDATA[PERL]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -1900,6 +2027,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[R]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -1911,6 +2041,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<property name="propertyName">
 												<string><![CDATA[CHDIR_FLAG]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -1920,6 +2053,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[JAVA]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -1931,6 +2067,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<property name="propertyName">
 												<string><![CDATA[R25]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -1940,6 +2079,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[PLATFORM]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -1951,6 +2093,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<property name="propertyName">
 												<string><![CDATA[LAX_ENDING]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -1960,6 +2105,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[GP_CLIENT_INSTALL]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -2045,6 +2193,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -2066,6 +2217,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<property name="propertyName">
 												<string><![CDATA[JAVA]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -2075,6 +2229,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[R]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -2086,6 +2243,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<property name="propertyName">
 												<string><![CDATA[USER_MAGIC_FOLDER_2]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -2095,6 +2255,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[CHDIR_FLAG]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -2106,6 +2269,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<property name="propertyName">
 												<string><![CDATA[PERL]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -2115,6 +2281,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[R25]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -2126,6 +2295,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<property name="propertyName">
 												<string><![CDATA[PLATFORM]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -2135,6 +2307,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[USER_MAGIC_FOLDER_1]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -2146,6 +2321,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<property name="propertyName">
 												<string><![CDATA[LAX_ENDING]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -2155,6 +2333,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[GP_CLIENT_INSTALL]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -2240,6 +2421,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -2261,6 +2445,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<property name="propertyName">
 												<string><![CDATA[JAVA]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -2270,6 +2457,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[R]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -2281,6 +2471,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<property name="propertyName">
 												<string><![CDATA[CHDIR_FLAG]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -2290,6 +2483,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[PERL]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -2301,6 +2497,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<property name="propertyName">
 												<string><![CDATA[R25]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -2310,6 +2509,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[PLATFORM]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -2321,6 +2523,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<property name="propertyName">
 												<string><![CDATA[LAX_ENDING]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -2330,6 +2535,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[GP_CLIENT_INSTALL]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -2415,6 +2623,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -2427,7 +2638,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 								<string><![CDATA[runtimeBuild.xml]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="existingBuildScriptPath">
 								<string><![CDATA[]]></string>
@@ -2439,7 +2650,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 								<string><![CDATA[runtimeBuild.properties]]></string>
 							</property>
 							<property name="buildPropertiesPath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="substituteIAVariables">
 								<boolean>true</boolean>
@@ -2455,7 +2666,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-antlr.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2465,7 +2676,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-apache-bcel.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2475,7 +2686,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-apache-bsf.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2485,7 +2696,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-apache-log4j.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2495,7 +2706,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-apache-oro.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2505,7 +2716,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-apache-regexp.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2515,7 +2726,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-apache-resolver.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2525,7 +2736,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-commons-logging.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2535,7 +2746,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-commons-net.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2545,7 +2756,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-icontract.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2555,7 +2766,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-jai.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2565,7 +2776,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-javamail.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2575,7 +2786,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-jdepend.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2585,7 +2796,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-jmf.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2595,7 +2806,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-jsch.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2605,7 +2816,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-junit.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2615,7 +2826,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-launcher.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2625,7 +2836,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-netrexx.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2635,7 +2846,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-nodeps.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2645,7 +2856,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-starteam.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2655,7 +2866,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-stylebook.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2665,7 +2876,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-swing.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2675,7 +2886,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-trax.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2685,7 +2896,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-vaj.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2695,7 +2906,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-weblogic.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2705,7 +2916,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-xalan1.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2715,7 +2926,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[ant-xslp.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -2729,6 +2940,12 @@ If you do not have write permission to this directory, the GenePattern server  w
 							</property>
 							<property name="showPleaseWaitPanel">
 								<boolean>true</boolean>
+							</property>
+							<property name="showIndeterminateDialog">
+								<boolean>false</boolean>
+							</property>
+							<property name="indeterminateDialogText">
+								<string><![CDATA[Executing ANT Script...]]></string>
 							</property>
 							<rules logicalOperation="AND">
 								<object class="com.zerog.ia.installer.rules.FileFolderPathChk" objectID="bb516350ad1f">
@@ -2781,7 +2998,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 								<string><![CDATA[com.zerog.ia.customcode.action.PropertiesFileReader]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_HOME$\plugins]]></string>
+								<string><![CDATA[$IA_HOME$/plugins]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[PropertiesFileReader.jar]]></string>
@@ -2805,6 +3022,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<property name="propertyName">
 												<string><![CDATA[SUBSTITUTE_VARIABLES]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>0</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -2814,6 +3034,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[OVERRIDE_EXISTING_VARIABLES]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -2825,6 +3048,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<property name="propertyName">
 												<string><![CDATA[PROPERTIES_FILE_LOCATION]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -2834,6 +3060,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[PROPERTIES_TO_IGNORE]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -2892,6 +3121,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 							<property name="value">
 								<string><![CDATA[$R$]]></string>
 							</property>
+							<property name="passByValue">
+								<boolean>false</boolean>
+							</property>
 						</object>
 					</method>
 					<method name="addElement">
@@ -2909,7 +3141,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 								<string><![CDATA[custom.SetRVariablePath]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[gpcustom.jar]]></string>
@@ -2922,7 +3154,7 @@ If you do not have write permission to this directory, the GenePattern server  w
 												<string><![CDATA[gpcustom.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 											</property>
 										</object>
 									</method>
@@ -2967,6 +3199,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 															<property name="variableName">
 																<string><![CDATA[$webmaster$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -2976,6 +3211,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -3000,6 +3238,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 															<property name="variableName">
 																<string><![CDATA[$purgeJobsAfter$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -3009,6 +3250,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -3033,6 +3277,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 															<property name="variableName">
 																<string><![CDATA[$purgeTime$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -3042,6 +3289,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -3066,6 +3316,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 															<property name="variableName">
 																<string><![CDATA[$GENEPATTERN_PORT$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -3075,6 +3328,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -3099,6 +3355,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 															<property name="variableName">
 																<string><![CDATA[$HSQL_port$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -3108,6 +3367,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -3132,6 +3394,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 															<property name="variableName">
 																<string><![CDATA[$R25$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -3141,6 +3406,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -3165,6 +3433,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 															<property name="variableName">
 																<string><![CDATA[$PERL$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -3174,6 +3445,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -3272,6 +3546,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -3312,6 +3589,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 															<property name="variableName">
 																<string><![CDATA[$webmaster$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -3321,6 +3601,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -3345,6 +3628,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 															<property name="variableName">
 																<string><![CDATA[$purgeJobsAfter$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -3354,6 +3640,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -3378,6 +3667,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 															<property name="variableName">
 																<string><![CDATA[$purgeTime$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -3387,6 +3679,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -3411,6 +3706,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 															<property name="variableName">
 																<string><![CDATA[$GENEPATTERN_PORT$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -3420,6 +3718,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -3444,6 +3745,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 															<property name="variableName">
 																<string><![CDATA[$HSQL_port$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -3453,6 +3757,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -3477,6 +3784,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 															<property name="variableName">
 																<string><![CDATA[$PERL$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -3486,6 +3796,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -3584,6 +3897,9 @@ If you do not have write permission to this directory, the GenePattern server  w
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -3665,6 +3981,9 @@ If your proxy requires authentication you will need to provide the username and 
 															<property name="variableName">
 																<string><![CDATA[$HTTP_PROXYSERVER$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -3674,6 +3993,9 @@ If your proxy requires authentication you will need to provide the username and 
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -3698,6 +4020,9 @@ If your proxy requires authentication you will need to provide the username and 
 															<property name="variableName">
 																<string><![CDATA[$HTTP_PROXYPORT$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -3707,6 +4032,9 @@ If your proxy requires authentication you will need to provide the username and 
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -3755,7 +4083,7 @@ If your proxy requires authentication you will need to provide the username and 
 								<string><![CDATA[custom.GetLsidAuthority]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[gpcustom.jar]]></string>
@@ -3842,7 +4170,11 @@ If your proxy requires authentication you will need to provide the username and 
 										</object>
 									</property>
 									<property name="doNotInstallOnPlatformList">
-										<object class="java.util.Vector"/>
+										<object class="java.util.Vector">
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
+										</object>
 									</property>
 								</object>
 							</rules>
@@ -3882,6 +4214,9 @@ If your proxy requires authentication you will need to provide the username and 
 															<property name="variableName">
 																<string><![CDATA[$LSID_AUTHORITY$]]></string>
 															</property>
+															<property name="bidiOption">
+																<int>0</int>
+															</property>
 														</object>
 													</method>
 												</object>
@@ -3891,6 +4226,9 @@ If your proxy requires authentication you will need to provide the username and 
 											</property>
 											<property name="additional">
 												<object class="java.lang.Integer">0</object>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -3926,7 +4264,7 @@ If your proxy requires authentication you will need to provide the username and 
 								<string><![CDATA[custom.URLCaller]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[gpcustom.jar]]></string>
@@ -3951,7 +4289,7 @@ If your proxy requires authentication you will need to provide the username and 
 								<string><![CDATA[custom.WriteBuildXml]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[gpcustom.jar]]></string>
@@ -4022,6 +4360,9 @@ If your proxy requires authentication you will need to provide the username and 
 							<property name="value">
 								<string><![CDATA[$USER_INSTALL_DIR$$/$StartGenePatternServer$LAX_ENDING$]]></string>
 							</property>
+							<property name="passByValue">
+								<boolean>false</boolean>
+							</property>
 						</object>
 					</method>
 					<method name="addElement">
@@ -4031,6 +4372,9 @@ If your proxy requires authentication you will need to provide the username and 
 							</property>
 							<property name="value">
 								<string><![CDATA[SUCCESS]]></string>
+							</property>
+							<property name="passByValue">
+								<boolean>false</boolean>
 							</property>
 						</object>
 					</method>
@@ -4049,7 +4393,7 @@ If your proxy requires authentication you will need to provide the username and 
 								<string><![CDATA[custom.CalculateShutdownPort]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[gpcustom.jar]]></string>
@@ -4066,6 +4410,9 @@ If your proxy requires authentication you will need to provide the username and 
 							</property>
 							<property name="value">
 								<string><![CDATA[true]]></string>
+							</property>
+							<property name="passByValue">
+								<boolean>false</boolean>
 							</property>
 							<rules logicalOperation="AND">
 								<object class="com.zerog.ia.installer.rules.FileFolderPathChk" objectID="6ce8ca06a27b">
@@ -4110,6 +4457,9 @@ If your proxy requires authentication you will need to provide the username and 
 							</property>
 							<property name="value">
 								<string><![CDATA[true]]></string>
+							</property>
+							<property name="passByValue">
+								<boolean>false</boolean>
 							</property>
 							<rules logicalOperation="AND">
 								<object class="com.zerog.ia.installer.rules.FileFolderPathChk" objectID="9b060e359879">
@@ -4223,6 +4573,9 @@ If your proxy requires authentication you will need to provide the username and 
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -4280,6 +4633,9 @@ If your proxy requires authentication you will need to provide the username and 
 											<property name="propertyName">
 												<string><![CDATA[server port:]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -4289,6 +4645,9 @@ If your proxy requires authentication you will need to provide the username and 
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[LSID Authority:]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -4300,6 +4659,9 @@ If your proxy requires authentication you will need to provide the username and 
 											<property name="propertyName">
 												<string><![CDATA[purge job results:]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -4309,6 +4671,9 @@ If your proxy requires authentication you will need to provide the username and 
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[email address to notify for problems:]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -4320,6 +4685,9 @@ If your proxy requires authentication you will need to provide the username and 
 											<property name="propertyName">
 												<string><![CDATA[HSQL port:]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -4330,6 +4698,9 @@ If your proxy requires authentication you will need to provide the username and 
 											<property name="propertyName">
 												<string><![CDATA[R2.5]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -4339,6 +4710,9 @@ If your proxy requires authentication you will need to provide the username and 
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[Perl]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -4372,6 +4746,9 @@ If your proxy requires authentication you will need to provide the username and 
 							</property>
 							<property name="value">
 								<string><![CDATA[$JAVA_HOME$]]></string>
+							</property>
+							<property name="passByValue">
+								<boolean>false</boolean>
 							</property>
 							<rules logicalOperation="AND">
 								<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="7ad6f4509e9d">
@@ -4452,6 +4829,9 @@ If your proxy requires authentication you will need to provide the username and 
 										<object class="java.util.Vector">
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
 											</method>
 										</object>
 									</property>
@@ -4571,7 +4951,7 @@ If your proxy requires authentication you will need to provide the username and 
 										<boolean>false</boolean>
 									</property>
 									<property name="sourcePath">
-										<string><![CDATA[$IA_PROJECT_DIR$\gpdist\]]></string>
+										<string><![CDATA[$IA_PROJECT_DIR$/gpdist/]]></string>
 									</property>
 									<property name="shouldUninstall">
 										<boolean>true</boolean>
@@ -4704,6 +5084,9 @@ If your proxy requires authentication you will need to provide the username and 
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[\]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -4940,6 +5323,9 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 											<property name="propertyName">
 												<string><![CDATA[=path to R/Resources]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 								</object>
@@ -5028,6 +5414,9 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
 											</method>
 										</object>
 									</property>
@@ -5183,6 +5572,9 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -5234,7 +5626,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 								<string><![CDATA[runtimeBuild.xml]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="existingBuildScriptPath">
 								<string><![CDATA[]]></string>
@@ -5246,7 +5638,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 								<string><![CDATA[runtimeBuild.properties]]></string>
 							</property>
 							<property name="buildPropertiesPath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="substituteIAVariables">
 								<boolean>true</boolean>
@@ -5262,7 +5654,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-antlr.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5272,7 +5664,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-apache-bcel.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5282,7 +5674,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-apache-bsf.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5292,7 +5684,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-apache-log4j.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5302,7 +5694,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-apache-oro.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5312,7 +5704,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-apache-regexp.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5322,7 +5714,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-apache-resolver.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5332,7 +5724,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-commons-logging.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5342,7 +5734,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-commons-net.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5352,7 +5744,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-icontract.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5362,7 +5754,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-jai.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5372,7 +5764,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-javamail.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5382,7 +5774,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-jdepend.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5392,7 +5784,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-jmf.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5402,7 +5794,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-jsch.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5412,7 +5804,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-junit.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5422,7 +5814,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-launcher.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5432,7 +5824,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-netrexx.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5442,7 +5834,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-nodeps.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5452,7 +5844,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-starteam.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5462,7 +5854,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-stylebook.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5472,7 +5864,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-swing.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5482,7 +5874,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-trax.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5492,7 +5884,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-vaj.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5502,7 +5894,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-weblogic.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5512,7 +5904,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-xalan1.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5522,7 +5914,7 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 												<string><![CDATA[ant-xslp.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5536,6 +5928,12 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 							</property>
 							<property name="showPleaseWaitPanel">
 								<boolean>true</boolean>
+							</property>
+							<property name="showIndeterminateDialog">
+								<boolean>false</boolean>
+							</property>
+							<property name="indeterminateDialogText">
+								<string><![CDATA[Executing ANT Script...]]></string>
 							</property>
 						</object>
 					</method>
@@ -5659,6 +6057,9 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -5686,7 +6087,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 								<string><![CDATA[runtimeBuild.xml]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="existingBuildScriptPath">
 								<string><![CDATA[]]></string>
@@ -5698,7 +6099,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 								<string><![CDATA[runtimeBuild.properties]]></string>
 							</property>
 							<property name="buildPropertiesPath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="substituteIAVariables">
 								<boolean>true</boolean>
@@ -5714,7 +6115,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-antlr.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5724,7 +6125,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-apache-bcel.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5734,7 +6135,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-apache-bsf.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5744,7 +6145,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-apache-log4j.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5754,7 +6155,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-apache-oro.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5764,7 +6165,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-apache-regexp.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5774,7 +6175,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-apache-resolver.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5784,7 +6185,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-commons-logging.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5794,7 +6195,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-commons-net.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5804,7 +6205,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-icontract.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5814,7 +6215,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-jai.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5824,7 +6225,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-javamail.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5834,7 +6235,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-jdepend.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5844,7 +6245,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-jmf.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5854,7 +6255,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-jsch.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5864,7 +6265,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-junit.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5874,7 +6275,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-launcher.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5884,7 +6285,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-netrexx.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5894,7 +6295,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-nodeps.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5904,7 +6305,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-starteam.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5914,7 +6315,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-stylebook.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5924,7 +6325,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-swing.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5934,7 +6335,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-trax.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5944,7 +6345,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-vaj.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5954,7 +6355,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-weblogic.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5964,7 +6365,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-xalan1.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5974,7 +6375,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 												<string><![CDATA[ant-xslp.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -5988,6 +6389,12 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 							</property>
 							<property name="showPleaseWaitPanel">
 								<boolean>true</boolean>
+							</property>
+							<property name="showIndeterminateDialog">
+								<boolean>false</boolean>
+							</property>
+							<property name="indeterminateDialogText">
+								<string><![CDATA[Executing ANT Script...]]></string>
 							</property>
 							<rules logicalOperation="AND">
 								<object class="com.zerog.ia.installer.rules.CompareVariable" objectID="cfa008398fd9">
@@ -6113,6 +6520,9 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 											<method name="addElement">
 												<string><![CDATA[Mac OS X]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -6227,6 +6637,9 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
 											</method>
 										</object>
 									</property>
@@ -6343,6 +6756,9 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -6373,7 +6789,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 							<property name="installSuccessMessage">
 								<string><![CDATA[Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:
      $USER_INSTALL_DIR$
-A web page to complete the installation which will open following the installer.  Press "Done" to quit the installer.]]></string>
+A web page to complete the installation will open after you close this installer.  Press "Done" to close the installer.]]></string>
 							</property>
 							<property name="installWarningMessage">
 								<string><![CDATA[Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:
@@ -6419,7 +6835,7 @@ Some warnings were generated during the install. The install log will be opened 
 								<string><![CDATA[runtimeBuild.xml]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="existingBuildScriptPath">
 								<string><![CDATA[]]></string>
@@ -6431,7 +6847,7 @@ Some warnings were generated during the install. The install log will be opened 
 								<string><![CDATA[runtimeBuild.properties]]></string>
 							</property>
 							<property name="buildPropertiesPath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="substituteIAVariables">
 								<boolean>true</boolean>
@@ -6447,7 +6863,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-antlr.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6457,7 +6873,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-apache-bcel.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6467,7 +6883,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-apache-bsf.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6477,7 +6893,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-apache-log4j.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6487,7 +6903,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-apache-oro.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6497,7 +6913,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-apache-regexp.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6507,7 +6923,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-apache-resolver.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6517,7 +6933,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-commons-logging.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6527,7 +6943,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-commons-net.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6537,7 +6953,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-icontract.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6547,7 +6963,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-jai.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6557,7 +6973,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-javamail.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6567,7 +6983,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-jdepend.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6577,7 +6993,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-jmf.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6587,7 +7003,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-jsch.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6597,7 +7013,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-junit.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6607,7 +7023,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-launcher.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6617,7 +7033,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-netrexx.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6627,7 +7043,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-nodeps.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6637,7 +7053,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-starteam.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6647,7 +7063,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-stylebook.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6657,7 +7073,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-swing.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6667,7 +7083,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-trax.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6677,7 +7093,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-vaj.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6687,7 +7103,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-weblogic.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6697,7 +7113,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-xalan1.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6707,7 +7123,7 @@ Some warnings were generated during the install. The install log will be opened 
 												<string><![CDATA[ant-xslp.jar]]></string>
 											</property>
 											<property name="propertyValue">
-												<string><![CDATA[$IA_HOME$\resource\ant]]></string>
+												<string><![CDATA[$IA_HOME$/resource/ant]]></string>
 											</property>
 										</object>
 									</method>
@@ -6721,6 +7137,12 @@ Some warnings were generated during the install. The install log will be opened 
 							</property>
 							<property name="showPleaseWaitPanel">
 								<boolean>true</boolean>
+							</property>
+							<property name="showIndeterminateDialog">
+								<boolean>false</boolean>
+							</property>
+							<property name="indeterminateDialogText">
+								<string><![CDATA[Executing ANT Script...]]></string>
 							</property>
 						</object>
 					</method>
@@ -6739,7 +7161,7 @@ Some warnings were generated during the install. The install log will be opened 
 								<string><![CDATA[custom.URLCaller]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[gpcustom.jar]]></string>
@@ -6883,6 +7305,9 @@ Some warnings were generated during the install. The install log will be opened 
 											</method>
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
+											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
 											</method>
 										</object>
 									</property>
@@ -7053,6 +7478,9 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 											<method name="addElement">
 												<string><![CDATA[Unlisted Platforms]]></string>
 											</method>
+											<method name="addElement">
+												<string><![CDATA[OS/400]]></string>
+											</method>
 										</object>
 									</property>
 								</object>
@@ -7109,9 +7537,6 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					<property name="solarisMagicFolder">
 						<object class="com.zerog.ia.installer.util.magicfolders.ProgramsDirMF" factoryID="159" objectID="7dacc0c4afa5"/>
 					</property>
-					<property name="macMagicFolder">
-						<object refID="7dacc0c4afa5"/>
-					</property>
 					<property name="macXMagicFolder">
 						<object refID="7dacc0c4afa5"/>
 					</property>
@@ -7121,14 +7546,14 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					<property name="solarisMagicFolderPath">
 						<string><![CDATA[GenePatternServer]]></string>
 					</property>
-					<property name="macMagicFolderPath">
-						<string><![CDATA[GP_Product]]></string>
-					</property>
 					<property name="macXMagicFolderPath">
 						<string><![CDATA[GenePatternServer]]></string>
 					</property>
 					<property name="win32MagicFolderPath">
 						<string><![CDATA[GenePatternServer]]></string>
+					</property>
+					<property name="os400MagicFolderPath">
+						<string><![CDATA[$PRODUCT_NAME$]]></string>
 					</property>
 				</object>
 			</property>
@@ -7156,6 +7581,9 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 						<string><![CDATA[]]></string>
 					</property>
 					<property name="win32MagicFolderPath">
+						<string><![CDATA[]]></string>
+					</property>
+					<property name="os400MagicFolderPath">
 						<string><![CDATA[]]></string>
 					</property>
 				</object>
@@ -7212,110 +7640,244 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</property>
 				</object>
 			</property>
+			<property name="buildConfigurations">
+				<object class="java.util.Vector">
+					<method name="addElement">
+						<object class="com.zerog.ia.designer.build.BuildConfiguration" objectID="6d3e301889ac">
+							<property name="buildTargets">
+								<object class="java.util.Vector">
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="6d3e301989ac">
+											<property name="type">
+												<int>2</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[MacOSX]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>true</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>false</boolean>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="6d3e301b89ac">
+											<property name="type">
+												<int>0</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[Windows]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>true</boolean>
+											</property>
+											<property name="bundledVM">
+												<string><![CDATA[SunJRE150_11iWin32.vm]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="6d3e301989ad">
+											<property name="type">
+												<int>3</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[AIX]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="bundledVM">
+												<string><![CDATA[IBMJRE141AIX_ca1411-20030930.vm]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="6d3e301a89ad">
+											<property name="type">
+												<int>5</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[HPUX]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="bundledVM">
+												<string><![CDATA[HPJRE131_12HP-UX11PA-RISC.vm]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="6d3e301c89ad">
+											<property name="type">
+												<int>1</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[Linux]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="bundledVM">
+												<string><![CDATA[SunJRE150_11LinuxINTEL.vm]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="6d3e301a89ae">
+											<property name="type">
+												<int>4</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[Solaris]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="bundledVM">
+												<string><![CDATA[SunJRE131_11SolarisSPARC.vm]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="6d3e301b89ae">
+											<property name="type">
+												<int>8</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[GenericUnix]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>false</boolean>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="6d3e301d89ae">
+											<property name="type">
+												<int>6</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[UNIX_with_VM]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="bundledVM">
+												<string><![CDATA[SunJRE150_11LinuxINTEL.vm]]></string>
+											</property>
+										</object>
+									</method>
+									<method name="addElement">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="6d3e301b89af">
+											<property name="type">
+												<int>7</int>
+											</property>
+											<property name="outputDir">
+												<string><![CDATA[Java]]></string>
+											</property>
+											<property name="buildNoVM">
+												<boolean>false</boolean>
+											</property>
+											<property name="buildWithVM">
+												<boolean>false</boolean>
+											</property>
+										</object>
+									</method>
+								</object>
+							</property>
+							<property name="wantCdRom">
+								<boolean>false</boolean>
+							</property>
+							<property name="wantWeb">
+								<boolean>true</boolean>
+							</property>
+							<property name="wantOptimizationByPlatformCdRom">
+								<boolean>false</boolean>
+							</property>
+							<property name="wantOptimizationByPlatformWeb">
+								<boolean>true</boolean>
+							</property>
+							<property name="wantOptimizationByPlatformMerge">
+								<boolean>false</boolean>
+							</property>
+							<property name="buildOutputLocation">
+								<string><![CDATA[/home/radon00/genepatt/projects/genepattern/v3_1_0/installer/server_Build_Output]]></string>
+							</property>
+							<property name="defaultWindowsUIMode">
+								<string><![CDATA[GUI]]></string>
+							</property>
+							<property name="defaultUnixUIMode">
+								<string><![CDATA[GUI]]></string>
+							</property>
+						</object>
+					</method>
+				</object>
+			</property>
 			<property name="buildSettings">
 				<object class="java.util.Properties">
 					<method name="put">
-						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[January 23, 2008 12:17:20 PM EST]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.merge]]></string>
+						<string><![CDATA[com.zerog.ia.build.platform.linux.novm]]></string>
 						<string><![CDATA[false]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.installer.options.heap.size.max]]></string>
-						<string><![CDATA[256000000]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.vmpack.hpux.path]]></string>
-						<string><![CDATA[HPJRE131_12HP-UX11PA-RISC.vm]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.vmpack.unix.path]]></string>
-						<string><![CDATA[SunJRE150_11LinuxINTEL.vm]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.linux.vm]]></string>
 						<string><![CDATA[false]]></string>
 					</method>
 					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.platform.solaris.vm]]></string>
+						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.merge]]></string>
 						<string><![CDATA[false]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.platform.named_unix.vm]]></string>
-						<string><![CDATA[false]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.cdrom]]></string>
-						<string><![CDATA[false]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.installer.options.platform.macosx.vm.version]]></string>
-						<string><![CDATA[1.5*]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.vmpack.solaris.path]]></string>
-						<string><![CDATA[SunJRE131_11SolarisSPARC.vm]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.options.auto-populate.labels]]></string>
-						<string><![CDATA[false]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.options.webpage.language]]></string>
-						<string><![CDATA[en]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.platform.named_unix.novm]]></string>
-						<string><![CDATA[false]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.installer.options.arguments]]></string>
-						<string><![CDATA[]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.project.build.last.date]]></string>
-						<string><![CDATA[December 17, 2007 9:08:34 AM EST]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.installer.options.stderr.redirect]]></string>
-						<string><![CDATA[console]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.installer.options.heap.size.initial]]></string>
-						<string><![CDATA[16777216]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.vmpack.linux.path]]></string>
-						<string><![CDATA[SunJRE150_11LinuxINTEL.vm]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.vmpack.aix.path]]></string>
-						<string><![CDATA[IBMJRE141AIX_ca1411-20030930.vm]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.installer.options.platform.macosx.authentication]]></string>
 						<string><![CDATA[false]]></string>
 					</method>
 					<method name="put">
-						<string><![CDATA[com.zerog.ia.installer.options.platform.unix.ui.default]]></string>
-						<string><![CDATA[GUI]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.platform.linux.novm]]></string>
-						<string><![CDATA[false]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.installer.options.platform.macosx.authentication.gui]]></string>
+						<string><![CDATA[com.zerog.ia.build.platform.macosx.novm]]></string>
 						<string><![CDATA[true]]></string>
 					</method>
 					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.platform.java.novm]]></string>
+						<string><![CDATA[com.zerog.ia.build.vmpack.hpux.path]]></string>
+						<string><![CDATA[HPJRE131_12HP-UX11PA-RISC.vm]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.build.vmpack.solaris.path]]></string>
+						<string><![CDATA[SunJRE131_11SolarisSPARC.vm]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.installer.options.heap.size.max]]></string>
+						<string><![CDATA[256000000]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.build.options.auto-populate.labels]]></string>
 						<string><![CDATA[false]]></string>
 					</method>
 					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.platform.windows.novm]]></string>
+						<string><![CDATA[com.zerog.ia.build.platform.solaris.vm]]></string>
 						<string><![CDATA[false]]></string>
 					</method>
 					<method name="put">
@@ -7324,35 +7886,103 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.installer.options.valid.vm.list]]></string>
-						<string><![CDATA[J2 MSJ MRJ]]></string>
+						<string><![CDATA[1.4+]]></string>
 					</method>
 					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.options.output.web]]></string>
-						<string><![CDATA[true]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.platform.macosx.novm]]></string>
-						<string><![CDATA[true]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.installer.options.platform.windows.ui.default]]></string>
-						<string><![CDATA[GUI]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.options.output.cdrom]]></string>
-						<string><![CDATA[false]]></string>
-					</method>
-					<method name="put">
-						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.web]]></string>
-						<string><![CDATA[true]]></string>
+						<string><![CDATA[com.zerog.ia.project.build.last.date]]></string>
+						<string><![CDATA[December 17, 2007 9:08:34 AM EST]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.windows.vm]]></string>
 						<string><![CDATA[true]]></string>
 					</method>
 					<method name="put">
+						<string><![CDATA[com.zerog.ia.project.ImportedToBuildConfiguration]]></string>
+						<string><![CDATA[true]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.build.options.output.web]]></string>
+						<string><![CDATA[true]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.web]]></string>
+						<string><![CDATA[true]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.installer.options.arguments]]></string>
+						<string><![CDATA[]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.build.vmpack.linux.path]]></string>
+						<string><![CDATA[SunJRE150_11LinuxINTEL.vm]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.build.platform.named_unix.vm]]></string>
+						<string><![CDATA[false]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.build.options.output.cdrom]]></string>
+						<string><![CDATA[false]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.build.vmpack.unix.path]]></string>
+						<string><![CDATA[SunJRE150_11LinuxINTEL.vm]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.build.platform.named_unix.novm]]></string>
+						<string><![CDATA[false]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.installer.options.stderr.redirect]]></string>
+						<string><![CDATA[console]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.build.platform.windows.novm]]></string>
+						<string><![CDATA[false]]></string>
+					</method>
+					<method name="put">
 						<string><![CDATA[com.zerog.ia.installer.options.stdout.redirect]]></string>
 						<string><![CDATA[console]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
+						<string><![CDATA[June 5, 2008 1:25:32 PM EDT]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.cdrom]]></string>
+						<string><![CDATA[false]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.installer.options.platform.unix.ui.default]]></string>
+						<string><![CDATA[GUI]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.installer.options.heap.size.initial]]></string>
+						<string><![CDATA[16777216]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.installer.options.platform.macosx.authentication.gui]]></string>
+						<string><![CDATA[true]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.installer.options.platform.macosx.vm.version]]></string>
+						<string><![CDATA[1.5*]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.build.platform.java.novm]]></string>
+						<string><![CDATA[false]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.build.options.webpage.language]]></string>
+						<string><![CDATA[en]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.installer.options.platform.windows.ui.default]]></string>
+						<string><![CDATA[GUI]]></string>
+					</method>
+					<method name="put">
+						<string><![CDATA[com.zerog.ia.build.vmpack.aix.path]]></string>
+						<string><![CDATA[IBMJRE141AIX_ca1411-20030930.vm]]></string>
 					</method>
 				</object>
 			</property>
@@ -7381,6 +8011,9 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</property>
 					<property name="backgroundImageName">
 						<string><![CDATA[background_default.png]]></string>
+					</property>
+					<property name="mirrorBidiImage">
+						<string><![CDATA[2]]></string>
 					</property>
 					<property name="currentLabelIconPath">
 						<string><![CDATA[com/zerog/ia/installer/images/]]></string>
@@ -7510,17 +8143,21 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 							</method>
 						</object>
 					</property>
-					<property name="productVersionMajor">
-						<int>3</int>
-					</property>
-					<property name="productVersionMinor">
-						<int>1</int>
-					</property>
-					<property name="productVersionRevision">
-						<int>0</int>
-					</property>
-					<property name="productVersionSubRevision">
-						<int>0</int>
+					<property name="productVersion">
+						<object class="com.zerog.ia.installer.util.Version" objectID="6d3e302289af">
+							<property name="major">
+								<int>3</int>
+							</property>
+							<property name="minor">
+								<int>1</int>
+							</property>
+							<property name="revision">
+								<int>0</int>
+							</property>
+							<property name="subRevision">
+								<int>0</int>
+							</property>
+						</object>
 					</property>
 					<property name="vendorName">
 						<string><![CDATA[Broad Institute, MIT]]></string>
@@ -7631,6 +8268,9 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 											<property name="propertyName">
 												<string><![CDATA[DIR_TO_DELETE]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -7640,6 +8280,9 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[RESTART_NEEDED]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
 											</property>
 										</object>
 									</method>
@@ -7662,7 +8305,7 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 								<string><![CDATA[com.zerog.ia.customcode.action.PropertiesFileReader]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_HOME$\plugins]]></string>
+								<string><![CDATA[$IA_HOME$/plugins]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[PropertiesFileReader.jar]]></string>
@@ -7686,6 +8329,9 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 											<property name="propertyName">
 												<string><![CDATA[SUBSTITUTE_VARIABLES]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>0</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -7695,6 +8341,9 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[OVERRIDE_EXISTING_VARIABLES]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -7706,6 +8355,9 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 											<property name="propertyName">
 												<string><![CDATA[PROPERTIES_FILE_LOCATION]]></string>
 											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
 										</object>
 									</method>
 									<method name="addElement">
@@ -7715,6 +8367,9 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[PROPERTIES_TO_IGNORE]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>0</int>
 											</property>
 										</object>
 									</method>
@@ -7746,7 +8401,7 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 								<string><![CDATA[custom.URLCaller]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[gpcustom.jar]]></string>
@@ -7824,7 +8479,7 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 								<string><![CDATA[custom.DeleteFileAndDir]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[gpcustom.jar]]></string>
@@ -7878,6 +8533,9 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 							<property name="uninstallIncompleteMessage">
 								<string><![CDATA[The following items could not be removed:]]></string>
 							</property>
+							<property name="rebootNotNeededMessage">
+								<string><![CDATA[]]></string>
+							</property>
 							<property name="rebootRecommendedMessage">
 								<string><![CDATA[You should restart the system to complete the uninstallation.]]></string>
 							</property>
@@ -7926,6 +8584,18 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 				<object class="java.util.Vector"/>
 			</property>
 			<property name="responseFileEnabled">
+				<boolean>false</boolean>
+			</property>
+			<property name="useJCEEncryption">
+				<boolean>false</boolean>
+			</property>
+			<property name="sortLocaleKeys">
+				<boolean>true</boolean>
+			</property>
+			<property name="removeUnreferencedLocaleKeys">
+				<boolean>false</boolean>
+			</property>
+			<property name="notUpdateGlobalRegistry">
 				<boolean>false</boolean>
 			</property>
 			<visualChildren>
@@ -8218,15 +8888,12 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="72b27ca9b6db">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="73b3cce6b4f3">
 															<property name="propertyValue">
-																<string><![CDATA[2750]]></string>
+																<string><![CDATA[./temp]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
-															</property>
-															<property name="propertyComment">
-																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+																<string><![CDATA[java.io.tmpdir]]></string>
 															</property>
 														</object>
 													</method>
@@ -8245,12 +8912,15 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="73b3cce6b4f3">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="72b27ca9b6db">
 															<property name="propertyValue">
-																<string><![CDATA[./temp]]></string>
+																<string><![CDATA[2750]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[java.io.tmpdir]]></string>
+																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+															</property>
+															<property name="propertyComment">
+																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 															</property>
 														</object>
 													</method>
@@ -8271,15 +8941,18 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														<string><![CDATA[start32.gif]]></string>
 													</property>
 													<property name="smallIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 													<property name="largeIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 												</object>
 											</property>
 											<property name="mainClass">
 												<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
+											</property>
+											<property name="execLevel">
+												<int>0</int>
 											</property>
 											<rules logicalOperation="AND">
 												<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="0a437210b99c">
@@ -8360,6 +9033,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														<object class="java.util.Vector">
 															<method name="addElement">
 																<string><![CDATA[Mac OS X]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
 															</method>
 														</object>
 													</property>
@@ -8640,6 +9316,9 @@ and any path to a file to read from that file]]></string>
 													<property name="neverRestarts">
 														<boolean>false</boolean>
 													</property>
+													<property name="execLevel">
+														<int>1</int>
+													</property>
 													<property name="asksUserAboutRestart">
 														<boolean>true</boolean>
 													</property>
@@ -8791,6 +9470,9 @@ and any path to a file to read from that file]]></string>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -8816,13 +9498,13 @@ and any path to a file to read from that file]]></string>
 												<boolean>true</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\..\resources]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../resources]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
 											</property>
 											<property name="destinationName">
-												<string><![CDATA[resources\]]></string>
+												<string><![CDATA[resources/]]></string>
 											</property>
 											<property name="createDirectory">
 												<boolean>true</boolean>
@@ -9100,13 +9782,13 @@ and any path to a file to read from that file]]></string>
 												<boolean>true</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\gpdist\Tomcat]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/gpdist/Tomcat]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
 											</property>
 											<property name="destinationName">
-												<string><![CDATA[Tomcat\]]></string>
+												<string><![CDATA[Tomcat/]]></string>
 											</property>
 											<property name="createDirectory">
 												<boolean>true</boolean>
@@ -9334,13 +10016,13 @@ and any path to a file to read from that file]]></string>
 												<boolean>true</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\..\website]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../website]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
 											</property>
 											<property name="destinationName">
-												<string><![CDATA[website\]]></string>
+												<string><![CDATA[website/]]></string>
 											</property>
 											<property name="createDirectory">
 												<boolean>true</boolean>
@@ -9560,13 +10242,13 @@ and any path to a file to read from that file]]></string>
 												<boolean>true</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\..\build\website\classes]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../build/website/classes]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
 											</property>
 											<property name="destinationName">
-												<string><![CDATA[classes\]]></string>
+												<string><![CDATA[classes/]]></string>
 											</property>
 											<property name="createDirectory">
 												<boolean>true</boolean>
@@ -9907,6 +10589,16 @@ Relative paths are relative to the launcher.]]></string>
 														</object>
 													</method>
 													<method name="addElement">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfad">
+															<property name="propertyValue">
+																<string><![CDATA[webapps/gp/resources]]></string>
+															</property>
+															<property name="propertyName">
+																<string><![CDATA[omnigene.conf]]></string>
+															</property>
+														</object>
+													</method>
+													<method name="addElement">
 														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="a761ea68af75">
 															<property name="propertyValue">
 																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$;$$IA_CLASSPATH$$;$$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar$;$$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
@@ -9917,16 +10609,6 @@ Relative paths are relative to the launcher.]]></string>
 															<property name="propertyComment">
 																<string><![CDATA[the Java classpath necessary to run this application
 Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
-															</property>
-														</object>
-													</method>
-													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfad">
-															<property name="propertyValue">
-																<string><![CDATA[webapps/gp/resources]]></string>
-															</property>
-															<property name="propertyName">
-																<string><![CDATA[omnigene.conf]]></string>
 															</property>
 														</object>
 													</method>
@@ -9979,16 +10661,6 @@ it will search for ones in this list]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfa9">
-															<property name="propertyValue">
-																<string><![CDATA[./temp]]></string>
-															</property>
-															<property name="propertyName">
-																<string><![CDATA[java.io.tmpdir]]></string>
-															</property>
-														</object>
-													</method>
-													<method name="addElement">
 														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="baefc8e5b7c6">
 															<property name="propertyValue">
 																<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
@@ -9998,6 +10670,16 @@ it will search for ones in this list]]></string>
 															</property>
 															<property name="propertyComment">
 																<string><![CDATA[the class that contains the main method for the application]]></string>
+															</property>
+														</object>
+													</method>
+													<method name="addElement">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfa9">
+															<property name="propertyValue">
+																<string><![CDATA[./temp]]></string>
+															</property>
+															<property name="propertyName">
+																<string><![CDATA[java.io.tmpdir]]></string>
 															</property>
 														</object>
 													</method>
@@ -10032,13 +10714,13 @@ and any path to a file to save to the file]]></string>
 														<string><![CDATA[stop32.GIF]]></string>
 													</property>
 													<property name="smallIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 													<property name="largeIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 													<property name="macOSXIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 													<property name="macOSXIconName">
 														<string><![CDATA[stop128.icns]]></string>
@@ -10047,6 +10729,9 @@ and any path to a file to save to the file]]></string>
 											</property>
 											<property name="mainClass">
 												<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
+											</property>
+											<property name="execLevel">
+												<int>0</int>
 											</property>
 											<rules logicalOperation="AND">
 												<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="9f4e1275b95c">
@@ -10127,6 +10812,9 @@ and any path to a file to save to the file]]></string>
 														<object class="java.util.Vector">
 															<method name="addElement">
 																<string><![CDATA[Mac OS X]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
 															</method>
 														</object>
 													</property>
@@ -10232,6 +10920,9 @@ and any path to a file to save to the file]]></string>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -10256,10 +10947,10 @@ and any path to a file to save to the file]]></string>
 														<string><![CDATA[start32.gif]]></string>
 													</property>
 													<property name="smallIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 													<property name="largeIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 												</object>
 											</property>
@@ -10352,6 +11043,9 @@ and any path to a file to save to the file]]></string>
 															<method name="addElement">
 																<string><![CDATA[Linux]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -10376,10 +11070,10 @@ and any path to a file to save to the file]]></string>
 														<string><![CDATA[stop32.GIF]]></string>
 													</property>
 													<property name="smallIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 													<property name="largeIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 												</object>
 											</property>
@@ -10472,6 +11166,9 @@ and any path to a file to save to the file]]></string>
 															<method name="addElement">
 																<string><![CDATA[Linux]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -10511,7 +11208,7 @@ and any path to a file to save to the file]]></string>
 												<string><![CDATA[R.zip]]></string>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\gpdist\Windows\]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/gpdist/Windows/]]></string>
 											</property>
 											<property name="sourceFileType">
 												<int>0</int>
@@ -10602,6 +11299,9 @@ and any path to a file to save to the file]]></string>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -10612,7 +11312,7 @@ and any path to a file to save to the file]]></string>
 												<string><![CDATA[Perl.zip]]></string>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\gpdist\Windows\]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/gpdist/Windows/]]></string>
 											</property>
 											<property name="sourceFileType">
 												<int>0</int>
@@ -10702,6 +11402,9 @@ and any path to a file to save to the file]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
 															</method>
 														</object>
 													</property>
@@ -10925,16 +11628,15 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="d9b5849a97d8">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0a435ac9b995">
 															<property name="propertyValue">
-																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$:$$IA_CLASSPATH$:$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar:$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
+																<string><![CDATA[2750]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.class.path]]></string>
+																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[the Java classpath necessary to run this application
-Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
+																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 															</property>
 														</object>
 													</method>
@@ -10949,15 +11651,16 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0a435ac9b995">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="d9b5849a97d8">
 															<property name="propertyValue">
-																<string><![CDATA[2750]]></string>
+																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$:$$IA_CLASSPATH$:$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar:$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+																<string><![CDATA[lax.class.path]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+																<string><![CDATA[the Java classpath necessary to run this application
+Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</property>
 														</object>
 													</method>
@@ -10978,13 +11681,13 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														<string><![CDATA[start32.gif]]></string>
 													</property>
 													<property name="smallIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 													<property name="largeIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 													<property name="macOSXIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 													<property name="macOSXIconName">
 														<string><![CDATA[start128.icns]]></string>
@@ -10993,6 +11696,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 											</property>
 											<property name="mainClass">
 												<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
+											</property>
+											<property name="execLevel">
+												<int>0</int>
 											</property>
 											<rules logicalOperation="AND">
 												<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="0a43cb0fb99c">
@@ -11073,6 +11779,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Solaris]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
 															</method>
 														</object>
 													</property>
@@ -11187,6 +11896,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -11291,6 +12003,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -11315,10 +12030,10 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														<string><![CDATA[start32.gif]]></string>
 													</property>
 													<property name="smallIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 													<property name="largeIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 												</object>
 											</property>
@@ -11411,6 +12126,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -11436,10 +12154,10 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														<string><![CDATA[pattern16b.GIF]]></string>
 													</property>
 													<property name="smallIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 													<property name="largeIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 												</object>
 											</property>
@@ -11503,7 +12221,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\..\build\]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../build/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -11570,13 +12288,13 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>true</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\..\build\website\lib]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../build/website/lib]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
 											</property>
 											<property name="destinationName">
-												<string><![CDATA[lib\]]></string>
+												<string><![CDATA[lib/]]></string>
 											</property>
 											<property name="createDirectory">
 												<boolean>true</boolean>
@@ -11834,6 +12552,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -11947,6 +12668,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -12051,6 +12775,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -12151,7 +12878,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\..\build\]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../build/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -12209,7 +12936,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\..\build\]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../build/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -12275,10 +13002,10 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														<string><![CDATA[start32.gif]]></string>
 													</property>
 													<property name="smallIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 													<property name="largeIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 												</object>
 											</property>
@@ -12371,6 +13098,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Windows Vista]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -12395,10 +13125,10 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														<string><![CDATA[stop32.GIF]]></string>
 													</property>
 													<property name="smallIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 													<property name="largeIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 												</object>
 											</property>
@@ -12491,6 +13221,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Windows Vista]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -12507,7 +13240,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\..\build\]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../build/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -12565,7 +13298,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\..\build\]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../build/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -12623,7 +13356,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\..\build\]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../build/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -12860,6 +13593,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -12984,6 +13720,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -13031,7 +13770,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														<boolean>false</boolean>
 													</property>
 													<property name="sourcePath">
-														<string><![CDATA[$IA_PROJECT_DIR$\..\build\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/../build/]]></string>
 													</property>
 													<property name="shouldUninstall">
 														<boolean>true</boolean>
@@ -13088,7 +13827,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														<boolean>false</boolean>
 													</property>
 													<property name="sourcePath">
-														<string><![CDATA[$IA_PROJECT_DIR$\..\src\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/../src/]]></string>
 													</property>
 													<property name="shouldUninstall">
 														<boolean>true</boolean>
@@ -13144,7 +13883,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\..\src\]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../src/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -13244,7 +13983,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-                                                                                                <string><![CDATA[$IA_PROJECT_DIR$/../clients/R/downloads/]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../clients/R/downloads/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -13333,7 +14072,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														<boolean>false</boolean>
 													</property>
 													<property name="sourcePath">
-                                                                                                                <string><![CDATA[$IA_PROJECT_DIR$/../clients/R/downloads/]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/../clients/R/downloads/]]></string>
 													</property>
 													<property name="shouldUninstall">
 														<boolean>true</boolean>
@@ -13772,6 +14511,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -13884,6 +14626,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
 															</method>
 														</object>
 													</property>
@@ -13998,6 +14743,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -14110,6 +14858,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
 															</method>
 														</object>
 													</property>
@@ -14224,6 +14975,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -14337,6 +15091,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -14347,7 +15104,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[R-2.5.zip]]></string>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\gpdist\MacOS\]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/gpdist/MacOS/]]></string>
 											</property>
 											<property name="sourceFileType">
 												<int>0</int>
@@ -14437,6 +15194,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
 															</method>
 														</object>
 													</property>
@@ -14582,6 +15342,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</method>
 															<method name="addElement">
 																<string><![CDATA[Unlisted Platforms]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
 															</method>
 														</object>
 													</property>
@@ -14837,16 +15600,15 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="9f66eaecbe03">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="9f66eaecbe0b">
 															<property name="propertyValue">
-																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$:$$IA_CLASSPATH$:$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar:$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
+																<string><![CDATA[2750]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.class.path]]></string>
+																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[the Java classpath necessary to run this application
-Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
+																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 															</property>
 														</object>
 													</method>
@@ -14861,15 +15623,16 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="9f66eaecbe0b">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="9f66eaecbe03">
 															<property name="propertyValue">
-																<string><![CDATA[2750]]></string>
+																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$:$$IA_CLASSPATH$:$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar:$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+																<string><![CDATA[lax.class.path]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+																<string><![CDATA[the Java classpath necessary to run this application
+Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</property>
 														</object>
 													</method>
@@ -14890,13 +15653,13 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														<string><![CDATA[stop32.GIF]]></string>
 													</property>
 													<property name="smallIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 													<property name="largeIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 													<property name="macOSXIconPath">
-														<string><![CDATA[$IA_PROJECT_DIR$\]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 													</property>
 													<property name="macOSXIconName">
 														<string><![CDATA[stop128.icns]]></string>
@@ -14905,6 +15668,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 											</property>
 											<property name="mainClass">
 												<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
+											</property>
+											<property name="execLevel">
+												<int>0</int>
 											</property>
 											<rules logicalOperation="AND">
 												<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="9f66eaedbe01">
@@ -14986,6 +15752,9 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															<method name="addElement">
 																<string><![CDATA[Solaris]]></string>
 															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -15021,7 +15790,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$\..\build\]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../build/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
@@ -15709,119 +16478,123 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 				<object refID="9777adc98096"/>
 				<object refID="72a1c588b1d5"/>
 				<object refID="6230d0838734"/>
-				<object class="com.zerog.ia.installer.GhostDirectory" objectID="72a1c569b1d2">
-					<property name="destinationFolder">
-						<object refID="7dacc07fafa5"/>
-					</property>
-					<property name="overrideUnixPermissions">
-						<boolean>false</boolean>
-					</property>
-					<property name="unixPermissions">
-						<string><![CDATA[775]]></string>
-					</property>
+				<object class="com.zerog.ia.installer.hosts.OSHost" objectID="6d3e31d789ec">
 					<visualChildren>
-						<object refID="7dd565af9105"/>
-						<object refID="7dfebc2991f4"/>
-						<object refID="7dd5c59d9105"/>
-						<object refID="7dfee64b91f4"/>
-						<object refID="7dec0a229183"/>
-						<object refID="7dec4f799185"/>
-						<object refID="334b4447b44b"/>
-						<object refID="b674f8fc8795"/>
-						<object refID="ba7324c7878d"/>
-						<object refID="c27ee2f5883e"/>
-						<object refID="c2801e0a883e"/>
-						<object refID="afccf83195c9"/>
-						<object refID="885bdc2a8409"/>
-						<object refID="885b3f568408"/>
-						<object refID="bb845a3ead20"/>
-						<object refID="dc3fd6c7878a"/>
-						<object refID="033c41cebd1a"/>
-						<object refID="033c9a74bd1d"/>
-						<object refID="c02612b39000"/>
-						<object refID="d78593808508"/>
-						<object refID="0ed2fb49a1df"/>
-						<object refID="d71ef3db84b6"/>
-						<object refID="9a0c3b429d30"/>
-						<object refID="9e6d6b20a651"/>
-						<object refID="0081260688de"/>
-						<object refID="bc48925e8f07"/>
-						<object refID="bc4966208f08"/>
-						<object refID="bc523d5a8f14"/>
-						<object refID="c01cbffe9000"/>
-						<object refID="bc5cd2a18f1a"/>
-						<object refID="bc617b238f22"/>
-						<object refID="dd658e60b979"/>
-						<object refID="d976fd1e8ef7"/>
-						<object refID="9142196fb8b2"/>
-						<object refID="aacfb8f5b397"/>
-						<object refID="2420a9eb9187"/>
-						<object refID="cbe14d7aa25e"/>
-						<object refID="a62bfa74af5e"/>
-						<object refID="b67375888791"/>
-						<object refID="ba7b12208790"/>
-						<object refID="b673757e8791"/>
-						<object refID="b673a1318795"/>
-						<object refID="b6743a958795"/>
-						<object refID="ba7b38c68790"/>
-						<object refID="89cabc63abbe"/>
-						<object refID="4e2d83cb878d"/>
-						<object refID="4e2d83ca878d"/>
-						<object refID="4e2ce2bf878c"/>
-						<object refID="4e2e7e2d878f"/>
-						<object refID="127cdc33934c"/>
-						<object refID="07909bbe998f"/>
-						<object refID="0790f90b9992"/>
-						<object refID="a62c5360af5e"/>
-						<object refID="d9772cba8efb"/>
-						<object refID="91424c36b8b6"/>
-						<object refID="127e0ff79350"/>
-						<object refID="16a36e4b90a0"/>
-						<object refID="16a39b2090a4"/>
-						<object refID="11fec4948f6f"/>
-						<object refID="dd6674a4b97c"/>
-						<object refID="aad08336b39b"/>
-						<object refID="242151a29187"/>
-						<object refID="ca3a7473b25c"/>
-						<object refID="bc4d22268f10"/>
-						<object refID="bc4d74f78f10"/>
-						<object refID="72a1c5c4b1d9"/>
-						<object refID="972c3879bf25"/>
-						<object refID="972c976abf25"/>
-						<object refID="b67615fa8795"/>
-						<object refID="ab0f1c01a55a"/>
-						<object refID="1e2286c2bfa5"/>
-						<object refID="9f66eaecbe01"/>
-						<object refID="72b26ed9b6d6"/>
-						<object refID="0a435abfb993"/>
-						<object refID="1f93695dba1c"/>
-						<object refID="e36a1c529eff"/>
-						<object refID="1f94aef3ba1c"/>
-						<object refID="e36a51a49f00"/>
-						<object refID="cbe07101a254"/>
-					</visualChildren>
-				</object>
-				<object class="com.zerog.ia.installer.GhostDirectory" objectID="1e6c27aaa1f5">
-					<property name="destinationFolder">
-						<object refID="7daeb370afa5"/>
-					</property>
-					<property name="overrideUnixPermissions">
-						<boolean>false</boolean>
-					</property>
-					<property name="unixPermissions">
-						<string><![CDATA[775]]></string>
-					</property>
-					<visualChildren>
-						<object refID="1f035f27a3e0"/>
-						<object refID="ab3dde1d8fb1"/>
-						<object refID="1ff5149fb9a5"/>
-						<object refID="e34c5705adcf"/>
-						<object refID="1f05a5bba3e1"/>
-						<object refID="ab3e464b8fb3"/>
-						<object refID="1e6cee84a1fb"/>
-						<object refID="a6a9e2578cce"/>
-						<object refID="ab0f6a91a55f"/>
-						<object refID="cbe0710ca259"/>
+						<object class="com.zerog.ia.installer.GhostDirectory" objectID="72a1c569b1d2">
+							<property name="destinationFolder">
+								<object refID="7dacc07fafa5"/>
+							</property>
+							<property name="overrideUnixPermissions">
+								<boolean>false</boolean>
+							</property>
+							<property name="unixPermissions">
+								<string><![CDATA[775]]></string>
+							</property>
+							<visualChildren>
+								<object refID="7dd565af9105"/>
+								<object refID="7dfebc2991f4"/>
+								<object refID="7dd5c59d9105"/>
+								<object refID="7dfee64b91f4"/>
+								<object refID="7dec0a229183"/>
+								<object refID="7dec4f799185"/>
+								<object refID="334b4447b44b"/>
+								<object refID="b674f8fc8795"/>
+								<object refID="ba7324c7878d"/>
+								<object refID="c27ee2f5883e"/>
+								<object refID="c2801e0a883e"/>
+								<object refID="afccf83195c9"/>
+								<object refID="885bdc2a8409"/>
+								<object refID="885b3f568408"/>
+								<object refID="bb845a3ead20"/>
+								<object refID="dc3fd6c7878a"/>
+								<object refID="033c41cebd1a"/>
+								<object refID="033c9a74bd1d"/>
+								<object refID="c02612b39000"/>
+								<object refID="d78593808508"/>
+								<object refID="0ed2fb49a1df"/>
+								<object refID="d71ef3db84b6"/>
+								<object refID="9a0c3b429d30"/>
+								<object refID="9e6d6b20a651"/>
+								<object refID="0081260688de"/>
+								<object refID="bc48925e8f07"/>
+								<object refID="bc4966208f08"/>
+								<object refID="bc523d5a8f14"/>
+								<object refID="c01cbffe9000"/>
+								<object refID="bc5cd2a18f1a"/>
+								<object refID="bc617b238f22"/>
+								<object refID="dd658e60b979"/>
+								<object refID="d976fd1e8ef7"/>
+								<object refID="9142196fb8b2"/>
+								<object refID="aacfb8f5b397"/>
+								<object refID="2420a9eb9187"/>
+								<object refID="cbe14d7aa25e"/>
+								<object refID="a62bfa74af5e"/>
+								<object refID="b67375888791"/>
+								<object refID="ba7b12208790"/>
+								<object refID="b673757e8791"/>
+								<object refID="b673a1318795"/>
+								<object refID="b6743a958795"/>
+								<object refID="ba7b38c68790"/>
+								<object refID="89cabc63abbe"/>
+								<object refID="4e2d83cb878d"/>
+								<object refID="4e2d83ca878d"/>
+								<object refID="4e2ce2bf878c"/>
+								<object refID="4e2e7e2d878f"/>
+								<object refID="127cdc33934c"/>
+								<object refID="07909bbe998f"/>
+								<object refID="0790f90b9992"/>
+								<object refID="a62c5360af5e"/>
+								<object refID="d9772cba8efb"/>
+								<object refID="91424c36b8b6"/>
+								<object refID="127e0ff79350"/>
+								<object refID="16a36e4b90a0"/>
+								<object refID="16a39b2090a4"/>
+								<object refID="11fec4948f6f"/>
+								<object refID="dd6674a4b97c"/>
+								<object refID="aad08336b39b"/>
+								<object refID="242151a29187"/>
+								<object refID="ca3a7473b25c"/>
+								<object refID="bc4d22268f10"/>
+								<object refID="bc4d74f78f10"/>
+								<object refID="72a1c5c4b1d9"/>
+								<object refID="972c3879bf25"/>
+								<object refID="972c976abf25"/>
+								<object refID="b67615fa8795"/>
+								<object refID="ab0f1c01a55a"/>
+								<object refID="1e2286c2bfa5"/>
+								<object refID="9f66eaecbe01"/>
+								<object refID="72b26ed9b6d6"/>
+								<object refID="0a435abfb993"/>
+								<object refID="1f93695dba1c"/>
+								<object refID="e36a1c529eff"/>
+								<object refID="1f94aef3ba1c"/>
+								<object refID="e36a51a49f00"/>
+								<object refID="cbe07101a254"/>
+							</visualChildren>
+						</object>
+						<object class="com.zerog.ia.installer.GhostDirectory" objectID="1e6c27aaa1f5">
+							<property name="destinationFolder">
+								<object refID="7daeb370afa5"/>
+							</property>
+							<property name="overrideUnixPermissions">
+								<boolean>false</boolean>
+							</property>
+							<property name="unixPermissions">
+								<string><![CDATA[775]]></string>
+							</property>
+							<visualChildren>
+								<object refID="1f035f27a3e0"/>
+								<object refID="ab3dde1d8fb1"/>
+								<object refID="1ff5149fb9a5"/>
+								<object refID="e34c5705adcf"/>
+								<object refID="1f05a5bba3e1"/>
+								<object refID="ab3e464b8fb3"/>
+								<object refID="1e6cee84a1fb"/>
+								<object refID="a6a9e2578cce"/>
+								<object refID="ab0f6a91a55f"/>
+								<object refID="cbe0710ca259"/>
+							</visualChildren>
+						</object>
 					</visualChildren>
 				</object>
 				<object refID="72a1c573b1d2"/>
