@@ -20,13 +20,13 @@ find 'all_aml_test.preprocessed.gct'
 go /gp/pages/index.jsf?lsid=HierarchicalClustering
 url /gp/pages/index.jsf
 fv taskForm input.filename_cb_url url
-fv taskForm input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
+fv taskForm input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/HSC_FDR002.gct
 submit
 code 200
 url /gp/runTaskPipeline.jsp
-find 'all_aml_test.preprocessed.atr'
-find 'all_aml_test.preprocessed.cdt'
-find 'all_aml_test.preprocessed.gtr'
+find 'HSC_FDR002.atr'
+find 'HSC_FDR002.cdt'
+find 'HSC_FDR002.gtr'
 
 #Step 2 (b) KMeansClustering
 go /gp/pages/index.jsf?lsid=KMeansClustering
@@ -55,10 +55,9 @@ find all_aml_test.preprocessed1.odf
 go /gp/pages/index.jsf?lsid=NMFConsensus
 url /gp/pages/index.jsf
 fv taskForm dataset.filename_cb url
-fv taskForm dataset.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
+fv taskForm dataset.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/HSC_FDR002.gct
 submit
 code 200
-
 
 #Step 2 (e) ConsensusClustering
 go /gp/pages/index.jsf?lsid=ConsensusClustering
