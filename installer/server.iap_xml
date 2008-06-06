@@ -1554,7 +1554,7 @@ R is freely available from http://www.r-project.org/.]]></string>
 								<string><![CDATA[Installation and use of ActiveState Perl requires acceptance of the following license agreement:]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$/../resources/]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/\.\./resources/]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[EULA-Community_License.txt]]></string>
