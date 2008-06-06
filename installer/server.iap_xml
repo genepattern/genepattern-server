@@ -1560,7 +1560,7 @@ R is freely available from http://www.r-project.org/.]]></string>
 								<string><![CDATA[EULA-Community_License.txt]]></string>
 							</property>
 							<property name="existingFilePath">
-								<string><![CDATA[$IA_PROJECT_DIR$/../resources/EULA-Community_License.txt]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/EULA-Community_License.txt]]></string>
 							</property>
 							<property name="sourceFileType">
 								<int>1</int>
@@ -1691,7 +1691,7 @@ R is freely available from http://www.r-project.org/.]]></string>
 								<string><![CDATA[Installation and use of R requires acceptance of the following license agreement:]]></string>
 							</property>
 							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$/../resources/]]></string>
+								<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 							</property>
 							<property name="resourceName">
 								<string><![CDATA[RLicense]]></string>
