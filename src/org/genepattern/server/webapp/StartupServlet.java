@@ -47,6 +47,7 @@ import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.process.JobPurger;
+import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -377,7 +378,11 @@ public class StartupServlet extends HttpServlet {
 		String key = (String) iter.next();
 		String val = props.getProperty(key);
 		if (val.startsWith(".")) {
-		    val = new File(val).getAbsolutePath();
+		    //HACK: don't rewrite my value
+		    if (! key.equals(JobResultsFilenameFilter.KEY)) {
+		        // why? why  is this here? -- PJC
+		        val = new File(val).getAbsolutePath();
+		    }
 		}
 		sysProps.setProperty(key, val);
 	    }
@@ -392,7 +397,11 @@ public class StartupServlet extends HttpServlet {
 		String key = (String) iter.next();
 		String val = props.getProperty(key);
 		if (val.startsWith(".")) {
-		    val = new File(val).getCanonicalPath();
+            //HACK: don't rewrite my value
+            if (! key.equals(JobResultsFilenameFilter.KEY)) {
+                // why? why  is this here? -- PJC
+                val = new File(val).getAbsolutePath();
+            }
 		}
 		sysProps.setProperty(key, val);
 	    }
