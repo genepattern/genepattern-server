@@ -16,6 +16,6 @@ runfile prediction.twill
 
 # 4. SNP Copy Number and Loss of Heterozygosity Estimation Protocol
 #    [this is optional because it takes a lot of RAM]
-#runfile snp.twill
+runfile snp.twill
 
 
