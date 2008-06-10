@@ -315,7 +315,8 @@ function createPipeline(filename) {
     JobInfo[] jobs = null;
     try {
         if (showAll) {
-            jobs = analysisClient.getJobs(null, -1, Integer.MAX_VALUE,
+            String nullStr = null;
+            jobs = analysisClient.getJobs(nullStr, -1, Integer.MAX_VALUE,
                     false);
         } else {
             jobs = analysisClient.getJobs(userID, -1,
