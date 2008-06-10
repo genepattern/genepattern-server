@@ -5,6 +5,8 @@ import static org.genepattern.util.GPConstants.STDOUT;
 import static org.genepattern.util.GPConstants.TASKLOG;
 
 import java.io.File;
+import java.io.InputStream;
+import java.util.Properties;
 
 import junit.framework.TestCase;
 
@@ -17,6 +19,7 @@ public class JobResultsFilenameFilterTest extends TestCase {
     private static final String ds_store = ".DS_Store";
     private static final String nfsExample = ".nfs00012.txt";
     private static final String gctExample = "all_aml_out.gct";
+    private static final String lsfExample = ".lsf_12.out";
     
     private JobResultsFilenameFilter filter = null;
     
@@ -29,6 +32,23 @@ public class JobResultsFilenameFilterTest extends TestCase {
         filter.addExactMatch(TASKLOG);
     }
 
+    /**
+     * Load the glob pattern from a .properties file
+     */
+    public void testGetProperties() throws Exception {
+        Properties props = new Properties();
+        InputStream properties = this.getClass().getResourceAsStream("jobsFilenameFilter.properties");
+        props.load(properties);
+        
+        String glob = props.getProperty(JobResultsFilenameFilter.KEY);
+        filter.setGlob(glob);
+        
+        assertFalse("accept('"+nfsExample+"')", filter.accept(dir, nfsExample));
+        assertFalse("accept('"+lsfExample+"')", filter.accept(dir, lsfExample));
+        assertTrue("accept('"+ds_store+"')", filter.accept(dir, ds_store));
+        assertTrue("accept('"+gctExample+"')", filter.accept(dir, gctExample));
+    }
+    
     /**
      * <pre>
        JobResultsFilenameFilter.setGlob(".nfs*").
