@@ -9,8 +9,14 @@
   whatsoever. Neither the Broad Institute nor MIT can be responsible for its
   use, misuse, or functionality.
 */ --%>
-<%@ page
-  import="java.io.File,java.util.zip.*,java.io.*,java.text.*,java.util.*,java.net.*,org.genepattern.server.webapp.jsf.AuthorizationHelper,org.genepattern.util.GPConstants,org.genepattern.webservice.JobInfo,org.genepattern.util.StringUtils,org.genepattern.webservice.JobStatus,org.genepattern.webservice.ParameterInfo,org.genepattern.webservice.WebServiceException,org.genepattern.server.webservice.server.local.*,org.genepattern.server.genepattern.GenePatternAnalysisTask"
+<%@ page import="java.io.File,
+  java.util.zip.*,
+  java.io.*,
+  java.text.*,
+  java.util.*,
+  java.net.*,
+  org.genepattern.server.webapp.jsf.AuthorizationHelper,
+  org.genepattern.util.GPConstants,org.genepattern.webservice.JobInfo,org.genepattern.util.StringUtils,org.genepattern.webservice.JobStatus,org.genepattern.webservice.ParameterInfo,org.genepattern.webservice.WebServiceException,org.genepattern.server.webservice.server.local.*,org.genepattern.server.genepattern.GenePatternAnalysisTask,org.genepattern.server.webservice.server.Analysis.JobSortOrder"
   session="false" contentType="text/html" language="Java"%>
 <%
     /*********************************************************
@@ -314,12 +320,12 @@ function createPipeline(filename) {
 
     JobInfo[] jobs = null;
     try {
+        JobSortOrder jobSortOrder = JobSortOrder.JOB_NUMBER;
         if (showAll) {
-            jobs = analysisClient.getJobs(null, -1, Integer.MAX_VALUE,
-                    false);
+            String nullStr = null;
+            jobs = analysisClient.getJobs(nullStr, -1, Integer.MAX_VALUE, false, jobSortOrder, false);
         } else {
-            jobs = analysisClient.getJobs(userID, -1,
-                    Integer.MAX_VALUE, false);
+            jobs = analysisClient.getJobs(userID, -1, Integer.MAX_VALUE, false, jobSortOrder, false);
         }
     } catch (WebServiceException wse) {
         wse.printStackTrace();
