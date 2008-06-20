@@ -342,7 +342,7 @@ function showFileInput(id) {
                         </div>
                         <span class="description" style="display:inline">
                         	<input type="radio" id="#{p.name}_cb_url" name="#{p.name}_cb" value="url" 
-                        		onclick="showUrlInput('#{p.name}');">Specify URL</input></span>
+                        		onclick="showUrlInput('#{p.name}');"><h:outputText rendered="#{runTaskBean.allowInputFilePaths}">Specify File Path or URL</h:outputText><h:outputText rendered="#{!runTaskBean.allowInputFilePaths}">Specify URL</h:outputText></input></span>
                         <span class="description" style="display:inline"><input type="radio" id="#{p.name}_cb_file" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');" checked="yes">Upload
 									File</input></span>
                       </h:outputText>
@@ -360,7 +360,7 @@ function showFileInput(id) {
                         </div>
                         <span class="description" style="display:inline">
                         	<input type="radio" id="#{p.name}_cb_url" name="#{p.name}_cb" value="url" onclick="showUrlInput('#{p.name}');" 
-                        		checked="yes">Specify URL</input>
+                        		checked="yes"><h:outputText rendered="#{runTaskBean.allowInputFilePaths}">Specify File Path or URL</h:outputText><h:outputText rendered="#{!runTaskBean.allowInputFilePaths}">Specify URL</h:outputText></input>
                         </span>
                         <span class="description" style="display:inline">
                         	<input type="radio" id="#{p.name}_cb_file" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');">Upload File</input>
