@@ -1,0 +1,15 @@
+# Run GISTIC using example datafiles in the PDF document
+#
+# requires login.twill
+
+go /gp/pages/index.jsf?lsid=GISTIC
+
+fv taskForm seg.file_cb url
+fv taskForm seg.file_url http://www.broad.mit.edu/mpr/publications/projects/CNS/segmented_data_080520.seg
+fv taskForm markers.file_cb url
+fv taskForm markers.file_url http://www.broad.mit.edu/mpr/publications/projects/CNS/100K_markerpositions.hg16.txt
+fv taskForm array.list.file_cb url
+fv taskForm array.list.file_url  http://www.broad.mit.edu/mpr/publications/projects/CNS/Glioma_array_list_080423.txt
+fv taskForm cnv.file_cb url
+fv taskForm cnv.file_url http://www.broad.mit.edu/mpr/publications/projects/CNS/100K_CNVs_080423.txt
+submit
