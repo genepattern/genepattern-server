@@ -89,8 +89,8 @@ public class AnalysisJob {
      * @es_generated
      */
     public void setStatus(JobStatus value) {
-     	log.debug("\tSetting status on " + this.getJobNo() +" to " + value.getStatusName());
-           this.jobStatus = value;
+        //log.debug("\tSetting status on " + this.getJobNo() +" to " + value.getStatusName());
+        this.jobStatus = value;
     }
 
     
