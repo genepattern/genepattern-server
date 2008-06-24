@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Ant build file --><project basedir="." default="installer" name="GPGEInstaller">
+<!-- Ant build file --><project basedir="." name="GPGEInstaller">
     
    
     	<target name="compile">
