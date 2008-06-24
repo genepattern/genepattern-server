@@ -1,0 +1,11 @@
+# run KNN with erroneous input
+go /gp/pages/index.jsf?lsid=KNNXValidation
+url /gp/pages/index.jsf
+fv taskForm data.filename_cb url
+fv taskForm data.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+fv taskForm class.filename_cb url
+fv taskForm class.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls
+submit
+find "An error was reported during execution of this module"
+find stderr.txt
+

@@ -1,0 +1,3 @@
+setglobal username test
+setglobal password test
+setglobal gpurl http://genepattern.broad.mit.edu/gp/

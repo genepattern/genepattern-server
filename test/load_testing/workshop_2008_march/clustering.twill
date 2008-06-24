@@ -1,0 +1,48 @@
+# Step 1: PreprocessDataset: 
+go /gp/pages/index.jsf?lsid=PreprocessDataset
+url /gp/pages/index.jsf
+fv taskForm input.filename_cb url
+fv taskForm input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.res
+submit
+code 200
+url /gp/runTaskPipeline.jsp
+# find the url to the output file, to be used as input to the next step
+find 'all_aml_train.preprocessed.res'
+run "mod_output = get_browser().find_link('all_aml_train.preprocessed.res')"
+# echo $mod_output.url, e.g. jobResults/11656/all_aml_train.preprocessed.res
+# echo $mod_output.text, e.g. all_aml_train.preprocessed.res
+# echo http://genepattern.broad.mit.edu/gp/${mod_output.url}, 
+#   e.g. http://genepattern.broad.mit.edu/gp/jobResults/11656/all_aml_train.preprocessed.res
+
+# Step 2: Hierarchical Clustering
+go /gp/pages/index.jsf?lsid=HierarchicalClustering
+fv taskForm input.filename_cb url
+fv taskForm input.filename_url ${gpurl}${mod_output.url}
+fv taskForm row.distance.measure "No row clustering"
+fv taskForm log.transform yes
+fv taskForm row.center no
+fv taskForm row.normalize yes
+fv taskForm column.center "Subtract the mean of each column"
+submit
+notfind stderr.txt
+find 'all_aml_train.preprocessed.cdt'
+find 'all_aml_train.preprocessed.atr'
+run "cdt_url = get_browser().find_link('all_aml_train.preprocessed.cdt')"
+run "atr_url = get_browser().find_link('all_aml_train.preprocessed.atr')"
+
+# Step 3: HierarchicalClusteringViewer
+go /gp/pages/index.jsf?lsid=HierarchicalClusteringViewer
+fv taskForm cdt.file_cb url
+fv taskForm cdt.file_url ${gpurl}${cdt_url.url}
+fv taskForm atr.file_cb url
+fv taskForm atr.file_url ${gpurl}${atr_url.url}
+submit
+code 200
+url /gp/preRunVisualizer.jsp
+# download the applet jar files
+go /gp/downloads/runVisualizer.jar
+code 200
+go /gp/downloads/commons-codec-1.3.jar
+code 200
+go /gp/downloads/commons-httpclient.jar
+code 200

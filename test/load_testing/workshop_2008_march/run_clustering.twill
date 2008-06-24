@@ -1,0 +1,5 @@
+setglobal username test
+setglobal password test
+setglobal gpurl http://genepatterntest.broad.mit.edu/gp/
+runfile login.twill
+runfile clustering.twill
