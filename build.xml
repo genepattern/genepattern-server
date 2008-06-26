@@ -439,11 +439,13 @@
         <mkdir dir="installer/GP_server_Build_Output/Web_Installers/InstData/warfile" />
         <copy file="gp_war.zip" todir="installer/GP_server_Build_Output/Web_Installers/InstData/warfile" />
 
+    	<!--
         <copy overwrite="true" todir="/xchip/genepattern/anthill3/server/opt/tomcat/webapps/gpinstalls/nightlyBuild">
             <fileset dir="installer/GP_server_Build_Output/Web_Installers" />
         </copy>
 
         <antcall target="publishGPGEinstallerToWWWDev" />
+        -->
     </target>
 
     <target name="publishBuild">
