@@ -104,5 +104,7 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/xercesImpl.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/xml-apis.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/xsltc.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry kind="output" path="website/WEB-INF/classes"/>
 </classpath>
