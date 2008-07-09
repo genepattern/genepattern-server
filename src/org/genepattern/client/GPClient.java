@@ -105,6 +105,16 @@ public class GPClient {
     }
 
     /**
+     * Terminate the job.
+     * @param jobId
+     * @throws WebServiceException
+     */
+    public void terminateJob(int jobId) throws WebServiceException {
+    	AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, username, password, false);
+    	analysisProxy.terminateJob(jobId);
+    }
+
+    /**
      * Creates a new <tt>JobResult</tt> instance for the given job number. Invoke this method after the job is
      * complete.
      * 
