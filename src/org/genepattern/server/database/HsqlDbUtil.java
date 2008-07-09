@@ -13,15 +13,12 @@
 package org.genepattern.server.database;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
