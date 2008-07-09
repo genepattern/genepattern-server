@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- This script was automatically generated using Macrovision InstallAnywhere 2008 Enterprise, Build 3428
+<!-- This script was automatically generated using Macrovision InstallAnywhere 2008 VP1 Enterprise, Build 3532
      STATUS: Fully Functional LICENSED Edition
-     DATE:   Thu Mar 27 11:58:33 EDT 2008 -->
-<InstallAnywhere_Deployment_Project increments="12146">
+     DATE:   Tue Jul 08 19:50:08 EDT 2008 -->
+<InstallAnywhere_Deployment_Project increments="12176">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
-		<versionID major="9" minor="0" revision="0"/>
-		<editionID>57,46,48,32,69,110,116,101,114,112,114,105,115,101,32,66,117,105,108,100,32,51,52,50,56</editionID>
-		<scriptID>12,42,11,69,56,51,52,57,70,56,54,82,56,82,74,88,57,70,54,67,70,56,72,53,55,85</scriptID>
-		<buildID>3,13,71,76,105,110,117,120,44,32,50,46,54,46,56,45,50,52,46,50,52,45,115,109,112,44,32,105,51,56,54,59,32,74,97,118,97,32,49,46,53,46,48,95,49,49,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,65,78,83,73,95,88,51,46,52,45,49,57,54,56</buildID>
+		<versionID major="9" minor="5" revision="0"/>
+		<editionID>57,46,53,32,69,110,116,101,114,112,114,105,115,101,32,66,117,105,108,100,32,51,53,51,50</editionID>
+		<scriptID>12,42,11,69,50,57,49,57,68,68,87,52,78,55,86,82,81,86,81,55,68,78,89,85,76,87</scriptID>
+		<buildID>3,13,71,76,105,110,117,120,44,32,50,46,54,46,56,45,50,52,46,50,52,45,115,109,112,44,32,97,109,100,54,52,59,32,74,97,118,97,32,49,46,53,46,48,95,48,57,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,65,78,83,73,95,88,51,46,52,45,49,57,54,56</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,16,-13,-8,64,16,80,112,118,100,85,99,113,97,113,65,81,84,74,67,70,68,72,74,64,69,66,69,64,95,71,5,2,4,2,102,96,8,1,0,0</authorizationID>
+		<authorizationID>1,0,0,16,3,24,0,64,80,112,118,100,85,99,113,97,113,65,81,84,74,67,70,68,72,74,64,69,66,69,64,95,71,5,2,12,5,101,101,11,1,0,0</authorizationID>
 	</essentialScriptInfo>
-	<installationObjects uniqueObjects="682">
+	<installationObjects uniqueObjects="687">
 		<object class="com.zerog.ia.installer.Installer" objectID="72a1c4b4b1bf">
 			<property name="wizardME">
 				<object class="com.zerog.ia.installer.actions.MakeExecutable" objectID="cbe07101a254">
@@ -422,15 +422,15 @@ and any path to a file to read from that file]]></string>
 							<property name="propertyList">
 								<object class="java.util.Vector">
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="047604adafa2">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="815d855c8bec">
 											<property name="propertyValue">
 												<string><![CDATA[]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[R_HOME]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>0</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
@@ -498,158 +498,158 @@ and any path to a file to read from that file]]></string>
 							<property name="propertyList">
 								<object class="java.util.Vector">
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="0476191cafa2">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="735e730f89ed">
 											<property name="propertyValue">
 												<string><![CDATA[7]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[purgeJobsAfter]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>0</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="0476191dafa2">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="735e731089ed">
 											<property name="propertyValue">
 												<string><![CDATA[false]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[require.password]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>0</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="0476191eafa2">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="735e730f89ee">
 											<property name="propertyValue">
 												<string><![CDATA[http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_get_authority.cgi]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[CHECK_IP_ADDRESS_URL]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>0</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="0476191dafa3">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="735e731089ee">
 											<property name="propertyValue">
 												<string><![CDATA[modules_pre_1_3]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[OLD_TASKS_ZIP_DIR]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>0</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="0476191eafa3">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="735e730f89ef">
 											<property name="propertyValue">
 												<string><![CDATA[@version.minor@]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[version.minor]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>0</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="0476191dafa4">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="735e731089ef">
 											<property name="propertyValue">
 												<string><![CDATA[@version.major@.@version.minor@]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[GENEPATTERN_VERSION]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>0</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="0476191eafa4">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="735e731189ef">
 											<property name="propertyValue">
 												<string><![CDATA[23:00]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[purgeTime]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>0</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="0476191dafa5">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="735e731089f0">
 											<property name="propertyValue">
 												<string><![CDATA[@version.major@]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[version.major]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>0</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="0476191eafa5">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="735e731189f0">
 											<property name="propertyValue">
 												<string><![CDATA[@buildrelease@]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[buildrelease]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>0</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="04761920afa5">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="735e731089f1">
 											<property name="propertyValue">
 												<string><![CDATA[@builddate@]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[builddate]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>0</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="0476191eafa6">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="735e731189f1">
 											<property name="propertyValue">
 												<string><![CDATA[@buildtag@]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[buildtag]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>0</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="0476191fafa6">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="735e731089f2">
 											<property name="propertyValue">
 												<string><![CDATA[false]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[MAC_APPLICATIONS_WRITABLE]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>0</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
@@ -1490,318 +1490,327 @@ R is freely available from http://www.r-project.org/.]]></string>
 						</object>
 					</method>
 					<method name="addElement">
-						<object class="com.zerog.ia.installer.actions.LicenseAgrAction" objectID="1fd0f094a5aa">
-							<property name="imageOption">
-								<int>1</int>
+						<object class="com.zerog.ia.installer.actions.ActionGroup" objectID="1885607d9cd2">
+							<property name="groupName">
+								<string><![CDATA[License Panels]]></string>
 							</property>
-							<property name="labelOption">
-								<int>2</int>
-							</property>
-							<property name="labelIndex">
-								<int>2</int>
-							</property>
-							<property name="title">
-								<string><![CDATA[Apache Tomcat License Agreement]]></string>
-							</property>
-							<property name="stepPrompt">
-								<string><![CDATA[Installation and use of Apache Tomcat requires acceptance of the following license agreement:]]></string>
-							</property>
-							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$/gpdist/Tomcat/]]></string>
-							</property>
-							<property name="resourceName">
-								<string><![CDATA[LICENSE]]></string>
-							</property>
-							<property name="sourceFileType">
-								<int>0</int>
-							</property>
-							<property name="requiresUserChoice">
-								<boolean>true</boolean>
-							</property>
-							<property name="agreeWithLicenseByDefault">
-								<boolean>false</boolean>
-							</property>
-							<property name="forceScroll">
-								<boolean>false</boolean>
-							</property>
-							<property name="openExternalLinks">
-								<boolean>true</boolean>
-							</property>
-							<property name="help">
-								<object class="com.zerog.ia.installer.util.Help" objectID="1fd0f095a5aa">
-									<property name="showHelp">
+							<visualChildren>
+								<object class="com.zerog.ia.installer.actions.LicenseAgrAction" objectID="1fd0f094a5aa">
+									<property name="imageOption">
+										<int>1</int>
+									</property>
+									<property name="labelOption">
+										<int>2</int>
+									</property>
+									<property name="labelIndex">
+										<int>2</int>
+									</property>
+									<property name="title">
+										<string><![CDATA[Apache Tomcat License Agreement]]></string>
+									</property>
+									<property name="stepPrompt">
+										<string><![CDATA[Installation and use of Apache Tomcat requires acceptance of the following license agreement:]]></string>
+									</property>
+									<property name="resourcePath">
+										<string><![CDATA[$IA_PROJECT_DIR$/gpdist/Tomcat/]]></string>
+									</property>
+									<property name="resourceName">
+										<string><![CDATA[LICENSE]]></string>
+									</property>
+									<property name="sourceFileType">
+										<int>0</int>
+									</property>
+									<property name="requiresUserChoice">
+										<boolean>true</boolean>
+									</property>
+									<property name="agreeWithLicenseByDefault">
 										<boolean>false</boolean>
 									</property>
-								</object>
-							</property>
-						</object>
-					</method>
-					<method name="addElement">
-						<object class="com.zerog.ia.installer.actions.LicenseAgrAction" objectID="1fd243c0a5aa">
-							<property name="imageOption">
-								<int>1</int>
-							</property>
-							<property name="labelOption">
-								<int>2</int>
-							</property>
-							<property name="labelIndex">
-								<int>3</int>
-							</property>
-							<property name="title">
-								<string><![CDATA[ActiveState Perl License Agreement]]></string>
-							</property>
-							<property name="stepPrompt">
-								<string><![CDATA[Installation and use of ActiveState Perl requires acceptance of the following license agreement:]]></string>
-							</property>
-							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$/../resources/]]></string>
-							</property>
-							<property name="resourceName">
-								<string><![CDATA[EULA-Community_License.txt]]></string>
-							</property>
-							<property name="sourceFileType">
-								<int>0</int>
-							</property>
-							<property name="requiresUserChoice">
-								<boolean>true</boolean>
-							</property>
-							<property name="agreeWithLicenseByDefault">
-								<boolean>false</boolean>
-							</property>
-							<property name="forceScroll">
-								<boolean>false</boolean>
-							</property>
-							<property name="openExternalLinks">
-								<boolean>true</boolean>
-							</property>
-							<property name="help">
-								<object class="com.zerog.ia.installer.util.Help" objectID="1fddd0c8a5aa">
-									<property name="showHelp">
+									<property name="forceScroll">
 										<boolean>false</boolean>
 									</property>
-								</object>
-							</property>
-							<rules logicalOperation="AND">
-								<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="1fd9be0fa5aa">
-									<property name="installOnPlatformList">
-										<object class="java.util.Vector">
-											<method name="addElement">
-												<string><![CDATA[Windows 95]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Windows 98]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Windows NT]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Windows Me]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Windows 2000]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Windows XP]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Windows 2003]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Windows Vista]]></string>
-											</method>
-										</object>
+									<property name="openExternalLinks">
+										<boolean>true</boolean>
 									</property>
-									<property name="doNotInstallOnPlatformList">
-										<object class="java.util.Vector">
-											<method name="addElement">
-												<string><![CDATA[Mac OS X]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[OS/2]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Solaris]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[SunOS]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[HP-UX]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Linux]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[AIX]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Irix]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[DG-UX]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Compaq's Digital UNIX]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[FreeBSD]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Rhapsody]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[NetWare]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[z/OS]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[OS/390]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Unlisted Platforms]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[OS/400]]></string>
-											</method>
+									<property name="help">
+										<object class="com.zerog.ia.installer.util.Help" objectID="1fd0f095a5aa">
+											<property name="showHelp">
+												<boolean>false</boolean>
+											</property>
 										</object>
 									</property>
 								</object>
-							</rules>
-						</object>
-					</method>
-					<method name="addElement">
-						<object class="com.zerog.ia.installer.actions.LicenseAgrAction" objectID="1fd3acd6a5aa">
-							<property name="imageOption">
-								<int>1</int>
-							</property>
-							<property name="labelOption">
-								<int>2</int>
-							</property>
-							<property name="labelIndex">
-								<int>4</int>
-							</property>
-							<property name="title">
-								<string><![CDATA[R License Agreement]]></string>
-							</property>
-							<property name="stepPrompt">
-								<string><![CDATA[Installation and use of R requires acceptance of the following license agreement:]]></string>
-							</property>
-							<property name="resourcePath">
-								<string><![CDATA[$IA_PROJECT_DIR$/../resources/]]></string>
-							</property>
-							<property name="resourceName">
-								<string><![CDATA[RLicense]]></string>
-							</property>
-							<property name="sourceFileType">
-								<int>0</int>
-							</property>
-							<property name="requiresUserChoice">
-								<boolean>true</boolean>
-							</property>
-							<property name="agreeWithLicenseByDefault">
-								<boolean>false</boolean>
-							</property>
-							<property name="forceScroll">
-								<boolean>false</boolean>
-							</property>
-							<property name="openExternalLinks">
-								<boolean>true</boolean>
-							</property>
-							<property name="help">
-								<object class="com.zerog.ia.installer.util.Help" objectID="1fddd0c9a5aa">
-									<property name="showHelp">
+								<object class="com.zerog.ia.installer.actions.LicenseAgrAction" objectID="1fd243c0a5aa">
+									<property name="imageOption">
+										<int>1</int>
+									</property>
+									<property name="labelOption">
+										<int>2</int>
+									</property>
+									<property name="labelIndex">
+										<int>3</int>
+									</property>
+									<property name="title">
+										<string><![CDATA[ActiveState Perl License Agreement]]></string>
+									</property>
+									<property name="stepPrompt">
+										<string><![CDATA[Installation and use of ActiveState Perl requires acceptance of the following license agreement:]]></string>
+									</property>
+									<property name="resourcePath">
+										<string><![CDATA[/xchip/genepattern/tools/hudson/jobs/GenePattern_3.1.1/workspace/gp-3.1.1/resources/]]></string>
+									</property>
+									<property name="resourceName">
+										<string><![CDATA[EULA-Community_License.txt]]></string>
+									</property>
+									<property name="existingFilePath">
+										<string><![CDATA[EULA-Community_License.txt]]></string>
+									</property>
+									<property name="sourceFileType">
+										<int>0</int>
+									</property>
+									<property name="requiresUserChoice">
+										<boolean>true</boolean>
+									</property>
+									<property name="agreeWithLicenseByDefault">
 										<boolean>false</boolean>
 									</property>
-								</object>
-							</property>
-							<rules logicalOperation="AND">
-								<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="1fd972aea5aa">
-									<property name="installOnPlatformList">
-										<object class="java.util.Vector">
-											<method name="addElement">
-												<string><![CDATA[Windows 95]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Windows 98]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Windows NT]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Windows Me]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Windows 2000]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Windows XP]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Windows 2003]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Windows Vista]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Mac OS X]]></string>
-											</method>
+									<property name="forceScroll">
+										<boolean>false</boolean>
+									</property>
+									<property name="openExternalLinks">
+										<boolean>true</boolean>
+									</property>
+									<property name="help">
+										<object class="com.zerog.ia.installer.util.Help" objectID="1fddd0c8a5aa">
+											<property name="showHelp">
+												<boolean>false</boolean>
+											</property>
 										</object>
 									</property>
-									<property name="doNotInstallOnPlatformList">
-										<object class="java.util.Vector">
-											<method name="addElement">
-												<string><![CDATA[OS/2]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Solaris]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[SunOS]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[HP-UX]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Linux]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[AIX]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Irix]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[DG-UX]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Compaq's Digital UNIX]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[FreeBSD]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Rhapsody]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[NetWare]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[z/OS]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[OS/390]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[Unlisted Platforms]]></string>
-											</method>
-											<method name="addElement">
-												<string><![CDATA[OS/400]]></string>
-											</method>
+									<rules logicalOperation="AND">
+										<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="1fd9be0fa5aa">
+											<property name="installOnPlatformList">
+												<object class="java.util.Vector">
+													<method name="addElement">
+														<string><![CDATA[Windows 95]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Windows 98]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Windows NT]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Windows Me]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Windows 2000]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Windows XP]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Windows 2003]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Windows Vista]]></string>
+													</method>
+												</object>
+											</property>
+											<property name="doNotInstallOnPlatformList">
+												<object class="java.util.Vector">
+													<method name="addElement">
+														<string><![CDATA[Mac OS X]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[OS/2]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Solaris]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[SunOS]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[HP-UX]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Linux]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[AIX]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Irix]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[DG-UX]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Compaq's Digital UNIX]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[FreeBSD]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Rhapsody]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[NetWare]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[z/OS]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[OS/390]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Unlisted Platforms]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[OS/400]]></string>
+													</method>
+												</object>
+											</property>
+										</object>
+									</rules>
+								</object>
+								<object class="com.zerog.ia.installer.actions.LicenseAgrAction" objectID="1fd3acd6a5aa">
+									<property name="imageOption">
+										<int>1</int>
+									</property>
+									<property name="labelOption">
+										<int>2</int>
+									</property>
+									<property name="labelIndex">
+										<int>4</int>
+									</property>
+									<property name="title">
+										<string><![CDATA[R License Agreement]]></string>
+									</property>
+									<property name="stepPrompt">
+										<string><![CDATA[Installation and use of R requires acceptance of the following license agreement:]]></string>
+									</property>
+									<property name="resourcePath">
+										<string><![CDATA[/xchip/genepattern/tools/hudson/jobs/GenePattern_3.1.1/workspace/gp-3.1.1/resources/]]></string>
+									</property>
+									<property name="resourceName">
+										<string><![CDATA[RLicense]]></string>
+									</property>
+									<property name="existingFilePath">
+										<string><![CDATA[RLicense]]></string>
+									</property>
+									<property name="sourceFileType">
+										<int>0</int>
+									</property>
+									<property name="requiresUserChoice">
+										<boolean>true</boolean>
+									</property>
+									<property name="agreeWithLicenseByDefault">
+										<boolean>false</boolean>
+									</property>
+									<property name="forceScroll">
+										<boolean>false</boolean>
+									</property>
+									<property name="openExternalLinks">
+										<boolean>true</boolean>
+									</property>
+									<property name="help">
+										<object class="com.zerog.ia.installer.util.Help" objectID="1fddd0c9a5aa">
+											<property name="showHelp">
+												<boolean>false</boolean>
+											</property>
 										</object>
 									</property>
+									<rules logicalOperation="AND">
+										<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="1fd972aea5aa">
+											<property name="installOnPlatformList">
+												<object class="java.util.Vector">
+													<method name="addElement">
+														<string><![CDATA[Windows 95]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Windows 98]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Windows NT]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Windows Me]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Windows 2000]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Windows XP]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Windows 2003]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Windows Vista]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Mac OS X]]></string>
+													</method>
+												</object>
+											</property>
+											<property name="doNotInstallOnPlatformList">
+												<object class="java.util.Vector">
+													<method name="addElement">
+														<string><![CDATA[OS/2]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Solaris]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[SunOS]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[HP-UX]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Linux]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[AIX]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Irix]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[DG-UX]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Compaq's Digital UNIX]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[FreeBSD]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Rhapsody]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[NetWare]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[z/OS]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[OS/390]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[Unlisted Platforms]]></string>
+													</method>
+													<method name="addElement">
+														<string><![CDATA[OS/400]]></string>
+													</method>
+												</object>
+											</property>
+										</object>
+									</rules>
 								</object>
-							</rules>
+							</visualChildren>
 						</object>
 					</method>
 					<method name="addElement">
@@ -2940,6 +2949,12 @@ If you do not have write permission to this directory, the GenePattern server  w
 							</property>
 							<property name="showPleaseWaitPanel">
 								<boolean>true</boolean>
+							</property>
+							<property name="showIndeterminateDialog">
+								<boolean>false</boolean>
+							</property>
+							<property name="indeterminateDialogText">
+								<string><![CDATA[Executing ANT Script...]]></string>
 							</property>
 							<rules logicalOperation="AND">
 								<object class="com.zerog.ia.installer.rules.FileFolderPathChk" objectID="bb516350ad1f">
@@ -4954,7 +4969,7 @@ If your proxy requires authentication you will need to provide the username and 
 										<string><![CDATA[GenePatternHome.html]]></string>
 									</property>
 									<property name="fileSize">
-										<long>161</long>
+										<long>154</long>
 									</property>
 									<property name="macBinary">
 										<boolean>false</boolean>
@@ -5923,6 +5938,12 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 							<property name="showPleaseWaitPanel">
 								<boolean>true</boolean>
 							</property>
+							<property name="showIndeterminateDialog">
+								<boolean>false</boolean>
+							</property>
+							<property name="indeterminateDialogText">
+								<string><![CDATA[Executing ANT Script...]]></string>
+							</property>
 						</object>
 					</method>
 					<method name="addElement">
@@ -6378,6 +6399,12 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 							<property name="showPleaseWaitPanel">
 								<boolean>true</boolean>
 							</property>
+							<property name="showIndeterminateDialog">
+								<boolean>false</boolean>
+							</property>
+							<property name="indeterminateDialogText">
+								<string><![CDATA[Executing ANT Script...]]></string>
+							</property>
 							<rules logicalOperation="AND">
 								<object class="com.zerog.ia.installer.rules.CompareVariable" objectID="cfa008398fd9">
 									<property name="operation">
@@ -6771,7 +6798,7 @@ chmod -R 775 $R25base$$/$resources$/$bin$/$*
 							<property name="installSuccessMessage">
 								<string><![CDATA[Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:
      $USER_INSTALL_DIR$
-A web page to complete the installation which will open following the installer.  Press "Done" to quit the installer.]]></string>
+A web page to complete the installation will open after you close this installer.  Press "Done" to close the installer.]]></string>
 							</property>
 							<property name="installWarningMessage">
 								<string><![CDATA[Congratulations! $PRODUCT_NAME$  $version.major$.$version.minor$ has been installed to:
@@ -7119,6 +7146,12 @@ Some warnings were generated during the install. The install log will be opened 
 							</property>
 							<property name="showPleaseWaitPanel">
 								<boolean>true</boolean>
+							</property>
+							<property name="showIndeterminateDialog">
+								<boolean>false</boolean>
+							</property>
+							<property name="indeterminateDialogText">
+								<string><![CDATA[Executing ANT Script...]]></string>
 							</property>
 						</object>
 					</method>
@@ -7619,11 +7652,11 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 			<property name="buildConfigurations">
 				<object class="java.util.Vector">
 					<method name="addElement">
-						<object class="com.zerog.ia.designer.build.BuildConfiguration" objectID="0473382faf03">
+						<object class="com.zerog.ia.designer.build.BuildConfiguration" objectID="6d3e301889ac">
 							<property name="buildTargets">
 								<object class="java.util.Vector">
 									<method name="addElement">
-										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="04733830af03">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="6d3e301989ac">
 											<property name="type">
 												<int>2</int>
 											</property>
@@ -7639,7 +7672,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="04733831af03">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="6d3e301b89ac">
 											<property name="type">
 												<int>0</int>
 											</property>
@@ -7658,7 +7691,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="04733833af03">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="6d3e301989ad">
 											<property name="type">
 												<int>3</int>
 											</property>
@@ -7677,7 +7710,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="04733831af04">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="6d3e301a89ad">
 											<property name="type">
 												<int>5</int>
 											</property>
@@ -7696,7 +7729,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="04733832af04">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="6d3e301c89ad">
 											<property name="type">
 												<int>1</int>
 											</property>
@@ -7715,7 +7748,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="04733833af04">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="6d3e301a89ae">
 											<property name="type">
 												<int>4</int>
 											</property>
@@ -7734,7 +7767,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="04733835af04">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="6d3e301b89ae">
 											<property name="type">
 												<int>8</int>
 											</property>
@@ -7750,7 +7783,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="04733833af05">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="6d3e301d89ae">
 											<property name="type">
 												<int>6</int>
 											</property>
@@ -7769,7 +7802,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="04733834af05">
+										<object class="com.zerog.ia.designer.build.BuildTarget" objectID="6d3e301b89af">
 											<property name="type">
 												<int>7</int>
 											</property>
@@ -7802,7 +7835,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="buildOutputLocation">
-								<string><![CDATA[$IA_PROJECT_DIR$/../server_Build_Output]]></string>
+								<string><![CDATA[/xchip/genepattern/tools/hudson/jobs/GenePattern_3.1.1/workspace/gp-3.1.1/installer/server_Build_Output]]></string>
 							</property>
 							<property name="defaultWindowsUIMode">
 								<string><![CDATA[GUI]]></string>
@@ -7866,7 +7899,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.build.last.date]]></string>
-						<string><![CDATA[December 17, 2007 9:08:34 AM EST]]></string>
+						<string><![CDATA[July 8, 2008 7:48:01 PM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.windows.vm]]></string>
@@ -7922,7 +7955,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[March 27, 2008 11:58:33 AM EDT]]></string>
+						<string><![CDATA[July 8, 2008 7:50:08 PM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.cdrom]]></string>
@@ -8120,7 +8153,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 						</object>
 					</property>
 					<property name="productVersion">
-						<object class="com.zerog.ia.installer.util.Version" objectID="0473383eaf05">
+						<object class="com.zerog.ia.installer.util.Version" objectID="6d3e302289af">
 							<property name="major">
 								<int>3</int>
 							</property>
@@ -8571,6 +8604,9 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 			<property name="removeUnreferencedLocaleKeys">
 				<boolean>false</boolean>
 			</property>
+			<property name="notUpdateGlobalRegistry">
+				<boolean>false</boolean>
+			</property>
 			<visualChildren>
 				<object class="com.zerog.ia.installer.InstallSet" objectID="72a1c57eb1d3">
 					<property name="imagePath">
@@ -8723,7 +8759,7 @@ Relative paths are relative to the launcher.]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0473389caf09">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="baefc8beb793">
 															<property name="propertyValue">
 																<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
 															</property>
@@ -9456,7 +9492,7 @@ and any path to a file to read from that file]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="totalSize">
-												<long>27595</long>
+												<long>27506</long>
 											</property>
 											<property name="unixPermissions">
 												<string><![CDATA[775]]></string>
@@ -9721,6 +9757,25 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																</object>
 															</method>
+															<method name="addElement">
+																<object class="com.zerog.ia.installer.PatternAtom" objectID="1889c8ca9d4c">
+																	<property name="searchDescription">
+																		<string><![CDATA[Begins With]]></string>
+																	</property>
+																	<property name="includeExcludeState">
+																		<string><![CDATA[Excludes]]></string>
+																	</property>
+																	<property name="matchString">
+																		<string><![CDATA[.svn]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Folders]]></string>
+																	</property>
+																</object>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -9740,7 +9795,7 @@ and any path to a file to read from that file]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="totalSize">
-												<long>15004171</long>
+												<long>15092049</long>
 											</property>
 											<property name="unixPermissions">
 												<string><![CDATA[775]]></string>
@@ -9909,6 +9964,25 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																</object>
 															</method>
+															<method name="addElement">
+																<object class="com.zerog.ia.installer.PatternAtom" objectID="188a5b1b9d4f">
+																	<property name="searchDescription">
+																		<string><![CDATA[Begins With]]></string>
+																	</property>
+																	<property name="includeExcludeState">
+																		<string><![CDATA[Excludes]]></string>
+																	</property>
+																	<property name="matchString">
+																		<string><![CDATA[.svn]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Folders]]></string>
+																	</property>
+																</object>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -9974,7 +10048,7 @@ and any path to a file to read from that file]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="totalSize">
-												<long>38314507</long>
+												<long>38347458</long>
 											</property>
 											<property name="unixPermissions">
 												<string><![CDATA[775]]></string>
@@ -10181,6 +10255,25 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																</object>
 															</method>
+															<method name="addElement">
+																<object class="com.zerog.ia.installer.PatternAtom" objectID="188b76d59d53">
+																	<property name="searchDescription">
+																		<string><![CDATA[Begins With]]></string>
+																	</property>
+																	<property name="includeExcludeState">
+																		<string><![CDATA[Excludes]]></string>
+																	</property>
+																	<property name="matchString">
+																		<string><![CDATA[.svn]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Folders]]></string>
+																	</property>
+																</object>
+															</method>
 														</object>
 													</property>
 												</object>
@@ -10328,6 +10421,25 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="typeOption">
 																		<string><![CDATA[Files and Folders]]></string>
+																	</property>
+																</object>
+															</method>
+															<method name="addElement">
+																<object class="com.zerog.ia.installer.PatternAtom" objectID="188c1e9e9d56">
+																	<property name="searchDescription">
+																		<string><![CDATA[Begins With]]></string>
+																	</property>
+																	<property name="includeExcludeState">
+																		<string><![CDATA[Excludes]]></string>
+																	</property>
+																	<property name="matchString">
+																		<string><![CDATA[.svn]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Folders]]></string>
 																	</property>
 																</object>
 															</method>
@@ -10634,7 +10746,7 @@ it will search for ones in this list]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="04733938af17">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="baefc8e5b7c6">
 															<property name="propertyValue">
 																<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
 															</property>
@@ -11463,7 +11575,7 @@ Relative paths are relative to the launcher.]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0473396caf1d">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="baefc903b7d7">
 															<property name="propertyValue">
 																<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
 															</property>
@@ -12203,7 +12315,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[gp-full.jar]]></string>
 											</property>
 											<property name="fileSize">
-												<long>869711</long>
+												<long>888163</long>
 											</property>
 											<property name="macBinary">
 												<boolean>false</boolean>
@@ -12246,7 +12358,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="totalSize">
-												<long>7250587</long>
+												<long>7269039</long>
 											</property>
 											<property name="unixPermissions">
 												<string><![CDATA[775]]></string>
@@ -12860,7 +12972,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[GenePattern.zip]]></string>
 											</property>
 											<property name="fileSize">
-												<long>5473254</long>
+												<long>5488699</long>
 											</property>
 											<property name="macBinary">
 												<boolean>false</boolean>
@@ -13222,7 +13334,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[GenePatternMatlab.zip]]></string>
 											</property>
 											<property name="fileSize">
-												<long>6241987</long>
+												<long>6276220</long>
 											</property>
 											<property name="macBinary">
 												<boolean>false</boolean>
@@ -13280,7 +13392,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[runVisualizer.jar]]></string>
 											</property>
 											<property name="fileSize">
-												<long>14434</long>
+												<long>14587</long>
 											</property>
 											<property name="macBinary">
 												<boolean>false</boolean>
@@ -13338,7 +13450,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[analysis.jar]]></string>
 											</property>
 											<property name="fileSize">
-												<long>2488</long>
+												<long>2487</long>
 											</property>
 											<property name="macBinary">
 												<boolean>false</boolean>
@@ -13809,7 +13921,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														<string><![CDATA[hibernate.cfg.xml]]></string>
 													</property>
 													<property name="fileSize">
-														<long>2252</long>
+														<long>2293</long>
 													</property>
 													<property name="macBinary">
 														<boolean>false</boolean>
@@ -13865,7 +13977,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[log4j.properties]]></string>
 											</property>
 											<property name="fileSize">
-												<long>1469</long>
+												<long>1432</long>
 											</property>
 											<property name="macBinary">
 												<boolean>false</boolean>
@@ -13950,22 +14062,22 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[664]]></string>
 											</property>
 											<property name="sourceName">
-												<string><![CDATA[GenePattern_1.0.0.tar.gz]]></string>
+												<string><![CDATA[GenePattern_1.0.1.tar.gz]]></string>
 											</property>
 											<property name="overrideUnixPermissions">
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$/../clients/R/downloads/]]></string>
+												<string><![CDATA[/xchip/genepattern/tools/hudson/jobs/GenePattern_3.1.1/workspace/gp-3.1.1/clients/R/downloads/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
 											</property>
 											<property name="destinationName">
-												<string><![CDATA[GenePattern_1.0.0.tar.gz]]></string>
+												<string><![CDATA[GenePattern_1.0.1.tar.gz]]></string>
 											</property>
 											<property name="fileSize">
-												<long>4191222</long>
+												<long>3680523</long>
 											</property>
 											<property name="macBinary">
 												<boolean>false</boolean>
@@ -13979,22 +14091,22 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[664]]></string>
 											</property>
 											<property name="sourceName">
-												<string><![CDATA[GenePattern_1.0.0.tgz]]></string>
+												<string><![CDATA[GenePattern_1.0.1.tgz]]></string>
 											</property>
 											<property name="overrideUnixPermissions">
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$/../clients/R/downloads/]]></string>
+												<string><![CDATA[/xchip/genepattern/tools/hudson/jobs/GenePattern_3.1.1/workspace/gp-3.1.1/clients/R/downloads/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
 											</property>
 											<property name="destinationName">
-												<string><![CDATA[GenePattern_1.0.0.tgz]]></string>
+												<string><![CDATA[GenePattern_1.0.1.tgz]]></string>
 											</property>
 											<property name="fileSize">
-												<long>4189424</long>
+												<long>3679384</long>
 											</property>
 											<property name="macBinary">
 												<boolean>false</boolean>
@@ -14039,22 +14151,22 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														<string><![CDATA[664]]></string>
 													</property>
 													<property name="sourceName">
-														<string><![CDATA[GenePattern_1.0.0.zip]]></string>
+														<string><![CDATA[GenePattern_1.0.1.zip]]></string>
 													</property>
 													<property name="overrideUnixPermissions">
 														<boolean>false</boolean>
 													</property>
 													<property name="sourcePath">
-														<string><![CDATA[$IA_PROJECT_DIR$/../clients/R/downloads/]]></string>
+														<string><![CDATA[/xchip/genepattern/tools/hudson/jobs/GenePattern_3.1.1/workspace/gp-3.1.1/clients/R/downloads/]]></string>
 													</property>
 													<property name="shouldUninstall">
 														<boolean>true</boolean>
 													</property>
 													<property name="destinationName">
-														<string><![CDATA[GenePattern_1.0.0.zip]]></string>
+														<string><![CDATA[GenePattern_1.0.1.zip]]></string>
 													</property>
 													<property name="fileSize">
-														<long>4198492</long>
+														<long>3688876</long>
 													</property>
 													<property name="macBinary">
 														<boolean>false</boolean>
@@ -15435,7 +15547,7 @@ Relative paths are relative to the launcher.]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="04733a45af26">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="baefc953b811">
 															<property name="propertyValue">
 																<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
 															</property>
@@ -16451,7 +16563,7 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 				<object refID="9777adc98096"/>
 				<object refID="72a1c588b1d5"/>
 				<object refID="6230d0838734"/>
-				<object class="com.zerog.ia.installer.hosts.OSHost" objectID="04733a7baf32">
+				<object class="com.zerog.ia.installer.hosts.OSHost" objectID="6d3e31d789ec">
 					<visualChildren>
 						<object class="com.zerog.ia.installer.GhostDirectory" objectID="72a1c569b1d2">
 							<property name="destinationFolder">
