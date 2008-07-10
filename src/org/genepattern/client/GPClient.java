@@ -160,6 +160,40 @@ public class GPClient {
     }
 
     /**
+     * Checks if the given module is cached from the server.
+     * 
+     * @param moduleNameOrLsid
+     *                The module name or LSID. When an LSID is provided that does not include a version, the latest
+     *                available version of the task identified by the LSID will be used. If a module name is supplied,
+     *                the latest version of the module with the nearest authority is selected. The nearest authority is
+     *                the first match in the sequence: local authority, Broad authority, other authority.
+     * @return <tt>true</tt> if the module is cached<tt>false</tt> otherwise.
+     */
+    public boolean isCached(String moduleNameOrLsid) {
+	return cachedTasks.containsKey(moduleNameOrLsid);
+    }
+
+    /**
+     * Returns the TaskInfo object for the specified module name or lsid.
+     * 
+     * @param moduleNameOrLsid
+     *                The module name or LSID. When an LSID is provided that does not include a version, the latest
+     *                available version of the task identified by the LSID will be used. If a module name is supplied,
+     *                the latest version of the module with the nearest authority is selected. The nearest authority is
+     *                the first match in the sequence: local authority, Broad authority, other authority.
+     * @return The <tt>TaskInfo</tt> object.
+     * @throws WebServiceException
+     *                 If an error occurs while getting the parameters.
+     */
+    public TaskInfo getModule(String moduleNameOrLsid) throws WebServiceException {
+	try {
+	    return getTask(moduleNameOrLsid);
+	} catch (org.genepattern.webservice.WebServiceException wse) {
+	    throw new WebServiceException(wse.getMessage(), wse.getRootCause());
+	}
+    }
+
+    /**
      * Returns the array of parameters for the specified module name or lsid.
      * 
      * @param moduleNameOrLsid
@@ -239,19 +273,34 @@ public class GPClient {
 	try {
 	    TaskInfo taskInfo = getTask(moduleNameOrLsid);
 	    ParameterInfo[] actualParameters = GPClient.createParameterInfoArray(taskInfo, parameters);
-	    AnalysisWebServiceProxy analysisProxy = null;
-	    try {
-		analysisProxy = new AnalysisWebServiceProxy(server, username, password);
-		analysisProxy.setTimeout(Integer.MAX_VALUE);
-	    } catch (Exception x) {
-		throw new WebServiceException(x);
-	    }
-	    AnalysisJob job = submitJob(analysisProxy, taskInfo, actualParameters);
-	    waitForErrorOrCompletion(analysisProxy, job);
-	    return createJobResult(job.getJobInfo());
+	    return runAnalysis(taskInfo, actualParameters);
 	} catch (org.genepattern.webservice.WebServiceException wse) {
 	    throw new WebServiceException(wse.getMessage(), wse.getRootCause());
 	}
+    }
+
+    /**
+     * Submits the given module with the given parameters and waits for the job to complete.
+     * 
+     * @param taskInfo
+     *                The <tt>TaskInfo</tt> object
+     * @param parameters
+     *                The parameters to run the module with.
+     * @return The job result.
+     * @throws WebServiceException
+     *                 If an error occurs during the job submission or job result retrieval process.
+     */
+    public JobResult runAnalysis(TaskInfo taskInfo, ParameterInfo[] parameters) throws WebServiceException {
+	AnalysisWebServiceProxy analysisProxy = null;
+	try {
+	    analysisProxy = new AnalysisWebServiceProxy(server, username, password);
+	    analysisProxy.setTimeout(Integer.MAX_VALUE);
+	} catch (Exception x) {
+	    throw new WebServiceException(x);
+	}
+	AnalysisJob job = submitJob(analysisProxy, taskInfo, parameters);
+	waitForErrorOrCompletion(analysisProxy, job);
+	return createJobResult(job.getJobInfo());
     }
 
     /**
@@ -411,6 +460,8 @@ public class GPClient {
 		    stdout = true;
 		} else if (fileName.equals(GPConstants.STDERR)) {
 		    stderr = true;
+		} else if (fileName.equals(GPConstants.TASKLOG)) {
+		    // ignore
 		} else {
 		    resultFiles.add(fileName);
 		}
