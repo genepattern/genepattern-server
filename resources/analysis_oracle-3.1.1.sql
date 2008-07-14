@@ -1,6 +1,6 @@
 -- add table(s) for System Alert Messages.
 
-CREATE TABLE GPPORTAL.SYSTEM_MESSAGE ( 
+CREATE TABLE SYSTEM_MESSAGE ( 
     id              NUMBER (10,0) NOT NULL,
     message         VARCHAR2(4000 CHAR) NOT NULL,
     start_time      TIMESTAMP DEFAULT sysdate NOT NULL,
