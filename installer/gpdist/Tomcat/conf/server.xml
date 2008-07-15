@@ -77,9 +77,8 @@
     <Connector port="$GENEPATTERN_PORT$" maxHttpHeaderSize="8192"
                maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
                enableLookups="true" redirectPort="8443" acceptCount="100"
-               connectionTimeout="20000" disableUploadTimeout="true" />
-    <!-- Note : To disable connection timeouts, set connectionTimeout value
-     to 0 -->
+               connectionTimeout="20000" disableUploadTimeout="true" proxyName="$HOST_ADDRESS$" proxyPort="$GENEPATTERN_PORT$" />
+    <!-- Note : To disable connection timeouts, set connectionTimeout value to 0 -->
 	
 	<!-- Note : To use gzip compression you could set the following properties :
 	
