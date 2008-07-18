@@ -114,7 +114,7 @@ public class LoginHttpClient {
             if (password != null) {
                 fields.add(new NameValuePair("loginForm:password", password));
             }
-            fields.add(new NameValuePair("loginForm:signIn", "Log In"));
+            fields.add(new NameValuePair("loginForm:signIn", "Sign in"));
             NameValuePair[] fieldsArr = new NameValuePair[fields.size()];
             fieldsArr = fields.toArray(fieldsArr);
             loginPost.setRequestBody(fieldsArr);
