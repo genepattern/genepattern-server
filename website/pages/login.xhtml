@@ -75,7 +75,7 @@
 					rendered="#{loginBean.passwordRequired}"></h:outputLabel>
 				<h:inputSecret size="50" value="#{loginBean.password}" id="password" rendered="#{loginBean.passwordRequired}" />
 			</h:panelGrid>
-			<h:commandButton id="signIn" actionListener="#{loginBean.submitLogin}" value="Sign In" />
+			<h:commandButton id="signIn" actionListener="#{loginBean.submitLogin}" value="Log In" />
 			<br />
 			<h:outputLink
 				value="#{facesContext.externalContext.requestContextPath}/pages/forgotPassword.jsf"
