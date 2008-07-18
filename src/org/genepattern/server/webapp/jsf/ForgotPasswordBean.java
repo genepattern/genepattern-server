@@ -38,41 +38,49 @@ public class ForgotPasswordBean {
     public String resetPassword() {
 	User user = new UserDAO().findById(username);
 	if (user == null) {
-	    UIBeanHelper.setErrorMessage("No user with the given username exists.");
+	    UIBeanHelper.setErrorMessage("User not registered: "+username);
 	    return "failure";
 	}
+    String email = user.getEmail();
+    if (email == null || email.length() == 0) {
+        UIBeanHelper.setErrorMessage("No email address for username: "+username);
+        return "failure";
+    }
+    
 	Properties p = new Properties();
 	String mailServer = System.getProperty("smtp.server", "imap.broad.mit.edu");
-
 	p.put("mail.host", mailServer);
 	Session mailSession = Session.getDefaultInstance(p, null);
 	mailSession.setDebug(false);
 	MimeMessage msg = new MimeMessage(mailSession);
-	// use numeric instead of alphabetic characters so we accidentally generate a 'naughty' word
-	String newPassword = RandomStringUtils.randomNumeric(8);
 	try {
+	    // use numeric instead of alphabetic characters so we accidentally generate a 'naughty' word
+	    String newPassword = RandomStringUtils.randomNumeric(8);
 	    msg.setSubject("Your GenePattern Password");
 	    msg.setText("Your GenePattern password has been reset to " + newPassword
-		    + ".\nPlease log into GenePattern to update your password.");
+		    + ".\nPlease sign in to GenePattern to update your password.");
 	    msg.setFrom(new InternetAddress("no-reply@genepattern.org"));
 	    msg.setSentDate(new Date());
-	    String email = user.getEmail();
-	    if (email == null) {
-		UIBeanHelper.setErrorMessage("No email address found.");
-		return "failure";
-	    }
 	    msg.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
+	    //try to encrypt the password before sending the email. If this fails, don't proceed.
+	    byte[] encryptedPassword = EncryptionUtil.encrypt(newPassword);
+	    //try to send the email before changing the password. If this fails, don't proceed.
 	    Transport.send(msg);
-	    user.setPassword(EncryptionUtil.encrypt(newPassword));
+	    user.setPassword(encryptedPassword);
 	    UIBeanHelper.setInfoMessage("Your new password has been sent to " + email + ".");
-	} catch (MessagingException e) {
+	} 
+    catch (NoSuchAlgorithmException e) {
+        log.error(e);
+        UIBeanHelper.setErrorMessage("Server configuration error: Unable to encrypt password. "+
+                "\nContact the GenePattern server administrator for help.");
+        return "failure";
+    }
+	catch (MessagingException e) {
 	    log.error(e);
-	    UIBeanHelper.setErrorMessage("An error occurred while sending the email.");
+	    UIBeanHelper.setErrorMessage("Server configuration error: Unable to send email."+
+	            "\nContact the GenePattern server administrator for help.");
 	    return "failure";
-	} catch (NoSuchAlgorithmException e) {
-	    log.error(e);
-	    return "failure";
-	}
+	} 
 
 	return "success";
 
