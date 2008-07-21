@@ -443,7 +443,8 @@
             <fileset dir="installer/GP_server_Build_Output/Web_Installers" />
         </copy>
 
-        <antcall target="publishGPGEinstallerToWWWDev" />
+    	<echo>No longer publishing GPGE installer to wwwdev as part of the nightlyBuild</echo>
+        <!-- antcall target="publishGPGEinstallerToWWWDev" / -->
     </target>
 
     <target name="publishBuild">
