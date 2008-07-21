@@ -443,8 +443,9 @@
             <fileset dir="installer/GP_server_Build_Output/Web_Installers" />
         </copy>
 
-    	<echo>No longer publishing GPGE installer to wwwdev as part of the nightlyBuild</echo>
-        <!-- antcall target="publishGPGEinstallerToWWWDev" / -->
+        <copy overwrite="true" todir="/xchip/genepattern/anthill3/server/opt/tomcat/webapps/gpinstalls/release311/gpge">
+            <fileset dir="build/Web_Installers" />
+        </copy>
     </target>
 
     <target name="publishBuild">
