@@ -67,15 +67,23 @@ public class EncryptionUtil {
      * @return the generated key.
      */
     public String pushPipelineUserKey(User user) {
-	String key = user.getUserId() + "." + System.currentTimeMillis();
-	try {
-	    byte[] encryptedKey = encrypt(key);
-	    key = convertToString(encryptedKey);
-	} catch (NoSuchAlgorithmException e) {
-	    log.error("Warning: unable to encrypt system generated key", e);
-	}
-	pipelineUserKeys.put(key, user.getPassword());
-	return key;
+        String key = "";
+        if (user == null) {
+            log.error("Null arg (user) in pushPipelineUserKey");
+        }
+        else {
+            key += user.getUserId();
+        }
+        key += "." + System.currentTimeMillis();
+        try {
+            byte[] encryptedKey = encrypt(key);
+            key = convertToString(encryptedKey);
+        } 
+        catch (NoSuchAlgorithmException e) {
+            log.error("Warning: unable to encrypt system generated key", e);
+        }
+        pipelineUserKeys.put(key, user.getPassword());
+        return key;
     }
 
     /**
