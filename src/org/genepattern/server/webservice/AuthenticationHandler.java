@@ -88,11 +88,18 @@ public class AuthenticationHandler extends GenePatternHandlerBase {
      * @return
      */
     private boolean validateUserPassword(String userId, String password) {
+        //if (!passwordRequired) {
+        //    return true;
+        //}
+        User user = (new UserDAO()).findById(userId);
+        if (user == null) {
+            log.info("Unknown userId: "+userId);
+            return false;
+        }
         if (!passwordRequired) {
             return true;
         }
-        User user = (new UserDAO()).findById(userId);
-        if (user == null || password == null) {
+        if (password == null) {
             return false;
         }
         try {
