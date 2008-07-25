@@ -274,7 +274,7 @@ public class AdminDAO extends BaseDAO {
     }
 
     public TaskInfo[] getAllTasksForUser(String username) {
-	String hql = "from org.genepattern.server.domain.TaskMaster where userId = :userId or accessId = :accessId";
+        String hql = "from org.genepattern.server.domain.TaskMaster where userId = :userId or accessId = :accessId order by TASK_NAME asc";
 	Query query = getSession().createQuery(hql);
 	query.setString("userId", username);
 	query.setInteger("accessId", PUBLIC_ACCESS_ID);
