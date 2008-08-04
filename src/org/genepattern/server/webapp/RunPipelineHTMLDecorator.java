@@ -515,6 +515,9 @@ public class RunPipelineHTMLDecorator extends RunPipelineDecoratorBase implement
         String GENEPATTERN_PORT = "GENEPATTERN_PORT";
         String GENEPATTERN_URL = "GenePatternURL";
         String port = genepatternProps.getProperty(GENEPATTERN_PORT);
+        if (port == null) { 
+        	port = "";
+        }
         original = StringUtils.replaceAll(original, GPConstants.LEFT_DELIMITER + GPConstants.LSID
                 + GPConstants.RIGHT_DELIMITER, model.getLsid());
         original = StringUtils.replaceAll(original, GPConstants.LEFT_DELIMITER + GENEPATTERN_PORT
