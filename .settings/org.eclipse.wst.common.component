@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-modules id="moduleCoreId" project-version="1.5.0">
-<wb-module deploy-name="gp-3.1">
+<wb-module deploy-name="gp-3.1.1-patch-01">
 <wb-resource deploy-path="/" source-path="/website"/>
 <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
 <wb-resource deploy-path="/WEB-INF/classes" source-path="/clients/JavaGE/src"/>
 <wb-resource deploy-path="/WEB-INF/classes" source-path="/build_tools/ZipUpload/src"/>
-<property name="context-root" value="gp"/>
 <property name="java-output-path"/>
+<property name="context-root" value="gp"/>
 </wb-module>
 </project-modules>
