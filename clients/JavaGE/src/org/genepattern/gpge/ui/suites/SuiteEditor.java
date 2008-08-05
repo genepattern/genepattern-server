@@ -64,16 +64,10 @@ import com.jgoodies.forms.layout.FormLayout;
 
 /**
  * Used to create/edit a suite
- * 
- * 
- * 
  */
 public class SuiteEditor extends JPanel {
-
     public HeaderPanel headerPanel;
-
     private ArrayList<TaskSelector> checkBoxes = new ArrayList<TaskSelector>();
-
     private SuiteInfo suiteInfo;
 
     public SuiteEditor() {
@@ -115,31 +109,46 @@ public class SuiteEditor extends JPanel {
 	return rowBuff.toString();
     }
 
-    static class TaskSelector {
+    private static class TaskSelector {
+        private JCheckBox cb;
+        private LSID lsid;
+        private JComboBox versionsComboBox;
 
-	private JCheckBox cb;
-
-	private LSID lsid;
-
-	private JComboBox versionsComboBox;
-
-	public TaskSelector(JCheckBox cb, LSID lsid, JComboBox versionsComboBox) {
-	    this.cb = cb;
-	    this.lsid = lsid;
-	    this.versionsComboBox = versionsComboBox;
-	}
-
+        public TaskSelector(JCheckBox cb, LSID lsid, JComboBox versionsComboBox) {
+            this.cb = cb;
+            this.lsid = lsid;
+            this.versionsComboBox = versionsComboBox;
+        }
     }
+
+    private static int getPermittedAccessId(AnalysisServiceManager asm) throws WebServiceException {
+        TaskIntegratorProxy taskIntegrator = new TaskIntegratorProxy(asm.getServer(), asm.getUsername(), asm.getPassword());
+        return taskIntegrator.getPermittedAccessId(GPConstants.ACCESS_PUBLIC);
+    } 
 
     public void display(SuiteInfo _suiteInfo) {
 	checkBoxes.clear();
 	removeAll();
+
+    //if we can't determine permitted access, use the most permissible flag
+	int permittedAccessId = GPConstants.ACCESS_PUBLIC;
+    AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
+    try {
+        permittedAccessId = getPermittedAccessId(asm);
+    }
+    catch (WebServiceException e1) {
+        GenePattern.showErrorDialog("An error occured while constructing the Suite Editor: Unable to connect to server to getPermittedAccessId: "+e1.getLocalizedMessage());
+        e1.printStackTrace();
+    }
+
 	if (_suiteInfo == null) {
 	    _suiteInfo = new SuiteInfo();
 	    _suiteInfo.setLsid(null);
-	    AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
 	    _suiteInfo.setAuthor(asm.getUsername());
 	    _suiteInfo.setOwner(asm.getUsername());
+	    if (permittedAccessId != GPConstants.ACCESS_PUBLIC) {
+	        _suiteInfo.setAccessId(permittedAccessId);
+	    }
 	}
 	this.suiteInfo = _suiteInfo;
 	boolean view = !suiteInfo.getOwner().equals(AnalysisServiceManager.getInstance().getUsername());
@@ -263,7 +272,7 @@ public class SuiteEditor extends JPanel {
 	tasksPanel.add(leftTasksPanel, cc.xy(1, 1, "left, top"));
 	tasksPanel.add(rightTasksPanel, cc.xy(3, 1, "left, top"));
 
-	headerPanel = new HeaderPanel(suiteInfo, view);
+	headerPanel = new HeaderPanel(suiteInfo, view, permittedAccessId);
 
 	JPanel bottomBtnPanel = new JPanel();
 	final JButton saveButton = new JButton("Save");
@@ -395,7 +404,7 @@ public class SuiteEditor extends JPanel {
 	validate();
     }
 
-    static class HeaderPanel extends JPanel {
+    private static class HeaderPanel extends JPanel {
 
 	private JTextField nameField;
 
@@ -409,7 +418,7 @@ public class SuiteEditor extends JPanel {
 
 	private JComboBox docComboBox;
 
-	public HeaderPanel(final SuiteInfo suiteInfo, boolean view) {
+	public HeaderPanel(final SuiteInfo suiteInfo, boolean view, int permittedAccessId) {
 
 	    setLayout(new BorderLayout());
 
@@ -458,13 +467,27 @@ public class SuiteEditor extends JPanel {
 	    detailsPanel.add(ownerField, cc.xy(3, 3));
 
 	    JLabel privacyLabel = new JLabel("Privacy:");
+	    
+        privacyComboBox = new JComboBox();
+        if (permittedAccessId == GPConstants.ACCESS_PUBLIC) {
+            privacyComboBox = new JComboBox(new String[] { "Public", "Private" });
+        }
+        else {
+            privacyComboBox = new JComboBox(new String[] { "Private" });	        
+        }
 
-	    privacyComboBox = new JComboBox(new String[] { "Public", "Private" });
-	    if (suiteInfo.getAccessId() == GPConstants.ACCESS_PUBLIC) {
-		privacyComboBox.setSelectedIndex(0);
-	    } else {
-		privacyComboBox.setSelectedIndex(1);
-	    }
+        try {
+            if (suiteInfo.getAccessId() == GPConstants.ACCESS_PUBLIC) {
+                privacyComboBox.setSelectedItem("Public");
+            } 
+            else {
+                privacyComboBox.setSelectedItem("Private");
+            }
+        }
+        catch (Exception e) {
+            GenePattern.showErrorDialog("An error occurred initializing Suite Editor: "+e.getLocalizedMessage());
+            e.printStackTrace();
+        }
 
 	    detailsPanel.add(privacyLabel, cc.xy(1, 5));
 	    if (!view) {

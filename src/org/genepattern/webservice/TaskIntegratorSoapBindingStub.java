@@ -33,11 +33,12 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
     static org.apache.axis.description.OperationDesc[] _operations;
 
     static {
-        _operations = new org.apache.axis.description.OperationDesc[36];
+        _operations = new org.apache.axis.description.OperationDesc[37];
         _initOperationDesc1();
         _initOperationDesc2();
         _initOperationDesc3();
         _initOperationDesc4();
+        _initOperationDesc5();
     }
 
     private static void _initOperationDesc1() {
@@ -1118,6 +1119,34 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
 
     }
 
+    private static void _initOperationDesc5() {
+        org.apache.axis.description.OperationDesc oper;
+        org.apache.axis.description.ParameterDesc param;
+        oper = new org.apache.axis.description.OperationDesc();
+        oper.setName("getPermittedAccessId");
+        param = new org.apache.axis.description.ParameterDesc(
+                new javax.xml.namespace.QName("", "access_id"),
+                org.apache.axis.description.ParameterDesc.IN,
+                new javax.xml.namespace.QName(
+                        "http://www.w3.org/2001/XMLSchema", "int"), int.class,
+                false, false);
+        oper.addParameter(param);
+        oper.setReturnType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "int"));
+        oper.setReturnClass(int.class);
+        oper.setReturnQName(new javax.xml.namespace.QName("", "getPermittedAccessIdReturn"));
+        oper.setStyle(org.apache.axis.constants.Style.RPC);
+        oper.setUse(org.apache.axis.constants.Use.ENCODED);
+        oper.addFault(new org.apache.axis.description.FaultDesc(
+                new javax.xml.namespace.QName(
+                        "http://localhost:8080/gp/services/TaskIntegrator",
+                        "fault"),
+                "org.genepattern.webservice.WebServiceException",
+                new javax.xml.namespace.QName(
+                        "http://webservice.genepattern.org",
+                        "WebServiceException"), true));
+        _operations[36] = oper;
+    }
+
     public TaskIntegratorSoapBindingStub() throws org.apache.axis.AxisFault {
         this(null);
     }
@@ -1858,6 +1887,28 @@ public class TaskIntegratorSoapBindingStub extends org.apache.axis.client.Stub {
                 }
             }
             throw axisFaultException;
+        }
+    }
+    
+    public int getPermittedAccessId(int access_id) throws java.rmi.RemoteException {
+        org.apache.axis.client.Call _call = createCall();
+        _call.setOperation(_operations[36]);
+        _call.setUseSOAPAction(true);
+        _call.setSOAPVersion(org.apache.axis.soap.SOAPConstants.SOAP11_CONSTANTS);
+        _call.setOperationName(new javax.xml.namespace.QName(
+                        "http://server.webservice.server.genepattern.org",
+                        "getPermittedAccessId"));
+        setRequestHeaders(_call);
+        setAttachments(_call);
+        Object _resp = _call.invoke(new Object[]{new Integer(access_id)});
+        if (_resp instanceof java.rmi.RemoteException) {
+            throw (java.rmi.RemoteException) _resp;
+        }
+        else if (_resp instanceof Integer) {
+            return ((Integer)_resp).intValue();
+        }
+        else {
+            throw new java.rmi.RemoteException("Unexpected error in SOAP call to getPermittedAccessId: Integer not returned");
         }
     }
 
