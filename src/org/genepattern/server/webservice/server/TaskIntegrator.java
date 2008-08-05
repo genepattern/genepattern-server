@@ -683,8 +683,8 @@ public class TaskIntegrator {
 	} else {
 	    access = access_id;
 	}
-	System.out.println("Perm=" + authManager.checkPermission("createPublicSuite", getUserName()));
-	System.out.println("TI installSuite  priv in=" + access_id + "  set to=" + access);
+	log.debug("Perm=" + authManager.checkPermission("createPublicSuite", getUserName()));
+	log.debug("TI installSuite  priv in=" + access_id + "  set to=" + access);
 	return access;
     }
 
