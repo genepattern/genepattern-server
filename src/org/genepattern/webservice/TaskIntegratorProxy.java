@@ -282,4 +282,14 @@ public class TaskIntegratorProxy {
             throw new WebServiceException(re);
         }
     }
+    
+    public int getPermittedAccessId(int access_id) throws WebServiceException {
+        try {
+            return stub.getPermittedAccessId(access_id);
+        }
+        catch (RemoteException re) {
+            throw new WebServiceException(re);
+        }
+    }
+
 }
