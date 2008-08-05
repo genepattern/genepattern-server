@@ -1011,6 +1011,12 @@ public class TaskIntegrator {
 	    String[] moduleLsids, javax.activation.DataHandler[] dataHandlers, String[] fileNames)
 	    throws WebServiceException {
 	isAuthorized(getUserName(), "createSuite");
+	if (access_id == 1) {
+	    isAuthorized(getUserName(), "createPublicSuite");
+	}
+	else {
+	    isAuthorized(getUserName(), "createPrivateSuite");
+	}
 	String newLsid = modifySuite(access_id, lsid, name, description, author, owner, new ArrayList(Arrays
 		.asList(moduleLsids)), new ArrayList());
 	IAdminClient adminClient = new LocalAdminClient(getUserName());
