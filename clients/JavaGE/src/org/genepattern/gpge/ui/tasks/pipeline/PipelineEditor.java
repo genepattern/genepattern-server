@@ -533,14 +533,12 @@ public class PipelineEditor extends JPanel implements TaskDisplay, PipelineListe
 
 	    model.setLSID(lsid);
 	    return true;
-	} catch (WebServiceException e1) {
+	} 
+	catch (WebServiceException e1) {
 	    e1.printStackTrace();
-	    if (!GenePattern.disconnectedFromServer(e1, AnalysisServiceManager.getInstance().getServer())) {
-		GenePattern.showErrorDialog("An error occurred while saving the pipeline.");
-	    }
-	    return false;
+        GenePattern.showErrorDialog("An error occurred while saving the pipeline: "+e1.getLocalizedMessage());
+        return false;
 	}
-
     }
 
     void reset() {
