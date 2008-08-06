@@ -1096,6 +1096,13 @@ public class TaskIntegrator {
     	String taskType = (String)taskAttributes.get("taskType");
 	     if ("pipeline".equals(taskType)){
 	    	isAuthorized(getUserName(), "createPipeline");
+	    	//check for createPublicPipeline and createPrivatePipeline
+	    	if (accessId == GPConstants.ACCESS_PUBLIC) {
+                isAuthorized(getUserName(), "createPublicPipeline");
+	    	}
+	    	else {
+                isAuthorized(getUserName(), "createPrivatePipeline");	    	    
+	    	}
 	    } else {
 	    	isAuthorized(getUserName(), "createModule");
 	    }
