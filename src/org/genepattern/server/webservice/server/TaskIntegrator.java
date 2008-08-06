@@ -1259,7 +1259,7 @@ public class TaskIntegrator {
 
     protected void isAuthorized(String user, String permission) throws WebServiceException {
 	if (!authManager.checkPermission(permission, user)) {
-	    throw new WebServiceException("You do not have permission to perfom this action.");
+	    throw new WebServiceException("You do not have permission to perfom this action: "+permission);
 	}
     }
 
