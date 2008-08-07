@@ -2637,13 +2637,9 @@ public class GenePatternAnalysisTask {
 	    }
 	    commandLine = translateCommandline(commandLine);
 
-	    log.error(Arrays.asList(commandLine));
-	    ProcessBuilder pb = new ProcessBuilder(Arrays.asList(commandLine));
-
+	    ProcessBuilder pb = new ProcessBuilder(commandLine);
 	    Map<String, String> env = pb.environment();
-	    log.error("env " + env);
-	    // env.putAll(environmentVariables);
-
+	    env.putAll(environmentVariables);
 	    pb.directory(runDir);
 
 	    // spawn the command
