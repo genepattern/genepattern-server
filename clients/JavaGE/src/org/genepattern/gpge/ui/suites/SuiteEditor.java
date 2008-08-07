@@ -121,23 +121,19 @@ public class SuiteEditor extends JPanel {
         }
     }
 
-    private static int getPermittedAccessId(AnalysisServiceManager asm) throws WebServiceException {
-        TaskIntegratorProxy taskIntegrator = new TaskIntegratorProxy(asm.getServer(), asm.getUsername(), asm.getPassword());
-        return taskIntegrator.getPermittedAccessId(GPConstants.ACCESS_PUBLIC);
-    } 
-
     public void display(SuiteInfo _suiteInfo) {
 	checkBoxes.clear();
 	removeAll();
+    AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
 
     //if we can't determine permitted access, use the most permissible flag
-	int permittedAccessId = GPConstants.ACCESS_PUBLIC;
-    AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
+    boolean canCreatePublicSuite = true;
     try {
-        permittedAccessId = getPermittedAccessId(asm);
+        TaskIntegratorProxy taskIntegrator = new TaskIntegratorProxy(asm.getServer(), asm.getUsername(), asm.getPassword());
+        canCreatePublicSuite = taskIntegrator.checkPermission("createPublicSuite");
     }
     catch (WebServiceException e1) {
-        GenePattern.showErrorDialog("An error occured while constructing the Suite Editor: Unable to connect to server to getPermittedAccessId: "+e1.getLocalizedMessage());
+        GenePattern.showErrorDialog("An error occurred while constructing the Suite Editor: Unable to connect to server to checkPermission: "+e1.getLocalizedMessage());
         e1.printStackTrace();
     }
 
@@ -146,9 +142,8 @@ public class SuiteEditor extends JPanel {
 	    _suiteInfo.setLsid(null);
 	    _suiteInfo.setAuthor(asm.getUsername());
 	    _suiteInfo.setOwner(asm.getUsername());
-	    if (permittedAccessId != GPConstants.ACCESS_PUBLIC) {
-	        _suiteInfo.setAccessId(permittedAccessId);
-	    }
+	    //by default, create private suites
+	    _suiteInfo.setAccessId(GPConstants.ACCESS_PRIVATE);
 	}
 	this.suiteInfo = _suiteInfo;
 	boolean view = !suiteInfo.getOwner().equals(AnalysisServiceManager.getInstance().getUsername());
@@ -272,7 +267,7 @@ public class SuiteEditor extends JPanel {
 	tasksPanel.add(leftTasksPanel, cc.xy(1, 1, "left, top"));
 	tasksPanel.add(rightTasksPanel, cc.xy(3, 1, "left, top"));
 
-	headerPanel = new HeaderPanel(suiteInfo, view, permittedAccessId);
+    headerPanel = new HeaderPanel(suiteInfo, view, canCreatePublicSuite);
 
 	JPanel bottomBtnPanel = new JPanel();
 	final JButton saveButton = new JButton("Save");
@@ -418,7 +413,7 @@ public class SuiteEditor extends JPanel {
 
 	private JComboBox docComboBox;
 
-	public HeaderPanel(final SuiteInfo suiteInfo, boolean view, int permittedAccessId) {
+	public HeaderPanel(final SuiteInfo suiteInfo, boolean view, boolean canCreatePublicSuite) {
 
 	    setLayout(new BorderLayout());
 
@@ -469,7 +464,7 @@ public class SuiteEditor extends JPanel {
 	    JLabel privacyLabel = new JLabel("Privacy:");
 	    
         privacyComboBox = new JComboBox();
-        if (permittedAccessId == GPConstants.ACCESS_PUBLIC) {
+        if (canCreatePublicSuite) {
             privacyComboBox = new JComboBox(new String[] { "Public", "Private" });
         }
         else {
