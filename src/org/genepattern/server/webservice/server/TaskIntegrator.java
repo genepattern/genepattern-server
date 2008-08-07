@@ -674,6 +674,22 @@ public class TaskIntegrator {
 	return (new TaskIntegratorDAO()).saveOrUpdate(suiteInfo);
     }
 
+    /**
+     * Expose <code>IAuthorizationManager.checkPermission</code> to the SOAP interface.
+     * Checks permissions as the current user.
+     * Permissions are configured in <pre>resources/permissionMap.xml</pre>.
+     * 
+     * @param permission
+     * @return true if the current user has the given permission.
+     * 
+     * @see IAuthorizationManager#checkPermission(String, String)
+     */
+    public boolean checkPermission(String permission) {
+        IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
+        String userName = getUserName();
+        return authManager.checkPermission(permission, userName);
+    }
+
     public int getPermittedAccessId(int access_id) {
 
 	int access = GPConstants.ACCESS_PRIVATE;
@@ -1252,7 +1268,7 @@ public class TaskIntegrator {
 
     protected void isAuthorized(String user, String permission) throws WebServiceException {
 	if (!authManager.checkPermission(permission, user)) {
-	    throw new WebServiceException("You do not have permission to perfom this action.");
+	    throw new WebServiceException("You do not have permission to perfom this action: "+permission);
 	}
     }
 

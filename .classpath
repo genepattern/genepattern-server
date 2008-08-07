@@ -18,7 +18,7 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/archiver.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/asm.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/asm-attrs.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/axis.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/axis.jar" sourcepath="/Broad/Java/axis/axis-1_4/src"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/axis-ant.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/axis-schema.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/c3p0-0.9.0.jar"/>
