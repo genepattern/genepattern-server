@@ -291,5 +291,14 @@ public class TaskIntegratorProxy {
             throw new WebServiceException(re);
         }
     }
+    
+    public boolean checkPermission(String permission) throws WebServiceException {
+        try {
+            return stub.checkPermission(permission);
+        }
+        catch (RemoteException re) {
+            throw new WebServiceException(re);
+        }
+    }
 
 }
