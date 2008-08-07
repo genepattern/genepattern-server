@@ -658,7 +658,7 @@ public class PipelineEditor extends JPanel implements TaskDisplay, PipelineListe
 	return true;
     }
 
-    static class HeaderPanel extends JPanel {
+    private static class HeaderPanel extends JPanel {
 
 	private JTextField nameField;
 
@@ -768,11 +768,32 @@ public class PipelineEditor extends JPanel implements TaskDisplay, PipelineListe
 
 	    JLabel privacyLabel = new JLabel("Privacy:");
 
-	    privacyComboBox = new JComboBox(new String[] { "Public", "Private" });
-	    if (model.getPrivacy() == GPConstants.ACCESS_PUBLIC) {
-		privacyComboBox.setSelectedIndex(0);
-	    } else {
-		privacyComboBox.setSelectedIndex(1);
+        //if we can't determine permitted access, use the most permissible flag
+        boolean canCreatePublicPipeline = true;
+        try {
+            AnalysisServiceManager asm = AnalysisServiceManager.getInstance();
+            TaskIntegratorProxy taskIntegrator = new TaskIntegratorProxy(asm.getServer(), asm.getUsername(), asm.getPassword());
+            canCreatePublicPipeline = taskIntegrator.checkPermission("createPublicPipeline");
+        }
+        catch (WebServiceException e1) {
+            GenePattern.showErrorDialog("An error occurred while constructing the Pipeline Editor: Unable to connect to server to checkPermission: "+e1.getLocalizedMessage());
+            e1.printStackTrace();
+        }
+        if (canCreatePublicPipeline) {
+            privacyComboBox = new JComboBox(new String[] { "Public", "Private" });
+        }
+        else {
+            privacyComboBox = new JComboBox(new String[] { "Private" });
+        }
+        if (model.getPrivacy() == GPConstants.ACCESS_PUBLIC && !canCreatePublicPipeline) {
+            GenePattern.showErrorDialog("An error occurred while constructig the Pipeline Editor: You don't have permission to create public pipelines. Changing your pipeline to Private");
+            model.setPrivacy(GPConstants.ACCESS_PRIVATE);
+        }
+        if (model.getPrivacy() == GPConstants.ACCESS_PUBLIC) {
+            privacyComboBox.setSelectedItem("Public");
+        } 
+        else {
+            privacyComboBox.setSelectedItem("Private");
 	    }
 
 	    detailsPanel.add(privacyLabel, cc.xy(1, 5));
