@@ -39,28 +39,42 @@
 
         if (taskName.length() > 0) {
             in = new File(DirectoryManager.getTaskLibDir(taskName, taskName, userID), filename);
-        } else {
+        } 
+        else {
+            String prefix = userID + "_";
             // look in temp for pipelines run without saving
             in = new File(System.getProperty("java.io.tmpdir"), filename);
+            
+            //special case for Axis
+            if (!in.exists()) {
+                File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
+                in = new File(soapAttachmentDir, filename);
+                if (in.exists()) {
+                    //authorization check
+                    prefix = userID + "/";
+                }
+            }
 
-	// now we need to check whether this is the user or an admin trying
-	// to look at the file if it exists
-	if (in.exists()){
-	    String prefix = userID + "_";
-		if (!filename.startsWith(prefix)){
-			boolean isAdmin = AuthorizationHelper.adminJobs(userID);
-			if (!isAdmin){
-		System.out.println("SECURITY ALERT: " + userID +" tried to access someone else's file: " + filename);
-		((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
-		return;
-			}
-		}
-	}
+            // now we need to check whether this is the user or an admin trying
+            // to look at the file if it exists
+            if (in.exists()) {
+                //String prefix = userID + "_";
+                if (!filename.startsWith(prefix)) {
+			        boolean isAdmin = AuthorizationHelper.adminJobs(userID);
+			        if (!isAdmin) {
+			            System.out.println("SECURITY ALERT: " + userID +" tried to access someone else's file: " + filename);
+		                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
+		                return;
+			        }
+		        }
+ 	        }
         }
-    } catch (Exception e) {
+    } 
+    catch (Exception e) {
         try {
             in = new File(DirectoryManager.getTaskLibDir(taskName, null, userID), filename);
-        } catch (Exception e2) {
+        } 
+        catch (Exception e2) {
             ((HttpServletResponse) response).sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }

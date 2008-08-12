@@ -187,7 +187,9 @@ public class JobInfoBean {
 				displayValue = value;
 				if (displayValue.startsWith("Axis")) {
 					displayValue = displayValue.substring(displayValue.indexOf('_') + 1);
-				} else if (exists) {
+				} 
+                //else if (exists) {
+                if (exists) {
 					directory = f.getParentFile().getName();
 				}
 			}
