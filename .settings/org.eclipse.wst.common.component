@@ -5,6 +5,7 @@
 <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
 <wb-resource deploy-path="/WEB-INF/classes" source-path="/clients/JavaGE/src"/>
 <wb-resource deploy-path="/WEB-INF/classes" source-path="/build_tools/ZipUpload/src"/>
+<wb-resource deploy-path="/WEB-INF/classes" source-path="/test/src"/>
 <property name="java-output-path"/>
 <property name="context-root" value="gp"/>
 </wb-module>
