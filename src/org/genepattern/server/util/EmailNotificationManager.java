@@ -119,7 +119,9 @@ public class EmailNotificationManager {
 		TreeMap<Integer, String> tmHosts = null;
 		if (mailServer == null) {
 		    tmHosts = dnsClient.findMXServers(domain);
-		} else {
+		} 
+		else {
+		    tmHosts = new TreeMap<Integer,String>();
 		    tmHosts.put(new Integer(1), mailServer);
 		}
 		if (tmHosts == null || tmHosts.size() == 0) {
