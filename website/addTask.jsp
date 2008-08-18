@@ -845,6 +845,15 @@ function addNewFileType(name, desc){
 <%!public String createSelection(TaskInfoAttributes tia, String name, String[] values, String eventHandlers, boolean viewOnly) {
 	StringBuffer sbOut = new StringBuffer();
 	String value = (tia != null ? tia.get(name) : "");
+	//super hack for privacy menu, get rid of this code when porting from JSP to JSF
+	if (name.equals(GPConstants.PRIVACY)) {
+	    if (value.equals(""+GPConstants.ACCESS_PRIVATE)) {
+	        value = GPConstants.PRIVATE;
+	    }
+	    else if (value.equals(""+GPConstants.ACCESS_PUBLIC)) {
+	        value = GPConstants.PUBLIC;
+	    }
+	}
 	boolean found = false;
 	if (!viewOnly) {
 	        sbOut.append("<select name=\"" + name + "\"");
