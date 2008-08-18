@@ -175,8 +175,15 @@ public class TaskInfoAttributes extends HashMap implements Serializable {
             return (String)obj;
         }
         Log.error("Unexpected type in TaskInfoAttributes.get("+name+"): '"+ obj.getClass().getName()+"'. Returning empty string");
-        //return obj.toString();
-        return "";
+        return obj.toString();
+        //return "";
+	}
+	
+	public Object put(Object key, Object value) {
+	    if (value instanceof java.lang.Integer) {
+	        Log.warn("Adding Integer value to TaskInfoAttributes. key="+key);
+	    }
+	    return super.put(key, value);
 	}
 
 	/*
