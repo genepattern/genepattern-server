@@ -426,13 +426,13 @@ function addNewFileType(name, desc){
 
 		
 		
-		<% if (taskInfo != null && !viewOnly) { %>
+		<% if (taskInfo != null && !viewOnly && errors == null) { %>
 		  <div title="Delete <%=taskInfo.getName() %> " style="display:inline"> 
 		  		  <input type="button" value="<%= DELETE %>..." name="<%= DELETE %>" class="little"
 		   onclick="if (window.confirm('Really delete the ' + document.forms['task'].<%= GPConstants.NAME %>.value + ' task?')) { window.location='saveTask.jsp?delete=1&<%= GPConstants.NAME %>=' + document.forms['task'].<%= GPConstants.NAME %>.value + '&<%= GPConstants.LSID %>=' + document.forms['task'].<%= GPConstants.LSID %>.value; }">
 		  </div>
 		<% }
-		if (taskInfo != null) { %>
+		if (taskInfo != null && errors == null) { %>
 			<div title="Run <%=taskInfo.getName() %>" style="display:inline">
 			<input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
 			</div>
@@ -813,7 +813,7 @@ function addNewFileType(name, desc){
 	<%	} else { %>
 			<input type="button" value="<%= RUN %>" name="<%= RUN %>" class="little" onclick="runTask()">
 			<%
-		  	if(createModuleAllowed) { %>
+		  	if(createModuleAllowed && errors==null) { %>
 				<input type="button" value="<%= CLONE %>..." name="<%= CLONE %>" class="little" onclick="cloneTask()">
 		 	<%	} %>
 
@@ -845,6 +845,15 @@ function addNewFileType(name, desc){
 <%!public String createSelection(TaskInfoAttributes tia, String name, String[] values, String eventHandlers, boolean viewOnly) {
 	StringBuffer sbOut = new StringBuffer();
 	String value = (tia != null ? tia.get(name) : "");
+	//super hack for privacy menu, get rid of this code when porting from JSP to JSF
+	if (name.equals(GPConstants.PRIVACY)) {
+	    if (value.equals(""+GPConstants.ACCESS_PRIVATE)) {
+	        value = GPConstants.PRIVATE;
+	    }
+	    else if (value.equals(""+GPConstants.ACCESS_PUBLIC)) {
+	        value = GPConstants.PUBLIC;
+	    }
+	}
 	boolean found = false;
 	if (!viewOnly) {
 	        sbOut.append("<select name=\"" + name + "\"");

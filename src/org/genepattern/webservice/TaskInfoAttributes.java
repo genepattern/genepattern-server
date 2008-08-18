@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.jfree.util.Log;
+
 /**
  * @author Jim Lerner
  *  
@@ -156,19 +158,32 @@ public class TaskInfoAttributes extends HashMap implements Serializable {
 		return sbOut.toString();
 	}
 
-	/*
-	 * 
-	 * convenience method that converts a get returning null into one returning
-	 * an empty string and that returns a String rather than an Object @author
-	 * Jim Lerner @param name Name of parameter to look up in HashMap @return
-	 * String value of parameter if it exists, otherwise empty string
-	 *  
-	 */
+    /**
+     * Convenience method that converts a get returning null into one returning
+     * an empty string and that returns a String rather than an Object 
+     * 
+     * @author Jim Lerner 
+     * @param name Name of parameter to look up in HashMap 
+     * @return String value of parameter if it exists, otherwise empty string.
+     */
 	public String get(String name) {
-		String ret = (String) super.get(name);
-		if (ret == null)
-			ret = "";
-		return ret;
+	    Object obj = super.get(name);
+        if (obj == null) {
+            return "";
+        }
+        if (obj instanceof String) {
+            return (String)obj;
+        }
+        Log.error("Unexpected type in TaskInfoAttributes.get("+name+"): '"+ obj.getClass().getName()+"'. Returning empty string");
+        return obj.toString();
+        //return "";
+	}
+	
+	public Object put(Object key, Object value) {
+	    if (value instanceof java.lang.Integer) {
+	        Log.warn("Adding Integer value to TaskInfoAttributes. key="+key);
+	    }
+	    return super.put(key, value);
 	}
 
 	/*
