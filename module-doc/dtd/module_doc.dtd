@@ -1,0 +1,24 @@
+
+<!-- DTD for the GenePattern module documentation -->
+
+<!ELEMENT module_doc (name, author?, contact?, summary, overview?, interpretation?, input_parameters?, output_files?, dependencies?, references?)>
+<!ELEMENT name (#PCDATA)><!ELEMENT author (#PCDATA)><!ELEMENT contact (#PCDATA)>
+<!-- one-line summary used for tooltips; not included in doc -->
+<!ELEMENT summary (#PCDATA)>
+<!-- description element is used when a description can contain HTML and/or images -->
+<!ELEMENT description (text, image_file*)>
+<!-- content of text element will be <![CDATA[stuff]]> -->
+<!ELEMENT text (#PCDATA)>
+<!-- image_file holds a file name; user uploads a file we put file name here and file in images folder -->
+<!ELEMENT image_file (#PCDATA)>	
+<!-- overview is the Description section in the doc --><!ELEMENT overview (description)>
+<!-- interpretation is the Interpreting Results section --><!ELEMENT interpretation (description)><!ELEMENT input_parameters (parameter+)>
+<!-- this allows a paremeter description to have multiple example files; typically there'd be one --><!ELEMENT parameter (description, choices?, example_file*)> <!-- example_file holds a file name; user uploads a file we put file name here and file in linked_files folder -->
+<!ELEMENT example_file (#PCDATA)><!-- GET ALL parameter ATTRIBUTES EXCEPT TYPE FROM GenePattern -->
+<!-- I've left these attributes rather than elements since most will likely be removed from the DTD --><!ATTLIST parameter								type (basic | advanced) #REQUIRED	name CDATA #REQUIRED	default CDATA #IMPLIED	required (yes | no) #REQUIRED	file_format CDATA #IMPLIED><!-- where parameter has choices we want to list them in the doc, descriptions are optional -->
+<!ELEMENT choices (choice+)><!ELEMENT choice (value, description?)>
+<!-- GET the choice values FROM GenePattern -->
+<!ELEMENT value (#PCDATA)>				<!ELEMENT output_files (output_file+)><!ELEMENT output_file (description, example_file*)>
+<!ATTLIST output_file								name CDATA #REQUIRED	file_format CDATA #IMPLIED><!-- GET DEPENDENCIES FROM  FROM GenePattern -->
+<!ELEMENT dependencies (cpu, os, language, language_version)><!ELEMENT cpu (#PCDATA)><!ELEMENT os (#PCDATA)><!ELEMENT language (#PCDATA)><!ELEMENT language_version (#PCDATA)><!ELEMENT references (reference+)><!-- content of reference element will be <![CDATA[stuff]]> -->
+<!ELEMENT reference (#PCDATA)>
