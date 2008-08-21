@@ -1,0 +1,188 @@
+body {
+	background-color: #e3e3fd;
+	padding: 0px 20px 20px;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 11px;
+	line-height: 14px;
+	color: #000000;
+	text-decoration: none;
+}
+
+a {
+	color: #000099;
+	text-decoration: none;
+}
+a:hover {
+	color: #6666FF;
+	text-decoration:  none;
+}
+a:active {
+	color: #CCCCFF;
+	text-decoration: none;
+}
+
+ul {
+	margin-top: 0px;
+	margin-bottom: 0px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+ul li {
+	padding-bottom: 10px;
+}
+ul li ul {
+	margin-top: 10px;
+	margin-bottom: 0px;
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+
+ol {
+}
+
+ol li {
+	margin-bottom: 0px;
+	padding-bottom: 0px;
+}
+
+h1{
+	color: #333366;
+	font-size: 16px;
+	line-height: 22px;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	border-bottom-color: #9999FF;
+	margin: 0px;
+	padding: 0px;
+}
+h2{
+	color: #333366;
+	font-size: 14px;
+	line-height: 18px;
+}
+h3{
+	color: #666633;
+	font-size: 12px;
+	line-height: 14px;
+}
+h4{
+	color: #333366;
+	font-size: 11px;
+	line-height: 13px;
+}
+h5 {
+	color: #000000;
+	font-size: 10px;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	margin: 5px 0px 10px;
+	padding: 0px 0px 0px 15px;
+}
+
+.steps {
+	background-color: #FFF;
+	padding: 5px 10px 10px;
+	border: 1px solid #6666FF;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+.resultsInlineSubhead {
+	font-size: 12px;
+	font-weight: bold;
+	color: #666633;
+}
+.steps p {
+	padding: 0px 0px 0px 15px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 10px;
+	margin-left: 0px;
+}
+
+.gpLinks {
+	background-color: #ffffee; /* PWY, Pale Weak Yellow */
+	border: 1px solid #cccccc; /* PG, Pale Gray */
+	border-top: 4px solid #cccccc;
+
+    padding: 0px 0px 0px 10px;
+	margin-top: 0px;
+	margin-bottom: 12px;
+	margin-left: 24px;
+	margin-right: 24px;
+}
+
+.gpLinks ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.gpLinks ul li {
+	padding: 0;
+	margin: 0;
+}
+
+/* places the new-win-icon.gif to the right of the link */
+.gpLinks a {
+    background-image: url(../images/new-win-icon.gif);
+    background-position: right;
+    background-repeat: no-repeat;
+    padding-right: 14px;
+}
+
+/* for links within the gpLinks div which don't open in the GenePattern window. */
+a.notGpLinks {
+    background-image: none;
+    padding-right: 0px;
+}
+
+/* display list of documentation links as an inline sequence of anchor (<a>) tags. */
+.gpDocLinks p {
+	text-indent: -12px;
+	padding-left: 36px;
+}
+
+.gpDocLinks img {
+	border: none;
+}
+	
+.gpDocLinks a { /* keep text and icon together */
+	white-space: nowrap;
+}
+
+.mdoc_list {
+	/* margin-left: 40px; */
+    margin-top: 0px;
+	margin-bottom: 0px;
+	margin-left: 0;
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+
+.mdoc_list_item {
+	clear: both;
+}
+
+.mdoc_list_toc {
+	float: left;
+	padding-right: 12px;
+	padding-bottom: 12px;
+
+}
+
+.mdoc_list_block {
+	/* aligns text to the right of the image, in case there is a lot of text. */
+	padding-left: 170px;
+	padding-bottom: 12px;
+}
+
+/* places the new-win-icon.gif to the right of the link */
+.mdoc_list a {
+	font-weight: bold;
+	font-size: 11px;
+    background-position: right;
+    background-repeat: no-repeat;
+    padding-right: 14px;
+}
+
+
