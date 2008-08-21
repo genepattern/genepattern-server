@@ -1,0 +1,16 @@
+The css, dtd, and xsl directories are what you would expect. 
+
+The cms directory is essentially the doc directory of the ComparativeMarkerSelection module:
+
+- cms.xml is the source file. 
+- cms.html was generated using SAXON: 
+
+java -jar saxon9.jar -t -s:cms/cms.xml -xsl:xsl/module_doc.xslt -o:cms/cms.html
+
+
+Next steps for Heidi:
+- create a few more xml files: GISTIC, CMSViewer, PreprocessDataset, perhaps a few others
+- work with Jon to modify the css to improve the layout
+
+
+
