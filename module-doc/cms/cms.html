@@ -1,0 +1,296 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"></meta>
+      <title>
+         ComparativeMarkerSelection
+         
+      </title>
+      <link href="../css/module_doc.css" rel="stylesheet" type="text/css"></link>
+   </head>
+   <body>
+      <h1>
+         ComparativeMarkerSelection
+         
+      </h1>
+      <p>
+         Joshua Gould, Gad Getz, Stefano Monti (Broad Institute)
+         <br></br>
+         	Contact: 
+         gp-help (at) broad.mit.edu
+         
+      </p>
+      <div class="mdoc_list">
+         <div class="mdoc_list_item">
+            <div class="mdoc_list_toc">
+               <p><a href="#description">Description</a><br></br><a href="#interpretation">Interpreting Results</a><br></br><a href="#parameters">Input Parameters</a><br></br><a href="#results">Result files</a><br></br><a href="#dependencies">Platform Dependencies</a><br></br><a href="#references">References</a><br></br><a href="#related">Related Modules</a></p>
+            </div>
+            <div class="mdoc_list_block">
+               <div class="steps"><a name="description">
+                     <h2>Description</h2></a>
+                  Identifies genes (if any) that are differentially expressed between distinct classes of samples. For each gene, uses a test
+                  statistic to calculate the difference in gene expression between the two classes and computes a p-value to estimate the significance
+                  of the test statistic score. Testing tens of thousands of genes simultaneously increases the possibility of mistakenly identifying
+                  a non-marker gene as a marker gene (a false positive). Therefore, the module corrects for multiple hypothesis testing by computing
+                  both false discovery rates (FDR) and family-wise error rates (FWER).
+                  <ul>
+                  <li>FDR represents the expected proportion of non-marker genes (false positives) within the set of genes declared to be differentially
+                  expressed. Researchers generally identify marker genes based on FDR rather than the more conservative FWER.</li>
+                  <li>FWER represents the probability of having any false positive. It is in general stricter or more conservative than FDR.
+                  Thus, FWER may frequently fail to find marker genes due to the noisy nature of microarray data and the large number of hypotheses
+                  being tested.</li>
+                  </ul>
+               </div>
+            </div>
+         </div>
+      </div>
+      <div class="steps"><a name="interpretation">
+            <h2>Interpreting Results</h2></a>
+         <p>Use the ComparativeMarkerSelectionViewer to view the result file. A paragraph discussing what to look for and how to interpret
+         what you find. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Praesent fermentum turpis commodo lorem luctus suscipit.
+         Curabitur adipiscing hendrerit orci. Praesent vitae libero. Suspendisse id turpis in magna rutrum molestie. Quisque tristique
+         mattis purus. Etiam ullamcorper dapibus orci. Vestibulum urna purus, scelerisque in, porta in, molestie semper, odio. Sed
+         sodales ante vel risus. Aenean porttitor pharetra dui. Donec iaculis, velit vel commodo scelerisque, eros est pellentesque
+         nulla, nec aliquet sem nunc non lorem. Sed vitae nisi sit amet metus consectetuer pretium. Donec bibendum urna. Donec commodo,
+         tellus vel egestas condimentum, enim augue elementum mi, at dictum lacus mi eget tortor. Cras dolor.</p>
+         <p>
+         If appropriate, discuss next steps. Sed sodales ante vel risus. Aenean porttitor pharetra dui. Donec iaculis, velit vel commodo
+         scelerisque, eros est pellentesque nulla, nec aliquet sem nunc non lorem. Sed vitae nisi sit amet metus consectetuer pretium.
+         Donec bibendum urna. Donec commodo, tellus vel egestas condimentum, enim augue elementum mi, at dictum lacus mi eget tortor.
+         Cras dolor.</p>
+         
+         <table xmlns="">
+            <tr>
+               <td><a href="images/test.gif"><img src="images/small_test.gif.png" alt="test.gif"></a></td>
+            </tr>
+            <tr>
+               <td><a href="images/web_client_tut_cms_viewer.gif"><img src="images/small_web_client_tut_cms_viewer.gif.png" alt="web_client_tut_cms_viewer.gif"></a></td>
+            </tr>
+         </table>
+      </div>
+      <div class="steps"><a name="parameters"></a><h2>Basic Parameters</h2>
+         <p>Parameters that are essential to the analysis.</p>
+         <h3 xmlns="">input filename :   
+            Required
+         </h3>
+         Gene expression data file. Preprocess the data. Procedures such as FDR and FWER control for multiple hypotheses testing by
+         "inflating" the nominal p-values of the single hypotheses (genes). This allows for controlling the number of false positives
+         but at the cost of potentially increasing the number of false negatives (actual markers that are wrongly declared not differentially
+         expressed). Preprocessing the data reduces the number of hypotheses (genes) to be tested.
+         
+         <h3 xmlns="">cls filename :   
+            Required
+         </h3>
+         Class file
+         
+         <h2>Advanced Parameters</h2>
+         <p>Parameters whose default values are sufficient for most analyses.</p>
+         <h3 xmlns="">confound variable cls filename :   
+            Optional
+         </h3>
+         If you specify this class file, permutations shuffle the labels in <i>Class file</i>  only within the subsets defined by this
+         class file. For example, when identifying genes 
+         that are differentially expressed between the classes Tumor and Normal, tissue type 
+         might be a confounding variable. This file would define classes for each tissue type. 
+         During permutations, the module shuffles the Tumor/Normal labels only among samples that have the same tissue type. 
+         
+         <h3 xmlns="">test direction :   
+            Required
+         </h3>
+         The test to perform. 
+         By default, ComparativeMarkerSelection performs a two-sided test, which tests for differential expression between classes.
+         If you are interested in a one-sided test (up-regulated in class 0 or in class 1), perform the one-sided test, perform the
+         two-sided test, and consider both sets of results.
+         
+         <h4 xmlns="">Options</h4>
+         <ul xmlns="">
+            <li>Class 0
+               	: up-regulated for class 0
+               
+            </li>
+            <li>Class 1
+               	: up-regulated for class 1
+               
+            </li>
+            <li>Two-sided
+               	: differentially expressed between class 0 and class 1
+               
+            </li>
+         </ul>
+         <h3 xmlns="">test statistic :   
+            Required
+         </h3>
+         The statistic to use.
+         
+         <h4 xmlns="">Options</h4>
+         <ul xmlns="">
+            <li>t-test
+               	: 
+               The difference between the mean expression of class 1 and class 2. The
+               difference is divided by the sum of the standard deviation of class 1 and 2 to penalize genes with wide variation. In the
+               equation: 
+               <ul>
+               <li>μ is the average
+               <li>σ is the standard deviation
+               <li>n is the number of samples
+               </ul>
+               
+               <table>
+                  <tr>
+                     <td><a href="images/t-test.gif"><img src="images/small_t-test.gif.png" alt="t-test.gif"></a></td>
+                  </tr>
+               </table>
+            </li>
+            <li>t-test (median)
+               	: 
+               Same as t-test, but uses median rather than average.
+            </li>
+            <li>t-test (min std)
+               	: 
+               Same as t-test, but enforces a minimum value for σ (minimal standard deviation).
+            </li>
+            <li>t-test (median, min std)
+               	: 
+               Same as t-test, but uses median rather than average and enforces a minimum value for σ (minimal standard deviation).
+            </li>
+            <li>SNR (signal-to-noise ratio)
+               	: 
+               In the equation: 
+               <ul>
+               <li>μ is the average
+               <li>σ is the standard deviation
+               </ul>
+               
+               <table>
+                  <tr>
+                     <td><a href="images/snr.gif"><img src="images/small_snr.gif.png" alt="snr.gif"></a></td>
+                  </tr>
+               </table>
+            </li>
+            <li>snr (median)
+               	: 
+               Same as snr, but uses median rather than average.
+            </li>
+            <li>snr (min std)
+               	: 
+               Same as snr, but enforces a minimum value for σ (minimal standard deviation).
+            </li>
+            <li>snr (median, min std)
+               	: 
+               Same as snr, but uses median rather than average and enforces a minimum value for σ (minimal standard deviation).
+            </li>
+         </ul>
+         <h3 xmlns="">min std :   
+            Optional
+         </h3>
+         Used only if test statistic includes the min std option. If σ is less than min std, σ is set to min std.
+         
+         <h3 xmlns="">number of permutations :   
+            Required
+         </h3>
+         The number of permutations to perform (use 0 to calculate asymptotic p-values). The number of permutations you specify depends
+         on the number of hypotheses being tested and the significance level that you want to achieve (3). The greater the number of
+         permutations, the more accurate the p value. 
+         Generally, if the data set includes at least 10 samples per class, use the default value of 1000 permutations 
+         to ensure accurate <i>p</i>-values. If the data set includes fewer than 10 samples in any class, permuting the 
+         samples cannot give an accurate <i>p</i>-value; specify 0 permutations to use asymptotic <i>p</i>-values
+         instead.
+         <h3 xmlns="">complete :   
+            Required
+         </h3>
+         Whether to perform all possible permutations. By default, complete is set to no and number of permutations determines the
+         number of permutations performed. If you have a small number of samples, you might want to perform all possible permutations.
+         
+         <h3 xmlns="">balanced :   
+            Required
+         </h3>
+         Whether to perform balanced permutations. By default, balanced is set to no and phenotype labels are permuted without regard
+         to the number of samples per phenotype (for example, if your dataset has 12 samples in class 0 and 10 in class 1, any permutation
+         of class 0 has 12 randomly selected samples).
+         <p>
+         If you set balanced to yes,  phenotype labels are permuted by balancing the number of samples per phenotype (for example,
+         if your dataset has 12 samples in class 0 and 10 in class 1, any permutation of class 0 has an equal number of samples from
+         class 0 and class 1. Balancing samples is rarely necessary, but may be useful if your samples are very unevenly distributed
+         across phenotypes.
+         </p>
+         
+         <h3 xmlns="">random seed :   
+            Required
+         </h3>
+         The seed for the random number generator.
+         <h3 xmlns="">smooth p values :   
+            Required
+         </h3>
+         Whether to smooth p-values by using the Laplace’s Rule of Succession. By default, smooth p values is set to yes, which means
+         p-values are always less than 1.0 and greater than 0.0.
+         
+         <h3 xmlns="">phenotype test :   
+            Required
+         </h3>
+         If the data set includes more than two classes, use this parameter
+         to analyze each class against all others (one-versus-all) or all class pairs
+         (all pairs).
+         Note: The p-values obtained from the one-versus-all comparison are not fully corrected for multiple hypothesis testing.
+         
+         <h3 xmlns="">output file :   
+            Required
+         </h3>
+         The name of the output file.
+         
+      </div>
+      <div class="steps"><a name="results">
+            <h2>Result Files</h2></a><h3 xmlns="">*.comp.marker.odf
+            	: odf
+         </h3>
+         <p xmlns="">Example file: 
+            <a href="linked_files/all_aml_test.comp.marker.odf">all_aml_test.comp.marker.odf</a></p>
+         Structured text output file that includes the test statistic score, its p value, two FDR statistics and three FWER statistics
+         for each gene. Use the ComparativeMarkerSelectionViewer module to view the results.
+         
+      </div>
+      <div class="steps"><a name="dependencies">
+            <h2>Platform Dependencies</h2></a><ul xmlns="">
+            <li>CPU: any</li>
+            <li>Operating system: any</li>
+            <li>Language: Java, R</li>
+            <li>Language version: 1.5, 2.5.0</li>
+         </ul>
+      </div>
+      <div class="steps"><a name="references">
+            <h2>References</h2></a><p xmlns="">
+            Benjamini,
+            Y. and Hochberg, Y. (1995) Controlling the False Discovery Rate: A
+            Practical and Powerful Approach to Multiple Testing&lt;i&gt;. Journal of the
+            Royal Statistical Society. Series B (Methodological&lt;/i&gt;). &lt;b&gt;57&lt;/b&gt;(1): p.
+            289-300.
+            
+         </p>
+         <p xmlns=""> Golub,
+            T., Slonim, D. et al. (1999) Molecular Classification of Cancer: Class
+            Discovery and Class Prediction by Gene Expression. &lt;i&gt;Science&lt;/i&gt; &lt;b&gt;286&lt;/b&gt;,
+            531-537.
+         </p>
+         <p xmlns="">Good, P.
+            (2000) Permutation Tests: A Practical Guide for Testing Hypotheses, 2&lt;sup&gt;nd&lt;/sup&gt;
+            Ed., New York: Springer-Verlag
+         </p>
+         <p xmlns="">Gould J.,
+            Getz G., Monti S., Reich M., and Mesirov J.P. (2006) Comparative gene marker
+            selection suite. &lt;i&gt;Bioinformatics&lt;/i&gt; &lt;b&gt;22&lt;/b&gt;,
+            1924-1925; doi:10.1093/bioinformatics/btl196.
+         </p>
+         <p xmlns="">Lu, J.,
+            Getz, G., Miska, E., et al. (2005) MicroRNA Expression Profiles Classify
+            Human Cancers. &lt;i&gt;Nature&lt;/i&gt; &lt;b&gt;435&lt;/b&gt;, 834-838
+         </p>
+         <p xmlns="">Storey,
+            J.D. and R. Tibshirani (2003) Statistical significance for genomewide
+            studies. &lt;i&gt;PNAS&lt;/i&gt;, &lt;b&gt;100&lt;/b&gt;(16): p. 9440-9445.
+         </p>
+         <p xmlns="">Westfall,
+            P.H. and S. S. Young (1993) Resampling-Based Multiple Testing: Examples
+            and Methods for p-Value Adjustment. &lt;i&gt;Wiley Series in Probability and
+            Statistics&lt;/i&gt;. New York: Wiley.
+         </p>
+      </div>
+   </body>
+</html>
