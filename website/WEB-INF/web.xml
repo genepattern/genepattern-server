@@ -252,7 +252,17 @@
   <servlet-name>AjaxServlet</servlet-name>
   <url-pattern>*.ajax</url-pattern>
  </servlet-mapping>
-
+ 
+ <servlet>
+  <display-name>ModuleDocServlet</display-name>
+  <servlet-name>ModuleDocServlet</servlet-name>
+  <servlet-class>org.genepattern.server.webapp.ModuleDocServlet</servlet-class>
+  <load-on-startup>1</load-on-startup>
+ </servlet>
+ <servlet-mapping>
+  <servlet-name>ModuleDocServlet</servlet-name>
+  <url-pattern>/module/doc/*</url-pattern>
+ </servlet-mapping>
  <welcome-file-list>
   <welcome-file>/index.jsp</welcome-file>
  </welcome-file-list>
