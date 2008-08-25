@@ -452,35 +452,40 @@ public class PipelineModel implements Serializable {
 	return model;
     }
 
-    // add a runtime prompt parameter to the model
+    /**
+     * Add a runtime prompt parameter to the model.
+     * @param name - the parameter name, [jobName][taskNum].[parameterName]
+     * e.g. 
+     *     ImputeMissingValues.KNN1.output.file
+     */
     protected void addRTParameter(String name) {
-	String taskName = name.substring(0, name.indexOf("."));
-	int taskNum = 1;
-	ParameterInfo pi = null;
-	findTask: for (Enumeration eTasks = getTasks().elements(); eTasks.hasMoreElements(); taskNum++) {
-	    JobSubmission job = (JobSubmission) eTasks.nextElement();
-	    if ((job.getName() + taskNum).equals(taskName)) {
-		String unprefixedName = name.substring(name.indexOf(".") + 1);
-		int paramNum = 0;
-		for (Enumeration eParams = job.getParameters().elements(); eParams.hasMoreElements(); paramNum++) {
-		    pi = (ParameterInfo) eParams.nextElement();
-		    if (pi.getName().equals(unprefixedName)) {
-			pi.setValue("");
-			HashMap attributes = pi.getAttributes();
-			if (attributes == null) {
-			    attributes = new HashMap();
-			}
-			attributes.put("runTimePrompt", "1");
-			pi.setAttributes(attributes);
-			boolean runTimePrompt[] = job.getRuntimePrompt();
-			runTimePrompt[paramNum] = true;
-			job.setRuntimePrompt(runTimePrompt);
-			addInputParameter(name, pi);
-			break findTask;
-		    }
-		}
-	    }
-	}
+        int taskNum = 0;
+        for (JobSubmission job : vTasks) { //Enumeration eTasks = getTasks().elements(); eTasks.hasMoreElements(); taskNum++) {
+            ++taskNum;
+            String prefix = job.getName() + "" + taskNum + ".";
+            int idx = name.indexOf(prefix);
+            if (idx == 0) { 
+                String unprefixedName = name.substring(prefix.length());
+                int paramNum = 0;
+                for (Enumeration eParams = job.getParameters().elements(); eParams.hasMoreElements(); paramNum++) {
+                    ParameterInfo pi = (ParameterInfo) eParams.nextElement();
+                    if (pi.getName().equals(unprefixedName)) {
+                        pi.setValue("");
+                        HashMap attributes = pi.getAttributes();
+                        if (attributes == null) {
+                            attributes = new HashMap();
+                        }
+                        attributes.put("runTimePrompt", "1");
+                        pi.setAttributes(attributes);
+                        boolean runTimePrompt[] = job.getRuntimePrompt();
+                        runTimePrompt[paramNum] = true;
+                        job.setRuntimePrompt(runTimePrompt);
+                        addInputParameter(name, pi);
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     protected void addTask(NamedNodeMap task, boolean verify) throws Exception, OmnigeneException {

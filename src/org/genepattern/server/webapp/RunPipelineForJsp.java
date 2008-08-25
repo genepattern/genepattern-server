@@ -390,8 +390,10 @@ public class RunPipelineForJsp {
                 File f = (File)val;
                 value = baseURL + "getFile.jsp?task=&file=" + f.getParentFile().getName() +"/" + f.getName();
             }
-            
-            System.out.println("P= " + p.getName() + "=" + value);
+
+            if (log.isDebugEnabled()) {
+                log.debug("P= " + p.getName() + "=" + value);
+            }
             p.setValue(value);
         }
         
@@ -494,8 +496,9 @@ public class RunPipelineForJsp {
                         try {
                             model = PipelineModel
                                     .toPipelineModel(serializedModel);
-                        } catch (Throwable x) {
-                            x.printStackTrace(System.out);
+                        } 
+                        catch (Throwable x) {
+                            log.error(x);
                         }
                     }
                 }
@@ -570,8 +573,9 @@ public class RunPipelineForJsp {
                     showEdit = task.getTaskInfoAttributes().get(GPConstants.PRIVACY).equals(GPConstants.PUBLIC) ||
                             task.getTaskInfoAttributes().get(GPConstants.USERID).equals(userID);
                 }
-            } catch (Exception e) {
-                e.printStackTrace(System.out);
+            } 
+            catch (Exception e) {
+                log.error(e);
             }
             if (showEdit && (!hideButtons)) {
                 String editURL = "pipelineDesigner.jsp?name=" + pipelineName;
