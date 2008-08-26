@@ -13,6 +13,15 @@
 package org.genepattern.server.webapp.jsf;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.Authenticator;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.PasswordAuthentication;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -37,10 +46,24 @@ import org.genepattern.server.webservice.server.dao.BaseDAO;
 import org.genepattern.util.GPConstants;
 
 public class RegisterServerBean {
-	  private static Logger log = Logger.getLogger(RegisterServerBean.class);
+    private static Logger log = Logger.getLogger(RegisterServerBean.class);
+
+    //see ModuleRepository.SimpleAuthenticator
+    private static class SimpleAuthenticator extends Authenticator {
+        private String username, password;
+
+        public SimpleAuthenticator(String username, String password) {
+            this.username = username;
+            this.password = password;
+        }
+
+        protected PasswordAuthentication getPasswordAuthentication() {
+            return new PasswordAuthentication(username, password.toCharArray());
+        }
+    }
 	  
-	  // not in properties file so it cannot be (easily) overridden
-	  private String action="http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_server_license_process.cgi";
+    // not in properties file so it cannot be (easily) overridden, but can be configured via setRegistrationUrl
+    private String registrationUrl="http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_server_license_process.cgi";
 	  
 	  private String email;
 	  private String name;
@@ -113,71 +136,100 @@ public class RegisterServerBean {
 			"Wallis and Futuna Islands", "Western Sahara", "Yemen",
 			"Yugoslavia", "Zaire", "Zambia", "Zimbabwe" };  
 	    
-	  public RegisterServerBean(){
+	  public RegisterServerBean() {
 		  this.email = System.getProperty("webmaster","");
 	  }
 
-	  
-	   public String  registerServer() {
-		   
-		   String os = System.getProperty("os.name") + ", "+ System.getProperty("os.version");
-		   String genepatternVersion = System.getProperty("GenePatternVersion");
-		      
-		   HttpClient client = new HttpClient();
-		   PostMethod httppost = new PostMethod(action);
-		  
-		   httppost.addParameter("component","Server");
-           httppost.addParameter("gpversion",genepatternVersion);
-		   httppost.addParameter("build",System.getProperty("build.tag"));
-		   httppost.addParameter("os", os);
-			
-		   httppost.addParameter("name",this.name);
-		   if (title != null) httppost.addParameter("title",this.title);
-		   httppost.addParameter("email",this.email);
-		   httppost.addParameter("organization",this.organization);
-		   httppost.addParameter("department",this.department);
-		   httppost.addParameter("address1",this.address1);
-		   if (address2 != null) httppost.addParameter("address2",this.address2);
-		   httppost.addParameter("city",this.city);
-		   httppost.addParameter("state",this.state);
-		   if (zipCode != null) httppost.addParameter("zip",this.zipCode);
-		   httppost.addParameter("country",this.country);
-		   httppost.addParameter("join", ""+this.joinMailingList);
-		   httppost.addParameter("os", os);
-		   
-		   // let them go on in if there was an exception but don't save 
-		   // the registration to the DB.  They will be asked to register again
-		   // after each restart
-		   try {
-			   int responseCode = client.executeMethod(httppost);
-			   
-			   if (responseCode >= 400) throw new HttpException();
-			   saveIsRegistered();
-			   this.createNewUserNoPassword(this.email);
-			   UIBeanHelper.login(this.email, false, false, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
-			   error = false;			   
-			   return "installFrame";
-		   } catch (HttpException e) {
-			   System.setProperty(GPConstants.REGISTERED_SERVER, "unregistered");
-			   e.printStackTrace();
-			   error = true;
-			   return "unregisteredServer";
-		   } catch (IOException e) {
-			   // TODO Auto-generated catch block
-			   System.setProperty(GPConstants.REGISTERED_SERVER, "unregistered");
-			   e.printStackTrace();
-			   error = true;
-			   return "unregisteredServer";
-		   }
-		 
-	   }
-	   public String cancelRegistration() {
+    private String handleException(Exception e) {
+        System.setProperty(GPConstants.REGISTERED_SERVER, "unregistered");
+        e.printStackTrace();
+        error = true;
+        return "unregisteredServer";
+    }
+
+    private String encodeParameter(String key, String value) throws UnsupportedEncodingException {
+        return URLEncoder.encode(key, "UTF-8") + "=" + URLEncoder.encode(value, "UTF-8");
+    }
+
+    public String  registerServer() {
+        String os = System.getProperty("os.name") + ", "+ System.getProperty("os.version");
+        String genepatternVersion = System.getProperty("GenePatternVersion");
+        String buildTag = System.getProperty("build.tag");
+        URLConnection conn = null;
+        URL url = null;
+        try {
+            url = new URL(registrationUrl);
+
+            //set proxy crededentials if necessary
+            String user = System.getProperty("http.proxyUser");
+            String pass = System.getProperty("http.proxyPassword");
+            if ((user != null) && (pass != null)) {
+                Authenticator.setDefault(new SimpleAuthenticator(user, pass));
+            }
+
+            conn = url.openConnection();
+            ((HttpURLConnection)conn).setRequestMethod("POST");
+            conn.setDoOutput(true);
+
+            String data = encodeParameter("component","Server");
+            data += "&" + encodeParameter("gpversion",genepatternVersion);
+            data += "&" + encodeParameter("build",buildTag);
+            data += "&" + encodeParameter("os", os);
+             
+            data += "&" + encodeParameter("name",this.name);
+            if (title != null) {
+                data += "&" + encodeParameter("title",this.title);
+            }
+            data += "&" + encodeParameter("email",this.email);
+            data += "&" + encodeParameter("organization",this.organization);
+            data += "&" + encodeParameter("department",this.department);
+            data += "&" + encodeParameter("address1",this.address1);
+            if (address2 != null) {
+                data += "&" + encodeParameter("address2",this.address2);
+            }
+            data += "&" + encodeParameter("city",this.city);
+            data += "&" + encodeParameter("state",this.state);
+            if (zipCode != null) {
+                data += "&" + encodeParameter("zip",this.zipCode);
+            }
+            data += "&" + encodeParameter("country",this.country);
+            data += "&" + encodeParameter("join", ""+this.joinMailingList);
+            data += "&" + encodeParameter("os", os);
+            
+            OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
+            wr.write(data);
+            wr.flush();
+            wr.close();
+           
+            int responseCode = ((HttpURLConnection)conn).getResponseCode();
+            if (responseCode < 200 || responseCode >= 400) {
+                throw new HttpException();
+            }
+
+            saveIsRegistered();
+            RegisterServerBean.createNewUserNoPassword(this.email);
+            UIBeanHelper.login(this.email, false, false, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
+            error = false;              
+            return "installFrame";
+        }
+        catch (MalformedURLException e) {
+            return handleException(e);
+        }
+        catch (IOException e) {
+            return handleException(e);
+        }
+        catch (Exception e) {
+            return handleException(e);
+        }
+    }
+
+    public String cancelRegistration() {
 		   System.setProperty(GPConstants.REGISTERED_SERVER, "unregistered");
 		   String os = System.getProperty("os.name") + ", "+ System.getProperty("os.version");
 		   String genepatternVersion = System.getProperty("GenePatternVersion");
 	        
 		   HttpClient client = new HttpClient();
-		   PostMethod httppost = new PostMethod(action);
+		   PostMethod httppost = new PostMethod(registrationUrl);
 		  
 		   httppost.addParameter("name","Anonymous");
 		   httppost.addParameter("component","Server");
@@ -200,12 +252,12 @@ public class RegisterServerBean {
 		   // after each restart
 		   try {
 			   
-			   this.createNewUserNoPassword(this.email);
+			   RegisterServerBean.createNewUserNoPassword(this.email);
 			   UIBeanHelper.login(this.email, false, false, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
 			   
 			   int responseCode = client.executeMethod(httppost);
 			   
-			   if (responseCode >= 400) throw new HttpException();
+			   if (responseCode < 200 || responseCode >= 400) throw new HttpException();
 			   // we don't know them, but their download is recorded so mark the server as registered
 			   saveIsRegistered();
 			   
@@ -334,7 +386,9 @@ public static boolean isRegisteredOrDeclined(){
 	        }
 	   }
 
-	   
+    public void setRegistrationUrl(String url) {
+        this.registrationUrl = url;
+    }
 	   
 	public String getEmail() {
 		return email;
