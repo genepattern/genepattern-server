@@ -7,7 +7,7 @@
 </head>
 <body>
 
-<t:div rendered="#{!empty requestScope.userID and systemMessageBean.isNew}">
+<t:div rendered="#{!empty requestScope.userID and systemMessageBean.enableJavaScriptAlert and systemMessageBean.isNew}">
 <script type="text/javascript" language="javascript">
 window.addEventListener("load",
     function () {

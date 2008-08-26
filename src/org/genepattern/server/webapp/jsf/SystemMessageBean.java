@@ -25,17 +25,20 @@ public class SystemMessageBean {
 
     //to prevent doing a database query for each page load, change the delay to some value
     //other than zero.
-    private long delay = 0 * 60 * 1000; //number of  millisecs to wait before querying the database again
+    private long delay = 1000; //number of  millisecs to wait before querying the database again
     private long lastLookup = System.currentTimeMillis() - delay;
 
     private boolean isNew = true;
     private boolean isOpen = true;
+    //if this is true the getMessageAsJavaScriptString will
+    private boolean enableJavaScriptAlert = false;
     
     /**
      * Initialize.
      */
     public SystemMessageBean() {
         lookupSystemMessage(new Date());
+        enableJavaScriptAlert = Boolean.valueOf(System.getProperty("systemMessage.enableJavaScriptAlert"));
     }
 
     /**
@@ -79,10 +82,17 @@ public class SystemMessageBean {
         return systemMessage;
     }
 
+    public boolean getEnableJavaScriptAlert() {
+        return this.enableJavaScriptAlert;
+    }
+
     /**
      * @return format the system message for display in a javascript alert window.
      */
     public String getMessageAsJavaScriptString() {
+        if (!enableJavaScriptAlert) {
+            return "";
+        }
         checkSystemMessage();
         if  (systemMessage == null) {
             return "";
