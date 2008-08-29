@@ -18,7 +18,7 @@ window.addEventListener("load",
 </t:div>
 <h:form id="dismissForm" rendered="#{systemMessageBean.isOpen}" >
     <h:outputText escape="false" value="#{systemMessageBean.messageAsHtmlString} " style="color: red;" />
-    <h:commandLink value=" [ok] " actionListener="#{systemMessageBean.hide}" rendered="#{!empty requestScope.userID}" />
+    <h:commandLink value=" [hide] " actionListener="#{systemMessageBean.hide}" rendered="#{!empty requestScope.userID}" />
 </h:form>
 
 </body>
