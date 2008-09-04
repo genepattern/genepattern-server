@@ -5,7 +5,7 @@ fv taskForm input.filename_cb url
 fv taskForm input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.res
 submit
 code 200
-url /gp/runTaskPipeline.jsp
+url /gp/pages/jobResult.jsf
 # find the url to the output file, to be used as input to the next step
 find 'all_aml_train.preprocessed.res'
 run "mod_output = get_browser().find_link('all_aml_train.preprocessed.res')"

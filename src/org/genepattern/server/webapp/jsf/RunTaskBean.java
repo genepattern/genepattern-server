@@ -129,13 +129,13 @@ public class RunTaskBean {
     }
 
     public String getFormAction() {
-	if (visualizer) {
-	    return "preRunVisualizer.jsp";
-
-	} else if (pipeline) {
-	    return "runPromptingPipeline.jsp";
-	}
-	return "runTaskPipeline.jsp";
+        if (visualizer) {
+            return "submitVisualizer.jsp";
+        } 
+        else if (pipeline) {
+            return "submitPipeline.jsp";
+        }
+        return "submitJob.jsp";
     }
 
     public String getLsid() {
