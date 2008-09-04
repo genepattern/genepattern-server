@@ -16,6 +16,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,21 +47,32 @@ public class JobInfoBean {
     private int requestedJobNumber = -1;
 
     public static class JobInfoWrapper {
-	private List<OutputParameter> outputFiles;
-	private List<InputParameter> inputParameters;
-	private String taskName;
+        private String taskName;
+        private Date dateSubmitted;
+        private Date dateCompleted;
+        private List<InputParameter> inputParameters;
+        private List<OutputParameter> outputFiles;
 
-	public List<OutputParameter> getOutputFiles() {
-	    return outputFiles;
-	}
+        public String getTaskName() {
+            return taskName;
+        }
+        
+        public Date getDateSubmitted() {
+            return dateSubmitted;
+        }
+        
+        public Date getDateCompleted() {
+            return dateCompleted;
+        }
 
-	public List<InputParameter> getInputParameters() {
-	    return inputParameters;
-	}
+        public List<InputParameter> getInputParameters() {
+            return inputParameters;
+        }
 
-	public String getTaskName() {
-	    return taskName;
-	}
+        public List<OutputParameter> getOutputFiles() {
+            return outputFiles;
+        }
+        
     }
 
     public JobInfoBean() {
@@ -101,233 +113,226 @@ public class JobInfoBean {
     }
 
     private JobInfoWrapper createJobInfoWrapper(JobInfo job) {
+        if (!AuthorizationHelper.adminJobs() && !job.getUserId().equals(UIBeanHelper.getUserId())) {
+            throw new FacesException("You don't have the required permissions to access the requested job.");
+        }
 
-	if (!AuthorizationHelper.adminJobs() && !job.getUserId().equals(UIBeanHelper.getUserId())) {
-	    throw new FacesException("You don't have the required permissions to access the requested job.");
-	}
+        Map<String, ParameterInfo> parameterMap = new HashMap<String, ParameterInfo>();
+        ParameterInfo[] formalParameters = null;
+        try {
+            TaskInfo task = new LocalAdminClient(job.getUserId()).getTask(job.getTaskLSID());
+            formalParameters = task.getParameterInfoArray();
+        } 
+        catch (WebServiceException e) {
+            log.error(e);
+        }
 
-	Map<String, ParameterInfo> parameterMap = new HashMap<String, ParameterInfo>();
-	ParameterInfo[] formalParameters = null;
-	try {
-	    TaskInfo task = new LocalAdminClient(job.getUserId()).getTask(job.getTaskLSID());
+        List<OutputParameter> outputFiles = new ArrayList<OutputParameter>();
+        List<InputParameter> inputs = new ArrayList<InputParameter>();
+        ParameterInfo[] parameterInfoArray = job.getParameterInfoArray();
+        if (parameterInfoArray != null) {
+            for (ParameterInfo p : parameterInfoArray) {
+                parameterMap.put(p.getName(), p);
+            }
+        }
 
-	    formalParameters = task.getParameterInfoArray();
+        if (formalParameters != null) {
+            for (ParameterInfo formalParameter : formalParameters) {
+                ParameterInfo param = parameterMap.get(formalParameter.getName());
+                if (param == null) {
+                    continue;
+                }
+                String value = param.getUIValue(formalParameter);
+                // skip parameters that the user did not give a value for
+                if (value == null || value.equals("")) {
+                    continue;
+                }
+                String displayValue = value;
+                boolean isUrl = false;
+                boolean exists = false;
+                String directory = null;
+                if (formalParameter.isInputFile()) {
+                    try {
+                        // see if a URL was passed in
+                        URL url = new URL(value);
+                        // bug 2026 - file:// URLs should not be treated as a URL
+                        isUrl = true;
+                        if ("file".equals(url.getProtocol())){
+                            isUrl = false;
+                            value = value.substring(5);// strip off the file: part for the next step
+                        }
+                        if (displayValue.startsWith(genePatternUrl)) {			
+                            int lastNameIdx = value.lastIndexOf("/");
+                            displayValue = value.substring(lastNameIdx+1);		
+                            isUrl = true;
+                        }
+                    } 
+                    catch (MalformedURLException e) {
+                        if (displayValue.startsWith("<GenePatternURL>")) {			
+                            int lastNameIdx = value.lastIndexOf("/");
+                            if (lastNameIdx == -1) {
+                                lastNameIdx = value.lastIndexOf("file=");
+                                if (lastNameIdx != -1) {
+                                    lastNameIdx += 5;
+                                }
+                            }
+                            if (lastNameIdx != -1) { 
+                                displayValue = value.substring(lastNameIdx);		
+                            } 
+                            else {
+                                displayValue = value;
+                            }
+                            value = genePatternUrl + value.substring("<GenePatternURL>".length());
+                            isUrl = true;
+                        } 
+                    }
 
-	} catch (WebServiceException e) {
-	    log.error(e);
-	}
-	List<OutputParameter> outputFiles = new ArrayList<OutputParameter>();
-	List<InputParameter> inputs = new ArrayList<InputParameter>();
-	ParameterInfo[] parameterInfoArray = job.getParameterInfoArray();
-	if (parameterInfoArray != null) {
-	    for (ParameterInfo p : parameterInfoArray) {
-		parameterMap.put(p.getName(), p);
-	    }
-	}
+                    if (!isUrl) {
+                        File f = new File(value);
+                        exists = f.exists();
+                        value = f.getName();
+                        displayValue = value;
+                        if (displayValue.startsWith("Axis")) {
+                            displayValue = displayValue.substring(displayValue.indexOf('_') + 1);
+                        }
+                        if (exists) {
+                            directory = f.getParentFile().getName();
+                        }
+                    }
+                }
 
-	if (formalParameters != null) {
-	    for (ParameterInfo formalParameter : formalParameters) {
-		ParameterInfo param = parameterMap.get(formalParameter.getName());
-		if (param == null)
-		    continue;
+                InputParameter p = new InputParameter();
+                String name = (String) formalParameter.getAttributes().get("altName");
+                if (name == null) {
+                    name = formalParameter.getName();
+                }
+                name = name.replaceAll("\\.", " ");
+                p.setDirectory(directory);
+                p.setName(name);
+                if (formalParameter.isPassword()) {
+                    p.setDisplayValue(displayValue != null ? "*****" : null);
+                } 
+                else {
+                    p.setDisplayValue(displayValue);
+                }
+                p.setValue(value);
+                p.setUrl(isUrl);
+                p.setExists(exists);
+                inputs.add(p);
+            }
+        }
 
-		String value = param.getUIValue(formalParameter);
-		// skip parameters that the user did not give a value for
-		if (value == null || value.equals("")) {
-		    continue;
-		}
-		String displayValue = value;
-
-		boolean isUrl = false;
-		boolean exists = false;
-		String directory = null;
-		if (formalParameter.isInputFile()) {
-		    try {
-				// see if a URL was passed in
-				URL url = new URL(value);
-				
-				// bug 2026 - file:// URLs should not be treated as a URL
-				isUrl = true;
-					
-				if ("file".equals(url.getProtocol())){
-					isUrl = false;
-					value = value.substring(5);// strip off the file: part for the next step
-				} 
-				if (displayValue.startsWith(genePatternUrl)) {			
-					int lastNameIdx = value.lastIndexOf("/");
-					displayValue = value.substring(lastNameIdx+1);		
-					isUrl = true;
-				}
-			} catch (MalformedURLException e) {
-				
-				if (displayValue.startsWith("<GenePatternURL>")) {			
-					int lastNameIdx = value.lastIndexOf("/");
-					if (lastNameIdx == -1) {
-						lastNameIdx = value.lastIndexOf("file=");
-						if (lastNameIdx != -1) lastNameIdx += 5;
-					}
-					if (lastNameIdx != -1) { 
-						displayValue = value.substring(lastNameIdx);		
-					} else {
-						displayValue = value;
-						
-					}
-					value = genePatternUrl + value.substring("<GenePatternURL>".length());
-					isUrl = true;
-				} 
-				
-		    }
-
-			if (!isUrl) {
-				
-
-				File f = new File(value);
-				exists = f.exists();
-				value = f.getName();
-				displayValue = value;
-				if (displayValue.startsWith("Axis")) {
-					displayValue = displayValue.substring(displayValue.indexOf('_') + 1);
-				} 
-                //else if (exists) {
-                if (exists) {
-					directory = f.getParentFile().getName();
-				}
-			}
-		}
-
-		InputParameter p = new InputParameter();
-		String name = (String) formalParameter.getAttributes().get("altName");
-		if (name == null) {
-		    name = formalParameter.getName();
-		}
-		name = name.replaceAll("\\.", " ");
-
-		p.setDirectory(directory);
-		p.setName(name);
-		if (formalParameter.isPassword()) {
-		    p.setDisplayValue(displayValue != null ? "*****" : null);
-		} else {
-		    p.setDisplayValue(displayValue);
-		}
-		p.setValue(value);
-		p.setUrl(isUrl);
-		p.setExists(exists);
-
-		inputs.add(p);
-	    }
-
-	}
-
-	if (parameterInfoArray != null) {
-	    for (ParameterInfo param : parameterInfoArray) {
-		if (param.isOutputFile() && !param.getName().equals(GPConstants.TASKLOG)) {
-		    String value = param.getValue();
-		    int index = StringUtils.lastIndexOfFileSeparator(value);
-		    int jobNumber = Integer.parseInt(value.substring(0, index));
-		    String filename = value.substring(index + 1);
-		    OutputParameter p = new OutputParameter();
-		    p.setJobNumber(jobNumber);
-		    p.setName(filename);
-		    outputFiles.add(p);
-		}
-	    }
-	}
-	JobInfoWrapper jobInfoWrapper = new JobInfoWrapper();
-	jobInfoWrapper.taskName = job.getTaskName();
-	jobInfoWrapper.outputFiles = outputFiles;
-	jobInfoWrapper.inputParameters = inputs;
-	return jobInfoWrapper;
+        if (parameterInfoArray != null) {
+            for (ParameterInfo param : parameterInfoArray) {
+                if (param.isOutputFile() && !param.getName().equals(GPConstants.TASKLOG)) {
+                    String value = param.getValue();
+                    int index = StringUtils.lastIndexOfFileSeparator(value);
+                    int jobNumber = Integer.parseInt(value.substring(0, index));
+                    String filename = value.substring(index + 1);
+                    OutputParameter p = new OutputParameter();
+                    p.setJobNumber(jobNumber);
+                    p.setName(filename);
+                    outputFiles.add(p);
+                }
+            }
+        }
+        JobInfoWrapper jobInfoWrapper = new JobInfoWrapper();
+        jobInfoWrapper.taskName = job.getTaskName();
+        jobInfoWrapper.dateSubmitted = job.getDateSubmitted();
+        jobInfoWrapper.dateCompleted = job.getDateCompleted();
+        jobInfoWrapper.outputFiles = outputFiles;
+        jobInfoWrapper.inputParameters = inputs;
+        return jobInfoWrapper;
     }
 
     public static class OutputParameter {
-	private String name;
+        private String name;
+        private int jobNumber;
 
-	private int jobNumber;
+        public int getJobNumber() {
+            return jobNumber;
+        }
 
-	public int getJobNumber() {
-	    return jobNumber;
-	}
+        public void setJobNumber(int jobNumber) {
+            this.jobNumber = jobNumber;
+        }
 
-	public void setJobNumber(int jobNumber) {
-	    this.jobNumber = jobNumber;
-	}
+        public String getName() {
+            return name;
+        }
 
-	public String getName() {
-	    return name;
-	}
-
-	public void setName(String name) {
-	    this.name = name;
-	}
-
+        public void setName(String name) {
+            this.name = name;
+        }
     }
 
     public static class InputParameter {
-	private boolean url;
+        private boolean url;
+        private String name;
+        private String value;
+        private String displayValue;
+        private boolean exists;
+        private String directory;
 
-	private String name;
+        public String getName() {
+            return name;
+        }
 
-	private String value;
+        public void setDisplayValue(String displayValue) {
+            this.displayValue = displayValue;
+        }
 
-	private String displayValue;
+        public String getDisplayValue() {
+            return this.displayValue;
+        }
 
-	private boolean exists;
+        public void setName(String name) {
+            this.name = name;
+        }
 
-	private String directory;
+        public boolean isUrl() {
+            return url;
+        }
 
-	private boolean password;
+        public void setUrl(boolean url) {
+            this.url = url;
+        }
 
-	public String getName() {
-	    return name;
-	}
+        public String getValue() {
+            return value;
+        }
 
-	public void setDisplayValue(String displayValue) {
-	    this.displayValue = displayValue;
-	}
+        public void setValue(String value) {
+            this.value = value;
+        }
 
-	public String getDisplayValue() {
-	    return this.displayValue;
-	}
+        public boolean isExists() {
+            return exists;
+        }
 
-	public void setName(String name) {
-	    this.name = name;
-	}
+        public void setExists(boolean exists) {
+            this.exists = exists;
+        }
 
-	public boolean isUrl() {
-	    return url;
-	}
+        public String getDirectory() {
+            return directory;
+        }
 
-	public void setUrl(boolean url) {
-	    this.url = url;
-	}
-
-	public String getValue() {
-	    return value;
-	}
-
-	public void setValue(String value) {
-	    this.value = value;
-	}
-
-	public boolean isExists() {
-	    return exists;
-	}
-
-	public void setExists(boolean exists) {
-	    this.exists = exists;
-	}
-
-	public String getDirectory() {
-	    return directory;
-	}
-
-	public void setDirectory(String directory) {
-	    this.directory = directory;
-	}
+        public void setDirectory(String directory) {
+            this.directory = directory;
+        }
     }
 
     public int getJobNumber() {
 	return requestedJobNumber;
+    }
+
+    public Date getDateSubmitted() {
+        return jobInfoWrapper.getDateSubmitted();
+    }
+
+    public Date getDateCompleted() {
+        return jobInfoWrapper.getDateCompleted();
     }
 
     public JobInfoWrapper getJobInfoWrapper() {
