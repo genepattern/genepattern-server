@@ -19,14 +19,21 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import javax.faces.FactoryFinder;
+import javax.faces.application.Application;
+import javax.faces.application.ViewHandler;
+import javax.faces.component.UIViewRoot;
+import javax.faces.context.FacesContext;
+import javax.faces.context.FacesContextFactory;
+import javax.faces.lifecycle.Lifecycle;
+import javax.faces.lifecycle.LifecycleFactory;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -113,22 +120,21 @@ public class JobResultsFilter implements Filter {
 
         String userid = (String) request.getAttribute(GPConstants.USERID);
 
-        // since this is a dir name with a path, we want to get the path in the
-        // application context
+        // since this is a dir name with a path, we want to get the path in the application context
         // ie "gp" so...
         // given http://aserver:aport/gp/jobResults/92/foo.txt
         // we want to get the "92" as the job #
 
+        //request.getServletPath URLdecodes the servlet path
+        //request.getRequestURI does not URLdecode the url
         String servletPath = ((HttpServletRequest) request).getServletPath();
+        String contextPath = ((HttpServletRequest) request).getContextPath();
+
         int idx = servletPath.indexOf("jobResults");
         if (idx == -1) {
             ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
         }
         String resultsPath = servletPath.substring(idx + 1 + ("jobResults".length()));
-        try {
-            resultsPath = URLDecoder.decode(resultsPath, "UTF-8");
-        } catch (UnsupportedEncodingException x) {
-        }
 
         StringTokenizer strtok = new StringTokenizer(resultsPath, "/");
         String job = null;
@@ -140,14 +146,19 @@ public class JobResultsFilter implements Filter {
             file = strtok.nextToken();
         }
 
-        if (job == null || file == null) {
-            // if file is null, request is for a directory-prohibit directory
-            // listings
+        if (job == null) {
+            // if file is null, request is for a directory-prohibit directory listings
             // should admin be allowed here?
             allowed = false;
-        } else if (isJobOwner(userid, job)
-                || AuthorizationHelper.adminJobs(userid)) {
+        } 
+        else if (isJobOwner(userid, job) || AuthorizationHelper.adminJobs(userid)) {
             allowed = true;
+        }
+        
+        if (allowed && file == null) {
+            String jsfPage = contextPath + "/pages/jobInfo.jsf?jobNumber="+job;
+            ((HttpServletResponse) response).sendRedirect( jsfPage );
+            return;
         }
 
         if (allowed) {
