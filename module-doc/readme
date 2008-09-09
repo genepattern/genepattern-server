@@ -9,6 +9,13 @@ java -jar saxon9.jar -t -s:cms/cms.xml -xsl:xsl/module_doc.xslt -o:cms/cms.html
 
 
 Next steps for Heidi:
+- correct the following errors in the xslt for CMS: 
+(1) under parameters, example files aren't being displayed (example Result files are displayed); 
+(2) under parameters, file format is not being displayed; 
+(3) CMS uses uploaded example files, GISTIC uses URLs for example files; XML and XSLT need to be modified to handle both cases; 
+(4) notice in the output that some paragraphs use <p> and others don't; this needs to be addressed and made consistent; 
+(5) under References, the HTML is displaying HTML tags, eg <i> and </i>; (6) under Platform Dependencies, Task Type is missing; 
+(7) add Related Modules section to the end of the XSLT.   
 - create a few more xml files: GISTIC, CMSViewer, PreprocessDataset, perhaps a few others
 - work with Jon to modify the css to improve the layout
 
