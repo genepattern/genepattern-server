@@ -27,7 +27,7 @@
                 <input name="toggleDesc" id="toggleDesc" onclick="toggleDescriptions();" type="checkbox" checked="checked">Show parameter descriptions</input>
               </h:outputText>
               <h:outputText rendered="#{! runTaskBean.showParameterDescriptions}">
-                <h:selectBooleanCheckbox name="toggleDesc" id="toggleDesc" onclick="toggleDescriptions();" type="checkbox">Show parameter descriptions</h:selectBooleanCheckbox>
+                <h:selectBooleanCheckbox id="toggleDesc" onclick="toggleDescriptions();">Show parameter descriptions</h:selectBooleanCheckbox>
               </h:outputText>
               </form>
             </td>
