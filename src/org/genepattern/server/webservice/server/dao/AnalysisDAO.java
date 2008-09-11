@@ -265,7 +265,7 @@ public class AnalysisDAO extends BaseDAO {
      */
     public int getNumJobs(String userId) {
         //if userId is null or empty get all of the jobs
-        String hql = "select count(*) from AnalysisJob where deleted = :deleted";
+        String hql = "select count(*) from AnalysisJob where ((parent = null) OR (parent = -1)) and deleted = :deleted ";
         if (userId != null) {
             hql += " and userId = :userId";
         }
