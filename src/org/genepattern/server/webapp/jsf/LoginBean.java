@@ -33,17 +33,11 @@ import org.genepattern.server.user.UserDAO;
 public class LoginBean {
 
     private static Logger log = Logger.getLogger(LoginBean.class);
-
     private String username;
-
     private String password;
-
     private boolean passwordRequired;
-
     private boolean unknownUser = false;
-
     private boolean invalidPassword = false;
-
     private boolean createAccountAllowed;
 
     public LoginBean() {
@@ -81,11 +75,6 @@ public class LoginBean {
         return unknownUser;
     }
 
-    public String logout() {
-        UIBeanHelper.logout();
-        return "logout";
-    }
-
     public void setPassword(String password) {
         this.password = password;
     }
@@ -102,65 +91,64 @@ public class LoginBean {
      *                ignored
      */
     public void submitLogin(ActionEvent event) {
-	try {
-	    assert username != null;
-	    User up = (new UserDAO()).findById(username);
-	    if (up == null) {
-		if (passwordRequired) {
-		    unknownUser = true;
-		} 
-		else {
-		    createNewUserNoPassword(username);
-		    try {
-		        UIBeanHelper.login(username, false);
-		    } 
-		    catch (UnsupportedEncodingException e) {
-		        log.error(e);
-		    } 
-		    catch (IOException e) {
-		        log.error(e);
-		    }
-		}
-	    } 
-	    else if (passwordRequired) {
-	        if (!java.util.Arrays.equals(EncryptionUtil.encrypt(password), up.getPassword())) {
-	            invalidPassword = true;
-	        } 
-	        else {
-	            UIBeanHelper.login(username, passwordRequired);
-	        }
-	    } 
-	    else {
-	        UIBeanHelper.login(username, passwordRequired);
-	    }
-	} 
-	catch (UnsupportedEncodingException e) {
-	    log.error(e);
-	    throw new RuntimeException(e); // @TODO -- wrap in gp system
-	    // exeception.
-	} 
-	catch (IOException e) {
-	    log.error(e);
-	    throw new RuntimeException(e); // @TODO -- wrap in gp system
-	    // exeception.
-	} 
-	catch (NoSuchAlgorithmException e) {
-	    log.error(e);
-	    throw new RuntimeException(e); // @TODO -- wrap in gp system
-	    // exeception.
-	}
+        try {
+            assert username != null;
+            User up = (new UserDAO()).findById(username);
+            if (up == null) {
+                if (passwordRequired) {
+                    unknownUser = true;
+                } 
+                else {
+                    createNewUserNoPassword(username);
+                    try {
+                        UIBeanHelper.login(username, false);
+                    } 
+                    catch (UnsupportedEncodingException e) {
+                        log.error(e);
+                    } 
+                    catch (IOException e) {
+                        log.error(e);
+                    }
+                }
+            } 
+            else if (passwordRequired) {
+                if (!java.util.Arrays.equals(EncryptionUtil.encrypt(password),
+                        up.getPassword())) {
+                    invalidPassword = true;
+                } 
+                else {
+                    UIBeanHelper.login(username, passwordRequired);
+                }
+            } 
+            else {
+                UIBeanHelper.login(username, passwordRequired);
+            }
+        } 
+        catch (UnsupportedEncodingException e) {
+            log.error(e);
+            throw new RuntimeException(e); // @TODO -- wrap in gp system exeception.
+        }
+        catch (IOException e) {
+            log.error(e);
+            throw new RuntimeException(e); // @TODO -- wrap in gp system exeception.
+        } 
+        catch (NoSuchAlgorithmException e) {
+            log.error(e);
+            throw new RuntimeException(e); // @TODO -- wrap in gp system exeception.
+        }
     }
 
     public static void createNewUserNoPassword(String username) {
-	User newUser = new User();
-	newUser.setUserId(username);
-	newUser.setRegistrationDate(new Date());
-	try {
-	    newUser.setPassword(EncryptionUtil.encrypt(""));
-	} catch (NoSuchAlgorithmException e) {
-	    log.error(e);
-	}
-	(new UserDAO()).save(newUser);
+        User newUser = new User();
+        newUser.setUserId(username);
+        newUser.setRegistrationDate(new Date());
+        try {
+            newUser.setPassword(EncryptionUtil.encrypt(""));
+        }
+        catch (NoSuchAlgorithmException e) {
+            log.error(e);
+        }
+        (new UserDAO()).save(newUser);
     }
 
 }

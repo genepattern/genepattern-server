@@ -134,15 +134,6 @@ public class UIBeanHelper {
 	return getUserId() != null;
     }
 
-    public static void logout(HttpServletRequest request, HttpServletResponse response, HttpSession session) {
-        session.removeAttribute(GPConstants.USERID);
-        session.invalidate();
-    }
-
-    public static void logout() {
-        logout(getRequest(), getResponse(), getSession());
-    }
-
     /**
      * 
      * @param username
