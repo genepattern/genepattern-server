@@ -251,15 +251,23 @@ public class TaskInfo implements Serializable {
     }
 
     public boolean isPipeline() {
-        Map tia = getTaskInfoAttributes();
-        if (tia == null) return false; // default to false if unknown
-
+        TaskInfoAttributes tia = getTaskInfoAttributes();
+        if (tia == null) {
+            return false; // default to false if unknown
+        }
         String type = (String) tia.get(GPConstants.TASK_TYPE);
-        if (type == null) return false; // default to false if unknown
-
+        if (type == null) {
+            return false; // default to false if unknown
+        }
         return type.endsWith("pipeline");
-
     }
     
+    public boolean isVisualizer() {
+        TaskInfoAttributes tia = getTaskInfoAttributes();
+        if (tia == null) {
+            return false;
+        }
+        return GPConstants.TASK_TYPE_VISUALIZER.equalsIgnoreCase(tia.get(GPConstants.TASK_TYPE));
+    }
 
 }

@@ -291,7 +291,8 @@ public class JobBean {
 	    JobInfo jobInfo = new JobInfo(-1, -1, null, null, null, jobParameters, UIBeanHelper.getUserId(), lsid,
 		    taskInfo.getName());
 
-	    AnalysisJob job = new AnalysisJob(UIBeanHelper.getServer(), jobInfo, JobBean.isVisualizer(taskInfo));
+	    boolean isVisualizer = taskInfo.isVisualizer();
+	    AnalysisJob job = new AnalysisJob(UIBeanHelper.getServer(), jobInfo, isVisualizer);
 	    return CodeGeneratorUtil.getCode(language, job, taskInfo, adminClient);
 	} catch (WebServiceException e) {
 	    log.error("Error getting code.", e);
@@ -664,10 +665,6 @@ public class JobBean {
 	    }
 	}
 	return selectedJobs;
-    }
-
-    public static boolean isVisualizer(TaskInfo taskInfo) {
-	return "visualizer".equalsIgnoreCase((String) taskInfo.getTaskInfoAttributes().get(GPConstants.TASK_TYPE));
     }
 
     /**

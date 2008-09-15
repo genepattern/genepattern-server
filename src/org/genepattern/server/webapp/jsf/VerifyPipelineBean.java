@@ -244,13 +244,6 @@ public class VerifyPipelineBean {
 		    }
 		}
 	    }
-
-	    // boolean isVisualizer = ((String)
-	    // mTia.get(GPConstants.TASK_TYPE)).equals(GPConstants.TASK_TYPE_VISUALIZER);
-	    // jobSubmission = new JobSubmission(taskName, mTaskInfo.getDescription(), taskLSID, params, runTimePrompt,
-	    // isVisualizer, mTaskInfo);
-	    //
-	    // model.addTask(jobSubmission);
 	}
 
 	return (problems.size() == 0) ? new JSONArray() : new JSONArray(problems);

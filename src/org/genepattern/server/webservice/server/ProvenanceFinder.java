@@ -205,7 +205,7 @@ public class ProvenanceFinder {
 			+ job.getTaskName() + " in module list.");
 	    }
 	    TaskInfoAttributes mTia = mTaskInfo.giveTaskInfoAttributes();
-	    boolean isVisualizer = ((String) mTia.get(GPConstants.TASK_TYPE)).equals(GPConstants.TASK_TYPE_VISUALIZER);
+	    boolean isVisualizer = mTaskInfo.isVisualizer();
 
 	    ParameterInfo[] adjustedParams = createPipelineParams(job.getParameterInfoArray(), mTaskInfo
 		    .getParameterInfoArray(), jobOrder);
