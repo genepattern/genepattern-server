@@ -28,5 +28,5 @@ notfind Exception
 code 200
 
 #logout
-go /gp/logout.jsp
+go /gp/logout
 #timer log

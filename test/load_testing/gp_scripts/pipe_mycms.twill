@@ -26,5 +26,5 @@ find 'all_aml_train.comp.marker.odf'
 find 'all_aml_train.comp.marker.filt.txt'
 
 #logout
-go /gp/logout.jsp
+go /gp/logout
 #timer log

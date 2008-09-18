@@ -21,4 +21,4 @@ find '1 of 1'
 find 'all_aml_train.cvt.cls'
 
 #logout
-go /gp/logout.jsp
+go /gp/logout
