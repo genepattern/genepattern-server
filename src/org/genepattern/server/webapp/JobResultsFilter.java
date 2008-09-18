@@ -20,11 +20,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Properties;
-import java.util.StringTokenizer;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.webapp.jsf.AuthorizationHelper;
+import org.genepattern.server.JobIDNotFoundException;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
@@ -105,50 +105,85 @@ public class JobResultsFilter implements Filter {
         jobsDirectory = props.getProperty("jobs");
     }
 
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
-            ServletException {
-        boolean allowed = false;
-
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+    throws IOException, ServletException 
+    {
         String userid = (String) request.getAttribute(GPConstants.USERID);
-
-        // since this is a dir name with a path, we want to get the path in the application context
-        // ie "gp" so...
-        // given http://aserver:aport/gp/jobResults/92/foo.txt
-        // we want to get the "92" as the job #
-
-        //request.getServletPath URLdecodes the servlet path
-        //request.getRequestURI does not URLdecode the url
         String servletPath = ((HttpServletRequest) request).getServletPath();
-        String contextPath = ((HttpServletRequest) request).getContextPath();
+       
+        //valid servlet paths:
+        // <contextpath>/jobResults
+        // <contextpath>/jobResults/
+        // <contextpath>/jobResults/<job>
+        // <contextpath>/jobResults/<job>/
+        // <contextpath>/jobResults/<job>/<file>
 
-        int idx = servletPath.indexOf("jobResults");
-        if (idx == -1) {
+        if (!servletPath.startsWith("/jobResults")) {
             ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
+            return;
         }
-        String resultsPath = servletPath.substring(idx + 1 + ("jobResults".length()));
-
-        StringTokenizer strtok = new StringTokenizer(resultsPath, "/");
-        String job = null;
-        String file = null;
-        if (strtok.hasMoreTokens()) {
-            job = strtok.nextToken();
-        }
-        if (strtok.hasMoreTokens()) {
-            file = strtok.nextToken();
-        }
-
-        if (job == null) {
-            // if file is null, request is for a directory-prohibit directory listings
-            // should admin be allowed here?
-            allowed = false;
-        } 
-        else if (isJobOwner(userid, job) || AuthorizationHelper.adminJobs(userid)) {
-            allowed = true;
+        String resultsPath = servletPath.substring("/jobResults".length());
+        if (resultsPath.length() > 0) {
+            if ('/' != resultsPath.charAt(0)) {
+                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+            resultsPath = resultsPath.substring(1);
         }
         
+        //parse the job number and file
+        String job = null;
+        String file = null;
+        if (resultsPath != null && resultsPath.length() > 0) {
+            int idx = resultsPath.indexOf('/');
+            if (idx < 0) {
+                job = resultsPath;
+            }
+            else {
+                job = resultsPath.substring(0, idx);
+                //remove '/'
+                file = resultsPath.substring(idx+1);
+                if (file.length() == 0) {
+                    file = null;
+                }
+            }
+        }
+        
+        //special case: list all job results
+        if (job == null) {
+            //((HttpServletResponse) response).sendRedirect( contextPath + "/pages/jobResults.jsf" );
+            //return;
+            //i'd like to use this to eliminate the .jfs from the url but it causes problems on Sign out
+            //    for reasons unknown to me, if I use the request dispatcher to include a jsf page,
+            //    when the user 'Signs out' a JobInfoBean is instantiated.
+            RequestDispatcher rd = request.getRequestDispatcher("/pages/jobResults.jsf");
+            rd.include(request, response);
+            chain.doFilter(request, response);
+            return;
+        }
+
+        boolean allowed = false;
+        try {
+            int jobID = Integer.parseInt(job);
+            AnalysisDAO ds = new AnalysisDAO();
+            JobInfo jobInfo = ds.getJobInfo(jobID);
+            allowed = userid != null && userid.equals(jobInfo.getUserId());
+        }
+        catch (NumberFormatException e) {
+            ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid jobid: "+job);
+            return;
+        }
+        catch (JobIDNotFoundException e) {
+            ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN, "Job not found: "+job);
+            return;
+        }
+
         if (allowed && file == null) {
-            String jsfPage = contextPath + "/pages/jobInfo.jsf?jobNumber="+job;
-            ((HttpServletResponse) response).sendRedirect( jsfPage );
+            String jsfPage = "/pages/jobResult.jsf?jobNumber="+job;
+            //((HttpServletResponse) response).sendRedirect( contextPath + jsfPage );
+            RequestDispatcher rd = request.getRequestDispatcher(jsfPage);
+            rd.include(request, response);
+            chain.doFilter(request, response);
             return;
         }
 
@@ -192,23 +227,6 @@ public class JobResultsFilter implements Filter {
         }
     }
 
-    private boolean isJobOwner(String user, String jobId) {
-        try {
-            if (user == null) {
-                return false;
-            }
-            int jobID = Integer.parseInt(jobId);
-            AnalysisDAO ds = new AnalysisDAO();
-            JobInfo jobInfo = ds.getJobInfo(jobID);
-            return user.equals(jobInfo.getUserId());
-        } catch (NumberFormatException nfe) {
-            return false;
-        }
-
-    }
-
     public void destroy() {
-
     }
-
 }
