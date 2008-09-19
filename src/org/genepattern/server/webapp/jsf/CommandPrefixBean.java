@@ -17,16 +17,18 @@ import static org.genepattern.util.GPConstants.TASK_PREFIX_MAPPING;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.faces.FacesException;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
-import org.apache.log4j.Logger;
 import org.genepattern.server.util.PropertiesManager;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -36,18 +38,11 @@ import org.genepattern.webservice.WebServiceException;
 
 public class CommandPrefixBean {
 
-    private static Logger log = Logger.getLogger(CommandPrefixBean.class);
-
     private IAdminClient admin;
-
     private String defaultCommandPrefix;
-
     private String newPrefixName;
-
     private String newPrefixValue;
-
     private List newMappingLSID;
-
     private String newMappingPrefix;
 
     PropertiesManager pm = null;
@@ -85,27 +80,75 @@ public class CommandPrefixBean {
         pm.saveProperties(COMMAND_PREFIX, p);
     }
 
-    public List getCommandPrefixes() {
-        return new ArrayList(pm.getCommandPrefixes().entrySet());
+    private static final Comparator<Map.Entry<Object, Object>> PREFIX_NAME_COMPARATOR = new Comparator<Map.Entry<Object,Object>>() {
+        public int compare(Entry<Object, Object> arg0, Entry<Object, Object> arg1) {
+            Object k0 = arg0 == null ? null : arg0.getKey();
+            Object k1 = arg1 == null ? null : arg1.getKey();
+            String s0 = k0 == null ? "" : k0 instanceof String ? (String) k0 : "";
+            String s1 = k1 == null ? "" : k1 instanceof String ? (String) k1 : "";
+            return s0.compareToIgnoreCase(s1);
+        }
+    };
+    
+    private static final TaskPrefixMappingComparator TASK_PREFIX_MAPPING_COMPARATOR = new TaskPrefixMappingComparator();
+    private static class TaskPrefixMappingComparator implements Comparator<KeyValuePair> {
+        private boolean sortByKey = true;
+        public void setSortByKey(boolean b) {
+            this.sortByKey = b;
+        }
+
+        public int compare(KeyValuePair arg0, KeyValuePair arg1) {
+            String k0 = arg0 == null ? "" : arg0.getKey();
+            String k1 = arg1 == null ? "" : arg1.getKey();
+            String v0 = arg0 == null ? "" : arg0.getValue();
+            String v1 = arg1 == null ? "" : arg1.getValue();
+            
+            //sort by key then by value
+            if (sortByKey) {
+                int c = k0.compareToIgnoreCase(k1);
+                if (c == 0) {
+                    c = v0.compareToIgnoreCase(v1);
+                }
+                return c;
+            }
+            //sort by value then by key
+            else {
+                int c = v0.compareToIgnoreCase(v1);
+                if (c == 0) {
+                    c = k0.compareToIgnoreCase(k1);
+                }
+                return c;
+            }
+        }
+    };
+
+    public List<Map.Entry<Object, Object>> getCommandPrefixes() {
+        //return new ArrayList(pm.getCommandPrefixes().entrySet());
+        Properties cmdPrefixes = pm.getCommandPrefixes();
+        Set<Map.Entry<Object,Object>> entrySet = cmdPrefixes.entrySet();
+        List<Map.Entry<Object,Object>> prefixes = new ArrayList<Map.Entry<Object,Object>>(entrySet);
+        Collections.sort(prefixes,PREFIX_NAME_COMPARATOR);
+        return prefixes;
     }
 
     public List<SelectItem> getCommandPrefixesAsSelectItems() {
-        ArrayList out = new ArrayList<SelectItem>();
-        for (Iterator iter = pm.getCommandPrefixes().keySet().iterator(); iter.hasNext();) {
-            String key = (String) iter.next();
+        List<SelectItem> out = new ArrayList<SelectItem>();
+        
+        List<Map.Entry<Object,Object>> cmdPrefixes = getCommandPrefixes();
+        for (Map.Entry<Object,Object> entry : cmdPrefixes) {
+            String key = (String) entry.getKey();
             out.add(new SelectItem(key, key));
         }
         return out;
     }
 
     /**
-     * We store the mapping with LSIDs (unique) but display with names (not
-     * unique)
+     * We store the mapping with LSIDs (unique) but display with names (not unique).
      *
      * @return
      */
-    public List getTaskPrefixMapping() throws WebServiceException {
-        ArrayList out = new ArrayList();
+    public List<KeyValuePair> getTaskPrefixMapping() throws WebServiceException {
+        List<KeyValuePair> out = new ArrayList<KeyValuePair>();
         Properties taskPrefixMapping = pm.getTaskPrefixMapping();
 
         // return tastPrefixMapping; by name not LSID as we really keep it
@@ -113,6 +156,9 @@ public class CommandPrefixBean {
             String name = nameFromLSID((String) lsidStr);
             out.add(new KeyValuePair(name, (String) lsidStr, taskPrefixMapping.getProperty((String) lsidStr)));
         }
+        //TODO: allow this to be set from web page, 
+        //TASK_PREFIX_MAPPING_COMPARATOR.setSortByKey(false);
+        Collections.sort(out,TASK_PREFIX_MAPPING_COMPARATOR);
         return out;
     }
 
