@@ -1,4 +1,5 @@
 <%@ page import="
+                 java.util.ArrayList,
                  java.util.List,
                  java.util.Map,
                  org.genepattern.server.webapp.RunTaskHelper,
@@ -6,21 +7,29 @@
                  org.genepattern.util.GPConstants,
                  org.genepattern.webservice.JobInfo,
                  org.genepattern.webservice.ParameterInfo,
-                 org.genepattern.webservice.TaskInfo"
+                 org.genepattern.webservice.TaskInfo,
+                 org.apache.commons.fileupload.FileUploadException"
          session="false" contentType="text/html" language="Java" %>
 <%
-try {
     String userID = (String) request.getAttribute(GPConstants.USERID);
-    RunTaskHelper runTaskHelper = new RunTaskHelper(userID, request);
-    TaskInfo task = runTaskHelper.getTaskInfo();
-    if (task == null) {
-        out.println("Unable to find module");
-        return;
+    RunTaskHelper runTaskHelper = null;
+    TaskInfo task = null;
+    List<ParameterInfo> missingReqParams = new ArrayList<ParameterInfo>();
+    FileUploadException fileUploadException = null;
+    try {
+        runTaskHelper = new RunTaskHelper(userID, request);
+        task = runTaskHelper.getTaskInfo();
+        if (task == null) {
+            out.println("Unable to find module");
+            return;
+        }
+        missingReqParams = runTaskHelper.getMissingParameters();
     }
-    
-    List<ParameterInfo> missingReqParams = runTaskHelper.getMissingParameters();
-    if (missingReqParams.size() > 0) {
-        request.setAttribute("missingReqParams", missingReqParams); 
+    catch (FileUploadException e) {
+        fileUploadException = e;
+    }
+    if (fileUploadException != null || missingReqParams.size() > 0) {
+        request.setAttribute("missingReqParams", missingReqParams);
 %>
 <html>
 <head>
@@ -37,7 +46,15 @@ try {
 <body>
 
 <jsp:include page="navbar.jsp"/>
+<% if (missingReqParams.size() > 0) { %>
 <jsp:include page="runTaskMissingParams.jsp"/>
+<% } else { %>
+       <font size='+1' color='red'><b> Warning </b></font><br>
+       <% out.println(fileUploadException.getLocalizedMessage()); %>
+       <p>
+       <p>
+       Hit the back button to resubmit the job.
+<% } %>
 <jsp:include page="footer.jsp"/>
 </body>
 </html>
@@ -51,9 +68,4 @@ try {
     JobInfo job = analysisClient.submitJob(task.getID(), paramInfos);
     String jobId = "" + job.getJobNumber();
     response.sendRedirect("/gp/pages/jobResult.jsf?jobNumber="+jobId);
-} 
-catch (Throwable e) {
-    org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(getClass());
-    log.error(e);
-}
 %>

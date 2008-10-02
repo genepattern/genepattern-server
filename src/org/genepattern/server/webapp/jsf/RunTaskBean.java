@@ -131,10 +131,8 @@ public class RunTaskBean {
     public String getFormAction() {
         if (visualizer) {
             return "submitVisualizer.jsp";
+            //return "submitJob.jsp";
         } 
-        else if (pipeline) {
-            return "submitPipeline.jsp";
-        }
         return "submitJob.jsp";
     }
 
@@ -312,8 +310,8 @@ public class RunTaskBean {
 					String jobNumber = value.substring(0, index);
 					String filename = value.substring(index + 1);
 
-					reloadValues.put(inputParameterName, UIBeanHelper.getServer() + "/jobResults/"
-						+ jobNumber + "/" + UIBeanHelper.encode(filename));
+                    //reloadValues.put(inputParameterName, UIBeanHelper.getServer() + "/jobResults/" + jobNumber + "/" + UIBeanHelper.encode(filename));
+                    reloadValues.put(inputParameterName, UIBeanHelper.getServer() + "/jobResults/" + jobNumber + "/" + filename);
 				    }
 
 				}

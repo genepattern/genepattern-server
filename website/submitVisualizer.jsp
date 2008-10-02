@@ -13,6 +13,7 @@
 
 <%@ page
     import="java.net.URLEncoder, 
+         java.util.ArrayList,
          java.util.List,
          java.util.Map,
          org.genepattern.util.StringUtils,
@@ -22,7 +23,8 @@
          org.genepattern.util.GPConstants,
          org.genepattern.webservice.TaskInfo,
          org.genepattern.webservice.JobInfo,
-         org.genepattern.server.webapp.RunTaskHelper"
+         org.genepattern.server.webapp.RunTaskHelper,
+         org.apache.commons.fileupload.FileUploadException"
     session="false" contentType="text/html" language="Java"%>
 <%
 response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
@@ -59,21 +61,35 @@ try {
     // set up the call to the runVisualizer.jsp by putting the params into the request
     // and then forwarding through a requestDispatcher
     
-    RunTaskHelper runTaskHelper = new RunTaskHelper(userID, request);
-    TaskInfo task = runTaskHelper.getTaskInfo();
-    ParameterInfo[] parmInfos = task.getParameterInfoArray();
-    
-    Map<String, String> requestParameters = runTaskHelper.getRequestParameters();
-    String tmpDirName = runTaskHelper.getTempDirectory().getName();
-    
-    String lsid = runTaskHelper.getTaskLsid();
-    String taskName = runTaskHelper.getTaskName();
-    
-    request.setAttribute("name", lsid);
-    List<ParameterInfo> missingReqParams = runTaskHelper.getMissingParameters();
-    if (missingReqParams.size() > 0){
+    RunTaskHelper runTaskHelper = null;
+    TaskInfo task = null;
+    String lsid = null;
+    List<ParameterInfo> missingReqParams = new ArrayList<ParameterInfo>();
+    FileUploadException fileUploadException = null;
+    try {
+        runTaskHelper = new RunTaskHelper(userID, request);
+        task = runTaskHelper.getTaskInfo();
+        lsid = runTaskHelper.getTaskLsid();
+        request.setAttribute("name", lsid);
+        missingReqParams = runTaskHelper.getMissingParameters();
+    }
+    catch (FileUploadException e) {
+        fileUploadException = e;
+    }
+    if (fileUploadException != null) { %>
+        <font size='+1' color='red'><b> Warning </b></font><br>
+        <% out.println(fileUploadException.getLocalizedMessage()); %>
+        <p>
+        <p>
+        Hit the back button to resubmit the job.
+<jsp:include page="footer.jsp"/>
+</body>
+</html>
+<%
+        return;
+    }
+    if (missingReqParams.size() > 0) {
         System.out.println(""+missingReqParams);
-
         request.setAttribute("missingReqParams", missingReqParams);
         %>
         <jsp:include page="runTaskMissingParams.jsp"/>
@@ -84,6 +100,10 @@ try {
         return;
     }
 
+    String taskName = runTaskHelper.getTaskName();
+    String tmpDirName = runTaskHelper.getTempDirectory().getName();
+    Map<String, String> requestParameters = runTaskHelper.getRequestParameters();
+    ParameterInfo[] parmInfos = task.getParameterInfoArray();
     for (int i=0; i < parmInfos.length; i++){
         ParameterInfo pinfo = parmInfos[i];
         String value = pinfo.getValue();    
