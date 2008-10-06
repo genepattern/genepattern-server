@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobIDNotFoundException;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
@@ -163,21 +164,25 @@ public class JobResultsFilter implements Filter {
         }
 
         boolean allowed = false;
-        try {
-            int jobID = Integer.parseInt(job);
-            AnalysisDAO ds = new AnalysisDAO();
-            JobInfo jobInfo = ds.getJobInfo(jobID);
-            allowed = userid != null && userid.equals(jobInfo.getUserId());
+        if (userid != null && AuthorizationHelper.adminJobs(userid)) {
+            allowed = true;
         }
-        catch (NumberFormatException e) {
-            ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid jobid: "+job);
-            return;
+        else {
+            try {
+                int jobID = Integer.parseInt(job);
+                AnalysisDAO ds = new AnalysisDAO();
+                JobInfo jobInfo = ds.getJobInfo(jobID);
+                allowed = userid != null && userid.equals(jobInfo.getUserId());
+            }
+            catch (NumberFormatException e) {
+                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid jobid: "+job);
+                return;
+            }
+            catch (JobIDNotFoundException e) {
+                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN, "Job not found: "+job);
+                return;
+            }
         }
-        catch (JobIDNotFoundException e) {
-            ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN, "Job not found: "+job);
-            return;
-        }
-
         if (allowed && file == null) {
             String jsfPage = "/pages/jobResult.jsf?jobNumber="+job;
             //((HttpServletResponse) response).sendRedirect( contextPath + jsfPage );
