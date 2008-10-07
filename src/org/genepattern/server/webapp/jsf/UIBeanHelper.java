@@ -127,7 +127,19 @@ public class UIBeanHelper {
     }
 
     public static String getUserId() {
-	return (String) getRequest().getAttribute(GPConstants.USERID);
+        HttpServletRequest request = getRequest();
+        if (request == null) {
+            return null;
+        }
+        HttpSession session = request.getSession();
+        if (session == null) {
+            return null;
+        }
+        Object userid = session.getAttribute(GPConstants.USERID);
+        if (userid instanceof String) {
+            return (String) userid;
+        }
+        return null;
     }
 
     public static boolean isLoggedIn() {
@@ -172,6 +184,15 @@ public class UIBeanHelper {
             response.sendRedirect(referrer);
             getFacesContext().responseComplete();
         }
+    }
+
+    public static void logout() {
+        logout(getRequest(), getResponse(), getSession());
+    }
+
+    public static void logout(HttpServletRequest request, HttpServletResponse response, HttpSession session) {
+        session.removeAttribute(GPConstants.USERID);
+        session.invalidate();
     }
 
     public static String encode(String s) {
