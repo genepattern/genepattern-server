@@ -90,15 +90,6 @@
   <filter-class>org.genepattern.server.webapp.LogoutFilter</filter-class>
  </filter>
 
- <filter> 
- <filter-name>JobResultsFilter</filter-name>
-  <filter-class>org.genepattern.server.webapp.JobResultsFilter</filter-class>
-  <init-param>
-   <param-name>genepattern.properties</param-name>
-   <param-value>../resources</param-value>
-  </init-param>
- </filter>
-
  <filter>
   <filter-name>AdminServerFilter</filter-name>
   <filter-class>org.genepattern.server.webapp.AdminServerFilter</filter-class> 
@@ -176,11 +167,6 @@
  </filter-mapping>
 
  <filter-mapping>
-  <filter-name>JobResultsFilter</filter-name>
-  <url-pattern>/jobResults/*</url-pattern>
- </filter-mapping>
-
- <filter-mapping>
   <filter-name>AuthorizationFilter</filter-name>
   <url-pattern>/services/*</url-pattern>
  </filter-mapping>
@@ -203,6 +189,10 @@
  <filter-mapping>
    <filter-name>LogoutFilter</filter-name>
    <url-pattern>/logout</url-pattern>
+ </filter-mapping>
+ <filter-mapping>
+   <filter-name>LogoutFilter</filter-name>
+   <url-pattern>/logout.jsp</url-pattern>
  </filter-mapping>
 
  <servlet>
@@ -259,6 +249,31 @@
  <servlet-mapping>
   <servlet-name>AjaxServlet</servlet-name>
   <url-pattern>*.ajax</url-pattern>
+ </servlet-mapping>
+
+ <servlet>
+  <display-name>JobResultsServlet</display-name>
+  <servlet-name>JobResultsServlet</servlet-name>
+  <servlet-class>org.genepattern.server.webapp.JobResultsServlet</servlet-class>
+  <init-param>
+   <param-name>genepattern.properties</param-name>
+   <param-value>../resources</param-value>
+  </init-param>
+ </servlet>
+ <servlet-mapping>
+  <servlet-name>JobResultsServlet</servlet-name>
+  <url-pattern>/jobResults/*</url-pattern>
+ </servlet-mapping>
+
+ <servlet>
+  <display-name>JobInputServlet</display-name>
+  <servlet-name>JobInputServlet</servlet-name>
+  <servlet-class>org.genepattern.server.webapp.JobInputServlet</servlet-class>
+  <load-on-startup>1</load-on-startup>
+ </servlet>
+ <servlet-mapping>
+  <servlet-name>JobInputServlet</servlet-name>
+  <url-pattern>/fileupload/*</url-pattern>
  </servlet-mapping>
  
  <servlet>
