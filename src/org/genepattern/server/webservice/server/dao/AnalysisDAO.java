@@ -130,7 +130,7 @@ public class AnalysisDAO extends BaseDAO {
 
     public Set<GroupPermission> getGroupPermissions(int jobId) {
         //select * from JobGroup where job_no = ?
-        String hqlString = "select * from JobGroup where jobNo = :jobNo";
+        String hqlString = "from JobGroup where jobNo = :jobNo";
         Query query = getSession().createQuery(hqlString);
         query.setInteger("jobNo", jobId);
         List<JobGroup> results = query.list();
