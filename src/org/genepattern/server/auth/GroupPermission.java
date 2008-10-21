@@ -2,17 +2,12 @@ package org.genepattern.server.auth;
 
 public class GroupPermission {
     public enum Permission {
-        NONE (0),
-        READ_WRITE (1),
-        READ (2);
-        
-        private final int flag_id;
-        Permission(int flag_id) {
-            this.flag_id = flag_id;
-        }
-        
+        NONE,
+        READ_WRITE,
+        READ;
+
         public int getFlag() {
-            return flag_id;
+            return this.ordinal();
         }
 
         public boolean canWrite() {
@@ -27,21 +22,23 @@ public class GroupPermission {
     private String groupId = null;
     private Permission permission = null;
     
+    /**
+     * Create a new instance via db lookup.
+     * @param groupId
+     * @param flag_from_db 
+     *        - use the integer value from the PERMISSION_FLAG.ID table in the database,
+     *          Make sure the values in the DB correspond to the order of declaration in the Permission enum.
+     */
     public GroupPermission(String groupId, int flag_from_db) {
         this.groupId = groupId;
-        //hmmm ... kinda defeats the purpose of the enum
-        switch (flag_from_db) {
-        case 1:
-            this.permission = Permission.READ_WRITE;
-            break;
-        case 2:
-            this.permission = Permission.READ;
-            break;
-        default:
+        if (flag_from_db >= 0 && flag_from_db < Permission.values().length) {
+            this.permission = Permission.values()[flag_from_db];
+        }
+        else {
             this.permission = Permission.NONE;
-            break;
         }
     }
+
     public GroupPermission(String groupId, Permission p) {
         this.groupId = groupId;
         this.permission = p;
