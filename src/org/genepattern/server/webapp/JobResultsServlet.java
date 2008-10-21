@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
@@ -32,6 +33,9 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobIDNotFoundException;
+import org.genepattern.server.auth.GroupManagerFactory;
+import org.genepattern.server.auth.GroupPermission;
+import org.genepattern.server.auth.IGroupManagerPlugin;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
@@ -175,7 +179,24 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
                 int jobID = Integer.parseInt(job);
                 AnalysisDAO ds = new AnalysisDAO();
                 JobInfo jobInfo = ds.getJobInfo(jobID);
+                
+                //if the current user owns the job
                 allowed = useridFromSession != null && useridFromSession.equals(jobInfo.getUserId());
+                //or if the current user is in one of the groups which can read the job
+                if (!allowed) {
+                    Set<GroupPermission> perm = ds.getGroupPermissions(jobID);
+                    
+                    //TODO: create helper function in group manager package
+                    IGroupManagerPlugin groupManager = GroupManagerFactory.getGroupManager();
+                    for(GroupPermission gp : perm) {
+                        if (groupManager.isMember(useridFromSession, gp.getGroupId())) {
+                            if (gp.getPermission().canRead()) {
+                                allowed = true;
+                                break;
+                            }
+                        }
+                    }
+                }
             }
             catch (NumberFormatException e) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid jobid: "+job);
