@@ -1,0 +1,22 @@
+<!-- map of users to groups -->
+
+<userGroups>
+<group name="public">
+    <user name="*"/>
+</group>
+
+<group name="administrators">
+    <user name="admin"/>
+    <user name="gp_admin"/>
+</group>
+
+<group name="gp-dev">
+    <user name="pcarr" />
+    <user name="jgould" />
+</group>
+
+<group name="module-dev">
+    <user name="jgould" />
+    <user name="nazaire" />
+</group>
+</userGroups>
