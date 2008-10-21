@@ -20,10 +20,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.faces.FacesException;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.auth.GroupManagerFactory;
+import org.genepattern.server.auth.GroupPermission;
+import org.genepattern.server.auth.IGroupManagerPlugin;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
@@ -48,6 +53,7 @@ public class JobInfoBean {
 
     public static class JobInfoWrapper {
         private String taskName;
+        private String status;
         private Date dateSubmitted;
         private Date dateCompleted;
         private List<InputParameter> inputParameters;
@@ -56,7 +62,11 @@ public class JobInfoBean {
         public String getTaskName() {
             return taskName;
         }
-        
+
+        public String getStatus() {
+            return status;
+        }
+
         public Date getDateSubmitted() {
             return dateSubmitted;
         }
@@ -84,7 +94,8 @@ public class JobInfoBean {
 		    "jobNumber")));
 	} catch (NumberFormatException e1) {
 	    log.error(e1);
-	    throw new FacesException("Requested job not found.");
+	    //throw new FacesException("Requested job not found.");
+	    return;
 	}
 	LocalAnalysisClient client = new LocalAnalysisClient(UIBeanHelper.getUserId());
 	try {
@@ -112,8 +123,40 @@ public class JobInfoBean {
 	}
     }
 
+    //TODO: create helper function in group manager package
+    private boolean canReadJob(String userId, JobInfo jobInfo) {
+        return checkPermission(userId, jobInfo, false);
+    }
+    private boolean canWriteJob(String userId, JobInfo jobInfo) {
+        return checkPermission(userId, jobInfo, true);
+    }
+    private boolean checkPermission(String userId, JobInfo jobInfo, boolean write) {
+        if (AuthorizationHelper.adminJobs(userId)) {
+            return true;
+        }
+        String jobOwner = jobInfo.getUserId();
+        if (userId.equals(jobOwner)) {
+            return true;
+        }
+        AnalysisDAO ds = new AnalysisDAO();
+        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(jobInfo.getJobNumber());
+        IGroupManagerPlugin groupManager = GroupManagerFactory.getGroupManager();
+        for(GroupPermission gp : groupPermissions) {
+            if (groupManager.isMember(userId, gp.getGroupId())) {
+                if (write && gp.getPermission().canWrite()) {
+                    return true;
+                }
+                else if (gp.getPermission().canRead()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private JobInfoWrapper createJobInfoWrapper(JobInfo job) {
-        if (!AuthorizationHelper.adminJobs() && !job.getUserId().equals(UIBeanHelper.getUserId())) {
+        String userId = UIBeanHelper.getUserId();
+        if (!canReadJob(userId, job)) {
             throw new FacesException("You don't have the required permissions to access the requested job.");
         }
 
@@ -238,6 +281,7 @@ public class JobInfoBean {
         }
         JobInfoWrapper jobInfoWrapper = new JobInfoWrapper();
         jobInfoWrapper.taskName = job.getTaskName();
+        jobInfoWrapper.status = job.getStatus();
         jobInfoWrapper.dateSubmitted = job.getDateSubmitted();
         jobInfoWrapper.dateCompleted = job.getDateCompleted();
         jobInfoWrapper.outputFiles = outputFiles;
