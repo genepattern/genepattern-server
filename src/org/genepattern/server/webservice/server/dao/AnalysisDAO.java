@@ -26,7 +26,6 @@ import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.genepattern.server.JobIDNotFoundException;
-import org.genepattern.server.auth.Group;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.JobGroup;
 import org.genepattern.server.database.HibernateUtil;
