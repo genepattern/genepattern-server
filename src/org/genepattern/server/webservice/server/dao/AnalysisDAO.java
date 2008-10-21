@@ -18,12 +18,17 @@ import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.genepattern.server.JobIDNotFoundException;
+import org.genepattern.server.auth.Group;
+import org.genepattern.server.auth.GroupPermission;
+import org.genepattern.server.auth.JobGroup;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
@@ -59,9 +64,8 @@ public class AnalysisDAO extends BaseDAO {
      * 
      */
     public JobInfo addNewJob(int taskID, String user_id, String parameter_info, int parentJobNumber) {
-	Integer jobNo = addNewJob(taskID, user_id, parameter_info, null, new Integer(parentJobNumber), null);
-	return getJobInfo(jobNo);
-
+        Integer jobNo = addNewJob(taskID, user_id, parameter_info, null, new Integer(parentJobNumber), null);
+        return getJobInfo(jobNo);
     }
 
     /**
@@ -81,45 +85,84 @@ public class AnalysisDAO extends BaseDAO {
      * @throws RemoteException
      * @return Job ID
      */
-    public Integer addNewJob(int taskID, String user_id, String parameter_info, String taskName,
-	    Integer parentJobNumber, String task_lsid) {
-	return this.addNewJob(taskID, user_id, parameter_info, taskName, parentJobNumber, task_lsid,
-		JobStatus.JOB_PENDING);
+    public Integer addNewJob(int taskID, String user_id, String parameter_info, String taskName, Integer parentJobNumber, String task_lsid) {
+        return this.addNewJob(taskID, user_id, parameter_info, taskName, parentJobNumber, task_lsid, JobStatus.JOB_PENDING);
     }
 
-    public Integer addNewJob(int taskID, String user_id, String parameter_info, String taskName,
-	    Integer parentJobNumber, String task_lsid, int status) {
-	int updatedRecord = 0;
+    public Integer addNewJob(int taskID, String user_id, String parameter_info, String taskName, Integer parentJobNumber, String task_lsid, int status) {
+        int updatedRecord = 0;
+        String lsid = null;
+        // Check taskID is valid
+        if (taskID != UNPROCESSABLE_TASKID) {
+            String hqlString = "select taskName, lsid from org.genepattern.server.domain.TaskMaster where taskId = :taskId";
+            Query query = getSession().createQuery(hqlString);
+            query.setInteger("taskId", taskID);
+            Object[] results = (Object[]) query.uniqueResult();
+            taskName = (String) results[0];
+            lsid = (String) results[1];
+        } 
+        else {
+            if (task_lsid != null) {
+                lsid = task_lsid;
+            }
+        }
 
-	String lsid = null;
+        AnalysisJob aJob = new AnalysisJob();
+        aJob.setTaskId(taskID);
+        aJob.setSubmittedDate(Calendar.getInstance().getTime());
+        aJob.setParameterInfo(parameter_info);
+        aJob.setUserId(user_id);
+        aJob.setTaskName(taskName);
+        aJob.setParent(parentJobNumber);
+        aJob.setTaskLsid(lsid);
 
-	// Check taskID is valid
-	if (taskID != UNPROCESSABLE_TASKID) {
-	    String hqlString = "select taskName, lsid from org.genepattern.server.domain.TaskMaster where taskId = :taskId";
-	    Query query = getSession().createQuery(hqlString);
-	    query.setInteger("taskId", taskID);
-	    Object[] results = (Object[]) query.uniqueResult();
-	    taskName = (String) results[0];
-	    lsid = (String) results[1];
-	} else {
-	    if (task_lsid != null)
-		lsid = task_lsid;
-	}
+        JobStatus js = (new JobStatusDAO()).findById(status);
+        aJob.setJobStatus(js);
 
-	AnalysisJob aJob = new AnalysisJob();
-	aJob.setTaskId(taskID);
-	aJob.setSubmittedDate(Calendar.getInstance().getTime());
-	aJob.setParameterInfo(parameter_info);
-	aJob.setUserId(user_id);
-	aJob.setTaskName(taskName);
-	aJob.setParent(parentJobNumber);
-	aJob.setTaskLsid(lsid);
+        Integer jobId = (Integer) getSession().save(aJob);
+        
+        //optionally save group permissions with the job
+        Set<GroupPermission> gp = new HashSet<GroupPermission>();
+        gp.add(new GroupPermission("public", GroupPermission.Permission.READ));
+        setGroupPermissions(jobId.intValue(), gp);
+        
+        return jobId;
+    }
 
-	JobStatus js = (new JobStatusDAO()).findById(status);
-	aJob.setJobStatus(js);
+    public Set<GroupPermission> getGroupPermissions(int jobId) {
+        //select * from JobGroup where job_no = ?
+        String hqlString = "select * from JobGroup where jobNo = :jobNo";
+        Query query = getSession().createQuery(hqlString);
+        query.setInteger("jobNo", jobId);
+        List<JobGroup> results = query.list();
 
-	return (Integer) getSession().save(aJob);
+        Set<GroupPermission> rval = new HashSet<GroupPermission>();
+        for(JobGroup jg : results) {
+            GroupPermission gp = new GroupPermission(jg.getGroupId(), jg.getPermissionFlag());
+            rval.add(gp);
+        }
+        return rval;
+    }
 
+    /**
+     * Update the 'JOB_GROUP' table with the given group permissions.
+     * @param jobId
+     * @param groupPermissions
+     */
+    public void setGroupPermissions(int jobId, Set<GroupPermission> groupPermissions) {
+        //delete from JOB_GROUP where job_no = jobId
+        Query query = HibernateUtil.getSession().createQuery("delete JobGroup where jobNo = ?");
+        query.setInteger(0, jobId);
+        query.executeUpdate();
+        
+        for(GroupPermission gp : groupPermissions) {
+            JobGroup jg = new JobGroup();
+            jg.setJobNo(jobId);
+            jg.setGroupId(gp.getGroupId());
+            jg.setPermissionFlag(gp.getPermission().getFlag());
+            
+            HibernateUtil.getSession().saveOrUpdate(jg);
+        }
     }
 
     /**

@@ -35,5 +35,6 @@
     <mapping resource="org/genepattern/server/user/JobCompletionEvent.hbm.xml"/>
     <mapping resource="org/genepattern/server/user/User.hbm.xml"/>
     <mapping resource="org/genepattern/server/user/UserProp.hbm.xml"/>
+    <mapping resource="org/genepattern/server/auth/JobGroup.hbm.xml"/>
   </session-factory>
 </hibernate-configuration>
