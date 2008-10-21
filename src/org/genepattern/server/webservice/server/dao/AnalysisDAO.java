@@ -245,6 +245,14 @@ public class AnalysisDAO extends BaseDAO {
 	return (JobInfo[]) results.toArray(new JobInfo[0]);
     }
 
+    public String getJobOwner(int jobNo) {
+        String hql = "select a.userId from org.genepattern.server.domain.AnalysisJob a where a.jobNo = :jobNo";
+        Query query = getSession().createQuery(hql);
+        query.setInteger("jobNo", jobNo);
+        String userId = (String) query.uniqueResult();
+        return userId;
+    }
+
     /**
      * Fetches JobInformation
      * 
