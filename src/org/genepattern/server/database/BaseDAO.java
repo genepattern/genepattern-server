@@ -13,8 +13,6 @@
 package org.genepattern.server.database;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.domain.Lsid;
-import org.hibernate.LockMode;
 
 public abstract class BaseDAO {
     
