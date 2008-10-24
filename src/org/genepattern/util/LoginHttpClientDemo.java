@@ -62,7 +62,7 @@ public class LoginHttpClientDemo {
     public static void main(String[] args) {
         PrintStream out = System.out;
         if (args.length < 2 || args.length > 3) {
-            out.println("Usage: TestLogin <url:http://localhost:8080> <username> <password>");
+            out.println("Usage: TestLogin <url:http://localhost:8080/gp> <username> <password>");
             return;
         }
         final String url = args[0];

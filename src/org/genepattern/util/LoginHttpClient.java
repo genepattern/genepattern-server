@@ -14,6 +14,7 @@ package org.genepattern.util;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
@@ -22,6 +23,8 @@ import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
+import org.genepattern.webservice.AdminProxy;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  * Login to the GenePattern server with an HttpClient.
@@ -35,11 +38,10 @@ public class LoginHttpClient {
         INVALID, //incorrect username and/or password
         IO_EXCEPTION,  //problem connecting to the server
     }
-    
-    final static String LOGIN_PAGE = "/gp/pages/login.jsf";
-    final static String HOME_PAGE = "/gp/pages/index.jsf";
-    
-    private String serverUrl = "";
+
+    private String serverUrl = ""; //e.g. http://127.0.0.1:8080
+    private String contextPath = System.getProperty("GP_Path", "/gp");
+
     private String username = "";
     private String password = null;
 
@@ -47,7 +49,7 @@ public class LoginHttpClient {
     }
 
     /**
-     * @param the url to the GenePattern Server, e.g. <pre>http://localhost:8080</pre>.
+     * @param the hostname and port of the GenePattern Server, e.g. <pre>http://localhost:8080</pre>.
      */
     public void setServerUrl(String url) {
         this.serverUrl = url;
@@ -58,6 +60,13 @@ public class LoginHttpClient {
      */
     public String getServerUrl() {
         return this.serverUrl;
+    }
+
+    /**
+     * @param contextPath - the servlet context path, e.g. <pre>/gp</pre>.
+     */
+    public void setContextPath(String contextPath) {
+        this.contextPath = contextPath;
     }
 
     /**
@@ -74,13 +83,103 @@ public class LoginHttpClient {
         this.password = password;
     }
 
+    public LoginState login(HttpClient client) {
+        return loginWithVersionCheck(client);
+    }
+
     /**
-     * Login to a GenePattern 3.1 server.
+     * Login to a GenePattern 3.1.2+ server.
+     * @param client
+     * @return
+     */
+    public LoginState loginLatest(HttpClient client) {
+       PostMethod loginPost = null;
+       loginPost = new PostMethod(serverUrl + contextPath + "/login");
+       List<NameValuePair> fields = new ArrayList<NameValuePair>();
+       fields.add(new NameValuePair("username", username));
+       if (password != null) {
+           fields.add(new NameValuePair("password", password));
+       }
+       NameValuePair[] fieldsArr = new NameValuePair[fields.size()];
+       fieldsArr = fields.toArray(fieldsArr);
+       loginPost.setRequestBody(fieldsArr);
+       try {
+           int responseCode = client.executeMethod(loginPost);
+           if (responseCode >= 200 && responseCode < 300) {
+               updateServerUrl(loginPost);
+               //status OK
+               return LoginState.SUCCESS;
+           }
+           return LoginState.INVALID;
+       }
+       catch (IOException e) {
+           return LoginState.IO_EXCEPTION;
+       }
+       finally {
+           if (loginPost != null) {
+               loginPost.releaseConnection();
+           }
+       }
+    }
+
+    //------------ legacy code for connecting to GenePattern 3.1 and 3.1.1 -------------------- //
+    private LoginState loginWithVersionCheck(HttpClient client) {
+        //1. get the version
+        String version = null;
+        try {
+            version = getVersion();
+        }
+        catch (WebServiceException e) {
+            log.warn("Unable to get GenePattern Version: "+e.getLocalizedMessage(), e);
+        }
+        
+        return loginWithVersion(client, version);
+    }
+
+    /**
+     * If you have an instance of AdminService, just do the following instead of calling this method.
+     * <code>
+     * Map map = admin.getServiceInfo;
+     * String version = (String) map.get("genepattern.version");
+     * </code>
+     * @param gpProps
+     * @return
+     */
+    private String getVersion() throws WebServiceException 
+    {
+        AdminProxy adminProxy = new AdminProxy(serverUrl, username, password);
+        
+        String version = "";
+        Map map = adminProxy.getServiceInfo();
+        Object gpVersion = map.get("genepattern.version");
+        if (gpVersion instanceof String) {
+            version = (String) gpVersion;
+        }
+        return version;
+    }
+
+    public LoginState loginWithVersion(HttpClient client, String version) {
+        //special cases for 3.0 and 3.1 and 3.1.1 servers
+        if (version != null && version.startsWith("3.0")) {
+            return login3_0(client);
+        }
+        else if (version != null && (version.equals("3.1") || version.equals("3.1.1"))) {
+            return login3_1(client);
+        }
+        
+        return loginLatest(client);
+    }
+
+    /**
+     * Login to a GenePattern 3.1 or 3.1.1 server.
      * @param client - the http client with which to perform subsequent http requests.
      * @throws Exception
      * @return a LoginState indicating success or failure.
      */
-    public LoginState login(HttpClient client) {
+    public LoginState login3_1(HttpClient client) {
+        final String LOGIN_PAGE = contextPath + "/pages/login.jsf";
+        final String HOME_PAGE = contextPath + "/pages/index.jsf";
+
         GetMethod loginGet = null;
         String viewStateValue = "";
         try {
@@ -91,7 +190,7 @@ public class LoginHttpClient {
             if (! LOGIN_PAGE.equals(loginGet.getPath())) {
                 return LoginState.SUCCESS;
             }
-            viewStateValue = parseLoginForm(loginGet);
+            viewStateValue = parse3_1LoginForm(loginGet);
             updateServerUrl(loginGet);
         }
         catch (IOException e) {
@@ -142,7 +241,7 @@ public class LoginHttpClient {
      * @param method an HttpGetMethod after requesting the login page.
      * @return the dynamically generated value for ViewState
      */
-    private static String parseLoginForm(HttpMethod method) {
+    private static String parse3_1LoginForm(HttpMethod method) {
         final String matchViewState = "name=\"javax.faces.ViewState\" id=\"javax.faces.ViewState\" value=\"";
         
         String rval = "";
@@ -160,7 +259,7 @@ public class LoginHttpClient {
             return rval;
         }
         catch (IOException e) {
-            log.error("Error parsing "+LOGIN_PAGE+": "+e.getLocalizedMessage(), e);
+            log.error("Error parsing "+method.getPath()+": "+e.getLocalizedMessage(), e);
         }
         log.error("Didn't find expected parameter in loginForm: "+matchViewState);
         return rval;
@@ -169,9 +268,11 @@ public class LoginHttpClient {
     /**
      * Login to a GenePattern 3.0 Server.
      * @param client - an instance of an http client.
-     * @return a LoginState indicating sucess or failure.
+     * @return a LoginState indicating success or failure.
      */
     public LoginState login3_0(HttpClient client) {
+        final String LOGIN_PAGE = contextPath + "/pages/login.jsf";
+        
         GetMethod loginGet = null;
         try {
             String reqParams = "?username="+username;
@@ -200,7 +301,9 @@ public class LoginHttpClient {
      * @return SUCCESS or FAILURE
      */
     private LoginState validateLogin(HttpClient client) {
-        //validate the login 
+        final String LOGIN_PAGE = contextPath + "/pages/login.jsf";
+        final String HOME_PAGE = contextPath + "/pages/index.jsf";
+
         GetMethod get = null;
         try {
             get = new GetMethod(serverUrl + HOME_PAGE);
