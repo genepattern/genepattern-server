@@ -140,7 +140,7 @@ public class RegistrationBean {
 	    newUser.setPassword(EncryptionUtil.encrypt(password));
 	    newUser.setRegistrationDate(new Date());
 	    (new UserDAO()).save(newUser);
-	    UIBeanHelper.login(username, true);
+	    UIBeanHelper.login(username);
 	    
 	    if (this.isJoinMailingList()){
 	    	sendJoinMailingListRequest();
