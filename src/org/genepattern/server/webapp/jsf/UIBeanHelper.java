@@ -147,15 +147,12 @@ public class UIBeanHelper {
     }
 
     /**
-     * 
      * @param username
-     * @param sessionOnly
-     *                whether the login cookie should be set for the session only
      * @throws UnsupportedEncodingException
      * @throws IOException
      */
-    public static void login(String username, boolean sessionOnly) throws UnsupportedEncodingException, IOException {
-        UIBeanHelper.login(username, sessionOnly, true, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
+    public static void login(String username) throws UnsupportedEncodingException, IOException {
+        UIBeanHelper.login(username, true, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
     }
 
     /**
@@ -168,7 +165,7 @@ public class UIBeanHelper {
      * @throws UnsupportedEncodingException
      * @throws IOException
      */
-    public static void login(String username, boolean sessionOnly, boolean redirect, HttpServletRequest request, HttpServletResponse response) 
+    public static void login(String username, boolean redirect, HttpServletRequest request, HttpServletResponse response) 
     throws UnsupportedEncodingException, IOException 
     {
         User user = new UserDAO().findById(username);

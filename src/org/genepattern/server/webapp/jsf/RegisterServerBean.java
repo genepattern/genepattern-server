@@ -208,7 +208,7 @@ public class RegisterServerBean {
 
             saveIsRegistered();
             RegisterServerBean.createNewUserNoPassword(this.email);
-            UIBeanHelper.login(this.email, false, false, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
+            UIBeanHelper.login(this.email, false, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
             error = false;              
             return "installFrame";
         }
@@ -251,9 +251,9 @@ public class RegisterServerBean {
 		   // the registration to the DB.  They will be asked to register again
 		   // after each restart
 		   try {
-			   
-			   RegisterServerBean.createNewUserNoPassword(this.email);
-			   UIBeanHelper.login(this.email, false, false, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
+
+		       RegisterServerBean.createNewUserNoPassword(this.email);
+			   UIBeanHelper.login(this.email, false, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
 			   
 			   int responseCode = client.executeMethod(httppost);
 			   
