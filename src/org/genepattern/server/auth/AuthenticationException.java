@@ -12,7 +12,15 @@ public class AuthenticationException extends Exception {
         INVALID_CREDENTIALS;
     }
     
+    private Type type = null;
+
     public AuthenticationException(Type type, String...args) {
         super(type.name());
+        
+        this.type = type;
+    }
+    
+    public Type getType() {
+        return type;
     }
 }
