@@ -99,7 +99,7 @@ public class LoginBean {
         byte[] credentials = password != null ? password.getBytes() : new byte[0];
         try {
             authentication.authenticate(username, credentials);
-            UIBeanHelper.login(username, passwordRequired);
+            UIBeanHelper.login(username);
         }
         catch (AuthenticationException e) {
             if (AuthenticationException.Type.INVALID_USERNAME.equals(e.getType())) {
