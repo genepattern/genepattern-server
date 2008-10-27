@@ -41,12 +41,13 @@ public class RegistrationBean {
 
     private static Logger log = Logger.getLogger(RegistrationBean.class);
     private String username;
-    private String password;
+    private String password = "";
     private String passwordConfirm;
     private String email;
     private String emailConfirm;
     private UIInput passwordConfirmComponent;
     private UIInput emailConfirmComponent;
+    private boolean passwordRequired = true;
     private boolean joinMailingList = true;
     private boolean showTermsOfService = false;
     //private String pathToTerms = "gp/pages/terms.txt";
@@ -58,6 +59,9 @@ public class RegistrationBean {
         "We make no guarantees whatsoever.";
 
     public RegistrationBean() {
+        String prop = System.getProperty("require.password", "false").toLowerCase();
+        passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
+
         String createAccountAllowedProp = System.getProperty("create.account.allowed", "true").toLowerCase();
         boolean createAccountAllowed = (
                 createAccountAllowedProp.equals("true") || 
@@ -87,6 +91,10 @@ public class RegistrationBean {
 
     public UIInput getEmailConfirmComponent() {
 	return emailConfirmComponent;
+    }
+
+    public boolean isPasswordRequired() {
+        return passwordRequired;
     }
 
     public String getPassword() {

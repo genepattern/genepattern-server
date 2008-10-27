@@ -59,44 +59,46 @@
            <f:attribute name="forceId" value="true"/>
         </t:inputText>
                      
-        <h:outputLabel value="Password:" for="password"/>
+        <h:outputLabel value="Password:" for="password" rendered="#{registrationBean.passwordRequired}"/>
         <t:inputSecret size="50" value="#{registrationBean.password}" id="password" 
-                       required="true" requiredMessage="Password is required" validator="#{registrationBean.validatePassword}">
+                       required="true" requiredMessage="Password is required" validator="#{registrationBean.validatePassword}" rendered="#{registrationBean.passwordRequired}">
            <f:attribute name="forceId" value="true"/>
         </t:inputSecret>
                        
-        <h:outputLabel value="Re-enter password:" for="passwordConfirm"/>
+        <h:outputLabel value="Re-enter password:" for="passwordConfirm" rendered="#{registrationBean.passwordRequired}"/>
         <t:inputSecret size="50" value="#{registrationBean.passwordConfirm}" id="passwordConfirm" 
-                       binding="#{registrationBean.passwordConfirmComponent}">
+                       binding="#{registrationBean.passwordConfirmComponent}" rendered="#{registrationBean.passwordRequired}">
            <f:attribute name="forceId" value="true"/>
         </t:inputSecret>
                        
-        <h:outputLabel value="Email:" for="email"/>
+        <h:outputLabel value="Email:" for="email" rendered="#{registrationBean.passwordRequired}"/>
         <t:inputText size="50" value="#{registrationBean.email}" id="email" 
-                     required="true" requiredMessage="Email is required" validator="#{registrationBean.validateEmail}">
+                     required="true" requiredMessage="Email is required" validator="#{registrationBean.validateEmail}" rendered="#{registrationBean.passwordRequired}">
            <t:validateEmail/>
            <f:attribute name="forceId" value="true"/>
         </t:inputText>
         
-        <h:outputLabel value="Re-enter email:" for="emailConfirm"/>
+        <h:outputLabel value="Re-enter email:" for="emailConfirm" rendered="#{registrationBean.passwordRequired}"/>
         <t:inputText size="50" value="#{registrationBean.emailConfirm}" id="emailConfirm" 
-                     binding="#{registrationBean.emailConfirmComponent}">
+                     binding="#{registrationBean.emailConfirmComponent}" rendered="#{registrationBean.passwordRequired}">
            <t:validateEmail/>
            <f:attribute name="forceId" value="true"/>
         </t:inputText>
+
+        <h:outputText value="" rendered="${registrationBean.passwordRequired}" />
+        <h:panelGroup rendered="${registrationBean.passwordRequired}">
+        <h:selectBooleanCheckbox title="emailUpdates"  value="#{registrationBean.joinMailingList}" >
+        </h:selectBooleanCheckbox>
+        <h:outputText value="Add me to the GenePattern users mailing list"/>
+        </h:panelGroup>
+        
         <h:outputLabel rendered="#{registrationBean.showTermsOfService}" value="Terms of Service:" for="termsOfService"/>
-        <t:div id="termsOfService" rendered="#{registrationBean.showTermsOfService}" >
+        <h:panelGroup id="termsOfService" rendered="#{registrationBean.showTermsOfService}" >
           <h:outputText value="By clicking on 'I accept' below you are agreeing to the " />
           <h:outputLink target="_blank" value="/gp/pages/terms.jsf"><h:outputText value="Terms of Service and Privacy Statement" /></h:outputLink>
           <h:outputText value="." />
-        </t:div>
-        &#160;
-        <h:panelGroup>
-        <h:selectBooleanCheckbox title="emailUpdates"  value="#{registrationBean.joinMailingList}" >
-		</h:selectBooleanCheckbox>
-		<h:outputText value="Add me to the GenePattern users mailing list"/>
         </h:panelGroup>
-		&#160;
+        <h:outputText value="" />
         <h:commandButton rendered="#{registrationBean.showTermsOfService}" value="I accept. Create account." class="little" actionListener="#{registrationBean.registerUser}"/>
         <h:commandButton rendered="#{not registrationBean.showTermsOfService}" value="Create account." class="little" actionListener="#{registrationBean.registerUser}"/>
         
