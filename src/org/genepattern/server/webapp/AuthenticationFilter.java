@@ -315,52 +315,18 @@ public class AuthenticationFilter implements Filter {
      * Check to see if user is logged in and has registered in database.
      */
     private boolean isSignedIn(String userId, HttpServletRequest request, HttpServletResponse response) {
-        return UIBeanHelper.isLoggedIn();
-//        
-//        if (!passwordRequired) {
-//            // don't check for valid session if no password is
-//            // required-GPConstants.USERID cookie is sufficient for
-//            // authentication
-//
-//            HibernateUtil.beginTransaction();
-//            User user = new UserDAO().findById(userId);
-//            if (user == null) {
-//                try {
-//                    UserAccountManager.instance().createUser(userId);
-//                }
-//                catch (AuthenticationException e) {
-//                    log.error(e);
-//                    return false;
-//                }
-//                try {
-//                    UIBeanHelper.login(userId, false, false, request, response);
-//                } 
-//                catch (UnsupportedEncodingException e) {
-//                    log.error(e);
-//                } 
-//                catch (IOException e) {
-//                    log.error(e);
-//                }
-//            }
-//            HibernateUtil.commitTransaction();
-//            return true;
-//        } 
-//        else {
-//            if (request.isRequestedSessionIdFromURL()) { 
-//                // disallow passing the session id from the URL, 
-//                // allow cookie based sessions only
-//                return false;
-//            }
-//
-//            HttpSession session = request.getSession(false);
-//            if (session != null) {
-//                HibernateUtil.beginTransaction();
-//                boolean returnValue = new UserDAO().findById(userId) != null;
-//                HibernateUtil.commitTransaction();
-//                return returnValue;
-//            }
-//            return false;
-//        }
+        if (request == null) {
+            return false;
+        }
+        HttpSession session = request.getSession();
+        if (session == null) {
+            return false;
+        }
+        Object userid = session.getAttribute(GPConstants.USERID);
+        if (userid == null) {
+            return false;
+        }
+        return true;
     }
 
     static void loadProperties(Properties props, File propFile) {
