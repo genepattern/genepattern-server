@@ -1,13 +1,17 @@
 package org.genepattern.server.webapp;
 
 import java.io.IOException;
+import java.util.Date;
 
+import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
+import org.genepattern.server.user.User;
+import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.GPConstants;
 
@@ -30,6 +34,15 @@ public class LoginManager {
         return loginManager;
     }
 
+    /**
+     * Authenticate and then login.
+     * 
+     * @param request
+     * @param response
+     * @param redirect
+     * @throws AuthenticationException
+     * @throws IOException
+     */
     public void login(HttpServletRequest request, HttpServletResponse response, boolean redirect) 
     throws AuthenticationException, IOException {
         String gp_username = request.getParameter("username");
@@ -37,6 +50,17 @@ public class LoginManager {
         login(request, response, gp_username, passwordString, redirect);
     }
 
+    /**
+     * Authenticate and then login.
+     * 
+     * @param request
+     * @param response
+     * @param gp_username
+     * @param passwordString
+     * @param redirect
+     * @throws AuthenticationException
+     * @throws IOException
+     */
     public void login(HttpServletRequest request, HttpServletResponse response, String gp_username, String passwordString, boolean redirect) 
     throws AuthenticationException, IOException {
         byte[] password = null;
@@ -56,7 +80,47 @@ public class LoginManager {
             UserAccountManager.instance().createUser(gp_username);
         }
         
-        UIBeanHelper.login(gp_username, redirect, request, response);
+        startUserSession(gp_username, request);
+        if (redirect) {
+            redirect(request, response);
+        }
+    }
+    
+    /**
+     * Initiate a user session.
+     * 
+     * @param username
+     * @param request
+     */
+    public void startUserSession(String username, HttpServletRequest request) {
+        User user = new UserDAO().findById(username);
+        if (user == null) {
+            //TODO: log exception
+            return;
+        }
+
+        user.incrementLoginCount();
+        user.setLastLoginDate(new Date());
+        user.setLastLoginIP(request.getRemoteAddr());
+        
+        HttpSession session = request.getSession();
+        if (session == null) {
+            //TODO: log exception
+            return;
+        }
+        request.getSession().setAttribute(GPConstants.USERID, user.getUserId());
+        request.getSession().setAttribute("userID", username); //TODO: replace all references to 'userID' with 'userid'
+    }
+    
+    private void redirect(HttpServletRequest request, HttpServletResponse response) 
+    throws IOException
+    {
+        String referrer = UIBeanHelper.getReferrer(request);
+        response.sendRedirect(referrer);
+        FacesContext fc = FacesContext.getCurrentInstance();
+        if (fc != null) {
+            fc.responseComplete();
+        }
     }
     
     public void logout(HttpServletRequest request, HttpServletResponse response) 

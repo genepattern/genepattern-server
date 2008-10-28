@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.webapp.LoginManager;
 
 /**
  * Backing bean for creating a new user.
@@ -128,7 +129,7 @@ public class RegistrationBean {
     public void registerUser(ActionEvent event) {
         try {
             UserAccountManager.instance().createUser(username, password, email);
-            UIBeanHelper.login(username);
+            LoginManager.instance().startUserSession(username, UIBeanHelper.getRequest());
             if (this.isJoinMailingList()){
                 sendJoinMailingListRequest();
             }

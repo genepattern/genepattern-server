@@ -38,6 +38,7 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.server.webservice.server.dao.BaseDAO;
 import org.genepattern.util.GPConstants;
 
@@ -203,7 +204,7 @@ public class RegisterServerBean {
 
             saveIsRegistered();
             UserAccountManager.instance().createUser(email);
-            UIBeanHelper.login(this.email, false, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
+            LoginManager.instance().startUserSession(email, UIBeanHelper.getRequest());
             error = false;              
             return "installFrame";
         }
@@ -247,7 +248,7 @@ public class RegisterServerBean {
 		   // after each restart
 		   try {
 		       UserAccountManager.instance().createUser(email);
-			   UIBeanHelper.login(this.email, false, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
+		       LoginManager.instance().startUserSession(email, UIBeanHelper.getRequest());
 			   
 			   int responseCode = client.executeMethod(httppost);
 			   if (responseCode < 200 || responseCode >= 400) throw new HttpException();

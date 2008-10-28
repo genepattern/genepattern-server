@@ -12,11 +12,9 @@
 
 package org.genepattern.server.webapp.jsf;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.Map;
 
@@ -29,8 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.user.User;
-import org.genepattern.server.user.UserDAO;
 import org.genepattern.util.GPConstants;
 
 public class UIBeanHelper {
@@ -140,54 +136,6 @@ public class UIBeanHelper {
             return (String) userid;
         }
         return null;
-    }
-
-    /**
-     * @param username
-     * @throws UnsupportedEncodingException
-     * @throws IOException
-     */
-    public static void login(String username) throws IOException {
-        UIBeanHelper.login(username, true, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
-    }
-
-    /**
-     * 
-     * @param username
-     * @param sessionOnly
-     *                whether the login cookie should be set for the session only
-     * @param redirect
-     *                Whether to perform a redirect after login
-     * @throws UnsupportedEncodingException
-     * @throws IOException
-     */
-    public static void login(String username, boolean redirect, HttpServletRequest request, HttpServletResponse response) 
-    throws IOException 
-    {
-        User user = new UserDAO().findById(username);
-        assert user != null;
-        user.incrementLoginCount();
-        user.setLastLoginDate(new Date());
-        user.setLastLoginIP(request.getRemoteAddr());
-        request.getSession().setAttribute(GPConstants.USERID, user.getUserId());
-        request.getSession().setAttribute("userID", username); //TODO: replace all references to 'userID' with 'userid'
-        if (redirect) {
-            String referrer = UIBeanHelper.getReferrer(request);
-            response.sendRedirect(referrer);
-            FacesContext fc = getFacesContext();
-            if (fc != null) {
-                fc.responseComplete();
-            }
-        }
-    }
-
-    public static void logout() {
-        logout(getRequest(), getResponse(), getSession());
-    }
-
-    public static void logout(HttpServletRequest request, HttpServletResponse response, HttpSession session) {
-        session.removeAttribute(GPConstants.USERID);
-        session.invalidate();
     }
 
     public static String encode(String s) {

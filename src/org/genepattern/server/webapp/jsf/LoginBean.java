@@ -14,7 +14,6 @@ package org.genepattern.server.webapp.jsf;
 
 import java.io.IOException;
 
-import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
