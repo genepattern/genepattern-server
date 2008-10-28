@@ -178,7 +178,6 @@ public class UIBeanHelper {
             if (fc != null) {
                 fc.responseComplete();
             }
-            getFacesContext().responseComplete();
         }
     }
 
