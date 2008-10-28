@@ -99,8 +99,8 @@
           <h:outputText value="." />
         </h:panelGroup>
         <h:outputText value="" />
-        <h:commandButton rendered="#{registrationBean.showTermsOfService}" value="I accept. Create account." class="little" actionListener="#{registrationBean.registerUser}"/>
-        <h:commandButton rendered="#{not registrationBean.showTermsOfService}" value="Create account." class="little" actionListener="#{registrationBean.registerUser}"/>
+        <h:commandButton rendered="#{registrationBean.showTermsOfService}" value="I accept. Create my account." class="little" actionListener="#{registrationBean.registerUser}"/>
+        <h:commandButton rendered="#{not registrationBean.showTermsOfService}" value="Create My Account" class="little" actionListener="#{registrationBean.registerUser}"/>
         
       </h:panelGrid>
     </h:form>
