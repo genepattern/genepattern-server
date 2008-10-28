@@ -40,90 +40,90 @@ public class UIBeanHelper {
     }
 
     public static Map getSessionMap() {
-	return FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
+    return FacesContext.getCurrentInstance().getExternalContext().getSessionMap();
     }
 
     public static Map getRequestMap() {
-	return FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
+    return FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
     }
 
     public static FacesContext getFacesContext() {
-	return FacesContext.getCurrentInstance();
+    return FacesContext.getCurrentInstance();
     }
 
     public static ExternalContext getExternalContext() {
-	return FacesContext.getCurrentInstance().getExternalContext();
+    return FacesContext.getCurrentInstance().getExternalContext();
     }
 
     public static HttpServletRequest getRequest() {
-	FacesContext fc = FacesContext.getCurrentInstance();
-	return fc != null ? (HttpServletRequest) getExternalContext().getRequest() : null;
+    FacesContext fc = FacesContext.getCurrentInstance();
+    return fc != null ? (HttpServletRequest) getExternalContext().getRequest() : null;
     }
 
     public static HttpSession getSession() {
-	return getRequest().getSession();
+    return getRequest().getSession();
     }
 
     public static HttpSession getSession(boolean create) {
-	return getRequest().getSession(create);
+    return getRequest().getSession(create);
     }
 
     public static HttpServletResponse getResponse() {
-	return (HttpServletResponse) getExternalContext().getResponse();
+    return (HttpServletResponse) getExternalContext().getResponse();
     }
 
     public static Object getManagedBean(String elExpression) {
-	return getFacesContext().getApplication().createValueBinding(elExpression).getValue(getFacesContext());
+    return getFacesContext().getApplication().createValueBinding(elExpression).getValue(getFacesContext());
     }
 
     public static void setInfoMessage(String summary) {
-	getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
+    getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
     }
 
     public static void setErrorMessage(String summary) {
-	getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, summary, null));
+    getFacesContext().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, summary, null));
     }
 
     public static void setInfoMessage(UIComponent component, String summary) {
-	getFacesContext().addMessage(component.getClientId(getFacesContext()),
-		new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
+    getFacesContext().addMessage(component.getClientId(getFacesContext()),
+        new FacesMessage(FacesMessage.SEVERITY_INFO, summary, null));
     }
 
     public static void printAttributes() {
-	System.out.println("Attributes:");
-	Enumeration en = getRequest().getAttributeNames();
-	while (en.hasMoreElements()) {
-	    String name = (String) en.nextElement();
-	    System.out.print(name + " -> ");
-	    System.out.println(getRequest().getAttribute(name));
+    System.out.println("Attributes:");
+    Enumeration en = getRequest().getAttributeNames();
+    while (en.hasMoreElements()) {
+        String name = (String) en.nextElement();
+        System.out.print(name + " -> ");
+        System.out.println(getRequest().getAttribute(name));
 
-	}
+    }
     }
 
     public static void printParameters() {
-	System.out.println("Parameters: ");
-	Enumeration en = getRequest().getParameterNames();
-	while (en.hasMoreElements()) {
-	    String name = (String) en.nextElement();
-	    System.out.print(name + " -> ");
-	    for (String value : getRequest().getParameterValues(name)) {
-		System.out.print(value + " ");
-	    }
-	    System.out.println();
-	}
+    System.out.println("Parameters: ");
+    Enumeration en = getRequest().getParameterNames();
+    while (en.hasMoreElements()) {
+        String name = (String) en.nextElement();
+        System.out.print(name + " -> ");
+        for (String value : getRequest().getParameterValues(name)) {
+        System.out.print(value + " ");
+        }
+        System.out.println();
+    }
     }
 
     public static String getReferrer(HttpServletRequest request) {
-	String referrer = (String) request.getSession().getAttribute("origin");
-	request.getSession().removeAttribute("origin");
-	if (referrer == null || referrer.length() == 0) {
-	    referrer = request.getParameter("origin");
-	}
+    String referrer = (String) request.getSession().getAttribute("origin");
+    request.getSession().removeAttribute("origin");
+    if (referrer == null || referrer.length() == 0) {
+        referrer = request.getParameter("origin");
+    }
 
-	if (referrer == null || referrer.length() == 0) {
-	    referrer = request.getContextPath() + "/pages/index.jsf";
-	}
-	return referrer;
+    if (referrer == null || referrer.length() == 0) {
+        referrer = request.getContextPath() + "/pages/index.jsf";
+    }
+    return referrer;
     }
 
     public static String getUserId() {
@@ -140,10 +140,6 @@ public class UIBeanHelper {
             return (String) userid;
         }
         return null;
-    }
-
-    public static boolean isLoggedIn() {
-	return getUserId() != null;
     }
 
     /**
@@ -173,12 +169,15 @@ public class UIBeanHelper {
         user.incrementLoginCount();
         user.setLastLoginDate(new Date());
         user.setLastLoginIP(request.getRemoteAddr());
-        request.setAttribute(GPConstants.USERID, username);
-        request.setAttribute("userID", username);
         request.getSession().setAttribute(GPConstants.USERID, user.getUserId());
+        request.getSession().setAttribute("userID", username); //TODO: replace all references to 'userID' with 'userid'
         if (redirect) {
             String referrer = UIBeanHelper.getReferrer(request);
             response.sendRedirect(referrer);
+            FacesContext fc = getFacesContext();
+            if (fc != null) {
+                fc.responseComplete();
+            }
             getFacesContext().responseComplete();
         }
     }
@@ -193,27 +192,27 @@ public class UIBeanHelper {
     }
 
     public static String encode(String s) {
-	if (s == null) {
-	    return null;
-	}
-	try {
-	    return URLEncoder.encode(s, "UTF-8");
-	} catch (UnsupportedEncodingException e) {
-	    log.error(e);
-	    return s;
-	}
+    if (s == null) {
+        return null;
+    }
+    try {
+        return URLEncoder.encode(s, "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+        log.error(e);
+        return s;
+    }
     }
 
     public static String decode(String s) {
-	if (s == null) {
-	    return null;
-	}
-	try {
-	    return URLDecoder.decode(s, "UTF-8");
-	} catch (UnsupportedEncodingException e) {
-	    log.error(e);
-	    return s;
-	}
+    if (s == null) {
+        return null;
+    }
+    try {
+        return URLDecoder.decode(s, "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+        log.error(e);
+        return s;
+    }
     }
 
     /**
