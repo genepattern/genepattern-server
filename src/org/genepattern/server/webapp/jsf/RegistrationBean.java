@@ -9,15 +9,10 @@
  whatsoever. Neither the Broad Institute nor MIT can be responsible for its
  use, misuse, or functionality.
  */
-
-/**
- * 
- */
 package org.genepattern.server.webapp.jsf;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Date;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -27,12 +22,14 @@ import javax.faces.event.ActionEvent;
 import javax.faces.validator.ValidatorException;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.EncryptionUtil;
+import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 
 /**
  * Backing bean for creating a new user.
+ * 
+ * @see UserAccountManager#createUser(String, String, String)
  * 
  * @author jrobinso
  * 
@@ -82,15 +79,15 @@ public class RegistrationBean {
     }
 
     public String getEmail() {
-	return email;
+    return email;
     }
 
     public String getEmailConfirm() {
-	return emailConfirm;
+    return emailConfirm;
     }
 
     public UIInput getEmailConfirmComponent() {
-	return emailConfirmComponent;
+    return emailConfirmComponent;
     }
 
     public boolean isPasswordRequired() {
@@ -98,30 +95,30 @@ public class RegistrationBean {
     }
 
     public String getPassword() {
-	return password;
+    return password;
     }
 
     public String getPasswordConfirm() {
-	return passwordConfirm;
+    return passwordConfirm;
     }
 
     public UIInput getPasswordConfirmComponent() {
-	return passwordConfirmComponent;
+    return passwordConfirmComponent;
     }
 
     public String getUsername() {
-	return username;
+    return username;
     }
 
     public boolean isJoinMailingList() {
-		return joinMailingList;
-	}
+        return joinMailingList;
+    }
 
-	public void setJoinMailingList(boolean joinMailingList) {
-		this.joinMailingList = joinMailingList;
-	}
+    public void setJoinMailingList(boolean joinMailingList) {
+        this.joinMailingList = joinMailingList;
+    }
 
-	/**
+    /**
      * Register a new user. For now this uses an action listener since we are redirecting to a page outside of the JSF
      * framework. This should be changed to an action to use jsf navigation in the future.
      * 
@@ -129,35 +126,24 @@ public class RegistrationBean {
      *                ignored
      */
     public void registerUser(ActionEvent event) {
-
-	try {
-	    assert username != null;
-	    assert password != null;
-
-	    User newUser = new User();
-	    newUser.setUserId(username);
-	    newUser.setEmail(email);
-	    newUser.setPassword(EncryptionUtil.encrypt(password));
-	    newUser.setRegistrationDate(new Date());
-	    (new UserDAO()).save(newUser);
-	    UIBeanHelper.login(username);
-	    
-	    if (this.isJoinMailingList()){
-	    	sendJoinMailingListRequest();
-	    }
-	    
-	} catch (Exception e) {
-	    log.error(e);
-	    throw new RuntimeException(e);
-	}
-
+        try {
+            UserAccountManager.instance().createUser(username, password, email);
+            UIBeanHelper.login(username);
+            if (this.isJoinMailingList()){
+                sendJoinMailingListRequest();
+            }
+        } 
+        catch (Exception e) {
+            log.error(e);
+            throw new RuntimeException(e);
+        }
     }
 
     public void sendJoinMailingListRequest(){
-    	String mailingListURL = System.getProperty("gp.mailinglist.registration.url","http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_mail_list.cgi");
-    	StringBuffer buff = new StringBuffer(mailingListURL);
-        buff.append("?choice=Add&email="+ this.getEmail());	
-    	
+        String mailingListURL = System.getProperty("gp.mailinglist.registration.url","http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_mail_list.cgi");
+        StringBuffer buff = new StringBuffer(mailingListURL);
+        buff.append("?choice=Add&email="+ this.getEmail()); 
+        
         try {
             URL regUrl = new URL(buff.toString());
             regUrl.openConnection();
@@ -166,9 +152,9 @@ public class RegistrationBean {
             conn.getContent();
             int response = conn.getResponseCode();
             if (response < 300) {
-            	UIBeanHelper.setInfoMessage("You have successfully been registered in the GenePattern users mailing list.");
+                UIBeanHelper.setInfoMessage("You have successfully been registered in the GenePattern users mailing list.");
             } else{
-            	UIBeanHelper.setInfoMessage("Automatic registration in the GenePattern mailing list failed. You can do this manually from the Resources/Mailing list menu.");
+                UIBeanHelper.setInfoMessage("Automatic registration in the GenePattern mailing list failed. You can do this manually from the Resources/Mailing list menu.");
             }
             
         } catch (Exception e){
@@ -179,60 +165,60 @@ public class RegistrationBean {
     }
     
     public void setEmail(String email) {
-	this.email = email;
+    this.email = email;
     }
 
     public void setEmailConfirm(String emailConfirm) {
-	this.emailConfirm = emailConfirm;
+    this.emailConfirm = emailConfirm;
     }
 
     public void setEmailConfirmComponent(UIInput emailConfirmComponent) {
-	this.emailConfirmComponent = emailConfirmComponent;
+    this.emailConfirmComponent = emailConfirmComponent;
     }
 
     public void setPassword(String password) {
-	this.password = password;
+    this.password = password;
     }
 
     public void setPasswordConfirm(String passwordConfirm) {
-	this.passwordConfirm = passwordConfirm;
+    this.passwordConfirm = passwordConfirm;
     }
 
     public void setPasswordConfirmComponent(UIInput passwordConfirmComponent) {
-	this.passwordConfirmComponent = passwordConfirmComponent;
+    this.passwordConfirmComponent = passwordConfirmComponent;
     }
 
     public void setUsername(String username) {
-	this.username = username;
+    this.username = username;
     }
 
     public void validateEmail(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-	if (!value.equals(emailConfirmComponent.getSubmittedValue())) {
-	    String message = "Email entries do not match.";
-	    FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
-	    ((UIInput) component).setValid(false);
-	    throw new ValidatorException(facesMessage);
-	}
+    if (!value.equals(emailConfirmComponent.getSubmittedValue())) {
+        String message = "Email entries do not match.";
+        FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
+        ((UIInput) component).setValid(false);
+        throw new ValidatorException(facesMessage);
+    }
     }
 
     public void validateNewUsername(FacesContext context, UIComponent component, Object value)
-	    throws ValidatorException {
-	User user = (new UserDAO()).findById(value.toString());
-	if (user != null) {
-	    String message = "An account with this username already exists.  Please choose another.";
-	    FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
-	    ((UIInput) component).setValid(false);
-	    throw new ValidatorException(facesMessage);
-	}
+        throws ValidatorException {
+    User user = (new UserDAO()).findById(value.toString());
+    if (user != null) {
+        String message = "An account with this username already exists.  Please choose another.";
+        FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
+        ((UIInput) component).setValid(false);
+        throw new ValidatorException(facesMessage);
+    }
     }
 
     public void validatePassword(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-	if (!value.equals(passwordConfirmComponent.getSubmittedValue())) {
-	    String message = "Password entries do not match.";
-	    FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
-	    ((UIInput) component).setValid(false);
-	    throw new ValidatorException(facesMessage);
-	}
+    if (!value.equals(passwordConfirmComponent.getSubmittedValue())) {
+        String message = "Password entries do not match.";
+        FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
+        ((UIInput) component).setValid(false);
+        throw new ValidatorException(facesMessage);
+    }
     }
     
     public boolean isShowTermsOfService() {

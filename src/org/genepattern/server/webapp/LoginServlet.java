@@ -20,14 +20,11 @@ import org.genepattern.server.auth.AuthenticationException;
  * @author pcarr
  */
 public class LoginServlet extends HttpServlet implements Servlet {
-    private LoginManager loginManager = null;
     
     public void init(ServletConfig config) 
     throws ServletException
     {
         super.init(config);
-        
-        loginManager = new LoginManager();
     }
     
     public void doGet(HttpServletRequest req, HttpServletResponse resp) 
@@ -46,7 +43,8 @@ public class LoginServlet extends HttpServlet implements Servlet {
     throws IOException
     {
         try {
-            loginManager.loginFromWebClient(request);
+            //TODO: guess whether or not to redirect, based on user agent
+            LoginManager.instance().login(request, resp, true);
         }
         catch (AuthenticationException e) {
             resp.sendError(HttpServletResponse.SC_FORBIDDEN, e.getLocalizedMessage());

@@ -12,20 +12,16 @@
 
 package org.genepattern.server.webservice;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.apache.axis.AxisFault;
 import org.apache.axis.MessageContext;
 import org.apache.log4j.Logger;
-import org.genepattern.server.EncryptionUtil;
-import org.genepattern.server.user.User;
-import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.auth.AuthenticationException;
 
 public class AuthenticationHandler extends GenePatternHandlerBase {
-    boolean passwordRequired = false;
-
     private static Logger log = Logger.getLogger(AuthenticationHandler.class);
     ArrayList<String> noLoginMethods = new ArrayList<String>();
     
@@ -41,11 +37,6 @@ public class AuthenticationHandler extends GenePatternHandlerBase {
         while (strtok.hasMoreTokens()){
             noLoginMethods.add(strtok.nextToken());
         }
- 
-        // see if we care about passwords or not
-        String prop = System.getProperty("require.password", "false").toLowerCase();
-        passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
-
     }
 
     public void invoke(MessageContext msgContext) throws AxisFault {
@@ -76,43 +67,17 @@ public class AuthenticationHandler extends GenePatternHandlerBase {
             //}
         }
 
-        if (!validateUserPassword(username, password)) {
+        boolean authenticated = false;
+        byte[] credentials = password != null ? password.getBytes() : null;
+        try {
+            authenticated = UserAccountManager.instance().getAuthentication().authenticate(username, credentials);
+        }
+        catch (AuthenticationException e) {
+            throw new AxisFault(e.getType().toString());
+        }
+
+        if (!authenticated) {
             throw new AxisFault("Error: Unknown user or invalid password.");
         }
-    }
-
-    /**
-     * 
-     * @param userId
-     * @param password
-     * @return
-     */
-    private boolean validateUserPassword(String userId, String password) {
-        //if (!passwordRequired) {
-        //    return true;
-        //}
-        User user = (new UserDAO()).findById(userId);
-        if (user == null) {
-            log.info("Unknown userId: "+userId);
-            return false;
-        }
-        if (!passwordRequired) {
-            return true;
-        }
-        if (password == null) {
-            return false;
-        }
-        try {
-            byte[] encryptedPassword = EncryptionUtil.encrypt(password);
-            if (java.util.Arrays.equals(encryptedPassword, user.getPassword())) {
-                return true;
-            }
-        }
-        catch (NoSuchAlgorithmException e) {
-            log.error(e);
-        }
-        
-        byte[] encryptedPassword = EncryptionUtil.getInstance().getPipelineUserEncryptedPassword(password);
-        return java.util.Arrays.equals(encryptedPassword, user.getPassword());
     }
 }

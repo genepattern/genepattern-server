@@ -14,12 +14,15 @@ package org.genepattern.server.webapp.jsf;
 
 import java.io.IOException;
 
+import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
-import org.genepattern.server.auth.DefaultGenePatternAuthentication;
-import org.genepattern.server.auth.IAuthenticationPlugin;
+import org.genepattern.server.webapp.LoginManager;
 
 /**
  * Backing bean for pages/login.
@@ -29,26 +32,13 @@ import org.genepattern.server.auth.IAuthenticationPlugin;
  */
 public class LoginBean {
     private static Logger log = Logger.getLogger(LoginBean.class);
-    private IAuthenticationPlugin authentication = null;
 
     private String username;
     private String password;
-    private boolean passwordRequired;
     private boolean unknownUser = false;
     private boolean invalidPassword = false;
-    private boolean createAccountAllowed;
 
     public LoginBean() {
-        String prop = System.getProperty("require.password", "false").toLowerCase();
-        passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
-
-        String createAccountAllowedProp = System.getProperty("create.account.allowed", "true").toLowerCase();
-        createAccountAllowed = 
-            createAccountAllowedProp.equals("true") || 
-            createAccountAllowedProp.equals("y") || 
-            createAccountAllowedProp.equals("yes");
-        
-        authentication = new DefaultGenePatternAuthentication();
     }
 
     public String getPassword() {
@@ -60,7 +50,7 @@ public class LoginBean {
     }
 
     public boolean isCreateAccountAllowed() {
-        return createAccountAllowed;
+        return UserAccountManager.instance().isCreateAccountAllowed();
     }
 
     public boolean isInvalidPassword() {
@@ -68,7 +58,7 @@ public class LoginBean {
     }
 
     public boolean isPasswordRequired() {
-        return passwordRequired;
+        return UserAccountManager.instance().isPasswordRequired();
     }
 
     public boolean isUnknownUser() {
@@ -96,10 +86,10 @@ public class LoginBean {
             return;
         }
 
-        byte[] credentials = password != null ? password.getBytes() : new byte[0];
         try {
-            authentication.authenticate(username, credentials);
-            UIBeanHelper.login(username);
+            HttpServletRequest request = UIBeanHelper.getRequest();
+            HttpServletResponse response = UIBeanHelper.getResponse();
+            LoginManager.instance().login(request, response, username, password, true);
         }
         catch (AuthenticationException e) {
             if (AuthenticationException.Type.INVALID_USERNAME.equals(e.getType())) {

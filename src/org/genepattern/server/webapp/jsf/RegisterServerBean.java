@@ -22,10 +22,8 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.faces.application.FacesMessage;
@@ -39,9 +37,7 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
-import org.genepattern.server.EncryptionUtil;
-import org.genepattern.server.user.User;
-import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.webservice.server.dao.BaseDAO;
 import org.genepattern.util.GPConstants;
 
@@ -63,25 +59,24 @@ public class RegisterServerBean {
     }
 	  
     // not in properties file so it cannot be (easily) overridden, but can be configured via setRegistrationUrl
-    private String registrationUrl="http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_server_license_process.cgi";
+    private String registrationUrl="http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_server_license_process.cgi";  
+    private String email;
+    private String name;
+    private String title;
+    private String organization;
+    private String department;
+    private String address1;
+    private String address2;
+    private String city;
+    private String state;
+    private String zipCode;
+    private String country;
+    private boolean acceptLicense = false;
+    private String os;
+    private boolean error = false;
 	  
-	  private String email;
-	  private String name;
-	  private String title;
-	  private String organization;
-	  private String department;
-	  private String address1;
-	  private String address2;
-	  private String city;
-	  private String state;
-	  private String zipCode;
-	  private String country;
-	  private boolean acceptLicense = false;
-	  private String os;
-	  private boolean error = false;
-	  
-	  private boolean joinMailingList = true;
-	  private String[] countries = { "United States of America", "Albania",
+    private boolean joinMailingList = true;
+    private String[] countries = { "United States of America", "Albania",
 			"Algeria", "American Samoa", "Andorra", "Angola", "Anguila",
 			"Antarctica", "Antigua and Barbuda", "Argentina", "Armenia",
 			"Aruba", "Australia", "Austria", "Azerjaijan", "Bahamas",
@@ -136,9 +131,9 @@ public class RegisterServerBean {
 			"Wallis and Futuna Islands", "Western Sahara", "Yemen",
 			"Yugoslavia", "Zaire", "Zambia", "Zimbabwe" };  
 	    
-	  public RegisterServerBean() {
-		  this.email = System.getProperty("webmaster","");
-	  }
+    public RegisterServerBean() {
+        this.email = System.getProperty("webmaster","");
+    }
 
     private String handleException(Exception e) {
         System.setProperty(GPConstants.REGISTERED_SERVER, "unregistered");
@@ -207,7 +202,7 @@ public class RegisterServerBean {
             }
 
             saveIsRegistered();
-            RegisterServerBean.createNewUserNoPassword(this.email);
+            UserAccountManager.instance().createUser(email);
             UIBeanHelper.login(this.email, false, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
             error = false;              
             return "installFrame";
@@ -251,140 +246,113 @@ public class RegisterServerBean {
 		   // the registration to the DB.  They will be asked to register again
 		   // after each restart
 		   try {
-
-		       RegisterServerBean.createNewUserNoPassword(this.email);
+		       UserAccountManager.instance().createUser(email);
 			   UIBeanHelper.login(this.email, false, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
 			   
 			   int responseCode = client.executeMethod(httppost);
-			   
 			   if (responseCode < 200 || responseCode >= 400) throw new HttpException();
 			   // we don't know them, but their download is recorded so mark the server as registered
 			   saveIsRegistered();
-			   
-		   } catch (Exception e){
+		   } 
+		   catch (Exception e) {
 			   // swallow it and return
 			   // didn't get a record back at the mother ship from the post so
 			   // make the registration only good until restart
 		   }
-		   
-		   
 		   return "unregisteredServer";
-	   }
-	   
-	   public static void createNewUserNoPassword(String username) {
-			User newUser = new User();
-			newUser.setUserId(username);
-			try {
-				UserDAO ud = new UserDAO();
-				User u = ud.findById(username);
-				if (u != null) return;
-				newUser.setRegistrationDate(new Date());
-				
-			    newUser.setPassword(EncryptionUtil.encrypt(""));
-			    (new UserDAO()).save(newUser);
-			} catch (NoSuchAlgorithmException e) {
-			    log.error(e);
-			}
-			
-		}
-	  
-public static boolean isRegisteredOrDeclined(){
-	
-	if (System.getProperty(GPConstants.REGISTERED_SERVER, null) != null) return true;    
-	else return isRegistered();
-	
-}
+    }
 
-        public static boolean isRegistered() {
-            log.debug("checking registration");
-            final String genepatternVersion = System.getProperty("GenePatternVersion");
-            String dbRegisteredVersion = getDbRegisteredVersion();
-            if (dbRegisteredVersion == null || dbRegisteredVersion.equals("")) {
-                return false;
-            }
-            return (genepatternVersion.compareTo(dbRegisteredVersion) <= 0);
-        }
+    public static boolean isRegisteredOrDeclined(){	
+        if (System.getProperty(GPConstants.REGISTERED_SERVER, null) != null) return true;    
+        else return isRegistered();
+    }
 
-        /**
-         * @return true if this is an update from a previously registered version of GenePattern, <code>e.g. from 3.1 to 3.1.1</code>.
-         */
-        public boolean getIsUpdate() {
-            List<String> dbEntries = getDbRegisteredVersions();
-            final String genepatternVersion = System.getProperty("GenePatternVersion");
-            if (dbEntries.contains("registeredVersion"+genepatternVersion)) {
-                //already registered
-                return false;
-            }
-            if (dbEntries.size() > 0) {
-                return true;
-            }
+    public static boolean isRegistered() {
+        log.debug("checking registration");
+        final String genepatternVersion = System.getProperty("GenePatternVersion");
+        String dbRegisteredVersion = getDbRegisteredVersion();
+        if (dbRegisteredVersion == null || dbRegisteredVersion.equals("")) {
             return false;
         }
+        return (genepatternVersion.compareTo(dbRegisteredVersion) <= 0);
+    }
 
-        /**
-         * Lookup the registration key from the database, return an empty string
-         * if there is no entry in the database.
-         * @return
-         */
-        private static String getDbRegisteredVersion() {
-            log.debug("getting registration info from database");
-            String dbRegisteredVersion = "";
-            final String genepatternVersion = System.getProperty("GenePatternVersion");
-            final String sql = "select value from props where key='registeredVersion"+genepatternVersion+"'";
-            try {
-                BaseDAO dao = new BaseDAO();
-                ResultSet resultSet = dao.executeSQL(sql, false);
-                if (resultSet.next()) {
-                    dbRegisteredVersion = resultSet.getString(1);
-               }
-            } 
-            catch (Exception e) {
-                log.error("Didn't get registration info from database: "+e.getLocalizedMessage(), e);
+    /**
+     * @return true if this is an update from a previously registered version of GenePattern, <code>e.g. from 3.1 to 3.1.1</code>.
+     */
+    public boolean getIsUpdate() {
+        List<String> dbEntries = getDbRegisteredVersions();
+        final String genepatternVersion = System.getProperty("GenePatternVersion");
+        if (dbEntries.contains("registeredVersion"+genepatternVersion)) {
+            //already registered
+            return false;
+        }
+        if (dbEntries.size() > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Lookup the registration key from the database, return an empty string
+     * if there is no entry in the database.
+     * @return
+     */
+    private static String getDbRegisteredVersion() {
+        log.debug("getting registration info from database");
+        String dbRegisteredVersion = "";
+        final String genepatternVersion = System.getProperty("GenePatternVersion");
+        final String sql = "select value from props where key='registeredVersion"+genepatternVersion+"'";
+        try {
+            BaseDAO dao = new BaseDAO();
+            ResultSet resultSet = dao.executeSQL(sql, false);
+            if (resultSet.next()) {
+                dbRegisteredVersion = resultSet.getString(1);
             }
-            return dbRegisteredVersion;
+        } 
+        catch (Exception e) {
+            log.error("Didn't get registration info from database: "+e.getLocalizedMessage(), e);
+        }
+        return dbRegisteredVersion;
+    }
+
+    private static List<String> getDbRegisteredVersions() {
+        log.debug("getting registration info from database");
+        List<String> dbEntries = new ArrayList<String>();
+        final String sql = "select VALUE from PROPS where key like 'registeredVersion%' order by key";
+        try {
+            BaseDAO dao = new BaseDAO();
+            ResultSet resultSet = dao.executeSQL(sql, false);
+            while(resultSet.next()) {
+                dbEntries.add(resultSet.getString(1));
+            }
+        } 
+        catch (Exception e) {
+            log.error("Didn't get registration info from database: "+e.getLocalizedMessage(), e);
+        }
+        return dbEntries;
+    }
+
+    private static void saveIsRegistered() {
+        log.debug("saving registration");
+        String genepatternVersion = System.getProperty("GenePatternVersion");
+        String dbRegisteredVersion = System.getProperty(GPConstants.REGISTERED_SERVER, null);
+        if (dbRegisteredVersion != null) {
+            return;
         }
 
-        private static List<String> getDbRegisteredVersions() {
-            log.debug("getting registration info from database");
-            List<String> dbEntries = new ArrayList<String>();
-            final String sql = "select VALUE from PROPS where key like 'registeredVersion%' order by key";
-            try {
-                BaseDAO dao = new BaseDAO();
-                ResultSet resultSet = dao.executeSQL(sql, false);
-                while(resultSet.next()) {
-                    dbEntries.add(resultSet.getString(1));
-                }
-            } 
-            catch (Exception e) {
-                log.error("Didn't get registration info from database: "+e.getLocalizedMessage(), e);
-            }
-            return dbEntries;
+        // update the DB
+        try {
+            BaseDAO dao = new BaseDAO();
+            String sqlIns = "insert into props values ('registeredVersion"+genepatternVersion+"', '"+genepatternVersion+"')";
+            dao.executeUpdate(sqlIns);
+            System.setProperty(GPConstants.REGISTERED_SERVER, genepatternVersion);
+        } 
+        catch (Exception e) {
+            // either DB is down or we already have it there
+            log.debug(e);
         }
-
-	   private static void saveIsRegistered() {
-	        log.debug("saving registration");
-	        String dbRegisteredVersion;
-	        
-	        String genepatternVersion = System.getProperty("GenePatternVersion");
-	        dbRegisteredVersion = System.getProperty(GPConstants.REGISTERED_SERVER, null);
-	       
-	        if (dbRegisteredVersion != null) return;
-	       
-	        // check the DB
-	        String sql1 = "select value from props where key='registeredVersion"+genepatternVersion+"'";
-
-	        String sqlIns = "insert into props values ('registeredVersion"+genepatternVersion+"', '"+genepatternVersion+"')";
-	        
-
-	        try {
-	            BaseDAO dao = new BaseDAO();
-	            dao.executeUpdate(sqlIns);
-	            System.setProperty(GPConstants.REGISTERED_SERVER, genepatternVersion);
-	        } catch (Exception e) {
-	        	// either DB is down or we already have it there
-	        	log.debug(e);
-	        }
-	   }
+    }
 
     public void setRegistrationUrl(String url) {
         this.registrationUrl = url;
@@ -550,17 +518,12 @@ public static boolean isRegisteredOrDeclined(){
 	    }
 	}
 
-
 	public boolean isError() {
 		return error;
 	}
 
-
 	public void setError(boolean error) {
 		this.error = error;
 	}
-	
-	
-	
-	
+
 }
