@@ -151,7 +151,7 @@ public class UIBeanHelper {
      * @throws UnsupportedEncodingException
      * @throws IOException
      */
-    public static void login(String username) throws UnsupportedEncodingException, IOException {
+    public static void login(String username) throws IOException {
         UIBeanHelper.login(username, true, UIBeanHelper.getRequest(), UIBeanHelper.getResponse());
     }
 
@@ -166,7 +166,7 @@ public class UIBeanHelper {
      * @throws IOException
      */
     public static void login(String username, boolean redirect, HttpServletRequest request, HttpServletResponse response) 
-    throws UnsupportedEncodingException, IOException 
+    throws IOException 
     {
         User user = new UserDAO().findById(username);
         assert user != null;
