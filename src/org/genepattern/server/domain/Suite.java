@@ -15,12 +15,9 @@
 package org.genepattern.server.domain;
 
 import java.net.MalformedURLException;
-import java.util.*;
+import java.util.List;
 
-import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.LSID;
-
-import static org.genepattern.util.GPConstants.*;
 
 /**
  * A hibernate mapped POJO representing a Suite. This class is a near copy of SuiteInfo. Both are kept for an interim
