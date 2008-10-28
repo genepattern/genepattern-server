@@ -33,7 +33,6 @@ import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
-import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.GPConstants;
 
 /**
@@ -88,6 +87,13 @@ public class AuthenticationFilter implements Filter {
         }
 
         if (isAuthenticated((HttpServletRequest) request, (HttpServletResponse) response)) {
+            String userId = getUserId((HttpServletRequest) request);
+            
+            //TODO: this is an artifact of gp-3.1 and earlier,
+            //      which uses a request attribute to get the current user
+            request.setAttribute(GPConstants.USERID, userId);
+            request.setAttribute("userID", userId); // old jsp pages use this
+
             if (isChangePasswordRequired((HttpServletRequest) request, (HttpServletResponse) response)) {
                 if (requestedURI.contains("requireChangePassword")) {
                     chain.doFilter(request, response);
@@ -249,21 +255,22 @@ public class AuthenticationFilter implements Filter {
     }
 
     protected String getUserId(HttpServletRequest request) {
-        return (String)request.getSession().getAttribute(GPConstants.USERID);
+        if (request == null) {
+            return null;
+        }
+        HttpSession session = request.getSession();
+        if (session == null) {
+            return null;
+        }
+        return (String) session.getAttribute(GPConstants.USERID);
     }
 
     /**
-     * Authenticate the user by checking to see if the cookie userID is set
+     * Authenticate the user by checking for the 'userid' session variable
      */
     protected boolean isAuthenticated(HttpServletRequest request, HttpServletResponse response) {
         String userId = getUserId(request);
-        if (userId != null && isSignedIn(userId, request, response)) {
-            request.setAttribute(GPConstants.USERID, userId);
-            request.setAttribute("userID", userId); // old jsp pages use this
-            // attribute for usernames
-            return true;
-        }
-        return false;
+        return userId != null;
     }
     
     protected boolean isChangePasswordRequired(HttpServletRequest request, HttpServletResponse response) {
@@ -309,24 +316,6 @@ public class AuthenticationFilter implements Filter {
             tokens[i] = tokens[i].trim();
         }
         return tokens;
-    }
-
-    /**
-     * Check to see if user is logged in and has registered in database.
-     */
-    private boolean isSignedIn(String userId, HttpServletRequest request, HttpServletResponse response) {
-        if (request == null) {
-            return false;
-        }
-        HttpSession session = request.getSession();
-        if (session == null) {
-            return false;
-        }
-        Object userid = session.getAttribute(GPConstants.USERID);
-        if (userid == null) {
-            return false;
-        }
-        return true;
     }
 
     static void loadProperties(Properties props, File propFile) {
