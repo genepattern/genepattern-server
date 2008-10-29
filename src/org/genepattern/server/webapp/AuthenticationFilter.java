@@ -41,7 +41,6 @@ import org.genepattern.util.GPConstants;
  * @author Liefeld
  */
 public class AuthenticationFilter implements Filter {
-
     private static Logger log = Logger.getLogger(AuthenticationFilter.class);
     private String homePage;
     private String loginPage;
@@ -64,74 +63,59 @@ public class AuthenticationFilter implements Filter {
 
     public void destroy() {
     }
-
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) 
+    
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) 
     throws IOException, ServletException 
     {
-        HttpServletRequest req = (HttpServletRequest) request;
-        String requestedURI = req.getRequestURI();
-
-        // allow jsp precompilation
-        if (isJspPrecompile(req)) {
-            chain.doFilter(request, response);
-            return;
-        }
-
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        HttpServletResponse response = (HttpServletResponse) servletResponse;
+        //String requestedURI = request.getRequestURI();
+        
+        //if necessary, redirect to fully qualified host name
         if (redirectToFqHostName) { 
             // redirect to fqHostName so that only one cookie needs to be written
-            String serverName = request.getServerName();
+            String serverName = servletRequest.getServerName();
             if (!getFQHostName().equalsIgnoreCase(serverName)) {
-                redirectToFullyQualifiedHostName((HttpServletRequest) request, (HttpServletResponse) response);
+                redirectToFullyQualifiedHostName(request, response);
                 return;
             }
         }
-
-        if (isAuthenticated((HttpServletRequest) request, (HttpServletResponse) response)) {
-            String userId = getUserId((HttpServletRequest) request);
-            
+        
+        if (isAuthenticated(request)) {
             //TODO: this is an artifact of gp-3.1 and earlier,
             //      which uses a request attribute to get the current user
-            request.setAttribute(GPConstants.USERID, userId);
-            request.setAttribute("userID", userId); // old jsp pages use this
+            String userId = getUserId(request);
+            servletRequest.setAttribute(GPConstants.USERID, userId);
+            servletRequest.setAttribute("userID", userId); // old jsp pages use this
 
-            if (isChangePasswordRequired((HttpServletRequest) request, (HttpServletResponse) response)) {
-                if (requestedURI.contains("requireChangePassword")) {
-                    chain.doFilter(request, response);
-                }
+            if (isRedirectRequired(request)) {
+                //do redirect
+                boolean origin = request.getParameter("origin") != null;
+                if (!origin) {
+                    response.sendRedirect(request.getContextPath() + homePage);
+                } 
                 else {
-                    redirectToPage((HttpServletRequest) request, (HttpServletResponse) response, "/pages/requireChangePassword.jsf");
+                    chain.doFilter(servletRequest, servletResponse);
                 }
                 return;
             }
-            boolean origin = req.getParameter("origin") != null;
-            for (int i = 0, length = noAuthorizationRequiredPagesRedirect.length; i < length; i++) {
-                if (requestedURI.contains(noAuthorizationRequiredPagesRedirect[i])) {
-                    if (!origin) {
-                        ((HttpServletResponse) response).sendRedirect(req.getContextPath() + homePage);
-                    } else {
-                        chain.doFilter(request, response);
-                    }
-                    return;
-                }
+            if (isChangePasswordRequired(request, response)) {
+                response.sendRedirect(request.getContextPath() + "/pages/requireChangePassword.jsf");
+                return;
             }
-            chain.doFilter(request, response);
+            chain.doFilter(servletRequest, servletResponse);
+            return;
         }
-        else {
-            // escape valve for pages that do not require authentication
-            for (int i = 0, length = noAuthorizationRequiredPages.length; i < length; i++) {
-                if (requestedURI.contains(noAuthorizationRequiredPages[i])) {
-                    chain.doFilter(request, response);
-                    return;
-                }
-            }
-            for (int i = 0, length = noAuthorizationRequiredPagesRedirect.length; i < length; i++) {
-                if (requestedURI.contains(noAuthorizationRequiredPagesRedirect[i])) {
-                    chain.doFilter(request, response);
-                    return;
-                }
-            }
-            redirectToLoginPage((HttpServletRequest) request, (HttpServletResponse) response);
+        //else, not authenticated
+        if (!isAuthenticationRequired(request)) {
+            //no authentication required
+            chain.doFilter(servletRequest, servletResponse);
+            return;
         }
+        //else, authentication is required
+        //implement default authentication 
+        response.sendRedirect(request.getContextPath() + loginPage);
+        return;
     }
 
     public void init(FilterConfig filterconfig) throws ServletException {
@@ -184,60 +168,6 @@ public class AuthenticationFilter implements Filter {
         }
     }
 
-    public void redirectToLoginPage(HttpServletRequest request, HttpServletResponse response) {
-        redirectToPage(request, response, loginPage);
-    }
-
-    public void redirectToPage(HttpServletRequest request, HttpServletResponse response, String page) {
-        String currentURL = request.getRequestURI();
-        // get everything after the context root
-        int firstSlash = currentURL.indexOf("/", 1); // jump past the
-        // starting slash
-        String targetURL = null;
-        if (firstSlash != -1) {
-            targetURL = currentURL.substring(firstSlash + 1, currentURL.length());
-        }
-
-        // redirect to the fully-qualified host name to make sure that the
-        // cookie that we are allowed to write is useful
-        try {
-            String fqHostName = request.getServerName();
-            if (redirectToFqHostName) {
-                fqHostName = System.getProperty("fqHostName");
-                if (fqHostName == null) {
-                    fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
-                    if (fqHostName.equals("localhost")) {
-                        fqHostName = "127.0.0.1";
-                    }
-                }
-            }
-
-            String portStr = "";
-            int port = request.getServerPort();
-            if (port > 0) {
-                portStr = ":"+port;
-            }
-            String basePath = request.getScheme() + "://" + fqHostName + portStr + request.getContextPath();
-            String fullyQualifiedPage = basePath + page;
-
-            if (basePath.charAt(basePath.length() - 1) != '/') {
-                if (targetURL != null && targetURL.length() >= 1 && targetURL.charAt(0) != '/') {
-                    targetURL = "/" + targetURL;
-                }
-            }
-            targetURL = basePath + targetURL;
-
-            if (targetURL != null && !targetURL.contains(page)) { 
-                // don't redirect back to page
-                request.getSession().setAttribute("origin", targetURL);
-            }
-            response.sendRedirect(fullyQualifiedPage);
-        } 
-        catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
-    }
-
     /**
      * get fully qualified host name from the machine. If this was set in system
      * properties (from the genepattern.properties file) use that since some
@@ -268,15 +198,59 @@ public class AuthenticationFilter implements Filter {
     /**
      * Authenticate the user by checking for the 'userid' session variable
      */
-    protected boolean isAuthenticated(HttpServletRequest request, HttpServletResponse response) {
+    protected boolean isAuthenticated(HttpServletRequest request) {
         String userId = getUserId(request);
         return userId != null;
+    }
+    
+    /**
+     * Does the requested resource require authentication?
+     * 
+     * @param request
+     * @return
+     */
+    protected boolean isAuthenticationRequired(HttpServletRequest request) {
+        String requestedURI = request.getRequestURI();
+        for (int i = 0, length = noAuthorizationRequiredPages.length; i < length; i++) {
+            if (requestedURI.contains(noAuthorizationRequiredPages[i])) {
+                return false;
+            }
+        }
+        for (int i = 0, length = noAuthorizationRequiredPagesRedirect.length; i < length; i++) {
+            if (requestedURI.contains(noAuthorizationRequiredPagesRedirect[i])) {
+                return false;
+            }
+        }
+        // allow jsp precompilation
+        if (isJspPrecompile(request)) {
+            return false;
+        }
+
+        return true;
+    }
+    
+    /**
+     * Is a redirect required when the resource is requested by authenticated user?
+     */
+    protected boolean isRedirectRequired(HttpServletRequest request) {
+        String requestedURI = request.getRequestURI();
+        for (int i = 0, length = noAuthorizationRequiredPagesRedirect.length; i < length; i++) {
+            if (requestedURI.contains(noAuthorizationRequiredPagesRedirect[i])) {
+                return true;
+            }
+        }
+        return false;
     }
     
     protected boolean isChangePasswordRequired(HttpServletRequest request, HttpServletResponse response) {
         if (!passwordRequired) {
             return false;
         }
+        
+        if (request.getRequestURI().contains("requireChangePassword")) {
+            return false;
+        }
+        
         String userId = getUserId(request);
         HttpSession session = request.getSession(false);
         if (session != null) {
