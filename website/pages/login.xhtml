@@ -73,7 +73,9 @@
 				
 				<h:outputLabel value="Password:" for="password"
 					rendered="#{loginBean.passwordRequired}"></h:outputLabel>
-				<h:inputSecret size="50" value="#{loginBean.password}" id="password" rendered="#{loginBean.passwordRequired}" />
+				<t:inputSecret size="50" value="#{loginBean.password}" id="password" rendered="#{loginBean.passwordRequired}" >
+                  <f:attribute name="forceId" value="true"/>
+				</t:inputSecret>
 			</h:panelGrid>
 			<h:commandButton id="signIn" actionListener="#{loginBean.submitLogin}" value="Sign in" />
 			<br />
