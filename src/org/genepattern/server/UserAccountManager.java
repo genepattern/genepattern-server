@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.auth.DefaultGenePatternAuthentication;
 import org.genepattern.server.auth.IAuthenticationPlugin;
+import org.genepattern.server.auth.WorldAccessAuthentication;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 
@@ -36,6 +37,7 @@ public class UserAccountManager {
                 createAccountAllowedProp.equals("yes");
             
             userAccountManager.authentication = new DefaultGenePatternAuthentication();
+            //userAccountManager.authentication = new WorldAccessAuthentication();
         }
         return userAccountManager;
     }

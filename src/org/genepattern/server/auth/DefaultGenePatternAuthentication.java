@@ -1,7 +1,11 @@
 package org.genepattern.server.auth;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.user.User;
@@ -17,6 +21,7 @@ import org.genepattern.server.user.UserDAO;
  */
 public class DefaultGenePatternAuthentication implements IAuthenticationPlugin {
     private boolean passwordRequired = true;
+    private String loginPage = "/pages/login.jsf";
     
     public DefaultGenePatternAuthentication() {
         //TODO: make sure this configuration parameter is well-documented
@@ -26,6 +31,31 @@ public class DefaultGenePatternAuthentication implements IAuthenticationPlugin {
     
     public void setPasswordRequired(boolean b) {
         this.passwordRequired = b;
+    }
+    
+    public void setLoginPage(String loginPage) {
+        this.loginPage = loginPage;
+    }
+    
+    public void requestAuthentication(HttpServletRequest request, HttpServletResponse response) 
+    throws IOException
+    {
+        response.sendRedirect(request.getContextPath() + loginPage);        
+    }
+
+    public String authenticate(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+        String gp_username = request.getParameter("username");
+        String passwordString = request.getParameter("password");
+        byte[] password = null;
+        if (passwordString != null) {
+            password = passwordString.getBytes();
+        }
+        boolean authenticated = authenticate(gp_username, password);
+        if (authenticated) {
+            //addUserIdToSession(request, gp_username);
+            return gp_username;
+        }
+        return null;
     }
 
     public boolean authenticate(String username, byte[] password) throws AuthenticationException {
@@ -67,4 +97,5 @@ public class DefaultGenePatternAuthentication implements IAuthenticationPlugin {
             return true;
         }
     }
+
 }

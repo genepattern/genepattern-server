@@ -88,7 +88,7 @@ public class LoginBean {
         try {
             HttpServletRequest request = UIBeanHelper.getRequest();
             HttpServletResponse response = UIBeanHelper.getResponse();
-            LoginManager.instance().login(request, response, username, password, true);
+            LoginManager.instance().login(request, response, true);
         }
         catch (AuthenticationException e) {
             if (AuthenticationException.Type.INVALID_USERNAME.equals(e.getType())) {

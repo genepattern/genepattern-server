@@ -44,32 +44,9 @@ public class LoginManager {
      * @throws IOException
      */
     public void login(HttpServletRequest request, HttpServletResponse response, boolean redirect) 
-    throws AuthenticationException, IOException {
-        String gp_username = request.getParameter("username");
-        String passwordString = request.getParameter("password");
-        login(request, response, gp_username, passwordString, redirect);
-    }
-
-    /**
-     * Authenticate and then login.
-     * 
-     * @param request
-     * @param response
-     * @param gp_username
-     * @param passwordString
-     * @param redirect
-     * @throws AuthenticationException
-     * @throws IOException
-     */
-    public void login(HttpServletRequest request, HttpServletResponse response, String gp_username, String passwordString, boolean redirect) 
-    throws AuthenticationException, IOException {
-        byte[] password = null;
-        if (passwordString != null) {
-            password = passwordString.getBytes();
-        }
-
-        boolean authenticated = UserAccountManager.instance().getAuthentication().authenticate(gp_username, password);
-        if (!authenticated) {
+    throws AuthenticationException, IOException { 
+        String gp_username = UserAccountManager.instance().getAuthentication().authenticate(request, response);
+        if (gp_username == null) {
             return;
         }
         
@@ -79,20 +56,22 @@ public class LoginManager {
             //TODO: optionally create password to prevent inadvertent logon if the authentication system is not available
             UserAccountManager.instance().createUser(gp_username);
         }
-        
-        startUserSession(gp_username, request);
+
+        addUserIdToSession(request, gp_username);
+        logUserLogin(gp_username, request);
+
         if (redirect) {
             redirect(request, response);
         }
     }
     
     /**
-     * Initiate a user session.
+     * Track of user login stats in the gp user database.
      * 
      * @param username
      * @param request
      */
-    public void startUserSession(String username, HttpServletRequest request) {
+    public void logUserLogin(String username, HttpServletRequest request) {
         User user = new UserDAO().findById(username);
         if (user == null) {
             //TODO: log exception
@@ -102,14 +81,6 @@ public class LoginManager {
         user.incrementLoginCount();
         user.setLastLoginDate(new Date());
         user.setLastLoginIP(request.getRemoteAddr());
-        
-        HttpSession session = request.getSession();
-        if (session == null) {
-            //TODO: log exception
-            return;
-        }
-        request.getSession().setAttribute(GPConstants.USERID, user.getUserId());
-        request.getSession().setAttribute("userID", username); //TODO: replace all references to 'userID' with 'userid'
     }
     
     private void redirect(HttpServletRequest request, HttpServletResponse response) 
@@ -134,5 +105,28 @@ public class LoginManager {
         String contextPath = request.getContextPath();
         response.sendRedirect( contextPath );
     }
+    
+    public String getUserIdFromSession(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+        HttpSession session = request.getSession();
+        if (session == null) {
+            return null;
+        }
+        return (String) session.getAttribute(GPConstants.USERID);
+    }
+    
+    private void addUserIdToSession(HttpServletRequest request, String gp_username) {
+        HttpSession session = request.getSession();
+        if (session == null) {
+            //TODO: log exception
+            return;
+        }
+        request.getSession().setAttribute(GPConstants.USERID, gp_username);
+        request.getSession().setAttribute("userID", gp_username); //TODO: replace all references to 'userID' with 'userid'
+    }
+
+
 
 }

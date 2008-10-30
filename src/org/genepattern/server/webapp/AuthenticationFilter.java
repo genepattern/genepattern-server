@@ -30,6 +30,9 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.EncryptionUtil;
+import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.auth.AuthenticationException;
+import org.genepattern.server.auth.DefaultGenePatternAuthentication;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
@@ -42,6 +45,9 @@ import org.genepattern.util.GPConstants;
  */
 public class AuthenticationFilter implements Filter {
     private static Logger log = Logger.getLogger(AuthenticationFilter.class);
+
+    private boolean redirectToFqHostName = false;
+    private boolean passwordRequired;
     private String homePage;
     private String loginPage;
 
@@ -57,19 +63,66 @@ public class AuthenticationFilter implements Filter {
      */
     private String[] noAuthorizationRequiredPagesRedirect;
 
-    private boolean passwordRequired;
+    public void init(FilterConfig filterconfig) throws ServletException {
+        String dir = filterconfig.getInitParameter("genepattern.properties");
+        File propFile = new File(dir, "genepattern.properties");
+        File customPropFile = new File(dir, "custom.properties");
+        Properties props = new Properties();
 
-    private boolean redirectToFqHostName = false;
+        if (propFile.exists()) {
+            loadProperties(props, propFile);
+        }
 
-    public void destroy() {
+        if (customPropFile.exists()) {
+            loadProperties(props, customPropFile);
+        }
+        String prop = props.getProperty("require.password", "false").toLowerCase();
+        passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
+        noAuthorizationRequiredPagesRedirect = csvToArray(filterconfig
+                .getInitParameter("no.login.required.redirect.to.home"));
+        noAuthorizationRequiredPages = csvToArray(filterconfig.getInitParameter("no.login.required"));
+        homePage = filterconfig.getInitParameter("home.page").trim();
+        loginPage = filterconfig.getInitParameter("login.page").trim();
+        redirectToFqHostName = Boolean.valueOf(props.getProperty("redirect.to.fq.host", "true"));
     }
-    
+
+    static void loadProperties(Properties props, File propFile) {
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(propFile);
+            props.load(fis);
+
+        } 
+        catch (IOException e) {
+            log.error(e);
+        } 
+        finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } 
+                catch (IOException e) {
+                }
+            }
+        }
+    }
+
+    private static String[] csvToArray(String s) {
+        if (s == null) {
+            return new String[0];
+        }
+        String[] tokens = s.split(",");
+        for (int i = 0; i < tokens.length; i++) {
+            tokens[i] = tokens[i].trim();
+        }
+        return tokens;
+    }
+
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) 
     throws IOException, ServletException 
     {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
-        //String requestedURI = request.getRequestURI();
         
         //if necessary, redirect to fully qualified host name
         if (redirectToFqHostName) { 
@@ -82,12 +135,6 @@ public class AuthenticationFilter implements Filter {
         }
         
         if (isAuthenticated(request)) {
-            //TODO: this is an artifact of gp-3.1 and earlier,
-            //      which uses a request attribute to get the current user
-            String userId = getUserId(request);
-            servletRequest.setAttribute(GPConstants.USERID, userId);
-            servletRequest.setAttribute("userID", userId); // old jsp pages use this
-
             if (isRedirectRequired(request)) {
                 //do redirect
                 boolean origin = request.getParameter("origin") != null;
@@ -113,59 +160,58 @@ public class AuthenticationFilter implements Filter {
             return;
         }
         //else, authentication is required
-        //implement default authentication 
-        response.sendRedirect(request.getContextPath() + loginPage);
-        return;
-    }
-
-    public void init(FilterConfig filterconfig) throws ServletException {
-        String dir = filterconfig.getInitParameter("genepattern.properties");
-        File propFile = new File(dir, "genepattern.properties");
-        File customPropFile = new File(dir, "custom.properties");
-        Properties props = new Properties();
-
-        if (propFile.exists()) {
-            loadProperties(props, propFile);
-        }
-
-        if (customPropFile.exists()) {
-            loadProperties(props, customPropFile);
-        }
-        String prop = props.getProperty("require.password", "false").toLowerCase();
-        passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
-        noAuthorizationRequiredPagesRedirect = csvToArray(filterconfig
-                .getInitParameter("no.login.required.redirect.to.home"));
-        noAuthorizationRequiredPages = csvToArray(filterconfig.getInitParameter("no.login.required"));
-        homePage = filterconfig.getInitParameter("home.page").trim();
-        loginPage = filterconfig.getInitParameter("login.page").trim();
-        redirectToFqHostName = Boolean.valueOf(props.getProperty("redirect.to.fq.host", "true"));
-    }
-
-    public void redirectToFullyQualifiedHostName(HttpServletRequest request, HttpServletResponse response) {
+        //try to authenticate ...
+        //two step process accommodates two types of use-cases
+        //1) authentication can be done directly with the request object, or
+        //2) authentication requires a login step (either via login form, or with an external server)
         try {
-            String fqHostName = System.getProperty("fullyQualifiedHostName");
-            if (fqHostName == null) {
-                fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
-            }
-            if (fqHostName.equals("localhost")) {
-                fqHostName = "127.0.0.1";
-            }
-            String queryString = request.getQueryString();
-            if (queryString == null) {
-                queryString = "";
-            } else {
-                queryString = "?" + queryString;
-            }
-            String portStr = "";
-            int port = request.getServerPort();
-            if (port > 0) {
-                portStr = ":"+port;
-            }
-            String fqAddress = request.getScheme() + "://" + fqHostName + portStr + request.getRequestURI() + queryString;
-            response.sendRedirect(fqAddress);
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
+            //because this can be called from a login servlet as well as from here ... 
+            //use a LoginManager class
+            //This is where the gp user account is created if necessary
+            LoginManager.instance().login(request, response, false);
         }
+        catch (AuthenticationException e) {
+            //ignore
+        }
+        if (isAuthenticated(request)) {
+            chain.doFilter(servletRequest, servletResponse);
+            return;
+        }
+        else {
+            //redirect to a login page
+            UserAccountManager.instance().getAuthentication().requestAuthentication(request, response);
+            return;
+        }
+    }
+
+    
+    public void destroy() {
+    }
+    
+    public void redirectToFullyQualifiedHostName(HttpServletRequest request, HttpServletResponse response) 
+    throws IOException
+    {
+        String fqHostName = System.getProperty("fullyQualifiedHostName");
+        if (fqHostName == null) {
+            fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
+        }
+        if (fqHostName.equals("localhost")) {
+            fqHostName = "127.0.0.1";
+        }
+        String queryString = request.getQueryString();
+        if (queryString == null) {
+            queryString = "";
+        } 
+        else {
+            queryString = "?" + queryString;
+        }
+        String portStr = "";
+        int port = request.getServerPort();
+        if (port > 0) {
+            portStr = ":"+port;
+        }
+        String fqAddress = request.getScheme() + "://" + fqHostName + portStr + request.getRequestURI() + queryString;
+        response.sendRedirect(fqAddress);
     }
 
     /**
@@ -184,25 +230,22 @@ public class AuthenticationFilter implements Filter {
         return fqHostName;
     }
 
-    protected String getUserId(HttpServletRequest request) {
-        if (request == null) {
-            return null;
-        }
-        HttpSession session = request.getSession();
-        if (session == null) {
-            return null;
-        }
-        return (String) session.getAttribute(GPConstants.USERID);
-    }
-
     /**
      * Authenticate the user by checking for the 'userid' session variable
      */
     protected boolean isAuthenticated(HttpServletRequest request) {
-        String userId = getUserId(request);
+        String userId = LoginManager.instance().getUserIdFromSession(request);
+
+        if (userId != null) {
+            //TODO: this is an artifact of gp-3.1 and earlier,
+            //      which uses a request attribute to get the current user        
+            request.setAttribute(GPConstants.USERID, userId);
+            request.setAttribute("userID", userId); // old jsp pages use this
+        }
+
         return userId != null;
     }
-    
+
     /**
      * Does the requested resource require authentication?
      * 
@@ -230,7 +273,7 @@ public class AuthenticationFilter implements Filter {
     }
     
     /**
-     * Is a redirect required when the resource is requested by authenticated user?
+     * Is a redirect required when the resource is requested by an authenticated user?
      */
     protected boolean isRedirectRequired(HttpServletRequest request) {
         String requestedURI = request.getRequestURI();
@@ -242,7 +285,19 @@ public class AuthenticationFilter implements Filter {
         return false;
     }
     
+    /**
+     * Special case when using default GenePattern authentication and the server configuration has changed from not requiring passwords to requiring passwords.
+     * Any user account created before passwords were required will be automatically redirected to the change password page the next time they log in.
+     * 
+     * @param request
+     * @param response
+     * @return
+     */
     protected boolean isChangePasswordRequired(HttpServletRequest request, HttpServletResponse response) {
+        if (!(UserAccountManager.instance().getAuthentication() instanceof DefaultGenePatternAuthentication)) {
+            //hack alert: special case should only apply for default genepattern authentication
+            return false;
+        }
         if (!passwordRequired) {
             return false;
         }
@@ -251,7 +306,7 @@ public class AuthenticationFilter implements Filter {
             return false;
         }
         
-        String userId = getUserId(request);
+        String userId = LoginManager.instance().getUserIdFromSession(request);
         HttpSession session = request.getSession(false);
         if (session != null) {
             HibernateUtil.beginTransaction();
@@ -281,36 +336,5 @@ public class AuthenticationFilter implements Filter {
         return ((p != null) && ("localhost".equals(rh)) && (numParams == 1));
     }
 
-    private String[] csvToArray(String s) {
-        if (s == null) {
-            return new String[0];
-        }
-        String[] tokens = s.split(",");
-        for (int i = 0; i < tokens.length; i++) {
-            tokens[i] = tokens[i].trim();
-        }
-        return tokens;
-    }
-
-    static void loadProperties(Properties props, File propFile) {
-        FileInputStream fis = null;
-        try {
-            fis = new FileInputStream(propFile);
-            props.load(fis);
-
-        } 
-        catch (IOException e) {
-            log.error(e);
-        } 
-        finally {
-            if (fis != null) {
-                try {
-                    fis.close();
-                } 
-                catch (IOException e) {
-                }
-            }
-        }
-    }
 
 }
