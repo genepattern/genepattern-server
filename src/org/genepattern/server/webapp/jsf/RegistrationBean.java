@@ -20,6 +20,8 @@ import javax.faces.component.UIInput;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.validator.ValidatorException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
@@ -129,10 +131,15 @@ public class RegistrationBean {
     public void registerUser(ActionEvent event) {
         try {
             UserAccountManager.instance().createUser(username, password, email);
-            LoginManager.instance().addUserIdToSession(UIBeanHelper.getRequest(), email);
+            LoginManager.instance().addUserIdToSession(UIBeanHelper.getRequest(), username);
             if (this.isJoinMailingList()){
                 sendJoinMailingListRequest();
             }
+            //redirect to main page
+            HttpServletRequest request = UIBeanHelper.getRequest();
+            HttpServletResponse response = UIBeanHelper.getResponse();
+            String contextPath = request.getContextPath();
+            response.sendRedirect( contextPath );
         } 
         catch (Exception e) {
             log.error(e);
