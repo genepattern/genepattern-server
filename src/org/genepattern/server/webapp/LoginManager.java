@@ -117,7 +117,7 @@ public class LoginManager {
         return (String) session.getAttribute(GPConstants.USERID);
     }
     
-    private void addUserIdToSession(HttpServletRequest request, String gp_username) {
+    public void addUserIdToSession(HttpServletRequest request, String gp_username) {
         HttpSession session = request.getSession();
         if (session == null) {
             //TODO: log exception

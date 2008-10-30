@@ -204,6 +204,7 @@ public class RegisterServerBean {
 
             saveIsRegistered();
             UserAccountManager.instance().createUser(email);
+            LoginManager.instance().addUserIdToSession(UIBeanHelper.getRequest(), email);
             LoginManager.instance().logUserLogin(email, UIBeanHelper.getRequest());
             error = false;              
             return "installFrame";
@@ -248,6 +249,7 @@ public class RegisterServerBean {
 		   // after each restart
 		   try {
 		       UserAccountManager.instance().createUser(email);
+		       LoginManager.instance().addUserIdToSession(UIBeanHelper.getRequest(), email);
 		       LoginManager.instance().logUserLogin(email, UIBeanHelper.getRequest());
 			   
 			   int responseCode = client.executeMethod(httppost);
