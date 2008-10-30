@@ -129,6 +129,7 @@ public class RegistrationBean {
     public void registerUser(ActionEvent event) {
         try {
             UserAccountManager.instance().createUser(username, password, email);
+            LoginManager.instance().addUserIdToSession(UIBeanHelper.getRequest(), email);
             LoginManager.instance().logUserLogin(username, UIBeanHelper.getRequest());
             if (this.isJoinMailingList()){
                 sendJoinMailingListRequest();
