@@ -130,7 +130,6 @@ public class RegistrationBean {
         try {
             UserAccountManager.instance().createUser(username, password, email);
             LoginManager.instance().addUserIdToSession(UIBeanHelper.getRequest(), email);
-            LoginManager.instance().logUserLogin(username, UIBeanHelper.getRequest());
             if (this.isJoinMailingList()){
                 sendJoinMailingListRequest();
             }

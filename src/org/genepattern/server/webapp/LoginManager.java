@@ -58,20 +58,31 @@ public class LoginManager {
         }
 
         addUserIdToSession(request, gp_username);
-        logUserLogin(gp_username, request);
 
         if (redirect) {
             redirect(request, response);
         }
     }
     
+    public void addUserIdToSession(HttpServletRequest request, String gp_username) {
+        HttpSession session = request.getSession();
+        if (session == null) {
+            //TODO: log exception
+            return;
+        }
+        session.setAttribute(GPConstants.USERID, gp_username);
+        session.setAttribute("userID", gp_username); //TODO: replace all references to 'userID' with 'userid'
+        
+        logUserLogin(gp_username, request);
+    }
+
     /**
      * Track of user login stats in the gp user database.
      * 
      * @param username
      * @param request
      */
-    public void logUserLogin(String username, HttpServletRequest request) {
+    private void logUserLogin(String username, HttpServletRequest request) {
         User user = new UserDAO().findById(username);
         if (user == null) {
             //TODO: log exception
@@ -83,6 +94,17 @@ public class LoginManager {
         user.setLastLoginIP(request.getRemoteAddr());
     }
     
+    public String getUserIdFromSession(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+        HttpSession session = request.getSession();
+        if (session == null) {
+            return null;
+        }
+        return (String) session.getAttribute(GPConstants.USERID);
+    }
+
     private void redirect(HttpServletRequest request, HttpServletResponse response) 
     throws IOException
     {
@@ -106,27 +128,4 @@ public class LoginManager {
         response.sendRedirect( contextPath );
     }
     
-    public String getUserIdFromSession(HttpServletRequest request) {
-        if (request == null) {
-            return null;
-        }
-        HttpSession session = request.getSession();
-        if (session == null) {
-            return null;
-        }
-        return (String) session.getAttribute(GPConstants.USERID);
-    }
-    
-    public void addUserIdToSession(HttpServletRequest request, String gp_username) {
-        HttpSession session = request.getSession();
-        if (session == null) {
-            //TODO: log exception
-            return;
-        }
-        request.getSession().setAttribute(GPConstants.USERID, gp_username);
-        request.getSession().setAttribute("userID", gp_username); //TODO: replace all references to 'userID' with 'userid'
-    }
-
-
-
 }

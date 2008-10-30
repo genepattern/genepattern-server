@@ -124,9 +124,8 @@ public class AuthenticationFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         
-        //if necessary, redirect to fully qualified host name
+        //if necessary, redirect to fully qualified host name so that only one cookie needs to be written
         if (redirectToFqHostName) { 
-            // redirect to fqHostName so that only one cookie needs to be written
             String serverName = servletRequest.getServerName();
             if (!getFQHostName().equalsIgnoreCase(serverName)) {
                 redirectToFullyQualifiedHostName(request, response);
@@ -159,15 +158,9 @@ public class AuthenticationFilter implements Filter {
             chain.doFilter(servletRequest, servletResponse);
             return;
         }
-        //else, authentication is required
-        //try to authenticate ...
-        //two step process accommodates two types of use-cases
-        //1) authentication can be done directly with the request object, or
-        //2) authentication requires a login step (either via login form, or with an external server)
+        //else, try to authenticate ...
         try {
-            //because this can be called from a login servlet as well as from here ... 
-            //use a LoginManager class
-            //This is where the gp user account is created if necessary
+            //The GenePattern user account is created in the login step if necessary
             LoginManager.instance().login(request, response, false);
         }
         catch (AuthenticationException e) {
@@ -178,7 +171,7 @@ public class AuthenticationFilter implements Filter {
             return;
         }
         else {
-            //redirect to a login page
+            //if authentication requires another step, redirect to a login page
             UserAccountManager.instance().getAuthentication().requestAuthentication(request, response);
             return;
         }
@@ -231,9 +224,12 @@ public class AuthenticationFilter implements Filter {
     }
 
     /**
-     * Authenticate the user by checking for the 'userid' session variable
+     * Check for the 'userid' session variable.
+     * 
+     * @return true if the user has already been authenticated in this web session.
      */
     protected boolean isAuthenticated(HttpServletRequest request) {
+        //Delegated to LoginManager because the same logic is applied from the LoginServlet.
         String userId = LoginManager.instance().getUserIdFromSession(request);
 
         if (userId != null) {
