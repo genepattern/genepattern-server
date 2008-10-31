@@ -7,9 +7,8 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.auth.DefaultGenePatternAuthentication;
-import org.genepattern.server.auth.HttpBasicAuthentication;
 import org.genepattern.server.auth.IAuthenticationPlugin;
-//import org.genepattern.server.auth.WorldAccessAuthentication;
+import org.genepattern.server.auth.NoAuthentication;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 
@@ -48,15 +47,10 @@ public class UserAccountManager {
                 try {
                     userAccountManager.authentication = (IAuthenticationPlugin) Class.forName(customAuthenticationClass).newInstance();
                 } 
-                catch (InstantiationException e) {
-                    log.error(e);
+                catch (final Exception e) {
+                    log.error("Failed to load custom authentication class: "+customAuthenticationClass, e);
+                    userAccountManager.authentication = new NoAuthentication(e);
                 } 
-                catch (IllegalAccessException e) {
-                    log.error(e);
-                } 
-                catch (ClassNotFoundException e) {
-                    log.error(e);
-                }
             }
         }
         return userAccountManager;

@@ -173,7 +173,6 @@ public class AuthenticationFilter implements Filter {
         else {
             //if authentication requires another step, redirect to a login page
             UserAccountManager.instance().getAuthentication().requestAuthentication(request, response);
-            return;
         }
     }
 
