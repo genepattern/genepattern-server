@@ -20,6 +20,8 @@ import org.genepattern.server.user.UserDAO;
  */
 public class UserAccountManager {
     private static Logger log = Logger.getLogger(UserAccountManager.class);
+    
+    public static final String PROP_AUTHENTICATION_CLASS = "authentication.class";
 
     //force use of factory methods
     private UserAccountManager() {
@@ -38,8 +40,24 @@ public class UserAccountManager {
                 createAccountAllowedProp.equals("y") || 
                 createAccountAllowedProp.equals("yes");
             
-            //userAccountManager.authentication = new DefaultGenePatternAuthentication();
-            userAccountManager.authentication = new HttpBasicAuthentication();
+            String customAuthenticationClass = System.getProperty(PROP_AUTHENTICATION_CLASS);
+            if (customAuthenticationClass == null) {
+                userAccountManager.authentication = new DefaultGenePatternAuthentication();
+            }
+            else {
+                try {
+                    userAccountManager.authentication = (IAuthenticationPlugin) Class.forName(customAuthenticationClass).newInstance();
+                } 
+                catch (InstantiationException e) {
+                    log.error(e);
+                } 
+                catch (IllegalAccessException e) {
+                    log.error(e);
+                } 
+                catch (ClassNotFoundException e) {
+                    log.error(e);
+                }
+            }
         }
         return userAccountManager;
     }
