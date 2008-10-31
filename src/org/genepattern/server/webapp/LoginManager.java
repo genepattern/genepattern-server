@@ -119,13 +119,19 @@ public class LoginManager {
     public void logout(HttpServletRequest request, HttpServletResponse response) 
     throws IOException
     {
-        HttpSession session = request.getSession();
-        session.removeAttribute(GPConstants.USERID);
-        session.invalidate();
+        String userid = getUserIdFromSession(request);
+        UserAccountManager.instance().getAuthentication().logout(userid, request, response);
 
-        //redirect to main page
+        HttpSession session = request.getSession();
+        if (session != null) {
+            session.removeAttribute(GPConstants.USERID);
+            session.invalidate();
+        }
+
+        //redirect to a page which doesn't require authentication
+        //UserAccountManager.instance().getAuthentication().requestAuthentication(request, response);
         String contextPath = request.getContextPath();
-        response.sendRedirect( contextPath );
+        response.sendRedirect( contextPath + "/pages/login.jsf" );
     }
     
 }

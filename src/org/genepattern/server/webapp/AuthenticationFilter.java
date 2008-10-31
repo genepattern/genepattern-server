@@ -233,7 +233,7 @@ public class AuthenticationFilter implements Filter {
         String userId = LoginManager.instance().getUserIdFromSession(request);
 
         if (userId != null) {
-            //TODO: this is an artifact of gp-3.1 and earlier,
+            //TODO: this is an artifact of gp-3.1.1 and earlier,
             //      which uses a request attribute to get the current user        
             request.setAttribute(GPConstants.USERID, userId);
             request.setAttribute("userID", userId); // old jsp pages use this

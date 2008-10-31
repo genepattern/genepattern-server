@@ -9,6 +9,12 @@ public interface IAuthenticationPlugin {
     /**
      * Redirect to login form.
      * 
+     * Use-case: A user-agent requests a resource which requires authentication. The session has not yet been authenticated,
+     * so the server requests authentication via this plugin. 
+     *
+     * It is up to the plugin to decide how to request authentication from the user-agent; one example is to redirect the
+     * user-agent to a login page.
+     * 
      * @param request
      * @param response
      * @throws IOException
@@ -24,9 +30,9 @@ public interface IAuthenticationPlugin {
      * @throws AuthenticationException
      */
     public String authenticate(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException;
-    
+
     /**
-     * Helper method (can be ignored) which authenticates given a username and some credentials such as a password.
+     * Helper method (can be ignored) which authenticates based on username and credentials such as a password.
      * 
      * @param user
      * @param credentials
@@ -34,4 +40,16 @@ public interface IAuthenticationPlugin {
      * @throws AuthenticationException
      */
     public boolean authenticate(String user, byte[] credentials) throws AuthenticationException;
+
+    /**
+     * Logout user from session.
+     * 
+     * Use-case: A user clicks on the GenePattern logout link.
+     * 
+     * @param GenePattern userid
+     * @param request
+     * @param response
+     */
+    public void logout(String userid, HttpServletRequest request, HttpServletResponse response);
+
 }

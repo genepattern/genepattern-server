@@ -1,11 +1,13 @@
 package org.genepattern.server;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.auth.DefaultGenePatternAuthentication;
+import org.genepattern.server.auth.HttpBasicAuthentication;
 import org.genepattern.server.auth.IAuthenticationPlugin;
 //import org.genepattern.server.auth.WorldAccessAuthentication;
 import org.genepattern.server.user.User;
@@ -36,8 +38,8 @@ public class UserAccountManager {
                 createAccountAllowedProp.equals("y") || 
                 createAccountAllowedProp.equals("yes");
             
-            userAccountManager.authentication = new DefaultGenePatternAuthentication();
-            //userAccountManager.authentication = new WorldAccessAuthentication();
+            //userAccountManager.authentication = new DefaultGenePatternAuthentication();
+            userAccountManager.authentication = new HttpBasicAuthentication();
         }
         return userAccountManager;
     }
@@ -136,6 +138,54 @@ public class UserAccountManager {
         (new UserDAO()).save(newUser);
     }
     
+    /**
+     * Authenticate using the username:password pair.
+     * This matches the credentials in the GenePattern user database.
+     * @param username
+     * @param password
+     * @return
+     * @throws AuthenticationException
+     */
+    public boolean authenticateUser(String username, byte[] password) throws AuthenticationException {
+        if (username == null) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME, "Missing required parmameter: username");
+        }
+
+        if (passwordRequired && password == null) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_CREDENTIALS, "Missing required parmameter: password");
+        }
+
+        User user = null;
+        try {
+            user = (new UserDAO()).findById(username);
+        }
+        catch (Error e) {
+            throw new AuthenticationException(AuthenticationException.Type.SERVICE_NOT_AVAILABLE, e.getLocalizedMessage());
+        }
+        if (user == null) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME, "User '"+username+"' is not registered.");
+        }
+
+        if (passwordRequired) {
+            String rawPasswordString = new String(password);
+            byte[] encryptedPassword = null;
+            try {
+                encryptedPassword = EncryptionUtil.encrypt(rawPasswordString);
+            }
+            catch (NoSuchAlgorithmException e) {
+                throw new AuthenticationException(AuthenticationException.Type.SERVICE_NOT_AVAILABLE, e.getLocalizedMessage());
+            }
+            boolean validPassword = Arrays.equals(encryptedPassword, user.getPassword());
+            if (!validPassword) {
+                throw new AuthenticationException(AuthenticationException.Type.INVALID_CREDENTIALS);
+            }
+            return true;
+        }
+        else {
+            return true;
+        }
+    }
+
     /**
      * Get the IAuthenticationPlugin for this GenePattern Server.
      * @return
