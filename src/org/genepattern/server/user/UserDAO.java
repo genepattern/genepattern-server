@@ -20,7 +20,10 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.BaseDAO;
 import org.genepattern.server.database.HibernateUtil;
+import org.hibernate.Criteria;
 import org.hibernate.Query;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Restrictions;
 
 /**
  * Home object for domain model class User.
@@ -37,6 +40,22 @@ public class UserDAO extends BaseDAO {
             return null;
         }
         return (User) HibernateUtil.getSession().get("org.genepattern.server.user.User", id);
+    }
+    
+    public User findByIdIgnoreCase(String id) {
+        if (id == null) {
+            return null;
+        }
+        
+        Criteria criteria = HibernateUtil.getSession().createCriteria(User.class);
+        Criterion criterion = Restrictions.ilike("userId", id);
+        criteria.add(criterion);
+
+        List results = criteria.list();
+        if (results != null && results.size() > 0) {
+            return (User) results.get(0);
+        }
+        return null;
     }
 
     public void setProperty(String userId, String key, String value) {
