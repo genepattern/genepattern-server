@@ -7,7 +7,7 @@ import java.util.Set;
  * 
  * @author pcarr
  */
-public interface IGroupManagerPlugin {
+public interface IGroupMembershipPlugin {
     /**
      * Get the set of groups which this GenePattern user is a member of.
      * @param user

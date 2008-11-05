@@ -17,13 +17,13 @@ import org.jdom.input.SAXBuilder;
  * 
  * @author pcarr
  */
-public class XmlGroupManager extends DefaultGroupManager {
+public class XmlGroupMembership extends DefaultGroupManager {
     
     /**
      * Initialize group membership from a file.
      * @param userGroupsXmlFile
      */
-    public XmlGroupManager(File userGroupsXmlFile) {
+    public XmlGroupMembership(File userGroupsXmlFile) {
         try {
             initUserGroupMap(userGroupsXmlFile);
         }
@@ -39,7 +39,7 @@ public class XmlGroupManager extends DefaultGroupManager {
      * Initialize group membership from an InputStream.
      * @param in
      */
-    public XmlGroupManager(InputStream in) {
+    public XmlGroupMembership(InputStream in) {
         try {
             initUserGroupMap(in);
         }

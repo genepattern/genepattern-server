@@ -9,9 +9,9 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.auth.DefaultGenePatternAuthentication;
 import org.genepattern.server.auth.IAuthenticationPlugin;
-//import org.genepattern.server.auth.IGroupMembershipPlugin;
+import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.auth.NoAuthentication;
-//import org.genepattern.server.auth.XmlGroupMembership;
+import org.genepattern.server.auth.XmlGroupMembership;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 
@@ -62,7 +62,7 @@ public class UserAccountManager {
     private boolean passwordRequired = true;
     private boolean createAccountAllowed = true;
     private IAuthenticationPlugin authentication = null;
-    //private IGroupMembershipPlugin groupMembership = null;
+    private IGroupMembershipPlugin groupMembership = null;
 
     /**
      * Flag indicating whether or not users can register new accounts via the web interface.
@@ -253,16 +253,16 @@ public class UserAccountManager {
         return authentication;
     }
     
-//    /**
-//     * Get the IGroupMembershipPlugin for this GenePattern Server.
-//     * @return
-//     */
-//    public IGroupMembershipPlugin getGroupMembership() {
-//        if (groupMembership == null) {
-//            File userGroupMapFile = new File(System.getProperty("genepattern.properties"), "userGroups.xml");
-//            groupMembership = new XmlGroupMembership(userGroupMapFile);
-//        }
-//        return groupMembership;
-//    }
+    /**
+     * Get the IGroupMembershipPlugin for this GenePattern Server.
+     * @return
+     */
+    public IGroupMembershipPlugin getGroupMembership() {
+        if (groupMembership == null) {
+            File userGroupMapFile = new File(System.getProperty("genepattern.properties"), "userGroups.xml");
+            groupMembership = new XmlGroupMembership(userGroupMapFile);
+        }
+        return groupMembership;
+    }
     
 }
