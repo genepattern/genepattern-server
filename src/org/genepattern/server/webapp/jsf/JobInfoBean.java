@@ -25,9 +25,9 @@ import java.util.Set;
 import javax.faces.FacesException;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.auth.GroupManagerFactory;
+import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.GroupPermission;
-import org.genepattern.server.auth.IGroupManagerPlugin;
+import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
@@ -140,9 +140,9 @@ public class JobInfoBean {
         }
         AnalysisDAO ds = new AnalysisDAO();
         Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(jobInfo.getJobNumber());
-        IGroupManagerPlugin groupManager = GroupManagerFactory.getGroupManager();
+        IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
         for(GroupPermission gp : groupPermissions) {
-            if (groupManager.isMember(userId, gp.getGroupId())) {
+            if (groupMembership.isMember(userId, gp.getGroupId())) {
                 if (write && gp.getPermission().canWrite()) {
                     return true;
                 }

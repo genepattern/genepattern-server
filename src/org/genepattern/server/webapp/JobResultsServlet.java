@@ -33,9 +33,9 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobIDNotFoundException;
-import org.genepattern.server.auth.GroupManagerFactory;
+import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.GroupPermission;
-import org.genepattern.server.auth.IGroupManagerPlugin;
+import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
@@ -187,9 +187,9 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
                     Set<GroupPermission> perm = ds.getGroupPermissions(jobID);
                     
                     //TODO: create helper function in group manager package
-                    IGroupManagerPlugin groupManager = GroupManagerFactory.getGroupManager();
+                    IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
                     for(GroupPermission gp : perm) {
-                        if (groupManager.isMember(useridFromSession, gp.getGroupId())) {
+                        if (groupMembership.isMember(useridFromSession, gp.getGroupId())) {
                             if (gp.getPermission().canRead()) {
                                 allowed = true;
                                 break;
