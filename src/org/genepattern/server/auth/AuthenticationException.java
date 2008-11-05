@@ -10,17 +10,34 @@ public class AuthenticationException extends Exception {
         SERVICE_NOT_AVAILABLE,
         INVALID_USERNAME,
         INVALID_CREDENTIALS;
+        
+        public String toString() {
+            String str = this.name().toLowerCase().replace('_', ' ');
+            return Character.toUpperCase(str.charAt(0)) + str.substring(1);
+        }
     }
     
     private Type type = null;
+    private String message = "";
 
-    public AuthenticationException(Type type, String...args) {
+    public AuthenticationException(Type type) {
+        this(type, type.toString());
+    }
+    public AuthenticationException(Type type, String message) {
         super(type.name());
-        
         this.type = type;
+        this.message = message;
     }
     
     public Type getType() {
         return type;
+    }
+    
+    public String getMessage() {
+        return message;
+    }
+    
+    public String getLocalizedMessage() {
+        return message;
     }
 }

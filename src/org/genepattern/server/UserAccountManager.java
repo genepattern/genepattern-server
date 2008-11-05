@@ -1,5 +1,6 @@
 package org.genepattern.server;
 
+import java.io.File;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Date;
@@ -8,7 +9,9 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.auth.DefaultGenePatternAuthentication;
 import org.genepattern.server.auth.IAuthenticationPlugin;
+//import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.auth.NoAuthentication;
+//import org.genepattern.server.auth.XmlGroupMembership;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 
@@ -59,6 +62,7 @@ public class UserAccountManager {
     private boolean passwordRequired = true;
     private boolean createAccountAllowed = true;
     private IAuthenticationPlugin authentication = null;
+    //private IGroupMembershipPlugin groupMembership = null;
 
     /**
      * Flag indicating whether or not users can register new accounts via the web interface.
@@ -77,13 +81,61 @@ public class UserAccountManager {
     }
 
     /**
+     * Validate the username before creating a new account.
+     * Prohibit creating new user accounts whose names differ only by case.
+     * 
+     * @param username
+     * @throws AuthenticationException
+     */
+    public void validateNewUsername(String username) throws AuthenticationException {
+        //1) is it a valid username
+        validateUsername(username);
+        //2) is it a unique username
+        User user = (new UserDAO()).findByIdIgnoreCase(username);
+        if (user != null) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
+                    "User already registered: "+user.getUserId());
+        }
+    }
+
+    /**
+     * Is the username valid for a GenePattern account. This does not check for similar names in the database.
+     * It just enforces any rules on what constitutes a valid name.
+     * <ul>
+     * <li>No space characters allowed at the beginning or end of the name.
+     * <li>Must map to valid filename on the servers file system. E.g. for unix, no '/' characters allowed.
+     * </ul>
+     * 
+     * @param username
+     * @throws AuthenticationException if the username is not valid
+     */
+    public void validateUsername(String username) throws AuthenticationException {
+        if (username == null) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
+                    "Username is null");
+        }
+        if (username.startsWith(" ")) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME, 
+                    "Invalid username: '"+username+"': Can't start with a space (' ') character.");
+        }
+        if (username.endsWith(" ")) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME, 
+                    "Invalid username: '"+username+"': Can't end with a space (' ') character.");
+        }
+        if (username.contains(File.separator)) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME, 
+                    "Invalid username: '"+username+"': Can't contain a file separator ('"+File.separator+"') character.");
+        }
+    }
+
+    /**
      * Is there already a GenePattern user account with this username.
      * 
      * @param username
      * @return
      */
     public boolean userExists(String username) {
-        User user = (new UserDAO()).findById(username);
+        User user = (new UserDAO()).findByIdIgnoreCase(username);
         return user != null;
     }
 
@@ -124,13 +176,8 @@ public class UserAccountManager {
      */
     public void createUser(String username, String password, String email) 
     throws AuthenticationException {
-        if (userExists(username)) {
-            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME, "User already registered: "+username);
-        }
+        validateNewUsername(username);
 
-        //TODO: apply rule: validate username
-        //TODO: apply rule: validate password
-        //TODO: apply rule: validate email
         if (password == null) {
             password = "";
         }
@@ -205,5 +252,17 @@ public class UserAccountManager {
     public IAuthenticationPlugin getAuthentication() {
         return authentication;
     }
+    
+//    /**
+//     * Get the IGroupMembershipPlugin for this GenePattern Server.
+//     * @return
+//     */
+//    public IGroupMembershipPlugin getGroupMembership() {
+//        if (groupMembership == null) {
+//            File userGroupMapFile = new File(System.getProperty("genepattern.properties"), "userGroups.xml");
+//            groupMembership = new XmlGroupMembership(userGroupMapFile);
+//        }
+//        return groupMembership;
+//    }
     
 }

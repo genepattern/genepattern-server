@@ -25,8 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
-import org.genepattern.server.user.User;
-import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.webapp.LoginManager;
 
 /**
@@ -210,24 +209,26 @@ public class RegistrationBean {
     }
 
     public void validateNewUsername(FacesContext context, UIComponent component, Object value)
-        throws ValidatorException {
-    User user = (new UserDAO()).findById(value.toString());
-    if (user != null) {
-        String message = "An account with this username already exists.  Please choose another.";
-        FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
-        ((UIInput) component).setValid(false);
-        throw new ValidatorException(facesMessage);
-    }
+    throws ValidatorException 
+    {
+        try {
+            UserAccountManager.instance().validateNewUsername(value.toString());
+        }
+        catch (AuthenticationException e) {
+            FacesMessage facesMessage = new FacesMessage(e.getLocalizedMessage());
+            ((UIInput) component).setValid(false);
+            throw new ValidatorException(facesMessage);
+        }
     }
 
     public void validatePassword(FacesContext context, UIComponent component, Object value) throws ValidatorException {
-    if (!value.equals(passwordConfirmComponent.getSubmittedValue())) {
-        String message = "Password entries do not match.";
-        FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
-        ((UIInput) component).setValid(false);
-        throw new ValidatorException(facesMessage);
-    }
-    }
+        if (!value.equals(passwordConfirmComponent.getSubmittedValue())) {
+            String message = "Password entries do not match.";
+            FacesMessage facesMessage = new FacesMessage(FacesMessage.SEVERITY_ERROR, message, message);
+            ((UIInput) component).setValid(false);
+            throw new ValidatorException(facesMessage);
+        }
+        }
     
     public boolean isShowTermsOfService() {
         return this.showTermsOfService;
