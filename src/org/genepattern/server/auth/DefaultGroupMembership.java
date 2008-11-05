@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-public class DefaultGroupManager implements IGroupMembershipPlugin {
+public class DefaultGroupMembership implements IGroupMembershipPlugin {
     protected static final Set<String> EMPTY_GROUPS = new HashSet<String>();
 
     public Set<String> wildcardGroups = new HashSet<String>();

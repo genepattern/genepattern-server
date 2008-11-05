@@ -8,6 +8,7 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.auth.DefaultGenePatternAuthentication;
+import org.genepattern.server.auth.DefaultGroupMembership;
 import org.genepattern.server.auth.IAuthenticationPlugin;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.auth.NoAuthentication;
@@ -24,6 +25,7 @@ public class UserAccountManager {
     private static Logger log = Logger.getLogger(UserAccountManager.class);
     
     public static final String PROP_AUTHENTICATION_CLASS = "authentication.class";
+    public static final String PROP_GROUP_MEMBERSHIP_CLASS = "group.membership.class";
 
     //force use of factory methods
     private UserAccountManager() {
@@ -54,6 +56,21 @@ public class UserAccountManager {
                     log.error("Failed to load custom authentication class: "+customAuthenticationClass, e);
                     userAccountManager.authentication = new NoAuthentication(e);
                 } 
+            }
+            
+            String customGroupMembershipClass = System.getProperty(PROP_GROUP_MEMBERSHIP_CLASS);
+            if (customGroupMembershipClass == null) {
+                File userGroupMapFile = new File(System.getProperty("genepattern.properties"), "userGroups.xml");
+                userAccountManager.groupMembership = new XmlGroupMembership(userGroupMapFile);                
+            }
+            else {
+                try {
+                    userAccountManager.groupMembership = (IGroupMembershipPlugin) Class.forName(customGroupMembershipClass).newInstance();
+                }
+                catch (Exception e) {
+                    log.error("Failed to load custom group membership class: "+customGroupMembershipClass, e);
+                    userAccountManager.groupMembership = new DefaultGroupMembership();
+                }
             }
         }
         return userAccountManager;
@@ -258,10 +275,6 @@ public class UserAccountManager {
      * @return
      */
     public IGroupMembershipPlugin getGroupMembership() {
-        if (groupMembership == null) {
-            File userGroupMapFile = new File(System.getProperty("genepattern.properties"), "userGroups.xml");
-            groupMembership = new XmlGroupMembership(userGroupMapFile);
-        }
         return groupMembership;
     }
     

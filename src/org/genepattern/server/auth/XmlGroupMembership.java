@@ -17,7 +17,7 @@ import org.jdom.input.SAXBuilder;
  * 
  * @author pcarr
  */
-public class XmlGroupMembership extends DefaultGroupManager {
+public class XmlGroupMembership extends DefaultGroupMembership {
     
     /**
      * Initialize group membership from a file.

@@ -11,7 +11,7 @@ import junit.framework.TestCase;
  * @author pcarr
  */
 public class XmlGroupManagerTest extends TestCase {
-    private XmlGroupManager groupManager = null;
+    private XmlGroupMembership groupManager = null;
 
     private InputStream input = null;
 
@@ -32,7 +32,7 @@ public class XmlGroupManagerTest extends TestCase {
         super.setUp();
         
         input = this.getClass().getResourceAsStream("userGroups.xml");
-        groupManager = new XmlGroupManager(input);
+        groupManager = new XmlGroupMembership(input);
     }
     
     public void testWildcardGroups() {
