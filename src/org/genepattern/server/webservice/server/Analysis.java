@@ -29,9 +29,9 @@ import javax.xml.soap.SOAPException;
 import org.apache.axis.MessageContext;
 import org.apache.axis.attachments.AttachmentPart;
 import org.apache.log4j.Logger;
-import org.genepattern.server.auth.GroupManagerFactory;
+import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.GroupPermission;
-import org.genepattern.server.auth.IGroupManagerPlugin;
+import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.handler.AddNewJobHandler;
@@ -639,9 +639,9 @@ public class Analysis extends GenericWebService {
             return;
         }
         Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(jobId);
-        IGroupManagerPlugin groupManager = GroupManagerFactory.getGroupManager();
+        IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
         for(GroupPermission gp : groupPermissions) {
-            if (groupManager.isMember(userId, gp.getGroupId())) {
+            if (groupMembership.isMember(userId, gp.getGroupId())) {
                 if (write && gp.getPermission().canWrite()) {
                     return;
                 }
