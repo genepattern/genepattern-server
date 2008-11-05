@@ -32,12 +32,12 @@ public interface IAuthenticationPlugin {
     public String authenticate(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException;
 
     /**
-     * Helper method (can be ignored) which authenticates based on username and credentials such as a password.
+     * Authenticate using the username and password passed in via a SOAP request.
      * 
      * @param user
      * @param credentials
-     * @return
-     * @throws AuthenticationException
+     * @return true iff the username and or credentials are not valid.
+     * @throws AuthenticationException to indicate invalid username or credentials.
      */
     public boolean authenticate(String user, byte[] credentials) throws AuthenticationException;
 
