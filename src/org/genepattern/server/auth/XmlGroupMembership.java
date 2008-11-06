@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -18,20 +19,31 @@ import org.jdom.input.SAXBuilder;
  * @author pcarr
  */
 public class XmlGroupMembership extends DefaultGroupMembership {
+    private static Logger log = Logger.getLogger(XmlGroupMembership.class);
     
     /**
+     * Create a new instance by reading the userGroups.xml file from the genepattern.properties directory.
+     */
+    public XmlGroupMembership() {
+        this((File)null);
+    }
+
+    /**
      * Initialize group membership from a file.
-     * @param userGroupsXmlFile
+     * @param userGroupsXmlFile - if this is null, use the default location for the userGroups.xml file.
      */
     public XmlGroupMembership(File userGroupsXmlFile) {
+        if (userGroupsXmlFile == null) {
+            userGroupsXmlFile = new File(System.getProperty("genepattern.properties"), "userGroups.xml");
+        }
         try {
             initUserGroupMap(userGroupsXmlFile);
         }
         catch (IOException e) {
-            //TODO: log exception
+            log.error("Didn't initialize group access permissions: "+e.getLocalizedMessage(), e);
         }
         catch (JDOMException e) {
-            //TODO: log exception
+            log.error("Didn't initialize group access permissions: "+e.getLocalizedMessage(), e);
         }
     }
 
@@ -44,17 +56,17 @@ public class XmlGroupMembership extends DefaultGroupMembership {
             initUserGroupMap(in);
         }
         catch (IOException e) {
-            //TODO: log exception
+            log.error("Didn't initialize group access permissions: "+e.getLocalizedMessage(), e);
         }
         catch (JDOMException e) {
-            //TODO: log exception
+            log.error("Didn't initialize group access permissions: "+e.getLocalizedMessage(), e);
         }
     }
 
     private void initUserGroupMap(File userGroupsXmlFile) throws IOException, JDOMException {
         InputStream is = null;
         if (!userGroupsXmlFile.exists()) {
-            //TODO: log error
+            log.error("Didn't initialize group access permissions! File doesn't exist: "+userGroupsXmlFile.getAbsolutePath());
             return;
         }
         is = new FileInputStream(userGroupsXmlFile);
