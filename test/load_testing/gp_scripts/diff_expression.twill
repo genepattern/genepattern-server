@@ -2,12 +2,39 @@
 #
 # requires login.twill
 
-# Step 1: PreprocessDataset
+# Step 0: Preprocess Dataset, Missing required params
+go /gp/pages/index.jsf?lsid=PreprocessDataset
+fv taskForm taskName PreprocessDataset
+submit
+code 200
+url /gp/submitJob.jsp
+find "The module could not be run. The following required parameters need to have values provided;"
+
+# Step 1: PreprocessDataset, upload file
+go /gp/pages/index.jsf?lsid=PreprocessDataset
+fv taskForm input.filename_cb file
+formfile taskForm input.filename all_aml_test.gct
+submit
+code 200
+url jobNumber=([0-9]*)
+echo jobNumber=${__match__}
+sleep 3
+go /gp/jobResults/${__match__}
+notfind Exception
+notfind stderr.txt
+find all_aml_test.preprocessed.gct
+
+# Step 2: PreprocessDataset, ftp file
 go /gp/pages/index.jsf?lsid=PreprocessDataset
 fv taskForm input.filename_cb url
 fv taskForm input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
 submit
 code 200
+url jobNumber=([0-9]*)
+echo jobNumber=${__match__}
+notfind Exception
+notfind stderr.txt
+go /gp/jobResults/${__match__}
 notfind Exception
 notfind stderr.txt
 find all_aml_test.preprocessed.gct
