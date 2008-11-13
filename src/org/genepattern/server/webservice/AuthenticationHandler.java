@@ -47,7 +47,7 @@ public class AuthenticationHandler extends GenePatternHandlerBase {
         
         // some methods may be exempted from password protection such as
         // Admin.getServiceInfo
-        // there are set in the server-config.wsdd as comma delimeted values
+        // there are set in the server-config.wsdd as comma delimited values
         // in the no.login.required parameter
         for (String meth: noLoginMethods){
             if (meth.equalsIgnoreCase(methodSig)) return;
@@ -58,13 +58,6 @@ public class AuthenticationHandler extends GenePatternHandlerBase {
 
         if (log.isDebugEnabled()) {
             log.debug("\tusername: "+username);
-            //don't log passwords!!!
-            //log.debug("\tpassword: "+password);
-            //what happened to log.trace()? 
-            //for(StackTraceElement elem : Thread.currentThread().getStackTrace()) {
-            //    log.trace("\tat "+elem.getClassName()+"."+elem.getMethodName()+
-            //        "("+elem.getMethodName()+":"+elem.getLineNumber()+")");
-            //}
         }
 
         boolean authenticated = false;
