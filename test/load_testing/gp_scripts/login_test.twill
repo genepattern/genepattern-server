@@ -1,10 +1,6 @@
 setlocal username test
 setlocal password test
 
-go /gp
-url /gp/pages/login.jsf
-fv loginForm username ${username}
-fv loginForm password ${password}
-submit
+go /gp/login?username=${username}&password=${password}
 code 200
 url /gp/pages/index.jsf

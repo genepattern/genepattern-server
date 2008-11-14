@@ -1,15 +1,9 @@
 #
-# Login to the GenePattern server
+# Login to the GenePattern 3.2+ server
 #
 # pass the server url as an arg, e.g.
 #   -u http://node255.broad.mit.edu:7070
 #   -u http://gpb67-896.broad.mit.edu:8080
-
-go /gp
-#url /gp/pages/login.jsf
-fv loginForm username test
-fv loginForm password test
-submit
+go /gp/login?username=test&password=test
 code 200
-#go /gp
-#url /gp/pages/index.jsf
+url /gp/pages/index.jsf

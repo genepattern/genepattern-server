@@ -1,3 +1,3 @@
-runfile login_protocols.twill
+runfile login.twill
 runfile protocols.twill
 
