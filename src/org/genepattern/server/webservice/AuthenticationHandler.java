@@ -18,8 +18,11 @@ import java.util.StringTokenizer;
 import org.apache.axis.AxisFault;
 import org.apache.axis.MessageContext;
 import org.apache.log4j.Logger;
+import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
+import org.genepattern.server.user.User;
+import org.genepattern.server.user.UserDAO;
 
 public class AuthenticationHandler extends GenePatternHandlerBase {
     private static Logger log = Logger.getLogger(AuthenticationHandler.class);
@@ -67,6 +70,13 @@ public class AuthenticationHandler extends GenePatternHandlerBase {
         }
         catch (AuthenticationException e) {
             throw new AxisFault(e.getType().toString());
+        }
+        
+        //special case for pipelines
+        if (!authenticated) {
+            byte[] encryptedPassword = EncryptionUtil.getInstance().getPipelineUserEncryptedPassword(new String(password));
+            User user = (new UserDAO()).findById(username);
+            authenticated = user != null && java.util.Arrays.equals(encryptedPassword, user.getPassword());
         }
 
         if (!authenticated) {
