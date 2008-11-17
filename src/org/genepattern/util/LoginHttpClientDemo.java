@@ -75,10 +75,12 @@ public class LoginHttpClientDemo {
         testLogin.setPassword(password);
         
         boolean is3_0 = false;
+        boolean is3_1 = false;
         try {
             AdminProxy admin = getAdmin(url, username, password);
             String v = getVersion(admin);
             is3_0 = v != null && v.startsWith("3.0");
+            is3_1 = v != null && (v.equals("3.1") || v.startsWith("3.1.1"));
         }
         catch (Exception e) {
             //TODO: plug in some sort of logging mechanism
@@ -91,6 +93,10 @@ public class LoginHttpClientDemo {
         if (is3_0) {
             out.print("logging in (to 3.0 server)...");
             state = testLogin.login3_0(client);
+        }
+        else if (is3_1) {
+            out.print("logging in (to 3.1 server)...");
+            state = testLogin.login3_1(client);
         }
         else {
             out.print("logging in...");
