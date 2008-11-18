@@ -21,17 +21,30 @@
 </table>
 <p>Find genes that are significantly differentially expressed between classes of samples.</p>
 
-
-<h2>Preliminaries</h2>
+<div class="steps">
+<h2>Before you begin</h2>
 <ul>
-<li><a href="GctResFiles.html">GCT or RES file</a> that contains the gene expression data.
+<li>Gene expression data must be in a <a href="GctResFiles.html">GCT or RES file</a>.
     <br />Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct">all_aml_test.gct</a>.</li>
-<li><a href="ClsFiles.html">CLS file</a> that identifies the class of each sample in the gene expression data.
+<li>The class of each sample must be identified in a <a href="ClsFiles.html">CLS file</a>.
     <br />Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls">all_aml_test.cls</a>.</li>
 </ul>
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td align="right">learn more:<br />
+    <a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_fileformats.html?gct">file formats</a>
+    </td>
+  </tr>
+</table>
 
+</div>
 <div class="steps">
   <h2>Step 1: PreprocessDataset</h2>
+  <p>Preprocess gene expression data 
+      to remove platform noise and genes that have little variation.
+Although researchers generally preprocess data before differential analysis if doing so removes relevant biological information, skip this step.</p>
+
+
   <div class="gpLinks">
   <ul>
     <li><a href="/gp/pages/index.jsf?lsid=PreprocessDataset" 
@@ -42,23 +55,20 @@
         >Open module with example data</a> in the GenePattern window.</li>
   </ul>
   </div>
-
-  <h5>What it does</h5>
-  <p>Use this module to filter the gene expression data. Preprocess the data to remove platform noise and genes that have little variation.
-      This module can preprocess the data in one or more ways (in this order):    </p>
+  <h5>Considerations</h5>
+  <ul>
+ <li>PreprocessDataset can preprocess the data in one or more ways (in this order):
   <ol>
     <li>Set threshold and ceiling values. Any value lower/higher than the threshold/ceiling
       value is reset to the threshold/ceiling value. </li>
-    <li>Convert each expression value to the log base 2 of the value (see Considerations). </li>
+    <li>Convert each expression value to the log base 2 of the value. </li>
     <li>Remove genes (rows) if a given number of its sample values are less than
       a given threshold. </li>
     <li>Remove genes (rows) that do not have a minimum fold change or expression
       variation. </li>
     <li>Discretize or normalize the data. </li>
-  </ol>
-  
-  <h5>Considerations</h5>
-  <ul>
+  </ol></li>
+
     <li>When using ratios to compare gene expression between samples, 
       convert values to log base 2 of the value to
       bring up- and down-regulated genes to the same scale. 
@@ -68,15 +78,31 @@
       check whether preprocessing steps have already been taken before 
       running the PreprocessDataset module. </li>
   </ul>
-  <div class="gpDocLinks">
-  <p>Module documentation: <a href="/gp/getTaskDoc.jsp?name=PreprocessDataset">PreprocessDataset.pdf <img src="/gp/images/pdf.jpg"/></a>
-  </p>
+  
+  
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td align="right">learn more:<br />
+    <a href="/gp/getTaskDoc.jsp?name=PreprocessDataset">PreprocessDataset</a>
+    </td>
+  </tr>
+</table>
   </div>
 
 </div>
 
 <div class="steps">
   <h2>Step 2: ComparativeMarkerSelection</h2>
+    <p>ComparativeMarkerSelection computes differential gene expression.
+  For each gene, it uses a test statistic to calculate the 
+      difference in gene expression between classes and then computes a p-value to estimate the 
+      significance of the test statistic score. </p>
+      <p>Because testing tens of thousands of genes simultaneously 
+      increases the possibility of mistakenly identifying a non-marker gene as a marker gene (a false positive), 
+      ComparativeMarkerSelection corrects for multiple hypothesis testing by computing both false discovery 
+      rates (FDR) and family-wise error rates (FWER). 
+      </p>
+
   
   <div class="gpLinks">
   <ul>
@@ -89,20 +115,8 @@
   </li>
   </ul>
   </div>
-
-  <h5>What it does</h5>
-  <p>Run the ComparativeMarkerSelection module to compute differential gene expression.</p>
-  <ul>
-    <li>For each gene, the module uses a test statistic to calculate the 
-      difference in gene expression between classes and then computes a p-value to estimate the 
-      significance of the test statistic score. Because testing tens of thousands of genes simultaneously 
-      increases the possibility of mistakenly identifying a non-marker gene as a marker gene (a false positive), 
-      ComparativeMarkerSelection corrects for multiple hypothesis testing by computing both false discovery 
-      rates (FDR) and family-wise error rates (FWER). 
-      Researchers generally identify marker genes based on FDR rather than the more conservative FWER.</li> 
-  </ul>
-
-  <h5>Considerations</h5>
+  
+    <h5>Considerations</h5>
   <ul>
     <li>If the data set includes at least 10 samples per class, use the default value of 1000 permutations 
       to ensure accurate <i>p</i>-values. If the data set includes fewer than 10 samples in any class, permuting the 
@@ -113,14 +127,23 @@
       (all pairs). </li>
   </ul>
 
-  <div class="gpDocLinks">
-  <p>Module documentation: <a href="/gp/getTaskDoc.jsp?name=ComparativeMarkerSelection">ComparativeMarkerSelection.pdf <img src="/gp/images/pdf.jpg"/></a></p>
-  </div>
+
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td align="right">learn more:<br />
+    <a href="../module_doc/cms.html">ComparativeMarkerSelection</a>
+    </td>
+  </tr>
+</table>
 </div>
 
-
+ 
 <div class="steps">
   <h2>Step 3: ComparativeMarkerSelectionViewer</h2>
+    <p>Run the ComparativeMarkerSelectionViewer module to view the results.
+  The viewer displays the test statistic score, its p value, two FDR statistics and three FWER statistics for each gene. 
+      </p>
+
   <div class="gpLinks">
   <ul>
      <li><a href="/gp/pages/index.jsf?lsid=ComparativeMarkerSelectionViewer"
@@ -131,15 +154,10 @@
          >Open module with example data</a></li>
   </ul>
   </div>
-  
-  <h5>What it does</h5>
-  <p>Run the ComparativeMarkerSelectionViewer module to view the results.</p>
-  <ul>
-    <li>The viewer displays the analysis results including 
-      the test statistic score, its p value, two FDR statistics and three FWER statistics for each gene. </li>
-  </ul>
   <h5>Considerations</h5>
   <ul>
+  <li>Generally,
+      researchers identify marker genes based on FDR rather than the more conservative FWER.</li>
     <li>Often, marker genes are identified based on an FDR cutoff value of .05, which 
       indicates that a gene identified as a marker gene has a 1 in 20 (5%) chance of being a false positive. 
       Select <i>Edit&gt;Filter Features&gt;Custom Filter</i> to filter results
@@ -147,10 +165,18 @@
     <li>Select <i>File&gt;Save Derived Dataset</i> to create a GCT file that contains
       a subset of the expression data. </li>
   </ul>
+  
+  
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td align="right">learn more:<br />
+    <a href="../module_doc/cms_viewer.html">ComparativeMarkerSelectionViewer</a>
+    </td>
+  </tr>
+</table>
 
-  <div class="gpDocLinks">
-  <p>Module documentation: <a href="/gp/getTaskDoc.jsp?name=ComparativeMarkerSelectionViewer">ComparativeMarkerSelectionViewer.pdf <img src="/gp/images/pdf.jpg"/></a></p>
-  </div>
+  
+
 </div>
 
  <h2>Reference</h2>
