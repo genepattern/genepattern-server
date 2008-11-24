@@ -43,7 +43,7 @@
 					GenePattern</span></td>
 					<td align="right"><h:outputLink
 						value="#{facesContext.externalContext.requestContextPath}/pages/registerUser.jsf"
-						rendered="#{loginBean.createAccountAllowed}">
+						rendered="#{loginBean.createAccountAllowed and loginBean.showRegistrationLink}">
 			    Click to register
 			  </h:outputLink></td>
 				</tr>

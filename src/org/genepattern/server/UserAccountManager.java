@@ -34,14 +34,18 @@ public class UserAccountManager {
     public static UserAccountManager instance() {
         if (userAccountManager == null) {
             userAccountManager = new UserAccountManager();
-            String prop = System.getProperty("require.password", "false").toLowerCase();
-            userAccountManager.passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
 
-            String createAccountAllowedProp = System.getProperty("create.account.allowed", "true").toLowerCase();
+            String prop = System.getProperty("require.password", "false").toLowerCase();
+            userAccountManager.passwordRequired = 
+                prop.equals("true") || prop.equals("y") || prop.equals("yes");
+
+            prop = System.getProperty("create.account.allowed", "true").toLowerCase();
             userAccountManager.createAccountAllowed = 
-                createAccountAllowedProp.equals("true") || 
-                createAccountAllowedProp.equals("y") || 
-                createAccountAllowedProp.equals("yes");
+                prop.equals("true") ||  prop.equals("y") || prop.equals("yes");
+            
+            prop = System.getProperty("show.registration.link", "true").toLowerCase();
+            userAccountManager.showRegistrationLink = 
+                prop.equals("true") ||  prop.equals("y") || prop.equals("yes");
             
             String customAuthenticationClass = System.getProperty(PROP_AUTHENTICATION_CLASS);
             if (customAuthenticationClass == null) {
@@ -77,6 +81,7 @@ public class UserAccountManager {
     
     private boolean passwordRequired = true;
     private boolean createAccountAllowed = true;
+    private boolean showRegistrationLink = true;
     private IAuthenticationPlugin authentication = null;
     private IGroupMembershipPlugin groupMembership = null;
 
@@ -86,6 +91,10 @@ public class UserAccountManager {
      */
     public boolean isCreateAccountAllowed() {
         return createAccountAllowed;
+    }
+    
+    public boolean isShowRegistrationLink() {
+        return showRegistrationLink;
     }
 
     /**

@@ -51,6 +51,10 @@ public class LoginBean {
     public boolean isCreateAccountAllowed() {
         return UserAccountManager.instance().isCreateAccountAllowed();
     }
+    
+    public boolean isShowRegistrationLink() {
+        return UserAccountManager.instance().isShowRegistrationLink();
+    }
 
     public boolean isInvalidPassword() {
         return invalidPassword;
