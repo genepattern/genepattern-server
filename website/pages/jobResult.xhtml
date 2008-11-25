@@ -15,6 +15,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:t="http://myfaces.apache.org/tomahawk"
 	xmlns:c="http://java.sun.com/jstl/core">
@@ -27,80 +28,160 @@
 			href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css"
 			rel="stylesheet" type="text/css" />
 		<script type="text/javascript"
-			src="#{facesContext.externalContext.requestContextPath}/js/jobResults.js" />
-		<script type="text/javascript"
 			src="#{facesContext.externalContext.requestContextPath}/js/collapsiblePanel.js" />
+			
+		<!-- Script which reloads the page -->
+        <t:div rendered="#{jobInfoBean.jobInfoWrapper.status != 'Finished' and jobInfoBean.jobInfoWrapper.status != 'Error'}">
+	        <script>
+	        function startRefreshTimer() { 
+	            var interval = 10000; //millis
+	            window.setTimeout(refresh, interval);
+	        }
+	        function refresh() {
+	        window.location.reload();
+	        }
+	        window.addEventListener("load", startRefreshTimer, false);
+	        </script>
+	        
+	        
+        </t:div>
+        <script type="text/javascript">
+	        
+	        function toggleInputParameters() {
+	        	var myDiv = document.getElementById("inputParametersDiv");
+	        	myDiv.style.display = myDiv.style.display == "none" ? "" : "none"; 
+	        }
+	        
+	        </script>
 	</ui:define>
 
 	<ui:define name="body">
-	<table width="100%"  border="0" cellpadding="0" cellspacing="0" class="barhead-task">
-     <tr>
-        <td>#{jobInfoBean.jobInfoWrapper.taskName} Status </td>
-     </tr>
-</table>
-<table width='100%' cellpadding="0">
-    <tr>
-      <td width="50px">
-  <!--   input name="stopCmd" id="stopCmd" type="button" value="Stop..." onclick="stopJob(this, <%= job.getJobNumber()%>)" class="little" -->
-      </td>
-        <td>
-            <h:outputText value="Running #{jobInfoBean.jobInfoWrapper.taskName} as job # #{jobInfoBean.jobNumber} on #{jobInfoBean.dateSubmitted}.">
-                <f:convertDateTime pattern="dd.MM.yyyy HH:mm" />
-            </h:outputText>
-        </td>
-    </tr>
-
-<tr><td>&nbsp;</td></tr>
-</table>
+	<t:div rendered="#{jobInfoBean.jobInfoWrapper.status != 'Finished' and jobInfoBean.jobInfoWrapper.status != 'Error'}">
+		<p>This page will reload every 10 seconds until your job is completed.  <a href="javascript:window.location.reload();">Click here</a> to reload manually.  You may navigate away from this page and your job will still finish.</p>
+	</t:div>
 	
-    <h2>Job #{jobInfoBean.jobNumber}: #{jobInfoBean.jobInfoWrapper.taskName}</h2>
-
-    <h:outputText rendered="#{! empty jobInfoBean.jobInfoWrapper.inputParameters}">
-    <b>Input Parameters</b>
-    <br />
-    <t:dataList var="p" value="#{jobInfoBean.jobInfoWrapper.inputParameters}">
-        <h:outputText>#{p.name}: </h:outputText>
-        <h:outputText rendered="#{p.url}">
-            <a href="#{p.value}">#{p.displayValue}</a>
-        </h:outputText>
-        <h:outputText rendered="#{!p.url and p.exists}">
-            <h:outputText rendered="#{!empty p.directory}">
-                <a href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.directory}/#{p.value}">#{p.displayValue}</a>
-            </h:outputText>
-            <h:outputText rendered="#{empty p.directory}">
-                <a href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.value}">#{p.displayValue}</a>
-            </h:outputText>
-        </h:outputText>
-        <h:outputText rendered="#{!p.url and !p.exists}">
-            #{p.displayValue}
-        </h:outputText>
-        <br />
-    </t:dataList>
-    </h:outputText>
-
-    <h:outputText rendered="#{!empty jobInfoBean.jobInfoWrapper.outputFiles}">
-    <br />
-    <b>Output Files</b>
-    <ol>
-        <t:dataList var="p" value="#{jobInfoBean.jobInfoWrapper.outputFiles}">
-            <li><h:outputText>
-                <a href="#{facesContext.externalContext.requestContextPath}/jobResults/#{p.jobNumber}/#{p.name}">#{p.name}</a>
-                </h:outputText></li>
-        </t:dataList>
-    </ol>
-    </h:outputText>
-
-<ol>
+	<br/>
+	<table width="100%"  border="0" cellpadding="0" cellspacing="0" class="barhead-task">
+     	<tr>
+        	<td>#{jobInfoBean.jobInfoWrapper.taskName} Status </td>
+    	</tr>
+	</table><br/>
+	<table width='100%' cellpadding="0" style="border-bottom: 1px solid gray">
+	    <tr>
+	      <td width="50px" style="text-align: center">
+	      <t:div rendered="#{jobInfoBean.jobInfoWrapper.status != 'Finished' and jobInfoBean.jobInfoWrapper.status != 'Error'}">
+          	<img src="/gp/images/runningJob.gif"/>
+          </t:div>
+          <t:div rendered="#{jobInfoBean.jobInfoWrapper.status == 'Finished'}">
+          	<img src="/gp/images/checkbox.gif" height="18"/>
+          </t:div>
+          <t:div rendered="#{jobInfoBean.jobInfoWrapper.status == 'Error'}">
+          	<img src="/gp/images/delete-icon.gif"/>
+          </t:div>
+          
+	  <!--   input name="stopCmd" id="stopCmd" type="button" value="Stop..." onclick="stopJob(this, <%= job.getJobNumber()%>)" class="little" -->
+	      </td>
+	        <td>
+	            <t:div rendered="#{jobInfoBean.jobInfoWrapper.status != 'Finished' and jobInfoBean.jobInfoWrapper.status != 'Error'}">
+	            	<h:outputText value="Running #{jobInfoBean.jobInfoWrapper.taskName} as job # #{jobInfoBean.jobNumber} on #{jobInfoBean.dateSubmitted}.">
+		                <f:convertDateTime pattern="dd.MM.yyyy HH:mm" />
+		            </h:outputText>
+	            </t:div>
+				<t:div rendered="#{jobInfoBean.jobInfoWrapper.status == 'Finished' or jobInfoBean.jobInfoWrapper.status == 'Error'}">
+		            <h:outputText value="#{jobInfoBean.jobInfoWrapper.status} running #{jobInfoBean.jobInfoWrapper.taskName} as job # #{jobInfoBean.jobNumber} on #{jobInfoBean.dateCompleted}.">
+		                <f:convertDateTime pattern="dd.MM.yyyy HH:mm" />
+	            	</h:outputText>	
+	            </t:div>
+	            <div>Elapsed time: #{jobInfoBean.jobInfoWrapper.elapsedTimeMillis} ms</div>
+	            <div><a href="#" onclick='window.open("#{facesContext.externalContext.requestContextPath}/pages/jobInfo.jsf?target=new&amp;jobNumber=#{jobInfoBean.jobNumber}", "Job #{jobInfoBean.jobNumber}","toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=300");return false'>click to view input parameters</a></div>
+	            </td></tr>
+	            <tr><td>&nbsp;</td><td>
+	            <h:outputText rendered="#{!empty jobInfoBean.jobInfoWrapper.outputFiles}">
+				 	<table>
+				 	<tr><td style="vertical-align: top">
+				    <b>Output Files:</b>
+				    </td><td style="vertical-align: top">
+					    <ol>
+					        <t:dataList var="p" value="#{jobInfoBean.jobInfoWrapper.outputFiles}">
+					            <li><h:outputText>
+					                <a href="#{facesContext.externalContext.requestContextPath}/jobResults/#{p.jobNumber}/#{p.name}">#{p.name}</a>
+					                </h:outputText></li>
+					        </t:dataList>
+					    </ol>
+					</td>
+					</tr>
+					</table>
+			    </h:outputText> 
+	        </td>
+	    </tr>
+	
+	<tr><td>&nbsp;</td></tr>
+	</table>
+	
+	<h:outputText rendered="#{fn:length(jobInfoBean.childJobs) gt 0}">
+	<div style="margin-left: 25px;">
+	<h3>Pipeline steps:</h3>
     <t:dataList var="child" value="#{jobInfoBean.childJobs}">
-        <li>
-        <h3>#{child.taskName}</h3>
-        </li>
-        <ui:include src="jobInfo-job.xhtml">
-            <ui:param name="jobInfoWrapper" value="#{child}" />
-        </ui:include>
+        <table width="100%"  border="0" cellpadding="0" cellspacing="0" class="barhead-task">
+     	<tr>
+        	<td>#{child.taskName} Status </td>
+    	</tr>
+	</table><br/>
+	<table width='100%' cellpadding="0" style="border-bottom: 1px solid gray">
+	    <tr>
+	      <td width="50px" style="text-align: center">
+	      <t:div rendered="#{child.status != 'Finished' and child.status != 'Error'}">
+          	<img src="/gp/images/runningJob.gif"/>
+          </t:div>
+          <t:div rendered="#{child.status == 'Finished'}">
+          	<img src="/gp/images/checkbox.gif" height="18"/>
+          </t:div>
+          <t:div rendered="#{child.status == 'Error'}">
+          	<img src="/gp/images/delete-icon.gif"/>
+          </t:div>
+          
+	  <!--   input name="stopCmd" id="stopCmd" type="button" value="Stop..." onclick="stopJob(this, <%= job.getJobNumber()%>)" class="little" -->
+	      </td>
+	        <td>
+	            <t:div rendered="#{child.status != 'Finished' and child.status != 'Error'}">
+	            	<h:outputText value="Running #{child.taskName} as job # #{child.jobNumber} on #{child.dateSubmitted}.">
+		                <f:convertDateTime pattern="dd.MM.yyyy HH:mm" />
+		            </h:outputText>
+	            </t:div>
+				<t:div rendered="#{child.status == 'Finished' or child.status == 'Error'}">
+		            <h:outputText value="#{child.status} running #{child.taskName} as job # #{child.jobNumber} on #{child.dateCompleted}.">
+		                <f:convertDateTime pattern="dd.MM.yyyy HH:mm" />
+	            	</h:outputText>	
+	            </t:div>
+	            <div>Elapsed time: #{child.elapsedTimeMillis} ms</div>
+	            <div><a href="#" onclick='window.open("#{facesContext.externalContext.requestContextPath}/pages/jobInfo.jsf?target=new&amp;jobNumber=#{child.jobNumber}", "Job #{child.jobNumber}","toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=300");return false'>click to view input parameters</a></div>
+	            </td></tr>
+	            <tr><td>&nbsp;</td><td>
+	            <h:outputText rendered="#{!empty child.outputFiles}">
+				 	<table cellpadding="0">
+				 	<tr><td style="vertical-align: top">
+				    <b>Output Files:</b>
+				    </td><td style="vertical-align: top">
+					    <ol>
+					        <t:dataList var="p" value="#{child.outputFiles}">
+					            <li><h:outputText>
+					                <a href="#{facesContext.externalContext.requestContextPath}/jobResults/#{p.jobNumber}/#{p.name}">#{p.name}</a>
+					                </h:outputText></li>
+					        </t:dataList>
+					    </ol>
+					</td>
+					</tr>
+					</table>
+			    </h:outputText> 
+	        </td>
+	    </tr>
+	
+	<tr><td>&nbsp;</td></tr>
+	</table>
     </t:dataList>
-</ol>
-    
+    </div>
+    </h:outputText>
+
 	</ui:define>
 </ui:composition>
 </html>
