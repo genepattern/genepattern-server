@@ -2,7 +2,7 @@ package org.genepattern.server.auth;
 
 import java.io.Serializable;
 
-public class GroupPermission implements Serializable {
+public class GroupPermission implements Comparable<GroupPermission>, Serializable {
     public enum Permission {
         NONE,
         READ_WRITE,
@@ -52,5 +52,26 @@ public class GroupPermission implements Serializable {
     
     public Permission getPermission() {
         return permission;
+    }
+
+    /**
+     * Default comparison between groups is based on case-insensitive on group id.
+     */
+    public int compareTo(GroupPermission to) {
+        if (this.groupId == null) {
+            if (to.groupId == null) {
+                return 0;
+            }
+            return -1;
+        }
+        if (to.groupId == null) {
+            return 1;
+        }
+        //by default compare the group id's
+        int rval = this.groupId.toLowerCase().compareTo(to.groupId.toLowerCase());
+        if (rval == 0) {
+            return this.permission.compareTo(to.permission);
+        }
+        return rval;
     }
 }
