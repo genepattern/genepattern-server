@@ -7,10 +7,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webapp.jsf.JobBean.OutputFileInfo;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
@@ -169,6 +173,28 @@ public class JobResultsWrapper {
 
     public String getUserId() {
         return jobInfo.getUserId();
+    }
+    
+    public List<GroupPermission> getGroupPermissions() {
+        AnalysisDAO ds = new AnalysisDAO();
+        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(jobInfo.getJobNumber());
+        
+        //sorted by group
+        SortedSet<GroupPermission> sorted = new TreeSet<GroupPermission>(groupPermissions);
+        return new ArrayList<GroupPermission>( sorted );
+    }
+    
+    public String getPermissionsLabel() {
+        List<GroupPermission> groups = getGroupPermissions();
+        if (groups == null || groups.size() == 0) {
+            return "";
+        }
+        String rval = "( ";
+        for (GroupPermission gp : groups) {
+            rval += gp.getGroupId() + " " + gp.getPermission() + ", ";
+        }
+        int idx = rval.lastIndexOf(", ");
+        return rval.substring(0, idx) + " )";
     }
 
     /**
