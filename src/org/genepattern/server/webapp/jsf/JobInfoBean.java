@@ -58,7 +58,9 @@ public class JobInfoBean {
         private Date dateCompleted;
         private List<InputParameter> inputParameters;
         private List<OutputParameter> outputFiles;
-
+        private long elapsedTimeMillis;
+		private int jobNumber;
+        
         public String getTaskName() {
             return taskName;
         }
@@ -83,44 +85,55 @@ public class JobInfoBean {
             return outputFiles;
         }
         
+        public long getElapsedTimeMillis() {
+        	if (dateSubmitted == null) return 0;
+        	else if (dateCompleted != null) return dateCompleted.getTime() - dateSubmitted.getTime();
+        	else return new Date().getTime() - dateSubmitted.getTime();
+        }
+        
+        public int getJobNumber() {
+        	return jobNumber;
+        }
+                
     }
 
     public JobInfoBean() {
 
-	genePatternUrl = UIBeanHelper.getServer();
-
-	try {
-	    requestedJobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter(
-		    "jobNumber")));
-	} catch (NumberFormatException e1) {
-	    log.error(e1);
-	    //throw new FacesException("Requested job not found.");
-	    return;
-	}
-	LocalAnalysisClient client = new LocalAnalysisClient(UIBeanHelper.getUserId());
-	try {
-	    JobInfo job = client.getJob(requestedJobNumber);
-
-	    jobInfoWrapper = createJobInfoWrapper(job);
-	    JobInfo[] children = new JobInfo[0];
-	    try {
-		children = client.getChildren(job.getJobNumber());
-	    } catch (Exception e) {
-
-		log.error(e.getMessage(), e);
-
-	    }
-
-	    childJobs = new JobInfoWrapper[children != null ? children.length : 0];
-	    if (children != null) {
-		for (int i = 0, length = children.length; i < length; i++) {
-		    childJobs[i] = createJobInfoWrapper(children[i]);
+		genePatternUrl = UIBeanHelper.getServer();
+	
+		try {
+		    requestedJobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter(
+			    "jobNumber")));
+		} catch (NumberFormatException e1) {
+		    log.error(e1);
+		    //throw new FacesException("Requested job not found.");
+		    return;
 		}
-	    }
-	} catch (WebServiceException e) {
-	    log.error(e);
-	    throw new FacesException("Job " + requestedJobNumber + " not found.");
-	}
+		LocalAnalysisClient client = new LocalAnalysisClient(UIBeanHelper.getUserId());
+		try {
+		    JobInfo job = client.getJob(requestedJobNumber);
+	
+		    
+		    jobInfoWrapper = createJobInfoWrapper(job);
+		    JobInfo[] children = new JobInfo[0];
+		    try {
+		    	children = client.getChildren(job.getJobNumber());
+		    } catch (Exception e) {
+	
+		    	log.error(e.getMessage(), e);
+	
+		    }
+	
+		    childJobs = new JobInfoWrapper[children != null ? children.length : 0];
+		    if (children != null) {
+				for (int i = 0, length = children.length; i < length; i++) {
+				    childJobs[i] = createJobInfoWrapper(children[i]);
+				}
+		    }
+		} catch (WebServiceException e) {
+		    log.error(e);
+		    throw new FacesException("Job " + requestedJobNumber + " not found.");
+		}
     }
 
     //TODO: create helper function in group manager package
@@ -286,6 +299,7 @@ public class JobInfoBean {
         jobInfoWrapper.dateCompleted = job.getDateCompleted();
         jobInfoWrapper.outputFiles = outputFiles;
         jobInfoWrapper.inputParameters = inputs;
+        jobInfoWrapper.jobNumber = job.getJobNumber();
         return jobInfoWrapper;
     }
 
