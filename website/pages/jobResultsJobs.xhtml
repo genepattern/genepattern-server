@@ -23,9 +23,11 @@
     <!--  job row -->
     <tr id="job_row_#{jobWrapper.jobNumber}" class="#{jobWrapper.level == 0 ? 'task-titlerow' : 'pipelinetask-titlerow'}">
       <td>
+        <h:outputLink value="/gp/jobResults/#{jobWrapper.jobNumber}">
         <h:outputText>
           #{jobWrapper.jobNumber}
         </h:outputText>
+        </h:outputLink>
         <!--  Hidden field to hold the expansion state.  -->
         <input type="hidden" id="expansion_state_#{jobWrapper.jobNumber}"
                name="expansion_state_#{jobWrapper.jobNumber}" value="#{jobWrapper.expanded}"/>
