@@ -1,6 +1,8 @@
 package org.genepattern.server.auth;
 
-public class GroupPermission {
+import java.io.Serializable;
+
+public class GroupPermission implements Serializable {
     public enum Permission {
         NONE,
         READ_WRITE,

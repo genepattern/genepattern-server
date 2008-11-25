@@ -55,13 +55,59 @@
           <input type="hidden" id="taskName" name="taskName" value="#{runTaskBean.name}"/>
           <table border="0" cellpadding="5" cellspacing="0" class="attribute" valign="top">
             <tbody>
+            <!-- set user access permissions -->
+              <tr>
+              <td colspan="3">
+              <table>
+              <tr><td>job owner:</td><td><em>${requestScope.userID}</em></td></tr>
+             
+              <!-- another way to do it, JSF components, but won't work because we submit to a .jsp -->
+              <tr><td>group access:</td>
+                  <td>
+                    <!-- manually construct the menu, because this form is processed by a JSP rather than a JSF -->
+                    <select name="groupAccess" id="groupAccess">
+                      <option value="">Private</option>
+                      <t:dataList value="#{userPrefsBean.groups}" var="group">
+                      <h:outputText>
+                        <option value="#{group}:RW">#{group} - View and edit</option>
+                      </h:outputText>
+                      <h:outputText>
+                        <option value="#{group}:R">#{group} - View</option>
+                      </h:outputText>
+                      </t:dataList>
+                    </select>
+                  </td>
+                  <td><a href="#" onClick="alert('to do, remove this row');">remove</a></td>
+                  <td><em></em></td>
+              </tr> 
+              <tr>
+              <td></td>
+              <td><a href="#" onClick="alert('to do, add another row');">add</a></td>
+              <td></td>
+              </tr>
+
+              <tr><td>public access:</td>
+                  <td><select name="publicAccess" id="publicAccess">
+                      <option value="">Private</option>                      
+                      <option value="public:RW">View and edit</option>                      
+                      <option value="public:R">View</option>
+                    </select>
+                  </td>
+                  <td></td>
+                  <td></td>
+              </tr>              
+              </table>
+              </td>
+              </tr>
+              <!--  set user access permissions --> 
+
               <tr class="taskperameter">
                 <td>
                   <span class="description">
                     <h:outputText rendered="#{runTaskBean.inputParametersExist}">* required field</h:outputText>
                   </span>
                 </td>
-                <td colspan="2" class="maintasknav2">
+                <td colspan="2" class="maintasknav2"> 
                   <input id="cmd1" name="cmd1" value="Run" type="submit"/>
                   <input id="reset" name="reset" value="Reset" type="button"
                          onclick="document.location='#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{runTaskBean.encodedLsid}'"/> &#160;&#160;

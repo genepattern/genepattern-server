@@ -12,17 +12,18 @@
 
 package org.genepattern.server.handler;
 
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.TaskIDNotFoundException;
+import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
-
-// import edu.mit.wi.omnigene.omnidas.*;
 
 /**
  * AddNewJobHandler to submit a job request and get back <CODE>JobInfo</CODE>
@@ -32,15 +33,13 @@ import org.genepattern.webservice.ParameterInfo;
  */
 
 public class AddNewJobHandler extends RequestHandler {
-    
     private static Logger log = Logger.getLogger(AddNewJobHandler.class);
     protected int taskID = 1;
-    
-    protected String parameter_info = "", inputFileName = "";
-    
+    protected String parameter_info = "";
+    protected String inputFileName = "";
     protected ParameterInfo[] parameterInfoArray = null;
-    
     protected String userID;
+    private Set<GroupPermission> groupPermissions = null;
     
     protected int parentJobID;
     
@@ -87,6 +86,10 @@ public class AddNewJobHandler extends RequestHandler {
         hasParent = true;
     }
     
+    public void setGroupPermissions(Set<GroupPermission> groupPermissions) {
+        this.groupPermissions = groupPermissions;
+    }
+    
     /**
      * Creates job. Call this fun. if you need JobInfo object
      *
@@ -110,14 +113,26 @@ public class AddNewJobHandler extends RequestHandler {
             // Invoke EJB function
             if (hasParent) {
                 ji = ds.addNewJob(taskID, userID, parameter_info, parentJobID);
-            } else {
+            } 
+            else {
                 ji = ds.addNewJob(taskID, userID, parameter_info, -1);
             }
+
+            // Checking for null
+            if (ji == null) {
+                HibernateUtil.rollbackTransaction();
+                throw new OmnigeneException(
+                    "AddNewJobRequest:executeRequest Operation failed, null value returned for JobInfo");
+            }
+            
+            // Insert group permissions information
+            if (groupPermissions != null && groupPermissions.size() > 0) {
+                ds.setGroupPermissions(ji.getJobNumber(), groupPermissions);
+            }
+
             HibernateUtil.commitTransaction();
             
-            // Checking for null
-            if (ji == null) throw new OmnigeneException(
-                    "AddNewJobRequest:executeRequest Operation failed, null value returned for JobInfo");
+            
             if(log.isDebugEnabled()) {
                 log.debug("Waking up job queue");
             }
@@ -125,11 +140,13 @@ public class AddNewJobHandler extends RequestHandler {
             
             // Reparse parameter_info before sending to client
             ji.setParameterInfoArray(pfc.getParameterInfoArray(parameter_info));
-        } catch (TaskIDNotFoundException taskEx) {
+        } 
+        catch (TaskIDNotFoundException taskEx) {
             HibernateUtil.rollbackTransaction();
             log.error("AddNewJob(executeRequest) " + taskID, taskEx);
             throw taskEx;
-        } catch (Exception ex) {
+        } 
+        catch (Exception ex) {
             HibernateUtil.rollbackTransaction();
             log.error("AddNewJob(executeRequest): Error ",  ex);
             throw new OmnigeneException(ex.getMessage());

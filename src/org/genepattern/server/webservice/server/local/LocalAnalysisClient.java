@@ -13,12 +13,15 @@
 package org.genepattern.server.webservice.server.local;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.handler.AddNewJobHandlerNoWakeup;
@@ -89,21 +92,21 @@ public class LocalAnalysisClient {
     // in this submission, we do not expect files to all be data handlers, but rather to really be files
     // that do not need to be renamed
     public JobInfo submitJob(int taskID, ParameterInfo[] parameters) throws WebServiceException {
-
-	Thread.yield(); // JL: fixes BUG in which responses from AxisServlet are
-	// sometimes empty
-
-	JobInfo jobInfo = null;
-
-	AddNewJobHandler req = new AddNewJobHandler(taskID, userName, parameters);
-	jobInfo = req.executeRequest();
-
-	return jobInfo;
-
+        return submitJob(taskID, parameters, new HashSet<GroupPermission>());
     }
 
     public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files) throws WebServiceException {
 	return service.submitJob(taskID, parameters, files);
+    }
+    
+    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Set<GroupPermission> groupPermissions) {
+        // JL: fixes BUG in which responses from AxisServlet are sometimes empty
+        Thread.yield(); 
+
+        AddNewJobHandler req = new AddNewJobHandler(taskID, userName, parameters);
+        req.setGroupPermissions(groupPermissions);
+        JobInfo jobInfo = req.executeRequest();
+        return jobInfo;
     }
 
     /**

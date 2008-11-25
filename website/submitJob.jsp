@@ -65,7 +65,7 @@
     ParameterInfo[] paramInfos = task.getParameterInfoArray();
     paramInfos = paramInfos == null ? paramInfos = new ParameterInfo[0] : paramInfos;
     LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);        
-    JobInfo job = analysisClient.submitJob(task.getID(), paramInfos);
+    JobInfo job = analysisClient.submitJob(task.getID(), paramInfos, runTaskHelper.getGroupPermissions());
     String jobId = "" + job.getJobNumber();
     response.sendRedirect("/gp/pages/jobResult.jsf?jobNumber="+jobId);
 %>

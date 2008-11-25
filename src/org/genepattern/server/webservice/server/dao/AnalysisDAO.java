@@ -88,7 +88,12 @@ public class AnalysisDAO extends BaseDAO {
         return this.addNewJob(taskID, user_id, parameter_info, taskName, parentJobNumber, task_lsid, JobStatus.JOB_PENDING);
     }
 
-    public Integer addNewJob(int taskID, String user_id, String parameter_info, String taskName, Integer parentJobNumber, String task_lsid, int status) {
+    public Integer addNewJob(int taskID, String user_id, String parameter_info, String taskName, Integer parentJobNumber, String task_lsid, int status) {        
+        Set<GroupPermission> groupPermissions = new HashSet<GroupPermission>();
+        return this.addNewJob(taskID, user_id, groupPermissions, parameter_info, taskName, parentJobNumber, task_lsid, status);
+    }
+
+    public Integer addNewJob(int taskID, String user_id, Set<GroupPermission> groupPermissions, String parameter_info, String taskName, Integer parentJobNumber, String task_lsid, int status) {
         int updatedRecord = 0;
         String lsid = null;
         // Check taskID is valid
@@ -119,12 +124,11 @@ public class AnalysisDAO extends BaseDAO {
         aJob.setJobStatus(js);
 
         Integer jobId = (Integer) getSession().save(aJob);
-        
+
         //optionally save group permissions with the job
-        Set<GroupPermission> gp = new HashSet<GroupPermission>();
-        gp.add(new GroupPermission("public", GroupPermission.Permission.READ));
-        setGroupPermissions(jobId.intValue(), gp);
-        
+        if (groupPermissions != null && groupPermissions.size() > 0) {
+            setGroupPermissions(jobId.intValue(), groupPermissions);
+        }
         return jobId;
     }
 
@@ -153,6 +157,10 @@ public class AnalysisDAO extends BaseDAO {
         Query query = HibernateUtil.getSession().createQuery("delete JobGroup where jobNo = ?");
         query.setInteger(0, jobId);
         query.executeUpdate();
+        
+        if (groupPermissions == null) {
+            return;
+        }
         
         for(GroupPermission gp : groupPermissions) {
             JobGroup jg = new JobGroup();
