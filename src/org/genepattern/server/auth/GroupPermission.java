@@ -12,11 +12,11 @@ public class GroupPermission implements Comparable<GroupPermission>, Serializabl
             return this.ordinal();
         }
 
-        public boolean canWrite() {
+        public boolean getWrite() {
             return this == READ_WRITE;
         }
 
-        public boolean canRead() {
+        public boolean getRead() {
             return this == READ || this == READ_WRITE;
         }
     };

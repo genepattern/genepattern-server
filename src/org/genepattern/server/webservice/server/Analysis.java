@@ -642,10 +642,10 @@ public class Analysis extends GenericWebService {
         IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
         for(GroupPermission gp : groupPermissions) {
             if (groupMembership.isMember(userId, gp.getGroupId())) {
-                if (write && gp.getPermission().canWrite()) {
+                if (write && gp.getPermission().getWrite()) {
                     return;
                 }
-                else if (gp.getPermission().canRead()) {
+                else if (gp.getPermission().getRead()) {
                     return;
                 }
             }

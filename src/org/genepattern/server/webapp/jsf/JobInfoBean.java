@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.faces.FacesException;
 
@@ -60,6 +62,7 @@ public class JobInfoBean {
         private List<OutputParameter> outputFiles;
         private long elapsedTimeMillis;
 		private int jobNumber;
+		private GroupPermission[] permissions = {};
         
         public String getTaskName() {
             return taskName;
@@ -88,13 +91,36 @@ public class JobInfoBean {
         public long getElapsedTimeMillis() {
         	if (dateSubmitted == null) return 0;
         	else if (dateCompleted != null) return dateCompleted.getTime() - dateSubmitted.getTime();
-        	else return new Date().getTime() - dateSubmitted.getTime();
+        	else if (!"finished".equals(getStatus())) return new Date().getTime() - dateSubmitted.getTime();
+        	else return 0;
         }
         
         public int getJobNumber() {
         	return jobNumber;
         }
-                
+         
+        public List<GroupPermission> getGroupPermissions() {
+            AnalysisDAO ds = new AnalysisDAO();
+            Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(jobNumber);
+            
+            //sorted by group
+            SortedSet<GroupPermission> sorted = new TreeSet<GroupPermission>(groupPermissions);
+            return new ArrayList<GroupPermission>( sorted );
+        }
+        
+        public String getPermissionsLabel() {
+            List<GroupPermission> groups = getGroupPermissions();
+            if (groups == null || groups.size() == 0) {
+                return "";
+            }
+            String rval = "";
+            for (GroupPermission gp : groups) {
+                rval += gp.getGroupId() + " " + gp.getPermission() + ", ";
+            }
+            int idx = rval.lastIndexOf(", ");
+            return rval.substring(0, idx) + "";
+        }
+        
     }
 
     public JobInfoBean() {
@@ -156,10 +182,10 @@ public class JobInfoBean {
         IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
         for(GroupPermission gp : groupPermissions) {
             if (groupMembership.isMember(userId, gp.getGroupId())) {
-                if (write && gp.getPermission().canWrite()) {
+                if (write && gp.getPermission().getWrite()) {
                     return true;
                 }
-                else if (gp.getPermission().canRead()) {
+                else if (gp.getPermission().getRead()) {
                     return true;
                 }
             }

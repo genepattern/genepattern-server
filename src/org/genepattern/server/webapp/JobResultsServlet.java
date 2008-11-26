@@ -190,7 +190,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
                     IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
                     for(GroupPermission gp : perm) {
                         if (groupMembership.isMember(useridFromSession, gp.getGroupId())) {
-                            if (gp.getPermission().canRead()) {
+                            if (gp.getPermission().getRead()) {
                                 allowed = true;
                                 break;
                             }

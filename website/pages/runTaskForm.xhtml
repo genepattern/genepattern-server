@@ -21,6 +21,9 @@
         <table width="100%
                 " border="0" cellspacing="0" cellpadding="0">
           <tr>
+          	<td>
+          		<a href="#" onclick="document.getElementById('permissionDiv').style.display = (document.getElementById('permissionDiv').style.display == 'none' ? '' : 'none'); document.getElementById('userGroupText').innerHTML = (document.getElementById('userGroupText').innerHTML == 'edit' ? 'hide' : 'edit');"><img border="0" src="/gp/images/group.gif"/> <span id="userGroupText">edit</span> group permissions</a>
+          	</td>
             <td valign="top" class="maintasknav" id="maintasknav">
               <form id="toggleDescForm">
               <h:outputText rendered="#{runTaskBean.showParameterDescriptions}">
@@ -32,7 +35,37 @@
               </form>
             </td>
           </tr>
+          <tr>
+          	<td colspan="2">
+          	<div id="permissionDiv" style="display: none; margin: 5px;">               
+		      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+		       	<tr class="tableheader-row">
+		       		<th align="left">group</th>
+		       		<th>read</th>
+		       		<th>read/write</th>
+		        </tr>
+		        <t:dataList value="#{userPrefsBean.groups}" var="group">
+		        <tr class="task-titlerow">
+		        	<td><h:outputText>#{group}</h:outputText></td>
+		        	<td align="center"><input id="perm#{group}R" type="checkbox" value="R"/></td>
+		        	<td align="center"><input id="perm#{group}RW" type="checkbox" value="RW"/></td>
+				</tr>
+				</t:dataList>
+			  </table>                  
+              </div>
+              </td>
+          </tr>
         </table>
+        <script type="text/javascript">
+        	function constructPermissions() {
+        		var permString = "";
+        		<t:dataList value="#{userPrefsBean.groups}" var="group">
+        			if (document.getElementById('perm#{group}RW').checked) permString += '#{group}:RW,';
+        			else if (document.getElementById('perm#{group}R').checked) permString += '#{group}:R,';
+        		</t:dataList>
+        		document.getElementById("groupAccessHidden").value = permString;
+        	}
+        </script>
         <table width="100%" border="0" cellpadding="0" cellspacing="0" class="barhead-task">
           <tr>
             <td>#{runTaskBean.name}</td>
@@ -50,57 +83,12 @@
             </td>
           </tr>
         </table>
-        <form action="#{facesContext.externalContext.requestContextPath}/#{runTaskBean.formAction}" method="post" id="taskForm" enctype="multipart/form-data" onsubmit="return validateForm();">
+        <form action="#{facesContext.externalContext.requestContextPath}/#{runTaskBean.formAction}" method="post" id="taskForm" enctype="multipart/form-data" onsubmit="constructPermissions(); return validateForm();">
           <input type="hidden" id="taskLSID" name="taskLSID" value="#{runTaskBean.encodedLsid}"/>
           <input type="hidden" id="taskName" name="taskName" value="#{runTaskBean.name}"/>
+          <input type="hidden" id="groupAccessHidden" name="groupAccess" value=""/>
           <table border="0" cellpadding="5" cellspacing="0" class="attribute" valign="top">
             <tbody>
-            <!-- set user access permissions -->
-              <tr>
-              <td colspan="3">
-              <table>
-              <tr><td>job owner:</td><td><em>${requestScope.userID}</em></td></tr>
-             
-              <!-- another way to do it, JSF components, but won't work because we submit to a .jsp -->
-              <tr><td>group access:</td>
-                  <td>
-                    <!-- manually construct the menu, because this form is processed by a JSP rather than a JSF -->
-                    <select name="groupAccess" id="groupAccess">
-                      <option value="">Private</option>
-                      <t:dataList value="#{userPrefsBean.groups}" var="group">
-                      <h:outputText>
-                        <option value="#{group}:RW">#{group} - View and edit</option>
-                      </h:outputText>
-                      <h:outputText>
-                        <option value="#{group}:R">#{group} - View</option>
-                      </h:outputText>
-                      </t:dataList>
-                    </select>
-                  </td>
-                  <td><a href="#" onClick="alert('to do, remove this row');">remove</a></td>
-                  <td><em></em></td>
-              </tr> 
-              <tr>
-              <td></td>
-              <td></td>
-              <td><a href="#" onClick="alert('to do, add another row');">add</a></td>
-              </tr>
-
-              <tr><td>public access:</td>
-                  <td><select name="publicAccess" id="publicAccess">
-                      <option value="">Private</option>                      
-                      <option value="public:RW">View and edit</option>                      
-                      <option value="public:R">View</option>
-                    </select>
-                  </td>
-                  <td></td>
-                  <td></td>
-              </tr>              
-              </table>
-              </td>
-              </tr>
-              <!--  set user access permissions --> 
-
               <tr class="taskperameter">
                 <td>
                   <span class="description">

@@ -275,47 +275,48 @@ public class RunTaskHelper {
         this.groupPermissions = new HashSet<GroupPermission>();
 
         String groupAccessValue = requestParameters.remove("groupAccess");
-        String publicAccessValue = requestParameters.remove("publicAccess");
         
-        GroupPermission p = parseRequestValue(groupAccessValue);
-        if (p != null) {
-            groupPermissions.add(p);
-        }
-        p = parseRequestValue(publicAccessValue);
-        if (p != null) {
-            groupPermissions.add(p);
+        List<GroupPermission> permissions = parseRequestValue(groupAccessValue);
+        for (GroupPermission permission : permissions) {
+        	groupPermissions.add(permission);
         }
     }
 
-    //expected format, ?groupAccess=<group_id>:[R|RW]&publicAccess=<group_id>:[R|RW]
-    private GroupPermission parseRequestValue(String groupAccessSpec) {
+    //expected format, ?groupAccess=<group_id>:[R|RW],<group_id>:[R|RW]...
+    private List<GroupPermission> parseRequestValue(String groupAccessSpec) {
+    	List<GroupPermission> permissions = new ArrayList<GroupPermission>();
         if (groupAccessSpec == null) {
-            return null;
+            return permissions;
         }
         if (groupAccessSpec.trim().equals("")) {
-            return null;
+            return permissions;
         }
-        String group = groupAccessSpec;
         GroupPermission.Permission flag = GroupPermission.Permission.NONE;
         
-        int idx = groupAccessSpec.lastIndexOf(':');
-        if (idx <= 0) {
-            //TODO: ERROR
-            return null;
+        String[] split = groupAccessSpec.split(",");
+        for (String spec : split) {
+        	if (spec.length() > 0) {
+		        int idx = spec.lastIndexOf(':');
+		        if (idx <= 0) {
+		            //TODO: ERROR
+		            return null;
+		        }
+		        String group = spec.substring(0, idx);
+		        String perm_flag_key = spec.substring(idx+1);
+		        if ("r".equalsIgnoreCase(perm_flag_key)) {
+		            flag = GroupPermission.Permission.READ;
+		        }
+		        else if ("rw".equalsIgnoreCase(perm_flag_key)) {
+		            flag = GroupPermission.Permission.READ_WRITE;
+		        }
+		        else {
+		            //TODO: ERROR
+		            return null;
+		        }
+		        permissions.add(new GroupPermission(group, flag));
+        	}
         }
-        group = groupAccessSpec.substring(0, idx);
-        String perm_flag_key = groupAccessSpec.substring(idx+1);
-        if ("r".equalsIgnoreCase(perm_flag_key)) {
-            flag = GroupPermission.Permission.READ;
-        }
-        else if ("rw".equalsIgnoreCase(perm_flag_key)) {
-            flag = GroupPermission.Permission.READ_WRITE;
-        }
-        else {
-            //TODO: ERROR
-            return null;
-        }
-        return new GroupPermission(group, flag);
+        return permissions;
     }
     
 

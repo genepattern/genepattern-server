@@ -92,9 +92,14 @@
         <h:outputText value="#{jobWrapper.dateCompleted}" converter="gp" />
       </td>
       <td>
-        <div align="center" class="status-#{jobWrapper.status}">#{jobWrapper.status}</div>
-      </td>      
-      <td>#{jobWrapper.userId} #{jobWrapper.permissionsLabel}</td>
+        <div class="status-#{jobWrapper.status}">#{jobWrapper.status}</div>
+      </td>
+      
+      
+      	<td>#{jobWrapper.userId}</td>
+      	<td>
+      		#{jobWrapper.permissionsLabel}
+      	</td>
     </tr>
     <!--  End job row  -->
 

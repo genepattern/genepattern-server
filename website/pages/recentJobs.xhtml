@@ -20,6 +20,7 @@
 
 <ui:composition>
 <ui:define name="headText">
+
 <script type="text/javascript" language="javascript">	
 /* <![CDATA[ */
 var jobIdToChildJobs = new Object();
@@ -104,8 +105,10 @@ function toggleJobVisibility(jobNo) {
       	  </td>
           
           <td>
-            <span class="recentjobs-sh">#{job.taskName}</span>
-			
+          	
+            <span class="recentjobs-sh yui-skin-sam" style="white-space: nowrap">
+            	#{job.taskName}
+            </span>
             <!-- Image trigger for jobs menu popup -->
             <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif"
                  name="Image2_#{job.jobNumber}" width="14" height="14" border="0" align="top"
@@ -113,7 +116,7 @@ function toggleJobVisibility(jobNo) {
                  onmouseover="MM_swapImage('Image2_#{job.jobNumber}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)"
                  onmouseout="MM_swapImgRestore();"/>
             <br/>
-
+			
 			<div id="#{job.jobNumber}_div" style="#{job.expanded ? 'display:inline;' : 'display:none;'}">
             <h:outputText value="(#{job.jobNumber}) " /> 
             <h:outputText value="#{job.dateCompleted}" converter="gp" />
@@ -125,7 +128,7 @@ function toggleJobVisibility(jobNo) {
 			</div>
           </td>
           <td width="9">
-            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
+			<img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
           </td>
         </tr>
 
@@ -182,6 +185,19 @@ function toggleJobVisibility(jobNo) {
   <p>
     <br/>
   </p>
+<script type="text/javascript">
+	YAHOO.namespace("example.container");
+
+	YAHOO.example.container.init = function() {
+
+		var ttB = new YAHOO.widget.Tooltip("ttB", { 
+			context:"mylink", text: "testtooltiptext"
+		});
+		
+	};
+
+	YAHOO.util.Event.addListener(window, "load", YAHOO.example.container.init);
+</script>
 
   </ui:composition>
 </html>
