@@ -725,9 +725,9 @@ public class JobBean {
     }
 
     public void setShowEveryonesJobs(boolean showEveryonesJobs) {
-	this.showEveryonesJobs = showEveryonesJobs && AuthorizationHelper.adminJobs();
-	new UserDAO().setProperty(UIBeanHelper.getUserId(), "showEveryonesJobs", String.valueOf(showEveryonesJobs));
-	this.resetJobs();
+        this.showEveryonesJobs = showEveryonesJobs;
+        new UserDAO().setProperty(UIBeanHelper.getUserId(), "showEveryonesJobs", String.valueOf(showEveryonesJobs));
+        this.resetJobs();
     }
 
     /**

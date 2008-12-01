@@ -23,5 +23,10 @@
     <many-to-one name="jobStatus" lazy="false" entity-name="org.genepattern.server.domain.JobStatus" cascade="none"> 
       <column name="STATUS_ID" precision="10" scale="0"/>
     </many-to-one>
+    
+    <set name="permissions" cascade="delete">
+        <key column="JOB_NO" />
+        <one-to-many class="org.genepattern.server.auth.JobGroup" />
+    </set>
   </class>
 </hibernate-mapping>

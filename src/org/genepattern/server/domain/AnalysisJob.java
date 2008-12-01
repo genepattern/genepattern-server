@@ -15,8 +15,11 @@
 package org.genepattern.server.domain;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.auth.JobGroup;
 
 
 public class AnalysisJob {
@@ -35,6 +38,8 @@ public class AnalysisJob {
     private Integer parent;
     private boolean deleted;
     private String parameterInfo;
+    
+    private Set<JobGroup> permissions = new HashSet<JobGroup>();
 
     /**
      * auto generated
@@ -300,6 +305,14 @@ public class AnalysisJob {
      */
     public void setDeleted(Boolean value) {
         this.deleted = value;
+    }
+    
+    public Set<JobGroup> getPermissions() {
+        return permissions;
+    }
+    
+    public void setPermissions(Set<JobGroup> permissions) {
+        this.permissions = permissions;
     }
 
 }

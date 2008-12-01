@@ -282,15 +282,15 @@ public class Analysis extends GenericWebService {
      *                number in the database
      * @param maxEntries
      *                the maximum number of jobs to return
-     * @param allJobs
+     * @param includeDeletedJobs
      *                if <tt>true</tt> return all jobs that the given user has run, otherwise return jobs that have
      *                not been deleted
      * 
      * @return the jobs
      */
-    public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs)
+    public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean includeDeletedJobs)
 	    throws WebServiceException {
-	return getJobs(username, maxJobNumber, maxEntries, allJobs, JobSortOrder.JOB_NUMBER, false);
+	return getJobs(username, maxJobNumber, maxEntries, includeDeletedJobs, JobSortOrder.JOB_NUMBER, false);
     }
 
     /**
@@ -304,26 +304,44 @@ public class Analysis extends GenericWebService {
      *                number in the database
      * @param maxEntries
      *                the maximum number of jobs to return
-     * @param allJobs
+     * @param includeDeletedJobs
      *                if <tt>true</tt> return all jobs that the given user has run, otherwise return jobs that have
      *                not been deleted
      * 
      * @return the jobs
      */
-    public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs,
-	    JobSortOrder jobSortOrder, boolean asc) throws WebServiceException {
-	if (username == null || !username.equals(getUsernameFromContext())) {
-	    if (!AuthorizationHelper.adminServer(getUsernameFromContext())) {
-		throw new WebServiceException("You are not authorized to perform this action.");
-	    }
-	}
+    public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean includeDeletedJobs, JobSortOrder jobSortOrder, boolean asc) 
+    throws WebServiceException 
+    {
+        //three options:
+        if (username != null) {
+            // (1) get jobs owned by user
+           try {
+                AnalysisDAO ds = new AnalysisDAO();
+                return ds.getJobs(username, maxJobNumber, maxEntries, includeDeletedJobs, jobSortOrder, asc);
+            } 
+            catch (Exception e) {
+                throw new WebServiceException(e);
+            }
+        }
+        Set<String> groups = null;
+        if (!AuthorizationHelper.adminServer()) {
+            // (2) get jobs for current user including jobs visible to that user by group permissions
+            IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
+            username = getUsernameFromContext();
+            groups = groupMembership.getGroups(username);
+        }
+        else {
+            // (3) current user is an admin, get all jobs            
+        }
+        try {
+            AnalysisDAO ds = new AnalysisDAO();
+            return ds.getJobs(username, groups, maxJobNumber, maxEntries, includeDeletedJobs, jobSortOrder, asc);
+        } 
+        catch (Exception e) {
+            throw new WebServiceException(e);
+        }
 
-	try {
-	    AnalysisDAO ds = new AnalysisDAO();
-	    return ds.getJobs(username, maxJobNumber, maxEntries, allJobs, jobSortOrder, asc);
-	} catch (Exception e) {
-	    throw new WebServiceException(e);
-	}
     }
 
     public FileWrapper[] getResultFiles(int jobId, String[] filenames) throws WebServiceException {

@@ -333,77 +333,161 @@ public class AnalysisDAO extends BaseDAO {
             query.setString("userId", userId);
         }
         Object rval = query.uniqueResult();
-        return ((Integer) rval).intValue();
+        
+        //handle rval type of Integer or Long
+        if (rval instanceof Long) {
+            return ((Long)rval).intValue();
+        }
+        else if (rval instanceof Integer) {
+            return ((Integer)rval).intValue();
+        }
+        else if (rval instanceof Number) {
+           return ((Number)rval).intValue();
+        }
+        else {
+            throw new OmnigeneException("Unknown type returned from hibernate query: "+rval);
+        }
     }
 
-    public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs)
+    public JobInfo[] getJobs(String ownedByUsername, int maxJobNumber, int maxEntries, boolean includeDeletedJobs)
 	    throws OmnigeneException {
-	return getJobs(username, maxJobNumber, maxEntries, allJobs, JobSortOrder.JOB_NUMBER, false);
+	return getJobs(ownedByUsername, maxJobNumber, maxEntries, includeDeletedJobs, JobSortOrder.JOB_NUMBER, false);
     }
 
-    public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean allJobs,
+    public JobInfo[] getJobs(String ownedByUsername, int maxJobNumber, int maxEntries, boolean includeDeletedJobs,
 	    JobSortOrder sortOrder, boolean ascending) throws OmnigeneException {
-        return getPagedJobs(username, maxJobNumber, maxEntries, allJobs, sortOrder, ascending);
+        return getPagedJobs(ownedByUsername, maxJobNumber, maxEntries, includeDeletedJobs, sortOrder, ascending);
     }
-    public JobInfo[] getPagedJobs(String username, int firstResult, int maxResults, boolean allJobs, JobSortOrder sortOrder, boolean ascending)
+    
+    public JobInfo[] getJobs(String username, Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending) {
+        return getPagedJobs(username, groups, firstResult, maxResults, includeDeletedJobs, sortOrder, ascending);
+    }
+
+    public JobInfo[] getPagedJobs(String ownedByUsername, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending)
     throws OmnigeneException 
     {
-	StringBuffer hql = new StringBuffer(
-		" from org.genepattern.server.domain.AnalysisJob where ((parent = null) OR (parent = -1)) ");
-	if (username != null) {
-	    hql.append(" AND userId = :username ");
-	}
-	if (!allJobs) {
-	    hql.append(" AND deleted = :deleted ");
-	}
-	switch (sortOrder) {
-	case JOB_NUMBER:
-	    hql.append(" ORDER BY jobNo");
-	    break;
-	case JOB_STATUS:
-	    hql.append(" ORDER BY jobStatus");
-	    break;
-	case SUBMITTED_DATE:
-	    hql.append(" ORDER BY submittedDate");
-	    break;
-	case COMPLETED_DATE:
-	    hql.append(" ORDER BY completedDate");
-	    break;
-	case USER:
-	    hql.append(" ORDER BY userId");
-	    break;
-	case MODULE_NAME:
-	    hql.append(" ORDER BY taskName");
-	    break;
-	}
-
-	hql.append(ascending ? " ASC" : " DESC");
-	Query query = getSession().createQuery(hql.toString());
-	if (firstResult >= 0) {
-	    query.setFirstResult(firstResult);
-	}
-	if (maxResults < Integer.MAX_VALUE) {
-	    query.setMaxResults(maxResults);
-	}
-	if (username != null) {
-	    query.setString("username", username);
-	}
-	if (!allJobs) {
-	    query.setBoolean("deleted", false);
-	}
-
-	List<JobInfo> results = new ArrayList<JobInfo>();
-	List<AnalysisJob> aJobs = query.list();
-	for (AnalysisJob aJob : aJobs) {
-	    JobInfo ji = new JobInfo(aJob);
-	    results.add(ji);
-	}
-	return results.toArray(new JobInfo[] {});
-
+        return getPagedJobs(ownedByUsername, null, firstResult, maxResults, includeDeletedJobs, sortOrder, ascending);
     }
 
     /**
-     * get the next available suite LSID identifer from the database
+     * Get the next page of JobInfos.
+     * 
+     * Use cases:
+     * 1. All jobs owned by a given user
+     *    ... where a.username = <username>
+     * 2. All jobs owned by a given user, or visible to one of the given groups. (The intention is to pass in the set of groups that the given user is a member of). 
+     *    ... where a.username = <username> or a.job_no = 
+     * 3. All jobs. Should only be called for an admin user.
+     * 
+     * [option: Included deleted jobs in the report]
+     * 
+     * @param username
+     * @param groups
+     * @param firstResult
+     * @param maxResults
+     * @param includeDeletedJobs
+     * @param sortOrder
+     * @param ascending
+     * @return
+     * @throws OmnigeneException
+     */
+    public JobInfo[] getPagedJobs(String username, Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending)
+    throws OmnigeneException 
+    {
+        //three exclusive states: [owned_by_user | all_jobs | viewable_by_user]
+        boolean getAllJobs = username == null;
+        //boolean getJobsOwnedByUsername = false;
+        boolean includeGroups = false;
+        if (!getAllJobs) {
+            includeGroups = groups != null && groups.size() > 0;
+        }
+
+        /* Example SQL query
+        select a.job_no, a.user_id, a.task_name, g.group_id, g.permission_flag
+          from analysis_job a 
+            left outer join job_group g on a.job_no = g.job_no
+          where
+            a.deleted != 'true'
+            and
+            (a.parent != null or a. parent = -1)
+            and
+            ( a.user_id = 'test' or g.group_id in ('pcarr') )
+          order by user_id, group_id 
+        */
+        
+        StringBuffer hql = new StringBuffer(" select a from org.genepattern.server.domain.AnalysisJob as a ");
+        if (includeGroups) {
+            hql.append(" left join a.permissions as p ");
+        }
+        hql.append("where ((a.parent = null) OR (a.parent = -1)) ");
+        if (!includeDeletedJobs) {
+            hql.append(" AND a.deleted = :deleted ");
+        }
+        if (includeGroups) {
+            hql.append(" AND ( a.userId = :username or p.groupId in ( ");
+            boolean first = true;
+            for (String group_id : groups) {
+                if (first) {
+                    first = false;
+                }
+                else {
+                    hql.append(", ");
+                }
+                hql.append("'"+group_id+"'");
+            }
+            hql.append(" ) ) ");
+        }
+        else if (!getAllJobs) {
+            hql.append(" AND a.userId = :username ");
+        }
+
+        switch (sortOrder) {
+        case JOB_NUMBER:
+            hql.append(" ORDER BY a.jobNo");
+            break;
+        case JOB_STATUS:
+            hql.append(" ORDER BY a.jobStatus");
+            break;
+        case SUBMITTED_DATE:
+            hql.append(" ORDER BY a.submittedDate");
+            break;
+        case COMPLETED_DATE:
+            hql.append(" ORDER BY a.completedDate");
+            break;
+        case USER:
+            hql.append(" ORDER BY a.userId");
+            break;
+        case MODULE_NAME:
+            hql.append(" ORDER BY a.taskName");
+            break;
+        }
+
+        hql.append(ascending ? " ASC" : " DESC");
+        Query query = getSession().createQuery(hql.toString());
+        if (firstResult >= 0) {
+            query.setFirstResult(firstResult);
+        }
+        if (maxResults < Integer.MAX_VALUE) {
+            query.setMaxResults(maxResults);
+        }
+        if (username != null) {
+            query.setString("username", username);
+        }
+        if (!includeDeletedJobs) {
+            query.setBoolean("deleted", false);
+        }
+
+        List<JobInfo> results = new ArrayList<JobInfo>();
+        List<AnalysisJob> aJobs = query.list();
+        for (AnalysisJob aJob : aJobs) {
+            JobInfo ji = new JobInfo(aJob);
+            results.add(ji);
+        }
+        return results.toArray(new JobInfo[] {});
+    }
+
+    /**
+     * get the next available suite LSID identifier from the database
      * 
      * @throws OmnigeneException
      * @throws RemoteException
