@@ -42,6 +42,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
+import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
@@ -586,7 +588,14 @@ public class JobBean {
     public int getJobCount() {
         if (jobCount < 0) {
             String userId = UIBeanHelper.getUserId();
-            this.jobCount = new AnalysisDAO().getNumJobs(showEveryonesJobs ? null : userId);
+            Set<String> groups = null;
+            boolean isAdmin = AuthorizationHelper.adminServer();
+            
+            if (!isAdmin && showEveryonesJobs) {
+                IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
+                groups = groupMembership.getGroups(userId);
+            }
+            this.jobCount = new AnalysisDAO().getNumJobs(userId, groups, showEveryonesJobs);
         }
         return jobCount;
     }

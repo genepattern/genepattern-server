@@ -310,6 +310,8 @@ public class AnalysisDAO extends BaseDAO {
     /**
      * Get the total number of job entries which aren't deleted.
      * @return
+     * 
+     * @deprecated
      */
     public long getNumJobs() {
         return getNumJobs(null);
@@ -320,17 +322,51 @@ public class AnalysisDAO extends BaseDAO {
      * If the userId is null get a count of all non deleted jobs.
      * @param userId
      * @return
+     * 
+     * @deprecated
      */
     public int getNumJobs(String userId) {
         //if userId is null or empty get all of the jobs
-        String hql = "select count(*) from AnalysisJob where ((parent = null) OR (parent = -1)) and deleted = :deleted ";
+        String hql = "select count(a.jobNo) from AnalysisJob a where ((a.parent = null) OR (a.parent = -1)) and a.deleted = :deleted ";
         if (userId != null) {
-            hql += " and userId = :userId";
+            hql += " and a.userId = :userId";
         }
         Query query = getSession().createQuery(hql);
         query.setBoolean("deleted", false);
         if (userId != null) {
             query.setString("userId", userId);
+        }
+        Object rval = query.uniqueResult();
+        
+        //handle rval type of Integer or Long
+        if (rval instanceof Long) {
+            return ((Long)rval).intValue();
+        }
+        else if (rval instanceof Integer) {
+            return ((Integer)rval).intValue();
+        }
+        else if (rval instanceof Number) {
+           return ((Number)rval).intValue();
+        }
+        else {
+            throw new OmnigeneException("Unknown type returned from hibernate query: "+rval);
+        }
+    }
+
+    public int getNumJobs(String userId, Set<String> groups, boolean showEveryonesJobs) {
+        boolean includeGroups = groups != null;
+        boolean getAllJobs = showEveryonesJobs;
+        return getNumJobs(userId, groups, includeGroups, getAllJobs, false);
+    }
+
+    private int getNumJobs(String userId, Set<String> groups, boolean includeGroups, boolean getAllJobs, boolean includeDeletedJobs) {
+        StringBuffer hql = new StringBuffer(
+                getAnalysisJobQuery(true, groups, includeGroups, getAllJobs, includeDeletedJobs)
+        );
+        Query query = getSession().createQuery(hql.toString());
+        query.setBoolean("deleted", false);
+        if (includeGroups || !getAllJobs) {
+            query.setString("username", userId);
         }
         Object rval = query.uniqueResult();
         
@@ -401,45 +437,10 @@ public class AnalysisDAO extends BaseDAO {
         if (!getAllJobs) {
             includeGroups = groups != null && groups.size() > 0;
         }
-
-        /* Example SQL query
-        select a.job_no, a.user_id, a.task_name, g.group_id, g.permission_flag
-          from analysis_job a 
-            left outer join job_group g on a.job_no = g.job_no
-          where
-            a.deleted != 'true'
-            and
-            (a.parent != null or a. parent = -1)
-            and
-            ( a.user_id = 'test' or g.group_id in ('pcarr') )
-          order by user_id, group_id 
-        */
         
-        StringBuffer hql = new StringBuffer(" select a from org.genepattern.server.domain.AnalysisJob as a ");
-        if (includeGroups) {
-            hql.append(" left join a.permissions as p ");
-        }
-        hql.append("where ((a.parent = null) OR (a.parent = -1)) ");
-        if (!includeDeletedJobs) {
-            hql.append(" AND a.deleted = :deleted ");
-        }
-        if (includeGroups) {
-            hql.append(" AND ( a.userId = :username or p.groupId in ( ");
-            boolean first = true;
-            for (String group_id : groups) {
-                if (first) {
-                    first = false;
-                }
-                else {
-                    hql.append(", ");
-                }
-                hql.append("'"+group_id+"'");
-            }
-            hql.append(" ) ) ");
-        }
-        else if (!getAllJobs) {
-            hql.append(" AND a.userId = :username ");
-        }
+        StringBuffer hql = new StringBuffer(
+                getAnalysisJobQuery(false, groups, includeGroups, getAllJobs, includeDeletedJobs)
+        );
 
         switch (sortOrder) {
         case JOB_NUMBER:
@@ -484,6 +485,69 @@ public class AnalysisDAO extends BaseDAO {
             results.add(ji);
         }
         return results.toArray(new JobInfo[] {});
+    }
+    
+    /**
+     * Construct an HQL query to get the jobs (or a count of the jobs) for a given user.
+     * 
+     * @param count - if true, just get a count of the number of distinct jobs
+     * @param groups - Set of group_ids for filtering the jobs, can be null.
+     * @param includeGroups - flag indicating whether or not to include groups in the query
+     * @param getAllJobs - flag indicating whether or not to get all jobs
+     * @param includeDeletedJobs - flag indicating whether or not to include deleted jobs
+     * 
+     * @return an HQL query string
+     */
+    private String getAnalysisJobQuery(boolean count, Set<String> groups, boolean includeGroups, boolean getAllJobs, boolean includeDeletedJobs) {
+        /* 
+        Example SQL query
+        select (distinct a.job_no) ...
+        or ...
+        select a.job_no, a.user_id, a.task_name, g.group_id, g.permission_flag
+          from analysis_job a 
+            left outer join job_group g on a.job_no = g.job_no
+          where
+            a.deleted != 'true'
+            and
+            (a.parent != null or a. parent = -1)
+            and
+            ( a.user_id = 'test' or g.group_id in ('public') )
+          order by user_id, group_id 
+         */
+
+        StringBuffer hql = new StringBuffer(" select ");
+        if (count) {
+            hql.append("count(distinct a.jobNo) ");
+        }
+        else {
+            hql.append(" distinct a ");
+        }
+        hql.append(" from org.genepattern.server.domain.AnalysisJob as a ");
+        if (includeGroups) {
+            hql.append(" left join a.permissions as p ");
+        }
+        hql.append("where ((a.parent = null) OR (a.parent = -1)) ");
+        if (!includeDeletedJobs) {
+            hql.append(" AND a.deleted = :deleted ");
+        }
+        if (includeGroups) {
+            hql.append(" AND ( a.userId = :username or p.groupId in ( ");
+            boolean first = true;
+            for (String group_id : groups) {
+                if (first) {
+                    first = false;
+                }
+                else {
+                    hql.append(", ");
+                }
+                hql.append("'"+group_id+"'");
+            }
+            hql.append(" ) ) ");
+        }
+        else if (!getAllJobs) {
+            hql.append(" AND a.userId = :username ");
+        }
+        return hql.toString();
     }
 
     /**
