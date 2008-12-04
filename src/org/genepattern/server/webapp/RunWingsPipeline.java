@@ -60,19 +60,10 @@ import org.genepattern.webservice.WebServiceException;
 import org.xml.sax.InputSource;
 
 /**
- * Note that RunPipeline may only be run on the server side in the context of a
- * GenePattern installation as it needs to connect natively to the DB (via
- * LocalAnalysisClient and LocalAdminClient). This is done to prevent the need
- * to pass a users Password into this code in order to execute the pipeline
- * tasks as that user.
- *
- * If needed, we could easily make a remote version (using remote interfaces)
- * but this does not seem to be necessary.
- *
- * @author liefeld
- *
+ * Copy of RunPipelineSoap
+ * 
+ * @author pcarr
  */
-
 public class RunWingsPipeline {
     private static final String logFile = "pipelineErrors.log";  //one log file per pipeline
         
@@ -122,6 +113,22 @@ public class RunWingsPipeline {
         
         this.model = model;
         this.decorator = decorator == null ? new RunPipelineBasicDecorator() : decorator;
+    }
+    
+    private static String getServer() throws MalformedURLException {
+        System.getProperty("GenePatternURL");
+        String gpUrl = System.getProperty("GenePatternURL", "");
+
+        URL serverFromFile = new URL(gpUrl);
+
+        String host = serverFromFile.getHost();
+        String port = "";
+        int portNum = serverFromFile.getPort();
+        if (portNum >= 0) {
+            port = ":"+portNum;
+        }
+        String server = serverFromFile.getProtocol() + "://" + host + port;
+        return server;
     }
     
     private static void runPipeline(String args[]) throws Exception {
@@ -331,48 +338,33 @@ public class RunWingsPipeline {
     }
 
     private static void runWingsPipeline(String[] args) throws Exception {
-        //TODO: get these parameters from cmdLine args or env
-        String server = "http://localhost:8080";
-        String username = "test";
-        String password = "test";
+        String userId = args[1];
+        System.setProperty("userId", userId);
+        String userKey = System.getProperty(EncryptionUtil.PROP_PIPELINE_USER_KEY, null);
+        if (userKey == null) {
+            userKey = System.getenv().get(EncryptionUtil.PROP_PIPELINE_USER_KEY);
+        }
         
         GPClient gpClient = null;
+        String server = getServer();
         try {
-            gpClient = new GPClient(server, username, password);
+            gpClient = new GPClient(server, userId, userKey);
         }
         catch (WebServiceException e) {
-            System.err.println("Unable to connect to server: "+server+" as user "+username+": "+e.getLocalizedMessage());
+            System.err.println("Unable to connect to server: "+server+" as user "+userId+": "+e.getLocalizedMessage());
             e.printStackTrace();
             return;
         }
         JobResult jobResult = null;
-        //try {
-            //final String wingsLsid = "urn:lsid:8080.pcarr.gm971-3d7.broad.mit.edu:genepatternmodules:86:5";
-            final String wingsLsid = "WingsPipeline";
-            String pipelineLSID = System.getProperty(GPConstants.LSID);
-            String userId = args[1];
-            System.setProperty("userId", userId);
-            String userKey = System.getProperty(EncryptionUtil.PROP_PIPELINE_USER_KEY, null);
-            if (userKey == null) {
-                userKey = System.getenv().get(EncryptionUtil.PROP_PIPELINE_USER_KEY);
-            }
 
-            jobResult = 
+        final String wingsLsid = "WingsPipeline";
+        String pipelineLSID = System.getProperty(GPConstants.LSID);
+
+        jobResult =     
             gpClient.runAnalysis(wingsLsid, 
                     new Parameter[]{new Parameter("wings1.pipelineLsid", pipelineLSID), 
                     new Parameter("wings1.gp_user_id", userId), 
                     new Parameter("wings1.gp_password", userKey)});
-//        }
-//        catch (WebServiceException e) {
-//            System.err.println("Unable to run wings module: "+e.getLocalizedMessage());
-//            e.printStackTrace();
-//            return;
-//        }
-//        catch (Exception e) {
-//            System.err.println("Error in running wings module: "+e.getLocalizedMessage());
-//            e.printStackTrace();
-//            return;
-//        }
     }
 
     /**
@@ -524,10 +516,6 @@ public class RunWingsPipeline {
         }
         return taskResult;
     }
-    
- 
-    
-
     
     protected void getChildJobOutputs(int childJobID, List<ParameterInfo> outs) {
         
