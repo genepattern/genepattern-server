@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launchConfiguration type="org.eclipse.jdt.launching.remoteJavaApplication">
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/gp-3.1.1-patch01"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="4"/>
+</listAttribute>
+<booleanAttribute key="org.eclipse.jdt.launching.ALLOW_TERMINATE" value="true"/>
+<mapAttribute key="org.eclipse.jdt.launching.CONNECT_MAP">
+<mapEntry key="port" value="5000"/>
+<mapEntry key="hostname" value="127.0.0.1"/>
+</mapAttribute>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="gp-3.1.1-patch01"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_CONNECTOR_ID" value="org.eclipse.jdt.launching.socketAttachConnector"/>
+</launchConfiguration>

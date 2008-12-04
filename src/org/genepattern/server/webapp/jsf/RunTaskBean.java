@@ -45,6 +45,8 @@ public class RunTaskBean {
     private boolean visualizer;
 
     private boolean pipeline;
+    
+    private boolean wings = false;
 
     private String name;
 
@@ -129,10 +131,13 @@ public class RunTaskBean {
     }
 
     public String getFormAction() {
-	if (visualizer) {
+    if (wings) {
+        return "submitJob.jsp";
+    }
+    else if (visualizer) {
 	    return "preRunVisualizer.jsp";
-
-	} else if (pipeline) {
+	} 
+    else if (pipeline) {
 	    return "runPromptingPipeline.jsp";
 	}
 	return "runTaskPipeline.jsp";
@@ -464,7 +469,9 @@ public class RunTaskBean {
 	this.pipeline = "pipeline".equalsIgnoreCase(taskType);
 	this.name = taskInfo.getName();
 	this.lsid = taskInfo.getLsid();
-	try {
+    this.wings = name != null && name.toLowerCase().startsWith("abstract");
+
+    try {
 	    LSID l = new LSID(lsid);
 	    this.version = l.getVersion();
 	    versions = new LocalAdminClient(UIBeanHelper.getUserId()).getVersions(l);
