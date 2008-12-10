@@ -34,7 +34,7 @@
         <t:div rendered="#{jobInfoBean.jobInfoWrapper.status != 'Finished' and jobInfoBean.jobInfoWrapper.status != 'Error'}">
 	        <script>
 	        function startRefreshTimer() { 
-	            var interval = 10000; //millis
+	            <h:outputText value="var interval = #{jobInfoBean.jobInfoWrapper.refreshInterval}; //millis" />
 	            window.setTimeout(refresh, interval);
 	        }
 	        function refresh() {
@@ -57,7 +57,7 @@
 
 	<ui:define name="body">
 	<t:div rendered="#{jobInfoBean.jobInfoWrapper.status != 'Finished' and jobInfoBean.jobInfoWrapper.status != 'Error'}">
-		<p>This page will reload every 10 seconds until your job is completed.  <a href="javascript:window.location.reload();">Click here</a> to reload manually.  You may navigate away from this page and your job will still finish.</p>
+		<p>This page will reload every <h:outputText value=" #{jobInfoBean.jobInfoWrapper.refreshIntervalLabel} " /> until your job is completed.  <a href="javascript:window.location.reload();">Click here</a> to reload manually.  You may navigate away from this page and your job will still finish.</p>
 	</t:div>
 	
 	<br/>

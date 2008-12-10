@@ -60,7 +60,6 @@ public class JobInfoBean {
         private Date dateCompleted;
         private List<InputParameter> inputParameters;
         private List<OutputParameter> outputFiles;
-        private long elapsedTimeMillis;
 		private int jobNumber;
 		private GroupPermission[] permissions = {};
         
@@ -93,6 +92,30 @@ public class JobInfoBean {
         	else if (dateCompleted != null) return dateCompleted.getTime() - dateSubmitted.getTime();
         	else if (!"finished".equals(getStatus())) return new Date().getTime() - dateSubmitted.getTime();
         	else return 0;
+        }
+        
+        public long getRefreshInterval() {
+            long elapsedTimeMillis = getElapsedTimeMillis();
+            if (elapsedTimeMillis < 10000) {
+                return 1000;
+            }
+            else if (elapsedTimeMillis < 60000) {
+                return 5000;
+            }
+            else {
+                return 10000;
+            }
+        }
+        
+        public String getRefreshIntervalLabel() {
+            long millis = getRefreshInterval();
+            long sec = millis / 1000L;
+            if (sec == 1) {
+                return "1 second";
+            }
+            else {
+                return sec + " seconds";
+            }
         }
         
         public int getJobNumber() {
