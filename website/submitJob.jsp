@@ -3,15 +3,14 @@
                  java.util.List,
                  java.util.Map,
                  org.genepattern.server.webapp.RunTaskHelper,
-                 org.genepattern.server.webservice.server.local.LocalAnalysisClient,
+                 org.genepattern.server.webapp.RunJobFromJsp,
                  org.genepattern.util.GPConstants,
-                 org.genepattern.webservice.JobInfo,
                  org.genepattern.webservice.ParameterInfo,
                  org.genepattern.webservice.TaskInfo,
                  org.apache.commons.fileupload.FileUploadException"
          session="false" contentType="text/html" language="Java" %>
 <%
-    String userID = (String) request.getAttribute(GPConstants.USERID);
+String userID = (String) request.getAttribute(GPConstants.USERID);
     RunTaskHelper runTaskHelper = null;
     TaskInfo task = null;
     List<ParameterInfo> missingReqParams = new ArrayList<ParameterInfo>();
@@ -59,13 +58,17 @@
 </body>
 </html>
 <%
-        return;
+    return;
     }
-
-    ParameterInfo[] paramInfos = task.getParameterInfoArray();
-    paramInfos = paramInfos == null ? paramInfos = new ParameterInfo[0] : paramInfos;
-    LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);        
-    JobInfo job = analysisClient.submitJob(task.getID(), paramInfos, runTaskHelper.getGroupPermissions());
-    String jobId = "" + job.getJobNumber();
-    response.sendRedirect("/gp/pages/jobResult.jsf?jobNumber="+jobId);
+    
+    RunJobFromJsp runner = new RunJobFromJsp();
+    runner.setUserId(userID);
+    runner.setTaskInfo(task);
+    String jobId = runner.submitJob();
+    if (jobId == null) {
+        response.sendRedirect("/gp/pages/jobResults.jsf");
+    }
+    else {
+        response.sendRedirect("/gp/pages/jobResult.jsf?jobNumber="+jobId);
+    }
 %>
