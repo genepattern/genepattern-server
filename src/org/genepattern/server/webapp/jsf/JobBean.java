@@ -38,6 +38,7 @@ import java.util.zip.ZipOutputStream;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
@@ -62,16 +63,11 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
-public class JobBean {
-
+public class JobBean { 
     private static Logger log = Logger.getLogger(JobBean.class);
-
     private List<JobResultsWrapper> recentJobs;
-
     private List<JobResultsWrapper> allJobs;
-
     private Map<String, Collection<TaskInfo>> kindToModules;
-
     private Map<String, List<KeyValuePair>> kindToInputParameters = Collections.emptyMap();
 
     /**
@@ -305,6 +301,55 @@ public class JobBean {
 
     public boolean isShowExecutionLogs() {
 	return showExecutionLogs;
+    }
+    
+    private String selectedGroup = null;
+    private Set<String> selectedGroups = new HashSet<String>();
+    public Object getJobFilter() {
+        if (selectedGroup != null) {
+            return selectedGroup;
+        }
+        if (showEveryonesJobs) {
+            return "#ALL_JOBS";
+        }
+        else {
+            return "#MY_JOBS";
+        }
+    }
+    
+    public void setJobFilter(Object obj) {
+        this.setShowEveryonesJobs(false);
+        selectedGroup = null;
+        selectedGroups.clear();
+        if ((obj == null) || !(obj instanceof String)) {
+            return;
+        }
+        String menuVal = (String) obj;
+        if (menuVal.equals("#MY_JOBS")) {
+            this.setShowEveryonesJobs(false);
+        }
+        else if (menuVal.equals("#ALL_JOBS")) {
+            this.setShowEveryonesJobs(true);
+        }
+        else {
+            selectedGroup = menuVal;
+            selectedGroups.add(menuVal);
+        }
+    }
+    
+    public List<SelectItem> getJobFilterMenu() {
+        List<SelectItem> rval = new ArrayList<SelectItem>();
+        rval.add(new SelectItem("#MY_JOBS", "My jobs"));
+        rval.add(new SelectItem("#ALL_JOBS", "All jobs"));
+        
+        //add groups to the list
+        String userId = UIBeanHelper.getUserId();
+        IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
+        Set<String> groups = groupMembership.getGroups(userId);
+        for(String group : groups) {
+            rval.add(new SelectItem(group, "In group: " + group));
+        }
+        return rval;
     }
 
     /**
@@ -588,14 +633,24 @@ public class JobBean {
     public int getJobCount() {
         if (jobCount < 0) {
             String userId = UIBeanHelper.getUserId();
-            Set<String> groups = null;
-            boolean isAdmin = AuthorizationHelper.adminServer();
             
-            if (!isAdmin && showEveryonesJobs) {
-                IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
-                groups = groupMembership.getGroups(userId);
+            if (selectedGroup != null) {
+                boolean filterByGroup = false;
+                boolean includeGroups = true;
+                boolean getAllJobs = false;
+                boolean includeDeletedJobs = false;
+                this.jobCount = new AnalysisDAO().getNumJobs(userId, filterByGroup, selectedGroups, includeGroups, getAllJobs, includeDeletedJobs);
             }
-            this.jobCount = new AnalysisDAO().getNumJobs(userId, groups, showEveryonesJobs);
+            else {
+                Set<String> groups = null;
+                boolean isAdmin = AuthorizationHelper.adminServer(); 
+                if (!isAdmin && showEveryonesJobs) {
+                    IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
+                    groups = groupMembership.getGroups(userId);
+                }
+                this.jobCount = new AnalysisDAO().getNumJobs(userId, groups, showEveryonesJobs);
+                
+            }
         }
         return jobCount;
     }
@@ -615,9 +670,16 @@ public class JobBean {
             String userId = UIBeanHelper.getUserId();
             LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
             try {
-                allJobs = wrapJobs(
-                        analysisClient.getJobs(showEveryonesJobs ? null : userId, 
-                                maxJobNumber, maxEntries, false, getJobSortOrder(), jobSortAscending));
+                JobInfo[] jobInfos = new JobInfo[0];
+                if (selectedGroup != null) {
+                    jobInfos = 
+                        analysisClient.getJobsInGroup(selectedGroups, maxJobNumber, maxEntries, false, getJobSortOrder(), jobSortAscending);
+                }
+                else {
+                    jobInfos = 
+                        analysisClient.getJobs(showEveryonesJobs ? null : userId, maxJobNumber, maxEntries, false, getJobSortOrder(), jobSortAscending);
+                }
+                allJobs = wrapJobs( jobInfos );
                 sortFiles();
             } 
             catch (WebServiceException wse) {

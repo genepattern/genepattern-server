@@ -69,6 +69,12 @@ public class LocalAnalysisClient {
 	return service.getJobs(username, maxJobNumber, maxEntries, all, jobSortOrder, asc);
     }
 
+    public JobInfo[] getJobsInGroup(Set<String> groups, int maxJobNumber, int maxEntries, boolean all, JobSortOrder jobSortOrder, boolean asc) 
+        throws WebServiceException 
+    {
+        return service.getJobsInGroup(groups, maxJobNumber, maxEntries, all, jobSortOrder, asc);
+    }
+
     public JobInfo getJob(int jobId) throws WebServiceException {
 	return service.getJob(jobId);
     }

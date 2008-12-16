@@ -360,8 +360,14 @@ public class AnalysisDAO extends BaseDAO {
     }
 
     private int getNumJobs(String userId, Set<String> groups, boolean includeGroups, boolean getAllJobs, boolean includeDeletedJobs) {
+        boolean filterByGroup = false;
+        return getNumJobs(userId, filterByGroup, groups, includeGroups, getAllJobs, includeDeletedJobs);
+    }
+
+    public int getNumJobs(String userId, boolean filterByGroup, Set<String> groups, boolean includeGroups, boolean getAllJobs, boolean includeDeletedJobs) {
+        boolean getCount = true;
         StringBuffer hql = new StringBuffer(
-                getAnalysisJobQuery(true, groups, includeGroups, getAllJobs, includeDeletedJobs)
+                getAnalysisJobQuery(getCount, filterByGroup, groups, includeGroups, getAllJobs, includeDeletedJobs)
         );
         Query query = getSession().createQuery(hql.toString());
         query.setBoolean("deleted", false);
@@ -397,6 +403,24 @@ public class AnalysisDAO extends BaseDAO {
     
     public JobInfo[] getJobs(String username, Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending) {
         return getPagedJobs(username, groups, firstResult, maxResults, includeDeletedJobs, sortOrder, ascending);
+    }
+    
+    /**
+     * Get all of the jobs in at least one of the given groups.
+     * 
+     * @param groups
+     * @param firstResult
+     * @param maxResults
+     * @param includeDeletedJobs
+     * @param sortOrder
+     * @param ascending
+     * @return
+     */
+    public JobInfo[] getJobsInGroup(Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending) {
+        boolean getAllJobs = false;
+        boolean filterByGroup = true;
+        boolean includeGroups = true;
+        return getPagedJobs(getAllJobs, filterByGroup, includeGroups, null, groups, firstResult, maxResults, includeDeletedJobs, sortOrder, ascending);
     }
 
     public JobInfo[] getPagedJobs(String ownedByUsername, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending)
@@ -438,8 +462,18 @@ public class AnalysisDAO extends BaseDAO {
             includeGroups = groups != null && groups.size() > 0;
         }
         
+        return getPagedJobs(getAllJobs, includeGroups, username, groups, firstResult, maxResults, includeDeletedJobs, sortOrder, ascending);
+    }
+    
+    public JobInfo[] getPagedJobs(boolean getAllJobs, boolean includeGroups, String username, Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending) {
+        boolean filterByGroup = false;
+        return getPagedJobs(getAllJobs, filterByGroup, includeGroups, username, groups, firstResult, maxResults, includeDeletedJobs, sortOrder, ascending);
+    }
+
+    public JobInfo[] getPagedJobs(boolean getAllJobs, boolean filterByGroup, boolean includeGroups, String username, Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending) {
+
         StringBuffer hql = new StringBuffer(
-                getAnalysisJobQuery(false, groups, includeGroups, getAllJobs, includeDeletedJobs)
+                getAnalysisJobQuery(false, filterByGroup, groups, includeGroups, getAllJobs, includeDeletedJobs)
         );
 
         switch (sortOrder) {
@@ -499,6 +533,11 @@ public class AnalysisDAO extends BaseDAO {
      * @return an HQL query string
      */
     private String getAnalysisJobQuery(boolean count, Set<String> groups, boolean includeGroups, boolean getAllJobs, boolean includeDeletedJobs) {
+        boolean filterByGroup = false;
+        return getAnalysisJobQuery(count, filterByGroup, groups, includeGroups, getAllJobs, includeDeletedJobs);
+    }
+
+    private String getAnalysisJobQuery(boolean count, boolean filterByGroup, Set<String> groups, boolean includeGroups, boolean getAllJobs, boolean includeDeletedJobs) {
         /* 
         Example SQL query
         select (distinct a.job_no) ...
@@ -513,6 +552,19 @@ public class AnalysisDAO extends BaseDAO {
             and
             ( a.user_id = 'test' or g.group_id in ('public') )
           order by user_id, group_id 
+         */
+        
+        /*
+         Example SQL query when filtering by group
+         select a.job_no, a.user_id, a.task_name, g.group_id, g.permission_flag 
+           from analysis_job a
+             left outer join job_group g on a.job_no = g.job_no
+         where
+           a.deleted != 'true'
+           and
+           (a.parent != null or a.parent = -1)
+           and
+           g.group_id in ('administrators', 'public')
          */
 
         StringBuffer hql = new StringBuffer(" select ");
@@ -531,7 +583,12 @@ public class AnalysisDAO extends BaseDAO {
             hql.append(" AND a.deleted = :deleted ");
         }
         if (includeGroups) {
-            hql.append(" AND ( a.userId = :username or p.groupId in ( ");
+            if (filterByGroup) {
+                hql.append(" AND ( p.groupId in ( ");                
+            }
+            else {
+                hql.append(" AND ( a.userId = :username or p.groupId in ( ");
+            }
             boolean first = true;
             for (String group_id : groups) {
                 if (first) {
@@ -544,7 +601,7 @@ public class AnalysisDAO extends BaseDAO {
             }
             hql.append(" ) ) ");
         }
-        else if (!getAllJobs) {
+        else if (!getAllJobs && !filterByGroup) {
             hql.append(" AND a.userId = :username ");
         }
         return hql.toString();

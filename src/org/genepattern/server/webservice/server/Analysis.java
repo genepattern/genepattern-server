@@ -341,7 +341,44 @@ public class Analysis extends GenericWebService {
         catch (Exception e) {
             throw new WebServiceException(e);
         }
+    }
 
+    public JobInfo[] getJobsInGroup(Set<String> groups, int maxJobNumber, int maxEntries, boolean includeDeletedJobs, JobSortOrder jobSortOrder, boolean asc) 
+    throws WebServiceException
+    {
+        try {
+            AnalysisDAO ds = new AnalysisDAO();
+            return ds.getJobsInGroup(groups, maxJobNumber, maxEntries, includeDeletedJobs, jobSortOrder, asc);
+        } 
+        catch (Exception e) {
+            throw new WebServiceException(e);
+        }
+
+    }
+
+    /**
+     * Get all of the jobs for the given user, filtered by option list of groups.
+     * 
+     * @param username
+     * @param groups - if groups is empty, only get jobs owned by the user
+     * @param maxJobNumber
+     * @param maxEntries
+     * @param includeDeletedJobs
+     * @param jobSortOrder
+     * @param asc
+     * @return
+     */
+    public JobInfo[] getJobs(String username, Set<String> groups, int maxJobNumber, int maxEntries, boolean includeDeletedJobs, JobSortOrder jobSortOrder, boolean asc) 
+    throws WebServiceException
+    {
+        try {
+            AnalysisDAO ds = new AnalysisDAO();
+            return ds.getJobs(username, groups, maxJobNumber, maxEntries, includeDeletedJobs, jobSortOrder, asc);
+        } 
+        catch (Exception e) {
+            throw new WebServiceException(e);
+        }
+        
     }
 
     public FileWrapper[] getResultFiles(int jobId, String[] filenames) throws WebServiceException {
