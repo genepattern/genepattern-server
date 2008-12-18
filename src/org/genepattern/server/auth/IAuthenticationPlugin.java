@@ -36,7 +36,7 @@ public interface IAuthenticationPlugin {
      * 
      * @param user
      * @param credentials
-     * @return true iff the username and or credentials are not valid.
+     * @return true iff the username and credentials are valid.
      * @throws AuthenticationException to indicate invalid username or credentials.
      */
     public boolean authenticate(String user, byte[] credentials) throws AuthenticationException;
