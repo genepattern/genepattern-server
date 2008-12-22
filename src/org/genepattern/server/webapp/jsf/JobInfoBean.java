@@ -18,6 +18,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,11 +26,13 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import javax.faces.FacesException;
+import javax.faces.context.FacesContext;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
+import org.genepattern.server.auth.GroupPermission.Permission;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
@@ -54,15 +57,20 @@ public class JobInfoBean {
     private int requestedJobNumber = -1;
 
     public static class JobInfoWrapper {
+        private JobInfo jobInfo = null;
+        private int jobNumber;
         private String taskName;
         private String status;
         private Date dateSubmitted;
         private Date dateCompleted;
         private List<InputParameter> inputParameters;
         private List<OutputParameter> outputFiles;
-		private int jobNumber;
-		private GroupPermission[] permissions = {};
-        
+        private TaskInfo taskInfo = null;
+
+        public int getJobNumber() {
+            return jobNumber;
+        }
+         
         public String getTaskName() {
             return taskName;
         }
@@ -87,6 +95,10 @@ public class JobInfoBean {
             return outputFiles;
         }
         
+        //public boolean getIsVisualizer() {
+        //    return isVisualizer;
+        //}
+
         public long getElapsedTimeMillis() {
         	if (dateSubmitted == null) return 0;
         	else if (dateCompleted != null) return dateCompleted.getTime() - dateSubmitted.getTime();
@@ -118,19 +130,87 @@ public class JobInfoBean {
             }
         }
         
-        public int getJobNumber() {
-        	return jobNumber;
-        }
-         
         public List<GroupPermission> getGroupPermissions() {
+            String userId = jobInfo.getUserId(); //owner of the job
+            Set<String> groups = UserAccountManager.instance().getGroupMembership().getGroups(userId);
+
             AnalysisDAO ds = new AnalysisDAO();
             Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(jobNumber);
             
+            //add any groups the user is a member of for which no permissions are set
+            Set<String> pg = new HashSet<String>(); //groups with permissions set
+            for(GroupPermission gp : groupPermissions) {
+                pg.add(gp.getGroupId());
+            }
+            groups.removeAll(pg);
+            for(String groupId : groups) {
+                groupPermissions.add(new GroupPermission(groupId, GroupPermission.Permission.NONE));
+            }
+            
             //sorted by group
-            SortedSet<GroupPermission> sorted = new TreeSet<GroupPermission>(groupPermissions);
+            SortedSet<GroupPermission> sorted = new TreeSet<GroupPermission>(groupPermissions); 
             return new ArrayList<GroupPermission>( sorted );
         }
         
+        /**
+         * Process request parameters (from form submission) and update the access permissions for the current job.
+         */
+        public void saveGroupPermissions() { 
+            List<GroupPermission> permissions = getGroupPermissions();
+            /* 
+             JSF auto generated parameter names from jobResult.xhtml, e.g.
+               permForm:   permForm
+               permForm:permTable:0:RW:    true
+               permForm:permTable:0:R:     true
+               permForm:permTable:1:R:     true
+             Note: only selected checkboxes are submitted.
+            */
+            
+            //not sure this is the best approach, but for now, 
+            //    regenerate the table in the exact order as was done to present the input form
+            
+            //NOTE: don't edit the jobResult.xhtml without also editing this page 
+            //    in other words, DON'T REUSE THIS CODE in another page unless you know what you are doing
+            Set<GroupPermission> updatedPermissions = new HashSet<GroupPermission>();
+            Map<String,String[]> requestParameters = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterValuesMap();
+            for(String name : requestParameters.keySet()) {
+                //System.out.println("\t"+val);
+                if (name.endsWith("R") || name.endsWith("RW")) {
+                    int gin = -1;
+                    String[] splits = name.split(":");
+                    String permFlag = splits[ splits.length - 1 ];
+                    int sin = splits.length - 2;
+                    if (sin > 0) {
+                        try {
+                            gin = Integer.parseInt( splits[sin] );
+                            String groupId = permissions.get(gin).getGroupId();
+                            System.out.println("set "+permFlag+" permission for group: " + groupId);
+                            
+                            Permission p = null;
+                            if (permFlag.equalsIgnoreCase("R")) {
+                                p = GroupPermission.Permission.READ;
+                            }
+                            else if (permFlag.equalsIgnoreCase("RW")) {
+                                p = GroupPermission.Permission.READ_WRITE;                                
+                            }
+                            else {
+                                log.error("Ignoring permissions flag: "+permFlag);
+                                return;
+                            }
+                            GroupPermission gp = new GroupPermission(groupId, p);
+                            updatedPermissions.add(gp);
+                        }
+                        catch (NumberFormatException e) {
+                            log.error("Can't parse input form", e);
+                        }
+                    }
+                }
+            }
+            
+            AnalysisDAO ds = new AnalysisDAO();
+            ds.setGroupPermissions(jobNumber, updatedPermissions);
+        }
+
         public String getPermissionsLabel() {
             List<GroupPermission> groups = getGroupPermissions();
             if (groups == null || groups.size() == 0) {
@@ -143,34 +223,28 @@ public class JobInfoBean {
             int idx = rval.lastIndexOf(", ");
             return rval.substring(0, idx) + "";
         }
-        
     }
 
     public JobInfoBean() {
-
-		genePatternUrl = UIBeanHelper.getServer();
-	
-		try {
-		    requestedJobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter(
-			    "jobNumber")));
-		} catch (NumberFormatException e1) {
-		    log.error(e1);
+        genePatternUrl = UIBeanHelper.getServer();
+        try {
+            requestedJobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
+        }
+        catch (NumberFormatException e1) {
+            log.error(e1);
 		    //throw new FacesException("Requested job not found.");
-		    return;
-		}
-		LocalAnalysisClient client = new LocalAnalysisClient(UIBeanHelper.getUserId());
-		try {
-		    JobInfo job = client.getJob(requestedJobNumber);
-	
-		    
-		    jobInfoWrapper = createJobInfoWrapper(job);
+            return;
+        }
+        LocalAnalysisClient client = new LocalAnalysisClient(UIBeanHelper.getUserId());
+        try {
+            JobInfo jobInfo = client.getJob(requestedJobNumber);
+            jobInfoWrapper = createJobInfoWrapper(jobInfo);
 		    JobInfo[] children = new JobInfo[0];
 		    try {
-		    	children = client.getChildren(job.getJobNumber());
-		    } catch (Exception e) {
-	
-		    	log.error(e.getMessage(), e);
-	
+		        children = client.getChildren(jobInfo.getJobNumber());
+		    } 
+		    catch (Exception e) {
+		        log.error(e.getMessage(), e);
 		    }
 	
 		    childJobs = new JobInfoWrapper[children != null ? children.length : 0];
@@ -179,7 +253,8 @@ public class JobInfoBean {
 				    childJobs[i] = createJobInfoWrapper(children[i]);
 				}
 		    }
-		} catch (WebServiceException e) {
+		} 
+        catch (WebServiceException e) {
 		    log.error(e);
 		    throw new FacesException("Job " + requestedJobNumber + " not found.");
 		}
@@ -216,17 +291,18 @@ public class JobInfoBean {
         return false;
     }
 
-    private JobInfoWrapper createJobInfoWrapper(JobInfo job) {
+    private JobInfoWrapper createJobInfoWrapper(JobInfo jobInfo) {
         String userId = UIBeanHelper.getUserId();
-        if (!canReadJob(userId, job)) {
+        if (!canReadJob(userId, jobInfo)) {
             throw new FacesException("You don't have the required permissions to access the requested job.");
         }
 
         Map<String, ParameterInfo> parameterMap = new HashMap<String, ParameterInfo>();
         ParameterInfo[] formalParameters = null;
+        TaskInfo taskInfo = null;
         try {
-            TaskInfo task = new LocalAdminClient(job.getUserId()).getTask(job.getTaskLSID());
-            formalParameters = task.getParameterInfoArray();
+            taskInfo = new LocalAdminClient(jobInfo.getUserId()).getTask(jobInfo.getTaskLSID());
+            formalParameters = taskInfo.getParameterInfoArray();
         } 
         catch (WebServiceException e) {
             log.error(e);
@@ -234,7 +310,7 @@ public class JobInfoBean {
 
         List<OutputParameter> outputFiles = new ArrayList<OutputParameter>();
         List<InputParameter> inputs = new ArrayList<InputParameter>();
-        ParameterInfo[] parameterInfoArray = job.getParameterInfoArray();
+        ParameterInfo[] parameterInfoArray = jobInfo.getParameterInfoArray();
         if (parameterInfoArray != null) {
             for (ParameterInfo p : parameterInfoArray) {
                 parameterMap.put(p.getName(), p);
@@ -342,13 +418,16 @@ public class JobInfoBean {
             }
         }
         JobInfoWrapper jobInfoWrapper = new JobInfoWrapper();
-        jobInfoWrapper.taskName = job.getTaskName();
-        jobInfoWrapper.status = job.getStatus();
-        jobInfoWrapper.dateSubmitted = job.getDateSubmitted();
-        jobInfoWrapper.dateCompleted = job.getDateCompleted();
+        jobInfoWrapper.jobInfo = jobInfo;
+        jobInfoWrapper.jobNumber = jobInfo.getJobNumber();
+        jobInfoWrapper.taskName = jobInfo.getTaskName();
+        jobInfoWrapper.status = jobInfo.getStatus();
+        jobInfoWrapper.dateSubmitted = jobInfo.getDateSubmitted();
+        jobInfoWrapper.dateCompleted = jobInfo.getDateCompleted();
         jobInfoWrapper.outputFiles = outputFiles;
         jobInfoWrapper.inputParameters = inputs;
-        jobInfoWrapper.jobNumber = job.getJobNumber();
+        //jobInfoWrapper.isVisualizer = taskInfo != null && taskInfo.isVisualizer();
+        jobInfoWrapper.taskInfo = taskInfo;
         return jobInfoWrapper;
     }
 

@@ -68,35 +68,38 @@
 				<br/><br/>
 			</td>
 		</tr>
-     	<tr id="permissionDiv" style="display:none;">
-			<td>
-			<table width="50%" border="0" cellspacing="0" cellpadding="0">
-		       	<tr class="tableheader-row">
-		       		<th align="left">group</th>
-		       		<th>read</th>
-		       		<th>read/write</th>
-		         	</tr>
-		         	<t:dataList value="#{userPrefsBean.groups}" var="group">
-		        <tr class="task-titlerow">
-		        	<td><h:outputText>#{group}</h:outputText></td>
-		        	<td align="center"><input id="perm#{group}R" type="checkbox" value="R"/></td>
-		        	<td align="center"><input id="perm#{group}RW" type="checkbox" value="RW"/></td>
-				</tr>
-				</t:dataList>
-				<script> 
-					<t:dataList value="#{jobInfoBean.jobInfoWrapper.groupPermissions}" var="gp">
-					<h:outputText rendered="#{gp.permission.read}">
-						document.getElementById('perm#{gp.groupId}R').checked = true;
-					</h:outputText>
-					<h:outputText rendered="#{gp.permission.write}">
-						document.getElementById('perm#{gp.groupId}RW').checked = true;
-					</h:outputText>
-					</t:dataList>
-				</script>
-			</table>     
-			<br/><input type='button' value='submit changes' />
-			<br/><br/>             
-			</td>
+		<tr id="permissionDiv" style="display:none;">
+		    <td>
+		    <h:form id="permForm">
+		    <!--  the jobNumber is required -->
+		    <f:verbatim><INPUT TYPE="hidden" NAME="jobNumber" VALUE="#{jobInfoBean.jobNumber}"></INPUT></f:verbatim>
+		    <t:dataTable id="permTable" var="groupPermission" value="#{jobInfoBean.jobInfoWrapper.groupPermissions}"
+		    width="50%" border="0" cellspacing="0" cellpadding="0" headerClass="tableheader-row" rowClasses="task-titlerow" columnClasses="left, center, center">
+		      <t:column headerstyle="text-align: left;">
+                <f:facet name="header">
+                  <h:outputText value="group"></h:outputText>
+                </f:facet>
+                <h:outputText value="#{groupPermission.groupId}" />
+              </t:column>
+              
+              <t:column headerstyle="text-align: center;">
+                <f:facet name="header">
+                  <h:outputText value="read" />
+                </f:facet>
+                <t:selectBooleanCheckbox id="R" checked="#{true == groupPermission.permission.read}" />
+              </t:column>
+
+              <t:column headerstyle="text-align: center;">
+                <f:facet name="header">
+                  <h:outputText value="read/write" />
+                </f:facet>
+                <t:selectBooleanCheckbox id="RW" checked="#{true == groupPermission.permission.write}" />
+              </t:column>
+		    </t:dataTable>
+            <br/><h:commandButton action="#{jobInfoBean.jobInfoWrapper.saveGroupPermissions}" value="save permissions" />
+            <br/><br/>
+		    </h:form>
+		    </td>
 		</tr>
      	<tr>
         	<td class="barhead-task">#{jobInfoBean.jobInfoWrapper.taskName} Status </td>
@@ -189,6 +192,9 @@
 		            <h:outputText value="#{child.status} running #{child.taskName} as job # #{child.jobNumber} on #{child.dateCompleted}.">
 		                <f:convertDateTime pattern="dd.MM.yyyy HH:mm" />
 	            	</h:outputText>	
+	            </t:div>
+	            <t:div rendered="#{child.isVisualizer}">
+	                <h:outputText escape="false" value="#{child.visualizerAppletTag}" />
 	            </t:div>
 	            <div>Elapsed time: #{child.elapsedTimeMillis} ms</div>
 	            <div><a href="#" onclick='window.open("#{facesContext.externalContext.requestContextPath}/pages/jobInfo.jsf?target=new&amp;jobNumber=#{child.jobNumber}", "Job #{child.jobNumber}","toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=300");return false'>click to view input parameters</a></div>
