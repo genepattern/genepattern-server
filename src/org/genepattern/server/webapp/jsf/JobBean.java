@@ -339,8 +339,8 @@ public class JobBean {
     
     public List<SelectItem> getJobFilterMenu() {
         List<SelectItem> rval = new ArrayList<SelectItem>();
-        rval.add(new SelectItem("#MY_JOBS", "My jobs"));
-        rval.add(new SelectItem("#ALL_JOBS", "All jobs"));
+        rval.add(new SelectItem("#MY_JOBS", "My job results"));
+        rval.add(new SelectItem("#ALL_JOBS", "All job results"));
         
         //add groups to the list
         String userId = UIBeanHelper.getUserId();
