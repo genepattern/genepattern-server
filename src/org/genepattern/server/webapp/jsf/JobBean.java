@@ -87,6 +87,8 @@ public class JobBean {
     private String fileSortColumn = "name";
 
     private boolean showEveryonesJobs = false;
+    private String selectedGroup = null;
+    private Set<String> selectedGroups = new HashSet<String>();
 
     /**
      * Specifies job column to sort on. Possible values are jobNumber taskName dateSubmitted dateCompleted status
@@ -122,9 +124,14 @@ public class JobBean {
 	this.fileSortAscending = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "fileSortAscending", String
 		.valueOf(fileSortAscending)));
 	this.fileSortColumn = new UserDAO().getPropertyValue(userId, "fileSortColumn", fileSortColumn);
-	this.showEveryonesJobs = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showEveryonesJobs", String
-		.valueOf(showEveryonesJobs)))
-		&& AuthorizationHelper.adminJobs();
+    this.showEveryonesJobs = 
+        Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showEveryonesJobs", String.valueOf(showEveryonesJobs)));
+    this.selectedGroups.clear();
+    this.selectedGroup = new UserDAO().getPropertyValue(userId, "jobResultsFilter", null);
+    if (selectedGroup != null) {
+        this.selectedGroups.add(selectedGroup);
+        this.showEveryonesJobs = false;
+    }
 	this.jobSortColumn = new UserDAO().getPropertyValue(userId, "jobSortColumn", jobSortColumn);
 	this.jobSortAscending = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "jobSortAscending", String
 		.valueOf(jobSortAscending)));
@@ -303,8 +310,6 @@ public class JobBean {
 	return showExecutionLogs;
     }
     
-    private String selectedGroup = null;
-    private Set<String> selectedGroups = new HashSet<String>();
     public Object getJobFilter() {
         if (selectedGroup != null) {
             return selectedGroup;
@@ -318,20 +323,27 @@ public class JobBean {
     }
     
     public void setJobFilter(Object obj) {
-        this.setShowEveryonesJobs(false);
         selectedGroup = null;
         selectedGroups.clear();
         if ((obj == null) || !(obj instanceof String)) {
+            //use defaults, reset
+            this.showEveryonesJobs = false;
+            new UserDAO().setProperty(UIBeanHelper.getUserId(), "showEveryonesJobs", String.valueOf(showEveryonesJobs));
             return;
         }
         String menuVal = (String) obj;
         if (menuVal.equals("#MY_JOBS")) {
-            this.setShowEveryonesJobs(false);
+            this.showEveryonesJobs = false;
+            new UserDAO().setProperty(UIBeanHelper.getUserId(), "showEveryonesJobs", String.valueOf(showEveryonesJobs));
+            return;
         }
         else if (menuVal.equals("#ALL_JOBS")) {
-            this.setShowEveryonesJobs(true);
+            this.showEveryonesJobs = true;
+            new UserDAO().setProperty(UIBeanHelper.getUserId(), "showEveryonesJobs", String.valueOf(showEveryonesJobs));
+            return;
         }
         else {
+            new UserDAO().setProperty(UIBeanHelper.getUserId(), "jobResultsFilter", menuVal);
             selectedGroup = menuVal;
             selectedGroups.add(menuVal);
         }
@@ -793,12 +805,6 @@ public class JobBean {
     public void setJobSortColumn(String jobSortField) {
 	this.jobSortColumn = jobSortField;
 	new UserDAO().setProperty(UIBeanHelper.getUserId(), "jobSortColumn", String.valueOf(jobSortColumn));
-    }
-
-    public void setShowEveryonesJobs(boolean showEveryonesJobs) {
-        this.showEveryonesJobs = showEveryonesJobs;
-        new UserDAO().setProperty(UIBeanHelper.getUserId(), "showEveryonesJobs", String.valueOf(showEveryonesJobs));
-        this.resetJobs();
     }
 
     /**
