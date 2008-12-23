@@ -13,6 +13,7 @@
 package org.genepattern.server.webapp.jsf;
 
 import java.io.File;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -22,18 +23,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import javax.faces.FacesException;
 import javax.faces.context.FacesContext;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.PermissionsManager;
 import org.genepattern.server.auth.GroupPermission;
-import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.auth.GroupPermission.Permission;
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.server.genepattern.RunVisualizer;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
@@ -41,6 +39,7 @@ import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
 
 /**
@@ -65,8 +64,9 @@ public class JobInfoBean {
         private Date dateCompleted;
         private List<InputParameter> inputParameters;
         private List<OutputParameter> outputFiles;
+        
         private TaskInfo taskInfo = null;
-
+        
         public int getJobNumber() {
             return jobNumber;
         }
@@ -94,16 +94,12 @@ public class JobInfoBean {
         public List<OutputParameter> getOutputFiles() {
             return outputFiles;
         }
-        
-        //public boolean getIsVisualizer() {
-        //    return isVisualizer;
-        //}
 
         public long getElapsedTimeMillis() {
-        	if (dateSubmitted == null) return 0;
-        	else if (dateCompleted != null) return dateCompleted.getTime() - dateSubmitted.getTime();
-        	else if (!"finished".equals(getStatus())) return new Date().getTime() - dateSubmitted.getTime();
-        	else return 0;
+            if (dateSubmitted == null) return 0;
+            else if (dateCompleted != null) return dateCompleted.getTime() - dateSubmitted.getTime();
+            else if (!"finished".equals(getStatus())) return new Date().getTime() - dateSubmitted.getTime();
+            else return 0;
         }
         
         public long getRefreshInterval() {
@@ -131,31 +127,21 @@ public class JobInfoBean {
         }
         
         public List<GroupPermission> getGroupPermissions() {
-            String userId = jobInfo.getUserId(); //owner of the job
-            Set<String> groups = UserAccountManager.instance().getGroupMembership().getGroups(userId);
-
-            AnalysisDAO ds = new AnalysisDAO();
-            Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(jobNumber);
-            
-            //add any groups the user is a member of for which no permissions are set
-            Set<String> pg = new HashSet<String>(); //groups with permissions set
-            for(GroupPermission gp : groupPermissions) {
-                pg.add(gp.getGroupId());
-            }
-            groups.removeAll(pg);
-            for(String groupId : groups) {
-                groupPermissions.add(new GroupPermission(groupId, GroupPermission.Permission.NONE));
-            }
-            
-            //sorted by group
-            SortedSet<GroupPermission> sorted = new TreeSet<GroupPermission>(groupPermissions); 
-            return new ArrayList<GroupPermission>( sorted );
+            PermissionsManager pm = new PermissionsManager(jobInfo.getUserId());
+            return pm.getJobResultPermissions(jobNumber);
+        }
+        
+        public boolean getSetJobPermissionsAllowed() {
+            String userId = UIBeanHelper.getUserId();
+            PermissionsManager pm = new PermissionsManager(userId);
+            return pm.canSetJobPermissions(jobInfo);
         }
         
         /**
          * Process request parameters (from form submission) and update the access permissions for the current job.
+         * Only the owner of a job is allowed to change its permissions.
          */
-        public void saveGroupPermissions() { 
+        public String saveGroupPermissions() { 
             List<GroupPermission> permissions = getGroupPermissions();
             /* 
              JSF auto generated parameter names from jobResult.xhtml, e.g.
@@ -194,21 +180,40 @@ public class JobInfoBean {
                                 p = GroupPermission.Permission.READ_WRITE;                                
                             }
                             else {
-                                log.error("Ignoring permissions flag: "+permFlag);
-                                return;
+                                handleException("Ignoring permissions flag: "+permFlag);
+                                return "error";
                             }
                             GroupPermission gp = new GroupPermission(groupId, p);
                             updatedPermissions.add(gp);
                         }
                         catch (NumberFormatException e) {
-                            log.error("Can't parse input form", e);
+                            handleException("Can't parse input form", e);
+                            return "error";
                         }
                     }
                 }
             }
             
-            AnalysisDAO ds = new AnalysisDAO();
-            ds.setGroupPermissions(jobNumber, updatedPermissions);
+            String userId = UIBeanHelper.getUserId();
+            PermissionsManager pm = new PermissionsManager(userId);
+            try {
+                pm.setPermissions(jobInfo, updatedPermissions);
+                return "success";
+            }
+            catch (Exception e) {
+                handleException("You are not authorized to change the permissions for this job", e);
+                return "error";
+            }
+        }
+        
+        private void handleException(String message) {
+            log.error(message);
+            UIBeanHelper.setErrorMessage(message);
+        }
+
+        private void handleException(String message, Exception e) {
+            log.error(message, e);
+            UIBeanHelper.setErrorMessage(message);
         }
 
         public String getPermissionsLabel() {
@@ -232,69 +237,40 @@ public class JobInfoBean {
         }
         catch (NumberFormatException e1) {
             log.error(e1);
-		    //throw new FacesException("Requested job not found.");
+            //throw new FacesException("Requested job not found.");
             return;
         }
         LocalAnalysisClient client = new LocalAnalysisClient(UIBeanHelper.getUserId());
         try {
             JobInfo jobInfo = client.getJob(requestedJobNumber);
             jobInfoWrapper = createJobInfoWrapper(jobInfo);
-		    JobInfo[] children = new JobInfo[0];
-		    try {
-		        children = client.getChildren(jobInfo.getJobNumber());
-		    } 
-		    catch (Exception e) {
-		        log.error(e.getMessage(), e);
-		    }
-	
-		    childJobs = new JobInfoWrapper[children != null ? children.length : 0];
-		    if (children != null) {
-				for (int i = 0, length = children.length; i < length; i++) {
-				    childJobs[i] = createJobInfoWrapper(children[i]);
-				}
-		    }
-		} 
-        catch (WebServiceException e) {
-		    log.error(e);
-		    throw new FacesException("Job " + requestedJobNumber + " not found.");
-		}
-    }
-
-    //TODO: create helper function in group manager package
-    private boolean canReadJob(String userId, JobInfo jobInfo) {
-        return checkPermission(userId, jobInfo, false);
-    }
-    private boolean canWriteJob(String userId, JobInfo jobInfo) {
-        return checkPermission(userId, jobInfo, true);
-    }
-    private boolean checkPermission(String userId, JobInfo jobInfo, boolean write) {
-        if (AuthorizationHelper.adminJobs(userId)) {
-            return true;
-        }
-        String jobOwner = jobInfo.getUserId();
-        if (userId.equals(jobOwner)) {
-            return true;
-        }
-        AnalysisDAO ds = new AnalysisDAO();
-        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(jobInfo.getJobNumber());
-        IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
-        for(GroupPermission gp : groupPermissions) {
-            if (groupMembership.isMember(userId, gp.getGroupId())) {
-                if (write && gp.getPermission().getWrite()) {
-                    return true;
-                }
-                else if (gp.getPermission().getRead()) {
-                    return true;
+            JobInfo[] children = new JobInfo[0];
+            try {
+                children = client.getChildren(jobInfo.getJobNumber());
+            } 
+            catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+    
+            childJobs = new JobInfoWrapper[children != null ? children.length : 0];
+            if (children != null) {
+                for (int i = 0, length = children.length; i < length; i++) {
+                    childJobs[i] = createJobInfoWrapper(children[i]);
                 }
             }
+        } 
+        catch (WebServiceException e) {
+            log.error(e);
+            throw new FacesException("Job " + requestedJobNumber + " not found.");
         }
-        return false;
     }
 
     private JobInfoWrapper createJobInfoWrapper(JobInfo jobInfo) {
+        //TODO: shouldn't have to check for permissions here, should require permissions in order to create the JobInfo instance
         String userId = UIBeanHelper.getUserId();
-        if (!canReadJob(userId, jobInfo)) {
-            throw new FacesException("You don't have the required permissions to access the requested job.");
+        PermissionsManager pm = new PermissionsManager(userId);
+        if (!pm.canReadJob(userId, jobInfo)) {
+            throw new FacesException("You don't have the required permissions to access the requested job."); 
         }
 
         Map<String, ParameterInfo> parameterMap = new HashMap<String, ParameterInfo>();
@@ -342,14 +318,14 @@ public class JobInfoBean {
                             isUrl = false;
                             value = value.substring(5);// strip off the file: part for the next step
                         }
-                        if (displayValue.startsWith(genePatternUrl)) {			
+                        if (displayValue.startsWith(genePatternUrl)) {          
                             int lastNameIdx = value.lastIndexOf("/");
-                            displayValue = value.substring(lastNameIdx+1);		
+                            displayValue = value.substring(lastNameIdx+1);      
                             isUrl = true;
                         }
                     } 
                     catch (MalformedURLException e) {
-                        if (displayValue.startsWith("<GenePatternURL>")) {			
+                        if (displayValue.startsWith("<GenePatternURL>")) {          
                             int lastNameIdx = value.lastIndexOf("/");
                             if (lastNameIdx == -1) {
                                 lastNameIdx = value.lastIndexOf("file=");
@@ -358,7 +334,7 @@ public class JobInfoBean {
                                 }
                             }
                             if (lastNameIdx != -1) { 
-                                displayValue = value.substring(lastNameIdx);		
+                                displayValue = value.substring(lastNameIdx);        
                             } 
                             else {
                                 displayValue = value;
@@ -510,7 +486,7 @@ public class JobInfoBean {
     }
 
     public int getJobNumber() {
-	return requestedJobNumber;
+    return requestedJobNumber;
     }
 
     public Date getDateSubmitted() {
@@ -522,19 +498,19 @@ public class JobInfoBean {
     }
 
     public JobInfoWrapper getJobInfoWrapper() {
-	return jobInfoWrapper;
+    return jobInfoWrapper;
     }
 
     public void setJobInfoWrapper(JobInfoWrapper jobInfoWrapper) {
-	this.jobInfoWrapper = jobInfoWrapper;
+    this.jobInfoWrapper = jobInfoWrapper;
     }
 
     public JobInfoWrapper[] getChildJobs() {
-	return childJobs;
+    return childJobs;
     }
 
     public void setChildJobs(JobInfoWrapper[] childJobs) {
-	this.childJobs = childJobs;
+    this.childJobs = childJobs;
     }
 
 }
