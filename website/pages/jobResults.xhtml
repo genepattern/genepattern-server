@@ -234,8 +234,8 @@ document.location.href=location;
 				<tr>
 					<td valign="top" class="maintasknav" id="maintasknav" align="right" width="100%">
 					<h:outputText value=" Filter job results, show: " />
-					<h:selectOneMenu value="#{jobsBean.jobFilter}" onchange="this.form.submit();">
-					    <f:selectItems value="#{jobsBean.jobFilterMenu}" />
+					<h:selectOneMenu value="#{jobResultsFilterBean.jobFilter}" onchange="this.form.submit();">
+					    <f:selectItems value="#{jobResultsFilterBean.jobFilterMenu}" />
 					</h:selectOneMenu>
                     <h:selectBooleanCheckbox value="#{jobsBean.showExecutionLogs}" onclick="this.form.submit();" />show execution logs</td>
 				</tr>
@@ -379,7 +379,7 @@ document.location.href=location;
 			   </t:dataList> <h:commandLink immediate="true" rendered="#{jobsBean.pageCount gt 1 and jobsBean.pageNumber lt jobsBean.pageCount}"
 				action="#{jobsBean.goToPage}">Next<f:param name="page" value="#{jobsBean.pageNumber + 1}" /></h:commandLink>
 				<br clear="all"/>
-				<h:outputText rendered="#{jobsBean.pageCount gt 1}" value="Page #{jobsBean.pageNumber} of #{jobsBean.pageCount} (#{jobsBean.jobCount} jobs)" />
+				<h:outputText rendered="#{jobsBean.pageCount gt 1}" value="Page #{jobsBean.pageNumber} of #{jobsBean.pageCount} (#{jobResultsFilterBean.jobCount} jobs)" />
 		    </t:div>
 		</h:form>
 

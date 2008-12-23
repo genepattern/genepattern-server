@@ -68,6 +68,12 @@
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  <managed-bean>
+ <managed-bean>
+  <managed-bean-name>jobResultsFilterBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.JobResultsFilterBean</managed-bean-class>
+  <managed-bean-scope>session</managed-bean-scope>
+ </managed-bean>
+ <managed-bean>
   <managed-bean-name>userPrefsBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.UserPrefsBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>

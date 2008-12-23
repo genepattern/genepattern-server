@@ -38,20 +38,16 @@ import java.util.zip.ZipOutputStream;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
-import org.genepattern.server.UserAccountManager;
-import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
@@ -86,9 +82,6 @@ public class JobBean {
      */
     private String fileSortColumn = "name";
 
-    private boolean showEveryonesJobs = false;
-    private String selectedGroup = null;
-    private Set<String> selectedGroups = new HashSet<String>();
 
     /**
      * Specifies job column to sort on. Possible values are jobNumber taskName dateSubmitted dateCompleted status
@@ -106,7 +99,7 @@ public class JobBean {
     /** Current page displayed */
     private int pageNumber = 1;
     
-    private int jobCount = -1;
+    //private int jobCount = -1;
 
     public JobBean() {
 	try {
@@ -124,14 +117,6 @@ public class JobBean {
 	this.fileSortAscending = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "fileSortAscending", String
 		.valueOf(fileSortAscending)));
 	this.fileSortColumn = new UserDAO().getPropertyValue(userId, "fileSortColumn", fileSortColumn);
-    this.showEveryonesJobs = 
-        Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showEveryonesJobs", String.valueOf(showEveryonesJobs)));
-    this.selectedGroups.clear();
-    this.selectedGroup = new UserDAO().getPropertyValue(userId, "jobResultsFilter", null);
-    if (selectedGroup != null) {
-        this.selectedGroups.add(selectedGroup);
-        this.showEveryonesJobs = false;
-    }
 	this.jobSortColumn = new UserDAO().getPropertyValue(userId, "jobSortColumn", jobSortColumn);
 	this.jobSortAscending = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "jobSortAscending", String
 		.valueOf(jobSortAscending)));
@@ -310,60 +295,6 @@ public class JobBean {
 	return showExecutionLogs;
     }
     
-    public Object getJobFilter() {
-        if (selectedGroup != null) {
-            return selectedGroup;
-        }
-        if (showEveryonesJobs) {
-            return "#ALL_JOBS";
-        }
-        else {
-            return "#MY_JOBS";
-        }
-    }
-    
-    public void setJobFilter(Object obj) {
-        selectedGroup = null;
-        selectedGroups.clear();
-        if ((obj == null) || !(obj instanceof String)) {
-            //use defaults, reset
-            this.showEveryonesJobs = false;
-            new UserDAO().setProperty(UIBeanHelper.getUserId(), "showEveryonesJobs", String.valueOf(showEveryonesJobs));
-            return;
-        }
-        String menuVal = (String) obj;
-        if (menuVal.equals("#MY_JOBS")) {
-            this.showEveryonesJobs = false;
-            new UserDAO().setProperty(UIBeanHelper.getUserId(), "showEveryonesJobs", String.valueOf(showEveryonesJobs));
-            return;
-        }
-        else if (menuVal.equals("#ALL_JOBS")) {
-            this.showEveryonesJobs = true;
-            new UserDAO().setProperty(UIBeanHelper.getUserId(), "showEveryonesJobs", String.valueOf(showEveryonesJobs));
-            return;
-        }
-        else {
-            new UserDAO().setProperty(UIBeanHelper.getUserId(), "jobResultsFilter", menuVal);
-            selectedGroup = menuVal;
-            selectedGroups.add(menuVal);
-        }
-    }
-    
-    public List<SelectItem> getJobFilterMenu() {
-        List<SelectItem> rval = new ArrayList<SelectItem>();
-        rval.add(new SelectItem("#MY_JOBS", "My job results"));
-        rval.add(new SelectItem("#ALL_JOBS", "All job results"));
-        
-        //add groups to the list
-        String userId = UIBeanHelper.getUserId();
-        IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
-        Set<String> groups = groupMembership.getGroups(userId);
-        for(String group : groups) {
-            rval.add(new SelectItem(group, "In group: " + group));
-        }
-        return rval;
-    }
-
     /**
      * Loads a module from an output file.
      * 
@@ -642,33 +573,17 @@ public class JobBean {
 	this.pageNumber++;
     }
 
-    public int getJobCount() {
-        if (jobCount < 0) {
-            String userId = UIBeanHelper.getUserId();
-            
-            if (selectedGroup != null) {
-                boolean filterByGroup = false;
-                boolean includeGroups = true;
-                boolean getAllJobs = false;
-                boolean includeDeletedJobs = false;
-                this.jobCount = new AnalysisDAO().getNumJobs(userId, filterByGroup, selectedGroups, includeGroups, getAllJobs, includeDeletedJobs);
-            }
-            else {
-                Set<String> groups = null;
-                boolean isAdmin = AuthorizationHelper.adminServer(); 
-                if (!isAdmin && showEveryonesJobs) {
-                    IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
-                    groups = groupMembership.getGroups(userId);
-                }
-                this.jobCount = new AnalysisDAO().getNumJobs(userId, groups, showEveryonesJobs);
-                
-            }
-        }
-        return jobCount;
-    }
-
     public int getPageCount() {
-        return (int) Math.ceil(getJobCount() / (double) pageSize);
+        //requires session scope jobResultsFilterBean
+        FacesContext ctx = FacesContext.getCurrentInstance();
+        Object obj = ctx.getExternalContext().getSessionMap().get("jobResultsFilterBean");
+        if (!(obj instanceof JobResultsFilterBean)) {
+            log.error("Unexpected type for session bean 'jobResultsFilterBean' "+obj.getClass());
+            return 1;
+        }
+        JobResultsFilterBean jobResultsFilterBean = (JobResultsFilterBean) obj;
+        int jobCount = jobResultsFilterBean.getJobCount();
+        return (int) Math.ceil(jobCount / (double) pageSize);
     }
 
     public List<JobResultsWrapper> getAllJobs() {
@@ -680,6 +595,23 @@ public class JobBean {
     private List<JobResultsWrapper> getJobs(int maxJobNumber, int maxEntries) { 
         if (allJobs == null) {
             String userId = UIBeanHelper.getUserId();
+            //TODO: refactor to avoid dependency between JobBean and JobResultsFilterBean
+            String selectedGroup = null;
+            Set<String> selectedGroups = new HashSet<String>();
+            boolean showEveryonesJobs = false;
+            FacesContext ctx = FacesContext.getCurrentInstance();
+            Object obj = ctx.getExternalContext().getSessionMap().get("jobResultsFilterBean");
+            if (obj instanceof JobResultsFilterBean) {
+                JobResultsFilterBean jobResultsFilterBean = (JobResultsFilterBean) obj;
+                selectedGroup = jobResultsFilterBean.getSelectedGroup();
+                selectedGroups = jobResultsFilterBean.getSelectedGroups();
+                showEveryonesJobs = jobResultsFilterBean.isShowEveryonesJobs();
+            }
+            else {
+                log.error("Unexpected type for session bean 'jobResultsFilterBean' "+obj.getClass());
+            }
+            
+            
             LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
             try {
                 JobInfo[] jobInfos = new JobInfo[0];
@@ -781,9 +713,9 @@ public class JobBean {
 	return fileSortAscending;
     }
 
-    public boolean isShowEveryonesJobs() {
-	return showEveryonesJobs;
-    }
+//    public boolean isShowEveryonesJobs() {
+//	return showEveryonesJobs;
+//    }
 
     public void setFileSortAscending(boolean fileSortAscending) {
 	this.fileSortAscending = fileSortAscending;
@@ -900,7 +832,7 @@ public class JobBean {
     private void resetJobs() {
 	recentJobs = null;
 	allJobs = null;
-	jobCount = -1;
+	//jobCount = -1;
     }
 
     public static class OutputFileInfo {

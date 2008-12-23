@@ -307,38 +307,75 @@ public class AnalysisDAO extends BaseDAO {
 
     }
 
-    /**
-     * Get the total number of job entries which aren't deleted.
-     * @return
-     * 
-     * @deprecated
-     */
-    public long getNumJobs() {
-        return getNumJobs(null);
-    }
-
     /** 
-     * Get the total number of jobs which aren't deleted and which are owned by the given user.
-     * If the userId is null get a count of all non deleted jobs.
+     * Get the total number of all top-level, non deleted jobs.
+     * Top level means the job is not a step in a pipeline.
      * @param userId
      * @return
-     * 
-     * @deprecated
      */
-    public int getNumJobs(String userId) {
-        //if userId is null or empty get all of the jobs
-        String hql = "select count(a.jobNo) from AnalysisJob a where ((a.parent = null) OR (a.parent = -1)) and a.deleted = :deleted ";
-        if (userId != null) {
-            hql += " and a.userId = :userId";
-        }
-        Query query = getSession().createQuery(hql);
+    public int getNumJobsTotal() {
+        Query query = getSession().getNamedQuery("getNumJobs");
         query.setBoolean("deleted", false);
-        if (userId != null) {
-            query.setString("userId", userId);
-        }
         Object rval = query.uniqueResult();
-        
-        //handle rval type of Integer or Long
+        return getCount(rval);
+    }
+
+    /**
+     * Get the number of jobs owned by the user.
+     * 
+     * @param userId
+     * @return
+     */
+    public int getNumJobsByUser(String userId) {
+        Query query = getSession().getNamedQuery("getNumJobsByUser");
+        query.setBoolean("deleted", false);
+        query.setString("userId", userId);
+        Object rval = query.uniqueResult();
+        return getCount(rval);
+    }
+    
+    /**
+     * Get the number of jobs that are either owned by the user or that are in one of the given groups.
+     * 
+     * @param userId 
+     * @param groupIds - a list of zero or more groups
+     * 
+     * @return
+     */
+    public int getNumJobsByUser(String userId, Set<String> groupIds) {
+        if (groupIds == null || groupIds.size() == 0) {
+            return getNumJobsByUser(userId);
+        }
+        Query query = getSession().getNamedQuery("getNumJobsByUserIncludingGroups");
+        query.setBoolean("deleted", false);
+        query.setString("userId", userId);
+        query.setParameterList("groupId", groupIds);
+        Object rval = query.uniqueResult();
+        return getCount(rval);
+    }
+
+    /**
+     * Get the number of jobs in at least one of the given groups. Don't count duplicates.
+     * 
+     * @param groupIds
+     * @return
+     * @throws OmnigeneException
+     */
+    public int getNumJobsInGroups(Set<String> groupIds) throws OmnigeneException {
+        Query query = getSession().getNamedQuery("getNumJobsInGroups");
+        query.setBoolean("deleted", false);
+        query.setParameterList("groupId", groupIds);
+        Object rval = query.uniqueResult();
+        return getCount(rval);
+    }
+    
+    /**
+     * Helper method for converting from query#getUniqeResult to an int.
+     * 
+     * @param rval
+     * @return
+     */
+    private int getCount(Object rval) {
         if (rval instanceof Long) {
             return ((Long)rval).intValue();
         }
@@ -346,45 +383,7 @@ public class AnalysisDAO extends BaseDAO {
             return ((Integer)rval).intValue();
         }
         else if (rval instanceof Number) {
-           return ((Number)rval).intValue();
-        }
-        else {
-            throw new OmnigeneException("Unknown type returned from hibernate query: "+rval);
-        }
-    }
-
-    public int getNumJobs(String userId, Set<String> groups, boolean showEveryonesJobs) {
-        boolean includeGroups = groups != null;
-        boolean getAllJobs = showEveryonesJobs;
-        return getNumJobs(userId, groups, includeGroups, getAllJobs, false);
-    }
-
-    private int getNumJobs(String userId, Set<String> groups, boolean includeGroups, boolean getAllJobs, boolean includeDeletedJobs) {
-        boolean filterByGroup = false;
-        return getNumJobs(userId, filterByGroup, groups, includeGroups, getAllJobs, includeDeletedJobs);
-    }
-
-    public int getNumJobs(String userId, boolean filterByGroup, Set<String> groups, boolean includeGroups, boolean getAllJobs, boolean includeDeletedJobs) {
-        boolean getCount = true;
-        StringBuffer hql = new StringBuffer(
-                getAnalysisJobQuery(getCount, filterByGroup, groups, includeGroups, getAllJobs, includeDeletedJobs)
-        );
-        Query query = getSession().createQuery(hql.toString());
-        query.setBoolean("deleted", false);
-        if (includeGroups || !getAllJobs) {
-            query.setString("username", userId);
-        }
-        Object rval = query.uniqueResult();
-        
-        //handle rval type of Integer or Long
-        if (rval instanceof Long) {
-            return ((Long)rval).intValue();
-        }
-        else if (rval instanceof Integer) {
-            return ((Integer)rval).intValue();
-        }
-        else if (rval instanceof Number) {
-           return ((Number)rval).intValue();
+            return ((Number)rval).intValue();
         }
         else {
             throw new OmnigeneException("Unknown type returned from hibernate query: "+rval);
@@ -473,7 +472,7 @@ public class AnalysisDAO extends BaseDAO {
     public JobInfo[] getPagedJobs(boolean getAllJobs, boolean filterByGroup, boolean includeGroups, String username, Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending) {
 
         StringBuffer hql = new StringBuffer(
-                getAnalysisJobQuery(false, filterByGroup, groups, includeGroups, getAllJobs, includeDeletedJobs)
+                getAnalysisJobQuery(filterByGroup, groups, includeGroups, getAllJobs, includeDeletedJobs)
         );
 
         switch (sortOrder) {
@@ -520,24 +519,9 @@ public class AnalysisDAO extends BaseDAO {
         }
         return results.toArray(new JobInfo[] {});
     }
-    
-    /**
-     * Construct an HQL query to get the jobs (or a count of the jobs) for a given user.
-     * 
-     * @param count - if true, just get a count of the number of distinct jobs
-     * @param groups - Set of group_ids for filtering the jobs, can be null.
-     * @param includeGroups - flag indicating whether or not to include groups in the query
-     * @param getAllJobs - flag indicating whether or not to get all jobs
-     * @param includeDeletedJobs - flag indicating whether or not to include deleted jobs
-     * 
-     * @return an HQL query string
-     */
-    private String getAnalysisJobQuery(boolean count, Set<String> groups, boolean includeGroups, boolean getAllJobs, boolean includeDeletedJobs) {
-        boolean filterByGroup = false;
-        return getAnalysisJobQuery(count, filterByGroup, groups, includeGroups, getAllJobs, includeDeletedJobs);
-    }
 
-    private String getAnalysisJobQuery(boolean count, boolean filterByGroup, Set<String> groups, boolean includeGroups, boolean getAllJobs, boolean includeDeletedJobs) {
+    //TODO: use named queries (see AnalysisJob.hbm.xml) because it is easier to understand what is going on
+    private String getAnalysisJobQuery(boolean filterByGroup, Set<String> groups, boolean includeGroups, boolean getAllJobs, boolean includeDeletedJobs) {
         /* 
         Example SQL query
         select (distinct a.job_no) ...
@@ -568,12 +552,7 @@ public class AnalysisDAO extends BaseDAO {
          */
 
         StringBuffer hql = new StringBuffer(" select ");
-        if (count) {
-            hql.append("count(distinct a.jobNo) ");
-        }
-        else {
-            hql.append(" distinct a ");
-        }
+        hql.append(" distinct a ");
         hql.append(" from org.genepattern.server.domain.AnalysisJob as a ");
         if (includeGroups) {
             hql.append(" left join a.permissions as p ");

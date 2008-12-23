@@ -29,4 +29,51 @@
         <one-to-many class="org.genepattern.server.auth.JobGroup" />
     </set>
   </class>
+
+  <query name="getNumJobs">
+  <![CDATA[
+      select count(distinct a.jobNo) 
+      from org.genepattern.server.domain.AnalysisJob as a left join a.permissions as p 
+      where 
+        ((a.parent = null) OR (a.parent = -1))  
+        AND 
+        a.deleted = :deleted  
+  ]]></query>
+
+  <query name="getNumJobsByUser">
+  <![CDATA[
+      select count(distinct a.jobNo) 
+      from org.genepattern.server.domain.AnalysisJob as a left join a.permissions as p 
+      where 
+        ((a.parent = null) OR (a.parent = -1))  
+        AND 
+        a.deleted = :deleted  
+        AND 
+        ( a.userId = :userId )
+  ]]></query>
+  
+  <query name="getNumJobsInGroups">
+  <![CDATA[
+      select count(distinct a.jobNo) 
+      from org.genepattern.server.domain.AnalysisJob as a left join a.permissions as p 
+      where 
+        ((a.parent = null) OR (a.parent = -1))  
+        AND 
+        a.deleted = :deleted  
+        AND 
+        p.groupId in ( :groupId )
+  ]]></query>
+  
+    <query name="getNumJobsByUserIncludingGroups">
+  <![CDATA[
+      select count(distinct a.jobNo) 
+      from org.genepattern.server.domain.AnalysisJob as a left join a.permissions as p 
+      where 
+        ((a.parent = null) OR (a.parent = -1))  
+        AND 
+        a.deleted = :deleted  
+        AND 
+        ( a.userId = :userId OR p.groupId in ( :groupId ) )
+  ]]></query>
+  
 </hibernate-mapping>
