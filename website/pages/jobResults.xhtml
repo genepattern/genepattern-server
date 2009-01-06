@@ -38,36 +38,6 @@
       return '#{facesContext.externalContext.requestContextPath}';
     }
 
-    // Toggle the sort order state.
-
-    function toggleSortOrder(id) {
-
-      var hiddenField = $(id + "_field");
-      var image = $(id);
-      var currentValue = hiddenField.value;
-      if(currentValue == "true") {
-        hiddenField.value = "false";
-        image.src = '#{facesContext.externalContext.requestContextPath}/images/sort-down.gif';
-      }
-      else {
-        hiddenField.value = "true";
-        image.src = '#{facesContext.externalContext.requestContextPath}/images/sort-up.gif';
-      }
-    }
-
-    function setSortOrderImage(id) {
-      var hiddenField = $(id + "_field");
-      var image = $(id);
-      var currentValue = hiddenField.value;
-      if(currentValue == "true") {
-         image.src = '#{facesContext.externalContext.requestContextPath}/images/sort-up.gif';
-      }
-      else {
-        image.src = '#{facesContext.externalContext.requestContextPath}/images/sort-down.gif';
-      }
-    }
-
-
     var jobNumbers = new Array();
     var fileRows = new Object();
 
@@ -160,18 +130,21 @@
       }
     }
 
-
     function openAll() {
       for(property in fileRows) {
         showCategory(property);
       }
+      var header_two_row = document.getElementById("header_two");
+      header_two_row.style.display="";
     }
+
     function closeAll() {
       for(property in fileRows) {
         hideCategory(property);
       }
+      var header_two_row = document.getElementById("header_two");
+      header_two_row.style.display="none";
     }
-
 
 	function confirmDelete() {
 		var jobs = document.getElementsByClassName("jobResult", "jobsForm");
@@ -214,14 +187,15 @@
 	}
 
 	function toggleShowEveryonesJobs(cb) {
-var location = '#{facesContext.externalContext.requestContextPath}/pages/jobResults.jsf';
-if(cb.checked) {
-location += "?all=1";
-} else {
-location += "?all=0";
-}
-document.location.href=location;
-}
+        var location = '#{facesContext.externalContext.requestContextPath}/pages/jobResults.jsf';
+        if(cb.checked) {
+            location += "?all=1";
+        } 
+        else {
+            location += "?all=0";
+        }
+        document.location.href=location;
+    }
 
 /* ]]> */
 
@@ -291,7 +265,7 @@ document.location.href=location;
 		<td>
 		  <!--  file size link here -->
         </td>
-		<td><h:commandLink action="#{jobsBean.sortJobsByDateSubmitted}" title="Sort job results by date submitted">submitted
+		<td><h:commandLink action="#{jobsBean.sortJobsByDateSubmitted}" title="Sort job results by date submitted">date submitted
           <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'dateSubmitted'}">
             <img style="cursor: pointer;"  width="11" height="16" border="0" align="absmiddle" 
               src="#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.jobSortFlag}.gif" 
@@ -329,7 +303,7 @@ document.location.href=location;
       </tr>
 
       <!--  secondary header row: for sorting output files within each job result -->
-      <tr class="tableheader-row">
+      <tr id="header_two" class="tableheader-row">
         <td></td>
         <td></td>
         <td></td>
@@ -358,8 +332,8 @@ document.location.href=location;
             </h:outputText>
           </h:commandLink>&#160;</td>                    
         <td></td>
-        <td>
-          <h:commandLink action="#{jobsBean.sortFilesByDateCompleted}" title="Sort output files by last modification date">file saved
+        <td>&#160;&#160;&#160;&#160;&#160;
+          <h:commandLink action="#{jobsBean.sortFilesByDateCompleted}" title="Sort output files by last modification date">date saved
             <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'lastModified'}">
               <img style="cursor: pointer;"  width="11" height="16" border="0" align="absmiddle" 
                 src="#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.fileSortFlag}.gif" 
