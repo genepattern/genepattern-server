@@ -700,6 +700,80 @@ public class JobBean {
 	return null;
 
     }
+    
+    public String sortFilesByName() {
+        toggleFileSortColumn("name");
+        return "success";
+    }
+    
+    public String sortFilesBySize() {
+        toggleFileSortColumn("size");
+        return "success";
+    }
+    
+    public String sortFilesByDateCompleted() {
+        toggleFileSortColumn("lastModified");
+        return "success";
+    }
+    
+    private void toggleFileSortColumn(String fileSortColumn) {
+        if (fileSortColumn.equals(this.fileSortColumn)) {
+            this.setFileSortAscending(!this.fileSortAscending);            
+        }
+        else {
+            this.setFileSortColumn(fileSortColumn);
+        }
+    }
+    
+    public String sortJobsById() {
+        if ("jobNumber".equals(this.jobSortColumn)) {
+            this.setJobSortAscending(!this.jobSortAscending);
+        }
+        else {
+            this.setJobSortColumn("jobNumber");
+        }
+        return "success";
+    }
+    
+    public String sortJobsByModule() {
+        if ("taskName".equals(this.jobSortColumn)) {
+            this.setJobSortAscending(!this.jobSortAscending);
+        }
+        else {
+            this.setJobSortColumn("taskName");
+        }
+        return "success";
+    }
+    
+    public String sortJobsByDateSubmitted() {
+        if ("dateSubmitted".equals(this.jobSortColumn)) {
+            this.setJobSortAscending(!this.jobSortAscending);
+        }
+        else {
+            this.setJobSortColumn("dateSubmitted");
+        }
+        return "success";
+    }
+    
+    public String sortJobsByDateCompleted() {
+        if ("dateCompleted".equals(this.jobSortColumn)) {
+            this.setJobSortAscending(!this.jobSortAscending);
+        }
+        else {
+            this.setJobSortColumn("dateCompleted");
+        }
+        return "success";
+    }
+
+    public String sortJobsByStatus() {
+        if ("status".equals(this.jobSortColumn)) {
+            this.setJobSortAscending(!this.jobSortAscending);
+        }
+        else {
+            this.setJobSortColumn("status");
+        }
+        return "success";
+    }
 
     public String getFileSortColumn() {
 	return fileSortColumn;
@@ -712,10 +786,6 @@ public class JobBean {
     public boolean isFileSortAscending() {
 	return fileSortAscending;
     }
-
-//    public boolean isShowEveryonesJobs() {
-//	return showEveryonesJobs;
-//    }
 
     public void setFileSortAscending(boolean fileSortAscending) {
 	this.fileSortAscending = fileSortAscending;
@@ -824,6 +894,24 @@ public class JobBean {
 
     public boolean isJobSortAscending() {
 	return jobSortAscending;
+    }
+    
+    public String getJobSortFlag() {
+        if (jobSortAscending) {
+            return "up";
+        }
+        else {
+            return "down";
+        }
+    }
+    
+    public String getFileSortFlag() {
+        if (fileSortAscending) {
+            return "up";
+        }
+        else {
+            return "down";
+        }
     }
 
     /**
