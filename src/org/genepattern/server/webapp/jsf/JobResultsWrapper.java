@@ -176,25 +176,47 @@ public class JobResultsWrapper {
     }
     
     public List<GroupPermission> getGroupPermissions() {
+        return getGroupPermissions(null);
+    }
+
+    public List<GroupPermission> getGroupPermissionsWrite() {
+        return getGroupPermissions(GroupPermission.Permission.READ_WRITE);
+    }
+
+    public List<GroupPermission> getGroupPermissionsReadOnly() {
+        return getGroupPermissions(GroupPermission.Permission.READ);
+    }
+
+    private List<GroupPermission> getGroupPermissions(GroupPermission.Permission flag) {
         AnalysisDAO ds = new AnalysisDAO();
-        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(jobInfo.getJobNumber());
+        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(jobInfo.getJobNumber(), flag);
         
-        //sorted by group
-        SortedSet<GroupPermission> sorted = new TreeSet<GroupPermission>(groupPermissions);
+        //sorted by permission (write then read), then by group
+        SortedSet<GroupPermission> sorted = new TreeSet<GroupPermission>(new GroupPermission.SortByPermission());
+        sorted.addAll(groupPermissions);
+        
+        //sorted by group id
+        //SortedSet<GroupPermission> sorted = new TreeSet<GroupPermission>(groupPermissions, new GroupPermission.SortByPermission());
         return new ArrayList<GroupPermission>( sorted );
     }
     
     public String getPermissionsLabel() {
         List<GroupPermission> groups = getGroupPermissions();
         if (groups == null || groups.size() == 0) {
-            return "";
+            return "private";
         }
-        String rval = "( ";
+        boolean isPublic = false;
         for (GroupPermission gp : groups) {
-            rval += gp.getGroupId() + " " + gp.getPermission() + ", ";
+            //hack: special case for 'public' group
+            if ("public".equals(gp.getGroupId())) {
+                isPublic = true;
+                break;
+            }
         }
-        int idx = rval.lastIndexOf(", ");
-        return rval.substring(0, idx) + " )";
+        if (isPublic) {
+            return "public";
+        }
+        return "shared";
     }
 
     /**
