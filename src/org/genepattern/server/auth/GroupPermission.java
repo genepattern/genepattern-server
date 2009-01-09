@@ -1,6 +1,7 @@
 package org.genepattern.server.auth;
 
 import java.io.Serializable;
+import java.util.Comparator;
 
 public class GroupPermission implements Comparable<GroupPermission>, Serializable {
     public enum Permission {
@@ -20,6 +21,23 @@ public class GroupPermission implements Comparable<GroupPermission>, Serializabl
             return this == READ || this == READ_WRITE;
         }
     };
+    
+    /**
+     * Helper class for sorting permissions first by permission type (WRITE then READ), then by group id.
+     * Use this to output a listing of all groups which have write permission, followed by all groups which have read permission.
+     */
+    public static class SortByPermission implements Comparator<GroupPermission> {
+        public int compare(GroupPermission arg0, GroupPermission arg1) {
+            if (arg0 == arg1) {
+                return 0;
+            }
+            int pcomp = arg0.permission.compareTo(arg1.permission);
+            if (pcomp != 0) {
+                return pcomp;
+            }
+            return arg0.groupId.compareTo(arg1.groupId);
+        }
+    }
     
     private String groupId = null;
     private Permission permission = null;
