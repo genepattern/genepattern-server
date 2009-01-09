@@ -1,13 +1,40 @@
 .boldtype {font-weight: bold}
 .smalltype {font-size: 9px}
-.tableheader-row {
-	color: #666633;
-	font-weight: bold;
-	line-height: 20px;
+
+.jobresults-header-1 td, 
+.jobresults-header-2 td 
+{
+    color: #666633;
+    font-weight: bold;
+    line-height: 20px;
+    white-space: nowrap;
+    padding-right: 12px;
+
+    border-top-style: solid;
+    border-top-width: 2px;
+    border-top-color: #CCCC99;
 }
-.tableheader-row td{
-	color: #666633;
-	font-weight: bold;
+
+.jobresults-header-2 td 
+{
+    border-top-width: 1px;
+    border-top-color: #EBEBFB;
+}
+
+.jobresults-header-1 a, 
+.jobresults-header-2 a
+{
+    color: #666633;
+}
+	
+.tableheader-row, .tableheader-row td {
+    background-color: #F5F5E3;
+    font-weight: bold;
+    line-height: 20px;
+}
+
+.tableheader-row td
+{
 	border-top-style: solid;
 	border-top-width: 2px;
 	border-top-color: #CCCC99;
@@ -16,7 +43,8 @@
     padding-right: 12px;
 }
 
-.tableheader-row a{
+.tableheader-row a
+{
     color: #666633;
 }
 
@@ -53,6 +81,7 @@
 	border-top-width: 2px;
 	border-top-color: #CCCC99;
 }
+
 .task-title a{
 	text-decoration: none;
 	color: #000000;
@@ -60,13 +89,13 @@
 
 .task-title a:hover {
 	color: #333399;
-	text-decoration:  none;
+	text-decoration: none;
 }
+
 .task-title a:active {
 	color: #6666FF;
 	text-decoration: none;
 }
-
 
 .pipelinetask-titlerow {
 	background-color: #F5F5E3;
@@ -90,13 +119,12 @@
 }
 
 
-.files {
+.files, .files td, .files-nolines, .pipelinefiles {
 	background-color: #FFFFFF;
 	line-height: 20px;
 }
 
 .files td{
-	background-color: #FFFFFF;
  	border-top-style: solid;
 	border-top-width: 1px;
 	border-top-color: #EBEBFB;
@@ -105,21 +133,20 @@
 }
 
 .pipelinefiles {
-	background-color: #FFFFFF;
-	line-height: 20px;
 	text-indent: 40px;
 }
 
 
-.files-nolines {
-	background-color: #FFFFFF;
-	line-height: 20px;
-}
 .files-nolines td{
 	background-color: #FFFFFF;
  	border-top-style: solid;
 	border-top-width: 1px;
 	border-top-color: #FFFFFF;
+}
+
+.checkbox_column {
+	text-align: center;
+	padding-right: 12px;
 }
 
 .status-finished {color: #666633; }

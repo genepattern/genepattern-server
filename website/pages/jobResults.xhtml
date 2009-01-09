@@ -17,7 +17,7 @@
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:t="http://myfaces.apache.org/tomahawk"
-	xmlns:c="http://java.sun.com/jstl/core">
+	xmlns:c="http://java.sun.com/jstl/core" charset="UTF-8">
 <ui:composition template="/templates/common.xhtml">
 	<ui:define name="pageTitle">
 		GenePattern | Job Results
@@ -81,8 +81,6 @@
       }
     }
 
-
-
     function toggleVisibility(jobNo) {
       var hiddenField = $("expansion_state_" + jobNo);
       if(hiddenField.value == "false")
@@ -96,7 +94,6 @@
     }
 
     function hideCategory( jobNo ) {
-
       $("expansion_state_" + jobNo).value = "false";
 
       var downArrow = document.getElementById(jobNo + "_expanded_img");
@@ -114,7 +111,6 @@
     }
 
     function showCategory( jobNo ) {
-
       $("expansion_state_" + jobNo).value = "true";
 
       var downArrow = document.getElementById(jobNo + "_expanded_img");
@@ -186,17 +182,6 @@
 
 	}
 
-	function toggleShowEveryonesJobs(cb) {
-        var location = '#{facesContext.externalContext.requestContextPath}/pages/jobResults.jsf';
-        if(cb.checked) {
-            location += "?all=1";
-        } 
-        else {
-            location += "?all=0";
-        }
-        document.location.href=location;
-    }
-
 /* ]]> */
 
 	</script>
@@ -211,12 +196,7 @@
     <!-- Job results table -->
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="padding-top: 10px;">
       <tr class="maintasknav">
-        <td>&#160;</td>
-        <td>&#160;</td>
-        <td>&#160;</td>
-        <td>&#160;</td>
-        <td>&#160;</td>
-        <td>&#160;</td>
+        <td colspan="6">&#160;</td>
         <td align="right" colspan="4">
         <h:outputText value=" Filter job results, show: " />
         <h:selectOneMenu value="#{jobResultsFilterBean.jobFilter}" onchange="this.form.submit();">
@@ -226,7 +206,7 @@
       </tr>
       <tr class="maintasknav">
         <td>&#160;</td>
-        <td align="center"><h:commandLink action="#{jobsBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink></td>
+        <td class="checkbox_column"><h:commandLink action="#{jobsBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink></td>
         <td>&#160;</td>
         <td align="left"><h:commandLink onclick="openAll(); return false;">open all</h:commandLink>&#160;|&#160;<h:commandLink onclick="closeAll(); return false;">close all</h:commandLink></td>
         <td>&#160;</td>
@@ -234,187 +214,132 @@
         <td align="right" valign="top" colspan="4"><h:selectBooleanCheckbox value="#{jobsBean.showExecutionLogs}" onclick="this.form.submit();" />show execution logs</td>
       </tr>
 
-      <!-- first header row: for toggling sort order of job results -->
-      <tr class="tableheader-row">
+      <!-- primary header row; active links for toggling sort order of job results -->
+      <tr class="jobresults-header-1">
         <td><h:commandLink action="#{jobsBean.sortJobsById}" title="Sort job results by job number (#{jobsBean.jobSortAscending ? 'high to low' : 'low to high'})">job
-          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'jobNumber'}">
-          <img style="cursor: pointer;"  width="11" height="16" border="0" align="absmiddle" 
-            src="#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.jobSortFlag}.gif" 
-            onmouseover="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.jobSortFlag}-over.gif'"
-            onmouseout="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.jobSortFlag}.gif'" />
-          </h:outputText>
-          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'jobNumber'}">
-            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="11" height="16" border="0" align="absmiddle" />
-          </h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'jobNumber' and jobsBean.jobSortAscending}">▲</h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'jobNumber' and not jobsBean.jobSortAscending}">▼</h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'jobNumber'}">&#160;</h:outputText>
         </h:commandLink></td>
-		<td>
-		  <div align="center"><input type="checkbox" onclick="toggleAllCheckboxes(this);" /></div>
-	    </td>
+		<td class="checkbox_column"><input type="checkbox" onclick="toggleAllCheckboxes(this);" /></td>
 		<td>&#160;</td>
 		<td><h:commandLink action="#{jobsBean.sortJobsByModule}" title="Sort job results by module name">module name
-		  <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'taskName'}">
-          <img style="cursor: pointer;"  width="11" height="16" border="0" align="absmiddle" 
-            src="#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.jobSortFlag}.gif" 
-            onmouseover="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.jobSortFlag}-over.gif'"
-            onmouseout="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.jobSortFlag}.gif'" />
-          </h:outputText>
-          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'taskName'}">
-            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="11" height="16" border="0" align="absmiddle" />
-          </h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'taskName' and jobsBean.jobSortAscending}">▲</h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'taskName' and not jobsBean.jobSortAscending}">▼</h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'taskName'}">&#160;</h:outputText>
 		</h:commandLink></td>
 		<td>
 		  <!--  file size link here -->
         </td>
 		<td><h:commandLink action="#{jobsBean.sortJobsByDateSubmitted}" title="Sort job results by date submitted">date submitted
-          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'dateSubmitted'}">
-            <img style="cursor: pointer;"  width="11" height="16" border="0" align="absmiddle" 
-              src="#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.jobSortFlag}.gif" 
-              onmouseover="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.jobSortFlag}-over.gif'"
-              onmouseout="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.jobSortFlag}.gif'" />
-          </h:outputText>
-          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'dateSubmitted'}">
-            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="11" height="16" border="0" align="absmiddle" />
-          </h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'dateSubmitted' and jobsBean.jobSortAscending}">▲</h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'dateSubmitted' and not jobsBean.jobSortAscending}">▼</h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'dateSubmitted'}">&#160;</h:outputText>
 		</h:commandLink></td>
 		<td><h:commandLink action="#{jobsBean.sortJobsByDateCompleted}" title="Sort job results by date completed">date completed
-          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'dateCompleted'}">
-            <img style="cursor: pointer;"  width="11" height="16" border="0" align="absmiddle" 
-              src="#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.jobSortFlag}.gif" 
-              onmouseover="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.jobSortFlag}-over.gif'"
-              onmouseout="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.jobSortFlag}.gif'" />
-          </h:outputText>
-          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'dateCompleted'}">
-            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="11" height="16" border="0" align="absmiddle" />
-          </h:outputText>
-		</h:commandLink></td>
-		<td><h:commandLink action="#{jobsBean.sortJobsByStatus}" title="Sort job results by status">status
-		  <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'status'}">
-            <img style="cursor: pointer;"  width="11" height="16" border="0" align="absmiddle" 
-              src="#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.jobSortFlag}.gif" 
-              onmouseover="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.jobSortFlag}-over.gif'"
-              onmouseout="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.jobSortFlag}.gif'" />
-          </h:outputText>
-          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'status'}">
-            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="11" height="16" border="0" align="absmiddle" />
-          </h:outputText>
-		</h:commandLink></td>
+          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'dateCompleted' and jobsBean.jobSortAscending}">▲</h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'dateCompleted' and not jobsBean.jobSortAscending}">▼</h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'dateCompleted'}">&#160;</h:outputText>
+        </h:commandLink></td>
+        <td><h:commandLink action="#{jobsBean.sortJobsByStatus}" title="Sort job results by status">status
+          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'status' and jobsBean.jobSortAscending}">▲</h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'status' and not jobsBean.jobSortAscending}">▼</h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'status'}">&#160;</h:outputText>
+        </h:commandLink></td>
 		<td>owner</td>
 		<td>groups</td>					
       </tr>
 
-      <!--  secondary header row: for sorting output files within each job result -->
-      <tr id="header_two" class="tableheader-row">
-        <td></td>
-        <td></td>
-        <td></td>
+      <!--  secondary header row: active links for sorting output files within each job result -->
+      <tr id="header_two" class="jobresults-header-2">
+        <td>&#160;</td>
+        <td>&#160;</td>
+        <td>&#160;</td>
         <td>&#160;&#160;&#160;&#160;&#160;
           <h:commandLink action="#{jobsBean.sortFilesByName}" title="Sort output files by name">file  
-            <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'name'}">
-              <img style="cursor: pointer;"  width="11" height="16" border="0" align="absmiddle" 
-                src="#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.fileSortFlag}.gif" 
-                onmouseover="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.fileSortFlag}-over.gif'"
-                onmouseout="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.fileSortFlag}.gif'" />
-            </h:outputText>
-            <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn != 'name'}">
-              <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="11" height="16" border="0" align="absmiddle" />
-            </h:outputText>                 
+          <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'name' and jobsBean.fileSortAscending}">▲</h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'name' and not jobsBean.fileSortAscending}">▼</h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn != 'name'}">&#160;</h:outputText>
           </h:commandLink></td>
         <td>
           <h:commandLink action="#{jobsBean.sortFilesBySize}" title="Sort output files by size">size
-            <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'size'}">
-              <img style="cursor: pointer;"  width="11" height="16" border="0" align="absmiddle" 
-                src="#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.fileSortFlag}.gif" 
-                onmouseover="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.fileSortFlag}-over.gif'"
-                onmouseout="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.fileSortFlag}.gif'" />
-            </h:outputText>
-            <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn != 'size'}">
-              <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="11" height="16" border="0" align="absmiddle" />
-            </h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'size' and jobsBean.fileSortAscending}">▲</h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'size' and not jobsBean.fileSortAscending}">▼</h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn != 'size'}">&#160;</h:outputText>
           </h:commandLink>&#160;</td>                    
         <td></td>
         <td>&#160;&#160;&#160;&#160;&#160;
           <h:commandLink action="#{jobsBean.sortFilesByDateCompleted}" title="Sort output files by last modification date">date saved
-            <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'lastModified'}">
-              <img style="cursor: pointer;"  width="11" height="16" border="0" align="absmiddle" 
-                src="#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.fileSortFlag}.gif" 
-                onmouseover="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.fileSortFlag}-over.gif'"
-                onmouseout="this.src='#{facesContext.externalContext.requestContextPath}/images/sort-#{jobsBean.fileSortFlag}.gif'" />
-            </h:outputText>
-            <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn != 'lastModified'}">
-              <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="11" height="16" border="0" align="absmiddle" />
-            </h:outputText>                 
+          <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'lastModified' and jobsBean.fileSortAscending}">▲</h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'lastModified' and not jobsBean.fileSortAscending}">▼</h:outputText>
+          <h:outputText escape="false" rendered="#{jobsBean.fileSortColumn != 'lastModified'}">&#160;</h:outputText>
           </h:commandLink>&#160;</td>
         <td></td>
         <td></td>
         <td></td>
       </tr>
 
-				<!--  Loop through job list -->
-				<t:dataList var="rootJobWrapper" value="#{jobsBean.pagedJobs}" rowIndexVar="jobIndex">
-                  <script type="text/javascript" language="javascript">
-                    jobNumbers[#{jobIndex}]='#{rootJobWrapper.jobNumber}';
-                  </script>
+      <!--  Loop through job list -->
+      <t:dataList var="rootJobWrapper" value="#{jobsBean.pagedJobs}" rowIndexVar="jobIndex">
+        <script type="text/javascript" language="javascript">
+          jobNumbers[#{jobIndex}]='#{rootJobWrapper.jobNumber}';
+        </script>
+        <ui:include src="jobResultsJobs.xhtml">
+          <ui:param name="jobWrapper" value="#{rootJobWrapper}" />
+          <ui:param name="parentJobNumber" value="#{rootJobWrapper.jobNumber}" />
+        </ui:include>
 
-                  <ui:include src="jobResultsJobs.xhtml">
-                    <ui:param name="jobWrapper" value="#{rootJobWrapper}" />
-                    <ui:param name="parentJobNumber" value="#{rootJobWrapper.jobNumber}" />
-                  </ui:include>
-
-                  <!--  Loop through descendants  -->
-                  <t:dataList var="childJob" value="#{rootJobWrapper.descendantJobs}">
-                    <script type="text/javascript" language="javascript">
-                      var rowId = "job_row_" + #{childJob.jobNumber};
-                      addFileRow('#{rootJobWrapper.jobNumber}', rowId);
-                    </script>
-
-                    <ui:include src="jobResultsJobs.xhtml">
-                      <ui:param name="jobWrapper" value="#{childJob}" />
-                      <ui:param name="parentJobNumber" value="#{rootJobWrapper.jobNumber}" />
-                    </ui:include>
-                  </t:dataList>
-                </t:dataList>
-
-				<tr>
-					<td class="smalltype">&#160;</td>
-					<td valign="top" class="smalltype"  style="white-space: nowrap;"><div align="center"><h:commandLink
-						action="#{jobsBean.delete}"
-						onclick="if (!confirmDelete()) return false">delete</h:commandLink>
-					</div></td>
-					<td>&#160;</td>
-					<td>&#160;</td>
-					<td>&#160;</td>
-					<td>&#160;</td>
-					<td>&#160;</td>
-					<td>&#160;</td>
-					<td>&#160;</td>
-					<td>&#160;</td>
-				</tr>
-			</table>
-
-			<t:div style="text-align: center;" rendered="#{jobsBean.pageCount gt 1}">
-			<h:commandLink rendered="#{jobsBean.pageNumber gt 1}" immediate="true" 
-			   action="#{jobsBean.goToPage}"><h:outputText value="Previous"/><f:param name="page" value="#{jobsBean.pageNumber - 1}" /></h:commandLink>
-			   <t:dataList var="p" value="#{jobsBean.pages}">
-			       <h:outputText rendered="#{p lt 0}" value=" ... " />
-			       <h:commandLink rendered="#{p gt 0 and p != jobsBean.pageNumber}"
-				       action="#{jobsBean.goToPage}"><span style="text-decoration: underline;">#{p}</span>
-				       <f:param name="page" value="#{p}" />
-				   </h:commandLink>
-				   <h:outputText rendered="#{p == jobsBean.pageNumber}"><span  style="font-weight: bold;">#{p}</span></h:outputText>
-			   </t:dataList> <h:commandLink immediate="true" rendered="#{jobsBean.pageCount gt 1 and jobsBean.pageNumber lt jobsBean.pageCount}"
-				action="#{jobsBean.goToPage}">Next<f:param name="page" value="#{jobsBean.pageNumber + 1}" /></h:commandLink>
-				<br clear="all"/>
-				<h:outputText rendered="#{jobsBean.pageCount gt 1}" value="Page #{jobsBean.pageNumber} of #{jobsBean.pageCount} (#{jobResultsFilterBean.jobCount} jobs)" />
-		    </t:div>
-		</h:form>
-
-		<!-- Set initial visibility state  -->
-		<script type="text/javascript" language="javascript">
-      <t:dataList var="jobInfo" value="#{jobsBean.pagedJobs}">
-        <h:outputText rendered="#{!jobInfo.expanded}">
-            hideCategory('#{jobInfo.jobNumber}');
-        </h:outputText>
+        <!--  Loop through descendants  -->
+        <t:dataList var="childJob" value="#{rootJobWrapper.descendantJobs}">
+          <script type="text/javascript" language="javascript">
+            var rowId = "job_row_" + #{childJob.jobNumber};
+             addFileRow('#{rootJobWrapper.jobNumber}', rowId);
+          </script>
+          <ui:include src="jobResultsJobs.xhtml">
+            <ui:param name="jobWrapper" value="#{childJob}" />
+            <ui:param name="parentJobNumber" value="#{rootJobWrapper.jobNumber}" />
+          </ui:include>
+        </t:dataList>
       </t:dataList>
+
+      <tr>
+        <td>&#160;</td>
+        <td class="checkbox_column"><h:commandLink action="#{jobsBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink></td>
+        <td>&#160;</td>
+        <td>&#160;</td>
+        <td>&#160;</td>
+        <td>&#160;</td>
+        <td>&#160;</td>
+        <td>&#160;</td>
+        <td>&#160;</td>
+        <td>&#160;</td>
+      </tr>
+    </table>
+
+    <t:div style="text-align: center;" rendered="#{jobsBean.pageCount gt 1}">
+      <h:commandLink rendered="#{jobsBean.pageNumber gt 1}" immediate="true" action="#{jobsBean.goToPage}">
+        <h:outputText value="Previous"/><f:param name="page" value="#{jobsBean.pageNumber - 1}" /></h:commandLink>
+		<t:dataList var="p" value="#{jobsBean.pages}">
+		  <h:outputText rendered="#{p lt 0}" value=" ... " />
+		  <h:commandLink rendered="#{p gt 0 and p != jobsBean.pageNumber}" action="#{jobsBean.goToPage}">
+            <f:param name="page" value="#{p}" />
+		    <span style="text-decoration: underline;">#{p}</span>
+          </h:commandLink>
+          <h:outputText rendered="#{p == jobsBean.pageNumber}"><span  style="font-weight: bold;">#{p}</span></h:outputText>
+        </t:dataList> 
+        <h:commandLink immediate="true" rendered="#{jobsBean.pageCount gt 1 and jobsBean.pageNumber lt jobsBean.pageCount}" action="#{jobsBean.goToPage}">Next
+          <f:param name="page" value="#{jobsBean.pageNumber + 1}" />
+        </h:commandLink>
+        <br clear="all"/>
+        <h:outputText rendered="#{jobsBean.pageCount gt 1}" value="Page #{jobsBean.pageNumber} of #{jobsBean.pageCount} (#{jobResultsFilterBean.jobCount} jobs)" />
+    </t:div>
+    </h:form>
+
+    <!-- Set initial visibility state  -->
+    <script type="text/javascript" language="javascript">
+    <t:dataList var="jobInfo" value="#{jobsBean.pagedJobs}">
+      <h:outputText rendered="#{!jobInfo.expanded}">hideCategory('#{jobInfo.jobNumber}');</h:outputText>
+    </t:dataList>
     </script>
 
 	</ui:define>
@@ -435,7 +360,6 @@
 			</t:dataList>
 		</h:form>
 	</ui:define>
-
 
 </ui:composition>
 </html>
