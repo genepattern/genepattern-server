@@ -23,15 +23,9 @@
     <!--  job row -->
     <tr id="job_row_#{jobWrapper.jobNumber}" class="#{jobWrapper.level == 0 ? 'task-titlerow' : 'pipelinetask-titlerow'}">
       <td>
-        <h:outputLink value="/gp/jobResults/#{jobWrapper.jobNumber}">
-        <h:outputText>
-          #{jobWrapper.jobNumber}
-        </h:outputText>
-        </h:outputLink>
+        <h:outputLink value="/gp/jobResults/#{jobWrapper.jobNumber}">#{jobWrapper.jobNumber}</h:outputLink>
         <!--  Hidden field to hold the expansion state.  -->
-        <input type="hidden" id="expansion_state_#{jobWrapper.jobNumber}"
-               name="expansion_state_#{jobWrapper.jobNumber}" value="#{jobWrapper.expanded}"/>
-
+        <input type="hidden" id="expansion_state_#{jobWrapper.jobNumber}" name="expansion_state_#{jobWrapper.jobNumber}" value="#{jobWrapper.expanded}"/>
       </td>
 
       <!-- Job select checkbox -->
@@ -94,18 +88,74 @@
       <td>
         <div class="status-#{jobWrapper.status}">#{jobWrapper.status}</div>
       </td>
-      
-      
-      	<td>#{jobWrapper.userId}</td>
-      	<td>
-      		#{jobWrapper.permissionsLabel}
-      	</td>
+      <h:outputText rendered="#{jobWrapper.level == 0}">
+        <td>#{jobWrapper.userId}</td>
+        <td>
+        #{jobWrapper.permissionsLabel}
+        <h:outputText rendered="#{jobWrapper.permissionsLabel != 'private'}">
+        [<h:commandLink rendered="#{true}" value="details" onclick="toggleSharingInfo('#{jobWrapper.jobNumber}'); return false;" />]
+        </h:outputText>
+        </td>
+      </h:outputText>
+      <h:outputText rendered="#{jobWrapper.level != 0}">
+        <td></td>
+        <td></td>
+      </h:outputText>
     </tr>
+    
+    <!--  secondary job row for showing job result actions -->
+    <h:outputText escape="false" rendered="#{jobWrapper.level == 0}">
+    <tr class="task-titlerow-actions">
+      <td colspan="3" />
+      <td >
+      <h:commandLink rendered="#{jobWrapper.complete} and false" value="download" actionListener="#{jobsBean.downloadZip}" immediate="true">
+          <f:param value="#{jobWrapper.jobNumber}" name="jobNumber" />
+        </h:commandLink>
+        <h:outputText rendered="#{!jobWrapper.complete}  and false"><em>download</em>
+        </h:outputText>
+        <h:commandLink rendered="false" value="reload" action="#{jobsBean.reload}" immediate="true">
+          <f:param value="#{jobWrapper.jobNumber}" name="jobNumber" />
+        </h:commandLink> 
+        <h:commandLink rendered="false and #{jobWrapper.complete and jobWrapper.deleteAllowed}" value="delete" actionListener="#{jobsBean.delete}" immediate="true" 
+          onclick="return confirm('Are you sure you want to delete job #{jobWrapper.jobNumber}?');" >
+          <f:param value="#{jobWrapper.jobNumber}" name="jobNumber" />
+        </h:commandLink> 
+        <h:outputText rendered="false and #{!jobWrapper.complete or !jobWrapper.deleteAllowed}"><em>delete</em>
+        </h:outputText>
+      </td>
+      <td colspan="6" style="text-align: right;">
+      <h:outputText>
+          <div id="sharingInfo_#{jobWrapper.jobNumber}" style="display: none;">
+          write access: <t:dataList var="groupPermission" value="#{jobWrapper.groupPermissionsWrite}"> #{groupPermission.groupId}</t:dataList>
+          <br />
+          read access: <t:dataList var="groupPermission" value="#{jobWrapper.groupPermissionsReadOnly}"> #{groupPermission.groupId}</t:dataList>
+          </div>
+      </h:outputText> 
+      </td>   
+    </tr>
+    </h:outputText>
     <!--  End job row  -->
 
     <!--  Loop through output files -->
     <ui:include src="jobResultsFiles.xhtml">
     </ui:include>
+    
+        <script type="text/javascript" language="javascript">
+
+/* <![CDATA[ */
+
+    function toggleSharingInfo(jobNo) {
+        var row = document.getElementById("sharingInfo_"+jobNo);
+        if (row.style.display == "") {
+            row.style.display = "none";
+        }
+        else {
+            row.style.display = "";
+        }
+    }
+    /* ]]> */
+
+    </script>
 
   </ui:composition>
 </html>

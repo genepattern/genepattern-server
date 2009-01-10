@@ -68,6 +68,14 @@
 	white-space: nowrap;
 	padding-right: 12px;
 }
+.task-titlerow-actions {
+    background-color: #F5F5E3;
+    line-height: 20px;
+}
+.task-titlerow-actions td{
+    background-color: #F5F5E3;
+}
+
 .task-title {
 	background-color: #F5F5E3;
 	line-height: 20px;
