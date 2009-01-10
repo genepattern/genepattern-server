@@ -133,10 +133,20 @@ public class AnalysisDAO extends BaseDAO {
     }
 
     public Set<GroupPermission> getGroupPermissions(int jobId) {
+        return getGroupPermissions(jobId, null);
+    }
+
+    public Set<GroupPermission> getGroupPermissions(int jobId, GroupPermission.Permission permission) {
         //select * from JobGroup where job_no = ?
         String hqlString = "from JobGroup where jobNo = :jobNo";
+        if (permission != null) {
+            hqlString += " and permissionFlag = :permissionFlag";
+        }
         Query query = getSession().createQuery(hqlString);
         query.setInteger("jobNo", jobId);
+        if (permission != null) {
+            query.setInteger("permissionFlag", permission.getFlag());
+        }
         List<JobGroup> results = query.list();
 
         Set<GroupPermission> rval = new HashSet<GroupPermission>();
