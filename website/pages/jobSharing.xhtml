@@ -1,0 +1,57 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:c="http://java.sun.com/jstl/core">
+
+<ui:composition>
+
+<table width="100%"  border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td><a href="#" 
+           onclick="document.getElementById('permissionDiv').style.display = (document.getElementById('permissionDiv').style.display == 'none' ? '' : 'none'); document.getElementById('userGroupText').innerHTML = (document.getElementById('userGroupText').innerHTML == 'edit' ? 'hide' : 'edit');">
+           <img border="0" src="/gp/images/group.gif"/> <span id="userGroupText">edit</span> group permissions</a>
+        <br/><br/>
+    </td>
+  </tr>
+  <tr id="permissionDiv" style="display:none;">
+            <td>
+            <h:form id="permForm">
+            <!--  the jobNumber is required -->
+            <f:verbatim><INPUT TYPE="hidden" NAME="jobNumber" VALUE="#{jobInfoBean.jobNumber}"></INPUT></f:verbatim>
+            <t:dataTable id="permTable" var="groupPermission" value="#{jobInfoBean.jobInfoWrapper.groupPermissions}"
+            width="50%" border="0" cellspacing="0" cellpadding="0" headerClass="tableheader-row" rowClasses="task-titlerow" columnClasses="left, center, center">
+              <t:column headerstyle="text-align: left;">
+                <f:facet name="header">
+                  <h:outputText value="group"></h:outputText>
+                </f:facet>
+                <h:outputText value="#{groupPermission.groupId}" />
+              </t:column>
+              
+              <t:column headerstyle="text-align: center;">
+                <f:facet name="header">
+                  <h:outputText value="read" />
+                </f:facet>
+                <t:selectBooleanCheckbox id="R" checked="#{true == groupPermission.permission.read}" />
+              </t:column>
+
+              <t:column headerstyle="text-align: center;">
+                <f:facet name="header">
+                  <h:outputText value="read/write" />
+                </f:facet>
+                <t:selectBooleanCheckbox id="RW" checked="#{true == groupPermission.permission.write}" />
+              </t:column>
+            </t:dataTable>
+            <br/><h:commandButton action="#{jobInfoBean.jobInfoWrapper.saveGroupPermissions}" value="save permissions" />
+            <br/><br/>
+            </h:form>
+            </td>
+        </tr>
+    </table>
+    
+</ui:composition>
+
+</html>
+    
