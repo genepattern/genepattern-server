@@ -123,12 +123,16 @@
         <h:outputText rendered="false and #{!jobWrapper.complete or !jobWrapper.deleteAllowed}"><em>delete</em>
         </h:outputText>
       </td>
-      <td colspan="6" style="text-align: right;">
+      <td colspan="6" style="text-align: right; padding-right: 24px;">
       <h:outputText>
           <div id="sharingInfo_#{jobWrapper.jobNumber}" style="display: none;">
+          <h:outputText rendered="#{jobWrapper.numGroupPermissionsWrite > 0}">
           write access: <t:dataList var="groupPermission" value="#{jobWrapper.groupPermissionsWrite}"> #{groupPermission.groupId}</t:dataList>
           <br />
+          </h:outputText>
+          <h:outputText rendered="#{jobWrapper.numGroupPermissionsReadOnly > 0}">
           read access: <t:dataList var="groupPermission" value="#{jobWrapper.groupPermissionsReadOnly}"> #{groupPermission.groupId}</t:dataList>
+          </h:outputText>
           </div>
       </h:outputText> 
       </td>   

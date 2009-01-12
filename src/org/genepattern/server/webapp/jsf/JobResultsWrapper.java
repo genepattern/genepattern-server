@@ -12,6 +12,7 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.auth.GroupPermission;
+import org.genepattern.server.auth.GroupPermission.Permission;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webapp.jsf.JobBean.OutputFileInfo;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -56,6 +57,8 @@ public class JobResultsWrapper {
         this.selected = selectedJobs.contains(String.valueOf(jobInfo.getJobNumber()));
         this.level = level;
         this.sequence = sequence;
+        
+        this.initGroupPermissions();
 
         deleteAllowed = jobInfo.getUserId().equals(UIBeanHelper.getUserId()) || AuthorizationHelper.adminJobs();
 
@@ -174,49 +177,56 @@ public class JobResultsWrapper {
     public String getUserId() {
         return jobInfo.getUserId();
     }
-    
-    public List<GroupPermission> getGroupPermissions() {
-        return getGroupPermissions(null);
-    }
 
+    private List<GroupPermission> groupPermissionsWrite = new ArrayList<GroupPermission>();
+    private List<GroupPermission> groupPermissionsRead = new ArrayList<GroupPermission>();
     public List<GroupPermission> getGroupPermissionsWrite() {
-        return getGroupPermissions(GroupPermission.Permission.READ_WRITE);
+        return groupPermissionsWrite;
     }
 
     public List<GroupPermission> getGroupPermissionsReadOnly() {
-        return getGroupPermissions(GroupPermission.Permission.READ);
+        return groupPermissionsRead;
     }
 
-    private List<GroupPermission> getGroupPermissions(GroupPermission.Permission flag) {
+    public int getNumGroupPermissionsWrite() {
+        return groupPermissionsWrite == null ? 0 : groupPermissionsWrite.size();
+    }
+    
+    public int getNumGroupPermissionsReadOnly() {
+        return groupPermissionsRead == null ? 0 : groupPermissionsRead.size();
+    }
+
+    private void initGroupPermissions() {
         AnalysisDAO ds = new AnalysisDAO();
-        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(jobInfo.getJobNumber(), flag);
+        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(jobInfo.getJobNumber());
         
         //sorted by permission (write then read), then by group
         SortedSet<GroupPermission> sorted = new TreeSet<GroupPermission>(new GroupPermission.SortByPermission());
         sorted.addAll(groupPermissions);
         
-        //sorted by group id
-        //SortedSet<GroupPermission> sorted = new TreeSet<GroupPermission>(groupPermissions, new GroupPermission.SortByPermission());
-        return new ArrayList<GroupPermission>( sorted );
-    }
-    
-    public String getPermissionsLabel() {
-        List<GroupPermission> groups = getGroupPermissions();
-        if (groups == null || groups.size() == 0) {
-            return "private";
+        groupPermissionsWrite.clear();
+        groupPermissionsRead.clear();
+        
+        permissionsLabel = "private";
+        if (sorted.size() > 0) {
+            permissionsLabel = "shared";
         }
-        boolean isPublic = false;
-        for (GroupPermission gp : groups) {
-            //hack: special case for 'public' group
+        for(GroupPermission gp : sorted) {
             if ("public".equals(gp.getGroupId())) {
-                isPublic = true;
-                break;
+                permissionsLabel = "public";
+            }
+            if (gp.getPermission() == Permission.READ_WRITE) {
+                groupPermissionsWrite.add(gp);
+            }
+            else if (gp.getPermission() == Permission.READ) {
+                groupPermissionsRead.add(gp);
             }
         }
-        if (isPublic) {
-            return "public";
-        }
-        return "shared";
+    }
+    
+    private String permissionsLabel;
+    public String getPermissionsLabel() {
+        return permissionsLabel;
     }
 
     /**
