@@ -99,7 +99,6 @@ public class JobBean {
     /** Current page displayed */
     private int pageNumber = 1;
     
-    //private int jobCount = -1;
 
     public JobBean() {
 	try {
@@ -153,13 +152,15 @@ public class JobBean {
      * @param event
      */
     public void delete(ActionEvent event) {
-	try {
-	    int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
-	    deleteJob(jobNumber);
-	    resetJobs();
-	} catch (NumberFormatException e) {
-	    log.error("Error deleting job.", e);
-	}
+        try {
+            int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
+            deleteJob(jobNumber);
+            resetJobs();
+        } 
+        catch (NumberFormatException e) {
+            log.error("Error deleting job.", e);
+            return;
+        }
     }
 
     public void deleteFile(ActionEvent event) {
@@ -573,17 +574,21 @@ public class JobBean {
 	this.pageNumber++;
     }
 
+    private int pageCount = -1;
     public int getPageCount() {
-        //requires session scope jobResultsFilterBean
-        FacesContext ctx = FacesContext.getCurrentInstance();
-        Object obj = ctx.getExternalContext().getSessionMap().get("jobResultsFilterBean");
-        if (!(obj instanceof JobResultsFilterBean)) {
-            log.error("Unexpected type for session bean 'jobResultsFilterBean' "+obj.getClass());
-            return 1;
+        if (pageCount < 0) {
+            //requires session scope jobResultsFilterBean
+            FacesContext ctx = FacesContext.getCurrentInstance();
+            Object obj = ctx.getExternalContext().getSessionMap().get("jobResultsFilterBean");
+            if (!(obj instanceof JobResultsFilterBean)) {
+                log.error("Unexpected type for session bean 'jobResultsFilterBean' "+obj.getClass());
+                pageCount = 1;
+            }
+            JobResultsFilterBean jobResultsFilterBean = (JobResultsFilterBean) obj;
+            int jobCount = jobResultsFilterBean.getJobCount();
+            pageCount = (int) Math.ceil(jobCount / (double) pageSize);
         }
-        JobResultsFilterBean jobResultsFilterBean = (JobResultsFilterBean) obj;
-        int jobCount = jobResultsFilterBean.getJobCount();
-        return (int) Math.ceil(jobCount / (double) pageSize);
+        return pageCount;
     }
 
     public List<JobResultsWrapper> getAllJobs() {
@@ -610,8 +615,7 @@ public class JobBean {
             else {
                 log.error("Unexpected type for session bean 'jobResultsFilterBean' "+obj.getClass());
             }
-            
-            
+
             LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
             try {
                 JobInfo[] jobInfos = new JobInfo[0];
@@ -918,9 +922,8 @@ public class JobBean {
      * Force an update of the job list by nulling the current values.
      */
     private void resetJobs() {
-	recentJobs = null;
-	allJobs = null;
-	//jobCount = -1;
+        recentJobs = null;
+        allJobs = null;
     }
 
     public static class OutputFileInfo {
