@@ -27,7 +27,7 @@ import javax.faces.FacesException;
 import javax.faces.context.FacesContext;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.PermissionsManager;
+import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.GroupPermission.Permission;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -124,13 +124,14 @@ public class JobInfoBean {
         }
         
         public List<GroupPermission> getGroupPermissions() {
-            PermissionsManager pm = new PermissionsManager(jobInfo.getUserId());
-            return pm.getJobResultPermissions(jobNumber);
+            PermissionsHelper pm = new PermissionsHelper(jobInfo.getUserId());
+            boolean includeUsersGroups = true;
+            return pm.getJobResultPermissions(jobNumber, includeUsersGroups);
         }
         
         public boolean getSetJobPermissionsAllowed() {
             String userId = UIBeanHelper.getUserId();
-            PermissionsManager pm = new PermissionsManager(userId);
+            PermissionsHelper pm = new PermissionsHelper(userId);
             return pm.canSetJobPermissions(jobInfo);
         }
         
@@ -192,7 +193,7 @@ public class JobInfoBean {
             }
             
             String userId = UIBeanHelper.getUserId();
-            PermissionsManager pm = new PermissionsManager(userId);
+            PermissionsHelper pm = new PermissionsHelper(userId);
             try {
                 pm.setPermissions(jobInfo, updatedPermissions);
                 return "success";
@@ -265,7 +266,7 @@ public class JobInfoBean {
     private JobInfoWrapper createJobInfoWrapper(JobInfo jobInfo) {
         //TODO: shouldn't have to check for permissions here, should require permissions in order to create the JobInfo instance
         String userId = UIBeanHelper.getUserId();
-        PermissionsManager pm = new PermissionsManager(userId);
+        PermissionsHelper pm = new PermissionsHelper(userId);
         if (!pm.canReadJob(userId, jobInfo)) {
             throw new FacesException("You don't have the required permissions to access the requested job."); 
         }
