@@ -262,6 +262,13 @@ public class Analysis extends GenericWebService {
 	    throw new WebServiceException(e);
 	}
     }
+    
+    public JobInfo[] getChildJobInfos(int parentJobId) throws WebServiceException {
+        String userId = getUsernameFromContext();
+        this.canReadJob(userId, parentJobId);
+        AnalysisDAO ds = new AnalysisDAO();
+        return ds.getChildren(parentJobId);
+    }
 
     public JobInfo getJob(int jobId) throws WebServiceException {
         String userId = getUsernameFromContext();

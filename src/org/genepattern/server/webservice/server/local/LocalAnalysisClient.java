@@ -85,13 +85,7 @@ public class LocalAnalysisClient {
     }
 
     public JobInfo[] getChildren(int jobNumber) throws WebServiceException {
-	int[] children = service.getChildren(jobNumber);
-	JobInfo[] childJobs = new JobInfo[children.length];
-
-	for (int i = 0, length = children.length; i < length; i++) {
-	    childJobs[i] = service.getJob(children[i]);
-	}
-	return childJobs;
+        return service.getChildJobInfos(jobNumber);
     }
 
     // XXX Where should files be located?
