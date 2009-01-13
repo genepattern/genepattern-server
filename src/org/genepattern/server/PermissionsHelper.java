@@ -20,17 +20,10 @@ import org.genepattern.webservice.JobInfo;
  * @author pcarr
  *
  */
-public class PermissionsManager {
+public class PermissionsHelper {
     private String userId = null;
 
-    public PermissionsManager() { 
-    }
-
-    public PermissionsManager(String userId) {
-        this.userId = userId;
-    }
-    
-    public void setUserId(String userId) {
+    public PermissionsHelper(String userId) {
         this.userId = userId;
     }
 
@@ -65,7 +58,7 @@ public class PermissionsManager {
         return true;
     }
 
-    private boolean checkPermission(String userId, JobInfo jobInfo, boolean write) {
+    private boolean checkPermission(String userId, JobInfo jobInfo, boolean checkWrite) {
         if (AuthorizationHelper.adminJobs(userId)) {
             return true;
         }
@@ -78,31 +71,48 @@ public class PermissionsManager {
         IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
         for(GroupPermission gp : groupPermissions) {
             if (groupMembership.isMember(userId, gp.getGroupId())) {
-                if (write && gp.getPermission().getWrite()) {
-                    return true;
+                if (checkWrite) {
+                    if (gp.getPermission().getWrite()) {
+                        return true;
+                    }
                 }
-                else if (gp.getPermission().getRead()) {
-                    return true;
+                else {
+                    if (gp.getPermission().getRead()) {
+                        return true;
+                    }
                 }
             }
         }
         return false;
     }
     
+    /**
+     * Get the list of group permissions for the job, include any groups which the current user is a member of, 
+     * even if permissions have not been set for those groups.
+     * 
+     * @param jobNumber
+     * @return
+     */
     public List<GroupPermission> getJobResultPermissions(int jobNumber) {
+        return getJobResultPermissions(jobNumber, false);
+    }
+    
+    public List<GroupPermission> getJobResultPermissions(int jobNumber, boolean includeUsersGroups) {
         Set<String> groups = UserAccountManager.instance().getGroupMembership().getGroups(userId);
 
         AnalysisDAO ds = new AnalysisDAO();
         Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(jobNumber);
         
         //add any groups the user is a member of for which no permissions are set
-        Set<String> pg = new HashSet<String>(); //groups with permissions set
-        for(GroupPermission gp : groupPermissions) {
-            pg.add(gp.getGroupId());
-        }
-        groups.removeAll(pg);
-        for(String groupId : groups) {
-            groupPermissions.add(new GroupPermission(groupId, GroupPermission.Permission.NONE));
+        if (includeUsersGroups) {
+            Set<String> pg = new HashSet<String>(); //groups with permissions set
+            for(GroupPermission gp : groupPermissions) {
+                pg.add(gp.getGroupId());
+            }
+            groups.removeAll(pg);
+            for(String groupId : groups) {
+                groupPermissions.add(new GroupPermission(groupId, GroupPermission.Permission.NONE));
+            }
         }
         
         //sorted by group
