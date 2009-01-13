@@ -25,23 +25,25 @@
     <t:dataList var="fileInfo" value="#{jobWrapper.outputFileParameterInfos}" rowIndexVar="index">
 
       <!-- Generate ID for this row and append to the fileRows array for the containing job -->
+      <h:outputText escape="false" rendered="#{jobWrapper.deleteAllowed}">
       <script type="text/javascript" language="javascript">
         var rowId = 'file_row_' + '#{jobWrapper.jobNumber}_#{index}';
         addFileRow('#{parentJobNumber}', rowId);
       </script>
+      </h:outputText>
 
       <tr class="files" id="file_row_#{jobWrapper.jobNumber}_#{index}">
         <td>&#160;</td>
-        <td>
-          <!-- File selection checkbox -->
-          <div align="center">
+        <td align="center">
+          <!-- File selection checkbox, only display if the current user has write access to the parent job -->
+          <t:div rendered="#{jobWrapper.deleteAllowed}">
             <t:div rendered="#{fileInfo.selected}">
               <input type="checkbox" class="jobFile" name="selectedFiles" checked="checked" value="#{fileInfo.value}"/>
             </t:div>
             <t:div rendered="#{!fileInfo.selected}">
               <input type="checkbox" class="jobFile" name="selectedFiles" value="#{fileInfo.value}"/>
             </t:div>
-          </div>
+          </t:div>
         </td>
         <td>&#160;</td>
         <td class="#{jobWrapper.level == 0 ? '' : 'pipelinefiles'}">

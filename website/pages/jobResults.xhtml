@@ -27,11 +27,8 @@
 			href="#{facesContext.externalContext.requestContextPath}/css/style-jobresults.css"
 			rel="stylesheet" type="text/css" />
 		<script type="text/javascript"
-			src="#{facesContext.externalContext.requestContextPath}/js/jobResults.js" />
-		<script type="text/javascript"
 			src="#{facesContext.externalContext.requestContextPath}/js/collapsiblePanel.js" />
 		<script type="text/javascript" language="javascript">
-
 /* <![CDATA[ */
 
     function getContext() {
@@ -179,8 +176,17 @@
        		fileString += " files";
        	}
 		return confirm('Are you sure you want to delete the selected' + jobString + fileString + '?');
-
 	}
+
+    function toggleSharingInfo(jobNo) {
+        var row = document.getElementById("sharingInfo_"+jobNo);
+        if (row.style.display == "") {
+            row.style.display = "none"
+        }
+        else {
+            row.style.display = "";
+        }
+    }
 
 /* ]]> */
 
@@ -281,9 +287,11 @@
 
       <!--  Loop through job list -->
       <t:dataList var="rootJobWrapper" value="#{jobsBean.pagedJobs}" rowIndexVar="jobIndex">
+        <h:outputText rendered="#{rootJobWrapper.deleteAllowed}" escape="false">
         <script type="text/javascript" language="javascript">
-          jobNumbers[#{jobIndex}]='#{rootJobWrapper.jobNumber}';
+          jobNumbers[ jobNumbers.length ] = '#{rootJobWrapper.jobNumber}';
         </script>
+        </h:outputText>
         <ui:include src="jobResultsJobs.xhtml">
           <ui:param name="jobWrapper" value="#{rootJobWrapper}" />
           <ui:param name="parentJobNumber" value="#{rootJobWrapper.jobNumber}" />
@@ -291,10 +299,12 @@
 
         <!--  Loop through descendants  -->
         <t:dataList var="childJob" value="#{rootJobWrapper.descendantJobs}">
+          <h:outputText rendered="#{true or rootJobWrapper.deleteAllowed}">
           <script type="text/javascript" language="javascript">
             var rowId = "job_row_" + #{childJob.jobNumber};
              addFileRow('#{rootJobWrapper.jobNumber}', rowId);
           </script>
+          </h:outputText>
           <ui:include src="jobResultsJobs.xhtml">
             <ui:param name="jobWrapper" value="#{childJob}" />
             <ui:param name="parentJobNumber" value="#{rootJobWrapper.jobNumber}" />
