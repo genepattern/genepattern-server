@@ -11,11 +11,11 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.GroupPermission.Permission;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webapp.jsf.JobBean.OutputFileInfo;
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
@@ -44,26 +44,22 @@ public class JobResultsWrapper {
 
     public JobResultsWrapper(
             JobInfo jobInfo, 
-            Map<String, 
-            Collection<TaskInfo>> kindToModules,
+            Map<String,Collection<TaskInfo>> kindToModules,
             Set<String> selectedFiles, 
             Set<String> selectedJobs, 
             int level, 
             int sequence,
-            Map<String, List<KeyValuePair>> kindToInputParameters, 
-            boolean showExecutionLogs) 
+            Map<String, List<KeyValuePair>> kindToInputParameters, boolean showExecutionLogs) 
     {
         this.jobInfo = jobInfo;
         this.selected = selectedJobs.contains(String.valueOf(jobInfo.getJobNumber()));
         this.level = level;
         this.sequence = sequence;
-        
+        this.deleteAllowed = jobInfo.getUserId().equals(UIBeanHelper.getUserId()) || AuthorizationHelper.adminJobs();
+
         this.initGroupPermissions();
 
-        deleteAllowed = jobInfo.getUserId().equals(UIBeanHelper.getUserId()) || AuthorizationHelper.adminJobs();
-
         // Build the list of output files from the parameter info array.
-
         outputFiles = new ArrayList<OutputFileInfo>();
         ParameterInfo[] parameterInfoArray = jobInfo.getParameterInfoArray();
         if (parameterInfoArray != null) {
@@ -100,7 +96,9 @@ public class JobResultsWrapper {
             int seq = 1;
             int childLevel = getLevel() + 1;
             for (JobInfo child : children) {
-                childJobs.add(new JobResultsWrapper(child, kindToModules, selectedFiles, selectedJobs, childLevel, seq,kindToInputParameters, showExecutionLogs));
+                JobResultsWrapper childJob = new JobResultsWrapper(child, kindToModules, selectedFiles, selectedJobs, childLevel, seq, kindToInputParameters, showExecutionLogs);
+                childJob.deleteAllowed = this.deleteAllowed;
+                childJobs.add(childJob);
                 seq++;
             }
         } 
@@ -196,9 +194,11 @@ public class JobResultsWrapper {
         return groupPermissionsRead == null ? 0 : groupPermissionsRead.size();
     }
 
-    private void initGroupPermissions() {
-        AnalysisDAO ds = new AnalysisDAO();
-        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(jobInfo.getJobNumber());
+    private void initGroupPermissions() { 
+        String userId = UIBeanHelper.getUserId();
+        PermissionsHelper pm = new PermissionsHelper(userId);
+        List<GroupPermission> groupPermissions = pm.getJobResultPermissions(jobInfo.getJobNumber());
+        this.deleteAllowed = pm.canWriteJob(userId, jobInfo);
         
         //sorted by permission (write then read), then by group
         SortedSet<GroupPermission> sorted = new TreeSet<GroupPermission>(new GroupPermission.SortByPermission());
