@@ -102,6 +102,9 @@
       <t:div rendered="#{serverSettingsBean.currentMode == 'System Message'}">
         <ui:include src="serverSettingsSystemMessage.xhtml"/>       
       </t:div>
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Users and Groups'}">
+        <ui:include src="serverSettingsUsersAndGroups.xhtml"/>       
+      </t:div>
 
     </ui:define>
   </ui:composition>

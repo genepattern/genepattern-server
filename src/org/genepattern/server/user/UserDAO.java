@@ -57,6 +57,13 @@ public class UserDAO extends BaseDAO {
         }
         return null;
     }
+    
+    public List<User> getAllUsers() {
+        List<User> users = 
+            HibernateUtil.getSession().createQuery(
+                    "from org.genepattern.server.user.User order by userId").list();
+        return users;
+    }
 
     public void setProperty(String userId, String key, String value) {
         getProperty(userId, key).setValue(value);

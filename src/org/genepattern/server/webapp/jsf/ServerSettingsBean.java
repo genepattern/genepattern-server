@@ -38,62 +38,46 @@ import org.genepattern.server.util.PropertiesManager;
 import org.genepattern.server.webapp.StartupServlet;
 
 public class ServerSettingsBean {
-
     private static Logger log = Logger.getLogger("ServerSettingsBean.class");
-
     private Map<String, String[]> modes;
-
     private String[] clientModes = new String[] { "Local", "Any", "Specified" };
-
     private String currentClientMode = clientModes[0]; // default
-
     private String specifiedClientMode;
-
     private String currentMode; // Default
-
     private Properties settings;
-
     private List<KeyValuePair> customSettings;
-
     private Properties defaultSettings;
-
     private String newCSKey = "";
-
     private String newCSValue = "";
-
     private Calendar cal = Calendar.getInstance();
-
     private final String gpLogPath = "GpLogPath";
-
     private final String wsLogPath = "WsLogPath";
 
     /**
      * 
      */
     public ServerSettingsBean() {
-	if (!AuthorizationHelper.adminServer()) {
-	    throw new SecurityException("You don't have the required permissions to administer the server.");
-	}
+        if (!AuthorizationHelper.adminServer()) {
+            throw new SecurityException("You don't have the required permissions to administer the server.");
+        }
 
-	if (modes == null) {
-	    modes = new TreeMap<String, String[]>();
-	    modes.put("Access", new String[] { "gp.allowed.clients" });
-	    modes.put("Command Line Prefix", new String[] { "gp.allowed.clients" });
-	    modes.put("File Purge", new String[] { "purgeJobsAfter", "purgeTime" });
-	    modes.put("Gene Pattern Log", null);
-	    modes.put("Web Server Log", null);
-	    modes.put("Repositories", new String[] { "ModuleRepositoryURL", "ModuleRepositoryURLs",
-		    "SuiteRepositoryURL", "SuiteRepositoryURLs" });
-	    modes.put("Proxy", new String[] { "http.proxyHost", "http.proxyPort", "http.proxyUser",
-		    "http.proxyPassword", "ftp.proxyHost", "ftp.proxyPort", "ftp.proxyUser", "ftp.proxyPassword" });
-	    modes.put("Database", new String[] { "database.vendor", "HSQL_port", "HSQL.class", "HSQL.args",
-		    "HSQL.schema", "hibernate.connection.driver_class", "hibernate.connection.shutdown",
-		    "hibernate.connection.url", "hibernate.connection.username", "hibernate.connection.password",
-		    "hibernate.dialect", "hibernate.default_schema", "hibernate.connection.SetBigStringTryClob" });
-	    // modes.put("LSID", new String[] { "lsid.authority", "lsid.show"
-	    // }); // remove show LSID for 3.1 per bug 1654
+        if (modes == null) {
+            modes = new TreeMap<String, String[]>();
+            modes.put("Access", new String[] { "gp.allowed.clients" });
+            modes.put("Command Line Prefix", new String[] { "gp.allowed.clients" });
+            modes.put("File Purge", new String[] { "purgeJobsAfter", "purgeTime" });
+            modes.put("Gene Pattern Log", null);
+            modes.put("Web Server Log", null);
+            modes.put("Repositories", new String[] { 
+                    "ModuleRepositoryURL", "ModuleRepositoryURLs", "SuiteRepositoryURL", "SuiteRepositoryURLs" });
+            modes.put("Proxy", new String[] { 
+                    "http.proxyHost", "http.proxyPort", "http.proxyUser","http.proxyPassword", "ftp.proxyHost", "ftp.proxyPort", "ftp.proxyUser", "ftp.proxyPassword" });
+	    modes.put("Database", new String[] { 
+	            "database.vendor", "HSQL_port", "HSQL.class", "HSQL.args", "HSQL.schema", 
+	            "hibernate.connection.driver_class", "hibernate.connection.shutdown", "hibernate.connection.url", 
+	            "hibernate.connection.username", "hibernate.connection.password", "hibernate.dialect", 
+	            "hibernate.default_schema", "hibernate.connection.SetBigStringTryClob" });
 	    modes.put("Programming Languages", new String[] { "perl", "java", "R2.5", "R" });
-	   
 	    modes.put("Advanced", new String[] { 
 	            "DefaultPatchRepositoryURL", 
 	            "DefaultPatchURL", 
@@ -116,6 +100,7 @@ public class ServerSettingsBean {
 	    modes.put("Custom", null);
 	    modes.put("Shut Down Server", null);
 	    modes.put("System Message", null);
+	    modes.put("Users and Groups", null);
 	}
 	currentMode = (String) modes.keySet().toArray()[0];
 	if (settings == null) {
@@ -335,8 +320,15 @@ public class ServerSettingsBean {
      * @throws IOException
      */
     public String getWsLog() {
-	return getLog(getWsLogFile());
-
+        File wsLogFile = getWsLogFile();
+        String out = "";
+        try {
+            out = getLog(wsLogFile);
+        }
+        catch (Exception e) {
+            out = e.getLocalizedMessage();
+        }
+        return out;
     }
 
     /**
