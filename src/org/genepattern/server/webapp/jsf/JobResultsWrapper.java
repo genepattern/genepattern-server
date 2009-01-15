@@ -197,7 +197,8 @@ public class JobResultsWrapper {
     private void initGroupPermissions() { 
         String userId = UIBeanHelper.getUserId();
         PermissionsHelper pm = new PermissionsHelper(userId);
-        List<GroupPermission> groupPermissions = pm.getJobResultPermissions(jobInfo.getJobNumber());
+        boolean includeUsersGroups = false;
+        List<GroupPermission> groupPermissions = pm.getJobResultPermissions(jobInfo.getJobNumber(), includeUsersGroups);
         this.deleteAllowed = pm.canWriteJob(userId, jobInfo);
         
         //sorted by permission (write then read), then by group

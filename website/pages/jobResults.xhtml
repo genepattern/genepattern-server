@@ -253,7 +253,8 @@
           <h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'status'}">&#160;</h:outputText>
         </h:commandLink></td>
 		<td>owner</td>
-		<td>privacy</td>					
+		<td>permission</td>
+		<td>sharing</td>
       </tr>
 
       <!--  secondary header row: active links for sorting output files within each job result -->
@@ -282,6 +283,7 @@
           </h:commandLink>&#160;</td>
         <td></td>
         <td></td>
+        <td>&#160;&#160;&#160;&#160;&#160;you can ...</td>
         <td></td>
       </tr>
 
@@ -315,6 +317,7 @@
       <tr>
         <td>&#160;</td>
         <td class="checkbox_column"><h:commandLink action="#{jobsBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink></td>
+        <td>&#160;</td>
         <td>&#160;</td>
         <td>&#160;</td>
         <td>&#160;</td>
