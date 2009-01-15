@@ -62,19 +62,7 @@ public class UserAccountManager {
             }
             
             String customGroupMembershipClass = System.getProperty(PROP_GROUP_MEMBERSHIP_CLASS);
-            if (customGroupMembershipClass == null) {
-                File userGroupMapFile = new File(System.getProperty("genepattern.properties"), "userGroups.xml");
-                userAccountManager.groupMembership = new XmlGroupMembership(userGroupMapFile);                
-            }
-            else {
-                try {
-                    userAccountManager.groupMembership = (IGroupMembershipPlugin) Class.forName(customGroupMembershipClass).newInstance();
-                }
-                catch (Exception e) {
-                    log.error("Failed to load custom group membership class: "+customGroupMembershipClass, e);
-                    userAccountManager.groupMembership = new DefaultGroupMembership();
-                }
-            }
+            userAccountManager.loadGroupMembership(customGroupMembershipClass);
         }
         return userAccountManager;
     }
@@ -279,6 +267,28 @@ public class UserAccountManager {
      */
     public IGroupMembershipPlugin getGroupMembership() {
         return groupMembership;
+    }
+    
+    public void reloadGroupMembership() {
+        this.groupMembership = null;
+        String customGroupMembershipClass = System.getProperty(PROP_GROUP_MEMBERSHIP_CLASS);
+        loadGroupMembership(customGroupMembershipClass);
+    }
+    
+    private void loadGroupMembership(String customGroupMembershipClass) {
+        if (customGroupMembershipClass == null) {
+            File userGroupMapFile = new File(System.getProperty("genepattern.properties"), "userGroups.xml");
+            this.groupMembership = new XmlGroupMembership(userGroupMapFile);                
+        }
+        else {
+            try {
+                this.groupMembership = (IGroupMembershipPlugin) Class.forName(customGroupMembershipClass).newInstance();
+            }
+            catch (Exception e) {
+                log.error("Failed to load custom group membership class: "+customGroupMembershipClass, e);
+                this.groupMembership = new DefaultGroupMembership();
+            }
+        }
     }
     
 }

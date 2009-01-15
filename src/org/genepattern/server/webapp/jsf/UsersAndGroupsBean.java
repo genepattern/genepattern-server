@@ -25,6 +25,9 @@ public class UsersAndGroupsBean {
     private SortedSet<GroupEntry> groupEntries;
     private GroupEntry adminGroupEntry;
     private GroupEntry publicGroupEntry;
+    
+    private static String ADMIN_GROUP_ID = "administrators";
+    private static String PUBLIC_GROUP_ID = "public";
         
     public UsersAndGroupsBean() {
         init();
@@ -32,48 +35,42 @@ public class UsersAndGroupsBean {
     
     private void init() {
         List<User> allUsers = new UserDAO().getAllUsers();
-        //allGroups = new TreeSet<String>();
+        IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
+
         userEntries = new TreeSet<UserEntry>(new UserEntryComparator());
         groupEntries = new TreeSet<GroupEntry>();
-        //mapUsersToGroups = new HashMap<String,SortedSet<String>>();
-        Map<String,SortedSet<String>> mapGroupsToUsers;
-        mapGroupsToUsers  = new HashMap<String,SortedSet<String>>();
+        Map<String,SortedSet<String>> mapGroupIdToUserIds = new HashMap<String,SortedSet<String>>();
         
-        IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
         for(User user : allUsers) {
             UserEntry userEntry = new UserEntry(user);
             userEntries.add(userEntry);
             Set<String> groupIds = groupMembership.getGroups(user.getUserId());
-
-            //mapUsersToGroups.put(user.getUserId(), new TreeSet<String>(groupIds));
             
             for(String groupId : groupIds) {
-                //allGroups.add(groupId);
                 userEntry.addGroup(groupId);
-                SortedSet<String> userIds = mapGroupsToUsers.get(groupId);
+                SortedSet<String> userIds = mapGroupIdToUserIds.get(groupId);
                 if (userIds == null) {
                     userIds = new TreeSet<String>();
-                    mapGroupsToUsers.put(groupId, userIds);
+                    mapGroupIdToUserIds.put(groupId, userIds);
                 }
                 userIds.add(user.getUserId());
             }
         }
         
         //helpers
-        for(String groupId : mapGroupsToUsers.keySet()) {
-            GroupEntry ge = new GroupEntry(groupId, null);
-            if ("public".equalsIgnoreCase(groupId)) {
+        for(String groupId : mapGroupIdToUserIds.keySet()) {
+            GroupEntry ge = new GroupEntry(groupId);
+            if (PUBLIC_GROUP_ID.equalsIgnoreCase(groupId)) {
                 publicGroupEntry = ge;
             }
-            else if ("administrators".equalsIgnoreCase(groupId)) {
+            else if (ADMIN_GROUP_ID.equalsIgnoreCase(groupId)) {
                 adminGroupEntry = ge;
-                adminGroupEntry.description = "Administrative accounts";
             }
             else {
                 groupEntries.add(ge);
             }
             
-            for(String userId : mapGroupsToUsers.get(groupId)) {
+            for(String userId : mapGroupIdToUserIds.get(groupId)) {
                 ge.addUser(userId);
             }
         }
@@ -105,6 +102,7 @@ public class UsersAndGroupsBean {
     public static class UserEntry {
         private User user;
         private SortedSet<String> groups;
+        private boolean isAdmin = false;
         
         public UserEntry(User user) {
             this.user = user;
@@ -112,10 +110,13 @@ public class UsersAndGroupsBean {
         }
         
         public void addGroup(String groupId) {
-            if ("public".equalsIgnoreCase(groupId)) {
+            if (PUBLIC_GROUP_ID.equalsIgnoreCase(groupId)) {
                 return;
             }
             groups.add(groupId);
+            if (ADMIN_GROUP_ID.equalsIgnoreCase(groupId)) {
+                isAdmin = true;
+            }
         }
         
         public User getUser() {
@@ -124,6 +125,10 @@ public class UsersAndGroupsBean {
         
         public List<String> getGroups() {
             return new ArrayList<String>(groups);
+        }
+        
+        public boolean isAdmin() {
+            return isAdmin;
         }
 
     }
@@ -135,12 +140,10 @@ public class UsersAndGroupsBean {
      */
     public static class GroupEntry implements Comparable<GroupEntry> {
         private String groupId;
-        private String description;
         private SortedSet<String> users;
         
-        public GroupEntry(String groupId, String description) {
+        public GroupEntry(String groupId) {
             this.groupId = groupId;
-            this.description = description;
             this.users = new TreeSet<String>();
         }
         
@@ -150,10 +153,6 @@ public class UsersAndGroupsBean {
         
         public String getGroupId() {
             return groupId;
-        }
-        
-        public String getDescription() {
-            return description;
         }
         
         public List<String> getUsers() {
@@ -166,7 +165,6 @@ public class UsersAndGroupsBean {
         public int compareTo(GroupEntry arg) {
             String from = this.groupId == null ? "" : this.groupId;
             String to = arg == null ? "" : arg.groupId;
-            // TODO Auto-generated method stub
             return from.compareToIgnoreCase(to);
         }
     }
@@ -187,5 +185,13 @@ public class UsersAndGroupsBean {
 
     public List<GroupEntry> getGroupEntries() {
         return new ArrayList<GroupEntry>(groupEntries);
+    }
+    
+    /**
+     * Reload the users and groups database from the file system.
+     */
+    public void reloadUsersAndGroups() {
+        UserAccountManager.instance().reloadGroupMembership();
+        init();
     }
 }
