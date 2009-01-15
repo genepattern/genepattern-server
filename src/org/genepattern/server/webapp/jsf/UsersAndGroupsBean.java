@@ -133,7 +133,7 @@ public class UsersAndGroupsBean {
      * 
      * @author pcarr
      */
-    public static class GroupEntry {
+    public static class GroupEntry implements Comparable<GroupEntry> {
         private String groupId;
         private String description;
         private SortedSet<String> users;
@@ -158,6 +158,16 @@ public class UsersAndGroupsBean {
         
         public List<String> getUsers() {
             return new ArrayList<String>(this.users);
+        }
+
+        /**
+         * natural sort order based on groupId, ignoring case.
+         */
+        public int compareTo(GroupEntry arg) {
+            String from = this.groupId == null ? "" : this.groupId;
+            String to = arg == null ? "" : arg.groupId;
+            // TODO Auto-generated method stub
+            return from.compareToIgnoreCase(to);
         }
     }
     
