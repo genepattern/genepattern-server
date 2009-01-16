@@ -20,7 +20,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
@@ -34,9 +33,6 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobIDNotFoundException;
 import org.genepattern.server.PermissionsHelper;
-import org.genepattern.server.UserAccountManager;
-import org.genepattern.server.auth.GroupPermission;
-import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
