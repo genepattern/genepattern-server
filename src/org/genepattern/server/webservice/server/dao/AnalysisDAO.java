@@ -263,6 +263,29 @@ public class AnalysisDAO extends BaseDAO {
 	return (JobInfo[]) results.toArray(new JobInfo[0]);
     }
 
+    /**
+     * Get the root job number for the given job.
+     * If the given job has no parent, return its job number, otherwise recursively get the job number
+     * of the parent until you are at the root.
+     * @param jobNo
+     * @return
+     */
+    public int getRootJobNumber(int jobNo) {
+        String hql = "select a.parent from org.genepattern.server.domain.AnalysisJob a where a.jobNo = :jobNo";
+        Query query = getSession().createQuery(hql);
+        query.setInteger("jobNo", jobNo);
+        List<Integer> rval = query.list();
+        if (rval.size() != 1) {
+            log.error("getRootJobNumber: couldn't query AnalysisJob.parent from database");
+            return -1;
+        }
+        Integer parentJobNo = rval.get(0);
+        if (parentJobNo == null ||  parentJobNo.intValue() < 0) {
+            return jobNo;
+        }
+        return getRootJobNumber(parentJobNo);
+    }
+
     public String getJobOwner(int jobNo) {
         String hql = "select a.userId from org.genepattern.server.domain.AnalysisJob a where a.jobNo = :jobNo";
         Query query = getSession().createQuery(hql);
