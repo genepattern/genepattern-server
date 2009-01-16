@@ -17,7 +17,7 @@ import org.genepattern.webservice.JobInfo;
  * Common interface for getting and setting user and group access permissions for job results.
  * Intended to isolate DAO from JSF beans; and to encode all permissions rules in on place.
  * 
- * By convention, the access permissions for a job result are linked to the ownership and access permissions on the root job. 
+ * By convention, the access permissions for a job result are based on the ownership and access permissions of the root job. 
  * 
  * @author pcarr
  *
@@ -32,6 +32,16 @@ public class PermissionsHelper {
     
     private JobInfo rootJobInfo;
     private String rootJobOwner;
+    
+    public PermissionsHelper(String userId, int jobNo) {
+        this.currentUser = userId;
+        this.isAdmin = AuthorizationHelper.adminJobs(currentUser);
+
+        AnalysisDAO ds = new AnalysisDAO();
+        int rootJobNo = ds.getRootJobNumber(jobNo);
+        this.rootJobInfo = ds.getJobInfo(rootJobNo);
+        init(ds);
+    }
 
     /**
      * Suggested use: create one instance per HTTP request.
@@ -43,15 +53,15 @@ public class PermissionsHelper {
         this.isAdmin =  AuthorizationHelper.adminJobs(currentUser);
 
         this.rootJobInfo = jobInfo;
-        
-        //special case: use root job info for job results access permissions
         AnalysisDAO ds = new AnalysisDAO();
-
         int rootJobId = ds.getRootJobNumber(jobInfo.getJobNumber());
         if (rootJobId != jobInfo.getJobNumber()) {
-            rootJobInfo = ds.getJobInfo(rootJobId);
-        }
-        
+            this.rootJobInfo = ds.getJobInfo(rootJobId);
+        }        
+        init(ds);
+    }
+    
+    private void init(AnalysisDAO ds)  {
         this.rootJobOwner = rootJobInfo.getUserId();
         
         this.isOwner = this.currentUser.equals(this.rootJobOwner);
@@ -76,6 +86,7 @@ public class PermissionsHelper {
             }
         }
     }
+
  
     /**
      * Does the given user have read access to the given job.

@@ -29,8 +29,8 @@ import javax.xml.soap.SOAPException;
 import org.apache.axis.MessageContext;
 import org.apache.axis.attachments.AttachmentPart;
 import org.apache.log4j.Logger;
+import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.UserAccountManager;
-import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
@@ -678,41 +678,17 @@ public class Analysis extends GenericWebService {
 	return username;
     }
 
-    //TODO: create helper function in group manager package
-    private void canReadJob(String userId, int jobId) 
-    throws WebServiceException
-    {
-        checkPermission(userId, jobId, false);
+    private void canReadJob(String userId, int jobId) throws WebServiceException {
+        PermissionsHelper ph = new PermissionsHelper(userId, jobId);
+        if (!ph.canReadJob()) {
+            throw new WebServiceException("You do not have permission to read the job: "+jobId);
+        }
     }
-    private void canWriteJob(String userId, int jobId) 
-    throws WebServiceException
-    {
-        checkPermission(userId, jobId, true);
-    }
-    private void checkPermission(String userId, int jobId, boolean write) 
-    throws WebServiceException
-    {
-        if (AuthorizationHelper.adminJobs(userId)) {
-            return;
+    private void canWriteJob(String userId, int jobId) throws WebServiceException {
+        PermissionsHelper ph = new PermissionsHelper(userId, jobId);
+        if (!ph.canWriteJob()) {
+            throw new WebServiceException("You do not have permission to edit the job: "+jobId);
         }
-        AnalysisDAO ds = new AnalysisDAO();
-        String jobOwner = ds.getJobOwner(jobId);
-        if (userId.equals(jobOwner)) {
-            return;
-        }
-        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(jobId);
-        IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
-        for(GroupPermission gp : groupPermissions) {
-            if (groupMembership.isMember(userId, gp.getGroupId())) {
-                if (write && gp.getPermission().getWrite()) {
-                    return;
-                }
-                else if (gp.getPermission().getRead()) {
-                    return;
-                }
-            }
-        }
-        throw new WebServiceException("You do not have the required permission to perform the requested action.");
     }
 
     private ParameterInfo[] removeOutputFileParameters(JobInfo jobInfo, String value) {
