@@ -14,21 +14,69 @@ import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 
 /**
- * Common interface for getting and setting user and group access permissions for job results, pipelines and modules.
- * Initially designed to isolate DAO from JSF beans.
+ * Common interface for getting and setting user and group access permissions for job results.
+ * Intended to isolate DAO from JSF beans; and to encode all permissions rules in on place.
+ * 
+ * By convention, the access permissions for a job result are linked to the ownership and access permissions on the root job. 
  * 
  * @author pcarr
  *
  */
 public class PermissionsHelper {
     private String currentUser = null;
-    private JobInfo jobInfo = null;
+    private boolean isAdmin = false;
+    private boolean isOwner = false;
+    private boolean canRead = false;
+    private boolean canWrite = false;
+    private boolean canSetPermissions = false;
+    
+    private JobInfo rootJobInfo;
+    private String rootJobOwner;
 
+    /**
+     * Suggested use: create one instance per HTTP request.
+     * @param userId
+     * @param jobInfo
+     */
     public PermissionsHelper(String userId, JobInfo jobInfo) {
         this.currentUser = userId;
-        this.jobInfo = jobInfo;
-    }
+        this.isAdmin =  AuthorizationHelper.adminJobs(currentUser);
 
+        this.rootJobInfo = jobInfo;
+        
+        //special case: use root job info for job results access permissions
+        AnalysisDAO ds = new AnalysisDAO();
+
+        int rootJobId = ds.getRootJobNumber(jobInfo.getJobNumber());
+        if (rootJobId != jobInfo.getJobNumber()) {
+            rootJobInfo = ds.getJobInfo(rootJobId);
+        }
+        
+        this.rootJobOwner = rootJobInfo.getUserId();
+        
+        this.isOwner = this.currentUser.equals(this.rootJobOwner);
+        this.canSetPermissions = this.isOwner;
+        
+        if (isAdmin || isOwner) {
+            canRead = true;
+            canWrite = true;
+        }
+        else {
+            Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(rootJobInfo.getJobNumber());
+            IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
+            for(GroupPermission gp : groupPermissions) {
+                if (groupMembership.isMember(currentUser, gp.getGroupId())) {
+                    if (gp.getPermission().getWrite()) {
+                        this.canWrite = true;
+                    }
+                    if (gp.getPermission().getRead()) {
+                            this.canRead = true;
+                    }
+                }
+            }
+        }
+    }
+ 
     /**
      * Does the given user have read access to the given job.
      * 
@@ -37,7 +85,7 @@ public class PermissionsHelper {
      * @return
      */
     public boolean canReadJob() {
-        return checkPermission(currentUser, jobInfo, false);
+        return this.canRead;
     }
 
     /**
@@ -48,62 +96,25 @@ public class PermissionsHelper {
      * @return
      */
     public boolean canWriteJob() {
-        return checkPermission(currentUser, jobInfo, true);
+        return this.canWrite;
     }
 
     public boolean canSetJobPermissions() {
-        AnalysisDAO ds = new AnalysisDAO();
-        String ownerUserId = ds.getJobOwner(jobInfo.getJobNumber());
-        if (!currentUser.equals(ownerUserId)) {
-            return false;
-        }
-        return true;
-    }
-
-    private boolean checkPermission(String userId, JobInfo jobInfo, boolean checkWrite) {
-        if (AuthorizationHelper.adminJobs(userId)) {
-            return true;
-        }
-        String jobOwner = jobInfo.getUserId();
-        if (userId.equals(jobOwner)) {
-            return true;
-        }
-        AnalysisDAO ds = new AnalysisDAO();
-        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(jobInfo.getJobNumber());
-        IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
-        for(GroupPermission gp : groupPermissions) {
-            if (groupMembership.isMember(userId, gp.getGroupId())) {
-                if (checkWrite) {
-                    if (gp.getPermission().getWrite()) {
-                        return true;
-                    }
-                }
-                else {
-                    if (gp.getPermission().getRead()) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        return this.canSetPermissions;
     }
     
     /**
      * Get the list of group permissions for the job, include any groups which the current user is a member of, 
      * even if permissions have not been set for those groups.
      * 
-     * @param jobNumber
+     * @param includeUsersGroups - if true add groups of which the currentUser is a member, and for which access permissions are not set.
      * @return
      */
-    public List<GroupPermission> getJobResultPermissions() {
-        return getJobResultPermissions(false);
-    }
-    
     public List<GroupPermission> getJobResultPermissions(boolean includeUsersGroups) {
         Set<String> groups = UserAccountManager.instance().getGroupMembership().getGroups(currentUser);
 
         AnalysisDAO ds = new AnalysisDAO();
-        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(jobInfo.getJobNumber());
+        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(rootJobInfo.getJobNumber());
         
         //add any groups the user is a member of for which no permissions are set
         if (includeUsersGroups) {
@@ -123,11 +134,11 @@ public class PermissionsHelper {
     }
 
     /**
-     * Change the access permissions for the given job.
+     * Change the access permissions for the current job.
+     * <br />
+     * Note: only the owner of a job is allowed to change the permissions.<br />
+     * Note: changing access permissions on a child job sets the permissions for the root job and all siblings.
      * 
-     * Note: only the owner of a job is allowed to change the permissions.
-     * 
-     * @param jobId
      * @param permissions
      * 
      * @throws Exception - if current user is not authorized to change the permissions
@@ -139,6 +150,6 @@ public class PermissionsHelper {
             throw new Exception("Insufficient permissions: Only job owner can change group access permissions!");
         }
         AnalysisDAO ds = new AnalysisDAO();
-        ds.setGroupPermissions(jobInfo.getJobNumber(), permissions);
+        ds.setGroupPermissions(rootJobInfo.getJobNumber(), permissions);
     }
 }
