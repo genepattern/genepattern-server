@@ -124,15 +124,16 @@ public class JobInfoBean {
         }
         
         public List<GroupPermission> getGroupPermissions() {
-            PermissionsHelper pm = new PermissionsHelper(jobInfo.getUserId());
+            String userId = UIBeanHelper.getUserId();
+            PermissionsHelper pm = new PermissionsHelper(userId, jobInfo);
             boolean includeUsersGroups = true;
-            return pm.getJobResultPermissions(jobNumber, includeUsersGroups);
+            return pm.getJobResultPermissions(includeUsersGroups);
         }
         
         public boolean getSetJobPermissionsAllowed() {
             String userId = UIBeanHelper.getUserId();
-            PermissionsHelper pm = new PermissionsHelper(userId);
-            return pm.canSetJobPermissions(jobInfo);
+            PermissionsHelper pm = new PermissionsHelper(userId, jobInfo);
+            return pm.canSetJobPermissions();
         }
         
         /**
@@ -193,9 +194,9 @@ public class JobInfoBean {
             }
             
             String userId = UIBeanHelper.getUserId();
-            PermissionsHelper pm = new PermissionsHelper(userId);
+            PermissionsHelper pm = new PermissionsHelper(userId, jobInfo);
             try {
-                pm.setPermissions(jobInfo, updatedPermissions);
+                pm.setPermissions(updatedPermissions);
                 return "success";
             }
             catch (Exception e) {
@@ -266,8 +267,8 @@ public class JobInfoBean {
     private JobInfoWrapper createJobInfoWrapper(JobInfo jobInfo) {
         //TODO: shouldn't have to check for permissions here, should require permissions in order to create the JobInfo instance
         String userId = UIBeanHelper.getUserId();
-        PermissionsHelper pm = new PermissionsHelper(userId);
-        if (!pm.canReadJob(userId, jobInfo)) {
+        PermissionsHelper pm = new PermissionsHelper(userId, jobInfo);
+        if (!pm.canReadJob()) {
             throw new FacesException("You don't have the required permissions to access the requested job."); 
         }
 
