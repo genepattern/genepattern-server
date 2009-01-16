@@ -33,6 +33,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobIDNotFoundException;
+import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
@@ -146,15 +147,15 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         }
         
         //parse the job number and file
-        String job = null;
+        String jobNumber = null;
         String file = null;
         if (resultsPath != null && resultsPath.length() > 0) {
             int idx = resultsPath.indexOf('/');
             if (idx < 0) {
-                job = resultsPath;
+                jobNumber = resultsPath;
             }
             else {
-                job = resultsPath.substring(0, idx);
+                jobNumber = resultsPath.substring(0, idx);
                 //remove '/'
                 file = resultsPath.substring(idx+1);
                 if (file.length() == 0) {
@@ -164,7 +165,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         }
         
         //special case: list all job results
-        if (job == null) {
+        if (jobNumber == null) {
             RequestDispatcher rd = this.getServletContext().getRequestDispatcher("/pages/jobResults.jsf");
             rd.forward(request, response);
             return;
@@ -176,34 +177,18 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         }
         else {
             try {
-                int jobID = Integer.parseInt(job);
+                int jobID = Integer.parseInt(jobNumber);
                 AnalysisDAO ds = new AnalysisDAO();
                 JobInfo jobInfo = ds.getJobInfo(jobID);
-                
-                //if the current user owns the job
-                allowed = useridFromSession != null && useridFromSession.equals(jobInfo.getUserId());
-                //or if the current user is in one of the groups which can read the job
-                if (!allowed) {
-                    Set<GroupPermission> perm = ds.getGroupPermissions(jobID);
-                    
-                    //TODO: create helper function in group manager package
-                    IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
-                    for(GroupPermission gp : perm) {
-                        if (groupMembership.isMember(useridFromSession, gp.getGroupId())) {
-                            if (gp.getPermission().getRead()) {
-                                allowed = true;
-                                break;
-                            }
-                        }
-                    }
-                }
+                PermissionsHelper ph = new PermissionsHelper(useridFromSession, jobInfo);
+                allowed = ph.canReadJob();
             }
             catch (NumberFormatException e) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid jobid: "+job);
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid jobid: "+jobNumber);
                 return;
             }
             catch (JobIDNotFoundException e) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job not found: "+job);
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job not found: "+jobNumber);
                 return;
             }
         }
@@ -212,12 +197,12 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             return;
         }
         if (file == null) {
-            RequestDispatcher rd = this.getServletContext().getRequestDispatcher("/pages/jobResult.jsf?jobNumber="+job);
+            RequestDispatcher rd = this.getServletContext().getRequestDispatcher("/pages/jobResult.jsf?jobNumber="+jobNumber);
             rd.forward(request, response);
             return;
         }
 
-        File fileObj = new File(jobsDirectory + File.separator + job + File.separator + file);
+        File fileObj = new File(jobsDirectory + File.separator + jobNumber + File.separator + file);
         serveFile(fileObj, response);
     }
     
