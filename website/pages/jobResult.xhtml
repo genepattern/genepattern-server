@@ -158,9 +158,6 @@
 		                <f:convertDateTime pattern="dd.MM.yyyy HH:mm" />
 	            	</h:outputText>	
 	            </t:div>
-	            <t:div rendered="#{child.isVisualizer}">
-                    <h:outputText escape="false" value="#{child.visualizerAppletTag}" />
-                </t:div>	            
                 
                 <div>Elapsed time: #{child.elapsedTimeMillis} ms</div>
 	            <div><a href="#" onclick='window.open("#{facesContext.externalContext.requestContextPath}/pages/jobInfo.jsf?target=new&amp;jobNumber=#{child.jobNumber}", "Job #{child.jobNumber}","toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=300");return false'>click to view input parameters</a></div>
