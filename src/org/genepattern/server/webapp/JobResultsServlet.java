@@ -33,10 +33,7 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobIDNotFoundException;
 import org.genepattern.server.PermissionsHelper;
-import org.genepattern.server.webapp.jsf.AuthorizationHelper;
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
-import org.genepattern.webservice.JobInfo;
 
 /**
  *
@@ -168,16 +165,11 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         }
 
         boolean allowed = false;
-        if (useridFromSession != null && AuthorizationHelper.adminJobs(useridFromSession)) {
-            allowed = true;
-        }
-        else {
+        if (useridFromSession != null) {
             try {
                 int jobID = Integer.parseInt(jobNumber);
-                AnalysisDAO ds = new AnalysisDAO();
-                JobInfo jobInfo = ds.getJobInfo(jobID);
-                PermissionsHelper ph = new PermissionsHelper(useridFromSession, jobInfo);
-                allowed = ph.canReadJob();
+                PermissionsHelper ph = new PermissionsHelper(useridFromSession, jobID);
+                allowed = ph.canReadJob();            
             }
             catch (NumberFormatException e) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid jobid: "+jobNumber);
