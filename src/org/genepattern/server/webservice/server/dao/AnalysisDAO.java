@@ -27,7 +27,6 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.genepattern.server.JobIDNotFoundException;
 import org.genepattern.server.auth.GroupPermission;
-import org.genepattern.server.auth.JobGroup;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
@@ -137,21 +136,15 @@ public class AnalysisDAO extends BaseDAO {
     }
 
     public Set<GroupPermission> getGroupPermissions(int jobId, GroupPermission.Permission permission) {
-        //select * from JobGroup where job_no = ?
-        String hqlString = "from JobGroup where jobNo = :jobNo";
-        if (permission != null) {
-            hqlString += " and permissionFlag = :permissionFlag";
-        }
-        Query query = getSession().createQuery(hqlString);
-        query.setInteger("jobNo", jobId);
-        if (permission != null) {
-            query.setInteger("permissionFlag", permission.getFlag());
-        }
-        List<JobGroup> results = query.list();
-
+        String sqlString = "select group_id, permission_flag from job_group where job_no = :jobId";
+        Query sqlQuery = getSession().createSQLQuery(sqlString);
+        sqlQuery.setInteger("jobId", jobId);
+        List<Object[]> results = sqlQuery.list();
         Set<GroupPermission> rval = new HashSet<GroupPermission>();
-        for(JobGroup jg : results) {
-            GroupPermission gp = new GroupPermission(jg.getGroupId(), jg.getPermissionFlag());
+        for(Object[] tuple : results) {
+            String groupId = (String) (tuple[0]);
+            Integer permissionFlag = (Integer) (tuple[1]);
+            GroupPermission gp = new GroupPermission(groupId, permissionFlag.intValue());
             rval.add(gp);
         }
         return rval;
@@ -163,23 +156,25 @@ public class AnalysisDAO extends BaseDAO {
      * @param groupPermissions
      */
     public void setGroupPermissions(int jobId, Set<GroupPermission> groupPermissions) {
-        //delete from JOB_GROUP where job_no = jobId
-        Query query = HibernateUtil.getSession().createQuery("delete JobGroup where jobNo = ?");
-        query.setInteger(0, jobId);
-        query.executeUpdate();
+        Query sqlQuery = HibernateUtil.getSession().createSQLQuery("delete from JOB_GROUP where job_no = :jobId");
+        sqlQuery.setInteger("jobId", jobId);
+        int numDeleted = sqlQuery.executeUpdate();
         
         if (groupPermissions == null) {
             return;
         }
         
         for(GroupPermission gp : groupPermissions) {
-            JobGroup jg = new JobGroup();
-            jg.setJobNo(jobId);
-            jg.setGroupId(gp.getGroupId());
-            jg.setPermissionFlag(gp.getPermission().getFlag());
+            //insert into JOB_GROUP (job_no, group_id, permission_flag) values (<int: jobId>, <String: gp.groupId>, <int: gp.permission.flag>); 
+            String sqlInsertStatement = 
+                "insert into JOB_GROUP (job_no, group_id, permission_flag) values (:jobId, :groupId, :permissionFlag)";
+            sqlQuery = HibernateUtil.getSession().createSQLQuery(sqlInsertStatement);
+            sqlQuery.setInteger("jobId", jobId);
+            sqlQuery.setString("groupId", gp.getGroupId());
+            sqlQuery.setInteger("permissionFlag", gp.getPermission().getFlag());
             
-            HibernateUtil.getSession().saveOrUpdate(jg);
-        }
+            sqlQuery.executeUpdate();
+        } 
     }
 
     /**

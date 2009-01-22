@@ -9,6 +9,7 @@ import java.util.TreeSet;
 
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
+import org.genepattern.server.auth.GroupPermission.Permission;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
@@ -29,6 +30,13 @@ public class PermissionsHelper {
     private boolean canRead = false;
     private boolean canWrite = false;
     private boolean canSetPermissions = false;
+    private boolean isPublic = false;
+    private boolean isShared = false;
+    
+    private Permission publicAccessPermission = GroupPermission.Permission.NONE;
+    private List<GroupPermission> nonPublicPermissions = null;
+    private List<GroupPermission >jobResultPermissionsWithGroups = null;
+    private List<GroupPermission> jobResultPermissionsNoGroups = null;
     
     private JobInfo rootJobInfo;
     private String rootJobOwner;
@@ -71,21 +79,73 @@ public class PermissionsHelper {
             canRead = true;
             canWrite = true;
         }
-        else {
-            Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(rootJobInfo.getJobNumber());
-            IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
-            for(GroupPermission gp : groupPermissions) {
-                if (groupMembership.isMember(currentUser, gp.getGroupId())) {
-                    if (gp.getPermission().getWrite()) {
-                        this.canWrite = true;
-                    }
-                    if (gp.getPermission().getRead()) {
-                            this.canRead = true;
-                    }
+
+        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(rootJobInfo.getJobNumber());
+
+        IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
+        for(GroupPermission gp : groupPermissions) {
+            if ("public".equals(gp.getGroupId())) {
+                this.isPublic = true;
+                this.publicAccessPermission = gp.getPermission();
+            }
+
+            if (groupMembership.isMember(currentUser, gp.getGroupId())) {
+                if (gp.getPermission().getWrite()) {
+                    this.canWrite = true;
+                }
+                if (gp.getPermission().getRead()) {
+                    this.canRead = true;
                 }
             }
         }
+        
+        initJobResultPermissions();
+        initNonPublicPermissions();
     }
+    
+    private void initJobResultPermissions() {
+        Set<String> groups = UserAccountManager.instance().getGroupMembership().getGroups(currentUser);
+
+        AnalysisDAO ds = new AnalysisDAO();
+        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(rootJobInfo.getJobNumber());
+        SortedSet<GroupPermission> sortedNoGroups = new TreeSet<GroupPermission>(groupPermissions);
+        jobResultPermissionsNoGroups = new ArrayList<GroupPermission>(sortedNoGroups);
+        
+        //if (includeUsersGroups) {
+            //get all of the groups which aren't in group permissions
+            Set<String> groupsToAdd = new HashSet<String>();
+            groupsToAdd.addAll(groups);
+            for(GroupPermission gp : groupPermissions) {
+                String groupId = gp.getGroupId();
+                groupsToAdd.remove(groupId);
+            }
+            for(String groupId : groupsToAdd) {
+                groupPermissions.add(new GroupPermission(groupId, GroupPermission.Permission.NONE));
+            }
+        //}            
+        
+        //sorted by group
+        SortedSet<GroupPermission> sorted = new TreeSet<GroupPermission>(groupPermissions); 
+        jobResultPermissionsWithGroups = new ArrayList<GroupPermission>( sorted );
+    }
+
+    private void initNonPublicPermissions() {
+        List<GroupPermission> groupPermissions = getJobResultPermissions(true);
+        Set<GroupPermission> publicGroupPermissions = new HashSet<GroupPermission>();
+        for(GroupPermission gp : groupPermissions) {
+            if ("public".equals(gp.getGroupId())) {
+                publicGroupPermissions.add(gp);
+            }
+            if (gp.getPermission().getRead()) {
+                isShared = true;
+            }
+        }
+        groupPermissions.removeAll(publicGroupPermissions);
+        //sorted by group
+        SortedSet<GroupPermission> sorted = new TreeSet<GroupPermission>(groupPermissions); 
+        nonPublicPermissions =  new ArrayList<GroupPermission>( sorted ); 
+    }
+
 
  
     /**
@@ -113,6 +173,40 @@ public class PermissionsHelper {
     public boolean canSetJobPermissions() {
         return this.canSetPermissions;
     }
+
+    /**
+     * Is the current job read or write accessible by members of the 'public' group.
+     * @return
+     */
+    public boolean isPublic() {
+        return isPublic;        
+    }
+    
+    /**
+     * Is the current job read or write accessible by anyone other than the owner?
+     * @return
+     */
+    public boolean isShared() {
+        return isShared;
+    }
+    
+    /**
+     * Get the public access permission flag (None, Read, or Read_Write)
+     * @return
+     */
+    public Permission getPublicAccessPermission() {
+        //Note: if more than one public group is involved (currently not implemented), user the most permissive
+        return publicAccessPermission;
+    }
+
+    /**
+     * Get the list of all non-public group permissions for the job.
+     * @return
+     */
+    public List<GroupPermission> getNonPublicPermissions() {
+        return nonPublicPermissions;
+    }
+    
     
     /**
      * Get the list of group permissions for the job, include any groups which the current user is a member of, 
@@ -122,28 +216,14 @@ public class PermissionsHelper {
      * @return
      */
     public List<GroupPermission> getJobResultPermissions(boolean includeUsersGroups) {
-        Set<String> groups = UserAccountManager.instance().getGroupMembership().getGroups(currentUser);
-
-        AnalysisDAO ds = new AnalysisDAO();
-        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(rootJobInfo.getJobNumber());
-        
-        //add any groups the user is a member of for which no permissions are set
         if (includeUsersGroups) {
-            Set<String> pg = new HashSet<String>(); //groups with permissions set
-            for(GroupPermission gp : groupPermissions) {
-                pg.add(gp.getGroupId());
-            }
-            groups.removeAll(pg);
-            for(String groupId : groups) {
-                groupPermissions.add(new GroupPermission(groupId, GroupPermission.Permission.NONE));
-            }
+            return jobResultPermissionsWithGroups;
         }
-        
-        //sorted by group
-        SortedSet<GroupPermission> sorted = new TreeSet<GroupPermission>(groupPermissions); 
-        return new ArrayList<GroupPermission>( sorted );
+        else {
+            return jobResultPermissionsNoGroups;
+        }
     }
-
+    
     /**
      * Change the access permissions for the current job.
      * <br />

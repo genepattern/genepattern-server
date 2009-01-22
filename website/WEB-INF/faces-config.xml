@@ -23,6 +23,16 @@
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  <managed-bean>
+  <managed-bean-name>jobPermissionsBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.JobPermissionsBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+  <managed-property>
+    <property-name>jobId</property-name>
+    <value>#{param.jobNumber}</value>
+  </managed-property>
+  
+ </managed-bean>
+ <managed-bean>
   <managed-bean-name>indexPageBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.IndexPageBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
