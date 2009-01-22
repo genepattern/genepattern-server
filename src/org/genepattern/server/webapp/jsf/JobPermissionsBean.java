@@ -1,10 +1,13 @@
 package org.genepattern.server.webapp.jsf;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.faces.context.FacesContext;
 
@@ -28,7 +31,13 @@ public class JobPermissionsBean {
     
     private boolean isPublic = false;
     private boolean isShared = false;
+    
+    //toggle-state in Job Result page
     private boolean showPermissionsDiv = false;
+
+    //for displaying read-only summary information (e.g. in Job Results Page)
+    private List<String> groupIdsWithFullAccess;
+    private List<String> groupIdsWithReadOnlyAccess;
 
     public JobPermissionsBean() {
     }
@@ -49,6 +58,19 @@ public class JobPermissionsBean {
         for (GroupPermission gp : currentPermissions) {
             groupAccessPermissions.add(new GroupPermission(gp.getGroupId(), gp.getPermission()));
         }
+        
+        SortedSet<String> g_full_access = new TreeSet<String>();
+        SortedSet<String> g_read_only_access = new TreeSet<String>();
+        for(GroupPermission gp : permissionsHelper.getJobResultPermissions(false)) {
+            if (gp.getPermission() == Permission.READ_WRITE) {
+                g_full_access.add(gp.getGroupId());
+            }
+            else if (gp.getPermission() == Permission.READ) {
+                g_read_only_access.add(gp.getGroupId());
+            }
+        }
+        groupIdsWithFullAccess = new ArrayList<String>(g_full_access);
+        groupIdsWithReadOnlyAccess = new ArrayList<String>(g_read_only_access);
     }
     
     public void setJobId(int jobId) {
@@ -88,6 +110,35 @@ public class JobPermissionsBean {
         this.showPermissionsDiv = b;
     }
     
+    //helpers for read only view on 'Job Results' page
+    public String getPermissionsLabel() {
+        if (isPublic()) {
+            return "Public";
+        }
+        else if (isShared()) {
+            return "Shared";
+        }
+        return "Private";
+    }
+
+    public int getNumGroupsWithFullAccess() {
+        return groupIdsWithFullAccess.size();
+    }
+    
+    public List<String> getGroupsWithFullAcess() {
+        return Collections.unmodifiableList(groupIdsWithFullAccess);
+    }
+
+    public int getNumGroupsWithReadOnlyAccess() {
+        return groupIdsWithReadOnlyAccess.size();
+    }
+
+    public List<String> getGroupsWithReadOnlyAccess() {
+        return Collections.unmodifiableList(groupIdsWithReadOnlyAccess);
+    }
+    
+    
+    //helpers for updating permissions
     /**
      * Process request parameters (from form submission) and update the access permissions for the current job.
      * Only the owner of a job is allowed to change its permissions.
@@ -141,6 +192,7 @@ public class JobPermissionsBean {
             return "success";
         }
         catch (Exception e) {
+            reset();
             handleException("You are not authorized to change the permissions for this job", e);
             return "error";
         }

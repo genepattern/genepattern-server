@@ -12,13 +12,13 @@ import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.auth.GroupPermission.Permission;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
-import org.genepattern.webservice.JobInfo;
 
 /**
  * Common interface for getting and setting user and group access permissions for job results.
  * Intended to isolate DAO from JSF beans; and to encode all permissions rules in on place.
  * 
  * By convention, the access permissions for a job result are based on the ownership and access permissions of the root job. 
+ * This is implemented in this class; not implemented in AnalysisDAO.
  * 
  * @author pcarr
  *
@@ -38,7 +38,7 @@ public class PermissionsHelper {
     private List<GroupPermission >jobResultPermissionsWithGroups = null;
     private List<GroupPermission> jobResultPermissionsNoGroups = null;
     
-    private JobInfo rootJobInfo;
+    private int rootJobNo;
     private String rootJobOwner;
     
     public PermissionsHelper(String userId, int jobNo) {
@@ -46,32 +46,8 @@ public class PermissionsHelper {
         this.isAdmin = AuthorizationHelper.adminJobs(currentUser);
 
         AnalysisDAO ds = new AnalysisDAO();
-        int rootJobNo = ds.getRootJobNumber(jobNo);
-        this.rootJobInfo = ds.getJobInfo(rootJobNo);
-        init(ds);
-    }
-
-    /**
-     * Suggested use: create one instance per HTTP request.
-     * @param userId
-     * @param jobInfo
-     */
-    public PermissionsHelper(String userId, JobInfo jobInfo) {
-        this.currentUser = userId;
-        this.isAdmin =  AuthorizationHelper.adminJobs(currentUser);
-
-        this.rootJobInfo = jobInfo;
-        AnalysisDAO ds = new AnalysisDAO();
-        int rootJobId = ds.getRootJobNumber(jobInfo.getJobNumber());
-        if (rootJobId != jobInfo.getJobNumber()) {
-            this.rootJobInfo = ds.getJobInfo(rootJobId);
-        }        
-        init(ds);
-    }
-    
-    private void init(AnalysisDAO ds)  {
-        this.rootJobOwner = rootJobInfo.getUserId();
-        
+        this.rootJobNo = ds.getRootJobNumber(jobNo);
+        this.rootJobOwner = ds.getJobOwner(rootJobNo);
         this.isOwner = this.currentUser.equals(this.rootJobOwner);
         this.canSetPermissions = this.isOwner;
         
@@ -79,8 +55,11 @@ public class PermissionsHelper {
             canRead = true;
             canWrite = true;
         }
-
-        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(rootJobInfo.getJobNumber());
+        init(ds);
+    }
+    
+    private void init(AnalysisDAO ds)  {
+        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(rootJobNo);
 
         IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
         for(GroupPermission gp : groupPermissions) {
@@ -99,30 +78,27 @@ public class PermissionsHelper {
             }
         }
         
-        initJobResultPermissions();
+        initJobResultPermissions(ds);
         initNonPublicPermissions();
     }
     
-    private void initJobResultPermissions() {
+    private void initJobResultPermissions(AnalysisDAO ds) {
         Set<String> groups = UserAccountManager.instance().getGroupMembership().getGroups(currentUser);
 
-        AnalysisDAO ds = new AnalysisDAO();
-        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(rootJobInfo.getJobNumber());
+        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(rootJobNo);
         SortedSet<GroupPermission> sortedNoGroups = new TreeSet<GroupPermission>(groupPermissions);
         jobResultPermissionsNoGroups = new ArrayList<GroupPermission>(sortedNoGroups);
-        
-        //if (includeUsersGroups) {
-            //get all of the groups which aren't in group permissions
-            Set<String> groupsToAdd = new HashSet<String>();
-            groupsToAdd.addAll(groups);
-            for(GroupPermission gp : groupPermissions) {
-                String groupId = gp.getGroupId();
-                groupsToAdd.remove(groupId);
-            }
-            for(String groupId : groupsToAdd) {
-                groupPermissions.add(new GroupPermission(groupId, GroupPermission.Permission.NONE));
-            }
-        //}            
+
+        //get all of the groups which aren't in group permissions
+        Set<String> groupsToAdd = new HashSet<String>();
+        groupsToAdd.addAll(groups);
+        for(GroupPermission gp : groupPermissions) {
+            String groupId = gp.getGroupId();
+            groupsToAdd.remove(groupId);
+        }
+        for(String groupId : groupsToAdd) {
+            groupPermissions.add(new GroupPermission(groupId, GroupPermission.Permission.NONE));
+        }
         
         //sorted by group
         SortedSet<GroupPermission> sorted = new TreeSet<GroupPermission>(groupPermissions); 
@@ -146,8 +122,6 @@ public class PermissionsHelper {
         nonPublicPermissions =  new ArrayList<GroupPermission>( sorted ); 
     }
 
-
- 
     /**
      * Does the given user have read access to the given job.
      * 
@@ -238,9 +212,9 @@ public class PermissionsHelper {
         throws Exception 
     {
         if (!canSetJobPermissions()) {
-            throw new Exception("Insufficient permissions: Only job owner can change group access permissions!");
+            throw new Exception("Insufficient permissions to change access permission for job: "+rootJobNo);
         }
         AnalysisDAO ds = new AnalysisDAO();
-        ds.setGroupPermissions(rootJobInfo.getJobNumber(), permissions);
+        ds.setGroupPermissions(rootJobNo, permissions);
     }
 }

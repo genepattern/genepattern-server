@@ -132,10 +132,6 @@ public class AnalysisDAO extends BaseDAO {
     }
 
     public Set<GroupPermission> getGroupPermissions(int jobId) {
-        return getGroupPermissions(jobId, null);
-    }
-
-    public Set<GroupPermission> getGroupPermissions(int jobId, GroupPermission.Permission permission) {
         String sqlString = "select group_id, permission_flag from job_group where job_no = :jobId";
         Query sqlQuery = getSession().createSQLQuery(sqlString);
         sqlQuery.setInteger("jobId", jobId);
@@ -285,8 +281,12 @@ public class AnalysisDAO extends BaseDAO {
         String hql = "select a.userId from org.genepattern.server.domain.AnalysisJob a where a.jobNo = :jobNo";
         Query query = getSession().createQuery(hql);
         query.setInteger("jobNo", jobNo);
-        String userId = (String) query.uniqueResult();
-        return userId;
+        List<String> rval = query.list();
+        if (rval.size() != 1) {
+            log.error("getJobOwner: couldn't get jobOwner for job_id: "+jobNo);
+            return "";
+        }
+        return rval.get(0);
     }
 
     /**

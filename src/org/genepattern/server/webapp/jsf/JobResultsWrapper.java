@@ -7,13 +7,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.PermissionsHelper;
-import org.genepattern.server.auth.GroupPermission;
-import org.genepattern.server.auth.GroupPermission.Permission;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webapp.jsf.JobBean.OutputFileInfo;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
@@ -176,58 +171,31 @@ public class JobResultsWrapper {
         return jobInfo.getUserId();
     }
 
-    private List<GroupPermission> groupPermissionsWrite = new ArrayList<GroupPermission>();
-    private List<GroupPermission> groupPermissionsRead = new ArrayList<GroupPermission>();
-    public List<GroupPermission> getGroupPermissionsWrite() {
-        return groupPermissionsWrite;
+    private JobPermissionsBean jobPermissionsBean;
+
+    private void initGroupPermissions() { 
+        jobPermissionsBean = new JobPermissionsBean();
+        jobPermissionsBean.setJobId(jobInfo.getJobNumber());
+    }
+    
+    public String getPermissionsLabel() {
+        return jobPermissionsBean.getPermissionsLabel();
     }
 
-    public List<GroupPermission> getGroupPermissionsReadOnly() {
-        return groupPermissionsRead;
+    public List<String> getGroupPermissionsWrite() {
+        return jobPermissionsBean.getGroupsWithFullAcess();
+    }
+
+    public List<String> getGroupPermissionsReadOnly() {
+        return jobPermissionsBean.getGroupsWithReadOnlyAccess();
     }
 
     public int getNumGroupPermissionsWrite() {
-        return groupPermissionsWrite == null ? 0 : groupPermissionsWrite.size();
+        return jobPermissionsBean.getNumGroupsWithFullAccess();
     }
     
     public int getNumGroupPermissionsReadOnly() {
-        return groupPermissionsRead == null ? 0 : groupPermissionsRead.size();
-    }
-
-    private void initGroupPermissions() { 
-        String userId = UIBeanHelper.getUserId();
-        PermissionsHelper pm = new PermissionsHelper(userId, jobInfo);
-        boolean includeUsersGroups = false;
-        List<GroupPermission> groupPermissions = pm.getJobResultPermissions(includeUsersGroups);
-        this.deleteAllowed = pm.canWriteJob();
-        
-        //sorted by permission (write then read), then by group
-        SortedSet<GroupPermission> sorted = new TreeSet<GroupPermission>(new GroupPermission.SortByPermission());
-        sorted.addAll(groupPermissions);
-        
-        groupPermissionsWrite.clear();
-        groupPermissionsRead.clear();
-        
-        permissionsLabel = "private";
-        if (sorted.size() > 0) {
-            permissionsLabel = "shared";
-        }
-        for(GroupPermission gp : sorted) {
-            if ("public".equals(gp.getGroupId())) {
-                permissionsLabel = "public";
-            }
-            if (gp.getPermission() == Permission.READ_WRITE) {
-                groupPermissionsWrite.add(gp);
-            }
-            else if (gp.getPermission() == Permission.READ) {
-                groupPermissionsRead.add(gp);
-            }
-        }
-    }
-    
-    private String permissionsLabel;
-    public String getPermissionsLabel() {
-        return permissionsLabel;
+        return jobPermissionsBean.getNumGroupsWithReadOnlyAccess();
     }
 
     /**

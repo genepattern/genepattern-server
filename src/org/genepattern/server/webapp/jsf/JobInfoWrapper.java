@@ -1,12 +1,7 @@
 package org.genepattern.server.webapp.jsf;
 
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.faces.context.FacesContext;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.PermissionsHelper;
@@ -40,7 +35,6 @@ public class JobInfoWrapper {
         this.dateSubmitted = jobInfo.getDateSubmitted();
         this.dateCompleted = jobInfo.getDateCompleted();
         
-        //this.isVisualizer = taskInfo != null && taskInfo.isVisualizer();
         this.taskInfo = taskInfo;
     }
     
@@ -159,86 +153,6 @@ public class JobInfoWrapper {
     public boolean getSetJobPermissionsAllowed() {
         return permissionsHelper.canSetJobPermissions();
     }
-    
-    /**
-     * Process request parameters (from form submission) and update the access permissions for the current job.
-     * Only the owner of a job is allowed to change its permissions.
-     */
-    public String saveGroupPermissions() { 
-        //List<GroupPermission> permissions = getGroupPermissions();
-        boolean includeUsersGroups = true;
-        List<GroupPermission> permissions = permissionsHelper.getJobResultPermissions(includeUsersGroups);
-
-        /* 
-         JSF auto generated parameter names from jobResult.xhtml, e.g.
-           permForm:   permForm
-           permForm:permTable:0:RW:    true
-           permForm:permTable:0:R:     true
-           permForm:permTable:1:R:     true
-         Note: only selected checkboxes are submitted.
-        */
-        
-        //not sure this is the best approach, but for now, 
-        //    regenerate the table in the exact order as was done to present the input form
-        
-        //NOTE: don't edit the jobResult.xhtml without also editing this page 
-        //    in other words, DON'T REUSE THIS CODE in another page unless you know what you are doing
-        Set<GroupPermission> updatedPermissions = new HashSet<GroupPermission>();
-        Map<String,String[]> requestParameters = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterValuesMap();
-        for(String name : requestParameters.keySet()) {
-            //System.out.println("\t"+val);
-            if (name.endsWith("R") || name.endsWith("RW")) {
-                int gin = -1;
-                String[] splits = name.split(":");
-                String permFlag = splits[ splits.length - 1 ];
-                int sin = splits.length - 2;
-                if (sin > 0) {
-                    try {
-                        gin = Integer.parseInt( splits[sin] );
-                        String groupId = permissions.get(gin).getGroupId();
-                        System.out.println("set "+permFlag+" permission for group: " + groupId);
-                        
-                        Permission p = null;
-                        if (permFlag.equalsIgnoreCase("R")) {
-                            p = GroupPermission.Permission.READ;
-                        }
-                        else if (permFlag.equalsIgnoreCase("RW")) {
-                            p = GroupPermission.Permission.READ_WRITE;                                
-                        }
-                        else {
-                            handleException("Ignoring permissions flag: "+permFlag);
-                            return "error";
-                        }
-                        GroupPermission gp = new GroupPermission(groupId, p);
-                        updatedPermissions.add(gp);
-                    }
-                    catch (NumberFormatException e) {
-                        handleException("Can't parse input form", e);
-                        return "error";
-                    }
-                }
-            }
-        }
-        
-        try {
-            permissionsHelper.setPermissions(updatedPermissions);
-            return "success";
-        }
-        catch (Exception e) {
-            handleException("You are not authorized to change the permissions for this job", e);
-            return "error";
-        }
-    }
-    
-    private void handleException(String message) {
-        log.error(message);
-        UIBeanHelper.setErrorMessage(message);
-    }
-
-    private void handleException(String message, Exception e) {
-        log.error(message, e);
-        UIBeanHelper.setErrorMessage(message);
-    }
 
     public String getPermissionsLabel() {
         List<GroupPermission> groups = getGroupPermissions();
@@ -252,5 +166,4 @@ public class JobInfoWrapper {
         int idx = rval.lastIndexOf(", ");
         return rval.substring(0, idx) + "";
     }
-
 }

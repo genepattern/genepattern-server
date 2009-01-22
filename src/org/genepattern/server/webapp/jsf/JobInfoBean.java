@@ -85,7 +85,7 @@ public class JobInfoBean {
     private JobInfoWrapper createJobInfoWrapper(JobInfo jobInfo) {
         //TODO: shouldn't have to check for permissions here, should require permissions in order to create the JobInfo instance
         String userId = UIBeanHelper.getUserId();
-        PermissionsHelper permissionsHelper = new PermissionsHelper(userId, jobInfo);
+        PermissionsHelper permissionsHelper = new PermissionsHelper(userId, jobInfo.getJobNumber());
         if (!permissionsHelper.canReadJob()) {
             throw new FacesException("You don't have the required permissions to access the requested job."); 
         }
