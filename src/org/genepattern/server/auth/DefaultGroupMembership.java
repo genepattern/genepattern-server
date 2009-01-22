@@ -1,5 +1,6 @@
 package org.genepattern.server.auth;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,20 +38,21 @@ public class DefaultGroupMembership implements IGroupMembershipPlugin {
     
     public Set<String> getGroups(String userId) {
         Set<String> rval = null;
-        //if user == null
-        if (userId != null) {
-            rval = userGroups.get(userId);
-            if (rval == null) {
-                rval = EMPTY_GROUPS;
-            }
-            rval.addAll(wildcardGroups);
+        if (userId ==  null) {
+            return rval;
         }
-        return rval;
+        
+        rval = userGroups.get(userId);
+        if (rval == null) {
+            rval = EMPTY_GROUPS;
+        }
+        rval.addAll(wildcardGroups);
+        //return an unmodifiable set
+        return Collections.unmodifiableSet(rval);
     }
 
     public boolean isMember(String userId, String groupId) {
         Set<String> myGroups = getGroups(userId);
         return myGroups.contains(groupId);
     }
-
 }
