@@ -1,0 +1,2 @@
+C TXT
+    Yet another sample input file.
