@@ -32,6 +32,9 @@ public class JobPermissionsBean {
     private boolean isPublic = false;
     private boolean isShared = false;
     
+    //is the current user allowed to delete the job
+    private boolean isDeleteAllowed = false;
+    
     //toggle-state in Job Result page
     private boolean showPermissionsDiv = false;
 
@@ -51,6 +54,7 @@ public class JobPermissionsBean {
         this.isPublic = permissionsHelper.isPublic();
         this.isShared = permissionsHelper.isShared();
         this.publicAccessPermission = permissionsHelper.getPublicAccessPermission();
+        this.isDeleteAllowed = permissionsHelper.canWriteJob();
         
         List<GroupPermission> currentPermissions = permissionsHelper.getNonPublicPermissions();
         //copy
@@ -92,6 +96,10 @@ public class JobPermissionsBean {
 
     public List<GroupPermission> getGroupAccessPermissions() {
         return groupAccessPermissions;
+    }
+    
+    public boolean isDeleteAllowed() {
+        return isDeleteAllowed;
     }
     
     public boolean isPublic() {

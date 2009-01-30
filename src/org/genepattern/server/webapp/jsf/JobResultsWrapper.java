@@ -50,7 +50,6 @@ public class JobResultsWrapper {
         this.selected = selectedJobs.contains(String.valueOf(jobInfo.getJobNumber()));
         this.level = level;
         this.sequence = sequence;
-        this.deleteAllowed = jobInfo.getUserId().equals(UIBeanHelper.getUserId()) || AuthorizationHelper.adminJobs();
 
         this.initGroupPermissions();
 
@@ -176,6 +175,7 @@ public class JobResultsWrapper {
     private void initGroupPermissions() { 
         jobPermissionsBean = new JobPermissionsBean();
         jobPermissionsBean.setJobId(jobInfo.getJobNumber());
+        this.deleteAllowed = jobPermissionsBean.isDeleteAllowed();
     }
     
     public String getPermissionsLabel() {
