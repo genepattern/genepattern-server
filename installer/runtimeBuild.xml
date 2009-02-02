@@ -25,11 +25,17 @@
 		<sleep seconds="5"/>
 	</target>
 
-	<target name="waitForStartup">	
-		<waitfor maxwait="30" maxwaitunit="second">
-		     <http url="http://127.0.0.1:${port}/gp/installFrame.html"/>
-		</waitfor>
-	</target>
+    <target name="waitForStartup">
+        <echo>
+        Running target waitForStartup ...
+        url=http://127.0.0.1:${port}/gp/installFrame.html
+        </echo>
+        <!-- commented out for debugging
+        <waitfor maxwait="30" maxwaitunit="second">
+            <http url="http://127.0.0.1:${port}/gp/installFrame.html"/>
+        </waitfor>
+        -->
+    </target>
 
      
 	<target name="zip_old_tasks">
