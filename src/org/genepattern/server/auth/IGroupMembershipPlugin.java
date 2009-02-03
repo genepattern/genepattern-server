@@ -10,14 +10,14 @@ import java.util.Set;
 public interface IGroupMembershipPlugin {
     /**
      * Get the set of groups which this GenePattern user is a member of.
-     * @param user
+     * @param user, must handle null value.
      * @return a Set of zero or more Groups.
      */
     Set<String> getGroups(String userId);
     
     /**
-     * @param user
-     * @param group
+     * @param user, must handle null value
+     * @param group, must handle null value
      * @return true if the given GenePattern user is a member of the group.
      */
     boolean isMember(String userId, String groupId);
