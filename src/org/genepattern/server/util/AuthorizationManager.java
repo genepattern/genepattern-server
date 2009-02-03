@@ -19,7 +19,9 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
+import org.genepattern.server.UserAccountManager;
 import org.jdom.Attribute;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -45,12 +47,7 @@ public class AuthorizationManager implements IAuthorizationManager {
         }
     }
 
-    protected HashMap<String, HashSet<String>> userGroups = new HashMap<String, HashSet<String>>();
-
-    protected HashMap<String, HashSet<String>> groupUsers = new HashMap<String, HashSet<String>>();
-
     protected HashMap<String, HashSet<String>> actionPermission = new HashMap<String, HashSet<String>>();
-
     protected HashMap<String, HashSet<String>> groupPermission = new HashMap<String, HashSet<String>>();
 
     public String getCheckedLink(String link, String userID, String failureNote) {
@@ -98,13 +95,14 @@ public class AuthorizationManager implements IAuthorizationManager {
      * Check permission map.  Return true if user has specifed privelege (permissionName), false otherwise.
      */
     public boolean checkPermission(String permissionName, String userID) {
-        HashSet<String> usersGroups = userGroups.get(userID);
-        HashSet<String> openGroups = userGroups.get("*");
+        //HashSet<String> usersGroups = userGroups.get(userID);
+        Set<String> usersGroups = UserAccountManager.instance().getGroupMembership().getGroups(userID);
+        //HashSet<String> openGroups = userGroups.get("*");
 
         if (usersGroups == null)
             usersGroups = emptySet;
-        if (openGroups == null)
-            openGroups = emptySet;
+        //if (openGroups == null)
+        //    openGroups = emptySet;
 
         HashSet<String> allowedGroups = groupPermission.get(permissionName);
 
@@ -123,12 +121,12 @@ public class AuthorizationManager implements IAuthorizationManager {
             if (allowedGroups.contains(groupName))
                 return true;
         }
-        for (Iterator<String> iter = openGroups.iterator(); iter.hasNext();) {
-            String groupName = iter.next();
-
-            if (allowedGroups.contains(groupName))
-                return true;
-        }
+        //for (Iterator<String> iter = openGroups.iterator(); iter.hasNext();) {
+        //    String groupName = iter.next();
+//
+        //    if (allowedGroups.contains(groupName))
+        //        return true;
+        //}
 
         return false;
     }
@@ -152,7 +150,7 @@ public class AuthorizationManager implements IAuthorizationManager {
             //
             initPermissionMap();
             initActionPermissionMap();
-            initUserGroupMap();
+            //initUserGroupMap();
         } catch (IOException ioe) {
             ioe.printStackTrace();
             throw ioe;
@@ -227,23 +225,23 @@ public class AuthorizationManager implements IAuthorizationManager {
 
             String groupName = group.getAttribute("name").getValue();
 
-            HashSet<String> groupMembers = groupUsers.get(groupName);
-            if (groupMembers == null) {
-                groupMembers = new HashSet<String>();
-                groupUsers.put(groupName, groupMembers);
-
-            }
+//            HashSet<String> groupMembers = groupUsers.get(groupName);
+//            if (groupMembers == null) {
+//                groupMembers = new HashSet<String>();
+//                groupUsers.put(groupName, groupMembers);
+//
+//            }
             for (Iterator i2 = group.getChildren("user").iterator(); i2.hasNext();) {
                 Element user = (Element) i2.next();
                 String userName = user.getAttribute("name").getValue();
-                HashSet<String> usersGroups = userGroups.get(userName);
-                if (usersGroups == null) {
-                    usersGroups = new HashSet<String>();
-                    userGroups.put(userName, usersGroups);
-                }
+//                HashSet<String> usersGroups = userGroups.get(userName);
+//                if (usersGroups == null) {
+//                    usersGroups = new HashSet<String>();
+//                    userGroups.put(userName, usersGroups);
+//                }
 
-                usersGroups.add(groupName);
-                groupMembers.add(userName);
+//                usersGroups.add(groupName);
+//                groupMembers.add(userName);
             }
         }
         // loop over SOAP methods next
