@@ -46,23 +46,8 @@ public class UserAccountManager {
             prop = System.getProperty("show.registration.link", "true").toLowerCase();
             userAccountManager.showRegistrationLink = 
                 prop.equals("true") ||  prop.equals("y") || prop.equals("yes");
-            
-            String customAuthenticationClass = System.getProperty(PROP_AUTHENTICATION_CLASS);
-            if (customAuthenticationClass == null) {
-                userAccountManager.authentication = new DefaultGenePatternAuthentication();
-            }
-            else {
-                try {
-                    userAccountManager.authentication = (IAuthenticationPlugin) Class.forName(customAuthenticationClass).newInstance();
-                } 
-                catch (final Exception e) {
-                    log.error("Failed to load custom authentication class: "+customAuthenticationClass, e);
-                    userAccountManager.authentication = new NoAuthentication(e);
-                } 
-            }
-            
-            String customGroupMembershipClass = System.getProperty(PROP_GROUP_MEMBERSHIP_CLASS);
-            userAccountManager.loadGroupMembership(customGroupMembershipClass);
+
+            userAccountManager.refreshUsersAndGroups();
         }
         return userAccountManager;
     }
@@ -269,10 +254,46 @@ public class UserAccountManager {
         return groupMembership;
     }
     
-    public void reloadGroupMembership() {
+    /**
+     * If necessary reload user and groups information by reloading the IAuthenticationPlugin and IGroupMembershipPlugins.
+     * This supports one specific use-case: when GP default group membership is used, and an admin edits the configuration file,
+     * it cause the GP server to reload group membership information from the config file.
+     */
+    public void refreshUsersAndGroups() {
+        this.authentication = null;
         this.groupMembership = null;
+        String customAuthenticationClass = System.getProperty(PROP_AUTHENTICATION_CLASS);
         String customGroupMembershipClass = System.getProperty(PROP_GROUP_MEMBERSHIP_CLASS);
-        loadGroupMembership(customGroupMembershipClass);
+        loadAuthentication(customAuthenticationClass);
+
+        //check for special case: 
+        //    use the same instance for both Authentication and GroupMembership 
+        //    if and only if both are set to the same class
+        if (this.authentication instanceof IGroupMembershipPlugin &&
+            customAuthenticationClass != null && 
+            !"".equals(customAuthenticationClass) && 
+            customAuthenticationClass.equals(customGroupMembershipClass))
+        {
+            this.groupMembership = (IGroupMembershipPlugin) this.authentication;
+        }
+        else {
+            loadGroupMembership(customGroupMembershipClass);            
+        }
+    }
+    
+    private void loadAuthentication(String customAuthenticationClass) {
+        if (customAuthenticationClass == null) {
+            userAccountManager.authentication = new DefaultGenePatternAuthentication();
+        }
+        else {
+            try {
+                userAccountManager.authentication = (IAuthenticationPlugin) Class.forName(customAuthenticationClass).newInstance();
+            } 
+            catch (final Exception e) {
+                log.error("Failed to load custom authentication class: "+customAuthenticationClass, e);
+                userAccountManager.authentication = new NoAuthentication(e);
+            } 
+        }
     }
     
     private void loadGroupMembership(String customGroupMembershipClass) {
