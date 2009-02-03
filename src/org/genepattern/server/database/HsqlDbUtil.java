@@ -26,30 +26,28 @@ import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.dao.BaseDAO;
 
 public class HsqlDbUtil {
-
     private static Logger log = Logger.getLogger(HsqlDbUtil.class);
 
     /**
      * HSQL.args= -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb
      */
     public static void startDatabase() {
+        log.debug("Starting HSQL Database...");
         // @todo - get from properites file
-      //  String port = System.getProperty("HSQL_port", "9001");
-      //  String dbFile = System.getProperty("HSQL.dbfile", "../resources/GenePatternDB");
-      //  String dbUrl = "file:" + dbFile;
-      //  String dbName = System.getProperty("HSQL.dbName", "xdb");
-      //  String[] args = new String[] { "-port", port, "-database.0", dbUrl, "-dbname.0", dbName };
-		      
-
-		String args = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
-		String argsArray[] = new String[6];
-		StringTokenizer strTok = new StringTokenizer(args);
-		int i=0;
-		while (strTok.hasMoreTokens()){
-			String tok = strTok.nextToken();
-			argsArray[i++] = tok;
-		}
-		org.hsqldb.Server.main(argsArray);
+        //  String port = System.getProperty("HSQL_port", "9001");
+        //  String dbFile = System.getProperty("HSQL.dbfile", "../resources/GenePatternDB");
+        //  String dbUrl = "file:" + dbFile;
+        //  String dbName = System.getProperty("HSQL.dbName", "xdb");
+        //  String[] args = new String[] { "-port", port, "-database.0", dbUrl, "-dbname.0", dbName };
+        String args = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
+        String argsArray[] = new String[6];
+        StringTokenizer strTok = new StringTokenizer(args);
+        int i=0;
+        while (strTok.hasMoreTokens()){
+            String tok = strTok.nextToken();
+            argsArray[i++] = tok;
+        }
+        org.hsqldb.Server.main(argsArray);
 
         HibernateUtil.beginTransaction();
         updateSchema();
@@ -57,7 +55,6 @@ public class HsqlDbUtil {
     }
 
     public static void shutdownDatabase() {
-        
         try {
             HibernateUtil.beginTransaction();
             log.info("Checkpointing database");
@@ -65,36 +62,24 @@ public class HsqlDbUtil {
             dao.executeUpdate("CHECKPOINT");
             log.info("Checkpointed.");
             dao.executeUpdate("SHUTDOWN");
-            try {
-            	// bug 1887 again // HibernateUtil.commitTransaction();
-            } catch (Exception e){
-            	// swallow the exception here since we expect to get one.  After all the database will
-            	// shut down before the commit returns since that is what we are executing
-            	// bug # 1887
-            }
-        }  catch (Throwable t) {
+        }  
+        catch (Throwable t) {
             t.printStackTrace();
             log.info("checkpoint database in StartupServlet.destroy", t);
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
-
-
     }
 
     private static void updateSchema() {
-
+        log.debug("Updating schema...");
         try {
             String resourceDir = new File(System.getProperty("resources")).getCanonicalPath();
-            
             if (!checkSchema(resourceDir)) {
-
                 createSchema(resourceDir);
-
                 if (!checkSchema(resourceDir)) {
                     log.error("schema didn't have correct version after creating");
-
                     throw new IOException("Unable to successfully update database tables.");
                 }
             }
@@ -102,8 +87,7 @@ public class HsqlDbUtil {
         catch (IOException e) {
             log.error(e);
         }
-
-
+        log.debug("Updating schema...Done!");
     }
 
     /**
@@ -113,13 +97,12 @@ public class HsqlDbUtil {
      * @return
      */
     private static boolean checkSchema(String resourceDir) {
+        log.debug("checking schema in resourceDir: "+resourceDir);
         boolean upToDate = false;
         String dbSchemaVersion = "";
         String requiredSchemaVersion = System.getProperty("GenePatternVersion");
         // check schemaVersion
-
         String sql = "select value from props where key='schemaVersion'";
-
         try {
         	BaseDAO dao = new BaseDAO();
             ResultSet resultSet = dao.executeSQL(sql, false);
@@ -139,8 +122,7 @@ public class HsqlDbUtil {
         }
 
         System.setProperty("dbSchemaVersion", dbSchemaVersion);
-        log.info("schema up-to-date: " + upToDate + ": " + requiredSchemaVersion + " required, "
-                + dbSchemaVersion + " current");
+        log.info("schema up-to-date: " + upToDate + ": " + requiredSchemaVersion + " required, " + dbSchemaVersion + " current");
         return upToDate;
     }
 
@@ -151,6 +133,7 @@ public class HsqlDbUtil {
      * @throws IOException
      */
     private static void createSchema(String resourceDir) throws IOException {
+        log.debug("createSchema in resourceDir: "+resourceDir);
         final String schemaPrefix = System.getProperty("HSQL.schema", "analysis_hypersonic-");
         File[] schemaFiles = new File(resourceDir).listFiles(new FilenameFilter() {
             // INNER CLASS !!!
@@ -185,6 +168,7 @@ public class HsqlDbUtil {
                 log.info("skipping " + name + " (" + version + ")");
             }
         }
+        log.debug("createSchema ... Done!");
     }
 
     protected static void processSchemaFile(File schemaFile) throws IOException {
@@ -219,6 +203,7 @@ public class HsqlDbUtil {
                 log.error(se);
             }
         }
+        log.debug("updating database from schema ... Done!");
     }
 
     static String readFile(File file) throws IOException {
@@ -250,16 +235,12 @@ public class HsqlDbUtil {
     }
 
     public static void main(String args[]) {
-
         startDatabase();
         try {
             System.in.read();
         }
         catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
     }
-
 }
