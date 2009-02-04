@@ -191,7 +191,7 @@ public class UsersAndGroupsBean {
      * Reload the users and groups database from the file system.
      */
     public void reloadUsersAndGroups() {
-        UserAccountManager.instance().reloadGroupMembership();
+        UserAccountManager.instance().refreshUsersAndGroups();
         init();
     }
 }
