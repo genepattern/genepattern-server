@@ -99,26 +99,28 @@ public class JobBean {
     /** Current page displayed */
     private int pageNumber = 1;
     
+    private JobResultsFilterBean jobResultsFilterBean = null;
+    public void setJobResultsFilterBean(JobResultsFilterBean j) {
+        this.jobResultsFilterBean = j;
+    }
 
     public JobBean() {
-	try {
-	    pageSize = Integer.parseInt(System.getProperty("job.results.per.page", "50"));
-	} catch (NumberFormatException nfe) {
-	    pageSize = 50;
-	}
+        try {
+            pageSize = Integer.parseInt(System.getProperty("job.results.per.page", "50"));
+        } 
+        catch (NumberFormatException nfe) {
+            pageSize = 50;
+        }
 	
-	String userId = UIBeanHelper.getUserId();
-	kindToModules = SemanticUtil.getKindToModulesMap(new AdminDAO().getLatestTasks(userId));
-	this.showExecutionLogs = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showExecutionLogs", String
-		.valueOf(showExecutionLogs)));
+        String userId = UIBeanHelper.getUserId();
+        kindToModules = SemanticUtil.getKindToModulesMap(new AdminDAO().getLatestTasks(userId));
+        this.showExecutionLogs = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showExecutionLogs", String.valueOf(showExecutionLogs)));
 
-	// Attributes to support job results page
-	this.fileSortAscending = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "fileSortAscending", String
-		.valueOf(fileSortAscending)));
-	this.fileSortColumn = new UserDAO().getPropertyValue(userId, "fileSortColumn", fileSortColumn);
-	this.jobSortColumn = new UserDAO().getPropertyValue(userId, "jobSortColumn", jobSortColumn);
-	this.jobSortAscending = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "jobSortAscending", String
-		.valueOf(jobSortAscending)));
+        // Attributes to support job results page
+        this.fileSortAscending = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "fileSortAscending", String.valueOf(fileSortAscending)));
+        this.fileSortColumn = new UserDAO().getPropertyValue(userId, "fileSortColumn", fileSortColumn);
+        this.jobSortColumn = new UserDAO().getPropertyValue(userId, "jobSortColumn", jobSortColumn);
+        this.jobSortAscending = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "jobSortAscending", String.valueOf(jobSortAscending)));
     }
 
     public void createPipeline(ActionEvent e) {
@@ -128,9 +130,9 @@ public class JobBean {
 		UIBeanHelper.setErrorMessage("No job specified.");
 		return;
 	    }
-	    String pipelineName = "job" + jobNumber; // TODO prompt user for name
-	    String lsid = new LocalAnalysisClient(UIBeanHelper.getUserId()).createProvenancePipeline(jobNumber,
-		    pipelineName);
+        // TODO prompt user for name
+	    String pipelineName = "job" + jobNumber; 
+	    String lsid = new LocalAnalysisClient(UIBeanHelper.getUserId()).createProvenancePipeline(jobNumber, pipelineName);
 
 	    if (lsid == null) {
 		UIBeanHelper.setErrorMessage("Unable to create pipeline.");
@@ -518,7 +520,7 @@ public class JobBean {
     }
 
     public void setPageNumber(int pageNumber) {
-	this.pageNumber = pageNumber;
+        this.pageNumber = pageNumber;
     }
 
     public int getPageNumber() {
@@ -533,7 +535,7 @@ public class JobBean {
     }
 
     public void goToPage() {
-	this.pageNumber = Integer.parseInt(UIBeanHelper.getRequest().getParameter("page"));
+        this.pageNumber = Integer.parseInt(UIBeanHelper.getRequest().getParameter("page"));
     }
 
     public List<Integer> getPages() {
@@ -576,18 +578,11 @@ public class JobBean {
 
     private int pageCount = -1;
     public int getPageCount() {
-        if (pageCount < 0) {
-            //requires session scope jobResultsFilterBean
-            FacesContext ctx = FacesContext.getCurrentInstance();
-            Object obj = ctx.getExternalContext().getSessionMap().get("jobResultsFilterBean");
-            if (!(obj instanceof JobResultsFilterBean)) {
-                log.error("Unexpected type for session bean 'jobResultsFilterBean' "+obj.getClass());
-                pageCount = 1;
-            }
-            JobResultsFilterBean jobResultsFilterBean = (JobResultsFilterBean) obj;
+        if (jobResultsFilterBean != null) {
             int jobCount = jobResultsFilterBean.getJobCount();
-            pageCount = (int) Math.ceil(jobCount / (double) pageSize);
+            return (int) Math.ceil(jobCount / (double) pageSize);
         }
+        log.error("null JobResultsFilterBean, can't compute pageCount in job results page.");
         return pageCount;
     }
 
@@ -599,22 +594,10 @@ public class JobBean {
 
     private List<JobResultsWrapper> getJobs(int maxJobNumber, int maxEntries) { 
         if (allJobs == null) {
-            String userId = UIBeanHelper.getUserId();
-            //TODO: refactor to avoid dependency between JobBean and JobResultsFilterBean
-            String selectedGroup = null;
-            Set<String> selectedGroups = new HashSet<String>();
-            boolean showEveryonesJobs = false;
-            FacesContext ctx = FacesContext.getCurrentInstance();
-            Object obj = ctx.getExternalContext().getSessionMap().get("jobResultsFilterBean");
-            if (obj instanceof JobResultsFilterBean) {
-                JobResultsFilterBean jobResultsFilterBean = (JobResultsFilterBean) obj;
-                selectedGroup = jobResultsFilterBean.getSelectedGroup();
-                selectedGroups = jobResultsFilterBean.getSelectedGroups();
-                showEveryonesJobs = jobResultsFilterBean.isShowEveryonesJobs();
-            }
-            else {
-                log.error("Unexpected type for session bean 'jobResultsFilterBean' "+obj.getClass());
-            }
+            String userId = UIBeanHelper.getUserId(); 
+            String selectedGroup = jobResultsFilterBean.getSelectedGroup();
+            Set<String> selectedGroups = jobResultsFilterBean.getSelectedGroups();
+            boolean showEveryonesJobs = jobResultsFilterBean.isShowEveryonesJobs();
 
             LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
             try {

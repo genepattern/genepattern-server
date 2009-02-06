@@ -126,6 +126,10 @@
   <managed-bean-name>jobsBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.JobBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
+  <managed-property>
+    <property-name>jobResultsFilterBean</property-name>
+    <value>#{jobResultsFilterBean}</value>
+  </managed-property>
  </managed-bean>
  <managed-bean>
   <managed-bean-name>createSuiteBean</managed-bean-name>
