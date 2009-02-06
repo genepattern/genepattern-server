@@ -11,8 +11,10 @@ import java.util.Set;
  * The intention is to make it easier for implementors of custom group authentication; while still
  * allowing users to share job results, pipelines, and modules with all genepattern users.
  * 
+ * TODO: Once the ability to share a job result with a user (in addition to members of a group) is implemented, then 
+ *       this functionality can be part of the user permissions logic (aka, share this job result with all (*) users).
+ * 
  * @author pcarr
- *
  */
 public class GroupMembershipWrapper implements IGroupMembershipPlugin {
     private static final String wildCardGroupId = GroupPermission.PUBLIC;
@@ -24,15 +26,24 @@ public class GroupMembershipWrapper implements IGroupMembershipPlugin {
     }
 
     public Set<String> getGroups(String userId) {
-        Set<String> wrappedGroups = new HashSet<String>(this.groupMembership.getGroups(userId)); 
-        wrappedGroups.add(wildCardGroupId);
-        return Collections.unmodifiableSet(wrappedGroups);
+        Set<String> groups = null;
+        if (groupMembership != null) {
+            groups = groupMembership.getGroups(userId);
+        }
+        if (groups == null) {
+            return Collections.emptySet();
+        }
+        else {
+            Set<String> wrappedGroups = new HashSet<String>(groups); 
+            wrappedGroups.add(wildCardGroupId);
+            return Collections.unmodifiableSet(wrappedGroups);
+        }
     }
 
     public boolean isMember(String userId, String groupId) {
         if (wildCardGroupId.equals(groupId)) {
             return true;
         }
-        return groupMembership.isMember(userId, groupId);
+        return groupMembership != null && groupMembership.isMember(userId, groupId);
     }
 }
