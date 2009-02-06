@@ -10,30 +10,39 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.util.AuthorizationManagerFactory;
+import org.genepattern.server.util.IAuthorizationManager;
 
 /**
  * Backing bean for the admin page for displaying all genepattern users and groups.
  * Request scope.
+ * 
+ * TODO: link permissions to this page so that you can see the permissions that each user has.
  * 
  * @author pcarr
  */
 public class UsersAndGroupsBean {
     private SortedSet<UserEntry> userEntries;
     private SortedSet<GroupEntry> groupEntries;
-    private GroupEntry adminGroupEntry;
-    private GroupEntry publicGroupEntry;
     
-    private static String ADMIN_GROUP_ID = "administrators";
-    private static String PUBLIC_GROUP_ID = "public";
+    //toggle whether or not to include the '*' wildcard group on the users and groups page
+    //    if this is enabled, the '*' group, which includes all registered users, will be displayed.
+    //    Set this to false to help with debugging.
+    private final static boolean ignorePublicGroups = true;
+    
+    private IAuthorizationManager authManager;
         
     public UsersAndGroupsBean() {
         init();
     }
     
     private void init() {
+        authManager = AuthorizationManagerFactory.getAuthorizationManager();
+
         List<User> allUsers = new UserDAO().getAllUsers();
         IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
 
@@ -60,11 +69,7 @@ public class UsersAndGroupsBean {
         //helpers
         for(String groupId : mapGroupIdToUserIds.keySet()) {
             GroupEntry ge = new GroupEntry(groupId);
-            if (PUBLIC_GROUP_ID.equalsIgnoreCase(groupId)) {
-                publicGroupEntry = ge;
-            }
-            else if (ADMIN_GROUP_ID.equalsIgnoreCase(groupId)) {
-                adminGroupEntry = ge;
+            if (ignorePublicGroups && GroupPermission.PUBLIC.equalsIgnoreCase(groupId)) {
             }
             else {
                 groupEntries.add(ge);
@@ -97,9 +102,9 @@ public class UsersAndGroupsBean {
     }
 
     /**
-     * Map each user to its groups, excluding 'public' from the list.
+     * Map each user to its groups.
      */
-    public static class UserEntry {
+    public class UserEntry {
         private User user;
         private SortedSet<String> groups;
         private boolean isAdmin = false;
@@ -107,16 +112,14 @@ public class UsersAndGroupsBean {
         public UserEntry(User user) {
             this.user = user;
             this.groups = new TreeSet<String>();
+            this.isAdmin = UsersAndGroupsBean.this.authManager.checkPermission("adminServer", user.getUserId());
         }
         
         public void addGroup(String groupId) {
-            if (PUBLIC_GROUP_ID.equalsIgnoreCase(groupId)) {
+            if (UsersAndGroupsBean.ignorePublicGroups && GroupPermission.PUBLIC.equalsIgnoreCase(groupId)) {
                 return;
             }
             groups.add(groupId);
-            if (ADMIN_GROUP_ID.equalsIgnoreCase(groupId)) {
-                isAdmin = true;
-            }
         }
         
         public User getUser() {
@@ -130,7 +133,6 @@ public class UsersAndGroupsBean {
         public boolean isAdmin() {
             return isAdmin;
         }
-
     }
 
     /**
@@ -173,14 +175,6 @@ public class UsersAndGroupsBean {
         List<UserEntry> rval = new ArrayList<UserEntry>();
         rval.addAll(userEntries);
         return rval;
-    }
-
-    public GroupEntry getPublicGroupEntry() {
-        return publicGroupEntry;
-    }
-
-    public GroupEntry getAdminGroupEntry() {
-        return adminGroupEntry;
     }
 
     public List<GroupEntry> getGroupEntries() {

@@ -18,7 +18,7 @@
       xmlns:t="http://myfaces.apache.org/tomahawk" 
       xmlns:c="http://java.sun.com/jstl/core">
 
-    <table width="100%" border="0" cellpadding="0" cellspacing="0"  class="barhead-other">
+    <table width="100%" class="barhead-other">
       <tr>
         <td>Users and Groups</td>        
       </tr>
@@ -31,33 +31,31 @@
     </div>
     
     <h3>Users</h3>
-    <table>
-      <tr>
-        <th>user_id</th>
-        <th>email</th>
-        <th>groups</th>
+    <table border="0" cellpadding="0" cellspacing="0" >
+      <thead>
+      <tr class="tableheader-row2">
+        <td align="left">user_id</td>
+        <td align="left">email</td>
+        <td align="left">groups</td>
+        <td align="left" style="padding-left: 10px; padding-right: 10px;">admin?</td>
       </tr>
+      </thead>
     <t:dataList var="userEntry" value="#{usersAndGroupsBean.userEntries}">
-      <tr>
+      <tr class="admin-row">
         <td>#{userEntry.user.userId}</td>
-        <td>#{userEntry.user.email}</td>
+        <td><a href="mailto:#{userEntry.user.email}">#{userEntry.user.email}</a></td>
         <td>
           <t:dataList var="userGroupId" value="#{userEntry.groups}">
           #{userGroupId} <br />
           </t:dataList>
         </td>
+        <td style="text-align: center; padding-left: 10px; color: green;"><h:outputText rendered="#{userEntry.admin}">&#x2713;</h:outputText></td>
       </tr>
     </t:dataList>
     </table>
 
     <h3>Groups</h3>
     <dl>
-      <dt>#{usersAndGroupsBean.adminGroupEntry.groupId}</dt>
-      <dd>
-      <t:dataList var="userId" rowIndexVar="idx" value="#{usersAndGroupsBean.adminGroupEntry.users}">
-          #{userId}<br />
-      </t:dataList>
-      </dd>
     <t:dataList var="groupEntry" value="#{usersAndGroupsBean.groupEntries}">
       <dt>#{groupEntry.groupId}</dt>
         <dd>

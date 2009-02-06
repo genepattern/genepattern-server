@@ -666,6 +666,17 @@ a:active {
 	border-bottom-color: #CCCC99;
 	background-color: #FFFFFF;
 }
+
+.admin-row td, .admin-row th{
+    vertical-align: baseline;
+    padding-top: 2px;
+ 	padding-right: 20px;
+ 	padding-bottom: 6px;
+	border-bottom-style: solid;
+	border-bottom-color: #CCCCCC;
+	border-bottom-width: 1px;
+}
+	
 h1 {
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	color: #666633;
