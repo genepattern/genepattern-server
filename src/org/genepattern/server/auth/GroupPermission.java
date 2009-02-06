@@ -4,6 +4,9 @@ import java.io.Serializable;
 import java.util.Comparator;
 
 public class GroupPermission implements Comparable<GroupPermission>, Serializable {
+    /** Group id for public access. */
+    final static public String PUBLIC = "*";
+
     public enum Permission {
         NONE,
         READ_WRITE,

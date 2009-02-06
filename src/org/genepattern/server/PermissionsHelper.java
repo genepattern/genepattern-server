@@ -63,9 +63,15 @@ public class PermissionsHelper {
 
         IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
         for(GroupPermission gp : groupPermissions) {
-            if ("public".equals(gp.getGroupId())) {
+            if (GroupPermission.PUBLIC.equals(gp.getGroupId())) {
                 this.isPublic = true;
                 this.publicAccessPermission = gp.getPermission();
+                if (gp.getPermission().getWrite()) {
+                    this.canWrite = true;
+                }
+                if (gp.getPermission().getRead()) {
+                    this.canRead = true;
+                }
             }
 
             if (groupMembership.isMember(currentUser, gp.getGroupId())) {
@@ -109,7 +115,7 @@ public class PermissionsHelper {
         List<GroupPermission> groupPermissions = getJobResultPermissions(true);
         Set<GroupPermission> publicGroupPermissions = new HashSet<GroupPermission>();
         for(GroupPermission gp : groupPermissions) {
-            if ("public".equals(gp.getGroupId())) {
+            if (GroupPermission.PUBLIC.equals(gp.getGroupId())) {
                 publicGroupPermissions.add(gp);
             }
             if (gp.getPermission().getRead()) {
@@ -169,7 +175,7 @@ public class PermissionsHelper {
      * @return
      */
     public Permission getPublicAccessPermission() {
-        //Note: if more than one public group is involved (currently not implemented), user the most permissive
+        //Note: if more than one public group is involved (currently not implemented), use the most permissive
         return publicAccessPermission;
     }
 

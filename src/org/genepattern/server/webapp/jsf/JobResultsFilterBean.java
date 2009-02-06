@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.faces.model.SelectItem;
 
 import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -70,13 +71,11 @@ public class JobResultsFilterBean {
         }
 
         if (menuVal != null && menuVal.equals("#MY_JOBS")) {
-            //this.showEveryonesJobs = false;
         }
         else if (menuVal != null && menuVal.equals("#ALL_JOBS")) {
             this.showEveryonesJobs = true;
         }
         else if (menuVal != null) {
-            //this.showEveryonesJobs = false;
             selectedGroup = menuVal;
             selectedGroups.add(menuVal);
         }
@@ -94,7 +93,12 @@ public class JobResultsFilterBean {
         //add groups to the list
         String userId = UIBeanHelper.getUserId();
         IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
-        Set<String> groups = groupMembership.getGroups(userId);
+        Set<String> groups = new HashSet<String>(groupMembership.getGroups(userId));
+        
+        if (groups.contains(GroupPermission.PUBLIC)) {
+            rval.add(new SelectItem(GroupPermission.PUBLIC, "Public job results"));
+            groups.remove(GroupPermission.PUBLIC);
+        }
         for(String group : groups) {
             rval.add(new SelectItem(group, "In group: " + group));
         }

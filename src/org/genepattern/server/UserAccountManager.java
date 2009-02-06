@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.auth.DefaultGenePatternAuthentication;
 import org.genepattern.server.auth.DefaultGroupMembership;
+import org.genepattern.server.auth.GroupMembershipWrapper;
 import org.genepattern.server.auth.IAuthenticationPlugin;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.auth.NoAuthentication;
@@ -279,6 +280,7 @@ public class UserAccountManager {
         else {
             loadGroupMembership(customGroupMembershipClass);            
         }
+        this.groupMembership = new GroupMembershipWrapper(this.groupMembership);
     }
     
     private void loadAuthentication(String customAuthenticationClass) {

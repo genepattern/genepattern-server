@@ -161,7 +161,7 @@ public class JobPermissionsBean {
         //    in other words, DON'T REUSE THIS CODE in another page unless you know what you are doing
         Set<GroupPermission> updatedPermissions = new HashSet<GroupPermission>();
         if (publicAccessPermission != Permission.NONE) {
-            updatedPermissions.add(new GroupPermission("public", publicAccessPermission));
+            updatedPermissions.add(new GroupPermission(GroupPermission.PUBLIC, publicAccessPermission));
         }
         Map<String,String[]> requestParameters = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterValuesMap();
         for(String name : requestParameters.keySet()) {
