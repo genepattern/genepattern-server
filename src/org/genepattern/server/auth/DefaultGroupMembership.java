@@ -6,15 +6,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class DefaultGroupMembership implements IGroupMembershipPlugin {
-    protected static final Set<String> EMPTY_GROUPS = new HashSet<String>();
-
-    public Set<String> wildcardGroups = new HashSet<String>();
-    public HashMap<String, Set<String>> userGroups = new HashMap<String, Set<String>>();
-    public HashMap<String, Set<String>> groupUsers = new HashMap<String, Set<String>>();
-
-    protected void init() {
+    public Set<String> wildcardGroups;
+    public HashMap<String, Set<String>> userGroups;
+    public HashMap<String, Set<String>> groupUsers;
+   
+    public DefaultGroupMembership() {
+        wildcardGroups = new HashSet<String>();
+        userGroups = new HashMap<String, Set<String>>();
+        groupUsers = new HashMap<String, Set<String>>();
     }
-    
+
     protected void addGroup(String groupId) {
         Set<String> members = groupUsers.get(groupId);
         if (members == null) {
@@ -44,7 +45,7 @@ public class DefaultGroupMembership implements IGroupMembershipPlugin {
         
         rval = userGroups.get(userId);
         if (rval == null) {
-            rval = EMPTY_GROUPS;
+            rval = new HashSet<String>();
         }
         rval.addAll(wildcardGroups);
         //return an unmodifiable set

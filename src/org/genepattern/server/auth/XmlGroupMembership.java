@@ -33,6 +33,7 @@ public class XmlGroupMembership extends DefaultGroupMembership {
      * @param userGroupsXmlFile - if this is null, use the default location for the userGroups.xml file.
      */
     public XmlGroupMembership(File userGroupsXmlFile) {
+        super();
         if (userGroupsXmlFile == null) {
             userGroupsXmlFile = new File(System.getProperty("genepattern.properties"), "userGroups.xml");
         }
