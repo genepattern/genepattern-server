@@ -27,30 +27,18 @@ public class UserAccountManager {
     public static final String PROP_AUTHENTICATION_CLASS = "authentication.class";
     public static final String PROP_GROUP_MEMBERSHIP_CLASS = "group.membership.class";
 
-    //force use of factory methods
-    private UserAccountManager() {
+    /**
+     * @return the singleton instance of the UserAccountManager.
+     */
+    public static UserAccountManager instance() {
+        return Singleton.userAccountManager;
     }
     
-    private static UserAccountManager userAccountManager = null;
-    public static UserAccountManager instance() {
-        if (userAccountManager == null) {
-            userAccountManager = new UserAccountManager();
-
-            String prop = System.getProperty("require.password", "false").toLowerCase();
-            userAccountManager.passwordRequired = 
-                prop.equals("true") || prop.equals("y") || prop.equals("yes");
-
-            prop = System.getProperty("create.account.allowed", "true").toLowerCase();
-            userAccountManager.createAccountAllowed = 
-                prop.equals("true") ||  prop.equals("y") || prop.equals("yes");
-            
-            prop = System.getProperty("show.registration.link", "true").toLowerCase();
-            userAccountManager.showRegistrationLink = 
-                prop.equals("true") ||  prop.equals("y") || prop.equals("yes");
-
-            userAccountManager.refreshUsersAndGroups();
-        }
-        return userAccountManager;
+    /**
+     * Lazy load the singleton instance of the UserAccountManager class.
+     */
+    private static class Singleton {
+        static UserAccountManager userAccountManager = new UserAccountManager();
     }
     
     private boolean passwordRequired = true;
@@ -58,6 +46,25 @@ public class UserAccountManager {
     private boolean showRegistrationLink = true;
     private IAuthenticationPlugin authentication = null;
     private IGroupMembershipPlugin groupMembership = null;
+
+    /**
+     * private constructor requires call to {@link #instance()}.
+     */
+    private UserAccountManager() {
+        String prop = System.getProperty("require.password", "false").toLowerCase();
+        this.passwordRequired = 
+            prop.equals("true") || prop.equals("y") || prop.equals("yes");
+
+        prop = System.getProperty("create.account.allowed", "true").toLowerCase();
+        this.createAccountAllowed = 
+            prop.equals("true") ||  prop.equals("y") || prop.equals("yes");
+        
+        prop = System.getProperty("show.registration.link", "true").toLowerCase();
+        this.showRegistrationLink = 
+            prop.equals("true") ||  prop.equals("y") || prop.equals("yes");
+        
+        p_refreshUsersAndGroups();
+    }
 
     /**
      * Flag indicating whether or not users can register new accounts via the web interface.
@@ -144,9 +151,7 @@ public class UserAccountManager {
      * @param username
      * @throws AuthenticationException - if the user is already registered.
      */
-    public void createUser(String username) 
-    throws AuthenticationException
-    {
+    public void createUser(String username) throws AuthenticationException {
         String password = "";
         createUser(username, password);
     }
@@ -158,9 +163,7 @@ public class UserAccountManager {
      * @param password
      * @throws AuthenticationException - if the user is already registered.
      */
-    public void createUser(String username, String password) 
-    throws AuthenticationException
-    {
+    public void createUser(String username, String password) throws AuthenticationException {
         String email = null;
         createUser(username, password, email);
     }
@@ -173,8 +176,7 @@ public class UserAccountManager {
      * @param email
      * @throws AuthenticationException - if the user is already registered.
      */
-    public void createUser(String username, String password, String email) 
-    throws AuthenticationException {
+    public void createUser(String username, String password, String email) throws AuthenticationException {
         validateNewUsername(username);
 
         if (password == null) {
@@ -260,7 +262,13 @@ public class UserAccountManager {
      * This supports one specific use-case: when GP default group membership is used, and an admin edits the configuration file,
      * it cause the GP server to reload group membership information from the config file.
      */
-    public void refreshUsersAndGroups() {
+    public synchronized void refreshUsersAndGroups() {
+        p_refreshUsersAndGroups();
+    }
+
+    //don't know if this is necessary, but it is here because it is called from the constructor
+    //    and from refreshUsersAndGroups (which is synchronized).
+    private void p_refreshUsersAndGroups() {
         this.authentication = null;
         this.groupMembership = null;
         String customAuthenticationClass = System.getProperty(PROP_AUTHENTICATION_CLASS);
@@ -285,23 +293,22 @@ public class UserAccountManager {
     
     private void loadAuthentication(String customAuthenticationClass) {
         if (customAuthenticationClass == null) {
-            userAccountManager.authentication = new DefaultGenePatternAuthentication();
+            this.authentication = new DefaultGenePatternAuthentication();
         }
         else {
             try {
-                userAccountManager.authentication = (IAuthenticationPlugin) Class.forName(customAuthenticationClass).newInstance();
+                this.authentication = (IAuthenticationPlugin) Class.forName(customAuthenticationClass).newInstance();
             } 
             catch (final Exception e) {
                 log.error("Failed to load custom authentication class: "+customAuthenticationClass, e);
-                userAccountManager.authentication = new NoAuthentication(e);
+                this.authentication = new NoAuthentication(e);
             } 
         }
     }
     
     private void loadGroupMembership(String customGroupMembershipClass) {
         if (customGroupMembershipClass == null) {
-            File userGroupMapFile = new File(System.getProperty("genepattern.properties"), "userGroups.xml");
-            this.groupMembership = new XmlGroupMembership(userGroupMapFile);                
+            this.groupMembership = new XmlGroupMembership();                
         }
         else {
             try {
