@@ -11,7 +11,6 @@ import java.util.TreeSet;
 
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.GroupPermission;
-import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.util.AuthorizationManagerFactory;
@@ -44,7 +43,6 @@ public class UsersAndGroupsBean {
         authManager = AuthorizationManagerFactory.getAuthorizationManager();
 
         List<User> allUsers = new UserDAO().getAllUsers();
-        IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
 
         userEntries = new TreeSet<UserEntry>(new UserEntryComparator());
         groupEntries = new TreeSet<GroupEntry>();
@@ -53,7 +51,7 @@ public class UsersAndGroupsBean {
         for(User user : allUsers) {
             UserEntry userEntry = new UserEntry(user);
             userEntries.add(userEntry);
-            Set<String> groupIds = groupMembership.getGroups(user.getUserId());
+            Set<String> groupIds = UserAccountManager.instance().getGroupMembership().getGroups(user.getUserId());
             
             for(String groupId : groupIds) {
                 userEntry.addGroup(groupId);
@@ -97,7 +95,11 @@ public class UsersAndGroupsBean {
                 s2 = o2.getUser().getUserId();
             }
             
-            return s1.compareToIgnoreCase(s2);
+            int rval = s1.compareToIgnoreCase(s2);
+            if (rval == 0) {
+                rval = s1.compareTo(s2);
+            }
+            return rval;
         }
     }
 
@@ -167,7 +169,11 @@ public class UsersAndGroupsBean {
         public int compareTo(GroupEntry arg) {
             String from = this.groupId == null ? "" : this.groupId;
             String to = arg == null ? "" : arg.groupId;
-            return from.compareToIgnoreCase(to);
+            int rval = from.compareToIgnoreCase(to); 
+            if (rval == 0) {
+                rval = from.compareTo(to);
+            }
+            return rval;
         }
     }
     
