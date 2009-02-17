@@ -56,8 +56,7 @@ String userID = (String) request.getAttribute(GPConstants.USERID);
 try {
     String RUN = "run";
     String CLONE = "clone";
-    
-    
+
     // set up the call to the runVisualizer.jsp by putting the params into the request
     // and then forwarding through a requestDispatcher
     
@@ -130,17 +129,18 @@ try {
             String htmlValue = StringUtils.htmlEncode(pinfo.getValue());        
             if (value.startsWith("http:") || value.startsWith("https:") || value.startsWith("ftp:") || value.startsWith("file:")) {
                 out.println("<a href='"+ htmlValue + "'>"+htmlValue +"</a>");
-            } else {
+            } 
+            else {
                 out.println("<a href='getFile.jsp?task=&file="+ URLEncoder.encode(tmpDirName +"/" + value)+"'>"+htmlValue +"</a>");
-    
             }
-        } else {
+        } 
+        else {
             out.println(StringUtils.htmlEncode(pinfo.getValue()));
         }
         if (i != (parmInfos.length -1))out.println(", ");
     }
-
-} catch (Exception e){
+} 
+catch (Exception e){
     e.printStackTrace();
 }
 
