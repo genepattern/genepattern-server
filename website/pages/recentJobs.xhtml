@@ -118,7 +118,7 @@ function toggleJobVisibility(jobNo) {
             <br/>
 			
 			<div id="#{job.jobNumber}_div" style="#{job.expanded ? 'display:inline;' : 'display:none;'}">
-            <h:outputText value="(#{job.jobNumber}) " /> 
+              <h:outputText>( <h:outputLink value="/gp/jobResults/#{job.jobNumber}">#{job.jobNumber}</h:outputLink> )</h:outputText>
             <h:outputText value="#{job.dateCompleted}" converter="gp" />
             <br/>
             <!--  Loop through output files -->
