@@ -5,38 +5,24 @@
         java.io.FileInputStream,org.genepattern.server.webapp.jsf.AuthorizationHelper,java.io.InputStream,java.io.OutputStream,java.net.URLDecoder,java.io.UnsupportedEncodingException,java.net.MalformedURLException" %>
 <%
 	String taskName = request.getParameter("task");
-	try {
-		if(taskName!= null) {
-	    	taskName = URLDecoder.decode(taskName, "UTF-8");
-		}
-	} catch(UnsupportedEncodingException x) {}
-
     if (taskName == null) {
         taskName = "";
     }
 
     String filename = request.getParameter("file");
-    try {
-        filename = URLDecoder.decode(filename, "UTF-8");
-    } catch(UnsupportedEncodingException x){}
-
     if (filename == null) {
         out.println("no such file: " + filename);
         return;
     }
-    int i = filename.lastIndexOf(File.separator);
-    if ((i != -1) && (taskName.trim().length() != 0)) {
-        filename = filename.substring(i + 1); // disallow absolute paths
-    }
-    File in = null;
-	String userID = (String) request.getAttribute(GPConstants.USERID);
 
-	if (userID == null){ // no anonymous files
+    File in = null;
+	String userID = (String) session.getAttribute(GPConstants.USERID);
+
+	if (userID == null) { // no anonymous files
 	    ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
 		return;
 	}
     try {
-
         if (taskName.length() > 0) {
             in = new File(DirectoryManager.getTaskLibDir(taskName, taskName, userID), filename);
         } 
@@ -58,7 +44,6 @@
             // now we need to check whether this is the user or an admin trying
             // to look at the file if it exists
             if (in.exists()) {
-                //String prefix = userID + "_";
                 if (!filename.startsWith(prefix)) {
 			        boolean isAdmin = AuthorizationHelper.adminJobs(userID);
 			        if (!isAdmin) {
