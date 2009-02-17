@@ -94,14 +94,17 @@
     </target>
 
     <target name="clean">
+        <delete dir="applet-build" />
         <delete quiet="true" failonerror="false">
             <fileset dir="src/" includes="**/*.class" />
-            <fileset dir="build/" includes="**/*" />
             <fileset dir="website/" includes="**/*.class" />
             <fileset dir="installer/GP_server_Build_Output/" includes="**/*" />
             <fileset dir="installer/server_Build_Output/" includes="**/*" />
             <fileset dir="installer/" includes=".buildinstaller*.tmp/**" />
             <fileset dir="clients/javage/installer/" includes=".buildinstaller*.tmp/**" />
+        </delete>
+        <delete quiet="true" failonerror="false" includeemptydirs="true">
+            <fileset dir="build/" includes="**/*" />
         </delete>
         <ant antfile="../build.xml" dir="clients/JavaGE/src" inheritall="true" inheritrefs="true" target="clean" />
     </target>
@@ -109,7 +112,7 @@
 
     <target depends="init" description="Compiles all the source." name="compile">
 
-        <javac classpathref="library.classpath" debug="true" destdir="${genepattern.build}" srcdir="${src}" compiler="javac1.5" source="${java.target}" excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**" />
+        <javac debug="true" classpathref="library.classpath" destdir="${genepattern.build}" srcdir="${src}" compiler="javac1.5" source="${java.target}" excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**" />
 
         <copy todir="${genepattern.build}">
             <fileset dir="${src}" includes="**/*.xml" />
@@ -193,7 +196,7 @@
 
 
     <target depends="init" name="runtask">
-        <javac classpathref="library.classpath" debug="true" destdir="${genepattern.build}" srcdir="${src}" target="${java.target}" source="${java.target}" includes="org/genepattern/util/RunGenePatternTaskMain.java" />
+        <javac debug="true" classpathref="library.classpath" destdir="${genepattern.build}" srcdir="${src}" target="${java.target}" source="${java.target}" includes="org/genepattern/util/RunGenePatternTaskMain.java" />
 
 
         <!-- Makes runMain.jar -->
@@ -287,7 +290,7 @@
 
     <target name="build-visualizer-applet" depends="init, makeKeystore">
         <mkdir dir="applet-build" />
-        <javac destdir="applet-build" srcdir="src" classpathref="library.classpath" includes="org/genepattern/visualizer/*.java" target="1.1" source="1.2" />
+        <javac debug="true" destdir="applet-build" srcdir="src" classpathref="library.classpath" includes="org/genepattern/visualizer/*.java" target="1.1" source="1.2" />
 
         <jar basedir="applet-build" defaultexcludes="true" includes="org/genepattern/visualizer/*.class" jarfile="${genepattern.build}/${runVisualizer-jarname}">
         </jar>
@@ -306,7 +309,7 @@
         <mkdir dir="${genepattern.build}/website/lib" />
         <ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB" />
 
-        <javac destdir="${genepattern.build}/website/classes" srcdir="${genepattern.website}/WEB-INF/classes" classpathref="library.classpath" />
+        <javac debug="true" destdir="${genepattern.build}/website/classes" srcdir="${genepattern.website}/WEB-INF/classes" classpathref="library.classpath" />
 
 
         <!-- copy the web sites jar files to build/web-site/lib -->
@@ -343,7 +346,7 @@
 
     <target depends="init,common,analysis,build-visualizer-applet" name="quick-website">
         <mkdir dir="${genepattern.build}/website/classes" />
-        <javac destdir="${genepattern.build}/website/classes" srcdir="${genepattern.website}/WEB-INF/classes" classpathref="library.classpath" />
+        <javac debug="true" destdir="${genepattern.build}/website/classes" srcdir="${genepattern.website}/WEB-INF/classes" classpathref="library.classpath" />
         <!-- Now call any custom post-compilation people want to do -->
         <antcall target="post-compile" />
     </target>
