@@ -67,9 +67,9 @@ String userID = (String) request.getAttribute(GPConstants.USERID);
     runner.setGroupPermissions(runTaskHelper.getGroupPermissions());
     String jobId = runner.submitJob();
     if (jobId == null) {
-        response.sendRedirect("/gp/pages/jobResults.jsf");
+        response.sendRedirect("/gp/jobResults");
     }
     else {
-        response.sendRedirect("/gp/pages/jobResult.jsf?jobNumber="+jobId);
+        response.sendRedirect("/gp/jobResults/"+jobId);
     }
 %>
