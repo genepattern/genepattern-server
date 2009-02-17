@@ -69,7 +69,8 @@ public class AuthenticationHandler extends GenePatternHandlerBase {
             authenticated = UserAccountManager.instance().getAuthentication().authenticate(username, credentials);
         }
         catch (AuthenticationException e) {
-            throw new AxisFault(e.getType().toString());
+            //skip exception, special case for pipelines
+            authenticated = false;
         }
         
         //special case for pipelines
