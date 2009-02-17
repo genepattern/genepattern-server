@@ -1,16 +1,21 @@
 package org.genepattern.server.webapp.jsf;
 
+import java.io.StringWriter;
 import java.util.Date;
 import java.util.List;
+
+import javax.faces.context.FacesContext;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.GroupPermission.Permission;
+import org.genepattern.server.genepattern.RunVisualizer;
 import org.genepattern.server.webapp.jsf.JobInfoBean.InputParameter;
 import org.genepattern.server.webapp.jsf.JobInfoBean.OutputParameter;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 
 public class JobInfoWrapper {
     private static Logger log = Logger.getLogger(JobInfoWrapper.class);
@@ -24,6 +29,7 @@ public class JobInfoWrapper {
     private List<InputParameter> inputParameters;
     private List<OutputParameter> outputFiles;
     private TaskInfo taskInfo = null;
+    private boolean isVisualizer = false;
     
     private PermissionsHelper permissionsHelper;
     
@@ -35,6 +41,7 @@ public class JobInfoWrapper {
         this.dateSubmitted = jobInfo.getDateSubmitted();
         this.dateCompleted = jobInfo.getDateCompleted();
         
+        this.isVisualizer = taskInfo != null && taskInfo.isVisualizer();
         this.taskInfo = taskInfo;
     }
     
@@ -166,4 +173,30 @@ public class JobInfoWrapper {
         int idx = rval.lastIndexOf(", ");
         return rval.substring(0, idx) + "";
     }
+    
+    public boolean getIsVisualizer() {
+        return isVisualizer;
+    }
+
+    public String getVisualizerAppletTag() {
+        RunVisualizer runVis = new RunVisualizer();
+        runVis.setJobInfo(jobInfo);
+        TaskInfoAttributes taskInfoAttributes = taskInfo.giveTaskInfoAttributes();
+        runVis.setTaskInfoAttributes(taskInfoAttributes);
+        String contextPath = FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath();
+        if (contextPath == null) {
+            contextPath = "/gp";
+        }
+        runVis.setContextPath(contextPath);
+        StringWriter writer = new StringWriter();
+        try {
+            runVis.writeVisualizer(writer);
+            writer.close();
+        }
+        catch (Exception e) {
+            writer.write("<p>Error in getVisualizerAppletTag: "+e.getLocalizedMessage()+"</p>");
+        }
+        return writer.toString();
+    }
+
 }

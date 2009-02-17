@@ -19,27 +19,17 @@ import org.genepattern.webservice.TaskInfoAttributes;
 public class RunVisualizer {
     private String userID = null;
     private JobInfo jobInfo = null;
-    //private TaskInfo taskInfo = null; //the visualizer task
     private TaskInfoAttributes taskInfoAttributes = null;
     private String contextPath = "/gp";
     private String javaFlags = null;
     private Properties requestParameters = new Properties();
 
-//
-//     session="false" language="Java" %><%
-//      response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
-//      response.setHeader("Pragma", "no-cache");        // HTTP 1.0 cache control
-//      response.setDateHeader("Expires", 0);
     public RunVisualizer() {
     }
     
     public void setJobInfo(JobInfo ji) {
         this.jobInfo = ji;
     }
-    
-//    public void setTaskInfo(TaskInfo ti) {
-//        this.taskInfo = ti;
-//    }
     
     public void setTaskInfoAttributes(TaskInfoAttributes tia) {
         this.taskInfoAttributes = tia;
@@ -86,20 +76,17 @@ public class RunVisualizer {
             }
             paramNameList.append(parameterInfoArray[i].getName());
         }
-        //app.append("<param name=\"" + RunVisualizerConstants.PARAM_NAMES + "\" value=\"" + URLEncoder.encode(paramNameList.toString(), "UTF-8") + "\" >");
         app.append("<param name=\"" + RunVisualizerConstants.PARAM_NAMES + "\" value=\"" + paramNameList.toString() + "\" >");
 
         for (int i = 0; i < parameterInfoArray.length; i++) {
             String paramName = parameterInfoArray[i].getName();
             String paramValue = (String) parameterInfoArray[i].getValue();
-//          String value = params.getProperty(paramName);
-            if(paramValue != null) {
+            if (paramValue != null) {
                 paramValue = paramValue.replace("\\", "\\\\");
             } 
             else {
                 paramValue = "";
             }
-            //app.append("<param name=\"" + paramName + "\" value=\"" + URLEncoder.encode(paramValue, "UTF-8") + "\">");
             app.append("<param name=\"" + paramName + "\" value=\"" + paramValue + "\">");
         }
 
@@ -107,10 +94,13 @@ public class RunVisualizer {
 
         int numToDownload = 0;
         for (int i = 0; i < parameterInfoArray.length; i++) {
-            String paramName = parameterInfoArray[i].getName();
             String paramValue = parameterInfoArray[i].getValue();
-            //if (parameterInfoArray[i].isInputFile() && params.getProperty(paramName) != null) {
-            if (parameterInfoArray[i].isInputFile() && paramValue != null) {
+            
+            //HACK: don't know what is supposed to happen here, parameterInfo.isInputFile() no longer works!
+            //      After converting from .jsp pages to run visualizers.
+            ParameterInfo parameterInfo = parameterInfoArray[i];
+            String mode = (String) parameterInfo.getAttributes().get("MODE");
+            if (mode != null && ( mode.equals("IN") || mode.equals("URL_IN") ) && paramValue != null) {
                 try {
                     new java.net.URL(paramValue);
                     // note that this parameter is a URL that must be downloaded by adding it to the CSV list for the applet
@@ -129,7 +119,6 @@ public class RunVisualizer {
         app.append("<param name=\"" + RunVisualizerConstants.DEBUG + "\" value=\"1\">");
 
         StringBuffer fileNamesBuf = new StringBuffer();
-        //String lsid = (String) taskInfoAttributes.get(GPConstants.LSID);
         String lsid = jobInfo.getTaskLSID();
         String libdir = DirectoryManager.getTaskLibDir(null, lsid, userID);
         File[] supportFiles = new File(libdir).listFiles();
@@ -152,8 +141,6 @@ public class RunVisualizer {
         String js = "<SCRIPT LANGUAGE=\"JavaScript\">\ndocument.writeln('";
         js += app.toString();
         js += "');\n";
-        //TODO: do I need the cookie?
-        //js += ("document.writeln('<PARAM name=\\\"browserCookie\\\" value=\\\" + document.cookie + \"\\\">');\n");
         js += "document.writeln(\"<PARAM name=\\\"browserCookie\\\" value=\\\"\" + document.cookie + \"\\\">\");";
         js += "document.writeln('</applet>');\n";
         js += "</SCRIPT>";

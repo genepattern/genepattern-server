@@ -129,10 +129,6 @@ public class RunTaskBean {
     }
 
     public String getFormAction() {
-        if (visualizer) {
-            return "submitVisualizer.jsp";
-            //return "submitJob.jsp";
-        } 
         return "submitJob.jsp";
     }
 

@@ -54,8 +54,6 @@ public class RunTaskHelper {
 
     private File tempDir;
 
-    private boolean visualizer;
-
     private List<ParameterInfo> missingParameters;
 
     private TaskInfo taskInfo;
@@ -192,7 +190,6 @@ public class RunTaskHelper {
             catch (WebServiceException e) {
                 e.printStackTrace();
             }
-            this.visualizer = "visualizer".equalsIgnoreCase((String) taskInfo.getTaskInfoAttributes().get(GPConstants.TASK_TYPE));
             parameterInfoArray = taskInfo.getParameterInfoArray();
             if (parameterInfoArray == null) {
                 parameterInfoArray = new ParameterInfo[0];
@@ -237,20 +234,6 @@ public class RunTaskHelper {
                         attrs.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
                         attrs.remove(ParameterInfo.TYPE);
                     } 
-                    else {
-                        if (visualizer) {
-                            File file = new File(value);
-                            File parent = file.getParentFile();
-                            if (parent != null) {
-                                value = server + "getFile.jsp?task=&file="
-                                        + parent.getName() + File.separator
-                                        + file.getName();
-                            } 
-                            else {
-                                value = "";
-                            }
-                        }
-                    }
                 }
             } 
             else {

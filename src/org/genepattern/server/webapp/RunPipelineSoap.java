@@ -236,38 +236,12 @@ public class RunPipelineSoap {
 	log.debug("taskInfo: " + task.getName() + ", " + task.getLsid());
 
 	AnalysisService svc = new AnalysisService(server, task);
-	if (jobSubmission.isVisualizer()) {
-	    return executeVisualizer(svc, params);
-	}
 	AnalysisJob job = submitJob(svc, params);
 	JobInfo jobInfo = waitForErrorOrCompletion(job);
 	return jobInfo;
     }
 
-    protected JobInfo executeVisualizer(AnalysisService svc, ParameterInfo[] params) {
-	try {
-	    if (params != null) {
-		String context = System.getProperty("GP_Path", "/gp");
-		for (int i = 0; i < params.length; i++) {
-		    String val = params[i].getValue();
-		    if (val.startsWith("<GenePatternURL>")) {
-			val = val.replaceAll("<GenePatternURL>", server + context + "/");
-
-			params[i].setValue(val);
-		    }
-
-		}
-	    }
-	    return analysisClient.recordClientJob(svc.getTaskInfo().getID(), params, jobId);
-	} catch (WebServiceException e) {
-	    e.printStackTrace();
-	}
-	return new JobInfo();
-    }
-
     protected void getChildJobOutputs(int childJobID, List<ParameterInfo> outs) {
-
-	// analysisClient.getResultFiles(jobID);
 	try {
 	    JobInfo childJobInfo = analysisClient.checkStatus(childJobID);
 	    getChildJobOutputs(childJobInfo, outs);
@@ -291,9 +265,7 @@ public class RunPipelineSoap {
     }
 
     protected String getInheritedFilename(Map attributes, JobInfo[] results) throws FileNotFoundException {
-	// these params must be removed so that the soap lib doesn't try to send
-	// the
-	// file as ana attachment
+	// these params must be removed so that the soap lib doesn't try to send the file as ana attachment
 	String taskStr = (String) attributes.get(PipelineModel.INHERIT_TASKNAME);
 	String fileStr = (String) attributes.get(PipelineModel.INHERIT_FILENAME);
 	attributes.remove("TYPE");
@@ -339,7 +311,6 @@ public class RunPipelineSoap {
 
 	    }
 	}
-	// return parameterInfo;
 	return params.toArray(new ParameterInfo[params.size()]);
     }
 

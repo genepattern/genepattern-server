@@ -80,7 +80,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
@@ -366,6 +365,20 @@ public class GenePatternAnalysisTask {
 	}
     }
 
+    protected File localInputUrlToUploadedFile(URL url, String userId) {
+        //do the same mapping that the JobInputServlet does, but without requiring an http request
+        String path = url.getPath();
+        int idx = path.indexOf("/fileupload/");
+        if (idx < 0) {
+            return null;
+        }
+        String localPath = path.substring(idx + "/fileupload/".length());
+        localPath = localPath.replace('/', File.separatorChar);
+        File file = new File("fileupload");
+        file = new File(file, localPath);
+        return file;
+    }
+
     /**
      * Returns a local URL as a File object or <tt>null</tt> if the URL can not be represented as a File
      * 
@@ -519,6 +532,7 @@ public class GenePatternAnalysisTask {
 	// pipelines run from the webapp show up as BaseDAO.UNPROCESSABLE_TASKID
 	// and are being run by other means so bail out now
 	if (jobInfo.getTaskID() == BaseDAO.UNPROCESSABLE_TASKID) {
+	    log.error("pipelines run from the webapp should no longer show with taskID="+BaseDAO.UNPROCESSABLE_TASKID);
 	    return;
 	}
 
@@ -585,8 +599,9 @@ public class GenePatternAnalysisTask {
 		parent = parentJI.getJobNumber();
 	    }
 	    ParameterInfo[] params = jobInfo.getParameterInfoArray();
-	    Properties props = setupProps(taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(), taskInfoAttributes,
-		    params, environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
+	    Properties props = setupProps(taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(),
+		    taskInfoAttributes, params, environmentVariables, taskInfo.getParameterInfoArray(), jobInfo
+	    		    .getUserId());
 	    Vector<String> vProblems = new Vector<String>();
 	    long inputLastModified[] = new long[0];
 	    long inputLength[] = new long[0];
@@ -643,9 +658,7 @@ public class GenePatternAnalysisTask {
 			    // ensure file is in GenePatternServer/temp/attachments/username or in
 			    // GenePatternServer/Tomcat/temp/username_run[0-9]+.tmp
 			    String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
-
-			    String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir") + File.separator
-				    + jobInfo.getUserId()).getCanonicalPath();
+			    String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir") + File.separator + jobInfo.getUserId()).getCanonicalPath();
 
 			    File inputFile = new File(originalPath);
 			    String inputFileDirectory = inputFile.getParentFile().getCanonicalPath();
@@ -755,7 +768,7 @@ public class GenePatternAnalysisTask {
 				}
 			    }
 			}
-			if (isURL) {
+			if (isURL && !taskInfo.isVisualizer()) {
 			    URI uri = new URI(originalPath);
 			    final String userInfo = uri.getUserInfo();
 			    if (userInfo != null) {
@@ -827,6 +840,10 @@ public class GenePatternAnalysisTask {
 				    if (isLocalHost(url)) {
 					try {
 					    File file = localInputUrlToFile(url, jobInfo.getUserId());
+					    if (file == null) {
+					        //is this a file upload?
+					        file = localInputUrlToUploadedFile(url, jobInfo.getUserId());
+					    }
 					    if (file != null) {
 						if (inputFileMode == INPUT_FILE_MODE.PATH) {
 						    params[i].setValue(file.getCanonicalPath());
@@ -924,7 +941,10 @@ public class GenePatternAnalysisTask {
 		vProblems.add("Command line not defined");
 	    }
 
-	    setCommandPrefix(taskInfoAttributes, props);
+	    if (!taskInfo.isVisualizer()) {
+	        //TODO: special case for visualizer
+            setCommandPrefix(taskInfoAttributes);
+	    }
 
 	    // create an array of Strings for Runtime.exec to fix bug 55
 	    // (filenames in spaces cause invalid command line)
@@ -1072,21 +1092,37 @@ public class GenePatternAnalysisTask {
 		    stderrFile = new File(outDir, stderrFilename);
 		}
 		try {
-		    runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename,
-			    stderrBuffer);
-		    jobStatus = JobStatus.JOB_FINISHED;
-		    log.info(taskName + " (" + jobInfo.getJobNumber() + ") done.");
-		} catch (Throwable t) {
+		    if (taskInfo.isVisualizer()) {
+		        RunVisualizer runVis = new RunVisualizer();
+		        runVis.setJobInfo(jobInfo);
+		        runVis.setTaskInfoAttributes(taskInfoAttributes);
+		        //TODO: lookup context path from servlet context
+		        runVis.setContextPath("/gp");
+		        File visFile = new File(outDir, "runVisualizer.html");
+		        PrintWriter visOut = new PrintWriter(visFile);
+		        runVis.writeVisualizer(visOut);
+		        visOut.flush();
+		        visOut.close();
+                jobStatus = JobStatus.JOB_FINISHED;
+		    }
+		    else {
+		        runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
+		        jobStatus = JobStatus.JOB_FINISHED;
+		        log.info(taskName + " (" + jobInfo.getJobNumber() + ") done.");
+		    }
+		} 
+		catch (Throwable t) {
 		    jobStatus = JobStatus.JOB_ERROR;
 		    log.info(taskName + " (" + jobInfo.getJobNumber() + ") done with error: " + t.getMessage());
 		    t.printStackTrace();
 		    stderrBuffer.append(t.getMessage() + "\n\n");
-		} finally {
+		} 
+		finally {
 		    if (renameStdout) {
-			stdoutFile.renameTo(new File(outDir, STDOUT));
+		        stdoutFile.renameTo(new File(outDir, STDOUT));
 		    }
 		    if (renameStderr) {
-			stderrFile.renameTo(new File(outDir, STDERR));
+		        stderrFile.renameTo(new File(outDir, STDERR));
 		    }
 		    taskLog = writeProvenanceFile(outDirName, jobInfo, formalParameters, params, props);
 		}
@@ -1160,7 +1196,7 @@ public class GenePatternAnalysisTask {
 				}
 				log.warn(errorMessage);
 			    }
-			    outFile.delete();
+				outFile.delete();
 			    params[i].setValue(originalPath);
 			    continue;
 			}
@@ -1303,7 +1339,7 @@ public class GenePatternAnalysisTask {
      * @param taskInfoAttributes
      * @param props
      */
-    protected void setCommandPrefix(TaskInfoAttributes taskInfoAttributes, Properties props) throws MalformedURLException {
+    protected void setCommandPrefix(TaskInfoAttributes taskInfoAttributes) throws MalformedURLException {
 	String lsidStr = taskInfoAttributes.get(LSID);
 	PropertiesManager pm = PropertiesManager.getInstance();
 	Properties tpm = pm.getTaskPrefixMapping();
@@ -2625,15 +2661,15 @@ public class GenePatternAnalysisTask {
 	String jobID = null;
 	try {
 	    if (false) { // for debugging only
-		String[] debugCmdLine = new String[commandLine.length + 3];
-		debugCmdLine[0] = commandLine[0];
-		debugCmdLine[1] = "-Xdebug";
-		debugCmdLine[2] = "-Xnoagent";
-		debugCmdLine[3] = "-Xrunjdwp:transport=dt_socket,server=y,address=5001,suspend=y";
-		for (int i = 1; i < commandLine.length; ++i) {
-		    debugCmdLine[i + 3] = commandLine[i];
-		}
-		commandLine = debugCmdLine;
+	        String[] debugCmdLine = new String[commandLine.length + 3];
+	        debugCmdLine[0] = commandLine[0];
+	        debugCmdLine[1] = "-Xdebug";
+	        debugCmdLine[2] = "-Xnoagent";
+	        debugCmdLine[3] = "-Xrunjdwp:transport=dt_socket,server=y,address=5001,suspend=y";
+	        for (int i = 1; i < commandLine.length; ++i) {
+	            debugCmdLine[i + 3] = commandLine[i];
+	        }
+	        commandLine = debugCmdLine;
 	    }
 	    commandLine = translateCommandline(commandLine);
 
@@ -2926,8 +2962,9 @@ public class GenePatternAnalysisTask {
      * @return Vector of error messages (vProblems with new errors appended)
      * @author Jim Lerner
      */
-    protected Vector<String> validateSubstitutions(Properties props, String taskName, String commandLine, String source,
-	    Vector<String> vProblems, ParameterInfo[] formalParams) {
+    protected Vector<String> validateSubstitutions(Properties props, 
+            String taskName, String commandLine,
+	    String source, Vector<String> vProblems, ParameterInfo[] formalParams) {
 	// check that each substitution variable listed in the command line is
 	// actually in props
 	int start = 0;

@@ -90,16 +90,17 @@ public class RunVisualizer {
     protected static final String rightDelimiter = ">";
 
     /**
-     * @param params
-     *                HashMap containing the following key/value pairs: RunVisualizerConstants.NAME=name of visualizer
-     *                task RunVisualizerConstants.COMMAND_LINE=task command line (from TaskInfoAttributes)
-     *                RunVisualizerConstants.DEBUG=1 if debug output to stdout is desired (otherwise omit)
-     *                RunVisualizerConstants.OS=operating system choice from TaskInfoAttributes
-     *                RunVisualizerConstants.CPU_TYPE=CPU choice from TaskInfoAttributes
-     *                RunVisualizerConstants.LIBDIR=directory on server where the task lives
-     *                RunVisualizerConstants.DOWNLOAD_FILES=CSV list of parameter names which are URLs that need
-     *                downloading by client prior to execution RunVisualizerConstants.LSID=LSID of visualizer task PLUS
-     *                all of the input parameters that the task requires (eg. input.filename, out.stub, etc.)
+     * @param params HashMap containing the following key/value pairs: 
+     *   RunVisualizerConstants.NAME=name of visualizer task 
+     *   RunVisualizerConstants.COMMAND_LINE=task command line (from TaskInfoAttributes)
+     *   RunVisualizerConstants.DEBUG=1 if debug output to stdout is desired (otherwise omit)
+     *   RunVisualizerConstants.OS=operating system choice from TaskInfoAttributes
+     *   RunVisualizerConstants.CPU_TYPE=CPU choice from TaskInfoAttributes
+     *   RunVisualizerConstants.LIBDIR=directory on server where the task lives
+     *   RunVisualizerConstants.DOWNLOAD_FILES=CSV list of parameter names which are URLs that need downloading by client prior to execution 
+     *   RunVisualizerConstants.LSID=LSID of visualizer task 
+     *   
+     *   PLUS all of the input parameters that the task requires (eg. input.filename, out.stub, etc.)
      * 
      * @param supportFileNames
      *                array of names (without paths) of required support files for this task
