@@ -107,7 +107,7 @@ function toggleJobVisibility(jobNo) {
           <td>
           	
             <span class="recentjobs-sh yui-skin-sam" style="white-space: nowrap">
-            	#{job.taskName}
+            	<h:outputLink value="/gp/jobResults/#{job.jobNumber}">#{job.taskName}</h:outputLink>
             </span>
             <!-- Image trigger for jobs menu popup -->
             <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif"
