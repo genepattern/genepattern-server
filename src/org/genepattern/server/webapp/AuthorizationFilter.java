@@ -14,7 +14,6 @@ package org.genepattern.server.webapp;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.URLEncoder;
 import java.util.Properties;
 
@@ -37,20 +36,16 @@ import org.genepattern.util.GPConstants;
  *
  */
 public class AuthorizationFilter implements Filter {
-
     private IAuthorizationManager authManager = null;
-
-    private boolean redirectToFqHostName = false;
 
     public void destroy() {
         authManager = null;
     }
 
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
-            ServletException {
-
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) 
+    throws IOException, ServletException 
+    {
         HttpServletRequest req = (HttpServletRequest) request;
-        // String requestedURI = req.getRequestURI();
 
         String rh = req.getRemoteHost();
         String p = req.getParameter("jsp_precompile");
@@ -70,10 +65,11 @@ public class AuthorizationFilter implements Filter {
         // check permission
         boolean allowed = authManager.isAllowed(uri, userId);
 
-        if (!allowed) { // not allowed to do this
-            setNotPermittedPageRedirect((HttpServletRequest) request, (HttpServletResponse) response);
+        if (!allowed) { 
+            redirectToNotPermittedPage((HttpServletRequest) request, (HttpServletResponse) response);
             return;
-        } else { // looking for userID
+        } 
+        else { 
             chain.doFilter(request, response);
             return;
         }
@@ -97,38 +93,23 @@ public class AuthorizationFilter implements Filter {
             }
 
             authManager = AuthorizationManagerFactory.getAuthorizationManager();
-            redirectToFqHostName = Boolean.valueOf(props.getProperty("redirect.to.fq.host", "true"));
-
-        } catch (Exception e) {
+        } 
+        catch (Exception e) {
             throw new ServletException(e);
         }
     }
 
-    public void setNotPermittedPageRedirect(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    public void redirectToNotPermittedPage(HttpServletRequest request, HttpServletResponse response) throws IOException {
         if (response == null) {
             return;
         }
-
-        String fqHostName = request.getServerName();
-        if (redirectToFqHostName) {
-            // redirect to the fully-qualified host name
-            fqHostName = System.getProperty("fqHostName");
-            if (fqHostName == null) {
-                fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
-                if (fqHostName.equals("localhost")) {
-                    fqHostName = "127.0.0.1";
-                }
-            }
-        }
-
-        String portStr = "";
-        int port = request.getServerPort();
-        if (port > 0) {
-            portStr = ":"+port;
-        }
-        String notPermittedUrl = "http://" + fqHostName + portStr + request.getContextPath()
-                + "/pages/notPermitted.jsf?link=" + URLEncoder.encode(request.getRequestURI(), GPConstants.UTF8);
+        
+        String notPermittedUrl = 
+            request.getContextPath() 
+            + 
+            "/pages/notPermitted.jsf?link=" 
+            + URLEncoder.encode(request.getRequestURI(), GPConstants.UTF8);
+        
         response.sendRedirect(notPermittedUrl);
     }
 
