@@ -41,28 +41,19 @@ public class UserAccountManager {
         static UserAccountManager userAccountManager = new UserAccountManager();
     }
     
+    private IAuthenticationPlugin authentication = null;
+    private IGroupMembershipPlugin groupMembership = null;
+
+    //these properties are used in the DefaultGenePatternAuthentication class, and in the LoginBean
     private boolean passwordRequired = true;
     private boolean createAccountAllowed = true;
     private boolean showRegistrationLink = true;
-    private IAuthenticationPlugin authentication = null;
-    private IGroupMembershipPlugin groupMembership = null;
 
     /**
      * private constructor requires call to {@link #instance()}.
      */
     private UserAccountManager() {
-        String prop = System.getProperty("require.password", "false").toLowerCase();
-        this.passwordRequired = 
-            prop.equals("true") || prop.equals("y") || prop.equals("yes");
-
-        prop = System.getProperty("create.account.allowed", "true").toLowerCase();
-        this.createAccountAllowed = 
-            prop.equals("true") ||  prop.equals("y") || prop.equals("yes");
-        
-        prop = System.getProperty("show.registration.link", "true").toLowerCase();
-        this.showRegistrationLink = 
-            prop.equals("true") ||  prop.equals("y") || prop.equals("yes");
-        
+        p_refreshProperties();
         p_refreshUsersAndGroups();
     }
 
@@ -263,7 +254,22 @@ public class UserAccountManager {
      * it cause the GP server to reload group membership information from the config file.
      */
     public synchronized void refreshUsersAndGroups() {
+        p_refreshProperties();
         p_refreshUsersAndGroups();
+    }
+
+    private void p_refreshProperties() {
+        String prop = System.getProperty("require.password", "false").toLowerCase();
+        this.passwordRequired = 
+            prop.equals("true") || prop.equals("y") || prop.equals("yes");
+
+        prop = System.getProperty("create.account.allowed", "true").toLowerCase();
+        this.createAccountAllowed = 
+            prop.equals("true") ||  prop.equals("y") || prop.equals("yes");
+        
+        prop = System.getProperty("show.registration.link", "true").toLowerCase();
+        this.showRegistrationLink = 
+            prop.equals("true") ||  prop.equals("y") || prop.equals("yes");
     }
 
     //don't know if this is necessary, but it is here because it is called from the constructor

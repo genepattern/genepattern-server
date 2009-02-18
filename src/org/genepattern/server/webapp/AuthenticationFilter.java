@@ -26,16 +26,10 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
-import org.genepattern.server.auth.DefaultGenePatternAuthentication;
-import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.user.User;
-import org.genepattern.server.user.UserDAO;
 import org.genepattern.util.GPConstants;
 
 /**
@@ -47,9 +41,7 @@ public class AuthenticationFilter implements Filter {
     private static Logger log = Logger.getLogger(AuthenticationFilter.class);
 
     private boolean redirectToFqHostName = false;
-    private boolean passwordRequired;
     private String homePage;
-    private String loginPage;
 
     /**
      * List of jsf pages that user can access if not logged in. If user requests
@@ -76,13 +68,9 @@ public class AuthenticationFilter implements Filter {
         if (customPropFile.exists()) {
             loadProperties(props, customPropFile);
         }
-        String prop = props.getProperty("require.password", "false").toLowerCase();
-        passwordRequired = (prop.equals("true") || prop.equals("y") || prop.equals("yes"));
-        noAuthorizationRequiredPagesRedirect = csvToArray(filterconfig
-                .getInitParameter("no.login.required.redirect.to.home"));
+        noAuthorizationRequiredPagesRedirect = csvToArray(filterconfig.getInitParameter("no.login.required.redirect.to.home"));
         noAuthorizationRequiredPages = csvToArray(filterconfig.getInitParameter("no.login.required"));
         homePage = filterconfig.getInitParameter("home.page").trim();
-        loginPage = filterconfig.getInitParameter("login.page").trim();
         redirectToFqHostName = Boolean.valueOf(props.getProperty("redirect.to.fq.host", "true"));
     }
 
@@ -143,10 +131,6 @@ public class AuthenticationFilter implements Filter {
                 else {
                     chain.doFilter(servletRequest, servletResponse);
                 }
-                return;
-            }
-            if (isChangePasswordRequired(request, response)) {
-                response.sendRedirect(request.getContextPath() + "/pages/requireChangePassword.jsf");
                 return;
             }
             chain.doFilter(servletRequest, servletResponse);
@@ -274,42 +258,6 @@ public class AuthenticationFilter implements Filter {
         String requestedURI = request.getRequestURI();
         for (int i = 0, length = noAuthorizationRequiredPagesRedirect.length; i < length; i++) {
             if (requestedURI.contains(noAuthorizationRequiredPagesRedirect[i])) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    /**
-     * Special case when using default GenePattern authentication and the server configuration has changed from not requiring passwords to requiring passwords.
-     * Any user account created before passwords were required will be automatically redirected to the change password page the next time they log in.
-     * 
-     * @param request
-     * @param response
-     * @return
-     */
-    protected boolean isChangePasswordRequired(HttpServletRequest request, HttpServletResponse response) {
-        if (!(UserAccountManager.instance().getAuthentication() instanceof DefaultGenePatternAuthentication)) {
-            //hack alert: special case should only apply for default genepattern authentication
-            return false;
-        }
-        if (!passwordRequired) {
-            return false;
-        }
-        
-        if (request.getRequestURI().contains("requireChangePassword")) {
-            return false;
-        }
-        
-        String userId = LoginManager.instance().getUserIdFromSession(request);
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            HibernateUtil.beginTransaction();
-            User user = new UserDAO().findById(userId);
-            HibernateUtil.commitTransaction();
-
-            //check for users with empty passwords
-            if (user != null && EncryptionUtil.isEmpty(user.getPassword())) {
                 return true;
             }
         }
