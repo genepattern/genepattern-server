@@ -15,7 +15,6 @@ package org.genepattern.server.webapp;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.Properties;
 
 import javax.servlet.Filter;
@@ -40,8 +39,7 @@ import org.genepattern.util.GPConstants;
 public class AuthenticationFilter implements Filter {
     private static Logger log = Logger.getLogger(AuthenticationFilter.class);
 
-    private boolean redirectToFqHostName = false;
-    private String homePage;
+    private String homePage = "/pages/index.jsf";
 
     /**
      * List of jsf pages that user can access if not logged in. If user requests
@@ -71,7 +69,6 @@ public class AuthenticationFilter implements Filter {
         noAuthorizationRequiredPagesRedirect = csvToArray(filterconfig.getInitParameter("no.login.required.redirect.to.home"));
         noAuthorizationRequiredPages = csvToArray(filterconfig.getInitParameter("no.login.required"));
         homePage = filterconfig.getInitParameter("home.page").trim();
-        redirectToFqHostName = Boolean.valueOf(props.getProperty("redirect.to.fq.host", "true"));
     }
 
     static void loadProperties(Properties props, File propFile) {
@@ -79,7 +76,6 @@ public class AuthenticationFilter implements Filter {
         try {
             fis = new FileInputStream(propFile);
             props.load(fis);
-
         } 
         catch (IOException e) {
             log.error(e);
@@ -111,15 +107,6 @@ public class AuthenticationFilter implements Filter {
     {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
-        
-        //if necessary, redirect to fully qualified host name so that only one cookie needs to be written
-        if (redirectToFqHostName) { 
-            String serverName = servletRequest.getServerName();
-            if (!getFQHostName().equalsIgnoreCase(serverName)) {
-                redirectToFullyQualifiedHostName(request, response);
-                return;
-            }
-        }
         
         if (isAuthenticated(request)) {
             if (isRedirectRequired(request)) {
@@ -160,52 +147,9 @@ public class AuthenticationFilter implements Filter {
         }
     }
 
-    
     public void destroy() {
     }
     
-    public void redirectToFullyQualifiedHostName(HttpServletRequest request, HttpServletResponse response) 
-    throws IOException
-    {
-        String fqHostName = System.getProperty("fullyQualifiedHostName");
-        if (fqHostName == null) {
-            fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
-        }
-        if (fqHostName.equals("localhost")) {
-            fqHostName = "127.0.0.1";
-        }
-        String queryString = request.getQueryString();
-        if (queryString == null) {
-            queryString = "";
-        } 
-        else {
-            queryString = "?" + queryString;
-        }
-        String portStr = "";
-        int port = request.getServerPort();
-        if (port > 0) {
-            portStr = ":"+port;
-        }
-        String fqAddress = request.getScheme() + "://" + fqHostName + portStr + request.getRequestURI() + queryString;
-        response.sendRedirect(fqAddress);
-    }
-
-    /**
-     * get fully qualified host name from the machine. If this was set in system
-     * properties (from the genepattern.properties file) use that since some
-     * machines have multiple aliases
-     */
-    protected String getFQHostName() throws IOException {
-        String fqHostName = System.getProperty("fqHostName");
-        if (fqHostName == null) {
-            fqHostName = InetAddress.getLocalHost().getCanonicalHostName();
-        }
-        if (fqHostName.equals("localhost")) {
-            fqHostName = "127.0.0.1";
-        }
-        return fqHostName;
-    }
-
     /**
      * Check for the 'userid' session variable.
      * 
@@ -247,7 +191,6 @@ public class AuthenticationFilter implements Filter {
         if (isJspPrecompile(request)) {
             return false;
         }
-
         return true;
     }
     
@@ -278,6 +221,4 @@ public class AuthenticationFilter implements Filter {
         // allow jsp precompilation
         return ((p != null) && ("localhost".equals(rh)) && (numParams == 1));
     }
-
-
 }
