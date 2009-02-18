@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.user.User;
@@ -22,6 +23,8 @@ import org.genepattern.util.GPConstants;
  * @author pcarr
  */
 public class LoginManager {
+    private static Logger log = Logger.getLogger(LoginManager.class);
+
     private static LoginManager loginManager = null;
 
     private LoginManager() {
@@ -51,9 +54,7 @@ public class LoginManager {
         }
         
         if (!UserAccountManager.instance().userExists(gp_username)) {
-            //Automatically create a genepattern account the first time a user connects            
-            //TODO: optionally plugin to external authentication system to get user's email address and add it to gp database
-            //TODO: optionally create password to prevent inadvertent logon if the authentication system is not available
+            //TODO: optionally plug in to external authentication system to get user's email address and add it to gp database
             UserAccountManager.instance().createUser(gp_username);
         }
 
@@ -67,11 +68,12 @@ public class LoginManager {
     public void addUserIdToSession(HttpServletRequest request, String gp_username) {
         HttpSession session = request.getSession();
         if (session == null) {
-            //TODO: log exception
+            log.error("LoginManager: unable to addUserIdToSession, session is null.");
             return;
         }
         session.setAttribute(GPConstants.USERID, gp_username);
-        session.setAttribute("userID", gp_username); //TODO: replace all references to 'userID' with 'userid'
+        //TODO: replace all references to 'userID' with 'userid'
+        session.setAttribute("userID", gp_username);
         
         logUserLogin(gp_username, request);
     }
@@ -85,7 +87,7 @@ public class LoginManager {
     private void logUserLogin(String username, HttpServletRequest request) {
         User user = new UserDAO().findById(username);
         if (user == null) {
-            //TODO: log exception
+            log.error("LoginManager, unable to logUserLogin, user is null.");
             return;
         }
 
@@ -129,9 +131,8 @@ public class LoginManager {
         }
 
         //redirect to a page which doesn't require authentication
-        //UserAccountManager.instance().getAuthentication().requestAuthentication(request, response);
         String contextPath = request.getContextPath();
-        response.sendRedirect( contextPath + "/pages/login.jsf" );
+        response.sendRedirect( contextPath + "/" );
     }
     
 }
