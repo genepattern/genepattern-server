@@ -16,12 +16,23 @@ public class AboutBean {
     private String full;
 
     public AboutBean() {
-        int major = (int) Long.parseLong(System.getProperty("version.major"));
+        String major = System.getProperty("version.major");
         String minor = System.getProperty("version.minor");
-        int revision = (int) Long.parseLong(System
-                .getProperty("version.revision"));
+        String revision = System.getProperty("version.revision");
         String release = System.getProperty("release");
-        final String rev = (revision > 0) ? "." + revision : "";
+        String rev = "";
+        if (revision != null && !"".equals(revision.trim())) {
+            try {
+                //don't display the rev if it is a number less than zero
+                int revNum = Integer.parseInt(revision);
+                if (revNum > 0) {
+                    rev = "." + revision;
+                }
+            }
+            catch (NumberFormatException e) {
+                rev = "." + revision;
+            }
+        }
         this.full = major + "." + minor + rev + release;
     }
 
