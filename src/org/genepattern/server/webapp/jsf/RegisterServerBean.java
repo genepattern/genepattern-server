@@ -264,8 +264,16 @@ public class RegisterServerBean {
     }
 
     public static boolean isRegisteredOrDeclined(){	
-        if (System.getProperty(GPConstants.REGISTERED_SERVER, null) != null) return true;    
-        else return isRegistered();
+        if (System.getProperty(GPConstants.REGISTERED_SERVER, null) != null) {
+            return true;    
+        }
+        else {
+            boolean isRegistered = isRegistered();
+            if (isRegistered) {
+                System.setProperty(GPConstants.REGISTERED_SERVER, "true");
+            }
+            return isRegistered;
+        }
     }
 
     public static boolean isRegistered() {
