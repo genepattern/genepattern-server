@@ -32,8 +32,10 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobIDNotFoundException;
+import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.util.GPConstants;
+import org.json.JSONException;
 
 /**
  *
@@ -48,8 +50,9 @@ import org.genepattern.util.GPConstants;
  *
  *
  * reqURL: http://gp21e-789.broad.mit.edu:8080/gp/jobResults/92/foo.out
- * contextPath: /gp reqURI: /gp/jobResults/92/foo.out ServletPath:
- * /jobResults/92/foo.out
+ * contextPath: /gp 
+ * reqURI: /gp/jobResults/92/foo.out 
+ * ServletPath: /jobResults/92/foo.out
  *
  * and in genepattern.properties we typically have jobs=./webapps/gp/jobResults
  * which defines the directory the files are in
@@ -128,6 +131,8 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         // /jobResults/
         // /jobResults/<job>
         // /jobResults/<job>/
+        // /jobResults/<job>?returnType=JSON
+        // /jobResults/<job>/?returnType=JSON
         // /jobResults/<job>/<file>
 
         String resultsPath = request.getPathInfo();
@@ -165,9 +170,10 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         }
 
         boolean allowed = false;
+        int jobID = -1;
         if (useridFromSession != null) {
             try {
-                int jobID = Integer.parseInt(jobNumber);
+                jobID = Integer.parseInt(jobNumber);
                 PermissionsHelper ph = new PermissionsHelper(useridFromSession, jobID);
                 allowed = ph.canReadJob();            
             }
@@ -185,6 +191,27 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             return;
         }
         if (file == null) {
+            String returnTypeParam = request.getParameter("returnType");
+            if ("JSON".equalsIgnoreCase(returnTypeParam)) {
+                //return json formatted version of job num
+                JobInfoManager m = new JobInfoManager();
+                JobInfoManager.MyJobInfo myJobInfo = m.getJobInfo(useridFromSession, jobID);
+
+                try {
+                    response.setContentType("text/html");
+                    response.setHeader("Cache-Control", "no-cache");
+
+                    m.writeJobInfo(response.getWriter(), myJobInfo);
+                    
+                    response.getWriter().flush();
+                    response.getWriter().close();
+                    
+                    return;
+                }
+                catch (JSONException e) {
+                    log.error("Error in ajax request for job info: "+e.getMessage(), e);
+                }
+            }
             RequestDispatcher rd = this.getServletContext().getRequestDispatcher("/pages/jobResult.jsf?jobNumber="+jobNumber);
             rd.forward(request, response);
             return;
