@@ -4,12 +4,11 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,14 +19,9 @@ import org.json.JSONObject;
  */
 public class JobInfoManager {
     public static class MyJobInfo {
-        public static class InputParameter {
-        }
-        public static class OutputFile {            
-        }
-
         private JobInfo jobInfo;
-        private Set<InputParameter> inputParameters = new TreeSet<InputParameter>();
-        private Set<OutputFile> outputFiles = new TreeSet<OutputFile>();
+        private List<ParameterInfo> inputParameters = new ArrayList<ParameterInfo>();
+        private List<ParameterInfo> outputParameters= new ArrayList<ParameterInfo>();
         private List<MyJobInfo> children = new ArrayList<MyJobInfo>();
 
         public JobInfo getJobInfo() {
@@ -36,14 +30,15 @@ public class JobInfoManager {
 
         public void setJobInfo(JobInfo j) {
             this.jobInfo = j;
+            processParameterInfoArray();
         }
 
-        public Set<InputParameter> getInputParameters() {
+        public List<ParameterInfo> getInputParameters() {
             return inputParameters;
         }
         
-        public Set<OutputFile> getOutputFiles() {
-            return outputFiles;
+        public List<ParameterInfo> getOutputParameters() {
+            return outputParameters;
         }
         
         public List<MyJobInfo> getChildren() {
@@ -52,6 +47,22 @@ public class JobInfoManager {
         
         public void addChildJobInfo(MyJobInfo j) {
             children.add(j);
+        }
+        
+        /**
+         * Parse the ParameterInfo array from the XML file stored in the DB
+         * and convert into input and output objects for display in the UI.
+         */
+        private void processParameterInfoArray() {
+            for(ParameterInfo param : jobInfo.getParameterInfoArray()) {
+                if (param.isOutputFile()) {
+                    outputParameters.add(param);
+                }
+                else {
+                    inputParameters.add(param);
+                }
+            }
+            this.jobInfo.getParameterInfoArray();
         }
     }
 
@@ -65,7 +76,8 @@ public class JobInfoManager {
             HibernateUtil.beginTransaction();
             AnalysisDAO ds = new AnalysisDAO();
             JobInfo jobInfo = ds.getJobInfo(jobNo);
-            MyJobInfo myJobInfo = step(ds, jobInfo);
+            
+            MyJobInfo myJobInfo = processChildren(ds, jobInfo);
             PermissionsHelper perm = new PermissionsHelper(currentUser, jobNo);
             return myJobInfo;
         }
@@ -74,13 +86,19 @@ public class JobInfoManager {
         }
     }
     
-    private MyJobInfo step(AnalysisDAO ds, JobInfo jobInfo) {
+    /**
+     * Create a new MyJobInfo, recursively looking up and including all child jobs.
+     * @param ds
+     * @param jobInfo
+     * @return
+     */
+    private MyJobInfo processChildren(AnalysisDAO ds, JobInfo jobInfo) {
         MyJobInfo j = new MyJobInfo();
         j.setJobInfo(jobInfo);
 
         JobInfo[] children = ds.getChildren(jobInfo.getJobNumber());
         for(JobInfo child : children) {
-            MyJobInfo nextChild = step(ds, child);
+            MyJobInfo nextChild = processChildren(ds, child);
             j.addChildJobInfo(nextChild);
         }
         
@@ -102,6 +120,26 @@ public class JobInfoManager {
         obj.put("dateSubmitted", myJobInfo.getJobInfo().getDateSubmitted().getTime());
         obj.put("dateCompleted", myJobInfo.getJobInfo().getDateCompleted().getTime());
         obj.put("status", myJobInfo.getJobInfo().getStatus());
+        
+        //add input parameters
+        for(ParameterInfo inputParam : myJobInfo.getInputParameters()) {
+            JSONObject inp = new JSONObject();
+            inp.put("name", inputParam.getName());
+            inp.put("value", inputParam.getValue());
+            inp.put("description", inputParam.getDescription());
+            
+            obj.accumulate("inputParams", inp);
+        }
+        
+        //add output parameters
+        for(ParameterInfo outputParam : myJobInfo.getOutputParameters()) {
+            JSONObject inp = new JSONObject();
+            inp.put("name", outputParam.getName());
+            inp.put("value", outputParam.getValue());
+            inp.put("description", outputParam.getDescription());
+            
+            obj.accumulate("outputParams", inp);
+        }
         
         for(MyJobInfo child : myJobInfo.getChildren()) {
             JSONObject childObj = convertToJSON(child);
