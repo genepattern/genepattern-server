@@ -76,9 +76,15 @@ public class RedirectToFQHostFilter implements Filter {
     }
 
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        String serverName = servletRequest.getServerName();
+        //always redirect from 'localhost' to '127.0.0.1'
+        if ("localhost".equals(serverName)) {
+            redirectToHostName( "127.0.0.1", (HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, filterChain);
+            return;
+        }
         //if necessary, redirect to fully qualified host name so that only one cookie needs to be written
         if (redirectToFqHostName) { 
-            String serverName = servletRequest.getServerName();
+            serverName = servletRequest.getServerName();
             if (!fqHostName.equalsIgnoreCase(serverName)) {
                 redirectToFullyQualifiedHostName( (HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, filterChain);
                 return;
@@ -98,6 +104,12 @@ public class RedirectToFQHostFilter implements Filter {
     private void redirectToFullyQualifiedHostName(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) 
     throws IOException, ServletException
     {
+        redirectToHostName(this.fqHostName, request, response, filterChain);
+    }
+    
+    private void redirectToHostName(String hostName, HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) 
+    throws IOException, ServletException
+    {
         StringBuffer requestUrl = request.getRequestURL();
         //modify the requestUrl by replacing the request.serverName with the fqHostName
         String serverName = request.getServerName();
@@ -112,13 +124,13 @@ public class RedirectToFQHostFilter implements Filter {
             else {
                 queryString = "?" + queryString;
             }
-            String fqAddress = start + fqHostName + end + queryString;
+            String fqAddress = start + hostName + end + queryString;
             response.sendRedirect(fqAddress);
             return;
         }
         else {
             //error
-            log.error("Unable to redirectToFullyQualifiedHostName, requestURL=" + request.getRequestURL()+", fqHostName="+fqHostName);
+            log.error("Unable to redirectToHostName, requestURL=" + request.getRequestURL()+", hostName="+hostName);
             filterChain.doFilter(request, response);
         }
     }
