@@ -56,7 +56,8 @@ public class RedirectToFQHostFilter implements Filter {
 
         fqHostName = filterConfig.getInitParameter("fqHostName");
         fqHostName = props.getProperty("fqHostName", fqHostName);
-        if (fqHostName == null || fqHostName.trim() == "") {
+        fqHostName = fqHostName.trim();
+        if ("".equals(fqHostName)) {
             try {
                 InetAddress localHost = InetAddress.getLocalHost();
                 fqHostName = localHost.getCanonicalHostName();
