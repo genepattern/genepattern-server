@@ -43,7 +43,7 @@ function mmLoadMenus() {
   mm_menu_suites.menuBorderBgColor='#CCCC66';
 
   window.mm_menu_jobResults = new Menu("root",130,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  mm_menu_jobResults.addMenuItem("Results&nbsp;Summary","location=contextRoot + '/pages/jobResults.jsf'");
+  mm_menu_jobResults.addMenuItem("Results&nbsp;Summary","location=contextRoot + '/jobResults'");
   mm_menu_jobResults.hideOnMouseOut=true;
   mm_menu_jobResults.bgColor='#CCCC66';
   mm_menu_jobResults.menuBorder=0;

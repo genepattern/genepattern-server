@@ -90,10 +90,7 @@ public class EmailNotificationManager {
 	String subject = "Job " + jobId + " - " + moduleName + " - " + status;
 	StringBuffer msg = new StringBuffer();
 	msg.append("The results for job " + jobId + ", " + moduleName + ", are available on the ");
-
-	msg.append("<a href=\"" + UIBeanHelper.getServer() + "/pages/jobResults.jsf?jobNumber=" + jobId
-		+ "\">GenePattern Job Results Page</a>");
-
+	msg.append("<a href=\"" + UIBeanHelper.getServer() + "/jobResults/" + jobId + "\">GenePattern Job Results Page</a>");
 	emailToAddresses(addresses, from, subject, msg.toString());
 
     }
@@ -249,8 +246,7 @@ class JobWaitThread extends Thread {
 	    msg.append("There was a problem getting the status for job " + jobID);
 	    msg.append("\nThe job may or may not be finished.  When it is complete you will be able to");
 	    msg.append("get the results from here:\n ");
-	    msg.append("<a href='" + UIBeanHelper.getServer()
-		    + "/pages/jobResults.jsf?jobID=jobID'>GenePattern Results Page</a>");
+	    msg.append("<a href=\"" + UIBeanHelper.getServer() + "/jobResults/"+jobID+"\">GenePattern Results Page</a>");
 	    msg.append("\n\nSee the GenePattern logs for the error details.");
 
 	    em.emailToAddresses(addresses, from, subject, msg.toString());
