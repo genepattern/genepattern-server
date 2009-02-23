@@ -6,9 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -23,6 +25,8 @@ public class JobInfoManager {
         private List<ParameterInfo> inputParameters = new ArrayList<ParameterInfo>();
         private List<ParameterInfo> outputParameters= new ArrayList<ParameterInfo>();
         private List<MyJobInfo> children = new ArrayList<MyJobInfo>();
+        
+        private boolean isVisualizer = false;
 
         public JobInfo getJobInfo() {
             return jobInfo;
@@ -31,6 +35,10 @@ public class JobInfoManager {
         public void setJobInfo(JobInfo j) {
             this.jobInfo = j;
             processParameterInfoArray();
+        }
+
+        public boolean isVisualizer() {
+            return isVisualizer;
         }
 
         public List<ParameterInfo> getInputParameters() {
@@ -95,6 +103,12 @@ public class JobInfoManager {
     private MyJobInfo processChildren(AnalysisDAO ds, JobInfo jobInfo) {
         MyJobInfo j = new MyJobInfo();
         j.setJobInfo(jobInfo);
+        
+        //get the visualizer flag
+        int taskId = jobInfo.getTaskID();
+        AdminDAO ad = new AdminDAO();
+        TaskInfo taskInfo = ad.getTask(taskId);
+        j.isVisualizer = taskInfo.isVisualizer();
 
         JobInfo[] children = ds.getChildren(jobInfo.getJobNumber());
         for(JobInfo child : children) {
@@ -120,6 +134,7 @@ public class JobInfoManager {
         obj.put("dateSubmitted", myJobInfo.getJobInfo().getDateSubmitted().getTime());
         obj.put("dateCompleted", myJobInfo.getJobInfo().getDateCompleted().getTime());
         obj.put("status", myJobInfo.getJobInfo().getStatus());
+        obj.put("isVisualizer", Boolean.toString( myJobInfo.isVisualizer() ));
         
         //add input parameters
         for(ParameterInfo inputParam : myJobInfo.getInputParameters()) {
