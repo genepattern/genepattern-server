@@ -3,7 +3,10 @@ package org.genepattern.server;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.genepattern.server.database.HibernateUtil;
@@ -23,6 +26,9 @@ import org.json.JSONObject;
  * @author pcarr
  */
 public class JobInfoManager {
+    final static private String dateFormatPattern = "MMM dd hh:mm:ss aa";
+    final static private DateFormat df = new SimpleDateFormat(dateFormatPattern);
+    
     public static class MyJobInfo {
         private JobInfo jobInfo;
         private List<ParameterInfo> inputParameters = new ArrayList<ParameterInfo>();
@@ -114,6 +120,8 @@ public class JobInfoManager {
     
     /**
      * Create a new MyJobInfo, recursively looking up and including all child jobs.
+     * @param documentCookie
+     * @param contextPath
      * @param ds
      * @param jobInfo
      * @return
@@ -172,9 +180,8 @@ public class JobInfoManager {
         obj.put("jobNumber", myJobInfo.getJobInfo().getJobNumber());
         obj.put("userId", myJobInfo.getJobInfo().getUserId());
         obj.put("taskName", myJobInfo.getJobInfo().getTaskName());
-        obj.put("dateSubmitted", myJobInfo.getJobInfo().getDateSubmitted().getTime());
-        if (myJobInfo.getJobInfo().getDateCompleted() != null) 
-        	obj.put("dateCompleted", myJobInfo.getJobInfo().getDateCompleted().getTime());
+        obj.put("dateSubmitted", formatDate( myJobInfo.getJobInfo().getDateSubmitted() ));
+        obj.put("dateCompleted", formatDate( myJobInfo.getJobInfo().getDateCompleted() ));
         obj.put("status", myJobInfo.getJobInfo().getStatus());
         obj.put("isPipeline", Boolean.toString( myJobInfo.isPipeline() ));
         obj.put("isVisualizer", Boolean.toString( myJobInfo.isVisualizer() ));
@@ -207,6 +214,13 @@ public class JobInfoManager {
             obj.accumulate("children", childObj);
         }
         return obj;
+    }
+    
+    private String formatDate(Date date) {
+        if (date == null) {
+            return "";
+        }
+        return df.format(date);
     }
  
 }
