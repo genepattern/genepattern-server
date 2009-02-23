@@ -279,7 +279,7 @@
   </navigation-case>
   <navigation-case>
    <from-outcome>job results</from-outcome>
-   <to-view-id>/pages/jobResults.xhtml</to-view-id>
+   <to-view-id>/jobResults</to-view-id>
   </navigation-case>
   <navigation-case>
    <from-outcome>create suite</from-outcome>
