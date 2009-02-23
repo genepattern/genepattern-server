@@ -21,6 +21,7 @@ public class RunVisualizer {
     private JobInfo jobInfo = null;
     private TaskInfoAttributes taskInfoAttributes = null;
     private String contextPath = "/gp";
+    private String documentCookie = "";
     private String javaFlags = null;
     private Properties requestParameters = new Properties();
 
@@ -43,6 +44,10 @@ public class RunVisualizer {
         this.contextPath = str;
     }
     
+    public void setDocumentCookie(String documentCookie) {
+        this.documentCookie = documentCookie;
+    }
+    
     public void setJavaFlags(String str) {
         this.javaFlags = str;
     }
@@ -50,8 +55,8 @@ public class RunVisualizer {
     public void setRequestParameters(Properties props) {
         this.requestParameters.putAll(props);
     }
-
-    public void writeVisualizer(Writer out) throws IOException, UnsupportedEncodingException, MalformedURLException {
+    
+    public void writeVisualizerAppletTag(Writer out) throws IOException, UnsupportedEncodingException, MalformedURLException {
         String name = jobInfo.getTaskName();
         ParameterInfo[] parameterInfoArray = jobInfo.getParameterInfoArray();
 
@@ -137,14 +142,11 @@ public class RunVisualizer {
         }
         app.append("<param name=\"" + RunVisualizerConstants.SUPPORT_FILE_DATES + "\" value=\"" + URLEncoder.encode(fileDatesBuf.toString(), "UTF-8") + "\" >");
         app.append("<param name=\"" + RunVisualizerConstants.LSID + "\" value=\"" + URLEncoder.encode(lsid, "UTF-8") + "\" >");
-
-        String js = "<SCRIPT LANGUAGE=\"JavaScript\">\ndocument.writeln('";
-        js += app.toString();
-        js += "');\n";
-        js += "document.writeln(\"<PARAM name=\\\"browserCookie\\\" value=\\\"\" + document.cookie + \"\\\">\");";
-        js += "document.writeln('</applet>');\n";
-        js += "</SCRIPT>";
+        if (documentCookie != null && documentCookie.trim() != "") {
+            app.append("<param name=\"browserCookie\" value=\""+documentCookie+"\">");
+        }
+        app.append("</applet>");
         
-        out.write(js);
+        out.write(app.toString());
     }
 }

@@ -19,12 +19,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.util.Properties;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -193,12 +196,16 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         if (file == null) {
             String returnTypeParam = request.getParameter("returnType");
             if ("JSON".equalsIgnoreCase(returnTypeParam)) {
-                //return json formatted version of job num
+                //return json formatted version of job 
                 JobInfoManager m = new JobInfoManager();
-                JobInfoManager.MyJobInfo myJobInfo = m.getJobInfo(useridFromSession, jobID);
+                
+                String contextPath = request.getContextPath();
+                String cookie = request.getHeader("Cookie");
+                
+                JobInfoManager.MyJobInfo myJobInfo = m.getJobInfo(cookie, contextPath, useridFromSession, jobID);
 
                 try {
-                    response.setContentType("text/html");
+                    response.setContentType("text/json");
                     response.setHeader("Cache-Control", "no-cache");
 
                     m.writeJobInfo(response.getWriter(), myJobInfo);

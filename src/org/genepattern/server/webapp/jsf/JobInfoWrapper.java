@@ -183,6 +183,9 @@ public class JobInfoWrapper {
         runVis.setJobInfo(jobInfo);
         TaskInfoAttributes taskInfoAttributes = taskInfo.giveTaskInfoAttributes();
         runVis.setTaskInfoAttributes(taskInfoAttributes);
+
+        String documentCookie = FacesContext.getCurrentInstance().getExternalContext().getRequestHeaderMap().get("Cookie");
+        runVis.setDocumentCookie(documentCookie);
         String contextPath = FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath();
         if (contextPath == null) {
             contextPath = "/gp";
@@ -190,7 +193,7 @@ public class JobInfoWrapper {
         runVis.setContextPath(contextPath);
         StringWriter writer = new StringWriter();
         try {
-            runVis.writeVisualizer(writer);
+            runVis.writeVisualizerAppletTag(writer);
             writer.close();
         }
         catch (Exception e) {

@@ -1,16 +1,19 @@
 package org.genepattern.server;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.genepattern.RunVisualizer;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -28,6 +31,7 @@ public class JobInfoManager {
         
         private boolean isPipeline = false;
         private boolean isVisualizer = false;
+        private String visualizerAppletTag = "";
 
         public JobInfo getJobInfo() {
             return jobInfo;
@@ -44,6 +48,10 @@ public class JobInfoManager {
 
         public boolean isVisualizer() {
             return isVisualizer;
+        }
+        
+        public String getVisualizerAppletTag() {
+            return visualizerAppletTag;
         }
 
         public List<ParameterInfo> getInputParameters() {
@@ -81,16 +89,21 @@ public class JobInfoManager {
 
     /**
      * Get the current job status information by doing a db query.
+     * 
+     * @param documentCookie
+     * @param contextPath
+     * @param currentUser
      * @param jobNo
+     * 
      * @return
      */
-    public MyJobInfo getJobInfo(String currentUser, int jobNo) {
+    public MyJobInfo getJobInfo(String documentCookie, String contextPath, String currentUser, int jobNo) {
         try {
             HibernateUtil.beginTransaction();
             AnalysisDAO ds = new AnalysisDAO();
             JobInfo jobInfo = ds.getJobInfo(jobNo);
             
-            MyJobInfo myJobInfo = processChildren(ds, jobInfo);
+            MyJobInfo myJobInfo = processChildren(documentCookie, contextPath, ds, jobInfo);
             PermissionsHelper perm = new PermissionsHelper(currentUser, jobNo);
             return myJobInfo;
         }
@@ -105,7 +118,7 @@ public class JobInfoManager {
      * @param jobInfo
      * @return
      */
-    private MyJobInfo processChildren(AnalysisDAO ds, JobInfo jobInfo) {
+    private MyJobInfo processChildren(String documentCookie, String contextPath, AnalysisDAO ds, JobInfo jobInfo) {
         MyJobInfo j = new MyJobInfo();
         j.setJobInfo(jobInfo);
         
@@ -115,14 +128,36 @@ public class JobInfoManager {
         TaskInfo taskInfo = ad.getTask(taskId);
         j.isPipeline = taskInfo.isPipeline();
         j.isVisualizer = taskInfo.isVisualizer();
+        
+        if (taskInfo.isVisualizer()) {
+            j.visualizerAppletTag = getVisualizerAppletTag(documentCookie, contextPath, jobInfo, taskInfo);
+        }
 
         JobInfo[] children = ds.getChildren(jobInfo.getJobNumber());
         for(JobInfo child : children) {
-            MyJobInfo nextChild = processChildren(ds, child);
+            MyJobInfo nextChild = processChildren(documentCookie, contextPath, ds, child);
             j.addChildJobInfo(nextChild);
         }
         
         return j;
+    }
+    
+    private String getVisualizerAppletTag(String documentCookie, String contextPath, JobInfo jobInfo, TaskInfo taskInfo) {
+        RunVisualizer runVis = new RunVisualizer();
+        runVis.setJobInfo(jobInfo);
+        TaskInfoAttributes taskInfoAttributes = taskInfo.giveTaskInfoAttributes();
+        runVis.setTaskInfoAttributes(taskInfoAttributes);
+        runVis.setContextPath(contextPath);
+        runVis.setDocumentCookie(documentCookie);
+        StringWriter writer = new StringWriter();
+        try {
+            runVis.writeVisualizerAppletTag(writer);
+            writer.close();
+        }
+        catch (Exception e) {
+            writer.write("<p>Error in getVisualizerAppletTag: "+e.getLocalizedMessage()+"</p>");
+        }
+        return writer.toString();
     }
     
     public void writeJobInfo(Writer writer, MyJobInfo myJobInfo) 
@@ -142,6 +177,9 @@ public class JobInfoManager {
         obj.put("status", myJobInfo.getJobInfo().getStatus());
         obj.put("isPipeline", Boolean.toString( myJobInfo.isPipeline() ));
         obj.put("isVisualizer", Boolean.toString( myJobInfo.isVisualizer() ));
+        if (myJobInfo.isVisualizer()) {
+            obj.put("visualizerAppletTag", myJobInfo.getVisualizerAppletTag());
+        }
         
         //add input parameters
         for(ParameterInfo inputParam : myJobInfo.getInputParameters()) {

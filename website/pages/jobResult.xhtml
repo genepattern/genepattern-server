@@ -101,6 +101,7 @@
 	            <div><a href="#" onclick='window.open("#{facesContext.externalContext.requestContextPath}/pages/jobInfo.jsf?target=new&amp;jobNumber=#{jobInfoBean.jobNumber}", "Job #{jobInfoBean.jobNumber}","toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=300");return false'>click to view input parameters</a></div>
 	            </td></tr>
 	            <tr><td>&nbsp;</td><td>
+	            <h:outputText escape="false" rendered="#{jobInfoBean.jobInfoWrapper.isVisualizer and jobInfoBean.jobInfoWrapper.status == 'Finished'}" value="#{jobInfoBean.jobInfoWrapper.visualizerAppletTag}" />
 	            <h:outputText rendered="#{!empty jobInfoBean.jobInfoWrapper.outputFiles}">
 				 	<table>
 				 	<tr><td style="vertical-align: top">
@@ -161,6 +162,9 @@
                 
                 <div>Elapsed time: #{child.elapsedTimeMillis} ms</div>
 	            <div><a href="#" onclick='window.open("#{facesContext.externalContext.requestContextPath}/pages/jobInfo.jsf?target=new&amp;jobNumber=#{child.jobNumber}", "Job #{child.jobNumber}","toolbar=no, location=no, status=no, resizable=yes, scrollbars=yes, menubar=no, width=550, height=300");return false'>click to view input parameters</a></div>
+	            <t:div rendered="#{child.isVisualizer}">
+                    <h:outputText escape="false" value="#{child.visualizerAppletTag}" />
+                </t:div>                
 	            </td></tr>
 	            <tr><td>&nbsp;</td><td>
 	            <h:outputText rendered="#{!empty child.outputFiles}">

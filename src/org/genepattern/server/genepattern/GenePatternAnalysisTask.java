@@ -1093,16 +1093,6 @@ public class GenePatternAnalysisTask {
 		}
 		try {
 		    if (taskInfo.isVisualizer()) {
-		        RunVisualizer runVis = new RunVisualizer();
-		        runVis.setJobInfo(jobInfo);
-		        runVis.setTaskInfoAttributes(taskInfoAttributes);
-		        //TODO: lookup context path from servlet context
-		        runVis.setContextPath("/gp");
-		        File visFile = new File(outDir, "runVisualizer.html");
-		        PrintWriter visOut = new PrintWriter(visFile);
-		        runVis.writeVisualizer(visOut);
-		        visOut.flush();
-		        visOut.close();
                 jobStatus = JobStatus.JOB_FINISHED;
 		    }
 		    else {
