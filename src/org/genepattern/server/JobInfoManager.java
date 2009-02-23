@@ -26,6 +26,7 @@ public class JobInfoManager {
         private List<ParameterInfo> outputParameters= new ArrayList<ParameterInfo>();
         private List<MyJobInfo> children = new ArrayList<MyJobInfo>();
         
+        private boolean isPipeline = false;
         private boolean isVisualizer = false;
 
         public JobInfo getJobInfo() {
@@ -35,6 +36,10 @@ public class JobInfoManager {
         public void setJobInfo(JobInfo j) {
             this.jobInfo = j;
             processParameterInfoArray();
+        }
+
+        public boolean isPipeline() {
+            return isPipeline;
         }
 
         public boolean isVisualizer() {
@@ -108,6 +113,7 @@ public class JobInfoManager {
         int taskId = jobInfo.getTaskID();
         AdminDAO ad = new AdminDAO();
         TaskInfo taskInfo = ad.getTask(taskId);
+        j.isPipeline = taskInfo.isPipeline();
         j.isVisualizer = taskInfo.isVisualizer();
 
         JobInfo[] children = ds.getChildren(jobInfo.getJobNumber());
@@ -134,6 +140,7 @@ public class JobInfoManager {
         obj.put("dateSubmitted", myJobInfo.getJobInfo().getDateSubmitted().getTime());
         obj.put("dateCompleted", myJobInfo.getJobInfo().getDateCompleted().getTime());
         obj.put("status", myJobInfo.getJobInfo().getStatus());
+        obj.put("isPipeline", Boolean.toString( myJobInfo.isPipeline() ));
         obj.put("isVisualizer", Boolean.toString( myJobInfo.isVisualizer() ));
         
         //add input parameters
