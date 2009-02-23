@@ -75,6 +75,9 @@ public class RedirectToFQHostFilter implements Filter {
     public void destroy() {
     }
 
+    /**
+     * If necessary, redirect to fully qualified host name so that only one cookie needs to be written.
+     */
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         String serverName = servletRequest.getServerName();
         //always redirect from 'localhost' to '127.0.0.1'
@@ -82,7 +85,6 @@ public class RedirectToFQHostFilter implements Filter {
             redirectToHostName( "127.0.0.1", (HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse, filterChain);
             return;
         }
-        //if necessary, redirect to fully qualified host name so that only one cookie needs to be written
         if (redirectToFqHostName) { 
             serverName = servletRequest.getServerName();
             if (!fqHostName.equalsIgnoreCase(serverName)) {
