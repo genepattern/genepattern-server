@@ -173,7 +173,8 @@ public class JobInfoManager {
         obj.put("userId", myJobInfo.getJobInfo().getUserId());
         obj.put("taskName", myJobInfo.getJobInfo().getTaskName());
         obj.put("dateSubmitted", myJobInfo.getJobInfo().getDateSubmitted().getTime());
-        obj.put("dateCompleted", myJobInfo.getJobInfo().getDateCompleted().getTime());
+        if (myJobInfo.getJobInfo().getDateCompleted() != null) 
+        	obj.put("dateCompleted", myJobInfo.getJobInfo().getDateCompleted().getTime());
         obj.put("status", myJobInfo.getJobInfo().getStatus());
         obj.put("isPipeline", Boolean.toString( myJobInfo.isPipeline() ));
         obj.put("isVisualizer", Boolean.toString( myJobInfo.isVisualizer() ));
