@@ -205,7 +205,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
                 JobInfoManager.MyJobInfo myJobInfo = m.getJobInfo(cookie, contextPath, useridFromSession, jobID);
 
                 try {
-                    response.setContentType("text/json");
+                    response.setContentType("application/json");
                     response.setHeader("Cache-Control", "no-cache");
 
                     m.writeJobInfo(response.getWriter(), myJobInfo);
