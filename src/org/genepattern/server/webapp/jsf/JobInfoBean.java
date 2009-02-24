@@ -206,6 +206,7 @@ public class JobInfoBean {
                     OutputParameter p = new OutputParameter();
                     p.setJobNumber(jobNumber);
                     p.setName(filename);
+                    p.setValue(param.getValue());
                     outputFiles.add(p);
                 }
             }
@@ -220,6 +221,7 @@ public class JobInfoBean {
     public static class OutputParameter {
         private String name;
         private int jobNumber;
+        private String value;
 
         public int getJobNumber() {
             return jobNumber;
@@ -236,6 +238,19 @@ public class JobInfoBean {
         public void setName(String name) {
             this.name = name;
         }
+        
+        public String getValueId() {
+    	    String str = getValue().replace('/', '_');
+    	    return str;
+    	}
+
+		public String getValue() {
+			return value;
+		}
+
+		public void setValue(String value) {
+			this.value = value;
+		}
     }
 
     public static class InputParameter {
