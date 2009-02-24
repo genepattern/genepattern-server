@@ -1,0 +1,237 @@
+@charset "UTF-8";
+/* CSS Document */
+
+body.jobResults {
+	min-width:1024px;
+}
+
+img {
+	border:0;
+}
+
+.moduleDiv {
+	font-family:Arial, verdana, Helvetica, sans-serif;
+	font-size:12px;
+	color:#666666;
+	background-color:#FFFFFF;
+	width:100%;
+	float:left;
+}
+
+.moduleTop {
+	width:auto;
+}
+.moduleMiddle {
+	width:100%;
+}
+
+.moduleDiv h1{
+	font-size:16px;
+	font-weight:bold;
+	color:#666;
+}
+
+
+.moduleDiv a{
+	color:#333399;
+	font-weight:bold;
+	font-size:95%;
+	text-decoration:none;
+}
+
+.moduleDiv a:hover{
+	color:#999;
+}
+
+
+.moduleDiv label.small {
+	font-size:10px;
+}
+
+
+
+.moduleDiv select {
+	font-size: 10px;
+}
+.moduleDiv table.input{
+}
+.moduleDiv tr.title{
+	font-size:10px;
+}
+.moduleDiv font.tiny{
+	font-size:8px;
+}
+
+.moduleDiv font.item{
+	font-size:110%;
+	font-weight:normal;
+	color:#333333;
+}
+.moduleDiv font.info{
+	font-size:10px;
+	font-weight:normal;
+}
+
+.moduleDiv hr{
+	color:#999999;
+}
+
+.shareEdit {
+	font-family:Arial, verdana, Helvetica, sans-serif;
+	font-size:12px;
+	color:#333333;
+	margin-left:10px;
+	margin-top:20px;
+}
+.shareEdit h1{
+	font-size:18px;
+	font-weight:bold;
+	color:#333333;
+}
+.shareEdit table.main {
+	border-style:none;
+}
+
+.shareEdit tr.Title {
+	height:25px;
+	background-color:#D8DAAE;
+}
+.shareEdit tr.White {
+	background-color:#FFFFFF;
+}
+.shareEdit tr.Brown {
+	background-color:#EAEAD4;
+}
+.shareEdit td.TD1 {
+	padding:3px;
+	width:20px;
+	text-align:center;		
+}
+.shareEdit td.TD2 {
+	padding:3px;
+	width:150px;
+	text-indent:5px;
+}
+.shareEdit td.TD3 {
+	padding:3px;
+	vertical-align:middle;
+	text-indent:5px;
+}
+.shareEdit td.TD4 {
+	padding:3px;
+	width:150px;
+	text-indent:15px;
+}
+.shareEdit td.spacer {
+	width:1px;
+	background-color:#999900;
+}
+
+.jobResults {
+	color:#333;
+	min-width:1024px;
+	font-size:12px;
+	font-family:Arial, verdana, Helvetica, sans-serif;
+}
+
+.statusReport {
+	width:500px;
+	color:#333;
+	font-size:12px;
+	font-family:Arial, verdana, Helvetica, sans-serif;
+}
+
+
+table.title {
+	width:100%;
+	padding:5px;
+	background-color:#d8daae;
+	border-bottom:solid #94966a 1px;
+	border-right:solid #b6b88c 1px;
+	border-left:solid #b6b88c 1px;
+	border-top:solid #fafccf 1px;
+}
+
+table.module {
+	width:100%;
+	padding:5px;
+	background-color:#eaead4;
+	text-indent:10px;
+	font-size:16px;
+	color:#666;
+	font-weight:bold;
+	border-bottom:solid #b6b88c 1px;
+	border-right:solid #d8daae 1px;
+	border-left:solid #d8daae 1px;
+	border-top:solid #fafccf 1px;
+}
+
+.reminders {
+	display:block;
+	padding:10px;
+	font-size:12px;
+	color:#666;	
+}
+.summary {
+	width:100%;
+	border-bottom:solid #94966a 1px;
+	border-right:solid #c7c99e 1px;
+	border-top:solid #fafccf 1px;
+}
+
+tr.summaryTitle {
+	background-color:#d8daae;
+}
+.brown {
+	background-color:#eaead4;
+}
+.white {
+	background-color:#ffffff;
+}
+.summary td {
+ 	line-height:18px;
+	vertical-align:top;
+	padding:6px 5px 1px 5px;
+	border-left:solid #c7c99e 1px;
+}
+ td.center {
+	text-align:center;
+}
+ td.right {
+	text-align:right;
+}
+ td.file {
+	text-indent:13px;
+	
+}
+
+.indented {
+	padding-left:20px;
+}
+td.title {
+	text-indent:10px;
+	font-size:16px;
+	color:#666;
+	font-weight:bold;
+}
+td.smallTitle {
+	padding-top:5px;
+	text-indent:10px;
+	font-size:12px;
+	color:#666;
+	font-weight:bold;
+}
+
+ a{
+	color:#0066FF;
+	text-decoration:none;
+}
+ a.execution {
+	font-weight:bold;
+}
+ a.ID {
+	font-weight:bold;
+}
+a.view {
+	font-size:12px;
+}
