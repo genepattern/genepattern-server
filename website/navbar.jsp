@@ -38,7 +38,7 @@
            onclick="MM_showMenu(window.mm_menu_suites,x,y,null,'link14')"
            onmouseover="MM_showMenu(window.mm_menu_suites,x,y,null,'link14')"
            onmouseout="MM_startTimeout();">Suites</a> &#160;&#160;&#160;&#160;&#160;&#160;
-        <a name="link15" id="link10" href="<%=request.getContextPath()%>/JJJJJJJJJ_jobResults"
+        <a name="link15" id="link10" href="<%=request.getContextPath()%>/jobResults"
            onclick="MM_showMenu(window.mm_menu_jobResults,x,y,null,'link15')"
            onmouseover="MM_showMenu(window.mm_menu_jobResults,x,y,null,'link15')"
            onmouseout="MM_startTimeout();">Job Results</a> &#160;&#160;&#160;&#160;&#160;&#160;
