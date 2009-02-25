@@ -364,19 +364,30 @@
             </dname>
         </genkey>
     </target>
+ 
+    <target name="getSvnInfoLastRev" unless="version"
+        description="Sets property 'version' to the head svn Last Changed Rev">  
+        
+        <!-- find out revision number of HEAD, need svn.exe installed on local machine -->
+        <exec executable="svn" outputproperty="svninfo.out"> 
+            <arg line="info -r HEAD" />
+        </exec>
+        <exec executable="grep" inputstring="${svninfo.out}" outputproperty="grep.out">
+            <arg line="'Last Changed Rev:'" />
+        </exec>
+        <exec executable="sed" inputstring="${grep.out}" outputproperty="svn.info.lastRev">
+            <arg value="s/Last\ Changed\ Rev:\ //" />
+        </exec>
 
-
-    <target name="setCvsTagToAnthillVersion" if="version">
-        <property name="cvsTag" value="${version}" />
+        <property name="version" value="${svn.info.lastRev}" />
     </target>
-
-
-    <target name="setCvsTag" unless="cvsTag" depends="setCvsTagToAnthillVersion">
-        <property name="cvsTag" value="This build was not tagged in CVS" />
+    
+    <target name="getVersion" depends="getSvnInfoLastRev">
+        <echo>version: ${version}</echo> 
     </target>
-
-    <target description="Sets the program&apos;s version, build,
-    release and etc. properties" name="version_updater" depends="setCvsTag">
+    
+    <target name="version_updater" depends="getVersion"
+        description="Sets the program&apos;s version, build, release and etc. properties" >
 
         <property file="build.versionNumbers" />
 
@@ -385,13 +396,13 @@
             <entry key="date" pattern="EEE, MMM d yyyy" type="date" value="now" />
             <entry key="version.major" operation="=" type="int" value="${version.major}" />
             <entry key="version.minor" operation="=" type="string" value="${version.minor}" />
-            <entry default="-1" key="version.revision" operation="=" type="int" value="0" />
-            <entry default="0" key="count" operation="+" type="int" />
+            <entry key="version.revision" operation="=" type="int" value="0" default="-1" />
+            <entry key="count" operation="+" type="int" default="0" />
             <entry key="release" operation="=" type="string" value="" />
-            <entry key="program.name" operation="=" type="string" value="GenePattern Client" />
+            <entry key="program.name" operation="=" type="string" value="GenePattern Server" />
             <entry key="builders.name" operation="=" type="string" value="${user.name}" />
 
-            <entry key="build.tag" operation="=" type="string" value="${cvsTag}" />
+            <entry key="build.tag" operation="=" type="string" value="${version}" />
         </propertyfile>
     </target>
 
@@ -441,14 +452,6 @@
 
         <mkdir dir="installer/GP_server_Build_Output/Web_Installers/InstData/warfile" />
         <copy file="gp_war.zip" todir="installer/GP_server_Build_Output/Web_Installers/InstData/warfile" />
-
-    	<!--
-        <copy overwrite="true" todir="/xchip/genepattern/anthill3/server/opt/tomcat/webapps/gpinstalls/nightlyBuild">
-            <fileset dir="installer/GP_server_Build_Output/Web_Installers" />
-        </copy>
-
-        <antcall target="publishGPGEinstallerToWWWDev" />
-        -->
     </target>
 
     <target name="publishBuild">
