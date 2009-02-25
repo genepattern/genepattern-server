@@ -18,13 +18,12 @@
 	xmlns:t="http://myfaces.apache.org/tomahawk">
 
 <h:form>
-	<h:panelGrid columns="2">
+	<h:panelGrid columns="3">
 		<h:outputLabel value="Java Flags:" for="javaFlags"></h:outputLabel>
-		<h:inputText size="50" id="javaFlags" required="false"
-			value="#{userPrefsBean.javaFlags}" />
+		<h:inputText size="50" id="javaFlags" required="false" value="#{userPrefsBean.javaFlags}" />
+		<h:outputText style="font-style: italic;" value="e.g. -Xmx512M" />
 	</h:panelGrid>
 	<h:commandButton action="#{userPrefsBean.saveJavaFlags}" value="Save" />
-
 </h:form>
 
 </html>
