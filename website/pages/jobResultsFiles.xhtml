@@ -21,57 +21,53 @@
   <!-- File section include for job results page.
        Inputs:   jobWrapper
    -->
-  <ui:composition>
-    <t:dataList var="fileInfo" value="#{jobWrapper.outputFileParameterInfos}" rowIndexVar="index">
-
-      <!-- Generate ID for this row and append to the fileRows array for the containing job -->
-      <h:outputText escape="false" rendered="#{jobWrapper.deleteAllowed}">
-      <script type="text/javascript" language="javascript">
-        var rowId = 'file_row_' + '#{jobWrapper.jobNumber}_#{index}';
-        addFileRow('#{parentJobNumber}', rowId);
-      </script>
-      </h:outputText>
-
-      <tr class="files" id="file_row_#{jobWrapper.jobNumber}_#{index}">
-        <td>&#160;</td>
-        <td align="center">
-          <!-- File selection checkbox, only display if the current user has write access to the parent job -->
-          <t:div rendered="#{jobWrapper.deleteAllowed}">
-            <t:div rendered="#{fileInfo.selected}">
-              <input type="checkbox" class="jobFile" name="selectedFiles" checked="checked" value="#{fileInfo.value}"/>
-            </t:div>
-            <t:div rendered="#{!fileInfo.selected}">
-              <input type="checkbox" class="jobFile" name="selectedFiles" value="#{fileInfo.value}"/>
-            </t:div>
-          </t:div>
-        </td>
-        <td>&#160;</td>
-        <td class="#{jobWrapper.level == 0 ? '' : 'pipelinefiles'}">
-          <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif"
-               width="4" height="4" hspace="6" vspace="2" border="0"/>
-
-          <h:outputLink value="#{facesContext.externalContext.requestContextPath}/jobResults/#{jobWrapper.jobNumber}/#{fileInfo.name}">
-            <h:outputText>#{fileInfo.name}</h:outputText>
-          </h:outputLink>
-
-          <!-- Image for popup menu -->
-          <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif"
-               name="Image_#{fileInfo.valueId}" id="Image_#{fileInfo.valueId}"
-               width="14" height="14" border="0" align="top"
-               onclick="pm_showMenu('menuDiv_#{fileInfo.valueId}', Position.cumulativeOffset(this), 50, 50);"
-               onmouseover="MM_swapImage('Image_#{fileInfo.valueId}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)"
-               onmouseout="MM_swapImgRestore();"/>
-        </td>
-        <td>#{fileInfo.formattedSize}</td>
-        <td>&#160;</td>
-        <td>
-          <h:outputText value="#{fileInfo.lastModified}" converter="gp" />
-        </td>
-        <td>&#160;</td>
-        <td>&#160;</td>
-        <td>&#160;</td>
-        <td>&#160;</td>
-      </tr>
-    </t:dataList>
+	<ui:composition>
+    	<t:dataList var="fileInfo" value="#{jobWrapper.outputFileParameterInfos}" rowIndexVar="index2">
+			<tr class="white">
+		        <td class="center"></td>
+		        
+		        <td class="right"></td>
+		        
+		        <td class="center">
+		        <!-- File selection checkbox, only display if the current user has write access to the parent job -->
+		          	<t:div rendered="#{jobWrapper.deleteAllowed}">
+		            	<t:div rendered="#{fileInfo.selected}">
+		              		<input type="checkbox" class="jobFile" name="selectedFiles" checked="checked" value="#{fileInfo.value}"/>
+		            	</t:div>
+		            	<t:div rendered="#{!fileInfo.selected}">
+		              		<input type="checkbox" class="jobFile" name="selectedFiles" value="#{fileInfo.value}"/>
+		            	</t:div>
+		        	</t:div>
+		        </td>
+		
+		        
+		        <td class="file">
+		        	<h:outputLink value="#{facesContext.externalContext.requestContextPath}/jobResults/#{jobWrapper.jobNumber}/#{fileInfo.name}">
+		            	<h:outputText><img src="/gp/images/arrow2.gif" /> #{fileInfo.name}</h:outputText>
+		          	</h:outputLink>
+		
+		          	<!-- Image for popup menu -->
+		          	<img src="/gp/images/smallOptions.gif"
+		               name="Image_#{fileInfo.valueId}" id="Image_#{fileInfo.valueId}"
+		               width="14" height="14" border="0" align="top"
+		               onclick="pm_showMenu('menuDiv_#{fileInfo.valueId}', Position.cumulativeOffset(this), 50, 50);"
+		               onmouseover="MM_swapImage('Image_#{fileInfo.valueId}','','/gp/images/smallOptions.gif',2)"
+		               onmouseout="MM_swapImgRestore();"/>		        	
+		        </td>
+		        
+		        <td class="right">#{fileInfo.formattedSize}</td>
+		          
+		        <td></td>
+		        
+		        <td style="white-space: nowrap;"><span class="submit"><h:outputText value="#{fileInfo.lastModified}" converter="gp" /></span></td>
+		        
+		        <td></td>
+		        
+		        <td></td>
+		        
+		        <td></td>
+		
+		    </tr>
+		</t:dataList>
   </ui:composition>
 </html>

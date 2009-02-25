@@ -397,7 +397,7 @@
 				</t:dataList>
 		   	</td></tr>
 		   	</c:if>
-		    <c:if test="#{not empty jobInfoBean.jobInfoWrapper.outputFiles}">
+		    <h:outputText rendered="#{not empty jobInfoBean.jobInfoWrapper.outputFiles}">
 		    <tr><td class="smallTitle">Output Files</td></tr>
 			<t:dataList var="p" value="#{jobInfoBean.jobInfoWrapper.outputFiles}">
 		    <tr><td class="indented">
@@ -411,8 +411,8 @@
 		           onmouseout="MM_swapImgRestore();"/>
 		    </td></tr>
 		    </t:dataList>
-		    </c:if>
-		    <c:if test="#{jobInfoBean.jobInfoWrapper.isVisualizer}">
+		    </h:outputText>
+		    <h:outputText rendered="#{jobInfoBean.jobInfoWrapper.isVisualizer}">
 		    <tr><td class="smallTitle">
 		    	<a href="javascript:runVisualizer#{jobInfoBean.jobNumber}()"><img src="/gp/images/visualizer.gif" border="0"/> Open Visualizer</a>
 		    	<span id="visualizerSpan#{jobInfoBean.jobNumber}">&nbsp;</span>
@@ -422,7 +422,7 @@
 		    		}
 		    	</script>
 		    </td></tr>
-		    </c:if>
+		    </h:outputText>
 		</table>
 		<br />
 		<!--  REMOVE ME!!!  -->
