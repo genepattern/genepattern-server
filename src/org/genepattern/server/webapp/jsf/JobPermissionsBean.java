@@ -82,6 +82,10 @@ public class JobPermissionsBean {
         reset();
     }
     
+    public int getJobId() {
+    	return this.jobId;
+    }
+    
     public Permission getPublicAccessPermission() {
         return publicAccessPermission;
     }
@@ -196,6 +200,7 @@ public class JobPermissionsBean {
             String currentUserId = UIBeanHelper.getUserId();
             PermissionsHelper permissionsHelper = new PermissionsHelper(currentUserId, jobId);
             permissionsHelper.setPermissions(updatedPermissions);
+            setShowPermissionsDiv(true);
             reset();
             return "success";
         }

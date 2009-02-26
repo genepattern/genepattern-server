@@ -24,6 +24,12 @@
 	</ui:define>
 	<ui:define name="headText">
 		<link href="#{facesContext.externalContext.requestContextPath}/css/GP_DK.css" rel="stylesheet" type="text/css" />
+		<script type="text/javascript"
+		src="#{facesContext.externalContext.requestContextPath}/lytebox/lytebox.js" />
+		<link
+		href="#{facesContext.externalContext.requestContextPath}/lytebox/lytebox.css"
+		rel="stylesheet" type="text/css" />
+		
 		<script type="text/javascript" language="javascript">
 /* <![CDATA[ */
 
@@ -51,6 +57,21 @@
 				break;
 			}
 		}
+	}
+	
+	function openLyteBox(jobNumber) {
+		var a = document.createElement("a");
+		a.href = '#{facesContext.externalContext.requestContextPath}/pages/jobPermissions.jsf?jobNumber='+jobNumber;
+		a.rel = "lyteframe";
+		a.title = 'setting permissions for Job #' + jobNumber;
+		a.rev = "width: 500px; height: 300px; scrolling: auto, background=";
+		myLytebox.start( a, false, true);
+	}
+	
+	function closeLyteBox(jobNumber, isPrivate) {
+		var image = document.getElementById('permissionsImage'+jobNumber);
+		image.src = isPrivate ? '/gp/images/smallLock.gif' : '/gp/images/smallLockOpen.gif';
+		myLytebox.end();
 	}
 	
 	function toggleAll() {
@@ -270,7 +291,7 @@
 					</h:commandLink>
 		        </td>
 		        
-		        <td class="right">&nbsp;</td>
+		        <td class="right">Total Size</td>
 		
 		        
 		        <td class="header">
@@ -393,7 +414,7 @@
 		        	</span>
 		        </td>
 		        
-		        <td class="right"></td>
+		        <td class="right">#{rootJobWrapper.formattedSize}</td>
 		        
 		        <td style="white-space: nowrap;"><h:outputText value="#{rootJobWrapper.dateSubmitted}" converter="gp" /></td>
 		        
@@ -407,14 +428,18 @@
         			<h:outputText rendered="#{not rootJobWrapper.deleteAllowed}">Read</h:outputText>
         		</td>
 		        
-		        <td style="white-space: nowrap;">
-		        	<h:outputText rendered="#{jobWrapper.permissionsLabel != 'Private'}">
-			        	<h:commandLink rendered="#{true}" onclick="toggleSharingInfo('#{jobWrapper.jobNumber}'); return false;">
-			        		<img src="/gp/images/smallLockOpen.gif" alt="" align="left" border="0" /> Edit
-			        	</h:commandLink>
+		        <td class="center" style="white-space: nowrap;">
+		        	<h:outputText rendered="#{rootJobWrapper.permissionsLabel != 'Private'}">
+			        	
+			        		<img id="permissionsImage#{rootJobWrapper.jobNumber}" src="/gp/images/smallLockOpen.gif" alt="" align="left" border="0" />
 			        </h:outputText>
-			        <h:outputText rendered="#{jobWrapper.permissionsLabel == 'Private'}">
-			        	<img src="/gp/images/smallLockClosed.gif" alt="" align="left" border="0" />
+			        <h:outputText rendered="#{rootJobWrapper.permissionsLabel == 'Private'}">
+			        	<img id="permissionsImage#{rootJobWraper.jobNumber}" src="/gp/images/smallLock.gif" alt="" border="0" />
+			        </h:outputText>
+			   		<h:outputText rendered="#{rootJobWrapper.userId == requestScope.userID}">
+			        <a href="javascript:openLyteBox(#{rootJobWrapper.jobNumber})">
+			        	Edit
+			        </a>
 			        </h:outputText>
 		        </td>
 		    </tr>	
@@ -443,7 +468,7 @@
 		        
 		        <td class="center">&nbsp;</td>
 		
-		        <td class="childJob"><strong><a href="#"><img src="images/arrow2.gif" alt="" /></a>#{index2+1}. #{childJob.taskName}</strong></td>
+		        <td class="childJob"><strong><a href="#"><img src="/gp/images/arrow2.gif" alt="" /></a>#{index2+1}. #{childJob.taskName}</strong></td>
 		        
 		        <td class="right"></td>
 		        

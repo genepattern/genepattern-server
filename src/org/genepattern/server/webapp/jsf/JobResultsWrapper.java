@@ -32,6 +32,7 @@ public class JobResultsWrapper {
     private List<OutputFileInfo> outputFiles;
     private boolean selected = false;
     private int sequence = 0;
+    private long totalSize = 0l;
     /**
      * Is current user allowed to delete this job?
      */
@@ -74,6 +75,7 @@ public class JobResultsWrapper {
                             modules = kindToModules.get(kind);
                         }
                         OutputFileInfo pInfo = new OutputFileInfo(parameterInfoArray[i], file, modules, jobInfo.getJobNumber(), kind);
+                        totalSize += pInfo.getSize();
                         pInfo.setSelected(selectedFiles.contains(pInfo.getValue()));
                         outputFiles.add(pInfo);
                     }
@@ -93,6 +95,7 @@ public class JobResultsWrapper {
                 JobResultsWrapper childJob = new JobResultsWrapper(child, kindToModules, selectedFiles, selectedJobs, childLevel, seq, kindToInputParameters, showExecutionLogs);
                 childJob.deleteAllowed = this.deleteAllowed;
                 childJobs.add(childJob);
+                totalSize += childJob.getTotalSize();
                 seq++;
             }
         } 
@@ -101,6 +104,14 @@ public class JobResultsWrapper {
         }
     }
 
+    public String getFormattedSize() {
+	    return JobHelper.getFormattedSize(totalSize);
+	}
+    
+    public long getTotalSize() {
+    	return totalSize;
+    }
+    
     /**
      * @return The list all descendant jobs, basically a flattened tree.
      */
