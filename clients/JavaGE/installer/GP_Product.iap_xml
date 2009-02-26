@@ -1448,23 +1448,10 @@ and any path to a file to read from that file]]></string>
 									<method name="addElement">
 										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8c8a10">
 											<property name="propertyValue">
-												<string><![CDATA[@version.major@]]></string>
+												<string><![CDATA[@genepattern.version@]]></string>
 											</property>
 											<property name="propertyName">
-												<string><![CDATA[version.major]]></string>
-											</property>
-											<property name="passByValue">
-												<boolean>false</boolean>
-											</property>
-										</object>
-									</method>
-									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8d8a10">
-											<property name="propertyValue">
-												<string><![CDATA[@version.minor@]]></string>
-											</property>
-											<property name="propertyName">
-												<string><![CDATA[version.minor]]></string>
+												<string><![CDATA[genepattern.version]]></string>
 											</property>
 											<property name="passByValue">
 												<boolean>false</boolean>
@@ -1849,7 +1836,7 @@ and any path to a file to read from that file]]></string>
 							<property name="message">
 								<string><![CDATA[InstallAnywhere will guide you through the installation of the $PRODUCT_NAME$. 
 
-Version: $version.major$.$version.minor$ ($buildtag$) 
+Version: $genepattern.version$ ($buildtag$) 
 Built on $builddate$
 
 It is strongly recommended that you quit all programs before continuing with this installation.

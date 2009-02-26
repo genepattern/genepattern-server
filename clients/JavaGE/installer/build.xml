@@ -11,13 +11,12 @@
     <target name="installer">
         <property file="../../../resources/build.properties" />
         <delete verbose="true" file="GP_clientlocales/custom_en" />
-        <copy file="GP_Product.iap_xml" tofile="GP_client.iap_xml">
+        <copy file="GP_Product.iap_xml" tofile="GP_client.iap_xml">            
             <filterset>
-                <filter token="version.major" value="${version.major}" />
-                <filter token="version.minor" value="${version.minor}" />
-                <filter token="buildrelease" value="${release}" />
-                <filter token="builddate" value="${date}" />
-                <filter token="buildtag" value="${build.tag}" />
+                <filter token="genepattern.version" value="${genepattern.version} ${version.label}" />
+                <filter token="buildtag" value="${version.revision.id}"/>
+                <filter token="builddate" value="${version.build.date}"/>
+                <filter token="buildrelease" value=""/>
             </filterset>
         </copy>
 
