@@ -203,7 +203,9 @@ public class RegisterServerBean {
             }
 
             saveIsRegistered();
-            UserAccountManager.instance().createUser(email);
+            if (!UserAccountManager.instance().userExists(email)) {
+                UserAccountManager.instance().createUser(email);
+            }
             LoginManager.instance().addUserIdToSession(UIBeanHelper.getRequest(), email);
             error = false;              
             return "installFrame";
