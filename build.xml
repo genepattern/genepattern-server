@@ -387,25 +387,19 @@
     </target>
     
     <target name="version_updater" depends="getVersion"
-        description="Sets the program&apos;s version, build, release and etc. properties" >
+        description="Sets the version, build, and release properties" >
 
         <property file="build.versionNumbers" />
 
-        <propertyfile comment="Created by ANT; defines the build version, date etc." file="${build.properties.file}">
-            <entry key="build" operation="=" pattern="yyyyMMdd" type="date" value="now" />
-            <entry key="date" pattern="EEE, MMM d yyyy" type="date" value="now" />
-            <entry key="version.major" operation="=" type="int" value="${version.major}" />
-            <entry key="version.minor" operation="=" type="string" value="${version.minor}" />
-            <entry key="version.revision" operation="=" type="int" value="0" default="-1" />
-            <entry key="count" operation="+" type="int" default="0" />
-            <entry key="release" operation="=" type="string" value="" />
-            <entry key="program.name" operation="=" type="string" value="GenePattern Server" />
-            <entry key="builders.name" operation="=" type="string" value="${user.name}" />
+        <propertyfile  file="${build.properties.file}" comment="Created by ANT; defines the build version, date etc.">
+            <entry key="genepattern.version" type="string" value="${genepattern.version}" />
+            <entry key="version.label" type="string" value="${version.label}" />
+            <entry key="version.revision.id" type="string" value="${version}" />
+            <entry key="version.build.date" type="date" pattern="yyyy-MM-dd HH:mm" value="${TSTAMP}" />
 
-            <entry key="build.tag" operation="=" type="string" value="${version}" />
+            <entry key="builders.name" operation="=" type="string" value="${user.name}" /> 
         </propertyfile>
     </target>
-
 
     <!-- **************** ANTHILL TARGETS *************-->
     <target name="loadModules" depends="">

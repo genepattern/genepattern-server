@@ -12,38 +12,39 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf;
 
+/**
+ * Display information about this GenePattern Server by reading System properties loaded from the build.properties file.
+ * 
+ * @author pcarr
+ */
 public class AboutBean {
     private String full;
+    
+    //mapped from build.properties file
+    private String genepatternVersion = "";
+    private String versionLabel = "";
+    private String versionRevision = "";
+    private String versionBuildDate = "";
 
     public AboutBean() {
-        String major = System.getProperty("version.major");
-        String minor = System.getProperty("version.minor");
-        String revision = System.getProperty("version.revision");
-        String release = System.getProperty("release");
-        String rev = "";
-        if (revision != null && !"".equals(revision.trim())) {
-            try {
-                //don't display the rev if it is a number less than zero
-                int revNum = Integer.parseInt(revision);
-                if (revNum > 0) {
-                    rev = "." + revision;
-                }
-            }
-            catch (NumberFormatException e) {
-                rev = "." + revision;
-            }
-        }
-        this.full = major + "." + minor + rev + release;
+        this.genepatternVersion = System.getProperty("genepattern.version", "unknown");
+        this.versionLabel = System.getProperty("version.label", "");
+        this.versionRevision = System.getProperty("version.revision.id", "");
+        this.versionBuildDate = System.getProperty("version.build.date", "");
+        
+        this.full = genepatternVersion + " " + versionLabel;
+        this.full = full.trim();
     }
 
     public String getBuildTag() {
-        return System.getProperty("build.tag");
+        return versionRevision;
     }
 
     public String getDate() {
-        return System.getProperty("date");
+        return versionBuildDate;
     }
 
+    
     public String getFull() {
         return full;
     }
