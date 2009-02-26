@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project basedir="src" default="package">
-	<import file="../../build.xml"/>
+	<import file="../../build.xml" />
 
 	<target name="_setCvsTag">
-		<antcall target="version_updater">
+		<antcall target="initBuildProperties">
 			 <param name="build.properties.file" value="../build.properties"/>
 		</antcall>
-
 	</target>
-
+			     
 	<target name="init" depends="_setCvsTag">
 
 		<property name="appfile" value="../gpge.jar" />
