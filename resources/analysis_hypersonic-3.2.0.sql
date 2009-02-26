@@ -20,4 +20,4 @@ constraint pf_fk FOREIGN KEY (permission_flag) references PERMISSION_FLAG(id)
 );
 
 -- update schema version
-update props set value='3.1.2' where key='schemaVersion';
+update props set value='3.2.0' where key='schemaVersion';

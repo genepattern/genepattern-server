@@ -1,5 +1,6 @@
 # File for maintaining major and minor versions for build numbers
-genepattern.version=3.1.2
+genepattern.version=3.2.0
 version.label=DEV
+# deprecated
 version.major=3
-version.minor=1.2
+version.minor=2.0
