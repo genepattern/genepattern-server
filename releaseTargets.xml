@@ -1,47 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<target name="tag">
-	<buildnumber file="build.number" />
-	<echo>making build number: ${build.number}</echo>
-	<property name="cvsTag" value="gp_b${build.number}" />
-	<!-- ensure these are called after setting the build number and cvsTag -->
-	<echo>STARTING tagging module gp2 in CVS with: ${cvsTag}</echo>
-	<cvs command="rtag -RF ${cvsTag} gp2" failonerror="true" />
-	<echo>FINISHED tagging module gp2 in CVS with: ${cvsTag}</echo>
-	<cvs command="commit -m ${cvsTag} build.number" failonerror="true" />
-</target>
-<target name="tag2">
-	<buildnumber file="build.number" />
-	<echo>making build number: ${build.number}</echo>
-	<property name="cvsTag" value="gp_b${build.number}" />
-	<cvs cvsRoot=":ext:gold:/xchip/software/mprcvs/"
-		failonerror="true">
-		<commandline>
-			<argument line="rtag -RF ${cvsTag} gp2" />
-		</commandline>
-	</cvs>
-	<cvs cvsRoot=":ext:gold:/xchip/software/mprcvs/"
-		failonerror="true">
-		<commandline>
-			<argument line="commit -m ${cvsTag} build.number" />
-		</commandline>
-	</cvs>
-</target>
-<target name="nightlyLabel">
-	<tstamp />
-	<property name="cvsTag" value="${version}" />
-</target>
-<target name="getBuildNumber">
-	<property file="build.number" />
-	<property name="cvsTag" value="gp_b${build.number}" />
-	<echo>build number is ${build.number} tag is ${cvsTag}</echo>
-</target>
-<target name="release"
-	depends="getBuildNumber, website,gp-library, GPGE,installers" />
-<target name="nightlyrelease"
-	depends="nightlyLabel, website, gp-library, GPGE,installers, createWar" />
-<!-- Create a war file to use for platforms without an installer -->
+
 <target name="createWar"
-	depends="getBuildNumber, website, gp-library">
+	depends="website, gp-library"
+	description="Create a war file to use for platforms without an installer">
 	<delete dir="wartemp" />
 	<mkdir dir="wartemp" />
 	<delete dir="ziptemp" />
@@ -101,4 +62,9 @@
 	<copy todir="ziptemp" file="installer/runtimeBuild.properties" />
 	<move todir="ziptemp" file="gp.war" />
 	<zip destfile="gp_war.zip" basedir="ziptemp" />
+</target>
+
+<target name="copyWar">
+    <mkdir dir="installer/GP_server_Build_Output/Web_Installers/InstData/warfile" />
+    <copy file="gp_war.zip" todir="installer/GP_server_Build_Output/Web_Installers/InstData/warfile" />
 </target>

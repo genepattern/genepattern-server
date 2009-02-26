@@ -26,7 +26,6 @@
     <property name="runVisualizer-jarname" value="runVisualizer.jar" />
     <property name="signingKey" value="gEnEpAtTeRn" />
     <property name="keyStore" value="${build}/keystore" />
-    <property name="build.properties.file" value="resources/build.properties" />
 
     <path id="genepattern.root">
         <pathelement location="${basedir}" />
@@ -50,9 +49,9 @@
         <echo>tag: tags entire repository prior to an official build</echo>
     </target>
 
-    <target depends="version_updater" name="init">
-        <mkdir dir="${build}" />
-        <mkdir dir="${build}/jars" />
+    <target name="init">
+        <tstamp />
+
         <property name="genepattern.root" value="${basedir}" />
         <property name="genepattern.website" value="${genepattern.root}/website" />
         <property name="genepattern.clients" value="${genepattern.root}/clients" />
@@ -60,18 +59,9 @@
         <property name="genepattern.graphical.environment" value="${genepattern.clients}/JavaGE" />
         <property name="genepattern.build" value="${genepattern.root}/build" />
         <property name="defaultInstallDir" value="/xchip/genepattern/node256/gp-3.2-dev" />
-
         <property name="genepattern.installer" value="${genepattern.root}/installer" />
         <property name="genepattern.gpge.installer" value="${genepattern.graphical.environment}/installer" />
-
         <property name="genepattern.package" value="org/genepattern" />
-
-        <tstamp>
-            <format pattern="yyyy-MM-dd HH:mm" property="build.number" />
-        </tstamp>
-        <property name="build.id" value="${build.number}" />
-        <property name="version" value="0.1" />
-
 
         <available file="post-compile.xml" property="post-compile.present" />
         <available file="${keyStore}" property="keyStore.present" />
@@ -91,6 +81,9 @@
                 <include name="*.zip" />
             </fileset>
         </path>
+        
+        <mkdir dir="${build}" />
+        <mkdir dir="${build}/jars" />
     </target>
 
     <target name="clean">
@@ -110,7 +103,7 @@
     </target>
 
 
-    <target depends="init" description="Compiles all the source." name="compile">
+    <target name="compile" depends="init" description="Compiles all the source.">
 
         <javac debug="true" classpathref="library.classpath" destdir="${genepattern.build}" srcdir="${src}" compiler="javac1.5" source="${java.target}" excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**" />
 
@@ -263,17 +256,21 @@
         <property name="user" value="genepattern" />
     </target>
 
-    <target name="publishGPGEinstallerToWWWDev" depends="version_updater">
-        <!-- copy todir="/web/wwwdev/htdocs/cancer/software/genepattern/download/gpge/${version.major}.${version.minor}" -->
+    <target name="publishGPGEinstallerToWWWDev" depends="initBuildProperties">
+        <!-- copy todir="/web/wwwdev/htdocs/cancer/software/genepattern/download/gpge/${genepattern.version}" -->
         <copy todir="/web/wwwdev/htdocs/cancer/software/genepattern/download/gpge/3.2">
             <fileset dir="build/Web_Installers" />
         </copy>
     </target>
 
-    <target name="test" depends="version_updater">
-        <echo>${version.major}.${version.minor}</echo>
+    <target name="test" depends="initBuildProperties">
+        <echo>
+            genepattern.version: ${genepattern.version}
+            version.label: ${version.label} 
+            version.revision.id: ${version.revision.id}
+            version.build.date: ${version.build.date}
+        </echo>
     </target>
-
 
     <target depends="website, GPGEinstaller" name="installers">
 
@@ -386,11 +383,11 @@
         <echo>version: ${version}</echo> 
     </target>
     
-    <target name="version_updater" depends="getVersion"
-        description="Sets the version, build, and release properties" >
+    <target name="initBuildProperties" depends="getVersion"
+        description="Updates the build.properties file." >
 
         <property file="build.versionNumbers" />
-
+        <property name="build.properties.file" value="resources/build.properties" />
         <propertyfile  file="${build.properties.file}" comment="Created by ANT; defines the build version, date etc.">
             <entry key="genepattern.version" type="string" value="${genepattern.version}" />
             <entry key="version.label" type="string" value="${version.label}" />
@@ -399,6 +396,8 @@
 
             <entry key="builders.name" operation="=" type="string" value="${user.name}" /> 
         </propertyfile>
+        
+        <property file="${build.properties.file}" />
     </target>
 
     <!-- **************** ANTHILL TARGETS *************-->
@@ -440,13 +439,7 @@
         </exec>
     </target>
 
-    <target name="nightlyBuild">
-        <mkdir dir="logs" />
-        <antcall target="nightlyrelease" />
-
-        <mkdir dir="installer/GP_server_Build_Output/Web_Installers/InstData/warfile" />
-        <copy file="gp_war.zip" todir="installer/GP_server_Build_Output/Web_Installers/InstData/warfile" />
-    </target>
+    <target name="nightlyBuild" depends="initBuildProperties, website, gp-library, GPGE,installers, createWar, copyWar" />
 
     <target name="publishBuild">
         <!-- ant antfile="anthill-build.xml" dir="${basedir}" target="installLocal" / -->

@@ -1,5 +1,8 @@
-# File for maintaining major and minor versions for build numbers
+# set the GenePatternVersion and [optional] version label
+
+# This property is used to set the System property 'GenePatternVersion'
 genepattern.version=3.2.0
+# optional property can be used to display, for example, the svn tag for this release
 version.label=DEV
 # deprecated
 version.major=3
