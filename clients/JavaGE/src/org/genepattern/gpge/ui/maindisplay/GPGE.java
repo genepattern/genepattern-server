@@ -114,6 +114,7 @@ import org.genepattern.util.BrowserLauncher;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LoginHttpClient;
+import org.genepattern.util.LoginHttpClient.LoginState;
 import org.genepattern.webservice.AdminProxy;
 import org.genepattern.webservice.AnalysisJob;
 import org.genepattern.webservice.AnalysisService;
@@ -435,9 +436,19 @@ public class GPGE {
         login.setUsername(username);
         login.setPassword(password);
         login.setServerUrl(_server);
-        LoginHttpClient.LoginState state = login.login(client);
-        if (!LoginHttpClient.LoginState.SUCCESS.equals(state)) {
-            GenePattern.showMessageDialog("Error connecting to server: "+_server);
+        LoginHttpClient.LoginState loginStatus = login.login(client);
+        if (!LoginHttpClient.LoginState.SUCCESS.equals(loginStatus)) {
+            String errorMessage = "Unable to log in to server, "+_server+": ";
+            if (loginStatus == LoginState.INVALID) {
+                errorMessage += "Invalid username or password.";
+            }
+            else if (loginStatus == LoginState.IO_EXCEPTION) {
+                errorMessage += "Server connection error.";
+            }
+            else {
+                errorMessage += loginStatus.toString();
+            }
+            GenePattern.showMessageDialog(errorMessage);
             setChangeServerActionsEnabled(true);
             return;
         }
