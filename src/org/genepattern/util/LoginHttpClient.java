@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.NameValuePair;
@@ -28,7 +29,9 @@ import org.genepattern.webservice.WebServiceException;
 
 /**
  * Login to the GenePattern server with an HttpClient.
+ * 
  * @author pcarr
+ * @see org.genepattern.server.webapp.LoginServlet
  */
 public class LoginHttpClient {
     private static Logger log = Logger.getLogger(LoginHttpClient.class);
@@ -45,7 +48,38 @@ public class LoginHttpClient {
     private String username = "";
     private String password = null;
 
+    /**
+     * The max number of times to follow a redirect to the login page. One, 1, redirect is the max necessary for the default configuration. 
+     */
+    private int maxRedirectCount = 5;
+
     public LoginHttpClient() {
+        checkMaxRedirectCount();
+    }
+
+    /**
+     * The property name of an optional System property which can be used to override the default maxRedirectCount.
+     * If, most likely for debugging, you need to change this property you can do so by setting a System property.
+     * One way to do this is with a command line argument to the java program, e.g.,
+     * <code>
+       java -Dorg.genepattern.util.LoginHttpClient.MAX_REDIRECT_COUNT=100 ...
+     * </code>
+     * To disable redirects, set the value to 0.
+     */
+    final static public String MAX_REDIRECT_COUNT_PROP = "org.genepattern.util.LoginHttpClient.MAX_REDIRECT_COUNT";
+    /**
+     * Check for property override of default maxRedirectCount.
+     */
+    private void checkMaxRedirectCount() {
+        String maxRedirectCountProp = System.getProperty(MAX_REDIRECT_COUNT_PROP);
+        if (maxRedirectCountProp != null) {
+            try {
+                maxRedirectCount = Integer.parseInt(maxRedirectCountProp);
+            } 
+            catch (Exception e) {
+                log.error("Unable to set org.genepattern.util.LoginHttpClient.MAX_REDIRECT_COUNT: "+e.getMessage(), e);
+            }
+        }        
     }
 
     /**
@@ -88,38 +122,73 @@ public class LoginHttpClient {
     }
 
     /**
-     * Login to a GenePattern 3.1.2+ server.
+     * Login to a GenePattern 3.2+ server.
      * @param client
      * @return
      */
     public LoginState loginLatest(HttpClient client) {
-       PostMethod loginPost = null;
-       loginPost = new PostMethod(serverUrl + contextPath + "/login");
-       List<NameValuePair> fields = new ArrayList<NameValuePair>();
-       fields.add(new NameValuePair("username", username));
-       if (password != null) {
-           fields.add(new NameValuePair("password", password));
-       }
-       NameValuePair[] fieldsArr = new NameValuePair[fields.size()];
-       fieldsArr = fields.toArray(fieldsArr);
-       loginPost.setRequestBody(fieldsArr);
-       try {
-           int responseCode = client.executeMethod(loginPost);
-           if (responseCode >= 200 && responseCode < 300) {
-               updateServerUrl(loginPost);
-               //status OK
-               return LoginState.SUCCESS;
-           }
-           return LoginState.INVALID;
-       }
-       catch (IOException e) {
-           return LoginState.IO_EXCEPTION;
-       }
-       finally {
-           if (loginPost != null) {
-               loginPost.releaseConnection();
-           }
-       }
+        String loginServletLocation = serverUrl + contextPath + "/login";
+        return loginAndHandleRedirect(client, loginServletLocation, 0);
+    }
+    
+    /**
+     * Post login credentials to the login servlet 
+     * and handle special case when the GenePattern Server requires a redirect in order to POST to the login servlet.
+     * This can happen when, <ul>
+     *   <li>the user enters 'localhost' as the server name, or
+     *   <li>the server is configured to redirect to fully qualified host name (fqhn) and the user does not enter the fqhn.
+     * </ul>
+     * 
+     * @param client, the http client
+     * @param loginServletLocation, the url of the login servlet
+     * @param redirectCount, current number of times that a redirect request has been sent.
+     * @return
+     */
+    private LoginState loginAndHandleRedirect(HttpClient client, String loginServletLocation, int redirectCount) {
+        if (redirectCount > maxRedirectCount) {
+            log.error("LoginHttpClient: Too many redirects: "+ redirectCount);
+            return LoginState.IO_EXCEPTION;
+        }
+        
+        PostMethod loginPost = null;
+        loginPost = new PostMethod(loginServletLocation);
+        List<NameValuePair> fields = new ArrayList<NameValuePair>();
+        fields.add(new NameValuePair("username", username));
+        if (password != null) {
+            fields.add(new NameValuePair("password", password));
+        }
+        //tell the login servlet to not send a redirect request
+        fields.add(new NameValuePair("redirect", "false"));
+        NameValuePair[] fieldsArr = new NameValuePair[fields.size()];
+        fieldsArr = fields.toArray(fieldsArr);
+        loginPost.setRequestBody(fieldsArr);
+        try {
+            int responseCode = client.executeMethod(loginPost);
+            if (responseCode >= 200 && responseCode < 300) {
+                updateServerUrl(loginPost);
+                //status OK
+                return LoginState.SUCCESS;
+            }
+            if (responseCode >= 300 && responseCode < 400) {
+                //special case: check for redirect to login
+                Header locationHeader = loginPost.getResponseHeader("Location");
+                String redirectTo = locationHeader.getValue();
+                if (redirectTo.toLowerCase().indexOf("/login") >= 0) {
+                    ++redirectCount;
+                    //note: recursive call, make sure to aviod infinite loops
+                    return loginAndHandleRedirect(client, redirectTo, redirectCount);
+                }
+            }
+            return LoginState.INVALID;
+        }
+        catch (IOException e) {
+            return LoginState.IO_EXCEPTION;
+        }
+        finally {
+            if (loginPost != null) {
+                loginPost.releaseConnection();
+            }
+        }
     }
 
     //------------ legacy code for connecting to GenePattern 3.1 and 3.1.1 -------------------- //
