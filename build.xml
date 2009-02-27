@@ -395,6 +395,17 @@
             <entry key="version.build.date" type="date" pattern="yyyy-MM-dd HH:mm" value="${TSTAMP}" />
 
             <entry key="builders.name" operation="=" type="string" value="${user.name}" /> 
+            
+            <!-- add entries required for GenePattern Client installation -->
+            <entry key="build" operation="=" pattern="yyyyMMdd" type="date" value="now" />
+            <entry key="date" pattern="EEE, MMM d yyyy" type="date" value="now" />
+            <entry key="version.major" operation="=" type="int" value="${version.major}" />
+            <entry key="version.minor" operation="=" type="string" value="${version.minor}" />
+            <entry key="version.revision" operation="=" type="int" value="0" default="-1" />
+            <entry key="count" operation="+" type="int" default="0" />
+            <entry key="release" operation="=" type="string" value="" />
+            <entry key="program.name" operation="=" type="string" value="GenePattern Client" />
+            <entry key="build.tag" operation="=" type="string" value="${version}" />
         </propertyfile>
         
         <property file="${build.properties.file}" />
