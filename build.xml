@@ -248,19 +248,8 @@
     </target>
 
 
-    <target depends="init" name="GPGEinstaller">
+    <target name="GPGEinstaller" depends="init">
         <ant dir="${genepattern.gpge.installer}" inheritall="false" inheritrefs="false" target="installer" />
-    </target>
-
-    <target name="setDefaultFTPUser" unless="user">
-        <property name="user" value="genepattern" />
-    </target>
-
-    <target name="publishGPGEinstallerToWWWDev" depends="initBuildProperties">
-        <!-- copy todir="/web/wwwdev/htdocs/cancer/software/genepattern/download/gpge/${genepattern.version}" -->
-        <copy todir="/web/wwwdev/htdocs/cancer/software/genepattern/download/gpge/3.2">
-            <fileset dir="build/Web_Installers" />
-        </copy>
     </target>
 
     <target name="test" depends="initBuildProperties">
@@ -272,10 +261,8 @@
         </echo>
     </target>
 
-    <target depends="website, GPGEinstaller" name="installers">
-
+    <target  name="installers" depends="website">
         <ant dir="${genepattern.installer}" inheritall="false" inheritrefs="false" target="installers" />
-
     </target>
 
     <target depends="gp-library, analysis" name="matlabclient">
