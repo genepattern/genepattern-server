@@ -48,6 +48,7 @@ import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.process.JobPurger;
 import org.genepattern.server.util.JobResultsFilenameFilter;
+import org.genepattern.server.webapp.jsf.AboutBean;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -195,15 +196,21 @@ public class StartupServlet extends HttpServlet {
     // }
 
     protected void announceReady(Properties props) {
-	String message = "GenePattern server version " + System.getProperty("GenePatternVersion") + " build "
-		+ System.getProperty("build.tag") + " built " + System.getProperty("date") + " is ready.";
-	String stars = "******************************************************************************************************************************************"
-		.substring(0, message.length());
-	System.out.println("Listening on " + System.getProperty("GenePatternURL"));
-	System.out.println("");
-	System.out.println(stars);
-	System.out.println(message);
-	System.out.println(stars);
+        AboutBean about = new AboutBean();
+        about.getFull();
+        about.getBuildTag();
+        about.getDate();
+        String message = "GenePattern server version " + about.getFull() + 
+            " build " + about.getBuildTag() + 
+            " built " + about.getDate() + " is ready.";
+
+        String stars = "******************************************************************************************************************************************"
+            .substring(0, message.length());
+        System.out.println("Listening on " + System.getProperty("GenePatternURL"));
+        System.out.println("");
+        System.out.println(stars);
+        System.out.println(message);
+        System.out.println(stars);
     }
 
     protected boolean findThreadByName(String name) {

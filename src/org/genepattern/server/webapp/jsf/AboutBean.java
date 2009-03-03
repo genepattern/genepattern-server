@@ -35,17 +35,37 @@ public class AboutBean {
         this.full = genepatternVersion + " " + versionLabel;
         this.full = full.trim();
     }
-
-    public String getBuildTag() {
-        return versionRevision;
-    }
-
-    public String getDate() {
-        return versionBuildDate;
-    }
-
     
     public String getFull() {
         return full;
     }
+
+    /**
+     * @return the genepattern.version from the build.properties file.
+     */
+    public String getGenePatternVersion() {
+        return this.genepatternVersion;
+    }
+    
+    /**
+     * @return the version.label from the build.properties file.
+     */
+    public String getVersionLabel() {
+        return this.versionLabel;
+    }
+
+    /**
+     * @return the version.revision.id from the build.properties file.
+     */
+    public String getBuildTag() {
+        return versionRevision;
+    }    
+
+    /**
+     * @return the version.build.date from the build.properties file.
+     */
+    public String getDate() {
+        return versionBuildDate;
+    }
+
 }

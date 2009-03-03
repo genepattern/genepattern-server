@@ -148,9 +148,11 @@ public class RegisterServerBean {
     }
 
     public String  registerServer() {
+        AboutBean about = new AboutBean();
+        
         String os = System.getProperty("os.name") + ", "+ System.getProperty("os.version");
-        String genepatternVersion = System.getProperty("GenePatternVersion");
-        String buildTag = System.getProperty("build.tag");
+        String genepatternVersion = about.getGenePatternVersion();
+        String buildTag = about.getBuildTag();
         URLConnection conn = null;
         URL url = null;
         try {
@@ -222,47 +224,46 @@ public class RegisterServerBean {
     }
 
     public String cancelRegistration() {
-		   System.setProperty(GPConstants.REGISTERED_SERVER, "unregistered");
-		   String os = System.getProperty("os.name") + ", "+ System.getProperty("os.version");
-		   String genepatternVersion = System.getProperty("GenePatternVersion");
-	        
-		   HttpClient client = new HttpClient();
-		   PostMethod httppost = new PostMethod(registrationUrl);
-		  
-		   httppost.addParameter("name","Anonymous");
-		   httppost.addParameter("component","Server");
-		   httppost.addParameter("gpversion",genepatternVersion);
-		   httppost.addParameter("build",System.getProperty("build.tag"));
-		   httppost.addParameter("os", os);
+        AboutBean about = new AboutBean();
+
+        System.setProperty(GPConstants.REGISTERED_SERVER, "unregistered"); 
+        String os = System.getProperty("os.name") + ", "+ System.getProperty("os.version");
+        String genepatternVersion = about.getGenePatternVersion();
+        String buildTag = about.getBuildTag();
+
+        HttpClient client = new HttpClient();
+        PostMethod httppost = new PostMethod(registrationUrl);
+        httppost.addParameter("name","Anonymous");
+        httppost.addParameter("component","Server");
+        httppost.addParameter("gpversion",genepatternVersion);
+        httppost.addParameter("build",buildTag);
+        httppost.addParameter("os", os);
 			   
-		   httppost.addParameter("email","");
-		   httppost.addParameter("component","Server");
-		   httppost.addParameter("organization","");
-		   httppost.addParameter("department","");
-		   httppost.addParameter("address1","");
-		   httppost.addParameter("city","");
-		   httppost.addParameter("state","");
-		   httppost.addParameter("country","");
-		   httppost.addParameter("join", "false");
+        httppost.addParameter("email","");
+        httppost.addParameter("component","Server");
+        httppost.addParameter("organization","");
+        httppost.addParameter("department","");
+        httppost.addParameter("address1","");
+        httppost.addParameter("city","");
+        httppost.addParameter("state","");
+        httppost.addParameter("country","");
+        httppost.addParameter("join", "false");
 		   
-		   // let them go on in if there was an exception but don't save 
-		   // the registration to the DB.  They will be asked to register again
-		   // after each restart
-		   try {
-		       UserAccountManager.instance().createUser(email);
-		       LoginManager.instance().addUserIdToSession(UIBeanHelper.getRequest(), email);
-			   
-			   int responseCode = client.executeMethod(httppost);
-			   if (responseCode < 200 || responseCode >= 400) throw new HttpException();
-			   // we don't know them, but their download is recorded so mark the server as registered
-			   saveIsRegistered();
-		   } 
-		   catch (Exception e) {
-			   // swallow it and return
-			   // didn't get a record back at the mother ship from the post so
-			   // make the registration only good until restart
-		   }
-		   return "unregisteredServer";
+        // let them go on in if there was an exception but don't save 
+        // the registration to the DB.  They will be asked to register again after each restart
+        try { 
+            UserAccountManager.instance().createUser(email);
+            LoginManager.instance().addUserIdToSession(UIBeanHelper.getRequest(), email);
+            int responseCode = client.executeMethod(httppost);
+            if (responseCode < 200 || responseCode >= 400) throw new HttpException();
+            // we don't know them, but their download is recorded so mark the server as registered
+            saveIsRegistered();
+        } 
+        catch (Exception e) {
+            // swallow it and return didn't get a record back at the mother ship from the post so
+            // make the registration only good until restart
+        }
+        return "unregisteredServer";
     }
 
     public static boolean isRegisteredOrDeclined(){	
@@ -280,7 +281,8 @@ public class RegisterServerBean {
 
     public static boolean isRegistered() {
         log.debug("checking registration");
-        final String genepatternVersion = System.getProperty("GenePatternVersion");
+        AboutBean about = new AboutBean();
+        final String genepatternVersion = about.getGenePatternVersion();
         String dbRegisteredVersion = getDbRegisteredVersion();
         if (dbRegisteredVersion == null || dbRegisteredVersion.equals("")) {
             return false;
@@ -293,7 +295,8 @@ public class RegisterServerBean {
      */
     public boolean getIsUpdate() {
         List<String> dbEntries = getDbRegisteredVersions();
-        final String genepatternVersion = System.getProperty("GenePatternVersion");
+        AboutBean about = new AboutBean();
+        final String genepatternVersion = about.getGenePatternVersion();
         if (dbEntries.contains("registeredVersion"+genepatternVersion)) {
             //already registered
             return false;
@@ -312,7 +315,8 @@ public class RegisterServerBean {
     private static String getDbRegisteredVersion() {
         log.debug("getting registration info from database");
         String dbRegisteredVersion = "";
-        final String genepatternVersion = System.getProperty("GenePatternVersion");
+        AboutBean about = new AboutBean();
+        final String genepatternVersion = about.getGenePatternVersion();
         final String sql = "select value from props where key='registeredVersion"+genepatternVersion+"'";
         try {
             BaseDAO dao = new BaseDAO();
@@ -346,7 +350,8 @@ public class RegisterServerBean {
 
     private static void saveIsRegistered() {
         log.debug("saving registration");
-        String genepatternVersion = System.getProperty("GenePatternVersion");
+        AboutBean about = new AboutBean();
+        String genepatternVersion = about.getGenePatternVersion();
         String dbRegisteredVersion = System.getProperty(GPConstants.REGISTERED_SERVER, null);
         if (dbRegisteredVersion != null) {
             return;
