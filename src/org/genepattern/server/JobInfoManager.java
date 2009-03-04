@@ -39,6 +39,13 @@ public class JobInfoManager {
         private boolean isVisualizer = false;
         private String visualizerAppletTag = "";
 
+        public int getJobNumber() {
+            if (jobInfo == null) {
+                return -1;
+            }
+            return jobInfo.getJobNumber();
+        }
+
         public JobInfo getJobInfo() {
             return jobInfo;
         }
@@ -64,7 +71,7 @@ public class JobInfoManager {
             return inputParameters;
         }
         
-        public List<ParameterInfo> getOutputParameters() {
+        public List<ParameterInfo> getOutputFiles() {
             return outputParameters;
         }
         
@@ -201,7 +208,7 @@ public class JobInfoManager {
         }
         
         //add output parameters
-        for(ParameterInfo outputParam : myJobInfo.getOutputParameters()) {
+        for(ParameterInfo outputParam : myJobInfo.getOutputFiles()) {
             JSONObject inp = new JSONObject();
             inp.put("name", outputParam.getName());
             inp.put("value", outputParam.getValue());
