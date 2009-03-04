@@ -299,35 +299,60 @@
 		    <tr><td class="smallTitle">Owner: #{jobStatusBean.jobInfo.userId}</td></tr>
 		    <tr><td class="smallTitle"><img src="/gp/images/lock.gif" /> Access Permission<a class="view" href="javascript:togglePermissions();"> <span id="permissionsText">View</span> Details</a></td></tr>
 		    <tr id="permissionsRow" style="display: none;"><td class="indented">
-			    
-			    <table class="summary" cellpadding="0" cellspacing="0" border="0">
-				    <tr class="summaryTitle">
-				    <td width="100px">Sharing</td><td>Access</td>
-				    </tr>
-				    <tr>
-					    <td><strong>Public</strong></td>
-					    <td>
-					    	<c:choose><c:when test="#{jobPermissionsBean.publicAccessPermission == 'NONE'}"><input name="publicPermission" type="radio" value="NONE" checked="true"/></c:when><c:otherwise><input name="publicPermission" type="radio" value="NONE" /></c:otherwise></c:choose>None
-					    	<c:choose><c:when test="#{jobPermissionsBean.publicAccessPermission == 'NONE'}"><input name="publicPermission" type="radio" value="READ" checked="true"/></c:when><c:otherwise><input name="publicPermission" type="radio" value="READ" /></c:otherwise></c:choose>Read
-					    	<c:choose><c:when test="#{jobPermissionsBean.publicAccessPermission == 'NONE'}"><input name="publicPermission" type="radio" value="READ_WRITE" checked="true"/></c:when><c:otherwise><input name="publicPermission" type="radio" value="READ_WRITE" /></c:otherwise></c:choose>Read and Write
-					    </td>
-				    </tr>
-				    <c:if test="#{jobPermissionsBean.numGroupAccessPermissions gt 0}">
-				    <tr class="brown">
-				    	<td><strong>Group</strong></td><td></td>
-				    </tr>
-				    <t:dataList var="groupPermission" rowIndexVar="rowIndex" value="#{jobPermissionsBean.groupAccessPermissions}">
-					    <tr class="brown">
-					    	<td><img src="/gp/images/arrow2.gif" />#{groupPermission.groupId}</td>
-					    	<td>
-						    	<c:choose><c:when test="#{groupPermission.permission == 'NONE'}"><input name="#{groupPermission.groupId}Permission" type="radio" value="NONE" checked="true"/></c:when><c:otherwise><input name="#{groupPermission.groupId}Permission" type="radio" value="NONE" /></c:otherwise></c:choose>None
-						    	<c:choose><c:when test="#{groupPermission.permission == 'NONE'}"><input name="#{groupPermission.groupId}Permission" type="radio" value="READ" checked="true"/></c:when><c:otherwise><input name="#{groupPermission.groupId}Permission" type="radio" value="READ" /></c:otherwise></c:choose>Read
-						    	<c:choose><c:when test="#{groupPermission.permission == 'NONE'}"><input name="#{groupPermission.groupId}Permission" type="radio" value="READ_WRITE" checked="true"/></c:when><c:otherwise><input name="#{groupPermission.groupId}Permission" type="radio" value="READ_WRITE" /></c:otherwise></c:choose>Read and Write
-						   	</td>
-					    </tr>
-					</t:dataList>
-				    </c:if>
-			    </table>	    
+		        <h:form id="jobResultsPermissionsForm">
+        <input type="hidden" name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
+        
+        <table class="summary" cellpadding="0" cellspacing="0" border="0">
+            <tr class="summaryTitle">
+            <td width="100px">Sharing</td><td>Access</td>
+            </tr>
+            <tr>
+                <td><strong>Public</strong></td>
+                <td>
+                    <t:selectOneRadio value="#{jobPermissionsBean.publicAccessPermission}">
+                        <f:selectItem itemValue="NONE" itemLabel="None" />
+                        <f:selectItem itemValue="READ" itemLabel="Read Only" />
+                        <f:selectItem itemValue="READ_WRITE" itemLabel="Read and Write" />
+                    </t:selectOneRadio>
+                </td>
+            </tr>
+            <c:if test="#{jobPermissionsBean.numGroupAccessPermissions gt 0}">
+            <tr class="brown">
+                <td><strong>Group</strong></td><td></td>
+            </tr>
+            <t:dataList var="groupPermission" rowIndexVar="rowIndex" value="#{jobPermissionsBean.groupAccessPermissions}">
+                <tr class="brown">
+                      <td><img src="/gp/images/arrow2.gif" />#{groupPermission.groupId}</td>
+                      <td>
+                          <t:outputText escape="false" rendered="#{groupPermission.permission == 'NONE'}">
+                          <input type="radio" name="jobAccessPerm:#{groupPermission.groupId}" value="NONE" checked="checked" />None
+                          </t:outputText>
+                          <t:outputText escape="false" rendered="#{groupPermission.permission != 'NONE'}">
+                          <input type="radio" name="jobAccessPerm:#{groupPermission.groupId}" value="NONE"  />None
+                          </t:outputText>
+                    
+                          <t:outputText escape="false" rendered="#{groupPermission.permission == 'READ'}">
+                          <input type="radio" name="jobAccessPerm:#{groupPermission.groupId}" value="READ" checked="checked" />Read Only
+                          </t:outputText>
+                          <t:outputText escape="false" rendered="#{groupPermission.permission != 'READ'}">
+                          <input type="radio" name="jobAccessPerm:#{groupPermission.groupId}" value="READ"  />Read Only
+                          </t:outputText>
+                    
+                          <t:outputText escape="false" rendered="#{groupPermission.permission == 'READ_WRITE'}">
+                          <input type="radio" name="jobAccessPerm:#{groupPermission.groupId}" value="READ_WRITE" checked="checked" />Read and Write
+                          </t:outputText>
+                          <t:outputText escape="false" rendered="#{groupPermission.permission != 'READ_WRITE'}">
+                          <input type="radio" name="jobAccessPerm:#{groupPermission.groupId}" value="READ_WRITE"  />Read and Write
+                          </t:outputText>
+                      </td>
+                </tr>
+            </t:dataList>
+            </c:if>
+        </table>
+        <br/>
+        <h:commandButton action="#{jobPermissionsBean.savePermissions}" value="save permissions" />
+    </h:form>    
+	    
 		    </td></tr>
 		    <c:if test="#{not empty jobStatusBean.jobInfo.inputParameters}">
 		    <tr>
