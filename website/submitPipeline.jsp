@@ -67,5 +67,5 @@
     LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);        
     JobInfo job = analysisClient.submitJob(task.getID(), paramInfos);
     String jobId = "" + job.getJobNumber();
-    response.sendRedirect("/gp/pages/jobResult.jsf?jobNumber="+jobId);
+    response.sendRedirect("/gp/pages/jobStatus.jsf?jobNumber="+jobId);
 %>

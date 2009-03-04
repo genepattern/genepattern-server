@@ -216,7 +216,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
                     log.error("Error in ajax request for job info: "+e.getMessage(), e);
                 }
             }
-            RequestDispatcher rd = this.getServletContext().getRequestDispatcher("/pages/jobResult.jsf?jobNumber="+jobNumber);
+            RequestDispatcher rd = this.getServletContext().getRequestDispatcher("/pages/jobStatus.jsf?jobNumber="+jobNumber);
             rd.forward(request, response);
             return;
         }
