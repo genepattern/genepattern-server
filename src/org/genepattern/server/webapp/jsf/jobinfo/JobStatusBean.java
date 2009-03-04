@@ -12,23 +12,23 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf.jobinfo;
 
-import java.util.Date;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
-import org.genepattern.server.JobInfoManager.MyJobInfo;
+import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 
 /**
+ * Access job status for a single job result from a JSF page.
+ * 
  * @author pcarr
  */
 public class JobStatusBean {
     private static Logger log = Logger.getLogger(JobStatusBean.class);
     
     private int jobNumber = -1;
-    private MyJobInfo myJobInfo = null;
+    private JobInfoWrapper myJobInfo = null;
 
     public JobStatusBean() {
         String jobNumberParameter = null;
@@ -53,7 +53,7 @@ public class JobStatusBean {
         this.myJobInfo = jobInfoManager.getJobInfo(cookie, contextPath, userId, jobNumber);
     }
     
-    public MyJobInfo getJobInfo() {
+    public JobInfoWrapper getJobInfo() {
         return myJobInfo;
     }
 

@@ -33,6 +33,7 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobIDNotFoundException;
 import org.genepattern.server.JobInfoManager;
+import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.util.GPConstants;
 import org.json.JSONException;
@@ -199,7 +200,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
                 String contextPath = request.getContextPath();
                 String cookie = request.getHeader("Cookie");
                 
-                JobInfoManager.MyJobInfo myJobInfo = m.getJobInfo(cookie, contextPath, useridFromSession, jobID);
+                JobInfoWrapper myJobInfo = m.getJobInfo(cookie, contextPath, useridFromSession, jobID);
 
                 try {
                     response.setContentType("application/json");
