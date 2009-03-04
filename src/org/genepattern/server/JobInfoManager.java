@@ -39,21 +39,34 @@ public class JobInfoManager {
         private boolean isVisualizer = false;
         private String visualizerAppletTag = "";
 
-        public int getJobNumber() {
-            if (jobInfo == null) {
-                return -1;
-            }
-            return jobInfo.getJobNumber();
-        }
-
-        public JobInfo getJobInfo() {
-            return jobInfo;
-        }
-
         public void setJobInfo(JobInfo j) {
             this.jobInfo = j;
             processParameterInfoArray();
         }
+
+        //JobInfo wrapper methods
+        public int getJobNumber() {
+            return jobInfo.getJobNumber();
+        }
+        public String getUserId() {
+            return jobInfo.getUserId();
+        }
+        public String getTaskName() {
+            return jobInfo.getTaskName();
+        }
+        public String getStatus() {
+            return jobInfo.getStatus();
+        }
+        public Date getDateSubmitted() {
+            return jobInfo.getDateSubmitted();
+        }
+        public Date getDateCompleted() {
+            return jobInfo.getDateCompleted();
+        }
+        public long getElapsedTimeMillis() {
+            return jobInfo.getElapsedTimeMillis();
+        }
+        //--- end JobInfo wrapper methods
 
         public boolean isPipeline() {
             return isPipeline;
@@ -184,13 +197,13 @@ public class JobInfoManager {
     
     private JSONObject convertToJSON(MyJobInfo myJobInfo) throws JSONException {
         JSONObject obj = new JSONObject();
-        obj.put("jobNumber", myJobInfo.getJobInfo().getJobNumber());
-        obj.put("userId", myJobInfo.getJobInfo().getUserId());
-        obj.put("taskName", myJobInfo.getJobInfo().getTaskName());
-        obj.put("dateSubmitted", formatDate( myJobInfo.getJobInfo().getDateSubmitted() ));
-        obj.put("dateCompleted", formatDate( myJobInfo.getJobInfo().getDateCompleted() ));
-        obj.put("elapsedTime", (myJobInfo.getJobInfo().getDateCompleted() == null ? new Date().getTime() : myJobInfo.getJobInfo().getDateCompleted().getTime()) - myJobInfo.getJobInfo().getDateSubmitted().getTime());
-        obj.put("status", myJobInfo.getJobInfo().getStatus());
+        obj.put("jobNumber", myJobInfo.getJobNumber());
+        obj.put("userId", myJobInfo.getUserId());
+        obj.put("taskName", myJobInfo.getTaskName());
+        obj.put("dateSubmitted", formatDate( myJobInfo.getDateSubmitted() ));
+        obj.put("dateCompleted", formatDate( myJobInfo.getDateCompleted() ));
+        obj.put("elapsedTime",  myJobInfo.getElapsedTimeMillis());
+        obj.put("status", myJobInfo.getStatus());
         obj.put("isPipeline", myJobInfo.isPipeline());
         obj.put("isVisualizer", myJobInfo.isVisualizer());
         if (myJobInfo.isVisualizer()) {

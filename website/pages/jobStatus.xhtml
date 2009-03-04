@@ -115,10 +115,10 @@
 			
 			function updateChild(child) {
 				var status = document.getElementById("statusText"+child.jobNumber).innerHTML;
-				if (status == 'Processing' && child.jobInfo.status != 'Processing') {
+				if (status == 'Processing' && child.status != 'Processing') {
 					updateOutputFiles(child, child.outputParams);
 				}
-				updateStatus(child.jobNumber, child.jobInfo.status);
+				updateStatus(child.jobNumber, child.status);
 			}			
 			
 			function createChild(child, step) {
@@ -130,14 +130,14 @@
 				table.border = '0';
 				var row = table.insertRow(table.rows.length);
 				var cell = row.insertCell(0);
-				cell.appendChild(document.createTextNode('step ' + step + ': ' + child.jobInfo.taskName));
+				cell.appendChild(document.createTextNode('step ' + step + ': ' + child.taskName));
 				cell = row.insertCell(1);
 				cell.width = '30px';
 				var img = document.createElement('img');
 				img.id = "statusIcon" + child.jobNumber;
-				if (child.jobInfo.status == 'Error') {
+				if (child.status == 'Error') {
 					img.src = "/gp/images/error.gif";
-				} else if (child.jobInfo.status == 'Finished') {
+				} else if (child.status == 'Finished') {
 				 	img.src = "/gp/images/complete.gif";
 				} else {
 					img.src = "/gp/images/spin.gif";
@@ -154,7 +154,7 @@
 				cell.appendChild(document.createTextNode("Status: "));
 				var span = document.createElement('span');
 				span.id = 'statusText' + child.jobNumber;
-				span.appendChild(document.createTextNode(child.jobInfo.status));
+				span.appendChild(document.createTextNode(child.status));
 				cell.appendChild(span);
 				row = table.insertRow(table.rows.length);
 				cell = row.insertCell(0);
@@ -167,7 +167,7 @@
 				createInputParams(child, table);
 				document.getElementById("childrenDiv").appendChild(table);
 			
-				if (child.jobInfo.status == 'Finished') {
+				if (child.status == 'Finished') {
 					updateOutputFiles(child, child.outputParams);
 				}				
 			}
@@ -248,7 +248,7 @@
 			
 			/* ]]> */
 			
-			<c:if test="#{jobStatusBean.jobInfo.jobInfo.status != 'Finished'}">
+			<c:if test="#{jobStatusBean.jobInfo.status != 'Finished'}">
 			YAHOO.util.Event.addListener(window, "load", function() { 
 				setTimeout("updatePage();", 2500);
 			});
@@ -264,7 +264,7 @@
 		<table class="title" cellpadding="0" cellspacing="0" border="0"><tr>
 		<td class="title">
 		
-			#{jobStatusBean.jobInfo.jobInfo.taskName} [id: #{jobStatusBean.jobInfo.jobNumber}]
+			#{jobStatusBean.jobInfo.taskName} [id: #{jobStatusBean.jobInfo.jobNumber}]
 			<img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif"
                  name="Image2_#{jobStatusBean.jobInfo.jobNumber}" width="14" height="14" border="0" align="top"
                  id="Image2_#{jobStatusBean.jobInfo.jobNumber}" onclick="pm_showMenu('menuDiv_#{jobStatusBean.jobInfo.jobNumber}', Position.cumulativeOffset(this), 50, 50);"
@@ -272,31 +272,31 @@
                  onmouseout="MM_swapImgRestore();"/>
 		
 		</td><td width="30px">
-			<h:outputText rendered="#{jobStatusBean.jobInfo.jobInfo.status != 'Finished' and jobStatusBean.jobInfo.jobInfo.status != 'Error'}">
+			<h:outputText rendered="#{jobStatusBean.jobInfo.status != 'Finished' and jobStatusBean.jobInfo.status != 'Error'}">
 				<img src="/gp/images/spin.gif" id="statusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
 			</h:outputText>
-			<h:outputText rendered="#{jobStatusBean.jobInfo.jobInfo.status == 'Finished'}">
+			<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Finished'}">
 				<img src="/gp/images/complete.gif" id="statusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
 			</h:outputText>
-			<h:outputText rendered="#{jobStatusBean.jobInfo.jobInfo.status == 'Error'}">
+			<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Error'}">
 				<img src="/gp/images/error.gif"  id="statusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
 			</h:outputText>
 		</td>
 		</tr></table>
 	    
 	    <table width="100%" id="infoTable#{jobStatusBean.jobInfo.jobNumber}">
-		    <tr><td class="smallTitle">Status: <span id="statusText#{jobStatusBean.jobInfo.jobNumber}">#{jobStatusBean.jobInfo.jobInfo.status}</span></td></tr>
+		    <tr><td class="smallTitle">Status: <span id="statusText#{jobStatusBean.jobInfo.jobNumber}">#{jobStatusBean.jobInfo.status}</span></td></tr>
 		    <tr>
 		    	<td class="indented">
 		    		<span id="finishedText#{jobStatusBean.jobInfo.jobNumber}">
-		    			<c:if test="#{jobStatusBean.jobInfo.jobInfo.status == 'Finished'}">Finished running #{jobStatusBean.jobInfo.jobInfo.taskName} as job # #{jobStatusBean.jobInfo.jobNumber} on #{jobStatusBean.jobInfo.jobInfo.dateCompleted}
+		    			<c:if test="#{jobStatusBean.jobInfo.status == 'Finished'}">Finished running #{jobStatusBean.jobInfo.taskName} as job # #{jobStatusBean.jobInfo.jobNumber} on #{jobStatusBean.jobInfo.dateCompleted}
 				    	<br />
 			    	</c:if>
 			    	</span>
-			    	Elapsed Time: <span id="elapsedTime#{jobStatusBean.jobInfo.jobNumber}">#{jobStatusBean.jobInfo.jobInfo.elapsedTimeMillis}</span>ms
+			    	Elapsed Time: <span id="elapsedTime#{jobStatusBean.jobInfo.jobNumber}">#{jobStatusBean.jobInfo.elapsedTimeMillis}</span>ms
 		    	</td>
 		    </tr>
-		    <tr><td class="smallTitle">Owner: #{jobStatusBean.jobInfo.jobInfo.userId}</td></tr>
+		    <tr><td class="smallTitle">Owner: #{jobStatusBean.jobInfo.userId}</td></tr>
 		    <tr><td class="smallTitle"><img src="/gp/images/lock.gif" /> Access Permission<a class="view" href="javascript:togglePermissions();"> <span id="permissionsText">View</span> Details</a></td></tr>
 		    <tr id="permissionsRow" style="display: none;"><td class="indented">
 			    
@@ -396,40 +396,40 @@
 		<div id="childrenDiv">
 		<c:if test="#{not empty jobStatusBean.jobInfo.children}">
 			<t:dataList var="child" value="#{jobStatusBean.jobInfo.children}" rowIndexVar="rowIndex">
-			<table id="jobTable#{child.jobInfo.jobNumber}" class="module" cellpadding="0" cellspacing="0" border="0">
+			<table id="jobTable#{child.jobNumber}" class="module" cellpadding="0" cellspacing="0" border="0">
 			<tr>
-				<td>step #{rowIndex+1}: #{child.jobInfo.taskName} 
+				<td>step #{rowIndex+1}: #{child.taskName} 
 				
 				</td>
 				<td width="30px">
-				<h:outputText rendered="#{child.jobInfo.status != 'Finished' and child.jobInfo.status != 'Error'}">
-					<img src="/gp/images/spin.gif" id="statusIcon#{child.jobInfo.jobNumber}"/>
+				<h:outputText rendered="#{child.status != 'Finished' and child.status != 'Error'}">
+					<img src="/gp/images/spin.gif" id="statusIcon#{child.jobNumber}"/>
 				</h:outputText>
-				<h:outputText rendered="#{child.jobInfo.status == 'Finished'}">
-					<img src="/gp/images/complete.gif" id="statusIcon#{child.jobInfo.jobNumber}"/>
+				<h:outputText rendered="#{child.status == 'Finished'}">
+					<img src="/gp/images/complete.gif" id="statusIcon#{child.jobNumber}"/>
 				</h:outputText>
-				<h:outputText rendered="#{child.jobInfo.status == 'Error'}">
-					<img src="/gp/images/error.gif"  id="statusIcon#{child.jobInfo.jobNumber}"/>
+				<h:outputText rendered="#{child.status == 'Error'}">
+					<img src="/gp/images/error.gif"  id="statusIcon#{child.jobNumber}"/>
 				</h:outputText>
 				</td>
 			</tr></table>
-			<table width="100%" id="infoTable#{child.jobInfo.jobNumber}">
-			    <tr><td class="smallTitle">Status: <span id="statusText#{child.jobInfo.jobNumber}">#{child.jobInfo.status}</span></td></tr>
+			<table width="100%" id="infoTable#{child.jobNumber}">
+			    <tr><td class="smallTitle">Status: <span id="statusText#{child.jobNumber}">#{child.status}</span></td></tr>
 			    <tr>
 			    	<td class="indented">
-			    		<c:if test="#{child.jobInfo.status == 'Finished'}">Finished running #{child.jobInfo.taskName} as job # #{child.jobInfo.jobNumber} on <h:outputText value="#{child.jobInfo.dateCompleted}"> <f:convertDateTime pattern="dd.MM.yyyy HH:mm" /></h:outputText>
+			    		<c:if test="#{child.status == 'Finished'}">Finished running #{child.taskName} as job # #{child.jobNumber} on <h:outputText value="#{child.dateCompleted}"> <f:convertDateTime pattern="dd.MM.yyyy HH:mm" /></h:outputText>
 				    	<br />
 				    	</c:if>
-				    	Elapsed Time: <span id="elapsedTime#{child.jobInfo.jobNumber}">#{child.jobInfo.elapsedTimeMillis}</span>ms
+				    	Elapsed Time: <span id="elapsedTime#{child.jobNumber}">#{child.elapsedTimeMillis}</span>ms
 			    	</td>
 			    </tr>
 			    <h:outputText rendered="#{not empty child.inputParameters}">
 			    <tr>
 			    	<td class="smallTitle">
-			    		<img src="/gp/images/parameters.gif" /> Input Parameters <a class="view" href="javascript:toggleInputParams(#{child.jobInfo.jobNumber});"><span id="inputParamsText#{child.jobInfo.jobNumber}">View</span> Details</a>
+			    		<img src="/gp/images/parameters.gif" /> Input Parameters <a class="view" href="javascript:toggleInputParams(#{child.jobNumber});"><span id="inputParamsText#{child.jobNumber}">View</span> Details</a>
 			   		</td>
 			   	</tr>
-			   	<tr id="inputParamsRow#{child.jobInfo.jobNumber}" style="display: none;"><td class="indented">
+			   	<tr id="inputParamsRow#{child.jobNumber}" style="display: none;"><td class="indented">
 			   		<t:dataList var="p" value="#{child.inputParameters}">
 						#{p.name}:
 						<c:choose><c:when test="#{!empty p.url}">
