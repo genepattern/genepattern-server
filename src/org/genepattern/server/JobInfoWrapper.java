@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.webapp.jsf.JobPermissionsBean;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
@@ -15,6 +16,8 @@ public class JobInfoWrapper {
     private List<JobInfoWrapper> children = new ArrayList<JobInfoWrapper>();
     
     private boolean isPipeline = false;
+    private int numSteps = 1;
+    
     private boolean isVisualizer = false;
     private String visualizerAppletTag = "";
 
@@ -56,6 +59,44 @@ public class JobInfoWrapper {
     
     public boolean isPipeline() {
         return isPipeline;
+    }
+    
+    public int getNumStepsCompleted() {
+        //for pipelines
+        if (isPipeline()) {
+            if (children == null || children.size() == 0) {
+                return 0;
+            }
+            int lastIdx = children.size() - 1;
+            JobInfoWrapper last = children.get(lastIdx);
+            if (last.isFinished()) {
+                return lastIdx + 1;
+            }
+            else {
+                return lastIdx;
+            }
+        }
+        //for non-pipelines
+        if (isFinished()) {
+            return 1;
+        }
+        return 0;
+    }
+    
+    public void setNumSteps(int n) {
+        this.numSteps = n;
+    }
+    
+    public int getNumSteps() {
+        return numSteps;
+    }
+    
+    private boolean isFinished() {
+        if ( JobStatus.FINISHED.equals(getStatus()) ||
+                JobStatus.ERROR.equals(getStatus()) ) {
+            return true;
+        }
+        return false;        
     }
 
     public void setVisualizer(boolean isVisualizer) {

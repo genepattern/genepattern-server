@@ -52,9 +52,9 @@
 				document.getElementById("inputParamsText"+jobId).innerHTML = viewHide == 'View' ? 'Hide' : 'View';
 			}
 			
-			function updateStatus(jobNumber, status) {
+			function updateStatus(jobNumber, status,  numStepsCompleted, numSteps) {
 				document.getElementById("statusIcon"+jobNumber).src = (status == 'Error' ? "/gp/images/error.gif" : (status == 'Finished' ? "/gp/images/complete.gif" : "/gp/images/spin.gif"));
-				document.getElementById("statusText"+jobNumber).innerHTML = status;
+				document.getElementById("statusText"+jobNumber).innerHTML = status + ' : Completed ' + numStepsCompleted + ' of ' + numSteps + ' steps';
 			}
 			
 			function updateOutputFiles(job, outputFiles) {
@@ -118,7 +118,7 @@
 				if (status == 'Processing' && child.status != 'Processing') {
 					updateOutputFiles(child, child.outputParams);
 				}
-				updateStatus(child.jobNumber, child.status);
+				updateStatus(child.jobNumber, child.status, child.numStepsCompleted, child.numSteps);
 			}			
 			
 			function createChild(child, step) {
@@ -214,7 +214,9 @@
 					var data = eval('(' + o.responseText + ')');
 					var status = data.status;
 					var jobNumber = data.jobNumber;
-					updateStatus(jobNumber, status);
+					var numStepsCompleted = data.numStepsCompleted;
+					var numSteps = data.numSteps;
+					updateStatus(jobNumber, status, numStepsCompleted, numSteps);
 					if (status != 'Finished') {
 						setTimeout("updatePage();", 2500);
 					} else {

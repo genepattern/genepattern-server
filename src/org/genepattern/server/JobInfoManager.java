@@ -7,10 +7,13 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
+import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.RunVisualizer;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -24,6 +27,8 @@ import org.json.JSONObject;
  * @author pcarr
  */
 public class JobInfoManager {
+    private static Logger log = Logger.getLogger(JobInfoManager.class);
+
     final static private String dateFormatPattern = "MMM dd hh:mm:ss aa";
     final static private DateFormat df = new SimpleDateFormat(dateFormatPattern);
     
@@ -45,11 +50,36 @@ public class JobInfoManager {
             
             JobInfoWrapper jobInfoWrapper = processChildren(documentCookie, contextPath, ds, jobInfo);
             ///PermissionsHelper perm = new PermissionsHelper(currentUser, jobNo);
+            
             return jobInfoWrapper;
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
+    }
+    
+    private PipelineModel getPipelineModel(JobInfo jobInfo) {
+        PipelineModel model = null;
+
+        int taskId = jobInfo.getTaskID();
+        AdminDAO ad = new AdminDAO();
+        TaskInfo taskInfo = ad.getTask(taskId);
+
+        if ((taskInfo != null) && (model == null)) {
+            TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+            if (tia != null) {
+                String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
+                if (serializedModel != null && serializedModel.length() > 0) {
+                    try {
+                        model = PipelineModel.toPipelineModel(serializedModel);
+                    } 
+                    catch (Throwable x) {
+                        log.error(x);
+                    }
+                }
+            }
+        }
+        return model;
     }
     
     /**
@@ -61,28 +91,35 @@ public class JobInfoManager {
      * @return
      */
     private JobInfoWrapper processChildren(String documentCookie, String contextPath, AnalysisDAO ds, JobInfo jobInfo) {
-        JobInfoWrapper j = new JobInfoWrapper();
-        j.setJobInfo(jobInfo);
+        JobInfoWrapper jobInfoWrapper = new JobInfoWrapper();
+        jobInfoWrapper.setJobInfo(jobInfo);
         
         //get the visualizer flag
         int taskId = jobInfo.getTaskID();
         AdminDAO ad = new AdminDAO();
         TaskInfo taskInfo = ad.getTask(taskId);
-        j.setPipeline(taskInfo.isPipeline());
-        j.setVisualizer(taskInfo.isVisualizer());
+        jobInfoWrapper.setPipeline(taskInfo.isPipeline());
+        jobInfoWrapper.setVisualizer(taskInfo.isVisualizer());
         
         if (taskInfo.isVisualizer()) {
             String tag = createVisualizerAppletTag(documentCookie, contextPath, jobInfo, taskInfo);
-            j.setVisualizerAppletTag(tag);
+            jobInfoWrapper.setVisualizerAppletTag(tag);
         }
 
         JobInfo[] children = ds.getChildren(jobInfo.getJobNumber());
         for(JobInfo child : children) {
             JobInfoWrapper nextChild = processChildren(documentCookie, contextPath, ds, child);
-            j.addChildJobInfo(nextChild);
+            jobInfoWrapper.addChildJobInfo(nextChild);
         }
         
-        return j;
+        int numSteps = 1;
+        if (jobInfoWrapper.isPipeline()) {
+            PipelineModel pipelineModel = getPipelineModel(jobInfo);
+            numSteps = pipelineModel.getTasks().size();
+        }
+        jobInfoWrapper.setNumSteps(numSteps);
+        
+        return jobInfoWrapper;
     }
     
     private String createVisualizerAppletTag(String documentCookie, String contextPath, JobInfo jobInfo, TaskInfo taskInfo) {
@@ -119,7 +156,11 @@ public class JobInfoManager {
         obj.put("dateCompleted", formatDate( myJobInfo.getDateCompleted() ));
         obj.put("elapsedTime",  myJobInfo.getElapsedTimeMillis());
         obj.put("status", myJobInfo.getStatus());
+
         obj.put("isPipeline", myJobInfo.isPipeline());
+        obj.put("numStepsCompleted", myJobInfo.getNumStepsCompleted());
+        obj.put("numSteps", myJobInfo.getNumSteps());
+
         obj.put("isVisualizer", myJobInfo.isVisualizer());
         if (myJobInfo.isVisualizer()) {
             obj.put("visualizerAppletTag", myJobInfo.getVisualizerAppletTag());
