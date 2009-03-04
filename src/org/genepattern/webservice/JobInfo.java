@@ -210,6 +210,16 @@ public class JobInfo implements Serializable {
     public void setDateCompleted(Date completedDate) {
         this.completedDate = completedDate;
     }
+    
+    public long getElapsedTimeMillis() {
+        if (this.submittedDate == null) {
+            return 0;
+        }
+        if (this.completedDate == null) {
+            return System.currentTimeMillis() - submittedDate.getTime();
+        }
+        return this.completedDate.getTime() - this.submittedDate.getTime();
+    }
 
     /**
      * get parameter info jaxb string
