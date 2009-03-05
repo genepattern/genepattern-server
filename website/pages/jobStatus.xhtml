@@ -386,6 +386,11 @@
 					</c:choose>
 					<br />
 				</t:dataList>
+				
+				<!--  added for debugging, show list of input files -->
+				<t:dataList var="inputFile" value="#{jobStatusBean.jobInfo.inputFiles}">
+				    #{inputFile.name}: #{inputFile.value}
+				</t:dataList>
 		   	</td></tr>
 		   	</c:if>
 		    <h:outputText rendered="#{not empty jobStatusBean.jobInfo.outputFiles}">

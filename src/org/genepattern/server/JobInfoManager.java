@@ -92,12 +92,13 @@ public class JobInfoManager {
      */
     private JobInfoWrapper processChildren(String documentCookie, String contextPath, AnalysisDAO ds, JobInfo jobInfo) {
         JobInfoWrapper jobInfoWrapper = new JobInfoWrapper();
-        jobInfoWrapper.setJobInfo(jobInfo);
         
         //get the visualizer flag
         int taskId = jobInfo.getTaskID();
         AdminDAO ad = new AdminDAO();
         TaskInfo taskInfo = ad.getTask(taskId);
+
+        jobInfoWrapper.setJobInfo(jobInfo);
         jobInfoWrapper.setPipeline(taskInfo.isPipeline());
         jobInfoWrapper.setVisualizer(taskInfo.isVisualizer());
         
@@ -174,6 +175,16 @@ public class JobInfoManager {
             inp.put("description", inputParam.getDescription());
             
             obj.accumulate("inputParams", inp);
+        }
+        
+        //add input files
+        for(ParameterInfo inputFile : myJobInfo.getInputFiles()) {
+            JSONObject inp = new JSONObject();
+            inp.put("name", inputFile.getName());
+            inp.put("value", inputFile.getValue());
+            inp.put("description", inputFile.getDescription());
+            
+            obj.accumulate("inputFiles", inp);
         }
         
         //add output parameters

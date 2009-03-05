@@ -12,6 +12,7 @@ import org.genepattern.webservice.ParameterInfo;
 public class JobInfoWrapper {
     private JobInfo jobInfo;
     private List<ParameterInfo> inputParameters = new ArrayList<ParameterInfo>();
+    private List<ParameterInfo> inputFiles = new ArrayList<ParameterInfo>();
     private List<ParameterInfo> outputParameters= new ArrayList<ParameterInfo>();
     private List<JobInfoWrapper> children = new ArrayList<JobInfoWrapper>();
     
@@ -23,8 +24,8 @@ public class JobInfoWrapper {
 
     private JobPermissionsBean jobPermissionsBean;
 
-    public void setJobInfo(JobInfo j) {
-        this.jobInfo = j;
+    public void setJobInfo(JobInfo jobInfo) {
+        this.jobInfo = jobInfo;
         processParameterInfoArray();
         this.jobPermissionsBean = null;
     }
@@ -119,6 +120,10 @@ public class JobInfoWrapper {
         return inputParameters;
     }
     
+    public List<ParameterInfo> getInputFiles() {
+        return inputFiles;
+    }
+    
     public List<ParameterInfo> getOutputFiles() {
         return outputParameters;
     }
@@ -150,7 +155,25 @@ public class JobInfoWrapper {
             else {
                 inputParameters.add(param);
             }
+            if (isInputFile(param)) {
+                inputFiles.add(param);
+            }
         }
+    }
+    
+    private boolean isInputFile(ParameterInfo param) {
+        //Note: formalParameters is one way to check if a given ParameterInfo is an input file
+        //ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
+
+        if (param.isInputFile()) {
+            return true;
+        }
+        //not to be confused with 'TYPE'
+        String type = (String) param.getAttributes().get("type");
+        if (type != null && type.equals("java.io.File")) {
+            return true;
+        }
+        return false;
     }
     
     //Job Permissions methods
