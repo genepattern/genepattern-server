@@ -73,7 +73,7 @@
 						cell = row.insertCell(0);
 						cell.className = 'indented';
 						var link = document.createElement('a');
-						link.href = '#{facesContext.externalContext.requestContextPath}/jobResults/' + job.jobNumber + '/' + outputFiles[i].name;
+						link.href = outputFiles[i].link;
 						link.appendChild(document.createTextNode(outputFiles[i].name));
 						cell.appendChild(link);
 				    }
@@ -116,7 +116,7 @@
 			function updateChild(child) {
 				var status = document.getElementById("statusText"+child.jobNumber).innerHTML;
 				if (status == 'Processing' && child.status != 'Processing') {
-					updateOutputFiles(child, child.outputParams);
+					updateOutputFiles(child, child.outputFiles);
 				}
 				updateStatus(child.jobNumber, child.status, child.numStepsCompleted, child.numSteps);
 			}			
@@ -168,7 +168,7 @@
 				document.getElementById("childrenDiv").appendChild(table);
 			
 				if (child.status == 'Finished') {
-					updateOutputFiles(child, child.outputParams);
+					updateOutputFiles(child, child.outputFiles);
 				}				
 			}
 			
@@ -220,7 +220,7 @@
 					if (status != 'Finished') {
 						setTimeout("updatePage();", 2500);
 					} else {
-						updateOutputFiles(data, data.outputParams);
+						updateOutputFiles(data, data.outputFiles);
 					}
 					if (data.isPipeline && data.children) {
 						updateChildren(data.children);
@@ -388,6 +388,7 @@
 				</t:dataList>
 				
 				<!--  added for debugging, show list of input files -->
+				<br /><b>Input Files</b><br />
 				<t:dataList var="inputFile" value="#{jobStatusBean.jobInfo.inputFiles}">
 				    #{inputFile.name}: #{inputFile.value}
 				</t:dataList>
@@ -395,15 +396,15 @@
 		   	</c:if>
 		    <h:outputText rendered="#{not empty jobStatusBean.jobInfo.outputFiles}">
 		    <tr><td class="smallTitle">Output Files</td></tr>
-			<t:dataList var="p" value="#{jobStatusBean.jobInfo.outputFiles}">
+			<t:dataList var="outputFile" value="#{jobStatusBean.jobInfo.outputFiles}">
 		    <tr><td class="indented">
-			    <a href="#{facesContext.externalContext.requestContextPath}/jobResults/#{jobStatusBean.jobInfo.jobNumber}/#{p.name}">#{p.name}</a>
+			    <a href="#{outputFile.link}">#{outputFile.name}</a>
 			    <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" 
-		           name="Image_#{p.valueId}" 
-		           id="Image_#{p.valueId}" 
+		           name="Image_#{outputFile.valueId}" 
+		           id="Image_#{outputFile.valueId}" 
 		           width="14" height="14" border="0" align="top" 
-		           onclick="pm_showMenu('menuDiv_#{p.valueId}', Position.cumulativeOffset(this), 50, 50);" 
-		           onmouseover="MM_swapImage('Image_#{p.valueId}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" 
+		           onclick="pm_showMenu('menuDiv_#{outputFile.valueId}', Position.cumulativeOffset(this), 50, 50);" 
+		           onmouseover="MM_swapImage('Image_#{outputFile.valueId}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" 
 		           onmouseout="MM_swapImgRestore();"/>
 		    </td></tr>
 		    </t:dataList>
@@ -489,15 +490,15 @@
 			   	</h:outputText>
 			    <h:outputText rendered="#{not empty child.outputFiles}">
 			    <tr><td class="smallTitle">Output Files</td></tr>
-				<t:dataList var="p" value="#{child.outputFiles}">
+				<t:dataList var="outputFile" value="#{child.outputFiles}">
 			    <tr><td class="indented">
-			    	<a href="#{facesContext.externalContext.requestContextPath}/jobResults/#{child.jobNumber}/#{p.name}">#{p.name}</a>
+			    	<a href="#{outputFile.link}">#{outputFile.name}</a>
 			    	<img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" 
-				           name="Image_#{p.valueId}" 
-				           id="Image_#{p.valueId}" 
+				           name="Image_#{outputFile.valueId}" 
+				           id="Image_#{outputFile.valueId}" 
 				           width="14" height="14" border="0" align="top" 
-				           onclick="pm_showMenu('menuDiv_#{p.valueId}', Position.cumulativeOffset(this), 50, 50);" 
-				           onmouseover="MM_swapImage('Image_#{p.valueId}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" 
+				           onclick="pm_showMenu('menuDiv_#{outputFile.valueId}', Position.cumulativeOffset(this), 50, 50);" 
+				           onmouseover="MM_swapImage('Image_#{outputFile.valueId}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" 
 				           onmouseout="MM_swapImgRestore();"/>	
 			    </td></tr>
 			    </t:dataList>

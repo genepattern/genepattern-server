@@ -9,11 +9,62 @@ import org.genepattern.server.webapp.jsf.JobPermissionsBean;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 
+/**
+ * Wrapper class to access JobInfo from JSON and JSF formatted pages.
+ * 
+ * @author pcarr
+ */
 public class JobInfoWrapper {
+    /**
+     * Wrapper class for a ParameterInfo which is an output file.
+     */
+    public static class OutputFile {
+        private ParameterInfo parameterInfo = null;
+        private String link = null;
+
+        OutputFile(String contextPath, JobInfo jobInfo, ParameterInfo param) {
+            this.parameterInfo = param;
+            //map from ParameterInfo.name to URL for downloading the output file from the server
+            this.link = contextPath + "/jobResults/" + jobInfo.getJobNumber() + "/" + parameterInfo.getName();
+        }
+
+        //ParameterInfo wrappper methods
+        public String getName() {
+            return parameterInfo.getName();
+        }
+        
+        public String getValue() {
+            return parameterInfo.getValue();
+        }
+        
+        public String getValueId() {
+            return parameterInfo.getValueId();
+        }
+        
+        public String getDescription() {
+            return parameterInfo.getDescription();
+        }
+        //----- end ParameterInfo wrapper methods
+
+        /**
+         * In case a ParameterInfo method is not wrapper, access it directly.
+         */
+        public ParameterInfo getParameterInfo() {
+            return parameterInfo;
+        } 
+
+        /**
+         * @return a link, relative to the server, for a web client to access the output file.
+         */
+        public String getLink() {
+            return link;
+        }
+    }
+    
     private JobInfo jobInfo;
     private List<ParameterInfo> inputParameters = new ArrayList<ParameterInfo>();
     private List<ParameterInfo> inputFiles = new ArrayList<ParameterInfo>();
-    private List<ParameterInfo> outputParameters= new ArrayList<ParameterInfo>();
+    private List<OutputFile> outputFiles = new ArrayList<OutputFile>();
     private List<JobInfoWrapper> children = new ArrayList<JobInfoWrapper>();
     
     private boolean isPipeline = false;
@@ -24,9 +75,9 @@ public class JobInfoWrapper {
 
     private JobPermissionsBean jobPermissionsBean;
 
-    public void setJobInfo(JobInfo jobInfo) {
+    public void setJobInfo(String contextPath, JobInfo jobInfo) {
         this.jobInfo = jobInfo;
-        processParameterInfoArray();
+        processParameterInfoArray(contextPath);
         this.jobPermissionsBean = null;
     }
 
@@ -124,8 +175,8 @@ public class JobInfoWrapper {
         return inputFiles;
     }
     
-    public List<ParameterInfo> getOutputFiles() {
-        return outputParameters;
+    public List<OutputFile> getOutputFiles() {
+        return outputFiles;
     }
     
     public List<JobInfoWrapper> getChildren() {
@@ -147,10 +198,11 @@ public class JobInfoWrapper {
      * Read the ParameterInfo array from the jobInfo object 
      * and store the input and output parameters.
      */
-    private void processParameterInfoArray() {
+    private void processParameterInfoArray(String contextPath) {
         for(ParameterInfo param : jobInfo.getParameterInfoArray()) {
             if (param.isOutputFile()) {
-                outputParameters.add(param);
+                OutputFile outputFile = new OutputFile(contextPath, jobInfo, param);
+                outputFiles.add(outputFile);
             }
             else {
                 inputParameters.add(param);

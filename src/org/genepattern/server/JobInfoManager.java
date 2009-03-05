@@ -98,7 +98,7 @@ public class JobInfoManager {
         AdminDAO ad = new AdminDAO();
         TaskInfo taskInfo = ad.getTask(taskId);
 
-        jobInfoWrapper.setJobInfo(jobInfo);
+        jobInfoWrapper.setJobInfo(contextPath, jobInfo);
         jobInfoWrapper.setPipeline(taskInfo.isPipeline());
         jobInfoWrapper.setVisualizer(taskInfo.isVisualizer());
         
@@ -187,15 +187,17 @@ public class JobInfoManager {
             obj.accumulate("inputFiles", inp);
         }
         
-        //add output parameters
-        for(ParameterInfo outputParam : myJobInfo.getOutputFiles()) {
+        //add output files
+        for(JobInfoWrapper.OutputFile outputFile : myJobInfo.getOutputFiles()) {
             JSONObject inp = new JSONObject();
-            inp.put("name", outputParam.getName());
-            inp.put("value", outputParam.getValue());
-            inp.put("description", outputParam.getDescription());
+            inp.put("name", outputFile.getName());
+            inp.put("value", outputFile.getValue());
+            inp.put("link", outputFile.getLink());
+            inp.put("description", outputFile.getDescription());
             
-            obj.accumulate("outputParams", inp);
+            obj.accumulate("outputFiles", inp);
         }
+
         
         for(JobInfoWrapper child : myJobInfo.getChildren()) {
             JSONObject childObj = convertToJSON(child);
