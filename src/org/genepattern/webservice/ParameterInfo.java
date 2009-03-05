@@ -83,18 +83,6 @@ public class ParameterInfo implements Serializable {
         return value;
     }
 
-    /**
-     * Helper method for accessing the value from web client JavaScript code.
-     * @return the value, replacing all '/' with '_'.
-     */
-    public String getValueId() {
-        if (value == null) {
-            return null;
-        }
-        String valueId = value.replace('/', '_');
-        return valueId;
-    }
-
     public void setDescription(String description) {
         this.description = description;
     }

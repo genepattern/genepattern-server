@@ -37,8 +37,17 @@ public class JobInfoWrapper {
             return parameterInfo.getValue();
         }
         
+        /**
+         * Helper method for accessing the value from web client JavaScript code.
+         * @return the value, replacing all '/' with '_'.
+         */
         public String getValueId() {
-            return parameterInfo.getValueId();
+            String value = parameterInfo.getValue();
+            if (value == null) {
+                return null;
+            }
+            String valueId = value.replace('/', '_');
+            return valueId;
         }
         
         public String getDescription() {
