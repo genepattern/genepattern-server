@@ -97,7 +97,7 @@
             <fileset dir="clients/javage/installer/" includes=".buildinstaller*.tmp/**" />
         </delete>
         <delete quiet="true" failonerror="false" includeemptydirs="true">
-            <fileset dir="build/" includes="**/*" />
+            <fileset dir="build/" includes="**/*" excludes="placeholder.txt" />
         </delete>
         <ant antfile="../build.xml" dir="clients/JavaGE/src" inheritall="true" inheritrefs="true" target="clean" />
     </target>
