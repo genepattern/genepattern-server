@@ -200,13 +200,13 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
                 String contextPath = request.getContextPath();
                 String cookie = request.getHeader("Cookie");
                 
-                JobInfoWrapper myJobInfo = m.getJobInfo(cookie, contextPath, useridFromSession, jobID);
+                JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, useridFromSession, jobID);
 
                 try {
                     response.setContentType("application/json");
                     response.setHeader("Cache-Control", "no-cache");
 
-                    m.writeJobInfo(response.getWriter(), myJobInfo);
+                    m.writeJobInfo(response.getWriter(), jobInfoWrapper);
                     
                     response.getWriter().flush();
                     response.getWriter().close();
