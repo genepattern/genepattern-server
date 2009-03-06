@@ -262,6 +262,37 @@
 	<ui:define name="body">
 		<div class="statusReport">
 		<div class="reminders"><font color="#FF0000">*</font>Clicking <font color="#0066ff">file name</font> will open the file in a new browser window. </div>
+		
+		<t:dataList var="jobInfoWrapper" rowIndexVar="idx" value="#{jobStatusBean.allSteps}">
+		    job\#: #{jobInfoWrapper.jobNumber}
+            <h:outputText rendered="#{jobInfoWrapper.numAncestors > 0}">
+                Indent level: #{jobInfoWrapper.numAncestors}, 
+                [#{jobInfoWrapper.stepPath}], 
+		        Step #{jobInfoWrapper.stepNumber} of #{jobInfoWrapper.stepCount},
+		        Totals: Step #{jobInfoWrapper.totalStepNumber} of #{jobInfoWrapper.totalStepCount}
+		    </h:outputText>
+		    <br />
+		    <h:outputText rendered="#{idx > 0}">Step #{idx}.</h:outputText> 
+		    <b>#{jobInfoWrapper.taskName}</b> [id: #{jobInfoWrapper.jobNumber}] [indent level: #{jobInfoWrapper.numAncestors}] [isPipeline: #{jobInfoWrapper.pipeline}]
+		    <br />
+		    <b>Input Parameters</b>
+		    <br />
+		    <t:dataList var="inputParameter" value="#{jobInfoWrapper.inputParameters}">
+		    <h:outputText>#{inputParameter.name}: #{inputParameter.value}</h:outputText>
+		    </t:dataList>
+		    <br />
+		    <b>Input Files</b>
+		    <br />
+		    <t:dataList var="inputFile" value="#{jobInfoWrapper.inputFiles}" layout="orderedList">
+		    #{inputFile.name}: <em>#{inputFile.value}</em>
+		    </t:dataList>
+		    <b>Output Files</b>
+		    <t:dataList var="outputFile" value="#{jobInfoWrapper.outputFiles}" layout="orderedList">
+		    <a href="#{outputFile.link}">#{outputFile.name}</a>
+		    </t:dataList>
+		    <br />
+		    <br />
+        </t:dataList>
 	
 		<table class="title" cellpadding="0" cellspacing="0" border="0"><tr>
 		<td class="title">
@@ -412,7 +443,7 @@
 		    <h:outputText rendered="#{jobStatusBean.jobInfo.visualizer}">
 		    <tr><td class="smallTitle">
 		    	<a href="javascript:runVisualizer#{jobStatusBean.jobInfo.jobNumber}()"><img src="/gp/images/visualizer.gif" border="0"/> Open Visualizer</a>
-		    	<span id="visualizerSpan#{jobStatusBean.jobInfo.jobNumber}">&nbsp;</span>
+                <span id="visualizerSpan#{jobStatusBean.jobInfo.jobNumber}">&nbsp;</span>
 		    	<script type="text/javascript">
 		    		function runVisualizer#{jobStatusBean.jobInfo.jobNumber}() {
 		    			document.getElementById("visualizerSpan#{jobStatusBean.jobInfo.jobNumber}").innerHTML = '#{jobStatusBean.jobInfo.visualizerAppletTag}';
@@ -427,43 +458,43 @@
 		<div id="resultDiv">
 		</div>
 		<div id="childrenDiv">
-		<c:if test="#{not empty jobStatusBean.jobInfo.children}">
-			<t:dataList var="child" value="#{jobStatusBean.jobInfo.children}" rowIndexVar="rowIndex">
-			<table id="jobTable#{child.jobNumber}" class="module" cellpadding="0" cellspacing="0" border="0">
+		<c:if test="#{not empty jobStatusBean.jobInfo.allSteps}">
+			<t:dataList var="jobInfoStep" value="#{jobStatusBean.jobInfo.allSteps}" rowIndexVar="rowIndex">
+			<table id="jobTable#{jobInfoStep.jobNumber}" class="module" cellpadding="0" cellspacing="0" border="0">
 			<tr>
-				<td>step #{rowIndex+1}: #{child.taskName} 
+				<td>step #{rowIndex+1}: #{jobInfoStep.taskName} 
 				
 				</td>
 				<td width="30px">
-				<h:outputText rendered="#{child.status != 'Finished' and child.status != 'Error'}">
-					<img src="/gp/images/spin.gif" id="statusIcon#{child.jobNumber}"/>
+				<h:outputText rendered="#{jobInfoStep.status != 'Finished' and jobInfoStep.status != 'Error'}">
+					<img src="/gp/images/spin.gif" id="statusIcon#{jobInfoStep.jobNumber}"/>
 				</h:outputText>
-				<h:outputText rendered="#{child.status == 'Finished'}">
-					<img src="/gp/images/complete.gif" id="statusIcon#{child.jobNumber}"/>
+				<h:outputText rendered="#{jobInfoStep.status == 'Finished'}">
+					<img src="/gp/images/complete.gif" id="statusIcon#{jobInfoStep.jobNumber}"/>
 				</h:outputText>
-				<h:outputText rendered="#{child.status == 'Error'}">
-					<img src="/gp/images/error.gif"  id="statusIcon#{child.jobNumber}"/>
+				<h:outputText rendered="#{jobInfoStep.status == 'Error'}">
+					<img src="/gp/images/error.gif"  id="statusIcon#{jobInfoStep.jobNumber}"/>
 				</h:outputText>
 				</td>
 			</tr></table>
-			<table width="100%" id="infoTable#{child.jobNumber}">
-			    <tr><td class="smallTitle">Status: <span id="statusText#{child.jobNumber}">#{child.status}</span></td></tr>
+			<table width="100%" id="infoTable#{jobInfoStep.jobNumber}">
+			    <tr><td class="smallTitle">Status: <span id="statusText#{jobInfoStep.jobNumber}">#{jobInfoStep.status}</span></td></tr>
 			    <tr>
 			    	<td class="indented">
-			    		<c:if test="#{child.status == 'Finished'}">Finished running #{child.taskName} as job # #{child.jobNumber} on <h:outputText value="#{child.dateCompleted}"> <f:convertDateTime pattern="dd.MM.yyyy HH:mm" /></h:outputText>
+			    		<c:if test="#{jobInfoStep.status == 'Finished'}">Finished running #{jobInfoStep.taskName} as job # #{jobInfoStep.jobNumber} on <h:outputText value="#{jobInfoStep.dateCompleted}"> <f:convertDateTime pattern="dd.MM.yyyy HH:mm" /></h:outputText>
 				    	<br />
 				    	</c:if>
-				    	Elapsed Time: <span id="elapsedTime#{child.jobNumber}">#{child.elapsedTimeMillis}</span>ms
+				    	Elapsed Time: <span id="elapsedTime#{jobInfoStep.jobNumber}">#{jobInfoStep.elapsedTimeMillis}</span>ms
 			    	</td>
 			    </tr>
-			    <h:outputText rendered="#{not empty child.inputParameters}">
+			    <h:outputText rendered="#{not empty jobInfoStep.inputParameters}">
 			    <tr>
 			    	<td class="smallTitle">
-			    		<img src="/gp/images/parameters.gif" /> Input Parameters <a class="view" href="javascript:toggleInputParams(#{child.jobNumber});"><span id="inputParamsText#{child.jobNumber}">View</span> Details</a>
+			    		<img src="/gp/images/parameters.gif" /> Input Parameters <a class="view" href="javascript:toggleInputParams(#{jobInfoStep.jobNumber});"><span id="inputParamsText#{jobInfoStep.jobNumber}">View</span> Details</a>
 			   		</td>
 			   	</tr>
-			   	<tr id="inputParamsRow#{child.jobNumber}" style="display: none;"><td class="indented">
-			   		<t:dataList var="p" value="#{child.inputParameters}">
+			   	<tr id="inputParamsRow#{jobInfoStep.jobNumber}" style="display: none;"><td class="indented">
+			   		<t:dataList var="p" value="#{jobInfoStep.inputParameters}">
 						#{p.name}:
 						<c:choose><c:when test="#{!empty p.url}">
 							<a href="#{p.value}">#{p.value}</a>
@@ -488,9 +519,9 @@
 					</t:dataList>
 			   	</td></tr>
 			   	</h:outputText>
-			    <h:outputText rendered="#{not empty child.outputFiles}">
+			    <h:outputText rendered="#{not empty jobInfoStep.outputFiles}">
 			    <tr><td class="smallTitle">Output Files</td></tr>
-				<t:dataList var="outputFile" value="#{child.outputFiles}">
+				<t:dataList var="outputFile" value="#{jobInfoStep.outputFiles}">
 			    <tr><td class="indented">
 			    	<a href="#{outputFile.link}">#{outputFile.name}</a>
 			    	<img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" 
@@ -503,13 +534,13 @@
 			    </td></tr>
 			    </t:dataList>
 			    </h:outputText>
-			    <h:outputText rendered="#{child.visualizer}">
+			    <h:outputText rendered="#{jobInfoStep.visualizer}">
 			    <tr><td class="smallTitle">
-			    	<a href="javascript:runVisualizer#{child.jobNumber}()"><img src="/gp/images/visualizer.gif" border="0"/> Open Visualizer</a>
-			    	<span id="visualizerSpan#{child.jobNumber}">&nbsp;</span>
+			    	<a href="javascript:runVisualizer#{jobInfoStep.jobNumber}()"><img src="/gp/images/visualizer.gif" border="0"/> Open Visualizer</a>
+			    	<span id="visualizerSpan#{jobInfoStep.jobNumber}">&nbsp;</span>
 			    	<script type="text/javascript">
-			    		function runVisualizer#{child.jobNumber}() {
-			    			document.getElementById("visualizerSpan#{child.jobNumber}").innerHTML = '#{child.visualizerAppletTag}';
+			    		function runVisualizer#{jobInfoStep.jobNumber}() {
+			    			document.getElementById("visualizerSpan#{jobInfoStep.jobNumber}").innerHTML = '#{jobInfoStep.visualizerAppletTag}';
 			    		}
 			    	</script>
 			    </td></tr>

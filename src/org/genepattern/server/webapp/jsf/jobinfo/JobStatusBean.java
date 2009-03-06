@@ -12,6 +12,9 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf.jobinfo;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -28,7 +31,8 @@ public class JobStatusBean {
     private static Logger log = Logger.getLogger(JobStatusBean.class);
     
     private int jobNumber = -1;
-    private JobInfoWrapper myJobInfo = null;
+    private JobInfoWrapper jobInfoWrapper = null;
+    private List<JobInfoWrapper> allSteps = null;
 
     public JobStatusBean() {
         String jobNumberParameter = null;
@@ -50,11 +54,23 @@ public class JobStatusBean {
         String cookie = request.getHeader("Cookie");
         
         JobInfoManager jobInfoManager = new JobInfoManager();
-        this.myJobInfo = jobInfoManager.getJobInfo(cookie, contextPath, userId, jobNumber);
+        this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, userId, jobNumber);
     }
     
     public JobInfoWrapper getJobInfo() {
-        return myJobInfo;
+        return jobInfoWrapper;
     }
+
+    /**
+     * @return the top level job info, including all steps if it is a pipeline.
+     */
+    public List<JobInfoWrapper> getAllSteps() {
+        if (allSteps == null) {
+            allSteps = jobInfoWrapper.getAllSteps();
+            allSteps.add(0, jobInfoWrapper);
+        }
+        return allSteps;
+    }
+    
 
 }

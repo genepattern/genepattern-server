@@ -48,7 +48,11 @@ public class JobInfoManager {
             AnalysisDAO ds = new AnalysisDAO();
             JobInfo jobInfo = ds.getJobInfo(jobNo);
             
-            JobInfoWrapper jobInfoWrapper = processChildren(documentCookie, contextPath, ds, jobInfo);
+            JobInfoWrapper jobInfoWrapper = processChildren((JobInfoWrapper)null, documentCookie, contextPath, ds, jobInfo);
+
+            //this call initializes the helper methods
+            jobInfoWrapper.getPathFromRoot();
+
             ///PermissionsHelper perm = new PermissionsHelper(currentUser, jobNo);
             
             return jobInfoWrapper;
@@ -83,15 +87,19 @@ public class JobInfoManager {
     }
     
     /**
-     * Create a new MyJobInfo, recursively looking up and including all child jobs.
+     * Create a new JobInfoWrapper, recursively looking up and including all child jobs.
+     * Link each new JobInfoWrapper to its parent, which is null for top level jobs.
+     * 
+     * @param parent
      * @param documentCookie
      * @param contextPath
-     * @param ds
+     * @param analysisDao
      * @param jobInfo
-     * @return
+     * @return a new JobInfoWrapper
      */
-    private JobInfoWrapper processChildren(String documentCookie, String contextPath, AnalysisDAO ds, JobInfo jobInfo) {
+    private JobInfoWrapper processChildren(JobInfoWrapper parent, String documentCookie, String contextPath, AnalysisDAO analysisDao, JobInfo jobInfo) {
         JobInfoWrapper jobInfoWrapper = new JobInfoWrapper();
+        jobInfoWrapper.setParent(parent);
         
         //get the visualizer flag
         int taskId = jobInfo.getTaskID();
@@ -107,9 +115,10 @@ public class JobInfoManager {
             jobInfoWrapper.setVisualizerAppletTag(tag);
         }
 
-        JobInfo[] children = ds.getChildren(jobInfo.getJobNumber());
+        JobInfo[] children = analysisDao.getChildren(jobInfo.getJobNumber());
+        int idx = 0;
         for(JobInfo child : children) {
-            JobInfoWrapper nextChild = processChildren(documentCookie, contextPath, ds, child);
+            JobInfoWrapper nextChild = processChildren(jobInfoWrapper, documentCookie, contextPath, analysisDao, child);
             jobInfoWrapper.addChildJobInfo(nextChild);
         }
         
@@ -118,8 +127,8 @@ public class JobInfoManager {
             PipelineModel pipelineModel = getPipelineModel(jobInfo);
             numSteps = pipelineModel.getTasks().size();
         }
-        jobInfoWrapper.setNumSteps(numSteps);
         
+        jobInfoWrapper.setNumStepsInPipeline(numSteps);
         return jobInfoWrapper;
     }
     
@@ -141,34 +150,34 @@ public class JobInfoManager {
         return writer.toString();
     }
     
-    public void writeJobInfo(Writer writer, JobInfoWrapper myJobInfo) 
+    public void writeJobInfo(Writer writer, JobInfoWrapper jobInfoWrapper) 
     throws IOException,JSONException
     {
-        JSONObject jobInfoObj = convertToJSON(myJobInfo);
+        JSONObject jobInfoObj = convertToJSON(jobInfoWrapper);
         jobInfoObj.write(writer);
     }
     
-    private JSONObject convertToJSON(JobInfoWrapper myJobInfo) throws JSONException {
+    private JSONObject convertToJSON(JobInfoWrapper jobInfoWrapper) throws JSONException {
         JSONObject obj = new JSONObject();
-        obj.put("jobNumber", myJobInfo.getJobNumber());
-        obj.put("userId", myJobInfo.getUserId());
-        obj.put("taskName", myJobInfo.getTaskName());
-        obj.put("dateSubmitted", formatDate( myJobInfo.getDateSubmitted() ));
-        obj.put("dateCompleted", formatDate( myJobInfo.getDateCompleted() ));
-        obj.put("elapsedTime",  myJobInfo.getElapsedTimeMillis());
-        obj.put("status", myJobInfo.getStatus());
+        obj.put("jobNumber", jobInfoWrapper.getJobNumber());
+        obj.put("userId", jobInfoWrapper.getUserId());
+        obj.put("taskName", jobInfoWrapper.getTaskName());
+        obj.put("dateSubmitted", formatDate( jobInfoWrapper.getDateSubmitted() ));
+        obj.put("dateCompleted", formatDate( jobInfoWrapper.getDateCompleted() ));
+        obj.put("elapsedTime",  jobInfoWrapper.getElapsedTimeMillis());
+        obj.put("status", jobInfoWrapper.getStatus());
 
-        obj.put("isPipeline", myJobInfo.isPipeline());
-        obj.put("numStepsCompleted", myJobInfo.getNumStepsCompleted());
-        obj.put("numSteps", myJobInfo.getNumSteps());
+        obj.put("isPipeline", jobInfoWrapper.isPipeline());
+        obj.put("numStepsCompleted", jobInfoWrapper.getNumStepsCompleted());
+        obj.put("numSteps", jobInfoWrapper.getNumStepsInPipeline());
 
-        obj.put("isVisualizer", myJobInfo.isVisualizer());
-        if (myJobInfo.isVisualizer()) {
-            obj.put("visualizerAppletTag", myJobInfo.getVisualizerAppletTag());
+        obj.put("isVisualizer", jobInfoWrapper.isVisualizer());
+        if (jobInfoWrapper.isVisualizer()) {
+            obj.put("visualizerAppletTag", jobInfoWrapper.getVisualizerAppletTag());
         }
         
         //add input parameters
-        for(ParameterInfo inputParam : myJobInfo.getInputParameters()) {
+        for(ParameterInfo inputParam : jobInfoWrapper.getInputParameters()) {
             JSONObject inp = new JSONObject();
             inp.put("name", inputParam.getName());
             inp.put("value", inputParam.getValue());
@@ -178,7 +187,7 @@ public class JobInfoManager {
         }
         
         //add input files
-        for(ParameterInfo inputFile : myJobInfo.getInputFiles()) {
+        for(ParameterInfo inputFile : jobInfoWrapper.getInputFiles()) {
             JSONObject inp = new JSONObject();
             inp.put("name", inputFile.getName());
             inp.put("value", inputFile.getValue());
@@ -188,7 +197,7 @@ public class JobInfoManager {
         }
         
         //add output files
-        for(JobInfoWrapper.OutputFile outputFile : myJobInfo.getOutputFiles()) {
+        for(JobInfoWrapper.OutputFile outputFile : jobInfoWrapper.getOutputFiles()) {
             JSONObject inp = new JSONObject();
             inp.put("name", outputFile.getName());
             inp.put("value", outputFile.getValue());
@@ -199,7 +208,7 @@ public class JobInfoManager {
         }
 
         
-        for(JobInfoWrapper child : myJobInfo.getChildren()) {
+        for(JobInfoWrapper child : jobInfoWrapper.getChildren()) {
             JSONObject childObj = convertToJSON(child);
             obj.accumulate("children", childObj);
         }
