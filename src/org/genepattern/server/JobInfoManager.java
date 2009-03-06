@@ -105,8 +105,9 @@ public class JobInfoManager {
         int taskId = jobInfo.getTaskID();
         AdminDAO ad = new AdminDAO();
         TaskInfo taskInfo = ad.getTask(taskId);
+        ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
 
-        jobInfoWrapper.setJobInfo(contextPath, jobInfo);
+        jobInfoWrapper.setJobInfo(contextPath, formalParameters, jobInfo);
         jobInfoWrapper.setPipeline(taskInfo.isPipeline());
         jobInfoWrapper.setVisualizer(taskInfo.isVisualizer());
         
@@ -177,20 +178,20 @@ public class JobInfoManager {
         }
         
         //add input parameters
-        for(ParameterInfo inputParam : jobInfoWrapper.getInputParameters()) {
+        for(JobInfoWrapper.ParameterInfoWrapper inputParam : jobInfoWrapper.getInputParameters()) {
             JSONObject inp = new JSONObject();
             inp.put("name", inputParam.getName());
-            inp.put("value", inputParam.getValue());
+            inp.put("value", inputParam.getDisplayValue());
             inp.put("description", inputParam.getDescription());
             
             obj.accumulate("inputParams", inp);
         }
         
         //add input files
-        for(ParameterInfo inputFile : jobInfoWrapper.getInputFiles()) {
+        for(JobInfoWrapper.InputFile inputFile : jobInfoWrapper.getInputFiles()) {
             JSONObject inp = new JSONObject();
             inp.put("name", inputFile.getName());
-            inp.put("value", inputFile.getValue());
+            inp.put("value", inputFile.getDisplayValue());
             inp.put("description", inputFile.getDescription());
             
             obj.accumulate("inputFiles", inp);
@@ -200,7 +201,7 @@ public class JobInfoManager {
         for(JobInfoWrapper.OutputFile outputFile : jobInfoWrapper.getOutputFiles()) {
             JSONObject inp = new JSONObject();
             inp.put("name", outputFile.getName());
-            inp.put("value", outputFile.getValue());
+            inp.put("value", outputFile.getDisplayValue());
             inp.put("link", outputFile.getLink());
             inp.put("description", outputFile.getDescription());
             

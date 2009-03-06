@@ -197,7 +197,7 @@
 					cell = row.insertCell(0);
 					cell.className = 'indented';
 					for (var i = 0; i < job.inputParams.length; i++) {
-						cell.appendChild(document.createTextNode(job.inputParams[i].name + ': ' + job.inputParams[i].value));
+						cell.appendChild(document.createTextNode(job.inputParams[i].name + ': ' + job.inputParams[i].displayValue));
 						if (i+1 < job.inputParams.length) {
 							cell.appendChild(document.createElement('br'));
 						}
@@ -278,13 +278,18 @@
 		    <b>Input Parameters</b>
 		    <br />
 		    <t:dataList var="inputParameter" value="#{jobInfoWrapper.inputParameters}">
-		    <h:outputText>#{inputParameter.name}: #{inputParameter.value}</h:outputText>
+		      #{inputParameter.name}: <h:outputText rendered="#{empty inputParameter.link}">#{inputParameter.displayValue}</h:outputText>
+                                      <h:outputText rendered="#{!empty inputParameter.link}"><a href="#{inputParameter.link}">#{inputParameter.displayValue}</a></h:outputText>
 		    </t:dataList>
 		    <br />
 		    <b>Input Files</b>
 		    <br />
 		    <t:dataList var="inputFile" value="#{jobInfoWrapper.inputFiles}" layout="orderedList">
-		    #{inputFile.name}: <em>#{inputFile.value}</em>
+		    #{inputFile.name}: 
+		      <em>
+              <h:outputText rendered="#{!empty inputFile.link}"><a href="#{inputFile.link}">#{inputFile.displayValue}</a></h:outputText>
+              <h:outputText rendered="#{empty inputFile.link}">#{inputFile.displayValue}</h:outputText>
+		      </em>
 		    </t:dataList>
 		    <b>Output Files</b>
 		    <t:dataList var="outputFile" value="#{jobInfoWrapper.outputFiles}" layout="orderedList">
@@ -394,34 +399,16 @@
 		   		</td>
 		   	</tr>
 		   	<tr id="inputParamsRow#{jobStatusBean.jobInfo.jobNumber}" style="display: none;"><td class="indented">
-		   		<t:dataList var="p" value="#{jobStatusBean.jobInfo.inputParameters}">
-					#{p.name}:
-					<c:choose><c:when test="#{!empty p.url}">
-						<a href="#{p.value}">#{p.value}</a>
-					</c:when>
-					<c:otherwise>
-					<c:if test="#{!p.url and p.exists}">
-						<c:if test="#{!empty p.directory}">
-							<a
-								href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.directory}/#{p.value}">#{p.value}</a>
-						</c:if>
-						<c:if test="#{empty p.directory}">
-							<a
-								href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.value}">#{p.value}</a>
-						</c:if>
-					</c:if>
-					<c:if test="#{!p.url and !p.exists}">
-						#{p.value}
-					</c:if>
-					</c:otherwise>
-					</c:choose>
+		   		<t:dataList var="inputParameter" value="#{jobStatusBean.jobInfo.inputParameters}">
+                    #{inputParameter.name}: <h:outputText rendered="#{empty inputParameter.link}">#{inputParameter.displayValue}</h:outputText>
+                               <h:outputText rendered="#{!empty inputParameter.link}"><a href="#{inputParameter.link}">#{inputParameter.displayValue}</a></h:outputText>
 					<br />
 				</t:dataList>
 				
 				<!--  added for debugging, show list of input files -->
 				<br /><b>Input Files</b><br />
 				<t:dataList var="inputFile" value="#{jobStatusBean.jobInfo.inputFiles}">
-				    #{inputFile.name}: #{inputFile.value}
+				    #{inputFile.name}: #{inputFile.displayValue}
 				</t:dataList>
 		   	</td></tr>
 		   	</c:if>
@@ -495,26 +482,8 @@
 			   	</tr>
 			   	<tr id="inputParamsRow#{jobInfoStep.jobNumber}" style="display: none;"><td class="indented">
 			   		<t:dataList var="p" value="#{jobInfoStep.inputParameters}">
-						#{p.name}:
-						<c:choose><c:when test="#{!empty p.url}">
-							<a href="#{p.value}">#{p.value}</a>
-						</c:when>
-						<c:otherwise>
-						<c:if test="#{!p.url and p.exists}">
-							<c:if test="#{!empty p.directory}">
-								<a
-									href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.directory}/#{p.value}">#{p.value}</a>
-							</c:if>
-							<c:if test="#{empty p.directory}">
-								<a
-									href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.value}">#{p.value}</a>
-							</c:if>
-						</c:if>
-						<c:if test="#{!p.url and !p.exists}">
-							#{p.value}
-						</c:if>
-						</c:otherwise>
-						</c:choose>
+						#{p.name}: <h:outputText rendered="#{empty p.link}">#{p.displayValue}</h:outputText>
+						           <h:outputText rendered="#{!empty p.link}"><a href="#{p.link}">#{p.displayValue}</a></h:outputText>
 						<br />
 					</t:dataList>
 			   	</td></tr>

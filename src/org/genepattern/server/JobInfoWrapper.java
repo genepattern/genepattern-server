@@ -1,11 +1,15 @@
 package org.genepattern.server;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.webapp.jsf.JobPermissionsBean;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 
@@ -16,28 +20,43 @@ import org.genepattern.webservice.ParameterInfo;
  * @author pcarr
  */
 public class JobInfoWrapper {
-    /**
-     * Wrapper class for a ParameterInfo which is an output file.
-     */
-    public static class OutputFile {
+    public static class ParameterInfoWrapper {
         private ParameterInfo parameterInfo = null;
-        private String link = null;
-
-        OutputFile(String contextPath, JobInfo jobInfo, ParameterInfo param) {
-            this.parameterInfo = param;
-            //map from ParameterInfo.name to URL for downloading the output file from the server
-            this.link = contextPath + "/jobResults/" + jobInfo.getJobNumber() + "/" + parameterInfo.getName();
+        private String displayValue = null;
+        private String link = null; //optional link to GET input or output file
+        
+        public ParameterInfoWrapper(ParameterInfo parameterInfo) {
+            this.parameterInfo = parameterInfo;
         }
+        
+        /**
+         * Provide access to the wrapped ParameterInfo in case a wrapper method is not available.
+         */
+        public ParameterInfo getParameterInfo() {
+            return parameterInfo;
+        } 
 
-        //ParameterInfo wrappper methods
+        //ParameterInfo wrapper methods        
         public String getName() {
             return parameterInfo.getName();
         }
+
+        public String getDescription() {
+            return parameterInfo.getDescription();
+        } 
+        //------ end ParameterInfo wrapper methods
         
-        public String getValue() {
-            return parameterInfo.getValue();
+        protected void setDisplayValue(String displayValue) {
+            this.displayValue = displayValue;
         }
         
+        public String getDisplayValue() {
+            if (displayValue == null) {
+                return parameterInfo.getValue();
+            }
+            return displayValue;
+        }
+
         /**
          * Helper method for accessing the value from web client JavaScript code.
          * @return the value, replacing all '/' with '_'.
@@ -51,29 +70,168 @@ public class JobInfoWrapper {
             return valueId;
         }
         
-        public String getDescription() {
-            return parameterInfo.getDescription();
-        }
-        //----- end ParameterInfo wrapper methods
-
         /**
-         * In case a ParameterInfo method is not wrapper, access it directly.
+         * @param link
+         * @see #getLink()
          */
-        public ParameterInfo getParameterInfo() {
-            return parameterInfo;
-        } 
-
+        protected void setLink(String link) {
+            this.link = link;
+        }
+        
         /**
-         * @return a link, relative to the server, for a web client to access the output file.
+         * @return a link, relative to the server, for a web client to access this parameter;
+         *     Should be null unless this is an input or output file.
          */
         public String getLink() {
             return link;
         }
     }
     
+    /**
+     * Wrapper class for a ParameterInfo which is an output file.
+     */
+    public static class OutputFile extends ParameterInfoWrapper {
+        OutputFile(String contextPath, JobInfo jobInfo, ParameterInfo parameterInfo) {
+            super(parameterInfo);
+            //map from ParameterInfo.name to URL for downloading the output file from the server
+            String link = contextPath + "/jobResults/" + jobInfo.getJobNumber() + "/" + parameterInfo.getName();
+            setLink(link);
+            setDisplayValue(parameterInfo.getName());
+        }
+    }
+    
+    public static class InputFile extends ParameterInfoWrapper {
+        /**
+         *
+<pre>
+         <h:outputText rendered="#{p.url}">
+           <a href="#{p.value}">#{p.displayValue}</a>
+         </h:outputText>
+         <h:outputText rendered="#{!p.url and p.exists}">
+           <h:outputText rendered="#{!empty p.directory}">
+             <a href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.directory}/#{p.value}">#{p.displayValue}</a>
+           </h:outputText>
+           <h:outputText rendered="#{empty p.directory}">
+             <a href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.value}">#{p.displayValue}</a>
+           </h:outputText>
+         </h:outputText>
+         <h:outputText rendered="#{!p.url and !p.exists}">
+           #{p.displayValue}
+         </h:outputText>
+</pre>
+         * @param parameterInfo
+         */
+        InputFile(String contextPath, ParameterInfo[] formalParameters, ParameterInfo parameterInfo) {
+            super(parameterInfo);
+            initLinkValue(contextPath, formalParameters, parameterInfo);
+        }
+        
+        private ParameterInfo getFormalParameter(ParameterInfo[] formalParameters, ParameterInfo parameterInfo) {
+            //TODO: optimize
+            String paramName = null;
+            if (parameterInfo != null) {
+                paramName = parameterInfo.getName();
+            }
+            if (paramName == null) {
+                return null;
+            }
+            for(ParameterInfo formalParameter : formalParameters) {
+                if (paramName.equals(formalParameter.getName())) {
+                    return formalParameter;
+                }
+            }
+            return null;
+        }
+        
+        //Note: formalParameters is one way to check if a given ParameterInfo is an input file
+        //ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
+        private void initLinkValue(String contextPath, ParameterInfo[] formalParameters, ParameterInfo parameterInfo) {
+            ParameterInfo formalParameter = getFormalParameter(formalParameters, parameterInfo);
+            String name = (String) formalParameter.getAttributes().get("altName");
+            if (name == null) {
+                name = formalParameter.getName();
+            }
+            name = name.replaceAll("\\.", " ");
+            String value = parameterInfo.getUIValue(formalParameter);
+            // skip parameters that the user did not give a value for
+            if (value == null || value.equals("")) {
+                return;
+            }
+            String displayValue = value;
+            boolean isUrl = false;
+            boolean exists = false;
+            String directory = null;
+
+            String genePatternUrl = UIBeanHelper.getServer();
+
+            try {
+                // see if a URL was passed in
+                URL url = new URL(value);
+                // bug 2026 - file:// URLs should not be treated as a URL
+                isUrl = true;
+                if ("file".equals(url.getProtocol())){
+                    isUrl = false;
+                    value = value.substring(5);// strip off the file: part for the next step
+                }
+                if (displayValue.startsWith(genePatternUrl)) {          
+                    int lastNameIdx = value.lastIndexOf("/");
+                    displayValue = value.substring(lastNameIdx+1);      
+                    isUrl = true;
+                }
+            } 
+            catch (MalformedURLException e) {
+                if (displayValue.startsWith("<GenePatternURL>")) {          
+                    int lastNameIdx = value.lastIndexOf("/");
+                    if (lastNameIdx == -1) {
+                        lastNameIdx = value.lastIndexOf("file=");
+                        if (lastNameIdx != -1) {
+                            lastNameIdx += 5;
+                        }
+                    }
+                    if (lastNameIdx != -1) { 
+                        displayValue = value.substring(lastNameIdx);        
+                    } 
+                    else {
+                        displayValue = value;
+                    }
+                    value = genePatternUrl + value.substring("<GenePatternURL>".length());
+                    isUrl = true;
+                } 
+            }
+
+            if (!isUrl) {
+                File f = new File(value);
+                exists = f.exists();
+                value = f.getName();
+                displayValue = value;
+                if (displayValue.startsWith("Axis")) {
+                    displayValue = displayValue.substring(displayValue.indexOf('_') + 1);
+                }
+                if (exists) {
+                    directory = f.getParentFile().getName();
+                }
+            }
+            
+            String link = null;
+            if (isUrl) {
+                link = value;
+            }
+            else if (exists) {
+                String fileParam = "";
+                if (directory != null) {
+                    fileParam += directory + "/";
+                }
+                fileParam += value;
+                link = contextPath + "/getFile.jsp?file="+fileParam;
+            }
+            setLink(link);
+            setDisplayValue(displayValue);
+        }
+    }
+    
     private JobInfo jobInfo;
-    private List<ParameterInfo> inputParameters = new ArrayList<ParameterInfo>();
-    private List<ParameterInfo> inputFiles = new ArrayList<ParameterInfo>();
+    private List<ParameterInfoWrapper> inputParameters = new ArrayList<ParameterInfoWrapper>();
+    private List<InputFile> inputFiles = new ArrayList<InputFile>();
     private List<OutputFile> outputFiles = new ArrayList<OutputFile>();
     
     private JobInfoWrapper parent = null;
@@ -88,9 +246,9 @@ public class JobInfoWrapper {
 
     private JobPermissionsBean jobPermissionsBean;
 
-    public void setJobInfo(String contextPath, JobInfo jobInfo) {
+    public void setJobInfo(String contextPath, ParameterInfo[] formalParameters, JobInfo jobInfo) {
         this.jobInfo = jobInfo;
-        processParameterInfoArray(contextPath);
+        processParameterInfoArray(contextPath, formalParameters);
         this.jobPermissionsBean = null;
     }
 
@@ -119,11 +277,11 @@ public class JobInfoWrapper {
     //--- end JobInfo wrapper methods
 
     //access in to input and output parameters
-    public List<ParameterInfo> getInputParameters() {
+    public List<ParameterInfoWrapper> getInputParameters() {
         return inputParameters;
     }
     
-    public List<ParameterInfo> getInputFiles() {
+    public List<InputFile> getInputFiles() {
         return inputFiles;
     }
     
@@ -135,17 +293,23 @@ public class JobInfoWrapper {
      * Read the ParameterInfo array from the jobInfo object 
      * and store the input and output parameters.
      */
-    private void processParameterInfoArray(String contextPath) {
+    private void processParameterInfoArray(String contextPath, ParameterInfo[] formalParams) {
         for(ParameterInfo param : jobInfo.getParameterInfoArray()) {
             if (param.isOutputFile()) {
                 OutputFile outputFile = new OutputFile(contextPath, jobInfo, param);
                 outputFiles.add(outputFile);
             }
             else {
-                inputParameters.add(param);
-            }
-            if (isInputFile(param)) {
-                inputFiles.add(param);
+                ParameterInfoWrapper inputParam = null;
+                if (isInputFile(param)) {
+                    InputFile inputFile = new InputFile(contextPath, formalParams, param);
+                    inputFiles.add(inputFile);
+                    inputParam = inputFile;
+                } 
+                else {
+                    inputParam = new ParameterInfoWrapper(param);
+                }
+                inputParameters.add(inputParam);
             }
         }
     }
