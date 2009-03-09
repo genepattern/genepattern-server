@@ -18,6 +18,15 @@ import org.genepattern.webservice.WebServiceException;
  * 
  * See JIRA ticket <a href="http://jira.broad.mit.edu:8008/browse/GP-2513">GP-2453</a>.
  *
+ * To run this test:
+ *     1. Make sure the GenePattern.jar file is on the classpath; 
+ *     2. Make sure there is an input folder with proper input files available to the working directory, e.g.
+ *     <pre>
+       mkdir preprocess_dataset_inputs
+       cd preprocess_dataset_inputs
+       wget all_aml_test.gct
+       wget all_aml_train.gct
+ *        
  */
 public class TestBatchInput {
     //local path (relative to working directory) of batch input files
