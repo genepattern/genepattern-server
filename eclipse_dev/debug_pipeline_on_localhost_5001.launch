@@ -8,8 +8,8 @@
 </listAttribute>
 <booleanAttribute key="org.eclipse.jdt.launching.ALLOW_TERMINATE" value="true"/>
 <mapAttribute key="org.eclipse.jdt.launching.CONNECT_MAP">
-<mapEntry key="port" value="8000"/>
-<mapEntry key="hostname" value="node256.broad.mit.edu"/>
+<mapEntry key="port" value="5001"/>
+<mapEntry key="hostname" value="localhost"/>
 </mapAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="gp-trunk"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_CONNECTOR_ID" value="org.eclipse.jdt.launching.socketAttachConnector"/>

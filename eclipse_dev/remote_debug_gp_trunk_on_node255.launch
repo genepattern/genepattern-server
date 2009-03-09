@@ -8,7 +8,7 @@
 </listAttribute>
 <booleanAttribute key="org.eclipse.jdt.launching.ALLOW_TERMINATE" value="true"/>
 <mapAttribute key="org.eclipse.jdt.launching.CONNECT_MAP">
-<mapEntry key="port" value="8001"/>
+<mapEntry key="port" value="8000"/>
 <mapEntry key="hostname" value="node255.broad.mit.edu"/>
 </mapAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="gp-3.1"/>
