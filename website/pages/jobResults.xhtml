@@ -243,6 +243,7 @@
 	</script>
 	</ui:define>
 
+	
 	<ui:define name="body">
     <div class="jobResults">
     	<h:form id="jobsForm">
@@ -374,7 +375,7 @@
 			    </td>
 	        
 		        <td class="right">
-			        <h:outputLink value="/gp/jobResults/#{rootJobWrapper.jobNumber}">#{rootJobWrapper.jobNumber}</h:outputLink>
+			        <h:outputLink styleClass="ID" style="color:#0066FF;" value="/gp/jobResults/#{rootJobWrapper.jobNumber}">#{rootJobWrapper.jobNumber}</h:outputLink>
 			        <!--  Hidden field to hold the expansion state.  -->
 		        	<input type="hidden" id="expansion_state_#{rootJobWrapper.jobNumber}" name="expansion_state_#{rootJobWrapper.jobNumber}" value="#{rootJobWrapper.expanded}"/>
 		        </td>
@@ -408,13 +409,13 @@
 			        		<img src="/gp/images/smallOptions.gif"
 				             name="Image2_#{rootJobWrapper.jobNumber}" border="0" align="top" id="Image2_#{rootJobWrapper.jobNumber}"
 				             onclick="menuClick(#{rootJobWrapper.jobNumber},'Image2_#{rootJobWrapper.jobNumber}')"
-				             onmouseover="MM_swapImage('Image2_#{rootJobWrapper.jobNumber}','','/gp/images/smallOptions.gif',1)"
+				             onmouseover="MM_swapImage('Image2_#{rootJobWrapper.jobNumber}','','/gp/images/smallOptions2.gif',1)"
 				             onmouseout="MM_swapImgRestore();"/>
 
 		        	</span>
 		        </td>
 		        
-		        <td class="right">#{rootJobWrapper.formattedSize}</td>
+		        <td class="right" style="white-space: nowrap;">#{rootJobWrapper.formattedSize}</td>
 		        
 		        <td style="white-space: nowrap;"><h:outputText value="#{rootJobWrapper.dateSubmitted}" converter="gp" /></td>
 		        
@@ -431,7 +432,7 @@
 		        <td class="center" style="white-space: nowrap;">
 		        	<h:outputText rendered="#{rootJobWrapper.permissionsLabel != 'Private'}">
 			        	
-			        		<img id="permissionsImage#{rootJobWrapper.jobNumber}" src="/gp/images/smallLockOpen.gif" alt="" align="left" border="0" />
+			        		<img id="permissionsImage#{rootJobWrapper.jobNumber}" src="/gp/images/smallLockOpen.gif" alt="" border="0" />
 			        </h:outputText>
 			        <h:outputText rendered="#{rootJobWrapper.permissionsLabel == 'Private'}">
 			        	<img id="permissionsImage#{rootJobWrapper.jobNumber}" src="/gp/images/smallLock.gif" alt="" border="0" />
@@ -463,7 +464,7 @@
 			    </td>
 		        
 		        <td class="right">
-			        <h:outputLink value="/gp/jobResults/#{rootJobWrapper.jobNumber}">#{childJob.jobNumber}</h:outputLink>
+			        <h:outputLink styleClass="ID" style="color:#0066FF;" value="/gp/jobResults/#{rootJobWrapper.jobNumber}">#{childJob.jobNumber}</h:outputLink>
 		        </td>
 		        
 		        <td class="center">&nbsp;</td>
@@ -489,6 +490,23 @@
 			</t:dataList>
 			</t:dataList>
 		</table>
+		    <t:div style="text-align: center;" rendered="#{jobsBean.pageCount gt 1}">
+		      <h:commandLink rendered="#{jobsBean.pageNumber gt 1}" immediate="true" action="#{jobsBean.goToPage}">
+		        <h:outputText value="Previous"/><f:param name="page" value="#{jobsBean.pageNumber - 1}" /></h:commandLink>
+				<t:dataList var="p" value="#{jobsBean.pages}">
+				  <h:outputText rendered="#{p lt 0}" value=" ... " />
+				  <h:commandLink rendered="#{p gt 0 and p != jobsBean.pageNumber}" action="#{jobsBean.goToPage}">
+		            <f:param name="page" value="#{p}" />
+				    <span style="text-decoration: underline;">#{p}</span>
+		          </h:commandLink>
+		          <h:outputText rendered="#{p == jobsBean.pageNumber}"><span  style="font-weight: bold;">#{p}</span></h:outputText>
+		        </t:dataList> 
+		        <h:commandLink immediate="true" rendered="#{jobsBean.pageCount gt 1 and jobsBean.pageNumber lt jobsBean.pageCount}" action="#{jobsBean.goToPage}">Next
+		          <f:param name="page" value="#{jobsBean.pageNumber + 1}" />
+		        </h:commandLink>
+		        <br clear="all"/>
+		        <h:outputText rendered="#{jobsBean.pageCount gt 1}" value="Page #{jobsBean.pageNumber} of #{jobsBean.pageCount} (#{jobResultsFilterBean.jobCount} jobs)" />
+		    </t:div>
 		</h:form>
 	</div>
 	

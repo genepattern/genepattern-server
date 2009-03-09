@@ -70,6 +70,6 @@ String userID = (String) request.getAttribute(GPConstants.USERID);
         response.sendRedirect("/gp/jobResults");
     }
     else {
-        response.sendRedirect("/gp/jobResults/"+jobId);
+        response.sendRedirect("/gp/jobResults/"+jobId + "?openVisualizers=true");
     }
 %>

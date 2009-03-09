@@ -24,6 +24,8 @@
 		GenePattern | Job #{jobStatusBean.jobInfo.jobNumber}
 	</ui:define>
 	<ui:define name="headText">
+		<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/lytebox/lytebox.js" />
+		<link href="#{facesContext.externalContext.requestContextPath}/lytebox/lytebox.css"	rel="stylesheet" type="text/css" />
 	
 		<link href="#{facesContext.externalContext.requestContextPath}/css/GP_DK.css" rel="stylesheet" type="text/css" />
 		<!-- Dependency -->
@@ -34,18 +36,16 @@
 		
 		<!-- Source file -->
 		<script src="http://yui.yahooapis.com/2.7.0/build/connection/connection-min.js"></script>
-				
-		<script type="text/javascript">
-		/* <![CDATA[ */
-		
-			var visualizerAppletTags = new Array();
-		
-			function togglePermissions() {
-			    var viewHide = document.getElementById("permissionsText").innerHTML;
-				document.getElementById("permissionsRow").style.display = viewHide == 'View' ? '' : 'none';
-				document.getElementById("permissionsText").innerHTML = viewHide == 'View' ? 'Hide' : 'View';
-			}
 			
+<<<<<<< .mine
+		<script type="text/javascript">
+		/* <![CDATA[ */	
+			function toggle(id, openLabel, closedLabel) {
+				var open = !(document.getElementById(id).style.display == 'none');
+				document.getElementById(id).style.display = open ? 'none' : '';
+				if (openLabel) {
+					document.getElementById(id + "Label").innerHTML = open ? closedLabel : openLabel;
+=======
 			function toggleInputParams(jobId) {
 			    var viewHide = document.getElementById("inputParamsText"+jobId).innerHTML;
 				document.getElementById("inputParamsRow"+jobId).style.display = viewHide == 'View' ? '' : 'none';
@@ -96,23 +96,28 @@
 					span.id = 'visualizerSpan' + job.jobNumber;
 					cell.appendChild(span);
 					
+>>>>>>> .r8150
 				}
 			}
 			
-			function runVisualizer(jobNumber) {
-				document.getElementById("visualizerSpan" + jobNumber).innerHTML = visualizerAppletTags[jobNumber];
+			function openLyteBox(jobNumber) {
+				var a = document.createElement("a");
+				a.href = '#{facesContext.externalContext.requestContextPath}/pages/jobPermissions.jsf?jobNumber='+jobNumber;
+				a.rel = "lyteframe";
+				a.title = 'setting permissions for Job #' + jobNumber;
+				a.rev = "width: 500px; height: 300px; scrolling: auto, background=";
+				myLytebox.start( a, false, true);
 			}
 			
-			function updateChildren(children) {
-				for (var i = 0; i < children.length; i++) {
-					if (document.getElementById("jobTable"+children[i].jobNumber)) {
-						updateChild(children[i]);
-					} else {
-						createChild(children[i], i+1);
-					}
-				}	
+			function closeLyteBox(jobNumber, isPrivate) {
+				var image = document.getElementById('permissionsIcon');
+				image.src = isPrivate ? '/gp/images/lock.gif' : '/gp/images/lockOpen.gif';
+				myLytebox.end();
 			}
+		/* ]]> */
 			
+<<<<<<< .mine
+=======
 			function updateChild(child) {
 				var status = document.getElementById("statusText"+child.jobNumber).innerHTML;
 				if (status == 'Processing' && child.status != 'Processing') {
@@ -256,11 +261,22 @@
 			});
 			</c:if>
 			
+>>>>>>> .r8150
 		</script>
 	</ui:define>
 
 	<ui:define name="body">
+
 		<div class="statusReport">
+<<<<<<< .mine
+		<div style="text-align:right;">
+			To launch visualizer click <img src="/gp/images/visualizer.gif" /> icon. To see options click <img src="/gp/images/smallOptions.gif" /> icon. For Input Parameters click <img src="/gp/images/smallParameters.gif" /> icon.</div> <br />
+			<div class="icon">
+				<a style="color:#0066FF;" href="javascript:openLyteBox(#{jobStatusBean.jobInfo.jobNumber})">
+				<img id="permissionsIcon" src="/gp/images/lockOpen.gif" align="left" />
+				Access<br />Permission</a>
+			</div>
+=======
 		<div class="reminders"><font color="#FF0000">*</font>Clicking <font color="#0066ff">file name</font> will open the file in a new browser window. </div>
 		
 		<t:dataList var="jobInfoWrapper" rowIndexVar="idx" value="#{jobStatusBean.allSteps}">
@@ -301,7 +317,15 @@
 	
 		<table class="title" cellpadding="0" cellspacing="0" border="0"><tr>
 		<td class="title">
+>>>>>>> .r8150
 		
+<<<<<<< .mine
+		<div style="float:right;margin-right:10px;"><input type="checkbox" /> Email Reminder</div>
+		<div style="float:right;margin-right:10px;"><input type="checkbox" /> Show Execution Logs</div>
+		<br /><br />
+
+		<table class="title" cellpadding="0" cellspacing="0" border="0">
+=======
 			#{jobStatusBean.jobInfo.taskName} [id: #{jobStatusBean.jobInfo.jobNumber}]
 			<img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif"
                  name="Image2_#{jobStatusBean.jobInfo.jobNumber}" width="14" height="14" border="0" align="top"
@@ -448,11 +472,41 @@
 		<c:if test="#{not empty jobStatusBean.jobInfo.allSteps}">
 			<t:dataList var="jobInfoStep" value="#{jobStatusBean.jobInfo.allSteps}" rowIndexVar="rowIndex">
 			<table id="jobTable#{jobInfoStep.jobNumber}" class="module" cellpadding="0" cellspacing="0" border="0">
+>>>>>>> .r8150
 			<tr>
+<<<<<<< .mine
+				<td class="title">
+					#{jobStatusBean.jobInfo.jobNumber}.#{jobStatusBean.jobInfo.taskName} 
+					<img src="/gp/images/smallOptions.gif"
+		                 name="Image2_#{jobStatusBean.jobInfo.jobNumber}" border="0" align="top"
+		                 id="Image2_#{jobStatusBean.jobInfo.jobNumber}" onclick="pm_showMenu('menuDiv_#{jobStatusBean.jobInfo.jobNumber}', Position.cumulativeOffset(this), 50, 50);"
+		                 onmouseover="MM_swapImage('Image2_#{jobStatusBean.jobInfo.jobNumber}','','/gp/images/smallOptions2.gif',1)"
+		                 onmouseout="MM_swapImgRestore();"/>
+=======
 				<td>step #{rowIndex+1}: #{jobInfoStep.taskName} 
 				
+>>>>>>> .r8150
 				</td>
+				<td>
+					<h:outputText rendered="#{not empty jobStatusBean.jobInfo.inputParameters}">
+			    		<div class="icon2"><table cellpadding="0" border="0" cellspacing="0"><tr><td><a href="javascript:toggle('inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"><img src="/gp/images/parameters.gif" align="left" /></a></td><td><a style="color:#0066FF;" href="javascript:toggle('inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"><span id="inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}Label">Show</span> Input <br/>Parameters</a></td></tr></table></div>
+			    	</h:outputText>
+			    </td>
 				<td width="30px">
+<<<<<<< .mine
+					<h:outputText rendered="#{jobStatusBean.jobInfo.status != 'Finished' and jobStatusBean.jobInfo.status != 'Error'}">
+						<img src="/gp/images/spin.gif" id="statusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
+					</h:outputText>
+					<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Finished' and jobStatusBean.jobInfo.visualizer}">
+						<img src="/gp/images/visualizer.gif" id="statusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
+					</h:outputText>
+					<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Finished' and not jobStatusBean.jobInfo.visualizer}">
+						<img src="/gp/images/complete.gif" id="statusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
+					</h:outputText>
+					<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Error'}">
+						<img src="/gp/images/error.gif" border="0" id="statusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
+					</h:outputText>
+=======
 				<h:outputText rendered="#{jobInfoStep.status != 'Finished' and jobInfoStep.status != 'Error'}">
 					<img src="/gp/images/spin.gif" id="statusIcon#{jobInfoStep.jobNumber}"/>
 				</h:outputText>
@@ -462,7 +516,12 @@
 				<h:outputText rendered="#{jobInfoStep.status == 'Error'}">
 					<img src="/gp/images/error.gif"  id="statusIcon#{jobInfoStep.jobNumber}"/>
 				</h:outputText>
+>>>>>>> .r8150
 				</td>
+<<<<<<< .mine
+			</tr>
+		</table>
+=======
 			</tr></table>
 			<table width="100%" id="infoTable#{jobInfoStep.jobNumber}">
 			    <tr><td class="smallTitle">Status: <span id="statusText#{jobInfoStep.jobNumber}">#{jobInfoStep.status}</span></td></tr>
@@ -520,23 +579,53 @@
 		</c:if>
 		</div>
 	</div>
+>>>>>>> .r8150
+
+		<h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
+			<ui:include src="jobStatus_indicator.xhtml">
+		    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
+		    </ui:include>
+		</h:outputText>
+
+		<ui:include src="jobStatus_inputParams.xhtml">
+	    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
+	    </ui:include>
+
+		<ui:include src="jobStatus_files.xhtml">
+	    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
+	    	<ui:param name="indent" value="#{false}" />
+	    	<ui:param name="openVisualizers" value="#{jobStatusBean.openVisualizers}" />
+	    </ui:include>
+	    
+	    <h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
+			<t:dataList var="child" value="#{jobStatusBean.jobInfo.children}" rowIndexVar="rowIndex">
+	    		<ui:include src="jobStatus_child.xhtml">
+			    	<ui:param name="jobInfo" value="#{child}" />
+			    	<ui:param name="step" value="#{rowIndex+1}" />
+			    </ui:include>
+	    	</t:dataList>
+	   	</h:outputText>
+	    
+	    </div>
+	    
+		<!-- Create menus  -->
+		<ui:define name="popupMenus">
+			<h:form>
+				<t:dataList var="jobInfo" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
+		          <ui:include src="jobsMenu.xhtml">
+		            <ui:param name="job" value="#{jobInfo}"/>
+		          </ui:include>
+		          <t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}" rowIndexVar="paramIndex">
+		            <ui:include src="jobFileMenu.xhtml">
+		              <ui:param name="job" value="#{jobInfo}"/>
+		              <ui:param name="fileInfo" value="#{fileInfo}"/>
+		            </ui:include>
+		          </t:dataList>
+		        </t:dataList>
+			</h:form>
+		</ui:define>
 
 	</ui:define>
-	<!-- Create menus  -->
-	<ui:define name="popupMenus">
-		<h:form>
-			<t:dataList var="jobInfo" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
-	          <ui:include src="jobsMenu.xhtml">
-	            <ui:param name="job" value="#{jobInfo}"/>
-	          </ui:include>
-	          <t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}" rowIndexVar="paramIndex">
-	            <ui:include src="jobFileMenu.xhtml">
-	              <ui:param name="job" value="#{jobInfo}"/>
-	              <ui:param name="fileInfo" value="#{fileInfo}"/>
-	            </ui:include>
-	          </t:dataList>
-	        </t:dataList>
-		</h:form>
-	</ui:define>
+	
 </ui:composition>
 </html>

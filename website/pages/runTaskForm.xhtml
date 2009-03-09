@@ -134,28 +134,8 @@
                         <div id="#{p.name}_div_url" style="display:none">
                           <input id="#{p.name}_url" name="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}"/>
                           <h:outputText rendered="#{runTaskBean.allowInputFilePaths}">
-                          		<script type="text/javascript">
-                          		// construct a map of display names to page links
-                          		// from the information provided about data sources
-                          		var dsMap = new Array();
-                          		dsMap['Server File System'] = "#{facesContext.externalContext.requestContextPath}/jqueryFileTree/index.jsf?p=#{p.name}";
-                          		dsMap['GEO'] = "#{facesContext.externalContext.requestContextPath}/plugins/ds/GEO/index.jsp?parameterName=#{p.name}";
-                          		dsMap['Simple'] = "#{facesContext.externalContext.requestContextPath}/plugins/ds/simple/index.jsp?parameterName=#{p.name}";
-                          		
-                          		function openLyteBox(title) {
-                          			if (title == 'select a data source') return true;
-                          			var a = document.createElement("a");
-									a.href = dsMap[title];
-									a.rel = "lyteframe";
-									a.title = title;
-									a.rev = "width: 500px; height: 300px; scrolling: auto";
-									myLytebox.start( a, false, true);
-								}
-                          		</script>
-                          		<div style="padding-top: 5px; padding-bottom: 5px;">Other Data Sources: 
-                          			<select onChange="openLyteBox(this.value)"><option value="select a data source">select a data source...</option><option value="Server File System">Server File System</option><option value="Simple">Simple Links</option><option value="GEO">GEO</option></select>
-                                <!--a onclick='openLyteBox("Browse for #{p.name}", "#{facesContext.externalContext.requestContextPath}/jqueryFileTree/index.jsf?p=#{p.name}")' href="#">Browse Server File System...</a-->
-								</div>
+							<a rel="lyteframe" title="Browse for #{p.name}" rev="width: 400px; height: 300px; scrolling: auto" 
+                            href="#{facesContext.externalContext.requestContextPath}/jqueryFileTree/index.jsf?p=#{p.name}">Browse Server File System...</a>
                         </h:outputText>
                         </div>
                         <span class="description" style="display:inline">

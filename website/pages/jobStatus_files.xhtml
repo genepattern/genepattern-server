@@ -1,0 +1,87 @@
+<!-- /*
+ The Broad Institute
+ SOFTWARE COPYRIGHT NOTICE AGREEMENT
+ This software and its documentation are copyright (2003-2008) by the
+ Broad Institute/Massachusetts Institute of Technology. All rights are
+ reserved.
+ 
+ This software is supplied without any warranty or guaranteed support
+ whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+ use, misuse, or functionality.
+ */ -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:c="http://java.sun.com/jstl/core">
+
+  <!-- File section include for job results page.
+       Inputs:   jobInfo
+       			 indent
+   -->
+	<ui:composition>
+    	<div class="files" id="outputFilesDiv#{jobInfo.jobNumber}">
+    		<t:dataList var="inputFile" value="#{jobInfo.inputFiles}">
+				    <p class="narrow">
+			    		<t:dataList var="bunk" value="#{jobInfo.numAncestors}" rowIndexVar="ancestorIndex">
+							<h:outputText rendered="#{ancestorIndex gt 0 and ancestorIndex lt 10}">
+								<img src="/gp/images/blank.gif"/>
+							</h:outputText>
+						</t:dataList>
+			    		<img src="/gp/images/inputFile.gif" /> 
+			    		<strong>#{inputFile.name}</strong>: <a style="color:#0066FF;" href="#{inputFile.link}">#{inputFile.displayValue}</a>
+					    <img src="/gp/images/smallOptions2" 
+				           name="Image_#{inputFile.valueId}" 
+				           id="Image_#{inputFile.valueId}" 
+				           border="0" align="top" 
+				           onclick="pm_showMenu('menuDiv_#{inputFile.valueId}', Position.cumulativeOffset(this), 50, 50);" 
+				           onmouseover="MM_swapImage('Image_#{inputFile.valueId}','','/gp/images/smallOptions2',2)" 
+				           onmouseout="MM_swapImgRestore();"/>
+		    		</p>
+			</t:dataList>
+    		<t:dataList var="p" value="#{jobInfo.outputFiles}">
+		    	<p class="narrow">
+		    		<t:dataList var="bunk" value="#{jobInfo.numAncestors}" rowIndexVar="ancestorIndex">
+						<h:outputText rendered="#{ancestorIndex gt 0 and ancestorIndex lt 10}">
+							<img src="/gp/images/blank.gif"/>
+						</h:outputText>
+					</t:dataList>
+		    		<img src="/gp/images/outputFile.gif" /> 
+		    		<a style="color:#0066FF;" href="#{p.link}">#{p.name}</a>
+				    <h:outputText rendered="#{p.name != 'gp_execution_log.txt'}">
+				    <img src="/gp/images/smallOptions.gif" 
+			           name="Image_#{p.valueId}" 
+			           id="Image_#{p.valueId}" 
+			           border="0" align="top" 
+			           onclick="pm_showMenu('menuDiv_#{p.valueId}', Position.cumulativeOffset(this), 50, 50);" 
+			           onmouseover="MM_swapImage('Image_#{p.valueId}','','/gp/images/smallOptions2.gif',2)" 
+			           onmouseout="MM_swapImgRestore();"/>
+			       	</h:outputText>
+		    		</p>
+		    </t:dataList>
+		    <h:outputText rendered="#{jobInfo.visualizer and jobInfo.status == 'Finished'}">
+		    	<p class="narrow">
+		    		<t:dataList var="bunk" value="#{jobInfo.numAncestors}" rowIndexVar="ancestorIndex">
+						<h:outputText rendered="#{ancestorIndex gt 0 and ancestorIndex lt 10}">
+							<img src="/gp/images/blank.gif"/>
+						</h:outputText>
+					</t:dataList>
+			    	<a href="javascript:runVisualizer#{jobInfo.jobNumber}()"><img src="/gp/images/visualizer.gif" border="0"/> Open Visualizer</a>
+			    	<span id="visualizerSpan#{jobInfo.jobNumber}">&nbsp;</span>
+			    	<script type="text/javascript">
+			    		function runVisualizer#{jobInfo.jobNumber}() {
+			    			document.getElementById("visualizerSpan#{jobInfo.jobNumber}").innerHTML = '#{jobInfo.visualizerAppletTag}';
+			    		}
+			    		<h:outputText rendered="#{openVisualizers}">
+			    			runVisualizer#{jobInfo.jobNumber}();
+			    		</h:outputText>
+			    	</script>
+		    	</p>
+		    </h:outputText>
+		</div>
+		  	
+  </ui:composition>
+</html>

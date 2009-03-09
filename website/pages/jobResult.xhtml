@@ -21,9 +21,11 @@
 	xmlns:c="http://java.sun.com/jstl/core">
 <ui:composition template="/templates/common.xhtml">
 	<ui:define name="pageTitle">
-		GenePattern | Job #{jobInfoBean.jobNumber}
+		GenePattern | Job #{jobStatusBean.jobInfo.jobNumber}
 	</ui:define>
 	<ui:define name="headText">
+		<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/lytebox/lytebox.js" />
+		<link href="#{facesContext.externalContext.requestContextPath}/lytebox/lytebox.css"	rel="stylesheet" type="text/css" />
 	
 		<link href="#{facesContext.externalContext.requestContextPath}/css/GP_DK.css" rel="stylesheet" type="text/css" />
 		<!-- Dependency -->
@@ -34,224 +36,42 @@
 		
 		<!-- Source file -->
 		<script src="http://yui.yahooapis.com/2.7.0/build/connection/connection-min.js"></script>
-				
+			
 		<script type="text/javascript">
-		/* <![CDATA[ */
 		
-			var visualizerAppletTags = new Array();
+		var openVisualizers = #{jobStatusBean.openVisualizers};
 		
-			function togglePermissions() {
-			    var viewHide = document.getElementById("permissionsText").innerHTML;
-				document.getElementById("permissionsRow").style.display = viewHide == 'View' ? '' : 'none';
-				document.getElementById("permissionsText").innerHTML = viewHide == 'View' ? 'Hide' : 'View';
-			}
-			
-			function toggleInputParams(jobId) {
-			    var viewHide = document.getElementById("inputParamsText"+jobId).innerHTML;
-				document.getElementById("inputParamsRow"+jobId).style.display = viewHide == 'View' ? '' : 'none';
-				document.getElementById("inputParamsText"+jobId).innerHTML = viewHide == 'View' ? 'Hide' : 'View';
-			}
-			
-			function updateStatus(jobNumber, status) {
-				document.getElementById("statusIcon"+jobNumber).src = (status == 'Error' ? "/gp/images/error.gif" : (status == 'Finished' ? "/gp/images/complete.gif" : "/gp/images/spin.gif"));
-				document.getElementById("statusText"+jobNumber).innerHTML = status;
-			}
-			
-			function updateOutputFiles(job, outputFiles) {
-				if (outputFiles) {
-				
-					var table = document.getElementById("infoTable"+job.jobNumber);
-					var lastRow = table.rows.length;
-					var row = table.insertRow(lastRow);
-					var cell = row.insertCell(0);
-					cell.className = 'smallTitle';
-					cell.appendChild(document.createTextNode("Output Files"));	
-					
-					for (var i = 0; i < outputFiles.length; i++) {
-						lastRow = table.rows.length;
-						row = table.insertRow(lastRow);
-						cell = row.insertCell(0);
-						cell.className = 'indented';
-						var link = document.createElement('a');
-						link.href = '#{facesContext.externalContext.requestContextPath}/jobResults/' + job.jobNumber + '/' + outputFiles[i].name;
-						link.appendChild(document.createTextNode(outputFiles[i].name));
-						cell.appendChild(link);
-				    }
-				} else if (job.isVisualizer) {
-					var table = document.getElementById("infoTable"+job.jobNumber);
-					var lastRow = table.rows.length;
-					var row = table.insertRow(lastRow);
-					var cell = row.insertCell(0);
-					cell.className = 'smallTitle';
-					var link = document.createElement('a');
-					link.href = 'javascript:this.runVisualizer(' + job.jobNumber + ')';
-					visualizerAppletTags[job.jobNumber] = job.visualizerAppletTag;
-					var img = document.createElement('img');
-					img.border = '0';
-					img.src = '/gp/images/visualizer.gif';
-					link.appendChild(img);
-					link.appendChild(document.createTextNode(' Open Visualizer'));
-					cell.appendChild(link);
-					var span = document.createElement('span');
-					span.id = 'visualizerSpan' + job.jobNumber;
-					cell.appendChild(span);
-					
+		/* <![CDATA[ */	
+			function toggle(id, openLabel, closedLabel) {
+				var open = !(document.getElementById(id).style.display == 'none');
+				document.getElementById(id).style.display = open ? 'none' : '';
+				if (openLabel) {
+					document.getElementById(id + "Label").innerHTML = open ? closedLabel : openLabel;
 				}
 			}
 			
-			function runVisualizer(jobNumber) {
-				document.getElementById("visualizerSpan" + jobNumber).innerHTML = visualizerAppletTags[jobNumber];
+			function openLyteBox(jobNumber) {
+				var a = document.createElement("a");
+				a.href = '#{facesContext.externalContext.requestContextPath}/pages/jobPermissions.jsf?jobNumber='+jobNumber;
+				a.rel = "lyteframe";
+				a.title = 'setting permissions for Job #' + jobNumber;
+				a.rev = "width: 500px; height: 300px; scrolling: auto, background=";
+				myLytebox.start( a, false, true);
 			}
 			
-			function updateChildren(children) {
-				for (var i = 0; i < children.length; i++) {
-					if (document.getElementById("jobTable"+children[i].jobNumber)) {
-						updateChild(children[i]);
-					} else {
-						createChild(children[i], i+1);
-					}
-				}	
+			function closeLyteBox(jobNumber, isPrivate) {
+				var image = document.getElementById('permissionsIcon');
+				image.src = isPrivate ? '/gp/images/lock.gif' : '/gp/images/lockOpen.gif';
+				myLytebox.end();
 			}
 			
-			function updateChild(child) {
-				var status = document.getElementById("statusText"+child.jobNumber).innerHTML;
-				if (status == 'Processing' && child.status != 'Processing') {
-					updateOutputFiles(child, child.outputParams);
-				}
-				updateStatus(child.jobNumber, child.status);
-			}			
-			
-			function createChild(child, step) {
-				var table = document.createElement('table');
-				table.id = 'jobTable' + child.jobNumber;
-				table.className = 'module';
-				table.cellpadding = '0';
-				table.cellspacing = '0';
-				table.border = '0';
-				var row = table.insertRow(table.rows.length);
-				var cell = row.insertCell(0);
-				cell.appendChild(document.createTextNode('step ' + step + ': ' + child.taskName));
-				cell = row.insertCell(1);
-				cell.width = '30px';
-				var img = document.createElement('img');
-				img.id = "statusIcon" + child.jobNumber;
-				if (child.status == 'Error') {
-					img.src = "/gp/images/error.gif";
-				} else if (child.status == 'Finished') {
-				 	img.src = "/gp/images/complete.gif";
-				} else {
-					img.src = "/gp/images/spin.gif";
-				}
-				cell.appendChild(img);
-				document.getElementById("childrenDiv").appendChild(table);
-				
-				table = document.createElement('table');
-				table.id = 'infoTable' + child.jobNumber;
-				table.width = '100%';
-				row = table.insertRow(table.rows.length);
-				cell = row.insertCell(0);
-				cell.className = 'smallTitle';
-				cell.appendChild(document.createTextNode("Status: "));
-				var span = document.createElement('span');
-				span.id = 'statusText' + child.jobNumber;
-				span.appendChild(document.createTextNode(child.status));
-				cell.appendChild(span);
-				row = table.insertRow(table.rows.length);
-				cell = row.insertCell(0);
-				cell.className = 'indented';
-				cell.appendChild(document.createTextNode('Elapsed Time: '));
-				span = document.createElement('span');
-				span.id = 'elapsedTime' + child.jobNumber;
-				span.appendChild(document.createTextNode(child.dateStarted));
-				cell.appendChild(span);
-				createInputParams(child, table);
-				document.getElementById("childrenDiv").appendChild(table);
-			
-				if (child.status == 'Finished') {
-					updateOutputFiles(child, child.outputParams);
-				}				
-			}
-			
-			function createInputParams(job, table) {
-				if (job.inputParams) {
-					row = table.insertRow(table.rows.length);
-					cell = row.insertCell(0);
-					cell.className = 'smallTitle';
-					var img = document.createElement('img');
-					img.src = '/gp/images/parameters.gif';
-					cell.appendChild(img);
-					cell.appendChild(document.createTextNode(" Input Parameters "));
-					var a = document.createElement('a');
-					a.className = 'view';
-					a.href = 'javascript:toggleInputParams(' + job.jobNumber + ');';
-					var span = document.createElement('span');
-					span.id = 'inputParamsText' + job.jobNumber;
-					span.appendChild(document.createTextNode('View'));
-					a.appendChild(span);
-					a.appendChild(document.createTextNode(' Details'));
-					cell.appendChild(a);
-					
-					row = table.insertRow(table.rows.length);
-					row.style.display = 'none';
-					row.id = 'inputParamsRow' + job.jobNumber;
-					cell = row.insertCell(0);
-					cell.className = 'indented';
-					for (var i = 0; i < job.inputParams.length; i++) {
-						cell.appendChild(document.createTextNode(job.inputParams[i].name + ': ' + job.inputParams[i].value));
-						if (i+1 < job.inputParams.length) {
-							cell.appendChild(document.createElement('br'));
-						}
-					}
-				} else {
-					return; // no params for this job
-				}
-
-				
-				/*
-				
-		   	<tr id="inputParamsRow#{jobInfoBean.jobNumber}" style="display: none;"><td class="indented">
-		   		<t:dataList var="p" value="#{jobInfoBean.jobInfoWrapper.inputParameters}">
-					#{p.name}:
-					<c:choose><c:when test="#{!empty p.url}">
-						<a href="#{p.value}">#{p.displayValue}</a>
-					</c:when>
-					<c:otherwise>
-					<c:if test="#{!p.url and p.exists}">
-						<c:if test="#{!empty p.directory}">
-							<a
-								href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.directory}/#{p.value}">#{p.displayValue}</a>
-						</c:if>
-						<c:if test="#{empty p.directory}">
-							<a
-								href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.value}">#{p.displayValue}</a>
-						</c:if>
-					</c:if>
-					<c:if test="#{!p.url and !p.exists}">
-						#{p.displayValue}
-					</c:if>
-					</c:otherwise>
-					</c:choose>
-					<br />
-				</t:dataList>
-		   	</td></tr>
-		   	</c:if>
-		   	*/
-			}
-			
-			var div = document.getElementById('resultDiv');
-
 			var handleUpdateSuccess = function(o){
 				if(o.responseText !== undefined){
-					//document.getElementById('resultDiv').innerHTML = "<li>Transaction id: " + o.tId + "</li>";
-					//document.getElementById('resultDiv').innerHTML += "<li>HTTP status: " + o.status + "</li>";
-					//document.getElementById('resultDiv').innerHTML += "<li>Status code message: " + o.statusText + "</li>";
-					//document.getElementById('resultDiv').innerHTML += "<li>HTTP headers: <ul>" + o.getAllResponseHeaders + "</ul></li>";
-									 
 					var data = eval('(' + o.responseText + ')');
 					var status = data.status;
 					var jobNumber = data.jobNumber;
-					updateStatus(jobNumber, status);
-					if (status != 'Finished') {
+					updateStatus(data, status);
+					if (status != 'Finished' && status != 'Error') {
 						setTimeout("updatePage();", 2500);
 					} else {
 						updateOutputFiles(data, data.outputParams);
@@ -263,11 +83,7 @@
 			}
 			
 			var handleUpdateFailure = function(o){
-				if(o.responseText !== undefined){
-					document.getElementById('resultDiv').innerHTML = "<li>Transaction id: " + o.tId + "</li>";
-					document.getElementById('resultDiv').innerHTML += "<li>HTTP status: " + o.status + "</li>";
-					document.getElementById('resultDiv').innerHTML += "<li>Status code message: " + o.statusText + "</li>";
-				}
+				setTimeout("updatePage();", 2500);
 			}
 			
 			var updateCallback =
@@ -278,268 +94,223 @@
 			};
 			
 			function updatePage() {
-				var request = YAHOO.util.Connect.asyncRequest('GET', '#{jobInfoBean.jobNumber}?returnType=JSON', updateCallback);
+				var request = YAHOO.util.Connect.asyncRequest('GET', '#{jobStatusBean.jobInfo.jobNumber}?returnType=JSON', updateCallback);
 			} 
 			
+			function updateChildren(children) {
+				for (var i = 0; i < children.length; i++) {
+					if (document.getElementById("jobTable"+children[i].jobNumber)) {
+						updateChild(children[i]);
+					} else {
+						//createChild(children[i], i+1);
+					}
+				}	
+			}
 			
-			/* ]]> */
+			function createRegularTable(id, className) {
+				var table = document.createElement('table');
+				table.id = id;
+				table.className = className;
+				table.cellpadding = '0';
+				table.cellspacing = '0';
+				table.border = '0';
+				return table;
+			}
 			
-			<c:if test="#{jobInfoBean.jobInfoWrapper.status != 'Finished'}">
-			YAHOO.util.Event.addListener(window, "load", function() { 
-				setTimeout("updatePage();", 2500);
-			});
-			</c:if>
+			
+			
+			function updateChild(child) {
+				var status = document.getElementById("jobStatus"+child.jobNumber).innerHTML;
+				if (status == 'Processing' && child.status != 'Processing') {
+					updateOutputFiles(child, child.outputParams);
+				}
+				updateStatus(child, child.status);
+			}
+			
+			function updateStatus(job, status) {
+				document.getElementById("jobStatusIcon"+job.jobNumber).src = (status == 'Error' ? "/gp/images/error.gif" : (status == 'Finished' ? (job.isVisualizer ? "/gp/images/visualizer.gif" : "/gp/images/complete.gif") : "/gp/images/spin.gif"));
+				document.getElementById("jobStatus"+job.jobNumber).innerHTML = status;
+				// if there's an indicator cell, update it
+				if (document.getElementById("indicatorCell"+job.jobNumber)) {
+					var indicatorCell = document.getElementById("indicatorCell"+job.jobNumber);
+					indicatorCell.className = status == 'Error' ? "red" : (status == 'Finished' ? "blue" : "green");
+				}
+			}
+			
+			function addSpacer(element) {
+				addImage(element, "/gp/images/blank.gif");
+			}
+			
+			function addImage(element, src) {
+				var image = document.createElement("img");
+				image.src = src;
+				element.appendChild(image);
+				return image;
+			}
+			
+			
+			var visualizerAppletTags = new Array();
+			
+			function updateOutputFiles(job, outputFiles) {
+				var div = document.getElementById("outputFilesDiv"+job.jobNumber);
+				if (outputFiles) {											
+					for (var i = 0; i < outputFiles.length; i++) {
+						var p = document.createElement("p");
+						p.className = 'narrow';
+						for (var i = 0; i < job.numAncestors; i++) {
+							addSpacer(p);
+						}
+						var image = document.createElement("img");
+						image.src = "/gp/images/outputFile.gif";
+						p.appendChild(image);
+						var link = document.Element("a");
+						link.style.color = '#0066FF';
+						link.href = outputFiles[i].link;
+						link.appendChild(document.createTextNode(outputFiles[i].name));
+						p.appendChild(link);
+						div.appendChild(p);
+				    }
+				} else if (job.isVisualizer) {
+					var p = document.createElement("p");
+					p.className = 'narrow';
+					for (var i = 0; i < job.numAncestors; i++) {
+						addSpacer(p);
+					}
+					var link = document.createElement('a');
+					link.href = 'javascript:this.runVisualizer(' + job.jobNumber + ')';
+					visualizerAppletTags[job.jobNumber] = job.visualizerAppletTag;
+					var img = document.createElement('img');
+					img.border = '0';
+					img.src = '/gp/images/visualizer.gif';
+					link.appendChild(img);
+					link.appendChild(document.createTextNode(' Open Visualizer'));
+					p.appendChild(link);
+					div.appendChild(p);
+					var span = document.createElement('span');
+					span.id = 'visualizerSpan' + job.jobNumber;
+					div.appendChild(span);
+					if (openVisualizers) {
+						runVisualizer(job.jobNumber);						
+					}
+				}
+			}
+			
+			function runVisualizer(jobNumber) {
+				document.getElementById("visualizerSpan" + jobNumber).innerHTML = visualizerAppletTags[jobNumber];
+			}
+			
+		/* ]]> */
+			
+			<h:outputText rendered="#{jobStatusBean.jobInfo.status != 'Finished' and jobStatusBean.jobInfo.status != 'Error'}">
+				YAHOO.util.Event.addListener(window, "load", function() { 
+					setTimeout("updatePage();", 2500);
+				});
+			</h:outputText>
 			
 		</script>
 	</ui:define>
 
 	<ui:define name="body">
-		<div class="statusReport">
-		<div class="reminders"><font color="#FF0000">*</font>Clicking <font color="#0066ff">file name</font> will open the file in a new browser window. </div>
-	
-		<table class="title" cellpadding="0" cellspacing="0" border="0"><tr>
-		<td class="title">
-		
-			#{jobInfoBean.jobInfoWrapper.taskName} [id: #{jobInfoBean.jobNumber}]
-			<img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-1.gif"
-                 name="Image2_#{jobInfoBean.jobNumber}" width="14" height="14" border="0" align="top"
-                 id="Image2_#{jobInfoBean.jobNumber}" onclick="pm_showMenu('menuDiv_#{jobInfoBean.jobNumber}', Position.cumulativeOffset(this), 50, 50);"
-                 onmouseover="MM_swapImage('Image2_#{jobInfoBean.jobNumber}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',1)"
-                 onmouseout="MM_swapImgRestore();"/>
-		
-		</td><td width="30px">
-			<h:outputText rendered="#{jobInfoBean.jobInfoWrapper.status != 'Finished' and jobInfoBean.jobInfoWrapper.status != 'Error'}">
-				<img src="/gp/images/spin.gif" id="statusIcon#{jobInfoBean.jobNumber}"/>
-			</h:outputText>
-			<h:outputText rendered="#{jobInfoBean.jobInfoWrapper.status == 'Finished'}">
-				<img src="/gp/images/complete.gif" id="statusIcon#{jobInfoBean.jobNumber}"/>
-			</h:outputText>
-			<h:outputText rendered="#{jobInfoBean.jobInfoWrapper.status == 'Error'}">
-				<img src="/gp/images/error.gif"  id="statusIcon#{jobInfoBean.jobNumber}"/>
-			</h:outputText>
-		</td>
-		</tr></table>
-	    
-	    <table width="100%" id="infoTable#{jobInfoBean.jobNumber}">
-		    <tr><td class="smallTitle">Status: <span id="statusText#{jobInfoBean.jobNumber}">#{jobInfoBean.jobInfoWrapper.status}</span></td></tr>
-		    <tr>
-		    	<td class="indented">
-		    		<span id="finishedText#{jobInfoBean.jobNumber}">
-		    			<c:if test="#{jobInfoBean.jobInfoWrapper.status == 'Finished'}">Finished running #{jobInfoBean.jobInfoWrapper.taskName} as job # #{jobInfoBean.jobNumber} on #{jobInfoBean.jobInfoWrapper.dateCompleted}
-				    	<br />
-			    	</c:if>
-			    	</span>
-			    	Elapsed Time: <span id="elapsedTime#{jobInfoBean.jobNumber}">#{jobInfoBean.jobInfoWrapper.elapsedTimeMillis}</span>ms
-		    	</td>
-		    </tr>
-		    <tr><td class="smallTitle">Owner: #{jobInfoBean.jobInfoWrapper.owner}</td></tr>
-		    <tr><td class="smallTitle"><img src="/gp/images/lock.gif" /> Access Permission<a class="view" href="javascript:togglePermissions();"> <span id="permissionsText">View</span> Details</a></td></tr>
-		    <tr id="permissionsRow" style="display: none;"><td class="indented">
-			    
-			    <table class="summary" cellpadding="0" cellspacing="0" border="0">
-				    <tr class="summaryTitle">
-				    <td width="100px">Sharing</td><td>Access</td>
-				    </tr>
-				    <tr>
-					    <td><strong>Public</strong></td>
-					    <td>
-					    	<c:choose><c:when test="#{jobPermissionsBean.publicAccessPermission == 'NONE'}"><input name="publicPermission" type="radio" value="NONE" checked="true"/></c:when><c:otherwise><input name="publicPermission" type="radio" value="NONE" /></c:otherwise></c:choose>None
-					    	<c:choose><c:when test="#{jobPermissionsBean.publicAccessPermission == 'NONE'}"><input name="publicPermission" type="radio" value="READ" checked="true"/></c:when><c:otherwise><input name="publicPermission" type="radio" value="READ" /></c:otherwise></c:choose>Read
-					    	<c:choose><c:when test="#{jobPermissionsBean.publicAccessPermission == 'NONE'}"><input name="publicPermission" type="radio" value="READ_WRITE" checked="true"/></c:when><c:otherwise><input name="publicPermission" type="radio" value="READ_WRITE" /></c:otherwise></c:choose>Read and Write
-					    </td>
-				    </tr>
-				    <c:if test="#{jobPermissionsBean.numGroupAccessPermissions gt 0}">
-				    <tr class="brown">
-				    	<td><strong>Group</strong></td><td></td>
-				    </tr>
-				    <t:dataList var="groupPermission" rowIndexVar="rowIndex" value="#{jobPermissionsBean.groupAccessPermissions}">
-					    <tr class="brown">
-					    	<td><img src="/gp/images/arrow2.gif" />#{groupPermission.groupId}</td>
-					    	<td>
-						    	<c:choose><c:when test="#{groupPermission.permission == 'NONE'}"><input name="#{groupPermission.groupId}Permission" type="radio" value="NONE" checked="true"/></c:when><c:otherwise><input name="#{groupPermission.groupId}Permission" type="radio" value="NONE" /></c:otherwise></c:choose>None
-						    	<c:choose><c:when test="#{groupPermission.permission == 'NONE'}"><input name="#{groupPermission.groupId}Permission" type="radio" value="READ" checked="true"/></c:when><c:otherwise><input name="#{groupPermission.groupId}Permission" type="radio" value="READ" /></c:otherwise></c:choose>Read
-						    	<c:choose><c:when test="#{groupPermission.permission == 'NONE'}"><input name="#{groupPermission.groupId}Permission" type="radio" value="READ_WRITE" checked="true"/></c:when><c:otherwise><input name="#{groupPermission.groupId}Permission" type="radio" value="READ_WRITE" /></c:otherwise></c:choose>Read and Write
-						   	</td>
-					    </tr>
-					</t:dataList>
-				    </c:if>
-			    </table>	    
-		    </td></tr>
-		    <c:if test="#{not empty jobInfoBean.jobInfoWrapper.inputParameters}">
-		    <tr>
-		    	<td class="smallTitle">
-		    		<img src="/gp/images/parameters.gif" /> Input Parameters <a class="view" href="javascript:toggleInputParams(#{jobInfoBean.jobNumber});"><span id="inputParamsText#{jobInfoBean.jobNumber}">View</span> Details</a>
-		   		</td>
-		   	</tr>
-		   	<tr id="inputParamsRow#{jobInfoBean.jobNumber}" style="display: none;"><td class="indented">
-		   		<t:dataList var="p" value="#{jobInfoBean.jobInfoWrapper.inputParameters}">
-					#{p.name}:
-					<c:choose><c:when test="#{!empty p.url}">
-						<a href="#{p.value}">#{p.displayValue}</a>
-					</c:when>
-					<c:otherwise>
-					<c:if test="#{!p.url and p.exists}">
-						<c:if test="#{!empty p.directory}">
-							<a
-								href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.directory}/#{p.value}">#{p.displayValue}</a>
-						</c:if>
-						<c:if test="#{empty p.directory}">
-							<a
-								href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.value}">#{p.displayValue}</a>
-						</c:if>
-					</c:if>
-					<c:if test="#{!p.url and !p.exists}">
-						#{p.displayValue}
-					</c:if>
-					</c:otherwise>
-					</c:choose>
-					<br />
-				</t:dataList>
-		   	</td></tr>
-		   	</c:if>
-		    <h:outputText rendered="#{not empty jobInfoBean.jobInfoWrapper.outputFiles}">
-		    <tr><td class="smallTitle">Output Files</td></tr>
-			<t:dataList var="p" value="#{jobInfoBean.jobInfoWrapper.outputFiles}">
-		    <tr><td class="indented">
-			    <a href="#{facesContext.externalContext.requestContextPath}/jobResults/#{p.jobNumber}/#{p.name}">#{p.name}</a>
-			    <img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" 
-		           name="Image_#{p.valueId}" 
-		           id="Image_#{p.valueId}" 
-		           width="14" height="14" border="0" align="top" 
-		           onclick="pm_showMenu('menuDiv_#{p.valueId}', Position.cumulativeOffset(this), 50, 50);" 
-		           onmouseover="MM_swapImage('Image_#{p.valueId}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" 
-		           onmouseout="MM_swapImgRestore();"/>
-		    </td></tr>
-		    </t:dataList>
-		    </h:outputText>
-		    <h:outputText rendered="#{jobInfoBean.jobInfoWrapper.isVisualizer}">
-		    <tr><td class="smallTitle">
-		    	<a href="javascript:runVisualizer#{jobInfoBean.jobNumber}()"><img src="/gp/images/visualizer.gif" border="0"/> Open Visualizer</a>
-		    	<span id="visualizerSpan#{jobInfoBean.jobNumber}">&nbsp;</span>
-		    	<script type="text/javascript">
-		    		function runVisualizer#{jobInfoBean.jobNumber}() {
-		    			document.getElementById("visualizerSpan#{jobInfoBean.jobNumber}").innerHTML = '#{jobInfoBean.jobInfoWrapper.visualizerAppletTag}';
-		    		}
-		    	</script>
-		    </td></tr>
-		    </h:outputText>
-		</table>
-		<br />
-		<!--  REMOVE ME!!!  -->
-		<input type="button" onclick="updatePage();" value="Update" style="display: none;"/>
-		<div id="resultDiv">
-		</div>
-		<div id="childrenDiv">
-		<c:if test="#{not empty jobInfoBean.childJobs}">
-			<t:dataList var="child" value="#{jobInfoBean.childJobs}" rowIndexVar="rowIndex">
-			<table id="jobTable#{child.jobNumber}" class="module" cellpadding="0" cellspacing="0" border="0">
-			<tr>
-				<td>step #{rowIndex+1}: #{child.taskName} 
-				
-				</td>
-				<td width="30px">
-				<h:outputText rendered="#{child.status != 'Finished' and child.status != 'Error'}">
-					<img src="/gp/images/spin.gif" id="statusIcon#{child.jobNumber}"/>
-				</h:outputText>
-				<h:outputText rendered="#{child.status == 'Finished'}">
-					<img src="/gp/images/complete.gif" id="statusIcon#{child.jobNumber}"/>
-				</h:outputText>
-				<h:outputText rendered="#{child.status == 'Error'}">
-					<img src="/gp/images/error.gif"  id="statusIcon#{child.jobNumber}"/>
-				</h:outputText>
-				</td>
-			</tr></table>
-			<table width="100%" id="infoTable#{child.jobNumber}">
-			    <tr><td class="smallTitle">Status: <span id="statusText#{child.jobNumber}">#{child.status}</span></td></tr>
-			    <tr>
-			    	<td class="indented">
-			    		<c:if test="#{child.status == 'Finished'}">Finished running #{child.taskName} as job # #{child.jobNumber} on <h:outputText value="#{child.dateCompleted}"> <f:convertDateTime pattern="dd.MM.yyyy HH:mm" /></h:outputText>
-				    	<br />
-				    	</c:if>
-				    	Elapsed Time: <span id="elapsedTime#{child.jobNumber}">#{child.elapsedTimeMillis}</span>ms
-			    	</td>
-			    </tr>
-			    <h:outputText rendered="#{not empty child.inputParameters}">
-			    <tr>
-			    	<td class="smallTitle">
-			    		<img src="/gp/images/parameters.gif" /> Input Parameters <a class="view" href="javascript:toggleInputParams(#{child.jobNumber});"><span id="inputParamsText#{child.jobNumber}">View</span> Details</a>
-			   		</td>
-			   	</tr>
-			   	<tr id="inputParamsRow#{child.jobNumber}" style="display: none;"><td class="indented">
-			   		<t:dataList var="p" value="#{child.inputParameters}">
-						#{p.name}:
-						<c:choose><c:when test="#{!empty p.url}">
-							<a href="#{p.value}">#{p.displayValue}</a>
-						</c:when>
-						<c:otherwise>
-						<c:if test="#{!p.url and p.exists}">
-							<c:if test="#{!empty p.directory}">
-								<a
-									href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.directory}/#{p.value}">#{p.displayValue}</a>
-							</c:if>
-							<c:if test="#{empty p.directory}">
-								<a
-									href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.value}">#{p.displayValue}</a>
-							</c:if>
-						</c:if>
-						<c:if test="#{!p.url and !p.exists}">
-							#{p.displayValue}
-						</c:if>
-						</c:otherwise>
-						</c:choose>
-						<br />
-					</t:dataList>
-			   	</td></tr>
-			   	</h:outputText>
-			    <h:outputText rendered="#{not empty child.outputFiles}">
-			    <tr><td class="smallTitle">Output Files</td></tr>
-				<t:dataList var="p" value="#{child.outputFiles}">
-			    <tr><td class="indented">
-			    	<a href="#{facesContext.externalContext.requestContextPath}/jobResults/#{p.jobNumber}/#{p.name}">#{p.name}</a>
-			    	<img src="#{facesContext.externalContext.requestContextPath}/images/menuicon-2.gif" 
-				           name="Image_#{p.valueId}" 
-				           id="Image_#{p.valueId}" 
-				           width="14" height="14" border="0" align="top" 
-				           onclick="pm_showMenu('menuDiv_#{p.valueId}', Position.cumulativeOffset(this), 50, 50);" 
-				           onmouseover="MM_swapImage('Image_#{p.valueId}','','#{facesContext.externalContext.requestContextPath}/images/menuicon-over.gif',2)" 
-				           onmouseout="MM_swapImgRestore();"/>	
-			    </td></tr>
-			    </t:dataList>
-			    </h:outputText>
-			    <h:outputText rendered="#{child.isVisualizer}">
-			    <tr><td class="smallTitle">
-			    	<a href="javascript:runVisualizer#{child.jobNumber}()"><img src="/gp/images/visualizer.gif" border="0"/> Open Visualizer</a>
-			    	<span id="visualizerSpan#{child.jobNumber}">&nbsp;</span>
-			    	<script type="text/javascript">
-			    		function runVisualizer#{child.jobNumber}() {
-			    			document.getElementById("visualizerSpan#{child.jobNumber}").innerHTML = '#{child.visualizerAppletTag}';
-			    		}
-			    	</script>
-			    </td></tr>
-			    </h:outputText>
-			</table>
-			<br />
-			</t:dataList>		
-		</c:if>
-		</div>
-	</div>
 
+		<div class="statusReport">
+		<div style="text-align:right;">
+			To launch visualizer click <img src="/gp/images/visualizer.gif" /> icon. To see options click <img src="/gp/images/smallOptions.gif" /> icon. For Input Parameters click <img src="/gp/images/smallParameters.gif" /> icon.</div> <br />
+			<div class="icon">
+				<a style="color:#0066FF;" href="javascript:openLyteBox(#{jobStatusBean.jobInfo.jobNumber})">
+				<img id="permissionsIcon" src="/gp/images/lockOpen.gif" align="left" />
+				Access<br />Permission</a>
+			</div>
+		
+		<div style="float:right;margin-right:10px;"><input type="checkbox" /> Email Reminder</div>
+		<div style="float:right;margin-right:10px;"><input type="checkbox" /> Show Execution Logs</div>
+		<br /><br />
+
+		<table class="title" cellpadding="0" cellspacing="0" border="0" id="jobTable#{jobStatusBean.jobInfo.jobNumber}">
+			<tr>
+				<td class="title">
+					#{jobStatusBean.jobInfo.jobNumber}.#{jobStatusBean.jobInfo.taskName} 
+					<img src="/gp/images/smallOptions.gif"
+		                 name="Image2_#{jobStatusBean.jobInfo.jobNumber}" border="0" align="top"
+		                 id="Image2_#{jobStatusBean.jobInfo.jobNumber}" onclick="pm_showMenu('menuDiv_#{jobStatusBean.jobInfo.jobNumber}', Position.cumulativeOffset(this), 50, 50);"
+		                 onmouseover="MM_swapImage('Image2_#{jobStatusBean.jobInfo.jobNumber}','','/gp/images/smallOptions2.gif',1)"
+		                 onmouseout="MM_swapImgRestore();"/>
+				</td>
+				<td>
+					<h:outputText rendered="#{not empty jobStatusBean.jobInfo.inputParameters}">
+			    		<div class="icon2"><table cellpadding="0" border="0" cellspacing="0"><tr><td><a href="javascript:toggle('inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"><img src="/gp/images/parameters.gif" align="left" /></a></td><td><a style="color:#0066FF;" href="javascript:toggle('inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"><span id="inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}Label">Show</span> Input <br/>Parameters</a></td></tr></table></div>
+			    	</h:outputText>
+			    </td>
+				<td width="30px">
+					<h:outputText rendered="#{jobStatusBean.jobInfo.status != 'Finished' and jobStatusBean.jobInfo.status != 'Error'}">
+						<img src="/gp/images/spin.gif" id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
+					</h:outputText>
+					<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Finished' and jobStatusBean.jobInfo.visualizer}">
+						<img src="/gp/images/visualizer.gif" id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
+					</h:outputText>
+					<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Finished' and not jobStatusBean.jobInfo.visualizer}">
+						<img src="/gp/images/complete.gif" id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
+					</h:outputText>
+					<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Error'}">
+						<img src="/gp/images/error.gif" border="0" id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
+					</h:outputText>
+					<span id="jobStatus#{jobStatusBean.jobInfo.jobNumber}" style="display: none;">#{jobStatusBean.jobInfo.status}</span>
+				</td>
+			</tr>
+		</table>
+
+		<h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
+			<ui:include src="jobStatus_indicator.xhtml">
+		    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
+		    </ui:include>
+		</h:outputText>
+
+		<ui:include src="jobStatus_inputParams.xhtml">
+	    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
+	    </ui:include>
+
+		<ui:include src="jobStatus_files.xhtml">
+	    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
+	    	<ui:param name="indent" value="#{false}" />
+	    	<ui:param name="openVisualizers" value="#{jobStatusBean.openVisualizers}" />
+	    </ui:include>
+	    <h:form>
+		    <ui:include src="jobStatus_menu.xhtml">
+		    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
+		    </ui:include>
+	    </h:form>
+	    <t:dataList var="p" value="#{jobStatusBean.jobInfo.outputFiles}">
+	 		<h:form>
+	   			<ui:include src="jobStatus_fileMenu.xhtml">
+	        		<ui:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}"/>
+	       			<ui:param name="valueId" value="#{p.valueId}"/>
+	       			<ui:param name="value" value="#{p.link}"/>
+	       			<ui:param name="deleteAllowed" value="#{false}"/>
+	   			</ui:include>
+	  		</h:form>
+	  	</t:dataList>
+	  	<t:dataList var="p" value="#{jobStatusBean.jobInfo.inputFiles}">
+	 		<h:form>
+	   			<ui:include src="jobStatus_fileMenu.xhtml">
+	        		<ui:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}"/>
+	       			<ui:param name="valueId" value="#{p.valueId}"/>
+	       			<ui:param name="value" value="#{p.link}"/>
+	       			<ui:param name="deleteAllowed" value="#{false}"/>
+	   			</ui:include>
+	  		</h:form>
+	  	</t:dataList>
+	    <h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
+			<t:dataList var="child" value="#{jobStatusBean.allSteps}" rowIndexVar="idx">
+				<h:outputText rendered="#{idx gt 0}">
+		    		<ui:include src="jobStatus_child.xhtml">
+				    	<ui:param name="jobInfo" value="#{child}" />
+				    </ui:include>
+			    </h:outputText>
+	    	</t:dataList>
+	   	</h:outputText>
+	    
+	    </div>
+	    
 	</ui:define>
-	<!-- Create menus  -->
-	<ui:define name="popupMenus">
-		<h:form>
-			<t:dataList var="jobInfo" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
-	          <ui:include src="jobsMenu.xhtml">
-	            <ui:param name="job" value="#{jobInfo}"/>
-	          </ui:include>
-	          <t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}" rowIndexVar="paramIndex">
-	            <ui:include src="jobFileMenu.xhtml">
-	              <ui:param name="job" value="#{jobInfo}"/>
-	              <ui:param name="fileInfo" value="#{fileInfo}"/>
-	            </ui:include>
-	          </t:dataList>
-	        </t:dataList>
-		</h:form>
-	</ui:define>
+	
 </ui:composition>
 </html>
