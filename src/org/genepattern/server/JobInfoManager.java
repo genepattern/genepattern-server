@@ -161,6 +161,7 @@ public class JobInfoManager {
     private JSONObject convertToJSON(JobInfoWrapper jobInfoWrapper) throws JSONException {
         JSONObject obj = new JSONObject();
         obj.put("jobNumber", jobInfoWrapper.getJobNumber());
+        obj.put("formattedSize", jobInfoWrapper.getFormattedSize());
         obj.put("userId", jobInfoWrapper.getUserId());
         obj.put("taskName", jobInfoWrapper.getTaskName());
         obj.put("dateSubmitted", formatDate( jobInfoWrapper.getDateSubmitted() ));
@@ -206,6 +207,7 @@ public class JobInfoManager {
             inp.put("value", outputFile.getDisplayValue());
             inp.put("link", outputFile.getLink());
             inp.put("description", outputFile.getDescription());
+            inp.put("formattedSize", outputFile.getFormattedSize());
             
             obj.accumulate("outputFiles", inp);
         }

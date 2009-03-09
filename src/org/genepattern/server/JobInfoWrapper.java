@@ -4,14 +4,18 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.server.webapp.jsf.JobPermissionsBean;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
+import org.jfree.util.Log;
 
 /**
  * Wrapper class to access JobInfo from JSON and JSF formatted pages.
@@ -24,6 +28,8 @@ public class JobInfoWrapper {
         private ParameterInfo parameterInfo = null;
         private String displayValue = null;
         private String link = null; //optional link to GET input or output file
+        private Date lastModified = null; //optional last modification date for files on the server
+        private long size = 0L; //optional size for files on the server
         
         public ParameterInfoWrapper(ParameterInfo parameterInfo) {
             this.parameterInfo = parameterInfo;
@@ -70,6 +76,26 @@ public class JobInfoWrapper {
             return valueId;
         }
         
+        protected void setSize(long size) {
+            this.size = size;
+        }
+        
+        public long getSize() {
+            return this.size;
+        }
+        
+        public String getFormattedSize() {
+            return JobHelper.getFormattedSize(size);
+        }
+
+        protected void setLastModified(Date lastModified) {
+            this.lastModified = lastModified;
+        }
+
+        public Date getLastModified() {
+            return lastModified;
+        }
+        
         /**
          * @param link
          * @see #getLink()
@@ -91,12 +117,25 @@ public class JobInfoWrapper {
      * Wrapper class for a ParameterInfo which is an output file.
      */
     public static class OutputFile extends ParameterInfoWrapper {
-        OutputFile(String contextPath, JobInfo jobInfo, ParameterInfo parameterInfo) {
+        OutputFile(File outputDir, String contextPath, JobInfo jobInfo, ParameterInfo parameterInfo) {
             super(parameterInfo);
+            File outputFile = new File(outputDir, parameterInfo.getName());
+            //Set the size and lastModified properties for each output file
+            boolean exists = outputFile.exists();
+            if (exists) {
+                setSize(outputFile.length());
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(outputFile.lastModified());
+                setLastModified(cal.getTime());
+            }
+            else {
+                Log.error("Outputfile not found on server: "+outputFile.getAbsolutePath());
+            }
+
             //map from ParameterInfo.name to URL for downloading the output file from the server
             String link = contextPath + "/jobResults/" + jobInfo.getJobNumber() + "/" + parameterInfo.getName();
             setLink(link);
-            setDisplayValue(parameterInfo.getName());
+            setDisplayValue(outputFile.getName());
         }
     }
     
@@ -160,10 +199,9 @@ public class JobInfoWrapper {
             String displayValue = value;
             boolean isUrl = false;
             boolean exists = false;
+
             String directory = null;
-
             String genePatternUrl = UIBeanHelper.getServer();
-
             try {
                 // see if a URL was passed in
                 URL url = new URL(value);
@@ -209,6 +247,10 @@ public class JobInfoWrapper {
                 }
                 if (exists) {
                     directory = f.getParentFile().getName();
+                    setSize(f.length());
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTimeInMillis(f.lastModified());
+                    setLastModified(cal.getTime());
                 }
             }
             
@@ -230,6 +272,31 @@ public class JobInfoWrapper {
     }
     
     private JobInfo jobInfo;
+    
+    private Long size = null;
+    public long getSize() {
+        if (size == null) {
+            long counter = 0L;
+            for(JobInfoWrapper child : children) {
+                counter += child.getSize();
+            }
+            for(InputFile inputFile : inputFiles) {
+                counter += inputFile.getSize();
+            }
+            for(OutputFile outputFile : outputFiles) {
+                counter += outputFile.getSize();
+            }
+            size = counter;
+        }
+        return size;
+    }
+
+    public String getFormattedSize() {
+        return JobHelper.getFormattedSize(getSize());
+    }
+
+    private File outputDir;
+
     private List<ParameterInfoWrapper> inputParameters = new ArrayList<ParameterInfoWrapper>();
     private List<InputFile> inputFiles = new ArrayList<InputFile>();
     private List<OutputFile> outputFiles = new ArrayList<OutputFile>();
@@ -248,6 +315,8 @@ public class JobInfoWrapper {
 
     public void setJobInfo(String contextPath, ParameterInfo[] formalParameters, JobInfo jobInfo) {
         this.jobInfo = jobInfo;
+        String jobDir = GenePatternAnalysisTask.getJobDir(""+jobInfo.getJobNumber());
+        this.outputDir = new File(jobDir);
         processParameterInfoArray(contextPath, formalParameters);
         this.jobPermissionsBean = null;
     }
@@ -296,7 +365,7 @@ public class JobInfoWrapper {
     private void processParameterInfoArray(String contextPath, ParameterInfo[] formalParams) {
         for(ParameterInfo param : jobInfo.getParameterInfoArray()) {
             if (param.isOutputFile()) {
-                OutputFile outputFile = new OutputFile(contextPath, jobInfo, param);
+                OutputFile outputFile = new OutputFile(outputDir, contextPath, jobInfo, param);
                 outputFiles.add(outputFile);
             }
             else {
