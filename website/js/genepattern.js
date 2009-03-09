@@ -23,30 +23,33 @@ function stopJob(button, jobId) {
 }
 
 //request email notification for a user and a job
- function requestEmailNotification(userEmail, userId, jobId) {            
-        var opt = {
-          method:    'post',
-          postBody:  'cmd=notifyEmailJobCompletion&userEmail='+userEmail+'&userID='+userId+'&jobID='+jobId,
-          onSuccess: ajaxEmailResponse,
-          onFailure: function(t) {
-            alert('Error ' + t.status + ' -- ' + t.statusText);
-          }
-        } 
-        new  Ajax.Request('./notifyJobCompletion.ajax',opt);
-      }
+function requestEmailNotification(userEmail, userId, jobId) {
+    alert('requestEmailNotification: '+userEmail+', '+userId+', '+jobId);
+    var opt = {
+            method:    'post',
+            postBody:  'cmd=notifyEmailJobCompletion&userEmail='+userEmail+'&userID='+userId+'&jobID='+jobId,
+            onSuccess: ajaxEmailResponse,
+            onFailure: function(t) {
+                alert('Error ' + t.status + ' -- ' + t.statusText);
+            }
+    } 
+    alert('opt: '+opt);
+    new  Ajax.Request('/gp/notifyJobCompletion.ajax',opt);
+}
 
-  function cancelEmailNotification(userEmail, userId, jobId) {  
-		 		    
-        var opt = {
-          method:    'post',
-          postBody:  'cmd=cancelEmailJobCompletion&userEmail='+userEmail+'&userID='+userId+'&jobID='+jobId,
-          onSuccess: ajaxEmailResponse,
-          onFailure: function(t) {
-            alert('Error ' + t.status + ' -- ' + t.statusText);
-          }
-        } 
-        new  Ajax.Request('./cancelJobCompletion.ajax',opt);
-      }
+function cancelEmailNotification(userEmail, userId, jobId) {  
+    alert('cancelEmailNotification: '+userEmail+', '+userId+', '+jobId);
+    var opt = { 
+            method:    'post',
+            postBody:  'cmd=cancelEmailJobCompletion&userEmail='+userEmail+'&userID='+userId+'&jobID='+jobId,
+            onSuccess: ajaxEmailResponse,
+            onFailure: function(t) {
+                alert('Error ' + t.status + ' -- ' + t.statusText);
+            }
+    } 
+    alert('opt: '+opt);
+    new  Ajax.Request('/gp/cancelJobCompletion.ajax',opt);  
+}
 
   function ajaxEmailResponse( req ) {
 

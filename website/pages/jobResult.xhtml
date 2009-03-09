@@ -38,6 +38,38 @@
 		<script src="http://yui.yahooapis.com/2.7.0/build/connection/connection-min.js"></script>
 			
 		<script type="text/javascript">
+
+		function setEmailNotification(jobId, userId, userEmail){
+			alert('setEmailNotification: '+jobId+', '+userId+', '+userEmail);
+            var cb = document.getElementById('emailCheckbox');
+			alert('cb.checked: '+cb.checked);
+		    //var ue = document.getElementById("userEmail");
+		    //var uid = document.getElementById("userID");
+		    var valid = jcv_checkEmail(userEmail);
+            alert('valid: '+valid);
+		    if (!valid) {
+		        var em = prompt("Email on completion to?:");
+		        if (em == null){
+		            cb.checked = false;
+		            return;
+		        } 
+		        else {
+		            userEmail = em;
+		            valid = jcv_checkEmail(userEmail);
+		            if (!valid){
+		                cb.checked = false;
+		                alert(userEmail + ' is not a valid email address');
+		                return;
+		            }
+		        }
+		    }
+		    if (cb.checked) {
+		        requestEmailNotification(userEmail, userId, jobId);
+		    }
+		    else {
+		        cancelEmailNotification(userEmail, userId, jobId);
+		    }
+		}		
 		
 		var openVisualizers = #{jobStatusBean.openVisualizers};
 		
@@ -221,14 +253,19 @@
 				Access<br />Permission</a>
 			</div>
 		
-		<div style="float:right;margin-right:10px;"><input type="checkbox" /> Email Reminder</div>
+		<div style="float:right;margin-right:10px;">
+		    <input type="checkbox" 
+		           id="emailCheckbox" 
+		           onclick="setEmailNotification(#{jobStatusBean.jobInfo.jobNumber}, '#{jobStatusBean.currentUserId}', '#{jobStatusBean.currentUserEmail}');" 
+		           value="checkbox" /> Email Reminder </div>
+		
 		<div style="float:right;margin-right:10px;"><input type="checkbox" /> Show Execution Logs</div>
 		<br /><br />
 
 		<table class="title" cellpadding="0" cellspacing="0" border="0" id="jobTable#{jobStatusBean.jobInfo.jobNumber}">
 			<tr>
 				<td class="title">
-					#{jobStatusBean.jobInfo.jobNumber}.#{jobStatusBean.jobInfo.taskName} 
+					#{jobStatusBean.jobInfo.jobNumber}.#{jobStatusBean.jobInfo.taskName}
 					<img src="/gp/images/smallOptions.gif"
 		                 name="Image2_#{jobStatusBean.jobInfo.jobNumber}" border="0" align="top"
 		                 id="Image2_#{jobStatusBean.jobInfo.jobNumber}" onclick="pm_showMenu('menuDiv_#{jobStatusBean.jobInfo.jobNumber}', Position.cumulativeOffset(this), 50, 50);"
