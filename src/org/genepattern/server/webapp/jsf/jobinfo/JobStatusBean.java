@@ -12,7 +12,6 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf.jobinfo;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,6 +30,7 @@ public class JobStatusBean {
     private static Logger log = Logger.getLogger(JobStatusBean.class);
     
     private int jobNumber = -1;
+    private boolean openVisualizers = false;
     private JobInfoWrapper jobInfoWrapper = null;
     private List<JobInfoWrapper> allSteps = null;
 
@@ -41,6 +41,8 @@ public class JobStatusBean {
             jobNumberParameter = UIBeanHelper.getRequest().getParameter("jobNumber");
             jobNumberParameter = UIBeanHelper.decode(jobNumberParameter);
             jobNumber = Integer.parseInt(jobNumberParameter);
+            String openVisualizersParameter = UIBeanHelper.getRequest().getParameter("openVisualizers");
+            setOpenVisualizers(openVisualizersParameter != null);
         }
         catch (NumberFormatException e1) {
             log.error("Invalid value for request parameter, 'jobNumber':  "+jobNumberParameter, e1);
@@ -60,6 +62,14 @@ public class JobStatusBean {
     public JobInfoWrapper getJobInfo() {
         return jobInfoWrapper;
     }
+
+	public boolean getOpenVisualizers() {
+		return openVisualizers;
+	}
+
+	public void setOpenVisualizers(boolean openVisualizers) {
+		this.openVisualizers = openVisualizers;
+	}
 
     /**
      * @return the top level job info, including all steps if it is a pipeline.

@@ -167,10 +167,12 @@ public class JobInfoManager {
         obj.put("dateCompleted", formatDate( jobInfoWrapper.getDateCompleted() ));
         obj.put("elapsedTime",  jobInfoWrapper.getElapsedTimeMillis());
         obj.put("status", jobInfoWrapper.getStatus());
-
+        obj.put("numAncestors", jobInfoWrapper.getNumAncestors().length);
+        obj.put("stepPath", jobInfoWrapper.getStepPath());
+        
         obj.put("isPipeline", jobInfoWrapper.isPipeline());
         obj.put("numStepsCompleted", jobInfoWrapper.getNumStepsCompleted());
-        obj.put("numSteps", jobInfoWrapper.getNumStepsInPipeline());
+        obj.put("numSteps", jobInfoWrapper.getNumStepsInPipeline().length);
 
         obj.put("isVisualizer", jobInfoWrapper.isVisualizer());
         if (jobInfoWrapper.isVisualizer()) {

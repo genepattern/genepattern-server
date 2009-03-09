@@ -217,7 +217,9 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
                     log.error("Error in ajax request for job info: "+e.getMessage(), e);
                 }
             }
-            RequestDispatcher rd = this.getServletContext().getRequestDispatcher("/pages/jobStatus.jsf?jobNumber="+jobNumber);
+            String openVisualizers = request.getParameter("openVisualizers") == null ? "" : "&openVisualizers=true";
+            
+            RequestDispatcher rd = this.getServletContext().getRequestDispatcher("/pages/jobResult.jsf?jobNumber="+jobNumber+openVisualizers);
             rd.forward(request, response);
             return;
         }

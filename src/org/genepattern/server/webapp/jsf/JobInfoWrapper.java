@@ -30,6 +30,7 @@ public class JobInfoWrapper {
     private List<OutputParameter> outputFiles;
     private TaskInfo taskInfo = null;
     private boolean isVisualizer = false;
+    private boolean isPipeline = false;
     
     private PermissionsHelper permissionsHelper;
     
@@ -42,6 +43,7 @@ public class JobInfoWrapper {
         this.dateCompleted = jobInfo.getDateCompleted();
         
         this.isVisualizer = taskInfo != null && taskInfo.isVisualizer();
+        this.isPipeline = taskInfo != null && taskInfo.isPipeline();
         this.taskInfo = taskInfo;
     }
     
@@ -176,6 +178,9 @@ public class JobInfoWrapper {
     
     public boolean getIsVisualizer() {
         return isVisualizer;
+    }
+    public boolean getIsPipeline() {
+        return isPipeline;
     }
 
     public String getVisualizerAppletTag() {

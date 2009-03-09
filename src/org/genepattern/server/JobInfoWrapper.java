@@ -436,8 +436,10 @@ public class JobInfoWrapper {
     /**
      * @return the number of ancestor jobs, 0 if the parent is null, more than 0 for jobs that are in pipelines.
      */
-    public int getNumAncestors() {
-        return getPathFromRoot().size() - 1;
+    public Integer[] getNumAncestors() {
+        int num = getPathFromRoot().size() - 1;
+        Integer[] returnedArray = new Integer[num];
+        return returnedArray;
     }
 
     /**
@@ -455,11 +457,15 @@ public class JobInfoWrapper {
     /**
      * @return The number of steps (sibling jobs) in this jobs parent pipeline.
      */
-    public int getStepCount() {
+    public Integer[] getStepCount() {
         if (this.parent == null || this.parent.children == null || this.parent.children.size() == 0) {
-            return 0;
+            return new Integer[0];
         }
-        return this.parent.children.size();
+        Integer[] returnedArray = new Integer[this.parent.children.size()];
+        for (int i = 0; i < this.parent.children.size(); i++) {
+        	returnedArray[i] = i;
+        }
+        return returnedArray;
     }
 
     /**
@@ -542,8 +548,8 @@ public class JobInfoWrapper {
         this.numStepsInPipeline = n;
     }
     
-    public int getNumStepsInPipeline() {
-        return numStepsInPipeline;
+    public Integer[] getNumStepsInPipeline() {
+        return new Integer[numStepsInPipeline];
     }
 
     private int currentStepInPipeline = 0;

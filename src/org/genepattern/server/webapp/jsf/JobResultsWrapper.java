@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webapp.jsf.JobBean.OutputFileInfo;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
@@ -253,4 +254,11 @@ public class JobResultsWrapper {
         return deleteAllowed;
     }
 
+    public String getPermissionInfo() {
+    	String info = "Public: " + jobPermissionsBean.getPublicAccessPermission() + "<br/>";
+    	for (GroupPermission perm : jobPermissionsBean.getGroupAccessPermissions()) {
+    		info += perm.getGroupId() + ": " + perm.getPermission() + "<br/>";
+    	}
+    	return info;
+    }
 }
