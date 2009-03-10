@@ -113,6 +113,10 @@
 						setTimeout("updatePage();", 2500);
 					} else {
 						createOutputFiles(data);
+						// remove the email reminder button if it's there
+						if (document.getElementById('emailDiv')) {
+							document.getElementById('emailDiv').style.display = 'none';
+						}
 					}
 				}
 			}
@@ -461,19 +465,23 @@
 			<h:outputText rendered="#{jobStatusBean.jobInfo.userId == requestScope.userID}">
 			<div class="icon">
 				<a style="color:#0066FF;" href="javascript:openLyteBox(#{jobStatusBean.jobInfo.jobNumber})">
-				<img id="permissionsIcon" src="/gp/images/lockOpen.gif" align="left" />
-				Access<br />Permission</a>
+				<h:outputText rendered="#{jobStatusBean.jobInfo.permissions.permissionsLabel != 'Private'}">
+		        		<img id="permissionsIcon" src="/gp/images/lockOpen.gif" alt="" border="0" align="left" />
+		        </h:outputText>
+		        <h:outputText rendered="#{jobStatusBean.jobInfo.permissions.permissionsLabel == 'Private'}">
+		        	<img id="permissionsIcon" src="/gp/images/lock.gif" alt="" border="0" align="left"/>
+		        </h:outputText>
+			   	Access<br />Permission</a>
 			</div>
 			</h:outputText>
-		<div style="float:right;margin-right:10px;">
-			<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Processing'}">
-		    <input type="checkbox" 
-		           id="emailCheckbox" 
-		           onclick="setEmailNotification(#{jobStatusBean.jobInfo.jobNumber}, '#{jobStatusBean.currentUserId}', '#{jobStatusBean.currentUserEmail}');" 
-		           value="checkbox" /> Email Reminder 
-		    </h:outputText>
-		</div>
-		
+		<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Processing'}">
+			<div style="float:right;margin-right:10px;" id="emailDiv">
+				<input type="checkbox" 
+			           id="emailCheckbox" 
+			           onclick="setEmailNotification(#{jobStatusBean.jobInfo.jobNumber}, '#{jobStatusBean.currentUserId}', '#{jobStatusBean.currentUserEmail}');" 
+			           value="checkbox" /> Email Reminder 
+			</div>
+		</h:outputText>
 		<div style="float:right;margin-right:10px;"><input type="checkbox" /> Show Execution Logs</div>
 		<br /><br />
 
