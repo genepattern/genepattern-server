@@ -19,6 +19,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
+import org.genepattern.server.user.User;
+import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.util.EmailNotificationManager;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 
 /**
@@ -29,14 +32,17 @@ import org.genepattern.server.webapp.jsf.UIBeanHelper;
 public class JobStatusBean {
     private static Logger log = Logger.getLogger(JobStatusBean.class);
     
-    private int jobNumber = -1;
+    //private int jobNumber = -1;
     private boolean openVisualizers = false;
     private JobInfoWrapper jobInfoWrapper = null;
     private List<JobInfoWrapper> allSteps = null;
+    private String currentUserId = null;
+    private String currentUserEmail = null;
 
     public JobStatusBean() {
         String jobNumberParameter = null;
 
+        int jobNumber = -1;
         try {
             jobNumberParameter = UIBeanHelper.getRequest().getParameter("jobNumber");
             jobNumberParameter = UIBeanHelper.decode(jobNumberParameter);
@@ -49,14 +55,30 @@ public class JobStatusBean {
             return;
         }
         
-        String userId = UIBeanHelper.getUserId();
+        currentUserId = UIBeanHelper.getUserId();
+        try {
+            UserDAO userDao = new UserDAO();
+            User user = userDao.findById(currentUserId);
+            if (user != null) {
+                currentUserEmail = user.getEmail();
+            }
+
+            String key = getEmailNotificationPropKey();
+            if (key != null) {
+                String propValue = userDao.getPropertyValue(currentUserId, key, String.valueOf(sendEmailNotification));
+                sendEmailNotification = Boolean.valueOf(propValue);
+            }
+        }
+        catch (Exception e) {
+            log.error("Unable to initialize email notification for user: '"+currentUserId+"': "+e.getLocalizedMessage(), e);
+        }
 
         HttpServletRequest request = UIBeanHelper.getRequest();
         String contextPath = request.getContextPath();
         String cookie = request.getHeader("Cookie");
         
         JobInfoManager jobInfoManager = new JobInfoManager();
-        this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, userId, jobNumber);
+        this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, currentUserId, jobNumber);
     }
     
     public JobInfoWrapper getJobInfo() {
@@ -81,6 +103,69 @@ public class JobStatusBean {
         }
         return allSteps;
     }
-    
 
+    //support for Email Notification on job completion
+    private boolean sendEmailNotification = false;
+
+    public boolean isSendEmailNotification() {
+        return sendEmailNotification;
+    }
+
+    public void setSendEmailNotification(boolean b) {
+        this.sendEmailNotification = b;
+        //validate
+        String key = getEmailNotificationPropKey();
+        if (key == null) {
+            return;
+        }
+        //save state
+        String value = String.valueOf(this.sendEmailNotification);
+        UserDAO userDao = new UserDAO();        
+        userDao.setProperty(currentUserId, key, value);
+        //send notification
+        int jobNumber = this.getJobInfo().getJobNumber();
+        if (sendEmailNotification) {
+            EmailNotificationManager.getInstance().addWaitingUser(this.currentUserEmail, this.currentUserId, ""+jobNumber);
+        } 
+        else {
+            EmailNotificationManager.getInstance().removeWaitingUser(this.currentUserEmail, this.currentUserId, ""+jobNumber);
+        }
+    }
+    
+    private String getEmailNotificationPropKey() {
+        if (jobInfoWrapper == null) {
+            log.error("JobStatusBean.setEmailNotification with null jobInfoWrapper");
+            return null;
+        }
+        if (jobInfoWrapper.getJobNumber() < 0) {
+            log.error("JobStatusBean.setEmailNotification with invalid jobNumber: "+jobInfoWrapper.getJobNumber());
+            return null;
+        }
+        if (currentUserId == null) {
+            log.error("JobStatusBean.setEmailNotification with null currentUserId");
+            return null;
+        }
+        if (currentUserEmail == null) {
+            //TODO: handle special case when the current user has not yet set an email address
+            return null;
+        }
+        
+        return "sendEmailNotification_" + this.getJobInfo().getJobNumber();
+    }
+    
+    /**
+     * @return the userId of the logged in user,
+     *         not necessarily the same as the owner of the job.
+     */
+    public String getCurrentUserId() {
+        return currentUserId;
+    }
+    
+    /**
+     * @return the email address of the logged in user,
+     *         not necessarily the same as the owner of the job.
+     */
+    public String getCurrentUserEmail() {
+        return currentUserEmail;        
+    }
 }
