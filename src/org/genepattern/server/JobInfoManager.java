@@ -18,6 +18,7 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -181,26 +182,32 @@ public class JobInfoManager {
         }
         
         //add input parameters
+        JSONArray inputParameters = new JSONArray();
         for(JobInfoWrapper.ParameterInfoWrapper inputParam : jobInfoWrapper.getInputParameters()) {
             JSONObject inp = new JSONObject();
             inp.put("name", inputParam.getName());
             inp.put("value", inputParam.getDisplayValue());
             inp.put("description", inputParam.getDescription());
             
-            obj.accumulate("inputParams", inp);
+            inputParameters.put(inp);
         }
+        obj.put("inputParameters", inputParameters);
         
         //add input files
+        JSONArray inputFiles = new JSONArray();
         for(JobInfoWrapper.InputFile inputFile : jobInfoWrapper.getInputFiles()) {
             JSONObject inp = new JSONObject();
             inp.put("name", inputFile.getName());
             inp.put("value", inputFile.getDisplayValue());
+            inp.put("link", inputFile.getLink());
             inp.put("description", inputFile.getDescription());
             
-            obj.accumulate("inputFiles", inp);
+            inputFiles.put(inp);
         }
+        obj.put("inputFiles", inputFiles);
         
         //add output files
+        JSONArray outputFiles = new JSONArray();
         for(JobInfoWrapper.OutputFile outputFile : jobInfoWrapper.getOutputFiles()) {
             JSONObject inp = new JSONObject();
             inp.put("name", outputFile.getName());
@@ -209,9 +216,10 @@ public class JobInfoManager {
             inp.put("description", outputFile.getDescription());
             inp.put("formattedSize", outputFile.getFormattedSize());
             
-            obj.accumulate("outputFiles", inp);
+            outputFiles.put(inp);
         }
-
+        obj.put("outputFiles", outputFiles);
+        
         
         for(JobInfoWrapper child : jobInfoWrapper.getChildren()) {
             JSONObject childObj = convertToJSON(child);
