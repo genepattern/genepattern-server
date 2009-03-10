@@ -35,7 +35,7 @@
 							</tr>
 							
 							<t:dataList var="p" value="#{jobInfo.inputParameters}">
-								<tr><td>#{p.name}:</td><td>
+								<tr><td align="right">#{p.name}:</td><td>
 								<c:choose><c:when test="#{!empty p.url}">
 									<a href="#{p.link}">#{p.displayValue}</a>
 								</c:when>

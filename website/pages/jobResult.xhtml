@@ -103,13 +103,16 @@
 					var status = data.status;
 					var jobNumber = data.jobNumber;
 					updateStatus(data, status);
-					if (status != 'Finished' && status != 'Error') {
+					
+					if (data.isPipeline && data.children) {
+						updateChildren(data);
+					}
+					
+					document.getElementById('responseArea').value = o.responseText;
+					if (status != 'Finished' && status != 'Error' && document.getElementById('keepUpdating').checked) {
 						setTimeout("updatePage();", 2500);
 					} else {
-						updateOutputFiles(data, data.outputParams);
-					}
-					if (data.isPipeline && data.children) {
-						updateChildren(data.children);
+						createOutputFiles(data);
 					}
 				}
 			}
@@ -129,44 +132,179 @@
 				var request = YAHOO.util.Connect.asyncRequest('GET', '#{jobStatusBean.jobInfo.jobNumber}?returnType=JSON', updateCallback);
 			} 
 			
-			function updateChildren(children) {
-				for (var i = 0; i < children.length; i++) {
-					if (document.getElementById("jobTable"+children[i].jobNumber)) {
-						updateChild(children[i]);
+			function updateChildren(parent) {
+				for (var i = 0; i < parent.children.length; i++) {
+					if (document.getElementById("jobTable"+parent.children[i].jobNumber)) {
+						updateChild(parent.children[i], i, parent);
 					} else {
-						//createChild(children[i], i+1);
+						createChild(parent.children[i], i, parent);
 					}
 				}	
 			}
 			
 			function createRegularTable(id, className) {
-				var table = document.createElement('table');
+				var table = document.getElementById("testTable").cloneNode(false);
 				table.id = id;
 				table.className = className;
-				table.cellpadding = '0';
-				table.cellspacing = '0';
-				table.border = '0';
+				//table.cellpadding = '0';
+				//table.cellspacing = '0';
+				//table.border = '0';
+				table.style.display = '';
 				return table;
 			}
 			
+			function createChild(child, index, parent) {
+				// create overall job container
+				var div = document.createElement('div');
+				div.id = 'jobContainer' + child.jobNumber;
+				document.getElementById('jobContainer' + parent.jobNumber).appendChild(div);
+				var table = createRegularTable('jobTable' + child.jobNumber, 'module');
+				div.appendChild(table);
+				
+				
+				var row = table.insertRow(table.rows.length);
+				var cell = row.insertCell(row.cells.length);
+				for (var i = 1; i < child.numAncestors; i++) {
+					addSpacer(cell);
+				}
+				addImage(cell, "/gp/images/darkArrow.gif");
+				cell.appendChild(document.createTextNode(' step ' + child.stepPath + ': ' + child.taskName + '[id: ' + child.jobNumber + ']' ));
+				cell = row.insertCell(row.cells.length);
+				var iconDiv = document.createElement("div");
+				iconDiv.className = 'icon2';
+				var inputParamTable = createRegularTable('', '');
+				var row2 = inputParamTable.insertRow(inputParamTable.rows.length);
+				var cell2 = row2.insertCell(row2.cells.length);
+				var link = document.createElement('a');
+				link.style.color = '#0066FF';
+				link.href = "javascript:toggle('inputParamsDiv" + child.jobNumber + "', 'Hide', 'Show');";
+				var inputIcon = addImage(link, "/gp/images/parameters.gif");
+				inputIcon.align = 'left';
+				cell2.appendChild(link);
+				cell2 = row2.insertCell(row2.cells.length);
+				link = document.createElement('a');
+				link.href = "javascript:toggle('inputParamsDiv" + child.jobNumber + "', 'Hide', 'Show');";
+				var span = document.createElement('span');
+				span.innerHTML = 'Show';
+				span.id = "inputParamsDiv" + child.jobNumber + "Label";
+				link.appendChild(span);
+				link.appendChild(document.createTextNode(" Input "));
+				link.appendChild(document.createElement("br"));
+				link.appendChild(document.createTextNode("Parameters"));
+				cell2.appendChild(link);
+				iconDiv.appendChild(inputParamTable);
+				cell.appendChild(iconDiv);
+				
+				cell = row.insertCell(row.cells.length);
+				cell.width = '30px';
+				var img = document.createElement('img');
+				img.id = "jobStatusIcon" + child.jobNumber;
+				if (child.status == 'Error') {
+					img.src = "/gp/images/error.gif";
+				} else if (child.status == 'Finished' && child.isVisualizer) {
+					img.src = "/gp/images/visualizer.gif";
+				} else if (child.status == 'Finished') {
+				 	img.src = "/gp/images/complete.gif";
+				} else {
+					img.src = "/gp/images/spin.gif";
+				}
+				cell.appendChild(img);
+				var statusSpan = document.createElement('span');
+				statusSpan.id = 'jobStatus' + child.jobNumber;
+				statusSpan.style.display = 'none';
+				statusSpan.innerHTML = child.status;
+				cell.appendChild(statusSpan);			
+				
+				if (child.isPipeline) {
+					var indicator = createIndicator(child);
+					div.appendChild(indicator);
+				}
+				//createInputParams(child);
+				//createInputFiles(child);			
+				
+				//if (child.status == 'Finished') {
+			//		createOutputFiles(child);
+				//}		
+				tagIndicatorCell(child, index, parent);
+				
+				// create input parameters
+				var inputParameters = createInputParameters(child);
+				div.appendChild(inputParameters);
+				
+				// create outputFileDiv
+				var outputFileDiv = document.createElement('div');
+				outputFileDiv.id = 'outputFilesDiv' + child.jobNumber;
+				outputFileDiv.className = 'files';
+				div.appendChild(outputFileDiv);
+				
+				createInputFiles(child);
+				
+				if ((child.status == 'Error' || child.status == 'Finished')) {
+					createOutputFiles(child);
+				}
+						
+				// update the children
+				if (child.isPipeline && child.children) {
+					updateChildren(child);
+				}
+			}
 			
+			function createIndicator(child) {
+				var table = createRegularTable('indicator' + child.jobNumber, 'indicator');
+				var row = table.insertRow(table.rows.length);
+				for (var i = 0; i < child.numSteps; i++) {
+					var cell = row.insertCell(row.cells.length);
+					if (i < child.numStepsCompleted) {
+						cell.id = 'indicatorCell' + child.children[i].jobNumber;
+						if (child.children[i].status == 'Error') {
+							cell.innerHTML = '&nbsp;';
+							cell.className = 'red';
+						} else if (child.children[i].status == 'Finished') {
+							cell.innerHTML = '&nbsp;';
+							cell.className = 'blue';
+						} else {
+							cell.innerHTML = '&nbsp;';
+							cell.className = 'green';
+						}
+					} else {
+						cell.innerHTML = '&nbsp;';
+						cell.className = 'green';
+					} 
+				}
+				return table;
+			}
 			
-			function updateChild(child) {
+			function updateChild(child, index, parent) {
 				var status = document.getElementById("jobStatus"+child.jobNumber).innerHTML;
 				if (status == 'Processing' && child.status != 'Processing') {
-					updateOutputFiles(child, child.outputParams);
+					createOutputFiles(child);
 				}
 				updateStatus(child, child.status);
+				// if there's an indicator cell, update it, else create it
+				if (document.getElementById("indicatorCell"+child.jobNumber)) {
+					var indicatorCell = document.getElementById("indicatorCell"+child.jobNumber);
+					indicatorCell.className = child.status == 'Error' ? "red" : (child.status == 'Finished' ? "blue" : "green");
+				} else {
+					tagIndicatorCell(child, index, parent);
+				}
+				
+				// update the children
+				if (child.isPipeline && child.children) {
+					updateChildren(child);
+				}
 			}
+			
+			function tagIndicatorCell(child, index, parent) {
+				var indicatorTable = document.getElementById('indicator' + parent.jobNumber);
+				indicatorTable.rows[0].cells[index].id = 'indicatorCell' + child.jobNumber;
+				indicatorTable.rows[0].cells[index].className = child.status == 'Error' ? "red" : (child.status == 'Finished' ? "blue" : "green");
+			}
+					
 			
 			function updateStatus(job, status) {
 				document.getElementById("jobStatusIcon"+job.jobNumber).src = (status == 'Error' ? "/gp/images/error.gif" : (status == 'Finished' ? (job.isVisualizer ? "/gp/images/visualizer.gif" : "/gp/images/complete.gif") : "/gp/images/spin.gif"));
 				document.getElementById("jobStatus"+job.jobNumber).innerHTML = status;
-				// if there's an indicator cell, update it
-				if (document.getElementById("indicatorCell"+job.jobNumber)) {
-					var indicatorCell = document.getElementById("indicatorCell"+job.jobNumber);
-					indicatorCell.className = status == 'Error' ? "red" : (status == 'Finished' ? "blue" : "green");
-				}
+				
 			}
 			
 			function addSpacer(element) {
@@ -183,29 +321,56 @@
 			
 			var visualizerAppletTags = new Array();
 			
-			function updateOutputFiles(job, outputFiles) {
+			function createInputFiles(job) {
 				var div = document.getElementById("outputFilesDiv"+job.jobNumber);
-				if (outputFiles) {											
-					for (var i = 0; i < outputFiles.length; i++) {
+				if (job.inputFiles) {											
+					for (var i = 0; i < job.inputFiles.length; i++) {
 						var p = document.createElement("p");
 						p.className = 'narrow';
-						for (var i = 0; i < job.numAncestors; i++) {
+						for (var j = 1; j < job.numAncestors && j < 10; j++) {
+							addSpacer(p);
+						}
+						var image = document.createElement("img");
+						image.src = "/gp/images/inputFile.gif";
+						p.appendChild(image);
+						var label = document.createElement("strong");
+						label.appendChild(document.createTextNode(" " + job.inputFiles[i].name + ": "));
+						p.appendChild(label);
+						var link = document.createElement("a");
+						link.style.color = '#0066FF';
+						link.href = job.inputFiles[i].link;
+						link.appendChild(document.createTextNode(job.inputFiles[i].value));
+						p.appendChild(link);
+						div.appendChild(p);
+				    }
+				}
+			}
+			
+			function createOutputFiles(job) {
+				var div = document.getElementById("outputFilesDiv"+job.jobNumber);
+				if (job.outputFiles) {	
+					for (var i = 0; i < job.outputFiles.length; i++) {
+						var p = document.createElement("p");
+						p.className = 'narrow';
+						for (var j = 1; j < job.numAncestors && j < 10; j++) {
 							addSpacer(p);
 						}
 						var image = document.createElement("img");
 						image.src = "/gp/images/outputFile.gif";
 						p.appendChild(image);
-						var link = document.Element("a");
+						var link = document.createElement("a");
 						link.style.color = '#0066FF';
-						link.href = outputFiles[i].link;
-						link.appendChild(document.createTextNode(outputFiles[i].name));
+						link.href = job.outputFiles[i].link;
+						link.appendChild(document.createTextNode(job.outputFiles[i].name));
 						p.appendChild(link);
+						p.appendChild(document.createTextNode(" ("+job.outputFiles[i].formattedSize+") "));
 						div.appendChild(p);
 				    }
-				} else if (job.isVisualizer) {
+				}
+				if (job.isVisualizer) {
 					var p = document.createElement("p");
 					p.className = 'narrow';
-					for (var i = 0; i < job.numAncestors; i++) {
+					for (var j = 1; j < job.numAncestors && j < 10; j++) {
 						addSpacer(p);
 					}
 					var link = document.createElement('a');
@@ -227,6 +392,49 @@
 				}
 			}
 			
+			function createInputParameters(job) {
+				var div = document.createElement('div');
+				div.id = 'inputParamsDiv' + job.jobNumber;
+				div.class = "jobContent";
+				div.style.display = 'none';
+				div.appendChild(document.createElement('br'));
+				
+				var windowTable = createRegularTable('', 'window');
+				var singleRow = windowTable.insertRow(windowTable.rows.length);
+				var singleCell = singleRow.insertCell(singleRow.cells.length);
+				singleCell.appendChild(document.createElement('br'));
+				div.appendChild(windowTable);
+				
+				if (job.inputParameters) {
+					
+					var table = createRegularTable('', 'summary');
+					table.style.backgroundColor = '#FFFFFF';
+					singleCell.appendChild(table);
+					
+					row = table.insertRow(table.rows.length);
+					var header = document.createElement('th');
+					header.appendChild(document.createTextNode('Input Parameter'));
+					header.style.width = '150px';
+					row.appendChild(header);
+					header = document.createElement('th');
+					header.appendChild(document.createTextNode('Value'));
+					row.appendChild(header);
+					
+					for (var i = 0; i < job.inputParameters.length; i++) {
+						row = table.insertRow(table.rows.length);
+						var cell = row.insertCell(row.cells.length);
+						cell.align = 'right';
+						cell.appendChild(document.createTextNode(job.inputParameters[i].name));
+						cell = row.insertCell(row.cells.length);
+						cell.appendChild(document.createTextNode(job.inputParameters[i].value));
+					}
+				} else {
+					singleCell.appendChild(document.createTextNode("no input parameters"));
+				}		
+				singleCell.appendChild(document.createElement('br'));
+				return div;		
+			}
+				
 			function runVisualizer(jobNumber) {
 				document.getElementById("visualizerSpan" + jobNumber).innerHTML = visualizerAppletTags[jobNumber];
 			}
@@ -245,23 +453,31 @@
 	<ui:define name="body">
 
 		<div class="statusReport">
+		<input type="checkbox" CHECKED="true" id="keepUpdating" style="display:none;"/>
+	    <input type="textarea" id="responseArea" rows="30" cols="100" style="display:none;"/>
+	    
 		<div style="text-align:right;">
 			To launch visualizer click <img src="/gp/images/visualizer.gif" /> icon. To see options click <img src="/gp/images/smallOptions.gif" /> icon. For Input Parameters click <img src="/gp/images/smallParameters.gif" /> icon.</div> <br />
+			<h:outputText rendered="#{jobStatusBean.jobInfo.userId == requestScope.userID}">
 			<div class="icon">
 				<a style="color:#0066FF;" href="javascript:openLyteBox(#{jobStatusBean.jobInfo.jobNumber})">
 				<img id="permissionsIcon" src="/gp/images/lockOpen.gif" align="left" />
 				Access<br />Permission</a>
 			</div>
-		
+			</h:outputText>
 		<div style="float:right;margin-right:10px;">
+			<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Processing'}">
 		    <input type="checkbox" 
 		           id="emailCheckbox" 
 		           onclick="setEmailNotification(#{jobStatusBean.jobInfo.jobNumber}, '#{jobStatusBean.currentUserId}', '#{jobStatusBean.currentUserEmail}');" 
-		           value="checkbox" /> Email Reminder </div>
+		           value="checkbox" /> Email Reminder 
+		    </h:outputText>
+		</div>
 		
 		<div style="float:right;margin-right:10px;"><input type="checkbox" /> Show Execution Logs</div>
 		<br /><br />
 
+		<div id="jobContainer#{jobStatusBean.jobInfo.jobNumber}">
 		<table class="title" cellpadding="0" cellspacing="0" border="0" id="jobTable#{jobStatusBean.jobInfo.jobNumber}">
 			<tr>
 				<td class="title">
@@ -344,9 +560,16 @@
 			    </h:outputText>
 	    	</t:dataList>
 	   	</h:outputText>
-	    
 	    </div>
 	    
+	    
+	   
+	    <br/>
+	    
+	    </div>
+	    <table cellpadding="0" cellspacing="0" border="0" style="display: none;" id="testTable">
+	    	<tr><td></td></tr>
+	    </table> 
 	</ui:define>
 	
 </ui:composition>

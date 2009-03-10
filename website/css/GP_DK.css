@@ -196,6 +196,7 @@ table.title {
 	margin-top:3px;
 	margin-right:5px;
 	float:right;
+	padding-right: 15px;
 }
 
 .icon2 img {
@@ -327,13 +328,17 @@ table.indicator {
 	color:#fff;
 	font-size:7px;
 	background-color:#999999;
+	overflow: hidden;
 }
 table.indicator td {
-	border-left:solid #fff 1px;
+	border-left:solid #fff 2px;
 	padding:0 0 0 3px;
+	height:3px;
+	overflow: hidden;
+	line-height: 4px;
 }
 table.indicator td.green {
-	background-color:#CCFF00;
+	background-color:#CCFF00;	
 }
 table.indicator td.blue {
 	background-color:#00CCFF;
