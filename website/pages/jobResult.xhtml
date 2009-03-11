@@ -39,8 +39,7 @@
 			
 		<script type="text/javascript">
 
-		function setEmailNotification(jobId, userId, userEmail){
-            var cb = document.getElementById('emailCheckbox');
+		function setEmailNotification(cb, jobId, userId, userEmail){
             var valid = userEmail != null &amp;&amp; userEmail.length > 0;
 		    if (valid) {
 			    valid = jcv_checkEmail(userEmail);
@@ -488,14 +487,15 @@
 			   	Access<br />Permission</a>
 			</div>
 			</h:outputText>
-		<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Processing'}">
-			<div style="float:right;margin-right:10px;" id="emailDiv">
-				<input type="checkbox" 
-			           id="emailCheckbox" 
-			           onclick="setEmailNotification(#{jobStatusBean.jobInfo.jobNumber}, '#{jobStatusBean.currentUserId}', '#{jobStatusBean.currentUserEmail}');" 
-			           value="checkbox" /> Email Reminder 
-			</div>
-		</h:outputText>
+            <h:outputText rendered="#{not jobStatusBean.finished}">
+			    <div style="float:right;margin-right:10px;" id="emailDiv">
+                <h:form>
+                <h:selectBooleanCheckbox value="#{jobStatusBean.sendEmailNotification}" immediate="true" 
+                    onclick="setEmailNotification(this, #{jobStatusBean.jobInfo.jobNumber}, '#{jobStatusBean.currentUserId}', '#{jobStatusBean.currentUserEmail}');"
+                /> Email Reminder 
+                </h:form>
+			    </div>
+            </h:outputText>
 		<!--   div style="float:right;margin-right:10px;"><input type="checkbox" /> Show Execution Logs</div -->
 		<div style="float:right;margin-right:10px;">
 		    <h:form>

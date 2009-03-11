@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
+import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.util.EmailNotificationManager;
@@ -32,12 +33,15 @@ import org.genepattern.server.webapp.jsf.UIBeanHelper;
 public class JobStatusBean {
     private static Logger log = Logger.getLogger(JobStatusBean.class);
     
-    private boolean showExecutionLogs = false;
-    private boolean openVisualizers = false;
     private JobInfoWrapper jobInfoWrapper = null;
     private List<JobInfoWrapper> allSteps = null;
     private String currentUserId = null;
     private String currentUserEmail = null;
+
+    private boolean finished = false;
+    private boolean sendEmailNotification = false;
+    private boolean showExecutionLogs = false;
+    private boolean openVisualizers = false;
 
     public JobStatusBean() {
         String jobNumberParameter = null;
@@ -80,6 +84,9 @@ public class JobStatusBean {
         
         JobInfoManager jobInfoManager = new JobInfoManager();
         this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, currentUserId, jobNumber);
+        this.finished = 
+            JobStatus.FINISHED.equals(this.jobInfoWrapper.getStatus()) ||
+            JobStatus.ERROR.equals(this.jobInfoWrapper.getStatus());
     }
     
     public JobInfoWrapper getJobInfo() {
@@ -105,13 +112,14 @@ public class JobStatusBean {
         return allSteps;
     }
 
+    public boolean isFinished() {
+        return finished;
+    }
+
     public boolean isShowExecutionLogs() {
         return this.showExecutionLogs;
     }
     
-    //support for Email Notification on job completion
-    private boolean sendEmailNotification = false;
-
     public boolean isSendEmailNotification() {
         return sendEmailNotification;
     }
