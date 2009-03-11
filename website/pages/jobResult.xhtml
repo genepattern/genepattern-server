@@ -40,13 +40,8 @@
 		<script type="text/javascript">
 
 		function setEmailNotification(jobId, userId, userEmail){
-			alert('setEmailNotification: '+jobId+', '+userId+', '+userEmail);
             var cb = document.getElementById('emailCheckbox');
-			alert('cb.checked: '+cb.checked);
-		    //var ue = document.getElementById("userEmail");
-		    //var uid = document.getElementById("userID");
 		    var valid = jcv_checkEmail(userEmail);
-            alert('valid: '+valid);
 		    if (!valid) {
 		        var em = prompt("Email on completion to?:");
 		        if (em == null){
@@ -69,7 +64,23 @@
 		    else {
 		        cancelEmailNotification(userEmail, userId, jobId);
 		    }
-		}		
+		}	
+
+        function setShowExecutionLogs(cb, jobNumber) {
+            var action = cb.checked ? 'showExecutionLogs' : 'hideExecutionLogs';
+            var opt = {
+                    method:    'post',
+                    postBody:  '',
+                    onSuccess:  function(response) {
+                                    location.reload();
+                                },
+                    onFailure: function(t) {
+                        cb.checked = false;
+                        alert('Error ' + t.status + ': Problem with Show Execution Logs checkbox');
+                    }
+            } 
+            new  Ajax.Request('/gp/jobResults/'+jobNumber+'/'+action,opt);
+        }
 		
 		var openVisualizers = #{jobStatusBean.openVisualizers};
 		
@@ -482,7 +493,14 @@
 			           value="checkbox" /> Email Reminder 
 			</div>
 		</h:outputText>
-		<div style="float:right;margin-right:10px;"><input type="checkbox" /> Show Execution Logs</div>
+		<!--   div style="float:right;margin-right:10px;"><input type="checkbox" /> Show Execution Logs</div -->
+		<div style="float:right;margin-right:10px;">
+		    <h:form>
+		    <h:selectBooleanCheckbox value="#{jobStatusBean.showExecutionLogs}" 
+		        onclick="setShowExecutionLogs(this, #{jobStatusBean.jobInfo.jobNumber});" 
+		    /> Show Execution Logs
+		    </h:form>
+		</div>
 		<br /><br />
 
 		<div id="jobContainer#{jobStatusBean.jobInfo.jobNumber}">

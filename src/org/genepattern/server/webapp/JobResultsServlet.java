@@ -35,6 +35,7 @@ import org.genepattern.server.JobIDNotFoundException;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.PermissionsHelper;
+import org.genepattern.server.user.UserDAO;
 import org.genepattern.util.GPConstants;
 import org.json.JSONException;
 
@@ -109,58 +110,30 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         }
     }
 
+    /**
+     * Handle requests on job results.
+     * <pre>
+       GET /jobResults
+       GET /jobResults/
+       GET /jobResults/<job>
+       GET /jobResults/<job>/
+       GET /jobResults/<job>?returnType=JSON
+       GET /jobResults/<job>/?returnType=JSON
+       GET /jobResults/<job>/<file>
+     * </pre>
+     */
     public void doGet(HttpServletRequest request, HttpServletResponse response) 
     throws IOException, ServletException
-    {
-        String useridFromSession = null;
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            Object obj = session.getAttribute(GPConstants.USERID);
-            if (obj instanceof String) {
-                useridFromSession = (String) obj;
-            }
-        }
-
-        String servletPath = request.getServletPath();
-        if (!"/jobResults".equals(servletPath)) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+    { 
+        if (!checkServletPath(request, response)) {
             return;
-        }
-       
-        //valid servlet paths:
-        // /jobResults
-        // /jobResults/
-        // /jobResults/<job>
-        // /jobResults/<job>/
-        // /jobResults/<job>?returnType=JSON
-        // /jobResults/<job>/?returnType=JSON
-        // /jobResults/<job>/<file>
-
-        String resultsPath = request.getPathInfo();
-        if (resultsPath != null && resultsPath.length() > 0) {
-            if ('/' != resultsPath.charAt(0)) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                return;
-            }
-            resultsPath = resultsPath.substring(1);
-        }
-        
+        }  
         //parse the job number and file
-        String jobNumber = null;
+        StringBuffer resultsPath = initParsePathInfo(request);
+        String jobNumber = parseJobNumber(resultsPath);
         String file = null;
-        if (resultsPath != null && resultsPath.length() > 0) {
-            int idx = resultsPath.indexOf('/');
-            if (idx < 0) {
-                jobNumber = resultsPath;
-            }
-            else {
-                jobNumber = resultsPath.substring(0, idx);
-                //remove '/'
-                file = resultsPath.substring(idx+1);
-                if (file.length() == 0) {
-                    file = null;
-                }
-            }
+        if (jobNumber != null) {
+            file = parseFilename(resultsPath);
         }
         
         //special case: list all job results
@@ -172,6 +145,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
 
         boolean allowed = false;
         int jobID = -1;
+        String useridFromSession = getUserIdFromSession(request);
         if (useridFromSession != null) {
             try {
                 jobID = Integer.parseInt(jobNumber);
@@ -199,7 +173,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
                 
                 String contextPath = request.getContextPath();
                 String cookie = request.getHeader("Cookie");
-                
+
                 JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, useridFromSession, jobID);
 
                 try {
@@ -233,6 +207,131 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         serveFile(fileObj, response);
     }
     
+    /**
+     * Handle actions on job existing jobs results:
+     * <pre>
+       POST /jobResults/<job>/showExecutionLogs
+       POST /jobResults/<job>/hideExecutionLogs
+     * </pre>
+     */
+    public void doPost(HttpServletRequest request, HttpServletResponse response) 
+    throws IOException, ServletException
+    {
+        if (!checkServletPath(request, response)) {
+            return;
+        }  
+        //parse the job number and file
+        StringBuffer resultsPath = initParsePathInfo(request);
+        String jobNumber = parseJobNumber(resultsPath);
+        try {
+            Integer.parseInt(jobNumber);
+        }
+        catch (NumberFormatException e) {
+            response.setHeader("X-genepattern-JobResultsServletException", "Invalid jobNumber: "+jobNumber);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        
+        String action = null;
+        if (resultsPath != null) {
+            action = resultsPath.toString();
+        }
+        
+        boolean showExecutionLogs = false;
+        if ("showExecutionLogs".equals(action)) {
+            showExecutionLogs = true;
+        }
+        else if ("hideExecutionLogs".equals(action)) {
+            showExecutionLogs = false;
+        }
+        else {
+            response.setHeader("X-genepattern-JobResultsServletException", "Action not available: "+action);
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        String currentUserId = this.getUserIdFromSession(request);
+        try {
+            setShowExecutionLogs(currentUserId, showExecutionLogs);
+            response.setStatus(HttpServletResponse.SC_OK);
+        }
+        catch (Exception e) {
+            response.setHeader("X-genepattern-JobResultsServletException", action + ": " + e.getLocalizedMessage());
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private String getUserIdFromSession(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            Object obj = session.getAttribute(GPConstants.USERID);
+            if (obj instanceof String) {
+                return (String) obj;
+            }
+        }
+        return null;        
+    }
+    
+    /**
+     * Double check that the servlet path is properly configured.
+     * For Tomcat this is specified in the 'web.xml' file.
+     * @return true if the servlet path is valid
+     */
+    private boolean checkServletPath(HttpServletRequest request, HttpServletResponse response) 
+    throws IOException
+    {
+        String servletPath = request.getServletPath();
+        if (!"/jobResults".equals(servletPath)) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid servletPath: "+servletPath);
+            return false;
+        }
+        return true;
+    }
+    
+    private StringBuffer initParsePathInfo(HttpServletRequest request) {
+        StringBuffer resultsPath = null;
+        String requestPathInfo = request.getPathInfo();
+        if (requestPathInfo != null) {
+            resultsPath = new StringBuffer(request.getPathInfo());
+            //remove leading '/'
+            if (resultsPath != null && resultsPath.length() > 0) {
+                if ('/' != resultsPath.charAt(0)) {
+                    log.error("Expecting leading '/' character in request.pathInfo: "+resultsPath);
+                    return resultsPath;
+                }
+                resultsPath.delete(0, 1);
+            }
+        }
+        return resultsPath;        
+    }
+
+    private String parseJobNumber(StringBuffer resultsPath) {
+        if (resultsPath == null) {
+            return null;
+        }
+        //parse the job number and file
+        String jobNumber = null;
+        if (resultsPath.length() > 0) {
+            int idx = resultsPath.indexOf("/");
+            if (idx < 0) {
+                jobNumber = resultsPath.toString();
+                resultsPath.delete(0, resultsPath.length());
+            }
+            else {
+                jobNumber = resultsPath.substring(0, idx);
+                //remove '/'
+                resultsPath.delete(0, idx+1);
+            }
+        }
+        return jobNumber; 
+    }
+    
+    private String parseFilename(StringBuffer resultsPath) {
+        if (resultsPath != null && resultsPath.length() > 0) {
+            return resultsPath.toString();
+        }
+        return null;
+    }
+
     private void serveFile(File fileObj, HttpServletResponse httpServletResponse) 
     throws IOException
     {
@@ -272,5 +371,12 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             }
         }
     }
+    
+    private void setShowExecutionLogs(String userId, boolean showExecutionLogs) {
+        new UserDAO().setProperty(userId, "showExecutionLogs", String.valueOf(showExecutionLogs));
+    }
 
 }
+
+
+
