@@ -24,7 +24,12 @@ public class LogoutFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) 
     throws IOException, ServletException 
     {
-        LoginManager.instance().logout((HttpServletRequest) request, (HttpServletResponse) response);
+        boolean redirect = true;
+        String redirectParam = request.getParameter("redirect");
+        if (redirectParam != null) {
+            redirect = Boolean.valueOf(redirectParam);
+        }
+        LoginManager.instance().logout((HttpServletRequest) request, (HttpServletResponse) response, redirect);
     }
 
     public void destroy() {

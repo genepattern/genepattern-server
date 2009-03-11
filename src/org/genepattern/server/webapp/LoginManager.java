@@ -121,6 +121,12 @@ public class LoginManager {
     public void logout(HttpServletRequest request, HttpServletResponse response) 
     throws IOException
     {
+        this.logout(request, response, true);
+    }
+    
+    public void logout(HttpServletRequest request, HttpServletResponse response, boolean redirect) 
+    throws IOException
+    {
         String userid = getUserIdFromSession(request);
         UserAccountManager.instance().getAuthentication().logout(userid, request, response);
 
@@ -131,8 +137,10 @@ public class LoginManager {
         }
 
         //redirect to a page which doesn't require authentication
-        String contextPath = request.getContextPath();
-        response.sendRedirect( contextPath + "/" );
+        if (redirect) {
+            String contextPath = request.getContextPath();
+            response.sendRedirect( contextPath + "/" );
+        }
     }
     
 }
