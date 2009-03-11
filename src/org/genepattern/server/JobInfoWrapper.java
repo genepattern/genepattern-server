@@ -271,17 +271,25 @@ public class JobInfoWrapper {
         }
     }
     
-    private JobInfo jobInfo;
+    private JobInfo jobInfo = null;
     
     private Long size = null;
+    private boolean includeInputFilesInSize = false;
+    /**
+     * Get the total size of all of the output files for this job, including all descendent jobs.
+     * Note: the size of input files is ignored.
+     * @return
+     */
     public long getSize() {
         if (size == null) {
             long counter = 0L;
             for(JobInfoWrapper child : children) {
                 counter += child.getSize();
             }
-            for(InputFile inputFile : inputFiles) {
-                counter += inputFile.getSize();
+            if (includeInputFilesInSize) {
+                for(InputFile inputFile : inputFiles) {
+                    counter += inputFile.getSize();
+                }
             }
             for(OutputFile outputFile : outputFiles) {
                 counter += outputFile.getSize();
