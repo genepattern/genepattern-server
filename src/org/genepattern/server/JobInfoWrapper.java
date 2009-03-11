@@ -13,6 +13,7 @@ import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.server.webapp.jsf.JobPermissionsBean;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.jfree.util.Log;
@@ -117,6 +118,18 @@ public class JobInfoWrapper {
      * Wrapper class for a ParameterInfo which is an output file.
      */
     public static class OutputFile extends ParameterInfoWrapper {
+        public static boolean isTaskLog(ParameterInfo parameterInfo) {
+            String filename = parameterInfo == null ? "" : parameterInfo.getName();
+            boolean isTaskLog = 
+                filename != null &&
+                ( filename.equals(GPConstants.TASKLOG) || 
+                  filename.endsWith(GPConstants.PIPELINE_TASKLOG_ENDING)
+                );
+            return isTaskLog;
+        }
+
+        private boolean isTaskLog = false;
+
         OutputFile(File outputDir, String contextPath, JobInfo jobInfo, ParameterInfo parameterInfo) {
             super(parameterInfo);
             File outputFile = new File(outputDir, parameterInfo.getName());
@@ -136,7 +149,14 @@ public class JobInfoWrapper {
             String link = contextPath + "/jobResults/" + jobInfo.getJobNumber() + "/" + parameterInfo.getName();
             setLink(link);
             setDisplayValue(outputFile.getName());
+            
+            //check execution log
+            this.isTaskLog = isTaskLog(parameterInfo);
         }
+        
+        public boolean isTaskLog() {
+            return isTaskLog;
+        } 
     }
     
     public static class InputFile extends ParameterInfoWrapper {
@@ -304,10 +324,11 @@ public class JobInfoWrapper {
     }
 
     private File outputDir;
-
+    private boolean showExecutionLogs = false;
     private List<ParameterInfoWrapper> inputParameters = new ArrayList<ParameterInfoWrapper>();
     private List<InputFile> inputFiles = new ArrayList<InputFile>();
     private List<OutputFile> outputFiles = new ArrayList<OutputFile>();
+    private List<OutputFile> outputFilesAndTaskLogs = new ArrayList<OutputFile>();
     
     private JobInfoWrapper parent = null;
     private List<JobInfoWrapper> children = new ArrayList<JobInfoWrapper>();
@@ -321,7 +342,8 @@ public class JobInfoWrapper {
 
     private JobPermissionsBean jobPermissionsBean;
 
-    public void setJobInfo(String contextPath, ParameterInfo[] formalParameters, JobInfo jobInfo) {
+    public void setJobInfo(boolean showExecutionLogs, String contextPath, ParameterInfo[] formalParameters, JobInfo jobInfo) {
+        this.showExecutionLogs = showExecutionLogs;
         this.jobInfo = jobInfo;
         String jobDir = GenePatternAnalysisTask.getJobDir(""+jobInfo.getJobNumber());
         this.outputDir = new File(jobDir);
@@ -363,7 +385,12 @@ public class JobInfoWrapper {
     }
     
     public List<OutputFile> getOutputFiles() {
-        return outputFiles;
+        if (this.showExecutionLogs) {
+            return this.outputFilesAndTaskLogs;
+        }
+        else {
+            return outputFiles;
+        }
     }
 
     /**
@@ -374,7 +401,11 @@ public class JobInfoWrapper {
         for(ParameterInfo param : jobInfo.getParameterInfoArray()) {
             if (param.isOutputFile()) {
                 OutputFile outputFile = new OutputFile(outputDir, contextPath, jobInfo, param);
-                outputFiles.add(outputFile);
+                outputFilesAndTaskLogs.add(outputFile);
+                if (!outputFile.isTaskLog()) {
+                    //don't add execution logs
+                    outputFiles.add(outputFile);
+                }
             }
             else {
                 ParameterInfoWrapper inputParam = null;

@@ -112,4 +112,14 @@ public class UserDAO extends BaseDAO {
 
     }
 
+    /**
+     * Get the value of the 'showExecutionLogs' property for the user.
+     * @param userId
+     * @return false if the value is not set for the given userId
+     */
+    public boolean getPropertyShowExecutionLogs(String userId) {
+        String showExecutionLogsPropValue = getPropertyValue(userId, "showExecutionLogs", String.valueOf(false));
+        return Boolean.valueOf( showExecutionLogsPropValue );
+    }
+
 }

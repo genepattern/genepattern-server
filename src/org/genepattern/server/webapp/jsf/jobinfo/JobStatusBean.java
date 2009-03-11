@@ -32,7 +32,7 @@ import org.genepattern.server.webapp.jsf.UIBeanHelper;
 public class JobStatusBean {
     private static Logger log = Logger.getLogger(JobStatusBean.class);
     
-    //private int jobNumber = -1;
+    private boolean showExecutionLogs = false;
     private boolean openVisualizers = false;
     private JobInfoWrapper jobInfoWrapper = null;
     private List<JobInfoWrapper> allSteps = null;
@@ -61,6 +61,7 @@ public class JobStatusBean {
             User user = userDao.findById(currentUserId);
             if (user != null) {
                 currentUserEmail = user.getEmail();
+                showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUserId);
             }
 
             String key = getEmailNotificationPropKey();
@@ -104,6 +105,10 @@ public class JobStatusBean {
         return allSteps;
     }
 
+    public boolean isShowExecutionLogs() {
+        return this.showExecutionLogs;
+    }
+    
     //support for Email Notification on job completion
     private boolean sendEmailNotification = false;
 

@@ -13,6 +13,17 @@
 package org.genepattern.server.user;
 
 public class UserProp {
+    /**
+     * @param jobNumber
+     * @return
+     */
+    public static final String getEmailNotificationPropKey(int jobNumber) {
+        if (jobNumber < 0) {
+            return null;
+        }        
+        return "sendEmailNotification_" + jobNumber;
+    }
+
     private Integer id;
     /**
      * auto generated

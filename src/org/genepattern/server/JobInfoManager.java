@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.RunVisualizer;
+import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
@@ -46,10 +47,13 @@ public class JobInfoManager {
     public JobInfoWrapper getJobInfo(String documentCookie, String contextPath, String currentUser, int jobNo) {
         try {
             HibernateUtil.beginTransaction();
+            UserDAO userDao = new UserDAO();
+            boolean showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUser);
+
             AnalysisDAO ds = new AnalysisDAO();
             JobInfo jobInfo = ds.getJobInfo(jobNo);
             
-            JobInfoWrapper jobInfoWrapper = processChildren((JobInfoWrapper)null, documentCookie, contextPath, ds, jobInfo);
+            JobInfoWrapper jobInfoWrapper = processChildren((JobInfoWrapper)null, showExecutionLogs, documentCookie, contextPath, ds, jobInfo);
 
             //this call initializes the helper methods
             jobInfoWrapper.getPathFromRoot();
@@ -98,7 +102,7 @@ public class JobInfoManager {
      * @param jobInfo
      * @return a new JobInfoWrapper
      */
-    private JobInfoWrapper processChildren(JobInfoWrapper parent, String documentCookie, String contextPath, AnalysisDAO analysisDao, JobInfo jobInfo) {
+    private JobInfoWrapper processChildren(JobInfoWrapper parent, boolean showExecutionLogs, String documentCookie, String contextPath, AnalysisDAO analysisDao, JobInfo jobInfo) {
         JobInfoWrapper jobInfoWrapper = new JobInfoWrapper();
         jobInfoWrapper.setParent(parent);
         
@@ -108,7 +112,7 @@ public class JobInfoManager {
         TaskInfo taskInfo = ad.getTask(taskId);
         ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
 
-        jobInfoWrapper.setJobInfo(contextPath, formalParameters, jobInfo);
+        jobInfoWrapper.setJobInfo(showExecutionLogs, contextPath, formalParameters, jobInfo);
         jobInfoWrapper.setPipeline(taskInfo.isPipeline());
         jobInfoWrapper.setVisualizer(taskInfo.isVisualizer());
         
@@ -118,9 +122,8 @@ public class JobInfoManager {
         }
 
         JobInfo[] children = analysisDao.getChildren(jobInfo.getJobNumber());
-        int idx = 0;
         for(JobInfo child : children) {
-            JobInfoWrapper nextChild = processChildren(jobInfoWrapper, documentCookie, contextPath, analysisDao, child);
+            JobInfoWrapper nextChild = processChildren(jobInfoWrapper, showExecutionLogs, documentCookie, contextPath, analysisDao, child);
             jobInfoWrapper.addChildJobInfo(nextChild);
         }
         
