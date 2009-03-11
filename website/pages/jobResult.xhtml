@@ -59,10 +59,10 @@
 		        }
 		    }
 		    if (cb.checked) {
-		        requestEmailNotification(userEmail, userId, jobId);
+		        requestEmailNotification(cb, jobId, userEmail);
 		    }
 		    else {
-		        cancelEmailNotification(userEmail, userId, jobId);
+		        cancelEmailNotification(cb, jobId, userEmail);
 		    }
 		}	
 

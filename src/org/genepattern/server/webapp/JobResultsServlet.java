@@ -35,7 +35,11 @@ import org.genepattern.server.JobIDNotFoundException;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.PermissionsHelper;
+import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.user.UserProp;
+import org.genepattern.server.util.EmailNotificationManager;
 import org.genepattern.util.GPConstants;
 import org.json.JSONException;
 
@@ -212,6 +216,8 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
      * <pre>
        POST /jobResults/<job>/showExecutionLogs
        POST /jobResults/<job>/hideExecutionLogs
+       POST /jobResults/<job>/requestEmailNotification
+       POST /jobResults/<job>/cancelEmailNotification
      * </pre>
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response) 
@@ -237,12 +243,19 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             action = resultsPath.toString();
         }
         
-        boolean showExecutionLogs = false;
+        Boolean showExecutionLogs = null;
+        Boolean sendNotification = null;
         if ("showExecutionLogs".equals(action)) {
             showExecutionLogs = true;
         }
         else if ("hideExecutionLogs".equals(action)) {
             showExecutionLogs = false;
+        }
+        else if ("requestEmailNotification".equals(action)) {
+            sendNotification = true;
+        }
+        else if ("cancelEmailNotification".equals(action)) {
+            sendNotification = false;
         }
         else {
             response.setHeader("X-genepattern-JobResultsServletException", "Action not available: "+action);
@@ -250,14 +263,41 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             return;
         }
         String currentUserId = this.getUserIdFromSession(request);
-        try {
-            setShowExecutionLogs(currentUserId, showExecutionLogs);
-            response.setStatus(HttpServletResponse.SC_OK);
+        
+        if (showExecutionLogs != null) {
+            try {
+                setShowExecutionLogs(currentUserId, showExecutionLogs);
+                response.setStatus(HttpServletResponse.SC_OK);
+                return;
+            }
+            catch (Exception e) {
+                response.setHeader("X-genepattern-JobResultsServletException", action + ": " + e.getLocalizedMessage());
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                return;
+            }
         }
-        catch (Exception e) {
-            response.setHeader("X-genepattern-JobResultsServletException", action + ": " + e.getLocalizedMessage());
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
+        
+        if (sendNotification != null) {
+            int jobId = -1;
+            try {
+                jobId = Integer.parseInt(jobNumber);
+            }
+            catch (NumberFormatException e) {
+                response.setHeader("X-genepattern-EmailNotificationException", "Invalid jobNumber: "+jobNumber);
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+            try {
+                sendEmailNotification(request, sendNotification, currentUserId, jobId);
+                response.setStatus(HttpServletResponse.SC_OK); 
+                return;
+            }
+            catch (EmailNotificationException e) {
+                response.setHeader("X-genepattern-EmailNotificationException", e.getErrorMessage());
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, e.getErrorMessage());
+                return;
+            }
+        } 
     }
 
     private String getUserIdFromSession(HttpServletRequest request) {
@@ -375,6 +415,64 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
     private void setShowExecutionLogs(String userId, boolean showExecutionLogs) {
         new UserDAO().setProperty(userId, "showExecutionLogs", String.valueOf(showExecutionLogs));
     }
+
+    private final static class EmailNotificationException extends Exception {
+        private String errorMessage = "";
+        
+        public EmailNotificationException(String errorMessage) {
+            this.errorMessage = errorMessage;
+        }
+        
+        public String getErrorMessage() {
+            return errorMessage;
+        }
+    }
+
+    private void sendEmailNotification(HttpServletRequest request, boolean sendNotification, String currentUserId, int jobNumber) 
+    throws EmailNotificationException
+    {
+        String currentUserEmail = null;
+        try {
+            HibernateUtil.beginTransaction();
+            UserDAO userDao = new UserDAO();
+            User user = userDao.findById(currentUserId);
+            if (user != null) {
+                currentUserEmail = user.getEmail();
+            }
+            
+            //special case: current user has not yet set their email
+            if (currentUserEmail == null || "".equals(currentUserEmail)) {
+                currentUserEmail = request.getParameter("userEmail");
+            }
+
+            String key = null;
+            if (jobNumber >= 0 && currentUserId != null && currentUserEmail != null) {
+                key = UserProp.getEmailNotificationPropKey(jobNumber);
+            }
+            if (key == null) {
+                throw new  EmailNotificationException("Can't send email notification: jobNumber="+jobNumber+", user="+currentUserId+", email="+currentUserEmail);
+            }
+            //save state
+            String value = String.valueOf(sendNotification);
+            userDao.setProperty(currentUserId, key, value);
+            //send notification
+            if (sendNotification) {
+                EmailNotificationManager.getInstance().addWaitingUser(currentUserEmail, currentUserId, ""+jobNumber);
+            } 
+            else {
+                EmailNotificationManager.getInstance().removeWaitingUser(currentUserEmail, currentUserId, ""+jobNumber);
+            }
+        }
+        catch (Exception e) {
+            String errorMessage = "Unable to initialize email notification for user: '"+currentUserId+"': "+e.getLocalizedMessage();
+            log.error(errorMessage, e);
+            throw new EmailNotificationException(errorMessage);
+        }
+        finally {
+            HibernateUtil.commitTransaction();
+        }
+    }
+
 
 }
 
