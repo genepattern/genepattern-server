@@ -12,6 +12,7 @@ import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.server.webapp.jsf.JobPermissionsBean;
+import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
@@ -31,6 +32,7 @@ public class JobInfoWrapper {
         private String link = null; //optional link to GET input or output file
         private Date lastModified = null; //optional last modification date for files on the server
         private long size = 0L; //optional size for files on the server
+        private List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
         
         public ParameterInfoWrapper(ParameterInfo parameterInfo) {
             this.parameterInfo = parameterInfo;
@@ -111,6 +113,10 @@ public class JobInfoWrapper {
          */
         public String getLink() {
             return link;
+        }
+        
+        public List<KeyValuePair> getModuleMenuItems() {
+            return moduleMenuItems;
         }
     }
     
