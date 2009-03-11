@@ -41,7 +41,10 @@
 
 		function setEmailNotification(jobId, userId, userEmail){
             var cb = document.getElementById('emailCheckbox');
-		    var valid = jcv_checkEmail(userEmail);
+            var valid = userEmail != null &amp;&amp; userEmail.length > 0;
+		    if (valid) {
+			    valid = jcv_checkEmail(userEmail);
+		    }
 		    if (!valid) {
 		        var em = prompt("Email on completion to?:");
 		        if (em == null){
