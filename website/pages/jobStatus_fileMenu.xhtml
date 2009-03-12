@@ -62,17 +62,16 @@
           	</tr>
           </h:outputText>
           
-          <t:dataList value="#{fileInfo.moduleMenuItems}" var="moduleMenuItem">
+          <t:dataList  var="moduleMenuItem" value="#{moduleMenuItems}">
             <tr>
               <td>
-                <h:commandLink value="#{moduleMenuItem.key}" action="#{jobsBean.loadTask}" immediate="true">
-                  <f:param value="#{moduleMenuItem.value}" name="module"/>
-                  <f:param value="#{fileInfo.jobNumber}" name="jobNumber"/>
-                  <f:param value="#{fileInfo.name}" name="name"/>
-                </h:commandLink>
+              <h:commandLink value="#{moduleMenuItem.key}" action="#{jobsBean.loadTask}" immediate="true">
+                  <f:param name="module" value="#{moduleMenuItem.value}" />
+                  <f:param name="jobNumber" value="#{jobNumber}" />
+                  <f:param  name="name" value="#{filename} "/>
+              </h:commandLink>
               </td>
-            </tr>
-            
+            </tr>            
           </t:dataList>
         </tbody>
       </table>

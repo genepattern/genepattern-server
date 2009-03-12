@@ -129,7 +129,15 @@ public class JobInfoWrapper {
             return link;
         }
         
-        protected void setModuleMenuItems(List<KeyValuePair> moduleMenuItems) {
+        protected void setModuleMenuItemsForFile(Map<String, Collection<TaskInfo>>  kindToModules, File file) {
+            List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
+            String kind = SemanticUtil.getKind(file);
+            Collection<TaskInfo> taskInfos = kindToModules.get(kind);
+            for (TaskInfo taskInfo : taskInfos) {
+                KeyValuePair mi = new KeyValuePair(taskInfo.getShortName(), UIBeanHelper.encode(taskInfo.getLsid()));
+                moduleMenuItems.add(mi);
+            }
+            Collections.sort(moduleMenuItems, KEY_VALUE_COMPARATOR);
             this.moduleMenuItems = moduleMenuItems;
         }
         
@@ -178,16 +186,8 @@ public class JobInfoWrapper {
             this.isTaskLog = isTaskLog(parameterInfo);
             
             //set up module popup menu for the output file
-            if (!this.isTaskLog) {
-                List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
-                String kind = SemanticUtil.getKind(outputFile);
-                Collection<TaskInfo> taskInfos = kindToModules.get(kind);
-                for (TaskInfo taskInfo : taskInfos) {
-                    KeyValuePair mi = new KeyValuePair(taskInfo.getShortName(), UIBeanHelper.encode(taskInfo.getLsid()));
-                    moduleMenuItems.add(mi);
-                }
-                Collections.sort(moduleMenuItems, KEY_VALUE_COMPARATOR);
-                setModuleMenuItems(moduleMenuItems);
+            if (!this.isTaskLog && exists) {
+                setModuleMenuItemsForFile(kindToModules, outputFile);
             }
         }
         
@@ -217,9 +217,9 @@ public class JobInfoWrapper {
 </pre>
          * @param parameterInfo
          */
-        InputFile(String contextPath, ParameterInfo[] formalParameters, ParameterInfo parameterInfo) {
+        InputFile(Map<String, Collection<TaskInfo>>  kindToModules, String contextPath, ParameterInfo[] formalParameters, ParameterInfo parameterInfo) {
             super(parameterInfo);
-            initLinkValue(contextPath, formalParameters, parameterInfo);
+            initLinkValue(kindToModules, contextPath, formalParameters, parameterInfo);
         }
         
         private ParameterInfo getFormalParameter(ParameterInfo[] formalParameters, ParameterInfo parameterInfo) {
@@ -239,9 +239,7 @@ public class JobInfoWrapper {
             return null;
         }
         
-        //Note: formalParameters is one way to check if a given ParameterInfo is an input file
-        //ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
-        private void initLinkValue(String contextPath, ParameterInfo[] formalParameters, ParameterInfo parameterInfo) {
+        private void initLinkValue(Map<String, Collection<TaskInfo>>  kindToModules, String contextPath, ParameterInfo[] formalParameters, ParameterInfo parameterInfo) {
             ParameterInfo formalParameter = getFormalParameter(formalParameters, parameterInfo);
             String name = (String) formalParameter.getAttributes().get("altName");
             if (name == null) {
@@ -295,19 +293,23 @@ public class JobInfoWrapper {
             }
 
             if (!isUrl) {
-                File f = new File(value);
-                exists = f.exists();
-                value = f.getName();
+                File inputFile = new File(value);
+                exists = inputFile.exists();
+                value = inputFile.getName();
                 displayValue = value;
                 if (displayValue.startsWith("Axis")) {
                     displayValue = displayValue.substring(displayValue.indexOf('_') + 1);
                 }
                 if (exists) {
-                    directory = f.getParentFile().getName();
-                    setSize(f.length());
+                    directory = inputFile.getParentFile().getName();
+                    setSize(inputFile.length());
                     Calendar cal = Calendar.getInstance();
-                    cal.setTimeInMillis(f.lastModified());
+                    cal.setTimeInMillis(inputFile.lastModified());
                     setLastModified(cal.getTime());
+                    
+                    //TODO: don't add the menu items until the action links are enabled
+                    //set up module popup menu for the input file
+                    //setModuleMenuItemsForFile(kindToModules, inputFile);
                 }
             }
             
@@ -448,7 +450,7 @@ public class JobInfoWrapper {
             else {
                 ParameterInfoWrapper inputParam = null;
                 if (isInputFile(param)) {
-                    InputFile inputFile = new InputFile(contextPath, formalParams, param);
+                    InputFile inputFile = new InputFile(kindToModules, contextPath, formalParams, param);
                     inputFiles.add(inputFile);
                     inputParam = inputFile;
                 } 

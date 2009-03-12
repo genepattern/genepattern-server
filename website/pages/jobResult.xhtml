@@ -560,23 +560,27 @@
 		    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
 		    </ui:include>
 	    </h:form>
-	    <t:dataList var="p" value="#{jobStatusBean.jobInfo.outputFiles}">
+        <t:dataList var="outputFile" value="#{jobStatusBean.jobInfo.outputFiles}">
 	 		<h:form>
 	   			<ui:include src="jobStatus_fileMenu.xhtml">
-	        		<ui:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}"/>
-	       			<ui:param name="valueId" value="#{p.valueId}"/>
-	       			<ui:param name="value" value="#{p.link}"/>
-	       			<ui:param name="deleteAllowed" value="#{false}"/>
+                    <ui:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}"/>
+                    <ui:param name="filename" value="#{outputFile.name}" />
+                    <ui:param name="deleteAllowed" value="#{false}"/>
+                    <ui:param name="value" value="#{outputFile.link}"/>
+	       			<ui:param name="valueId" value="#{outputFile.valueId}"/>
+                    <ui:param name="moduleMenuItems" value="#{outputFile.moduleMenuItems}"/>
 	   			</ui:include>
 	  		</h:form>
 	  	</t:dataList>
-	  	<t:dataList var="p" value="#{jobStatusBean.jobInfo.inputFiles}">
+	  	<t:dataList var="inputFile" value="#{jobStatusBean.jobInfo.inputFiles}">
 	 		<h:form>
 	   			<ui:include src="jobStatus_fileMenu.xhtml">
-	        		<ui:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}"/>
-	       			<ui:param name="valueId" value="#{p.valueId}"/>
-	       			<ui:param name="value" value="#{p.link}"/>
-	       			<ui:param name="deleteAllowed" value="#{false}"/>
+                    <ui:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}"/>
+                    <ui:param name="filename" value="#{inputFile.name}" />
+                    <ui:param name="deleteAllowed" value="#{false}"/>
+                    <ui:param name="value" value="#{inputFile.link}"/>
+                    <ui:param name="valueId" value="#{inputFile.valueId}"/>
+                    <ui:param name="moduleMenuItems" value="#{inputFile.moduleMenuItems}"/>
 	   			</ui:include>
 	  		</h:form>
 	  	</t:dataList>
