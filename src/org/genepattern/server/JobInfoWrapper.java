@@ -5,8 +5,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -15,8 +19,10 @@ import org.genepattern.server.webapp.jsf.JobPermissionsBean;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 import org.jfree.util.Log;
 
 /**
@@ -27,11 +33,19 @@ import org.jfree.util.Log;
  */
 public class JobInfoWrapper {
     public static class ParameterInfoWrapper {
+        public static class KeyValueComparator implements Comparator<KeyValuePair> {
+            public int compare(KeyValuePair o1, KeyValuePair o2) {
+                return o1.getKey().compareToIgnoreCase(o2.getKey());
+            }
+        }
+        
         private ParameterInfo parameterInfo = null;
         private String displayValue = null;
         private String link = null; //optional link to GET input or output file
         private Date lastModified = null; //optional last modification date for files on the server
         private long size = 0L; //optional size for files on the server
+        protected static final Comparator<KeyValuePair> KEY_VALUE_COMPARATOR = new KeyValueComparator();
+
         private List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
         
         public ParameterInfoWrapper(ParameterInfo parameterInfo) {
@@ -115,6 +129,10 @@ public class JobInfoWrapper {
             return link;
         }
         
+        protected void setModuleMenuItems(List<KeyValuePair> moduleMenuItems) {
+            this.moduleMenuItems = moduleMenuItems;
+        }
+        
         public List<KeyValuePair> getModuleMenuItems() {
             return moduleMenuItems;
         }
@@ -136,7 +154,7 @@ public class JobInfoWrapper {
 
         private boolean isTaskLog = false;
 
-        OutputFile(File outputDir, String contextPath, JobInfo jobInfo, ParameterInfo parameterInfo) {
+        OutputFile(Map<String, Collection<TaskInfo>>  kindToModules, File outputDir, String contextPath, JobInfo jobInfo, ParameterInfo parameterInfo) {
             super(parameterInfo);
             File outputFile = new File(outputDir, parameterInfo.getName());
             //Set the size and lastModified properties for each output file
@@ -158,6 +176,19 @@ public class JobInfoWrapper {
             
             //check execution log
             this.isTaskLog = isTaskLog(parameterInfo);
+            
+            //set up module popup menu for the output file
+            if (!this.isTaskLog) {
+                List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
+                String kind = SemanticUtil.getKind(outputFile);
+                Collection<TaskInfo> taskInfos = kindToModules.get(kind);
+                for (TaskInfo taskInfo : taskInfos) {
+                    KeyValuePair mi = new KeyValuePair(taskInfo.getShortName(), UIBeanHelper.encode(taskInfo.getLsid()));
+                    moduleMenuItems.add(mi);
+                }
+                Collections.sort(moduleMenuItems, KEY_VALUE_COMPARATOR);
+                setModuleMenuItems(moduleMenuItems);
+            }
         }
         
         public boolean isTaskLog() {
@@ -298,7 +329,7 @@ public class JobInfoWrapper {
     }
     
     private JobInfo jobInfo = null;
-    
+    private Map<String, Collection<TaskInfo>> kindToModules;
     private Long size = null;
     private boolean includeInputFilesInSize = false;
     /**
@@ -348,9 +379,10 @@ public class JobInfoWrapper {
 
     private JobPermissionsBean jobPermissionsBean;
 
-    public void setJobInfo(boolean showExecutionLogs, String contextPath, ParameterInfo[] formalParameters, JobInfo jobInfo) {
+    public void setJobInfo(boolean showExecutionLogs, String contextPath, Map<String, Collection<TaskInfo>> kindToModules, ParameterInfo[] formalParameters, JobInfo jobInfo) {
         this.showExecutionLogs = showExecutionLogs;
         this.jobInfo = jobInfo;
+        this.kindToModules = kindToModules;
         String jobDir = GenePatternAnalysisTask.getJobDir(""+jobInfo.getJobNumber());
         this.outputDir = new File(jobDir);
         processParameterInfoArray(contextPath, formalParameters);
@@ -406,7 +438,7 @@ public class JobInfoWrapper {
     private void processParameterInfoArray(String contextPath, ParameterInfo[] formalParams) {
         for(ParameterInfo param : jobInfo.getParameterInfoArray()) {
             if (param.isOutputFile()) {
-                OutputFile outputFile = new OutputFile(outputDir, contextPath, jobInfo, param);
+                OutputFile outputFile = new OutputFile(kindToModules, outputDir, contextPath, jobInfo, param);
                 outputFilesAndTaskLogs.add(outputFile);
                 if (!outputFile.isTaskLog()) {
                     //don't add execution logs

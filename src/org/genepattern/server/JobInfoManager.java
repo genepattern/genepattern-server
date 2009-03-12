@@ -5,7 +5,9 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
@@ -15,6 +17,7 @@ import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -50,10 +53,14 @@ public class JobInfoManager {
             UserDAO userDao = new UserDAO();
             boolean showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUser);
 
-            AnalysisDAO ds = new AnalysisDAO();
-            JobInfo jobInfo = ds.getJobInfo(jobNo);
+            AnalysisDAO analysisDao = new AnalysisDAO();
+            JobInfo jobInfo = analysisDao.getJobInfo(jobNo);
             
-            JobInfoWrapper jobInfoWrapper = processChildren((JobInfoWrapper)null, showExecutionLogs, documentCookie, contextPath, ds, jobInfo);
+            AdminDAO adminDao = new AdminDAO();
+            TaskInfo[] latestTasks = adminDao.getLatestTasks(currentUser);
+            Map<String, Collection<TaskInfo>> kindToModules = SemanticUtil.getKindToModulesMap(latestTasks);
+
+            JobInfoWrapper jobInfoWrapper = processChildren((JobInfoWrapper)null, showExecutionLogs, documentCookie, contextPath, analysisDao, adminDao, kindToModules, jobInfo);
 
             //this call initializes the helper methods
             jobInfoWrapper.getPathFromRoot();
@@ -67,12 +74,11 @@ public class JobInfoManager {
         }
     }
     
-    private PipelineModel getPipelineModel(JobInfo jobInfo) {
+    private PipelineModel getPipelineModel(AdminDAO adminDao, JobInfo jobInfo) {
         PipelineModel model = null;
 
         int taskId = jobInfo.getTaskID();
-        AdminDAO ad = new AdminDAO();
-        TaskInfo taskInfo = ad.getTask(taskId);
+        TaskInfo taskInfo = adminDao.getTask(taskId);
 
         if ((taskInfo != null) && (model == null)) {
             TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
@@ -102,7 +108,7 @@ public class JobInfoManager {
      * @param jobInfo
      * @return a new JobInfoWrapper
      */
-    private JobInfoWrapper processChildren(JobInfoWrapper parent, boolean showExecutionLogs, String documentCookie, String contextPath, AnalysisDAO analysisDao, JobInfo jobInfo) {
+    private JobInfoWrapper processChildren(JobInfoWrapper parent, boolean showExecutionLogs, String documentCookie, String contextPath, AnalysisDAO analysisDao, AdminDAO adminDao, Map<String, Collection<TaskInfo>> kindToModules, JobInfo jobInfo) {
         JobInfoWrapper jobInfoWrapper = new JobInfoWrapper();
         jobInfoWrapper.setParent(parent);
         
@@ -112,7 +118,7 @@ public class JobInfoManager {
         TaskInfo taskInfo = ad.getTask(taskId);
         ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
 
-        jobInfoWrapper.setJobInfo(showExecutionLogs, contextPath, formalParameters, jobInfo);
+        jobInfoWrapper.setJobInfo(showExecutionLogs, contextPath, kindToModules, formalParameters, jobInfo);
         jobInfoWrapper.setPipeline(taskInfo.isPipeline());
         jobInfoWrapper.setVisualizer(taskInfo.isVisualizer());
         
@@ -123,13 +129,13 @@ public class JobInfoManager {
 
         JobInfo[] children = analysisDao.getChildren(jobInfo.getJobNumber());
         for(JobInfo child : children) {
-            JobInfoWrapper nextChild = processChildren(jobInfoWrapper, showExecutionLogs, documentCookie, contextPath, analysisDao, child);
+            JobInfoWrapper nextChild = processChildren(jobInfoWrapper, showExecutionLogs, documentCookie, contextPath, analysisDao, adminDao, kindToModules, child);
             jobInfoWrapper.addChildJobInfo(nextChild);
         }
         
         int numSteps = 1;
         if (jobInfoWrapper.isPipeline()) {
-            PipelineModel pipelineModel = getPipelineModel(jobInfo);
+            PipelineModel pipelineModel = getPipelineModel(adminDao, jobInfo);
             numSteps = pipelineModel.getTasks().size();
         }
         
