@@ -490,7 +490,7 @@
             <h:outputText rendered="#{not jobStatusBean.finished}">
 			    <div style="float:right;margin-right:10px;" id="emailDiv">
                 <h:form>
-                <h:selectBooleanCheckbox value="#{jobStatusBean.sendEmailNotification}" immediate="true" 
+                <h:selectBooleanCheckbox value="#{jobStatusBean.sendEmailNotification}" 
                     onclick="setEmailNotification(this, #{jobStatusBean.jobInfo.jobNumber}, '#{jobStatusBean.currentUserId}', '#{jobStatusBean.currentUserEmail}');"
                 /> Email Reminder 
                 </h:form>
