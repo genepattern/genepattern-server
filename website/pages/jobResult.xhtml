@@ -130,6 +130,9 @@
 						if (document.getElementById('emailDiv')) {
 							document.getElementById('emailDiv').style.display = 'none';
 						}
+						if (!data.isVisualizer) {
+							window.location.reload();
+						}
 					}
 				}
 			}
@@ -349,6 +352,7 @@
 						}
 						var image = document.createElement("img");
 						image.src = "/gp/images/inputFile.gif";
+						image.title = 'input file';
 						p.appendChild(image);
 						var label = document.createElement("strong");
 						label.appendChild(document.createTextNode(" " + job.inputFiles[i].name + ": "));
@@ -373,6 +377,7 @@
 							addSpacer(p);
 						}
 						var image = document.createElement("img");
+						image.title = 'output file';
 						image.src = "/gp/images/outputFile.gif";
 						p.appendChild(image);
 						var link = document.createElement("a");

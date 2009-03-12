@@ -284,7 +284,7 @@
 		        
 		        <td class="center"><div style="width:40px;"><input type="checkbox" onclick="toggleAllCheckboxes(this);" /><h:commandLink action="#{jobsBean.delete}" onclick="if (!confirmDelete()) return false"><img src="/gp/images/delete.gif" /></h:commandLink></div></td>
 		        
-		        <td class="header"><a href="javascript:toggleAll()"><img src="/gp/images/triangle_black_run.gif" id="jobToggleAllImage"/></a>
+		        <td class="header"><a href="javascript:toggleAll()"><img src="/gp/images/triangle_black_run.gif" id="jobToggleAllImage" title="toggle visibility of all jobs"/></a>
 			        <h:commandLink action="#{jobsBean.sortJobsByModule}" title="Sort job results by module name">Module Name
 			          	<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'taskName' and jobsBean.jobSortAscending}">&#9650;</h:outputText>
 			          	<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'taskName' and not jobsBean.jobSortAscending}">&#9660;</h:outputText>
@@ -403,7 +403,7 @@
 		        </td>
 		        
 		        <td>
-		        	<a style="color: black; text-decoration: none;" href="javascript:toggleJob(#{rootJobWrapper.jobNumber})"><img id="jobToggleImage#{rootJobWrapper.jobNumber}" src="/gp/images/triangle_black_run.gif" border="0" /><strong>#{rootJobWrapper.taskName}</strong></a>
+		        	<a style="color: black; text-decoration: none;" href="javascript:toggleJob(#{rootJobWrapper.jobNumber})"><img id="jobToggleImage#{rootJobWrapper.jobNumber}" src="/gp/images/triangle_black_run.gif" border="0"  title="toggle visibility of this job"/><strong>#{rootJobWrapper.taskName}</strong></a>
 		        	<span class="file">
 		        		
 			        		<img src="/gp/images/smallOptions.gif"
