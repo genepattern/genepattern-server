@@ -38,8 +38,26 @@ public class JobInfoWrapper {
                 return o1.getKey().compareToIgnoreCase(o2.getKey());
             }
         }
+
+        protected static ParameterInfo getFormalParameter(ParameterInfo[] formalParameters, ParameterInfo parameterInfo) {
+            //TODO: optimize
+            String paramName = null;
+            if (parameterInfo != null) {
+                paramName = parameterInfo.getName();
+            }
+            if (paramName == null) {
+                return null;
+            }
+            for(ParameterInfo formalParameter : formalParameters) {
+                if (paramName.equals(formalParameter.getName())) {
+                    return formalParameter;
+                }
+            }
+            return null;
+        }
         
         private ParameterInfo parameterInfo = null;
+        private String displayName = null;
         private String displayValue = null;
         private String link = null; //optional link to GET input or output file
         private Date lastModified = null; //optional last modification date for files on the server
@@ -61,14 +79,24 @@ public class JobInfoWrapper {
 
         //ParameterInfo wrapper methods        
         public String getName() {
-            return parameterInfo.getName();
+            if (displayName != null) {
+                return displayName;
+            }
+            if (parameterInfo != null) {
+                return parameterInfo.getName();
+            }
+            return "";
         }
 
         public String getDescription() {
             return parameterInfo.getDescription();
         } 
         //------ end ParameterInfo wrapper methods
-        
+
+        protected void setDisplayName(String displayName) {
+            this.displayName = displayName;
+        }
+
         protected void setDisplayValue(String displayValue) {
             this.displayValue = displayValue;
         }
@@ -217,40 +245,18 @@ public class JobInfoWrapper {
 </pre>
          * @param parameterInfo
          */
-        InputFile(Map<String, Collection<TaskInfo>>  kindToModules, String contextPath, ParameterInfo[] formalParameters, ParameterInfo parameterInfo) {
+        InputFile(String contextPath, String uiValue, ParameterInfo parameterInfo) {
             super(parameterInfo);
-            initLinkValue(kindToModules, contextPath, formalParameters, parameterInfo);
+            initLinkValue(contextPath, uiValue);
         }
         
-        private ParameterInfo getFormalParameter(ParameterInfo[] formalParameters, ParameterInfo parameterInfo) {
-            //TODO: optimize
-            String paramName = null;
-            if (parameterInfo != null) {
-                paramName = parameterInfo.getName();
-            }
-            if (paramName == null) {
-                return null;
-            }
-            for(ParameterInfo formalParameter : formalParameters) {
-                if (paramName.equals(formalParameter.getName())) {
-                    return formalParameter;
-                }
-            }
-            return null;
-        }
-        
-        private void initLinkValue(Map<String, Collection<TaskInfo>>  kindToModules, String contextPath, ParameterInfo[] formalParameters, ParameterInfo parameterInfo) {
-            ParameterInfo formalParameter = getFormalParameter(formalParameters, parameterInfo);
-            String name = (String) formalParameter.getAttributes().get("altName");
-            if (name == null) {
-                name = formalParameter.getName();
-            }
-            name = name.replaceAll("\\.", " ");
-            String value = parameterInfo.getUIValue(formalParameter);
+        private void initLinkValue( String contextPath, String value ) 
+        {
+            //String value = parameterInfo.getUIValue(formalParameter);
             // skip parameters that the user did not give a value for
-            if (value == null || value.equals("")) {
-                return;
-            }
+            //if (value == null || value.equals("")) {
+            //    return;
+            //}
             String displayValue = value;
             boolean isUrl = false;
             boolean exists = false;
@@ -307,7 +313,7 @@ public class JobInfoWrapper {
                     cal.setTimeInMillis(inputFile.lastModified());
                     setLastModified(cal.getTime());
                     
-                    //TODO: don't add the menu items until the action links are enabled
+                    //TODO: don't add the menu items until the action links are implemented, requires some updates to the JobBean
                     //set up module popup menu for the input file
                     //setModuleMenuItemsForFile(kindToModules, inputFile);
                 }
@@ -448,20 +454,35 @@ public class JobInfoWrapper {
                 }
             }
             else {
-                ParameterInfoWrapper inputParam = null;
-                if (isInputFile(param)) {
-                    InputFile inputFile = new InputFile(kindToModules, contextPath, formalParams, param);
-                    inputFiles.add(inputFile);
-                    inputParam = inputFile;
-                } 
-                else {
-                    inputParam = new ParameterInfoWrapper(param);
+                ParameterInfo formalParam = ParameterInfoWrapper.getFormalParameter(formalParams, param);
+                // skip parameters that the user did not give a value for
+                String uiValue = param.getUIValue(formalParam);
+                if (uiValue != null && !"".equals(uiValue)) {
+                    ParameterInfoWrapper inputParam = null;
+                    
+                    if (isInputFile(param)) {
+                        InputFile inputFile = new InputFile(contextPath, uiValue, param);
+                        inputFiles.add(inputFile);
+                        inputParam = inputFile;
+                    } 
+                    else {
+                        inputParam = new ParameterInfoWrapper(param);
+                    }
+
+                    //set the dispay name
+                    String name = (String) formalParam.getAttributes().get("altName");
+                    if (name == null) {
+                        name = formalParam.getName();
+                    }
+                    name = name.replaceAll("\\.", " ");
+                    inputParam.setDisplayName(name);
+
+                    inputParameters.add(inputParam);
                 }
-                inputParameters.add(inputParam);
             }
         }
     }
-    
+
     private boolean isInputFile(ParameterInfo param) {
         //Note: formalParameters is one way to check if a given ParameterInfo is an input file
         //ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
