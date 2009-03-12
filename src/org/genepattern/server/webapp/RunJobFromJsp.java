@@ -2,10 +2,8 @@ package org.genepattern.server.webapp;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.genepattern.server.EncryptionUtil;
-import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -23,7 +21,6 @@ import org.genepattern.webservice.WebServiceException;
 public class RunJobFromJsp {
     private String userId = null;
     private TaskInfo task = null;
-    private Set<GroupPermission> groupPermissions = null;
     
     public RunJobFromJsp() {    
     }
@@ -36,10 +33,6 @@ public class RunJobFromJsp {
         this.task = t;
     }
     
-    public void setGroupPermissions(Set<GroupPermission> gp) {
-        this.groupPermissions = gp;
-    }
-
     public String submitJob() throws WebServiceException {
         if (isWingsJob()) {
             return submitWingsJob();
@@ -55,7 +48,7 @@ public class RunJobFromJsp {
         ParameterInfo[] paramInfos = task == null ? null : task.getParameterInfoArray();
         paramInfos = paramInfos == null ? paramInfos = new ParameterInfo[0] : paramInfos;
         LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);        
-        JobInfo job = analysisClient.submitJob(task.getID(), paramInfos, groupPermissions);
+        JobInfo job = analysisClient.submitJob(task.getID(), paramInfos);
         String jobId = "" + job.getJobNumber();
         return jobId;
     }
@@ -103,7 +96,7 @@ public class RunJobFromJsp {
             paramInfos == null ? paramInfos = new ParameterInfo[0]
                 : paramInfos;
 
-        JobInfo job = analysisClient.submitJob(task.getID(), paramInfos, groupPermissions);
+        JobInfo job = analysisClient.submitJob(task.getID(), paramInfos);
         String jobId = "" + job.getJobNumber();
         return jobId;
     }

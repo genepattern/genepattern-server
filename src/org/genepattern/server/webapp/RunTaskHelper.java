@@ -31,7 +31,6 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
-import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
@@ -63,8 +62,6 @@ public class RunTaskHelper {
     private String taskName;
 
     private ParameterInfo[] parameterInfoArray;
-    
-    private Set<GroupPermission> groupPermissions;
 
 
     /**
@@ -168,9 +165,6 @@ public class RunTaskHelper {
                 requestParameters.put(k, v);
             }
         }
-        
-        //must process the group permissions after calling and processing fub.parseRequest
-        processGroupPermissions();
 
         this.taskLsid = requestParameters.get("taskLSID");
         this.taskLsid = taskLsid != null ? URLDecoder.decode(taskLsid, "UTF-8") : null;
@@ -253,56 +247,6 @@ public class RunTaskHelper {
             pinfo.setValue(value);
         }
     }
-    
-    private void processGroupPermissions() {
-        this.groupPermissions = new HashSet<GroupPermission>();
-
-        String groupAccessValue = requestParameters.remove("groupAccess");
-        
-        List<GroupPermission> permissions = parseRequestValue(groupAccessValue);
-        for (GroupPermission permission : permissions) {
-        	groupPermissions.add(permission);
-        }
-    }
-
-    //expected format, ?groupAccess=<group_id>:[R|RW],<group_id>:[R|RW]...
-    private List<GroupPermission> parseRequestValue(String groupAccessSpec) {
-    	List<GroupPermission> permissions = new ArrayList<GroupPermission>();
-        if (groupAccessSpec == null) {
-            return permissions;
-        }
-        if (groupAccessSpec.trim().equals("")) {
-            return permissions;
-        }
-        GroupPermission.Permission flag = GroupPermission.Permission.NONE;
-        
-        String[] split = groupAccessSpec.split(",");
-        for (String spec : split) {
-        	if (spec.length() > 0) {
-		        int idx = spec.lastIndexOf(':');
-		        if (idx <= 0) {
-		            //TODO: ERROR
-		            return null;
-		        }
-		        String group = spec.substring(0, idx);
-		        String perm_flag_key = spec.substring(idx+1);
-		        if ("r".equalsIgnoreCase(perm_flag_key)) {
-		            flag = GroupPermission.Permission.READ;
-		        }
-		        else if ("rw".equalsIgnoreCase(perm_flag_key)) {
-		            flag = GroupPermission.Permission.READ_WRITE;
-		        }
-		        else {
-		            //TODO: ERROR
-		            return null;
-		        }
-		        permissions.add(new GroupPermission(group, flag));
-        	}
-        }
-        return permissions;
-    }
-    
-
 
     public HashMap<String, String> getInputFileParameters() {
 	return inputFileParameters;
@@ -335,10 +279,6 @@ public class RunTaskHelper {
 
     public String getTaskName() {
 	return taskName;
-    }
-    
-    public Set<GroupPermission> getGroupPermissions() {
-        return groupPermissions;
     }
 
 }

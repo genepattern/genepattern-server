@@ -64,7 +64,6 @@ String userID = (String) request.getAttribute(GPConstants.USERID);
     RunJobFromJsp runner = new RunJobFromJsp();
     runner.setUserId(userID);
     runner.setTaskInfo(task);
-    runner.setGroupPermissions(runTaskHelper.getGroupPermissions());
     String jobId = runner.submitJob();
     if (jobId == null) {
         response.sendRedirect("/gp/jobResults");
