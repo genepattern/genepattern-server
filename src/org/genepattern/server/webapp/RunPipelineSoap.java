@@ -28,6 +28,7 @@ import java.net.UnknownHostException;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -144,6 +145,7 @@ public class RunPipelineSoap {
 		try {
 		    parameterInfo = jobSubmission.giveParameterInfoArray();
 		    setInheritedJobParameters(parameterInfo, results);
+		    substituteLsidInInputFiles(parameterInfo);
 		    ParameterInfo[] params = parameterInfo;
 		    params = setJobParametersFromArgs(jobSubmission.getName(), taskNum + 1, params, results, args);
 		    params = removeEmptyOptionalParams(parameterInfo);
@@ -265,27 +267,27 @@ public class RunPipelineSoap {
     }
 
     protected String getInheritedFilename(Map attributes, JobInfo[] results) throws FileNotFoundException {
-	// these params must be removed so that the soap lib doesn't try to send the file as ana attachment
-	String taskStr = (String) attributes.get(PipelineModel.INHERIT_TASKNAME);
-	String fileStr = (String) attributes.get(PipelineModel.INHERIT_FILENAME);
-	attributes.remove("TYPE");
-	attributes.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
+        // these params must be removed so that the soap lib doesn't try to send the file as an attachment
+        String taskStr = (String) attributes.get(PipelineModel.INHERIT_TASKNAME);
+        String fileStr = (String) attributes.get(PipelineModel.INHERIT_FILENAME);
+        attributes.remove("TYPE");
+        attributes.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
 
-	int task = Integer.parseInt(taskStr);
-	JobInfo job = results[task];
-	String fileName = getOutputFileName(job, fileStr);
+        int task = Integer.parseInt(taskStr);
+        JobInfo job = results[task];
+        String fileName = getOutputFileName(job, fileStr);
 
-	// TODO: why encode the fileName?
-	try {
-	    if (fileName != null) {
-		fileName = URLEncoder.encode(fileName, "UTF-8");
-	    }
+        // TODO: why encode the fileName?
+        try {
+            if (fileName != null) {
+                fileName = URLEncoder.encode(fileName, "UTF-8");
+            }
 	} catch (UnsupportedEncodingException uee) {
-	    // ignore
-	}
-	String context = System.getProperty("GP_Path", "/gp");
-	String url = server + context + "/jobResults/" + fileName;
-	return url;
+            // ignore
+        }
+        String context = System.getProperty("GP_Path", "/gp");
+        String url = server + context + "/jobResults/" + fileName;
+        return url;
     }
 
     protected ParameterInfo[] removeEmptyOptionalParams(ParameterInfo[] parameterInfo) {
@@ -314,23 +316,39 @@ public class RunPipelineSoap {
 	return params.toArray(new ParameterInfo[params.size()]);
     }
 
-    protected void setInheritedJobParameters(ParameterInfo[] parameterInfo, JobInfo[] results)
-	    throws FileNotFoundException {
-	for (int i = 0, length = parameterInfo.length; i < length; i++) {
-	    ParameterInfo aParam = parameterInfo[i];
-	    if (aParam.getAttributes() != null && aParam.getAttributes().get(PipelineModel.INHERIT_TASKNAME) != null) {
-		String url = getInheritedFilename(aParam.getAttributes(), results);
-		aParam.setValue(url);
-		String value = aParam.getValue();
-		if (value != null && value.startsWith("<GenePatternURL>")) {
-		    // substitute <LSID> flags for pipeline files
-		    String lsidTag = "<LSID>";
-		    String lsidValue = System.getProperty("LSID");
-		    value = value.replace(lsidTag, lsidValue);
-		    aParam.setValue(value);
-		}
-	    }
-	}
+    protected void setInheritedJobParameters(ParameterInfo[] parameterInfos, JobInfo[] results) throws FileNotFoundException {
+        for (ParameterInfo param : parameterInfos) {
+            boolean isInheritTaskName = false;
+            HashMap attributes = param.getAttributes();
+            if (attributes != null) {
+                isInheritTaskName = attributes.get(PipelineModel.INHERIT_TASKNAME) != null;
+            }
+            if (isInheritTaskName) {
+                String url = getInheritedFilename(param.getAttributes(), results);
+                param.setValue(url);
+            }
+        }
+    }
+
+    /**
+     * Substitute '<LSID>' in input files. 
+     * This is a special case for steps in a pipeline which use input files from the pipeline or from a previous step in the pipeline.
+     *
+     * Note: must be called after {@link #setInheritedJobParameters(ParameterInfo[], JobInfo[])}
+     * 
+     * @param parameterInfos
+     */
+    protected void substituteLsidInInputFiles(ParameterInfo[] parameterInfos) {
+        for (ParameterInfo param : parameterInfos) {
+            String value = param.getValue();
+            if (value != null && value.startsWith("<GenePatternURL>")) {
+                // substitute <LSID> flags for pipeline files
+                String lsidTag = "<LSID>";
+                String lsidValue = System.getProperty("LSID");
+                value = value.replace(lsidTag, lsidValue);
+                param.setValue(value);
+            }
+        }        
     }
 
     /**
