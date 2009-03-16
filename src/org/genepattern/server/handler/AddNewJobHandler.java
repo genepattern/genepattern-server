@@ -12,12 +12,9 @@
 
 package org.genepattern.server.handler;
 
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.TaskIDNotFoundException;
-import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
@@ -36,10 +33,8 @@ public class AddNewJobHandler extends RequestHandler {
     private static Logger log = Logger.getLogger(AddNewJobHandler.class);
     protected int taskID = 1;
     protected String parameter_info = "";
-    protected String inputFileName = "";
     protected ParameterInfo[] parameterInfoArray = null;
     protected String userID;
-    private Set<GroupPermission> groupPermissions = null;
     
     protected int parentJobID;
     
@@ -51,14 +46,12 @@ public class AddNewJobHandler extends RequestHandler {
     }
     
     /**
-     * Constructor with taskID, ParameterInfo[] and inputFileName
+     * Constructor with taskID, ParameterInfo[]
      *
      * @param taskID
      *            taskID from <CODE>TaskInfo</CODE>
      * @param parameterInfoArray
      *            <CODE>ParameterInfo</CODE>
-     * @param inputFileName
-     *            String
      */
     public AddNewJobHandler(int taskID, String userID, ParameterInfo[] parameterInfoArray) {
         this.taskID = taskID;
@@ -67,14 +60,12 @@ public class AddNewJobHandler extends RequestHandler {
     }
     
     /**
-     * Constructor with taskID, ParameterInfo[], inputFileName, and parentJobID
+     * Constructor with taskID, ParameterInfo[] and parentJobID
      *
      * @param taskID
      *            taskID from <CODE>TaskInfo</CODE>
      * @param parameterInfoArray
      *            <CODE>ParameterInfo</CODE>
-     * @param inputFileName
-     *            String
      * @param parentJobID
      *            the parent job number
      */
@@ -84,10 +75,6 @@ public class AddNewJobHandler extends RequestHandler {
         this.parameterInfoArray = parameterInfoArray;
         this.parentJobID = parentJobID;
         hasParent = true;
-    }
-    
-    public void setGroupPermissions(Set<GroupPermission> groupPermissions) {
-        this.groupPermissions = groupPermissions;
     }
     
     /**
@@ -125,13 +112,7 @@ public class AddNewJobHandler extends RequestHandler {
                     "AddNewJobRequest:executeRequest Operation failed, null value returned for JobInfo");
             }
             
-            // Insert group permissions information
-            if (groupPermissions != null && groupPermissions.size() > 0) {
-                ds.setGroupPermissions(ji.getJobNumber(), groupPermissions);
-            }
-
             HibernateUtil.commitTransaction();
-            
             
             if(log.isDebugEnabled()) {
                 log.debug("Waking up job queue");
@@ -153,9 +134,5 @@ public class AddNewJobHandler extends RequestHandler {
         }
         
         return ji;
-    }
-    
-    public String getInputFileName() {
-        return inputFileName;
     }
 }
