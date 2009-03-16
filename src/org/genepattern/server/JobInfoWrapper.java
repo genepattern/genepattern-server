@@ -293,7 +293,7 @@ public class JobInfoWrapper {
                     else {
                         displayValue = value;
                     }
-                    value = genePatternUrl + value.substring("<GenePatternURL>".length());
+                    value = genePatternUrl + "/" + value.substring("<GenePatternURL>".length());
                     isUrl = true;
                 } 
             }
