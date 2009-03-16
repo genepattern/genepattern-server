@@ -1,5 +1,10 @@
 package org.genepattern.server;
 
+import static org.genepattern.util.GPConstants.TASKLOG;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -8,10 +13,13 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.RunVisualizer;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -243,5 +251,85 @@ public class JobInfoManager {
         }
         return df.format(date);
     }
- 
+    
+    public static File writeExecutionLog(String outDirName, JobInfoWrapper jobInfoWrapper, Properties props) {
+        File outDir = new File(outDirName);
+        File gpExecutionLog = new File(outDir, TASKLOG);
+        BufferedWriter writer = null;
+        try {
+            writer = new BufferedWriter(new FileWriter(gpExecutionLog));
+            writeExecutionLog(writer, jobInfoWrapper, props);
+            return gpExecutionLog;
+        } 
+        catch (IOException e) {
+            log.error("Unable to create gp_execution_log: "+gpExecutionLog.getAbsolutePath(), e);
+            return null;
+        } 
+        finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } 
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    
+    public static void writeExecutionLog(Writer writer, JobInfoWrapper jobInfoWrapper, Properties props) 
+    throws IOException
+    {
+        writer.write("# Created: " + new Date() + " by " + jobInfoWrapper.getUserId());
+        writer.write("\n# Job: " + jobInfoWrapper.getJobNumber());
+
+        String GP_URL = System.getProperty("GenePatternURL");
+        if (GP_URL != null) {
+            writer.write("    server:  ");
+            writer.write(GP_URL);
+        }
+        writer.write("\n# Module: " + jobInfoWrapper.getTaskName() + " " + jobInfoWrapper.getTaskLSID());
+        writer.write("\n# Parameters: ");
+
+        //case 2: pattern match for uploaded input file
+        final String matchFileUploadPrefix = jobInfoWrapper.getServletContextPath() + "/getFile.jsp?file=";
+        
+        for(ParameterInfoWrapper inputParam : jobInfoWrapper.getInputParameters()) {
+            writer.write("\n#    " + inputParam.getName() + " = ");
+
+            String link = inputParam.getLink();
+            if(link == null) {
+                String displayValue = inputParam.getDisplayValue();
+                String value = inputParam.getValue();
+                String substitutedValue = GenePatternAnalysisTask.substitute(value, props, null);
+                // bug 899 perform command line substitutions
+                if (substitutedValue != null && !(value.equals(substitutedValue))) {
+                    displayValue = substitutedValue + " (" + value + ")";
+                }
+                writer.write(displayValue);
+            }
+            //special case for input files
+            else {
+                //case 1: an external URL
+                if (link.equals(inputParam.getDisplayValue())) {
+                    writer.write(link);
+                }
+                //case 2: an uploaded input file
+                else if (link.startsWith( matchFileUploadPrefix )) {
+                    link = link.substring(jobInfoWrapper.getServletContextPath().length(), link.length());
+                    if (GP_URL.endsWith("/")) {
+                        link = link.substring(1);
+                    }
+                    writer.write(inputParam.getDisplayValue() + "   " + GP_URL + link);
+                }
+                //case 3: an input which is part of the pipeline created from an output of a previous job with an uploaded file
+                //case 4: an output from a previous step in a pipeline
+                else {
+                    writer.write(inputParam.getDisplayValue() + "   " + link);                    
+                }
+            }
+        }
+        writer.write("\n");
+    }
+
 }

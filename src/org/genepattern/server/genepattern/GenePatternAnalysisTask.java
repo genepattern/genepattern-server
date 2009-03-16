@@ -68,7 +68,6 @@ import static org.genepattern.util.GPConstants.UTF8;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -126,6 +125,8 @@ import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.AnalysisServiceException;
 import org.genepattern.server.EncryptionUtil;
+import org.genepattern.server.JobInfoManager;
+import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
@@ -1114,7 +1115,14 @@ public class GenePatternAnalysisTask {
 		    if (renameStderr) {
 		        stderrFile.renameTo(new File(outDir, STDERR));
 		    }
-		    taskLog = writeProvenanceFile(outDirName, jobInfo, formalParameters, params, props);
+		    //taskLog = writeProvenanceFile(outDirName, jobInfo, formalParameters, params, props);
+		    
+	        JobInfoManager m = new JobInfoManager();
+	        //TODO: compute contextPath
+	        String contextPath = "/gp";
+	        String cookie = "";
+	        JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, jobInfo.getUserId(), jobInfo.getJobNumber());
+	        taskLog = JobInfoManager.writeExecutionLog(outDirName, jobInfoWrapper, props);
 		}
 	    }
 
@@ -1528,123 +1536,6 @@ public class GenePatternAnalysisTask {
 	    value = value.substring(value.indexOf("_") + 1);
 	}
 	return value;
-    }
-
-    protected static ParameterInfo getParam(String name, ParameterInfo[] params) {
-	for (int i = 0; i < params.length; i++) {
-	    if ((params[i].getName()).equals(name)) {
-		return params[i];
-	    }
-	}
-	return null;
-    }
-
-    protected static File writeProvenanceFile(String outDirName, JobInfo jobInfo, ParameterInfo[] formalParameters,
-	    ParameterInfo[] actualParams, Properties props) {
-	BufferedWriter bw = null;
-	int formalParamsLength = 0;
-	if (formalParameters != null) {
-	    formalParamsLength = formalParameters.length;
-	}
-	try {
-	    File outDir = new File(outDirName);
-	    File f = new File(outDir, TASKLOG);
-	    bw = new BufferedWriter(new FileWriter(f));
-	    bw.write("# Created: " + new Date(f.lastModified()) + " by " + jobInfo.getUserId());
-	    bw.write("\n# Job: " + jobInfo.getJobNumber());
-
-	    String GP_URL = System.getProperty("GenePatternURL");
-	    if (GP_URL != null) {
-		bw.write("    server:  ");
-		bw.write(GP_URL);
-	    }
-	    bw.write("\n# Module: " + jobInfo.getTaskName() + " " + jobInfo.getTaskLSID());
-	    bw.write("\n# Parameters: ");
-	    ParameterInfo pinfos[] = jobInfo.getParameterInfoArray();
-	    for (int pi = 0; pinfos != null && pi < pinfos.length; pi++) {
-		ParameterInfo pinfo = pinfos[pi];
-		if (!pinfo.isOutputFile()) {
-		    String value = null;
-		    if (pinfo.isInputFile()) {
-			File ifn = new File(pinfo.getValue());
-			ParameterInfo actp = getParam(pinfo.getName(), actualParams);
-			String origFullPath = (String) actp.getAttributes().get(ORIGINAL_PATH);
-			value = ifn.getName();
-			if (value.startsWith("Axis") && value.indexOf("_") != -1) {
-			    value = value.substring(value.indexOf("_") + 1);
-			}
-
-			// follow the input filename with the URL to fetch it if available
-			if ((origFullPath != null) && (origFullPath.length() > 0)) {
-			    // expect something that looks like this;
-			    // C:\Program
-			    // Files\GenePatternServer\Tomcat\..\temp\attachments\Axis39088.att_all_aml_500.gct
-			    // we want everything from ..\temp on
-			    String substr = File.separator + "temp" + File.separator;
-			    int fidx = origFullPath.indexOf(substr);
-			    String inputfilename = origFullPath.substring(fidx + 6);
-			    value = value + "    " + GP_URL + "getFile.jsp?task=&file=" + inputfilename;
-			}
-		    } else {
-			ParameterInfo formalPinfo = null;
-			for (int fpidx = 0; fpidx < formalParamsLength; fpidx++) {
-			    if (formalParameters[fpidx].getName().equals(pinfo.getName())) {
-				formalPinfo = formalParameters[fpidx];
-				break;
-			    }
-			}
-			ParameterInfo actp = getParam(pinfo.getName(), actualParams);
-			String origFullPath = null;
-			if (actp != null) {
-			    origFullPath = (String) actp.getAttributes().get(ORIGINAL_PATH);
-			}
-			if (origFullPath != null) {
-			    value = origFullPath;
-			    // follow the input filename with the URL to fetch it if available
-			    String substr = File.separator + "temp" + File.separator;
-			    int fidx = origFullPath.indexOf(substr);
-			    if (fidx >= 0) {
-				String inputfilename = origFullPath.substring(fidx + 6);
-				value = GP_URL + "getFile.jsp?task=&file=" + inputfilename;
-			    } else {
-				substr = File.separator + "jobResults" + File.separator;
-				fidx = origFullPath.indexOf(substr);
-				if (fidx >= 0) {
-				    String inputfilename = origFullPath.substring(fidx);
-				    inputfilename = inputfilename.replace('\\', '/');
-				    if (GP_URL.endsWith("/")) {
-					inputfilename = inputfilename.substring(1);
-				    }
-				    value = GP_URL + inputfilename;
-				}
-			    }
-			} else {
-			    value = pinfo.getUIValue(formalPinfo);
-			}
-		    }
-
-		    String substitutedValue = substitute(value, props, null);
-		    // bug 899 perform command line substitutions
-		    if (substitutedValue != null && !(value.equals(substitutedValue))) {
-			value = substitutedValue + " (" + value + ")";
-		    }
-		    bw.write("\n#    " + pinfo.getName() + " = " + value);
-		}
-	    }
-	    bw.write("\n");
-	    return f;
-	} catch (Exception e) {
-	    e.printStackTrace();
-	    return null;
-	} finally {
-	    if (bw != null) {
-		try {
-		    bw.close();
-		} catch (IOException e) {
-		    e.printStackTrace();
-		}
-	    }
-	}
     }
 
     protected static boolean validateCPU(String expected) throws Exception {

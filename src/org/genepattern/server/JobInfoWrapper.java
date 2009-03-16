@@ -91,6 +91,13 @@ public class JobInfoWrapper {
         public String getDescription() {
             return parameterInfo.getDescription();
         } 
+        
+        public String getValue() {
+            if (parameterInfo != null) {
+                return parameterInfo.getValue();
+            }
+            return "";
+        }
         //------ end ParameterInfo wrapper methods
 
         protected void setDisplayName(String displayName) {
@@ -368,6 +375,7 @@ public class JobInfoWrapper {
         return JobHelper.getFormattedSize(getSize());
     }
 
+    private String servletContextPath = "/gp";
     private File outputDir;
     private boolean showExecutionLogs = false;
     private List<ParameterInfoWrapper> inputParameters = new ArrayList<ParameterInfoWrapper>();
@@ -387,13 +395,14 @@ public class JobInfoWrapper {
 
     private JobPermissionsBean jobPermissionsBean;
 
-    public void setJobInfo(boolean showExecutionLogs, String contextPath, Map<String, Collection<TaskInfo>> kindToModules, ParameterInfo[] formalParameters, JobInfo jobInfo) {
+    public void setJobInfo(boolean showExecutionLogs, String servletContextPath, Map<String, Collection<TaskInfo>> kindToModules, ParameterInfo[] formalParameters, JobInfo jobInfo) {
+        this.servletContextPath = servletContextPath;
         this.showExecutionLogs = showExecutionLogs;
         this.jobInfo = jobInfo;
         this.kindToModules = kindToModules;
         String jobDir = GenePatternAnalysisTask.getJobDir(""+jobInfo.getJobNumber());
         this.outputDir = new File(jobDir);
-        processParameterInfoArray(contextPath, formalParameters);
+        processParameterInfoArray(formalParameters);
         this.jobPermissionsBean = null;
     }
 
@@ -406,6 +415,9 @@ public class JobInfoWrapper {
     }
     public String getTaskName() {
         return jobInfo.getTaskName();
+    }
+    public String getTaskLSID() {
+        return jobInfo.getTaskLSID();
     }
     public String getStatus() {
         return jobInfo.getStatus();
@@ -420,6 +432,10 @@ public class JobInfoWrapper {
         return jobInfo.getElapsedTimeMillis();
     }
     //--- end JobInfo wrapper methods
+    
+    public String getServletContextPath() {
+        return this.servletContextPath;
+    }
 
     //access in to input and output parameters
     public List<ParameterInfoWrapper> getInputParameters() {
@@ -443,10 +459,10 @@ public class JobInfoWrapper {
      * Read the ParameterInfo array from the jobInfo object 
      * and store the input and output parameters.
      */
-    private void processParameterInfoArray(String contextPath, ParameterInfo[] formalParams) {
+    private void processParameterInfoArray(ParameterInfo[] formalParams) {
         for(ParameterInfo param : jobInfo.getParameterInfoArray()) {
             if (param.isOutputFile()) {
-                OutputFile outputFile = new OutputFile(kindToModules, outputDir, contextPath, jobInfo, param);
+                OutputFile outputFile = new OutputFile(kindToModules, outputDir, servletContextPath, jobInfo, param);
                 outputFilesAndTaskLogs.add(outputFile);
                 if (!outputFile.isTaskLog()) {
                     //don't add execution logs
@@ -461,7 +477,7 @@ public class JobInfoWrapper {
                     ParameterInfoWrapper inputParam = null;
                     
                     if (isInputFile(param)) {
-                        InputFile inputFile = new InputFile(contextPath, uiValue, param);
+                        InputFile inputFile = new InputFile(servletContextPath, uiValue, param);
                         inputFiles.add(inputFile);
                         inputParam = inputFile;
                     } 
