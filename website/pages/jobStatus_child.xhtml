@@ -49,10 +49,7 @@
 					<h:outputText rendered="#{jobInfo.status != 'Finished' and jobInfo.status != 'Error'}">
 						<img src="/gp/images/spin.gif" id="jobStatusIcon#{jobInfo.jobNumber}"/>
 					</h:outputText>
-					<h:outputText rendered="#{jobInfo.status == 'Finished' and jobInfo.visualizer}">
-						<img src="/gp/images/visualizer.gif" id="jobStatusIcon#{jobInfo.jobNumber}"/>
-					</h:outputText>
-					<h:outputText rendered="#{jobInfo.status == 'Finished' and not jobInfo.visualizer}">
+					<h:outputText rendered="#{jobInfo.status == 'Finished'}">
 						<img src="/gp/images/complete.gif" id="jobStatusIcon#{jobInfo.jobNumber}"/>
 					</h:outputText>
 					<h:outputText rendered="#{jobInfo.status == 'Error'}">

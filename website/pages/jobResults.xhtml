@@ -403,7 +403,7 @@
 		        </td>
 		        
 		        <td>
-		        	<a style="color: black; text-decoration: none;" href="javascript:toggleJob(#{rootJobWrapper.jobNumber})"><img id="jobToggleImage#{rootJobWrapper.jobNumber}" src="/gp/images/triangle_black_run.gif" border="0"  title="toggle visibility of this job"/><strong>#{rootJobWrapper.taskName}</strong></a>
+		        	<a style="color: black; text-decoration: none;" href="javascript:toggleJob(#{rootJobWrapper.jobNumber})"><img id="jobToggleImage#{rootJobWrapper.jobNumber}" src="/gp/images/triangle_black_run.gif" border="0"  title="toggle visibility of this job"/><strong>#{rootJobWrapper.truncatedTaskName}</strong></a>
 		        	<span class="file">
 		        		
 			        		<img src="/gp/images/smallOptions.gif"
@@ -469,7 +469,7 @@
 		        
 		        <td class="center">&nbsp;</td>
 		
-		        <td class="childJob"><strong><a href="#"><img src="/gp/images/arrow2.gif" alt="" /></a>#{index2+1}. #{childJob.taskName}</strong></td>
+		        <td class="childJob"><strong><a href="#"><img src="/gp/images/arrow2.gif" alt="" /></a>#{index2+1}. #{childJob.truncatedTaskName}</strong></td>
 		        
 		        <td class="right"></td>
 		        

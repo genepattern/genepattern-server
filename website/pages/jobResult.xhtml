@@ -188,7 +188,7 @@
 					addSpacer(cell);
 				}
 				addImage(cell, "/gp/images/darkArrow.gif");
-				cell.appendChild(document.createTextNode(' step ' + child.stepPath + ': ' + child.taskName + '[id: ' + child.jobNumber + ']' ));
+				cell.appendChild(document.createTextNode(' step ' + child.stepPath + ': ' + child.truncatedTaskName + '[id: ' + child.jobNumber + ']' ));
 				cell = row.insertCell(row.cells.length);
 				var iconDiv = document.createElement("div");
 				iconDiv.className = 'icon2';
@@ -221,8 +221,6 @@
 				img.id = "jobStatusIcon" + child.jobNumber;
 				if (child.status == 'Error') {
 					img.src = "/gp/images/error.gif";
-				} else if (child.status == 'Finished' && child.isVisualizer) {
-					img.src = "/gp/images/visualizer.gif";
 				} else if (child.status == 'Finished') {
 				 	img.src = "/gp/images/complete.gif";
 				} else {
@@ -322,7 +320,7 @@
 					
 			
 			function updateStatus(job, status) {
-				document.getElementById("jobStatusIcon"+job.jobNumber).src = (status == 'Error' ? "/gp/images/error.gif" : (status == 'Finished' ? (job.isVisualizer ? "/gp/images/visualizer.gif" : "/gp/images/complete.gif") : "/gp/images/spin.gif"));
+				document.getElementById("jobStatusIcon"+job.jobNumber).src = (status == 'Error' ? "/gp/images/error.gif" : (status == 'Finished' ? "/gp/images/complete.gif" : "/gp/images/spin.gif"));
 				document.getElementById("jobStatus"+job.jobNumber).innerHTML = status;
 				
 			}
@@ -355,7 +353,7 @@
 						image.title = 'input file';
 						p.appendChild(image);
 						var label = document.createElement("strong");
-						label.appendChild(document.createTextNode(" " + job.inputFiles[i].name + ": "));
+						label.appendChild(document.createTextNode(" " + job.inputFiles[i].truncatedDisplayName + ": "));
 						p.appendChild(label);
 						var link = document.createElement("a");
 						link.style.color = '#0066FF';
@@ -383,7 +381,7 @@
 						var link = document.createElement("a");
 						link.style.color = '#0066FF';
 						link.href = job.outputFiles[i].link;
-						link.appendChild(document.createTextNode(job.outputFiles[i].name));
+						link.appendChild(document.createTextNode(job.outputFiles[i].truncatedDisplayName));
 						p.appendChild(link);
 						p.appendChild(document.createTextNode(" ("+job.outputFiles[i].formattedSize+") "));
 						div.appendChild(p);
@@ -515,7 +513,7 @@
 		<table class="title" cellpadding="0" cellspacing="0" border="0" id="jobTable#{jobStatusBean.jobInfo.jobNumber}">
 			<tr>
 				<td class="title">
-					#{jobStatusBean.jobInfo.jobNumber}.#{jobStatusBean.jobInfo.taskName}
+					#{jobStatusBean.jobInfo.jobNumber}.#{jobStatusBean.jobInfo.truncatedTaskName}
 					<img src="/gp/images/smallOptions.gif"
 		                 name="Image2_#{jobStatusBean.jobInfo.jobNumber}" border="0" align="top"
 		                 id="Image2_#{jobStatusBean.jobInfo.jobNumber}" onclick="pm_showMenu('menuDiv_#{jobStatusBean.jobInfo.jobNumber}', Position.cumulativeOffset(this), 50, 50);"
@@ -531,10 +529,7 @@
 					<h:outputText rendered="#{jobStatusBean.jobInfo.status != 'Finished' and jobStatusBean.jobInfo.status != 'Error'}">
 						<img src="/gp/images/spin.gif" id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
 					</h:outputText>
-					<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Finished' and jobStatusBean.jobInfo.visualizer}">
-						<img src="/gp/images/visualizer.gif" id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
-					</h:outputText>
-					<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Finished' and not jobStatusBean.jobInfo.visualizer}">
+					<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Finished'}">
 						<img src="/gp/images/complete.gif" id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
 					</h:outputText>
 					<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Error'}">
