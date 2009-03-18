@@ -174,10 +174,18 @@ public class JobResultsWrapper {
         return jobInfo.getTaskLSID();
     }
 
-    public String getTaskName() {
+    public String getTaskName() {    	
         return jobInfo.getTaskName();
     }
 
+    public String getTruncatedTaskName() {
+    	if (getTaskName() != null && getTaskName().length() > 70) {
+    		return getTaskName().substring(0, 67)+"...";
+    	} else {
+    		return getTaskName();
+    	}
+    }
+    
     public String getUserId() {
         return jobInfo.getUserId();
     }

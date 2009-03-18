@@ -277,6 +277,7 @@ public class JobInfoManager {
         obj.put("formattedSize", jobInfoWrapper.getFormattedSize());
         obj.put("userId", jobInfoWrapper.getUserId());
         obj.put("taskName", jobInfoWrapper.getTaskName());
+        obj.put("truncatedTaskName", jobInfoWrapper.getTruncatedTaskName());
         obj.put("dateSubmitted", formatDate( jobInfoWrapper.getDateSubmitted() ));
         obj.put("dateCompleted", formatDate( jobInfoWrapper.getDateCompleted() ));
         obj.put("elapsedTime",  jobInfoWrapper.getElapsedTimeMillis());
@@ -299,6 +300,7 @@ public class JobInfoManager {
             JSONObject inp = new JSONObject();
             inp.put("name", inputParam.getName());
             inp.put("value", inputParam.getDisplayValue());
+            inp.put("truncatedDisplayName", inputParam.getTruncatedDisplayName());
             inp.put("description", inputParam.getDescription());
             
             inputParameters.put(inp);
@@ -312,6 +314,7 @@ public class JobInfoManager {
             inp.put("name", inputFile.getDisplayName());
             inp.put("value", inputFile.getDisplayValue());
             inp.put("link", inputFile.getLink());
+            inp.put("truncatedDisplayName", inputFile.getTruncatedDisplayName());
             inp.put("description", inputFile.getDescription());
             
             inputFiles.put(inp);
@@ -325,6 +328,7 @@ public class JobInfoManager {
             inp.put("name", outputFile.getDisplayName());
             inp.put("value", outputFile.getDisplayValue());
             inp.put("link", outputFile.getLink());
+            inp.put("truncatedDisplayName", outputFile.getTruncatedDisplayName());
             inp.put("description", outputFile.getDescription());
             inp.put("formattedSize", outputFile.getFormattedSize());
             

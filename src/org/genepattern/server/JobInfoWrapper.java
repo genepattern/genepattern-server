@@ -107,6 +107,14 @@ public class JobInfoWrapper {
             }
             return displayName;
         }
+        
+        public String getTruncatedDisplayName() {
+        	if (getDisplayName() != null && getDisplayName().length() > 70) {
+        		return getDisplayName().substring(0, 35)+"..." + getDisplayName().substring(getDisplayName().length()-32, getDisplayName().length());
+        	} else {
+        		return getDisplayName();
+        	}
+        }
 
         protected void setDisplayValue(String displayValue) {
             this.displayValue = displayValue;
@@ -420,9 +428,17 @@ public class JobInfoWrapper {
     public String getTaskName() {
         return jobInfo.getTaskName();
     }
+    public String getTruncatedTaskName() {
+    	if (getTaskName() != null && getTaskName().length() > 70) {
+    		return getTaskName().substring(0, 67)+"...";
+    	} else {
+    		return getTaskName();
+    	}
+    }
     public String getTaskLSID() {
         return jobInfo.getTaskLSID();
     }
+
     public String getStatus() {
         return jobInfo.getStatus();
     }
