@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webapp.jsf.JobHelper;
@@ -32,6 +33,8 @@ import org.jfree.util.Log;
  * @author pcarr
  */
 public class JobInfoWrapper {
+    private static Logger log = Logger.getLogger(JobInfoWrapper.class);
+
     public static class ParameterInfoWrapper {
         public static class KeyValueComparator implements Comparator<KeyValuePair> {
             public int compare(KeyValuePair o1, KeyValuePair o2) {
@@ -399,34 +402,45 @@ public class JobInfoWrapper {
     private List<JobInfoWrapper> children = new ArrayList<JobInfoWrapper>();
     private List<JobInfoWrapper> allSteps = null;
     
-    private boolean isPipeline = false;
     private int numAncestors = 0;
     
-    private boolean isVisualizer = false;
-    private String visualizerAppletTag = "";
+    //private boolean isVisualizer = false;
+    private String visualizerAppletTag = null;
 
     private JobPermissionsBean jobPermissionsBean;
 
-    public void setJobInfo(boolean showExecutionLogs, String servletContextPath, Map<String, Collection<TaskInfo>> kindToModules, ParameterInfo[] formalParameters, JobInfo jobInfo) {
+    public void setJobInfo(boolean showExecutionLogs, String servletContextPath, Map<String, Collection<TaskInfo>> kindToModules, JobInfo jobInfo) {
         this.servletContextPath = servletContextPath;
         this.showExecutionLogs = showExecutionLogs;
         this.jobInfo = jobInfo;
         this.kindToModules = kindToModules;
         String jobDir = GenePatternAnalysisTask.getJobDir(""+jobInfo.getJobNumber());
         this.outputDir = new File(jobDir);
-        processParameterInfoArray(formalParameters);
+        processParameterInfoArray();
         this.jobPermissionsBean = null;
     }
 
     //JobInfo wrapper methods
     public int getJobNumber() {
-        return jobInfo.getJobNumber();
+        if (jobInfo != null) {
+            return jobInfo.getJobNumber();
+        }
+        log.error("jobInfo is null");
+        return -1;
     }
     public String getUserId() {
-        return jobInfo.getUserId();
+        if (jobInfo != null) {
+            return jobInfo.getUserId();
+        }
+        log.error("jobInfo is null");
+        return "";
     }
     public String getTaskName() {
-        return jobInfo.getTaskName();
+        if (jobInfo != null) {
+            return jobInfo.getTaskName();
+        }
+        log.error("jobInfo is null");
+        return "";
     }
     public String getTruncatedTaskName() {
     	if (getTaskName() != null && getTaskName().length() > 70) {
@@ -436,20 +450,39 @@ public class JobInfoWrapper {
     	}
     }
     public String getTaskLSID() {
-        return jobInfo.getTaskLSID();
+        if (jobInfo != null) {
+            return jobInfo.getTaskLSID();
+        }
+        log.error("jobInfo is null");
+        return "";
     }
-
     public String getStatus() {
-        return jobInfo.getStatus();
+        if (jobInfo != null) {
+            return jobInfo.getStatus();
+        }
+        log.error("jobInfo is null");
+        return "";
     }
     public Date getDateSubmitted() {
-        return jobInfo.getDateSubmitted();
+        if (jobInfo != null) {
+            return jobInfo.getDateSubmitted();
+        }
+        log.error("jobInfo is null");
+        return null;
     }
     public Date getDateCompleted() {
-        return jobInfo.getDateCompleted();
+        if (jobInfo != null) {
+            return jobInfo.getDateCompleted();
+        }
+        log.error("jobInfo is null");
+        return null;
     }
     public long getElapsedTimeMillis() {
-        return jobInfo.getElapsedTimeMillis();
+        if (jobInfo != null) {
+            return jobInfo.getElapsedTimeMillis();
+        }
+        log.error("jobInfo is null");
+        return 0L;
     }
     //--- end JobInfo wrapper methods
     
@@ -479,7 +512,7 @@ public class JobInfoWrapper {
      * Read the ParameterInfo array from the jobInfo object 
      * and store the input and output parameters.
      */
-    private void processParameterInfoArray(ParameterInfo[] formalParams) {
+    private void processParameterInfoArray() {
         for(ParameterInfo param : jobInfo.getParameterInfoArray()) {
             if (param.isOutputFile()) {
                 OutputFile outputFile = new OutputFile(kindToModules, outputDir, servletContextPath, jobInfo, param);
@@ -490,31 +523,34 @@ public class JobInfoWrapper {
                 }
             }
             else {
-                ParameterInfo formalParam = ParameterInfoWrapper.getFormalParameter(formalParams, param);
-                // skip parameters that the user did not give a value for
-                String uiValue = param.getUIValue(formalParam);
-                if (uiValue != null && !"".equals(uiValue)) {
-                    ParameterInfoWrapper inputParam = null;
-                    
+                ParameterInfoWrapper inputParam = null;
+                //ParameterInfo formalParam = ParameterInfoWrapper.getFormalParameter(formalParams, param);
+                //String uiValue = param.getUIValue(formalParam);
+                String value = param.getValue();
+                if (value != null && !"".equals(value)) {
                     if (isInputFile(param)) {
-                        InputFile inputFile = new InputFile(servletContextPath, uiValue, param);
+                        InputFile inputFile = new InputFile(servletContextPath, value, param);
                         inputFiles.add(inputFile);
                         inputParam = inputFile;
                     } 
                     else {
                         inputParam = new ParameterInfoWrapper(param);
                     }
-
-                    //set the dispay name
-                    String name = (String) formalParam.getAttributes().get("altName");
-                    if (name == null) {
-                        name = formalParam.getName();
-                    }
-                    name = name.replaceAll("\\.", " ");
-                    inputParam.setDisplayName(name);
-
-                    inputParameters.add(inputParam);
                 }
+                else {
+                    // [optional] parameter that the user did not give a value for
+                    inputParam = new ParameterInfoWrapper(param);
+                }
+                //set the display name
+                String name = param.getName();
+                //String name = (String) formalParam.getAttributes().get("altName");
+                //if (name == null) {
+                //    name = formalParam.getName();
+                //}
+                name = name.replaceAll("\\.", " ");
+                inputParam.setDisplayName(name);
+
+                inputParameters.add(inputParam);
             }
         }
     }
@@ -534,12 +570,8 @@ public class JobInfoWrapper {
     }
     
     //support for visualizers
-    public void setVisualizer(boolean isVisualizer) {
-        this.isVisualizer = isVisualizer;
-    }
-
     public boolean isVisualizer() {
-        return isVisualizer;
+        return this.visualizerAppletTag != null && !"".equals(this.visualizerAppletTag);
     }
     
     public void setVisualizerAppletTag(String tag) {
@@ -551,12 +583,8 @@ public class JobInfoWrapper {
     }
 
     //support for pipelines ...
-    public void setPipeline(boolean isPipeline) {
-        this.isPipeline = isPipeline;
-    }
-    
     public boolean isPipeline() {
-        return isPipeline;
+        return children != null && children.size() > 0;
     }
 
     //support for pipelines ... including traversing the list of all steps (including nested steps (and nested nested steps (and ...)))
@@ -780,8 +808,13 @@ public class JobInfoWrapper {
     //Job Permissions methods
     private void initGroupPermissions() { 
         jobPermissionsBean = new JobPermissionsBean();
-        jobPermissionsBean.setJobId(jobInfo.getJobNumber());
-        //this.deleteAllowed = jobPermissionsBean.isDeleteAllowed();
+        if (jobInfo != null) {
+            jobPermissionsBean.setJobId(jobInfo.getJobNumber());
+            //this.deleteAllowed = jobPermissionsBean.isDeleteAllowed();
+        }
+        else {
+            log.error("jobInfo is null");
+        }
     }
 
 }

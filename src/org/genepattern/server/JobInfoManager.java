@@ -31,7 +31,6 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.visualizer.RunVisualizerConstants;
 import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.json.JSONArray;
@@ -75,15 +74,64 @@ public class JobInfoManager {
             JobInfoWrapper jobInfoWrapper = processChildren((JobInfoWrapper)null, showExecutionLogs, documentCookie, contextPath, analysisDao, adminDao, kindToModules, jobInfo);
 
             //this call initializes the helper methods
-            jobInfoWrapper.getPathFromRoot();
-
-            ///PermissionsHelper perm = new PermissionsHelper(currentUser, jobNo);
-            
+            jobInfoWrapper.getPathFromRoot(); 
             return jobInfoWrapper;
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
+    }
+    
+    /**
+     * Create a new JobInfoWrapper, recursively looking up and including all child jobs.
+     * Link each new JobInfoWrapper to its parent, which is null for top level jobs.
+     * 
+     * @param parent
+     * @param documentCookie
+     * @param contextPath
+     * @param analysisDao
+     * @param jobInfo
+     * @return a new JobInfoWrapper
+     */
+    private JobInfoWrapper processChildren(JobInfoWrapper parent, boolean showExecutionLogs, String documentCookie, String contextPath, AnalysisDAO analysisDao, AdminDAO adminDao, Map<String, Collection<TaskInfo>> kindToModules, JobInfo jobInfo) {
+        JobInfoWrapper jobInfoWrapper = new JobInfoWrapper();
+        jobInfoWrapper.setParent(parent);
+        jobInfoWrapper.setJobInfo(showExecutionLogs, contextPath, kindToModules, jobInfo);
+        
+        //special case for visualizers
+        try {
+            //NOTE: this code will not work if the visualizer has been deleted
+            int taskId = jobInfo.getTaskID();
+            TaskInfo taskInfo = adminDao.getTask(taskId);
+            if (taskInfo.isVisualizer()) {
+                TaskInfoAttributes taskInfoAttributes = taskInfo.giveTaskInfoAttributes();
+                String tag = createVisualizerAppletTag(documentCookie, jobInfoWrapper, taskInfoAttributes);
+                jobInfoWrapper.setVisualizerAppletTag(tag);
+            }
+        }
+        catch (Exception e) {
+            //TODO: provide feedback in UI that the visualizer module has been deleted
+            //If the visualizer has been deleted an exception is thrown in adminDao.getTask
+            //    The job status page will not allow for re-loading the visualizer
+            log.info("Error loading taskInfo for job '"+jobInfo.getJobNumber()+"', taskId="+jobInfo.getTaskID()+"  : "+e.getLocalizedMessage(), e);
+        }
+
+        JobInfo[] children = analysisDao.getChildren(jobInfo.getJobNumber());
+        for(JobInfo child : children) {
+            JobInfoWrapper nextChild = processChildren(jobInfoWrapper, showExecutionLogs, documentCookie, contextPath, analysisDao, adminDao, kindToModules, child);
+            jobInfoWrapper.addChildJobInfo(nextChild);
+        }
+        
+        int numSteps = 1;
+        if (jobInfoWrapper.isPipeline()) {
+            PipelineModel pipelineModel = getPipelineModel(adminDao, jobInfo);
+            if (pipelineModel != null) {
+                numSteps = pipelineModel.getTasks().size();
+            }
+        }
+        
+        jobInfoWrapper.setNumStepsInPipeline(numSteps);
+        return jobInfoWrapper;
     }
     
     private PipelineModel getPipelineModel(AdminDAO adminDao, JobInfo jobInfo) {
@@ -109,60 +157,13 @@ public class JobInfoManager {
         return model;
     }
     
-    /**
-     * Create a new JobInfoWrapper, recursively looking up and including all child jobs.
-     * Link each new JobInfoWrapper to its parent, which is null for top level jobs.
-     * 
-     * @param parent
-     * @param documentCookie
-     * @param contextPath
-     * @param analysisDao
-     * @param jobInfo
-     * @return a new JobInfoWrapper
-     */
-    private JobInfoWrapper processChildren(JobInfoWrapper parent, boolean showExecutionLogs, String documentCookie, String contextPath, AnalysisDAO analysisDao, AdminDAO adminDao, Map<String, Collection<TaskInfo>> kindToModules, JobInfo jobInfo) {
-        JobInfoWrapper jobInfoWrapper = new JobInfoWrapper();
-        jobInfoWrapper.setParent(parent);
-        
-        //get the visualizer flag
-        int taskId = jobInfo.getTaskID();
-        AdminDAO ad = new AdminDAO();
-        TaskInfo taskInfo = ad.getTask(taskId);
-        TaskInfoAttributes taskInfoAttributes = taskInfo.giveTaskInfoAttributes();
-        ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
-
-        jobInfoWrapper.setJobInfo(showExecutionLogs, contextPath, kindToModules, formalParameters, jobInfo);
-        jobInfoWrapper.setPipeline(taskInfo.isPipeline());
-        jobInfoWrapper.setVisualizer(taskInfo.isVisualizer());
-        
-        if (taskInfo.isVisualizer()) {
-            String tag = createVisualizerAppletTag(documentCookie, jobInfoWrapper, taskInfoAttributes);
-            jobInfoWrapper.setVisualizerAppletTag(tag);
-        }
-
-        JobInfo[] children = analysisDao.getChildren(jobInfo.getJobNumber());
-        for(JobInfo child : children) {
-            JobInfoWrapper nextChild = processChildren(jobInfoWrapper, showExecutionLogs, documentCookie, contextPath, analysisDao, adminDao, kindToModules, child);
-            jobInfoWrapper.addChildJobInfo(nextChild);
-        }
-        
-        int numSteps = 1;
-        if (jobInfoWrapper.isPipeline()) {
-            PipelineModel pipelineModel = getPipelineModel(adminDao, jobInfo);
-            numSteps = pipelineModel.getTasks().size();
-        }
-        
-        jobInfoWrapper.setNumStepsInPipeline(numSteps);
-        return jobInfoWrapper;
-    }
-    
     public static String createVisualizerAppletTag(String documentCookie, JobInfoWrapper jobInfoWrapper, TaskInfoAttributes taskInfoAttributes) 
     {
         try {
 
         String GP_URL = System.getProperty("GenePatternURL");
         String name = jobInfoWrapper.getTaskName();
-        
+
         String os = taskInfoAttributes.get(GPConstants.OS);
         String cpuType = taskInfoAttributes.get(GPConstants.CPU_TYPE);
         //TODO: parameterize javaFlags
