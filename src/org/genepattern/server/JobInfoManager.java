@@ -7,7 +7,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -20,12 +23,13 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.genepattern.RunVisualizer;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
+import org.genepattern.visualizer.RunVisualizerConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -124,6 +128,7 @@ public class JobInfoManager {
         int taskId = jobInfo.getTaskID();
         AdminDAO ad = new AdminDAO();
         TaskInfo taskInfo = ad.getTask(taskId);
+        TaskInfoAttributes taskInfoAttributes = taskInfo.giveTaskInfoAttributes();
         ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
 
         jobInfoWrapper.setJobInfo(showExecutionLogs, contextPath, kindToModules, formalParameters, jobInfo);
@@ -131,7 +136,7 @@ public class JobInfoManager {
         jobInfoWrapper.setVisualizer(taskInfo.isVisualizer());
         
         if (taskInfo.isVisualizer()) {
-            String tag = createVisualizerAppletTag(documentCookie, contextPath, jobInfo, taskInfo);
+            String tag = createVisualizerAppletTag(documentCookie, jobInfoWrapper, taskInfoAttributes);
             jobInfoWrapper.setVisualizerAppletTag(tag);
         }
 
@@ -151,22 +156,112 @@ public class JobInfoManager {
         return jobInfoWrapper;
     }
     
-    private String createVisualizerAppletTag(String documentCookie, String contextPath, JobInfo jobInfo, TaskInfo taskInfo) {
-        RunVisualizer runVis = new RunVisualizer();
-        runVis.setJobInfo(jobInfo);
-        TaskInfoAttributes taskInfoAttributes = taskInfo.giveTaskInfoAttributes();
-        runVis.setTaskInfoAttributes(taskInfoAttributes);
-        runVis.setContextPath(contextPath);
-        runVis.setDocumentCookie(documentCookie);
-        StringWriter writer = new StringWriter();
+    public static String createVisualizerAppletTag(String documentCookie, JobInfoWrapper jobInfoWrapper, TaskInfoAttributes taskInfoAttributes) 
+    {
         try {
-            runVis.writeVisualizerAppletTag(writer);
-            writer.close();
+
+        String GP_URL = System.getProperty("GenePatternURL");
+        String name = jobInfoWrapper.getTaskName();
+        
+        String os = taskInfoAttributes.get(GPConstants.OS);
+        String cpuType = taskInfoAttributes.get(GPConstants.CPU_TYPE);
+        //TODO: parameterize javaFlags
+        String javaFlags = null;
+        if(javaFlags==null) {
+            javaFlags = System.getProperty(RunVisualizerConstants.JAVA_FLAGS_VALUE);
         }
-        catch (Exception e) {
-            writer.write("<p>Error in getVisualizerAppletTag: "+e.getLocalizedMessage()+"</p>");
+        String contextPath = jobInfoWrapper.getServletContextPath();
+        String commandLine = taskInfoAttributes.get(GPConstants.COMMAND_LINE);
+
+        StringWriter appletTag = new StringWriter();
+        appletTag.append("<applet code=\"" 
+                + org.genepattern.visualizer.RunVisualizerApplet.class.getName() 
+                + "\" archive=\"runVisualizer.jar,commons-httpclient.jar,commons-codec-1.3.jar\" codebase=\"/gp/downloads\" width=\"1\" height=\"1\" alt=\"Your browser can not run applets\">");
+
+        appletTag.append("<param name=\"" + RunVisualizerConstants.NAME + "\" value=\"" + URLEncoder.encode(name, "UTF-8") + "\" >");
+        appletTag.append("<param name=\"" + RunVisualizerConstants.OS + "\" value=\"" + URLEncoder.encode(os, "UTF-8") + "\">");
+        appletTag.append("<param name=\"" + RunVisualizerConstants.CPU_TYPE + "\" value=\"" + URLEncoder.encode(cpuType, "UTF-8") + "\">");
+        appletTag.append("<param name=\"" + RunVisualizerConstants.JAVA_FLAGS_VALUE + "\" value=\"" + URLEncoder.encode(javaFlags, "UTF-8") + "\">");
+        appletTag.append("<param name=\"" + RunVisualizerConstants.CONTEXT_PATH + "\" value=\"" + URLEncoder.encode(contextPath, "UTF-8") + "\">");
+
+        StringBuffer paramNameList = new StringBuffer();
+        StringBuffer paramNameValueList = new StringBuffer();
+        StringBuffer downloadFiles = new StringBuffer();
+
+        for(ParameterInfoWrapper inputParam : jobInfoWrapper.getInputParameters()) {
+            String paramName = inputParam.getName();
+            String paramValue = inputParam.getValue();
+            boolean isInputFile = false;
+            if (paramValue != null) {
+                paramValue = paramValue.replace("\\", "\\\\");
+            } 
+            else {
+                paramValue = "";
+            }
+
+            //process input file
+            isInputFile = inputParam.getLink() != null;
+            if (isInputFile) {
+                String link = inputParam.getLink();
+                if (link.startsWith(contextPath)) {
+                    //append server url
+                    link = link.substring(jobInfoWrapper.getServletContextPath().length(), link.length());
+                    if (GP_URL.endsWith("/")) {
+                        link = link.substring(1);
+                    }
+                }
+                paramValue = link;
+            }
+            
+            if (paramNameList.length() > 0) {
+                paramNameList.append(",");
+            }
+            paramNameList.append(paramName);
+            paramNameValueList.append("<param name=\"" + paramName + "\" value=\"" + paramValue + "\">");
+            if (isInputFile) {
+                if (downloadFiles.length() > 0) {
+                    downloadFiles.append(",");
+                }
+                downloadFiles.append(inputParam.getName());
+            }            
         }
-        return writer.toString();
+        appletTag.append("<param name=\"" + RunVisualizerConstants.PARAM_NAMES + "\" value=\"" + paramNameList.toString() + "\" >");
+        appletTag.append(paramNameValueList.toString());
+        appletTag.append("<param name=\"" + RunVisualizerConstants.DOWNLOAD_FILES + "\" value=\"" + URLEncoder.encode(downloadFiles.toString(), "UTF-8") + "\">");
+        appletTag.append("<param name=\"" + RunVisualizerConstants.COMMAND_LINE + "\" value=\"" + URLEncoder.encode(commandLine, "UTF-8") + "\">");
+        appletTag.append("<param name=\"" + RunVisualizerConstants.DEBUG + "\" value=\"1\">");
+
+        StringBuffer fileNamesBuf = new StringBuffer();
+        StringBuffer fileDatesBuf = new StringBuffer();
+        String lsid = jobInfoWrapper.getTaskLSID();
+        String libdir = DirectoryManager.getTaskLibDir(null, lsid, null);
+        File[] supportFiles = new File(libdir).listFiles();
+        for (int i = 0; i < supportFiles.length; i++) {
+            if (i > 0) {
+                fileNamesBuf.append(",");
+                fileDatesBuf.append(",");
+            }
+            fileNamesBuf.append(supportFiles[i].getName());
+            fileDatesBuf.append(supportFiles[i].lastModified());
+        }
+        appletTag.append("<param name=\"" + RunVisualizerConstants.SUPPORT_FILE_NAMES + "\" value=\"" + URLEncoder.encode(fileNamesBuf.toString(), "UTF-8") + "\" >");
+        appletTag.append("<param name=\"" + RunVisualizerConstants.SUPPORT_FILE_DATES + "\" value=\"" + URLEncoder.encode(fileDatesBuf.toString(), "UTF-8") + "\" >");
+        appletTag.append("<param name=\"" + RunVisualizerConstants.LSID + "\" value=\"" + URLEncoder.encode(lsid, "UTF-8") + "\" >");
+        if (documentCookie != null && documentCookie.trim() != "") {
+            appletTag.append("<param name=\"browserCookie\" value=\""+documentCookie+"\">");
+        }
+        appletTag.append("</applet>");
+        return appletTag.toString();
+        
+        }
+        catch (UnsupportedEncodingException e) {
+            return "<p>Error in createVisualizerAppletTag: "+e.getLocalizedMessage()+"</p>";
+            
+        }
+        catch (MalformedURLException e) {
+            return "<p>Error in createVisualizerAppletTag: "+e.getLocalizedMessage()+"</p>";
+            
+        }
     }
     
     public void writeJobInfo(Writer writer, JobInfoWrapper jobInfoWrapper) 
@@ -214,7 +309,7 @@ public class JobInfoManager {
         JSONArray inputFiles = new JSONArray();
         for(JobInfoWrapper.InputFile inputFile : jobInfoWrapper.getInputFiles()) {
             JSONObject inp = new JSONObject();
-            inp.put("name", inputFile.getName());
+            inp.put("name", inputFile.getDisplayName());
             inp.put("value", inputFile.getDisplayValue());
             inp.put("link", inputFile.getLink());
             inp.put("description", inputFile.getDescription());
@@ -227,7 +322,7 @@ public class JobInfoManager {
         JSONArray outputFiles = new JSONArray();
         for(JobInfoWrapper.OutputFile outputFile : jobInfoWrapper.getOutputFiles()) {
             JSONObject inp = new JSONObject();
-            inp.put("name", outputFile.getName());
+            inp.put("name", outputFile.getDisplayName());
             inp.put("value", outputFile.getDisplayValue());
             inp.put("link", outputFile.getLink());
             inp.put("description", outputFile.getDescription());
@@ -331,5 +426,4 @@ public class JobInfoManager {
         }
         writer.write("\n");
     }
-
 }

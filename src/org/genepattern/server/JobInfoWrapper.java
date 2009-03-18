@@ -79,9 +79,6 @@ public class JobInfoWrapper {
 
         //ParameterInfo wrapper methods        
         public String getName() {
-            if (displayName != null) {
-                return displayName;
-            }
             if (parameterInfo != null) {
                 return parameterInfo.getName();
             }
@@ -102,6 +99,13 @@ public class JobInfoWrapper {
 
         protected void setDisplayName(String displayName) {
             this.displayName = displayName;
+        }
+        
+        public String getDisplayName() {
+            if (displayName == null) {
+                return getName();
+            }
+            return displayName;
         }
 
         protected void setDisplayValue(String displayValue) {

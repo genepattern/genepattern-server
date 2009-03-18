@@ -366,20 +366,6 @@ public class GenePatternAnalysisTask {
 	}
     }
 
-    protected File localInputUrlToUploadedFile(URL url, String userId) {
-        //do the same mapping that the JobInputServlet does, but without requiring an http request
-        String path = url.getPath();
-        int idx = path.indexOf("/fileupload/");
-        if (idx < 0) {
-            return null;
-        }
-        String localPath = path.substring(idx + "/fileupload/".length());
-        localPath = localPath.replace('/', File.separatorChar);
-        File file = new File("fileupload");
-        file = new File(file, localPath);
-        return file;
-    }
-
     /**
      * Returns a local URL as a File object or <tt>null</tt> if the URL can not be represented as a File
      * 
@@ -841,10 +827,6 @@ public class GenePatternAnalysisTask {
 				    if (isLocalHost(url)) {
 					try {
 					    File file = localInputUrlToFile(url, jobInfo.getUserId());
-					    if (file == null) {
-					        //is this a file upload?
-					        file = localInputUrlToUploadedFile(url, jobInfo.getUserId());
-					    }
 					    if (file != null) {
 						if (inputFileMode == INPUT_FILE_MODE.PATH) {
 						    params[i].setValue(file.getCanonicalPath());
