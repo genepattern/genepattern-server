@@ -248,8 +248,12 @@ table.summary {
 	border-top:solid #fafccf 1px;
 }
 
+
 table.summary th {
-	background-color:#d8daae;
+   background-color:#eee;
+   border-top:solid #dfdfdf 1px;
+   border-left:solid #c7c99e 1px;
+   border-bottom:solid #c7c99e 1px;
 }
 
 tr.summaryTitle {
@@ -265,8 +269,13 @@ table.summary td {
  	line-height:18px;
 	vertical-align:top;
 	padding:6px 15px 1px 5px;
-	border-left:solid #c7c99e 1px;
+	border-left:solid #c7c99e 1px;	
 }
+
+table.summary tr.brown td {
+	border-bottom: solid white 1px;
+}
+
  td.center {
 	text-align:center;
 }
