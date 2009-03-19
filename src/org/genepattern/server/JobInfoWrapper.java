@@ -3,12 +3,16 @@ package org.genepattern.server;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
@@ -515,6 +519,33 @@ public class JobInfoWrapper {
         else {
             return outputFiles;
         }
+    }
+
+    public String getFormattedPurgeDate() {
+        GregorianCalendar purgeTOD = new GregorianCalendar();
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
+            GregorianCalendar gcPurge = new GregorianCalendar();
+            gcPurge.setTime(dateFormat.parse(System.getProperty("purgeTime", "23:00")));
+            purgeTOD.set(GregorianCalendar.HOUR_OF_DAY, gcPurge.get(GregorianCalendar.HOUR_OF_DAY));
+            purgeTOD.set(GregorianCalendar.MINUTE, gcPurge.get(GregorianCalendar.MINUTE));
+        } 
+        catch (ParseException pe) {
+            purgeTOD.set(GregorianCalendar.HOUR_OF_DAY, 23);
+            purgeTOD.set(GregorianCalendar.MINUTE, 0);
+        }
+        purgeTOD.set(GregorianCalendar.SECOND, 0);
+        purgeTOD.set(GregorianCalendar.MILLISECOND, 0);
+        int purgeInterval;
+        try {
+            purgeInterval = Integer.parseInt(System.getProperty("purgeJobsAfter", "-1"));
+        } 
+        catch (NumberFormatException nfe) {
+            purgeInterval = 7;
+        }
+        purgeTOD.add(GregorianCalendar.DATE, purgeInterval);
+        DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
+        return df.format(purgeTOD.getTime()).toLowerCase();
     }
 
     /**
