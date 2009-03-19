@@ -410,7 +410,6 @@ public class JobInfoWrapper {
     
     private int numAncestors = 0;
     
-    //private boolean isVisualizer = false;
     private String visualizerAppletTag = null;
 
     private JobPermissionsBean jobPermissionsBean;
@@ -516,6 +515,14 @@ public class JobInfoWrapper {
         else {
             return outputFiles;
         }
+    }
+
+    /**
+     * When a module or pipeline has been deleted the taskInfo is not available.
+     * @return true if the TaskInfo can be loaded from the GP database.
+     */
+    public boolean isTaskInfoAvailable() {
+        return taskInfo != null;
     }
 
     /**
