@@ -353,12 +353,12 @@
 						image.title = 'input file';
 						p.appendChild(image);
 						var label = document.createElement("strong");
-						label.appendChild(document.createTextNode(" " + job.inputFiles[i].truncatedDisplayName + ": "));
+						label.appendChild(document.createTextNode(" " + job.inputFiles[i].name + ": "));
 						p.appendChild(label);
 						var link = document.createElement("a");
 						link.style.color = '#0066FF';
 						link.href = job.inputFiles[i].link;
-						link.appendChild(document.createTextNode(job.inputFiles[i].value));
+						link.appendChild(document.createTextNode(job.inputFiles[i].truncatedDisplayValue));
 						p.appendChild(link);
 						div.appendChild(p);
 				    }
@@ -381,7 +381,7 @@
 						var link = document.createElement("a");
 						link.style.color = '#0066FF';
 						link.href = job.outputFiles[i].link;
-						link.appendChild(document.createTextNode(job.outputFiles[i].truncatedDisplayName));
+						link.appendChild(document.createTextNode(job.outputFiles[i].truncatedDisplayValue));
 						p.appendChild(link);
 						p.appendChild(document.createTextNode(" ("+job.outputFiles[i].formattedSize+") "));
 						div.appendChild(p);

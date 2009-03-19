@@ -32,7 +32,7 @@
 							</h:outputText>
 						</t:dataList>
 			    		<img src="/gp/images/inputFile.gif" title="input file"/> 
-			    		<strong>#{inputFile.name}</strong>: <a style="color:#0066FF;" href="#{inputFile.link}">#{inputFile.truncatedDisplayName}</a>
+			    		<strong>#{inputFile.name}</strong>: <a style="color:#0066FF;" href="#{inputFile.link}">#{inputFile.truncatedDisplayValue}</a>
 					    <img src="/gp/images/smallOptions.gif" 
 				           name="Image_#{inputFile.valueId}" 
 				           id="Image_#{inputFile.valueId}" 
@@ -50,7 +50,7 @@
 						</h:outputText>
 					</t:dataList>
 		    		<img src="/gp/images/outputFile.gif"  title="output file"/> 
-		    		<a style="color:#0066FF;" href="#{p.link}">#{p.truncatedDisplayName}</a> (#{p.formattedSize})
+		    		<a style="color:#0066FF;" href="#{p.link}">#{p.truncatedDisplayValue}</a> (#{p.formattedSize})
 				    <h:outputText rendered="#{p.name != 'gp_execution_log.txt'}">
 				    <img src="/gp/images/smallOptions.gif" 
 			           name="Image_#{p.valueId}" 
