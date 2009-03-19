@@ -190,30 +190,32 @@
 				addImage(cell, "/gp/images/darkArrow.gif");
 				cell.appendChild(document.createTextNode(' step ' + child.stepPath + ': ' + child.truncatedTaskName + '[id: ' + child.jobNumber + ']' ));
 				cell = row.insertCell(row.cells.length);
-				var iconDiv = document.createElement("div");
-				iconDiv.className = 'icon2';
-				var inputParamTable = createRegularTable('', '');
-				var row2 = inputParamTable.insertRow(inputParamTable.rows.length);
-				var cell2 = row2.insertCell(row2.cells.length);
-				var link = document.createElement('a');
-				link.style.color = '#0066FF';
-				link.href = "javascript:toggle('inputParamsDiv" + child.jobNumber + "', 'Hide', 'Show');";
-				var inputIcon = addImage(link, "/gp/images/parameters.gif");
-				inputIcon.align = 'left';
-				cell2.appendChild(link);
-				cell2 = row2.insertCell(row2.cells.length);
-				link = document.createElement('a');
-				link.href = "javascript:toggle('inputParamsDiv" + child.jobNumber + "', 'Hide', 'Show');";
-				var span = document.createElement('span');
-				span.innerHTML = 'Show';
-				span.id = "inputParamsDiv" + child.jobNumber + "Label";
-				link.appendChild(span);
-				link.appendChild(document.createTextNode(" Input "));
-				link.appendChild(document.createElement("br"));
-				link.appendChild(document.createTextNode("Parameters"));
-				cell2.appendChild(link);
-				iconDiv.appendChild(inputParamTable);
-				cell.appendChild(iconDiv);
+				if (child.inputParameters && child.inputParameters.length > 0) {
+					var iconDiv = document.createElement("div");
+					iconDiv.className = 'icon2';
+					var inputParamTable = createRegularTable('', '');
+					var row2 = inputParamTable.insertRow(inputParamTable.rows.length);
+					var cell2 = row2.insertCell(row2.cells.length);
+					var link = document.createElement('a');
+					link.style.color = '#0066FF';
+					link.href = "javascript:toggle('inputParamsDiv" + child.jobNumber + "', 'Hide', 'Show');";
+					var inputIcon = addImage(link, "/gp/images/parameters.gif");
+					inputIcon.align = 'left';
+					cell2.appendChild(link);
+					cell2 = row2.insertCell(row2.cells.length);
+					link = document.createElement('a');
+					link.href = "javascript:toggle('inputParamsDiv" + child.jobNumber + "', 'Hide', 'Show');";
+					var span = document.createElement('span');
+					span.innerHTML = 'Show';
+					span.id = "inputParamsDiv" + child.jobNumber + "Label";
+					link.appendChild(span);
+					link.appendChild(document.createTextNode(" Input "));
+					link.appendChild(document.createElement("br"));
+					link.appendChild(document.createTextNode("Parameters"));
+					cell2.appendChild(link);
+					iconDiv.appendChild(inputParamTable);
+					cell.appendChild(iconDiv);
+				}
 				
 				cell = row.insertCell(row.cells.length);
 				cell.width = '30px';
@@ -246,8 +248,10 @@
 				tagIndicatorCell(child, index, parent);
 				
 				// create input parameters
-				var inputParameters = createInputParameters(child);
-				div.appendChild(inputParameters);
+				if (child.inputParameters && child.inputParameters.length > 0) {
+					var inputParameters = createInputParameters(child);
+					div.appendChild(inputParameters);
+				}
 				
 				// create outputFileDiv
 				var outputFileDiv = document.createElement('div');
