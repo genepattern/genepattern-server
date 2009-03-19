@@ -455,7 +455,18 @@
 				} else {
 					singleCell.appendChild(document.createTextNode("no input parameters"));
 				}		
-				singleCell.appendChild(document.createElement('br'));
+				
+				var closeRow = windowTable.insertRow(windowTable.rows.length);
+				var closeCell = closeRow.insertCell(closeRow.cells.length);
+				closeCell.align = 'right';
+				var link = document.createElement('a');
+				link.href = "javascript:toggle('inputParamsDiv" + job.jobNumber + "', 'Hide', 'Show');";
+				link.style.color = '#0066FF';
+				var closeImage = document.createElement('img');
+				closeImage.src = "/gp/images/cross.gif";
+				link.appendChild(closeImage);
+				link.appendChild(document.createTextNode(' hide'));
+				closeCell.appendChild(link);
 				return div;		
 			}
 				
