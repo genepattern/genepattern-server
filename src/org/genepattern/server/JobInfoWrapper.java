@@ -183,11 +183,16 @@ public class JobInfoWrapper {
             List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
             String kind = SemanticUtil.getKind(file);
             Collection<TaskInfo> taskInfos = kindToModules.get(kind);
-            for (TaskInfo taskInfo : taskInfos) {
-                KeyValuePair mi = new KeyValuePair(taskInfo.getShortName(), UIBeanHelper.encode(taskInfo.getLsid()));
-                moduleMenuItems.add(mi);
+            if (taskInfos != null) {
+                for (TaskInfo taskInfo : taskInfos) {
+                    KeyValuePair mi = new KeyValuePair(taskInfo.getShortName(), UIBeanHelper.encode(taskInfo.getLsid()));
+                    moduleMenuItems.add(mi);
+                }
+                Collections.sort(moduleMenuItems, KEY_VALUE_COMPARATOR);
             }
-            Collections.sort(moduleMenuItems, KEY_VALUE_COMPARATOR);
+            else {
+                log.error("JobInfoWrapper.setModuleMenuItemsForFile: kindToModules.get('"+kind+"') returned null");
+            }
             this.moduleMenuItems = moduleMenuItems;
         }
         
