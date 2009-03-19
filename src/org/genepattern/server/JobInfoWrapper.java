@@ -111,11 +111,11 @@ public class JobInfoWrapper {
             return displayName;
         }
         
-        public String getTruncatedDisplayName() {
-        	if (getDisplayName() != null && getDisplayName().length() > 70) {
-        		return getDisplayName().substring(0, 35)+"..." + getDisplayName().substring(getDisplayName().length()-32, getDisplayName().length());
+        public String getTruncatedDisplayValue() {
+        	if (getDisplayValue() != null && getDisplayValue().length() > 70) {
+        		return getDisplayValue().substring(0, 35)+"..." + getDisplayValue().substring(getDisplayValue().length()-32, getDisplayValue().length());
         	} else {
-        		return getDisplayName();
+        		return getDisplayValue();
         	}
         }
 
