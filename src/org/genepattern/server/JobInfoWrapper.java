@@ -364,6 +364,7 @@ public class JobInfoWrapper {
     }
     
     private JobInfo jobInfo = null;
+    private TaskInfo taskInfo = null;
     private Map<String, Collection<TaskInfo>> kindToModules;
     private Long size = null;
     private boolean includeInputFilesInSize = false;
@@ -414,6 +415,10 @@ public class JobInfoWrapper {
 
     private JobPermissionsBean jobPermissionsBean;
 
+    public void setTaskInfo(TaskInfo taskInfo) {
+        this.taskInfo = taskInfo;
+    }
+    
     public void setJobInfo(boolean showExecutionLogs, String servletContextPath, Map<String, Collection<TaskInfo>> kindToModules, JobInfo jobInfo) {
         this.servletContextPath = servletContextPath;
         this.showExecutionLogs = showExecutionLogs;
@@ -589,6 +594,10 @@ public class JobInfoWrapper {
 
     //support for pipelines ...
     public boolean isPipeline() {
+        if (taskInfo != null) {
+            return taskInfo.isPipeline();
+        }
+        //handle special case when the module for this job number is not available
         return children != null && children.size() > 0;
     }
 

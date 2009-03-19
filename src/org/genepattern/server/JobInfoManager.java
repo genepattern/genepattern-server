@@ -94,26 +94,28 @@ public class JobInfoManager {
      * @return a new JobInfoWrapper
      */
     private JobInfoWrapper processChildren(JobInfoWrapper parent, boolean showExecutionLogs, String documentCookie, String contextPath, AnalysisDAO analysisDao, AdminDAO adminDao, Map<String, Collection<TaskInfo>> kindToModules, JobInfo jobInfo) {
+        TaskInfo taskInfo = null;
+        try {
+            //NOTE: an exception is thrown if the module has been deleted
+            int taskId = jobInfo.getTaskID();
+            taskInfo = adminDao.getTask(taskId);
+        }
+        catch (Exception e) {
+            //TODO: provide feedback in UI that the module for this job has been deleted 
+            log.info("Error loading taskInfo for job '"+jobInfo.getJobNumber()+"', taskId="+jobInfo.getTaskID()+"  : "+e.getLocalizedMessage(), e);
+        }
+        
         JobInfoWrapper jobInfoWrapper = new JobInfoWrapper();
         jobInfoWrapper.setParent(parent);
+        //Note: must call setTaskInfo before setJobInfo
+        jobInfoWrapper.setTaskInfo(taskInfo);        
         jobInfoWrapper.setJobInfo(showExecutionLogs, contextPath, kindToModules, jobInfo);
         
         //special case for visualizers
-        try {
-            //NOTE: this code will not work if the visualizer has been deleted
-            int taskId = jobInfo.getTaskID();
-            TaskInfo taskInfo = adminDao.getTask(taskId);
-            if (taskInfo.isVisualizer()) {
-                TaskInfoAttributes taskInfoAttributes = taskInfo.giveTaskInfoAttributes();
-                String tag = createVisualizerAppletTag(documentCookie, jobInfoWrapper, taskInfoAttributes);
-                jobInfoWrapper.setVisualizerAppletTag(tag);
-            }
-        }
-        catch (Exception e) {
-            //TODO: provide feedback in UI that the visualizer module has been deleted
-            //If the visualizer has been deleted an exception is thrown in adminDao.getTask
-            //    The job status page will not allow for re-loading the visualizer
-            log.info("Error loading taskInfo for job '"+jobInfo.getJobNumber()+"', taskId="+jobInfo.getTaskID()+"  : "+e.getLocalizedMessage(), e);
+        if (taskInfo != null && taskInfo.isVisualizer()) {
+            TaskInfoAttributes taskInfoAttributes = taskInfo.giveTaskInfoAttributes();
+            String tag = createVisualizerAppletTag(documentCookie, jobInfoWrapper, taskInfoAttributes);
+            jobInfoWrapper.setVisualizerAppletTag(tag);
         }
 
         JobInfo[] children = analysisDao.getChildren(jobInfo.getJobNumber());
@@ -124,23 +126,19 @@ public class JobInfoManager {
         
         int numSteps = 1;
         if (jobInfoWrapper.isPipeline()) {
-            PipelineModel pipelineModel = getPipelineModel(adminDao, jobInfo);
+            PipelineModel pipelineModel = getPipelineModel(taskInfo);
             if (pipelineModel != null) {
                 numSteps = pipelineModel.getTasks().size();
+                jobInfoWrapper.setNumStepsInPipeline(numSteps);
             }
         }
         
-        jobInfoWrapper.setNumStepsInPipeline(numSteps);
         return jobInfoWrapper;
     }
     
-    private PipelineModel getPipelineModel(AdminDAO adminDao, JobInfo jobInfo) {
+    private PipelineModel getPipelineModel(TaskInfo taskInfo) {
         PipelineModel model = null;
-
-        int taskId = jobInfo.getTaskID();
-        TaskInfo taskInfo = adminDao.getTask(taskId);
-
-        if ((taskInfo != null) && (model == null)) {
+        if (taskInfo != null) {
             TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
             if (tia != null) {
                 String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
