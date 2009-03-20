@@ -1097,14 +1097,15 @@ public class GenePatternAnalysisTask {
 		    if (renameStderr) {
 		        stderrFile.renameTo(new File(outDir, STDERR));
 		    }
-		    //taskLog = writeProvenanceFile(outDirName, jobInfo, formalParameters, params, props);
 		    
-	        JobInfoManager m = new JobInfoManager();
-	        //TODO: compute contextPath
-	        String contextPath = "/gp";
-	        String cookie = "";
-	        JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, jobInfo.getUserId(), jobInfo.getJobNumber());
-	        taskLog = JobInfoManager.writeExecutionLog(outDirName, jobInfoWrapper, props);
+		    if (!taskInfo.isVisualizer()) {
+		        JobInfoManager m = new JobInfoManager();
+		        //TODO: compute contextPath
+		        String contextPath = "/gp";
+		        String cookie = "";
+		        JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, jobInfo.getUserId(), jobInfo.getJobNumber());
+		        taskLog = JobInfoManager.writeExecutionLog(outDirName, jobInfoWrapper, props);
+		    }
 		}
 	    }
 
@@ -1212,39 +1213,42 @@ public class GenePatternAnalysisTask {
 	    parentJobInfo = getParentJobInfo(jobInfo.getJobNumber());
 
 	    for (int i = 0; i < outputFiles.length; i++) {
-		File f = outputFiles[i];
-		log.debug("adding output file to output parameters " + f.getName() + " from " + outDirName);
-		addFileToOutputParameters(jobInfo, f.getName(), f.getName(), parentJobInfo);
+	        File f = outputFiles[i];
+	        log.debug("adding output file to output parameters " + f.getName() + " from " + outDirName);
+	        addFileToOutputParameters(jobInfo, f.getName(), f.getName(), parentJobInfo);
 	    }
 
 	    if (stdoutFilename == null) {
-		stdoutFilename = STDOUT;
+	        stdoutFilename = STDOUT;
 	    }
 	    if (stderrFilename == null) {
-		stderrFilename = STDERR;
+	        stderrFilename = STDERR;
 	    }
 	    if (new File(outDir, stdoutFilename).exists()) {
-		addFileToOutputParameters(jobInfo, stdoutFilename, stdoutFilename, parentJobInfo);
+	        addFileToOutputParameters(jobInfo, stdoutFilename, stdoutFilename, parentJobInfo);
 	    }
 	    if (new File(outDir, stderrFilename).exists()) {
-		addFileToOutputParameters(jobInfo, stderrFilename, stderrFilename, parentJobInfo);
+	        addFileToOutputParameters(jobInfo, stderrFilename, stderrFilename, parentJobInfo);
 	    }
 	    if (stderrBuffer.length() > 0) {
-		writeStringToFile(outDirName, STDERR, stderrBuffer.toString());
-		addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
+	        writeStringToFile(outDirName, STDERR, stderrBuffer.toString());
+	        addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
 	    }
 	    if (taskLog != null) {
-		addFileToOutputParameters(jobInfo, TASKLOG, TASKLOG, parentJobInfo);
+	        addFileToOutputParameters(jobInfo, TASKLOG, TASKLOG, parentJobInfo);
 	    }
 
 	    recordJobCompletion(jobInfo, parentJobInfo, jobStatus, jobStartTime);
 
-	    if (outputFiles.length == 0 && !new File(outDir, stderrFilename).exists()
-		    && !new File(outDir, stdoutFilename).exists()) {
-		log.error("no output for " + taskName + " (job " + jobInfo.getJobNumber() + ").");
+	    if (!taskInfo.isVisualizer()) {
+	        if (outputFiles.length == 0 && !new File(outDir, stderrFilename).exists()
+	                && !new File(outDir, stdoutFilename).exists()) {
+	            log.error("no output for " + taskName + " (job " + jobInfo.getJobNumber() + ").");
+	        }
 	    }
 	    // IndexerDaemon.notifyJobComplete(jobInfo.getJobNumber());
-	} catch (Throwable e) {
+	} 
+	catch (Throwable e) {
 	    if (e.getCause() != null) {
 		e = e.getCause();
 	    }
