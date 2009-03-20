@@ -1,8 +1,10 @@
 package org.genepattern.server;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -360,6 +362,13 @@ public class JobInfoWrapper {
                     fileParam += directory + "/";
                 }
                 fileParam += value;
+                //url encode fileParam
+                try {
+                    fileParam = URLEncoder.encode(fileParam, "UTF-8");
+                }
+                catch (UnsupportedEncodingException e) {
+                    log.error("Error encoding inputFile param, '"+fileParam+"' "+e.getLocalizedMessage(), e);
+                } 
                 link = contextPath + "/getFile.jsp?file="+fileParam;
             }
             setLink(link);
