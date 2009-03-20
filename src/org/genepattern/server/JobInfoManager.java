@@ -224,14 +224,20 @@ public class JobInfoManager {
             }
             if (isInputFile) {
                 String link = inputParam.getLink();
-                if (link.startsWith(contextPath)) {
-                    //append server url
-                    link = link.substring(jobInfoWrapper.getServletContextPath().length(), link.length());
-                    if (GP_URL.endsWith("/")) {
-                        link = link.substring(1);
+                if (link != null) {
+                    if (link.startsWith(contextPath)) {
+                        //append server url
+                        link = link.substring(jobInfoWrapper.getServletContextPath().length(), link.length());
+                        if (GP_URL.endsWith("/")) {
+                            link = link.substring(1);
+                        }
                     }
+                    paramValue = link;
                 }
-                paramValue = link;
+                else {
+                    //TODO: prevent this from happening 
+                    log.error("link not set for inputFile: "+inputParam.getName()+"="+inputParam.getValue());
+                }
             }
             
             if (paramNameList.length() > 0) {
