@@ -1207,21 +1207,7 @@ public class GenePatternAnalysisTask {
 	    filenameFilter.setGlob(System.getProperty(JobResultsFilenameFilter.KEY));
 
 	    File[] outputFiles = new File(outDirName).listFiles(filenameFilter);
-
-	    // create a sorted list of files by lastModified() date
-	    Arrays.sort(outputFiles, new Comparator() {
-		public int compare(Object o1, Object o2) {
-		    long f1Date = ((File) o1).lastModified();
-		    long f2Date = ((File) o2).lastModified();
-		    if (f1Date < f2Date) {
-			return -1;
-		    }
-		    if (f1Date == f2Date) {
-			return 0;
-		    }
-		    return 1;
-		}
-	    });
+	    sortOutputFiles(outputFiles);
 
 	    parentJobInfo = getParentJobInfo(jobInfo.getJobNumber());
 
@@ -1279,6 +1265,28 @@ public class GenePatternAnalysisTask {
 	    }
 	}
     }
+
+    private static final Comparator<File> fileComparator = new Comparator<File>() {
+        public int compare(File o1, File o2) {
+            long f1Date = o1.lastModified();
+            long f2Date = o2.lastModified();
+            if (f1Date < f2Date) {
+                return -1;
+            }
+            if (f1Date == f2Date) {
+                return 0;
+            }
+            return 1;
+        }
+    };
+    /**
+     * Sorted output files by lastModified() date.
+     * @param outputFiles
+     */
+    private void sortOutputFiles(File[] outputFiles) {
+        Arrays.sort(outputFiles, fileComparator);
+    }
+
 
     /**
      * Record job completion status in the database.
