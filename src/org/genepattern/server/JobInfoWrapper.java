@@ -430,7 +430,7 @@ public class JobInfoWrapper {
         String jobDir = GenePatternAnalysisTask.getJobDir(""+jobInfo.getJobNumber());
         this.outputDir = new File(jobDir);
         processParameterInfoArray();
-        this.jobPermissionsBean = null;
+        this.jobPermissionsBean = null;        
     }
 
     //JobInfo wrapper methods
@@ -521,7 +521,17 @@ public class JobInfoWrapper {
         }
     }
 
-    public String getFormattedPurgeDate() {
+    private boolean purgeDateInitialized = false;
+    private Date purgeDate = null;
+    private String formattedPurgeDate = "";
+
+    /**
+     * @return the date when the job result files will be deleted from the server, 
+     *             a null value indicates that files won't be purged.
+     */
+    private synchronized void initPurgeDate() {
+        //this is also implemented in the JobPurger and Purger classes
+        //TODO: add a static method to the JobPurger to get the purge date
         GregorianCalendar purgeTOD = new GregorianCalendar();
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
@@ -541,11 +551,28 @@ public class JobInfoWrapper {
             purgeInterval = Integer.parseInt(System.getProperty("purgeJobsAfter", "-1"));
         } 
         catch (NumberFormatException nfe) {
+            log.error("Error getting file purge settings: "+nfe.getLocalizedMessage(), nfe);
             purgeInterval = 7;
         }
         purgeTOD.add(GregorianCalendar.DATE, purgeInterval);
+        this.purgeDate = purgeTOD.getTime();
         DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
-        return df.format(purgeTOD.getTime()).toLowerCase();
+        this.formattedPurgeDate =  df.format(purgeDate.getTime()).toLowerCase();
+        this.purgeDateInitialized = true;
+    }
+    
+    public Date getPurgeDate() {
+        if (!purgeDateInitialized) {
+            initPurgeDate();
+        }
+        return purgeDate;
+    }
+
+    public String getFormattedPurgeDate() {
+        if (!purgeDateInitialized) {
+            initPurgeDate();
+        }
+        return formattedPurgeDate;
     }
 
     /**
