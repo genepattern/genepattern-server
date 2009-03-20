@@ -15,6 +15,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -31,6 +32,7 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.visualizer.RunVisualizerConstants;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.json.JSONArray;
@@ -113,8 +115,7 @@ public class JobInfoManager {
         
         //special case for visualizers
         if (taskInfo != null && taskInfo.isVisualizer()) {
-            TaskInfoAttributes taskInfoAttributes = taskInfo.giveTaskInfoAttributes();
-            String tag = createVisualizerAppletTag(documentCookie, jobInfoWrapper, taskInfoAttributes);
+            String tag = createVisualizerAppletTag(documentCookie, jobInfoWrapper, taskInfo);
             jobInfoWrapper.setVisualizerAppletTag(tag);
         }
 
@@ -155,12 +156,14 @@ public class JobInfoManager {
         return model;
     }
     
-    public static String createVisualizerAppletTag(String documentCookie, JobInfoWrapper jobInfoWrapper, TaskInfoAttributes taskInfoAttributes) 
+    public static String createVisualizerAppletTag(String documentCookie, JobInfoWrapper jobInfoWrapper, TaskInfo taskInfo) 
     {
         try {
 
         String GP_URL = System.getProperty("GenePatternURL");
         String name = jobInfoWrapper.getTaskName();
+
+        TaskInfoAttributes taskInfoAttributes = taskInfo.giveTaskInfoAttributes();
 
         String os = taskInfoAttributes.get(GPConstants.OS);
         String cpuType = taskInfoAttributes.get(GPConstants.CPU_TYPE);
@@ -171,6 +174,15 @@ public class JobInfoManager {
         }
         String contextPath = jobInfoWrapper.getServletContextPath();
         String commandLine = taskInfoAttributes.get(GPConstants.COMMAND_LINE);
+        
+        Map<String,ParameterInfo> formalParameters = new HashMap<String,ParameterInfo>();
+        Map<String,ParameterInfo> optionalParameters = new HashMap<String,ParameterInfo>();
+        for(ParameterInfo formalParam : taskInfo.getParameterInfoArray()) {
+            formalParameters.put(formalParam.getName(), formalParam);
+            if (formalParam.isOptional()) {
+                optionalParameters.put(formalParam.getName(), formalParam);
+            }
+        }
 
         StringWriter appletTag = new StringWriter();
         appletTag.append("<applet code=\"" 
@@ -190,7 +202,6 @@ public class JobInfoManager {
         for(ParameterInfoWrapper inputParam : jobInfoWrapper.getInputParameters()) {
             String paramName = inputParam.getName();
             String paramValue = inputParam.getValue();
-            boolean isInputFile = false;
             if (paramValue != null) {
                 paramValue = paramValue.replace("\\", "\\\\");
             } 
@@ -199,7 +210,18 @@ public class JobInfoManager {
             }
 
             //process input file
-            isInputFile = inputParam.getLink() != null;
+            boolean isInputFile = false;
+            ParameterInfo formalParam = formalParameters.get(paramName);
+            if (formalParam != null) {
+                ParameterInfo optionalParam = optionalParameters.remove(paramName);
+                if (optionalParam != null) {
+                    log.debug("optional parameter: "+paramName+"="+paramValue);
+                }
+                isInputFile = formalParam.isInputFile();
+            }
+            else {
+                isInputFile = inputParam.getLink() != null;
+            }
             if (isInputFile) {
                 String link = inputParam.getLink();
                 if (link.startsWith(contextPath)) {
@@ -224,6 +246,18 @@ public class JobInfoManager {
                 downloadFiles.append(inputParam.getName());
             }            
         }
+        
+        //Bug GP-2605: add unset optional parameters to paramName and paramNameValueList
+        for(ParameterInfo optionalParam : optionalParameters.values()) {
+            String paramName = optionalParam.getName();
+            String paramValue="";
+            if (paramNameList.length() > 0) {
+                paramNameList.append(",");
+            }
+            paramNameList.append(paramName);
+            paramNameValueList.append("<param name=\"" + paramName + "\" value=\"" + paramValue + "\">");
+        }
+        
         appletTag.append("<param name=\"" + RunVisualizerConstants.PARAM_NAMES + "\" value=\"" + paramNameList.toString() + "\" >");
         appletTag.append(paramNameValueList.toString());
         appletTag.append("<param name=\"" + RunVisualizerConstants.DOWNLOAD_FILES + "\" value=\"" + URLEncoder.encode(downloadFiles.toString(), "UTF-8") + "\">");
