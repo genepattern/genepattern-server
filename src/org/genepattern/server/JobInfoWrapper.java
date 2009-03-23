@@ -665,6 +665,16 @@ public class JobInfoWrapper {
         return this.visualizerAppletTag != null && !"".equals(this.visualizerAppletTag);
     }
     
+    public boolean getHasVisualizer() {
+    	if (isVisualizer()) return true;
+    	else if (isPipeline()) {
+    		for (JobInfoWrapper child : children) {
+    			if (child.isVisualizer()) return true;
+    		}
+    	}
+    	return false;
+    }
+    
     public void setVisualizerAppletTag(String tag) {
         this.visualizerAppletTag = tag;
     }
