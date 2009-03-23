@@ -541,6 +541,21 @@ public class JobInfoWrapper {
     private synchronized void initPurgeDate() {
         //this is also implemented in the JobPurger and Purger classes
         //TODO: add a static method to the JobPurger to get the purge date
+        int purgeInterval = -1;
+        String purgeJobsAfter = System.getProperty("purgeJobsAfter", "-1");
+        try {
+            purgeInterval = Integer.parseInt(purgeJobsAfter);
+        } 
+        catch (NumberFormatException nfe) {
+            log.error("Error getting file purge settings: "+nfe.getLocalizedMessage(), nfe);
+            purgeInterval = 7;
+        }
+        if (purgeInterval < 0) {
+            purgeDate = null;
+            formattedPurgeDate = "";
+            return;
+        }
+       
         GregorianCalendar purgeTOD = new GregorianCalendar();
         try {
             SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
@@ -555,14 +570,6 @@ public class JobInfoWrapper {
         }
         purgeTOD.set(GregorianCalendar.SECOND, 0);
         purgeTOD.set(GregorianCalendar.MILLISECOND, 0);
-        int purgeInterval;
-        try {
-            purgeInterval = Integer.parseInt(System.getProperty("purgeJobsAfter", "-1"));
-        } 
-        catch (NumberFormatException nfe) {
-            log.error("Error getting file purge settings: "+nfe.getLocalizedMessage(), nfe);
-            purgeInterval = 7;
-        }
         purgeTOD.add(GregorianCalendar.DATE, purgeInterval);
         this.purgeDate = purgeTOD.getTime();
         DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
