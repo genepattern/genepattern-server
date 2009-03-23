@@ -29,13 +29,13 @@
 	
 		<link href="#{facesContext.externalContext.requestContextPath}/css/GP_DK.css" rel="stylesheet" type="text/css" />
 		<!-- Dependency -->
-		<script src="http://yui.yahooapis.com/2.7.0/build/yahoo/yahoo-min.js"></script>
+		<script src="/gp/js/YUI/yahoo/yahoo-min.js"></script>
 		
 		<!-- Used for Custom Events and event listener bindings -->
-		<script src="http://yui.yahooapis.com/2.7.0/build/event/event-min.js"></script>
+		<script src="/gp/js/YUI/event/event-min.js"></script>
 		
 		<!-- Source file -->
-		<script src="http://yui.yahooapis.com/2.7.0/build/connection/connection-min.js"></script>
+		<script src="/gp/js/YUI/connection/connection-min.js"></script>
 			
 		<script type="text/javascript">
 
@@ -492,7 +492,9 @@
 	    <input type="textarea" id="responseArea" rows="30" cols="100" style="display:none;"/>
 	    
 		<div style="text-align:right;">
-			To launch visualizer click <img src="/gp/images/visualizer.gif" /> icon. To see options click <img src="/gp/images/smallOptions.gif" /> icon. For Input Parameters click <img src="/gp/images/smallParameters.gif" /> icon.</div> <br />
+			<h:outputText rendered="#{jobStatusBean.jobInfo.hasVisualizer}">
+			To launch visualizer click <img src="/gp/images/visualizer.gif" /> icon.
+			</h:outputText> To see options click <img src="/gp/images/smallOptions.gif" /> icon. For Input Parameters click <img src="/gp/images/smallParameters.gif" /> icon.</div> <br />
 			<h:outputText rendered="#{jobStatusBean.jobInfo.userId == requestScope.userID}">
 			<div class="icon">
 				<a style="color:#0066FF;" href="javascript:openLyteBox(#{jobStatusBean.jobInfo.jobNumber})">
@@ -611,8 +613,12 @@
 	    </div>
 	    
 	    
-	   
 	    <br/>
+	    <br/>
+	    
+	    <h:outputText rendered="#{not empty jobStatus.jobInfo.purgeDate}">
+	    	<b>These job results are scheduled to be purged from the server on #{jobStatus.jobInfo.formattedPurgeDate}</b>
+	    </h:outputText>
 	    
 	    </div>
 	    <table cellpadding="0" cellspacing="0" border="0" style="display: none;" id="testTable">
