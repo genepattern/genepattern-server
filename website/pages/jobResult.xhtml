@@ -381,10 +381,10 @@
 						var image = document.createElement("img");
 						image.title = 'output file';
 						image.src = "/gp/images/outputFile.gif";
-						p.appendChild(image);
 						var link = document.createElement("a");
 						link.style.color = '#0066FF';
 						link.href = job.outputFiles[i].link;
+						link.appendChild(image);
 						link.appendChild(document.createTextNode(job.outputFiles[i].truncatedDisplayValue));
 						p.appendChild(link);
 						p.appendChild(document.createTextNode(" ("+job.outputFiles[i].formattedSize+") "));

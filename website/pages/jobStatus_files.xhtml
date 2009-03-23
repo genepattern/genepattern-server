@@ -49,8 +49,8 @@
 							<img src="/gp/images/blank.gif"/>
 						</h:outputText>
 					</t:dataList>
-		    		<img src="/gp/images/outputFile.gif"  title="output file"/> 
-		    		<a style="color:#0066FF;" href="#{p.link}">#{p.truncatedDisplayValue}</a> (#{p.formattedSize})
+					<a style="color:#0066FF;" href="#{p.link}"
+					><img src="/gp/images/outputFile.gif"  title="output file"/> #{p.truncatedDisplayValue}</a> (#{p.formattedSize})
 				    <h:outputText rendered="#{p.name != 'gp_execution_log.txt'}">
 				    <img src="/gp/images/smallOptions.gif" 
 			           name="Image_#{p.valueId}" 
