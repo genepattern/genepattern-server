@@ -19,22 +19,18 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.security.Security;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -98,80 +94,84 @@ public class RunPipelineSoap {
     }
 
     public void runPipeline(Map args) throws WebServiceException {
-	log.debug("runPipeline");
-	String stopAfterTaskStr = System.getProperty(GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM);
-	int stopAfterTask = Integer.MAX_VALUE;
-	if (stopAfterTaskStr != null) {
-	    if (stopAfterTaskStr.trim().length() > 0) {
-		try {
-		    stopAfterTask = Integer.parseInt(stopAfterTaskStr);
-		} catch (NumberFormatException nfe) {
-		    log.error("Ignoring invalid number format for: " + GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM
-			    + "=" + stopAfterTask, nfe);
-		}
-	    }
-	}
-	Vector vTasks = model.getTasks();
-	JobSubmission jobSubmission = null;
-	TaskInfo taskInfo = null;
-	ParameterInfo[] parameterInfo = null;
-	int taskNum = 0;
-	boolean okayToRun = true;
-	for (Enumeration eTasks = vTasks.elements(); eTasks.hasMoreElements(); taskNum++) {
-	    jobSubmission = (JobSubmission) eTasks.nextElement();
-	    taskInfo = adminClient.getTask(jobSubmission.getLSID());
-	    if (taskInfo == null) {
-		okayToRun = false;
-		log.error("No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID() + ")");
-		decorator.error(model, "No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID()
-			+ ")");
-	    }
-	}
-	if (!okayToRun) {
-	    throw new IllegalArgumentException("No such module " + jobSubmission.getName() + " ("
-		    + jobSubmission.getLSID() + ")");
-	}
+        log.debug("runPipeline");
+        String stopAfterTaskStr = System.getProperty(GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM);
+        int stopAfterTask = Integer.MAX_VALUE;
+        if (stopAfterTaskStr != null) {
+            if (stopAfterTaskStr.trim().length() > 0) {
+                try {
+                    stopAfterTask = Integer.parseInt(stopAfterTaskStr);
+                } 
+                catch (NumberFormatException nfe) {
+                    log.error("Ignoring invalid number format for: " + 
+                            GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM + "=" + stopAfterTask, nfe);
+                }
+            }
+        }
+        //Vector vTasks = model.getTasks();
+        //JobSubmission jobSubmission = null;
+        TaskInfo taskInfo = null;
+        ParameterInfo[] parameterInfo = null;
+        int taskNum = 0;
+        boolean okayToRun = true;
+        StringBuffer errorMessages = null;
+        for(JobSubmission jobSubmission : model.getTasks()) {
+            taskInfo = adminClient.getTask(jobSubmission.getLSID());
+            if (taskInfo == null) {
+                okayToRun = false;
+                String errorMessage = "No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID() + ")";
+                log.error(errorMessage);
+                decorator.error(model, errorMessage);
+                if (errorMessages == null) {
+                    errorMessages = new StringBuffer(errorMessage);
+                }
+                else {
+                    errorMessages.append(", "+errorMessage);
+                }
+            }
+        }
+        if (!okayToRun) {
+            throw new IllegalArgumentException(errorMessages.toString());
+        }
 
-	taskNum = 0;
-	JobInfo results[] = new JobInfo[vTasks.size()];
+        taskNum = 0;
+        JobInfo results[] = new JobInfo[model.getTasks().size()];
+        decorator.beforePipelineRuns(model);
+        try {
+            for(JobSubmission jobSubmission : model.getTasks()) { 
+                if (taskNum >= stopAfterTask) {
+                    break; // stop and execute no further
+                }
+                try {
+                    parameterInfo = jobSubmission.giveParameterInfoArray();
+                    setInheritedJobParameters(parameterInfo, results);
+                    substituteLsidInInputFiles(parameterInfo);
+                    ParameterInfo[] params = parameterInfo;
+                    params = setJobParametersFromArgs(jobSubmission.getName(), taskNum + 1, params, results, args);
+                    params = removeEmptyOptionalParams(parameterInfo);
+                    decorator.recordTaskExecution(jobSubmission, taskNum + 1, model.getTasks().size());
+                    JobInfo taskResult = executeTask(jobSubmission, params, taskNum, results);
 
-	decorator.beforePipelineRuns(model);
-	try {
-	    for (Enumeration eTasks = vTasks.elements(); eTasks.hasMoreElements(); taskNum++) {
-		jobSubmission = (JobSubmission) eTasks.nextElement();
-		if (taskNum >= stopAfterTask) {
-		    break; // stop and execute no further
-		}
-		try {
-		    parameterInfo = jobSubmission.giveParameterInfoArray();
-		    setInheritedJobParameters(parameterInfo, results);
-		    substituteLsidInInputFiles(parameterInfo);
-		    ParameterInfo[] params = parameterInfo;
-		    params = setJobParametersFromArgs(jobSubmission.getName(), taskNum + 1, params, results, args);
-		    params = removeEmptyOptionalParams(parameterInfo);
-		    decorator.recordTaskExecution(jobSubmission, taskNum + 1, vTasks.size());
-		    JobInfo taskResult = executeTask(jobSubmission, params, taskNum, results);
-
-		    // handle the special case where a task is a pipeline by
-		    // adding
-		    // all output files of the pipeline's children (recursively)
-		    // to its
-		    // taskResult so that they can be used downstream
-		    taskResult = collectChildJobResults(taskResult);
-		    decorator.recordTaskCompletion(taskResult, jobSubmission.getName() + (taskNum + 1));
-		    results[taskNum] = taskResult;
-		} catch (Exception e) {
-		    log.error("Execution for " + jobSubmission.getName() + " module failed.");
-		    if (e.getMessage() != null) {
-			log.error(e.getMessage());
-		    }
-		    break;
-		}
-	    }
-	} finally {
-	    decorator.afterPipelineRan(model);
-	}
-	setStatus(JobStatus.FINISHED);
+                    // handle the special case where a task is a pipeline by adding
+                    // all output files of the pipeline's children (recursively) to its
+                    // taskResult so that they can be used downstream
+                    taskResult = collectChildJobResults(taskResult);
+                    decorator.recordTaskCompletion(taskResult, jobSubmission.getName() + (taskNum + 1));
+                    results[taskNum] = taskResult;
+                } 
+                catch (Exception e) {
+                    log.error("Execution for " + jobSubmission.getName() + " module failed.");
+                    if (e.getMessage() != null) {
+                        log.error(e.getMessage());
+                    }
+                    break;
+                }
+            }
+        } 
+        finally {
+            decorator.afterPipelineRan(model);
+        }
+        setStatus(JobStatus.FINISHED);
     }
 
     /**
