@@ -321,6 +321,7 @@ public class JobInfoManager {
         obj.put("dateCompleted", formatDate( jobInfoWrapper.getDateCompleted() ));
         obj.put("elapsedTime",  jobInfoWrapper.getElapsedTimeMillis());
         obj.put("status", jobInfoWrapper.getStatus());
+        obj.put("finished", jobInfoWrapper.isFinished());
         obj.put("numAncestors", jobInfoWrapper.getNumAncestors().length);
         obj.put("stepPath", jobInfoWrapper.getStepPath());
         
