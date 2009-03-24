@@ -507,6 +507,16 @@ public class JobInfoWrapper {
         return 0L;
     }
     //--- end JobInfo wrapper methods
+    /**
+     * helper method which indicates if the job has completed processing.
+     */
+    public boolean isFinished() {
+        if ( JobStatus.FINISHED.equals(getStatus()) ||
+                JobStatus.ERROR.equals(getStatus()) ) {
+            return true;
+        }
+        return false;        
+    }
     
     public String getServletContextPath() {
         return this.servletContextPath;
@@ -895,14 +905,7 @@ public class JobInfoWrapper {
         return currentStepInPipeline;
     }
     
-    private boolean isFinished() {
-        if ( JobStatus.FINISHED.equals(getStatus()) ||
-                JobStatus.ERROR.equals(getStatus()) ) {
-            return true;
-        }
-        return false;        
-    }
-
+    //Job Permissions methods
     public JobPermissionsBean getPermissions() {
         if (jobPermissionsBean == null) {
             initGroupPermissions();
@@ -910,7 +913,6 @@ public class JobInfoWrapper {
         return jobPermissionsBean;
     }
     
-    //Job Permissions methods
     private void initGroupPermissions() { 
         jobPermissionsBean = new JobPermissionsBean();
         if (jobInfo != null) {
