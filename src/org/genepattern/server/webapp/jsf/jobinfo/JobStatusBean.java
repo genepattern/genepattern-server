@@ -38,7 +38,6 @@ public class JobStatusBean {
     private String currentUserId = null;
     private String currentUserEmail = null;
 
-    private boolean finished = false;
     private boolean sendEmailNotification = false;
     private boolean showExecutionLogs = false;
     private boolean openVisualizers = false;
@@ -84,9 +83,6 @@ public class JobStatusBean {
         
         JobInfoManager jobInfoManager = new JobInfoManager();
         this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, currentUserId, jobNumber);
-        this.finished = 
-            JobStatus.FINISHED.equals(this.jobInfoWrapper.getStatus()) ||
-            JobStatus.ERROR.equals(this.jobInfoWrapper.getStatus());
     }
     
     public JobInfoWrapper getJobInfo() {
@@ -113,6 +109,8 @@ public class JobStatusBean {
     }
 
     public boolean isFinished() {
+        boolean  finished = 
+            jobInfoWrapper != null && jobInfoWrapper.isFinished();
         return finished;
     }
 
