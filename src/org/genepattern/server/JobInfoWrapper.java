@@ -261,12 +261,12 @@ public class JobInfoWrapper {
 </pre>
          * @param parameterInfo
          */
-        InputFile(String contextPath, String uiValue, ParameterInfo parameterInfo) {
+        InputFile(JobInfo jobInfo, String contextPath, String uiValue, ParameterInfo parameterInfo) {
             super(parameterInfo);
-            initLinkValue(contextPath, uiValue);
+            initLinkValue(jobInfo.getJobNumber(), contextPath, uiValue);
         }
         
-        private void initLinkValue( String contextPath, String value ) 
+        private void initLinkValue( int jobNumber, String contextPath, String value ) 
         {
             String displayValue = value;
             boolean isUrl = false;
@@ -347,7 +347,7 @@ public class JobInfoWrapper {
                 catch (UnsupportedEncodingException e) {
                     log.error("Error encoding inputFile param, '"+fileParam+"' "+e.getLocalizedMessage(), e);
                 } 
-                link = contextPath + "/getFile.jsp?file="+fileParam;
+                link = contextPath + "/getFile.jsp?job="+jobNumber+"&file="+fileParam;
             }
             setLink(link);
             setDisplayValue(displayValue);
@@ -608,7 +608,7 @@ public class JobInfoWrapper {
                 String value = param.getValue();
                 if (value != null && !"".equals(value)) {
                     if (isInputFile(param)) {
-                        InputFile inputFile = new InputFile(servletContextPath, value, param);
+                        InputFile inputFile = new InputFile(jobInfo, servletContextPath, value, param);
                         inputFiles.add(inputFile);
                         inputParam = inputFile;
                     } 

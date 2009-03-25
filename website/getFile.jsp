@@ -1,6 +1,6 @@
 
 <%@ page
-        import="org.genepattern.server.webservice.server.DirectoryManager,
+        import="org.genepattern.server.webservice.server.DirectoryManager, org.genepattern.server.PermissionsHelper,
         org.genepattern.util.GPConstants, java.io.BufferedInputStream, java.io.File,
         java.io.FileInputStream,org.genepattern.server.webapp.jsf.AuthorizationHelper,java.io.InputStream,java.io.OutputStream,java.net.URLDecoder,java.io.UnsupportedEncodingException,java.net.MalformedURLException" %>
 <%
@@ -13,6 +13,20 @@
     if (filename == null) {
         out.println("no such file: " + filename);
         return;
+    }
+    
+    //if the jobNumber is set, it means that this file is being requested
+    //    as a link to an input file to the given job
+    //    use this information to validate group access permissions
+    int jobNumber = -1;
+    String job = request.getParameter("job");
+    if (job != null && !"".equals(job)) {
+        try {
+            jobNumber = Integer.parseInt(job);
+        }
+        catch (NumberFormatException e) {
+            out.println("Invalid job parameter, job="+job);
+        }
     }
 
     File in = null;
@@ -46,7 +60,13 @@
             if (in.exists()) {
                 if (!filename.startsWith(prefix)) {
 			        boolean isAdmin = AuthorizationHelper.adminJobs(userID);
+			        boolean canRead = false;
 			        if (!isAdmin) {
+			            //check for group access permissions
+			            PermissionsHelper perm = new PermissionsHelper(userID, jobNumber);
+			            canRead = perm.canReadJob();
+			        }
+			        if (!isAdmin && !canRead) {
 			            System.out.println("SECURITY ALERT: " + userID +" tried to access someone else's file: " + filename);
 		                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
 		                return;
