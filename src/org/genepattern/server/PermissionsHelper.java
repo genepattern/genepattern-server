@@ -129,10 +129,8 @@ public class PermissionsHelper {
     }
 
     /**
-     * Does the given user have read access to the given job.
+     * Does the user have read access to the job.
      * 
-     * @param currentUser
-     * @param jobInfo
      * @return
      */
     public boolean canReadJob() {
@@ -140,16 +138,18 @@ public class PermissionsHelper {
     }
 
     /**
-     * Does the given user have write access to the given job.
+     * Does the user have write access to the job.
      * 
-     * @param userId
-     * @param jobInfo
      * @return
      */
     public boolean canWriteJob() {
         return this.canWrite;
     }
 
+    /**
+     * Can the user set permissions on the job.
+     * @return
+     */
     public boolean canSetJobPermissions() {
         return this.canSetPermissions;
     }
