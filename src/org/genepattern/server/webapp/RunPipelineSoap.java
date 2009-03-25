@@ -108,11 +108,8 @@ public class RunPipelineSoap {
                 }
             }
         }
-        //Vector vTasks = model.getTasks();
-        //JobSubmission jobSubmission = null;
         TaskInfo taskInfo = null;
         ParameterInfo[] parameterInfo = null;
-        int taskNum = 0;
         boolean okayToRun = true;
         StringBuffer errorMessages = null;
         for(JobSubmission jobSubmission : model.getTasks()) {
@@ -134,44 +131,45 @@ public class RunPipelineSoap {
             throw new IllegalArgumentException(errorMessages.toString());
         }
 
-        taskNum = 0;
         JobInfo results[] = new JobInfo[model.getTasks().size()];
         decorator.beforePipelineRuns(model);
         try {
+            int taskNum = 0;
             for(JobSubmission jobSubmission : model.getTasks()) { 
                 if (taskNum >= stopAfterTask) {
                     break; // stop and execute no further
                 }
+                parameterInfo = jobSubmission.giveParameterInfoArray();
                 try {
-                    parameterInfo = jobSubmission.giveParameterInfoArray();
                     setInheritedJobParameters(parameterInfo, results);
-                    substituteLsidInInputFiles(parameterInfo);
-                    ParameterInfo[] params = parameterInfo;
-                    params = setJobParametersFromArgs(jobSubmission.getName(), taskNum + 1, params, results, args);
-                    params = removeEmptyOptionalParams(parameterInfo);
-                    decorator.recordTaskExecution(jobSubmission, taskNum + 1, model.getTasks().size());
-                    JobInfo taskResult = executeTask(jobSubmission, params, taskNum, results);
-
-                    // handle the special case where a task is a pipeline by adding
-                    // all output files of the pipeline's children (recursively) to its
-                    // taskResult so that they can be used downstream
-                    taskResult = collectChildJobResults(taskResult);
-                    decorator.recordTaskCompletion(taskResult, jobSubmission.getName() + (taskNum + 1));
-                    results[taskNum] = taskResult;
-                } 
-                catch (Exception e) {
-                    log.error("Execution for " + jobSubmission.getName() + " module failed.");
-                    if (e.getMessage() != null) {
-                        log.error(e.getMessage());
-                    }
-                    break;
                 }
+                catch (FileNotFoundException e) {
+                    String errorMessage = "Execution for " + jobSubmission.getName() + " module failed: "+e.getMessage();
+                    throw new WebServiceException(errorMessage, e);
+                }
+                substituteLsidInInputFiles(parameterInfo);
+                ParameterInfo[] params = parameterInfo;
+                params = setJobParametersFromArgs(jobSubmission.getName(), taskNum + 1, params, results, args);
+                params = removeEmptyOptionalParams(parameterInfo);
+                decorator.recordTaskExecution(jobSubmission, taskNum + 1, model.getTasks().size());
+                JobInfo taskResult = executeTask(jobSubmission, params, taskNum, results);
+
+                // handle the special case where a task is a pipeline by adding
+                // all output files of the pipeline's children (recursively) to its
+                // taskResult so that they can be used downstream
+                taskResult = collectChildJobResults(taskResult);
+                decorator.recordTaskCompletion(taskResult, jobSubmission.getName() + (taskNum + 1));
+                results[taskNum] = taskResult;
+                    
+                if (JobStatus.ERROR.equals(taskResult.getStatus())) {
+                    throw new WebServiceException("Error in pipeline step " + (taskNum + 1) + ": "+ taskResult.getTaskName()+" [id: "+taskResult.getJobNumber()+"]");
+                }
+                ++taskNum;
             }
-        } 
-        finally {
+        }
+	    finally {
             decorator.afterPipelineRan(model);
         }
-        setStatus(JobStatus.FINISHED);
     }
 
     /**
