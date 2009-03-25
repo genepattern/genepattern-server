@@ -1080,7 +1080,12 @@ public class GenePatternAnalysisTask {
 		    }
 		    else {
 		        runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
-		        jobStatus = JobStatus.JOB_FINISHED;
+		        if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0) {
+		            jobStatus = JobStatus.JOB_ERROR;
+		        }
+		        else {
+		            jobStatus = JobStatus.JOB_FINISHED;
+		        }
 		        log.info(taskName + " (" + jobInfo.getJobNumber() + ") done.");
 		    }
 		} 
