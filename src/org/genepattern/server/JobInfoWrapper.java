@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,23 +47,6 @@ public class JobInfoWrapper {
             public int compare(KeyValuePair o1, KeyValuePair o2) {
                 return o1.getKey().compareToIgnoreCase(o2.getKey());
             }
-        }
-
-        protected static ParameterInfo getFormalParameter(ParameterInfo[] formalParameters, ParameterInfo parameterInfo) {
-            //TODO: optimize
-            String paramName = null;
-            if (parameterInfo != null) {
-                paramName = parameterInfo.getName();
-            }
-            if (paramName == null) {
-                return null;
-            }
-            for(ParameterInfo formalParameter : formalParameters) {
-                if (paramName.equals(formalParameter.getName())) {
-                    return formalParameter;
-                }
-            }
-            return null;
         }
         
         private ParameterInfo parameterInfo = null;
@@ -285,11 +269,6 @@ public class JobInfoWrapper {
         
         private void initLinkValue( String contextPath, String value ) 
         {
-            //String value = parameterInfo.getUIValue(formalParameter);
-            // skip parameters that the user did not give a value for
-            //if (value == null || value.equals("")) {
-            //    return;
-            //}
             String displayValue = value;
             boolean isUrl = false;
             boolean exists = false;
@@ -345,7 +324,7 @@ public class JobInfoWrapper {
                     Calendar cal = Calendar.getInstance();
                     cal.setTimeInMillis(inputFile.lastModified());
                     setLastModified(cal.getTime());
-                    
+
                     //TODO: don't add the menu items until the action links are implemented, requires some updates to the JobBean
                     //set up module popup menu for the input file
                     //setModuleMenuItemsForFile(kindToModules, inputFile);
@@ -665,6 +644,11 @@ public class JobInfoWrapper {
         //not to be confused with 'TYPE'
         String type = (String) param.getAttributes().get("type");
         if (type != null && type.equals("java.io.File")) {
+            return true;
+        }
+        //special case: URL input via SOAP interface
+        String mode = (String) param.getAttributes().get("MODE");
+        if (mode != null && mode.equals("URL_IN")) {
             return true;
         }
         return false;
