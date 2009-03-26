@@ -369,119 +369,119 @@ public class GenePatternAnalysisTask {
     /**
      * Returns a local URL as a File object or <tt>null</tt> if the URL can not be represented as a File
      * 
-     * @param url
-     *            The URL to convert to a File.
-     * @param userId
-     *            The user id of the user running the job.
-     * @throws IllegalArgumentException
-     *             If the URL refers to a file that the specified userId does not have permission to access.
+     * @param url, The URL to convert to a File.
+     * @param userId, The user id of the user running the job.
+     * @throws IllegalArgumentException, If the URL refers to a file that the specified userId does not have permission to access.
      * @return The file or <tt>null</tt>
      */
-
     protected File localInputUrlToFile(URL url, String userId) {
-	String path = url.getPath();
-	try {
-	    path = URLDecoder.decode(path, "UTF-8");
-	} catch (UnsupportedEncodingException e) {
-	    log.error("Error", e);
-	}
+        String path = url.getPath();
+        try {
+            path = URLDecoder.decode(path, "UTF-8");
+        } 
+        catch (UnsupportedEncodingException e) {
+            log.error("Error", e);
+        }
 
-	if (path.endsWith("getFile.jsp")) {
-	    // request parameters are: task=lsid & file=filename
-	    String params = url.getQuery();
-	    int idx1 = params.indexOf("task=");
-	    int endIdx1 = params.indexOf('&', idx1);
-	    if (endIdx1 == -1) {
-		endIdx1 = params.length();
-	    }
-	    int idx2 = params.indexOf("file=");
-	    int endIdx2 = params.indexOf('&', idx2);
-	    if (endIdx2 == -1) {
-		endIdx2 = params.length();
-	    }
-	    String lsid = params.substring(idx1 + 5, endIdx1);
-	    try {
-		lsid = URLDecoder.decode(lsid, "UTF-8");
-	    } catch (UnsupportedEncodingException e) {
-		log.error("Error", e);
-	    }
-	    String filename = params.substring(idx2 + 5, endIdx2);
-	    if (filename == null) {
-		return null;
-	    }
-	    try {
-		filename = URLDecoder.decode(filename, "UTF-8");
-	    } catch (UnsupportedEncodingException e) {
-		log.error("Error", e);
-	    }
-	    if (lsid == null || lsid.trim().equals("")) { // input file
-		// look in temp for pipelines run without saving
-		File in = new File(System.getProperty("java.io.tmpdir"), filename);
-		// check whether this is the user or an admin
-		// requesting the file
-		if (in.exists()) {
-		    String prefix = userId + "_";
-		    if (filename.startsWith(prefix) || AuthorizationHelper.adminJobs(userId)) {
-			return in;
-		    }
-		    throw new IllegalArgumentException("You are not permitted to access the requested file.");
-		}
-		return null;
-	    }
-	    // check that user can access requested module
-	    try {
-		if (new LocalAdminClient(userId).getTask(lsid) != null) {
-		    File file = new File(DirectoryManager.getTaskLibDir(lsid, lsid, userId), filename);
-		    if (file.exists()) {
-			return file;
-		    }
-		} else {
-		    throw new IllegalArgumentException("You are not permitted to access the requested file.");
-		}
-	    } catch (WebServiceException e) {
-		log.error("Error", e);
-		throw new IllegalArgumentException("Error connecting to database.");
-	    } catch (MalformedURLException e) {
-		log.error("Error", e);
-		throw new IllegalArgumentException("Invalid LSID.");
-	    } catch (IllegalArgumentException e) {
-		log.error("Error", e);
-		throw new IllegalArgumentException("Module not found.");
-	    }
-	}
+        if (path.endsWith("getFile.jsp")) {
+            // request parameters are: task=lsid & job=<job_number> & file=filename
+            String params = url.getQuery();
+            int idx1 = params.indexOf("task=");
+            int endIdx1 = params.indexOf('&', idx1);
+            if (endIdx1 == -1) {
+                endIdx1 = params.length();
+            }
+            int idx2 = params.indexOf("file=");
+            int endIdx2 = params.indexOf('&', idx2);
+            if (endIdx2 == -1) {
+                endIdx2 = params.length();
+            }
+            String lsid = params.substring(idx1 + 5, endIdx1);
+            try {
+                lsid = URLDecoder.decode(lsid, "UTF-8");
+            } 
+            catch (UnsupportedEncodingException e) {
+                log.error("Error", e);
+            }
+            String filename = params.substring(idx2 + 5, endIdx2);
+            if (filename == null) {
+                return null;
+            }
+            try {
+                filename = URLDecoder.decode(filename, "UTF-8");
+            } 
+            catch (UnsupportedEncodingException e) {
+                log.error("Error", e);
+            }
+            if (lsid == null || lsid.trim().equals("")) { 
+                // input file look in temp for pipelines run without saving
+                File in = new File(System.getProperty("java.io.tmpdir"), filename);
+                // check whether this is the user or an admin requesting the file
+                if (in.exists()) {
+                    String prefix = userId + "_";
+                    if (filename.startsWith(prefix) || AuthorizationHelper.adminJobs(userId)) {
+                        return in;
+                    }
+                    throw new IllegalArgumentException("You are not permitted to access the requested file.");
+                }
+                return null;
+            }
+            // check that user can access requested module
+            try {
+                if (new LocalAdminClient(userId).getTask(lsid) != null) {
+                    File file = new File(DirectoryManager.getTaskLibDir(lsid, lsid, userId), filename);
+                    if (file.exists()) {
+                        return file;
+                    }
+                } 
+                else {
+                    throw new IllegalArgumentException("You are not permitted to access the requested file.");
+                }
+            } 
+            catch (WebServiceException e) {
+                log.error("Error", e);
+                throw new IllegalArgumentException("Error connecting to database.");
+            } 
+            catch (MalformedURLException e) {
+                log.error("Error", e);
+                throw new IllegalArgumentException("Invalid LSID.");
+            } 
+            catch (IllegalArgumentException e) {
+                log.error("Error", e);
+                throw new IllegalArgumentException("Module not found.");
+            }
+        }
 
-	File jobsDir = new File(System.getProperty("jobs"));
-	String jobDirName = jobsDir.getName();
-	int jobDirIndex = -1;
-	if ((jobDirIndex = path.lastIndexOf(jobDirName)) != -1) {
-	    path = path.substring(jobDirIndex + jobDirName.length());
-	    StringTokenizer strtok = new StringTokenizer(path, "/");
-	    String job = null;
+        File jobsDir = new File(System.getProperty("jobs"));
+        String jobDirName = jobsDir.getName();
+        int jobDirIndex = -1;
+        if ((jobDirIndex = path.lastIndexOf(jobDirName)) != -1) {
+            path = path.substring(jobDirIndex + jobDirName.length());
+            StringTokenizer strtok = new StringTokenizer(path, "/");
+            String job = null;
 
-	    if (strtok.hasMoreTokens()) {
-		job = strtok.nextToken();
-	    }
-	    String requestedFilename = null;
-	    if (strtok.hasMoreTokens()) {
-		requestedFilename = strtok.nextToken();
-	    }
-	    if (job == null || requestedFilename == null) {
-		return null;
-	    }
-	    if (isJobOwner(userId, job) || AuthorizationHelper.adminJobs(userId)) {
-		File jobDir = new File(jobsDir, job);
-		File file = new File(jobDir, requestedFilename);
-		if (file.exists()) {
-		    return file;
-		}
-	    } else {
-		throw new IllegalArgumentException("You are not permitted to access the requested file.");
-	    }
-
-	}
-
-	return null;
-
+            if (strtok.hasMoreTokens()) {
+                job = strtok.nextToken();
+            }
+            String requestedFilename = null;
+            if (strtok.hasMoreTokens()) {
+                requestedFilename = strtok.nextToken();
+            }
+            if (job == null || requestedFilename == null) {
+                return null;
+            }
+            if (isJobOwner(userId, job) || AuthorizationHelper.adminJobs(userId)) {
+                File jobDir = new File(jobsDir, job);
+                File file = new File(jobDir, requestedFilename);
+                if (file.exists()) {
+                    return file;
+                }
+            } 
+            else {
+                throw new IllegalArgumentException("You are not permitted to access the requested file.");
+            }
+        }
+        return null;
     }
 
     private boolean isJobOwner(String user, String jobId) {
@@ -796,21 +796,35 @@ public class GenePatternAnalysisTask {
 				    // filename
 				    // through SOAP
 				    File inputFile = new File(uri);
-				    String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
+				    String grandParentPath = inputFile.getParentFile().getParentFile().getCanonicalPath();
+				    
+                    String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
+				    //boolean isWebUpload = inputFile.getParentFile().getParentFile().getCanonicalPath().equals(webUploadDirectory);
+				    boolean isWebUpload = false;
+				    isWebUpload = webUploadDirectory.equals( grandParentPath );
+				    if (! ( isWebUpload
+				            && 
+				            ( AuthorizationHelper.adminJobs(jobInfo.getUserId()) 
+				              || 
+				              inputFile.getParentFile().getName().startsWith(jobInfo.getUserId() + "_")
+				            )
+				          )
+				       ) {
+				        String jobsDirectory = new File(System.getProperty("jobs")).getCanonicalPath();
+				        boolean isJobOutput = false;
+				        isJobOutput = jobsDirectory.equals(grandParentPath);
+				        String jobNumber = inputFile.getParentFile().getName();
 
-				    if (!(inputFile.getParentFile().getParentFile().getCanonicalPath().equals(webUploadDirectory) && (AuthorizationHelper
-					    .adminJobs(jobInfo.getUserId()) || inputFile.getParentFile().getName().startsWith(
-					    jobInfo.getUserId() + "_")))) {
-
-					String jobsDirectory = new File(System.getProperty("jobs")).getCanonicalPath();
-					String jobNumber = inputFile.getParentFile().getName();
-
-					if (!jobsDirectory.equals(inputFile.getParentFile().getParentFile().getCanonicalPath())
-						|| (!isJobOwner(jobInfo.getUserId(), jobNumber) && !AuthorizationHelper
-							.adminJobs(jobInfo.getUserId()))) {
-					    vProblems.add("File input URLs are not allowed on this GenePattern server.");
-					    continue;
-					}
+				        if (!isJobOutput
+				            || 
+				            ( !isJobOwner(jobInfo.getUserId(), jobNumber) 
+				              && 
+				              !AuthorizationHelper.adminJobs(jobInfo.getUserId())
+				            )
+				           ) {
+				            vProblems.add("File input URLs are not allowed on this GenePattern server.");
+				            continue;
+				        }
 				    }
 				    File f = new File(uri);
 				    if (inputFileMode == INPUT_FILE_MODE.PATH) {
