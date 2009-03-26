@@ -441,7 +441,7 @@ public class GenePatternAnalysisTask {
                     if (canRead) {
                         return in;
                     }
-                    throw new IllegalArgumentException("You are not permitted to access the requested file.");
+                    throw new IllegalArgumentException("You are not permitted to access the requested file: "+in.getName());
                 }
                 return null;
             }
@@ -454,7 +454,7 @@ public class GenePatternAnalysisTask {
                     }
                 } 
                 else {
-                    throw new IllegalArgumentException("You are not permitted to access the requested file.");
+                    throw new IllegalArgumentException("You are not permitted to access the requested file: "+filename);
                 }
             } 
             catch (WebServiceException e) {
@@ -647,6 +647,7 @@ public class GenePatternAnalysisTask {
 		            // param is existing job output file
 		            StringTokenizer strtok = new StringTokenizer(originalPath, "/");
 		            String job = null;
+                    int jobNumber = -1;
 		            if (strtok.hasMoreTokens()) {
 		                job = strtok.nextToken();
 		            }
@@ -655,16 +656,25 @@ public class GenePatternAnalysisTask {
 		                requestedFilename = strtok.nextToken();
 		            }
 		            if (job == null || requestedFilename == null) {
-		                vProblems.add("You are not permitted to access the requested file.");
+		                vProblems.add("You are not permitted to access the requested file: Unknown filename or job number.");
 		                continue;
 		            }
-		            if (isJobOwner(jobInfo.getUserId(), job) || AuthorizationHelper.adminJobs(jobInfo.getUserId())) {
-		                originalPath = System.getProperty("jobs") + "/" + originalPath;
-		            } 
-		            else {
-		                vProblems.add("You are not permitted to access the requested file.");
-		                continue;
+		            try {
+		                jobNumber = Integer.parseInt(job);
 		            }
+		            catch (NumberFormatException e) {
+                        vProblems.add("You are not permitted to access the requested file: Invalid job number, job='"+job+"'");
+                        continue;
+		            }
+                    PermissionsHelper perm = new PermissionsHelper(jobInfo.getUserId(), jobNumber);
+                    boolean canRead = perm.canReadJob();
+                    if (canRead) {
+                        originalPath = System.getProperty("jobs") + "/" + originalPath;
+                    }
+                    else {
+                        vProblems.add("You are not permitted to access the requested file: "+requestedFilename);
+                        continue;                        
+                    }
 		        } 
 		        else if (mode.equals(ParameterInfo.INPUT_MODE)) {
 		            log.error("IN " + params[i].getName() + "=" + originalPath);
@@ -678,15 +688,15 @@ public class GenePatternAnalysisTask {
 		            String inputFileDirectory = inputFile.getParentFile().getCanonicalPath();
 
 		            if (inputFile.getParentFile().getParentFile().getCanonicalPath().equals(webUploadDirectory)) {
-		                if (!AuthorizationHelper.adminJobs(jobInfo.getUserId())
-		                        && !inputFile.getParentFile().getName().startsWith(jobInfo.getUserId() + "_")) {
-		                    vProblems.add("You are not permitted to access the requested file.");
-		                    continue;
-		                }
+	                    PermissionsHelper perm = new PermissionsHelper(jobInfo.getUserId(), jobInfo.getJobNumber());
+	                    boolean canRead = perm.canReadJob();
+	                    if (!canRead) {
+                            vProblems.add("You are not permitted to access the requested file: "+inputFile.getName());
+                            continue;
+	                    }
 		            } 
 		            else if (!inputFileDirectory.equals(soapAttachmentDir)) {
-		                vProblems.add("Input file " + new File(originalPath).getName()
-		                        + " must be in SOAP attachment directory or web upload directory.");
+		                vProblems.add("Input file " + new File(originalPath).getName() + " must be in SOAP attachment directory or web upload directory.");
 		                continue;
 		            }
 		        } 
@@ -764,7 +774,7 @@ public class GenePatternAnalysisTask {
 		            // handle http files by downloading them and substituting the downloaded filename for the URL in the command line.
 		            if (inputFileMode == INPUT_FILE_MODE.PATH && new File(originalPath).exists()) {
 		                if (!allowInputFilePaths) {
-		                    vProblems.add("You are not permitted to access the requested file.");
+		                    vProblems.add("You are not permitted to access the requested file: "+originalPath);
 		                    continue;
 		                }
 		                params[i].setValue(new File(originalPath).getCanonicalPath());
@@ -781,7 +791,7 @@ public class GenePatternAnalysisTask {
 		                catch (MalformedURLException mfe) {
 		                    // path on server
 		                    if (!allowInputFilePaths) {
-		                        vProblems.add("You are not permitted to access the requested file.");
+		                        vProblems.add("You are not permitted to access the requested file: "+originalPath);
 		                        continue;
 		                    }
 		                }
