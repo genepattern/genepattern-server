@@ -627,321 +627,330 @@ public class GenePatternAnalysisTask {
 		for (int i = 0; i < params.length; i++) {
 		    HashMap<String, String> attrsActual = params[i].getAttributes();
 		    if (attrsActual == null) {
-			attrsActual = new HashMap<String, String>();
+		        attrsActual = new HashMap<String, String>();
 		    }
 		    String fileType = attrsActual.get(ParameterInfo.TYPE);
 		    String mode = attrsActual.get(ParameterInfo.MODE);
 		    String originalPath = params[i].getValue();
-
+            // allow parameter value substitutions within file input parameters
+            originalPath = substitute(originalPath, props, params);
 		    boolean isOptional = "on".equals(attrsActual.get("optional"));
 
-		    // allow parameter value substitutions within file input parameters
-		    originalPath = substitute(originalPath, props, params);
+		    if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
+		        if (originalPath == null) {
+		            if (isOptional) {
+		                continue;
+		            }
+		            throw new IOException("Non-optional parameter " + params[i].getName() + " has not been assigned a filename.");
+		        }
+		        if (mode.equals("CACHED_IN")) {
+		            // param is existing job output file
+		            StringTokenizer strtok = new StringTokenizer(originalPath, "/");
+		            String job = null;
+		            if (strtok.hasMoreTokens()) {
+		                job = strtok.nextToken();
+		            }
+		            String requestedFilename = null;
+		            if (strtok.hasMoreTokens()) {
+		                requestedFilename = strtok.nextToken();
+		            }
+		            if (job == null || requestedFilename == null) {
+		                vProblems.add("You are not permitted to access the requested file.");
+		                continue;
+		            }
+		            if (isJobOwner(jobInfo.getUserId(), job) || AuthorizationHelper.adminJobs(jobInfo.getUserId())) {
+		                originalPath = System.getProperty("jobs") + "/" + originalPath;
+		            } 
+		            else {
+		                vProblems.add("You are not permitted to access the requested file.");
+		                continue;
+		            }
+		        } 
+		        else if (mode.equals(ParameterInfo.INPUT_MODE)) {
+		            log.error("IN " + params[i].getName() + "=" + originalPath);
+		            // file provided via SOAP or by web form upload
+		            // ensure file is in GenePatternServer/temp/attachments/username or in
+		            // GenePatternServer/Tomcat/temp/username_run[0-9]+.tmp
+		            String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
+		            String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir") + File.separator + jobInfo.getUserId()).getCanonicalPath();
 
-		    if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null
-			    && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
-			if (originalPath == null) {
-			    if (isOptional) {
-				continue;
-			    }
-			    throw new IOException("Non-optional parameter " + params[i].getName()
-				    + " has not been assigned a filename.");
-			}
-			if (mode.equals("CACHED_IN")) {
-			    // param is existing job output file
-			    StringTokenizer strtok = new StringTokenizer(originalPath, "/");
-			    String job = null;
-			    if (strtok.hasMoreTokens()) {
-				job = strtok.nextToken();
-			    }
-			    String requestedFilename = null;
-			    if (strtok.hasMoreTokens()) {
-				requestedFilename = strtok.nextToken();
-			    }
-			    if (job == null || requestedFilename == null) {
-				vProblems.add("You are not permitted to access the requested file.");
-				continue;
-			    }
-			    if (isJobOwner(jobInfo.getUserId(), job) || AuthorizationHelper.adminJobs(jobInfo.getUserId())) {
-				originalPath = System.getProperty("jobs") + "/" + originalPath;
-			    } else {
-				vProblems.add("You are not permitted to access the requested file.");
-				continue;
-			    }
-			} else if (mode.equals(ParameterInfo.INPUT_MODE)) {
-			    log.error("IN " + params[i].getName() + "=" + originalPath);
-			    // file provided via SOAP or by web form upload
-			    // ensure file is in GenePatternServer/temp/attachments/username or in
-			    // GenePatternServer/Tomcat/temp/username_run[0-9]+.tmp
-			    String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
-			    String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir") + File.separator + jobInfo.getUserId()).getCanonicalPath();
+		            File inputFile = new File(originalPath);
+		            String inputFileDirectory = inputFile.getParentFile().getCanonicalPath();
 
-			    File inputFile = new File(originalPath);
-			    String inputFileDirectory = inputFile.getParentFile().getCanonicalPath();
+		            if (inputFile.getParentFile().getParentFile().getCanonicalPath().equals(webUploadDirectory)) {
+		                if (!AuthorizationHelper.adminJobs(jobInfo.getUserId())
+		                        && !inputFile.getParentFile().getName().startsWith(jobInfo.getUserId() + "_")) {
+		                    vProblems.add("You are not permitted to access the requested file.");
+		                    continue;
+		                }
+		            } 
+		            else if (!inputFileDirectory.equals(soapAttachmentDir)) {
+		                vProblems.add("Input file " + new File(originalPath).getName()
+		                        + " must be in SOAP attachment directory or web upload directory.");
+		                continue;
+		            }
+		        } 
+		        else {
+		            vProblems.add("Unknown mode for parameter " + params[i].getName() + ".");
+		            continue;
+		        }
+		        File inFile = new File(originalPath);
+		        if (!inFile.exists()) {
+		            vProblems.add("Input file " + inFile + " does not exist.");
+		            continue;
+		        }
 
-			    if (inputFile.getParentFile().getParentFile().getCanonicalPath().equals(webUploadDirectory)) {
-				if (!AuthorizationHelper.adminJobs(jobInfo.getUserId())
-					&& !inputFile.getParentFile().getName().startsWith(jobInfo.getUserId() + "_")) {
-				    vProblems.add("You are not permitted to access the requested file.");
-				    continue;
-				}
-			    } else if (!inputFileDirectory.equals(soapAttachmentDir)) {
-				vProblems.add("Input file " + new File(originalPath).getName()
-					+ " must be in SOAP attachment directory or web upload directory.");
-				continue;
-			    }
-			} else {
-			    vProblems.add("Unknown mode for parameter " + params[i].getName() + ".");
-			    continue;
-			}
-			File inFile = new File(originalPath);
-			if (!inFile.exists()) {
-			    vProblems.add("Input file " + inFile + " does not exist.");
-			    continue;
-			}
+		        if (inputFileMode == INPUT_FILE_MODE.PATH) {
+		            params[i].setValue(inFile.getCanonicalPath());
+		            attrsActual.remove(ParameterInfo.TYPE);
+		            attrsActual.remove(ParameterInfo.INPUT_MODE);
+		        } 
+		        else {
+		            File outFile = null;
+		            String inputFilename = new File(originalPath).getName();
+		            // strip off the AxisNNNNNaxis_ prefix
+		            int underscoreIndex = -1;
+		            if (inputFilename.startsWith("Axis") && (underscoreIndex = inputFilename.indexOf("_")) != -1) {
+		                inputFilename = inputFilename.substring(underscoreIndex + 1);
+		            }
+		            // outDirName is job directory
+		            outFile = new File(outDirName, inputFilename);
+		            int counter = 1;
+		            while (outFile.exists()) { // in case two input files have the same name
+		                outFile = new File(outDirName, inputFilename + "-" + counter);
+		                counter++;
+		            }
 
-			if (inputFileMode == INPUT_FILE_MODE.PATH) {
-			    params[i].setValue(inFile.getCanonicalPath());
-			    attrsActual.remove(ParameterInfo.TYPE);
-			    attrsActual.remove(ParameterInfo.INPUT_MODE);
-			} else {
-			    File outFile = null;
-			    String inputFilename = new File(originalPath).getName();
-			    // strip off the AxisNNNNNaxis_ prefix
-			    int underscoreIndex = -1;
-			    if (inputFilename.startsWith("Axis") && (underscoreIndex = inputFilename.indexOf("_")) != -1) {
-				inputFilename = inputFilename.substring(underscoreIndex + 1);
-			    }
-			    // outDirName is job directory
-			    outFile = new File(outDirName, inputFilename);
-			    int counter = 1;
-			    while (outFile.exists()) { // in case two input files have the same name
-				outFile = new File(outDirName, inputFilename + "-" + counter);
-				counter++;
-			    }
-
-			    if (inputFileMode == INPUT_FILE_MODE.COPY) {
-				if (!copyFile(inFile, outFile)) {
-				    vProblems.add("Unable to copy " + inFile + " to " + outFile);
-				    continue;
-				}
-				outFile.deleteOnExit(); // mark for delete, just in case
-			    } else if (inputFileMode == INPUT_FILE_MODE.MOVE) {
-				if (!rename(inFile, outFile, true)) {
-				    vProblems.add("Unable to move " + inFile + " to " + outFile);
-				    continue;
-				}
-			    }
-			    params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
-			    params[i].setValue(outFile.getCanonicalPath());
-			    inputLastModified[i] = outFile.lastModified();
-			    inputLength[i] = outFile.length();
-			}
-		    } else if (i >= formalParamsLength) {
-			log.debug("params[" + i + "]=" + params[i].getName() + " has no formal parameter defined");
-		    } else {
-			// check formal parameters for a file input type that
-			// was in fact sent as a string (ie. cached, http, or file path on server)
-			// find the formal parameter corresponding to this
-			// actual parameter
-			ParameterInfo[] formals = taskInfo.getParameterInfoArray();
-			HashMap<String, String> attrFormals = null;
-			fileType = null;
-			mode = null;
-			for (int formal = 0; formals != null && formal < formals.length; formal++) {
-			    if (formals[formal].getName().equals(params[i].getName())) {
-				attrFormals = formals[formal].getAttributes();
-				fileType = attrFormals.get(ParameterInfo.TYPE);
-				mode = attrFormals.get(ParameterInfo.MODE);
-				break;
-			    }
-			}
-			boolean isURL = false;
-			if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null
-				&& !mode.equals(ParameterInfo.OUTPUT_MODE) && originalPath != null) {
-			    // handle http files by downloading them and substituting the downloaded filename for the
-			    // URL in the command line.
-			    if (inputFileMode == INPUT_FILE_MODE.PATH && new File(originalPath).exists()) {
-				if (!allowInputFilePaths) {
-				    vProblems.add("You are not permitted to access the requested file.");
-				    continue;
-				}
-				params[i].setValue(new File(originalPath).getCanonicalPath());
-				attrsActual.remove(ParameterInfo.TYPE);
-				attrsActual.remove(ParameterInfo.INPUT_MODE);
-			    } else {
-				try {
-				    if (originalPath != null) {
-					new URL(originalPath);
-					isURL = true;
-				    }
-				} catch (MalformedURLException mfe) {
-				    // path on server
-				    if (!allowInputFilePaths) {
-					vProblems.add("You are not permitted to access the requested file.");
-					continue;
-				    }
-				}
-			    }
-			}
-			if (isURL && !taskInfo.isVisualizer()) {
-			    URI uri = new URI(originalPath);
-			    final String userInfo = uri.getUserInfo();
-			    if (userInfo != null) {
-				final String[] usernamePassword = userInfo.split(":");
-				if (usernamePassword.length == 2) {
-				    Authenticator.setDefault(new Authenticator() {
-					@Override
-					protected PasswordAuthentication getPasswordAuthentication() {
-					    return new PasswordAuthentication(usernamePassword[0], usernamePassword[1]
-						    .toCharArray());
-					}
-				    });
-				}
-			    }
-			    InputStream is = null;
-			    FileOutputStream os = null;
-			    File outFile = null;
-			    try {
-				String name = null;
-				boolean downloadUrl = true;
-				if ("file".equalsIgnoreCase(uri.getScheme()) && allowInputFilePaths) {
-				    File f = new File(uri);
-				    if (inputFileMode == INPUT_FILE_MODE.PATH) {
-					params[i].setValue(f.getCanonicalPath());
-					attrsActual.remove(ParameterInfo.TYPE);
-					attrsActual.remove(ParameterInfo.INPUT_MODE);
-					downloadUrl = false;
-				    } else {
-					is = new FileInputStream(f);
-					name = f.getName();
-				    }
-				} else if ("file".equalsIgnoreCase(uri.getScheme()) && !allowInputFilePaths) {
-				    // prompt when run input files in pipelines are saved as
-				    // file:/Applications/GenePatternServer/Tomcat/temp/username_run27407.tmp/filename
-				    // through the web client
-				    // and
-				    // file:/Applications/GenePatternServer/Tomcat/webapps/gp/jobResults/jobNumber/
-				    // filename
-				    // through SOAP
-				    File inputFile = new File(uri);
-				    String grandParentPath = inputFile.getParentFile().getParentFile().getCanonicalPath();
+		            if (inputFileMode == INPUT_FILE_MODE.COPY) {
+		                if (!copyFile(inFile, outFile)) {
+		                    vProblems.add("Unable to copy " + inFile + " to " + outFile);
+		                    continue;
+		                }
+		                outFile.deleteOnExit(); // mark for delete, just in case
+		            } 
+		            else if (inputFileMode == INPUT_FILE_MODE.MOVE) {
+		                if (!rename(inFile, outFile, true)) {
+		                    vProblems.add("Unable to move " + inFile + " to " + outFile);
+		                    continue;
+		                }
+		            }
+		            params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
+		            params[i].setValue(outFile.getCanonicalPath());
+		            inputLastModified[i] = outFile.lastModified();
+		            inputLength[i] = outFile.length();
+		        }
+		    } 
+		    else if (i >= formalParamsLength) {
+		        log.debug("params[" + i + "]=" + params[i].getName() + " has no formal parameter defined");
+		    } 
+		    else {
+		        // check formal parameters for a file input type that
+		        // was in fact sent as a string (ie. cached, http, or file path on server)
+		        // find the formal parameter corresponding to this actual parameter
+		        ParameterInfo[] formals = taskInfo.getParameterInfoArray();
+		        HashMap<String, String> attrFormals = null;
+		        fileType = null;
+		        mode = null;
+		        for (int formal = 0; formals != null && formal < formals.length; formal++) {
+		            if (formals[formal].getName().equals(params[i].getName())) {
+		                attrFormals = formals[formal].getAttributes();
+		                fileType = attrFormals.get(ParameterInfo.TYPE);
+		                mode = attrFormals.get(ParameterInfo.MODE);
+		                break;
+		            }
+		        }
+		        boolean isURL = false;
+		        if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE) && originalPath != null) {
+		            // handle http files by downloading them and substituting the downloaded filename for the URL in the command line.
+		            if (inputFileMode == INPUT_FILE_MODE.PATH && new File(originalPath).exists()) {
+		                if (!allowInputFilePaths) {
+		                    vProblems.add("You are not permitted to access the requested file.");
+		                    continue;
+		                }
+		                params[i].setValue(new File(originalPath).getCanonicalPath());
+		                attrsActual.remove(ParameterInfo.TYPE);
+		                attrsActual.remove(ParameterInfo.INPUT_MODE);
+		            } 
+		            else {
+		                try {
+		                    if (originalPath != null) {
+		                        new URL(originalPath);
+		                        isURL = true;
+		                    }
+		                } 
+		                catch (MalformedURLException mfe) {
+		                    // path on server
+		                    if (!allowInputFilePaths) {
+		                        vProblems.add("You are not permitted to access the requested file.");
+		                        continue;
+		                    }
+		                }
+		            }
+		        }
+		        if (isURL && !taskInfo.isVisualizer()) {
+		            URI uri = new URI(originalPath);
+		            final String userInfo = uri.getUserInfo();
+		            if (userInfo != null) {
+		                final String[] usernamePassword = userInfo.split(":");
+		                if (usernamePassword.length == 2) {
+		                    Authenticator.setDefault(new Authenticator() {
+		                        @Override
+		                        protected PasswordAuthentication getPasswordAuthentication() {
+		                            return new PasswordAuthentication(usernamePassword[0], usernamePassword[1].toCharArray());
+		                        }
+		                    });
+		                }
+		            }
+		            InputStream is = null;
+		            FileOutputStream os = null;
+		            File outFile = null;
+		            try {
+		                String name = null;
+		                boolean downloadUrl = true;
+		                if ("file".equalsIgnoreCase(uri.getScheme()) && allowInputFilePaths) {
+		                    File f = new File(uri);
+		                    if (inputFileMode == INPUT_FILE_MODE.PATH) {
+		                        params[i].setValue(f.getCanonicalPath());
+		                        attrsActual.remove(ParameterInfo.TYPE);
+		                        attrsActual.remove(ParameterInfo.INPUT_MODE);
+		                        downloadUrl = false;
+		                    } 
+		                    else {
+		                        is = new FileInputStream(f);
+		                        name = f.getName();
+		                    }
+		                } 
+		                else if ("file".equalsIgnoreCase(uri.getScheme()) && !allowInputFilePaths) {
+		                    // prompt when run input files in pipelines are saved as
+		                    // file:/Applications/GenePatternServer/Tomcat/temp/username_run27407.tmp/filename
+		                    // through the web client and
+		                    // file:/Applications/GenePatternServer/Tomcat/webapps/gp/jobResults/jobNumber/
+		                    // filename through SOAP
+		                    File inputFile = new File(uri);
+		                    String grandParentPath = inputFile.getParentFile().getParentFile().getCanonicalPath();
 				    
-                    String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
-				    //boolean isWebUpload = inputFile.getParentFile().getParentFile().getCanonicalPath().equals(webUploadDirectory);
-				    boolean isWebUpload = false;
-				    isWebUpload = webUploadDirectory.equals( grandParentPath );
-				    if (! ( isWebUpload
-				            && 
-				            ( AuthorizationHelper.adminJobs(jobInfo.getUserId()) 
-				              || 
-				              inputFile.getParentFile().getName().startsWith(jobInfo.getUserId() + "_")
-				            )
-				          )
-				       ) {
-				        String jobsDirectory = new File(System.getProperty("jobs")).getCanonicalPath();
-				        boolean isJobOutput = false;
-				        isJobOutput = jobsDirectory.equals(grandParentPath);
-				        String jobNumber = inputFile.getParentFile().getName();
-
-				        if (!isJobOutput
-				            || 
-				            ( !isJobOwner(jobInfo.getUserId(), jobNumber) 
-				              && 
-				              !AuthorizationHelper.adminJobs(jobInfo.getUserId())
-				            )
-				           ) {
-				            vProblems.add("File input URLs are not allowed on this GenePattern server.");
-				            continue;
-				        }
-				    }
-				    File f = new File(uri);
-				    if (inputFileMode == INPUT_FILE_MODE.PATH) {
-					params[i].setValue(f.getCanonicalPath());
-					attrsActual.remove(ParameterInfo.TYPE);
-					attrsActual.remove(ParameterInfo.INPUT_MODE);
-					downloadUrl = false;
-				    } else {
-					is = new FileInputStream(f);
-					name = f.getName();
-				    }
-				} else {
-				    URL url = uri.toURL();
-				    if (isLocalHost(url)) {
-					try {
-					    File file = localInputUrlToFile(url, jobInfo.getUserId());
-					    if (file != null) {
-						if (inputFileMode == INPUT_FILE_MODE.PATH) {
-						    params[i].setValue(file.getCanonicalPath());
-						    attrsActual.remove(ParameterInfo.TYPE);
-						    attrsActual.remove(ParameterInfo.INPUT_MODE);
-						    downloadUrl = false;
-						} else {
-						    name = file.getName();
-						    is = new BufferedInputStream(new FileInputStream(file));
-						}
-					    }
-					} catch (IllegalArgumentException e) {
-					    // user tried to access file that he is not allowed to
-					    vProblems.add(e.getMessage());
-					    downloadUrl = false;
-					}
-				    }
-				    if (is == null && downloadUrl) {
-					try {
-					    URLConnection conn = url.openConnection();
-					    name = getDownloadFileName(conn, url);
-					    is = conn.getInputStream();
-					} catch (IOException e) {
-					    vProblems.add("Unable to connect to " + url + ".");
-					    downloadUrl = false;
-					}
-				    }
-				}
-				if (downloadUrl) {
-				    outFile = new File(outDirName, name);
-				    if (outFile.exists()) {
-					// ensure that 2 file downloads for a job don't have the same name
-					if (name.length() < 3) {
-					    name = "download";
-					}
-					outFile = File.createTempFile(name, null, new File(outDirName));
-				    }
-				    os = new FileOutputStream(outFile);
-				    byte[] buf = new byte[100000];
-				    int bytesRead;
-				    while ((bytesRead = is.read(buf, 0, buf.length)) != -1) {
-					os.write(buf, 0, bytesRead);
-				    }
-				    params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
-				    params[i].setValue(outFile.getCanonicalPath());
-				    inputLastModified[i] = outFile.lastModified();
-				    inputLength[i] = outFile.length();
-				}
-			    } catch (IOException ioe) {
-				vProblems.add("An error occurred while downloading " + uri);
-			    } finally {
-				if (userInfo != null) {
-				    Authenticator.setDefault(null);
-				}
-				if (is != null) {
-				    try {
-					is.close();
-				    } catch (IOException x) {
-				    }
-				}
-				if (os != null) {
-				    try {
-					os.close();
-				    } catch (IOException x) {
-				    }
-				}
-				// don't set this until after the close...
-				if (outFile != null) {
-				    inputLastModified[i] = outFile.lastModified();
-				}
-			    }
-			}
+		                    String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
+		                    boolean isWebUpload = false;
+		                    isWebUpload = webUploadDirectory.equals( grandParentPath );
+		                    if (! ( isWebUpload
+		                            && 
+		                            ( AuthorizationHelper.adminJobs(jobInfo.getUserId()) 
+		                              || 
+		                              inputFile.getParentFile().getName().startsWith(jobInfo.getUserId() + "_")
+		                            )
+		                    )
+		                    ) {
+		                        String jobsDirectory = new File(System.getProperty("jobs")).getCanonicalPath();
+		                        boolean isJobOutput = false;
+		                        isJobOutput = jobsDirectory.equals(grandParentPath);
+		                        String jobNumber = inputFile.getParentFile().getName();
+		                        if (!isJobOutput
+		                             || 
+		                             ( !isJobOwner(jobInfo.getUserId(), jobNumber) 
+		                                && 
+		                               !AuthorizationHelper.adminJobs(jobInfo.getUserId())
+		                             )
+		                        ) {
+		                            vProblems.add("File input URLs are not allowed on this GenePattern server.");
+		                            continue;
+		                        }
+		                    }
+		                    File f = new File(uri);
+		                    if (inputFileMode == INPUT_FILE_MODE.PATH) {
+		                        params[i].setValue(f.getCanonicalPath());
+		                        attrsActual.remove(ParameterInfo.TYPE);
+		                        attrsActual.remove(ParameterInfo.INPUT_MODE);
+		                        downloadUrl = false;
+		                    } 
+		                    else {
+		                        is = new FileInputStream(f);
+		                        name = f.getName();
+		                    }
+		                } 
+		                else {
+		                    URL url = uri.toURL();
+		                    if (isLocalHost(url)) {
+		                        try {
+		                            File file = localInputUrlToFile(url, jobInfo.getUserId());
+		                            if (file != null) {
+		                                if (inputFileMode == INPUT_FILE_MODE.PATH) {
+		                                    params[i].setValue(file.getCanonicalPath());
+		                                    attrsActual.remove(ParameterInfo.TYPE);
+		                                    attrsActual.remove(ParameterInfo.INPUT_MODE);
+		                                    downloadUrl = false;
+		                                } 
+		                                else {
+		                                    name = file.getName();
+		                                    is = new BufferedInputStream(new FileInputStream(file));
+		                                }
+		                            }
+		                        } 
+		                        catch (IllegalArgumentException e) {
+		                            // user tried to access file that he is not allowed to
+		                            vProblems.add(e.getMessage());
+		                            downloadUrl = false;
+		                        }
+		                    }
+		                    if (is == null && downloadUrl) {
+		                        try {
+		                            URLConnection conn = url.openConnection();
+		                            name = getDownloadFileName(conn, url);
+		                            is = conn.getInputStream();
+		                        } 
+		                        catch (IOException e) {
+		                            vProblems.add("Unable to connect to " + url + ".");
+		                            downloadUrl = false;
+		                        }
+		                    }
+		                }
+		                if (downloadUrl) {
+		                    outFile = new File(outDirName, name);
+		                    if (outFile.exists()) {
+		                        // ensure that 2 file downloads for a job don't have the same name
+		                        if (name.length() < 3) {
+		                            name = "download";
+		                        }
+		                        outFile = File.createTempFile(name, null, new File(outDirName));
+		                    }
+		                    os = new FileOutputStream(outFile);
+		                    byte[] buf = new byte[100000];
+		                    int bytesRead;
+		                    while ((bytesRead = is.read(buf, 0, buf.length)) != -1) {
+		                        os.write(buf, 0, bytesRead);
+		                    }
+		                    params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
+		                    params[i].setValue(outFile.getCanonicalPath());
+		                    inputLastModified[i] = outFile.lastModified();
+		                    inputLength[i] = outFile.length();
+		                }
+		            } 
+		            catch (IOException ioe) {
+		                vProblems.add("An error occurred while downloading " + uri);
+		            }
+		            finally {
+		                if (userInfo != null) {
+		                    Authenticator.setDefault(null);
+		                }
+		                if (is != null) {
+		                    try {
+		                        is.close();
+		                    } 
+		                    catch (IOException x) {
+		                    }
+		                }
+		                if (os != null) {
+		                    try {
+		                        os.close();
+		                    } 
+		                    catch (IOException x) {
+		                    }
+		                }
+		                // don't set this until after the close...
+		                if (outFile != null) {
+		                    inputLastModified[i] = outFile.lastModified();
+		                }
+		            }
+		        }
 		    }
 		} // end for each parameter
 	    } // end if parameters not null
