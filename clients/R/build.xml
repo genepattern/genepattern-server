@@ -3,11 +3,7 @@
 
 	<target name="create-gzip">
 		<!-- OSX binary has extension .tgz, source package is .tar.gz -->
-		<tar destfile="downloads/GenePattern_1.0.1.tar.gz" compression="gzip">
-			<fileset dir="." includes="GenePattern/**">
-			</fileset>
-		</tar>
-
+		<tar destfile="downloads/GenePattern_1.0.2.tar.gz" compression="gzip" basedir="." includes="GenePattern/**" />
 	</target>
 
 </project>

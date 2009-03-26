@@ -1557,7 +1557,7 @@ R is freely available from http://www.r-project.org/.]]></string>
 										<string><![CDATA[Installation and use of ActiveState Perl requires acceptance of the following license agreement:]]></string>
 									</property>
 									<property name="resourcePath">
-										<string><![CDATA[/xchip/genepattern/tools/hudson/jobs/GenePattern_3.1.1/workspace/gp-3.1.1/resources/]]></string>
+										<string><![CDATA[$IA_PROJECT_DIR$/../resources/]]></string>
 									</property>
 									<property name="resourceName">
 										<string><![CDATA[EULA-Community_License.txt]]></string>
@@ -1692,7 +1692,7 @@ R is freely available from http://www.r-project.org/.]]></string>
 										<string><![CDATA[Installation and use of R requires acceptance of the following license agreement:]]></string>
 									</property>
 									<property name="resourcePath">
-										<string><![CDATA[/xchip/genepattern/tools/hudson/jobs/GenePattern_3.1.1/workspace/gp-3.1.1/resources/]]></string>
+										<string><![CDATA[$IA_PROJECT_DIR$/../resources/]]></string>
 									</property>
 									<property name="resourceName">
 										<string><![CDATA[RLicense]]></string>
@@ -14085,19 +14085,19 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[664]]></string>
 											</property>
 											<property name="sourceName">
-												<string><![CDATA[GenePattern_1.0.1.tar.gz]]></string>
+												<string><![CDATA[GenePattern_1.0.2.tar.gz]]></string>
 											</property>
 											<property name="overrideUnixPermissions">
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[/xchip/genepattern/tools/hudson/jobs/GenePattern_3.1.1/workspace/gp-3.1.1/clients/R/downloads/]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../clients/R/downloads/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
 											</property>
 											<property name="destinationName">
-												<string><![CDATA[GenePattern_1.0.1.tar.gz]]></string>
+												<string><![CDATA[GenePattern_1.0.2.tar.gz]]></string>
 											</property>
 											<property name="fileSize">
 												<long>3680523</long>
@@ -14114,19 +14114,19 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<string><![CDATA[664]]></string>
 											</property>
 											<property name="sourceName">
-												<string><![CDATA[GenePattern_1.0.1.tgz]]></string>
+												<string><![CDATA[GenePattern_1.0.2.tgz]]></string>
 											</property>
 											<property name="overrideUnixPermissions">
 												<boolean>false</boolean>
 											</property>
 											<property name="sourcePath">
-												<string><![CDATA[/xchip/genepattern/tools/hudson/jobs/GenePattern_3.1.1/workspace/gp-3.1.1/clients/R/downloads/]]></string>
+												<string><![CDATA[$IA_PROJECT_DIR$/../clients/R/downloads/]]></string>
 											</property>
 											<property name="shouldUninstall">
 												<boolean>true</boolean>
 											</property>
 											<property name="destinationName">
-												<string><![CDATA[GenePattern_1.0.1.tgz]]></string>
+												<string><![CDATA[GenePattern_1.0.2.tgz]]></string>
 											</property>
 											<property name="fileSize">
 												<long>3679384</long>
@@ -14174,19 +14174,19 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 														<string><![CDATA[664]]></string>
 													</property>
 													<property name="sourceName">
-														<string><![CDATA[GenePattern_1.0.1.zip]]></string>
+														<string><![CDATA[GenePattern_1.0.2.zip]]></string>
 													</property>
 													<property name="overrideUnixPermissions">
 														<boolean>false</boolean>
 													</property>
 													<property name="sourcePath">
-														<string><![CDATA[/xchip/genepattern/tools/hudson/jobs/GenePattern_3.1.1/workspace/gp-3.1.1/clients/R/downloads/]]></string>
+														<string><![CDATA[$IA_PROJECT_DIR$/../clients/R/downloads/]]></string>
 													</property>
 													<property name="shouldUninstall">
 														<boolean>true</boolean>
 													</property>
 													<property name="destinationName">
-														<string><![CDATA[GenePattern_1.0.1.zip]]></string>
+														<string><![CDATA[GenePattern_1.0.2.zip]]></string>
 													</property>
 													<property name="fileSize">
 														<long>3688876</long>
