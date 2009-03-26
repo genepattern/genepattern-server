@@ -127,6 +127,7 @@ import org.genepattern.server.AnalysisServiceException;
 import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
+import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
@@ -371,6 +372,7 @@ public class GenePatternAnalysisTask {
      * 
      * @param url, The URL to convert to a File.
      * @param userId, The user id of the user running the job.
+     * @param jobNumber, The job number of the running job.
      * @throws IllegalArgumentException, If the URL refers to a file that the specified userId does not have permission to access.
      * @return The file or <tt>null</tt>
      */
@@ -413,13 +415,30 @@ public class GenePatternAnalysisTask {
             catch (UnsupportedEncodingException e) {
                 log.error("Error", e);
             }
+            int idx3 = params.indexOf("job=");
+            int endIdx3 = params.indexOf('&', idx3);
+            if (endIdx3 == -1) {
+                endIdx3 = params.length();
+            }
+            int jobNumber = -1;
+            String jobNumberParam = params.substring(idx3 + 4, endIdx3);
+            if (jobNumberParam != null) {
+                try {
+                    jobNumber = Integer.parseInt(jobNumberParam);
+                }
+                catch (NumberFormatException e) {
+                    log.error("Invalid request parameter, job="+jobNumberParam, e);
+                }
+            }
+
             if (lsid == null || lsid.trim().equals("")) { 
                 // input file look in temp for pipelines run without saving
                 File in = new File(System.getProperty("java.io.tmpdir"), filename);
                 // check whether this is the user or an admin requesting the file
                 if (in.exists()) {
-                    String prefix = userId + "_";
-                    if (filename.startsWith(prefix) || AuthorizationHelper.adminJobs(userId)) {
+                    PermissionsHelper perm = new PermissionsHelper(userId, jobNumber);
+                    boolean canRead = perm.canReadJob();
+                    if (canRead) {
                         return in;
                     }
                     throw new IllegalArgumentException("You are not permitted to access the requested file.");
@@ -470,15 +489,25 @@ public class GenePatternAnalysisTask {
             if (job == null || requestedFilename == null) {
                 return null;
             }
-            if (isJobOwner(userId, job) || AuthorizationHelper.adminJobs(userId)) {
+            int jobNumber = -1;
+            try {
+                jobNumber = Integer.parseInt(job);
+            }
+            catch (NumberFormatException nfe) {
+                throw new IllegalArgumentException("You are not permitted to access the requested file: "+requestedFilename+", Error processing job number: "+job);
+            }
+            
+            PermissionsHelper perm = new PermissionsHelper(userId, jobNumber);
+            boolean canRead = perm.canReadJob();
+            if (canRead) {
                 File jobDir = new File(jobsDir, job);
                 File file = new File(jobDir, requestedFilename);
                 if (file.exists()) {
                     return file;
-                }
-            } 
+                }                
+            }
             else {
-                throw new IllegalArgumentException("You are not permitted to access the requested file.");
+                throw new IllegalArgumentException("You are not permitted to access the requested file: "+job+"/"+requestedFilename);                
             }
         }
         return null;
