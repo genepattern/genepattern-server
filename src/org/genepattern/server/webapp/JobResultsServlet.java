@@ -19,7 +19,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
@@ -35,6 +38,8 @@ import org.genepattern.server.JobIDNotFoundException;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.PermissionsHelper;
+import org.genepattern.server.auth.GroupPermission;
+import org.genepattern.server.auth.GroupPermission.Permission;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
@@ -218,6 +223,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
        POST /jobResults/<job>/hideExecutionLogs
        POST /jobResults/<job>/requestEmailNotification
        POST /jobResults/<job>/cancelEmailNotification
+       POST /jobResults/<job>/setPermissions
      * </pre>
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response) 
@@ -226,14 +232,17 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         if (!checkServletPath(request, response)) {
             return;
         }  
+        //get the current user
+        String currentUserId = this.getUserIdFromSession(request);
         //parse the job number and file
         StringBuffer resultsPath = initParsePathInfo(request);
-        String jobNumber = parseJobNumber(resultsPath);
+        String jobId = parseJobNumber(resultsPath);
+        int jobNumber = -1;
         try {
-            Integer.parseInt(jobNumber);
+            jobNumber = Integer.parseInt(jobId);
         }
         catch (NumberFormatException e) {
-            response.setHeader("X-genepattern-JobResultsServletException", "Invalid jobNumber: "+jobNumber);
+            response.setHeader("X-genepattern-JobResultsServletException", "Invalid jobNumber: "+jobId);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
@@ -257,12 +266,15 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         else if ("cancelEmailNotification".equals(action)) {
             sendNotification = false;
         }
+        else if ("setPermissions".equals(action)) {
+            setPermissions(currentUserId, jobNumber, request, response);
+            return;
+        }
         else {
             response.setHeader("X-genepattern-JobResultsServletException", "Action not available: "+action);
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
-        String currentUserId = this.getUserIdFromSession(request);
         
         if (showExecutionLogs != null) {
             try {
@@ -278,17 +290,8 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         }
         
         if (sendNotification != null) {
-            int jobId = -1;
             try {
-                jobId = Integer.parseInt(jobNumber);
-            }
-            catch (NumberFormatException e) {
-                response.setHeader("X-genepattern-EmailNotificationException", "Invalid jobNumber: "+jobNumber);
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                return;
-            }
-            try {
-                sendEmailNotification(request, sendNotification, currentUserId, jobId);
+                sendEmailNotification(request, sendNotification, currentUserId, jobNumber);
                 response.setStatus(HttpServletResponse.SC_OK); 
                 return;
             }
@@ -473,6 +476,114 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         }
     }
 
+    /**
+     * Process HTTP POST to set access permissions for a job.
+     * <pre>
+     * HTTP POST /gp/jobResults/<job>/setPermissions
+     * 
+     * Request parameters:
+     *     jobAccessPerm:<group>=[NONE|READ|READ_WRITE]
+     *     
+     * For example,
+     *     HTTP POST /gp/jobResults/2464/setPermissions
+     *         jobAccessPerm:*=READ&jobAccessPerm:administrators=READ_WRITE
+     * This request will set the access permission for job #2464 to READ for everyone (note the '*' character),
+     * and to READ_WRITE for all members of the administrators group.
+     * 
+     * By default all other access permissions are set to NONE, so there is really no need to explicitly include,
+     *     jobAccessPerm:<group>=NONE
+     * in the request.
+     *     
+     * Response codes
+     * 1. 200 OK  , or 204 No content
+     *    Indicates successful update of job permissions.
+     *  
+     * 2. 3xx
+     *    Indicates successful update when redirect=true.
+     *    
+     * 3. 403
+     *    Indicates an error in setting the permissions.
+     *    Response headers, when an error occurs, a response header gives the details:
+     *    X-genepattern-setPermissionsException
+     * </pre>
+     * 
+     * @see PermissionHelper, which has the code which updates the permissions.
+     * 
+     * @auther pcarr
+     */
+    private void setPermissions(String currentUserId, int jobNumber, HttpServletRequest request, HttpServletResponse response) 
+    throws IOException
+    {
+        Map<String,String[]> requestParameters = request.getParameterMap();
+        Set<GroupPermission> updatedPermissions = new HashSet<GroupPermission>();
+        for(String name : requestParameters.keySet()) {
+            int idx = name.indexOf("jobAccessPerm:");
+            if (idx >= 0) {
+                idx += "jobAccessPerm:".length();
+                String groupId = name.substring(idx);
+                Permission groupAccessPermission = Permission.NONE;
+          
+                String permFlagStr = null;
+                String[] values = requestParameters.get(name);
+                if (values != null && values.length == 1) {
+                    permFlagStr = values[0];
+                }
+                else {
+                    log.error("Unexpected value for request parameter, "+name+"="+values);
+                }
+                try {
+                    groupAccessPermission = Permission.valueOf(permFlagStr);
+                }
+                catch (IllegalArgumentException e) {
+                    handleSetPermissionsException(response, "Ignoring permissions flag: "+permFlagStr, e);
+                    return;
+                }
+                catch (NullPointerException e) {
+                    handleSetPermissionsException(response, "Ignoring permissions flag: "+permFlagStr, e);
+                    return;
+                }
+                if (groupAccessPermission != Permission.NONE) {
+                    //ignore NONE
+                    updatedPermissions.add(new GroupPermission(groupId, groupAccessPermission));
+                }
+            }
+        }
+        
+        try {
+            PermissionsHelper permissionsHelper = new PermissionsHelper(currentUserId, jobNumber);
+            permissionsHelper.setPermissions(updatedPermissions);
+            
+
+            boolean redirect = false;
+            String redirectParam = request.getParameter("redirect");
+            if (redirectParam != null) {
+                redirect = Boolean.valueOf(redirectParam);
+            }
+            if (redirect) {
+                String redirectTo = request.getHeader("Referer");
+                if (redirectTo == null || "".equals(redirectTo)) {
+                    redirectTo = request.getContextPath() + "/";
+                }
+                response.sendRedirect(redirectTo);
+            }
+            else {
+                response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+            }
+            return;
+        }
+        catch (Exception e) {
+            handleSetPermissionsException(response, "You are not authorized to change the permissions for this job", e);
+        }
+    }
+    
+    private void handleSetPermissionsException(HttpServletResponse response, String message, Exception e) 
+    throws IOException
+    {
+        log.error(message, e);
+        response.setHeader("X-genepattern-setPermissionsException", e.getLocalizedMessage());
+        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        return;
+    }
 
 }
 

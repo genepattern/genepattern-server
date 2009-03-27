@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- /*
+ The Broad Institute
+ SOFTWARE COPYRIGHT NOTICE AGREEMENT
+ This software and its documentation are copyright (2003-2009) by the
+ Broad Institute/Massachusetts Institute of Technology. All rights are
+ reserved.
+ 
+ This software is supplied without any warranty or guaranteed support
+ whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+ use, misuse, or functionality.
+ */ -->
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:c="http://java.sun.com/jstl/core" charset="UTF-8">
+    <head>
+	    <link href="#{facesContext.externalContext.requestContextPath}/css/GP_DK.css" rel="stylesheet" type="text/css" />
+    </head>
+    <body>
+
+    <form id="jobResultsPermissionsForm" method="post" action="#{facesContext.externalContext.requestContextPath}/jobResults/#{jobInfoBean.jobNumber}/setPermissions">
+        <input type="hidden" name="jobNumber" value="#{jobInfoBean.jobNumber}" />
+        <input type="hidden" name="redirect" value="true" />
+	    <table class="summary" cellpadding="0" cellspacing="0" border="0">
+		    <tr class="summaryTitle">
+		    <td width="100px">Sharing</td><td>Access Level</td>
+		    </tr>
+		    <tr>
+			    <td><strong>Everyone</strong></td>
+			    <td>
+                  <t:outputText escape="false" rendered="#{jobPermissionsBean.publicAccessPermission == 'NONE'}">
+                    <input type="radio" name="jobAccessPerm:*" value="NONE" checked="checked" />None
+                  </t:outputText>
+                  <t:outputText escape="false" rendered="#{jobPermissionsBean.publicAccessPermission != 'NONE'}">
+                    <input type="radio" name="jobAccessPerm:*" value="NONE"  />None
+                  </t:outputText>
+                    
+                  <t:outputText escape="false" rendered="#{jobPermissionsBean.publicAccessPermission == 'READ'}">
+                    <input type="radio" name="jobAccessPerm:*" value="READ" checked="checked" />Read Only
+                  </t:outputText>
+                  <t:outputText escape="false" rendered="#{jobPermissionsBean.publicAccessPermission != 'READ'}">
+                   <input type="radio" name="jobAccessPerm:*" value="READ"  />Read Only
+                  </t:outputText>
+                    
+                  <t:outputText escape="false" rendered="#{jobPermissionsBean.publicAccessPermission == 'READ_WRITE'}">
+                    <input type="radio" name="jobAccessPerm:*" value="READ_WRITE" checked="checked" />Read and Write
+                  </t:outputText>
+                  <t:outputText escape="false" rendered="#{jobPermissionsBean.publicAccessPermission != 'READ_WRITE'}">
+                    <input type="radio" name="jobAccessPerm:*" value="READ_WRITE"  />Read and Write
+                  </t:outputText>
+                </td>
+		    </tr>
+
+		    <c:if test="#{jobPermissionsBean.numGroupAccessPermissions gt 0}">
+		    <tr class="brown">
+		    	<td><strong>Group</strong></td><td></td>
+		    </tr>
+		    <t:dataList var="groupPermission" rowIndexVar="rowIndex" value="#{jobPermissionsBean.groupAccessPermissions}">
+			    <tr class="brown">
+			    	  <td><img src="/gp/images/arrow2.gif" />#{groupPermission.groupId}</td>
+				      <td>
+					      <t:outputText escape="false" rendered="#{groupPermission.permission == 'NONE'}">
+					      <input type="radio" name="jobAccessPerm:#{groupPermission.groupId}" value="NONE" checked="checked" />None
+					      </t:outputText>
+					      <t:outputText escape="false" rendered="#{groupPermission.permission != 'NONE'}">
+					      <input type="radio" name="jobAccessPerm:#{groupPermission.groupId}" value="NONE"  />None
+					      </t:outputText>
+					
+					      <t:outputText escape="false" rendered="#{groupPermission.permission == 'READ'}">
+					      <input type="radio" name="jobAccessPerm:#{groupPermission.groupId}" value="READ" checked="checked" />Read Only
+					      </t:outputText>
+					      <t:outputText escape="false" rendered="#{groupPermission.permission != 'READ'}">
+					      <input type="radio" name="jobAccessPerm:#{groupPermission.groupId}" value="READ"  />Read Only
+					      </t:outputText>
+					
+					      <t:outputText escape="false" rendered="#{groupPermission.permission == 'READ_WRITE'}">
+					      <input type="radio" name="jobAccessPerm:#{groupPermission.groupId}" value="READ_WRITE" checked="checked" />Read and Write
+					      </t:outputText>
+					      <t:outputText escape="false" rendered="#{groupPermission.permission != 'READ_WRITE'}">
+					      <input type="radio" name="jobAccessPerm:#{groupPermission.groupId}" value="READ_WRITE"  />Read and Write
+					      </t:outputText>
+				      </td>
+			    </tr>
+			</t:dataList>
+		    </c:if>
+	    </table>
+	    <br/><input type="submit" name="jobResultsPermissionsForm:button" value="save permissions" />
+	</form>	 
+	</body>
+</html>
