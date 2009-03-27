@@ -2,14 +2,9 @@ package org.genepattern.server.webapp.jsf;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import javax.faces.context.FacesContext;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.PermissionsHelper;
@@ -35,6 +30,9 @@ public class JobPermissionsBean {
     //is the current user allowed to delete the job
     private boolean isDeleteAllowed = false;
     
+    //is the current user allowed to edit permissions
+    private boolean isEditPermissionsAllowed = false;
+    
     //toggle-state in Job Result page
     private boolean showPermissionsDiv = false;
 
@@ -55,6 +53,7 @@ public class JobPermissionsBean {
         this.isShared = permissionsHelper.isShared();
         this.publicAccessPermission = permissionsHelper.getPublicAccessPermission();
         this.isDeleteAllowed = permissionsHelper.canWriteJob();
+        this.isEditPermissionsAllowed = permissionsHelper.canSetJobPermissions();
         
         List<GroupPermission> currentPermissions = permissionsHelper.getNonPublicPermissions();
         //copy
@@ -105,7 +104,11 @@ public class JobPermissionsBean {
     public boolean isDeleteAllowed() {
         return isDeleteAllowed;
     }
-    
+
+    public boolean isEditPermissionsAllowed() {
+        return isEditPermissionsAllowed;        
+    }
+
     public boolean isPublic() {
         return isPublic;
     }
@@ -113,7 +116,7 @@ public class JobPermissionsBean {
     public boolean isShared() {
         return isShared;
     }
-
+    
     public boolean isShowPermissionsDiv() {
         return showPermissionsDiv;
     }
@@ -149,70 +152,4 @@ public class JobPermissionsBean {
         return Collections.unmodifiableList(groupIdsWithReadOnlyAccess);
     }
     
-    
-    //helpers for updating permissions
-    /**
-     * Process request parameters (from form submission) and update the access permissions for the current job.
-     * Only the owner of a job is allowed to change its permissions.
-     */
-    public String savePermissions() { 
-        // parse request parameters from jobResultsPermissionsForm (see jobSharing.xhtml)
-        // JSF for public permission
-        // generated html for the groups
-        // name="jobAccessPerm:#{groupPermission.groupId}" value="#{groupPermission.permission.flag}"
-        
-        //NOTE: don't edit the jobSharing.xhtml without also editing this page 
-        //    in other words, DON'T REUSE THIS CODE in another page unless you know what you are doing
-        Set<GroupPermission> updatedPermissions = new HashSet<GroupPermission>();
-        if (publicAccessPermission != Permission.NONE) {
-            updatedPermissions.add(new GroupPermission(GroupPermission.PUBLIC, publicAccessPermission));
-        }
-        Map<String,String[]> requestParameters = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterValuesMap();
-        for(String name : requestParameters.keySet()) {
-            int idx = name.indexOf("jobAccessPerm:");
-            if (idx >= 0) {
-                idx += "jobAccessPerm:".length();
-                String groupId = name.substring(idx);
-                Permission groupAccessPermission = Permission.NONE;
-                
-                String permFlagStr = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(name);
-                try {
-                    groupAccessPermission = Permission.valueOf(permFlagStr);
-                }
-                catch (IllegalArgumentException e) {
-                    handleException("Ignoring permissions flag: "+permFlagStr, e);
-                    return "error";
-                    
-                }
-                catch (NullPointerException e) {
-                    handleException("Ignoring permissions flag: "+permFlagStr, e);
-                    return "error";
-                    
-                }
-                if (groupAccessPermission != Permission.NONE) {
-                    //ignore NONE
-                    updatedPermissions.add(new GroupPermission(groupId, groupAccessPermission));
-                }
-            }
-        }
-        
-        try {
-            String currentUserId = UIBeanHelper.getUserId();
-            PermissionsHelper permissionsHelper = new PermissionsHelper(currentUserId, jobId);
-            permissionsHelper.setPermissions(updatedPermissions);
-            setShowPermissionsDiv(true);
-            reset();
-            return "success";
-        }
-        catch (Exception e) {
-            reset();
-            handleException("You are not authorized to change the permissions for this job", e);
-            return "error";
-        }
-    }
-
-    private void handleException(String message, Exception e) {
-        log.error(message, e);
-        UIBeanHelper.setErrorMessage(message);
-    }
 }

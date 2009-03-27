@@ -495,16 +495,16 @@
 			<h:outputText rendered="#{jobStatusBean.jobInfo.hasVisualizer}">
 			To launch visualizer click <img src="/gp/images/visualizer.gif" /> icon.
 			</h:outputText> To see options click <img src="/gp/images/smallOptions.gif" /> icon. For Input Parameters click <img src="/gp/images/smallParameters.gif" /> icon.</div> <br />
-			<h:outputText rendered="#{jobStatusBean.jobInfo.userId == requestScope.userID}">
+			<h:outputText rendered="#{jobStatusBean.jobInfo.permissions.editPermissionsAllowed}">
 			<div class="icon">
 				<a style="color:#0066FF;" href="javascript:openLyteBox(#{jobStatusBean.jobInfo.jobNumber})">
-				<h:outputText rendered="#{jobStatusBean.jobInfo.permissions.permissionsLabel != 'Private'}">
+				<h:outputText rendered="#{jobStatusBean.jobInfo.permissions.shared}">
 		        		<img id="permissionsIcon" src="/gp/images/lockOpen.gif" alt="" border="0" align="left" />
 		        </h:outputText>
-		        <h:outputText rendered="#{jobStatusBean.jobInfo.permissions.permissionsLabel == 'Private'}">
+		        <h:outputText rendered="#{not jobStatusBean.jobInfo.permissions.shared}">
 		        	<img id="permissionsIcon" src="/gp/images/lock.gif" alt="" border="0" align="left"/>
 		        </h:outputText>
-			   	Access<br />Permission</a>
+			   	Sharing...</a>
 			</div>
 			</h:outputText>
             <h:outputText rendered="#{not jobStatusBean.finished}">
