@@ -221,6 +221,14 @@ public class PermissionsHelper {
             throw new Exception("Insufficient permissions to change access permission for job: "+rootJobNo);
         }
         AnalysisDAO ds = new AnalysisDAO();
+        
+        // need to reset the isShared property based on the new permissions
         ds.setGroupPermissions(rootJobNo, permissions);
+        isShared = false;
+        for(GroupPermission gp : permissions) {
+            if (gp.getPermission().getRead()) {
+                isShared = true;
+            }
+        }
     }
 }

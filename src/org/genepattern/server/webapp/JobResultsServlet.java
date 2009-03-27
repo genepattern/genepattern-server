@@ -19,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
@@ -47,6 +48,7 @@ import org.genepattern.server.user.UserProp;
 import org.genepattern.server.util.EmailNotificationManager;
 import org.genepattern.util.GPConstants;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  *
@@ -519,6 +521,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         for(String name : requestParameters.keySet()) {
             int idx = name.indexOf("jobAccessPerm:");
             if (idx >= 0) {
+            	
                 idx += "jobAccessPerm:".length();
                 String groupId = name.substring(idx);
                 Permission groupAccessPermission = Permission.NONE;
@@ -529,7 +532,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
                     permFlagStr = values[0];
                 }
                 else {
-                    log.error("Unexpected value for request parameter, "+name+"="+values);
+                	log.error("Unexpected value for request parameter, "+name+"="+values);
                 }
                 try {
                     groupAccessPermission = Permission.valueOf(permFlagStr);
@@ -554,7 +557,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             permissionsHelper.setPermissions(updatedPermissions);
             
 
-            boolean redirect = false;
+            /*boolean redirect = false;
             String redirectParam = request.getParameter("redirect");
             if (redirectParam != null) {
                 redirect = Boolean.valueOf(redirectParam);
@@ -569,7 +572,18 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             else {
                 response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
             }
+            */
+
+            response.setContentType("text/javascript");
+            JSONObject json = new JSONObject();
+            json.put("success", true);
+            json.put("isShared", permissionsHelper.isShared());
+            // let's wait half a second, we dont' want to return too quick or user won't think anything happened.
+            Thread.sleep(500);
+            
+            response.getWriter().write(json.toString());
             return;
+            
         }
         catch (Exception e) {
             handleSetPermissionsException(response, "You are not authorized to change the permissions for this job", e);
@@ -579,9 +593,15 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
     private void handleSetPermissionsException(HttpServletResponse response, String message, Exception e) 
     throws IOException
     {
-        log.error(message, e);
-        response.setHeader("X-genepattern-setPermissionsException", e.getLocalizedMessage());
-        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    	response.setContentType("text/javascript");
+    	try {
+        JSONObject json = new JSONObject();
+        json.put("success", false);
+        // let's wait half a second, we dont' want to return too quick or user won't think anything happened.
+        Thread.sleep(500);
+        response.getWriter().write(json.toString());
+    	} catch (Exception e2) {}
+        
         return;
     }
 
