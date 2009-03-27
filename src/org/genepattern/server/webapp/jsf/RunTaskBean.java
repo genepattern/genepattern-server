@@ -24,6 +24,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -327,36 +328,42 @@ public class RunTaskBean {
 	if (reloadJobNumberString == null) {
 	    reloadJobNumberString = (String) UIBeanHelper.getRequest().getAttribute("reloadJob");
 	}
-	if (reloadJobNumberString != null) {
-	    try {
-
-		LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
-		JobInfo reloadJob = ac.getJob(Integer.parseInt(reloadJobNumberString));
-
-		if (UIBeanHelper.getUserId().equals(reloadJob.getUserId()) || AuthorizationHelper.adminJobs()) {
-		    ParameterInfo[] reloadParams = reloadJob.getParameterInfoArray();
-		    if (reloadParams != null) {
-			for (int i = 0; i < reloadParams.length; i++) {
-			    String value = reloadParams[i].getValue();
-			    if (reloadParams[i].isInputFile()) {
-				try {
-				    new URL(value);
-				} catch (MalformedURLException mfe) {
-				    File file = new File(value);
-				    value = UIBeanHelper.getServer() + "/getFile.jsp?task=&file="
-					    + file.getParentFile().getName() + "/" + file.getName();
-				}
-			    }
-			    reloadValues.put(reloadParams[i].getName(), value);
-			}
-		    }
-		}
-	    } catch (NumberFormatException nfe) {
-		log.error(reloadJobNumberString + " is not an integer.", nfe);
-	    } catch (WebServiceException e) {
-		log.error("Error getting job " + reloadJobNumberString, e);
-	    }
-	}
+    if (reloadJobNumberString != null) {
+        try {
+            LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
+            int reloadJobNumber = Integer.parseInt(reloadJobNumberString);
+            JobInfo reloadJob = ac.getJob(reloadJobNumber);
+            
+            //check permissions
+            String currentUser = UIBeanHelper.getUserId();
+            PermissionsHelper perm = new PermissionsHelper(currentUser, reloadJobNumber);
+            boolean canReadJob = perm.canReadJob();
+            if (canReadJob) {
+                ParameterInfo[] reloadParams = reloadJob.getParameterInfoArray();
+                if (reloadParams != null) {
+                    for (int i = 0; i < reloadParams.length; i++) {
+                        String value = reloadParams[i].getValue();
+                        if (reloadParams[i].isInputFile()) {
+                            try {
+                                new URL(value);
+                            } 
+                            catch (MalformedURLException mfe) {
+                                File file = new File(value);
+                                value = UIBeanHelper.getServer() + "/getFile.jsp?task=&job="+reloadJobNumber+"&file="+ file.getParentFile().getName() + "/" + file.getName();
+                            }
+                        }
+                        reloadValues.put(reloadParams[i].getName(), value);
+                    }
+                }
+            }
+        } 
+        catch (NumberFormatException nfe) {
+            log.error(reloadJobNumberString + " is not an integer.", nfe);
+        } 
+        catch (WebServiceException e) {
+            log.error("Error getting job " + reloadJobNumberString, e);
+        }
+    }
 
 	this.parameters = new Parameter[taskParameters != null ? taskParameters.length : 0];
 	if (taskParameters != null) {
