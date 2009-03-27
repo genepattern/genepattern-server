@@ -1116,7 +1116,8 @@ public class GenePatternAnalysisTask {
 	            stderrBuffer.append(eProblems.nextElement() + "\n");
 	        }
 	        jobStatus = JobStatus.JOB_ERROR;
-	    } else {
+	    } 
+	    else {
 	        // run the task and wait for completion.
 	        log.info("running " + taskName + " (job " + jobInfo.getJobNumber() + ") command: " + commandLine.toString());
 	        File stdoutFile;
@@ -1132,7 +1133,8 @@ public class GenePatternAnalysisTask {
 	        if (renameStderr) {
 	            stderrFile = File.createTempFile("stderr", null);
 	            stderrFilename = STDERR;
-	        } else {
+	        } 
+	        else {
 	            stderrFile = new File(outDir, stderrFilename);
 	        }
 	        try {
@@ -1163,17 +1165,18 @@ public class GenePatternAnalysisTask {
 	            if (renameStderr) {
 	                stderrFile.renameTo(new File(outDir, STDERR));
 	            }
-
-	            if (!taskInfo.isVisualizer()) {
-	                JobInfoManager m = new JobInfoManager();
-	                //TODO: compute contextPath
-	                String contextPath = "/gp";
-	                String cookie = "";
-	                JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, jobInfo.getUserId(), jobInfo.getJobNumber());
-	                taskLog = JobInfoManager.writeExecutionLog(outDirName, jobInfoWrapper, props);
-	            }
 	        }
 	    }
+
+	    //write execution log
+        if (!taskInfo.isVisualizer()) {
+            JobInfoManager m = new JobInfoManager();
+            //TODO: compute contextPath
+            String contextPath = "/gp";
+            String cookie = "";
+            JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, jobInfo.getUserId(), jobInfo.getJobNumber());
+            taskLog = JobInfoManager.writeExecutionLog(outDirName, jobInfoWrapper, props);
+        }
 
 	    // move input files back into Axis attachments directory
 	    if (params != null) {
