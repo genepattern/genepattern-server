@@ -61,7 +61,7 @@
 	
 	function openLyteBox(jobNumber) {
 		var a = document.createElement("a");
-		a.href = '#{facesContext.externalContext.requestContextPath}/pages/jobPermissions.jsf?jobNumber='+jobNumber;
+		a.href = '#{facesContext.externalContext.requestContextPath}/pages/jobPermissionsForm.jsf?jobNumber='+jobNumber;
 		a.rel = "lyteframe";
 		a.title = 'setting permissions for Job #' + jobNumber;
 		a.rev = "width: 500px; height: 300px; scrolling: auto, background=";
