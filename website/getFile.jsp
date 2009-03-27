@@ -55,18 +55,13 @@
                 }
             }
 
-            // now we need to check whether this is the user or an admin trying
-            // to look at the file if it exists
+            // check whether the current user can read the file
             if (in.exists()) {
                 if (!filename.startsWith(prefix)) {
-			        boolean isAdmin = AuthorizationHelper.adminJobs(userID);
 			        boolean canRead = false;
-			        if (!isAdmin) {
-			            //check for group access permissions
-			            PermissionsHelper perm = new PermissionsHelper(userID, jobNumber);
-			            canRead = perm.canReadJob();
-			        }
-			        if (!isAdmin && !canRead) {
+			        PermissionsHelper perm = new PermissionsHelper(userID, jobNumber);
+			        canRead = perm.canReadJob();
+			        if (!canRead) {
 			            System.out.println("SECURITY ALERT: " + userID +" tried to access someone else's file: " + filename);
 		                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
 		                return;
