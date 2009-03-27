@@ -1171,8 +1171,10 @@ public class GenePatternAnalysisTask {
 	    //write execution log
         if (!taskInfo.isVisualizer()) {
             JobInfoManager m = new JobInfoManager();
-            //TODO: compute contextPath
-            String contextPath = "/gp";
+            String contextPath = System.getProperty("servletContextPath", "/gp");
+            if (!contextPath.startsWith("/")) {
+                contextPath = "/" + contextPath;
+            }
             String cookie = "";
             JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, jobInfo.getUserId(), jobInfo.getJobNumber());
             taskLog = JobInfoManager.writeExecutionLog(outDirName, jobInfoWrapper, props);
