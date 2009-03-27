@@ -571,7 +571,7 @@
 					        <h:outputText rendered="#{not jobStatusBean.jobInfo.permissions.shared}">
 					        	<img id="permissionsIcon" src="/gp/images/lock.gif" alt="" border="0" align="left"/>
 					        </h:outputText>
-						   	<span id="permissionsDivLabel">Edit</span> Access<br />Permission</a>
+						   	<span id="permissionsDivLabel">Edit</span><br />Sharing...</a>
 						</div>
 					</h:outputText>
 			    </td>
@@ -596,7 +596,7 @@
 		    </ui:include>
 		</h:outputText>
 
-		<h:outputText rendered="#{jobStatusBean.jobInfo.userId == requestScope.userID}">
+		<h:outputText rendered="#{jobStatusBean.jobInfo.permissions.editPermissionsAllowed}">
 			<div id="permissionsDiv" style="display: none;">
 				<form name="permissionsForm">
 					
