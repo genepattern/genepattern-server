@@ -32,9 +32,6 @@ public class JobPermissionsBean {
     
     //is the current user allowed to edit permissions
     private boolean isEditPermissionsAllowed = false;
-    
-    //toggle-state in Job Result page
-    private boolean showPermissionsDiv = false;
 
     //for displaying read-only summary information (e.g. in Job Results Page)
     private List<String> groupIdsWithFullAccess;
@@ -115,14 +112,6 @@ public class JobPermissionsBean {
 
     public boolean isShared() {
         return isShared;
-    }
-    
-    public boolean isShowPermissionsDiv() {
-        return showPermissionsDiv;
-    }
-    
-    public void setShowPermissionsDiv(boolean b) {
-        this.showPermissionsDiv = b;
     }
     
     //helpers for read only view on 'Job Results' page
