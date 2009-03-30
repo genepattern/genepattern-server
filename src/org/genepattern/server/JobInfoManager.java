@@ -353,6 +353,7 @@ public class JobInfoManager {
             JSONObject inp = new JSONObject();
             inp.put("name", inputFile.getDisplayName());
             inp.put("value", inputFile.getDisplayValue());
+            inp.put("valueId", inputFile.getValueId());
             inp.put("link", inputFile.getLink());
             inp.put("truncatedDisplayValue", inputFile.getTruncatedDisplayValue());
             inp.put("description", inputFile.getDescription());
@@ -367,11 +368,11 @@ public class JobInfoManager {
             JSONObject inp = new JSONObject();
             inp.put("name", outputFile.getDisplayName());
             inp.put("value", outputFile.getDisplayValue());
+            inp.put("valueId", outputFile.getValueId());
             inp.put("link", outputFile.getLink());
             inp.put("truncatedDisplayValue", outputFile.getTruncatedDisplayValue());
             inp.put("description", outputFile.getDescription());
             inp.put("formattedSize", outputFile.getFormattedSize());
-            
             outputFiles.put(inp);
         }
         obj.put("outputFiles", outputFiles);
