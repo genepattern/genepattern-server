@@ -163,9 +163,7 @@
 						if (document.getElementById('emailDiv')) {
 							document.getElementById('emailDiv').style.display = 'none';
 						}
-						if (!data.isVisualizer) {
-							window.location.reload();
-						}
+						
 					}
 				}
 			}
@@ -298,6 +296,11 @@
 					createOutputFiles(child);
 				}
 						
+				var fileMenusDiv = document.createElement('div');
+				fileMenusDiv.id = 'fileMenus' + child.jobNumber;
+				div.appendChild(fileMenusDiv);
+				
+						
 				// update the children
 				if (child.isPipeline && child.children) {
 					updateChildren(child);
@@ -421,6 +424,17 @@
 						link.appendChild(document.createTextNode(job.outputFiles[i].truncatedDisplayValue));
 						p.appendChild(link);
 						p.appendChild(document.createTextNode(" ("+job.outputFiles[i].formattedSize+") "));
+						
+						var fileMenuImage = document.createElement("img");
+						fileMenuImage.src = "/gp/images/smallOptions.gif";
+						fileMenuImage.name = "Image_" + job.outputFiles[i].valueId; 
+			            fileMenuImage.id = "Image_" + job.outputFiles[i].valueId;
+			            fileMenuImage.border = "0";
+			            fileMenuImage.align = "top"; 
+			            fileMenuImage.onclick = Function("pm_showMenu('menuDiv_" + job.outputFiles[i].valueId + "', Position.cumulativeOffset(this), 50, 50);"); 
+			            fileMenuImage.onmouseover = Function("MM_swapImage('Image_" + job.outputFiles[i].valueId + "','','/gp/images/smallOptions2.gif',2)"); 
+			            fileMenuImage.onmouseout = Function("MM_swapImgRestore();");
+						p.appendChild(fileMenuImage);
 						div.appendChild(p);
 				    }
 				}
@@ -447,6 +461,8 @@
 						runVisualizer(job.jobNumber);						
 					}
 				}
+				// create menus for this job's files
+				loadFileMenus(job.jobNumber);
 			}
 			
 			function createInputParameters(job) {
@@ -663,7 +679,7 @@
 					    </c:if>
 					    <tr class="brown">
 					    	<td style="whitespace: no-wrap;">
-					    		<input type="button" onclick="submitPermissionsRequest(this.form)" value="Update Settings"/>
+					    		<input type="button" enabled="false" onclick="submitPermissionsRequest(this.form)" value="Update Settings"/>
 					    		<img style="vertical-align: middle; display: none;" src="/gp/images/spin.gif" id="permissionsWorkingImage"/>
 					    	</td>
 							<td align="right">
@@ -690,6 +706,7 @@
 		    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
 		    </ui:include>
 	    </h:form>
+	    <div id="fileMenus#{jobStatusBean.jobInfo.jobNumber}">
         <t:dataList var="outputFile" value="#{jobStatusBean.jobInfo.outputFiles}">
 	 		<h:form>
 	   			<ui:include src="jobStatus_fileMenu.xhtml">
@@ -702,7 +719,7 @@
 	   			</ui:include>
 	  		</h:form>
 	  	</t:dataList>
-	  	<t:dataList var="inputFile" value="#{jobStatusBean.jobInfo.inputFiles}">
+	  	<t:dataList var="inputFile" value="#{jobStatusBean.jobInfo.inputFiles}" rowIndexVar="fileindex">
 	 		<h:form>
 	   			<ui:include src="jobStatus_fileMenu.xhtml">
                     <ui:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}"/>
@@ -712,8 +729,9 @@
                     <ui:param name="valueId" value="#{inputFile.valueId}"/>
                     <ui:param name="moduleMenuItems" value="#{inputFile.moduleMenuItems}"/>
 	   			</ui:include>
-	  		</h:form>
+	   		</h:form>		
 	  	</t:dataList>
+	  	</div>
 	    <h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
 			<t:dataList var="child" value="#{jobStatusBean.allSteps}" rowIndexVar="idx">
 				<h:outputText rendered="#{idx gt 0}">
@@ -736,7 +754,39 @@
 	    </div>
 	    <table cellpadding="0" cellspacing="0" border="0" style="display: none;" id="testTable">
 	    	<tr><td></td></tr>
-	    </table> 
+	    </table>
+	    <br/><br/>
+	     
+	     <script type="text/javascript">
+	     /* <![CDATA[ */	
+	     	var handleMenuSuccess = function(o){
+				if(o.responseText !== undefined){
+					//alert (o.responseText);
+					document.getElementById('fileMenus'+o.argument[0]).innerHTML = o.responseText;
+					
+					//pm_showMenu('menuDiv_C:\Program Files\GenePatternServer\Tomcat\webapps\gp\jobResults\821\all_aml_test.preprocessed.preprocessed.gct', Position.cumulativeOffset(document.getElementById('testFileMenu')), 50, 50);
+				}
+			}
+			
+			var handleMenuError = function(o){
+				alert("menu request failed");
+			}
+			
+			var menuCallback =
+			{
+			  success: handleMenuSuccess,
+			  failure: handleMenuError
+			  
+			};
+			
+			function loadFileMenus(jobNumber) {
+				var menuPostData = "jobNumber="+jobNumber;
+				menuCallback.argument = [jobNumber];
+				var request = YAHOO.util.Connect.asyncRequest('POST', '/gp/pages/jobStatus_fileMenuJSON.jsf', menuCallback, menuPostData);
+			}
+	     	/* ]]> */
+	     </script>
+	     
 	</ui:define>
 	
 </ui:composition>

@@ -74,30 +74,31 @@
 		<ui:include src="jobStatus_files.xhtml">
 	    	<ui:param name="jobInfo" value="#{jobInfo}" />
 	    </ui:include>
-	    
-	  	<t:dataList var="outputFile" value="#{jobInfo.outputFiles}">
-            <h:form>
-                <ui:include src="jobStatus_fileMenu.xhtml">
-                    <ui:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}"/>
-                    <ui:param name="filename" value="#{outputFile.name}" />
-                    <ui:param name="deleteAllowed" value="#{false}"/>
-                    <ui:param name="value" value="#{outputFile.link}"/>
-                    <ui:param name="valueId" value="#{outputFile.valueId}"/>
-                    <ui:param name="moduleMenuItems" value="#{outputFile.moduleMenuItems}"/>
-                </ui:include>
-            </h:form>
-        </t:dataList>
-        	  	
-	  	<t:dataList var="p" value="#{jobInfo.inputFiles}">
-	 		<h:form>
-	   			<ui:include src="jobStatus_fileMenu.xhtml">
-	        		<ui:param name="jobNumber" value="#{jobInfo.jobNumber}"/>
-	       			<ui:param name="valueId" value="#{p.valueId}"/>
-	       			<ui:param name="value" value="#{p.link}"/>
-	       			<ui:param name="deleteAllowed" value="#{false}"/>
-	   			</ui:include>
-	  		</h:form>
-	  	</t:dataList>
+	    <div id="fileMenus#{jobInfo.jobNumber}">
+		  	<t:dataList var="outputFile" value="#{jobInfo.outputFiles}">
+		  		<h:form>
+	                <ui:include src="jobStatus_fileMenu.xhtml">
+	                    <ui:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}"/>
+	                    <ui:param name="filename" value="#{outputFile.name}" />
+	                    <ui:param name="deleteAllowed" value="#{false}"/>
+	                    <ui:param name="value" value="#{outputFile.link}"/>
+	                    <ui:param name="valueId" value="#{outputFile.valueId}"/>
+	                    <ui:param name="moduleMenuItems" value="#{outputFile.moduleMenuItems}"/>
+	                </ui:include>
+	            </h:form>
+	        </t:dataList>
+	        	  	
+		  	<t:dataList var="p" value="#{jobInfo.inputFiles}">
+		 		<h:form>
+		   			<ui:include src="jobStatus_fileMenu.xhtml">
+		        		<ui:param name="jobNumber" value="#{jobInfo.jobNumber}"/>
+		       			<ui:param name="valueId" value="#{p.valueId}"/>
+		       			<ui:param name="value" value="#{p.link}"/>
+		       			<ui:param name="deleteAllowed" value="#{false}"/>
+		   			</ui:include>
+		  		</h:form>
+		  	</t:dataList>
+		</div>
 	    </div>
 	    
   </ui:composition>
