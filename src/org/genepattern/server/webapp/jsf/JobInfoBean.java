@@ -94,8 +94,11 @@ public class JobInfoBean {
         ParameterInfo[] formalParameters = null;
         TaskInfo taskInfo = null;
         try {
-            taskInfo = new LocalAdminClient(jobInfo.getUserId()).getTask(jobInfo.getTaskLSID());
-            formalParameters = taskInfo.getParameterInfoArray();
+            LocalAdminClient adminClient = new LocalAdminClient(jobInfo.getUserId());
+            taskInfo = adminClient.getTask(jobInfo.getTaskLSID());
+            if (taskInfo != null) {
+                formalParameters = taskInfo.getParameterInfoArray();
+            }
         } 
         catch (WebServiceException e) {
             log.error(e);
