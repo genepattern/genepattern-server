@@ -5,9 +5,9 @@ import org.genepattern.webservice.Parameter;
 
 /**
  * Test nested pipelines from the java API.
- * This is used to test bug GP-2580, <a href="http://jira.broad.mit.edu:8008/browse/GP-2580">GP-2580</a>.
+ * This is used to test bug GP-2637, <a href="http://jira.broad.mit.edu:8008/browse/GP-2580">GP-2637</a>.
  */
-public class TestGp2580 {
+public class TestGp2637 {
 
     public static void main(String[] args) {
         String server = "http://127.0.0.1:8080";
@@ -37,26 +37,24 @@ public class TestGp2580 {
                     new Parameter[] { 
                         new Parameter("PreprocessDataset1.input.filename", "all_aml_test.gct") 
                     });
-
-            // 2. run innerStep with URL
-            jobResult = gpClient.runAnalysis("innerStep",
-                    new Parameter[] { 
-                        new Parameter("PreprocessDataset1.input.filename", "ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct") 
-                    });
             
-            // 3. run innerStep with local server file URL
-            final String url1 = "file:////Broad/Projects/gp-trunk/test/load_testing/gp-2580/all_aml_test.gct";
-            final String url2 = "file:///xchip/genepattern/node255/gp-3.1.1-beta/taskLib/outer.1.931/all_aml_test.gct";
-            jobResult = gpClient.runAnalysis("innerStep", 
-                    new Parameter[] { 
-                        new Parameter("PreprocessDataset1.input.filename", url1) 
-                    });
-            
-            // 4. run outer pipeline
-            jobResult = gpClient.runAnalysis("outer",
-                    new Parameter[] { 
-                    });
-            
+            System.out.println("Job "+jobResult.getJobNumber());
+            boolean first = true;
+            for(Parameter param : jobResult.getParameters()) {
+                if (first) {
+                    System.out.println("Parameters");
+                    first = false;
+                }
+                System.out.println("\t"+param.getName() + "=" + param.getValue());
+            }
+            first = true;
+            for(String outputFile : jobResult.getOutputFileNames()) {
+                if (first) {
+                    System.out.println("Output Files");
+                    first = false;
+                }
+                System.out.println("\t"+outputFile+", "+jobResult.getURLForFileName(outputFile));
+            }
         } 
         catch (Exception e) {
             e.printStackTrace();

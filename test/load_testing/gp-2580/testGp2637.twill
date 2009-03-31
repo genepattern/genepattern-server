@@ -1,0 +1,13 @@
+# test GP-2637
+
+# login to the server
+go /gp/login?username=pcarr&password=pcarr
+code 200
+url /gp/pages/index.jsf
+
+# Run 'innerStep' with uploaded file
+go /gp/pages/index.jsf?lsid=innerStep
+fv taskForm PreprocessDataset1.input.filename_cb file
+formfile taskForm PreprocessDataset1.input.filename all_aml_test.gct
+submit
+code 200
