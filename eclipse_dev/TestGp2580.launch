@@ -28,5 +28,5 @@
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="http://127.0.0.1:8080  pcarr pcarr"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="gp-trunk"/>
 <booleanAttribute key="org.eclipse.jdt.launching.STOP_IN_MAIN" value="true"/>
-<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:gp-trunk/test/load_testing/gp-2072}"/>
+<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:gp-trunk/test/load_testing/gp-2580}"/>
 </launchConfiguration>
