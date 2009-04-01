@@ -677,16 +677,21 @@ public class GenePatternAnalysisTask {
 	                } 
 	                else if (mode.equals(ParameterInfo.INPUT_MODE)) {
 	                    log.error("IN " + params[i].getName() + "=" + originalPath);
-	                    // file provided via SOAP or by web form upload
-	                    // ensure file is in GenePatternServer/temp/attachments/username or in
-	                    // GenePatternServer/Tomcat/temp/username_run[0-9]+.tmp
-	                    String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
-	                    String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir") + File.separator + jobInfo.getUserId()).getCanonicalPath();
+	                    //web form upload: <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>
+	                    //SOAP client upload: <soap.attachment.dir>/<user_id>/<filename>
+                        Boolean isWebUpload = null;
+                        Boolean isSoapUpload = null;
+                        File inputFile = new File(originalPath);
+                        String inputFileDirectory = inputFile.getParentFile().getCanonicalPath();
+                        String inputFileGrandParent = inputFile.getParentFile().getParentFile().getCanonicalPath();
+                        String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
+                        isWebUpload = inputFileGrandParent.equals(webUploadDirectory);	                    
+	                    if (!isWebUpload) {
+	                        String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir") + File.separator + jobInfo.getUserId()).getCanonicalPath();
+	                        isSoapUpload = inputFileDirectory.equals(soapAttachmentDir);
+	                    }
 
-	                    File inputFile = new File(originalPath);
-	                    String inputFileDirectory = inputFile.getParentFile().getCanonicalPath();
-
-	                    if (inputFile.getParentFile().getParentFile().getCanonicalPath().equals(webUploadDirectory)) {
+	                    if (isWebUpload) {
 	                        PermissionsHelper perm = new PermissionsHelper(jobInfo.getUserId(), jobInfo.getJobNumber());
 	                        boolean canRead = perm.canReadJob();
 	                        if (!canRead) {
@@ -694,7 +699,7 @@ public class GenePatternAnalysisTask {
 	                            continue;
 	                        }
 	                    } 
-	                    else if (!inputFileDirectory.equals(soapAttachmentDir)) {
+	                    else if (!isSoapUpload) {
 	                        vProblems.add("Input file " + new File(originalPath).getName() + " must be in SOAP attachment directory or web upload directory.");
 	                        continue;
 	                    }
@@ -829,29 +834,34 @@ public class GenePatternAnalysisTask {
 	                                name = f.getName();
 	                            }
 	                        } 
-	                        else if ("file".equalsIgnoreCase(uri.getScheme()) && !allowInputFilePaths) {
-	                            // prompt when run input files in pipelines are saved as
-	                            // file:/Applications/GenePatternServer/Tomcat/temp/username_run27407.tmp/filename
-	                            // through the web client and
-	                            // file:/Applications/GenePatternServer/Tomcat/webapps/gp/jobResults/jobNumber/
-	                            // filename through SOAP
-	                            File inputFile = new File(uri);
-	                            String grandParentPath = inputFile.getParentFile().getParentFile().getCanonicalPath();
+                            else if ("file".equalsIgnoreCase(uri.getScheme()) && !allowInputFilePaths) {
+                                //prompt when run inputs
+                                //web form upload: <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>
+                                //SOAP client upload: <soap.attachment.dir>/<user_id>/<filename>
+                                Boolean isWebUpload = null;
+                                Boolean isSoapUpload = null;
+                                //File inputFile = new File(originalPath);
+                                File inputFile = new File(uri);
+                                String inputFileDirectory = inputFile.getParentFile().getCanonicalPath();
+                                String inputFileGrandParent = inputFile.getParentFile().getParentFile().getCanonicalPath();
+                                String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
+                                isWebUpload = inputFileGrandParent.equals(webUploadDirectory);                      
+                                if (!isWebUpload) {
+                                    String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir") + File.separator + jobInfo.getUserId()).getCanonicalPath();
+                                    isSoapUpload = inputFileDirectory.equals(soapAttachmentDir);
+                                }
 
-	                            String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
-	                            boolean isWebUpload = false;
-	                            isWebUpload = webUploadDirectory.equals( grandParentPath );
-	                            if (! ( isWebUpload
-	                                    && 
-	                                    ( AuthorizationHelper.adminJobs(jobInfo.getUserId()) 
-	                                            || 
-	                                            inputFile.getParentFile().getName().startsWith(jobInfo.getUserId() + "_")
-	                                    )
-	                            )
-	                            ) {
-	                                String jobsDirectory = new File(System.getProperty("jobs")).getCanonicalPath();
+                                if (! ( (isWebUpload || isSoapUpload)
+                                        && 
+                                        ( AuthorizationHelper.adminJobs(jobInfo.getUserId()) 
+                                                || 
+                                                inputFile.getParentFile().getName().startsWith(jobInfo.getUserId() + "_")
+                                        )
+                                )
+                                ) {
+                                    String jobsDirectory = new File(System.getProperty("jobs")).getCanonicalPath();
 	                                boolean isJobOutput = false;
-	                                isJobOutput = jobsDirectory.equals(grandParentPath);
+	                                isJobOutput = jobsDirectory.equals(inputFileGrandParent);
 	                                String jobNumber = inputFile.getParentFile().getName();
 	                                if (!isJobOutput
 	                                        || 
@@ -2488,8 +2498,8 @@ public class GenePatternAnalysisTask {
 					baseName = baseName.substring(baseName.indexOf("_") + 1);
 				    }
 				}
-				props.put(inputParamName + INPUT_FILE, new String(baseName)); // filename
-				// without path
+				// filename without path
+				props.put(inputParamName + INPUT_FILE, new String(baseName));
 				j = baseName.lastIndexOf(".");
 				if (j != -1) {
 				    props.put(inputParamName + INPUT_EXTENSION, new String(baseName.substring(j + 1))); // filename
