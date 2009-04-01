@@ -5,6 +5,9 @@ import java.io.IOException;
 
 import junit.framework.TestCase;
 
+import org.broadinstitute.io.IOUtil;
+import org.broadinstitute.io.matrix.ParseException;
+import org.broadinstitute.matrix.Dataset;
 import org.genepattern.client.GPClient;
 import org.genepattern.webservice.JobResult;
 import org.genepattern.webservice.Parameter;
@@ -27,8 +30,9 @@ public class TestSubmitJob extends TestCase {
 	 * @throws WebServiceException 
 	 * @throws IOException 
 	 * @throws SecurityException 
+	 * @throws ParseException 
 	 */
-	public void testPreprocess() throws WebServiceException, SecurityException, IOException {
+	public void testPreprocess() throws WebServiceException, SecurityException, IOException, ParseException {
 		Parameter[] params = new Parameter[1];
 		File testFile = new File(SMALL_GCT);
 		Parameter fileParam = new Parameter("input.filename", testFile);
@@ -43,11 +47,14 @@ public class TestSubmitJob extends TestCase {
 		File[] files = jobResult.downloadFiles(".");
 		assertNotNull(files);
 		assertEquals(1, files.length);
-		if (SMALL_RESULT_GCT.equals(files[0].getName())) {
-			assertTrue(true);
-		} else{
+		if (!SMALL_RESULT_GCT.equals(files[0].getName())) {
 			fail("found unexpected output file: " + files[0].getName());
 		}
+		
+		Dataset dataset = IOUtil.readDataset(files[0].getAbsolutePath());
+		assertNotNull(dataset);
+		assertEquals(2, dataset.getRowCount());
+		assertEquals(3, dataset.getColumnCount());
 	}
 
 }
