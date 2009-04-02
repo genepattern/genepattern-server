@@ -870,7 +870,7 @@ public class GenePatternAnalysisTask {
 	                                                !AuthorizationHelper.adminJobs(jobInfo.getUserId())
 	                                        )
 	                                ) {
-	                                    vProblems.add("File input URLs are not allowed on this GenePattern server.");
+	                                    vProblems.add("File input URLs are not allowed on this GenePattern server: " + inputFile.getCanonicalPath());
 	                                    continue;
 	                                }
 	                            }
