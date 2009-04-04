@@ -467,7 +467,7 @@ public class GenePatternAnalysisTask {
             } 
             catch (IllegalArgumentException e) {
                 log.error("Error", e);
-                throw new IllegalArgumentException("Module not found.");
+                throw new IllegalArgumentException("Module not found: "+e.getLocalizedMessage());
             }
         }
 
@@ -616,7 +616,7 @@ public class GenePatternAnalysisTask {
 	        parent = parentJI.getJobNumber();
 	    }
 	    ParameterInfo[] params = jobInfo.getParameterInfoArray();
-	    Properties props = setupProps(taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(),
+	    Properties props = setupProps(taskInfo, taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(),
 		    taskInfoAttributes, params, environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
 	    Vector<String> vProblems = new Vector<String>();
 	    long inputLastModified[] = new long[0];
@@ -801,7 +801,7 @@ public class GenePatternAnalysisTask {
 	                        }
 	                    }
 	                }
-	                if (isURL && !taskInfo.isVisualizer()) {
+	                if (isURL && !taskInfo.isVisualizer() && !taskInfo.isPipeline()) { //don't translate input urls for visualizers and pipelines
 	                    URI uri = new URI(originalPath);
 	                    final String userInfo = uri.getUserInfo();
 	                    if (userInfo != null) {
@@ -978,7 +978,7 @@ public class GenePatternAnalysisTask {
 	    // name from the properties
 	    // (ParameterInfo[], System properties, environment variables, and built-ins merged)
 	    // build props again, now that downloaded files are set
-	    props = setupProps(taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(), taskInfoAttributes, params,
+	    props = setupProps(taskInfo, taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(), taskInfoAttributes, params,
 	            environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
 
 	    params = stripOutSpecialParams(params);
@@ -1121,6 +1121,8 @@ public class GenePatternAnalysisTask {
 	        vProblems.add("Missing name for standard input redirect");
 	    }
 	    StringBuffer stderrBuffer = new StringBuffer();
+	    //keep a reference to this for debugging and optional output to the execution log
+	    ProcessBuilder processBuilder = null;
 	    if (vProblems.size() > 0) {
 	        for (Enumeration<String> eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
 	            stderrBuffer.append(eProblems.nextElement() + "\n");
@@ -1152,7 +1154,7 @@ public class GenePatternAnalysisTask {
 	                jobStatus = JobStatus.JOB_FINISHED;
 	            }
 	            else {
-	                runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
+	                processBuilder = runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
 	                if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0) {
 	                    jobStatus = JobStatus.JOB_ERROR;
 	                }
@@ -1187,7 +1189,7 @@ public class GenePatternAnalysisTask {
             }
             String cookie = "";
             JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, jobInfo.getUserId(), jobInfo.getJobNumber());
-            taskLog = JobInfoManager.writeExecutionLog(outDirName, jobInfoWrapper, props);
+            taskLog = JobInfoManager.writeExecutionLog(outDirName, jobInfoWrapper, props, processBuilder);
         }
 
 	    // move input files back into Axis attachments directory
@@ -1287,13 +1289,13 @@ public class GenePatternAnalysisTask {
 	    filenameFilter.addExactMatch(_stderrFilename);
 	    filenameFilter.setGlob(System.getProperty(JobResultsFilenameFilter.KEY));
 
-	    File[] outputFiles = new File(outDirName).listFiles(filenameFilter);
+	    File outputDir = new File(outDirName);
+        File[] outputFiles = outputDir.listFiles(filenameFilter);
 	    sortOutputFiles(outputFiles);
 
 	    parentJobInfo = getParentJobInfo(jobInfo.getJobNumber());
 
-	    for (int i = 0; i < outputFiles.length; i++) {
-	        File f = outputFiles[i];
+	    for (File f : outputFiles) {
 	        log.debug("adding output file to output parameters " + f.getName() + " from " + outDirName);
 	        addFileToOutputParameters(jobInfo, f.getName(), f.getName(), parentJobInfo);
 	    }
@@ -2399,145 +2401,140 @@ public class GenePatternAnalysisTask {
      * @return Properties Properties object with all substitution name/value pairs defined
      * @author Jim Lerner
      */
-    public Properties setupProps(String taskName, int parentJobNumber, int jobNumber, int taskID,
+    public Properties setupProps(TaskInfo taskInfo, String taskName, int parentJobNumber, int jobNumber, int taskID,
 	    TaskInfoAttributes taskInfoAttributes, ParameterInfo[] actuals, Map<String, String> env,
-	    ParameterInfo[] formalParameters, String userID) throws Exception {
-	Properties props = new Properties();
-	int formalParamsLength = 0;
-	if (formalParameters != null) {
-	    formalParamsLength = formalParameters.length;
-	}
-	try {
-	    // copy environment variables into props
-	    String key = null;
-	    String value = null;
+	    ParameterInfo[] formalParameters, String userID) 
+    throws Exception {
+        Properties props = new Properties();
+        int formalParamsLength = 0;
+        if (formalParameters != null) {
+            formalParamsLength = formalParameters.length;
+        }
+        try {
+            // copy environment variables into props
+            String key = null;
+            String value = null;
 
-	    for (Enumeration<?> eVariables = System.getProperties().propertyNames(); eVariables.hasMoreElements();) {
-		key = (String) eVariables.nextElement();
-		value = System.getProperty(key, "");
-		props.put(key, value);
-	    }
-	    for (Iterator<String> eVariables = env.keySet().iterator(); eVariables.hasNext();) {
-		key = eVariables.next();
-		value = (String) env.get(key);
-		if (value == null) {
-		    value = "";
-		}
-		props.put(key, value);
-	    }
-	    props.put(NAME, taskName);
-	    props.put(JOB_ID, Integer.toString(jobNumber));
-	    props.put("parent_" + JOB_ID, Integer.toString(parentJobNumber));
-	    props.put(TASK_ID, Integer.toString(taskID));
-	    props.put(USERID, "" + userID);
-	    props.put(PIPELINE_ARG_STOP_AFTER_TASK_NUM, ""); // should be
-	    // overridden by
-	    // actuals if
-	    // provided
+            for (Enumeration<?> eVariables = System.getProperties().propertyNames(); eVariables.hasMoreElements();) {
+                key = (String) eVariables.nextElement();
+                value = System.getProperty(key, "");
+                props.put(key, value);
+            }
+            for (Iterator<String> eVariables = env.keySet().iterator(); eVariables.hasNext();) {
+                key = eVariables.next();
+                value = (String) env.get(key);
+                if (value == null) {
+                    value = "";
+                }
+                props.put(key, value);
+            }
+            props.put(NAME, taskName);
+            props.put(JOB_ID, Integer.toString(jobNumber));
+            props.put("parent_" + JOB_ID, Integer.toString(parentJobNumber));
+            props.put(TASK_ID, Integer.toString(taskID));
+            props.put(USERID, "" + userID);
+            props.put(PIPELINE_ARG_STOP_AFTER_TASK_NUM, ""); // should be overridden by actuals if provided
+            String sLSID = taskInfoAttributes.get(LSID);
+            props.put(LSID, sLSID);
+            // as a convenience to the user, create a <libdir> property which is where DLLs, JARs, EXEs, etc. are dumped to when adding tasks
+            String taskLibDir = (taskID != -1 ? 
+                    new File(DirectoryManager.getTaskLibDir(taskName, sLSID, userID)).getPath() + System.getProperty("file.separator")
+                    : 
+                    "taskLibDir");
+            props.put(LIBDIR, taskLibDir);
 
-	    String sLSID = taskInfoAttributes.get(LSID);
-	    props.put(LSID, sLSID);
+            // set the java flags if they have been overridden in the java_flags.properties file
+            PropertiesManager pm = PropertiesManager.getInstance();
+            Properties javaFlagProps = pm.getJavaFlags();
+            String javaFlags = javaFlagProps.getProperty(sLSID);
+            if (javaFlags == null) {
+                LSID lsid = new LSID(sLSID);
+                javaFlags = javaFlagProps.getProperty(lsid.toStringNoVersion());
+            }
+            if (javaFlags != null) {
+                props.put(GPConstants.JAVA_FLAGS, javaFlags);
+            }
+            // populate props with the input parameters so that they can be looked up by name
+            if (actuals != null) {
+                for (int i = 0; i < actuals.length; i++) {
+                    value = actuals[i].getValue();
+                    if (value == null) {
+                        value = "";
+                    }
+                    props.put(actuals[i].getName(), value);
+                }
+            }
+            String inputFilename = null;
+            String inputParamName = null;
+            String outDirName = getJobDir(Integer.toString(jobNumber));
+            new File(outDirName).mkdirs();
+            int j;
+            // find input filenames, create _path, _file, and _basename props for each
+            boolean isPipeline = taskInfo != null && taskInfo.isPipeline();
+            if (actuals != null) { 
+                for (int i = 0; i < actuals.length; i++) {
+                    for (int f = 0; f < formalParamsLength; f++) {
+                        if (actuals[i].getName().equals(formalParameters[f].getName())) {
+                            if (formalParameters[f].isInputFile() && !isPipeline) { //don't change parameter values for input files to pipelines
+                                inputFilename = actuals[i].getValue();
+                                if (inputFilename == null || inputFilename.length() == 0) {
+                                    continue;
+                                }
+                                inputParamName = actuals[i].getName();
+                                File inFile = new File(outDirName, new File(inputFilename).getName());
+                                if (inputFileMode != INPUT_FILE_MODE.PATH) {
+                                    // file is moved to job directory
+                                    props.put(inputParamName, inFile.getName());
+                                }
+                                props.put(inputParamName + INPUT_PATH, new String(outDirName));
 
-	    // as a convenience to the user, create a <libdir> property which is
-	    // where DLLs, JARs, EXEs, etc. are dumped to when adding tasks
-	    String taskLibDir = (taskID != -1 ? new File(DirectoryManager.getTaskLibDir(taskName, sLSID, userID)).getPath()
-		    + System.getProperty("file.separator") : "taskLibDir");
-	    props.put(LIBDIR, taskLibDir);
-
-	    // set the java flags if they have been overridden in the java_flags.properties file
-	    PropertiesManager pm = PropertiesManager.getInstance();
-	    Properties javaFlagProps = pm.getJavaFlags();
-	    String javaFlags = javaFlagProps.getProperty(sLSID);
-	    if (javaFlags == null) {
-		LSID lsid = new LSID(sLSID);
-		javaFlags = javaFlagProps.getProperty(lsid.toStringNoVersion());
-	    }
-	    if (javaFlags != null)
-		props.put(GPConstants.JAVA_FLAGS, javaFlags);
-
-	    // populate props with the input parameters so that they can be
-	    // looked up by name
-	    if (actuals != null) {
-		for (int i = 0; i < actuals.length; i++) {
-		    value = actuals[i].getValue();
-		    if (value == null) {
-			value = "";
-		    }
-
-		    props.put(actuals[i].getName(), value);
-
-		}
-	    }
-	    String inputFilename = null;
-	    String inputParamName = null;
-	    String outDirName = getJobDir(Integer.toString(jobNumber));
-	    new File(outDirName).mkdirs();
-	    int j;
-	    // find input filenames, create _path, _file, and _basename props for each
-	    if (actuals != null) {
-		for (int i = 0; i < actuals.length; i++) {
-		    for (int f = 0; f < formalParamsLength; f++) {
-			if (actuals[i].getName().equals(formalParameters[f].getName())) {
-			    if (formalParameters[f].isInputFile()) {
-				inputFilename = actuals[i].getValue();
-				if (inputFilename == null || inputFilename.length() == 0) {
-				    continue;
-				}
-				inputParamName = actuals[i].getName();
-				File inFile = new File(outDirName, new File(inputFilename).getName());
-				if (inputFileMode != INPUT_FILE_MODE.PATH) {
-				    // file is moved to job directory
-				    props.put(inputParamName, inFile.getName());
-				}
-				props.put(inputParamName + INPUT_PATH, new String(outDirName));
-
-				String baseName = inFile.getName();
-				if (baseName.startsWith("Axis")) {
-				    // strip off the AxisNNNNNaxis_ prefix
-				    if (baseName.indexOf("_") != -1) {
-					baseName = baseName.substring(baseName.indexOf("_") + 1);
-				    }
-				}
-				// filename without path
-				props.put(inputParamName + INPUT_FILE, new String(baseName));
-				j = baseName.lastIndexOf(".");
-				if (j != -1) {
-				    props.put(inputParamName + INPUT_EXTENSION, new String(baseName.substring(j + 1))); // filename
-				    // extension
-				    baseName = baseName.substring(0, j);
-				} else {
-				    props.put(inputParamName + INPUT_EXTENSION, ""); // filename
-				    // extension
-				}
-				if (inputFilename.startsWith("http:") || inputFilename.startsWith("https:")
-					|| inputFilename.startsWith("ftp:")) {
-				    j = baseName.lastIndexOf("?");
-				    if (j != -1) {
-					baseName = baseName.substring(j + 1);
-				    }
-				    j = baseName.lastIndexOf("&");
-				    if (j != -1) {
-					baseName = baseName.substring(j + 1);
-				    }
-				    j = baseName.lastIndexOf("=");
-				    if (j != -1) {
-					baseName = baseName.substring(j + 1);
-				    }
-				}
-				props.put(inputParamName + INPUT_BASENAME, new String(baseName)); // filename
-				// without path
-				// or extension
-			    }
-			    break;
-			}
-		    }
-		}
-	    }
-	    return props;
-	} catch (NullPointerException npe) {
-	    log.error(npe + " in setupProps.  Currently have:\n" + props);
-	    throw npe;
-	}
+                                String baseName = inFile.getName();
+                                if (baseName.startsWith("Axis")) {
+                                    // strip off the AxisNNNNNaxis_ prefix
+                                    if (baseName.indexOf("_") != -1) {
+                                        baseName = baseName.substring(baseName.indexOf("_") + 1);
+                                    }
+                                }
+                                // filename without path
+                                props.put(inputParamName + INPUT_FILE, new String(baseName));
+                                j = baseName.lastIndexOf(".");
+                                if (j != -1) {
+                                    props.put(inputParamName + INPUT_EXTENSION, new String(baseName.substring(j + 1))); // filename
+                                    // extension
+                                    baseName = baseName.substring(0, j);
+                                } 
+                                else {
+                                    props.put(inputParamName + INPUT_EXTENSION, ""); // filename
+                                    // extension
+                                }
+                                if (inputFilename.startsWith("http:") || inputFilename.startsWith("https:")  || inputFilename.startsWith("ftp:")) {
+                                    j = baseName.lastIndexOf("?");
+                                    if (j != -1) {
+                                        baseName = baseName.substring(j + 1);
+                                    }
+                                    j = baseName.lastIndexOf("&");
+                                    if (j != -1) {
+                                        baseName = baseName.substring(j + 1);
+                                    }
+                                    j = baseName.lastIndexOf("=");
+                                    if (j != -1) {
+                                        baseName = baseName.substring(j + 1);
+                                    }
+                                }
+                                // filename without path or extension
+                                props.put(inputParamName + INPUT_BASENAME, new String(baseName));
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            return props;
+        } 
+        catch (NullPointerException npe) {
+            log.error(npe + " in setupProps.  Currently have:\n" + props);
+            throw npe;
+        }
     }
 
     /**
@@ -2610,8 +2607,9 @@ public class GenePatternAnalysisTask {
      *            buffer to append GenePattern errors to
      * @author Jim Lerner
      */
-    protected void runCommand(String commandLine[], Map<String, String> environmentVariables, File runDir, File stdoutFile,
+    protected ProcessBuilder runCommand(String commandLine[], Map<String, String> environmentVariables, File runDir, File stdoutFile,
 	    File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {
+    ProcessBuilder pb = null;
 	Process process = null;
 	String jobID = null;
 	try {
@@ -2628,7 +2626,7 @@ public class GenePatternAnalysisTask {
 	    }
 	    commandLine = translateCommandline(commandLine);
 
-	    ProcessBuilder pb = new ProcessBuilder(commandLine);
+	    pb = new ProcessBuilder(commandLine);
 	    Map<String, String> env = pb.environment();
 	    env.putAll(environmentVariables);
 	    pb.directory(runDir);
@@ -2690,7 +2688,9 @@ public class GenePatternAnalysisTask {
 	    if (jobID != null) {
 		htRunningJobs.remove(jobID);
 	    }
+	    
 	}
+	return pb;
     }
 
     /**
@@ -2982,7 +2982,7 @@ public class GenePatternAnalysisTask {
 	GenePatternAnalysisTask gp = new GenePatternAnalysisTask();
 	Vector<String> vProblems = null;
 	try {
-	    Properties props = gp.setupProps(taskName, -1, 0, -1, tia, params, new HashMap<String, String>(), params, null);
+	    Properties props = gp.setupProps(taskInfo, taskName, -1, 0, -1, tia, params, new HashMap<String, String>(), params, null);
 	    vProblems = gp.validateParameters(props, taskName, tia.get(COMMAND_LINE), params, params, false);
 	} catch (Exception e) {
 	    vProblems = new Vector<String>();

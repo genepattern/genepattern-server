@@ -344,22 +344,21 @@ public class RunPipelineSoap {
     /**
      * Look for parameters that are passed in on the command line and put them into the ParameterInfo array
      */
-    protected ParameterInfo[] setJobParametersFromArgs(String name, int taskNum, ParameterInfo[] parameterInfo,
-	    JobInfo[] results, Map args) {
-	for (int i = 0; i < parameterInfo.length; i++) {
-	    ParameterInfo aParam = parameterInfo[i];
-	    if (aParam.getAttributes() != null) {
-		if (aParam.getAttributes().get(PipelineModel.RUNTIME_PARAM) != null) {
-		    aParam.getAttributes().remove(PipelineModel.RUNTIME_PARAM);
-		    String key = name + taskNum + "." + aParam.getName();
-		    String val = (String) args.get(key);
-		    if ((val != null))
-			aParam.setValue(val);
-		}
-	    }
-	}
-	return parameterInfo;
-
+    protected ParameterInfo[] setJobParametersFromArgs(String name, int taskNum, ParameterInfo[] parameterInfo, JobInfo[] results, Map args) {
+        for (int i = 0; i < parameterInfo.length; i++) {
+            ParameterInfo aParam = parameterInfo[i];
+            if (aParam.getAttributes() != null) {
+                if (aParam.getAttributes().get(PipelineModel.RUNTIME_PARAM) != null) {
+                    aParam.getAttributes().remove(PipelineModel.RUNTIME_PARAM);
+                    String key = name + taskNum + "." + aParam.getName();
+                    String val = (String) args.get(key);
+                    if ((val != null)) {
+                        aParam.setValue(val);
+                    }
+                }
+            }
+        }
+        return parameterInfo;
     }
 
     /**

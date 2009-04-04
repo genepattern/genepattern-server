@@ -392,13 +392,13 @@ public class JobInfoManager {
         return df.format(date);
     }
     
-    public static File writeExecutionLog(String outDirName, JobInfoWrapper jobInfoWrapper, Properties props) {
+    public static File writeExecutionLog(String outDirName, JobInfoWrapper jobInfoWrapper, Properties props, ProcessBuilder processBuilder) {
         File outDir = new File(outDirName);
         File gpExecutionLog = new File(outDir, TASKLOG);
         BufferedWriter writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(gpExecutionLog));
-            writeExecutionLog(writer, jobInfoWrapper, props);
+            writeExecutionLog(writer, jobInfoWrapper, props, processBuilder);
             return gpExecutionLog;
         } 
         catch (IOException e) {
@@ -417,7 +417,7 @@ public class JobInfoManager {
         }
     }
     
-    public static void writeExecutionLog(Writer writer, JobInfoWrapper jobInfoWrapper, Properties props) 
+    public static void writeExecutionLog(Writer writer, JobInfoWrapper jobInfoWrapper, Properties props, ProcessBuilder processBuilder) 
     throws IOException
     {
         writer.write("# Created: " + new Date() + " by " + jobInfoWrapper.getUserId());
@@ -429,6 +429,21 @@ public class JobInfoManager {
             writer.write(GP_URL);
         }
         writer.write("\n# Module: " + jobInfoWrapper.getTaskName() + " " + jobInfoWrapper.getTaskLSID());
+        
+        // [optionally output the command line]
+        if (processBuilder != null) {
+            writer.write("\n# Command: ");
+            String working_dir = "";
+            if ( processBuilder.directory() != null ) {
+                working_dir = processBuilder.directory().getCanonicalPath();
+            }
+            writer.write("\n#\tworking directory: "+working_dir);
+            writer.write("\n#\tcommand line: ");
+            for(String n : processBuilder.command()) {
+                writer.write(n+" ");
+            }
+        }
+        
         writer.write("\n# Parameters: ");
 
         //case 2: pattern match for uploaded input file
