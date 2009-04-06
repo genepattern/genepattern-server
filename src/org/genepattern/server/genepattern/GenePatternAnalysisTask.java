@@ -835,46 +835,51 @@ public class GenePatternAnalysisTask {
 	                            }
 	                        } 
                             else if ("file".equalsIgnoreCase(uri.getScheme()) && !allowInputFilePaths) {
-                                //prompt when run inputs
-                                //web form upload: <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>
-                                //SOAP client upload: <soap.attachment.dir>/<user_id>/<filename>
-                                Boolean isWebUpload = null;
-                                Boolean isSoapUpload = null;
-                                //File inputFile = new File(originalPath);
+                                boolean isAllowed = false;
+
                                 File inputFile = new File(uri);
                                 String inputFileDirectory = inputFile.getParentFile().getCanonicalPath();
                                 String inputFileGrandParent = inputFile.getParentFile().getParentFile().getCanonicalPath();
+
+                                //special case: uploaded file from web client
+                                //                <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>
                                 String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
-                                isWebUpload = inputFileGrandParent.equals(webUploadDirectory);                      
-                                if (!isWebUpload) {
+                                boolean isWebUpload = inputFileGrandParent.equals(webUploadDirectory);
+                                isAllowed = isWebUpload;
+
+                                //special case: uploaded file from SOAP client
+                                //                <soap.attachment.dir>/<user_id>/<filename>
+                                if (!isAllowed) {
                                     String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir") + File.separator + jobInfo.getUserId()).getCanonicalPath();
-                                    isSoapUpload = inputFileDirectory.equals(soapAttachmentDir);
+                                    boolean isSoapUpload = inputFileDirectory.equals(soapAttachmentDir);
+                                    isAllowed = isSoapUpload;
                                 }
 
-                                if (! ( (isWebUpload || isSoapUpload)
-                                        && 
-                                        ( AuthorizationHelper.adminJobs(jobInfo.getUserId()) 
-                                                || 
-                                                inputFile.getParentFile().getName().startsWith(jobInfo.getUserId() + "_")
-                                        )
-                                )
-                                ) {
+                                //special case: output from a previous job
+                                if (!isAllowed) {
                                     String jobsDirectory = new File(System.getProperty("jobs")).getCanonicalPath();
-	                                boolean isJobOutput = false;
-	                                isJobOutput = jobsDirectory.equals(inputFileGrandParent);
-	                                String jobNumber = inputFile.getParentFile().getName();
-	                                if (!isJobOutput
-	                                        || 
-	                                        ( !isJobOwner(jobInfo.getUserId(), jobNumber) 
-	                                                && 
-	                                                !AuthorizationHelper.adminJobs(jobInfo.getUserId())
-	                                        )
-	                                ) {
-	                                    vProblems.add("File input URLs are not allowed on this GenePattern server: " + inputFile.getCanonicalPath());
-	                                    continue;
-	                                }
-	                            }
-	                            File f = new File(uri);
+                                    boolean isJobOutput = jobsDirectory.equals(inputFileGrandParent);
+                                    if (isJobOutput) {
+                                        String jobId = inputFile.getParentFile().getName();
+                                        try {
+                                            int jobNumber = Integer.parseInt(jobId);
+                                            //only allow access if the owner of this job has at least read access to the job which output this input file
+                                            PermissionsHelper perm = new PermissionsHelper(jobInfo.getUserId(), jobNumber);
+                                            boolean canRead = perm.canReadJob();
+                                            isAllowed = isJobOutput && canRead;
+                                        }
+                                        catch (NumberFormatException e) {
+                                            log.error("Invalid job number in file path: jobId="+jobId+", file="+inputFile.getCanonicalPath());
+                                        }
+                                    } 
+                                } 
+                                
+                                if (!isAllowed) {
+                                    vProblems.add("File input URLs are not allowed on this GenePattern server: " + inputFile.getCanonicalPath());
+                                    continue;                                    
+                                }
+
+                                File f = new File(uri);
 	                            if (inputFileMode == INPUT_FILE_MODE.PATH) {
 	                                params[i].setValue(f.getCanonicalPath());
 	                                attrsActual.remove(ParameterInfo.TYPE);
