@@ -138,7 +138,6 @@ import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager;
-import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -415,27 +414,28 @@ public class GenePatternAnalysisTask {
             catch (UnsupportedEncodingException e) {
                 log.error("Error", e);
             }
-            int idx3 = params.indexOf("job=");
-            int endIdx3 = params.indexOf('&', idx3);
-            if (endIdx3 == -1) {
-                endIdx3 = params.length();
-            }
             int jobNumber = -1;
-            String jobNumberParam = params.substring(idx3 + 4, endIdx3);
-            if (jobNumberParam != null) {
-                try {
-                    jobNumber = Integer.parseInt(jobNumberParam);
+            int idx3 = params.indexOf("job=");
+            if (idx3 >= 0) {
+                int endIdx3 = params.indexOf('&', idx3);
+                if (endIdx3 == -1) {
+                    endIdx3 = params.length();
                 }
-                catch (NumberFormatException e) {
-                    log.error("Invalid request parameter, job="+jobNumberParam, e);
+                String jobNumberParam = params.substring(idx3 + 4, endIdx3);
+                if (jobNumberParam != null) {
+                    try {
+                        jobNumber = Integer.parseInt(jobNumberParam);
+                    }
+                    catch (NumberFormatException e) {
+                        log.error("Invalid request parameter, job="+jobNumberParam, e);
+                    }
                 }
             }
-
             if (lsid == null || lsid.trim().equals("")) { 
                 // input file look in temp for pipelines run without saving
                 File in = new File(System.getProperty("java.io.tmpdir"), filename);
-                // check whether this is the user or an admin requesting the file
-                if (in.exists()) {
+                if (in.exists() && jobNumber >= 0) {
+                    // check whether the current user has access to the job
                     PermissionsHelper perm = new PermissionsHelper(userId, jobNumber);
                     boolean canRead = perm.canReadJob();
                     if (canRead) {
@@ -446,28 +446,35 @@ public class GenePatternAnalysisTask {
                 return null;
             }
             // check that user can access requested module
+            TaskInfo taskInfo = null;
+            LocalAdminClient adminClient = new LocalAdminClient(userId);
             try {
-                if (new LocalAdminClient(userId).getTask(lsid) != null) {
-                    File file = new File(DirectoryManager.getTaskLibDir(lsid, lsid, userId), filename);
-                    if (file.exists()) {
-                        return file;
-                    }
-                } 
-                else {
-                    throw new IllegalArgumentException("You are not permitted to access the requested file: "+filename);
-                }
-            } 
+                taskInfo = adminClient.getTask(lsid);
+            }
             catch (WebServiceException e) {
-                log.error("Error", e);
-                throw new IllegalArgumentException("Error connecting to database.");
+                String errorMessage = "Unable to find file: "+filename+ " ("+url+"). Because of a database connection error: "+e.getLocalizedMessage();
+                log.error(errorMessage, e);
+                throw new IllegalArgumentException(errorMessage,e);
             } 
+            if (taskInfo == null) {
+                String errorMessage = "You are not permitted to access the requested file: "+filename+ " ("+url+")";
+                log.error(errorMessage);
+                throw new IllegalArgumentException(errorMessage);
+            }
+            //else taskInfo != null
+            File file = null;
+            String taskLibDir = null;
+            try {
+                taskLibDir = DirectoryManager.getTaskLibDir(lsid, lsid, userId);
+            }
             catch (MalformedURLException e) {
-                log.error("Error", e);
-                throw new IllegalArgumentException("Invalid LSID.");
-            } 
-            catch (IllegalArgumentException e) {
-                log.error("Error", e);
-                throw new IllegalArgumentException("Module not found: "+e.getLocalizedMessage());
+                String errorMessage = "Unable to find file: "+filename+ " ("+url+"). Invalid LSID: "+lsid;
+                log.error(errorMessage, e);
+                throw new IllegalArgumentException(errorMessage,e);
+            }
+            file = new File(taskLibDir, filename);
+            if (file.exists()) {
+                return file;
             }
         }
 
@@ -511,21 +518,6 @@ public class GenePatternAnalysisTask {
             }
         }
         return null;
-    }
-
-    private boolean isJobOwner(String user, String jobId) {
-	try {
-	    if (user == null) {
-		return false;
-	    }
-	    int jobID = Integer.parseInt(jobId);
-	    AnalysisDAO ds = new AnalysisDAO();
-	    JobInfo jobInfo = ds.getJobInfo(jobID);
-	    return user.equals(jobInfo.getUserId());
-	} catch (NumberFormatException nfe) {
-	    return false;
-	}
-
     }
 
     /**
