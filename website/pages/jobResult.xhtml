@@ -747,8 +747,8 @@
 	    <br/>
 	    <br/>
 	    
-	    <h:outputText rendered="#{not empty jobStatus.jobInfo.purgeDate}">
-	    	<b>These job results are scheduled to be purged from the server on #{jobStatus.jobInfo.formattedPurgeDate}</b>
+	    <h:outputText rendered="#{not empty jobStatusBean.jobInfo.purgeDate}">
+	    	<b>These job results are scheduled to be purged from the server on #{jobStatusBean.jobInfo.formattedPurgeDate}</b>
 	    </h:outputText>
 	    
 	    </div>
@@ -761,10 +761,7 @@
 	     /* <![CDATA[ */	
 	     	var handleMenuSuccess = function(o){
 				if(o.responseText !== undefined){
-					//alert (o.responseText);
 					document.getElementById('fileMenus'+o.argument[0]).innerHTML = o.responseText;
-					
-					//pm_showMenu('menuDiv_C:\Program Files\GenePatternServer\Tomcat\webapps\gp\jobResults\821\all_aml_test.preprocessed.preprocessed.gct', Position.cumulativeOffset(document.getElementById('testFileMenu')), 50, 50);
 				}
 			}
 			
