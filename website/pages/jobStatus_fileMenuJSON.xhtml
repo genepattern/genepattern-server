@@ -30,6 +30,7 @@
 	            <td>
 	              <h:commandLink value="Save" actionListener="#{jobsBean.saveFile}" immediate="true">
 	                <f:param value="#{outputFile.value}" name="jobFileName"/>
+	                <f:param value="#{jobStatusBean.jobInfo.jobNumber}" name="jobNumber"/>
 	              </h:commandLink>
 	            </td>
 	          </tr>
