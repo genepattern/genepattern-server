@@ -57,7 +57,7 @@
 				<td>
 				  <h:commandLink value="Terminate"
 					actionListener="#{jobsBean.terminateJob}"
-					rendered="#{jobInfo.status == 'Processing'}"
+					rendered="#{!jobInfo.visualizer and  jobInfo.status == 'Processing'}"
 					immediate="true">
 					<f:param value="#{jobInfo.jobNumber}" name="jobNumber" />
 				  </h:commandLink>
