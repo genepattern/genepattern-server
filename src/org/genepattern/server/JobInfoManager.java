@@ -377,11 +377,13 @@ public class JobInfoManager {
         }
         obj.put("outputFiles", outputFiles);
         
-        
+
+        JSONArray children = new JSONArray();
         for(JobInfoWrapper child : jobInfoWrapper.getChildren()) {
             JSONObject childObj = convertToJSON(child);
-            obj.accumulate("children", childObj);
+            children.put(childObj);
         }
+        obj.put("children", children);
         return obj;
     }
     
