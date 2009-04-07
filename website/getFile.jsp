@@ -83,8 +83,16 @@
         ((HttpServletResponse) response).sendError(HttpServletResponse.SC_NOT_FOUND);
         return;
     }
-    response.setHeader("Content-disposition", "inline; filename=\""
-            + in.getName() + "\"");
+    String name = in.getName();
+    //handle special case for Axis
+    if (name.startsWith("Axis")) {
+        int idx = name.indexOf(".att_");
+        if (idx >= 0) {
+            idx += ".att_".length();
+            name = name.substring(idx);
+        }
+    }
+    response.setHeader("Content-disposition", "inline; filename=\"" + name + "\"");
     response.setHeader("Content-Type", "application/octet-stream");
     response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
     response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
