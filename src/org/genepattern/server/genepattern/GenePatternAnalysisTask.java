@@ -443,6 +443,12 @@ public class GenePatternAnalysisTask {
                     }
                     throw new IllegalArgumentException("You are not permitted to access the requested file: "+in.getName());
                 }
+                //special case: Axis
+                in = new File(System.getProperty("soap.attachment.dir"), filename);
+                if (in.exists()) {
+                    //TODO: permissions check for SOAP upload, see *similar* code in getFile.jsp
+                    return in;
+                }
                 return null;
             }
             // check that user can access requested module
@@ -888,6 +894,7 @@ public class GenePatternAnalysisTask {
 	                            if (isLocalHost(url)) {
 	                                try {
 	                                    File file = localInputUrlToFile(url, jobInfo.getUserId());
+	                                    
 	                                    if (file != null) {
 	                                        if (inputFileMode == INPUT_FILE_MODE.PATH) {
 	                                            params[i].setValue(file.getCanonicalPath());
@@ -897,6 +904,11 @@ public class GenePatternAnalysisTask {
 	                                        } 
 	                                        else {
 	                                            name = file.getName();
+	                                            //special case for axis: e.g. Axis23118.att_all_aml_test.gct
+	                                            if (name.startsWith("Axis")) {
+	                                                int endIdx = name.indexOf(".att_") + ".att_".length();
+	                                                name = name.substring(endIdx);
+	                                            }
 	                                            is = new BufferedInputStream(new FileInputStream(file));
 	                                        }
 	                                    }
@@ -2479,12 +2491,6 @@ public class GenePatternAnalysisTask {
                                 }
                                 inputParamName = actuals[i].getName();
                                 File inFile = new File(outDirName, new File(inputFilename).getName());
-                                if (inputFileMode != INPUT_FILE_MODE.PATH) {
-                                    // file is moved to job directory
-                                    props.put(inputParamName, inFile.getName());
-                                }
-                                props.put(inputParamName + INPUT_PATH, new String(outDirName));
-
                                 String baseName = inFile.getName();
                                 if (baseName.startsWith("Axis")) {
                                     // strip off the AxisNNNNNaxis_ prefix
@@ -2492,6 +2498,13 @@ public class GenePatternAnalysisTask {
                                         baseName = baseName.substring(baseName.indexOf("_") + 1);
                                     }
                                 }
+
+                                if (inputFileMode != INPUT_FILE_MODE.PATH) {
+                                    // file is moved to job directory
+                                    props.put(inputParamName, baseName);
+                                }
+                                props.put(inputParamName + INPUT_PATH, new String(outDirName));
+
                                 // filename without path
                                 props.put(inputParamName + INPUT_FILE, new String(baseName));
                                 j = baseName.lastIndexOf(".");
