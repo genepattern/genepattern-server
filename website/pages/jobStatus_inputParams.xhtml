@@ -35,27 +35,12 @@
 							</tr>
 							
 							<t:dataList var="p" value="#{jobInfo.inputParameters}">
-								<tr><td align="right">#{p.name}:</td><td>
-								<c:choose><c:when test="#{!empty p.url}">
-									<a href="#{p.link}">#{p.displayValue}</a>
-								</c:when>
-								<c:otherwise>
-								<c:if test="#{!p.url and p.exists}">
-									<c:if test="#{!empty p.directory}">
-										<a
-											href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.directory}/#{p.displayValue}">#{p.displayValue}</a>
-									</c:if>
-									<c:if test="#{empty p.directory}">
-										<a
-											href="#{facesContext.externalContext.requestContextPath}/getFile.jsp?file=#{p.displayValue}">#{p.displayValue}</a>
-									</c:if>
-								</c:if>
-								<c:if test="#{!p.url and !p.exists}">
-									#{p.displayValue}
-								</c:if>
-								</c:otherwise>
-								</c:choose>
-								</td></tr>
+							    <tr><td align="right">#{p.displayName}</td>
+							        <td><h:outputText rendered="#{!empty p.link}" escape="false"
+							            ><a style="color:#0066FF;" href="#{p.link}">#{p.displayValue}</a></h:outputText>
+							            <h:outputText rendered="#{empty p.link}" escape="false"
+							            >#{p.displayValue}</h:outputText>
+							      </td></tr>
 							</t:dataList>
 						</table>
 				   	</td>
