@@ -35,6 +35,16 @@
     var jobNumbers = new Array();
     var fileRows = new Object();
 
+	function addFileRow(jobNumber, fileRowId) {
+      var rowIds = fileRows[jobNumber];
+      if(rowIds == null) {
+        rowIds = new Array();
+        fileRows[jobNumber] = rowIds;
+      }
+      rowIds[rowIds.length] = fileRowId;
+    }
+
+
 	function toggleJob(jobNumber) {
 		var table = document.getElementById('jobTable');
 		var image = document.getElementById('jobToggleImage'+jobNumber);
@@ -444,7 +454,7 @@
 		        
 		        <td class="center">&nbsp;</td>
 		
-		        <td class="childJob"><strong><a href="#"><img src="/gp/images/arrow2.gif" alt="" /></a>#{index2+1}. #{childJob.truncatedTaskName}</strong></td>
+		        <td class="childJob"><strong><img src="/gp/images/arrow2.gif" alt="" />#{index2+1}. #{childJob.truncatedTaskName}</strong></td>
 		        
 		        <td class="right"></td>
 		        
@@ -461,6 +471,7 @@
 		    </tr>
 			<ui:include src="jobResultsChildFiles.xhtml">
 	            <ui:param name="jobWrapper" value="#{childJob}" />
+	            <ui:param name="parentJobNumber" value="#{rootJobWrapper.jobNumber}"/>
 	        </ui:include>
 			</t:dataList>
 			</t:dataList>

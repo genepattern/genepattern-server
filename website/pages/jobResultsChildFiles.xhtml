@@ -23,7 +23,11 @@
    -->
 	<ui:composition>
     	<t:dataList var="fileInfo" value="#{jobWrapper.outputFileParameterInfos}" rowIndexVar="index2">
-			<tr class="white">
+    	  <script type="text/javascript" language="javascript">
+	        var rowId = 'file_row_' + '#{jobWrapper.jobNumber}_#{index2}';
+	        addFileRow('#{parentJobNumber}', rowId);
+	      </script>
+			<tr class="white" id='file_row_#{jobWrapper.jobNumber}_#{index2}'>
 		        <td class="center"></td>
 		        
 		        <td class="right"></td>

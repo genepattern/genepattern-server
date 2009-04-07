@@ -59,6 +59,9 @@
 			           onmouseover="MM_swapImage('Image_#{p.valueId}','','/gp/images/smallOptions2.gif',2)" 
 			           onmouseout="MM_swapImgRestore();"/>
 			       	</h:outputText>
+			       	<h:outputText rendered="#{not empty p.lastModified}">
+			       		<font size="-2">(Last modified: #{p.lastModified})</font>
+			       	</h:outputText>
 		    		</p>
 		    </t:dataList>
 		    <h:outputText rendered="#{jobInfo.visualizer and jobInfo.status == 'Finished'}">
