@@ -330,18 +330,23 @@ public class JobInfoWrapper {
                 this.setLink(value);
                 
                 String displayValue = value;
-                int lastNameIdx = value.lastIndexOf("/");
+                //drop the server url, including first '/' from the display value
+                if (displayValue.startsWith(genePatternUrl)) {
+                    displayValue = displayValue.substring(genePatternUrl.length() + 1);
+                }
+                
+                int lastNameIdx = displayValue.lastIndexOf("/");
                 if (lastNameIdx >= 0) {
                     ++lastNameIdx;
                 }
                 else {
-                    lastNameIdx = value.lastIndexOf("file=");
+                    lastNameIdx = displayValue.lastIndexOf("file=");
                     if (lastNameIdx != -1) {
                         lastNameIdx += 5;
                     }
                 }
                 if (lastNameIdx != -1) { 
-                    displayValue = value.substring(lastNameIdx);        
+                    displayValue = displayValue.substring(lastNameIdx);        
                 } 
                 
                 //special case for Axis
