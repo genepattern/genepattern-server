@@ -95,7 +95,6 @@ public class ServerSettingsBean {
 	            "pipeline.vmargs", 
 	            "pipeline.decorator",
 	            "installedPatchLSIDs", 
-	            "JavaGEInstallerURL", 
 	            "num.threads" });
 	    modes.put("Custom", null);
 	    modes.put("Shut Down Server", null);

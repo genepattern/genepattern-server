@@ -15,7 +15,6 @@
 <script type="text/javascript" language="javascript">
   var contextRoot = "<%=request.getContextPath()%>/";
   <% String username = (String) request.getAttribute("userid"); %>
-  var javaGEInstallerURL = '<%= System.getProperty("JavaGEInstallerURL") %>';
   var createTaskAllowed = <%= AuthorizationHelper.createModule(username) %>;
   var createPublicPipelineAllowed = <%= AuthorizationHelper.createPipeline(username) %>;
   var createPublicSuiteAllowed = <%= AuthorizationHelper.createSuite(username) %>;

@@ -53,7 +53,6 @@ function mmLoadMenus() {
   // Help menu
   window.mm_menu_documentation = new Menu("root",153,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_documentation.addMenuItem("Tutorial","window.open('http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_tutorial.html', '_blank');");
-  mm_menu_documentation.addMenuItem("Desktop Client Guide","window.open('http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_java_client.html', '_blank');");
   mm_menu_documentation.addMenuItem("Web Client Guide","window.open('http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_web_client.html', '_blank');");
   mm_menu_documentation.addMenuItem("Programmers Guide","window.open('http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_programmer.html', '_blank');");
   mm_menu_documentation.addMenuItem("Module&nbsp;Documentation","location=contextRoot + '/getTaskDoc.jsp'");
@@ -80,7 +79,6 @@ function mmLoadMenus() {
   mm_menu_resources.menuBorderBgColor='#CCCC66';
 
   window.mm_menu_downloads = new Menu("root",157,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  mm_menu_downloads.addMenuItem("Install&nbsp;Desktop&nbsp;Client","window.open(javaGEInstallerURL, '_blank')");
   mm_menu_downloads.addMenuItem("Programming&nbsp;Libraries","location=contextRoot + '/pages/downloadProgrammingLibaries.jsf'");
   mm_menu_downloads.addMenuItem("Public&nbsp;Datasets","window.open('http://www.broad.mit.edu/cancer/software/genepattern/datasets/', '_blank')");
   mm_menu_downloads.hideOnMouseOut=true;

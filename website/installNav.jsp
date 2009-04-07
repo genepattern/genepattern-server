@@ -27,7 +27,6 @@ server:</b>
 <li><a href="installLog.jsp">View the server installation report</a><br><br></li>
 <li><a href="pages/taskCatalog.jsf">Install modules</a> from among those at the Broad public website.
 	If you want to install all available modules, click the <b>install checked</b> button.<br><br></li>
-<li><a href="<%= System.getProperty("JavaGEInstallerURL") %>?version=<%= System.getProperty("GenePatternVersion") %>&server=<%= URLEncoder.encode(request.getScheme()+"://" + request.getServerName() + ":" + request.getServerPort()) %>">Install the Desktop Client</a> (optional)<br><br></li>
 <li><a href="installDatasets.htm">Download sample datasets</a><br><br></li>
 <li><a href="pages/login.jsf?referrer=index.jsp" target="_parent">Login and begin using GenePattern</a></li>
 </ol>
