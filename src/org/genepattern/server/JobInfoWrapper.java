@@ -261,83 +261,125 @@ public class JobInfoWrapper {
 </pre>
          * @param parameterInfo
          */
-        InputFile(JobInfo jobInfo, String contextPath, String uiValue, ParameterInfo parameterInfo) {
+        InputFile(JobInfo jobInfo, String contextPath, String paramValue, ParameterInfo parameterInfo) {
             super(parameterInfo);
-            initLinkValue(jobInfo.getJobNumber(), contextPath, uiValue);
+            initLinkValue(jobInfo.getJobNumber(), contextPath, paramValue);
         }
         
-        private void initLinkValue( int jobNumber, String contextPath, String value ) 
-        {
-            String displayValue = value;
-            boolean isUrl = false;
-            boolean exists = false;
+        /**
+         * Map parameter value to displayValue and link.
+         * @param jobNumber
+         * @param contextPath
+         * @param value
+         */
+        private void initLinkValue( int jobNumber, String contextPath, String value ) {  
+            //A. External link, e.g. ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
 
-            String directory = null;
+            //B. Internal links
+            //   1. to file uploaded from web client in previous job, then reloaded for new job
+            //      http://127.0.0.1:8080/gp/getFile.jsp?task=&job=1383&file=test_run30303.tmp/all_aml_test.gct
+            //   2. to file uploaded from SOAP client in previous job, then reloaded for new job
+            //      http://127.0.0.1:8080/gp/getFile.jsp?task=&job=1387&file=test/Axis30305.att_all_aml_test.gct
+            //   3. to output from previous job
+            //      http://127.0.0.1:8080/gp/jobResults/3182/all_aml_test.preprocessed.gct
+            //   4. to file uploaded when creating a pipeline, e.g.
+            //      <GenePatternURL>getFile.jsp?task=urn%3Alsid%3A8080.pcarr.gm971-3d7.broad.mit.edu%3Agenepatternmodules%3A127%3A9&file=all_aml_test.gct
+            //      http://127.0.0.1:8080/gp/getFile.jsp?task=urn%3Alsid%3A8080.pcarr.gm971-3d7.broad.mit.edu%3Agenepatternmodules%3A127%3A9&file=all_aml_test.gct
+            
+            //C. Server file path
+            //   1. uploaded from web client,
+            //      /xchip/genepattern/node256/gp-trunk/Tomcat/temp/test_run30301.tmp/all_aml_test.gct
+            //   2. upload from SOAP client,
+            //      /xchip/genepattern/node256/gp-trunk/temp/attachments/test/Axis30302.att_all_aml_test.gct
+            //   3. other server file path, 
+            //      a) allow.input.file.paths=true
+            //      b) allow.input.file.paths=false, handle error 
+            //      c) allow.input.file.paths=true, but path is to a restricted area
+
             String genePatternUrl = UIBeanHelper.getServer();
-            try {
-                // see if a URL was passed in
-                URL url = new URL(value);
-                // bug 2026 - file:// URLs should not be treated as a URL
-                isUrl = true;
-                if ("file".equals(url.getProtocol())){
-                    isUrl = false;
-                    value = value.substring(5);// strip off the file: part for the next step
-                }
-                if (displayValue.startsWith(genePatternUrl)) {          
-                    int lastNameIdx = value.lastIndexOf("/");
-                    displayValue = value.substring(lastNameIdx+1);      
-                    isUrl = true;
-                }
-            } 
-            catch (MalformedURLException e) {
-                if (displayValue.startsWith("<GenePatternURL>")) {          
-                    int lastNameIdx = value.lastIndexOf("/");
-                    if (lastNameIdx == -1) {
-                        lastNameIdx = value.lastIndexOf("file=");
-                        if (lastNameIdx != -1) {
-                            lastNameIdx += 5;
-                        }
-                    }
-                    if (lastNameIdx != -1) { 
-                        displayValue = value.substring(lastNameIdx);        
-                    } 
-                    else {
-                        displayValue = value;
-                    }
-                    value = genePatternUrl + "/" + value.substring("<GenePatternURL>".length());
-                    isUrl = true;
-                } 
+            //substitute <GenePatternURL>
+            if (value.startsWith("<GenePatternURL>")) {
+                value = genePatternUrl + "/" + value.substring("<GenePatternURL>".length());
             }
-
-            if (!isUrl) {
-                File inputFile = new File(value);
-                exists = inputFile.exists();
-                value = inputFile.getName();
-                displayValue = value;
-                if (displayValue.startsWith("Axis")) {
-                    displayValue = displayValue.substring(displayValue.indexOf('_') + 1);
-                }
-                if (exists) {
-                    directory = inputFile.getParentFile().getName();
-                    setSize(inputFile.length());
-                    Calendar cal = Calendar.getInstance();
-                    cal.setTimeInMillis(inputFile.lastModified());
-                    setLastModified(cal.getTime());
-
-                    //TODO: don't add the menu items until the action links are implemented, requires some updates to the JobBean
-                    //set up module popup menu for the input file
-                    //setModuleMenuItemsForFile(kindToModules, inputFile);
-                }
+            if (value.startsWith("file:")) {
+                value = value.substring(5);
+            }
+            boolean isUrl = false;
+            URL url = null;
+            try {
+                url = new URL(value);
+                isUrl = true;
+            }
+            catch (MalformedURLException e) {
+                isUrl = false;
             }
             
-            String link = null;
-            if (isUrl) {
-                link = value;
+            boolean isInternalLink = value.startsWith(genePatternUrl);
+            boolean isExternalLink = isUrl && !isInternalLink;
+            boolean isServerFilePath = !isInternalLink && !isExternalLink;
+            
+            //case A
+            if (isExternalLink) {
+                this.setDisplayValue(value);
+                this.setLink(value);
+                return;
             }
-            else if (exists) {
+            
+            //case B
+            if (isInternalLink) {
+                this.setLink(value);
+                
+                String displayValue = value;
+                int lastNameIdx = value.lastIndexOf("/");
+                if (lastNameIdx >= 0) {
+                    ++lastNameIdx;
+                }
+                else {
+                    lastNameIdx = value.lastIndexOf("file=");
+                    if (lastNameIdx != -1) {
+                        lastNameIdx += 5;
+                    }
+                }
+                if (lastNameIdx != -1) { 
+                    displayValue = value.substring(lastNameIdx);        
+                } 
+                
+                //special case for Axis
+                if (displayValue.startsWith("Axis")) {
+                    int idx = displayValue.indexOf('_') + 1;
+                    displayValue = displayValue.substring(idx);
+                }
+                this.setDisplayValue(displayValue);
+                return;
+            }
+            
+            //case C: server file path
+            File inputFile = new File(value);
+            if (inputFile.exists()) {
+                //directory = inputFile.getParentFile().getName();
+                setSize(inputFile.length());
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(inputFile.lastModified());
+                setLastModified(cal.getTime());
+            }
+
+            String displayValue = inputFile.getName();
+            
+            Boolean isWebUpload = null;
+            Boolean isSoapUpload = null;
+            File inputFileParent = inputFile.getParentFile();
+            File inputFileGrandParent = inputFileParent == null ? null : inputFileParent.getParentFile();
+            File webUploadDirectory = new File(System.getProperty("java.io.tmpdir"));
+            isWebUpload = inputFileGrandParent.equals(webUploadDirectory);
+            if (!isWebUpload) {
+                File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
+                isSoapUpload = inputFileGrandParent.equals(soapAttachmentDir);
+            }
+            
+            if (isWebUpload) {
                 String fileParam = "";
-                if (directory != null) {
-                    fileParam += directory + "/";
+                if (inputFileParent != null) {
+                    fileParam += inputFileParent.getName() + "/";
                 }
                 fileParam += value;
                 //url encode fileParam
@@ -347,10 +389,18 @@ public class JobInfoWrapper {
                 catch (UnsupportedEncodingException e) {
                     log.error("Error encoding inputFile param, '"+fileParam+"' "+e.getLocalizedMessage(), e);
                 } 
-                link = contextPath + "/getFile.jsp?job="+jobNumber+"&file="+fileParam;
+                setLink(contextPath + "/getFile.jsp?job="+jobNumber+"&file="+fileParam);
             }
-            setLink(link);
-            setDisplayValue(displayValue);
+            else if (isSoapUpload) {
+                //http://127.0.0.1:8080/gp/getFile.jsp?task=&job=1387&file=test/Axis30305.att_all_aml_test.gct
+                //TODO don't really know the job #, should be the original job number for when this file was uploaded
+                setLink(contextPath + "/getFile.jsp?task=&file="+inputFileParent.getName()+"/"+inputFile.getName());
+                //special case for axis
+                if (displayValue.startsWith("Axis")) {
+                    displayValue = displayValue.substring(displayValue.indexOf('_') + 1);
+                }
+            }
+            this.setDisplayValue(displayValue);
         }
     }
     
