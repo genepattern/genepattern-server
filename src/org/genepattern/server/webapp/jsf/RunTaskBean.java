@@ -238,9 +238,7 @@ public class RunTaskBean {
 
 	ParameterInfo[] taskParameters = taskInfo.getParameterInfoArray();
 
-	// attributes matchJob and outputFileName are set when selecting a
-	// module
-	// from an output file.
+    // attributes matchJob and outputFileName are set when selecting a module from an output file.
 	String matchJob = (String) UIBeanHelper.getRequest().getAttribute("matchJob");
 	String matchOutputFileParameterName = (String) UIBeanHelper.getRequest().getAttribute("outputFileName");
 
@@ -265,12 +263,12 @@ public class RunTaskBean {
 	    }
 
 	    try {
-		LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
+        final String currentUser = UIBeanHelper.getUserId();
+        LocalAnalysisClient ac = new LocalAnalysisClient(currentUser);
 		JobInfo matchJobInfo = ac.getJob(Integer.parseInt(matchJob));
-
 		File outputDir = new File(GenePatternAnalysisTask.getJobDir("" + matchJobInfo.getJobNumber()));
-
-		if (UIBeanHelper.getUserId().equals(matchJobInfo.getUserId()) || AuthorizationHelper.adminJobs()) {
+        PermissionsHelper perm = new PermissionsHelper(currentUser, matchJobInfo.getJobNumber());
+		if (perm.canReadJob()) {
 		    ParameterInfo[] params = matchJobInfo.getParameterInfoArray();
 		    if (params != null) {
 			List<ParameterInfo> outputFileParameters = new ArrayList<ParameterInfo>();
@@ -330,15 +328,14 @@ public class RunTaskBean {
 	}
     if (reloadJobNumberString != null) {
         try {
-            LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
+            final String currentUser = UIBeanHelper.getUserId();
+            LocalAnalysisClient ac = new LocalAnalysisClient(currentUser);
             int reloadJobNumber = Integer.parseInt(reloadJobNumberString);
             JobInfo reloadJob = ac.getJob(reloadJobNumber);
             
             //check permissions
-            String currentUser = UIBeanHelper.getUserId();
             PermissionsHelper perm = new PermissionsHelper(currentUser, reloadJobNumber);
-            boolean canReadJob = perm.canReadJob();
-            if (canReadJob) {
+            if (perm.canReadJob()) {
                 ParameterInfo[] reloadParams = reloadJob.getParameterInfoArray();
                 if (reloadParams != null) {
                     for (int i = 0; i < reloadParams.length; i++) {
