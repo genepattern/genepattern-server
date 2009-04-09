@@ -427,13 +427,12 @@
         			<h:outputText rendered="#{not rootJobWrapper.deleteAllowed}">Read</h:outputText>
         		</td>
 		        
-		        <td class="center" style="white-space: nowrap;">
+		        <td class="center" style="white-space: nowrap;">#{rootJobWrapper.permissionsLabel}
 		        	<h:outputText rendered="#{rootJobWrapper.permissionsLabel != 'Private'}">
-			        	
-			        		<img id="permissionsImage#{rootJobWrapper.jobNumber}" src="/gp/images/smallLockOpen.gif" alt="" border="0" />
+			        		<img id="permissionsImage#{rootJobWrapper.jobNumber}" src="/gp/images/smallLockOpen.gif" alt="Shared" border="0" />
 			        </h:outputText>
 			        <h:outputText rendered="#{rootJobWrapper.permissionsLabel == 'Private'}">
-			        	<img id="permissionsImage#{rootJobWrapper.jobNumber}" src="/gp/images/smallLock.gif" alt="" border="0" />
+			        	<img id="permissionsImage#{rootJobWrapper.jobNumber}" src="/gp/images/smallLock.gif" alt="Private" border="0" />
 			        </h:outputText>
 		        </td>
 		    </tr>	
