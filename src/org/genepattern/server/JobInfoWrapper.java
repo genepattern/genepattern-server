@@ -180,7 +180,7 @@ public class JobInfoWrapper {
                 Collections.sort(moduleMenuItems, KEY_VALUE_COMPARATOR);
             }
             else {
-                log.error("JobInfoWrapper.setModuleMenuItemsForFile: kindToModules.get('"+kind+"') returned null");
+                log.debug("JobInfoWrapper.setModuleMenuItemsForFile: kindToModules.get('"+kind+"') returned null");
             }
             this.moduleMenuItems = moduleMenuItems;
         }
