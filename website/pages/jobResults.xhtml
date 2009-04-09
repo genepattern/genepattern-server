@@ -252,12 +252,20 @@
 		</table>
 	    
 	    
-	    <div class="reminders"><font color="#FF0000">*</font>Click<span class="file"><img src="/gp/images/smallOptions.gif" alt="" /></span> for more options. <font color="#FF0000">*</font>Click <font color="#0066ff">job ID</font> for job status report. <font color="#FF0000">*</font>Click <font color="#0066ff">file name</font> to open the file in a new browser window. <font color="#FF0000">*</font>Click <font color="#0066ff">Edit</font> to edit Share options. <font color="#FF0000">*</font>Click <img src="/gp/images/delete.gif" /> to delete selected jobs.</div>
+	    <div class="reminders">
+	    <!--  
+	      <font color="#FF0000">*</font>Click<span class="file"><img src="/gp/images/smallOptions.gif" alt="" /></span> for more options. 
+	      <font color="#FF0000">*</font>Click <font color="#0066ff">job ID</font> for job status report. 
+	      <font color="#FF0000">*</font>Click <font color="#0066ff">file name</font> to open the file in a new browser window. 
+	      <font color="#FF0000">*</font>Click <font color="#0066ff">Edit</font> to edit Share options. 
+	      <font color="#FF0000">*</font>Click <img src="/gp/images/delete.gif" /> to delete selected jobs.
+	    -->
+	    </div>
 
 		<table class="summary" cellpadding="0" cellspacing="0" id="jobTable">
 			<tr class="summaryTitle">
 		        <td class="center header">
-		        	<h:commandLink action="#{jobsBean.sortJobsByStatus}" title="Sort job results by status">Run
+		        	<h:commandLink action="#{jobsBean.sortJobsByStatus}" title="Sort job results by status">Status
 			          	<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'status' and jobsBean.jobSortAscending}">&#9650;</h:outputText>
 			          	<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'status' and not jobsBean.jobSortAscending}">&#9660;</h:outputText>
 			          	<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'status'}">&#160;</h:outputText>
@@ -265,14 +273,14 @@
 		        </td>
 		        
 		        <td class="right header">
-			        <h:commandLink action="#{jobsBean.sortJobsById}" title="Sort job results by job number (#{jobsBean.jobSortAscending ? 'high to low' : 'low to high'})">ID
+			        <h:commandLink action="#{jobsBean.sortJobsById}" title="Sort job results by job number (#{jobsBean.jobSortAscending ? 'high to low' : 'low to high'})">Job
 			          	<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'jobNumber' and jobsBean.jobSortAscending}">&#9650;</h:outputText>
 			          	<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn == 'jobNumber' and not jobsBean.jobSortAscending}">&#9660;</h:outputText>
 			          	<h:outputText escape="false" rendered="#{jobsBean.jobSortColumn != 'jobNumber'}">&#160;</h:outputText>
 			        </h:commandLink>
 		        </td>
 		        
-		        <td class="center"><div style="width:40px;"><input type="checkbox" onclick="toggleAllCheckboxes(this);" /><h:commandLink action="#{jobsBean.delete}" onclick="if (!confirmDelete()) return false"><img src="/gp/images/delete.gif" /></h:commandLink></div></td>
+		        <td class="center"><div><h:commandLink action="#{jobsBean.delete}" onclick="if (!confirmDelete()) return false">delete</h:commandLink></div></td>
 		        
 		        <td class="header"><a href="javascript:toggleAll()"><img src="/gp/images/triangle_black_run.gif" id="jobToggleAllImage" title="toggle visibility of all jobs"/></a>
 			        <h:commandLink action="#{jobsBean.sortJobsByModule}" title="Sort job results by module name">Module Name
@@ -282,7 +290,7 @@
 					</h:commandLink>
 		        </td>
 		        
-		        <td class="right">Total Size</td>
+		        <td class="right header">Total Size</td>
 		
 		        
 		        <td class="header">
@@ -313,7 +321,7 @@
 		        
 		        <td class="right"></td>
 		        
-		        <td class="center"></td>
+		        <td class="center"><input type="checkbox" onclick="toggleAllCheckboxes(this);" /></td>
 		        
 		        <td class="file header"><img src="/gp/images/arrow2.gif" />
 		        	<h:commandLink action="#{jobsBean.sortFilesByName}" title="Sort output files by name">File  
@@ -323,8 +331,8 @@
 			        </h:commandLink>
 		        </td>
 		        
-		        <td class="right header">
-			        <h:commandLink action="#{jobsBean.sortFilesBySize}" title="Sort output files by size">Size
+		        <td class="right header"><img src="/gp/images/arrow2.gif" />
+			        <h:commandLink action="#{jobsBean.sortFilesBySize}" title="Sort output files by size">File Size
 			          	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'size' and jobsBean.fileSortAscending}">&#9650;</h:outputText>
 			          	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'size' and not jobsBean.fileSortAscending}">&#9650;</h:outputText>
 			          	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn != 'size'}">&#160;</h:outputText>
@@ -333,8 +341,8 @@
 		        
 		        <td></td>
 		        
-		        <td class="header">
-		        	<h:commandLink action="#{jobsBean.sortFilesByDateCompleted}" title="Sort output files by last modification date">Save Date
+		        <td class="file header"><img src="/gp/images/arrow2.gif" />
+		        	<h:commandLink action="#{jobsBean.sortFilesByDateCompleted}" title="Sort output files by last modification date">File Output Date
 			          	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'lastModified' and jobsBean.fileSortAscending}">&#9650;</h:outputText>
 			          	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'lastModified' and not jobsBean.fileSortAscending}">&#9660;</h:outputText>
 			          	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn != 'lastModified'}">&#160;</h:outputText>
@@ -354,13 +362,13 @@
 		    <tr class="brown" id="jobRow#{rootJobWrapper.jobNumber}">
 			    <td class="center">
 			    	<h:outputText rendered="#{rootJobWrapper.status == 'error'}">
-			    		<img src="/gp/images/error.gif" />
+			    		<img src="/gp/images/error.gif" alt="error" />
 			    	</h:outputText>
 			    	<h:outputText rendered="#{rootJobWrapper.status == 'finished'}">
-			    		<img src="/gp/images/complete.gif" />
+			    		<img src="/gp/images/complete.gif" alt="finished" />
 			    	</h:outputText>
 			    	<h:outputText rendered="#{rootJobWrapper.status == 'processing'}">
-			    		<img src="/gp/images/run.gif" />
+			    		<img src="/gp/images/run.gif" alt="processing" />
 			    	</h:outputText>			    	
 			    </td>
 	        
