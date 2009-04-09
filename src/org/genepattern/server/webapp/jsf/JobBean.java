@@ -38,6 +38,7 @@ import java.util.zip.ZipOutputStream;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
@@ -333,48 +334,67 @@ public class JobBean {
     }
 
     public void saveFile(ActionEvent event) {
-	InputStream is = null;
+        HttpServletRequest request = UIBeanHelper.getRequest();
+        String jobFileName = request.getParameter("jobFileName");
+        jobFileName = UIBeanHelper.decode(jobFileName);
+        if (jobFileName == null || "".equals(jobFileName.trim())) {
+            log.error("Error saving file, missing required parameter, 'jobFileName'.");
+            return;
+        }
+	    
+        //parse jobFileName for <jobNumber> and <filename>, add support for directories
+        //from Job Summary page jobFileName="1/all_aml_test.preprocessed.gct"
+        //from Job Status page jobFileName="/gp/jobResults/1/all_aml_test.preprocessed.gct"
+        String contextPath = request.getContextPath();
+        String pathToJobResults = contextPath + "/jobResults/";
+        if (jobFileName.startsWith(pathToJobResults)) {
+            jobFileName = jobFileName.substring(pathToJobResults.length());
+        }
 
-	try {
-	    String value = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobFileName"));
-	    int index = StringUtils.lastIndexOfFileSeparator(value);
-	    String jobNumber = value.substring(0, index);
-	    String filename = value.substring(index + 1);
-	    File in = new File(GenePatternAnalysisTask.getJobDir(jobNumber), filename);
-	    if (!in.exists()) {
-		UIBeanHelper.setInfoMessage("File " + filename + " does not exist.");
-		return;
-	    }
-	    HttpServletResponse response = UIBeanHelper.getResponse();
-	    response.setHeader("Content-Disposition", "attachment; filename=" + in.getName() + ";");
-	    response.setHeader("Content-Type", "application/octet-stream");
-	    response.setHeader("Cache-Control", "no-store"); // HTTP 1.1
-	    response.setHeader("Pragma", "no-cache"); // HTTP 1.0 cache
-	    response.setDateHeader("Expires", 0);
+        int idx = jobFileName.indexOf('/');
+        if (idx <= 0) {
+            log.error("Error saving file, invalid parameter, jobFileName="+jobFileName);
+            return;
+        }
+        String jobNumber = jobFileName.substring(0, idx);
+        String filename = jobFileName.substring(idx+1);
+        File in = new File(GenePatternAnalysisTask.getJobDir(jobNumber), filename);
+        if (!in.exists()) {
+            UIBeanHelper.setInfoMessage("File " + filename + " does not exist.");
+            return;
+        }
+        InputStream is = null;
+        try {
+            HttpServletResponse response = UIBeanHelper.getResponse();
+            response.setHeader("Content-Disposition", "attachment; filename=" + in.getName() + ";");
+            response.setHeader("Content-Type", "application/octet-stream");
+            response.setHeader("Cache-Control", "no-store"); // HTTP 1.1
+            response.setHeader("Pragma", "no-cache"); // HTTP 1.0 cache
+            response.setDateHeader("Expires", 0);
 
-	    OutputStream os = response.getOutputStream();
-	    is = new BufferedInputStream(new FileInputStream(in));
-	    byte[] b = new byte[10000];
-	    int bytesRead;
-	    while ((bytesRead = is.read(b)) != -1) {
-		os.write(b, 0, bytesRead);
-	    }
-	    os.flush();
-	    os.close();
-	    UIBeanHelper.getFacesContext().responseComplete();
-	} catch (IOException e) {
-	    log.error("Error saving file.", e);
-
-	} finally {
-	    if (is != null) {
-		try {
-		    is.close();
-		} catch (IOException e) {
-
-		}
-	    }
-	}
-
+            OutputStream os = response.getOutputStream();
+            is = new BufferedInputStream(new FileInputStream(in));
+            byte[] b = new byte[10000];
+            int bytesRead;
+            while ((bytesRead = is.read(b)) != -1) {
+                os.write(b, 0, bytesRead);
+            }
+            os.flush();
+            os.close();
+            UIBeanHelper.getFacesContext().responseComplete();
+        } 
+        catch (IOException e) {
+            log.error("Error saving file.", e);
+        } 
+        finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } 
+                catch (IOException e) {
+                }
+            }
+        }
     }
 
     public void setShowExecutionLogs(boolean showExecutionLogs) {
