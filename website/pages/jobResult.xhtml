@@ -712,7 +712,7 @@
 	   			<ui:include src="jobStatus_fileMenu.xhtml">
                     <ui:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}"/>
                     <ui:param name="filename" value="#{outputFile.name}" />
-                    <ui:param name="deleteAllowed" value="#{false}"/>
+                    <ui:param name="deleteAllowed" value="#{jobStatusBean.jobInfo.permissions.deleteAllowed}"/>
                     <ui:param name="value" value="#{outputFile.link}"/>
 	       			<ui:param name="valueId" value="#{outputFile.valueId}"/>
                     <ui:param name="moduleMenuItems" value="#{outputFile.moduleMenuItems}"/>
