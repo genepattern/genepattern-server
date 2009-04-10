@@ -12,6 +12,7 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf.jobinfo;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -53,7 +54,8 @@ public class JobStatusBean {
             setOpenVisualizers(openVisualizersParameter != null);
         }
         catch (NumberFormatException e1) {
-            log.error("Invalid value for request parameter, 'jobNumber':  "+jobNumberParameter, e1);
+            String errorMessage = "Missing or invalid job id, jobNumber="+jobNumberParameter;
+            UIBeanHelper.setErrorMessage(errorMessage);
             return;
         }
         
@@ -73,7 +75,8 @@ public class JobStatusBean {
             }
         }
         catch (Exception e) {
-            log.error("Unable to initialize email notification for user: '"+currentUserId+"': "+e.getLocalizedMessage(), e);
+            String errorMessage = "Unable to initialize email notification for user: '"+currentUserId+"': "+e.getLocalizedMessage();
+            UIBeanHelper.setErrorMessage(errorMessage);
         }
 
         HttpServletRequest request = UIBeanHelper.getRequest();
@@ -82,6 +85,17 @@ public class JobStatusBean {
         
         JobInfoManager jobInfoManager = new JobInfoManager();
         this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, currentUserId, jobNumber);
+        
+        if (jobInfoWrapper.isDeleted()) {
+            String errorMessage = "Job # "+jobInfoWrapper.getJobNumber() + " is deleted.";
+            UIBeanHelper.setErrorMessage(errorMessage);
+            //try {
+            //    UIBeanHelper.getResponse().sendRedirect( UIBeanHelper.getRequest().getContextPath() + "/jobResults" );
+            //}
+            //catch (IOException e) {
+            //    log.error("Error sending redirect: "+e.getMessage(), e);
+            //}
+        }
     }
     
     public JobInfoWrapper getJobInfo() {

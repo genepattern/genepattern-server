@@ -23,31 +23,20 @@ import java.io.*;
  */
 
 public class JobInfo implements Serializable {
-
     private int jobNo = 0;
-
     private int taskID = 0;
-
     private String status = "";
-
     private ParameterInfo[] parameterInfoArray = null;
-
     private Date submittedDate = null;
-
     private Date completedDate = null;
-
     private String userId = null;
-
     private String lsid = null;
-
     private String taskName;
+    private boolean deleted = false;
 
     public JobInfo() {
         parameterInfoArray = new ParameterInfo[0];
     }
-
-    
-  
     
     /**
      * @param jobNo
@@ -71,10 +60,8 @@ public class JobInfo implements Serializable {
         this.userId = userId;
         this.lsid = lsid;
         this.taskName = taskName;
-
     }
 
-  
     
     /**
      * Construct a JobInfo object from an AnalysisJob
@@ -85,7 +72,8 @@ public class JobInfo implements Serializable {
                 aJob.getSubmittedDate(), aJob.getCompletedDate(), (new ParameterFormatConverter())
                         .getParameterInfoArray(aJob.getParameterInfo()), aJob.getUserId(), aJob.getTaskLsid(), aJob
                         .getTaskName());
-
+        
+        this.deleted = aJob.getDeleted();
     }
 
     /**
@@ -309,6 +297,10 @@ public class JobInfo implements Serializable {
 
     public String getUserId() {
         return this.userId;
+    }
+    
+    public boolean isDeleted() {
+        return deleted;
     }
 
     /** standard method */

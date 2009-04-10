@@ -539,6 +539,9 @@ public class JobInfoWrapper {
         log.error("jobInfo is null");
         return 0L;
     }
+    public boolean isDeleted() {
+        return jobInfo.isDeleted();
+    }
     //--- end JobInfo wrapper methods
     /**
      * helper method which indicates if the job has completed processing.
