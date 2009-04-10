@@ -15,7 +15,7 @@ import org.genepattern.webservice.WebServiceException;
  * @author jnedzel
  *
  */
-public class TestSubmitJob extends TestCase {
+public class TestRunPipeline extends TestCase {
 	
 	public static final String GOLUB_PIPELINE_NO_VIEWERS_LSID = "urn:lsid:8020.jnedzel.gm94e-69f.broad.mit.edu:genepatternmodules:2:2";
 	public static final String EXECUTION_LOG = "gp_execution_log.gct";
