@@ -459,19 +459,39 @@ public class JobBean {
 	}
     }
 
-    protected void deleteFile(String encodedJobFileName) {
-	try {
-	    int index = StringUtils.lastIndexOfFileSeparator(encodedJobFileName);
-	    int jobNumber = Integer.parseInt(encodedJobFileName.substring(0, index));
-	    // String filename = encodedJobFileName.substring(index + 1);
-	    new LocalAnalysisClient(UIBeanHelper.getUserId()).deleteJobResultFile(jobNumber, encodedJobFileName);
-	} catch (StringIndexOutOfBoundsException e) {
-	    log.error("Error parsing " + encodedJobFileName, e);
-	} catch (NumberFormatException e) {
-	    log.error("Error parsing " + encodedJobFileName, e);
-	} catch (WebServiceException e) {
-	    log.error("Error deleting file.", e);
-	}
+    protected void deleteFile(String jobFileName) {
+        //parse encodedJobFileName for <jobNumber> and <filename>, add support for directories
+        //from Job Summary page jobFileName="1/all_aml_test.preprocessed.gct"
+        //from Job Status page jobFileName="/gp/jobResults/1/all_aml_test.preprocessed.gct"
+        String contextPath = UIBeanHelper.getRequest().getContextPath();
+        String pathToJobResults = contextPath + "/jobResults/";
+        if (jobFileName.startsWith(pathToJobResults)) {
+            jobFileName = jobFileName.substring(pathToJobResults.length());
+        }
+        int idx = jobFileName.indexOf('/');
+        if (idx <= 0) {
+            UIBeanHelper.setErrorMessage("Error deleting file: "+jobFileName);
+            return;
+        }
+        int jobNumber = -1;
+        String jobId = jobFileName.substring(0, idx);
+        try {
+            jobNumber = Integer.parseInt(jobId);
+        }
+        catch (NumberFormatException e) {
+            UIBeanHelper.setErrorMessage("Error deleting file: "+jobFileName+", "+e.getMessage());
+            return;
+        }
+        try {
+            // String filename = encodedJobFileName.substring(index + 1);
+            String currentUserId = UIBeanHelper.getUserId();
+            LocalAnalysisClient analysisClient = new LocalAnalysisClient(currentUserId);
+            analysisClient.deleteJobResultFile(jobNumber, jobFileName);
+        } 
+        catch (WebServiceException e) {
+            UIBeanHelper.setErrorMessage("Error deleting file: "+jobFileName+", "+e.getMessage());
+            return;
+        }
     }
 
     /**
