@@ -19,7 +19,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
@@ -46,7 +45,10 @@ import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.util.EmailNotificationManager;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.WebServiceException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -226,6 +228,8 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
        POST /jobResults/<job>/requestEmailNotification
        POST /jobResults/<job>/cancelEmailNotification
        POST /jobResults/<job>/setPermissions
+       POST /jobResults/<job>/deleteJob
+       POST /jobResults/<job>/deleteFile
      * </pre>
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response) 
@@ -271,6 +275,12 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         else if ("setPermissions".equals(action)) {
             setPermissions(currentUserId, jobNumber, request, response);
             return;
+        }
+        else if ("deleteJob".equals(action)) {
+            deleteJob(currentUserId, jobNumber, request, response);
+        }
+        else if ("deleteFile".equals(action)) {
+            deleteFile(currentUserId, jobNumber, request, response);            
         }
         else {
             response.setHeader("X-genepattern-JobResultsServletException", "Action not available: "+action);
@@ -603,6 +613,101 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
     	} catch (Exception e2) {}
         
         return;
+    }
+    
+    private void deleteJob(String currentUserId, int jobNumber, HttpServletRequest request, HttpServletResponse response) 
+    throws IOException
+    {
+        PermissionsHelper perm = new PermissionsHelper(currentUserId, jobNumber);
+        if (!perm.canWriteJob()) {
+            response.setHeader("X-genepattern-deleteJobException", "User "+currentUserId+" does not have permission to delete job "+jobNumber);
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+        try {
+            //Note: the deleteJob method also checks permissions before proceeding
+            LocalAnalysisClient ac = new LocalAnalysisClient(currentUserId);
+            ac.deleteJob(jobNumber);
+        } 
+        catch (WebServiceException e) {
+            log.error("Error deleting job " + jobNumber, e);
+            response.setHeader("X-genepattern-deleteJobException", "Server error while deleting job: "+jobNumber);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        } 
+        
+        boolean redirect = false;
+        String redirectParam = request.getParameter("redirect");
+        if (redirectParam != null) {
+            redirect = Boolean.valueOf(redirectParam);
+        }
+        if (redirect) {
+            String redirectTo = request.getHeader("Referer");
+            if (redirectTo == null || "".equals(redirectTo)) {
+                redirectTo = request.getContextPath() + "/";
+            }
+            response.sendRedirect(redirectTo);
+            return;
+        }
+        else {
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            return;
+        }
+    }
+    
+    private void deleteFile(String currentUserId, int jobNumber, HttpServletRequest request, HttpServletResponse response) 
+    throws IOException
+    {
+        String jobFileName = request.getParameter("jobFile");
+        PermissionsHelper perm = new PermissionsHelper(currentUserId, jobNumber);
+        if (!perm.canWriteJob()) {
+            response.setHeader("X-genepattern-deleteFileException", "User "+currentUserId+" does not have permission to delete file "+jobNumber+" : "+jobFileName);
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+        
+        //parse encodedJobFileName for <jobNumber> and <filename>, add support for directories
+        //from Job Summary page jobFileName="1/all_aml_test.preprocessed.gct"
+        //from Job Status page jobFileName="/gp/jobResults/1/all_aml_test.preprocessed.gct"
+        String contextPath = request.getContextPath();
+        String pathToJobResults = contextPath + "/jobResults/";
+        if (jobFileName.startsWith(pathToJobResults)) {
+            jobFileName = jobFileName.substring(pathToJobResults.length());
+        }
+        int idx = jobFileName.indexOf('/');
+        if (idx <= 0) {
+            response.setHeader("X-genepattern-deleteFileException", "Error deleting file: "+jobFileName);
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+        try {
+            LocalAnalysisClient analysisClient = new LocalAnalysisClient(currentUserId);
+            analysisClient.deleteJobResultFile(jobNumber, jobFileName);
+        } 
+        catch (WebServiceException e) {
+            response.setHeader("X-genepattern-deleteFileException", "Error deleting file: "+jobFileName+", "+e.getMessage());
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            UIBeanHelper.setErrorMessage("Error deleting file: "+jobFileName+", "+e.getMessage());
+            return;
+        }
+        
+        boolean redirect = false;
+        String redirectParam = request.getParameter("redirect");
+        if (redirectParam != null) {
+            redirect = Boolean.valueOf(redirectParam);
+        }
+        if (redirect) {
+            String redirectTo = request.getHeader("Referer");
+            if (redirectTo == null || "".equals(redirectTo)) {
+                redirectTo = request.getContextPath() + "/";
+            }
+            response.sendRedirect(redirectTo);
+            return;
+        }
+        else {
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            return;
+        }
     }
 
 }
