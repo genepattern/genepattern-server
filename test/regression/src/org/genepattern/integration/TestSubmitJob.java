@@ -21,9 +21,12 @@ import org.genepattern.webservice.WebServiceException;
 public class TestSubmitJob extends TestCase {
 	
 	public static final String PREPROCESS_LSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:3";
+	public static final String GOLUB_PIPELINE_NO_VIEWERS_LSID = "urn:lsid:8020.jnedzel.gm94e-69f.broad.mit.edu:genepatternmodules:2:2";
 	public static final String SMALL_GCT = "small.gct";
 	public static final String SMALL_RESULT_GCT = "small.preprocessed.gct";
 	public static final String EXECUTION_LOG = "gp_execution_log.gct";
+	
+
 	
 	/**
 	 * Submits a PreprocessDataset job to GenePattern.
@@ -55,6 +58,24 @@ public class TestSubmitJob extends TestCase {
 		assertNotNull(dataset);
 		assertEquals(2, dataset.getRowCount());
 		assertEquals(3, dataset.getColumnCount());
+	}
+	
+	public void testGolubPipeline() throws WebServiceException, IOException {
+		GenePatternConfig config = new GenePatternConfig();
+		GPClient client = new GPClient(config.getGenePatternUrl(), config.getUsername(), config.getPassword());
+		assertNotNull(client);
+		JobResult jobResult = client.runAnalysis(GOLUB_PIPELINE_NO_VIEWERS_LSID, (Parameter []) null);
+		assertNotNull(jobResult);
+		assertTrue(!jobResult.hasStandardError());
+		
+		File[] files = jobResult.downloadFiles(".");
+		assertNotNull(files);
+		assertEquals(1, files.length);
+		String filename = files[0].getName();
+		assertNotNull(filename);
+		assertTrue(filename.contains("execution_log.html"));
+
+
 	}
 
 }
