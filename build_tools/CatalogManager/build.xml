@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project basedir="." default="installer" name="catalog">
+<project basedir="." default="compile" name="catalog">
 
    <target name="init">
 	<path  id="library.classpath">
