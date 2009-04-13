@@ -227,15 +227,21 @@
         </java>
     </target>
 
-    <target depends="R-client,GPGE, matlabclient" name="clients">
+    <target  name="clients" depends="R-client,matlabclient">
     </target>
 
-    <target depends="init" name="R-client">
+    <target  name="R-client" depends="init">
     </target>
 
-    <target depends="init,common,runtask,uisupport,analysis" name="GPGE">
+	<!--
+    <target name="GPGE" depends="init,common,runtask,uisupport,analysis">
         <ant dir="." inheritall="false" inheritrefs="false" target="analysis" />
         <ant antfile="../build.xml" dir="clients/JavaGE/src" target="package" />
+    </target>
+    -->
+	
+    <target  name="matlabclient" depends="gp-library, analysis">
+        <ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB" />
     </target>
 
     <target name="analysis" depends="init,common,runtask,uisupport">
@@ -264,13 +270,6 @@
     <target  name="installers" depends="website">
         <ant dir="${genepattern.installer}" inheritall="false" inheritrefs="false" target="installers" />
     </target>
-
-    <target depends="gp-library, analysis" name="matlabclient">
-
-        <ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB" />
-
-    </target>
-
 
     <target name="build-visualizer-applet" depends="init, makeKeystore">
         <mkdir dir="applet-build" />
@@ -437,7 +436,7 @@
         </exec>
     </target>
 
-    <target name="nightlyBuild" depends="initBuildProperties, website, gp-library, GPGE,installers, createWar, copyWar" />
+    <target name="nightlyBuild" depends="initBuildProperties, website, gp-library, installers, createWar, copyWar" />
 
     <target name="publishBuild">
         <!-- ant antfile="anthill-build.xml" dir="${basedir}" target="installLocal" / -->
