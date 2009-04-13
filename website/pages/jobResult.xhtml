@@ -21,7 +21,7 @@
 	xmlns:c="http://java.sun.com/jstl/core">
 <ui:composition template="/templates/common.xhtml">
 	<ui:define name="pageTitle">
-		GenePattern | Job #{jobStatusBean.jobInfo.jobNumber}
+		GenePattern | Job #{(!empty jobStatusBean.jobInfo ) ? jobStatusBean.jobInfo.jobNumber : "not set" }
 	</ui:define>
 	<ui:define name="headText">
 		
@@ -525,7 +525,7 @@
 			
 		/* ]]> */
 			
-			<h:outputText rendered="#{jobStatusBean.jobInfo.status != 'Finished' and jobStatusBean.jobInfo.status != 'Error'}">
+			<h:outputText rendered="#{!empty jobStatusBean.jobInfo and jobStatusBean.jobInfo.status != 'Finished' and jobStatusBean.jobInfo.status != 'Error'}">
 				YAHOO.util.Event.addListener(window, "load", function() { 
 					setTimeout("updatePage();", 2500);
 				});
@@ -535,7 +535,8 @@
 	</ui:define>
 
 	<ui:define name="body">
-
+	
+<h:outputText rendered="#{!empty jobStatusBean.jobInfo}">
 		<div class="statusReport">
 		<input type="checkbox" CHECKED="true" id="keepUpdating" style="display:none;"/>
 	    <input type="textarea" id="responseArea" rows="30" cols="100" style="display:none;"/>
@@ -783,7 +784,7 @@
 			}
 	     	/* ]]> */
 	     </script>
-	     
+</h:outputText>	     
 	</ui:define>
 	
 </ui:composition>
