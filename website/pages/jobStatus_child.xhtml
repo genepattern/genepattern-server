@@ -34,11 +34,6 @@
 						</h:outputText>
 					</t:dataList>
 					<img src="/gp/images/darkArrow.gif" /> step #{jobInfo.stepPath}: #{jobInfo.taskName} [id: #{jobInfo.jobNumber}] 
-					<!-- img src="/gp/images/smallOptions.gif"
-		                 name="Image2_#{jobInfo.jobNumber}" border="0" align="top"
-		                 id="Image2_#{jobInfo.jobNumber}" onclick="pm_showMenu('menuDiv_#{jobInfo.jobNumber}', Position.cumulativeOffset(this), 50, 50);"
-		                 onmouseover="MM_swapImage('Image2_#{jobInfo.jobNumber}','','/gp/images/smallOptions2.gif',1)"
-		                 onmouseout="MM_swapImgRestore();"/-->
 				</td>
 				<td>
 					<h:outputText rendered="#{not empty jobInfo.inputParameters}">
@@ -74,13 +69,14 @@
 		<ui:include src="jobStatus_files.xhtml">
 	    	<ui:param name="jobInfo" value="#{jobInfo}" />
 	    </ui:include>
+
 	    <div id="fileMenus#{jobInfo.jobNumber}">
 		  	<t:dataList var="outputFile" value="#{jobInfo.outputFiles}">
 		  		<h:form>
 	                <ui:include src="jobStatus_fileMenu.xhtml">
 	                    <ui:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}"/>
 	                    <ui:param name="filename" value="#{outputFile.name}" />
-	                    <ui:param name="deleteAllowed" value="#{false}"/>
+	                    <ui:param name="deleteAllowed" value="#{jobStatusBean.jobInfo.permissions.deleteAllowed}"/>
 	                    <ui:param name="value" value="#{outputFile.link}"/>
 	                    <ui:param name="valueId" value="#{outputFile.valueId}"/>
 	                    <ui:param name="moduleMenuItems" value="#{outputFile.moduleMenuItems}"/>
