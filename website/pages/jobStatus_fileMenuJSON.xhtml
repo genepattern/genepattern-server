@@ -14,39 +14,46 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
   <ui:composition>
   	<t:dataList var="outputFile" value="#{jobStatusBean.jobInfo.outputFiles}">
-	  	<h:form>
 	    <div id="menuDiv_#{outputFile.valueId}"  class="popupMenu">
 	      <table>
-	        <tbody>
+	        <tbody>	        
 	          <tr>
 	            <td>
-	              <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file?');" actionListener="#{jobsBean.deleteFile}" immediate="true" rendered="#{jobStatusBean.jobInfo.permissions.deleteAllowed}">
-	                <f:param name="jobNumber" value="#{param.jobNumber}" />
-	                <f:param name="jobFile" value="#{outputFile.value}" />
-	              </h:commandLink>
+	              <form name="#{param.jobNumber}_deleteFile_#{outputFile.value}" method="post" action="/gp/jobResults/#{param.jobNumber}/deleteFile">
+	                <input type="hidden" name="jobFile" value="#{outputFile.value}" />
+	                <input type="hidden" name="redirect" value="/gp/jobResults/#{param.rootJobNumber}" />
+	                <a href="#"
+	                onclick="document.forms['#{param.jobNumber}_deleteFile_#{outputFile.value}'].submit(); return false;"
+	                >Delete</a>
+	              </form>
 	            </td>
 	          </tr>
 	          <tr>
 	            <td>
-	              <h:commandLink value="Save" actionListener="#{jobsBean.saveFile}" immediate="true">
-	                <f:param name="jobNumber" value="#{param.jobNumber}" />
-	                <f:param name="jobFileName" value="#{outputFile.value}" />
-	              </h:commandLink>
+	              <form name="#{param.jobNumber}_saveFile_#{outputFile.value}" method="post" action="/gp/jobResults/#{param.jobNumber}/saveFile">
+	                <input type="hidden" name="jobFileName" value="#{outputFile.value}" />
+	                <a href="#"
+	                  onclick="document.forms['#{param.jobNumber}_saveFile_#{outputFile.value}'].submit(); return false;"
+		            >Save</a>
+	              </form>
 	            </td>
 	          </tr>
 	          <tr>
 	            <td>
-	              <h:commandLink value="Create Pipeline" actionListener="#{jobsBean.createPipeline}" immediate="true">
-	                <f:param name="jobNumber" value="#{param.jobNumber}" />
-	              </h:commandLink>
+	              <form name="#{param.jobNumber}_createPipeline_#{outputFile.value}" method="post" action="/gp/jobResults/#{param.jobNumber}/createPipeline">
+	                <a href="#"
+	                  onclick="document.forms['#{param.jobNumber}_createPipeline_#{outputFile.value}'].submit(); return false;"
+	                >Create Pipeline</a>
+	              </form>
 	            </td>
 	          </tr>
+
 	          <tr>
 	            <td>
 	              <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
 	            </td>
 	          </tr>
-	          
+
 	          <h:outputText rendered="#{!empty fileInfo.moduleInputParameters}">
 	          	<tr>
 	            	<td>
@@ -58,18 +65,19 @@
 	          <t:dataList  var="moduleMenuItem" value="#{outputFile.moduleMenuItems}">
 	            <tr>
 	              <td>
-	              <h:commandLink value="#{moduleMenuItem.key}" action="#{jobsBean.loadTask}" immediate="true">
-	                  <f:param name="jobNumber" value="#{param.jobNumber}" />
-	                  <f:param name="module" value="#{moduleMenuItem.value}" />
-	                  <f:param  name="name" value="#{outputFile.link} "/>
-	              </h:commandLink>
+	                <form name="#{param.jobNumber}_loadTask_#{outputFile.value}_#{moduleMenuItem.value}" method="post" action="/gp/jobResults/#{param.jobNumber}/loadTask">
+	                  <input type="hidden" name="module" value="#{moduleMenuItem.value}" />
+	                  <input type="hidden" name="name" value="#{outputFile.link}" />
+	                  <a href="#"
+	                  onclick="document.forms['#{param.jobNumber}_loadTask_#{outputFile.value}_#{moduleMenuItem.value}'].submit(); return false;"
+	                  >#{moduleMenuItem.key}</a>
+	                </form>
 	              </td>
 	            </tr>            
 	          </t:dataList>
 	        </tbody>
 	      </table>
 	    </div>
-	    </h:form>
 	</t:dataList>
   </ui:composition>
 </html>

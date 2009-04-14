@@ -18,12 +18,23 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.faces.FactoryFinder;
+import javax.faces.application.Application;
+import javax.faces.application.NavigationHandler;
+import javax.faces.application.ViewHandler;
+import javax.faces.component.UIViewRoot;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.faces.context.FacesContextFactory;
+import javax.faces.lifecycle.Lifecycle;
+import javax.faces.lifecycle.LifecycleFactory;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -41,10 +52,12 @@ import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.GroupPermission.Permission;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.util.EmailNotificationManager;
+import org.genepattern.server.webapp.jsf.RunTaskBean;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
@@ -230,6 +243,9 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
        POST /jobResults/<job>/setPermissions
        POST /jobResults/<job>/deleteJob
        POST /jobResults/<job>/deleteFile
+       POST /jobResults/<job>/saveFile
+       POST /jobResults/<job>/createPipeline
+       POST /jobResults/<job>/loadTask
      * </pre>
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response) 
@@ -281,6 +297,15 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         }
         else if ("deleteFile".equals(action)) {
             deleteFile(currentUserId, jobNumber, request, response);            
+        }
+        else if ("saveFile".equals(action)) {
+            saveFile(currentUserId, jobNumber, request, response);
+        }
+        else if ("createPipeline".equals(action)) {
+            createPipeline(currentUserId, jobNumber, request, response);
+        }
+        else if ("loadTask".equals(action)) {
+            loadTask(currentUserId, jobNumber, request, response);
         }
         else {
             response.setHeader("X-genepattern-JobResultsServletException", "Action not available: "+action);
@@ -691,25 +716,134 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             return;
         }
         
-        boolean redirect = false;
-        String redirectParam = request.getParameter("redirect");
-        if (redirectParam != null) {
-            redirect = Boolean.valueOf(redirectParam);
-        }
-        if (redirect) {
-            String redirectTo = request.getHeader("Referer");
-            if (redirectTo == null || "".equals(redirectTo)) {
-                redirectTo = request.getContextPath() + "/";
-            }
-            response.sendRedirect(redirectTo);
-            return;
+        String redirect = request.getParameter("redirect");
+        if (redirect != null) {
+            response.sendRedirect(redirect);
         }
         else {
             response.setStatus(HttpServletResponse.SC_NO_CONTENT);
             return;
         }
     }
+    
+    //<form name="#{param.jobNumber}_saveFile_#{outputFile.value}" method="post" action="/gp/jobResults/#{param.jobNumber}/saveFile">
+    //<input type="hidden" name="jobFileName" value="#{outputFile.value}" />
+    private void saveFile(String currentUserId, int jobNumber, HttpServletRequest request, HttpServletResponse response) {
+        String jobFileName = request.getParameter("jobFileName");
+        jobFileName = UIBeanHelper.decode(jobFileName);
+        if (jobFileName == null || "".equals(jobFileName.trim())) {
+            response.setHeader("X-genepattern-saveFileException", "Error saving file, missing required parameter, 'jobFileName'.");
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        }
+        
+        //parse jobFileName for <jobNumber> and <filename>, add support for directories
+        //from Job Summary page jobFileName="1/all_aml_test.preprocessed.gct"
+        //from Job Status page jobFileName="/gp/jobResults/1/all_aml_test.preprocessed.gct"
+        String contextPath = request.getContextPath();
+        String pathToJobResults = contextPath + "/jobResults/";
+        if (jobFileName.startsWith(pathToJobResults)) {
+            jobFileName = jobFileName.substring(pathToJobResults.length());
+        }
 
+        int idx = jobFileName.indexOf('/');
+        if (idx <= 0) {
+            response.setHeader("X-genepattern-saveFileException", "Error saving file, invalid parameter, jobFileName="+jobFileName);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        }
+        String jobNumberStr = jobFileName.substring(0, idx);
+        String filename = jobFileName.substring(idx+1);
+        File in = new File(GenePatternAnalysisTask.getJobDir(jobNumberStr), filename);
+        if (!in.exists()) {
+            response.setHeader("X-genepattern-saveFileException", "File " + filename + " does not exist.");
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        }
+        InputStream is = null;
+        try {
+            response.setHeader("Content-Disposition", "attachment; filename=" + in.getName() + ";");
+            response.setHeader("Content-Type", "application/octet-stream");
+            response.setHeader("Cache-Control", "no-store"); // HTTP 1.1
+            response.setHeader("Pragma", "no-cache"); // HTTP 1.0 cache
+            response.setDateHeader("Expires", 0);
+
+            OutputStream os = response.getOutputStream();
+            is = new BufferedInputStream(new FileInputStream(in));
+            byte[] b = new byte[10000];
+            int bytesRead;
+            while ((bytesRead = is.read(b)) != -1) {
+                os.write(b, 0, bytesRead);
+            }
+            os.flush();
+            os.close();
+            //UIBeanHelper.getFacesContext().responseComplete();
+        } 
+        catch (IOException e) {
+            log.error("Error saving file.", e);
+        } 
+        finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } 
+                catch (IOException e) {
+                }
+            }
+        }
+    }
+    
+    private void createPipeline(String currentUserId, int jobNumber, HttpServletRequest request, HttpServletResponse response) 
+    throws IOException
+    {
+        try {
+            // TODO prompt user for name
+            String pipelineName = "job" + jobNumber; 
+            String lsid = new LocalAnalysisClient(currentUserId).createProvenancePipeline(""+jobNumber, pipelineName);
+            if (lsid == null) {
+                UIBeanHelper.setErrorMessage("Unable to create pipeline.");
+                return;
+            }
+            response.sendRedirect(request.getContextPath() + "/pipelineDesigner.jsp?name=" + UIBeanHelper.encode(lsid));
+        } 
+        catch (WebServiceException wse) {
+            log.error("Error creating pipeline.", wse);
+        } 
+    }
+    
+    private void loadTask(String currentUserId, int jobNumber, HttpServletRequest request, HttpServletResponse response)
+    throws IOException, ServletException
+    {
+        String lsid = UIBeanHelper.decode(request.getParameter("module"));
+        String matchJob = ""+jobNumber;
+        String outputFileName = UIBeanHelper.decode(request.getParameter("name"));
+        
+        LifecycleFactory lFactory = (LifecycleFactory) FactoryFinder.getFactory(FactoryFinder.LIFECYCLE_FACTORY);
+        Lifecycle lifecycle = lFactory.getLifecycle(LifecycleFactory.DEFAULT_LIFECYCLE);
+        FacesContextFactory fcFactory = (FacesContextFactory) FactoryFinder.getFactory(FactoryFinder.FACES_CONTEXT_FACTORY);
+        FacesContext facesContext = fcFactory.getFacesContext(getServletContext(), request, response, lifecycle);
+        Application application = facesContext.getApplication();
+        ViewHandler viewHandler = application.getViewHandler();
+
+        String viewId = "/jobResults/"+matchJob+"/loadTask";
+        UIViewRoot view = viewHandler.createView(facesContext, viewId);
+        facesContext.setViewRoot(view);
+        
+        ExternalContext externalContext = facesContext.getExternalContext();
+        externalContext.getRequestMap().put("matchJob", matchJob);
+        externalContext.getRequestMap().put("outputFileName", outputFileName);
+        RunTaskBean runTaskBean = (RunTaskBean) application.createValueBinding("#{runTaskBean}").getValue(facesContext);
+        runTaskBean.setTask(lsid);
+        
+        // JSF navigation ... this is JSF for a redirect
+        String outcome="run task";
+        String fromAction="run task";
+        NavigationHandler navigationHandler = application.getNavigationHandler();
+        navigationHandler.handleNavigation(facesContext, fromAction, outcome);
+       
+        lifecycle.render(facesContext);
+        return;
+    }
 }
 
 
