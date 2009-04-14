@@ -148,6 +148,7 @@
 					var data = eval('(' + o.responseText + ')');
 					var status = data.status;
 					var jobNumber = data.jobNumber;
+					var rootJobNumber = data.rootJobNumber;
 					updateStatus(data, status);
 					
 					if (data.isPipeline && data.children) {
@@ -462,7 +463,7 @@
 					}
 				}
 				// create menus for this job's files
-				loadFileMenus(job.jobNumber);
+				loadFileMenus(job);
 			}
 			
 			function createInputParameters(job) {
@@ -777,9 +778,9 @@
 			  
 			};
 			
-			function loadFileMenus(jobNumber) {
-				var menuPostData = "jobNumber="+jobNumber;
-				menuCallback.argument = [jobNumber];
+			function loadFileMenus(job) {
+				var menuPostData = "jobNumber="+job.jobNumber+"&rootJobNumber="+job.rootJobNumber;
+				menuCallback.argument = [job.jobNumber];
 				var request = YAHOO.util.Connect.asyncRequest('POST', '/gp/pages/jobStatus_fileMenuJSON.jsf', menuCallback, menuPostData);
 			}
 	     	/* ]]> */

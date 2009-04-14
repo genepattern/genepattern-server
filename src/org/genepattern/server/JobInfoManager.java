@@ -324,6 +324,7 @@ public class JobInfoManager {
         obj.put("finished", jobInfoWrapper.isFinished());
         obj.put("numAncestors", jobInfoWrapper.getNumAncestors().length);
         obj.put("stepPath", jobInfoWrapper.getStepPath());
+        obj.put("rootJobNumber", jobInfoWrapper.getRoot().getJobNumber());
         
         obj.put("isPipeline", jobInfoWrapper.isPipeline());
         obj.put("numStepsCompleted", jobInfoWrapper.getNumStepsCompleted());
