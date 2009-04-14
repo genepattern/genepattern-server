@@ -463,7 +463,87 @@
 					}
 				}
 				// create menus for this job's files
-				loadFileMenus(job);
+				createFileMenus(job);
+			}
+			
+			function createInput(type, name, value) {
+				var input = document.createElement("input");
+				input.type = type;
+				input.name = name;
+				input.value = value;
+				return input;
+			}
+			
+			function createFileMenuLink(form, label) {
+				var link = document.createElement("a");
+				link.href = "javascript:document.forms['" + form.name + "'].submit()";
+				link.appendChild(document.createTextNode(label));
+				form.appendChild(link);
+			}			
+			
+			function pushIntoRow(table, element) {
+				var row = table.insertRow(table.rows.length);
+				var cell = row.insertCell(row.cells.length);
+				cell.appendChild(element);
+			}
+			
+			function createFileMenus(job) {
+				for (var i = 0; i < job.outputFiles.length; i++) {
+					var outputFile = job.outputFiles[i];
+					var div = document.createElement("div");
+					div.id = "menuDiv_" + outputFile.valueId;
+					div.className = 'popupMenu';
+					var table = document.createElement("table");
+					div.appendChild(table);
+					
+					var deleteForm = document.createElement("form");
+					deleteForm.name = job.jobNumber + "_deleteFile_" + outputFile.value;
+					deleteForm.method = "POST";
+					deleteForm.action = "/gp/jobResults/" + job.jobNumber + "/deleteFile";
+	
+					deleteForm.appendChild(createInput('hidden', 'jobFile', outputFile.value));
+					deleteForm.appendChild(createInput('hidden', 'jobFile', outputFile.value));
+					createFileMenuLink(deleteForm, "Delete");
+					pushIntoRow(table, deleteForm);
+					
+					var saveForm = document.createElement("form");
+					saveForm.name = job.jobNumber + "_saveFile_" + outputFile.value;
+					saveForm.method = "POST";
+					saveForm.action = "/gp/jobResults/" + job.jobNumber + "/saveFile";
+	
+					saveForm.appendChild(createInput('hidden', 'jobFileName', outputFile.value));
+					createFileMenuLink(saveForm, "Save");
+					pushIntoRow(table, saveForm);
+					
+					var pipelineForm = document.createElement("form");
+					pipelineForm.name = job.jobNumber + "_createPipeline_" + outputFile.value;
+					pipelineForm.method = "POST";
+					pipelineForm.action = "/gp/jobResults/" + job.jobNumber + "/createPipeline";
+	
+					createFileMenuLink(pipelineForm, "Create Pipeline");
+					pushIntoRow(table, pipelineForm);
+					
+					var separator = document.createElement("img");
+					separator.src = "/gp/images/divider-pix2.gif";
+					separator.width = "100%";
+					separator.height = "1";
+					pushIntoRow(table, separator);
+					
+					for (var j = 0; j < outputFile.moduleMenuItems.length; j++) {
+						var moduleMenuItem = outputFile.moduleMenuItems[j];
+						var taskForm = document.createElement("form");
+						taskForm.name = job.jobNumber + "_loadTask_" + outputFile.value + "_" + moduleMenuItem.key;
+						taskForm.method = "POST";
+						taskForm.action = "/gp/jobResults/" + job.jobNumber + "/loadTask";
+		
+						taskForm.appendChild(createInput('hidden', 'module', moduleMenuItem.value));
+						taskForm.appendChild(createInput('hidden', 'name', outputFile.link));
+						createFileMenuLink(taskForm, moduleMenuItem.key);
+						pushIntoRow(table, taskForm);
+					
+					}
+					document.body.appendChild(div);
+				}
 			}
 			
 			function createInputParameters(job) {
@@ -758,33 +838,6 @@
 	    	<tr><td></td></tr>
 	    </table>
 	    <br/><br/>
-	     
-	     <script type="text/javascript">
-	     /* <![CDATA[ */	
-	     	var handleMenuSuccess = function(o){
-				if(o.responseText !== undefined){
-					document.getElementById('fileMenus'+o.argument[0]).innerHTML = o.responseText;
-				}
-			}
-			
-			var handleMenuError = function(o){
-				alert("menu request failed");
-			}
-			
-			var menuCallback =
-			{
-			  success: handleMenuSuccess,
-			  failure: handleMenuError
-			  
-			};
-			
-			function loadFileMenus(job) {
-				var menuPostData = "jobNumber="+job.jobNumber+"&rootJobNumber="+job.rootJobNumber;
-				menuCallback.argument = [job.jobNumber];
-				var request = YAHOO.util.Connect.asyncRequest('POST', '/gp/pages/jobStatus_fileMenuJSON.jsf', menuCallback, menuPostData);
-			}
-	     	/* ]]> */
-	     </script>
 </h:outputText>	     
 	</ui:define>
 	
