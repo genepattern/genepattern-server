@@ -25,6 +25,7 @@ import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -374,6 +375,14 @@ public class JobInfoManager {
             inp.put("truncatedDisplayValue", outputFile.getTruncatedDisplayValue());
             inp.put("description", outputFile.getDescription());
             inp.put("formattedSize", outputFile.getFormattedSize());
+            JSONArray moduleMenuItems = new JSONArray();
+            for (KeyValuePair pair : outputFile.getModuleMenuItems()) {
+            	JSONObject moduleMenuItem = new JSONObject();
+            	moduleMenuItem.put("key", pair.getKey());
+            	moduleMenuItem.put("value", pair.getValue());
+            	moduleMenuItems.put(moduleMenuItem);
+            }
+            inp.put("moduleMenuItems", moduleMenuItems);
             outputFiles.put(inp);
         }
         obj.put("outputFiles", outputFiles);
