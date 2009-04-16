@@ -107,12 +107,11 @@ public class AuthenticationFilter implements Filter {
     {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
-        
+        boolean redirectToOrigin = request.getParameter("origin") != null;
+       
         if (isAuthenticated(request)) {
             if (isRedirectRequired(request)) {
-                //do redirect
-                boolean origin = request.getParameter("origin") != null;
-                if (!origin) {
+                if (!redirectToOrigin) {
                     response.sendRedirect(request.getContextPath() + homePage);
                 } 
                 else {
@@ -132,7 +131,7 @@ public class AuthenticationFilter implements Filter {
         //else, try to authenticate ...
         try {
             //The GenePattern user account is created in the login step if necessary
-            LoginManager.instance().login(request, response, false);
+            LoginManager.instance().login(request, response, redirectToOrigin);
         }
         catch (AuthenticationException e) {
             //ignore
@@ -142,7 +141,14 @@ public class AuthenticationFilter implements Filter {
             return;
         }
         else {
-            //if authentication requires another step, redirect to a login page
+            //if we are here, request authentication
+            
+            //first, keep track of the target URL,see UIBeanHelper#getReferrer
+            //    redirect to targetURL after successful login
+            String targetURL = request.getRequestURI();
+            request.getSession().setAttribute("origin", targetURL);
+
+            //second, request authentication, by default a redirect to the webapp's login page
             UserAccountManager.instance().getAuthentication().requestAuthentication(request, response);
         }
     }
