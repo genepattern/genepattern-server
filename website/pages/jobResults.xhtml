@@ -56,7 +56,7 @@
 		for (var i = 0; i < table.rows.length; i++) {
 			if (table.rows[i].id == 'jobRow' + jobNumber) {
 				i++;
-				while (i < table.rows.length && !table.rows[i].id) {
+				while (i < table.rows.length && table.rows[i].id.indexOf("jobRow") == -1) {
 					table.rows[i++].style.display = newDisplay;
 				}
 				break;
@@ -73,7 +73,7 @@
 		image.src = newImageSrc;
 		// start on 4th row
 		for (var i = 3; i < table.rows.length; i++) {
-			if (table.rows[i].id) {
+			if (table.rows[i].id.indexOf("jobRow") != -1) {
 			    var jobNumber = table.rows[i].id.substring('jobRow'.length);
 				document.getElementById('jobToggleImage'+jobNumber).src = newImageSrc;
 				document.getElementById('expansion_state_'+jobNumber).value = (!open ? 'true' : 'false');
