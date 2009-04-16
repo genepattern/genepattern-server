@@ -386,7 +386,7 @@ public class JobInfoWrapper {
                 if (inputFileParent != null) {
                     fileParam += inputFileParent.getName() + "/";
                 }
-                fileParam += value;
+                fileParam += inputFile.getName();
                 //url encode fileParam
                 try {
                     fileParam = URLEncoder.encode(fileParam, "UTF-8");
