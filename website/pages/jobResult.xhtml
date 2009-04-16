@@ -523,10 +523,9 @@
 					createFileMenuLink(pipelineForm, "Create Pipeline");
 					pushIntoRow(table, pipelineForm);
 					
-					var separator = document.createElement("img");
-					separator.src = "/gp/images/divider-pix2.gif";
-					separator.width = "100%";
-					separator.height = "1";
+					var separator = document.createElement("hr");
+					separator.size = "1px";
+					separator.color = '#cccc99';
 					pushIntoRow(table, separator);
 					
 					for (var j = 0; j < outputFile.moduleMenuItems.length; j++) {
