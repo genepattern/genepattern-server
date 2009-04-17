@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webapp.jsf.JobHelper;
@@ -30,6 +31,7 @@ import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 import org.jfree.util.Log;
 
 /**
@@ -411,6 +413,7 @@ public class JobInfoWrapper {
     
     private JobInfo jobInfo = null;
     private TaskInfo taskInfo = null;
+    private PipelineModel pipelineModel = null;
     private Map<String, Collection<TaskInfo>> kindToModules;
     private Long size = null;
     private boolean includeInputFilesInSize = false;
@@ -509,6 +512,12 @@ public class JobInfoWrapper {
             return jobInfo.getTaskLSID();
         }
         log.error("jobInfo is null");
+        return "";
+    }
+    public String getTaskDescription() {
+        if (taskInfo != null) {
+            return taskInfo.getDescription();
+        }
         return "";
     }
     public String getStatus() {
@@ -742,7 +751,33 @@ public class JobInfoWrapper {
         //handle special case when the module for this job number is not available
         return children != null && children.size() > 0;
     }
+    
+    private PipelineModel getPipelineModel() {
+        if (pipelineModel == null && isPipeline()) {
+            pipelineModel = getPipelineModel(taskInfo);
+        }
+        return pipelineModel;
+    }
 
+    private PipelineModel getPipelineModel(TaskInfo taskInfo) {
+        PipelineModel model = null;
+        if (taskInfo != null) {
+            TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+            if (tia != null) {
+                String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
+                if (serializedModel != null && serializedModel.length() > 0) {
+                    try {
+                        model = PipelineModel.toPipelineModel(serializedModel);
+                    } 
+                    catch (Throwable x) {
+                        log.error(x);
+                    }
+                }
+            }
+        }
+        return model;
+    }
+   
     //support for pipelines ... including traversing the list of all steps (including nested steps (and nested nested steps (and ...)))
     public void setParent(JobInfoWrapper parent) {
         this.parent = parent;
@@ -910,7 +945,6 @@ public class JobInfoWrapper {
     }
     
     //helper methods for indicating how many steps in the pipeline are completed
-    private int numStepsInPipeline = 0;
     public int getNumStepsCompleted() {
         //for pipelines
         if (isPipeline()) {
@@ -933,11 +967,12 @@ public class JobInfoWrapper {
         return 0;
     }
     
-    public void setNumStepsInPipeline(int n) {
-        this.numStepsInPipeline = n;
-    }
-    
     public Integer[] getNumStepsInPipeline() {
+        int numStepsInPipeline = 0;
+        PipelineModel pm = this.getPipelineModel();
+        if (pm != null) {
+            numStepsInPipeline = pm.getTasks().size();
+        }
         return new Integer[numStepsInPipeline];
     }
 
