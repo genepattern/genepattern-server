@@ -554,6 +554,7 @@ public class GenePatternAnalysisTask {
 	int jobStatus = JobStatus.JOB_ERROR;
 	String outDirName = getJobDir(Integer.toString(jobInfo.getJobNumber()));
 	File taskLog = null;
+	File pipelineTaskLog = null;
 	String taskName = "";
 	long jobStartTime = System.currentTimeMillis();
 	String userKey = "";
@@ -1198,6 +1199,9 @@ public class GenePatternAnalysisTask {
             }
             String cookie = "";
             JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, jobInfo.getUserId(), jobInfo.getJobNumber());
+            if (taskInfo.isPipeline()) {
+                pipelineTaskLog = JobInfoManager.writePipelineExecutionLog(outDirName, jobInfoWrapper);
+            }
             taskLog = JobInfoManager.writeExecutionLog(outDirName, jobInfoWrapper, props, processBuilder);
         }
 
@@ -1283,8 +1287,11 @@ public class GenePatternAnalysisTask {
 	    HibernateUtil.commitTransaction();
 
 	    // touch the taskLog file to make sure it is the oldest/last file
+        if (pipelineTaskLog != null) {
+            taskLog.setLastModified(System.currentTimeMillis() + 500);
+        }
 	    if (taskLog != null) {
-	        taskLog.setLastModified(System.currentTimeMillis() + 500);
+	        taskLog.setLastModified(System.currentTimeMillis() + 1000);
 	    }
 
 	    // any files that are left in outDir are output files
@@ -1294,6 +1301,9 @@ public class GenePatternAnalysisTask {
 	    filenameFilter.addExactMatch(STDERR);
 	    filenameFilter.addExactMatch(STDOUT);
 	    filenameFilter.addExactMatch(TASKLOG);
+	    if (pipelineTaskLog != null) {
+	        filenameFilter.addExactMatch(pipelineTaskLog.getName());
+	    }
 	    filenameFilter.addExactMatch(_stdoutFilename);
 	    filenameFilter.addExactMatch(_stderrFilename);
 	    filenameFilter.setGlob(System.getProperty(JobResultsFilenameFilter.KEY));
@@ -1325,6 +1335,9 @@ public class GenePatternAnalysisTask {
 	        writeStringToFile(outDirName, STDERR, stderrBuffer.toString());
 	        addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
 	    }
+        if (pipelineTaskLog != null) {
+            addFileToOutputParameters(jobInfo, pipelineTaskLog.getName(), pipelineTaskLog.getName(), parentJobInfo);
+        }
 	    if (taskLog != null) {
 	        addFileToOutputParameters(jobInfo, TASKLOG, TASKLOG, parentJobInfo);
 	    }

@@ -20,11 +20,11 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.webapp.WritePipelineExecutionLog;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -126,35 +126,7 @@ public class JobInfoManager {
             jobInfoWrapper.addChildJobInfo(nextChild);
         }
         
-        int numSteps = 1;
-        if (jobInfoWrapper.isPipeline()) {
-            PipelineModel pipelineModel = getPipelineModel(taskInfo);
-            if (pipelineModel != null) {
-                numSteps = pipelineModel.getTasks().size();
-                jobInfoWrapper.setNumStepsInPipeline(numSteps);
-            }
-        }
-        
         return jobInfoWrapper;
-    }
-    
-    private PipelineModel getPipelineModel(TaskInfo taskInfo) {
-        PipelineModel model = null;
-        if (taskInfo != null) {
-            TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-            if (tia != null) {
-                String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
-                if (serializedModel != null && serializedModel.length() > 0) {
-                    try {
-                        model = PipelineModel.toPipelineModel(serializedModel);
-                    } 
-                    catch (Throwable x) {
-                        log.error(x);
-                    }
-                }
-            }
-        }
-        return model;
     }
     
     public static String createVisualizerAppletTag(String documentCookie, JobInfoWrapper jobInfoWrapper, TaskInfo taskInfo) 
@@ -497,5 +469,13 @@ public class JobInfoManager {
             }
         }
         writer.write("\n");
+    }
+    
+    public static File writePipelineExecutionLog(String jobDirName, JobInfoWrapper jobInfo) {
+        File jobDir = new File(jobDirName);
+        File logFile = new File(jobDir, jobInfo.getTaskName() + "_execution_log.html");
+        WritePipelineExecutionLog w = new WritePipelineExecutionLog(logFile, jobInfo);
+        w.writeLogFile();
+        return logFile;        
     }
 }

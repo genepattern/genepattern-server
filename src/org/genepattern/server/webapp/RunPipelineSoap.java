@@ -82,15 +82,19 @@ public class RunPipelineSoap {
 
     private AdminProxy adminClient;
 
-    public RunPipelineSoap(String server, String userID, String cmdLinePassword, int jobId, PipelineModel model,
-	    RunPipelineOutputDecoratorIF decorator) throws WebServiceException {
-	this.analysisClient = new AnalysisWebServiceProxy(server, userID, cmdLinePassword);
-	this.adminClient = new AdminProxy(server, userID, cmdLinePassword);
-	this.server = server;
-	System.setProperty("userID", userID);
-	this.jobId = jobId;
-	this.model = model;
-	this.decorator = decorator == null ? new RunPipelineBasicDecorator() : decorator;
+    public RunPipelineSoap(String server, String userID, String cmdLinePassword, int jobId, PipelineModel model, RunPipelineOutputDecoratorIF decorator) 
+    throws WebServiceException 
+    {
+        this.analysisClient = new AnalysisWebServiceProxy(server, userID, cmdLinePassword);
+        this.adminClient = new AdminProxy(server, userID, cmdLinePassword);
+        this.server = server;
+        System.setProperty("userID", userID);
+        this.jobId = jobId;
+        this.model = model;
+        this.decorator = decorator;
+        if (this.decorator == null) {
+            this.decorator = new RunPipelineNoDecorator();
+        }
     }
 
     public void runPipeline(Map args) throws WebServiceException {
