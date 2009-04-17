@@ -271,12 +271,7 @@
 					var indicator = createIndicator(child);
 					div.appendChild(indicator);
 				}
-				//createInputParams(child);
-				//createInputFiles(child);			
-				
-				//if (child.status == 'Finished') {
-			//		createOutputFiles(child);
-				//}		
+
 				tagIndicatorCell(child, index, parent);
 				
 				// create input parameters
@@ -396,11 +391,17 @@
 						var label = document.createElement("strong");
 						label.appendChild(document.createTextNode(" " + job.inputFiles[i].name + ": "));
 						p.appendChild(label);
-						var link = document.createElement("a");
-						link.style.color = '#0066FF';
-						link.href = job.inputFiles[i].link;
-						link.appendChild(document.createTextNode(job.inputFiles[i].truncatedDisplayValue));
-						p.appendChild(link);
+
+						if (job.inputFiles[i].link) {
+							var link = document.createElement("a");
+							link.style.color = '#0066FF';
+							link.href = job.inputFiles[i].link;
+							link.appendChild(document.createTextNode(job.inputFiles[i].truncatedDisplayValue));
+							p.appendChild(link);
+						}
+						else {
+							p.appendChild(document.createTextNode(job.inputFiles[i].truncatedDisplayValue));
+						}
 						div.appendChild(p);
 				    }
 				}
