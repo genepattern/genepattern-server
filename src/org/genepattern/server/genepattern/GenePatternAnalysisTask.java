@@ -1199,10 +1199,15 @@ public class GenePatternAnalysisTask {
             }
             String cookie = "";
             JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, jobInfo.getUserId(), jobInfo.getJobNumber());
-            if (taskInfo.isPipeline()) {
-                pipelineTaskLog = JobInfoManager.writePipelineExecutionLog(outDirName, jobInfoWrapper);
+            if (jobInfoWrapper.isPipeline()) {
+                //output pipeline _execution_log only for the root pipeline, exclude nested pipelines
+                if (parent < 0) {
+                    pipelineTaskLog = JobInfoManager.writePipelineExecutionLog(outDirName, jobInfoWrapper);
+                }
             }
-            taskLog = JobInfoManager.writeExecutionLog(outDirName, jobInfoWrapper, props, processBuilder);
+            else {
+                taskLog = JobInfoManager.writeExecutionLog(outDirName, jobInfoWrapper, props, processBuilder);
+            }
         }
 
 	    // move input files back into Axis attachments directory
@@ -1288,10 +1293,10 @@ public class GenePatternAnalysisTask {
 
 	    // touch the taskLog file to make sure it is the oldest/last file
         if (pipelineTaskLog != null) {
-            taskLog.setLastModified(System.currentTimeMillis() + 500);
+            pipelineTaskLog.setLastModified(System.currentTimeMillis() + 500);
         }
 	    if (taskLog != null) {
-	        taskLog.setLastModified(System.currentTimeMillis() + 1000);
+	        taskLog.setLastModified(System.currentTimeMillis() + 500);
 	    }
 
 	    // any files that are left in outDir are output files

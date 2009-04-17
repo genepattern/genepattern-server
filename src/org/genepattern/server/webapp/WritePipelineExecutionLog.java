@@ -95,7 +95,7 @@ public class WritePipelineExecutionLog {
         //for each step
         for(JobInfoWrapper step : pipelineJobInfo.getAllSteps()) {
             ++stepNum;
-            recordTaskExecution(logWriter, step, ""+stepNum);
+            recordTaskExecution(logWriter, step);
             recordTaskCompletion(logWriter, step);
         }
     } 
@@ -122,14 +122,14 @@ public class WritePipelineExecutionLog {
         }       
     }
 
-    private void recordTaskExecution(PrintWriter logWriter, JobInfoWrapper jobInfo, String stepId) {
-        logWriter.println("<font size='+1'>" + stepId + ". <a href=\"../../addTask.jsp?view=1&name=" + htmlEncode(jobInfo.getTaskLSID()) + "\">" + 
-                htmlEncode(jobInfo.getTaskName()) + "</a></font> " + 
+    private void recordTaskExecution(PrintWriter logWriter, JobInfoWrapper jobInfo) {
+        logWriter.println("<font size='+1'>step " + jobInfo.getStepPath()  + ". <a href=\"../../addTask.jsp?view=1&name=" + htmlEncode(jobInfo.getTaskLSID()) + "\">" + 
+                htmlEncode(jobInfo.getTaskName()) + "</a>  [id: "+jobInfo.getJobNumber()+"]</font>  " + 
                 htmlEncode(jobInfo.getTaskDescription()));
-        logWriter.print("<div id=\"lsid" + stepId + "\" style=\"display:block;\">");
+        logWriter.print("<div id=\"lsid" + jobInfo.getCurrentStepInPipeline() + "\" style=\"display:block;\">");
         logWriter.print("<pre>    " + jobInfo.getTaskLSID() + "</pre>");
         logWriter.print("</div>");
-        logWriter.println("<div id=\"id" + stepId + "\" style=\"display:block;\">");
+        logWriter.println("<div id=\"id" + jobInfo.getCurrentStepInPipeline() + "\" style=\"display:block;\">");
         logWriter.flush();
         recordInputParameters(logWriter, jobInfo);
     }
