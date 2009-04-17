@@ -477,14 +477,18 @@
 			
 			function createFileMenuLink(form, label) {
 				var link = document.createElement("a");
-				link.href = "javascript:document.forms['" + form.name + "'].submit()";
+				link.href = "javascript:document.getElementById('" + form.id + "').submit()";
 				link.appendChild(document.createTextNode(label));
 				form.appendChild(link);
 			}			
 			
 			function pushIntoRow(table, element) {
 				var row = table.insertRow(table.rows.length);
+				row.style.padding = "0";
+				row.style.margin = "0";
 				var cell = row.insertCell(row.cells.length);
+				cell.style.padding = "2px";
+				cell.style.margin = "0";
 				cell.appendChild(element);
 			}
 			
@@ -494,11 +498,14 @@
 					var div = document.createElement("div");
 					div.id = "menuDiv_" + outputFile.valueId;
 					div.className = 'popupMenu';
-					var table = document.createElement("table");
+					var table = createRegularTable('','');
+					table.cellpadding = "0";
+					table.cellspacing = "0";
+					table.border = "0";
 					div.appendChild(table);
 					
 					var deleteForm = document.createElement("form");
-					deleteForm.name = job.jobNumber + "_deleteFile_" + outputFile.value;
+					deleteForm.id = job.jobNumber + "_deleteFile_" + i;
 					deleteForm.method = "POST";
 					deleteForm.action = "/gp/jobResults/" + job.jobNumber + "/deleteFile";
 	
@@ -508,7 +515,7 @@
 					pushIntoRow(table, deleteForm);
 					
 					var saveForm = document.createElement("form");
-					saveForm.name = job.jobNumber + "_saveFile_" + outputFile.value;
+					saveForm.id = job.jobNumber + "_saveFile_" + i;
 					saveForm.method = "POST";
 					saveForm.action = "/gp/jobResults/" + job.jobNumber + "/saveFile";
 	
@@ -517,22 +524,24 @@
 					pushIntoRow(table, saveForm);
 					
 					var pipelineForm = document.createElement("form");
-					pipelineForm.name = job.jobNumber + "_createPipeline_" + outputFile.value;
+					pipelineForm.id = job.jobNumber + "_createPipeline_" + i
 					pipelineForm.method = "POST";
 					pipelineForm.action = "/gp/jobResults/" + job.jobNumber + "/createPipeline";
 	
 					createFileMenuLink(pipelineForm, "Create Pipeline");
 					pushIntoRow(table, pipelineForm);
 					
-					var separator = document.createElement("hr");
-					separator.size = "1px";
-					separator.color = '#cccc99';
-					pushIntoRow(table, separator);
+					if (outputFile.moduleMenuItems.length > 0) {
+						var separator = document.createElement("hr");
+						separator.size = "1px";
+						separator.color = '#cccc99';
+						pushIntoRow(table, separator);
+					}
 					
 					for (var j = 0; j < outputFile.moduleMenuItems.length; j++) {
 						var moduleMenuItem = outputFile.moduleMenuItems[j];
 						var taskForm = document.createElement("form");
-						taskForm.name = job.jobNumber + "_loadTask_" + outputFile.value + "_" + moduleMenuItem.key;
+						taskForm.id = job.jobNumber + "_loadTask_" + i + "_" + moduleMenuItem.key;
 						taskForm.method = "POST";
 						taskForm.action = "/gp/jobResults/" + job.jobNumber + "/loadTask";
 		
