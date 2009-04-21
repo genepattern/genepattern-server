@@ -16,6 +16,7 @@
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:a4j="http://richfaces.org/a4j"
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:t="http://myfaces.apache.org/tomahawk"
 	xmlns:c="http://java.sun.com/jstl/core">
@@ -793,9 +794,17 @@
 	    	<ui:param name="openVisualizers" value="#{jobStatusBean.openVisualizers}" />
 	    </ui:include>
 	    <h:form>
-		    <ui:include src="jobStatus_menu.xhtml">
-		    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
-		    </ui:include>
+
+		    <a4j:outputPanel id="jobMenuPanel">
+			    <ui:include src="jobStatus_menu.xhtml">
+			    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
+			    </ui:include>
+			</a4j:outputPanel>
+  	  		<a4j:poll id="poll" interval="2500"  enabled="#{!jobStatusBean.jobInfo.visualizer and  jobStatusBean.jobInfo.status == 'Processing'}"
+                reRender="jobMenuPanel">
+            	  <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
+  			</a4j:poll>
+		    
 	    </h:form>
 	    <div id="fileMenus#{jobStatusBean.jobInfo.jobNumber}">
         <t:dataList var="outputFile" value="#{jobStatusBean.jobInfo.outputFiles}">
@@ -841,8 +850,8 @@
 	    <h:outputText rendered="#{not empty jobStatusBean.jobInfo.purgeDate}">
 	    	<b>These job results are scheduled to be purged from the server on #{jobStatusBean.jobInfo.formattedPurgeDate}</b>
 	    </h:outputText>
-	    
-	    </div>
+	     
+	       </div>
 	    <table cellpadding="0" cellspacing="0" border="0" style="display: none;" id="testTable">
 	    	<tr><td></td></tr>
 	    </table>
