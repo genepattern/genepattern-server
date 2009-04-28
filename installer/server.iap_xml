@@ -11769,7 +11769,7 @@ and any path to a file to read from that file]]></string>
 													<method name="addElement">
 														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="6dba8b04baf0">
 															<property name="propertyValue">
-																<string><![CDATA[64m]]></string>
+																<string><![CDATA[256m]]></string>
 															</property>
 															<property name="propertyName">
 																<string><![CDATA[lax.nl.java.option.java.heap.size.initial]]></string>
@@ -11818,7 +11818,7 @@ and any path to a file to read from that file]]></string>
 													<method name="addElement">
 														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="6dba8b05baf2">
 															<property name="propertyValue">
-																<string><![CDATA[256m]]></string>
+																<string><![CDATA[1024m]]></string>
 															</property>
 															<property name="propertyName">
 																<string><![CDATA[lax.nl.java.option.java.heap.size.max]]></string>
