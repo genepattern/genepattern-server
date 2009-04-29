@@ -15,7 +15,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:a4j="http://richfaces.org/a4j"
+	  xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:c="http://java.sun.com/jstl/core">
 
   <!-- File section include for job results page.
@@ -72,16 +73,7 @@
 
 	    <div id="fileMenus#{jobInfo.jobNumber}">
 		  	<t:dataList var="outputFile" value="#{jobInfo.outputFiles}">
-		  		<h:form>
-	                <ui:include src="jobStatus_fileMenu.xhtml">
-	                    <ui:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}"/>
-	                    <ui:param name="filename" value="#{outputFile.name}" />
-	                    <ui:param name="deleteAllowed" value="#{jobStatusBean.jobInfo.permissions.deleteAllowed}"/>
-	                    <ui:param name="value" value="#{outputFile.link}"/>
-	                    <ui:param name="valueId" value="#{outputFile.valueId}"/>
-	                    <ui:param name="moduleMenuItems" value="#{outputFile.moduleMenuItems}"/>
-	                </ui:include>
-	            </h:form>
+		  		<ui:include src="jobStatus_fileMenu.xhtml"/>
 	        </t:dataList>
 	        	  	
 		  	<t:dataList var="p" value="#{jobInfo.inputFiles}">

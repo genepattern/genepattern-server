@@ -160,7 +160,7 @@
 					if (status != 'Finished' && status != 'Error' && document.getElementById('keepUpdating').checked) {
 						setTimeout("updatePage();", 2500);
 					} else {
-						createOutputFiles(data);
+						// XXX createOutputFiles(data);
 						// remove the email reminder button if it's there
 						if (document.getElementById('emailDiv')) {
 							document.getElementById('emailDiv').style.display = 'none';
@@ -190,7 +190,7 @@
 					if (document.getElementById("jobTable"+parent.children[i].jobNumber)) {
 						updateChild(parent.children[i], i, parent);
 					} else {
-						createChild(parent.children[i], i, parent);
+						// createChild(parent.children[i], i, parent);
 					}
 				}	
 			}
@@ -290,7 +290,7 @@
 				createInputFiles(child);
 				
 				if ((child.status == 'Error' || child.status == 'Finished')) {
-					createOutputFiles(child);
+					// XXX createOutputFiles(child);
 				}
 						
 				var fileMenusDiv = document.createElement('div');
@@ -332,7 +332,7 @@
 			function updateChild(child, index, parent) {
 				var status = document.getElementById("jobStatus"+child.jobNumber).innerHTML;
 				if (status == 'Processing' && child.status != 'Processing') {
-					createOutputFiles(child);
+					// XXX createOutputFiles(child);
 				}
 				updateStatus(child, child.status);
 				// if there's an indicator cell, update it, else create it
@@ -408,66 +408,6 @@
 				}
 			}
 			
-			function createOutputFiles(job) {
-				var div = document.getElementById("outputFilesDiv"+job.jobNumber);
-				if (job.outputFiles) {	
-					for (var i = 0; i < job.outputFiles.length; i++) {
-						var p = document.createElement("p");
-						p.className = 'narrow';
-						for (var j = 1; j < job.numAncestors && j < 10; j++) {
-							addSpacer(p);
-						}
-						var image = document.createElement("img");
-						image.title = 'output file';
-						image.src = "/gp/images/outputFile.gif";
-						var link = document.createElement("a");
-						link.style.color = '#0066FF';
-						link.href = job.outputFiles[i].link;
-						link.appendChild(image);
-						link.appendChild(document.createTextNode(job.outputFiles[i].truncatedDisplayValue));
-						p.appendChild(link);
-						p.appendChild(document.createTextNode(" ("+job.outputFiles[i].formattedSize+") "));
-						
-						var fileMenuImage = document.createElement("img");
-						fileMenuImage.src = "/gp/images/smallOptions.gif";
-						fileMenuImage.name = "Image_" + job.outputFiles[i].valueId; 
-			            fileMenuImage.id = "Image_" + job.outputFiles[i].valueId;
-			            fileMenuImage.border = "0";
-			            fileMenuImage.align = "top"; 
-			            fileMenuImage.onclick = Function("pm_showMenu('menuDiv_" + job.outputFiles[i].valueId + "', Position.cumulativeOffset(this), 50, 50);"); 
-			            fileMenuImage.onmouseover = Function("MM_swapImage('Image_" + job.outputFiles[i].valueId + "','','/gp/images/smallOptions2.gif',2)"); 
-			            fileMenuImage.onmouseout = Function("MM_swapImgRestore();");
-						p.appendChild(fileMenuImage);
-						div.appendChild(p);
-				    }
-				}
-				if (job.isVisualizer) {
-					var p = document.createElement("p");
-					p.className = 'narrow';
-					for (var j = 1; j < job.numAncestors && j < 10; j++) {
-						addSpacer(p);
-					}
-					var link = document.createElement('a');
-					link.href = 'javascript:this.runVisualizer(' + job.jobNumber + ')';
-					visualizerAppletTags[job.jobNumber] = job.visualizerAppletTag;
-					var img = document.createElement('img');
-					img.border = '0';
-					img.src = '/gp/images/visualizer.gif';
-					link.appendChild(img);
-					link.appendChild(document.createTextNode(' Open Visualizer'));
-					p.appendChild(link);
-					div.appendChild(p);
-					var span = document.createElement('span');
-					span.id = 'visualizerSpan' + job.jobNumber;
-					div.appendChild(span);
-					if (openVisualizers) {
-						runVisualizer(job.jobNumber);						
-					}
-				}
-				// create menus for this job's files
-				createFileMenus(job);
-			}
-			
 			function createInput(type, name, value) {
 				var input = document.createElement("input");
 				input.type = type;
@@ -476,86 +416,8 @@
 				return input;
 			}
 			
-			function createFileMenuLink(form, label) {
-				var link = document.createElement("a");
-				link.href = "javascript:document.getElementById('" + form.id + "').submit()";
-				link.appendChild(document.createTextNode(label));
-				form.appendChild(link);
-			}			
 			
-			function pushIntoRow(table, element) {
-				var row = table.insertRow(table.rows.length);
-				row.style.padding = "0";
-				row.style.margin = "0";
-				var cell = row.insertCell(row.cells.length);
-				cell.style.padding = "2px";
-				cell.style.margin = "0";
-				cell.appendChild(element);
-			}
-			
-			function createFileMenus(job) {
-				for (var i = 0; i < job.outputFiles.length; i++) {
-					var outputFile = job.outputFiles[i];
-					var div = document.createElement("div");
-					div.id = "menuDiv_" + outputFile.valueId;
-					div.className = 'popupMenu';
-					var table = createRegularTable('','');
-					table.cellpadding = "0";
-					table.cellspacing = "0";
-					table.border = "0";
-					div.appendChild(table);
 					
-					var deleteForm = document.createElement("form");
-					deleteForm.id = job.jobNumber + "_deleteFile_" + i;
-					deleteForm.method = "POST";
-					deleteForm.action = "/gp/jobResults/" + job.jobNumber + "/deleteFile";
-	
-					deleteForm.appendChild(createInput('hidden', 'jobFile', outputFile.value));
-					deleteForm.appendChild(createInput('hidden', 'jobFile', outputFile.value));
-					createFileMenuLink(deleteForm, "Delete");
-					pushIntoRow(table, deleteForm);
-					
-					var saveForm = document.createElement("form");
-					saveForm.id = job.jobNumber + "_saveFile_" + i;
-					saveForm.method = "POST";
-					saveForm.action = "/gp/jobResults/" + job.jobNumber + "/saveFile";
-	
-					saveForm.appendChild(createInput('hidden', 'jobFileName', outputFile.value));
-					createFileMenuLink(saveForm, "Save");
-					pushIntoRow(table, saveForm);
-					
-					var pipelineForm = document.createElement("form");
-					pipelineForm.id = job.jobNumber + "_createPipeline_" + i
-					pipelineForm.method = "POST";
-					pipelineForm.action = "/gp/jobResults/" + job.jobNumber + "/createPipeline";
-	
-					createFileMenuLink(pipelineForm, "Create Pipeline");
-					pushIntoRow(table, pipelineForm);
-					
-					if (outputFile.moduleMenuItems.length > 0) {
-						var separator = document.createElement("hr");
-						separator.size = "1px";
-						separator.color = '#cccc99';
-						pushIntoRow(table, separator);
-					}
-					
-					for (var j = 0; j < outputFile.moduleMenuItems.length; j++) {
-						var moduleMenuItem = outputFile.moduleMenuItems[j];
-						var taskForm = document.createElement("form");
-						taskForm.id = job.jobNumber + "_loadTask_" + i + "_" + moduleMenuItem.key;
-						taskForm.method = "POST";
-						taskForm.action = "/gp/jobResults/" + job.jobNumber + "/loadTask";
-		
-						taskForm.appendChild(createInput('hidden', 'module', moduleMenuItem.value));
-						taskForm.appendChild(createInput('hidden', 'name', outputFile.link));
-						createFileMenuLink(taskForm, moduleMenuItem.key);
-						pushIntoRow(table, taskForm);
-					
-					}
-					document.body.appendChild(div);
-				}
-			}
-			
 			function createInputParameters(job) {
 				var div = document.createElement('div');
 				div.id = 'inputParamsDiv' + job.jobNumber;
@@ -787,12 +649,22 @@
 		<ui:include src="jobStatus_inputParams.xhtml">
 	    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
 	    </ui:include>
-
+	    
+	    <h:form>
+ 		<a4j:outputPanel id="filePanel#{jobStatusBean.jobInfo.jobNumber}">
 		<ui:include src="jobStatus_files.xhtml">
 	    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
 	    	<ui:param name="indent" value="#{false}" />
 	    	<ui:param name="openVisualizers" value="#{jobStatusBean.openVisualizers}" />
 	    </ui:include>
+	    </a4j:outputPanel>
+	    
+	    <a4j:poll id="poll" interval="2500"  enabled="#{!jobStatusBean.jobInfo.visualizer and  jobStatusBean.jobInfo.status == 'Processing'}"
+                reRender="filePanel#{jobStatusBean.jobInfo.jobNumber}, fileMenuPanel#{jobStatusBean.jobInfo.jobNumber}">
+            	  <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
+  		</a4j:poll>
+  		</h:form>	
+	    
 	    <h:form>
 
 		    <a4j:outputPanel id="jobMenuPanel">
@@ -801,24 +673,19 @@
 			    </ui:include>
 			</a4j:outputPanel>
   	  		<a4j:poll id="poll" interval="2500"  enabled="#{!jobStatusBean.jobInfo.visualizer and  jobStatusBean.jobInfo.status == 'Processing'}"
-                reRender="jobMenuPanel">
+                reRender="jobMenuPanel, fileMenuPanel">
             	  <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
   			</a4j:poll>
 		    
 	    </h:form>
+	   
+	   <h:form>
+	   <a4j:outputPanel id="fileMenuPanel#{jobStatusBean.jobInfo.jobNumber}">
 	    <div id="fileMenus#{jobStatusBean.jobInfo.jobNumber}">
         <t:dataList var="outputFile" value="#{jobStatusBean.jobInfo.outputFiles}">
-	 		<h:form>
-	   			<ui:include src="jobStatus_fileMenu.xhtml">
-                    <ui:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}"/>
-                    <ui:param name="filename" value="#{outputFile.name}" />
-                    <ui:param name="deleteAllowed" value="#{jobStatusBean.jobInfo.permissions.deleteAllowed}"/>
-                    <ui:param name="value" value="#{outputFile.link}"/>
-	       			<ui:param name="valueId" value="#{outputFile.valueId}"/>
-                    <ui:param name="moduleMenuItems" value="#{outputFile.moduleMenuItems}"/>
-	   			</ui:include>
-	  		</h:form>
-	  	</t:dataList>
+	 			<ui:include src="jobStatus_fileMenu.xhtml"/>
+      	</t:dataList>
+	  	
 	  	<t:dataList var="inputFile" value="#{jobStatusBean.jobInfo.inputFiles}" rowIndexVar="fileindex">
 	 		<h:form>
 	   			<ui:include src="jobStatus_fileMenu.xhtml">
@@ -832,6 +699,12 @@
 	   		</h:form>		
 	  	</t:dataList>
 	  	</div>
+	  	</a4j:outputPanel>
+	  	</h:form>
+	  	
+	  	 <h:form>
+
+	  	<a4j:outputPanel id="pipelinePanel#{jobStatusBean.jobInfo.jobNumber}">
 	    <h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
 			<t:dataList var="child" value="#{jobStatusBean.allSteps}" rowIndexVar="idx">
 				<h:outputText rendered="#{idx gt 0}">
@@ -841,6 +714,14 @@
 			    </h:outputText>
 	    	</t:dataList>
 	   	</h:outputText>
+	   	</a4j:outputPanel>
+	   	<a4j:poll id="poll" interval="500"  enabled="#{!jobStatusBean.jobInfo.visualizer and  jobStatusBean.jobInfo.status == 'Processing'}"
+                reRender="pipelinePanel#{jobStatusBean.jobInfo.jobNumber}">
+            	  <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
+  		</a4j:poll>
+  		</h:form>	
+  		
+  		
 	    </div>
 	    
 	    
