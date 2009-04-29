@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This script was automatically generated using Macrovision InstallAnywhere 2008 VP1 Enterprise, Build 3532
      STATUS: Fully Functional LICENSED Edition
-     DATE:   Thu Apr 23 12:06:28 EDT 2009 -->
-<InstallAnywhere_Deployment_Project increments="12188">
+     DATE:   Wed Apr 29 15:26:55 EDT 2009 -->
+<InstallAnywhere_Deployment_Project increments="12140">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
 		<versionID major="9" minor="5" revision="0"/>
 		<editionID>57,46,53,32,69,110,116,101,114,112,114,105,115,101,32,66,117,105,108,100,32,51,53,51,50</editionID>
 		<scriptID>12,42,11,69,50,57,49,57,68,68,87,52,78,55,86,82,81,86,81,55,68,78,89,85,76,87</scriptID>
-		<buildID>3,13,71,76,105,110,117,120,44,32,50,46,54,46,56,45,50,52,46,50,53,45,115,109,112,44,32,97,109,100,54,52,59,32,74,97,118,97,32,49,46,53,46,48,95,48,57,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,65,78,83,73,95,88,51,46,52,45,49,57,54,56</buildID>
+		<buildID>3,13,71,76,105,110,117,120,44,32,50,46,54,46,56,45,50,52,46,50,52,45,115,109,112,44,32,97,109,100,54,52,59,32,74,97,118,97,32,49,46,53,46,48,95,48,57,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,65,78,83,73,95,88,51,46,52,45,49,57,54,56</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,32,-45,-72,96,-128,80,112,118,100,85,99,113,97,113,65,81,84,74,67,70,68,72,74,64,69,66,69,64,95,71,5,2,8,0,106,99,0,1,0,0</authorizationID>
+		<authorizationID>1,0,0,32,-13,88,0,-32,80,112,118,100,85,99,113,97,113,65,81,84,74,67,70,68,72,74,64,69,66,69,64,95,71,5,2,2,12,104,99,0,1,0,0</authorizationID>
 	</essentialScriptInfo>
-	<installationObjects uniqueObjects="692">
+	<installationObjects uniqueObjects="690">
 		<object class="com.zerog.ia.installer.Installer" objectID="72a1c4b4b1bf">
 			<property name="wizardME">
 				<object class="com.zerog.ia.installer.actions.MakeExecutable" objectID="cbe07101a254">
@@ -6993,12 +6993,15 @@ and any path to a file to read from that file]]></string>
 												</object>
 											</method>
 											<method name="addElement">
-												<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="73b3cce6b4f3">
+												<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="72b27ca9b6db">
 													<property name="propertyValue">
-														<string><![CDATA[./temp]]></string>
+														<string><![CDATA[2750]]></string>
 													</property>
 													<property name="propertyName">
-														<string><![CDATA[java.io.tmpdir]]></string>
+														<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+													</property>
+													<property name="propertyComment">
+														<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 													</property>
 												</object>
 											</method>
@@ -7017,15 +7020,12 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												</object>
 											</method>
 											<method name="addElement">
-												<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="72b27ca9b6db">
+												<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="73b3cce6b4f3">
 													<property name="propertyValue">
-														<string><![CDATA[2750]]></string>
+														<string><![CDATA[./temp]]></string>
 													</property>
 													<property name="propertyName">
-														<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
-													</property>
-													<property name="propertyComment">
-														<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+														<string><![CDATA[java.io.tmpdir]]></string>
 													</property>
 												</object>
 											</method>
@@ -8441,7 +8441,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[April 23, 2009 12:06:27 PM EDT]]></string>
+						<string><![CDATA[April 29, 2009 3:26:54 PM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.cdrom]]></string>
@@ -8623,7 +8623,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 			<property name="installerInfoData">
 				<object class="com.zerog.ia.installer.util.InstallerInfoData" objectID="72a1c4c9b1c0">
 					<property name="installerTitle">
-						<string><![CDATA[GenePattern]]></string>
+						<string><![CDATA[ GenePattern]]></string>
 					</property>
 					<property name="installerName">
 						<string><![CDATA[GPserver]]></string>
@@ -10792,16 +10792,6 @@ Relative paths are relative to the launcher.]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfad">
-															<property name="propertyValue">
-																<string><![CDATA[webapps/gp/resources]]></string>
-															</property>
-															<property name="propertyName">
-																<string><![CDATA[omnigene.conf]]></string>
-															</property>
-														</object>
-													</method>
-													<method name="addElement">
 														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="a761ea68af75">
 															<property name="propertyValue">
 																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$;$$IA_CLASSPATH$$;$$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar$;$$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
@@ -10812,6 +10802,16 @@ Relative paths are relative to the launcher.]]></string>
 															<property name="propertyComment">
 																<string><![CDATA[the Java classpath necessary to run this application
 Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
+															</property>
+														</object>
+													</method>
+													<method name="addElement">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfad">
+															<property name="propertyValue">
+																<string><![CDATA[webapps/gp/resources]]></string>
+															</property>
+															<property name="propertyName">
+																<string><![CDATA[omnigene.conf]]></string>
 															</property>
 														</object>
 													</method>
@@ -10864,6 +10864,16 @@ it will search for ones in this list]]></string>
 														</object>
 													</method>
 													<method name="addElement">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfa9">
+															<property name="propertyValue">
+																<string><![CDATA[./temp]]></string>
+															</property>
+															<property name="propertyName">
+																<string><![CDATA[java.io.tmpdir]]></string>
+															</property>
+														</object>
+													</method>
+													<method name="addElement">
 														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="baefc8e5b7c6">
 															<property name="propertyValue">
 																<string><![CDATA[org.apache.catalina.startup.Bootstrap]]></string>
@@ -10873,16 +10883,6 @@ it will search for ones in this list]]></string>
 															</property>
 															<property name="propertyComment">
 																<string><![CDATA[the class that contains the main method for the application]]></string>
-															</property>
-														</object>
-													</method>
-													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="1e2286c2bfa9">
-															<property name="propertyValue">
-																<string><![CDATA[./temp]]></string>
-															</property>
-															<property name="propertyName">
-																<string><![CDATA[java.io.tmpdir]]></string>
 															</property>
 														</object>
 													</method>
@@ -11831,15 +11831,16 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0a435ac9b995">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="d9b5849a97d8">
 															<property name="propertyValue">
-																<string><![CDATA[2750]]></string>
+																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$:$$IA_CLASSPATH$:$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar:$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+																<string><![CDATA[lax.class.path]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+																<string><![CDATA[the Java classpath necessary to run this application
+Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</property>
 														</object>
 													</method>
@@ -11854,16 +11855,15 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="d9b5849a97d8">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="0a435ac9b995">
 															<property name="propertyValue">
-																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$:$$IA_CLASSPATH$:$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar:$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
+																<string><![CDATA[2750]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.class.path]]></string>
+																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[the Java classpath necessary to run this application
-Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
+																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 															</property>
 														</object>
 													</method>
@@ -15803,15 +15803,16 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="9f66eaecbe0b">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="9f66eaecbe03">
 															<property name="propertyValue">
-																<string><![CDATA[2750]]></string>
+																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$:$$IA_CLASSPATH$:$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar:$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
+																<string><![CDATA[lax.class.path]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
+																<string><![CDATA[the Java classpath necessary to run this application
+Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 															</property>
 														</object>
 													</method>
@@ -15826,16 +15827,15 @@ and any path to a file to read from that file]]></string>
 														</object>
 													</method>
 													<method name="addElement">
-														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="9f66eaecbe03">
+														<object class="com.zerog.ia.installer.util.LAXPropertyData" objectID="9f66eaecbe0b">
 															<property name="propertyValue">
-																<string><![CDATA[$USER_INSTALL_DIR$/lax.jar$:$$IA_CLASSPATH$:$USER_INSTALL_DIR$$/$Tomcat$/$bin$/$bootstrap.jar:$USER_INSTALL_DIR$$/$Tomcat$/$common$/$lib$/$tools.jar]]></string>
+																<string><![CDATA[2750]]></string>
 															</property>
 															<property name="propertyName">
-																<string><![CDATA[lax.class.path]]></string>
+																<string><![CDATA[lax.nl.win32.microsoftvm.min.version]]></string>
 															</property>
 															<property name="propertyComment">
-																<string><![CDATA[the Java classpath necessary to run this application
-Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
+																<string><![CDATA[The minimum version of Microsoft's VM this application will run against]]></string>
 															</property>
 														</object>
 													</method>
@@ -16040,137 +16040,63 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 												<int>0</int>
 											</property>
 										</object>
-										<object class="com.zerog.ia.installer.actions.MoveFileAction" objectID="c27ee2f5883e">
-											<property name="useInstalledFile">
-												<boolean>false</boolean>
+										<object class="com.zerog.ia.installer.actions.ASCIIFileManipulator" objectID="06c350518dc6">
+											<property name="additionalText">
+												<string><![CDATA[]]></string>
 											</property>
-											<property name="existingFilePath">
-												<string><![CDATA[$USER_INSTALL_DIR$/resources/permissionMap.xml]]></string>
+											<property name="fileTargetType">
+												<int>1</int>
 											</property>
-											<property name="destination">
-												<string><![CDATA[$USER_INSTALL_DIR$/resources/]]></string>
+											<property name="newFilePath">
+												<string><![CDATA[$USER_INSTALL_DIR/resources/userGroups.xml]]></string>
 											</property>
-											<property name="uninstallFlag">
-												<boolean>true</boolean>
-											</property>
-											<property name="folderOptions">
-												<int>90</int>
-											</property>
-											<property name="renames">
-												<boolean>true</boolean>
-											</property>
-											<property name="destinationRename">
-												<string><![CDATA[permissionMap.xml.saved]]></string>
-											</property>
-											<property name="overrideUnixPermissions">
-												<boolean>false</boolean>
-											</property>
-											<property name="unixPermissions">
-												<string><![CDATA[777]]></string>
-											</property>
-											<property name="targetCheckKind">
-												<int>0</int>
-											</property>
-											<rules logicalOperation="AND">
-												<object class="com.zerog.ia.installer.rules.FileFolderPathChk" objectID="c27feb06883e">
-													<property name="path">
-														<string><![CDATA[$USER_INSTALL_DIR$/resources/permissionMap.xml]]></string>
-													</property>
-													<property name="checkIsFileFolder">
-														<boolean>true</boolean>
-													</property>
-													<property name="isFile">
-														<boolean>true</boolean>
-													</property>
-													<property name="checkExists">
-														<boolean>true</boolean>
-													</property>
-													<property name="exists">
-														<boolean>true</boolean>
-													</property>
-													<property name="checkReadWrite">
-														<boolean>false</boolean>
-													</property>
-													<property name="isReadable">
-														<boolean>true</boolean>
-													</property>
-													<property name="isWriteable">
-														<boolean>true</boolean>
-													</property>
-													<property name="checksInUseNotNotInUse">
-														<boolean>false</boolean>
-													</property>
-													<property name="checkInUse">
-														<boolean>false</boolean>
-													</property>
-												</object>
-											</rules>
-										</object>
-										<object class="com.zerog.ia.installer.actions.MoveFileAction" objectID="c2801e0a883e">
-											<property name="useInstalledFile">
-												<boolean>false</boolean>
-											</property>
-											<property name="existingFilePath">
+											<property name="systemFilePath">
 												<string><![CDATA[$USER_INSTALL_DIR$/resources/userGroups.xml]]></string>
 											</property>
-											<property name="destination">
-												<string><![CDATA[$USER_INSTALL_DIR$/resources/]]></string>
+											<property name="lineEndingsType">
+												<int>3</int>
 											</property>
-											<property name="uninstallFlag">
-												<boolean>true</boolean>
+											<property name="textOptionsType">
+												<int>1</int>
 											</property>
-											<property name="folderOptions">
-												<int>90</int>
+											<property name="searchAndReplaceVector">
+												<object class="java.util.Vector"/>
 											</property>
-											<property name="renames">
-												<boolean>true</boolean>
-											</property>
-											<property name="destinationRename">
-												<string><![CDATA[userGroups.xml.saved]]></string>
-											</property>
-											<property name="overrideUnixPermissions">
+											<property name="substituteIAVariables">
 												<boolean>false</boolean>
 											</property>
-											<property name="unixPermissions">
-												<string><![CDATA[777]]></string>
+											<property name="backup">
+												<boolean>true</boolean>
 											</property>
-											<property name="targetCheckKind">
-												<int>0</int>
+										</object>
+										<object class="com.zerog.ia.installer.actions.ASCIIFileManipulator" objectID="06ce7c9e8de1">
+											<property name="additionalText">
+												<string><![CDATA[]]></string>
 											</property>
-											<rules logicalOperation="AND">
-												<object class="com.zerog.ia.installer.rules.FileFolderPathChk" objectID="c2801e0b883e">
-													<property name="path">
-														<string><![CDATA[$USER_INSTALL_DIR$/resources/userGroups.xml]]></string>
-													</property>
-													<property name="checkIsFileFolder">
-														<boolean>true</boolean>
-													</property>
-													<property name="isFile">
-														<boolean>true</boolean>
-													</property>
-													<property name="checkExists">
-														<boolean>true</boolean>
-													</property>
-													<property name="exists">
-														<boolean>true</boolean>
-													</property>
-													<property name="checkReadWrite">
-														<boolean>false</boolean>
-													</property>
-													<property name="isReadable">
-														<boolean>true</boolean>
-													</property>
-													<property name="isWriteable">
-														<boolean>true</boolean>
-													</property>
-													<property name="checksInUseNotNotInUse">
-														<boolean>false</boolean>
-													</property>
-													<property name="checkInUse">
-														<boolean>false</boolean>
-													</property>
-												</object>
-											</rules>
+											<property name="fileTargetType">
+												<int>1</int>
+											</property>
+											<property name="newFilePath">
+												<string><![CDATA[$USER_INSTALL_DIR/resources/userGroups.xml]]></string>
+											</property>
+											<property name="systemFilePath">
+												<string><![CDATA[$USER_INSTALL_DIR$/resources/permissionMap.xml]]></string>
+											</property>
+											<property name="lineEndingsType">
+												<int>3</int>
+											</property>
+											<property name="textOptionsType">
+												<int>1</int>
+											</property>
+											<property name="searchAndReplaceVector">
+												<object class="java.util.Vector"/>
+											</property>
+											<property name="substituteIAVariables">
+												<boolean>false</boolean>
+											</property>
+											<property name="backup">
+												<boolean>true</boolean>
+											</property>
 										</object>
 									</installChildren>
 								</object>
@@ -16703,8 +16629,8 @@ Can be separated by colons (Mac OS/Unix) or semicolons (Windows)]]></string>
 								<object refID="334b4447b44b"/>
 								<object refID="b674f8fc8795"/>
 								<object refID="ba7324c7878d"/>
-								<object refID="c27ee2f5883e"/>
-								<object refID="c2801e0a883e"/>
+								<object refID="06ce7c9e8de1"/>
+								<object refID="06c350518dc6"/>
 								<object refID="afccf83195c9"/>
 								<object refID="885bdc2a8409"/>
 								<object refID="885b3f568408"/>
