@@ -8725,7 +8725,9 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 
 $PRODUCT_NAME$
 
-This will remove features installed by InstallAnywhere.  It will not remove files and folders created after the installation.]]></string>
+This utility removes GenePattern features known to InstallAnywhere. To remove GenePattern completely, run this utility, delete the GenePattern installation folder, and remove the GenePattern desktop icons. 
+
+Mac users: To uninstall R, use the utility provided by R.]]></string>
 							</property>
 							<property name="justification">
 								<int>0</int>
