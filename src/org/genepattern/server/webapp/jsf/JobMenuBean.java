@@ -36,9 +36,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
+import org.genepattern.server.JobInfoWrapper;
+import org.genepattern.server.JobInfoWrapper.OutputFile;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 
+import org.genepattern.server.webapp.jsf.jobinfo.JobStatusBean;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 
 import org.genepattern.webservice.WebServiceException;
@@ -155,11 +158,23 @@ public class JobMenuBean {
     public void deleteFile(ActionEvent event) {
     	String value = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobFile"));
     	deleteFile(value);
+    
+    	/**
+    	 * Force the JobStatusBean to be refreshed. While it is used as a JSF bean it's lifecycle is not managed
+    	 * via JSF so we need to manually update it after the transaction to ensure the right files are displayed
+    	 * after the delete - JTL 4/30/09
+    	 */
+    	HibernateUtil.commitTransaction();
+    	HibernateUtil.beginTransaction();
+    	JobStatusBean jsb = (JobStatusBean)UIBeanHelper.getManagedBean("#{jobStatusBean}");
+    	
+    	if (jsb != null) jsb.init();
+    
     }
     
     public String deleteFileAction() {
-    	String jobNo = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber"));
     	deleteFile((ActionEvent)null);
+    	
     	
     	return "deleteSuccess";
     }

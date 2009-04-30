@@ -15,6 +15,7 @@ package org.genepattern.server.webapp.jsf.jobinfo;
 import java.io.IOException;
 import java.util.List;
 
+import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -43,61 +44,68 @@ public class JobStatusBean {
     private boolean openVisualizers = false;
 
     public JobStatusBean() {
-        String jobNumberParameter = null;
+      init();
+    }
     
+    public void init(){
+    	  String jobNumberParameter = null;
+    	  int jobNumber = -1;
+    	  allSteps = null;
+          try {
+              jobNumberParameter = UIBeanHelper.getRequest().getParameter("jobNumber");
+              jobNumberParameter = UIBeanHelper.decode(jobNumberParameter);
+              jobNumber = Integer.parseInt(jobNumberParameter);
+              String openVisualizersParameter = UIBeanHelper.getRequest().getParameter("openVisualizers");
+              setOpenVisualizers(openVisualizersParameter != null);
+          }
+          catch (NumberFormatException e1) {
+          	System.out.println("JobStatusbean creation failed");
+          	e1.printStackTrace();
+          	String jobNo = UIBeanHelper.getRequest().getParameter("jobNumber");
+          	
+          	System.out.println("\nJobNo="+jobNo);
+          //    String errorMessage = "Missing or invalid job id, jobNumber="+jobNumberParameter;
+          //    UIBeanHelper.setErrorMessage(errorMessage);
+              return;
+          }
+          
+          currentUserId = UIBeanHelper.getUserId();
+          try {
+              UserDAO userDao = new UserDAO();
+              User user = userDao.findById(currentUserId);
+              if (user != null) {
+                  currentUserEmail = user.getEmail();
+                  showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUserId);
+              }
 
-        int jobNumber = -1;
-        try {
-            jobNumberParameter = UIBeanHelper.getRequest().getParameter("jobNumber");
-            jobNumberParameter = UIBeanHelper.decode(jobNumberParameter);
-            jobNumber = Integer.parseInt(jobNumberParameter);
-            String openVisualizersParameter = UIBeanHelper.getRequest().getParameter("openVisualizers");
-            setOpenVisualizers(openVisualizersParameter != null);
-        }
-        catch (NumberFormatException e1) {
-        	System.out.println("JobStatusbean creation failed");
-        //    String errorMessage = "Missing or invalid job id, jobNumber="+jobNumberParameter;
-        //    UIBeanHelper.setErrorMessage(errorMessage);
-            return;
-        }
-        
-        currentUserId = UIBeanHelper.getUserId();
-        try {
-            UserDAO userDao = new UserDAO();
-            User user = userDao.findById(currentUserId);
-            if (user != null) {
-                currentUserEmail = user.getEmail();
-                showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUserId);
-            }
+              String key = UserProp.getEmailNotificationPropKey(jobNumber);
+              if (key != null) {
+                  String propValue = userDao.getPropertyValue(currentUserId, key, String.valueOf(sendEmailNotification));
+                  sendEmailNotification = Boolean.valueOf(propValue);
+              }
+          }
+          catch (Exception e) {
+              String errorMessage = "Unable to initialize email notification for user: '"+currentUserId+"': "+e.getLocalizedMessage();
+              UIBeanHelper.setErrorMessage(errorMessage);
+          }
 
-            String key = UserProp.getEmailNotificationPropKey(jobNumber);
-            if (key != null) {
-                String propValue = userDao.getPropertyValue(currentUserId, key, String.valueOf(sendEmailNotification));
-                sendEmailNotification = Boolean.valueOf(propValue);
-            }
-        }
-        catch (Exception e) {
-            String errorMessage = "Unable to initialize email notification for user: '"+currentUserId+"': "+e.getLocalizedMessage();
-            UIBeanHelper.setErrorMessage(errorMessage);
-        }
-
-        HttpServletRequest request = UIBeanHelper.getRequest();
-        String contextPath = request.getContextPath();
-        String cookie = request.getHeader("Cookie");
-        
-        JobInfoManager jobInfoManager = new JobInfoManager();
-        this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, currentUserId, jobNumber);
-        
-        if (jobInfoWrapper.isDeleted()) {
-            String errorMessage = "Job # "+jobInfoWrapper.getJobNumber() + " is deleted.";
-            UIBeanHelper.setErrorMessage(errorMessage);
-            //try {
-            //    UIBeanHelper.getResponse().sendRedirect( UIBeanHelper.getRequest().getContextPath() + "/jobResults" );
-            //}
-            //catch (IOException e) {
-            //    log.error("Error sending redirect: "+e.getMessage(), e);
-            //}
-        }
+          HttpServletRequest request = UIBeanHelper.getRequest();
+          String contextPath = request.getContextPath();
+          String cookie = request.getHeader("Cookie");
+          
+          JobInfoManager jobInfoManager = new JobInfoManager();
+          this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, currentUserId, jobNumber);
+          
+          if (jobInfoWrapper.isDeleted()) {
+              String errorMessage = "Job # "+jobInfoWrapper.getJobNumber() + " is deleted.";
+              UIBeanHelper.setErrorMessage(errorMessage);
+              //try {
+              //    UIBeanHelper.getResponse().sendRedirect( UIBeanHelper.getRequest().getContextPath() + "/jobResults" );
+              //}
+              //catch (IOException e) {
+              //    log.error("Error sending redirect: "+e.getMessage(), e);
+              //}
+          }
     }
     
     public JobInfoWrapper getJobInfo() {
