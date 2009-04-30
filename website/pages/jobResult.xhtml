@@ -38,7 +38,7 @@
 			
 		<script type="text/javascript">
 
-		var currentJobNumber = #{jobInfoBean.jobNumber};
+		var currentJobNumber = #{jobStatusBean.jobInfo.jobNumber};
 
 		function setEmailNotification(cb, jobId, userId, userEmail){
             var valid = userEmail != null &amp;&amp; userEmail.length > 0;
