@@ -86,6 +86,7 @@
         }
 		
 		var openVisualizers = #{jobStatusBean.openVisualizers};
+		var openedVisualizerJobs = new Array();
 		
 		/* <![CDATA[ */	
 		
@@ -659,7 +660,7 @@
 	    </ui:include>
 	    </a4j:outputPanel>
 	    
-	    <a4j:poll id="poll" interval="2500"  enabled="#{!jobStatusBean.jobInfo.visualizer and  jobStatusBean.jobInfo.status == 'Processing'}"
+	    <a4j:poll id="poll" interval="2500"  enabled="#{jobStatusBean.jobInfo.status == 'Processing'}"
                 reRender="filePanel#{jobStatusBean.jobInfo.jobNumber}, fileMenuPanel#{jobStatusBean.jobInfo.jobNumber}">
             	  <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
   		</a4j:poll>
@@ -683,21 +684,12 @@
 	   <a4j:outputPanel id="fileMenuPanel#{jobStatusBean.jobInfo.jobNumber}">
 	    <div id="fileMenus#{jobStatusBean.jobInfo.jobNumber}">
         <t:dataList var="outputFile" value="#{jobStatusBean.jobInfo.outputFiles}">
-	 			<ui:include src="jobStatus_fileMenu.xhtml"/>
+	 			<ui:include src="jobStatus_fileMenu.xhtml">
+	 				 <ui:param name="jobOnMenu" value="#{jobStatusBean.jobInfo}"/>
+	 			</ui:include>
       	</t:dataList>
 	  	
-	  	<t:dataList var="inputFile" value="#{jobStatusBean.jobInfo.inputFiles}" rowIndexVar="fileindex">
-	 		<h:form>
-	   			<ui:include src="jobStatus_fileMenu.xhtml">
-                    <ui:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}"/>
-                    <ui:param name="filename" value="#{inputFile.name}" />
-                    <ui:param name="deleteAllowed" value="#{false}"/>
-                    <ui:param name="value" value="#{inputFile.link}"/>
-                    <ui:param name="valueId" value="#{inputFile.valueId}"/>
-                    <ui:param name="moduleMenuItems" value="#{inputFile.moduleMenuItems}"/>
-	   			</ui:include>
-	   		</h:form>		
-	  	</t:dataList>
+	  	
 	  	</div>
 	  	</a4j:outputPanel>
 	  	</h:form>

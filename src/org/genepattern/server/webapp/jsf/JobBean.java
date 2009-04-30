@@ -126,7 +126,24 @@ public class JobBean {
 
     public void createPipeline(ActionEvent e) {
 	try {
-	    String jobNumber = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber"));
+		HttpServletRequest request = UIBeanHelper.getRequest();
+		String jobNumber = null;
+		
+		String jobNumber2 = request.getParameter("jobNumber");
+	    String jobNumber3 = request.getParameter("jobNumberOverride");
+		    
+	    System.out.println("CreatePipeline on job #" + jobNumber2 + "  " + jobNumber3);
+		
+		try{
+			jobNumber = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber"));
+			
+			String jno = jobNumber = UIBeanHelper.getRequest().getParameter("jobNumberOverride");
+			if (jno != null) jobNumber = jno;
+		} catch (Exception ex){
+			ex.printStackTrace();
+		}
+		
+	    
 	    if (jobNumber == null) {
 		UIBeanHelper.setErrorMessage("No job specified.");
 		return;
@@ -335,7 +352,16 @@ public class JobBean {
 
     public void saveFile(ActionEvent event) {
         HttpServletRequest request = UIBeanHelper.getRequest();
+        
         String jobFileName = request.getParameter("jobFileName");
+        String jobNumber2 = request.getParameter("jobNumber");
+        String jobNumber3 = request.getParameter("jobNumberOverride");
+        String jobNumber4 = request.getParameter("jnOverride");
+	    
+        
+        System.out.println("SAVE on job #" + jobNumber2 + "  " + jobNumber3 + "  " + jobNumber4);
+        System.out.println("SAVE on file #" + jobFileName);
+        
         jobFileName = UIBeanHelper.decode(jobFileName);
         if (jobFileName == null || "".equals(jobFileName.trim())) {
             log.error("Error saving file, missing required parameter, 'jobFileName'.");

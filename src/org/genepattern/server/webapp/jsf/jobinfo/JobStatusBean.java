@@ -44,6 +44,7 @@ public class JobStatusBean {
 
     public JobStatusBean() {
         String jobNumberParameter = null;
+    
 
         int jobNumber = -1;
         try {
@@ -54,8 +55,9 @@ public class JobStatusBean {
             setOpenVisualizers(openVisualizersParameter != null);
         }
         catch (NumberFormatException e1) {
-            String errorMessage = "Missing or invalid job id, jobNumber="+jobNumberParameter;
-            UIBeanHelper.setErrorMessage(errorMessage);
+        	System.out.println("JobStatusbean creation failed");
+        //    String errorMessage = "Missing or invalid job id, jobNumber="+jobNumberParameter;
+        //    UIBeanHelper.setErrorMessage(errorMessage);
             return;
         }
         

@@ -66,27 +66,19 @@
 	    	<ui:param name="jobInfo" value="#{jobInfo}" />
 	    </ui:include>
 	
-
+	  
 		<ui:include src="jobStatus_files.xhtml">
 	    	<ui:param name="jobInfo" value="#{jobInfo}" />
 	    </ui:include>
 
 	    <div id="fileMenus#{jobInfo.jobNumber}">
 		  	<t:dataList var="outputFile" value="#{jobInfo.outputFiles}">
-		  		<ui:include src="jobStatus_fileMenu.xhtml"/>
+		  		<ui:include src="jobStatus_fileMenu.xhtml">
+		  			<ui:param name="jobOnMenu" value="#{jobInfo}"/>
+		  		</ui:include>
 	        </t:dataList>
-	        	  	
-		  	<t:dataList var="p" value="#{jobInfo.inputFiles}">
-		 		<h:form>
-		   			<ui:include src="jobStatus_fileMenu.xhtml">
-		        		<ui:param name="jobNumber" value="#{jobInfo.jobNumber}"/>
-		       			<ui:param name="valueId" value="#{p.valueId}"/>
-		       			<ui:param name="value" value="#{p.link}"/>
-		       			<ui:param name="deleteAllowed" value="#{false}"/>
-		   			</ui:include>
-		  		</h:form>
-		  	</t:dataList>
-		</div>
+	    </div>
+		
 	    </div>
 	    
   </ui:composition>

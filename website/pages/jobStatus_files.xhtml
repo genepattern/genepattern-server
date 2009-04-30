@@ -64,6 +64,7 @@
 			       	</h:outputText>
 		    		</p>
 		    </t:dataList>
+		    
 		    <h:outputText rendered="#{jobInfo.visualizer and jobInfo.status == 'Finished'}">
 		    	<p class="narrow">
 		    		<t:dataList var="bunk" value="#{jobInfo.numAncestors}" rowIndexVar="ancestorIndex">
@@ -77,9 +78,14 @@
 			    		function runVisualizer#{jobInfo.jobNumber}() {
 			    			document.getElementById("visualizerSpan#{jobInfo.jobNumber}").innerHTML = '#{jobInfo.visualizerAppletTag}';
 			    		}
-			    		<h:outputText rendered="#{openVisualizers}">
-			    			runVisualizer#{jobInfo.jobNumber}();
-			    		</h:outputText>
+
+			    		if (openVisualizers == true){
+				    		if (!(openedVisualizerJobs[#{jobInfo.jobNumber}] == true)){
+			    				openedVisualizerJobs[#{jobInfo.jobNumber}]=true;
+			    				runVisualizer#{jobInfo.jobNumber}();
+			    			}
+			    		}
+				    	
 			    	</script>
 		    	</p>
 		    </h:outputText>
