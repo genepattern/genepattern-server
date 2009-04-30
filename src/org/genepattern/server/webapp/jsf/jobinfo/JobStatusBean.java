@@ -12,10 +12,8 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf.jobinfo;
 
-import java.io.IOException;
 import java.util.List;
 
-import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -48,25 +46,21 @@ public class JobStatusBean {
     }
     
     public void init(){
-    	  String jobNumberParameter = null;
-    	  int jobNumber = -1;
-    	  allSteps = null;
-          try {
-              jobNumberParameter = UIBeanHelper.getRequest().getParameter("jobNumber");
-              jobNumberParameter = UIBeanHelper.decode(jobNumberParameter);
-              jobNumber = Integer.parseInt(jobNumberParameter);
-              String openVisualizersParameter = UIBeanHelper.getRequest().getParameter("openVisualizers");
-              setOpenVisualizers(openVisualizersParameter != null);
-          }
-          catch (NumberFormatException e1) {
-          	System.out.println("JobStatusbean creation failed");
-          	e1.printStackTrace();
-          	String jobNo = UIBeanHelper.getRequest().getParameter("jobNumber");
-          	
-          	System.out.println("\nJobNo="+jobNo);
-          //    String errorMessage = "Missing or invalid job id, jobNumber="+jobNumberParameter;
-          //    UIBeanHelper.setErrorMessage(errorMessage);
-              return;
+        String jobNumberParameter = null;
+        int jobNumber = -1;
+        allSteps = null;
+        try {
+            jobNumberParameter = UIBeanHelper.getRequest().getParameter("jobNumber");
+            jobNumberParameter = UIBeanHelper.decode(jobNumberParameter);
+            jobNumber = Integer.parseInt(jobNumberParameter);
+            String openVisualizersParameter = UIBeanHelper.getRequest().getParameter("openVisualizers");
+            setOpenVisualizers(openVisualizersParameter != null);
+        }
+        catch (NumberFormatException e1) {
+            String errorMessage = "JobStatusBean creation failed: Missing or invalid job id, jobNumber="+jobNumberParameter;
+            log.error(errorMessage, e1);
+            //    UIBeanHelper.setErrorMessage(errorMessage);
+            return;
           }
           
           currentUserId = UIBeanHelper.getUserId();
