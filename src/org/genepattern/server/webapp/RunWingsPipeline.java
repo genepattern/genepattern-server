@@ -89,7 +89,7 @@ public class RunWingsPipeline {
     }
     private static final Logger log = setupLog4jConfig(logFile);
 
-    RunPipelineOutputDecoratorIF decorator;
+    //RunPipelineOutputDecoratorIF decorator;
     PipelineModel model;
     
     /** server to run the pipeline on */
@@ -101,9 +101,9 @@ public class RunWingsPipeline {
     AnalysisWebServiceProxy analysisClient;
     AdminProxy adminClient;
 
-    public RunWingsPipeline(String server, String userID, String cmdLinePassword, int jobId, PipelineModel model,
-            RunPipelineOutputDecoratorIF decorator) throws Exception {
-        
+    public RunWingsPipeline(String server, String userID, String cmdLinePassword, int jobId, PipelineModel model) 
+    throws Exception 
+    {    
     	this.analysisClient = new AnalysisWebServiceProxy(server, userID, cmdLinePassword);
         this.adminClient = new AdminProxy(server, userID, cmdLinePassword);
 
@@ -112,7 +112,6 @@ public class RunWingsPipeline {
         this.jobId = jobId;
         
         this.model = model;
-        this.decorator = decorator == null ? new RunPipelineBasicDecorator() : decorator;
     }
     
     private static String getServer() throws MalformedURLException {
@@ -237,11 +236,6 @@ public class RunWingsPipeline {
             else {
                 jobId = Integer.parseInt(System.getProperty("jobID"));
             }
-            RunPipelineOutputDecoratorIF decorator = null;
-            if (System.getProperty("decorator") != null) {
-                String decoratorClass = System.getProperty("decorator");
-                decorator = (RunPipelineOutputDecoratorIF) (Class.forName(decoratorClass)).newInstance();
-            }
             
             //see StartupServlet.java
             String gpUrl = System.getProperty("GenePatternURL", "");
@@ -288,7 +282,7 @@ public class RunWingsPipeline {
             }
             String server = serverFromFile.getProtocol() + "://" + host + port;
             PipelineModel pipelineModel = getPipelineModel(pipelineFileName, pipelineLSID, server, userId, userKey);
-            RunWingsPipeline rp = new RunWingsPipeline(server, userId, userKey, jobId, pipelineModel, decorator);
+            RunWingsPipeline rp = new RunWingsPipeline(server, userId, userKey, jobId, pipelineModel);
             rp.runPipeline(additionalArguments);
         } 
         finally {
@@ -408,8 +402,6 @@ public class RunWingsPipeline {
             if (taskInfo == null) {
                 okayToRun = false;
                 log.error("No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID() + ")");
-                decorator.error(model, "No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID()
-                + ")");
             }
         }
         if (!okayToRun) {
@@ -419,7 +411,6 @@ public class RunWingsPipeline {
         taskNum = 0;
         JobInfo results[] = new JobInfo[vTasks.size()];
         
-        decorator.beforePipelineRuns(model);
         try {
             for (Enumeration eTasks = vTasks.elements(); eTasks.hasMoreElements(); taskNum++) {
                 jobSubmission = (JobSubmission) eTasks.nextElement();
@@ -435,7 +426,6 @@ public class RunWingsPipeline {
                     
                     params = removeEmptyOptionalParams(parameterInfo);
                     
-                    decorator.recordTaskExecution(jobSubmission, taskNum + 1, vTasks.size());
                     
                     JobInfo taskResult = executeTask(jobSubmission, params, taskNum, results);
                     
@@ -446,7 +436,6 @@ public class RunWingsPipeline {
                     // taskResult so that they can be used downstream
                     taskResult = collectChildJobResults(taskResult);
                     
-                    decorator.recordTaskCompletion(taskResult, jobSubmission.getName() + (taskNum + 1));
                     
                     results[taskNum] = taskResult;
                 } 
@@ -461,7 +450,6 @@ public class RunWingsPipeline {
             }
         } 
         finally {
-            decorator.afterPipelineRan(model);
         }
         setStatus(JobStatus.FINISHED);
     }

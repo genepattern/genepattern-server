@@ -73,7 +73,6 @@ public class RunPipeline {
     private static final String logFile = "pipelineErrors.log"; // one log file per pipeline
     private static final Logger log = setupLog4jConfig(logFile);
 
-    RunPipelineOutputDecoratorIF decorator;
     PipelineModel model;
 
     /** server to run the pipeline on */
@@ -86,8 +85,7 @@ public class RunPipeline {
 
     LocalAdminClient adminClient;
 
-    public RunPipeline(String server, String userID, int jobId, PipelineModel model,
-	    RunPipelineOutputDecoratorIF decorator) throws Exception {
+    public RunPipeline(String server, String userID, int jobId, PipelineModel model) throws Exception {
 
 	this.analysisClient = new LocalAnalysisClient(userID);
 	this.adminClient = new LocalAdminClient(userID);
@@ -97,7 +95,6 @@ public class RunPipeline {
 	this.jobId = jobId;
 
 	this.model = model;
-	this.decorator = decorator == null ? new RunPipelineBasicDecorator() : decorator;
     }
 
     public static Logger setupLog4jConfig(String logFile) {
@@ -221,11 +218,6 @@ public class RunPipeline {
 	    } else {
 		jobId = Integer.parseInt(System.getProperty("jobID"));
 	    }
-	    RunPipelineOutputDecoratorIF decorator = null;
-	    if (System.getProperty("decorator") != null) {
-		String decoratorClass = System.getProperty("decorator");
-		decorator = (RunPipelineOutputDecoratorIF) (Class.forName(decoratorClass)).newInstance();
-	    }
 	    URL serverFromFile = null;
 
 	    try {
@@ -249,7 +241,7 @@ public class RunPipeline {
 	    String host = serverFromFile.getHost();
 	    String server = serverFromFile.getProtocol() + "://" + host + ":" + serverFromFile.getPort();
 	    PipelineModel pipelineModel = getPipelineModel(pipelineFileName, pipelineLSID, server);
-	    RunPipeline rp = new RunPipeline(server, userId, jobId, pipelineModel, decorator);
+	    RunPipeline rp = new RunPipeline(server, userId, jobId, pipelineModel);
 	    rp.runPipeline(additionalArguments);
 
 	} finally {
@@ -336,8 +328,6 @@ public class RunPipeline {
 	    if (taskInfo == null) {
 		okayToRun = false;
 		log.error("No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID() + ")");
-		decorator.error(model, "No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID()
-			+ ")");
 	    }
 
 	}
@@ -349,7 +339,6 @@ public class RunPipeline {
 	taskNum = 0;
 	JobInfo results[] = new JobInfo[vTasks.size()];
 
-	decorator.beforePipelineRuns(model);
 	try {
 	    for (Enumeration<?> eTasks = vTasks.elements(); eTasks.hasMoreElements(); taskNum++) {
 		jobSubmission = (JobSubmission) eTasks.nextElement();
@@ -363,8 +352,6 @@ public class RunPipeline {
 
 		    params = setJobParametersFromArgs(jobSubmission.getName(), taskNum + 1, params, results, args);
 
-		    decorator.recordTaskExecution(jobSubmission, taskNum + 1, vTasks.size());
-
 		    JobInfo taskResult = executeTask(jobSubmission, params, taskNum, results);
 
 		    // handle the special case where a task is a pipeline by
@@ -373,8 +360,6 @@ public class RunPipeline {
 		    // to its
 		    // taskResult so that they can be used downstream
 		    taskResult = collectChildJobResults(taskResult);
-
-		    decorator.recordTaskCompletion(taskResult, jobSubmission.getName() + (taskNum + 1));
 
 		    results[taskNum] = taskResult;
 
@@ -386,7 +371,6 @@ public class RunPipeline {
 		}
 	    }
 	} finally {
-	    decorator.afterPipelineRan(model);
 	}
 
 	HibernateUtil.commitTransaction();

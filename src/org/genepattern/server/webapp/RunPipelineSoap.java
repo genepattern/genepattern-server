@@ -69,8 +69,6 @@ public class RunPipelineSoap {
 
     private static final Logger log = setupLog4jConfig(logFile);
 
-    private RunPipelineOutputDecoratorIF decorator;
-
     private PipelineModel model;
     /** server to run the pipeline on */
     private String server;
@@ -82,7 +80,7 @@ public class RunPipelineSoap {
 
     private AdminProxy adminClient;
 
-    public RunPipelineSoap(String server, String userID, String cmdLinePassword, int jobId, PipelineModel model, RunPipelineOutputDecoratorIF decorator) 
+    public RunPipelineSoap(String server, String userID, String cmdLinePassword, int jobId, PipelineModel model) 
     throws WebServiceException 
     {
         this.analysisClient = new AnalysisWebServiceProxy(server, userID, cmdLinePassword);
@@ -91,10 +89,6 @@ public class RunPipelineSoap {
         System.setProperty("userID", userID);
         this.jobId = jobId;
         this.model = model;
-        this.decorator = decorator;
-        if (this.decorator == null) {
-            this.decorator = new RunPipelineNoDecorator();
-        }
     }
 
     public void runPipeline(Map args) throws WebServiceException {
@@ -122,7 +116,6 @@ public class RunPipelineSoap {
                 okayToRun = false;
                 String errorMessage = "No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID() + ")";
                 log.error(errorMessage);
-                decorator.error(model, errorMessage);
                 if (errorMessages == null) {
                     errorMessages = new StringBuffer(errorMessage);
                 }
@@ -136,7 +129,6 @@ public class RunPipelineSoap {
         }
 
         JobInfo results[] = new JobInfo[model.getTasks().size()];
-        decorator.beforePipelineRuns(model);
         try {
             int taskNum = 0;
             for(JobSubmission jobSubmission : model.getTasks()) { 
@@ -155,14 +147,12 @@ public class RunPipelineSoap {
                 ParameterInfo[] params = parameterInfo;
                 params = setJobParametersFromArgs(jobSubmission.getName(), taskNum + 1, params, results, args);
                 params = removeEmptyOptionalParams(parameterInfo);
-                decorator.recordTaskExecution(jobSubmission, taskNum + 1, model.getTasks().size());
                 JobInfo taskResult = executeTask(jobSubmission, params, taskNum, results);
 
                 // handle the special case where a task is a pipeline by adding
                 // all output files of the pipeline's children (recursively) to its
                 // taskResult so that they can be used downstream
                 taskResult = collectChildJobResults(taskResult);
-                decorator.recordTaskCompletion(taskResult, jobSubmission.getName() + (taskNum + 1));
                 results[taskNum] = taskResult;
                     
                 if (JobStatus.ERROR.equals(taskResult.getStatus())) {
@@ -172,7 +162,6 @@ public class RunPipelineSoap {
             }
         }
 	    finally {
-            decorator.afterPipelineRan(model);
         }
     }
 
@@ -661,11 +650,6 @@ public class RunPipelineSoap {
 	    } else {
 		jobId = Integer.parseInt(System.getProperty("jobID"));
 	    }
-	    RunPipelineOutputDecoratorIF decorator = null;
-	    if (System.getProperty("decorator") != null) {
-		String decoratorClass = System.getProperty("decorator");
-		decorator = (RunPipelineOutputDecoratorIF) (Class.forName(decoratorClass)).newInstance();
-	    }
 
 	    // see StartupServlet.java
 	    String gpUrl = System.getProperty("GenePatternURL", "");
@@ -714,7 +698,7 @@ public class RunPipelineSoap {
 		log.error("Unable to construct pipeline model.");
 		System.exit(1);
 	    }
-	    RunPipelineSoap rp = new RunPipelineSoap(server, userId, userKey, jobId, pipelineModel, decorator);
+	    RunPipelineSoap rp = new RunPipelineSoap(server, userId, userKey, jobId, pipelineModel);
 	    rp.runPipeline(additionalArguments);
 	} finally {
 	    log.debug("DEBUG=" + System.getProperty("DEBUG"));

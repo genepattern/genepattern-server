@@ -45,7 +45,7 @@ public class WritePipelineExecutionLog {
     private static SimpleDateFormat titleDateFormat = new SimpleDateFormat("h:mm a EEE MMM d, ''yy");
     
     private static String htmlEncode(String str) {
-        return RunPipelineDecoratorBase.htmlEncode(str);
+        return HtmlEncoder.htmlEncode(str);
     }
 
     private JobInfoWrapper pipelineJobInfo = null;

@@ -11,27 +11,14 @@
 */
 package org.genepattern.server.webapp;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Properties;
-
-import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.util.GPConstants;
-import org.genepattern.util.StringUtils;
-
 /**
- * This is the decorator for output from running a pipeline from the web
- * environment. It should generate the html for the runPipeline.jsp page as it
- * runs and also record a log file that will allow users to see when this
- * pipeline was run, execution times and output files
+ * Utility class for encoding html strings, copied from RunPipelineDecoratorBase.htmlEncode(str).
+ * 
+ * @author pcarr
  */
-public abstract class RunPipelineDecoratorBase implements RunPipelineOutputDecoratorIF {
-
-    protected Properties genepatternProps = null;
-    protected String URL = null;
-    protected PipelineModel model = null;
+public abstract class HtmlEncoder {
+    private static final String entityMap;
+    private static final String[] quickEntities;
 
     /**
      * escapes characters that have an HTML entity representation. It uses a
@@ -43,8 +30,9 @@ public abstract class RunPipelineDecoratorBase implements RunPipelineOutputDecor
      * @return String containing new copy of string with ENTITIES escaped
      */
     public static final String htmlEncode(String nonHTMLsrc) {
-        if (nonHTMLsrc == null)
+        if (nonHTMLsrc == null) {
             return "";
+        }
         StringBuffer res = new StringBuffer();
         int l = nonHTMLsrc.length();
         int idx;
@@ -54,7 +42,8 @@ public abstract class RunPipelineDecoratorBase implements RunPipelineOutputDecor
             idx = entityMap.indexOf(c);
             if (idx == -1) {
                 res.append(c);
-            } else {
+            } 
+            else {
                 res.append(quickEntities[idx]);
             }
         }
@@ -129,10 +118,6 @@ public abstract class RunPipelineDecoratorBase implements RunPipelineOutputDecor
             { "\u00FC", "uuml" }, { "\u00FD", "yacute" },
             { "\u00FE", "thorn" }, { "\u00FF", "yuml" }, { "\u0080", "euro" } };
 
-    private static String entityMap;
-
-    private static String[] quickEntities;
-
     static {
         // Initialize some local mappings to speed it all up
         int l = ENTITIES.length;
@@ -144,78 +129,6 @@ public abstract class RunPipelineDecoratorBase implements RunPipelineOutputDecor
             quickEntities[i] = "&" + ENTITIES[i][1] + ";";
         }
         entityMap = temp.toString();
-
     }
 
-    protected void init() {
-        //load genepattern.properties 
-        FileInputStream fis = null;
-        try {
-            String genePatternPropertiesFile = System.getProperty("genepattern.properties") + java.io.File.separator + "genepattern.properties";
-            fis = new FileInputStream(genePatternPropertiesFile);
-            genepatternProps = new Properties();
-            genepatternProps.load(fis);
-            fis.close();
-        }
-        catch (Exception ioe) {
-            //TODO: log exception
-            genepatternProps = new Properties();
-        }
-        finally {
-            if (fis != null) {
-                try {
-                    fis.close();
-                }
-                catch (IOException e) {
-                    //TODO: log exception
-                }
-            }
-        }
-            
-        //initialize the URL
-        URL = System.getProperty("GenePatternURL");
-        if (URL == null || URL.trim().length()==0) {
-            String localhost = "127.0.0.1"; //default value in case of exception
-            String portStr = genepatternProps.getProperty("GENEPATTERN_PORT");
-            portStr = portStr.trim();
-            if (portStr.length() > 0) {
-                portStr = ":"+portStr;
-            }
-            try {
-                localhost = InetAddress.getLocalHost().getCanonicalHostName();
-                if (localhost.equals("localhost")) {
-                    // MacOS X can't resolve localhost when unplugged from network
-                    localhost = "127.0.0.1";
-                }
-            }
-            catch (UnknownHostException e) {
-                //TODO: log exception
-            }
-            URL = "http://" + localhost + portStr + "/gp/";
-        }
-    }
-
-    protected String localizeURL(String original) {
-        if (original == null) {
-            return "";
-        }
-        String GENEPATTERN_PORT = "GENEPATTERN_PORT";
-        String GENEPATTERN_URL = "GenePatternURL";
-        String port = genepatternProps.getProperty(GENEPATTERN_PORT);
-        if (port == null) {
-            port = "PORT??";
-        }
-        original = StringUtils.replaceAll(original, GPConstants.LEFT_DELIMITER
-                + GPConstants.LSID + GPConstants.RIGHT_DELIMITER, model
-                .getLsid());
-        original = StringUtils.replaceAll(original, GPConstants.LEFT_DELIMITER
-                + GENEPATTERN_PORT + GPConstants.RIGHT_DELIMITER, port);
-        String gpUrl = System.getProperty("GenePatternURL");
-        if (gpUrl == null) {
-            gpUrl = "unknown";
-        }
-        original = StringUtils.replaceAll(original, GPConstants.LEFT_DELIMITER
-                + GENEPATTERN_URL + GPConstants.RIGHT_DELIMITER, gpUrl);
-        return original;
-    }
 }
