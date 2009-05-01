@@ -47,6 +47,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserPropKey;
+import org.genepattern.server.webapp.jsf.jobinfo.JobStatusBean;
 import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
@@ -175,6 +176,18 @@ public class JobBean {
         try {
             int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
             deleteJob(jobNumber);
+            System.out.println("DELETE on JobBean");
+            /**
+        	 * Force the JobStatusBean to be refreshed. While it is used as a JSF bean it's lifecycle is not managed
+        	 * via JSF so we need to manually update it after the transaction to ensure the right files are displayed
+        	 * after the delete - JTL 4/30/09
+        	 */
+        	HibernateUtil.commitTransaction();
+        	HibernateUtil.beginTransaction();
+        	JobStatusBean jsb = (JobStatusBean)UIBeanHelper.getManagedBean("#{jobStatusBean}");
+        	
+        	if (jsb != null) jsb.init();
+        
             resetJobs();
         } 
         catch (NumberFormatException e) {
