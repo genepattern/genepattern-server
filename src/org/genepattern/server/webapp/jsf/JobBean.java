@@ -167,6 +167,15 @@ public class JobBean {
 	}
     }
 
+    
+    public String deleteAction(){
+    	System.out.println("DeleteAction");
+    	delete(null);
+    	System.out.println("DeleteAction - finished");
+    	
+    	return "home";
+    }
+    
     /**
      * Delete the selected job. Should this also delete the files?
      * 
@@ -176,18 +185,8 @@ public class JobBean {
         try {
             int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
             deleteJob(jobNumber);
-            System.out.println("DELETE on JobBean");
-            /**
-        	 * Force the JobStatusBean to be refreshed. While it is used as a JSF bean it's lifecycle is not managed
-        	 * via JSF so we need to manually update it after the transaction to ensure the right files are displayed
-        	 * after the delete - JTL 4/30/09
-        	 */
-        	HibernateUtil.commitTransaction();
-        	HibernateUtil.beginTransaction();
-        	JobStatusBean jsb = (JobStatusBean)UIBeanHelper.getManagedBean("#{jobStatusBean}");
+            UIBeanHelper.setErrorMessage("Job "+jobNumber+" has been deleted");
         	
-        	if (jsb != null) jsb.init();
-        
             resetJobs();
         } 
         catch (NumberFormatException e) {

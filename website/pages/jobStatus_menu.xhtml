@@ -44,9 +44,8 @@
 			<tr>
 				<td>
 				  <h:commandLink value="Delete" 
-					onclick="return confirm('Are you sure you want to delete the selected job?');"
-					actionListener="#{jobsBean.delete}"
-					immediate="true"
+					onclick="return confirm('Are you sure you want to delete the selected job (#{jobStatusBean.jobInfo.jobNumber})?');"
+					action="#{jobsBean.deleteAction}"
 					rendered="#{jobStatusBean.jobInfo.permissions.deleteAllowed and (jobInfo.status == 'Finished' or jobStatusBean.jobInfo.status == 'Error')}">
 					<f:param value="#{jobStatusBean.jobInfo.jobNumber}" name="jobNumber" />
 				  </h:commandLink>
