@@ -173,7 +173,7 @@ public class JobBean {
     	delete(null);
     	System.out.println("DeleteAction - finished");
     	
-    	return "home";
+    	return "homeNoRedirect";
     }
     
     /**
