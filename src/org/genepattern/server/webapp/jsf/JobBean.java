@@ -47,7 +47,6 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserPropKey;
-import org.genepattern.server.webapp.jsf.jobinfo.JobStatusBean;
 import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
