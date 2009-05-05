@@ -196,6 +196,14 @@ public class JobInfoWrapper {
      * Wrapper class for a ParameterInfo which is an output file.
      */
     public static class OutputFile extends ParameterInfoWrapper {
+        private File outputFile = null;
+        /**
+         * @return the path to the output file on the server.
+         */
+        public File getOutputFile() {
+            return outputFile;
+        }
+        
         public static boolean isTaskLog(ParameterInfo parameterInfo) {
             String filename = parameterInfo == null ? "" : parameterInfo.getName();
             boolean isTaskLog = 
@@ -210,7 +218,7 @@ public class JobInfoWrapper {
 
         OutputFile(Map<String, Collection<TaskInfo>>  kindToModules, File outputDir, String contextPath, JobInfo jobInfo, ParameterInfo parameterInfo) {
             super(parameterInfo);
-            File outputFile = new File(outputDir, parameterInfo.getName());
+            this.outputFile = new File(outputDir, parameterInfo.getName());
             //Set the size and lastModified properties for each output file
             boolean exists = outputFile.exists();
             if (exists) {

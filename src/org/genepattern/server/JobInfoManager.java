@@ -6,6 +6,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
@@ -18,6 +19,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
@@ -478,4 +480,19 @@ public class JobInfoManager {
         w.writeLogFile();
         return logFile;        
     }
+    
+    public static File writeOutputFilesToZipFile(String jobDirName, JobInfoWrapper jobInfo) {
+        File jobDir = new File(jobDirName);
+        File zipFile = new File(jobDir, jobInfo.getJobNumber() + ".zip");
+        JobInfoZipFileWriter w = new JobInfoZipFileWriter(zipFile, jobInfo);
+        w.writeZipFile();
+        return zipFile;        
+    }
+    
+    public static void writeOutputFilesToZipStream(OutputStream os, JobInfoWrapper jobInfo) throws IOException {
+        ZipOutputStream zipStream = new ZipOutputStream(os);
+        JobInfoZipFileWriter w = new JobInfoZipFileWriter(jobInfo);
+        w.writeOutputFilesToZip(zipStream);
+    }
+
 }

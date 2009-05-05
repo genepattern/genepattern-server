@@ -146,6 +146,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
        GET /jobResults/<job>?returnType=JSON
        GET /jobResults/<job>/?returnType=JSON
        GET /jobResults/<job>/<file>
+       GET /jobResults/<job>.zip
      * </pre>
      */
     public void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -160,6 +161,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         String file = null;
         if (jobNumber != null) {
             file = parseFilename(resultsPath);
+            //Note: special case for /jobResults/<job>.zip, file will equal '.zip'
         }
         
         //special case: list all job results
@@ -226,6 +228,11 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             response.addHeader("Cache-Control", "must-revalidate");
             response.addHeader("Expires", "Mon, 1 Jan 2006 05:00:00 GMT");//in the past
             rd.forward(request, response);
+            return;
+        }
+        
+        if (file.equals(".zip")) {
+            downloadZip(useridFromSession, jobID, request, response);
             return;
         }
 
@@ -393,6 +400,13 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         if (resultsPath.length() > 0) {
             int idx = resultsPath.indexOf("/");
             if (idx < 0) {
+                //check for special case: <job>.zip
+                int idx2 = resultsPath.indexOf(".zip");
+                if (idx2 >= 0) {
+                    jobNumber = resultsPath.substring(0, idx2);
+                    resultsPath.delete(0, idx2);
+                    return jobNumber;
+                }
                 jobNumber = resultsPath.toString();
                 resultsPath.delete(0, resultsPath.length());
             }
@@ -777,7 +791,6 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             }
             os.flush();
             os.close();
-            //UIBeanHelper.getFacesContext().responseComplete();
         } 
         catch (IOException e) {
             log.error("Error saving file.", e);
@@ -793,6 +806,24 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         }
     }
     
+    private void downloadZip(String currentUserId, int jobNumber, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        JobInfoManager m = new JobInfoManager();
+        String contextPath = request.getContextPath();
+        String cookie = request.getHeader("Cookie");
+        JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, currentUserId, jobNumber);
+        
+        response.setHeader("Content-Disposition", "attachment; filename=" + jobNumber + ".zip" + ";");
+        response.setHeader("Content-Type", "application/octet-stream");
+        response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
+        response.setHeader("Pragma", "no-cache"); // HTTP 1.0 cache control
+        response.setDateHeader("Expires", 0);
+        OutputStream os = response.getOutputStream();
+        
+        JobInfoManager.writeOutputFilesToZipStream(os, jobInfoWrapper);
+        os.flush();
+        os.close();
+    }
+
     private void createPipeline(String currentUserId, int jobNumber, HttpServletRequest request, HttpServletResponse response) 
     throws IOException
     {
