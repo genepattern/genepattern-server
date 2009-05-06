@@ -734,10 +734,14 @@ public class JobInfoWrapper {
     }
     
     public boolean getHasVisualizer() {
-    	if (isVisualizer()) return true;
+    	if (isVisualizer()) {
+    	    return true;
+    	}
     	else if (isPipeline()) {
     		for (JobInfoWrapper child : children) {
-    			if (child.isVisualizer()) return true;
+    			if (child.isVisualizer()) {
+    			    return true;
+    			}
     		}
     	}
     	return false;
