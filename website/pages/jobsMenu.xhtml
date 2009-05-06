@@ -25,7 +25,7 @@
 			<tr>
 				<td>
 				  <h:commandLink value="Download"
-					actionListener="#{jobsBean.downloadZip}"
+					actionListener="#{jobStatusBean.downloadZip}"
 					immediate="true"
 					rendered="#{job.complete}">
 					<f:param value="#{job.jobNumber}" name="jobNumber" />

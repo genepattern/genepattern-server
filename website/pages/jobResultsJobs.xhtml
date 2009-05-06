@@ -113,7 +113,7 @@
     <tr class="task-titlerow-actions">
       <td colspan="3" />
       <td >
-      <h:commandLink rendered="#{jobWrapper.complete} and false" value="download" actionListener="#{jobsBean.downloadZip}" immediate="true">
+      <h:commandLink rendered="#{jobWrapper.complete} and false" value="download" actionListener="#{jobStatusBean.downloadZip}" immediate="true">
           <f:param value="#{jobWrapper.jobNumber}" name="jobNumber" />
         </h:commandLink>
         <h:outputText rendered="#{!jobWrapper.complete}  and false"><em>download</em>

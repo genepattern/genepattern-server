@@ -12,9 +12,17 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf.jobinfo;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipOutputStream;
 
+import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -25,6 +33,11 @@ import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
+import org.genepattern.util.StringUtils;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  * Access job status for a single job result from a JSF page.
@@ -157,4 +170,33 @@ public class JobStatusBean {
     public String getCurrentUserEmail() {
         return currentUserEmail;        
     }
+
+    //migrate actions from JobBean
+    public void downloadZip(ActionEvent event) {
+        if (jobInfoWrapper == null) {
+            init();
+        }
+        if (jobInfoWrapper == null) {
+            UIBeanHelper.setErrorMessage("Invalid job, can't download zip files.");
+            return;
+        }
+
+        HttpServletResponse response = UIBeanHelper.getResponse();
+        response.setHeader("Content-Disposition", "attachment; filename=" + jobInfoWrapper.getJobNumber() + ".zip" + ";");
+        response.setHeader("Content-Type", "application/octet-stream");
+        response.setHeader("Cache-Control", "no-store");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
+        
+        try {
+            OutputStream os = response.getOutputStream();
+            JobInfoManager.writeOutputFilesToZipStream(os, jobInfoWrapper);
+            os.close();
+        }
+        catch (IOException e) {
+            UIBeanHelper.setErrorMessage("Error downloading output files for job "+jobInfoWrapper.getJobNumber()+": "+e.getLocalizedMessage());
+        }
+        UIBeanHelper.getFacesContext().responseComplete();
+    }
+
 }
