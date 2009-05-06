@@ -12,15 +12,9 @@
  *******************************************************************************/
 package org.genepattern.server.webapp.jsf.jobinfo;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipOutputStream;
 
 import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletRequest;
@@ -33,11 +27,6 @@ import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
-import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
-import org.genepattern.util.StringUtils;
-import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.WebServiceException;
 
 /**
  * Access job status for a single job result from a JSF page.
