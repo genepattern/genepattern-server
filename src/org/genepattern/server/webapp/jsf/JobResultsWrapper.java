@@ -269,4 +269,14 @@ public class JobResultsWrapper {
     	}
     	return info;
     }
+
+    /**
+     * Flag indicating whether or not to enable the 'download' popup menu for this job.
+     * @return
+     */
+    public boolean isDownloadAllowed() {
+        //HACK: quick and dirty way to disable the download menu for a visualizer.
+        List<OutputFileInfo> outputFiles = this.getAllFileInfos();
+        return outputFiles != null && outputFiles.size() > 0;
+    }
 }

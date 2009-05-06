@@ -660,7 +660,7 @@
 	    </ui:include>
 	    </a4j:outputPanel>
 	    
-	    <a4j:poll id="poll" interval="2500"  enabled="#{jobStatusBean.jobInfo.status == 'Processing'}"
+	    <a4j:poll id="poll" interval="2500"  enabled="#{!jobStatusBean.jobInfo.finished}"
                 reRender="filePanel#{jobStatusBean.jobInfo.jobNumber}, fileMenuPanel#{jobStatusBean.jobInfo.jobNumber}">
             	  <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
   		</a4j:poll>
@@ -673,7 +673,7 @@
 			    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
 			    </ui:include>
 			</a4j:outputPanel>
-  	  		<a4j:poll id="poll" interval="2500"  enabled="#{!jobStatusBean.jobInfo.visualizer and  jobStatusBean.jobInfo.status == 'Processing'}"
+  	  		<a4j:poll id="poll" interval="2500"  enabled="#{!jobStatusBean.jobInfo.finished}"
                 reRender="jobMenuPanel, fileMenuPanel">
             	  <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
   			</a4j:poll>
@@ -707,7 +707,7 @@
 	    	</t:dataList>
 	   	</h:outputText>
 	   	</a4j:outputPanel>
-	   	<a4j:poll id="poll" interval="500"  enabled="#{!jobStatusBean.jobInfo.visualizer and  jobStatusBean.jobInfo.status == 'Processing'}"
+	   	<a4j:poll id="poll" interval="500"  enabled="#{!jobStatusBean.jobInfo.visualizer and  !jobStatusBean.jobInfo.finished}"
                 reRender="pipelinePanel#{jobStatusBean.jobInfo.jobNumber}">
             	  <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
   		</a4j:poll>
