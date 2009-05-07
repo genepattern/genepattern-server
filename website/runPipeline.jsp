@@ -257,8 +257,7 @@ var outputFileCount = new Array();
                             out.println("An error occurred while processing your request. Please try again.");
                             return;
                         }
-                        String decorator = (String) requestParamsAndAttributes.get("decorator");
-                        Process process = runPipelineForJsp.runPipeline(taskInfo, name, baseURL, decorator, user, commandLineParams);
+                        Process process = runPipelineForJsp.runPipeline(taskInfo, name, baseURL, user, commandLineParams);
                         jobID = runPipelineForJsp.getJobID();
 
                         // stuff to write view file
