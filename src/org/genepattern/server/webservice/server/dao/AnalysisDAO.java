@@ -579,9 +579,11 @@ public class AnalysisDAO extends BaseDAO {
            g.group_id in ('administrators', 'public')
          */
 
-        StringBuffer hql = new StringBuffer(" select ");
-        hql.append(" distinct a ");
-        hql.append(" from org.genepattern.server.domain.AnalysisJob as a ");
+        StringBuffer hql = new StringBuffer("select ");
+        if (includeGroups) {
+            hql.append("distinct");
+        }
+        hql.append(" a from org.genepattern.server.domain.AnalysisJob as a ");
         if (includeGroups) {
             hql.append(" left join a.permissions as p ");
         }
