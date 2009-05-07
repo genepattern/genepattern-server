@@ -19,74 +19,48 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipOutputStream;
-
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.genepattern.codegenerator.CodeGeneratorUtil;
-import org.genepattern.server.JobInfoWrapper;
-import org.genepattern.server.JobInfoWrapper.OutputFile;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-
 import org.genepattern.server.webapp.jsf.jobinfo.JobStatusBean;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
-
 import org.genepattern.webservice.WebServiceException;
 
 public class JobMenuBean { 
     private static Logger log = Logger.getLogger(JobMenuBean.class);
-   
-  
-    
 
-    public JobMenuBean() {
-      
+    public JobMenuBean() {  
     }
 
     public void createPipeline(ActionEvent e) {
-	try {
-		HttpServletRequest request = UIBeanHelper.getRequest();
-		
-		String jobNumber = request.getParameter("jobMenuNumber");
-	       
-	    System.out.println("CreatePipeline on job #" + jobNumber + "  ");
-		
-	    if (jobNumber == null) {
-		UIBeanHelper.setErrorMessage("No job specified.");
-		return;
-	    }
-        // TODO prompt user for name
-	    String pipelineName = "job" + jobNumber; 
-	    String lsid = new LocalAnalysisClient(UIBeanHelper.getUserId()).createProvenancePipeline(jobNumber, pipelineName);
-
-	    if (lsid == null) {
-		UIBeanHelper.setErrorMessage("Unable to create pipeline.");
-		return;
-	    }
-	    UIBeanHelper.getResponse().sendRedirect(
-		    UIBeanHelper.getRequest().getContextPath() + "/pipelineDesigner.jsp?name="
-			    + UIBeanHelper.encode(lsid));
-	} catch (WebServiceException wse) {
-	    log.error("Error creating pipeline.", wse);
-	} catch (IOException e1) {
-	    log.error("Error creating pipeline.", e1);
-	}
+        try {
+            HttpServletRequest request = UIBeanHelper.getRequest();
+            String jobNumber = request.getParameter("jobMenuNumber");
+            if (jobNumber == null) {
+                UIBeanHelper.setErrorMessage("No job specified.");
+                return;
+            }
+            // TODO prompt user for name
+            String pipelineName = "job" + jobNumber; 
+            String lsid = new LocalAnalysisClient(UIBeanHelper.getUserId()).createProvenancePipeline(jobNumber, pipelineName);
+            if (lsid == null) {
+                UIBeanHelper.setErrorMessage("Unable to create pipeline.");
+                return;
+            }
+            UIBeanHelper.getResponse().sendRedirect(
+                    UIBeanHelper.getRequest().getContextPath() + "/pipelineDesigner.jsp?name=" + UIBeanHelper.encode(lsid));
+        } 
+        catch (WebServiceException wse) {
+            log.error("Error creating pipeline.", wse);
+        } 
+        catch (IOException e1) {
+            log.error("Error creating pipeline.", e1);
+        }
     }
-
-      
 
     public void saveFile(ActionEvent event) {
         HttpServletRequest request = UIBeanHelper.getRequest();
