@@ -531,7 +531,7 @@ public class PipelineEditorModel {
 	taskInfoAttrs.put("cpuType", "any");
 	taskInfoAttrs.put("author", author);
 	StringBuffer baseCmdLine = new StringBuffer(
-		"<java> -cp <pipeline.cp> -Ddecorator=<pipeline.decorator> -Dgenepattern.properties=<resources> -DLSID=<LSID> <pipeline.main> <GenePatternURL>getPipelineModel.jsp?name=<LSID>&userid=<userid> <userid>");
+		"<java> -cp <pipeline.cp> -Dgenepattern.properties=<resources> -DLSID=<LSID> <pipeline.main> <GenePatternURL>getPipelineModel.jsp?name=<LSID>&userid=<userid> <userid>");
 	for (int i = 0; i < pipelineParameterInfoList.size(); i++) {
 	    ParameterInfo p = (ParameterInfo) pipelineParameterInfoList.get(i);
 	    baseCmdLine.append(" " + p.getName() + "=<" + p.getName() + ">");

@@ -93,7 +93,6 @@ public class ServerSettingsBean {
 	            "pipeline.cp", 
 	            "pipeline.main", 
 	            "pipeline.vmargs", 
-	            "pipeline.decorator",
 	            "installedPatchLSIDs", 
 	            "num.threads" });
 	    modes.put("Custom", null);

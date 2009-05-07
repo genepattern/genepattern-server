@@ -213,8 +213,7 @@ public class RunPipelineForJsp {
             String baseURL,
             TaskInfo taskInfo, 
             HashMap commandLineParams, 
-            File tempDir,
-            String decorator) 
+            File tempDir) 
     throws Exception 
     {
         
@@ -259,7 +258,6 @@ public class RunPipelineForJsp {
             }
         }
         cmdLine.add(classPath.toString());
-        cmdLine.add("-Ddecorator=" + decorator);
         cmdLine.add("-DjobID=" + jobID);
         cmdLine.add("-Djobs=" + System.getProperty("jobs"));
         cmdLine.add("-DsavedPipeline=" + savedPipeline);
@@ -400,7 +398,7 @@ public class RunPipelineForJsp {
         return ParameterFormatConverter.getJaxbString(params);
     }
     
-    public Process runPipeline(TaskInfo taskInfo, String name, String baseURL, String decorator, User user, HashMap commandLineParams) 
+    public Process runPipeline(TaskInfo taskInfo, String name, String baseURL, User user, HashMap commandLineParams) 
     throws Exception 
     {
         
@@ -428,13 +426,9 @@ public class RunPipelineForJsp {
                 .createTempFile("pipe", null, new java.io.File(System.getProperty("jobs")));
         tempDir.delete();
         tempDir.mkdirs();
-        if (decorator == null) {
-            decorator = "org.genepattern.server.webapp.RunPipelineLoggingHTMLDecorator";
-        }
         boolean deleteDirAfterRun = this
                 .deletePipelineDirAfterRun(taskInfo.getName());
-        String[] commandLine = this.generatePipelineCommandLine(taskInfo.getName(), "" + jobID, user,
-                baseURL, taskInfo, commandLineParams, tempDir, decorator);
+        String[] commandLine = this.generatePipelineCommandLine(taskInfo.getName(), "" + jobID, user, baseURL, taskInfo, commandLineParams, tempDir);
         
         // spawn the command
         if (log.isDebugEnabled()) {
