@@ -139,9 +139,15 @@ public class AnalysisDAO extends BaseDAO {
         Set<GroupPermission> rval = new HashSet<GroupPermission>();
         for(Object[] tuple : results) {
             String groupId = (String) (tuple[0]);
-            Integer permissionFlag = (Integer) (tuple[1]);
-            GroupPermission gp = new GroupPermission(groupId, permissionFlag.intValue());
-            rval.add(gp);
+            //convert to integer
+            if (tuple[1] instanceof Number) {
+                Number permissionFlag = (Number) (tuple[1]);
+                GroupPermission gp = new GroupPermission(groupId, permissionFlag.intValue());
+                rval.add(gp);
+            }
+            else {
+                log.error("Invalid return type for sql query: "+sqlString+". tuple[1]="+tuple[1]);
+            }
         }
         return rval;
     }
