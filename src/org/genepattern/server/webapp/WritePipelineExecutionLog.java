@@ -182,11 +182,21 @@ public class WritePipelineExecutionLog {
 
         // ============================================================================
         String formattedElapsedTime = getElapsedTime(jobInfo.getDateSubmitted(), jobInfo.getDateCompleted());
+        String formattedDateSubmitted = "";
+        String formattedDateCompleted = "";
+        Date dateSubmitted = jobInfo.getDateSubmitted();
+        Date dateCompleted = jobInfo.getDateCompleted();
+        if (dateSubmitted != null) {
+            formattedDateSubmitted = dateFormat.format(dateSubmitted);
+        }
+        if (dateCompleted != null) {
+            formattedDateCompleted = dateFormat.format(dateCompleted);
+        }
         logWriter.println("<table>");
         logWriter.println("<tr colspan='2'><td><b>Execution Times:</b></td></tr>");
-        logWriter.println("<tr><td width='25%'>Submitted: </td><td>" + dateFormat.format(jobInfo.getDateSubmitted()));
+        logWriter.println("<tr><td width='25%'>Submitted: </td><td>" + formattedDateSubmitted);
         logWriter.println("</td></tr>");
-        logWriter.println("<tr><td width='25%'>Completed: </td><td>" + dateFormat.format(jobInfo.getDateCompleted()));
+        logWriter.println("<tr><td width='25%'>Completed: </td><td>" + formattedDateCompleted);
         logWriter.println("</td></tr>");
         logWriter.println("<tr><td width='25%'>Elapsed: </td><td>" + formattedElapsedTime);
         logWriter.println("</td></tr>");
@@ -196,13 +206,23 @@ public class WritePipelineExecutionLog {
 
     public void afterPipelineRan(PrintWriter logWriter, PipelineModel model) {
         String formattedElapsedTime = getElapsedTime(pipelineJobInfo.getDateSubmitted(), pipelineJobInfo.getDateCompleted());
+        String formattedDateSubmitted = "";
+        String formattedDateCompleted = "";
+        Date dateSubmitted = pipelineJobInfo.getDateSubmitted();
+        Date dateCompleted = pipelineJobInfo.getDateCompleted();
+        if (dateSubmitted != null) {
+            formattedDateSubmitted = dateFormat.format(dateSubmitted);
+        }
+        if (dateCompleted != null) {
+            formattedDateCompleted = dateFormat.format(dateCompleted);
+        }
 
         logWriter.println("<table>");
 
         logWriter.println("<tr colspan='2'><td><h2>Pipeline Execution Times:</h2></td></tr>");
-        logWriter.println("<tr><td width='25%'>Submitted: </td><td>" + dateFormat.format(pipelineJobInfo.getDateSubmitted()));
+        logWriter.println("<tr><td width='25%'>Submitted: </td><td>" + formattedDateSubmitted);
         logWriter.println("</td></tr>");
-        logWriter.println("<tr><td width='25%'>Completed: </td><td>" + dateFormat.format(pipelineJobInfo.getDateCompleted()));
+        logWriter.println("<tr><td width='25%'>Completed: </td><td>" + formattedDateCompleted);
         logWriter.println("</td></tr>");
         logWriter.println("<tr><td width='25%'>Elapsed: </td><td>" + formattedElapsedTime);
         logWriter.println("</td></tr>");
@@ -214,7 +234,13 @@ public class WritePipelineExecutionLog {
     }
 
     public String getElapsedTime(Date startTime, Date endTime) {
-        long deltaMillis = endTime.getTime() - pipelineJobInfo.getDateSubmitted().getTime();
+        if (startTime == null) {
+            return "";
+        }
+        if (endTime == null) {
+            endTime = new Date();
+        }
+        long deltaMillis = endTime.getTime() - startTime.getTime();
         Calendar cal = new GregorianCalendar();
         cal.setTimeInMillis(deltaMillis);
         cal.setTimeZone(new SimpleTimeZone(0, ""));
