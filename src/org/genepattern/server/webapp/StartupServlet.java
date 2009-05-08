@@ -61,100 +61,102 @@ import org.w3c.dom.NodeList;
  */
 
 public class StartupServlet extends HttpServlet {
-
     public static String NAME = "GenePatternStartupServlet";
-
     SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
     public static Vector<Thread> vThreads = new Vector<Thread>();
 
     public StartupServlet() {
-	System.out.println("Creating StartupServlet");
+        System.out.println("Creating StartupServlet");
     }
 
     public void init(ServletConfig config) throws ServletException {
+        super.init(config);
 
-	super.init(config);
+        log("StartupServlet: user.dir=" + System.getProperty("user.dir"));
 
-	log("StartupServlet: user.dir=" + System.getProperty("user.dir"));
-	ServletContext application = config.getServletContext();
-	application.setAttribute("genepattern.properties", config.getInitParameter("genepattern.properties"));
-	application.setAttribute("custom.properties", config.getInitParameter("custom.properties"));
-	loadProperties(config);
+        ServletContext application = config.getServletContext();
+        application.setAttribute("genepattern.properties", config.getInitParameter("genepattern.properties"));
+        application.setAttribute("custom.properties", config.getInitParameter("custom.properties"));
+        loadProperties(config);
+        setServerURLs(config);
 
-	setServerURLs(config);
+        String dbVendor = System.getProperty("database.vendor", "HSQL");
+        if (dbVendor.equals("HSQL")) {
+            HsqlDbUtil.startDatabase();
+        }
 
-	String dbVendor = System.getProperty("database.vendor", "HSQL");
-	if (dbVendor.equals("HSQL")) {
-	    HsqlDbUtil.startDatabase();
-	}
+        launchTasks();
 
-	launchTasks();
+        // This starts an analysis task thread through a chain of side effects.
+        // Do not remove!
+        AnalysisManager.getInstance();
+        AnalysisTask.startQueue();
 
-	// This starts an analysis task thread through a chain of side effects.
-	// Do not remove!
-	AnalysisManager.getInstance();
-	AnalysisTask.startQueue();
+        startDaemons(System.getProperties(), application);
+        Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+        // 
+        // Probably best to put this code in a function somewhere...
+        // 
+        HostnameVerifier hv = new HostnameVerifier() {
+            public boolean verify(String urlHostName, SSLSession session) {
+                if (!urlHostName.equals(session.getPeerHost()))
+                    System.out.println("Warning: URL Host: " + urlHostName + " vs. " + session.getPeerHost());
+                return true;
+            }
+        };
+        HttpsURLConnection.setDefaultHostnameVerifier(hv);
 
-	startDaemons(System.getProperties(), application);
-	Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-	//
-	// Probably best to put this code in a function somewhere...
-	//
-	HostnameVerifier hv = new HostnameVerifier() {
-
-	    public boolean verify(String urlHostName, SSLSession session) {
-		if (!urlHostName.equals(session.getPeerHost()))
-		    System.out.println("Warning: URL Host: " + urlHostName + " vs. " + session.getPeerHost());
-		return true;
-	    }
-	};
-	HttpsURLConnection.setDefaultHostnameVerifier(hv);
-	
-	//clear system alert messages
-	try {
-	    SystemAlertFactory.getSystemAlert().deleteOnRestart();
-	}
-	catch (Exception e) {
-	    System.err.println("Error clearing system messages on restart: "+e.getLocalizedMessage());
-	}
-	announceReady(System.getProperties());
-
+        //clear system alert messages
+        try {
+            SystemAlertFactory.getSystemAlert().deleteOnRestart();
+        }
+        catch (Exception e) {
+            System.err.println("Error clearing system messages on restart: "+e.getLocalizedMessage());
+        }
+        announceReady(System.getProperties());
     }
 
     /**
-     * Set the GenePatternURL property dynamically
+     * Set the GenePatternURL property dynamically using
+     * the current canonical host name and servlet context path.
+     * Dynamic lookup works for Tomcat but may not work on other containers... 
+     * Define GP_Path (to be used as the 'servletContextPath') in the genepattern.properties file to avoid dynamic lookup.
      * 
      * @param config
      */
     private void setServerURLs(ServletConfig config) {
-	// this works for Tomcat. May not work on other containers...
-	// so they can simply define "servletContextPath" in their genepattern.properties
-	// file to avoid dynamic lookup
-	String pathRoot = System.getProperty("servletContextPath", null);
-	if (pathRoot == null) {
-	    pathRoot = (new File(config.getServletContext().getRealPath("/"))).getName();
-	}
-
-	// set the GenePatternURL to the current canonical host name unless specified in the
-	// properties file in which case we leave it alone
-	String myUrl = System.getProperty("GenePatternURL", "");
-	if (myUrl == null || myUrl.trim().length() == 0) {
-	    try {
-	        InetAddress addr = InetAddress.getLocalHost();
-	        String host_address = addr.getCanonicalHostName();
-	        String portStr = System.getProperty("GENEPATTERN_PORT", "");
-	        portStr = portStr.trim();
-	        if (portStr.length()>0) {
-	            portStr = ":"+portStr;
-	        }
-	        String genePatternServerURL = "http://" + host_address + portStr + "/" + pathRoot + "/";
-	        System.setProperty("GenePatternURL", genePatternServerURL);
-	    } 
-	    catch (UnknownHostException e) {
-	        e.printStackTrace();
-	    }
-	}
+        //set the GP_Path property if it has not already been set
+        String contextPath = System.getProperty("GP_Path");
+        if (contextPath == null) {
+            contextPath = "/gp";
+        }
+        else {
+            if (!contextPath.startsWith("/")) {
+                contextPath = "/" + contextPath;
+            }
+            if (contextPath.endsWith("/")) {
+                contextPath = contextPath.substring(0, contextPath.length()-1);
+            }
+        }
+        System.setProperty("GP_Path", "/gp");
+        String genePatternURL = System.getProperty("GenePatternURL", "");
+        if (genePatternURL == null || genePatternURL.trim().length() == 0) {
+            try {
+                InetAddress addr = InetAddress.getLocalHost();
+                String host_address = addr.getCanonicalHostName();
+                String portStr = System.getProperty("GENEPATTERN_PORT", "");
+                portStr = portStr.trim();
+                if (portStr.length()>0) {
+                    portStr = ":"+portStr;
+                }
+                contextPath = System.getProperty("GP_Path", "/gp");
+                String genePatternServerURL = "http://" + host_address + portStr + contextPath + "/";
+                System.setProperty("GenePatternURL", genePatternServerURL);
+            } 
+            catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     protected void startDaemons(Properties props, ServletContext application) {
@@ -441,28 +443,6 @@ public class StartupServlet extends HttpServlet {
     // read Tomcat's server.xml file and set the GenePatternURL and
     // GENEPATTERN_PORT properties according to the actual configuration
 
-    // Why are we doing this? This is weird. JTR.
-    // protected void setupWebserverProps(ServletConfig config, Properties props) {
-
-    /*
-     * if (config.getServletContext().getServerInfo().indexOf("Apache Tomcat") != -1) { try { File tomcatConf = new
-     * File(System.getProperty("tomcat"), "conf"); File fileServerXml = new File(tomcatConf, "server.xml"); Document doc =
-     * DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( new InputSource(new FileReader(fileServerXml)));
-     * Element root = doc.getDocumentElement();
-     * 
-     * HashMap hmProps = new HashMap(); processNode(root, hmProps); if (hmProps.containsKey("port") &&
-     * hmProps.containsKey("path")) { String scheme = "http"; if (hmProps.containsKey("scheme")) scheme = (String)
-     * hmProps.get("scheme");
-     * 
-     * props.setProperty("GenePatternURL", scheme + "://127.0.0.1:" + hmProps.get("port") + hmProps.get("path") + "/"); }
-     * if (hmProps.containsKey("port")) { props.setProperty("GENEPATTERN_PORT", (String) hmProps.get("port")); } if
-     * (hmProps.containsKey("path")) { props.setProperty("GP_Path", (String) hmProps.get("path")); } if
-     * (hmProps.containsKey("docBase")) { props.setProperty("GP_docBase", (String) hmProps.get("docBase")); } } catch
-     * (Exception e) { System.err.println(e.getMessage() + " in StartupServlet.parseTomcatServerXml"); } } else { //
-     * unknown server }
-     */
-
-    // }
     protected void processNode(Node node, HashMap<String, String> hmProps) {
 	if (node.getNodeType() == Node.ELEMENT_NODE) {
 	    Element c_elt = (Element) node;

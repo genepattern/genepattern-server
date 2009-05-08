@@ -1193,7 +1193,7 @@ public class GenePatternAnalysisTask {
 	    //write execution log
         if (!taskInfo.isVisualizer()) {
             JobInfoManager m = new JobInfoManager();
-            String contextPath = System.getProperty("servletContextPath", "/gp");
+            String contextPath = System.getProperty("GP_Path", "/gp");
             if (!contextPath.startsWith("/")) {
                 contextPath = "/" + contextPath;
             }
