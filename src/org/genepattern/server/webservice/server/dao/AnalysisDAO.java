@@ -584,12 +584,34 @@ public class AnalysisDAO extends BaseDAO {
            and
            g.group_id in ('administrators', 'public')
          */
+        
+        /*
+         Example SQL query using subselect,
+         Note: HQL and JPA QL support subqueries in the where clause only.
+         select * from analysis_job a
+         where
+         a.job_no IN
+         (select distinct a.job_no
+          from analysis_job a 
+          left outer join job_group p on a.job_no= p.job_no 
+          where 
+          ((a.parent = null) OR (a.parent = -1))  
+          AND 
+          a.deleted = 0 
+          AND 
+          ( a.user_id = 'pcarr'
+            or 
+            p.group_id in ( '*', 'gpdev' ) )  
+         );   
+         */
+        
+        StringBuffer hql = new StringBuffer("select a from org.genepattern.server.domain.AnalysisJob as a where a.jobNo IN (");
 
-        StringBuffer hql = new StringBuffer("select ");
+        hql.append(" select ");
         if (includeGroups) {
-            hql.append("distinct");
+            hql.append(" distinct ");
         }
-        hql.append(" a from org.genepattern.server.domain.AnalysisJob as a ");
+        hql.append(" a.jobNo from org.genepattern.server.domain.AnalysisJob as a ");
         if (includeGroups) {
             hql.append(" left join a.permissions as p ");
         }
@@ -619,6 +641,7 @@ public class AnalysisDAO extends BaseDAO {
         else if (!getAllJobs && !filterByGroup) {
             hql.append(" AND a.userId = :username ");
         }
+        hql.append(" )");
         return hql.toString();
     }
 
