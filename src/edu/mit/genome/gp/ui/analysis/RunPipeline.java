@@ -24,7 +24,7 @@ public class RunPipeline {
 	}// prevent instantiation
 
 	public static void main(String args[]) throws Exception {
-		org.genepattern.server.webapp.RunPipeline.main(args);
+		org.genepattern.server.webapp.RunPipelineSoap.main(args);
 	}
 }
 
