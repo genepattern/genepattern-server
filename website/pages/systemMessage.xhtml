@@ -1,11 +1,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:a4j="http://richfaces.org/a4j"
     xmlns:f="http://java.sun.com/jsf/core"
     xmlns:t="http://myfaces.apache.org/tomahawk">
 <head>
 </head>
 <body>
+
+<a4j:outputPanel id="statusMessage">
 
 <t:div rendered="#{!empty requestScope.userID and systemMessageBean.enableJavaScriptAlert and systemMessageBean.isNew}">
 <script type="text/javascript" language="javascript">
@@ -18,8 +21,9 @@ window.addEventListener("load",
 </t:div>
 <h:form id="dismissForm" rendered="#{systemMessageBean.isOpen}" >
     <h:outputText escape="false" value="#{systemMessageBean.messageAsHtmlString} " style="color: red;" />
-    <h:commandLink value=" [hide] " actionListener="#{systemMessageBean.hide}" rendered="#{!empty requestScope.userID}" />
+    <a4j:commandLink value=" [hide] " actionListener="#{systemMessageBean.hide}" rendered="#{!empty requestScope.userID}" 
+    	reRender="statusMessage"/>
 </h:form>
-
+</a4j:outputPanel>
 </body>
 </html>
