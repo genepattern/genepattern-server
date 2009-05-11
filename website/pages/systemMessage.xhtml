@@ -8,7 +8,7 @@
 </head>
 <body>
 
-<a4j:outputPanel id="statusMessage">
+<a4j:outputPanel id="systemMessage">
 
 <t:div rendered="#{!empty requestScope.userID and systemMessageBean.enableJavaScriptAlert and systemMessageBean.isNew}">
 <script type="text/javascript" language="javascript">
@@ -19,10 +19,10 @@ window.addEventListener("load",
     false);
 </script>
 </t:div>
-<h:form id="dismissForm" rendered="#{systemMessageBean.isOpen}" >
+<h:form id="systemMessageForm" rendered="#{systemMessageBean.isOpen}" >
     <h:outputText escape="false" value="#{systemMessageBean.messageAsHtmlString} " style="color: red;" />
     <a4j:commandLink value=" [hide] " actionListener="#{systemMessageBean.hide}" rendered="#{!empty requestScope.userID}" 
-    	reRender="statusMessage"/>
+        reRender="systemMessage, systemMessageLink" />
 </h:form>
 </a4j:outputPanel>
 </body>

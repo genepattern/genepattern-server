@@ -12,7 +12,13 @@
  use, misuse, or functionality.
  */ -->
 
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+    xmlns:ui="http://java.sun.com/jsf/facelets" 
+    xmlns:h="http://java.sun.com/jsf/html" 
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:f="http://java.sun.com/jsf/core" 
+    xmlns:t="http://myfaces.apache.org/tomahawk" 
+    xmlns:c="http://java.sun.com/jstl/core">
 <f:view contentType="text/html">
   <head>
     <!-- created by rebecca fagan, fagandesign -->
@@ -89,12 +95,13 @@
     </script>
 
     <!-- User settings area -->
+    <a4j:outputPanel id="systemMessageLink">    
     <t:div rendered="#{!empty requestScope.userID}">
       <table height="30" border="0" cellpadding="0" cellspacing="0" class="loginsettings">
         <tr valign="top">
           <td>
             <h:form id="showSystemMessageForm" rendered="#{!systemMessageBean.isOpen}" style="display: inline;" >
-            <h:commandLink value="System Message" actionListener="#{systemMessageBean.show}" style="color: red;" />
+            <a4j:commandLink value="System Message" actionListener="#{systemMessageBean.show}" style="color: red;" reRender="systemMessage, systemMessageLink" />
             <h:outputText value=" | " />
             </h:form>
             <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/accountInfo.jsf">
@@ -104,7 +111,7 @@
         </tr>
       </table>
     </t:div>
-
+    </a4j:outputPanel>
 
     <!-- top band with the logo -->
     <div id="topband" class="topband">
