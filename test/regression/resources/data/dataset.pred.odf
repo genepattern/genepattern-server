@@ -1,0 +1,45 @@
+ODF 1.0
+HeaderLines=8
+COLUMN_NAMES:Samples	True Class	Predicted Class	Confidence	Correct?
+COLUMN_TYPES:String	String	String	float	boolean
+Model=Prediction Results
+PredictorModel=KNN
+NumFeatures=10
+NumCorrect=32
+NumErrors=3
+DataLines=35
+ALL 19769 TA+ Norel	ALL	ALL	1	true
+ALL 406 TA+ (ML) Norel	ALL	ALL	1	true
+ALL 4466 Norel	ALL	ALL	1	true
+ALL 1245 TA- Norel	ALL	ALL	1	true
+ALL 16125 TA- Norel	ALL	ALL	1	true
+ALL 23368 TA- Norel	ALL	ALL	1	true
+ALL R28 (ML) Relap	ALL	ALL	1	true
+ALL 1234 ML	ALL	ALL	1	true
+ALL 1305 ML	ALL	ALL	1	true
+ALL 1421 ML	ALL	ALL	1	true
+ALL 1425 ML	ALL	ALL	1	true
+ALL 1486 ML	ALL	ALL	1	true
+ALL 1457 ML	ALL	ALL	1	true
+ALL 1256 TA+ (ML) Norel	ALL	ALL	1	true
+ALL 1275 TA+ (ML) Norel	ALL	ALL	1	true
+ALL 1101 TA- (ML) Norel	ALL	ALL	1	true
+ALL 1319 TA- (ML) Norel	ALL	ALL	1	true
+ALL 522 TA- (ML) Norel	ALL	AML	1	false
+ALL SH 6	ALL	ALL	1	true
+ALL SH 12	ALL	ALL	1	true
+ALL SH 15	ALL	ALL	1	true
+AML 15 (PK) Norel	AML	AML	1	true
+AML 19 (PK) Norel	AML	AML	1	true
+AML 10 (PK) Relap	AML	AML	1	true
+AML 9 (PK) Relap	AML	AML	1	true
+AML SH 5	AML	AML	1	true
+AML SH 13	AML	AML	1	true
+AML SH 14	AML	AML	1	true
+AML SH 16	AML	ALL	0.6685	false
+AML SH 18	AML	AML	1	true
+AML 17 ML	AML	AML	1	true
+AML 25 ML	AML	ALL	1	false
+AML 11 (ML)	AML	AML	1	true
+AML 12 (ML)	AML	AML	1	true
+AML 5 (ML) Relap	AML	AML	1	true

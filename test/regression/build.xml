@@ -1,0 +1,43 @@
+<project name="GenePatternRegressionTest" default="compile">
+	<property name="src" location="src"/>
+	<property name="lib" location="lib2"/>
+	<property name="build" location="build"/>
+	<property name="dist" location="dist"/>
+	<path id="project.class.path">
+		<fileset dir="lib2" includes="gp-full.jar,gp-modules.jar"/>
+	</path>
+	
+	<target name="clean">
+		<delete dir="${build}"/>
+		<delete dir="${dist}"/>
+	</target>
+
+	<target name="compile" depends="clean" 
+	        description="compiles the source code">
+		<mkdir dir="${build}"/>
+		<javac srcdir="${src}" destdir="${build}" debug="on">
+		  <classpath> 
+		    <fileset dir="lib2">
+		      <include name="**/*.jar"/>
+		    </fileset>
+		  </classpath>
+		</javac>
+	</target>
+
+	<target name="junit" depends="compile"
+	        description="runs junit tests">
+		<junit fork="yes">
+		  <classpath>
+		    <fileset dir="lib2" includes="**/*.jar"/>
+		    <dirset dir="build"/>
+		  </classpath>
+		  <formatter type="plain"/>
+		  <test name="org.genepattern.integration.TestRunModule" outfile="test_module_output"/>
+		  <test name="org.genepattern.integration.TestRunPipeline" outfile="test_pipeline_output"/>
+		  <jvmarg value="-DgenePatternUrl=http://genepattern.broad.mit.edu"/>
+		  <jvmarg value="-Dusername=gp_regression_test"/>
+		  <jvmarg value="-Dpassword=!_tst_R3gr"/>
+		</junit>
+	</target>
+
+</project>

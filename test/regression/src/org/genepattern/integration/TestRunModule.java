@@ -23,6 +23,7 @@ public class TestRunModule extends TestCase {
 	
 	public static final String PREPROCESS_LSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:3";
 	public static final String CONVERT_LSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1";
+	public static final String SVM_LSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00025:4";
 
 	public static final String SMALL_GCT = "resources/data/small.gct";
 	public static final String SMALL_PREPROCESS_RESULT_GCT = "small.preprocessed.gct";	
@@ -31,6 +32,14 @@ public class TestRunModule extends TestCase {
 	public static final String ALL_AML_RES_URL = "ftp://ftp.broad.mit.edu/pub/genepattern/all_aml/all_aml_train.res";
 	public static final String ALL_AML_RES_PREPROCESS_RESULT = "all_aml_train.preprocessed.res";
 	public static final String ALL_AML_RES_CONVERT_RESULT = "all_aml_train.cvt.res";	
+	public static final String ALL_AML_RES_CONVERT_RERUN_RESULT = "all_aml_train.cvt.cvt.res";	
+	
+	public static final String TRAIN_DATA_FILENAME = "resources/data/all_aml_train.gct";
+	public static final String TRAIN_CLS_FILENAME = "resources/data/all_aml_train.cls";
+	public static final String TEST_DATA_FILENAME = "resources/data/all_aml_test.gct";
+	public static final String TEST_CLS_FILENAME = "resources/data/all_aml_test.cls";
+	public static final String SVM_ODF_RESULT = "all_aml_test.pred.odf";
+	
 	
 	/**
 	 * Submits a PreprocessDataset job to GenePattern.  Input file is uploaded from client.
@@ -47,7 +56,7 @@ public class TestRunModule extends TestCase {
 		Parameter[] params = new Parameter[1];
 		Parameter fileParam = new Parameter("input.filename", testFile);
 		params[0] = fileParam;
-		File[] files = runModule(params, PREPROCESS_LSID);
+		File[] files = runModule(params, PREPROCESS_LSID, 1);
 		validateResultFile(files, SMALL_PREPROCESS_RESULT_GCT, 2, 3);
 	}
 
@@ -77,16 +86,17 @@ public class TestRunModule extends TestCase {
 	 * Runs the module on GenePattern and downloads the result files.
 	 * @param params Parameters for the run.
 	 * @param lsid Lsid of module to run.
+	 * @param expectedNumFiles expected number of result files
 	 * @return Downloaded result files.
 	 * @throws WebServiceException
 	 * @throws IOException
 	 */
-	private File[] runModule(Parameter[] params, String lsid)
+	private File[] runModule(Parameter[] params, String lsid, int expectedNumFiles)
 			throws WebServiceException, IOException {
 		JobResult jobResult = runModuleHelper(params, lsid);
 		File[] files = jobResult.downloadFiles(".");
 		assertNotNull(files);
-		assertEquals(1, files.length);
+		assertEquals(expectedNumFiles, files.length);
 		return files;
 	}
 
@@ -123,10 +133,18 @@ public class TestRunModule extends TestCase {
 		Parameter[] params = new Parameter[1];
 		Parameter fileParam = new Parameter("input.filename", ALL_AML_RES_URL);
 		params[0] = fileParam;
-		File[] files = runModule(params, PREPROCESS_LSID);
+		File[] files = runModule(params, PREPROCESS_LSID, 1);
 		validateResultFile(files, ALL_AML_RES_PREPROCESS_RESULT, 5864, 38);
 	}
 	
+	/**
+	 * Runs a PreprocessDataset job using an external URL, then takes result and
+	 * runs Preprocess again, using the GenePattern url to the result from the 
+	 * first run.
+	 * @throws SecurityException
+	 * @throws IOException
+	 * @throws WebServiceException
+	 */
 	public void testPreprocessGpUrl() throws SecurityException, IOException, WebServiceException {
 		File testFile = new File(SMALL_GCT);		
 		Parameter[] params = new Parameter[1];
@@ -144,9 +162,8 @@ public class TestRunModule extends TestCase {
 		fileParam = new Parameter("input.filename", inputUrl.toString());
 		params[0] = fileParam;
 		
-		files = runModule(params, PREPROCESS_LSID);
-		assertNotNull(files);
-		assertEquals(1, files.length);
+		files = runModule(params, PREPROCESS_LSID, 1);
+//		@TODO validate this 
 	}
 	
 	/**
@@ -163,7 +180,7 @@ public class TestRunModule extends TestCase {
 		Parameter[] params = new Parameter[1];
 		Parameter fileParam = new Parameter("input.filename", testFile);
 		params[0] = fileParam;
-		File[] files = runModule(params, CONVERT_LSID);
+		File[] files = runModule(params, CONVERT_LSID, 1);
 		validateResultFile(files, SMALL_CONVERT_RESULT_GCT, 2, 3);
 	}
 	
@@ -178,12 +195,54 @@ public class TestRunModule extends TestCase {
 	 * @throws WebServiceException
 	 * @throws ParseException
 	 */
-	public void testConvertLineEndingsGpUrl() throws SecurityException, IOException, WebServiceException, ParseException {
+	public void testConvertLineEndingsExternalUrl() throws SecurityException, IOException, WebServiceException, ParseException {
 		Parameter[] params = new Parameter[1];
 		Parameter fileParam = new Parameter("input.filename", ALL_AML_RES_URL);
 		params[0] = fileParam;
-		File[] files = runModule(params, CONVERT_LSID);
+		File[] files = runModule(params, CONVERT_LSID, 1);
 		validateResultFile(files, ALL_AML_RES_CONVERT_RESULT, 7129, 38);
-	}	
+	}
+	
+	public void testConvertLineEndingsGpUrl() throws WebServiceException, IOException, ParseException {
+		Parameter[] params = new Parameter[1];
+		Parameter fileParam = new Parameter("input.filename", ALL_AML_RES_URL);
+		params[0] = fileParam;
+		JobResult jobResult = runModuleHelper(params, CONVERT_LSID);
+		File[] files = jobResult.downloadFiles(".");
+		assertNotNull(files);
+		assertEquals(1, files.length);
+		
+		URL inputUrl = jobResult.getURLForFileName(ALL_AML_RES_CONVERT_RESULT);
+		assertNotNull(inputUrl);
+		
+		fileParam = new Parameter("input.filename", inputUrl.toString());
+		params[0] = fileParam;
+		
+		files = runModule(params, CONVERT_LSID, 1);
+		validateResultFile(files, ALL_AML_RES_CONVERT_RERUN_RESULT, 7129, 38);
+	}
+	
+	public void testSvmUploadedFiles() throws WebServiceException, IOException, ParseException {
+		Parameter[] params = new Parameter[4];
+		params[0] = new Parameter("train.data.filename", TRAIN_DATA_FILENAME);
+		params[1] = new Parameter("train.cls.filename", TRAIN_CLS_FILENAME);
+		params[2] = new Parameter("test.data.filename", TEST_DATA_FILENAME);		
+		params[3] = new Parameter("test.cls.filename", TEST_CLS_FILENAME);
+
+		JobResult jobResult = runModuleHelper(params, SVM_LSID);
+		assertNotNull(jobResult);
+		File[] files = jobResult.downloadFiles(".");
+		assertNotNull(files);
+		assertEquals(2, files.length);		
+		
+		
+		File odfResult = jobResult.downloadFile(SVM_ODF_RESULT, ".");
+		assertNotNull(odfResult);
+		// TODO get revised gp-modules.jar from Josh and read in file using OdfObject
+//		OdfObject odf = new OdfObject(odfResult.getAbsolutePath());
+
+	}
+	
+	
 
 }
