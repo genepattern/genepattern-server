@@ -251,6 +251,23 @@
 </filter-mapping>
 <filter-mapping>
  <filter-name>richfaces</filter-name>
+  <url-pattern>/jobResults/</url-pattern>
+  <!--  servlet-name>Faces Servlet</servlet-name -->
+ <dispatcher>REQUEST</dispatcher>
+ <dispatcher>FORWARD</dispatcher>
+ <dispatcher>INCLUDE</dispatcher>
+</filter-mapping>
+<filter-mapping>
+ <filter-name>richfaces</filter-name>
+  <url-pattern>/pages/jobResults.jsf</url-pattern>
+  <!--  servlet-name>Faces Servlet</servlet-name -->
+ <dispatcher>REQUEST</dispatcher>
+ <dispatcher>FORWARD</dispatcher>
+ <dispatcher>INCLUDE</dispatcher>
+</filter-mapping>
+
+<filter-mapping>
+ <filter-name>richfaces</filter-name>
   <url-pattern>/pages/jobResult.jsf</url-pattern>
   <!--  servlet-name>Faces Servlet</servlet-name -->
  <dispatcher>REQUEST</dispatcher>
