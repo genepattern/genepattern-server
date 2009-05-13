@@ -25,20 +25,15 @@
 		GenePattern | Job #{(!empty jobStatusBean.jobInfo ) ? jobStatusBean.jobInfo.jobNumber : "not set" }
 	</ui:define>
 	<ui:define name="headText">
-		
-		<link href="#{facesContext.externalContext.requestContextPath}/css/GP_DK.css" rel="stylesheet" type="text/css" />
-		<!-- Dependency -->
-		<script src="/gp/js/YUI/yahoo/yahoo-min.js"></script>
-		
+        <link href="#{facesContext.externalContext.requestContextPath}/css/GP_DK.css" rel="stylesheet" type="text/css" />
+        <!-- Dependency -->
+        <script src="/gp/js/YUI/yahoo/yahoo-min.js"></script>
 		<!-- Used for Custom Events and event listener bindings -->
-		<script src="/gp/js/YUI/event/event-min.js"></script>
-		
-		<!-- Source file -->
-		<script src="/gp/js/YUI/connection/connection-min.js"></script>
-			
-		<script type="text/javascript">
-
-		var currentJobNumber = #{jobStatusBean.jobInfo.jobNumber};
+        <script src="/gp/js/YUI/event/event-min.js"></script>
+        <!-- Source file -->
+        <script src="/gp/js/YUI/connection/connection-min.js"></script>	
+        <script type="text/javascript">
+        var currentJobNumber = #{jobStatusBean.jobInfo.jobNumber};
 
 		function setEmailNotification(cb, jobId, userId, userEmail){
             var valid = userEmail != null &amp;&amp; userEmail.length > 0;
@@ -105,20 +100,20 @@
 				}
 			}
 		}
-		
+
 		var handlePermFailure = function(o){
 			alert("permissions request failed");
 			document.getElementById("permissionsWorkingImage").src = '/gp/images/error.gif';
 		}
-		
-		var permCallback =
+
+        var permCallback =
 		{
 		  success: handlePermSuccess,
 		  failure: handlePermFailure
 		  
 		};
-		
-		function submitPermissionsRequest(form) {
+
+        function submitPermissionsRequest(form) {
 			document.getElementById("permissionsWorkingImage").style.display = '';
 			document.getElementById("permissionsWorkingImage").src = '/gp/images/spin.gif';
 			var permPostData = getPermissionsPostData(form);
@@ -136,355 +131,16 @@
  			} 
  			return postInfo;
 		}
-		
-			function toggle(id, openLabel, closedLabel) {
-				var open = !(document.getElementById(id).style.display == 'none');
-				document.getElementById(id).style.display = open ? 'none' : '';
-				if (openLabel) {
-					document.getElementById(id + "Label").innerHTML = open ? closedLabel : openLabel;
-				}
-			}
-			
-			var handleUpdateSuccess = function(o){
-				if(o.responseText !== undefined){
-					var data = eval('(' + o.responseText + ')');
-					var status = data.status;
-					var jobNumber = data.jobNumber;
-					var rootJobNumber = data.rootJobNumber;
-					updateStatus(data, status);
-					
-					if (data.isPipeline && data.children) {
-						updateChildren(data);
-					}
-					
-					document.getElementById('responseArea').value = o.responseText;
-					if (status != 'Finished' && status != 'Error' && document.getElementById('keepUpdating').checked) {
-						setTimeout("updatePage();", 2500);
-					} else {
-						// XXX createOutputFiles(data);
-						// remove the email reminder button if it's there
-						if (document.getElementById('emailDiv')) {
-							document.getElementById('emailDiv').style.display = 'none';
-						}
-						
-					}
-				}
-			}
-			
-			var handleUpdateFailure = function(o){
-				setTimeout("updatePage();", 2500);
-			}
-			
-			var updateCallback =
-			{
-			  success: handleUpdateSuccess,
-			  failure: handleUpdateFailure
-			  
-			};
-			
-			function updatePage() {
-				var request = YAHOO.util.Connect.asyncRequest('GET', '#{jobStatusBean.jobInfo.jobNumber}?returnType=JSON', updateCallback);
-			} 
-			
-			function updateChildren(parent) {
-				for (var i = 0; i < parent.children.length; i++) {
-					if (document.getElementById("jobTable"+parent.children[i].jobNumber)) {
-						updateChild(parent.children[i], i, parent);
-					} else {
-						// createChild(parent.children[i], i, parent);
-					}
-				}	
-			}
-			
-			function createRegularTable(id, className) {
-				var table = document.getElementById("testTable").cloneNode(false);
-				table.id = id;
-				table.className = className;
-				//table.cellpadding = '0';
-				//table.cellspacing = '0';
-				//table.border = '0';
-				table.style.display = '';
-				return table;
-			}
-			
-			function createChild(child, index, parent) {
-				// create overall job container
-				var div = document.createElement('div');
-				div.id = 'jobContainer' + child.jobNumber;
-				document.getElementById('jobContainer' + parent.jobNumber).appendChild(div);
-				var table = createRegularTable('jobTable' + child.jobNumber, 'module');
-				div.appendChild(table);
-				
-				
-				var row = table.insertRow(table.rows.length);
-				var cell = row.insertCell(row.cells.length);
-				for (var i = 1; i < child.numAncestors; i++) {
-					addSpacer(cell);
-				}
-				addImage(cell, "/gp/images/darkArrow.gif");
-				cell.appendChild(document.createTextNode(' step ' + child.stepPath + ': ' + child.truncatedTaskName + '[id: ' + child.jobNumber + ']' ));
-				cell = row.insertCell(row.cells.length);
-				if (child.inputParameters && child.inputParameters.length > 0) {
-					var iconDiv = document.createElement("div");
-					iconDiv.className = 'icon2';
-					var inputParamTable = createRegularTable('', '');
-					var row2 = inputParamTable.insertRow(inputParamTable.rows.length);
-					var cell2 = row2.insertCell(row2.cells.length);
-					var link = document.createElement('a');
-					link.style.color = '#0066FF';
-					link.href = "javascript:toggle('inputParamsDiv" + child.jobNumber + "', 'Hide', 'Show');";
-					var inputIcon = addImage(link, "/gp/images/parameters.gif");
-					inputIcon.align = 'left';
-					cell2.appendChild(link);
-					cell2 = row2.insertCell(row2.cells.length);
-					link = document.createElement('a');
-					link.href = "javascript:toggle('inputParamsDiv" + child.jobNumber + "', 'Hide', 'Show');";
-					var span = document.createElement('span');
-					span.innerHTML = 'Show';
-					span.id = "inputParamsDiv" + child.jobNumber + "Label";
-					link.appendChild(span);
-					link.appendChild(document.createTextNode(" Input "));
-					link.appendChild(document.createElement("br"));
-					link.appendChild(document.createTextNode("Parameters"));
-					cell2.appendChild(link);
-					iconDiv.appendChild(inputParamTable);
-					cell.appendChild(iconDiv);
-				}
-				
-				cell = row.insertCell(row.cells.length);
-				cell.width = '30px';
-				var img = document.createElement('img');
-				img.id = "jobStatusIcon" + child.jobNumber;
-				if (child.status == 'Error') {
-					img.src = "/gp/images/error.gif";
-				} else if (child.status == 'Finished') {
-				 	img.src = "/gp/images/complete.gif";
-				} else {
-					img.src = "/gp/images/spin.gif";
-				}
-				cell.appendChild(img);
-				var statusSpan = document.createElement('span');
-				statusSpan.id = 'jobStatus' + child.jobNumber;
-				statusSpan.style.display = 'none';
-				statusSpan.innerHTML = child.status;
-				cell.appendChild(statusSpan);			
-				
-				if (child.isPipeline) {
-					var indicator = createIndicator(child);
-					div.appendChild(indicator);
-				}
 
-				tagIndicatorCell(child, index, parent);
-				
-				// create input parameters
-				if (child.inputParameters && child.inputParameters.length > 0) {
-					var inputParameters = createInputParameters(child);
-					div.appendChild(inputParameters);
-				}
-				
-				// create outputFileDiv
-				var outputFileDiv = document.createElement('div');
-				outputFileDiv.id = 'outputFilesDiv' + child.jobNumber;
-				outputFileDiv.className = 'files';
-				div.appendChild(outputFileDiv);
-				
-				createInputFiles(child);
-				
-				if ((child.status == 'Error' || child.status == 'Finished')) {
-					// XXX createOutputFiles(child);
-				}
-						
-				var fileMenusDiv = document.createElement('div');
-				fileMenusDiv.id = 'fileMenus' + child.jobNumber;
-				div.appendChild(fileMenusDiv);
-				
-						
-				// update the children
-				if (child.isPipeline && child.children) {
-					updateChildren(child);
-				}
-			}
+		function toggle(id, openLabel, closedLabel) {
+            var open = !(document.getElementById(id).style.display == 'none');
+            document.getElementById(id).style.display = open ? 'none' : '';
+            if (openLabel) {
+                document.getElementById(id + "Label").innerHTML = open ? closedLabel : openLabel;
+            }
+        }
 			
-			function createIndicator(child) {
-				var table = createRegularTable('indicator' + child.jobNumber, 'indicator');
-				var row = table.insertRow(table.rows.length);
-				for (var i = 0; i < child.numSteps; i++) {
-					var cell = row.insertCell(row.cells.length);
-					if (i < child.numStepsCompleted) {
-						cell.id = 'indicatorCell' + child.children[i].jobNumber;
-						if (child.children[i].status == 'Error') {
-							cell.innerHTML = '&nbsp;';
-							cell.className = 'red';
-						} else if (child.children[i].status == 'Finished') {
-							cell.innerHTML = '&nbsp;';
-							cell.className = 'blue';
-						} else {
-							cell.innerHTML = '&nbsp;';
-							cell.className = 'green';
-						}
-					} else {
-						cell.innerHTML = '&nbsp;';
-						cell.className = 'green';
-					} 
-				}
-				return table;
-			}
-			
-			function updateChild(child, index, parent) {
-				var status = document.getElementById("jobStatus"+child.jobNumber).innerHTML;
-				if (status == 'Processing' && child.status != 'Processing') {
-					// XXX createOutputFiles(child);
-				}
-				updateStatus(child, child.status);
-				// if there's an indicator cell, update it, else create it
-				if (document.getElementById("indicatorCell"+child.jobNumber)) {
-					var indicatorCell = document.getElementById("indicatorCell"+child.jobNumber);
-					indicatorCell.className = child.status == 'Error' ? "red" : (child.status == 'Finished' ? "blue" : "green");
-				} else {
-					tagIndicatorCell(child, index, parent);
-				}
-				
-				// update the children
-				if (child.isPipeline && child.children) {
-					updateChildren(child);
-				}
-			}
-			
-			function tagIndicatorCell(child, index, parent) {
-				var indicatorTable = document.getElementById('indicator' + parent.jobNumber);
-				indicatorTable.rows[0].cells[index].id = 'indicatorCell' + child.jobNumber;
-				indicatorTable.rows[0].cells[index].className = child.status == 'Error' ? "red" : (child.status == 'Finished' ? "blue" : "green");
-			}
-					
-			
-			function updateStatus(job, status) {
-				document.getElementById("jobStatusIcon"+job.jobNumber).src = (status == 'Error' ? "/gp/images/error.gif" : (status == 'Finished' ? "/gp/images/complete.gif" : "/gp/images/spin.gif"));
-				document.getElementById("jobStatus"+job.jobNumber).innerHTML = status;
-				
-			}
-			
-			function addSpacer(element) {
-				addImage(element, "/gp/images/blank.gif");
-			}
-			
-			function addImage(element, src) {
-				var image = document.createElement("img");
-				image.src = src;
-				element.appendChild(image);
-				return image;
-			}
-			
-			
-			var visualizerAppletTags = new Array();
-			
-			function createInputFiles(job) {
-				var div = document.getElementById("outputFilesDiv"+job.jobNumber);
-				if (job.inputFiles) {											
-					for (var i = 0; i < job.inputFiles.length; i++) {
-						var p = document.createElement("p");
-						p.className = 'narrow';
-						for (var j = 1; j < job.numAncestors && j < 10; j++) {
-							addSpacer(p);
-						}
-						var image = document.createElement("img");
-						image.src = "/gp/images/inputFile.gif";
-						image.title = 'input file';
-						p.appendChild(image);
-						var label = document.createElement("strong");
-						label.appendChild(document.createTextNode(" " + job.inputFiles[i].name + ": "));
-						p.appendChild(label);
-
-						if (job.inputFiles[i].link) {
-							var link = document.createElement("a");
-							link.style.color = '#0066FF';
-							link.href = job.inputFiles[i].link;
-							link.appendChild(document.createTextNode(job.inputFiles[i].truncatedDisplayValue));
-							p.appendChild(link);
-						}
-						else {
-							p.appendChild(document.createTextNode(job.inputFiles[i].truncatedDisplayValue));
-						}
-						div.appendChild(p);
-				    }
-				}
-			}
-			
-			function createInput(type, name, value) {
-				var input = document.createElement("input");
-				input.type = type;
-				input.name = name;
-				input.value = value;
-				return input;
-			}
-			
-			
-					
-			function createInputParameters(job) {
-				var div = document.createElement('div');
-				div.id = 'inputParamsDiv' + job.jobNumber;
-				div.className = "jobContent";
-				div.style.display = 'none';
-				div.appendChild(document.createElement('br'));
-				
-				var windowTable = createRegularTable('', 'window');
-				var singleRow = windowTable.insertRow(windowTable.rows.length);
-				var singleCell = singleRow.insertCell(singleRow.cells.length);
-				singleCell.appendChild(document.createElement('br'));
-				div.appendChild(windowTable);
-				
-				if (job.inputParameters) {
-					
-					var table = createRegularTable('', 'summary');
-					table.style.backgroundColor = '#FFFFFF';
-					singleCell.appendChild(table);
-					
-					row = table.insertRow(table.rows.length);
-					var header = document.createElement('th');
-					header.appendChild(document.createTextNode('Input Parameter'));
-					header.style.width = '150px';
-					row.appendChild(header);
-					header = document.createElement('th');
-					header.appendChild(document.createTextNode('Value'));
-					row.appendChild(header);
-					
-					for (var i = 0; i < job.inputParameters.length; i++) {
-						row = table.insertRow(table.rows.length);
-						var cell = row.insertCell(row.cells.length);
-						cell.align = 'right';
-						cell.appendChild(document.createTextNode(job.inputParameters[i].name));
-						cell = row.insertCell(row.cells.length);
-						cell.appendChild(document.createTextNode(job.inputParameters[i].value));
-					}
-				} else {
-					singleCell.appendChild(document.createTextNode("no input parameters"));
-				}		
-				
-				var closeRow = windowTable.insertRow(windowTable.rows.length);
-				var closeCell = closeRow.insertCell(closeRow.cells.length);
-				closeCell.align = 'right';
-				var link = document.createElement('a');
-				link.href = "javascript:toggle('inputParamsDiv" + job.jobNumber + "', 'Hide', 'Show');";
-				link.style.color = '#0066FF';
-				var closeImage = document.createElement('img');
-				closeImage.src = "/gp/images/cross.gif";
-				link.appendChild(closeImage);
-				link.appendChild(document.createTextNode(' hide'));
-				closeCell.appendChild(link);
-				return div;		
-			}
-				
-			function runVisualizer(jobNumber) {
-				document.getElementById("visualizerSpan" + jobNumber).innerHTML = visualizerAppletTags[jobNumber];
-			}
-			
-		/* ]]> */
-			
-			<h:outputText rendered="#{!empty jobStatusBean.jobInfo and jobStatusBean.jobInfo.status != 'Finished' and jobStatusBean.jobInfo.status != 'Error'}">
-				YAHOO.util.Event.addListener(window, "load", function() { 
-					setTimeout("updatePage();", 2500);
-				});
-			</h:outputText>
-			
+		/* ]]> */			
 		</script>
 	</ui:define>
 
@@ -518,7 +174,8 @@
 		</div>
 		<br /><br />
 
-		<div id="jobContainer#{jobStatusBean.jobInfo.jobNumber}">
+        <div id="jobContainer#{jobStatusBean.jobInfo.jobNumber}">
+        <a4j:outputPanel id="jobStatus#{jobStatusBean.jobInfo.jobNumber}">
 		<table class="title" cellpadding="0" cellspacing="0" border="0" id="jobTable#{jobStatusBean.jobInfo.jobNumber}">
 			<tr>
 				<td class="title">
@@ -546,6 +203,8 @@
 						</div>
 					</h:outputText>
 			    </td>
+          
+          <!--  TODO: update this via a4j call -->
 				<td width="30px">
 					<h:outputText rendered="#{jobStatusBean.jobInfo.status != 'Finished' and jobStatusBean.jobInfo.status != 'Error'}">
 						<img src="/gp/images/spin.gif" id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
@@ -560,6 +219,7 @@
 				</td>
 			</tr>
 		</table>
+    </a4j:outputPanel>
 
 		<h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
 			<ui:include src="jobStatus_indicator.xhtml">
@@ -661,24 +321,22 @@
 	    </a4j:outputPanel>
 	    
 	    <a4j:poll id="poll" interval="2500"  enabled="#{!jobStatusBean.jobInfo.finished}"
-                reRender="filePanel#{jobStatusBean.jobInfo.jobNumber}, fileMenuPanel#{jobStatusBean.jobInfo.jobNumber}">
+                reRender="filePanel#{jobStatusBean.jobInfo.jobNumber}, fileMenuPanel#{jobStatusBean.jobInfo.jobNumber}, jobStatus#{jobStatusBean.jobInfo.jobNumber}">
             	  <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
   		</a4j:poll>
   		</h:form>	
 	    
-	    <h:form>
-
-		    <a4j:outputPanel id="jobMenuPanel">
-			    <ui:include src="jobStatus_menu.xhtml">
-			    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
-			    </ui:include>
-			</a4j:outputPanel>
-  	  		<a4j:poll id="poll" interval="2500"  enabled="#{!jobStatusBean.jobInfo.finished}"
-                reRender="jobMenuPanel, fileMenuPanel">
-            	  <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
-  			</a4j:poll>
-		    
-	    </h:form>
+        <h:form>
+        <a4j:outputPanel id="jobMenuPanel">
+            <ui:include src="jobStatus_menu.xhtml">
+                <ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
+            </ui:include>
+        </a4j:outputPanel>
+        <a4j:poll id="poll" interval="2500"  enabled="#{!jobStatusBean.jobInfo.finished}"
+            reRender="jobMenuPanel, fileMenuPanel">
+            <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
+        </a4j:poll>
+        </h:form>
 	   
 	   <a4j:form>
 	   <a4j:outputPanel id="fileMenuPanel#{jobStatusBean.jobInfo.jobNumber}">
