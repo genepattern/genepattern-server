@@ -69,7 +69,6 @@ public class JobStatusBean {
         setOpenVisualizers(openVisualizersParameter != null);
 
         currentUserId = UIBeanHelper.getUserId();
-        try {
             UserDAO userDao = new UserDAO();
             User user = userDao.findById(currentUserId);
             if (user != null) {
@@ -77,6 +76,7 @@ public class JobStatusBean {
                 showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUserId);
             }
 
+        try {
             String key = UserProp.getEmailNotificationPropKey(jobNumber);
             if (key != null) {
                 String propValue = userDao.getPropertyValue(currentUserId, key, String.valueOf(sendEmailNotification));

@@ -13,41 +13,25 @@
 package org.genepattern.server.user;
 
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 public class User {
-
     String userId;
-
     byte[] password;
-
     String email;
-
     Date lastLoginDate;
-
     Date registrationDate;
-
     String lastLoginIP;
-
     int totalLoginCount;
+    Set<UserProp> props = new HashSet<UserProp>();
 
-    List<UserProp> props;
-
-
-    public List<UserProp> getProps() {
-        return props;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setProps(List<UserProp> props) {
-        this.props = props;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
+    public void setUserId(String username) {
+        this.userId = username;
     }
 
     public byte[] getPassword() {
@@ -58,12 +42,12 @@ public class User {
         password = pw;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getEmail() {
+        return email;
     }
 
-    public void setUserId(String username) {
-        this.userId = username;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public Date getLastLoginDate() {
@@ -98,8 +82,15 @@ public class User {
         this.totalLoginCount = totalLoginCount;
     }
 
+    public Set<UserProp> getProps() {
+        return props;
+    }
+
+    public void setProps(Set<UserProp> props) {
+        this.props = props;
+    }
+    
     public void incrementLoginCount() {
         totalLoginCount++;
     }
-
 }

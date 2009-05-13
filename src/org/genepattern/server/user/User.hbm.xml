@@ -18,9 +18,9 @@
    name="lastLoginIP" type="string"/>
   <property column="total_login_count" generated="never" lazy="false"
    name="totalLoginCount" type="integer"/>
-  <bag cascade="all-delete-orphan" name="props">
-   <key column="gp_user_id"/>
-   <one-to-many class="org.genepattern.server.user.UserProp"/>
-  </bag>
+  <set cascade="all-delete-orphan" name="props">
+    <key column="gp_user_id"/>
+    <one-to-many class="org.genepattern.server.user.UserProp" />
+  </set>
  </class>
 </hibernate-mapping>

@@ -21,8 +21,8 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
 
@@ -423,7 +423,7 @@ public class HTMLPipelineView {
 	boolean showLSID = false;
 	User user = (new UserDAO()).findById(userID);
 	if (user != null) {
-	    List<UserProp> props = user.getProps();
+	    Set<UserProp> props = user.getProps();
 	    UserProp userProp = null;
 	    for (UserProp p : props) {
 		if (p.getKey().equals("showLSIDs")) {

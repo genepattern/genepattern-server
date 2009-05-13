@@ -14,8 +14,8 @@ package org.genepattern.server.user;
 
 // Generated Sep 21, 2006 12:36:06 PM by Hibernate Tools 3.1.0.beta5
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.BaseDAO;
@@ -82,34 +82,27 @@ public class UserDAO extends BaseDAO {
     }
 
     public UserProp getProperty(String userId, String key, String defaultValue) {
-        try {
-            Query query = HibernateUtil.getSession().createQuery(
-                    "from org.genepattern.server.user.UserProp where gpUserId = :gpUserId AND key = :key");
-            query.setString("key", key);
-            query.setString("gpUserId", userId);
-            UserProp prop = (UserProp) query.uniqueResult();
-            if (prop == null) {
-                prop = new UserProp();
-                prop.setKey(key);
-                prop.setValue(defaultValue);
-                prop.setGpUserId(userId);
-                User user = findById(userId);
-                if (user == null) {
-                    throw new NullPointerException(userId + " not found.");
-                }
-                List<UserProp> props = user.getProps();
-                if (props == null) {
-                    props = new ArrayList<UserProp>();
-                    user.setProps(props);
-                }
-                props.add(prop);
-            }
-            return prop;
-        } catch (RuntimeException re) {
-            log.error("find by example failed", re);
-            throw re;
+        UserProp rval = null;
+        User user = findById(userId);
+        if (user == null) {
+            log.error("Error in UserDAO.getProperty("+userId+", "+key+"): User not found: "+userId);
         }
-
+        if (user != null) {
+            Set<UserProp> userProps = user.getProps();
+            for(UserProp prop : userProps) {
+                if (key.equals(prop.getKey())) {
+                    rval = prop;
+                    return prop;
+                }
+            }
+            
+            rval = new UserProp();
+            rval.setGpUserId(userId);
+            rval.setKey(key);
+            rval.setValue(defaultValue);
+            userProps.add(rval);
+        }
+        return rval;
     }
 
     /**
