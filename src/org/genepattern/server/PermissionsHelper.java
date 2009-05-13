@@ -48,7 +48,7 @@ public class PermissionsHelper {
         AnalysisDAO ds = new AnalysisDAO();
         this.rootJobNo = ds.getRootJobNumber(jobNo);
         this.rootJobOwner = ds.getJobOwner(rootJobNo);
-        this.isOwner = this.currentUser.equals(this.rootJobOwner);
+        this.isOwner = this.currentUser != null && this.currentUser.equals(this.rootJobOwner);
         this.canSetPermissions = this.isOwner;
         
         if (isAdmin || isOwner) {
