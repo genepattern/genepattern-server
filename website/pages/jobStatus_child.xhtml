@@ -16,70 +16,78 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:a4j="http://richfaces.org/a4j"
-	  xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
       xmlns:c="http://java.sun.com/jstl/core">
 
   <!-- File section include for job results page.
-       Inputs:	jobInfo
-       			step
-       			indentLevel
+       Inputs:  jobInfo
+                step
+                indentLevel
    -->
-	<ui:composition>
-		<div id="jobContainer#{jobInfo.jobNumber}">
-    	<table class="module" cellpadding="0" cellspacing="0" border="0" id="jobTable#{jobInfo.jobNumber}">
-			<tr>
-				<td class="module">
-					<t:dataList var="bunk" value="#{jobInfo.numAncestors}" rowIndexVar="ancestorIndex">
-						<h:outputText rendered="#{ancestorIndex > 0}">
-							<img src="/gp/images/blank.gif"/>
-						</h:outputText>
-					</t:dataList>
-					<img src="/gp/images/darkArrow.gif" /> step #{jobInfo.stepPath}: #{jobInfo.taskName} [id: #{jobInfo.jobNumber}] 
-				</td>
-				<td>
-					<h:outputText rendered="#{not empty jobInfo.inputParameters}">
-				    	<div class="icon2"><table cellpadding="0" border="0" cellspacing="0"><tr><td><a href="javascript:toggle('inputParamsDiv#{jobInfo.jobNumber}', 'Hide', 'Show');"><img src="/gp/images/parameters.gif" align="left" /></a></td><td><a style="color:#0066FF;" href="javascript:toggle('inputParamsDiv#{jobInfo.jobNumber}', 'Hide', 'Show');"><span style="color:#0066FF;" id="inputParamsDiv#{jobInfo.jobNumber}Label">Show</span> Input <br/>Parameters</a></td></tr></table></div>
-				    </h:outputText>
-			    </td>
-				<td width="30px">
-					<h:outputText rendered="#{jobInfo.status != 'Finished' and jobInfo.status != 'Error'}">
-						<img src="/gp/images/spin.gif" id="jobStatusIcon#{jobInfo.jobNumber}"/>
-					</h:outputText>
-					<h:outputText rendered="#{jobInfo.status == 'Finished'}">
-						<img src="/gp/images/complete.gif" id="jobStatusIcon#{jobInfo.jobNumber}"/>
-					</h:outputText>
-					<h:outputText rendered="#{jobInfo.status == 'Error'}">
-						<img src="/gp/images/error.gif" border="0" id="jobStatusIcon#{jobInfo.jobNumber}"/>
-					</h:outputText>
-					<span id="jobStatus#{jobInfo.jobNumber}" style="display: none;">#{jobInfo.status}</span>
-				</td>
-			</tr>
-		</table>
-		<h:outputText rendered="#{jobInfo.pipeline}">
-			<ui:include src="jobStatus_indicator.xhtml">
-		    	<ui:param name="jobInfo" value="#{jobInfo}" />
-		    </ui:include>
-		</h:outputText>
+    <ui:composition>
+        <div id="jobContainer#{childJobInfo.jobNumber}">
+        <table class="module" cellpadding="0" cellspacing="0" border="0" id="jobTable#{childJobInfo.jobNumber}">
+            <tr>
+                <td class="module">
+                    <t:dataList var="bunk" value="#{childJobInfo.numAncestors}" rowIndexVar="ancestorIndex">
+                        <h:outputText rendered="#{ancestorIndex > 0}">
+                            <img src="/gp/images/blank.gif"/>
+                        </h:outputText>
+                    </t:dataList>
+                    <img src="/gp/images/darkArrow.gif" /> step #{childJobInfo.stepPath}: #{childJobInfo.taskName} [id: #{childJobInfo.jobNumber}] 
+                </td>
+                <td>
+                    <h:outputText rendered="#{not empty childJobInfo.inputParameters}">
+                        <div class="icon2">
+                        <table cellpadding="0" border="0" cellspacing="0">
+                          <tr><td><a href="javascript:toggle('inputParamsDiv#{childJobInfo.jobNumber}', 'Hide', 'Show');"
+                                  ><img src="/gp/images/parameters.gif" align="left" /></a></td>
+                              <td><a style="color:#0066FF;" href="javascript:toggle('inputParamsDiv#{jobInfo.jobNumber}', 'Hide', 'Show');"
+                                  ><span style="color:#0066FF;" id="inputParamsDiv#{jobInfo.jobNumber}Label">Show</span> Input <br/>Parameters</a></td>
+                          </tr>
+                        </table>
+                        </div>
+                    </h:outputText>
+                </td>
+                <td width="30px">
+                    <h:outputText rendered="#{childJobInfo.status != 'Finished' and childJobInfo.status != 'Error'}">
+                        <img src="/gp/images/spin.gif" id="jobStatusIcon#{jobInfo.jobNumber}"/>
+                    </h:outputText>
+                    <h:outputText rendered="#{childJobInfo.status == 'Finished'}">
+                        <img src="/gp/images/complete.gif" id="jobStatusIcon#{childJobInfo.jobNumber}"/>
+                    </h:outputText>
+                    <h:outputText rendered="#{jobInfo.status == 'Error'}">
+                        <img src="/gp/images/error.gif" border="0" id="jobStatusIcon#{childJobInfo.jobNumber}"/>
+                    </h:outputText>
+                    <span id="jobStatus#{childJobInfo.jobNumber}" style="display: none;">#{childJobInfo.status}</span>
+                </td>
+            </tr>
+        </table>
+        <h:outputText rendered="#{childJobInfo.pipeline}">
+            <ui:include src="jobStatus_indicator.xhtml">
+                <ui:param name="jobInfo" value="#{childJobInfo}" />
+            </ui:include>
+        </h:outputText>
 
-		
-		<ui:include src="jobStatus_inputParams.xhtml">
-	    	<ui:param name="jobInfo" value="#{jobInfo}" />
-	    </ui:include>
-	
-	  
-		<ui:include src="jobStatus_files.xhtml">
-	    	<ui:param name="jobInfo" value="#{jobInfo}" />
-	    </ui:include>
+        
+        <ui:include src="jobStatus_inputParams.xhtml">
+            <ui:param name="jobInfo" value="#{childJobInfo}" />
+        </ui:include>
+    
+      
+        <ui:include src="jobStatus_files.xhtml">
+            <ui:param name="jobInfo" value="#{childJobInfo}" />
+        </ui:include>
 
-	    <div id="fileMenus#{jobInfo.jobNumber}">
-		  	<t:dataList var="outputFile" value="#{jobInfo.outputFiles}">
-		  		<ui:include src="jobStatus_fileMenu.xhtml">
-		  			<ui:param name="jobOnMenu" value="#{jobInfo}"/>
-		  		</ui:include>
-	        </t:dataList>
-	    </div>
-		
-	    </div>
-	    
+        <div id="fileMenus#{childJobInfo.jobNumber}">
+            <t:dataList var="outputFile" value="#{childJobInfo.outputFiles}">
+                <ui:include src="jobStatus_fileMenu.xhtml">
+                    <ui:param name="jobOnMenu" value="#{childJobInfo}"/>
+                </ui:include>
+            </t:dataList>
+        </div>
+        
+        </div>
+        
   </ui:composition>
 </html>
