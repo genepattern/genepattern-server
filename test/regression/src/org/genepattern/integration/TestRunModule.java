@@ -21,9 +21,9 @@ import junit.framework.TestCase;
  */
 public class TestRunModule extends TestCase {
 	
-	public static final String PREPROCESS_LSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:3";
-	public static final String CONVERT_LSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1";
-	public static final String SVM_LSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00025:4";
+	public static final String PREPROCESS_LSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020";
+	public static final String CONVERT_LSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002";
+	public static final String SVM_LSID = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00025";
 
 	public static final String SMALL_GCT = "resources/data/small.gct";
 	public static final String SMALL_PREPROCESS_RESULT_GCT = "small.preprocessed.gct";	
