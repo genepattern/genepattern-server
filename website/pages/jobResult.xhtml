@@ -155,6 +155,7 @@
 			<h:outputText rendered="#{jobStatusBean.jobInfo.hasVisualizer}">
 			To launch visualizer click <img src="/gp/images/visualizer.gif" /> icon.
 			</h:outputText> To see options click <img src="/gp/images/smallOptions.gif" /> icon. For Input Parameters click <img src="/gp/images/smallParameters.gif" /> icon.</div> <br />
+            <a4j:outputPanel id="emailNotificationPanel" ajaxRendered="true">
 			<h:outputText rendered="#{not jobStatusBean.finished}">
 			    <div style="float:right;margin-right:10px;" id="emailDiv">
                 <h:form>
@@ -164,6 +165,7 @@
                 </h:form>
 			    </div>
             </h:outputText>
+            </a4j:outputPanel>
 		<!--   div style="float:right;margin-right:10px;"><input type="checkbox" /> Show Execution Logs</div -->
 		<div style="float:right;margin-right:10px;">
 		    <h:form>
@@ -175,7 +177,7 @@
 		<br /><br />
 
         <div id="jobContainer#{jobStatusBean.jobInfo.jobNumber}">
-        <a4j:outputPanel id="jobStatus#{jobStatusBean.jobInfo.jobNumber}">
+        <a4j:outputPanel id="jobStatus#{jobStatusBean.jobInfo.jobNumber}" ajaxRendered="true">
 		<table class="title" cellpadding="0" cellspacing="0" border="0" id="jobTable#{jobStatusBean.jobInfo.jobNumber}">
 			<tr>
 				<td class="title">
@@ -188,7 +190,15 @@
 				</td>
 				<td>
 					<h:outputText rendered="#{not empty jobStatusBean.jobInfo.inputParameters}">
-			    		<div class="icon2"><table cellpadding="0" border="0" cellspacing="0"><tr><td><a href="javascript:toggle('inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"><img src="/gp/images/parameters.gif" align="left" /></a></td><td><a style="color:#0066FF;" href="javascript:toggle('inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"><span id="inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}Label">Show</span> Input <br/>Parameters</a></td></tr></table></div>
+			        <div class="icon2">
+                    <table cellpadding="0" border="0" cellspacing="0">
+                      <tr><td><a href="javascript:toggle('inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"
+                              ><img src="/gp/images/parameters.gif" align="left" /></a></td>
+                          <td><a style="color:#0066FF;" href="javascript:toggle('inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"
+                              ><span id="inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}Label">Show</span> Input <br/>Parameters</a></td>
+                      </tr>
+                    </table>
+                    </div>
 			    	</h:outputText>
 					<h:outputText rendered="#{jobStatusBean.jobInfo.permissions.editPermissionsAllowed}">
 						<div class="icon">
@@ -204,7 +214,6 @@
 					</h:outputText>
 			    </td>
           
-          <!--  TODO: update this via a4j call -->
 				<td width="30px">
 					<h:outputText rendered="#{jobStatusBean.jobInfo.status != 'Finished' and jobStatusBean.jobInfo.status != 'Error'}">
 						<img src="/gp/images/spin.gif" id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
@@ -222,9 +231,11 @@
     </a4j:outputPanel>
 
 		<h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
+        <a4j:outputPanel ajaxRendered="true">
 			<ui:include src="jobStatus_indicator.xhtml">
 		    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
 		    </ui:include>
+        </a4j:outputPanel>
 		</h:outputText>
 
 		<h:outputText rendered="#{jobStatusBean.jobInfo.permissions.editPermissionsAllowed}">
@@ -312,7 +323,7 @@
 	    </ui:include>
 	    
 	    <h:form>
- 		<a4j:outputPanel id="filePanel#{jobStatusBean.jobInfo.jobNumber}">
+ 		<a4j:outputPanel id="filePanel#{jobStatusBean.jobInfo.jobNumber}" ajaxRendered="true">
 		<ui:include src="jobStatus_files.xhtml">
 	    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
 	    	<ui:param name="indent" value="#{false}" />
@@ -320,26 +331,21 @@
 	    </ui:include>
 	    </a4j:outputPanel>
 	    
-	    <a4j:poll id="poll" interval="2500"  enabled="#{!jobStatusBean.jobInfo.finished}"
-                reRender="filePanel#{jobStatusBean.jobInfo.jobNumber}, fileMenuPanel#{jobStatusBean.jobInfo.jobNumber}, jobStatus#{jobStatusBean.jobInfo.jobNumber}">
+	    <a4j:poll id="poll_jobInfo" interval="2500"  enabled="#{!jobStatusBean.jobInfo.finished}">
             	  <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
   		</a4j:poll>
   		</h:form>	
 	    
         <h:form>
-        <a4j:outputPanel id="jobMenuPanel">
+        <a4j:outputPanel id="jobMenuPanel" ajaxRendered="true">
             <ui:include src="jobStatus_menu.xhtml">
                 <ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
             </ui:include>
         </a4j:outputPanel>
-        <a4j:poll id="poll" interval="2500"  enabled="#{!jobStatusBean.jobInfo.finished}"
-            reRender="jobMenuPanel, fileMenuPanel">
-            <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
-        </a4j:poll>
         </h:form>
 	   
 	   <a4j:form>
-	   <a4j:outputPanel id="fileMenuPanel#{jobStatusBean.jobInfo.jobNumber}">
+	   <a4j:outputPanel id="fileMenuPanel#{jobStatusBean.jobInfo.jobNumber}" ajaxRendered="true">
 	    <div id="fileMenus#{jobStatusBean.jobInfo.jobNumber}">
         <t:dataList var="outputFile" value="#{jobStatusBean.jobInfo.outputFiles}">
 	 			<ui:include src="jobStatus_fileMenu.xhtml">
@@ -354,21 +360,17 @@
 	  	
 	  	 <h:form>
 
-	  	<a4j:outputPanel id="pipelinePanel#{jobStatusBean.jobInfo.jobNumber}">
+	  	<a4j:outputPanel ajaxRendered="true">
 	    <h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
 			<t:dataList var="child" value="#{jobStatusBean.allSteps}" rowIndexVar="idx">
 				<h:outputText rendered="#{idx gt 0}">
 		    		<ui:include src="jobStatus_child.xhtml">
-				    	<ui:param name="jobInfo" value="#{child}" />
+				    	<ui:param name="childJobInfo" value="#{child}" />
 				    </ui:include>
 			    </h:outputText>
 	    	</t:dataList>
 	   	</h:outputText>
 	   	</a4j:outputPanel>
-	   	<a4j:poll id="poll" interval="500"  enabled="#{!jobStatusBean.jobInfo.visualizer and  !jobStatusBean.jobInfo.finished}"
-                reRender="pipelinePanel#{jobStatusBean.jobInfo.jobNumber}">
-            	  <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
-  		</a4j:poll>
   		</h:form>	
   		
   		
