@@ -1,4 +1,4 @@
-<project name="GenePatternRegressionTest" default="compile">
+<project name="GenePatternRegressionTest" default="junit">
 	<property name="src" location="src"/>
 	<property name="lib" location="lib2"/>
 	<property name="build" location="build"/>
@@ -34,9 +34,9 @@
 		  <formatter type="plain"/>
 		  <test name="org.genepattern.integration.TestRunModule" outfile="test_module_output"/>
 		  <test name="org.genepattern.integration.TestRunPipeline" outfile="test_pipeline_output"/>
-		  <jvmarg value="-DgenePatternUrl=http://genepattern.broad.mit.edu"/>
-		  <jvmarg value="-Dusername=gp_regression_test"/>
-		  <jvmarg value="-Dpassword=!_tst_R3gr"/>
+		  <jvmarg value="-DgenePatternUrl=http://genepatterntest.broad.mit.edu"/>
+		  <jvmarg value="-Dusername=jntest"/>
+		  <jvmarg value="-Dpassword=jntest"/>
 		</junit>
 	</target>
 
