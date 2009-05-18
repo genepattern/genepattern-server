@@ -224,26 +224,26 @@ public class TestRunModule extends TestCase {
 		validateResultFile(files, ALL_AML_RES_CONVERT_RERUN_RESULT, 7129, 38);
 	}
 	
-	public void testSvmUploadedFiles() throws WebServiceException, IOException, ParseException {
-		Parameter[] params = new Parameter[4];
-		params[0] = new Parameter("train.data.filename", TRAIN_DATA_FILENAME);
-		params[1] = new Parameter("train.cls.filename", TRAIN_CLS_FILENAME);
-		params[2] = new Parameter("test.data.filename", TEST_DATA_FILENAME);		
-		params[3] = new Parameter("test.cls.filename", TEST_CLS_FILENAME);
-
-		JobResult jobResult = runModuleHelper(params, SVM_LSID);
-		assertNotNull(jobResult);
-		File[] files = jobResult.downloadFiles(".");
-		assertNotNull(files);
-		assertEquals(2, files.length);		
-		
-		
-		File odfResult = jobResult.downloadFile(SVM_ODF_RESULT, ".");
-		assertNotNull(odfResult);
-		// TODO get revised gp-modules.jar from Josh and read in file using OdfObject
-//		OdfObject odf = new OdfObject(odfResult.getAbsolutePath());
-
-	}
+//	public void testSvmUploadedFiles() throws WebServiceException, IOException, ParseException {
+//		Parameter[] params = new Parameter[4];
+//		params[0] = new Parameter("train.data.filename", TRAIN_DATA_FILENAME);
+//		params[1] = new Parameter("train.cls.filename", TRAIN_CLS_FILENAME);
+//		params[2] = new Parameter("test.data.filename", TEST_DATA_FILENAME);		
+//		params[3] = new Parameter("test.cls.filename", TEST_CLS_FILENAME);
+//
+//		JobResult jobResult = runModuleHelper(params, SVM_LSID);
+//		assertNotNull(jobResult);
+//		File[] files = jobResult.downloadFiles(".");
+//		assertNotNull(files);
+//		assertEquals(2, files.length);		
+//		
+//		
+//		File odfResult = jobResult.downloadFile(SVM_ODF_RESULT, ".");
+//		assertNotNull(odfResult);
+//		// TODO get revised gp-modules.jar from Josh and read in file using OdfObject
+////		OdfObject odf = new OdfObject(odfResult.getAbsolutePath());
+//
+//	}
 
 	public static Test suite() {
 		  TestSuite suite= new TestSuite();
