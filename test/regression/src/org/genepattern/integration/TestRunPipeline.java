@@ -3,7 +3,9 @@ package org.genepattern.integration;
 import java.io.File;
 import java.io.IOException;
 
+import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 import org.genepattern.client.GPClient;
 import org.genepattern.webservice.JobResult;
@@ -36,5 +38,12 @@ public class TestRunPipeline extends TestCase {
 		assertNotNull(filename);
 		assertTrue(filename.contains("execution_log.html"));
 	}
+
+
+	public static Test suite() {
+			  TestSuite suite= new TestSuite();
+			  suite.addTestSuite(TestRunPipeline.class);
+			  return suite;
+	}		
 
 }

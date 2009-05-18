@@ -15,6 +15,11 @@
 	<target name="compile" depends="clean" 
 	        description="compiles the source code">
 		<mkdir dir="${build}"/>
+		<copy todir="${build}">
+		  <fileset dir="${src}">
+		    <filename name="log4j.properties"/>
+		  </fileset>
+		</copy>
 		<javac srcdir="${src}" destdir="${build}" debug="on">
 		  <classpath> 
 		    <fileset dir="lib2">
@@ -27,17 +32,15 @@
 	<target name="junit" depends="compile"
 	        description="runs junit tests">
 		<junit fork="yes">
+		  <test name="org.genepattern.integration.TestAll" outfile="test_all"/>
 		  <classpath>
 		    <fileset dir="lib2" includes="**/*.jar"/>
 		    <dirset dir="build"/>
 		  </classpath>
-		  <formatter type="plain"/>
-		  <test name="org.genepattern.integration.TestRunModule" outfile="test_module_output"/>
-		  <test name="org.genepattern.integration.TestRunPipeline" outfile="test_pipeline_output"/>
-		  <jvmarg value="-DgenePatternUrl=http://genepatterntest.broad.mit.edu"/>
+		  <formatter type="xml"/>
+		  <jvmarg value="-DgenePatternUrl=http://gpdev02.broad.mit.edu:8080"/>
 		  <jvmarg value="-Dusername=jntest"/>
 		  <jvmarg value="-Dpassword=jntest"/>
 		</junit>
 	</target>
-
 </project>

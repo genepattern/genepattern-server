@@ -12,7 +12,9 @@ import org.genepattern.webservice.JobResult;
 import org.genepattern.webservice.Parameter;
 import org.genepattern.webservice.WebServiceException;
 
+import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * Tests the ability to run GenePattern Modules.
@@ -241,6 +243,12 @@ public class TestRunModule extends TestCase {
 		// TODO get revised gp-modules.jar from Josh and read in file using OdfObject
 //		OdfObject odf = new OdfObject(odfResult.getAbsolutePath());
 
+	}
+
+	public static Test suite() {
+		  TestSuite suite= new TestSuite();
+		  suite.addTestSuite(TestRunModule.class);
+		  return suite;
 	}
 	
 	
