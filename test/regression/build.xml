@@ -1,4 +1,4 @@
-<project name="GenePatternRegressionTest" default="junit">
+<project name="GenePatternRegressionTest" default="finish">
 	<property name="src" location="src"/>
 	<property name="lib" location="lib2"/>
 	<property name="build" location="build"/>
@@ -42,5 +42,10 @@
 		  <jvmarg value="-Dusername=jntest"/>
 		  <jvmarg value="-Dpassword=jntest"/>
 		</junit>
+	</target>
+
+        <target name="finish" description="works around a wierd timing problem in Hudson accepting test reports, make the very last target" depends="junit">
+	  <sleep seconds="2" />
+	  <touch file="test_all.xml"/>
 	</target>
 </project>
