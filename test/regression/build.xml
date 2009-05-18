@@ -3,6 +3,9 @@
 	<property name="lib" location="lib2"/>
 	<property name="build" location="build"/>
 	<property name="dist" location="dist"/>
+	<property name="genePatternUrl" value="http://genepatterntest.broad.mit.edu"/>
+	<property name="username" value="jntest"/>
+	<property name="password" value="jntest"/>
 	<path id="project.class.path">
 		<fileset dir="lib2" includes="gp-full.jar,gp-modules.jar"/>
 	</path>
@@ -38,9 +41,9 @@
 		    <dirset dir="build"/>
 		  </classpath>
 		  <formatter type="xml"/>
-		  <jvmarg value="-DgenePatternUrl=http://gpdev02.broad.mit.edu:8080"/>
-		  <jvmarg value="-Dusername=jntest"/>
-		  <jvmarg value="-Dpassword=jntest"/>
+		  <jvmarg value="-DgenePatternUrl=${genePatternUrl}"/>
+		  <jvmarg value="-Dusername=${username}"/>
+		  <jvmarg value="-Dpassword=${password}"/>
 		</junit>
 	</target>
 
