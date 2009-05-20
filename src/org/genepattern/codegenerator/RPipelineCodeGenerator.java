@@ -272,13 +272,15 @@ public class RPipelineCodeGenerator extends AbstractPipelineCodeGenerator implem
             for (int j = 0, length = queries.length; j < length; j++) {
                 String[] temp = queries[j].split("=");
                 try {
-                    if (temp[0].equals("file")) {
+                    if (temp.length > 0 && temp[0].equals("file")) {
                         file = URLDecoder.decode(temp[1], "utf-8");
                     }
-                    if (temp[0].equals("task")) {
-                        task = URLDecoder.decode(temp[1], "utf-8");
-                        if ("<LSID>".equalsIgnoreCase(task)) {
-                            task = model.getLsid();
+                    if (temp.length > 0 && temp[0].equals("task")) {
+                        if (temp.length > 1) {
+                            task = URLDecoder.decode(temp[1], "utf-8");
+                            if ("<LSID>".equalsIgnoreCase(task)) {
+                                task = model.getLsid();
+                            }
                         }
                     }
                 } catch (UnsupportedEncodingException uee) {
