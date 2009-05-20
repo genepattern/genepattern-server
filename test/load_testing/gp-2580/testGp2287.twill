@@ -1,0 +1,10 @@
+# GP-2287 Test: Large file upload via web input form.
+#    Make sure to pass in the url of the server on the twill-sh command line, e.g.
+#    $ twill-sh -u http://genepatterntest.broad.mit.edu
+#
+#    The large input file is here: \\Thumper21.broad.mit.edu\igv\dev\testfiles\cn\Very_large_copynumber.cn
+go /gp/login?username=test&password=test
+go /gp/pages/index.jsf?lsid=ConvertLineEndings
+fv taskForm input.filename_cb file
+formfile taskForm input.filename Very_large_copynumber.cn
+submit
