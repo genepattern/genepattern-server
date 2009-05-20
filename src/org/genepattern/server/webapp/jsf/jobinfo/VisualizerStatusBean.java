@@ -58,16 +58,11 @@ public class VisualizerStatusBean {
     //map from index to job number, e.g. the first visualizer on the page has index 0 and a null job number
     //    once the visualizer is available for rendering assign job number to the correct value
     //    use that value to render the visualizer applet tag once and only once
-    private List<Obj> visObjsInit = new ArrayList<Obj>(); //number of non-null visualizers on init
-    private List<Obj> visObjsUpdate = new ArrayList<Obj>();
+    //private List<Obj> visObjsUpdate = new ArrayList<Obj>();
     private List<Obj> visObjs = new ArrayList<Obj>();
 
     public List<Obj> getVisObjs() {
         return visObjs;
-    }
-    
-    public List<Obj> getVisObjsUpdate() {
-        return visObjsUpdate;
     }
     
     public void setJobInfo(JobInfoWrapper jobInfo) {
@@ -75,13 +70,6 @@ public class VisualizerStatusBean {
         for(int i=0; i<this.jobInfo.getNumVisualizers(); ++i) {
             visObjs.add(new Obj(""+i, null));
         }
-
-        int idx = 0;
-        for(JobInfoWrapper vis : getAllVisualizers()) {
-            visObjsInit.add(new Obj(""+idx, vis));
-            ++idx;
-        }
-
         updateVisualizerFlags();
     }
     
@@ -101,16 +89,15 @@ public class VisualizerStatusBean {
     }
     
     private void updateVisualizerFlags() {
-        visObjsUpdate.clear();
         List<JobInfoWrapper> current = getAllVisualizers();
         int idx = 0;
         for(JobInfoWrapper jobInfo : current) {
-            //if an item is in current but not in 'prev' then ... it is new
+            //if an item previously had a null jobInfo and now has a non-null jobInfo ...
+            //   ... automatically display the applet tag
             if (idx<visObjs.size()) {
                 Obj prevState = visObjs.get(idx);
                 if (prevState.getJobInfo() == null) {
                     prevState.setShowAppletTag(true);
-                    visObjsUpdate.add(prevState);
                 }
                 else {
                     prevState.setShowAppletTag(false);
