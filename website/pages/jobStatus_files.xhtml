@@ -72,21 +72,7 @@
 							<img src="/gp/images/blank.gif"/>
 						</h:outputText>
 					</t:dataList>
-			    	<a href="javascript:runVisualizer#{jobInfo.jobNumber}()"><img src="/gp/images/visualizer.gif" border="0"/> Open Visualizer</a>
-			    	<span id="visualizerSpan#{jobInfo.jobNumber}">&nbsp;</span>
-			    	<script type="text/javascript">
-			    		function runVisualizer#{jobInfo.jobNumber}() {
-			    			document.getElementById("visualizerSpan#{jobInfo.jobNumber}").innerHTML = '#{jobInfo.visualizerAppletTag}';
-			    		}
-
-			    		if (openVisualizers == true){
-				    		if (!(openedVisualizerJobs[#{jobInfo.jobNumber}] == true)){
-			    				openedVisualizerJobs[#{jobInfo.jobNumber}]=true;
-			    				runVisualizer#{jobInfo.jobNumber}();
-			    			}
-			    		}
-				    	
-			    	</script>
+			    	<a href="javascript:runVisualizer(#{jobInfo.jobNumber})"><img src="/gp/images/visualizer.gif" border="0"/> Open Visualizer</a>
 		    	</p>
 		    </h:outputText>
 		</div>

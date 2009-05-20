@@ -23,6 +23,15 @@
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  <managed-bean>
+  <managed-bean-name>visualizerStatusBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.jobinfo.VisualizerStatusBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+  <managed-property>
+    <property-name>jobInfo</property-name>
+    <value>#{jobStatusBean.jobInfo}</value>
+  </managed-property>
+ </managed-bean>
+ <managed-bean>
   <managed-bean-name>jobPermissionsBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.JobPermissionsBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>

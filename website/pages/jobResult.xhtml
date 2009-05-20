@@ -139,7 +139,45 @@
                 document.getElementById(id + "Label").innerHTML = open ? closedLabel : openLabel;
             }
         }
-			
+
+        var appletRegions = new Array();
+        var appletTags = new Array();
+        var appletIds = new Array();
+
+        function addVisualizer(key, jobId, appletName, appletId, appletTag) {
+            if (appletRegions[jobId] != null) {
+                //alert('already added');
+                return;
+            }
+
+            appletRegions[jobId] = 'visualizerSpan'+key;
+            appletTags[jobId] = appletTag;
+            appletIds[jobId] = appletId;
+
+            if (openVisualizers == true){
+                if (!(openedVisualizerJobs[jobId] == true)){
+                    openedVisualizerJobs[jobId]=true;
+                    runVisualizer(jobId);
+                }
+            }  
+        }
+
+        function runVisualizer(jobId) { 
+            var appletRegion = document.getElementById(appletRegions[jobId]);
+            if (appletRegion != null && appletRegion.innerHTML == '') {
+                appletRegion.innerHTML = appletTags[jobId];
+            }
+            //else {
+            //    //for debugging
+            //    alert('visualizer already running');
+            //    alert(''+appletRegion.innerHTML);
+            //    alert('document.applets.length: '+document.applets.length);
+            //    var visApplet = document.getElementById(appletIds[jobId]);
+            //    alert('visApplet == null: '+(visApplet == null));
+            //    alert('visApplet.isActive(): '+visApplet.isActive());
+            //}
+        }
+
 		/* ]]> */			
 		</script>
 	</ui:define>
@@ -147,36 +185,46 @@
 	<ui:define name="body">
 	
 <h:outputText rendered="#{!empty jobStatusBean.jobInfo}">
-		<div class="statusReport">
-		<input type="checkbox" CHECKED="true" id="keepUpdating" style="display:none;"/>
-	    <input type="textarea" id="responseArea" rows="30" cols="100" style="display:none;"/>
-	    
-		<div style="text-align:right;">
-			<h:outputText rendered="#{jobStatusBean.jobInfo.hasVisualizer}">
-			To launch visualizer click <img src="/gp/images/visualizer.gif" /> icon.
-			</h:outputText> To see options click <img src="/gp/images/smallOptions.gif" /> icon. For Input Parameters click <img src="/gp/images/smallParameters.gif" /> icon.</div> <br />
-            <a4j:outputPanel id="emailNotificationPanel" ajaxRendered="true">
-			<h:outputText rendered="#{not jobStatusBean.finished}">
-			    <div style="float:right;margin-right:10px;" id="emailDiv">
-                <h:form>
-                <h:selectBooleanCheckbox value="#{jobStatusBean.sendEmailNotification}" 
-                    onclick="setEmailNotification(this, #{jobStatusBean.jobInfo.jobNumber}, '#{jobStatusBean.currentUserId}', '#{jobStatusBean.currentUserEmail}');"
-                /> Email Reminder 
-                </h:form>
-			    </div>
-            </h:outputText>
-            </a4j:outputPanel>
-		<!--   div style="float:right;margin-right:10px;"><input type="checkbox" /> Show Execution Logs</div -->
-		<div style="float:right;margin-right:10px;">
-		    <h:form>
-		    <h:selectBooleanCheckbox value="#{jobStatusBean.showExecutionLogs}" 
-		        onclick="setShowExecutionLogs(this, #{jobStatusBean.jobInfo.jobNumber});" 
-		    /> Show Execution Logs
-		    </h:form>
-		</div>
-		<br /><br />
+  <a4j:keepAlive beanName="visualizerStatusBean" />
+  <h:form>
+    <a4j:poll id="poll_jobInfo"  eventsQueue="jobStatusQueue" interval="2500" enabled="#{!jobStatusBean.jobInfo.finished}" 
+        ignoreDupResponses="true"
+        actionListener="#{visualizerStatusBean.updateAjaxPoll}" 
+    >
+      <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
+    </a4j:poll>
+  </h:form>
 
-        <div id="jobContainer#{jobStatusBean.jobInfo.jobNumber}">
+  <div class="statusReport">	    
+  <div style="text-align:right;">
+  <h:outputText rendered="#{jobStatusBean.jobInfo.hasVisualizer}"
+  >To launch visualizer click <img src="/gp/images/visualizer.gif" /> icon.</h:outputText>
+   To see options click <img src="/gp/images/smallOptions.gif" /> icon. For Input Parameters click <img src="/gp/images/smallParameters.gif" /> icon.
+  </div> 
+  <br />
+
+  <a4j:outputPanel id="emailNotificationPanel" ajaxRendered="true">
+  <h:outputText rendered="#{not jobStatusBean.finished}">
+  <div style="float:right;margin-right:10px;" id="emailDiv">
+    <h:form>
+      <h:selectBooleanCheckbox value="#{jobStatusBean.sendEmailNotification}" 
+                    onclick="setEmailNotification(this, #{jobStatusBean.jobInfo.jobNumber}, '#{jobStatusBean.currentUserId}', '#{jobStatusBean.currentUserEmail}');"
+      /> Email Reminder 
+    </h:form>
+  </div>
+  </h:outputText>
+  </a4j:outputPanel>
+
+  <!--   div style="float:right;margin-right:10px;"><input type="checkbox" /> Show Execution Logs</div -->
+  <div style="float:right;margin-right:10px;">
+    <h:form>
+	  <h:selectBooleanCheckbox value="#{jobStatusBean.showExecutionLogs}" 
+        onclick="setShowExecutionLogs(this, #{jobStatusBean.jobInfo.jobNumber});" 
+      /> Show Execution Logs
+    </h:form>
+  </div>
+  <br /><br />
+  <div id="jobContainer#{jobStatusBean.jobInfo.jobNumber}">
         <a4j:outputPanel id="jobStatus#{jobStatusBean.jobInfo.jobNumber}" ajaxRendered="true">
 		<table class="title" cellpadding="0" cellspacing="0" border="0" id="jobTable#{jobStatusBean.jobInfo.jobNumber}">
 			<tr>
@@ -230,13 +278,13 @@
 		</table>
     </a4j:outputPanel>
 
-		<h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
+    <h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
         <a4j:outputPanel ajaxRendered="true">
 			<ui:include src="jobStatus_indicator.xhtml">
 		    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
 		    </ui:include>
         </a4j:outputPanel>
-		</h:outputText>
+    </h:outputText>
 
 		<h:outputText rendered="#{jobStatusBean.jobInfo.permissions.editPermissionsAllowed}">
 			<div id="permissionsDiv" style="display: none;">
@@ -329,13 +377,9 @@
 	    	<ui:param name="indent" value="#{false}" />
 	    	<ui:param name="openVisualizers" value="#{jobStatusBean.openVisualizers}" />
 	    </ui:include>
-	    </a4j:outputPanel>
-	    
-	    <a4j:poll id="poll_jobInfo" interval="2500"  enabled="#{!jobStatusBean.jobInfo.finished}">
-            	  <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
-  		</a4j:poll>
-  		</h:form>	
-	    
+        </a4j:outputPanel>
+  		</h:form>
+
         <h:form>
         <a4j:outputPanel id="jobMenuPanel" ajaxRendered="true">
             <ui:include src="jobStatus_menu.xhtml">
@@ -352,14 +396,11 @@
 	 				 <ui:param name="jobOnMenu" value="#{jobStatusBean.jobInfo}"/>
 	 			</ui:include>
       	</t:dataList>
-	  	
-	  	
 	  	</div>
 	  	</a4j:outputPanel>
 	  	</a4j:form>
 	  	
-	  	 <h:form>
-
+	  	<a4j:form>
 	  	<a4j:outputPanel ajaxRendered="true">
 	    <h:outputText rendered="#{jobStatusBean.jobInfo.pipeline}">
 			<t:dataList var="child" value="#{jobStatusBean.allSteps}" rowIndexVar="idx">
@@ -370,15 +411,26 @@
 			    </h:outputText>
 	    	</t:dataList>
 	   	</h:outputText>
-	   	</a4j:outputPanel>
-  		</h:form>	
-  		
-  		
-	    </div>
-	    
-	    
-	    <br/>
-	    <br/>
+        </a4j:outputPanel>
+  		</a4j:form>
+
+        <t:dataList var="visObj" value="#{visualizerStatusBean.visObjs}">
+          <span id="visualizerSpan#{visObj.key}"></span> <!-- place applet tag here -->
+        </t:dataList>
+
+        <a4j:outputPanel ajaxRendered="true">      
+        <t:dataList var="visObj" value="#{visualizerStatusBean.visObjs}">
+          <h:outputText escape="false" rendered="#{! empty visObj.jobInfo}">
+            <script type="text/javascript">
+            addVisualizer('#{visObj.key}', '#{visObj.jobInfo.jobNumber}', '#{visObj.jobInfo.visualizerAppletName}', '#{visObj.jobInfo.visualizerAppletId}', '#{visObj.jobInfo.visualizerAppletTag}');
+            </script>
+          </h:outputText>
+        </t:dataList>
+        </a4j:outputPanel>
+
+        </div>
+        <br/>
+        <br/>
 	    
 	    <h:outputText rendered="#{not empty jobStatusBean.jobInfo.purgeDate}">
 	    	<b>These job results are scheduled to be purged from the server on #{jobStatusBean.jobInfo.formattedPurgeDate}</b>

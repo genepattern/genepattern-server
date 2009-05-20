@@ -14,7 +14,10 @@ package org.genepattern.server.webapp.jsf.jobinfo;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletRequest;
@@ -45,6 +48,10 @@ public class JobStatusBean {
     private boolean showExecutionLogs = false;
     private boolean openVisualizers = false;
 
+    //track the list of automatically opened visualizers
+    //private List<Integer> runningVisualizers = new ArrayList<Integer>();
+    private Map<Integer,String> visualizerStatus = new HashMap<Integer,String>();
+    
     public JobStatusBean() {
       init();
     }
@@ -105,15 +112,23 @@ public class JobStatusBean {
                 log.error("Error sending redirect: "+e.getMessage(), e);
             }
         }
+        
+        //special-case for visualizers
+        visualizerStatus = new HashMap<Integer,String>(); 
+        for(JobInfoWrapper step : jobInfoWrapper.getAllSteps()) {
+            if (step.isVisualizer()) {
+                visualizerStatus.put(step.getJobNumber(), "PING");
+            }
+        }
     }
     
     public JobInfoWrapper getJobInfo() {
         return jobInfoWrapper;
     }
 
-	public boolean getOpenVisualizers() {
-		return openVisualizers;
-	}
+    public boolean getOpenVisualizers() {
+        return openVisualizers;
+    }
 
 	public void setOpenVisualizers(boolean openVisualizers) {
 		this.openVisualizers = openVisualizers;
