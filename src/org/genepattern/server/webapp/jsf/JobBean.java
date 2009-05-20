@@ -158,10 +158,7 @@ public class JobBean {
     }
     
     public String deleteAction(){
-    	System.out.println("DeleteAction");
     	delete(null);
-    	System.out.println("DeleteAction - finished");
-    	
     	return "homeNoRedirect";
     }
     
