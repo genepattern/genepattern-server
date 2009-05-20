@@ -3,6 +3,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="clients/JavaGE/src"/>
 	<classpathentry kind="src" path="build_tools/ZipUpload/src"/>
+	<classpathentry kind="src" output="test/load_testing/gp-2580" path="test/load_testing/gp-2580"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jst.server.core.container/org.eclipse.jst.server.tomcat.runtimeTarget/Apache Tomcat v5.5 - GenePattern"/>
 	<classpathentry kind="lib" path="lib/javax.servlet.jar"/>
@@ -102,5 +103,8 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/xercesImpl.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/xml-apis.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/xsltc.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-api-3.2.2.GA.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-impl-3.2.2.GA.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-ui-3.2.2.GA.jar"/>
 	<classpathentry kind="output" path="website/WEB-INF/classes"/>
 </classpath>
