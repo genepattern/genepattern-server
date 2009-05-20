@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -732,6 +733,34 @@ public class JobInfoWrapper {
     public boolean isVisualizer() {
         return this.visualizerAppletTag != null && !"".equals(this.visualizerAppletTag);
     }
+
+    /**
+     * The value of the 'id' attribute to the applet tag for this visualizer, so that you can access the visualizer with JavaScript.
+     * E.g. Document.getElementById().
+     * 
+     * Note: This value is set even for jobs which aren't visualizers.
+     * @return
+     */
+    public String getVisualizerAppletId() {
+        if (jobInfo == null) {
+            return "";
+        }
+        return "vis_" + jobInfo.getJobNumber();
+    }
+
+    /**
+     * The value of the 'name' attribute to the applet tag for this visualizer, so that you can access the visualizer with JavaScript,
+     * E.g. document.#{jobInfo.visualizerAppletName}.
+     * 
+     * Note: This value is set even for jobs which aren't visualizers.
+     * @return
+     */
+    public String getVisualizerAppletName() {
+        if (jobInfo == null) {
+            return "";
+        }
+        return jobInfo.getTaskName() + "_" + jobInfo.getJobNumber();
+    }
     
     public boolean getHasVisualizer() {
     	if (isVisualizer()) {
@@ -988,6 +1017,62 @@ public class JobInfoWrapper {
         return new Integer[numStepsInPipeline];
     }
 
+    public int getNumStepsInPipelineRecursive() {
+        PipelineModel pm = this.getPipelineModel();
+        return getNumStepsInPipelineRecursive(pm);
+    }
+    
+    public int getNumVisualizers() {
+        if (isVisualizer()) {
+            return 1;
+        }
+        if (isPipeline()) {
+            PipelineModel pm = this.getPipelineModel();
+            return getNumVisualizersInPipelineRecursive(pm);
+        }
+        return 0;        
+    }
+    
+    private int getNumVisualizersInPipelineRecursive(PipelineModel pm) {
+        if (pm == null) {
+            return 0;
+        }
+        int count = 0;
+        for(JobSubmission jobSubmission : pm.getTasks()) {
+            TaskInfo taskInfo = jobSubmission.getTaskInfo();
+            if (taskInfo != null && taskInfo.isVisualizer()) {
+                count += 1;
+            }
+            else if (taskInfo != null && taskInfo.isPipeline()) {
+                PipelineModel sub = this.getPipelineModel(taskInfo);
+                count += getNumVisualizersInPipelineRecursive(sub);
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Get a count of all jobs (excluding pipelines), including the count of jobs in nested pipelines.
+     * @param pm
+     * @return
+     */
+    private int getNumStepsInPipelineRecursive(PipelineModel pm) {
+        if (pm == null) {
+            return 0;
+        }
+        int level0count = pm.getTasks().size();
+        int total = level0count;
+        for(JobSubmission jobSubmission : pm.getTasks()) {
+            TaskInfo ti = jobSubmission.getTaskInfo();
+            if (ti.isPipeline()) {
+                total -= 1;
+                PipelineModel sub = this.getPipelineModel(ti);
+                total += getNumStepsInPipelineRecursive(sub);
+            }
+        }
+        return total;
+    }
+
     private int currentStepInPipeline = 0;
     public int getCurrentStepInPipeline() {
         return currentStepInPipeline;
@@ -1010,6 +1095,11 @@ public class JobInfoWrapper {
         else {
             log.error("jobInfo is null");
         }
+    }
+    
+    //for debugging
+    public String getRandom() {
+        return "r_" + System.currentTimeMillis() + ": " + Math.rint( 10.0 * Math.random() );
     }
 
 }
