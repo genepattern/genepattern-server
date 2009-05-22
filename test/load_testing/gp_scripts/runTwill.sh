@@ -6,7 +6,7 @@
 #
 
 # twill-sh
-twill_sh=./twill-0.9b1/twill-sh 
+twill_sh=twill-sh
 
 url=$1
 script=$2

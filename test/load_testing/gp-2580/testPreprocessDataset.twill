@@ -1,0 +1,24 @@
+#
+# Login to the GenePattern 3.2+ server
+#
+# pass the server url as an arg, e.g.
+#   -u http://node255.broad.mit.edu:7070
+#   -u http://gpb67-896.broad.mit.edu:8080
+go /gp/login?username=test&password=test
+code 200
+url /gp/pages/index.jsf
+
+# Run 'PreprocessDataset' with uploaded file
+go /gp/pages/index.jsf?lsid=PreprocessDataset
+fv taskForm input.filename_cb file
+formfile taskForm input.filename all_aml_test.gct
+submit
+code 200
+
+# Run 'PreprocessDataset' with URL
+go /gp/pages/index.jsf?lsid=innerStep
+fv taskForm input.filename_cb url
+fv taskForm input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+submit
+code 200
+
