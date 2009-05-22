@@ -75,7 +75,7 @@ public class VisualizerStatusBean {
     
     private List<JobInfoWrapper> getAllVisualizers() {
         List<JobInfoWrapper> v = new ArrayList<JobInfoWrapper>();
-        if (jobInfo != null && jobInfo.isVisualizer()) {
+        if (jobInfo != null && jobInfo.isVisualizer() && "Finished".equals(jobInfo.getStatus()) ) {
             v.add(jobInfo);
         }
         else if (jobInfo != null && jobInfo.isPipeline()) {

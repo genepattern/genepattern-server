@@ -80,9 +80,6 @@
             new  Ajax.Request('/gp/jobResults/'+jobNumber+'/'+action,opt);
         }
 		
-		var openVisualizers = #{jobStatusBean.openVisualizers};
-		var openedVisualizerJobs = new Array();
-		
 		/* <![CDATA[ */	
 		
 		var handlePermSuccess = function(o){
@@ -140,25 +137,18 @@
             }
         }
 
+		var openVisualizers = #{jobStatusBean.openVisualizers};
         var appletRegions = new Array();
         var appletTags = new Array();
         var appletIds = new Array();
 
         function addVisualizer(key, jobId, appletName, appletId, appletTag) {
-            if (appletRegions[jobId] != null) {
-                //alert('already added');
-                return;
-            }
-
             appletRegions[jobId] = 'visualizerSpan'+key;
             appletTags[jobId] = appletTag;
             appletIds[jobId] = appletId;
 
             if (openVisualizers == true){
-                if (!(openedVisualizerJobs[jobId] == true)){
-                    openedVisualizerJobs[jobId]=true;
-                    runVisualizer(jobId);
-                }
+                runVisualizer(jobId);
             }  
         }
 
@@ -187,12 +177,16 @@
 <h:outputText rendered="#{!empty jobStatusBean.jobInfo}">
   <a4j:keepAlive beanName="visualizerStatusBean" />
   <h:form>
-    <a4j:poll id="poll_jobInfo"  eventsQueue="jobStatusQueue" interval="2500" enabled="#{!jobStatusBean.jobInfo.finished}" 
+    <a4j:poll id="poll_jobInfo"  eventsQueue="jobStatusQueue" interval="100" enabled="#{!jobStatusBean.jobInfo.finished}" 
         ignoreDupResponses="true"
         actionListener="#{visualizerStatusBean.updateAjaxPoll}" 
     >
       <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
     </a4j:poll>
+    
+    <a4j:outputPanel ajaxRendered="true">
+      <h:messages/>
+    </a4j:outputPanel>
   </h:form>
 
   <div class="statusReport">	    
@@ -376,7 +370,6 @@
 		<ui:include src="jobStatus_files.xhtml">
 	    	<ui:param name="jobInfo" value="#{jobStatusBean.jobInfo}" />
 	    	<ui:param name="indent" value="#{false}" />
-	    	<ui:param name="openVisualizers" value="#{jobStatusBean.openVisualizers}" />
 	    </ui:include>
         </a4j:outputPanel>
   		</h:form>
@@ -421,7 +414,7 @@
 
         <a4j:outputPanel ajaxRendered="true">      
         <t:dataList var="visObj" value="#{visualizerStatusBean.visObjs}">
-          <h:outputText escape="false" rendered="#{! empty visObj.jobInfo}">
+          <h:outputText escape="false" rendered="#{! empty visObj.jobInfo and visObj.showAppletTag}">
             <script type="text/javascript">
             addVisualizer('#{visObj.key}', '#{visObj.jobInfo.jobNumber}', '#{visObj.jobInfo.visualizerAppletName}', '#{visObj.jobInfo.visualizerAppletId}', '#{visObj.jobInfo.visualizerAppletTag}');
             </script>
