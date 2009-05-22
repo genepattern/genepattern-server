@@ -416,8 +416,11 @@ public class JobInfoManager {
         }
         writer.write("\n# Module: " + jobInfoWrapper.getTaskName() + " " + jobInfoWrapper.getTaskLSID());
         
-        // [optionally output the command line]
-        if (processBuilder != null) {
+        // [optionally output the command line], 
+        // this is turned off for improved security
+        // TODO: make this a configurable parameter
+        boolean debug = false;
+        if (debug && processBuilder != null) {
             writer.write("\n# Command: ");
             String working_dir = "";
             if ( processBuilder.directory() != null ) {
