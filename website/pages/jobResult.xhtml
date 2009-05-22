@@ -263,7 +263,8 @@
 			    </td>
           
 				<td width="30px">
-					<h:outputText rendered="#{jobStatusBean.jobInfo.status != 'Finished' and jobStatusBean.jobInfo.status != 'Error'}">
+                    <h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Pending'}">Pending</h:outputText>
+					<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Processing'}">
 						<img src="/gp/images/spin.gif" id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
 					</h:outputText>
 					<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Finished'}">
