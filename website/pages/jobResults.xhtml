@@ -352,6 +352,9 @@
 		    <t:dataList var="rootJobWrapper" value="#{jobsBean.pagedJobs}" rowIndexVar="jobIndex">
 		    <tr class="brown" id="jobRow#{rootJobWrapper.jobNumber}">
 			    <td class="center">
+                    <h:outputText rendered="#{rootJobWrapper.status == 'pending'}">
+                        Pending
+                    </h:outputText>
 			    	<h:outputText rendered="#{rootJobWrapper.status == 'error'}">
 			    		<img src="/gp/images/error.gif" alt="error" />
 			    	</h:outputText>
