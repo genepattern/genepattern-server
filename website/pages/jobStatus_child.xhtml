@@ -50,7 +50,8 @@
                     </h:outputText>
                 </td>
                 <td width="30px">
-                    <h:outputText rendered="#{!childJobInfo.finished}">
+                    <h:outputText rendered="#{childJobInfo.status == 'Pending'}">Pending</h:outputText>
+                    <h:outputText rendered="#{!childJobInfo.status = 'Processsing'}">
                         <img src="/gp/images/spin.gif" id="jobStatusIcon#{jobInfo.jobNumber}"/>
                     </h:outputText>
                     <h:outputText rendered="#{childJobInfo.status == 'Finished'}">
