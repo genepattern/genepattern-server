@@ -1348,14 +1348,6 @@ public class GenePatternAnalysisTask {
 	    }
 
 	    recordJobCompletion(jobInfo, parentJobInfo, jobStatus, jobStartTime);
-
-	    if (!taskInfo.isVisualizer()) {
-	        if (outputFiles.length == 0 && !new File(outDir, stderrFilename).exists()
-	                && !new File(outDir, stdoutFilename).exists()) {
-	            log.error("no output for " + taskName + " (job " + jobInfo.getJobNumber() + ").");
-	        }
-	    }
-	    // IndexerDaemon.notifyJobComplete(jobInfo.getJobNumber());
 	} 
 	catch (Throwable e) {
 	    if (e.getCause() != null) {
