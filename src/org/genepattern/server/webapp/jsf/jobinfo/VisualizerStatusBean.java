@@ -50,6 +50,14 @@ public class VisualizerStatusBean {
         public void setShowAppletTag(boolean b) {
             this.showAppletTag = b;
         }
+        
+        public String getAppletTag() {
+            if (jobInfo == null) {
+                return "";
+            }
+            String tag = jobInfo.getVisualizerAppletTag();
+            return tag;
+        }
     }
     
 
@@ -63,6 +71,19 @@ public class VisualizerStatusBean {
 
     public List<Obj> getVisObjs() {
         return visObjs;
+    }
+    
+    /**
+     * @return a list of visualizers which have not yet been opened.
+     */
+    public List<Obj> getNewVisObjs() {
+        List<Obj> newVisObjs = new ArrayList<Obj>();
+        for(Obj obj : visObjs) {
+            if (obj.getShowAppletTag()) {
+                newVisObjs.add(obj);
+            }
+        }
+        return newVisObjs;
     }
     
     public void setJobInfo(JobInfoWrapper jobInfo) {

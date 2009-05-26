@@ -160,7 +160,8 @@ public class JobInfoManager {
         }
 
         StringWriter appletTag = new StringWriter();
-        appletTag.append("<applet name=\""+jobInfoWrapper.getVisualizerAppletName()+"\" id=\""+jobInfoWrapper.getVisualizerAppletId()+"\" code=\"" 
+        //appletTag.append("<applet ");
+        appletTag.append(" name=\""+jobInfoWrapper.getVisualizerAppletName()+"\" id=\""+jobInfoWrapper.getVisualizerAppletId()+"\" code=\"" 
                 + org.genepattern.visualizer.RunVisualizerApplet.class.getName() 
                 + "\" archive=\"runVisualizer.jar,commons-httpclient.jar,commons-codec-1.3.jar\" codebase=\"/gp/downloads\" width=\"1\" height=\"1\" alt=\"Your browser can not run applets\">");
 
@@ -264,7 +265,7 @@ public class JobInfoManager {
         if (documentCookie != null && documentCookie.trim() != "") {
             appletTag.append("<param name=\"browserCookie\" value=\""+documentCookie+"\">");
         }
-        appletTag.append("</applet>");
+        //appletTag.append("</applet>");
         return appletTag.toString();
         
         }
