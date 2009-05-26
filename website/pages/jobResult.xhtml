@@ -143,6 +143,7 @@
         var appletIds = new Array();
 
         function addVisualizer(key, jobId, appletName, appletId, appletTag) {
+            alert('addVisualizer('+key+')');
             appletRegions[jobId] = 'visualizerSpan'+key;
             appletTags[jobId] = appletTag;
             appletIds[jobId] = appletId;
@@ -155,7 +156,8 @@
         function runVisualizer(jobId) { 
             var appletRegion = document.getElementById(appletRegions[jobId]);
             if (appletRegion != null && appletRegion.innerHTML == '') {
-                appletRegion.innerHTML = appletTags[jobId];
+                alert('runVisualizer('+jobId+')');
+                appletRegion.innerHTML = '\<applet '+appletTags[jobId]+'\<\/applet\>';
             }
             //else {
             //    //for debugging
@@ -177,7 +179,7 @@
 <h:outputText rendered="#{!empty jobStatusBean.jobInfo}">
   <a4j:keepAlive beanName="visualizerStatusBean" />
   <h:form>
-    <a4j:poll id="poll_jobInfo"  eventsQueue="jobStatusQueue" interval="2500" enabled="#{!jobStatusBean.jobInfo.finished}" 
+    <a4j:poll id="poll_jobInfo"  eventsQueue="jobStatusQueue" interval="10000" enabled="#{!jobStatusBean.jobInfo.finished}" 
         ignoreDupResponses="true"
         actionListener="#{visualizerStatusBean.updateAjaxPoll}" 
     >
@@ -409,14 +411,26 @@
   		</a4j:form>
 
         <t:dataList var="visObj" value="#{visualizerStatusBean.visObjs}">
+          <h:outputText>
+          visObj: jobNumber=#{visObj.jobInfo.jobNumber}, showAppletTag=#{visObj.showAppletTag}
+          </h:outputText>
+          <br />
           <span id="visualizerSpan#{visObj.key}"></span> <!-- place applet tag here -->
+          <br />
         </t:dataList>
 
-        <a4j:outputPanel ajaxRendered="true">      
-        <t:dataList var="visObj" value="#{visualizerStatusBean.visObjs}">
-          <h:outputText escape="false" rendered="#{! empty visObj.jobInfo and visObj.showAppletTag}">
+        <a4j:outputPanel ajaxRendered="true">
+        Handling new visualizer tags ...  
+        <br />
+        <t:dataList var="visObj" value="#{visualizerStatusBean.newVisObjs}">
+          <h:outputText escape="false">
+            #{visObj.jobInfo.jobNumber}: #{visObj.jobInfo.random}
+            <br />
+            <pre>
+            #{visObj.appletTag}
+            </pre>
             <script type="text/javascript">
-            addVisualizer('#{visObj.key}', '#{visObj.jobInfo.jobNumber}', '#{visObj.jobInfo.visualizerAppletName}', '#{visObj.jobInfo.visualizerAppletId}', '#{visObj.jobInfo.visualizerAppletTag}');
+            addVisualizer('#{visObj.key}', '#{visObj.jobInfo.jobNumber}', '#{visObj.jobInfo.visualizerAppletName}', '#{visObj.jobInfo.visualizerAppletId}', '#{visObj.appletTag}');
             </script>
           </h:outputText>
         </t:dataList>
