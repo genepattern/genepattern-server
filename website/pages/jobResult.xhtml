@@ -150,21 +150,7 @@
             var jobId = vizAppletsToUpdate.pop();
             while(jobId) {
                 //alert('new visualizer job: '+jobId);
-                var linkId = 'runVisualizerLink_'+jobId;
-                var link = document.getElementById(linkId);
-                if (link) {
-                    var linkHandler = link.getAttribute('onclick');
-                    if (linkHandler) {
-                        //alert('about to eval linkHandler');
-                        eval(linkHandler);
-                    }
-                    else {
-                        alert('Error opening visualizer for job '+jobId+', click the Open Visualizer link to open the visualizer. Missing link handler.');
-                    }
-                }
-                else {
-                    alert('Error opening visualizer for job '+jobId+', click the Open Visualizer link to open the visualizer. Missing link ;)');
-                }
+                runVisualizer(jobId);
                 jobId = vizAppletsToUpdate.pop();
             }
         }
@@ -195,12 +181,8 @@
         function runVisualizerInSpan(key, appletName, appletId, appletTag) {
             var vizSpanId = 'visualizerSpan'+key;
             var vizSpan = document.getElementById(vizSpanId);
-
             //alert('runVisualizerInSpan, vizSpanId='+vizSpanId);
-            
-            vizSpan.style.display = 'none';
             vizSpan.innerHTML = '<' + 'applet' + appletTag + '</' + 'applet>';
-            vizSpan.style.display = '';
         }
 
         function runVisualizerInWindow(key, appletName, appletId, appletTag) {
