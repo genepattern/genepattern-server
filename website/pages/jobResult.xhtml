@@ -137,37 +137,90 @@
             }
         }
 
-		var openVisualizers = #{jobStatusBean.openVisualizers};
-        var appletRegions = new Array();
-        var appletTags = new Array();
-        var appletIds = new Array();
+        var vizPollStarted = false;
+        var vizKeys = new Array();
+        var vizAppletTags = new Array();
+        var vizAppletNames = new Array();
+        var vizAppletIds = new Array();
 
-        function addVisualizer(key, jobId, appletName, appletId, appletTag) {
-            alert('addVisualizer('+key+')');
-            appletRegions[jobId] = 'visualizerSpan'+key;
-            appletTags[jobId] = appletTag;
-            appletIds[jobId] = appletId;
-
-            if (openVisualizers == true){
-                runVisualizer(jobId);
-            }  
+        var vizAppletsToUpdate = new Array();
+        
+        function processVisualizers() {
+            //alert('checking for new visualizers...');
+            var jobId = vizAppletsToUpdate.pop();
+            while(jobId) {
+                //alert('new visualizer job: '+jobId);
+                var linkId = 'runVisualizerLink_'+jobId;
+                var link = document.getElementById(linkId);
+                if (link) {
+                    var linkHandler = link.getAttribute('onclick');
+                    if (linkHandler) {
+                        //alert('about to eval linkHandler');
+                        eval(linkHandler);
+                    }
+                    else {
+                        alert('Error opening visualizer for job '+jobId+', click the Open Visualizer link to open the visualizer. Missing link handler.');
+                    }
+                }
+                else {
+                    alert('Error opening visualizer for job '+jobId+', click the Open Visualizer link to open the visualizer. Missing link ;)');
+                }
+                jobId = vizAppletsToUpdate.pop();
+            }
         }
 
-        function runVisualizer(jobId) { 
-            var appletRegion = document.getElementById(appletRegions[jobId]);
-            if (appletRegion != null && appletRegion.innerHTML == '') {
-                alert('runVisualizer('+jobId+')');
-                appletRegion.innerHTML = '\<applet '+appletTags[jobId]+'\<\/applet\>';
+        function addVisualizer(key, jobId, appletName, appletId, appletTag, openVisualizerFlag) {
+            //alert('addVisualizer, openVisualizerFlag='+openVisualizerFlag);
+            vizKeys[''+jobId] = key;
+            vizAppletNames[''+jobId] = appletName;
+            vizAppletIds[''+jobId] = appletId;
+            vizAppletTags[''+jobId] = appletTag;
+
+            if (openVisualizerFlag) {
+                vizAppletsToUpdate.push( jobId );
             }
-            //else {
-            //    //for debugging
-            //    alert('visualizer already running');
-            //    alert(''+appletRegion.innerHTML);
-            //    alert('document.applets.length: '+document.applets.length);
-            //    var visApplet = document.getElementById(appletIds[jobId]);
-            //    alert('visApplet == null: '+(visApplet == null));
-            //    alert('visApplet.isActive(): '+visApplet.isActive());
-            //}
+        }
+
+        function runVisualizer(jobId) {
+            var key = vizKeys[''+jobId];
+            var appletName = vizAppletNames[''+jobId];
+            var appletId = vizAppletIds[''+jobId];
+            var appletTag = vizAppletTags[''+jobId];
+            //TODO: figure out why runVisualizerInSpan launches too many applet windows in FireFox and other browsers
+            //runVisualizerInSpan(key, appletName, appletId, appletTag);
+            //runVisualizerInWindow is a workaround
+            runVisualizerInWindow(key, appletName, appletId, appletTag);
+        }
+
+        function runVisualizerInSpan(key, appletName, appletId, appletTag) {
+            var vizSpanId = 'visualizerSpan'+key;
+            var vizSpan = document.getElementById(vizSpanId);
+
+            alert('runVisualizerInSpan, vizSpanId='+vizSpanId);
+            
+            vizSpan.style.display = 'none';
+            vizSpan.innerHTML = '<' + 'applet' + appletTag + '</' + 'applet>';
+            vizSpan.style.display = '';
+        }
+
+        function runVisualizerInWindow(key, appletName, appletId, appletTag) {
+            alert('runVisualizerInWindow, key='+key+', appletName='+appletName);
+            
+            var w = window.open();
+
+            //check for popup blocker
+            if (!w) {
+                alert('Popups not enabled! Click the "Open Visualizer" link on this page to open the visualizer.');
+            }
+            
+            var d = w.document;
+            d.open();
+            d.write("<h1>Visualizer Applet</h1>");
+            d.write("<p>appletName: "); d.write(appletName); d.write("</p>");
+            d.write("<p>appletId: "); d.write(appletId); d.write("</p>");
+            
+            d.write('<'); d.write('applet '); d.write(appletTag); d.write('</'); d.write('applet>');
+            d.close();
         }
 
 		/* ]]> */			
@@ -179,9 +232,11 @@
 <h:outputText rendered="#{!empty jobStatusBean.jobInfo}">
   <a4j:keepAlive beanName="visualizerStatusBean" />
   <h:form>
-    <a4j:poll id="poll_jobInfo"  eventsQueue="jobStatusQueue" interval="10000" enabled="#{!jobStatusBean.jobInfo.finished}" 
+    <a4j:poll id="poll_jobInfo"  eventsQueue="jobStatusQueue" interval="2500" enabled="#{!jobStatusBean.jobInfo.finished}" 
         ignoreDupResponses="true"
         actionListener="#{visualizerStatusBean.updateAjaxPoll}" 
+        onsubmit="vizPollStarted = true;"
+        oncomplete="processVisualizers()"
     >
       <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
     </a4j:poll>
@@ -411,31 +466,22 @@
   		</a4j:form>
 
         <t:dataList var="visObj" value="#{visualizerStatusBean.visObjs}">
-          <h:outputText>
-          visObj: jobNumber=#{visObj.jobInfo.jobNumber}, showAppletTag=#{visObj.showAppletTag}
-          </h:outputText>
-          <br />
           <span id="visualizerSpan#{visObj.key}"></span> <!-- place applet tag here -->
-          <br />
         </t:dataList>
 
         <a4j:outputPanel ajaxRendered="true">
-        Handling new visualizer tags ...  
-        <br />
         <t:dataList var="visObj" value="#{visualizerStatusBean.newVisObjs}">
-          <h:outputText escape="false">
-            #{visObj.jobInfo.jobNumber}: #{visObj.jobInfo.random}
-            <br />
-            <pre>
-            #{visObj.appletTag}
-            </pre>
             <script type="text/javascript">
-            addVisualizer('#{visObj.key}', '#{visObj.jobInfo.jobNumber}', '#{visObj.jobInfo.visualizerAppletName}', '#{visObj.jobInfo.visualizerAppletId}', '#{visObj.appletTag}');
+            addVisualizer('#{visObj.key}', '#{visObj.jobInfo.jobNumber}', '#{visObj.jobInfo.visualizerAppletName}', '#{visObj.jobInfo.visualizerAppletId}', '#{visObj.appletTag}', #{visualizerStatusBean.openVisualizers ? true : false});
             </script>
-          </h:outputText>
         </t:dataList>
-        </a4j:outputPanel>
-
+        <script type="text/javascript">
+            if (!vizPollStarted) {
+                processVisualizers();
+            }
+        </script>
+        
+        </a4j:outputPanel>        
         </div>
         <br/>
         <br/>

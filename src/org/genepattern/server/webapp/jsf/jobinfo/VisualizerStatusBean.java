@@ -1,5 +1,6 @@
 package org.genepattern.server.webapp.jsf.jobinfo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,10 +17,10 @@ import org.genepattern.server.webapp.jsf.UIBeanHelper;
  * 
  * @author pcarr
  */
-public class VisualizerStatusBean {
+public class VisualizerStatusBean implements Serializable {
     private static Logger log = Logger.getLogger(VisualizerStatusBean.class);
 
-    public static class Obj {
+    public static class Obj implements Serializable {
         private String key = null;
         private JobInfoWrapper jobInfo = null;
         
@@ -62,6 +63,34 @@ public class VisualizerStatusBean {
     
 
     private JobInfoWrapper jobInfo = null;
+    private boolean openVisualizers = false;
+    
+    public VisualizerStatusBean() {
+        //this is here because the openVisualizers parameter may or may not be set
+        //    not sure how to configure this properly with JSF in the faces-config.xml file
+        String openVisualizersParameter = UIBeanHelper.getRequest().getParameter("openVisualizers");
+        if (openVisualizersParameter != null) {
+            this.openVisualizers = true;
+        }
+    }
+    
+    public void setJobInfo(JobInfoWrapper jobInfo) {
+        this.jobInfo = jobInfo;
+        for(int i=0; i<this.jobInfo.getNumVisualizers(); ++i) {
+            visObjs.add(new Obj(""+i, null));
+        }
+        updateVisualizerFlags();
+    }
+    
+    public void setOpenVisualizers(String val) {
+        if (val != null && "true".equals(val)) {
+            this.openVisualizers = true;   
+        }
+    }
+    
+    public boolean isOpenVisualizers() {
+        return this.openVisualizers;
+    }
     
     //map from index to job number, e.g. the first visualizer on the page has index 0 and a null job number
     //    once the visualizer is available for rendering assign job number to the correct value
@@ -84,14 +113,6 @@ public class VisualizerStatusBean {
             }
         }
         return newVisObjs;
-    }
-    
-    public void setJobInfo(JobInfoWrapper jobInfo) {
-        this.jobInfo = jobInfo;
-        for(int i=0; i<this.jobInfo.getNumVisualizers(); ++i) {
-            visObjs.add(new Obj(""+i, null));
-        }
-        updateVisualizerFlags();
     }
     
     private List<JobInfoWrapper> getAllVisualizers() {

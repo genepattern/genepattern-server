@@ -1,6 +1,7 @@
 package org.genepattern.server;
 
 import java.io.File;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -41,10 +42,10 @@ import org.jfree.util.Log;
  * 
  * @author pcarr
  */
-public class JobInfoWrapper {
+public class JobInfoWrapper implements Serializable {
     private static Logger log = Logger.getLogger(JobInfoWrapper.class);
 
-    public static class ParameterInfoWrapper {
+    public static class ParameterInfoWrapper implements Serializable {
         public static class KeyValueComparator implements Comparator<KeyValuePair> {
             public int compare(KeyValuePair o1, KeyValuePair o2) {
                 return o1.getKey().compareToIgnoreCase(o2.getKey());

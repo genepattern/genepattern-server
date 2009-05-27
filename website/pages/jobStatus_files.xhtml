@@ -72,7 +72,7 @@
 							<img src="/gp/images/blank.gif"/>
 						</h:outputText>
 					</t:dataList>
-			    	<a href="javascript:runVisualizer(#{jobInfo.jobNumber})"><img src="/gp/images/visualizer.gif" border="0"/> Open Visualizer</a>
+			    	<a id="runVisualizerLink_#{jobInfo.jobNumber}" href="#" onclick="runVisualizer(#{jobInfo.jobNumber})"><img src="/gp/images/visualizer.gif" border="0"/> Open Visualizer</a>
 		    	</p>
 		    </h:outputText>
 		</div>
