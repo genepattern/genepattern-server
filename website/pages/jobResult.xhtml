@@ -187,16 +187,16 @@
             var appletId = vizAppletIds[''+jobId];
             var appletTag = vizAppletTags[''+jobId];
             //TODO: figure out why runVisualizerInSpan launches too many applet windows in FireFox and other browsers
-            //runVisualizerInSpan(key, appletName, appletId, appletTag);
+            runVisualizerInSpan(key, appletName, appletId, appletTag);
             //runVisualizerInWindow is a workaround
-            runVisualizerInWindow(key, appletName, appletId, appletTag);
+            //runVisualizerInWindow(key, appletName, appletId, appletTag);
         }
 
         function runVisualizerInSpan(key, appletName, appletId, appletTag) {
             var vizSpanId = 'visualizerSpan'+key;
             var vizSpan = document.getElementById(vizSpanId);
 
-            alert('runVisualizerInSpan, vizSpanId='+vizSpanId);
+            //alert('runVisualizerInSpan, vizSpanId='+vizSpanId);
             
             vizSpan.style.display = 'none';
             vizSpan.innerHTML = '<' + 'applet' + appletTag + '</' + 'applet>';
@@ -204,15 +204,14 @@
         }
 
         function runVisualizerInWindow(key, appletName, appletId, appletTag) {
-            alert('runVisualizerInWindow, key='+key+', appletName='+appletName);
+            //alert('runVisualizerInWindow, key='+key+', appletName='+appletName);
             
             var w = window.open();
-
             //check for popup blocker
             if (!w) {
                 alert('Popups not enabled! Click the "Open Visualizer" link on this page to open the visualizer.');
+                return;
             }
-            
             var d = w.document;
             d.open();
             d.write("<h1>Visualizer Applet</h1>");
@@ -470,11 +469,21 @@
         </t:dataList>
 
         <a4j:outputPanel ajaxRendered="true">
+        <h:outputText rendered="false">
         <t:dataList var="visObj" value="#{visualizerStatusBean.newVisObjs}">
             <script type="text/javascript">
             addVisualizer('#{visObj.key}', '#{visObj.jobInfo.jobNumber}', '#{visObj.jobInfo.visualizerAppletName}', '#{visObj.jobInfo.visualizerAppletId}', '#{visObj.appletTag}', #{visualizerStatusBean.openVisualizers ? true : false});
             </script>
         </t:dataList>
+        </h:outputText>
+        <h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Finished'}">
+        <t:dataList var="visObj" value="#{visualizerStatusBean.visObjs}">
+            <script type="text/javascript">
+            addVisualizer('#{visObj.key}', '#{visObj.jobInfo.jobNumber}', '#{visObj.jobInfo.visualizerAppletName}', '#{visObj.jobInfo.visualizerAppletId}', '#{visObj.appletTag}', #{visualizerStatusBean.openVisualizers ? true : false});
+            </script>
+        </t:dataList>
+        
+        </h:outputText>
         <script type="text/javascript">
             if (!vizPollStarted) {
                 processVisualizers();
