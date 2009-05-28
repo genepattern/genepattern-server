@@ -23,28 +23,26 @@
        			step
        			indentLevel
    -->
-	<ui:composition>
-    	<table class="indicator" border="0" cellpadding="0" cellspacing="0" id="indicator#{jobInfo.jobNumber}">
-			<tr>
-				<t:dataList var="index" value="#{jobInfo.numStepsInPipeline}" rowIndexVar="rowIndex">
-					<h:outputText rendered="#{jobInfo.children[rowIndex].status == 'Error'}">
-						<td id="indicatorCell#{jobInfo.children[rowIndex].jobNumber}" class="red" onclick="#jobTitle#{jobInfo.children[rowIndex].jobNumber}">
-							
-						</td>
-					</h:outputText>
-					<h:outputText rendered="#{jobInfo.children[rowIndex].status == 'Finished'}">
-						<td id="indicatorCell#{jobInfo.children[rowIndex].jobNumber}" class="blue">
-							
-						</td>
-					</h:outputText>
-					<h:outputText rendered="#{jobInfo.children[rowIndex].status != 'Error' and jobInfo.children[rowIndex].status != 'Finished'}">
-						<td id="indicatorCell#{jobInfo.children[rowIndex].jobNumber}" class="green">
-							
-						</td>
-					</h:outputText>
-					
-				</t:dataList>
-			</tr>
-		</table>
-  </ui:composition>
+<ui:composition>
+  <table class="indicator" border="0" cellpadding="0" cellspacing="0" id="indicator#{jobInfo.jobNumber}">
+    <tr>
+      <t:dataList var="index" value="#{jobInfo.numStepsInPipeline}" rowIndexVar="rowIndex">
+        <h:outputText rendered="#{jobInfo.children[rowIndex].status == 'Processing'}">
+          <td id="indicatorCell#{jobInfo.children[rowIndex].jobNumber}" class="green"></td>
+        </h:outputText>
+        <h:outputText rendered="#{jobInfo.children[rowIndex].status == 'Error'}">
+          <td id="indicatorCell#{jobInfo.children[rowIndex].jobNumber}" class="red" onclick="#jobTitle#{jobInfo.children[rowIndex].jobNumber}"></td>
+        </h:outputText>
+        <h:outputText rendered="#{jobInfo.children[rowIndex].status == 'Finished'}">
+          <td id="indicatorCell#{jobInfo.children[rowIndex].jobNumber}" class="blue"></td>
+        </h:outputText>
+        <h:outputText rendered="#{jobInfo.children[rowIndex].status != 'Error' and 
+                                  jobInfo.children[rowIndex].status != 'Finished' and
+                                  jobInfo.children[rowIndex].status != 'Processing' }">
+          <td id="indicatorCell#{jobInfo.children[rowIndex].jobNumber}" class="grey"></td>
+        </h:outputText>
+      </t:dataList>
+    </tr>
+  </table>
+ </ui:composition>
 </html>

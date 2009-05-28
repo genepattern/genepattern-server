@@ -353,7 +353,10 @@ table.indicator td.blue {
 	background-color:#00CCFF;
 }
 table.indicator td.red {
-	background-color:#FF0000;
+    background-color:#FF0000;
+}
+table.indicator td.grey {
+    background-color:#cccccc;
 }
 
 .jobContent {
