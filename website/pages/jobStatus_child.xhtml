@@ -51,16 +51,15 @@
                 </td>
                 <td width="30px">
                     <h:outputText rendered="#{childJobInfo.status == 'Pending'}">Pending</h:outputText>
-                    <h:outputText rendered="#{!childJobInfo.status == 'Processsing'}">
-                        <img src="/gp/images/spin.gif" id="jobStatusIcon#{childJobInfo.jobNumber}"/>
+                    <h:outputText rendered="#{childJobInfo.status == 'Processing'}">
+                        <img src="/gp/images/spin.gif" alt="#{childJobInfo.status}" id="jobStatusIcon#{childJobInfo.jobNumber}"/>
                     </h:outputText>
                     <h:outputText rendered="#{childJobInfo.status == 'Finished'}">
-                        <img src="/gp/images/complete.gif" id="jobStatusIcon#{childJobInfo.jobNumber}"/>
+                        <img src="/gp/images/complete.gif" alt="#{childJobInfo.status}" id="jobStatusIcon#{childJobInfo.jobNumber}"/>
                     </h:outputText>
                     <h:outputText rendered="#{childJobInfo.status == 'Error'}">
-                        <img src="/gp/images/error.gif" border="0" id="jobStatusIcon#{childJobInfo.jobNumber}"/>
+                        <img src="/gp/images/error.gif" alt="#{childJobInfo.status}" border="0" id="jobStatusIcon#{childJobInfo.jobNumber}"/>
                     </h:outputText>
-                    <span id="jobStatus#{childJobInfo.jobNumber}" style="display: none;">#{childJobInfo.status}</span>
                 </td>
             </tr>
         </table>
