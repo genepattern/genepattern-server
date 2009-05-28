@@ -126,7 +126,7 @@ public class VisualizerStatusBean implements Serializable {
         }
         else if (jobInfo != null && jobInfo.isPipeline()) {
             for(JobInfoWrapper step : this.jobInfo.getAllSteps()) {
-                if (step.isVisualizer()) {
+                if (step != null && step.isVisualizer()) {
                     v.add(step);
                 }
             }
