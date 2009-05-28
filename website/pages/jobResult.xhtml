@@ -297,15 +297,14 @@
 				<td width="30px">
                     <h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Pending'}">Pending</h:outputText>
 					<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Processing'}">
-						<img src="/gp/images/spin.gif" id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
+						<img src="/gp/images/spin.gif" alt="#{jobStatusBean.jobInfo.status}" id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
 					</h:outputText>
 					<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Finished'}">
-						<img src="/gp/images/complete.gif" id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
+						<img src="/gp/images/complete.gif" alt="#{jobStatusBean.jobInfo.status}" id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
 					</h:outputText>
 					<h:outputText rendered="#{jobStatusBean.jobInfo.status == 'Error'}">
-						<img src="/gp/images/error.gif" border="0" id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
+						<img src="/gp/images/error.gif" alt="#{jobStatusBean.jobInfo.status}" border="0" id="jobStatusIcon#{jobStatusBean.jobInfo.jobNumber}"/>
 					</h:outputText>
-					<span id="jobStatus#{jobStatusBean.jobInfo.jobNumber}" style="display: none;">#{jobStatusBean.jobInfo.status}</span>
 				</td>
 			</tr>
 		</table>

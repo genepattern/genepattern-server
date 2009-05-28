@@ -352,17 +352,15 @@
 		    <t:dataList var="rootJobWrapper" value="#{jobsBean.pagedJobs}" rowIndexVar="jobIndex">
 		    <tr class="brown" id="jobRow#{rootJobWrapper.jobNumber}">
 			    <td class="center">
-                    <h:outputText rendered="#{rootJobWrapper.status == 'pending'}">
-                        Pending
-                    </h:outputText>
+                    <h:outputText rendered="#{rootJobWrapper.status == 'pending'}">Pending</h:outputText>
 			    	<h:outputText rendered="#{rootJobWrapper.status == 'error'}">
-			    		<img src="/gp/images/error.gif" alt="error" />
+			    		<img src="/gp/images/error.gif" alt="#{rootJobWrapper.status}" />
 			    	</h:outputText>
 			    	<h:outputText rendered="#{rootJobWrapper.status == 'finished'}">
-			    		<img src="/gp/images/complete.gif" alt="finished" />
+			    		<img src="/gp/images/complete.gif" alt="#{rootJobWrapper.status}" />
 			    	</h:outputText>
 			    	<h:outputText rendered="#{rootJobWrapper.status == 'processing'}">
-			    		<img src="/gp/images/run.gif" alt="processing" />
+			    		<img src="/gp/images/run.gif" alt="#{rootJobWrapper.status}" />
 			    	</h:outputText>			    	
 			    </td>
 	        
@@ -438,14 +436,15 @@
 			<t:dataList var="childJob" value="#{rootJobWrapper.descendantJobs}" rowIndexVar="index2">
 			<tr class="brown">
 		        <td class="center">
+                    <h:outputText rendered="#{childJob.status == 'pending'}">Pending</h:outputText>
 			    	<h:outputText rendered="#{childJob.status == 'error'}">
-			    		<img src="/gp/images/error.gif" />
+			    		<img src="/gp/images/error.gif" alt="#{childJob.status}" />
 			    	</h:outputText>
 			    	<h:outputText rendered="#{childJob.status == 'finished'}">
-			    		<img src="/gp/images/complete.gif" />
+			    		<img src="/gp/images/complete.gif" alt="#{childJob.status}" />
 			    	</h:outputText>
 			    	<h:outputText rendered="#{childJob.status == 'processing'}">
-			    		<img src="/gp/images/run.gif" />
+			    		<img src="/gp/images/run.gif" alt="#{childJob.status}" />
 			    	</h:outputText>			    	
 			    </td>
 		        
