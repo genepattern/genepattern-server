@@ -76,6 +76,10 @@ public class VisualizerStatusBean implements Serializable {
     
     public void setJobInfo(JobInfoWrapper jobInfo) {
         this.jobInfo = jobInfo;
+        if (jobInfo == null) {
+            log.error("VisualizerStatusBean.setJobInfo: null");
+            return;
+        }
         for(int i=0; i<this.jobInfo.getNumVisualizers(); ++i) {
             visObjs.add(new Obj(""+i, null));
         }
