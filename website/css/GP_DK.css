@@ -167,6 +167,7 @@ table.title {
 	border-right:solid #b6b88c 1px;
 	border-left:solid #b6b88c 1px;
 	border-top:solid #fafccf 1px;
+	min-height: 240px;
 }
 
 .icon {
@@ -201,7 +202,6 @@ table.title {
 
 .icon2 img {
 	border:none;
-	margin-top:-5px;
 	margin-right:3px;
 }
 
