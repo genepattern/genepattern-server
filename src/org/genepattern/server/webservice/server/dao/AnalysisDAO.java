@@ -18,6 +18,7 @@ import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -238,6 +239,17 @@ public class AnalysisDAO extends BaseDAO {
 	AnalysisJob aJob = (AnalysisJob) getSession().get(AnalysisJob.class, jobID);
 	getSession().delete(aJob);
     }
+    
+    public void deleteJob(AnalysisJob aJob) {
+        // recursively delete the job directory
+        File jobDir = new File(GenePatternAnalysisTask.getJobDir(Integer.toString(aJob.getJobNo())));
+        Delete del = new Delete();
+        del.setDir(jobDir);
+        del.setIncludeEmptyDirs(true);
+        del.setProject(new Project());
+        del.execute();
+        getSession().delete(aJob);
+    }
 
     /**
      * 
@@ -295,6 +307,18 @@ public class AnalysisDAO extends BaseDAO {
         return rval.get(0);
     }
 
+    public AnalysisJob getAnalysisJob(int jobNo) {
+        String hql = " from org.genepattern.server.domain.AnalysisJob where jobNo = :jobNo";
+        Query query = getSession().createQuery(hql);
+        query.setInteger("jobNo", jobNo);
+        AnalysisJob aJob = (AnalysisJob) query.uniqueResult();
+        // If jobNo not found
+        if (aJob == null) {
+            throw new JobIDNotFoundException("AnalysisDAO:getJobInfo JobID " + jobNo + " not found");
+        }
+        return aJob;
+    }
+
     /**
      * Fetches JobInformation
      * 
@@ -305,17 +329,30 @@ public class AnalysisDAO extends BaseDAO {
      * @throws OmnigeneException
      */
     public JobInfo getJobInfo(int jobNo) {
-
-	String hql = " from org.genepattern.server.domain.AnalysisJob where jobNo = :jobNo";
-	Query query = getSession().createQuery(hql);
-	query.setInteger("jobNo", jobNo);
-	AnalysisJob aJob = (AnalysisJob) query.uniqueResult();
-	// If jobNo not found
-	if (aJob == null) {
-	    throw new JobIDNotFoundException("AnalysisDAO:getJobInfo JobID " + jobNo + " not found");
-	}
-
-	return new JobInfo(aJob);
+        AnalysisJob aJob = getAnalysisJob(jobNo);
+        return new JobInfo(aJob);
+    }
+    
+    public List<Integer> getAnalysisJobIds(Date date) {
+        String hql = "select jobNo from org.genepattern.server.domain.AnalysisJob as j where j.completedDate < :completedDate";
+        hql += " ORDER BY jobNo ASC";
+        Query query = getSession().createQuery(hql);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        query.setCalendar("completedDate", cal);
+        List<Integer> jobIds = query.list();
+        return jobIds;
+        
+    }
+    public List<AnalysisJob> getAnalysisJobs(Date date) {
+        String hql = "from org.genepattern.server.domain.AnalysisJob as j where j.completedDate < :completedDate";
+        hql += " ORDER BY jobNo ASC";
+        Query query = getSession().createQuery(hql);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        query.setCalendar("completedDate", cal);
+        List<AnalysisJob> aJobs = query.list();
+        return aJobs;
     }
 
     /**
@@ -325,20 +362,13 @@ public class AnalysisDAO extends BaseDAO {
      * @return <CODE>JobInfo[]</CODE>
      */
     public JobInfo[] getJobInfo(java.util.Date date) {
-	String hql = "from org.genepattern.server.domain.AnalysisJob as j where j.completedDate < :completedDate";
-	hql += " ORDER BY jobNo ASC";
-	Query query = getSession().createQuery(hql);
-	Calendar cal = Calendar.getInstance();
-	cal.setTime(date);
-	query.setCalendar("completedDate", cal);
-	List<AnalysisJob> aJobs = query.list();
-	JobInfo[] results = new JobInfo[aJobs.size()];
-	for (int i = 0, size = aJobs.size(); i < size; i++) {
-	    JobInfo ji = new JobInfo(aJobs.get(i));
-	    results[i] = ji;
-	}
-	return results;
-
+        List<AnalysisJob> aJobs = getAnalysisJobs(date);
+        JobInfo[] results = new JobInfo[aJobs.size()];
+        for (int i = 0, size = aJobs.size(); i < size; i++) {
+            JobInfo ji = new JobInfo(aJobs.get(i));
+            results[i] = ji;
+        }
+        return results;
     }
 
     /** 
