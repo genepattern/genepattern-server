@@ -18,7 +18,7 @@ CREATE SEQUENCE SYSTEM_MESSAGE_SEQ
   NOORDER;
 
 -- update schema version
-INSERT INTO PROPS (KEY,VALUE) values ('registeredVersion3.1.1', '3.1.1')
+INSERT INTO PROPS (KEY,VALUE) values ('registeredVersion3.1.1', '3.1.1');
 
 COMMIT;
 
