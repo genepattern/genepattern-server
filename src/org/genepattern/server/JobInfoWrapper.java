@@ -7,15 +7,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +21,7 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.process.JobPurgerUtil;
 import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.server.webapp.jsf.JobPermissionsBean;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
@@ -485,7 +483,9 @@ public class JobInfoWrapper implements Serializable {
         String jobDir = GenePatternAnalysisTask.getJobDir(""+jobInfo.getJobNumber());
         this.outputDir = new File(jobDir);
         processParameterInfoArray();
-        this.jobPermissionsBean = null;        
+        this.jobPermissionsBean = null;
+        
+        initPurgeDate();
     }
 
     //JobInfo wrapper methods
@@ -595,64 +595,30 @@ public class JobInfoWrapper implements Serializable {
         }
     }
 
-    private boolean purgeDateInitialized = false;
+    private static final DateFormat purgeDateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
     private Date purgeDate = null;
     private String formattedPurgeDate = "";
 
-    /**
-     * @return the date when the job result files will be deleted from the server, 
-     *             a null value indicates that files won't be purged.
-     */
-    private synchronized void initPurgeDate() {
-        //this is also implemented in the JobPurger and Purger classes
-        //TODO: add a static method to the JobPurger to get the purge date
-        int purgeInterval = -1;
-        String purgeJobsAfter = System.getProperty("purgeJobsAfter", "-1");
-        try {
-            purgeInterval = Integer.parseInt(purgeJobsAfter);
-        } 
-        catch (NumberFormatException nfe) {
-            log.error("Error getting file purge settings: "+nfe.getLocalizedMessage(), nfe);
-            purgeInterval = 7;
+    private void initPurgeDate() {
+        if (jobInfo != null) {
+            purgeDate = JobPurgerUtil.getJobPurgeDate(jobInfo.getDateCompleted());
         }
-        if (purgeInterval < 0) {
-            purgeDate = null;
-            formattedPurgeDate = "";
-            return;
+        if (purgeDate != null) {
+            formattedPurgeDate = purgeDateFormat.format(purgeDate);
         }
-       
-        GregorianCalendar purgeTOD = new GregorianCalendar();
-        try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
-            GregorianCalendar gcPurge = new GregorianCalendar();
-            gcPurge.setTime(dateFormat.parse(System.getProperty("purgeTime", "23:00")));
-            purgeTOD.set(GregorianCalendar.HOUR_OF_DAY, gcPurge.get(GregorianCalendar.HOUR_OF_DAY));
-            purgeTOD.set(GregorianCalendar.MINUTE, gcPurge.get(GregorianCalendar.MINUTE));
-        } 
-        catch (ParseException pe) {
-            purgeTOD.set(GregorianCalendar.HOUR_OF_DAY, 23);
-            purgeTOD.set(GregorianCalendar.MINUTE, 0);
-        }
-        purgeTOD.set(GregorianCalendar.SECOND, 0);
-        purgeTOD.set(GregorianCalendar.MILLISECOND, 0);
-        purgeTOD.add(GregorianCalendar.DATE, purgeInterval);
-        this.purgeDate = purgeTOD.getTime();
-        DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
-        this.formattedPurgeDate =  df.format(purgeDate.getTime()).toLowerCase();
-        this.purgeDateInitialized = true;
     }
     
+    /**
+     * @return the date that this job will be purged from the server.
+     */
     public Date getPurgeDate() {
-        if (!purgeDateInitialized) {
-            initPurgeDate();
-        }
         return purgeDate;
     }
 
+    /**
+     * @return the date, formatted for the web page, that this job will be purged from the server.
+     */
     public String getFormattedPurgeDate() {
-        if (!purgeDateInitialized) {
-            initPurgeDate();
-        }
         return formattedPurgeDate;
     }
 
