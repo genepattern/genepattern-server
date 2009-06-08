@@ -10,4 +10,5 @@ submit
 code 200
 notfind Exception
 notfind stderr.txt
-find all_aml_test.preprocessed.gct
+#find all_aml_test.preprocessed.gct
+find input.filename

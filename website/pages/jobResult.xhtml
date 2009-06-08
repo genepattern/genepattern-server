@@ -475,10 +475,12 @@
         </div>
         <br/>
         <br/>
-	    
+
+        <a4j:outputPanel ajaxRendered="true">
         <h:outputText rendered="#{not empty jobStatusBean.jobInfo.purgeDate}" 
           styleClass="purge_notice"
           value="These job results are scheduled to be purged from the server on #{jobStatusBean.jobInfo.formattedPurgeDate}" />
+        </a4j:outputPanel>
         
         <br />
         <br />

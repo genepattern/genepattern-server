@@ -24,11 +24,13 @@
       <column name="STATUS_ID" precision="10" scale="0"/>
     </many-to-one>
     
-    <set name="permissions" cascade="delete">
-        <key column="JOB_NO" />
-        <one-to-many class="org.genepattern.server.auth.JobGroup" />
+    <set name="permissions" inverse="true" cascade="all-delete-orphan">
+      <key column="JOB_NO" />
+      <one-to-many class="org.genepattern.server.auth.JobGroup" />
     </set>
+    
   </class>
+    
 
   <query name="getNumJobs">
   <![CDATA[

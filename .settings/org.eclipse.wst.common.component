@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-modules id="moduleCoreId" project-version="1.5.0">
-<wb-module deploy-name="gp-trunk">
+<wb-module deploy-name="gp-3.2.0">
 <wb-resource deploy-path="/" source-path="/website"/>
 <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
 <wb-resource deploy-path="/WEB-INF/classes" source-path="/clients/JavaGE/src"/>
 <wb-resource deploy-path="/WEB-INF/classes" source-path="/build_tools/ZipUpload/src"/>
 <wb-resource deploy-path="/WEB-INF/classes" source-path="/test/load_testing/gp-2580"/>
+<wb-resource deploy-path="/WEB-INF/classes" source-path="/test/src"/>
 <property name="java-output-path" value="build/classes"/>
 <property name="context-root" value="gp"/>
 </wb-module>
