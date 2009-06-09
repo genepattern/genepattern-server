@@ -51,4 +51,25 @@
 	  <sleep seconds="2" />
 	  <touch file="test_all.xml"/>
 	</target>
+
+	<target name="loadtest" depends="compile"
+	        description="runs a junit loadtest">
+		<junit fork="yes">
+		  <test name="org.genepattern.integration.TestLoad" outfile="load_test"/>
+		  <classpath>
+		    <fileset dir="lib2" includes="**/*.jar"/>
+		    <dirset dir="build"/>
+		  </classpath>
+		  <formatter type="xml"/>
+		  <jvmarg value="-DgenePatternUrl=${genePatternUrl}"/>
+		  <jvmarg value="-Dusername=${username}"/>
+		  <jvmarg value="-Dpassword=${password}"/>
+		</junit>
+	</target>
+
+        <target name="finish_load_test" description="works around a wierd timing problem in Hudson accepting test reports, make the very last target" depends="junit">
+	  <sleep seconds="2" />
+	  <touch file="load_test.xml"/>
+	</target>
+
 </project>
