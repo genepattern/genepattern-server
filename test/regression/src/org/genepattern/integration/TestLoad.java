@@ -41,7 +41,7 @@ public class TestLoad extends GenePatternTest {
 	
 	public void testRunPreprocessCheckResultsPage() throws Exception {
 		logger.debug("starting test on server: " + config.getGenePatternUrl());
-		helperRunPreprocessCheckResultsPage(1, 1);
+		helperRunPreprocessCheckResultsPage(50, 100);
 	}
 	
 	public void helperRunPreprocessCheckResultsPage(int numIncrements, int numJobsPerIncrement) throws Exception {
