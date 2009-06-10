@@ -98,6 +98,15 @@ for (Iterator iter = rParams.iterator(); iter.hasNext();) {
         // it is the file
         fileCount++;
         String name = fi.getName();
+        // strip out paths on IE -- BUG 1819
+        int idx =  name.lastIndexOf('/');
+        if (idx >=0) {
+            name = name.substring(idx+1);
+        }
+        idx =  name.lastIndexOf('\\');
+        if (idx >=0) {
+            name = name.substring(idx+1);
+        }
         
         if (name == null || name.equals("")) {
             continue;
