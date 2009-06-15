@@ -10,7 +10,7 @@ function openProtocolWindow(theTarget, theEvent) {
   if (window.name != 'protocol') {
     window.name = 'genepattern';
   }
-  w = window.open(theURL,'protocol','toolbar=1,menubar=1,scrollbars=1,resizable=1,width=500,height=400',false);
+  w = window.open(theURL,'protocol','toolbar=1,menubar=1,scrollbars=1,resizable=1,width=515,height=400',false);
   w.focus();
   return false;
 }

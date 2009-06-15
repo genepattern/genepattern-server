@@ -16,7 +16,7 @@
       <a href="protocols.html">protocols</a>
     </td>
     <td align="right">
-    <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=5">comments/suggestions</a>
+    <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=6">comments/suggestions</a>
     </td>
   </tr>
 </table>
@@ -30,7 +30,7 @@ To evaluate an existing weighted voting classifier, run the WeightedVoting modul
 <ul>
 <li>A *.model.odf file that contains the weighted voting classifier.
 <br />
-  Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.model.odf">all_aml_train.preprocessed.model.odf</a>. **TBD**
+  Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.wv.model.odf">all_aml_train.preprocessed.wv.model.odf</a>.
  </li>
 <li>A gene expression data set containing the unknown samples:
 <ul>
@@ -40,13 +40,13 @@ To evaluate an existing weighted voting classifier, run the WeightedVoting modul
  </li>
   <li><a href="ClsFiles.html">CLS file</a> that identifies the class of each sample in the gene expression data as 'unknown'. 
   <br />
-  Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test_unknown.cls">all_aml_test_unknown.cls</a>.  **TBD**
+  Example file: <a href="ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test_unknown.cls">all_aml_test_unknown.cls</a>.
   </li>
 </ul>
 <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
     <td align="right">learn more:<br>
-    <a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_fileformats.html?gct">file formats</a>
+    <a href="http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_fileformats.html#gct">file formats</a>
     </td>
   </tr>
 </table>
@@ -66,7 +66,7 @@ To evaluate an existing weighted voting classifier, run the WeightedVoting modul
   <ul>
        <li><a href="/gp/pages/index.jsf?lsid=WeightedVoting" onclick="return openModuleWindow(this, event);"
         >Open WeightedVoting</a></li>
-       <li><a href="/gp/pages/index.jsf?lsid=WeightedVoting&saved.model.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.model.odf&test.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct&test.class.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test_unknown.cls"         
+       <li><a href="/gp/pages/index.jsf?lsid=WeightedVoting&saved.model.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_train.preprocessed.wv.model.odf&test.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct&test.class.filename=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test_unknown.cls"         
            onclick="return openModuleWindow(this, event);"
         >Open WeightedVoting with example data</a></li>       
   </ul>
@@ -91,9 +91,9 @@ The viewer lists each sample with its actual class ('unknown') and its predicted
     <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer"
            onclick="return openModuleWindow(this, event);"
         >Open PredictionResultsViewer</a></li>
-    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer&prediction.results.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.wv.unknown.pred.odf"
+    <li><a href="/gp/pages/index.jsf?lsid=PredictionResultsViewer&prediction.results.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.pred.wv.unknown.odf"
            onclick="return openModuleWindow(this, event);"
-        >Open PredictionResultsViewer with example data</a> **TBD**</li>
+        >Open PredictionResultsViewer with example data</a></li>
  </ul>
   </div>
 
@@ -117,7 +117,7 @@ The viewer lists each sample with its actual class ('unknown') and its predicted
 <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
     <td align="right">
-      <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=5">comments/suggestions</a>
+      <a href="http://www.broad.mit.edu/cancer/software/genepattern/protocols/?p=6">comments/suggestions</a>
     </td>
   </tr>
 </table>
