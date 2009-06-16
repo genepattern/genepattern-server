@@ -385,8 +385,8 @@ InstallerInfoData.72a1c4c9b1c0.productName=GenePattern
 # InstallerInfoData.72a1c4c9b1c0.vendorName=Broad Institute, MIT
 InstallerInfoData.72a1c4c9b1c0.vendorName=Broad Institute, MIT
 
-# InstallerInfoData.72a1c4c9b1c0.vendorURL=http://www.broad.mit.edu/cancer/software/genepattern
-InstallerInfoData.72a1c4c9b1c0.vendorURL=http://www.broad.mit.edu/cancer/software/genepattern
+# InstallerInfoData.72a1c4c9b1c0.vendorURL=http://www.broadinstitute.org/cancer/software/genepattern
+InstallerInfoData.72a1c4c9b1c0.vendorURL=http://www.broadinstitute.org/cancer/software/genepattern
 
 # InstallFinishAction.72a1c5b9b1d8.installErrorMessage=The installation of $PRODUCT_NAME$ $version.major$.$version.minor$  is finished, but some errors occurred during the install.   The install log will be opened for your review  when the installer is closed.
 InstallFinishAction.72a1c5b9b1d8.installErrorMessage=The installation of $PRODUCT_NAME$ $version.major$.$version.minor$  is finished, but some errors occurred during the install.   The install log will be opened for your review  when the installer is closed.

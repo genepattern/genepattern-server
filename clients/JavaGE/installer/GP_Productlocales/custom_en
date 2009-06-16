@@ -1663,17 +1663,17 @@ InstallerInfoData.7daeb346afa5.productDescription=The Graphical Environment is a
 # InstallerInfoData.7daeb346afa5.productName=GenePattern Client
 InstallerInfoData.7daeb346afa5.productName=GenePattern Client
 
-# InstallerInfoData.7daeb346afa5.productURL=http://www.broad.mit.edu/cancer/software/genepattern
-InstallerInfoData.7daeb346afa5.productURL=http://www.broad.mit.edu/cancer/software/genepattern
+# InstallerInfoData.7daeb346afa5.productURL=http://www.broadinstitute.org/cancer/software/genepattern
+InstallerInfoData.7daeb346afa5.productURL=http://www.broadinstitute.org/cancer/software/genepattern
 
-# InstallerInfoData.7daeb346afa5.supportURL=http://www.broad.mit.edu/cancer/software/genepattern/FAQ.html
-InstallerInfoData.7daeb346afa5.supportURL=http://www.broad.mit.edu/cancer/software/genepattern/FAQ.html
+# InstallerInfoData.7daeb346afa5.supportURL=http://www.broadinstitute.org/cancer/software/genepattern/FAQ.html
+InstallerInfoData.7daeb346afa5.supportURL=http://www.broadinstitute.org/cancer/software/genepattern/FAQ.html
 
 # InstallerInfoData.7daeb346afa5.vendorName=The Broad Institute
 InstallerInfoData.7daeb346afa5.vendorName=The Broad Institute
 
-# InstallerInfoData.7daeb346afa5.vendorURL=http://www.broad.mit.edu/
-InstallerInfoData.7daeb346afa5.vendorURL=http://www.broad.mit.edu/
+# InstallerInfoData.7daeb346afa5.vendorURL=http://www.broadinstitute.org/
+InstallerInfoData.7daeb346afa5.vendorURL=http://www.broadinstitute.org/
 
 # InstallFailedAction.7daeb4a0afa5.message=The installation of $PRODUCT_NAME$ is complete, but some errors occurred during the install.\n\nPlease see the installation log for details.  Press \"\"Done\"\" to quit the installer.
 InstallFailedAction.7daeb4a0afa5.message=The installation of $PRODUCT_NAME$ is complete, but some errors occurred during the install.\n\nPlease see the installation log for details.  Press \"\"Done\"\" to quit the installer.
