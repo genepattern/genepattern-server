@@ -54,7 +54,7 @@
 
 \references
 {
-	GenePattern home: \url{http://www.broad.mit.edu/cancer/software/genepattern/}
+	GenePattern home: \url{http://www.broadinstitute.org/cancer/software/genepattern/}
 	GenePattern help: \email{gp-help@broad.mit.edu}
 }
 

@@ -526,7 +526,7 @@ and any path to a file to read from that file]]></string>
 									<method name="addElement">
 										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="735e730f89ee">
 											<property name="propertyValue">
-												<string><![CDATA[http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_get_authority.cgi]]></string>
+												<string><![CDATA[http://www.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_get_authority.cgi]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[CHECK_IP_ADDRESS_URL]]></string>
@@ -8119,7 +8119,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 						<string><![CDATA[2003]]></string>
 					</property>
 					<property name="url">
-						<string><![CDATA[http://www.broad.mit.edu/cancer/software/genepattern]]></string>
+						<string><![CDATA[http://www.broadinstitute.org/cancer/software/genepattern]]></string>
 					</property>
 					<property name="distribution">
 						<string><![CDATA[]]></string>
@@ -8665,7 +8665,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 						</object>
 					</property>
 					<property name="vendorURL">
-						<string><![CDATA[http://www.broad.mit.edu/cancer/software/genepattern]]></string>
+						<string><![CDATA[http://www.broadinstitute.org/cancer/software/genepattern]]></string>
 					</property>
 					<property name="email">
 						<string><![CDATA[gp-help@broad.mit.edu]]></string>

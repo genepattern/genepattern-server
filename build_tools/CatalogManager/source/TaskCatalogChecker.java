@@ -27,7 +27,7 @@ public class TaskCatalogChecker {
 	}
 
 	public static void main(String [] args)  {
-		String url = "http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_module_repository.cgi";
+		String url = "http://www.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_module_repository.cgi";
 
 		if (args.length > 0) {
 			url = args[0];

@@ -52,13 +52,13 @@ function mmLoadMenus() {
 
   // Help menu
   window.mm_menu_documentation = new Menu("root",153,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  mm_menu_documentation.addMenuItem("Tutorial","window.open('http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_tutorial.html', '_blank');");
-  mm_menu_documentation.addMenuItem("User Guide","window.open('http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_web_client.html', '_blank');");
-  mm_menu_documentation.addMenuItem("Programmers Guide","window.open('http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_programmer.html', '_blank');");
+  mm_menu_documentation.addMenuItem("Tutorial","window.open('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_tutorial.html', '_blank');");
+  mm_menu_documentation.addMenuItem("User Guide","window.open('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_web_client.html', '_blank');");
+  mm_menu_documentation.addMenuItem("Programmers Guide","window.open('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_programmer.html', '_blank');");
   mm_menu_documentation.addMenuItem("Module&nbsp;Documentation","location=contextRoot + '/getTaskDoc.jsp'");
-  mm_menu_documentation.addMenuItem("File Formats","window.open('http://www.broad.mit.edu/cancer/software/genepattern/tutorial/gp_fileformats.html', '_blank');");
-  mm_menu_documentation.addMenuItem("Release&nbsp;Notes","window.open('http://www.broad.mit.edu/cancer/software/genepattern/doc/relnotes/current/', '_blank')");
-  mm_menu_documentation.addMenuItem("FAQ","window.open('http://www.broad.mit.edu/cancer/software/genepattern/doc/faq/', '_blank')");
+  mm_menu_documentation.addMenuItem("File Formats","window.open('http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html', '_blank');");
+  mm_menu_documentation.addMenuItem("Release&nbsp;Notes","window.open('http://www.broadinstitute.org/cancer/software/genepattern/doc/relnotes/current/', '_blank')");
+  mm_menu_documentation.addMenuItem("FAQ","window.open('http://www.broadinstitute.org/cancer/software/genepattern/doc/faq/', '_blank')");
   mm_menu_documentation.addMenuItem("About","location=contextRoot + '/pages/about.jsf'");
   mm_menu_documentation.hideOnMouseOut=true;
   mm_menu_documentation.bgColor='#CCCC66';
@@ -67,9 +67,9 @@ function mmLoadMenus() {
   mm_menu_documentation.menuBorderBgColor='#CCCC66';
 
   window.mm_menu_resources = new Menu("root",89,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
-  mm_menu_resources.addMenuItem("Mailing&nbsp;List","window.open('http://www.broad.mit.edu/cancer/software/genepattern/gp_mail.html', '_blank')");
+  mm_menu_resources.addMenuItem("Mailing&nbsp;List","window.open('http://www.broadinstitute.org/cancer/software/genepattern/gp_mail.html', '_blank')");
   mm_menu_resources.addMenuItem("Report&nbsp;Bugs","location=contextRoot + '/pages/contactUs.jsf'");
-  mm_menu_resources.addMenuItem("User&nbsp;Forum","window.open('http://www.broad.mit.edu/cancer/software/genepattern/forum/', '_blank')");
+  mm_menu_resources.addMenuItem("User&nbsp;Forum","window.open('http://www.broadinstitute.org/cancer/software/genepattern/forum/', '_blank')");
   mm_menu_resources.addMenuItem("Contact Us","location=contextRoot + '/pages/contactUs.jsf'");
  
   mm_menu_resources.hideOnMouseOut=true;
@@ -80,7 +80,7 @@ function mmLoadMenus() {
 
   window.mm_menu_downloads = new Menu("root",157,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_downloads.addMenuItem("Programming&nbsp;Libraries","location=contextRoot + '/pages/downloadProgrammingLibaries.jsf'");
-  mm_menu_downloads.addMenuItem("Public&nbsp;Datasets","window.open('http://www.broad.mit.edu/cancer/software/genepattern/datasets/', '_blank')");
+  mm_menu_downloads.addMenuItem("Public&nbsp;Datasets","window.open('http://www.broadinstitute.org/cancer/software/genepattern/datasets/', '_blank')");
   mm_menu_downloads.hideOnMouseOut=true;
   mm_menu_downloads.bgColor='#CCCC66';
   mm_menu_downloads.menuBorder=0;

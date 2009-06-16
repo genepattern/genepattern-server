@@ -32,7 +32,7 @@ public class ZipCatalogUpload {
     public static final String PROD = "prod";
     public static final String MODULE = "module";
     public static final String PATCH = "patch";
-    public static final String BROAD_URL = "http://www.broad.mit.edu/webservices/gpModuleRepository/genepatternmodulerepository";
+    public static final String BROAD_URL = "http://www.broadinstitute.org/webservices/gpModuleRepository/genepatternmodulerepository";
 
     @Test
     public void testUploadToDev() throws Exception {
@@ -117,7 +117,7 @@ public class ZipCatalogUpload {
     private static void uploadFile(String targetURL, String modulePatchOrSuite, String devOrProd, File targetFile)
 	    throws IOException {
 	PostMethod filePost = new PostMethod(
-		"http://www.broad.mit.edu/webservices/gpModuleRepository/genepatternmodulerepository");
+		"http://www.broadinstitute.org/webservices/gpModuleRepository/genepatternmodulerepository");
 	HttpClient client = new HttpClient();
 	client.setState(new HttpState());
 	Part[] parts = { new FilePart("zipfilename", targetFile), new StringPart("repos", modulePatchOrSuite),
