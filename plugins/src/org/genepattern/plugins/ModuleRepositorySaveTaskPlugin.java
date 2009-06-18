@@ -23,7 +23,7 @@ import java.io.IOException;
  */
 public class ModuleRepositorySaveTaskPlugin implements SaveTaskPlugin {
     private static final String THIRD_PARTY_URL =
-            "http://wwwdev.broad.mit.edu/webservices/3rdpartymodulerepository/ModuleRepositoryServlet";
+            "http://wwwdev.broadinstitute.org/webservices/3rdpartymodulerepository/ModuleRepositoryServlet";
 
 
     public void taskSaved(File zipFile) {
