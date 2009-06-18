@@ -64,18 +64,30 @@ public class UserPrefsBean {
     }
 
     public int getNumberOfRecentJobs() {
+        if (recentJobsProp == null) {
+            return 0;
+        }
         return Integer.parseInt(recentJobsProp.getValue());
     }
 
     public void setNumberOfRecentJobs(int value) {
+        if (recentJobsProp == null) {
+            return;
+        }
         recentJobsProp.setValue(String.valueOf(value));
     }
 
     public String getJavaFlags() {
+        if (javaFlagsProp == null) {
+            return "";
+        }
         return javaFlagsProp.getValue();
     }
 
     public void setJavaFlags(String value) {
+        if (javaFlagsProp == null) {
+            return;
+        }
         this.javaFlagsProp.setValue(value);
     }
     
