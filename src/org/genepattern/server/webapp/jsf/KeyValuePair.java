@@ -12,15 +12,14 @@
 
 package org.genepattern.server.webapp.jsf;
 
-public class KeyValuePair {
+import java.io.Serializable;
+
+public class KeyValuePair implements Serializable {
     private String altKey;
-
     private String key;
-
     private String value;
 
     public KeyValuePair() {
-
     }
 
     public KeyValuePair(String key, String value) {
