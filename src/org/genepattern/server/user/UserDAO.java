@@ -21,7 +21,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.database.BaseDAO;
 import org.genepattern.server.database.HibernateUtil;
 import org.hibernate.Criteria;
-import org.hibernate.Query;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 
@@ -66,11 +65,17 @@ public class UserDAO extends BaseDAO {
     }
 
     public void setProperty(String userId, String key, String value) {
-        getProperty(userId, key).setValue(value);
+        UserProp userProp = getProperty(userId, key);
+        if (userProp != null) {
+            userProp.setValue(value);
+        }
     }
 
     public String getPropertyValue(String userId, String key, String defaultValue) {
         UserProp prop = getProperty(userId, key);
+        if (prop == null) {
+            return defaultValue;
+        }
         if (prop.getValue() == null) {
             prop.setValue(defaultValue);
         }
