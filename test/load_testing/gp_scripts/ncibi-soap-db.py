@@ -9,7 +9,7 @@
 #
 #
 # Based on sample Java application, DbDemoClient.java, posted on the NCIBI Wiki.
-#     Connect to NCIBI portal, login (e.g. as user pcarr@broad.mit.edu).
+#     Connect to NCIBI portal, login (e.g. as user pcarr@broadinstitute.org).
 #     Go to 'NCIBI Dev' Worksite -> 'Wiki' -> 'Client-Side Web Services' -> 'Client-Side Database Web Services'
 #     https://portal.ncibi.org/portal/site/NCIBI%20Sr%20Dev/page/98b4f8ef-2960-4acf-8004-c156234a815e
 #

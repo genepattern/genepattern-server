@@ -15,7 +15,7 @@ url /gp/pages/index.jsf
 timer
 
 #run MyComparativeMarkerSelection pipeline
-go /gp/pages/index.jsf?lsid=urn:lsid:7070.genepatt.node255.broad.mit.edu:genepatternmodules:144:2
+go /gp/pages/index.jsf?lsid=urn:lsid:7070.genepatt.node255.broadinstitute.org:genepatternmodules:144:2
 find MyComparativeMarkerSelection
 timer
 submit cmd 4

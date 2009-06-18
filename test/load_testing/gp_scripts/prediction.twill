@@ -6,7 +6,7 @@
 go /gp/pages/index.jsf?lsid=PreprocessDataset
 url /gp/pages/index.jsf
 fv taskForm input.filename_cb url
-fv taskForm input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+fv taskForm input.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
 submit
 code 200
 notfind Exception
@@ -17,9 +17,9 @@ find all_aml_test.preprocessed.gct
 go /gp/pages/index.jsf?lsid=CARTXValidation
 url /gp/pages/index.jsf
 fv taskForm data.filename_cb url
-fv taskForm data.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+fv taskForm data.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
 fv taskForm cls.filename_cb url
-fv taskForm cls.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
+fv taskForm cls.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls
 submit
 code 200
 notfind Exception
@@ -30,9 +30,9 @@ find all_aml_test.pred.odf
 go /gp/pages/index.jsf?lsid=KNNXValidation
 url /gp/pages/index.jsf
 fv taskForm data.filename_cb url
-fv taskForm data.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+fv taskForm data.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
 fv taskForm class.filename_cb url
-fv taskForm class.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
+fv taskForm class.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls
 submit
 code 200
 notfind Exception
@@ -46,9 +46,9 @@ find all_aml_test.feat.odf
 go /gp/pages/index.jsf?lsid=WeightedVotingXValidation
 url /gp/pages/index.jsf
 fv taskForm data.filename_cb url
-fv taskForm data.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+fv taskForm data.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
 fv taskForm class.filename_cb url
-fv taskForm class.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
+fv taskForm class.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls
 submit
 code 200
 notfind Exception
@@ -60,7 +60,7 @@ find all_aml_test.feat.odf
 go /gp/pages/index.jsf?lsid=PredictionResultsViewer
 url /gp/pages/index.jsf
 fv taskForm prediction.results.file_cb url
-fv taskForm prediction.results.file_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.pred.odf
+fv taskForm prediction.results.file_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.pred.odf
 submit
 code 200
 url /gp/preRunVisualizer.jsp
@@ -72,7 +72,7 @@ find 'Running PredictionResultsViewer'
 go /gp/pages/index.jsf?lsid=PredictionResultsViewer
 url /gp/pages/index.jsf
 fv taskForm prediction.results.file_cb url
-fv taskForm prediction.results.file_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.knn.pred.odf
+fv taskForm prediction.results.file_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.knn.pred.odf
 submit
 code 200
 notfind Exception
@@ -83,7 +83,7 @@ find 'Running PredictionResultsViewer '
 go /gp/pages/index.jsf?lsid=FeatureSummaryViewer
 url /gp/pages/index.jsf
 fv taskForm feature.filename_cb url
-fv taskForm feature.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.knn.pred.feat.odf
+fv taskForm feature.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.knn.pred.feat.odf
 submit
 code 200
 notfind Exception
@@ -95,13 +95,13 @@ find 'Running FeatureSummaryViewer '
 go /gp/pages/index.jsf?lsid=CART
 url /gp/pages/index.jsf
 fv taskForm train.data.filename_cb url
-fv taskForm train.data.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct
+fv taskForm train.data.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct
 fv taskForm train.cls.filename_cb url
-fv taskForm train.cls.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls
+fv taskForm train.cls.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls
 fv taskForm test.data.filename_cb url
-fv taskForm test.data.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+fv taskForm test.data.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
 fv taskForm test.cls.filename_cb url
-fv taskForm test.cls.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
+fv taskForm test.cls.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls
 submit
 code 200
 notfind Exception
@@ -114,13 +114,13 @@ find all_aml_test.pred.odf
 go /gp/pages/index.jsf?lsid=KNN
 url /gp/pages/index.jsf
 fv taskForm train.filename_cb url
-fv taskForm train.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct
+fv taskForm train.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct
 fv taskForm train.class.filename_cb url
-fv taskForm train.class.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls
+fv taskForm train.class.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls
 fv taskForm test.filename_cb url
-fv taskForm test.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+fv taskForm test.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
 fv taskForm test.class.filename_cb url
-fv taskForm test.class.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
+fv taskForm test.class.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls
 submit
 code 200
 notfind Exception
@@ -132,13 +132,13 @@ find all_aml_test.pred.odf
 go /gp/pages/index.jsf?lsid=SVM
 url /gp/pages/index.jsf
 fv taskForm train.data.filename_cb url
-fv taskForm train.data.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct
+fv taskForm train.data.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct
 fv taskForm train.cls.filename_cb url
-fv taskForm train.cls.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls
+fv taskForm train.cls.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls
 fv taskForm test.data.filename_cb url
-fv taskForm test.data.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+fv taskForm test.data.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
 fv taskForm test.cls.filename_cb url
-fv taskForm test.cls.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
+fv taskForm test.cls.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls
 submit
 code 200
 notfind Exception
@@ -150,13 +150,13 @@ find all_aml_test.pred.odf
 go /gp/pages/index.jsf?lsid=WeightedVoting
 url /gp/pages/index.jsf
 fv taskForm train.filename_cb url
-fv taskForm train.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.gct
+fv taskForm train.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.gct
 fv taskForm train.class.filename_cb url
-fv taskForm train.class.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls
+fv taskForm train.class.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls
 fv taskForm test.filename_cb url
-fv taskForm test.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+fv taskForm test.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
 fv taskForm test.class.filename_cb url
-fv taskForm test.class.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
+fv taskForm test.class.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls
 submit
 code 200
 notfind Exception

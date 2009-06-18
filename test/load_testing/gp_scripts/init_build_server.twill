@@ -3,7 +3,7 @@
 #
 
 # Register a new GenePattern server 
-go http://gpb67-896.broad.mit.edu:8080/gp
+go http://gpb67-896.broadinstitute.org:8080/gp
 runfile register.twill
 
 # Install all modules

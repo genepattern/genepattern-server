@@ -5,7 +5,7 @@
 # Step 1: SNPFileCreator
 go /gp/pages/index.jsf?lsid=SNPFileCreator
 fv taskForm zip.filename_cb url
-fv taskForm zip.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip
+fv taskForm zip.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip
 fv taskForm output.file GISTIC_Hind_subset.snp
 submit
 code 200

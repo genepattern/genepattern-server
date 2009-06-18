@@ -13,7 +13,7 @@
 </listAttribute>
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.genepattern.test.gp2543.TestBatchInput"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="convert_line_endings_inputs http://node256.broad.mit.edu:8080 test test"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="convert_line_endings_inputs http://node256.broadinstitute.org:8080 test test"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="gp-trunk"/>
 <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:gp-trunk/test/load_testing/gp-2543}"/>
 </launchConfiguration>

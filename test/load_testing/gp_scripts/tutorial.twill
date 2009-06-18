@@ -2,7 +2,7 @@
 # Test GenePattern Tutorial as user 'test'
 #
 # pass the server url as an arg, e.g.
-# -u http://node255.broad.mit.edu:7070
+# -u http://node255.broadinstitute.org:7070
 # 
 
 setlocal gp_data /home/radon01/pcarr/gp_data
@@ -19,7 +19,7 @@ url /gp/pages/index.jsf
 #randomsleep 15 30
 
 #run ComparativeMarkerSelection
-go /gp/pages/index.jsf?lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:3
+go /gp/pages/index.jsf?lsid=urn:lsid:broadinstitute.org:cancer.software.genepattern.module.analysis:00044:3
 formfile taskForm input.filename $res_file
 formfile taskForm cls.filename $cls_file
 # submit with 3 args required modified version of twill 
@@ -30,8 +30,8 @@ code 200
 
 #run ExtractComparativeMarkerResults
 go /gp
-go /gp/pages/index.jsf?lsid=urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00046:3
-fv 4 comparative.marker.selection.filename_url http://node255.broad.mit.edu:7070/gp/jobResults/1165/all_aml_train.comp.marker.odf
+go /gp/pages/index.jsf?lsid=urn:lsid:broadinstitute.org:cancer.software.genepattern.module.analysis:00046:3
+fv 4 comparative.marker.selection.filename_url http://node255.broadinstitute.org:7070/gp/jobResults/1165/all_aml_train.comp.marker.odf
 fv 4 comparative.marker.selection.filename_cb url
 formfile 4 dataset.filename $res_file
 fv 4 field Rank
@@ -41,7 +41,7 @@ submit cmd 4
 
 #run MyComparativeMarkerSelection pipeline
 go /gp
-go /gp/pages/index.jsf?lsid=urn:lsid:7070.genepatt.node255.broad.mit.edu:genepatternmodules:144:2
+go /gp/pages/index.jsf?lsid=urn:lsid:7070.genepatt.node255.broadinstitute.org:genepatternmodules:144:2
 find MyComparativeMarkerSelection
 submit cmd 4
 find '1 of 2'

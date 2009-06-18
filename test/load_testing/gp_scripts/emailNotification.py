@@ -3,7 +3,7 @@ import mechanize
 
 userID = 'test'
 password = 'test'
-userEmail = 'pcarr@broad.mit.edu'
+userEmail = 'pcarr@broadinstitute.org'
 gpServer = 'http://127.0.0.1:8080/gp/'
 jobID = '98'
 
