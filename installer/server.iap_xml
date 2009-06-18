@@ -4198,7 +4198,7 @@ If your proxy requires authentication you will need to provide the username and 
 								<string><![CDATA[LSID Authority]]></string>
 							</property>
 							<property name="prompt">
-								<string><![CDATA[Please enter a string to use as your LSID authority. This must be unique for this server.  Recommended authority string is the webserver port followed by  user name followed by full host name of this server (e.g. 8080.user.computer3.broad.mit.edu)]]></string>
+								<string><![CDATA[Please enter a string to use as your LSID authority. This must be unique for this server.  Recommended authority string is the webserver port followed by  user name followed by full host name of this server (e.g. 8080.user.computer3.broadinstitute.org)]]></string>
 							</property>
 							<property name="guiGroups">
 								<object class="java.util.Vector">
@@ -8668,7 +8668,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 						<string><![CDATA[http://www.broadinstitute.org/cancer/software/genepattern]]></string>
 					</property>
 					<property name="email">
-						<string><![CDATA[gp-help@broad.mit.edu]]></string>
+						<string><![CDATA[gp-help@broadinstitute.org]]></string>
 					</property>
 					<property name="copyright">
 						<string><![CDATA[2003-2009]]></string>
