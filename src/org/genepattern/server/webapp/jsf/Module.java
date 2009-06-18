@@ -125,7 +125,12 @@ public class Module implements java.io.Serializable {
      *         affects the color scheme for the module name.
      */
     public boolean isFromBroad() {
-        return getLSID().getAuthority().equals("broad.mit.edu");
+        String authority = "";
+        LSID lsid = this.getLSID();
+        if (lsid != null) {
+            authority = lsid.getAuthority();
+        }
+        return "broadinstitute.org".equals(authority) || "broad.mit.edu".equals(authority);
     }
 
     public boolean isPipeline() {
