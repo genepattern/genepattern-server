@@ -61,7 +61,7 @@ public class ZipCatalogUpload {
 
     /**
      * @param targetURL
-     *                The url http://iwww.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_publish_module.cgi
+     *                The url http://iwww.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_publish_module.cgi
      * @param modulePatchOrSuite
      *                ZipCatalogUpload.MODULE or ZipCatalogUpload.PATCH
      * @param devOrProd
@@ -94,7 +94,7 @@ public class ZipCatalogUpload {
 
     /**
      * @param targetURL
-     *                The url http://iwww.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_publish_module.cgi
+     *                The url http://iwww.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_publish_module.cgi
      * @throws IOException
      *                 If an error occurs
      */
