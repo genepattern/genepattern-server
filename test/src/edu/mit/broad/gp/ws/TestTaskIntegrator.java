@@ -135,7 +135,7 @@ public class TestTaskIntegrator extends TestWebService {
    public void testImportZipFromBadURL() {
       try {
          deleteAllTasks();
-         taskIntegratorProxy.importZipFromURL("http://broad.mit.edu", GPConstants.ACCESS_PUBLIC);
+         taskIntegratorProxy.importZipFromURL("http://broadinstitute.org", GPConstants.ACCESS_PUBLIC);
          fail("An exception should have been thrown");
       } catch(Exception e) {// FIXME
          System.out.println("testImportZipFromBadURL:" + e.getMessage());
