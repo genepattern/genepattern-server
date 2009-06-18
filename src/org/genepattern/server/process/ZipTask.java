@@ -267,8 +267,16 @@ public class ZipTask extends CommandLineAction {
 			TaskInfo ti = (TaskInfo) itTasks.next();
 			Map tia = ti.getTaskInfoAttributes();
 			String lsid = (String) tia.get("LSID");
+			
+			boolean isNonBroadTask = true;
+			if (lsid != null) {
+			    if (lsid.startsWith("urn:lsid:broadinstitute.org") ||
+			        lsid.startsWith("urn:lsid:broad.mit.edu")) {
+			        isNonBroadTask = false;
+			    }
+			}
 
-			if ((lsid == null) || (!lsid.startsWith("urn:lsid:broad.mit.edu"))) {
+			if (isNonBroadTask) {
 				System.out.println("\tSaving: " + ti.getName());
 
 				File zip = inst.packageTask(ti, userID);
