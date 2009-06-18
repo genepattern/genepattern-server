@@ -273,7 +273,7 @@
 			        <div class="icon2">
                     <table cellpadding="0" border="0" cellspacing="0">
                       <tr><td><a href="javascript:toggle('inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"
-                              ><img src="/gp/images/parameters.gif" align="left" /></a></td>
+                              ><img src="/gp/images/parameters.gif" align="left" height="24" vspace="4" /></a></td>
                           <td><a style="color:#0066FF;" href="javascript:toggle('inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}', 'Hide', 'Show');"
                               ><span id="inputParamsDiv#{jobStatusBean.jobInfo.jobNumber}Label">Show</span> Input <br/>Parameters</a></td>
                       </tr>
@@ -287,7 +287,7 @@
 					        		<img id="permissionsIcon" src="/gp/images/lockOpen.gif" alt="" border="0" align="left" />
 					        </h:outputText>
 					        <h:outputText rendered="#{not jobStatusBean.jobInfo.permissions.shared}">
-					        	<img id="permissionsIcon" src="/gp/images/lock.gif" alt="" border="0" align="left"/>
+					        	<img id="permissionsIcon" src="/gp/images/lock.gif" alt="" border="0" align="left" height="24" vspace="4" />
 					        </h:outputText>
 						   	<span id="permissionsDivLabel">Edit</span><br />Sharing...</a>
 						</div>
