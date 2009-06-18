@@ -283,7 +283,7 @@ public class JobInfoWrapper implements Serializable {
          * @param value
          */
         private void initLinkValue( int jobNumber, String contextPath, String value ) {  
-            //A. External link, e.g. ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+            //A. External link, e.g. ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
 
             //B. Internal links
             //   1. to file uploaded from web client in previous job, then reloaded for new job
@@ -293,8 +293,8 @@ public class JobInfoWrapper implements Serializable {
             //   3. to output from previous job
             //      http://127.0.0.1:8080/gp/jobResults/3182/all_aml_test.preprocessed.gct
             //   4. to file uploaded when creating a pipeline, e.g.
-            //      <GenePatternURL>getFile.jsp?task=urn%3Alsid%3A8080.pcarr.gm971-3d7.broad.mit.edu%3Agenepatternmodules%3A127%3A9&file=all_aml_test.gct
-            //      http://127.0.0.1:8080/gp/getFile.jsp?task=urn%3Alsid%3A8080.pcarr.gm971-3d7.broad.mit.edu%3Agenepatternmodules%3A127%3A9&file=all_aml_test.gct
+            //      <GenePatternURL>getFile.jsp?task=urn%3Alsid%3A8080.pcarr.gm971-3d7.broadinstitute.org%3Agenepatternmodules%3A127%3A9&file=all_aml_test.gct
+            //      http://127.0.0.1:8080/gp/getFile.jsp?task=urn%3Alsid%3A8080.pcarr.gm971-3d7.broadinstitute.org%3Agenepatternmodules%3A127%3A9&file=all_aml_test.gct
             
             //C. Server file path
             //   1. uploaded from web client,

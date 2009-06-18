@@ -43,15 +43,15 @@ import org.genepattern.webservice.WebServiceException;
  * Here are some example URLs which work for ComparativeMarkerSelection, which does have two doc files.
  * <ul>
  * <li>
- * http://127.0.0.1:8080/gp/module/doc/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4/ComparativeMarkerSelection.pdf
+ * http://127.0.0.1:8080/gp/module/doc/urn:lsid:broadinstitute.org:cancer.software.genepattern.module.analysis:00044:4/ComparativeMarkerSelection.pdf
  * <li>
- * http://127.0.0.1:8080/gp/module/doc/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4
+ * http://127.0.0.1:8080/gp/module/doc/urn:lsid:broadinstitute.org:cancer.software.genepattern.module.analysis:00044:4
  * <li>
- * http://127.0.0.1:8080/gp/module/doc/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044
+ * http://127.0.0.1:8080/gp/module/doc/urn:lsid:broadinstitute.org:cancer.software.genepattern.module.analysis:00044
  * <li>
  * http://127.0.0.1:8080/gp/module/doc/ComparativeMarkerSelection
  * <li>
- * http://127.0.0.1:8080/gp/module/doc/urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4/CompMarkSelAppNote.pdf
+ * http://127.0.0.1:8080/gp/module/doc/urn:lsid:broadinstitute.org:cancer.software.genepattern.module.analysis:00044:4/CompMarkSelAppNote.pdf
  * <li>
  * http://127.0.0.1:8080/gp/module/doc/ComparativeMarkerSelection/CompMarkSelAppNote.pdf
  * </ul>

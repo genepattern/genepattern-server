@@ -51,7 +51,7 @@ public class LSID implements Comparable, Serializable {
 	protected static final String UTF8 = "utf-8";
 
 	// sample valid LSID:
-	// urn:lsid:broad.mit.edu:genepatternmodule:123:2
+	// urn:lsid:broadinstitute.org:genepatternmodule:123:2
 
 	public LSID(String lsid) throws MalformedURLException {
 		if (lsid == null || lsid.length() == 0) {
