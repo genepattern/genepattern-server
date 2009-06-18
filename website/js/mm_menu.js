@@ -18,7 +18,7 @@ function Menu(label, mw, mh, fnt, fs, fclr, fhclr, bg, bgh, halgn, valgn, pad, s
 	this.menuWidth = mw;
 	this.menuItemHeight = mh;
 	this.fontSize = fs;
-	this.fontWeight = "plain";
+	this.fontWeight = "normal";
 	this.fontFamily = fnt;
 	this.fontColor = fclr;
 	this.fontColorHilite = fhclr;
@@ -119,9 +119,9 @@ function writeMenus(container) {
 			body.left = menu.menuBorder;
 		} else {
 			content += ''+
-			'<div id="menuLayer'+ countMenus +'" style="position:absolute;z-index:100;left:10px;top:'+ (i * 100) +'px;visibility:hidden;color:' +  menu.menuBorderBgColor + ';">\n'+
-			'  <div id="menuLite'+ countMenus +'" style="position:absolute;z-index:100;left:'+ menu.menuBorder +'px;top:'+ menu.menuBorder +'px;visibility:hide;" onmouseout="mouseoutMenu();">\n'+
-			'	 <div id="menuFg'+ countMenus +'" style="position:absolute;left:'+ menu.menuBorder +'px;top:'+ menu.menuBorder +'px;visibility:hide;">\n'+
+			'<div id="menuLayer'+ countMenus +'" style="position:absolute;z-index:100;left:10px;top:'+ (i * 100) +'px;color:' +  menu.menuBorderBgColor + ';">\n'+
+			'  <div id="menuLite'+ countMenus +'" style="position:absolute;z-index:100;left:'+ menu.menuBorder +'px;top:'+ menu.menuBorder +'px;" onmouseout="mouseoutMenu();">\n'+
+			'	 <div id="menuFg'+ countMenus +'" style="position:absolute;left:'+ menu.menuBorder +'px;top:'+ menu.menuBorder +'px;">\n'+
 			'';
 		}
 		var x=i;
@@ -222,7 +222,7 @@ function writeMenus(container) {
 			focusItem.document.writeln("&nbsp;");
 			focusItem.document.close();	
 		} else {
-		  content += '	  <div id="focusItem'+ countMenus +'" style="position:absolute;left:0px;top:0px;visibility:hide;" onclick="onMenuItemAction(null,this);">&nbsp;</div>\n';
+		  content += '	  <div id="focusItem'+ countMenus +'" style="position:absolute;left:0px;top:0px;visibility:hidden;" onclick="onMenuItemAction(null,this);">&nbsp;</div>\n';
 		  content += '   </div>\n  </div>\n</div>\n';
 		}
 		i=x;
