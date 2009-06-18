@@ -359,7 +359,6 @@ public class SuiteCatalogBean {
             	int idx = suiteUrl.indexOf("env=");
             	catEnv=suiteUrl.substring(idx+4);
             }
-            //ConsensusClustering/broad.mit.edu:cancer.software.genepattern.module.analysis/1/ConsensusClustering.pdf
             
             try {
 				LSID suiteLsid = new LSID(getLsid());
