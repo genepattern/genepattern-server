@@ -1648,8 +1648,8 @@ Installer.7daeb2feafa5.installLabels.09=Install Complete
 # Installer.7daeb2feafa5.rulesFailedMessage=The installer cannot run on your configuration. It will now quit.
 Installer.7daeb2feafa5.rulesFailedMessage=The installer cannot run on your configuration. It will now quit.
 
-# InstallerInfoData.7daeb346afa5.email=gp-help@broad.mit.edu
-InstallerInfoData.7daeb346afa5.email=gp-help@broad.mit.edu
+# InstallerInfoData.7daeb346afa5.email=gp-help@broadinstitute.org
+InstallerInfoData.7daeb346afa5.email=gp-help@broadinstitute.org
 
 # InstallerInfoData.7daeb346afa5.installerName=GenePatternClient
 InstallerInfoData.7daeb346afa5.installerName=GenePatternClient

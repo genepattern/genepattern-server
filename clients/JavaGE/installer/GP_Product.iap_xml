@@ -1435,7 +1435,7 @@ and any path to a file to read from that file]]></string>
 									<method name="addElement">
 										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="beadad8d8a0f">
 											<property name="propertyValue">
-												<string><![CDATA[http://www.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_client_license.cgi]]></string>
+												<string><![CDATA[http://www.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_client_license.cgi]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[GP_REG_REGISTRATION_URL]]></string>
@@ -7813,7 +7813,7 @@ The installation log will open after the installer with the details.  Press ""Do
 						</object>
 					</property>
 					<property name="productURL">
-						<string><![CDATA[http://www.broad.mit.edu/cancer/software/genepattern]]></string>
+						<string><![CDATA[http://www.broadinstitute.org/cancer/software/genepattern]]></string>
 					</property>
 					<property name="productDescription">
 						<string><![CDATA[The Graphical Environment is a client of GenePattern.]]></string>
@@ -7835,7 +7835,7 @@ The installation log will open after the installer with the details.  Press ""Do
 						</object>
 					</property>
 					<property name="supportURL">
-						<string><![CDATA[http://www.broad.mit.edu/cancer/software/genepattern/FAQ.html]]></string>
+						<string><![CDATA[http://www.broadinstitute.org/cancer/software/genepattern/FAQ.html]]></string>
 					</property>
 					<property name="vendorName">
 						<string><![CDATA[The Broad Institute]]></string>
@@ -7848,10 +7848,10 @@ The installation log will open after the installer with the details.  Press ""Do
 						</object>
 					</property>
 					<property name="vendorURL">
-						<string><![CDATA[http://www.broad.mit.edu/]]></string>
+						<string><![CDATA[http://www.broadinstitute.org/]]></string>
 					</property>
 					<property name="email">
-						<string><![CDATA[gp-help@broad.mit.edu]]></string>
+						<string><![CDATA[gp-help@broadinstitute.org]]></string>
 					</property>
 					<property name="copyright">
 						<string><![CDATA[2004]]></string>

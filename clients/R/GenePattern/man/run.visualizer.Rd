@@ -53,7 +53,7 @@
 		servername <- "http://localhost:8080"
       	## Obtain a GPServer object
 		gp.server <- gp.login(servername, username, password)
-		input.ds <- "ftp://ftp.broad.mit.edu/pub/genepattern/all_aml/all_aml_train.res"
+		input.ds <- "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_train.res"
       	## run the HeatMapViewer locally
    		jobresults <- run.visualizer(gp.server, "HeatMapViewer", dataset.filename=input.ds)
   	}
@@ -62,7 +62,7 @@
 \references
 {
 	GenePattern home: \url{http://www.broadinstitute.org/cancer/software/genepattern/}
-	GenePattern help: \email{gp-help@broad.mit.edu}
+	GenePattern help: \email{gp-help@broadinstitute.org}
 }
 
 \keyword{genepattern}
