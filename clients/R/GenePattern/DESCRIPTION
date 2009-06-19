@@ -3,7 +3,7 @@ Version: 1.0.1
 Date: 05-13-2008
 Title: GenePattern
 Author: Marc-Danie Nazaire, Joshua Gould
-Maintainer: GenePattern Team <gp-help@broad.mit.edu>
+Maintainer: GenePattern Team <gp-help@broadinstitute.org>
 Depends: rJava
 Description: GenePattern web service library
 URL: http://www.broadinstitute.org/cancer/software/genepattern
