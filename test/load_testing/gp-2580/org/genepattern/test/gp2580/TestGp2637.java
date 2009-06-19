@@ -7,7 +7,7 @@ import org.genepattern.webservice.Parameter;
 
 /**
  * Test nested pipelines from the java API.
- * This is used to test bug GP-2637, <a href="http://jira.broad.mit.edu:8008/browse/GP-2580">GP-2637</a>.
+ * This is used to test bug GP-2637, <a href="http://jira.broadinstitute.org:8008/browse/GP-2580">GP-2637</a>.
  */
 public class TestGp2637 {
 
@@ -20,7 +20,7 @@ public class TestGp2637 {
             // 0. run innerStep with URL
             jobResult = gpClient.runAnalysis("innerStep",
                     new Parameter[] { 
-                        new Parameter("PreprocessDataset1.input.filename", "ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct") 
+                        new Parameter("PreprocessDataset1.input.filename", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct") 
                 });
             Util.printJobResults(System.out, jobResult);
 

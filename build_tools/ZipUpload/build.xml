@@ -56,7 +56,7 @@
 	<target depends="init" name="catalog">
 		<java classname="org.genepattern.util.ZipCatalogUpload" classpath="./:${library.classpath}" fork="true">
 			<classpath refid="library.classpath" />
-			<arg line="http://iwww.broad.mit.edu/cgi-bin/cancer/software/genepattern/gp_pubtest.cgi prod ../modules/release_archive/ClassNeighbors.zip" />
+			<arg line="http://iwww.broadinstitute.org/cgi-bin/cancer/software/genepattern/gp_pubtest.cgi prod ../modules/release_archive/ClassNeighbors.zip" />
 		</java>
 	</target>
 

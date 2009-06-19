@@ -2,7 +2,7 @@
 
 #
 # e.g. 
-# runTwill.sh http://node255.broad.mit.edu:7070 ./gp_scripts/tutorial.twill 50
+# runTwill.sh http://node255.broadinstitute.org:7070 ./gp_scripts/tutorial.twill 50
 #
 
 # twill-sh

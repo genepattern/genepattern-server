@@ -342,19 +342,18 @@ public class ManageTasksBean {
 	    return pipelineNames;
 	}
 
-	public String getReason() {
-	    String reason = null;
-	    if (ti != null) {
-		String BROAD_AUTHORITY = "broad.mit.edu";
-		LSID lSID = getLSID(ti.getLsid());
-		String authority = (lSID == null ? "" : lSID.getAuthority());
+    public String getReason() {
+        String reason = null;
+        if (ti != null) {
+            LSID lSID = getLSID(ti.getLsid());
+            String authority = (lSID == null ? "" : lSID.getAuthority());
 
-		TaskInfoAttributes tia = ti.giveTaskInfoAttributes();
-		reason = tia.get(GPConstants.VERSION);
-		if (reason.equals("1.0") && authority.equals(BROAD_AUTHORITY)) {
-		    reason = "";
-		}
-	    }
+            TaskInfoAttributes tia = ti.giveTaskInfoAttributes();
+            reason = tia.get(GPConstants.VERSION);
+            if (reason.equals("1.0") && ("broadinstitute.org".equals(authority) || "broad.mit.edu".equals(authority))) {
+                reason = "";
+            }
+        }
 	    return reason;
 	}
 

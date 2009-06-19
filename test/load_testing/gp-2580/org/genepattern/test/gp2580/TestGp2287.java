@@ -8,7 +8,7 @@ import org.genepattern.webservice.Parameter;
  * Test SOAP client with large input file.
  *
  * Before running this test make sure to get a copy of a large file, such as, <pre>
- *    \\Thumper21.broad.mit.edu\igv\dev\testfiles\cn\Very_large_copynumber.cn
+ *    \\Thumper21.broadinstitute.org\igv\dev\testfiles\cn\Very_large_copynumber.cn
  * </pre>
  */
 public class TestGp2287 {

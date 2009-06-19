@@ -81,7 +81,7 @@ public class ContactUsBean {
 
     public String send() {
         Properties p = new Properties();
-        String mailServer = System.getProperty("smtp.server", "imap.broad.mit.edu");
+        String mailServer = System.getProperty("smtp.server", "imap.broadinstitute.org");
         p.put("mail.host", mailServer);
 
         Session mailSession = Session.getDefaultInstance(p, null);
@@ -93,7 +93,7 @@ public class ContactUsBean {
             msg.setText(message);
             msg.setFrom(new InternetAddress(replyTo));
             msg.setSentDate(new Date());
-            String email = "gp-help@broad.mit.edu";
+            String email = "gp-help@broadinstitute.org";
             msg.addRecipient(Message.RecipientType.TO, new InternetAddress(email));
             Transport.send(msg);
         } catch (MessagingException e) {

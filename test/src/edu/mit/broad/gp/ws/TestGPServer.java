@@ -26,7 +26,7 @@ import org.junit.Test;
  * @author Joshua Gould
  */
 public class TestGPServer extends Helper {
-    final static String ALL_AML_TRAIN = "ftp://ftp.broad.mit.edu/pub/genepattern/all_aml/all_aml_train.res";
+    final static String ALL_AML_TRAIN = "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_train.res";
 
     /*
      * public void testConcurrentSubmissions() { List threads = new ArrayList();

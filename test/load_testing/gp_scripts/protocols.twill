@@ -2,7 +2,7 @@
 #    Make sure to login first (either with login.twill or login_password.twill)
 #
 # pass the server url as an arg, e.g.
-# -u http://node255.broad.mit.edu:7070
+# -u http://node255.broadinstitute.org:7070
 # 
 
 # 1. Differential Expression Analysis

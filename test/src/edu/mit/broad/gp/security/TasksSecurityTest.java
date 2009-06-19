@@ -29,7 +29,7 @@ public class TasksSecurityTest {
 	String url="http://127.0.0.1:8080/";
 	
 	String privateLsid = null;
-	String publicLsid = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1";
+	String publicLsid = "urn:lsid:broadinstitute.org:cancer.software.genepattern.module.analysis:00002:1";
 	
 	
 	@Before public void setUp() throws WebServiceException {

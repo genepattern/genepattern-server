@@ -26,7 +26,7 @@ public class LSIDUtil {
 
 	public static boolean isBroadTask(LSID lsid) {
 		String authority = lsid.getAuthority();
-		return "broad.mit.edu".equals(authority);
+		return "broadinstitute.org".equals(authority) || "broad.mit.edu".equals(authority);
 	}
 
 	public static String getTaskId(TaskInfo task) {

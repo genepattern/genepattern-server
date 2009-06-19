@@ -181,8 +181,8 @@ Exec.fed8b687bcbd.commandLineArgs=/usr/bin/konqueror http://127.0.0.1:$GENEPATTE
 # ExecuteScript.198ffaadb9f4.dialogLabel=Executing Installation Script...
 ExecuteScript.198ffaadb9f4.dialogLabel=Executing Installation Script...
 
-# GetUserInput.35173a9ab622.prompt=Please enter a string to use as your LSID authority. This must be unique for this server.  Recommended authority string is the webserver port followed by  user name followed by full host name of this server (e.g. 8080.user.computer3.broad.mit.edu)
-GetUserInput.35173a9ab622.prompt=Please enter a string to use as your LSID authority. This must be unique for this server.  Recommended authority string is the webserver port followed by  user name followed by full host name of this server (e.g. 8080.user.computer3.broad.mit.edu)
+# GetUserInput.35173a9ab622.prompt=Please enter a string to use as your LSID authority. This must be unique for this server.  Recommended authority string is the webserver port followed by  user name followed by full host name of this server (e.g. 8080.user.computer3.broadinstitute.org)
+GetUserInput.35173a9ab622.prompt=Please enter a string to use as your LSID authority. This must be unique for this server.  Recommended authority string is the webserver port followed by  user name followed by full host name of this server (e.g. 8080.user.computer3.broadinstitute.org)
 
 # GetUserInput.35173a9ab622.title=LSID Authority
 GetUserInput.35173a9ab622.title=LSID Authority
@@ -370,8 +370,8 @@ Installer.72a1c4b4b1bf.panelImagePath=com/zerog/ia/installer/images/
 # Installer.72a1c4b4b1bf.rulesFailedMessage=The installer cannot run on your configuration. It will now quit.
 Installer.72a1c4b4b1bf.rulesFailedMessage=The installer cannot run on your configuration. It will now quit.
 
-# InstallerInfoData.72a1c4c9b1c0.email=gp-help@broad.mit.edu
-InstallerInfoData.72a1c4c9b1c0.email=gp-help@broad.mit.edu
+# InstallerInfoData.72a1c4c9b1c0.email=gp-help@broadinstitute.org
+InstallerInfoData.72a1c4c9b1c0.email=gp-help@broadinstitute.org
 
 # InstallerInfoData.72a1c4c9b1c0.installerName=GPserver
 InstallerInfoData.72a1c4c9b1c0.installerName=GPserver

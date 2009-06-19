@@ -4,7 +4,7 @@ import org.genepattern.webservice.Parameter;
 
 /**
  * Test submitting a GenePattern job from the java API.
- * This is used to verify bug GP-2513, http://jira.broad.mit.edu:8008/browse/GP-2513
+ * This is used to verify bug GP-2513, http://jira.broadinstitute.org:8008/browse/GP-2513
  * 
  * This test program depends on the 'GenePattern Java Library'.
  * To run this program,<ol> 
@@ -49,7 +49,7 @@ public class TestRunJob {
                     });
 
             // run PreprocessDataset with a URL input file
-            String inputDataset = "ftp://ftp.broad.mit.edu/pub/genepattern/all_aml/all_aml_train.res";
+            String inputDataset = "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_train.res";
             JobResult preprocess = gpClient.runAnalysis("PreprocessDataset",
                     new Parameter[] { 
                         new Parameter("input.filename", inputDataset) 

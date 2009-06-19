@@ -16,7 +16,7 @@ import org.genepattern.webservice.WebServiceException;
  * Run a module using each file in the input directory.
  * One job per input file.
  * 
- * See JIRA ticket <a href="http://jira.broad.mit.edu:8008/browse/GP-2513">GP-2453</a>.
+ * See JIRA ticket <a href="http://jira.broadinstitute.org:8008/browse/GP-2513">GP-2453</a>.
  *
  * To run this test:
  *     1. Make sure the GenePattern.jar file is on the classpath; 
@@ -120,7 +120,7 @@ public class TestBatchInput {
      * @throws WebServiceException
      */
     private void runConvertLineEndings(File inputFile) throws WebServiceException {
-        //String moduleName = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1";
+        //String moduleName = "urn:lsid:broadinstitute.org:cancer.software.genepattern.module.analysis:00002:1";
         final String moduleName = "ConvertLineEndings";
         JobResult result = gpClient.runAnalysis(moduleName, 
                 new Parameter[]{

@@ -30,7 +30,7 @@ find('all_aml_test.preprocessed.gct')
 # Step 3: PreprocessDataset, FTP Input file
 #go(gp_client.gp_url()+'/pages/index.jsf?lsid=PreprocessDataset')
 #fv('taskForm', 'input.filename_cb', 'url')
-#fv('taskForm', 'input.filename_url', 'ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct')
+#fv('taskForm', 'input.filename_url', 'ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct')
 #submit()
 #code(200)
 # refresh until job completes (or timeout)

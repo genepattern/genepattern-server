@@ -40,7 +40,7 @@ public class JobStatusSecurityTest {
 			analysisProxy2 = new AnalysisWebServiceProxy(url, username2, password);
 			adminProxy1 = new AdminProxy( url,  username1,  password);
 			
-			convertLineEndings = adminProxy1.getTask("urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:1");
+			convertLineEndings = adminProxy1.getTask("urn:lsid:broadinstitute.org:cancer.software.genepattern.module.analysis:00002:1");
 		} catch (WebServiceException wse){
 			wse.printStackTrace();
 			throw wse;

@@ -5,9 +5,48 @@ runfile login.twill
 # Step 1: ConvertLineEndings
 go /gp/pages/index.jsf?lsid=ConvertLineEndings
 fv taskForm input.filename_cb url
-fv taskForm input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.cls
+fv taskForm input.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls
 submit
 code 200
 notfind Exception
 notfind stderr.txt
-find all_aml_train.cvt.cls
+find ftp://ftp.broad.mit.edu/pub/genepat...tasets/all_aml/all_aml_train.cls
+
+go /gp/pages/index.jsf?lsid=ConvertLineEndings
+fv taskForm input.filename_cb file
+formfile taskForm input.filename all_aml_test.cls
+submit
+code 200
+notfind Exception
+notfind stderr.txt
+find all_aml_test.cls
+
+go /gp/pages/index.jsf?lsid=ConvertLineEndings
+fv taskForm input.filename_cb file
+formfile taskForm input.filename all_aml_test.cls
+submit
+code 200
+notfind Exception
+notfind stderr.txt
+find all_aml_test.cls
+
+go /gp/pages/index.jsf?lsid=ConvertLineEndings
+fv taskForm input.filename_cb file
+formfile taskForm input.filename all_aml_test.cls
+submit
+code 200
+notfind Exception
+notfind stderr.txt
+find all_aml_test.cls
+
+go /gp/pages/index.jsf?lsid=ConvertLineEndings
+fv taskForm input.filename_cb file
+formfile taskForm input.filename all_aml_test.cls
+submit
+code 200
+notfind Exception
+notfind stderr.txt
+find all_aml_test.cls
+
+
+

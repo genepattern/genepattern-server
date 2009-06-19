@@ -50,7 +50,7 @@ public class ForgotPasswordBean {
 
         Properties p = new Properties();
         String mailServer = System.getProperty("smtp.server",
-                "imap.broad.mit.edu");
+                "imap.broadinstitute.org");
         p.put("mail.host", mailServer);
         Session mailSession = Session.getDefaultInstance(p, null);
         mailSession.setDebug(false);

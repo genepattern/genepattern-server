@@ -57,7 +57,7 @@
 	    servername <- "http://localhost:8080"
         ## obtain a GPServer object
 	    gp.server <- gp.login(servername, username, password)
-	    input.ds <- "ftp://ftp.broad.mit.edu/pub/genepattern/all_aml/all_aml_train.res"
+	    input.ds <- "ftp://ftp.broadinstitute.org/pub/genepattern/all_aml/all_aml_train.res"
         ## run the TransposeDataset analysis on the GenePattern server
    	    job.number <- run.analysis.no.wait(gp.server, "TransposeDataset", input.filename=input.ds)
     }
@@ -66,7 +66,7 @@
 \references
 {
 	GenePattern home: \url{http://www.broadinstitute.org/cancer/software/genepattern/}
-	GenePattern help: \email{gp-help@broad.mit.edu}
+	GenePattern help: \email{gp-help@broadinstitute.org}
 }
 
 \keyword{genepattern, programming}

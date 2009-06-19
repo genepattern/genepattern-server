@@ -2,7 +2,7 @@
 go /gp/pages/index.jsf?lsid=PreprocessDataset
 url /gp/pages/index.jsf
 fv taskForm input.filename_cb url
-fv taskForm input.filename_url ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_train.res
+fv taskForm input.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.res
 submit
 code 200
 url /gp/pages/jobResult.jsf
@@ -11,8 +11,8 @@ find 'all_aml_train.preprocessed.res'
 run "mod_output = get_browser().find_link('all_aml_train.preprocessed.res')"
 # echo $mod_output.url, e.g. jobResults/11656/all_aml_train.preprocessed.res
 # echo $mod_output.text, e.g. all_aml_train.preprocessed.res
-# echo http://genepattern.broad.mit.edu/gp/${mod_output.url}, 
-#   e.g. http://genepattern.broad.mit.edu/gp/jobResults/11656/all_aml_train.preprocessed.res
+# echo http://genepattern.broadinstitute.org/gp/${mod_output.url}, 
+#   e.g. http://genepattern.broadinstitute.org/gp/jobResults/11656/all_aml_train.preprocessed.res
 
 # Step 2: Hierarchical Clustering
 go /gp/pages/index.jsf?lsid=HierarchicalClustering

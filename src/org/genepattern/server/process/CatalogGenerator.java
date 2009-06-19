@@ -174,14 +174,14 @@ public class CatalogGenerator {
      * for a particular module (directory) write the catalog XML to the writer e.g.
      * 
      * <site_module name="ClassNeighbors" zipfilesize="642025" timestamp="1103748609"
-     * url="ftp://ftp.broad.mit.edu/pub/genepattern/modules/ClassNeighbors/broad.mit.edu:cancer.software.genepattern.module.analysis/1/ClassNeighbors.zip"
-     * sitename="ftp://ftp.broad.mit.edu/pub/genepattern/modules" isexternal="false"> <support_file
-     * url="ftp://ftp.broad.mit.edu/pub/genepattern/modules/ClassNeighbors/broad.mit.edu:cancer.software.genepattern.module.analysis/1/ClassNeighbors.pdf">ClassNeighbors.pdf</support_file >
+     * url="ftp://ftp.broadinstitute.org/pub/genepattern/modules/ClassNeighbors/broadinstitute.org:cancer.software.genepattern.module.analysis/1/ClassNeighbors.zip"
+     * sitename="ftp://ftp.broadinstitute.org/pub/genepattern/modules" isexternal="false"> <support_file
+     * url="ftp://ftp.broadinstitute.org/pub/genepattern/modules/ClassNeighbors/broadinstitute.org:cancer.software.genepattern.module.analysis/1/ClassNeighbors.pdf">ClassNeighbors.pdf</support_file >
      * <manifest>#Fri Nov 19 10:24:28 EST 2004 &#xA;p12_type=java.lang.Integer &#xA;p8_prefix_when_specified=
      * &#xA;p5_optional=
      * 
      * <support_file
-     * url="ftp://ftp.broad.mit.edu/pub/genepattern/modules/ClassNeighbors/broad.mit.edu:cancer.software.genepattern.module.analysis/1/trove.jar">trove.jar</support_file >
+     * url="ftp://ftp.broadinstitute.org/pub/genepattern/modules/ClassNeighbors/broadinstitute.org:cancer.software.genepattern.module.analysis/1/trove.jar">trove.jar</support_file >
      * </site_module >
      * 
      * @param dir

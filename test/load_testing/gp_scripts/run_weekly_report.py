@@ -8,7 +8,7 @@ from twill.commands import *
 # python run_report.py <url> <username> <password> <reportdate>
 #
 # e.g.
-# python run_report.py http://genepatterntest.broad.mit.edu:8080 ted <password> 071228
+# python run_report.py http://genepatterntest.broadinstitute.org:8080 ted <password> 071228
 #
 #
 

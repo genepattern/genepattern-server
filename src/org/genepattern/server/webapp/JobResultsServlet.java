@@ -77,7 +77,7 @@ import org.json.JSONObject;
  * follows the "jobResults" part in the url
  *
  *
- * reqURL: http://gp21e-789.broad.mit.edu:8080/gp/jobResults/92/foo.out
+ * reqURL: http://gp21e-789.broadinstitute.org:8080/gp/jobResults/92/foo.out
  * contextPath: /gp 
  * reqURI: /gp/jobResults/92/foo.out 
  * ServletPath: /jobResults/92/foo.out

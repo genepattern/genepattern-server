@@ -142,7 +142,7 @@ public class AnalysisDAOTest extends DAOTestCase {
         assertEquals("2006-06-12 10:24:26.232", children[0].getDateCompleted().toString());
         assertEquals("2006-06-12 10:24:19.293", children[0].getDateSubmitted().toString());
         assertTrue(children[0].getParameterInfo().contains("Mapping50K_Xba240.CDF"));
-        assertEquals("bweir@broad.mit.edu", children[0].getUserId());
+        assertEquals("bweir@broadinstitute.org", children[0].getUserId());
         assertEquals("urn:lsid:8080.genepatt.18.103.8.161:genepatternmodules:1:14.6", children[0].getTaskLSID());
 
     }

@@ -76,9 +76,14 @@ public class LSIDUtil {
             String lsidAuthority = lsid.getAuthority();
             if (lsidAuthority.equals(authority)) {
                 authorityType = AUTHORITY_MINE;
-            } else if (lsidAuthority.equals(BROAD_AUTHORITY)) {
+            } 
+            else if (lsidAuthority.equals(BROAD_AUTHORITY)) {
                 authorityType = AUTHORITY_BROAD;
-            } else {
+            } 
+            else if (lsidAuthority.equals("broadinstitute.org")) {
+                authorityType = AUTHORITY_BROAD;
+            }
+            else {
                 authorityType = AUTHORITY_FOREIGN;
             }
         }

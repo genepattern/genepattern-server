@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." name="ReportCron" default="runWeekly">
-    <property name="genepattern.url" value="http://genepatterntest.broad.mit.edu:8080" />
+    <property name="genepattern.url" value="http://genepatterntest.broadinstitute.org:8080" />
     <property name="genepattern.user" value="ted" />
     <property name="genepattern.p" value="q" />
 
@@ -69,16 +69,16 @@
         <java classname="GetReport" classpathref="library.classpath" dir="." fork="true">
 	    <arg value="week" />
 	    <arg value="User_Jobs_run.jrxml" />
-	    <arg value="http://gm970-e5c.broad.mit.edu:8080/gp" />
+	    <arg value="http://gm970-e5c.broadinstitute.org:8080/gp" />
 	    <arg value="ted"/>
 	    <arg value="q"/>
 	</java>
     </target>
 
     <target name="mailReport">
-        <mail from="gp-dev@broad.mit.edu" 
-              mailhost="smtp.broad.mit.edu"
-              tolist="liefeld@broad.mit.edu,michaelr@broad.mit.edu,helga@broad.mit.edu,pcarr@broad.mit.edu"
+        <mail from="gp-dev@broadinstitute.org" 
+              mailhost="smtp.broadinstitute.org"
+              tolist="liefeld@broadinstitute.org,michaelr@broadinstitute.org,helga@broadinstitute.org,pcarr@broadinstitute.org"
               message="GenePattern Server Report generated at ${REPORT_INIT_TIME}" 
               subject="GenePattern Server Report ${REPORT_INIT_TIME}">
         <fileset dir="${report.out.dir}">

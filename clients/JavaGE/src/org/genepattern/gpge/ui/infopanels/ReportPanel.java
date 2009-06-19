@@ -275,9 +275,9 @@ public class ReportPanel extends javax.swing.JPanel {
     /** the buffer where the messages are kept */
     private StringBuffer buffer;
 
-    private static String DEFAULT_MAIL_HOST = "imap.broad.mit.edu";
+    private static String DEFAULT_MAIL_HOST = "imap.broadinstitute.org";
 
-    private static String DEFAULT_MAIL_HELP_ADDRESS = "gp-help@broad.mit.edu";
+    private static String DEFAULT_MAIL_HELP_ADDRESS = "gp-help@broadinstitute.org";
 
     private static String DEFAULT_MAIL_RETURN_ADDRESS = "anonymous@genepatternusers.org";
 }

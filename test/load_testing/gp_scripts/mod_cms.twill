@@ -3,7 +3,7 @@
 # depends on login.twill
 #
 
-go /gp/pages/index.jsf?lsid=ComparativeMarkerSelection&input.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct&cls.file=ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.cls
+go /gp/pages/index.jsf?lsid=ComparativeMarkerSelection&input.file=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct&cls.file=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls
 submit cmd 4
 
 #go /gp/pages/index.jsf?lsid=ComparativeMarkerSelection

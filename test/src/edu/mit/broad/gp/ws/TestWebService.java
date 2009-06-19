@@ -34,10 +34,10 @@ public abstract class TestWebService extends TestCase {
    protected TaskIntegratorProxy taskIntegratorProxy;
    protected GPClient gpClient;
    
-   protected final static Task PREPROCESS_ZERO = new Task("PreprocessDataset", "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:0");
+   protected final static Task PREPROCESS_ZERO = new Task("PreprocessDataset", "urn:lsid:broadinstitute.org:cancer.software.genepattern.module.analysis:00020:0");
    protected final static String[] PREPROCESS_ZERO_FILE_NAMES = {"broad-cg.jar", "jakarta-oro-2.0.8.jar", "Jama-1.0.1.jar", "Preprocess.jar", "PreprocessDataset.pdf", "trove.jar"};
 
-   protected final static Task PREPROCESS_ONE = new Task("PreprocessDataset", "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00020:1");
+   protected final static Task PREPROCESS_ONE = new Task("PreprocessDataset", "urn:lsid:broadinstitute.org:cancer.software.genepattern.module.analysis:00020:1");
 
    protected final static File BASE_FILE_DIR = new File("files");
 
@@ -163,7 +163,7 @@ public abstract class TestWebService extends TestCase {
       String name, lsid;
       File file;
       boolean zipOfZips = false;
-      private final static String BASE_FTP_URL = "ftp://ftp.broad.mit.edu/pub/genepattern/modules/";
+      private final static String BASE_FTP_URL = "ftp://ftp.broadinstitute.org/pub/genepattern/modules/";
 
 
       Task(File zipFile) {
@@ -200,7 +200,7 @@ public abstract class TestWebService extends TestCase {
          try {
             LSID _lsid = new LSID(lsid);
 
-            return BASE_FTP_URL + name + "/broad.mit.edu%3Acancer.software.genepattern.module.analysis/" + _lsid.getVersion() + "/" + name + ".zip";
+            return BASE_FTP_URL + name + "/broadinstitute.org%3Acancer.software.genepattern.module.analysis/" + _lsid.getVersion() + "/" + name + ".zip";
          } catch(Exception e) {
             e.printStackTrace();
          }
