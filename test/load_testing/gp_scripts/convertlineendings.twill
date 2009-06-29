@@ -8,6 +8,3 @@ fv taskForm input.filename_cb url
 fv taskForm input.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_train.cls
 submit
 code 200
-notfind Exception
-notfind stderr.txt
-find all_aml_train.cvt.cls
