@@ -283,7 +283,7 @@ public class JobInfoWrapper implements Serializable {
          * @param value
          */
         private void initLinkValue( int jobNumber, String contextPath, String value ) {  
-            //A. External link, e.g. ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+            //A. External link, e.g. ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
 
             //B. Internal links
             //   1. to file uploaded from web client in previous job, then reloaded for new job
@@ -293,8 +293,8 @@ public class JobInfoWrapper implements Serializable {
             //   3. to output from previous job
             //      http://127.0.0.1:8080/gp/jobResults/3182/all_aml_test.preprocessed.gct
             //   4. to file uploaded when creating a pipeline, e.g.
-            //      <GenePatternURL>getFile.jsp?task=urn%3Alsid%3A8080.pcarr.gm971-3d7.broad.mit.edu%3Agenepatternmodules%3A127%3A9&file=all_aml_test.gct
-            //      http://127.0.0.1:8080/gp/getFile.jsp?task=urn%3Alsid%3A8080.pcarr.gm971-3d7.broad.mit.edu%3Agenepatternmodules%3A127%3A9&file=all_aml_test.gct
+            //      <GenePatternURL>getFile.jsp?task=urn%3Alsid%3A8080.pcarr.gm971-3d7.broadinstitute.org%3Agenepatternmodules%3A127%3A9&file=all_aml_test.gct
+            //      http://127.0.0.1:8080/gp/getFile.jsp?task=urn%3Alsid%3A8080.pcarr.gm971-3d7.broadinstitute.org%3Agenepatternmodules%3A127%3A9&file=all_aml_test.gct
             
             //C. Server file path
             //   1. uploaded from web client,
@@ -819,9 +819,23 @@ public class JobInfoWrapper implements Serializable {
         children.add(jobInfoWrapper);
     }
     
+    public List<JobInfoWrapper> getAllStepsIncludingRoot() {
+        if (jobInfo == null) {
+            return new ArrayList<JobInfoWrapper>();
+        }
+        List<JobInfoWrapper> allInclusive =  getAllSteps(this,true);
+
+        int total = 1 + this.getNumStepsInPipelineRecursive();
+        int K = total - allInclusive.size();
+        for(int i=0; i<K; ++i) {
+            allInclusive.add((JobInfoWrapper)null);
+        }
+        return allInclusive;
+    }
+    
     /**
      * If this is a pipeline, get all of the steps in the pipeline.
-     * Does not include the root job.
+     * By default, does not include the root job.
      * @return
      */
     public List<JobInfoWrapper> getAllSteps() {
@@ -832,9 +846,13 @@ public class JobInfoWrapper implements Serializable {
     }
     
     private List<JobInfoWrapper> getAllSteps(JobInfoWrapper parent) {
+        return getAllSteps(parent, false);
+    }
+    
+    private List<JobInfoWrapper> getAllSteps(JobInfoWrapper parent, boolean includeRoot) {
         List<JobInfoWrapper> all = new ArrayList<JobInfoWrapper>();
-        //don't include the root job
-        if (!parent.isRoot()) {
+        //unless requested, don't include the root job
+        if (includeRoot || !parent.isRoot()) {
             all.add(parent);
         }
         for (JobInfoWrapper child : parent.children) {
@@ -1032,7 +1050,6 @@ public class JobInfoWrapper implements Serializable {
         for(JobSubmission jobSubmission : pm.getTasks()) {
             TaskInfo ti = jobSubmission.getTaskInfo();
             if (ti.isPipeline()) {
-                total -= 1;
                 PipelineModel sub = this.getPipelineModel(ti);
                 total += getNumStepsInPipelineRecursive(sub);
             }

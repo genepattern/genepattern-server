@@ -2,9 +2,12 @@ package org.genepattern.server.webapp.jsf.jobinfo;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.faces.event.ActionEvent;
+import javax.faces.event.PhaseId;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoWrapper;
@@ -61,7 +64,6 @@ public class VisualizerStatusBean implements Serializable {
         }
     }
     
-
     private JobInfoWrapper jobInfo = null;
     private boolean openVisualizers = false;
     
@@ -80,6 +82,10 @@ public class VisualizerStatusBean implements Serializable {
             log.error("VisualizerStatusBean.setJobInfo: null");
             return;
         }
+        
+        this.enablePoll = !jobInfo.isFinished();
+        this.dontUpdate = jobInfo.isFinished();
+        
         for(int i=0; i<this.jobInfo.getNumVisualizers(); ++i) {
             visObjs.add(new Obj(""+i, null));
         }
@@ -154,11 +160,18 @@ public class VisualizerStatusBean implements Serializable {
         }
     }
     
+    private boolean dontUpdate = false;
+    private boolean enablePoll = false;
+    public boolean isEnablePoll() {
+        return enablePoll;
+    }
+
     public void updateAjaxPoll(ActionEvent actionEvent) {
         try {
             JobStatusBean jobStatusBean = (JobStatusBean) UIBeanHelper.getManagedBean("#{jobStatusBean}");
             if (jobStatusBean != null) {
                 this.jobInfo = jobStatusBean.getJobInfo();
+                this.enablePoll = !this.jobInfo.isFinished();
             }
         }
         catch (Exception e) {
@@ -168,6 +181,69 @@ public class VisualizerStatusBean implements Serializable {
         if (this.jobInfo != null) {
             updateVisualizerFlags();
         }
+        
+        //test support for ajaxRendered ...
+        PhaseId id = actionEvent.getPhaseId();
+        if (PhaseId.RENDER_RESPONSE.equals(id)) {
+            log.debug("about to render response ...");
+            //TODO: keep track of ajaxKeys here
+        }
     }
+
+    //add support for ajax reRendering of other items, not just visualizers
+    /**
+     * rerender steps which have not yet started (could be null JobInfoWrapper) or that have not yet completed.
+     * @return
+     */
+    public Set<Integer> getAjaxKeys() {
+        Set<Integer> keys = new HashSet<Integer>();
+        List<JobInfoWrapper> allStepsPlusRoot = jobInfo.getAllStepsIncludingRoot();
+        
+        int idx = 0;
+        for(JobInfoWrapper step : allStepsPlusRoot) {
+            keys.add(idx);
+//            if (step == null) {
+//                keys.add(idx);
+//            }
+//            else if (!step.isFinished()) {
+//                keys.add(idx);
+//            }
+            ++idx;
+        }
+        return keys;
+    }
+    
+    private Set<Integer> ajaxKeysPrevUpdate = new HashSet<Integer>();
+    private void initAjaxKeys() {
+        List<JobInfoWrapper> allStepsPlusRoot = jobInfo.getAllStepsIncludingRoot();
+        int idx = 0;
+        for(JobInfoWrapper step : allStepsPlusRoot) {
+            if (step != null && step.isFinished()) {
+                
+            }
+            else {
+                ajaxKeysPrevUpdate.add(idx);
+            }
+            ++idx;
+        }
+    }
+    private void updateAjaxKeys() {
+        
+    }
+    
+    private Set<Integer> stepsToUpdate = new HashSet<Integer>();
+    private Set<Integer> finishedDuringLastRound = new HashSet<Integer>();
+//    private void updateStepsToUpdate() {
+//        if (dontUpdate) {
+//            return;
+//        }
+//        stepsToUpdate //TODO: implement this method
+//        //if the initial status of the job was complete, then don't update anything
+//        //otherwise, anything that is still running is on the list,
+//        //    also, the first time a step is finished it is on the list
+//        
+//    }
+
+    
     
 }
