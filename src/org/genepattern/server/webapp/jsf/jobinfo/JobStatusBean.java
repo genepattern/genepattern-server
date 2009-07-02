@@ -14,7 +14,9 @@ package org.genepattern.server.webapp.jsf.jobinfo;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletRequest;
@@ -47,7 +49,7 @@ public class JobStatusBean {
 
     //track the list of automatically opened visualizers
     //private List<Integer> runningVisualizers = new ArrayList<Integer>();
-    //private Map<Integer,String> visualizerStatus = new HashMap<Integer,String>();
+    private Map<Integer,String> visualizerStatus = new HashMap<Integer,String>();
     
     public JobStatusBean() {
       init();
@@ -108,7 +110,15 @@ public class JobStatusBean {
             catch (IOException e) {
                 log.error("Error sending redirect: "+e.getMessage(), e);
             }
-        } 
+        }
+        
+        //special-case for visualizers
+        visualizerStatus = new HashMap<Integer,String>(); 
+        for(JobInfoWrapper step : jobInfoWrapper.getAllSteps()) {
+            if (step.isVisualizer()) {
+                visualizerStatus.put(step.getJobNumber(), "PING");
+            }
+        }
     }
     
     public JobInfoWrapper getJobInfo() {
@@ -124,11 +134,12 @@ public class JobStatusBean {
 	}
 
     /**
-     * @return the top level job info, including all steps if it is a pipeline, including null steps if they haven't been initialized yet.
+     * @return the top level job info, including all steps if it is a pipeline.
      */
     public List<JobInfoWrapper> getAllSteps() {
         if (allSteps == null) {
-            allSteps = jobInfoWrapper.getAllStepsIncludingRoot();
+            allSteps = jobInfoWrapper.getAllSteps();
+            allSteps.add(0, jobInfoWrapper);
         }
         return allSteps;
     }
