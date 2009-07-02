@@ -221,7 +221,7 @@ public class RunR {
 			}
 		    }
 		    if (!skip) {
-			os.print(line);
+			os.println(line);
 		    }
 
 		}
