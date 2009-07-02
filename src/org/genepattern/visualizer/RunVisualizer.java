@@ -488,13 +488,13 @@ public class RunVisualizer {
 	}
 
 	if (baseName.indexOf("retrieveResults.jsp") != -1 && (j = file.lastIndexOf("filename=")) != -1) { // for
-	    // http://servername:8080/gp/retrieveResults.jsp?job=1122&filename=all_aml_wv_xval.odf
+	    // http://18.103.3.29:8080/gp/retrieveResults.jsp?job=1122&filename=all_aml_wv_xval.odf
 	    String temp = decode(file.substring(j + "filename=".length(), file.length()));
 	    return new java.util.StringTokenizer(temp, "&").nextToken();
 	}
 
 	if (baseName.indexOf("getFile.jsp") != -1 && (j = file.lastIndexOf("file=")) != -1) { // for
-	    // http://servername:8080/gp/getFile.jsp?task=try.SOMClusterViewer.pipeline&file=ten.res
+	    // http://cmec5-ea2.broad.mit.edu:8080/gp/getFile.jsp?task=try.SOMClusterViewer.pipeline&file=ten.res
 
 	    String temp = decode(file.substring(j + "file=".length(), file.length()));
 
