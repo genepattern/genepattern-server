@@ -41,8 +41,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.domain.BatchJob;
-import org.genepattern.server.domain.BatchJobDAO;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserPropKey;
@@ -578,26 +576,17 @@ public class JobBean {
             String selectedGroup = jobResultsFilterBean.getSelectedGroup();
             Set<String> selectedGroups = jobResultsFilterBean.getSelectedGroups();
             boolean showEveryonesJobs = jobResultsFilterBean.isShowEveryonesJobs();
-            
-            boolean filterOnBatch = false;            
-            if (selectedGroup != null && selectedGroup.startsWith(BatchJob.BATCH_KEY)){
-            	filterOnBatch = true;
-            }
-            
+
+            LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
             try {
                 JobInfo[] jobInfos = new JobInfo[0];
-                if (filterOnBatch ){
-                	jobInfos = new BatchJobDAO().getBatchJobs(userId, selectedGroup, maxJobNumber, maxEntries, getJobSortOrder(), jobSortAscending);
-                }else{
-                	LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);                     
-	                if (selectedGroup != null) {
-	                    jobInfos = 
-	                        analysisClient.getJobsInGroup(selectedGroups, maxJobNumber, maxEntries, false, getJobSortOrder(), jobSortAscending);
-	                }
-	                else {
-	                    jobInfos = 
-	                        analysisClient.getJobs(showEveryonesJobs ? null : userId, maxJobNumber, maxEntries, false, getJobSortOrder(), jobSortAscending);
-	                }
+                if (selectedGroup != null) {
+                    jobInfos = 
+                        analysisClient.getJobsInGroup(selectedGroups, maxJobNumber, maxEntries, false, getJobSortOrder(), jobSortAscending);
+                }
+                else {
+                    jobInfos = 
+                        analysisClient.getJobs(showEveryonesJobs ? null : userId, maxJobNumber, maxEntries, false, getJobSortOrder(), jobSortAscending);
                 }
                 allJobs = wrapJobs( jobInfos );
                 sortFiles();
