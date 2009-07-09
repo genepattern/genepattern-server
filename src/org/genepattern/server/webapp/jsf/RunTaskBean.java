@@ -13,8 +13,10 @@
 package org.genepattern.server.webapp.jsf;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -346,7 +348,20 @@ public class RunTaskBean {
                             } 
                             catch (MalformedURLException mfe) {
                                 File file = new File(value);
-                                value = UIBeanHelper.getServer() + "/getFile.jsp?task=&job="+reloadJobNumber+"&file="+ file.getParentFile().getName() + "/" + file.getName();
+                                //GP-2790: URLEncode input file names before adding to input form
+                                String fileParam = "";
+                                try {
+                                    fileParam = 
+                                        URLEncoder.encode(file.getParentFile().getName(), "UTF-8") 
+                                        + "/" 
+                                        + URLEncoder.encode(file.getName(), "UTF-8");
+                                }
+                                catch (UnsupportedEncodingException e) {
+                                    log.error("Can't URLEncode inputFile: "+fileParam, e);
+                                    fileParam = file.getParentFile().getName() + "/" + file.getName();
+                                    fileParam = fileParam.replace(' ', '+');
+                                }
+                                value = UIBeanHelper.getServer() + "/getFile.jsp?task=&job="+reloadJobNumber+"&file="+ fileParam;
                             }
                         }
                         reloadValues.put(reloadParams[i].getName(), value);
