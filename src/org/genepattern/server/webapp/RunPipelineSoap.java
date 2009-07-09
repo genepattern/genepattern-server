@@ -634,6 +634,15 @@ public class RunPipelineSoap {
 
 	    String pipelineFileName = args[0];
 	    String userId = args[1];
+	    //special-case: @see JIRA Ticket: GP-GP-2789, strip out quote characters for username which contain space characters
+	    if (userId != null && userId.contains(" ")) {
+	        if (userId.startsWith("\"") || userId.startsWith("'")) {
+	            userId = userId.substring(1);
+	        }
+	        if (userId.endsWith("\"") || userId.endsWith("'")) {
+	            userId = userId.substring(0, userId.length() - 1);
+	        }
+	    }
 	    System.setProperty("userId", userId);
 	    userKey = System.getProperty(EncryptionUtil.PROP_PIPELINE_USER_KEY, null);
 	    if (userKey == null) {
