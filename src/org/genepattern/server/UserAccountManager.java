@@ -106,7 +106,7 @@ public class UserAccountManager {
      * @param username
      * @throws AuthenticationException if the username is not valid
      */
-    public void validateUsername(String username) throws AuthenticationException {
+    static public void validateUsername(String username) throws AuthenticationException {
         if (username == null) {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
                     "Username is null");
@@ -122,6 +122,26 @@ public class UserAccountManager {
         if (username.contains(File.separator)) {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME, 
                     "Invalid username: '"+username+"': Can't contain a file separator ('"+File.separator+"') character.");
+        }
+        if (username.startsWith("\"")) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
+                    "Invalid username: '"+username+"': Can't begin with a quote ('\"') character.");
+        }
+        if (username.endsWith("\"")) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
+                    "Invalid username: '"+username+"': Can't end with a quote ('\"') character.");
+        }
+        if (username.startsWith("\'")) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
+                    "Invalid username: '"+username+"': Can't begin with a quote (') character.");
+        }
+        if (username.endsWith("\'")) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
+                    "Invalid username: '"+username+"': Can't end with a quote (') character.");
+        }
+        if (username.contains("\t")) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
+                    "Invalid username: '"+username+"': Can't end contain a TAB character.");
         }
     }
 
