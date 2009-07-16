@@ -11,3 +11,11 @@ updating HTML package descriptions
   'openVignette()'
   'citation("Biobase")'
 Creating a new generic function
+Note: removing empty section \seealso
+Note: ignoring empty \keyword entries
+Note: removing empty section \examples
+Loading Tcl/Tk interface ... Warning in fun(...) : no DISPLAY variable so Tk is not available
+KernSmooth 2.22 installed
+Copyright M. P. Wand 1997
+Note: removing empty section \details
+done
