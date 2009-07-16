@@ -19,3 +19,5 @@ KernSmooth 2.22 installed
 Copyright M. P. Wand 1997
 Note: removing empty section \details
 done
+Note: unmatched right brace in file 'density.Rd' on or after line 24
+Note: unmatched right brace in file 'estepE.Rd' on or after line 104
