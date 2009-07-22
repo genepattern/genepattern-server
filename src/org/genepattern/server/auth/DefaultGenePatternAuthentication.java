@@ -37,6 +37,9 @@ public class DefaultGenePatternAuthentication implements IAuthenticationPlugin {
     public String authenticate(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         String gp_username = request.getParameter("username");
         String passwordString = request.getParameter("password");
+        if (passwordString == null) {
+            passwordString = request.getParameter("loginForm:password");
+        }
         byte[] password = null;
         if (passwordString != null) {
             password = passwordString.getBytes();
