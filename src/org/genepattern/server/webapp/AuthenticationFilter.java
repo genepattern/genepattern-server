@@ -108,7 +108,13 @@ public class AuthenticationFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         boolean redirectToOrigin = request.getParameter("origin") != null;
-       
+
+        if (log.isDebugEnabled()) {
+            String method = request.getMethod();
+            String requestURI = request.getRequestURI();
+            log.debug(method + " " + requestURI);
+        }
+        
         if (isAuthenticated(request)) {
             if (isRedirectRequired(request)) {
                 if (!redirectToOrigin) {
