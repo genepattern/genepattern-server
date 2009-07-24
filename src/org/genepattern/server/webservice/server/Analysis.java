@@ -33,6 +33,7 @@ import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.domain.AnalysisJobDAO;
+import org.genepattern.server.domain.BatchJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
@@ -158,12 +159,17 @@ public class Analysis extends GenericWebService {
 	    AnalysisJobDAO aHome = new AnalysisJobDAO();
 	    org.genepattern.server.domain.AnalysisJob aJob = aHome.findById(jobId);
 	    aJob.setDeleted(true);
-
+	    
+	  
 	    AnalysisDAO ds = new AnalysisDAO();
 	    JobInfo[] children = ds.getChildren(jobId);
 	    for (int i = 0; i < children.length; i++) {
 		deleteJob(children[i].getJobNumber());
 	    }
+	    
+	    BatchJobDAO batchJob = new BatchJobDAO();
+	    batchJob.markDeletedIfLastJobDeleted(jobId);
+
 	} catch (Exception e) {
 	    throw new WebServiceException(e);
 	}
