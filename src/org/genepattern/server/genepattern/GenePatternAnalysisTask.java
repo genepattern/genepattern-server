@@ -675,7 +675,7 @@ public class GenePatternAnalysisTask {
 	                    }
 	                } 
 	                else if (mode.equals(ParameterInfo.INPUT_MODE)) {
-	                    log.error("IN " + params[i].getName() + "=" + originalPath);
+	                    log.debug("IN " + params[i].getName() + "=" + originalPath);
 	                    //web form upload: <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>
 	                    //SOAP client upload: <soap.attachment.dir>/<user_id>/<filename>
                         Boolean isWebUpload = null;
