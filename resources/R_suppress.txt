@@ -21,3 +21,7 @@ Note: removing empty section \details
 done
 Note: unmatched right brace in file 'density.Rd' on or after line 24
 Note: unmatched right brace in file 'estepE.Rd' on or after line 104
+Note: removing empty section \description
+Note: removing empty section \references
+Note: unmatched right brace in file 'normtensor.Rd' on or after line 44
+
