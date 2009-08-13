@@ -141,11 +141,52 @@ public class SemanticUtil {
         return kindToServices;
     }
 
+    protected static  HashMap<String, Collection<TaskInfo>> mapOfAllTasks = new HashMap<String, Collection<TaskInfo>>();
+    protected static HashSet loadedTasks = new HashSet<String>();
+  
     public static Map<String, Collection<TaskInfo>> getKindToModulesMap(TaskInfo[] tasks) {
         Map<String, Collection<TaskInfo>> map = new HashMap<String, Collection<TaskInfo>>();
-        for (TaskInfo task : tasks) {
-            addToInputTypeToModulesMap(map, task);
+        HashSet<TaskInfo> userTasks = new HashSet<TaskInfo>();
+        for (TaskInfo ti: tasks){
+            userTasks.add(ti);
         }
+        /*
+         * first make sure we have this task already in the complete list
+         */
+        for (TaskInfo task : tasks) {
+            if (loadedTasks.contains(task.getLsid())){
+                // already have it loaded
+            } else {
+                addToInputTypeToModulesMap(mapOfAllTasks, task);
+                loadedTasks.add(task.getLsid());
+            }
+        }
+        
+        /*
+         * Now filter the list to return just those that this user can see (that were provided in the input
+         * collection)
+         */
+        for (String type: mapOfAllTasks.keySet()){
+            Collection<TaskInfo>  allModulesForInputType = mapOfAllTasks.get(type);
+            Collection<TaskInfo> modules = new HashSet<TaskInfo>();
+            for (TaskInfo task: allModulesForInputType){
+                /* if this taskinfo is in the input array we use it */
+                
+                try {
+                if (task != null){
+                    if (userTasks.contains(task)) modules.add(task);
+                }
+                } catch (Exception e){
+                    System.out.println("error on task " + task.getName());
+                }
+            }
+            if (modules.size()> 0){
+                map.put(type, modules);
+            }
+        }
+        
+        
+        
         return map;
     }
 
@@ -178,7 +219,7 @@ public class SemanticUtil {
                     while (st.hasMoreTokens()) {
                         String type = st.nextToken();
                         Collection<TaskInfo> modules = map.get(type);
-                        if (modules == null) {
+                        if ((modules == null) && (type != null)) {
                             modules = new HashSet<TaskInfo>();
                             map.put(type, modules);
                         }
