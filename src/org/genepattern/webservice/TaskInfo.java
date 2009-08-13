@@ -225,6 +225,7 @@ public class TaskInfo implements Serializable {
     }
 
     public boolean equals(Object otherThing) {
+        if (otherThing == null) return false;
         if (!(otherThing instanceof TaskInfo)) return false;
         TaskInfo other = (TaskInfo) otherThing;
         return getUserId().equals(other.getUserId())
