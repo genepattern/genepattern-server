@@ -87,6 +87,10 @@ public class GPClient {
      *                 If an error occurs while connecting to the server
      */
     public GPClient(String server, String username, String password) throws WebServiceException {
+        if (server != null && server.endsWith("/")) {
+            //if necessary, remove the trailing slash, because the job downloader expects the trailing slash removed
+            server = server.substring(0, server.length() - 1);
+        }
 	this.server = server;
 	this.username = username;
 	this.password = password;

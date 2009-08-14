@@ -84,8 +84,14 @@ public class LoginHttpClient {
 
     /**
      * @param the hostname and port of the GenePattern Server, e.g. <pre>http://localhost:8080</pre>.
+     *     Trailing slash character is removed from the url.
      */
     public void setServerUrl(String url) {
+        if (url != null && url.endsWith("/")) {
+            log.error("Invalid input to LoginHttpClient.setServerUrl: "+url);
+            log.error("Trailing slash ignored");
+            url = url.substring(0, url.length() - 1);
+        }
         this.serverUrl = url;
     }
     
