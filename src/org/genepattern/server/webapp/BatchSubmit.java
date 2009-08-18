@@ -46,7 +46,7 @@ public class BatchSubmit  {
 	private boolean listSizesMatch = true;
 	private boolean matchedFiles = true;
 	private Integer id;
-    List<ParameterInfo> missingParameters = new ArrayList<ParameterInfo>();
+   List<ParameterInfo> missingParameters = new ArrayList<ParameterInfo>();
 	//Collect input parameters.  
 	//Find multi-file input file parameters
 	//Validate that only one file parameter has multiple files
@@ -63,7 +63,7 @@ public class BatchSubmit  {
 	}
 	
 	public void submitJobs() throws UnsupportedEncodingException, WebServiceException {
-    	isBatch = false;
+   	isBatch = false;
 
 		//Look up the task name, stored in a hidden field
 		String taskLsid = formValues.get("taskLSID");
@@ -83,77 +83,77 @@ public class BatchSubmit  {
 	    	return;
 	    }
 		
-        
-    	LocalAnalysisClient analysisClient = new LocalAnalysisClient(userName);                  
-        //Now try and match the parameters to the form fields we've just read     
-        for (int i = 0; i < parameterInfoArray.length; i++) {
-            ParameterInfo pinfo = parameterInfoArray[i];
-            String value;
-            
-            value = formValues.get(pinfo.getName());            
-            if (value != null){
-            	pinfo.setValue(value);
-            }else{
-            	//Perhaps, this form value has been submitted as a url
-            	value = formValues.get(pinfo.getName()+"_url");
-            	if (value != null){            		     
+
+   	LocalAnalysisClient analysisClient = new LocalAnalysisClient(userName);                  
+       //Now try and match the parameters to the form fields we've just read     
+       for (int i = 0; i < parameterInfoArray.length; i++) {
+           ParameterInfo pinfo = parameterInfoArray[i];
+           String value;
+
+           value = formValues.get(pinfo.getName());            
+           if (value != null){
+           	pinfo.setValue(value);
+           }else{
+           	//Perhaps, this form value has been submitted as a url
+           	value = formValues.get(pinfo.getName()+"_url");
+           	if (value != null){            		     
 					pinfo.getAttributes().put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
 					pinfo.getAttributes().remove(ParameterInfo.TYPE);	
 					pinfo.setValue(value);
-            	}
-            }
-            
-            //Was this value required?
-            if ((value == null) || (value.trim().length() == 0)) {            
-            	//Is it going to be filled in by our multi file submit process
-            	if (multiFileValues.get(pinfo.getName()+"_url") == null){
-            		boolean isOptional = ((String) pinfo.getAttributes()
-            				.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]))
-            				.length() > 0;
-            				if (!isOptional) {
-            					missingParameters.add(pinfo);
-            				}
-            	}
-            }            
-        }
-        
-        if (missingParameters.size() > 0){
-        	log.warn("Missing required parameters");
-        	return;
-        }
-        
-        if (!multiFileListsAreSameSize()){
-        	listSizesMatch = false;
-        	return;
-        }
-        if (!checkForMatchedParameters()){
-        	matchedFiles = false;
-        	return;
-        }
-        //Now, submit the job if there's no multi-file field
-        //Or, submit multiple jobs for each filename in the multi-file field
-    	if (multiFileValues.size() == 0){
-    		JobInfo job = analysisClient.submitJob(taskInfo.getID(), parameterInfoArray);		
-    		id = job.getJobNumber();    		
-        }else {        	
-        	BatchJob batchJob = new BatchJob(userName);
-        
-        	
-        	int numFiles = multiFileValues.values().iterator().next().getNumFiles();
-        	for (int i=0; i < numFiles; i++){
-        		for (String parameter: multiFileValues.keySet()){
-        			String parameterValue = multiFileValues.get(parameter).getFilenames().get(i).fullPath();
-        			assignParameter(undecorate(parameter), parameterValue, parameterInfoArray);
-        		}
-    			JobInfo job = analysisClient.submitJob(taskInfo.getID(), parameterInfoArray);					
+           	}
+           }
+
+           //Was this value required?
+           if ((value == null) || (value.trim().length() == 0)) {            
+           	//Is it going to be filled in by our multi file submit process
+           	if (multiFileValues.get(pinfo.getName()+"_url") == null){
+           		boolean isOptional = ((String) pinfo.getAttributes()
+           				.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]))
+           				.length() > 0;
+           				if (!isOptional) {
+           					missingParameters.add(pinfo);
+           				}
+           	}
+           }            
+       }
+
+       if (missingParameters.size() > 0){
+       	log.warn("Missing required parameters");
+       	return;
+       }
+
+       if (!multiFileListsAreSameSize()){
+       	listSizesMatch = false;
+       	return;
+       }
+       if (!checkForMatchedParameters()){
+       	matchedFiles = false;
+       	return;
+       }
+       //Now, submit the job if there's no multi-file field
+       //Or, submit multiple jobs for each filename in the multi-file field
+   	if (multiFileValues.size() == 0){
+   		JobInfo job = analysisClient.submitJob(taskInfo.getID(), parameterInfoArray);		
+   		id = job.getJobNumber();    		
+       }else {        	
+       	BatchJob batchJob = new BatchJob(userName);
+
+       	
+       	int numFiles = multiFileValues.values().iterator().next().getNumFiles();
+       	for (int i=0; i < numFiles; i++){
+       		for (String parameter: multiFileValues.keySet()){
+       			String parameterValue = multiFileValues.get(parameter).getFilenames().get(i).fullPath();
+       			assignParameter(undecorate(parameter), parameterValue, parameterInfoArray);
+       		}
+   			JobInfo job = analysisClient.submitJob(taskInfo.getID(), parameterInfoArray);					
 				batchJob.getBatchJobs().add(new AnalysisJobDAO().findById(job.getJobNumber()));	
-        	}        										
+       	}        										
 			new BatchJobDAO().save(batchJob);
 			
 			isBatch = true;
 			id = batchJob.getJobNo();
 		}
-     }
+    }
 
 	
 	//If the user uploaded multiple files for multiple parameters,
@@ -346,20 +346,16 @@ public class BatchSubmit  {
 	    fullPath = str;
 	  }
 
-	  public String extension() {
-	    int dot = fullPath.lastIndexOf(extensionSeparator);
-	    return fullPath.substring(dot + 1);
-	  }
-
 	  public String filename() { // gets filename without extension
 	    int dot = fullPath.lastIndexOf(extensionSeparator);
 	    int sep = fullPath.lastIndexOf(pathSeparator);
-	    return fullPath.substring(sep + 1, dot);
-	  }
-
-	  public String path() {
-	    int sep = fullPath.lastIndexOf(pathSeparator);
-	    return fullPath.substring(0, sep);
+	    if (dot > sep){
+	    	//file has an extension
+	    	return fullPath.substring(sep + 1, dot);
+	    }else{
+	    	//special case, no file extension
+	    	return fullPath.substring(sep+1);
+	    }
 	  }
 	  
 	  public String fullPath(){
