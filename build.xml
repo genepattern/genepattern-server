@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE project [
-        <!ENTITY release_targets SYSTEM "file:./releaseTargets.xml">
+        <!ENTITY release_targets SYSTEM "./releaseTargets.xml">
         ]>
 <project basedir="." default="targets" name="genepattern">
     <description>JAR deployment for genepattern</description>
