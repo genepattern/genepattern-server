@@ -212,6 +212,7 @@ public class StartupServlet extends HttpServlet {
         System.out.println("");
         System.out.println(stars);
         System.out.println(message);
+        System.out.println("\tJava Version: "+System.getProperty("java.version"));
         System.out.println(stars);
     }
 
