@@ -800,7 +800,7 @@ public class GenePatternAnalysisTask {
 	                        }
 	                    }
 	                }
-	                if (isURL && !taskInfo.isVisualizer() && !taskInfo.isPipeline()) { //don't translate input urls for visualizers and pipelines
+	                if (isURL && !TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes()) && !taskInfo.isPipeline()) { //don't translate input urls for visualizers and pipelines
 	                    URI uri = new URI(originalPath);
 	                    final String userInfo = uri.getUserInfo();
 	                    if (userInfo != null) {
@@ -1005,7 +1005,7 @@ public class GenePatternAnalysisTask {
 	        vProblems.add("Command line not defined");
 	    }
 
-	    if (!taskInfo.isVisualizer()) {
+	    if (!TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
 	        //TODO: special case for visualizer
 	        setCommandPrefix(taskInfoAttributes);
 	    }
@@ -1160,7 +1160,7 @@ public class GenePatternAnalysisTask {
 	            stderrFile = new File(outDir, stderrFilename);
 	        }
 	        try {
-	            if (taskInfo.isVisualizer()) {
+	            if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
 	                jobStatus = JobStatus.JOB_FINISHED;
 	            }
 	            else {
@@ -1191,7 +1191,7 @@ public class GenePatternAnalysisTask {
 	    }
 
 	    //write execution log
-        if (!taskInfo.isVisualizer()) {
+        if (!TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
             JobInfoManager m = new JobInfoManager();
             String contextPath = System.getProperty("GP_Path", "/gp");
             if (!contextPath.startsWith("/")) {
@@ -1199,7 +1199,10 @@ public class GenePatternAnalysisTask {
             }
             String cookie = "";
             JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, jobInfo.getUserId(), jobInfo.getJobNumber());
-            if (jobInfoWrapper.isPipeline()) {
+            if (jobInfoWrapper == null) {
+                
+            }
+            else if (jobInfoWrapper.isPipeline()) {
                 //output pipeline _execution_log only for the root pipeline, exclude nested pipelines
                 if (parent < 0) {
                     pipelineTaskLog = JobInfoManager.writePipelineExecutionLog(outDirName, jobInfoWrapper);
