@@ -68,19 +68,19 @@ public class Analysis extends GenericWebService {
     /**
      * Returns the JobInfo object with the given ID, presumably to check status.
      * 
-     * @param jobId
+     * @param jobID
      *                the Id of the task to check
      * @return the job information
      * @exception WebServiceException
      *                    thrown if problems are encountered
      */
-    public JobInfo checkStatus(int jobId) throws WebServiceException {
+    public JobInfo checkStatus(int jobID) throws WebServiceException {
         String userId = null;
         JobInfo jobInfo = null;
         try {
             userId = getUsernameFromContext();
-            jobInfo = (new AnalysisDAO()).getJobInfo(jobId);
-            this.canReadJob(userId, jobId);
+            jobInfo = (new AnalysisDAO()).getJobInfo(jobID);
+            this.canReadJob(userId, jobID);
         } 
         catch (Throwable t) {
             logAndThrow(t);

@@ -61,7 +61,7 @@ public class JobInfoManager {
      * @param currentUser
      * @param jobNo
      * 
-     * @return
+     * @return null if the job is deleted.
      */
     public JobInfoWrapper getJobInfo(String documentCookie, String contextPath, String currentUser, int jobNo) {
         try {
@@ -71,6 +71,9 @@ public class JobInfoManager {
 
             AnalysisDAO analysisDao = new AnalysisDAO();
             JobInfo jobInfo = analysisDao.getJobInfo(jobNo);
+            if (jobInfo == null) {
+                return null;
+            }
             
             AdminDAO adminDao = new AdminDAO();
             TaskInfo[] latestTasks = adminDao.getLatestTasks(currentUser);
@@ -117,7 +120,7 @@ public class JobInfoManager {
         jobInfoWrapper.setJobInfo(showExecutionLogs, contextPath, kindToModules, jobInfo);
         
         //special case for visualizers
-        if (taskInfo != null && taskInfo.isVisualizer()) {
+        if (taskInfo != null && TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
             String tag = createVisualizerAppletTag(documentCookie, jobInfoWrapper, taskInfo);
             jobInfoWrapper.setVisualizerAppletTag(tag);
         }

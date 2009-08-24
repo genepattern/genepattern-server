@@ -551,17 +551,21 @@ public class JobInfoWrapper implements Serializable {
         log.error("jobInfo is null");
         return null;
     }
+    //--- end JobInfo wrapper methods
     public long getElapsedTimeMillis() {
         if (jobInfo != null) {
-            return jobInfo.getElapsedTimeMillis();
+            if (jobInfo.getDateSubmitted() == null) {
+                return 0;
+            }
+            if (jobInfo.getDateCompleted() == null) {
+                return System.currentTimeMillis() - jobInfo.getDateSubmitted().getTime();
+            }
+            return jobInfo.getDateCompleted().getTime() - jobInfo.getDateSubmitted().getTime();
         }
         log.error("jobInfo is null");
         return 0L;
     }
-    public boolean isDeleted() {
-        return jobInfo.isDeleted();
-    }
-    //--- end JobInfo wrapper methods
+
     /**
      * helper method which indicates if the job has completed processing.
      */
@@ -1007,7 +1011,7 @@ public class JobInfoWrapper implements Serializable {
         int count = 0;
         for(JobSubmission jobSubmission : pm.getTasks()) {
             TaskInfo taskInfo = jobSubmission.getTaskInfo();
-            if (taskInfo != null && taskInfo.isVisualizer()) {
+            if (taskInfo != null && TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
                 count += 1;
             }
             else if (taskInfo != null && taskInfo.isPipeline()) {

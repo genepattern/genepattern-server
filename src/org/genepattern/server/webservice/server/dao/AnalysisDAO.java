@@ -330,6 +330,10 @@ public class AnalysisDAO extends BaseDAO {
      */
     public JobInfo getJobInfo(int jobNo) {
         AnalysisJob aJob = getAnalysisJob(jobNo);
+        if (aJob.getDeleted()) {
+            log.error("AnalysisDAO.getJobInfo("+jobNo+"): job is deleted!");
+            return null;
+        }
         return new JobInfo(aJob);
     }
     

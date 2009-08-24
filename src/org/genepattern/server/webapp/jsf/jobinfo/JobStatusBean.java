@@ -100,7 +100,7 @@ public class JobStatusBean {
         JobInfoManager jobInfoManager = new JobInfoManager();
         this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, currentUserId, jobNumber);
           
-        if (jobInfoWrapper.isDeleted()) {
+        if (jobInfoWrapper == null) {
             String errorMessage = "Job # "+jobInfoWrapper.getJobNumber() + " is deleted.";
             UIBeanHelper.setErrorMessage(errorMessage);
             try {

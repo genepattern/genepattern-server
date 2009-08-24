@@ -213,7 +213,7 @@ public class JobBean {
 	    JobInfo jobInfo = new JobInfo(-1, -1, null, null, null, jobParameters, UIBeanHelper.getUserId(), lsid,
 		    taskInfo.getName());
 
-	    boolean isVisualizer = taskInfo.isVisualizer();
+	    boolean isVisualizer = TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes());
 	    AnalysisJob job = new AnalysisJob(UIBeanHelper.getServer(), jobInfo, isVisualizer);
 	    return CodeGeneratorUtil.getCode(language, job, taskInfo, adminClient);
 	} catch (WebServiceException e) {

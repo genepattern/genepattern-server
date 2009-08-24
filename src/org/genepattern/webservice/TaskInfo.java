@@ -263,8 +263,7 @@ public class TaskInfo implements Serializable {
         return type.endsWith("pipeline");
     }
     
-    public boolean isVisualizer() {
-        TaskInfoAttributes tia = getTaskInfoAttributes();
+    public static boolean isVisualizer(TaskInfoAttributes tia) {
         if (tia == null) {
             return false;
         }
