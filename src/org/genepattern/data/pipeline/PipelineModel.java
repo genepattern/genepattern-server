@@ -425,7 +425,7 @@ public class PipelineModel implements Serializable {
 	    // invoke the setter methods in PipelineModel, once for each
 	    // <variable> tag
 	    String methodName = "set" + name.substring(0, 1).toUpperCase() + name.substring(1);
-	    clsModel.getMethod(methodName, arrayOfString).invoke(model, new String[] { value });
+	    clsModel.getMethod(methodName, arrayOfString).invoke(model, new Object[] { value });
 	}
 
 	// process "task" elements
