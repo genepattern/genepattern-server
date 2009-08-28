@@ -4,7 +4,7 @@
         To build the package for Unix, run the target create-gzip.
 
         To build the package for Windows, install the package on Mac or Unix and then zip the installed
-        GenePattern package directory (zip -r GenePattern_1.0.0.zip GenePattern).
+        GenePattern package directory (zip -r GenePattern_1.0.2.zip GenePattern).
 
         To build the package for Mac, install the package on Mac or Unix and then tar gzip the installed
         GenePattern package directory (tar czf GenePattern_1.0.2.tgz GenePattern).
@@ -24,7 +24,8 @@
 
     <target name="clean">
         <delete dir="./GenePattern/inst" />
-        <delete file="${r.source.file}" />
+        <!-- don't delete the lib file. we need to update the build process so that this file is no longer stored in svn. -->
+        <!-- delete file="${r.source.file}" / -->
     </target>
 </project>
 
