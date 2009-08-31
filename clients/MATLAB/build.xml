@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <project basedir="." name="GenePatternMatlab" default="create-zip">
+
+
     <target name="create-zip">
         <copy todir="GenePattern/lib">
             <fileset dir="../../build">
@@ -23,8 +26,8 @@
                 <include name="mail.jar" />
                 <include name="saaj.jar" />
                 <include name="trove.jar" />
-                </fileset>
-            </copy>
+            </fileset>
+        </copy>
 
         <zip destfile="../../build/${ant.project.name}.zip" whenempty="fail" defaultexcludes="true">
             <fileset dir=".">
@@ -34,9 +37,13 @@
                 <exclude name="*.bak" />
             </fileset>
         </zip>
-    </target>
 
+
+
+    </target>
+    
     <target name="clean">
         <delete dir="GenePattern/lib" />
-	</target>
+    </target>
+
 </project>
