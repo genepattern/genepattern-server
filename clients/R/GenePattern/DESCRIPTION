@@ -1,10 +1,10 @@
 Package: GenePattern
-Version: 1.0.1
-Date: 05-13-2008
+Version: 1.0.2
+Date: 08-31-2009
 Title: GenePattern
 Author: Marc-Danie Nazaire, Joshua Gould
 Maintainer: GenePattern Team <gp-help@broadinstitute.org>
 Depends: rJava
-Description: GenePattern web service library
+Description: GenePattern web service library built from GP 3.2.0
 URL: http://www.broadinstitute.org/cancer/software/genepattern
 License: GenePattern License
