@@ -1,31 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="create-gzip" name="genepattern">
+<project basedir="." name="GenePattern R Client Library" default="R.client.downloads">
     <description>
-        To build the package for Unix, run the target create-gzip.
-
-        To build the package for Windows, install the package on Mac or Unix and then zip the installed
-        GenePattern package directory (zip -r GenePattern_1.0.2.zip GenePattern).
-
-        To build the package for Mac, install the package on Mac or Unix and then tar gzip the installed
-        GenePattern package directory (tar czf GenePattern_1.0.2.tgz GenePattern).
+        Builds the R Client Library source and binary download files.
+        
+        To build the source distribution, run the target create-gzip.
+        (R CMD INSTALL -l ./r_lib downloads/GenePattern_1.0.2.tar.gz)
+        
+        To build the binary distribution, install the package on Mac or Unix and then ...
+        ... for Windows, (zip -r GenePattern_1.0.2.zip GenePattern)
+        ... for Mac, (tar czf GenePattern_1.0.2.tgz GenePattern)
     </description>
 
     <property name="java.client.zip" location="../../build/GenePattern.zip" />
-    <property name="r.source.file" location="downloads/GenePattern_1.0.2.tar.gz" />
+    <property name="R.client.downloads" location="downloads" />
+    <property name="R.client.src.tar.gz" location="${R.client.downloads}/GenePattern_1.0.2.tar.gz" />
+    <property name="R.client.mac.bin.tgz" location="${R.client.downloads}/GenePattern_1.0.2.tgz" />
+    <property name="R.client.win.bin.zip" location="${R.client.downloads}/GenePattern_1.0.2.zip" />
 
-    <target name="unzipGenePattern.zip">
+    <!-- temporary installation of GP client package from source -->
+    <property name="R.lib.dir" location="./r_lib" />
+
+
+    <target name="R.binary.package">
+        <description>Updates the R binary package with the latest version of the Java Client library.</description>
+        <fail unless="java.client.zip"  message="Missing required property 'java.client.zip'" />
+        <fail message="Missing required file '${java.client.zip}'">
+            <condition>
+                <not><available file="${java.client.zip}" /></not>
+            </condition>
+        </fail>
+        
         <unzip src="${java.client.zip}" dest="./GenePattern/inst/jars" />
+        <tar destfile="${R.client.src.tar.gz}" compression="gzip" basedir="." includes="GenePattern/**" />
     </target>
 
-    <target name="create-gzip" depends="unzipGenePattern.zip">
-        <!-- OSX binary has extension .tgz, source package is .tar.gz -->
-        <tar destfile="${r.source.file}" compression="gzip" basedir="." includes="GenePattern/**" />
+    <target name="install.R.binary.package" depends="R.binary.package">
+        <description>Installs the R binary package; Depends on 'R' being installed and on the path.</description>
+        <mkdir dir="${R.lib.dir}" />
+        <!-- R CMD INSTALL -l ./r_lib downloads/GenePattern_1.0.2.tar.gz -->
+        <exec command="R CMD INSTALL -l ${R.lib.dir} ${R.client.src.tar.gz}" failonerror="true" />
+    </target>
+    
+    <target name="R.src.package" depends="install.R.binary.package">
+        <description>Create R source distribution files for Mac and Win clients.</description>
+        <tar destfile="${R.client.mac.bin.tgz}" compression="gzip" basedir="${R.lib.dir}" includes="GenePattern/**/*" />
+        <zip destfile="${R.client.win.bin.zip}" basedir="${R.lib.dir}" includes="GenePattern/**/*" />
+    </target>
+    
+    <target name="R.client.downloads" depends="R.binary.package, R.src.package">
+        <description>
+            Create all distribution files for the R Programming library. 
+            These files should be added to the downloads directory of the GenePattern web application.
+        </description>
     </target>
 
     <target name="clean">
         <delete dir="./GenePattern/inst" />
+        <delete dir="${R.lib.dir}" />
         <!-- don't delete the lib file. we need to update the build process so that this file is no longer stored in svn. -->
-        <!-- delete file="${r.source.file}" / -->
+        <delete file="${R.client.src.tar.gz}" />
+        <delete file="${R.client.mac.bin.tgz}" />
+        <delete file="${R.client.win.bin.zip}" />
     </target>
 </project>
 

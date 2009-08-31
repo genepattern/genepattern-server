@@ -100,9 +100,11 @@
             <fileset dir="build/" includes="**/*" excludes="placeholder.txt, log4j.properties" />
         </delete>
         <ant antfile="build.xml" dir="clients/MATLAB" target="clean" />
+        <ant antfile="build.xml" dir="clients/R" target="clean" >
+            <property name="R.client.downloads" location="${R.client.downloads}" />
+        </ant>
         <ant antfile="../build.xml" dir="clients/JavaGE/src" inheritall="true" inheritrefs="true" target="clean" />
     </target>
-
 
     <target name="compile" depends="init" description="Compiles all the source.">
 
@@ -231,7 +233,11 @@
     <target  name="clients" depends="R-client,matlabclient">
     </target>
 
-    <target  name="R-client" depends="init">
+    <property name="R.client.downloads" location="clients/R/downloads" />
+    <target  name="R-client" depends="init, gp-library">
+        <ant antfile="build.xml" dir="${genepattern.root}/clients/R">
+            <property name="R.client.downloads" location="${R.client.downloads}" />
+        </ant>
     </target>
 
 	<!--
