@@ -41,5 +41,9 @@
 
 
 	</target>
+    
+    <target name="clean">
+        <delete dir="GenePattern/lib" />
+    </target>
 
 </project>
