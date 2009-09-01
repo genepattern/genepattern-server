@@ -172,7 +172,7 @@ public class PropertiesManager {
         FileInputStream fis = null;
 
         try {
-            String dir = System.getProperty("custom.properties");
+            String dir = System.getProperty("genepattern.properties");
             File propFile = new File(dir, "custom.properties");
 
             propFile.createNewFile();
@@ -370,7 +370,7 @@ public class PropertiesManager {
     protected static void storeCustomProperties(Properties props, String comment) throws IOException {
         FileOutputStream fos = null;
         try {
-            String dir = System.getProperty("custom.properties");
+            String dir = System.getProperty("genepattern.properties");
             File propFile = new File(dir, "custom.properties");
             fos = new FileOutputStream(propFile);
             props.store(fos, comment);
