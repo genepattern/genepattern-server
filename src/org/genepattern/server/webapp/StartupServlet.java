@@ -75,8 +75,13 @@ public class StartupServlet extends HttpServlet {
         log("StartupServlet: user.dir=" + System.getProperty("user.dir"));
 
         ServletContext application = config.getServletContext();
-        application.setAttribute("genepattern.properties", config.getInitParameter("genepattern.properties"));
-        application.setAttribute("custom.properties", config.getInitParameter("custom.properties"));
+        String genepatternProperties = config.getInitParameter("genepattern.properties");
+        application.setAttribute("genepattern.properties", genepatternProperties);
+        String customProperties = config.getInitParameter("custom.properties");
+        if (customProperties == null) {
+            customProperties = genepatternProperties;
+        }
+        application.setAttribute("custom.properties", customProperties);
         loadProperties(config);
         setServerURLs(config);
 
