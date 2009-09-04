@@ -1262,6 +1262,7 @@ function savePipeline(bMustName, cmd) {
 				&& shadowValue.indexOf('http://') != 0
 		       	&& shadowValue.indexOf('https://') != 0
 				&& shadowValue.indexOf('ftp://') != 0
+				&& shadowValue.indexOf('file://') != 0
 				&& shadowValue.indexOf('<GenePatternURL>') != 0) {
 			lostFiles = lostFiles + (i+1) + '. ' + task.name + ': ' + pi.name + ' (was ' + shadowValue + ')\n';
 			success = false;
