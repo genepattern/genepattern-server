@@ -663,18 +663,16 @@ public class JobBean {
      * @return
      */
     public String delete() {
-	String[] selectedJobs = UIBeanHelper.getRequest().getParameterValues("selectedJobs");
-	deleteJobs(selectedJobs);
-
-	String[] selectedFiles = UIBeanHelper.getRequest().getParameterValues("selectedFiles");
-	if (selectedFiles != null) {
-	    for (String jobFileName : selectedFiles) {
-		deleteFile(jobFileName);
-	    }
-	}
-	this.resetJobs();
-	return null;
-
+        String[] selectedFiles = UIBeanHelper.getRequest().getParameterValues("selectedFiles");
+        if (selectedFiles != null) {
+            for (String jobFileName : selectedFiles) {
+                deleteFile(jobFileName);
+            }
+        }
+        String[] selectedJobs = UIBeanHelper.getRequest().getParameterValues("selectedJobs");
+        deleteJobs(selectedJobs);
+        this.resetJobs();
+        return null;
     }
     
     public String sortFilesByName() {
