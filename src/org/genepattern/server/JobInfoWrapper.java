@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DateFormat;
@@ -305,6 +306,8 @@ public class JobInfoWrapper implements Serializable {
             //      a) allow.input.file.paths=true
             //      b) allow.input.file.paths=false, handle error 
             //      c) allow.input.file.paths=true, but path is to a restricted area
+            
+            String origValue = value;
 
             String genePatternUrl = UIBeanHelper.getServer();
             //substitute <GenePatternURL>
@@ -392,6 +395,7 @@ public class JobInfoWrapper implements Serializable {
             }
             
             if (isWebUpload) {
+                log.debug("isWebUpload");
                 String fileParam = "";
                 if (inputFileParent != null) {
                     fileParam += inputFileParent.getName() + "/";
@@ -407,12 +411,29 @@ public class JobInfoWrapper implements Serializable {
                 setLink(contextPath + "/getFile.jsp?job="+jobNumber+"&file="+fileParam);
             }
             else if (isSoapUpload) {
+                log.debug("isSoapUpload");
                 //http://127.0.0.1:8080/gp/getFile.jsp?task=&job=1387&file=test/Axis30305.att_all_aml_test.gct
                 //TODO don't really know the job #, should be the original job number for when this file was uploaded
                 setLink(contextPath + "/getFile.jsp?task=&file="+inputFileParent.getName()+"/"+inputFile.getName());
                 //special case for axis
                 if (displayValue.startsWith("Axis")) {
                     displayValue = displayValue.substring(displayValue.indexOf('_') + 1);
+                }
+            }
+            else {
+                log.debug("isServerFilePath");
+                displayValue = origValue;
+                //File file = new File(origValue);
+                if (inputFile.canRead()) {
+                    try {
+                        URI inputFileURI = inputFile.toURI();
+                        URL inputFileURL = inputFileURI.toURL();
+                        String inputFilePath = inputFileURL.getPath();
+                        setLink(contextPath + "/serverFilePath/" + inputFilePath);
+                    }
+                    catch (MalformedURLException e) {
+                        log.error(e);
+                    }
                 }
             }
             this.setDisplayValue(displayValue);
