@@ -363,14 +363,13 @@
  </servlet-mapping>
 
  <servlet>
-  <display-name>JobInputServlet</display-name>
-  <servlet-name>JobInputServlet</servlet-name>
-  <servlet-class>org.genepattern.server.webapp.JobInputServlet</servlet-class>
-  <load-on-startup>1</load-on-startup>
+  <display-name>FileServlet</display-name>
+  <servlet-name>FileServlet</servlet-name>
+  <servlet-class>org.genepattern.server.webapp.FileServlet</servlet-class>
  </servlet>
  <servlet-mapping>
-  <servlet-name>JobInputServlet</servlet-name>
-  <url-pattern>/fileupload/*</url-pattern>
+  <servlet-name>FileServlet</servlet-name>
+  <url-pattern>/serverFilePath/*</url-pattern>
  </servlet-mapping>
 
  <servlet>
