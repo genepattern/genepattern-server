@@ -340,12 +340,24 @@ public class RunPipelineSoap {
     protected ParameterInfo[] setJobParametersFromArgs(String name, int taskNum, ParameterInfo[] parameterInfo, JobInfo[] results, Map args) {
         for (int i = 0; i < parameterInfo.length; i++) {
             ParameterInfo aParam = parameterInfo[i];
-            if (aParam.getAttributes() != null) {
-                if (aParam.getAttributes().get(PipelineModel.RUNTIME_PARAM) != null) {
-                    aParam.getAttributes().remove(PipelineModel.RUNTIME_PARAM);
+            HashMap attributes = aParam.getAttributes();
+            if (attributes != null) {
+                if (attributes.get(PipelineModel.RUNTIME_PARAM) != null) {
+                    attributes.remove(PipelineModel.RUNTIME_PARAM);
                     String key = name + taskNum + "." + aParam.getName();
-                    String val = (String) args.get(key);
+                    String val = (String) args.get(key);                    
                     if ((val != null)) {
+                        
+                        //We don't want to double prefix the arguments.  If this RunPipelineSoap was
+                        //run from the GenePattern webpage, the arguments will have been prefixed as
+                        //the "run pipeline" job was run to get us here.
+                        if (attributes.containsKey(GPConstants.PARAM_INFO_PREFIX[0])){
+                            String prefix = (String) attributes.get(GPConstants.PARAM_INFO_PREFIX[0]);
+                            if (val.startsWith(prefix)){
+                                val = val.substring(prefix.length());
+                            }
+                        }
+                        
                         aParam.setValue(val);
                     }
                 }
