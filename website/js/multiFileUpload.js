@@ -2,7 +2,6 @@ var originalSubmit;
 var batchSubmit = "/gp/batchSubmit.jsp";
 var submitOnComplete = 0;
 var inputCount = 1;
-var pageSalt = Math.random();
 
 var mismatchErrorHead = " You have uploaded multiple files for multiple parameters but the lists of files do not match.<br/>For a batch process you must either ";
 var mismatchErrorBody =  "<ul style='font-weight:bold; color:red;'>"+
@@ -10,7 +9,10 @@ var mismatchErrorBody =  "<ul style='font-weight:bold; color:red;'>"+
 		   	"<li> Each parameter must have a list of files whose names differ only in their extension (e.g.  Parameter 1 has a.gcs;b.gcs;c.gcs and parameter 2 has a.res;b.res;c.res).</li>"+
 		   "</ul>";
 
-var appletParams = 				"<param name='uc_uploadUrl' value='/gp/MultiFileUploadReceiver'/>"+	
+var appletParams = 		"code='jmaster.jumploader.app.JumpLoaderApplet.class'"+
+"archive='/gp/downloads/jl_core_z.jar'"+
+"width='600' height='400' mayscript='true' >"+
+"<param name='uc_uploadUrl' value='/gp/MultiFileUploadReceiver'/>"+	
 "<param name='uc_directoriesEnabled' value='true'/>"+	
 "<param name='uc_partitionLength' value='5000000'/>" +
 "<param name='ac_fireUploaderFileStatusChanged' value='true'/>"+
@@ -27,30 +29,21 @@ var appletParams = 				"<param name='uc_uploadUrl' value='/gp/MultiFileUploadRec
 function addBatchSubmitLinksToPage(){	
 	originalSubmit = jQuery("#taskForm").attr('action');
 
-	
+
 	//Create uploader for directory type
 	jQuery("div .directory_param").each( function(){
 		var id = jQuery(this).attr('id');
 		jQuery(this).replaceWith(			
 			"<td class='jumploaderWindow' id='"+ id +"'>" +
 			"<applet name='di" + id + "'"+
-			"code='jmaster.jumploader.app.JumpLoaderApplet.class'"+
-			"archive='/gp/downloads/jl_core_z.jar'"+
-			"width='600' height='400' mayscript='true' >"+
 			appletParams +
 			"</applet>"+ 
 		"</td>"
 		);		
 
-		jQuery("applet[name=di"+id+"]").each(function(){	
-			if (typeof(this.getUploader)!='undefined'){			
-				var attrSet = this.getUploader().getAttributeSet();
-				var attr = attrSet.createStringAttribute("paramId", id+pageSalt);
-				attr.setSendToServer(true);
-			}
-		});
 		
 	});
+	
 	//Create links for input files types
 	jQuery("input[type='file']").after("" +
 			"<a class='batchprocess' href='#' >Batch process...</a>");
@@ -62,38 +55,24 @@ function addBatchSubmitLinksToPage(){
 			jQuery(jq("jlID"+inputId)).show();
 			jQuery(jq("revert"+inputId)).show();
 		}else{
-			jQuery(jq(inputId+"_td")).after(
-					"<td class='jumploaderWindow' id='jlID" + inputId+"'>" +
-						"<applet name='jl"+ inputId + "'"+
-						"code='jmaster.jumploader.app.JumpLoaderApplet.class'"+
-						"archive='/gp/downloads/jl_core_z.jar'"+
-						"width='600' height='400' mayscript='true' >"+
-							appletParams+
-						"</applet>"+ 
-						"<br/>"+
-						"<a id='revert"+inputId+"' href='#'> Load single file</a>"+						
-					"</td>"								
-			);
-			
-			//now see if the Applets are enabled
-			jQuery("applet[name=jl"+inputId+"]").each(function(){	
-				if (typeof(this.getUploader)=='undefined'){
+			if (navigator.javaEnabled()){
+				jQuery(jq(inputId+"_td")).after(
+						"<td class='jumploaderWindow' id='jlID" + inputId+"'>" +
+							"<applet name='jl"+ inputId + "'"+
+								appletParams+
+							"</applet>"+ 
+							"<br/>"+
+							"<a id='revert"+inputId+"' href='#'> Load single file</a>"+						
+						"</td>"								
+				);
+			}else{			
 					jQuery(jq("jlID"+inputId)).replaceWith(
 							"<td id=noJavaErr>"+
 								"<p style=color:red>Java is not detected on your machine.  You need Java to upload multiple files at once.</p>"+
 								"<a id='revert"+inputId+"' href='#'> Load single file</a>"+
-							"</td>"	
-								
-						)
-				}
-			});
-			jQuery("applet[name=jl"+inputId+"]").each(function(){	
-				if (typeof(this.getUploader)!='undefined'){			
-					var attrSet = this.getUploader().getAttributeSet();
-					var attr = attrSet.createStringAttribute("paramId", inputId+pageSalt);
-					attr.setSendToServer(true);
-				}
-			});
+							"</td>"									
+					);
+			}
 			
 			jQuery(jq("revert"+inputId)).click( function () {				
 				jQuery(this).hide();
@@ -132,35 +111,36 @@ function validateSubmit(){
 	
 	var valid = true;
 	jQuery("applet").each( function() {
-		if (typeof(this.getUploader)== 'function'){
+		try {
 			var uploader = this.getUploader();
-			if (typeof(uploader)!= 'undefined'){	
-				fileCount = uploader.getFileCount();
-				if (fileCount > 1){
-					if (firstCheck){
+		 	fileCount = uploader.getFileCount();
+			if (fileCount > 1){
+				if (firstCheck){
+					for (var i=0; i < fileCount; i++){
+						var file = uploader.getFile(i);	
+						var fullName = file.getName();
+						fileRootNames[getRootName(fullName)] = '1';							
+					}							
+					firstCheck = false;
+				}else{
+					if (fileCount != uploader.getFileCount()){
+						showMismatchError();
+						valid = false;
+					}else{	
 						for (var i=0; i < fileCount; i++){
-							var file = uploader.getFile(i);							
-							fileRootNames[getRootName(file.getName())] = '1';							
-						}							
-						firstCheck = false;
-					}else{
-						if (fileCount != uploader.getFileCount()){
-							showMismatchError();
-							valid = false;
-						}else{	
-							for (var i=0; i < fileCount; i++){
-								var file = uploader.getFile(i);								
-								var exists = fileRootNames[getRootName(file.getName())];
-								if (typeof(exists) == 'undefined') {
-									showMismatchError();
-									valid = false;
-								}														
-							}
-						}						
-					}
+							var file = uploader.getFile(i);			
+							var fullName = file.getName();
+							var exists = fileRootNames[getRootName(fullName)];
+							if (typeof(exists) == 'undefined') {
+								showMismatchError();
+								valid = false;
+							}														
+						}
+					}						
 				}
-			
 			}
+		}catch (e){		
+		
 		}
 	});		
 	if (!valid){
@@ -170,18 +150,18 @@ function validateSubmit(){
 	var uploadingComplete = true;		
 	submitOnComplete = 0;
 	jQuery("applet").each( function() {
-		if (typeof(this.getUploader)== 'function'){
+		try{
 			var uploader = this.getUploader();
-			if (typeof(uploader)!= 'undefined'){				
-				if (uploader.isUploading()){
-					uploadingComplete = false;
-					submitOnComplete = submitOnComplete + 1;					
-				}else if (uploader.canStartUpload()){
-					uploader.startUpload();
-					submitOnComplete = submitOnComplete + 1;					
-					uploadingComplete = false;	
-				}
+			if (uploader.isUploading()){
+				uploadingComplete = false;
+				submitOnComplete = submitOnComplete + 1;					
+			}else if (uploader.canStartUpload()){
+				uploader.startUpload();
+				submitOnComplete = submitOnComplete + 1;					
+				uploadingComplete = false;	
 			}
+		}catch(e){
+			
 		}
 	});		
 	
@@ -214,6 +194,7 @@ function getRootName (fullName){
 		return fullName;
 	}
 }
+
 function showMismatchError(){
 	var d = $("errorMessageDiv");
 	Element.update('errorMessageHeader', mismatchErrorHead);
@@ -227,7 +208,7 @@ function uploaderFileStatusChanged( uploader, file) {
 	if (file.getStatus()==2){		
 		//File upload complete
 		jQuery("applet").each(function() {
-			if (typeof(this.getUploader) != 'undefined'){
+			try{
 				if (this.getUploader().equals(uploader)){
 					var inputType = jQuery(this).attr("name").substring(0,2);
 					if (inputType == "jl"){
@@ -245,6 +226,7 @@ function uploaderFileStatusChanged( uploader, file) {
 						jQuery(jq(paramName)).val (response[0]);
 					}
 				}
+			}catch(e){
 			}
 		});
 	}
@@ -253,7 +235,7 @@ function uploaderFileStatusChanged( uploader, file) {
 
 function uploaderFileRemoved( uploader, file ) {	
 	jQuery("applet").each(function() {
-		if (typeof(this.getUploader) != 'undefined'){
+		try{
 			if (this.getUploader().equals(uploader)){
 				var inputType = jQuery(this).attr("name").substring(0,2);
 				if (inputType == "jl"){
@@ -268,6 +250,7 @@ function uploaderFileRemoved( uploader, file ) {
 					jQuery(jq(urlName)).val( shortenedFileList);
 				}
 			}
+		}catch(e){
 		}
 	});
 }
@@ -285,7 +268,10 @@ function uploaderStatusChanged( uploader ) {
 }
 
 function appletInitialized( applet){
-	applet.getMainView().getUploadView().showOpenDialog();				
+	applet.getMainView().getUploadView().showOpenDialog();	
+	var attrSet = applet.getUploader().getAttributeSet();
+	var attr = attrSet.createStringAttribute("paramId", Math.random());
+	attr.setSendToServer(true);
 }
 
 jQuery(document).ready(function(){
