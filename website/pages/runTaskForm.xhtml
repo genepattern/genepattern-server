@@ -24,20 +24,20 @@
 		<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/multiFileUpload.js"></script>
 		<script> jQuery.noConflict(); </script> 
 	</h:outputText>
-        <table width="100%
-                " border="0" cellspacing="0" cellpadding="0">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0">
           <tr>
           	<td>
           	</td>
             <td valign="top" class="maintasknav" id="maintasknav">
-              <form id="toggleDescForm">
+              <span id="toggleDescForm">
               <h:outputText rendered="#{runTaskBean.showParameterDescriptions}">
-                <input name="toggleDesc" id="toggleDesc" onclick="toggleDescriptions();" type="checkbox" checked="checked">Show parameter descriptions</input>
+                <input name="toggleDesc" id="toggleDesc" onclick="toggleDescriptions();" type="checkbox" checked="checked" />
+                <label for="toggleDesc">Show parameter descriptions</label>
               </h:outputText>
               <h:outputText rendered="#{! runTaskBean.showParameterDescriptions}">
                 <h:selectBooleanCheckbox id="toggleDesc" onclick="toggleDescriptions();">Show parameter descriptions</h:selectBooleanCheckbox>
               </h:outputText>
-              </form>
+              </span>
             </td>
           </tr>
           <tr>
@@ -117,10 +117,14 @@
                         </h:outputText>
                         </div>
                         <span class="description" style="display:inline">
-                            <input type="radio" id="#{p.name}_cb_url" name="#{p.name}_cb" value="url" 
-                                onclick="showUrlInput('#{p.name}');"><h:outputText rendered="#{runTaskBean.allowInputFilePaths}">Specify File Path or URL</h:outputText><h:outputText rendered="#{!runTaskBean.allowInputFilePaths}">Specify URL</h:outputText></input></span>
-                        <span class="description" style="display:inline"><input type="radio" id="#{p.name}_cb_file" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');" checked="yes">Upload
-                                    File</input></span>
+                            <input type="radio" id="#{p.name}_cb_url" name="#{p.name}_cb" value="url" onclick="showUrlInput('#{p.name}');" />
+                            <label for="#{p.name}_cb_url"><h:outputText value="#{runTaskBean.allowInputFilePaths ? 'Specify File Path or URL' : 'Specify URL'}" />
+                            </label>
+                        </span>
+                        <span class="description" style="display:inline">
+                            <input type="radio" id="#{p.name}_cb_file" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');" checked="yes" />
+                            <label for="#{p.name}_cb_file">Upload File</label>
+                        </span>
                       </h:outputText>
                       
                       <h:outputText rendered="#{!empty p.defaultValue}">
