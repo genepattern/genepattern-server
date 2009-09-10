@@ -225,8 +225,9 @@ function uploaderFileStatusChanged( uploader, file) {
 					if (inputType == "jl"){				
 						var inputName =  jQuery(this).attr("name").substring(2);					
 						jQuery(jq(inputName+"_cb_url")).click();	
-						var urlName = inputName+"_url";		
-						var response = file.getResponseContent().split(";");
+						var urlName = inputName+"_url";
+						var responseContent = "" + file.getResponseContent();
+						var response = responseContent.split(";");
 						jQuery(jq(urlName)).val( jQuery(jq(urlName)).val() + response[1]+ ';');
 						localToRemoteMap[file.getPath()] = response[1];
 					}else if (inputType=="di"){
