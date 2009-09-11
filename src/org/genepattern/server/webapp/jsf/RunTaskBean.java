@@ -84,6 +84,7 @@ public class RunTaskBean {
     private boolean invalidLsid = false;
 
     private String lsidParam = null;
+    private boolean allowBatchProcess = false;
 
     /**
      * Initialize the task lsid. This page needs to support redirects from older .jsp pages as well as jsf navigation.
@@ -108,6 +109,7 @@ public class RunTaskBean {
 	    lsidParam = taskToRun;
 	}
 	allowInputFilePaths = "true".equalsIgnoreCase(System.getProperty("allow.input.file.paths"));
+	allowBatchProcess = "true".equalsIgnoreCase(System.getProperty("allow.batch.process"));
     }
 
     public void changeVersion(ActionEvent event) {
@@ -184,6 +186,14 @@ public class RunTaskBean {
 
     public boolean isAllowInputFilePaths() {
 	return allowInputFilePaths;
+    }
+    
+    /**
+     * Is the server configured to allow batch execution of jobs?
+     * @return true if the genepattern.properties file has the property, allow.batch.process=true
+     */
+    public boolean isAllowBatchProcess() {
+        return allowBatchProcess;
     }
 
     public boolean isEditAllowed() {
