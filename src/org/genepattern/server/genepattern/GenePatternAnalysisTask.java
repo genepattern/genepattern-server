@@ -553,8 +553,6 @@ public class GenePatternAnalysisTask {
 	JobInfo parentJobInfo = null;
 	int jobStatus = JobStatus.JOB_ERROR;
 	String outDirName = getJobDir(Integer.toString(jobInfo.getJobNumber()));
-	File taskLog = null;
-	File pipelineTaskLog = null;
 	String taskName = "";
 	long jobStartTime = System.currentTimeMillis();
 	String userKey = "";
@@ -1190,7 +1188,9 @@ public class GenePatternAnalysisTask {
 	        }
 	    }
 
-	    //write execution log
+        //write execution log
+        File taskLog = null;
+        File pipelineTaskLog = null;
         if (!TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
             JobInfoManager m = new JobInfoManager();
             String contextPath = System.getProperty("GP_Path", "/gp");
@@ -1202,18 +1202,16 @@ public class GenePatternAnalysisTask {
             if (jobInfoWrapper == null) {
                 
             }
-            else if (jobInfoWrapper.isPipeline()) {
+            else if (jobInfoWrapper.isPipeline() && jobInfoWrapper.isRoot()) {
                 //output pipeline _execution_log only for the root pipeline, exclude nested pipelines
-                if (parent < 0) {
-                    pipelineTaskLog = JobInfoManager.writePipelineExecutionLog(outDirName, jobInfoWrapper);
-                }
+                pipelineTaskLog = JobInfoManager.writePipelineExecutionLog(outDirName, jobInfoWrapper);
             }
             else {
                 taskLog = JobInfoManager.writeExecutionLog(outDirName, jobInfoWrapper, props, processBuilder);
             }
         }
 
-	    // move input files back into Axis attachments directory
+        // move input files back into Axis attachments directory
 	    if (params != null) {
 	        for (int i = 0; i < params.length; i++) {
 	            HashMap attrsActual = params[i].getAttributes();
@@ -1289,67 +1287,20 @@ public class GenePatternAnalysisTask {
 	        } // end for each parameter
 	    } // end if parameters not null
 
-	    // reload jobInfo to pick up any output parameters were added by the job explicitly (eg. pipelines)
-	    HibernateUtil.beginTransaction();
-	    jobInfo = (new AnalysisDAO()).getJobInfo(jobInfo.getJobNumber());
-	    HibernateUtil.commitTransaction();
+        // reload jobInfo to pick up any output parameters were added by the job explicitly (eg. pipelines)
+        HibernateUtil.beginTransaction();
+        jobInfo = (new AnalysisDAO()).getJobInfo(jobInfo.getJobNumber());
+        HibernateUtil.commitTransaction();
 
-	    // touch the taskLog file to make sure it is the oldest/last file
+        // touch the taskLog file to make sure it is the oldest/last file
         if (pipelineTaskLog != null) {
             pipelineTaskLog.setLastModified(System.currentTimeMillis() + 500);
         }
-	    if (taskLog != null) {
-	        taskLog.setLastModified(System.currentTimeMillis() + 500);
-	    }
-
-	    // any files that are left in outDir are output files
-	    final String _stdoutFilename = stdoutFilename;
-	    final String _stderrFilename = stderrFilename;
-	    JobResultsFilenameFilter filenameFilter = new JobResultsFilenameFilter();
-	    filenameFilter.addExactMatch(STDERR);
-	    filenameFilter.addExactMatch(STDOUT);
-	    filenameFilter.addExactMatch(TASKLOG);
-	    if (pipelineTaskLog != null) {
-	        filenameFilter.addExactMatch(pipelineTaskLog.getName());
-	    }
-	    filenameFilter.addExactMatch(_stdoutFilename);
-	    filenameFilter.addExactMatch(_stderrFilename);
-	    filenameFilter.setGlob(System.getProperty(JobResultsFilenameFilter.KEY));
-
-	    File outputDir = new File(outDirName);
-        File[] outputFiles = outputDir.listFiles(filenameFilter);
-	    sortOutputFiles(outputFiles);
-
-	    parentJobInfo = getParentJobInfo(jobInfo.getJobNumber());
-
-	    for (File f : outputFiles) {
-	        log.debug("adding output file to output parameters " + f.getName() + " from " + outDirName);
-	        addFileToOutputParameters(jobInfo, f.getName(), f.getName(), parentJobInfo);
-	    }
-
-	    if (stdoutFilename == null) {
-	        stdoutFilename = STDOUT;
-	    }
-	    if (stderrFilename == null) {
-	        stderrFilename = STDERR;
-	    }
-	    if (new File(outDir, stdoutFilename).exists()) {
-	        addFileToOutputParameters(jobInfo, stdoutFilename, stdoutFilename, parentJobInfo);
-	    }
-	    if (new File(outDir, stderrFilename).exists()) {
-	        addFileToOutputParameters(jobInfo, stderrFilename, stderrFilename, parentJobInfo);
-	    }
-	    if (stderrBuffer.length() > 0) {
-	        writeStringToFile(outDirName, STDERR, stderrBuffer.toString());
-	        addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
-	    }
-        if (pipelineTaskLog != null) {
-            addFileToOutputParameters(jobInfo, pipelineTaskLog.getName(), pipelineTaskLog.getName(), parentJobInfo);
+        if (taskLog != null) {
+            taskLog.setLastModified(System.currentTimeMillis() + 500);
         }
-	    if (taskLog != null) {
-	        addFileToOutputParameters(jobInfo, TASKLOG, TASKLOG, parentJobInfo);
-	    }
 
+        processJobResults(jobInfo, taskInfo, outDir, outDirName, stdoutFilename, stderrFilename, props, processBuilder, stderrBuffer, jobStatus, jobStartTime, taskLog, pipelineTaskLog);
 	    recordJobCompletion(jobInfo, parentJobInfo, jobStatus, jobStartTime);
 	} 
 	catch (Throwable e) {
@@ -1372,6 +1323,61 @@ public class GenePatternAnalysisTask {
 	        EncryptionUtil.getInstance().removePipelineUserKey(userKey);
 	    }
 	}
+    }
+
+    /**
+     * After a job completes, ...
+     */
+    private void processJobResults(JobInfo jobInfo, TaskInfo taskInfo, File outDir, String outDirName, String stdoutFilename, String stderrFilename, Properties props, ProcessBuilder processBuilder, StringBuffer stderrBuffer,
+            int jobStatus, long jobStartTime, File taskLog, File pipelineTaskLog) {
+        
+        // any files that are left in outDir are output files
+        final String _stdoutFilename = stdoutFilename;
+        final String _stderrFilename = stderrFilename;
+        JobResultsFilenameFilter filenameFilter = new JobResultsFilenameFilter();
+        filenameFilter.addExactMatch(STDERR);
+        filenameFilter.addExactMatch(STDOUT);
+        filenameFilter.addExactMatch(TASKLOG);
+        if (pipelineTaskLog != null) {
+            filenameFilter.addExactMatch(pipelineTaskLog.getName());
+        }
+        filenameFilter.addExactMatch(_stdoutFilename);
+        filenameFilter.addExactMatch(_stderrFilename);
+        filenameFilter.setGlob(System.getProperty(JobResultsFilenameFilter.KEY));
+
+        File outputDir = new File(outDirName);
+        File[] outputFiles = outputDir.listFiles(filenameFilter);
+        sortOutputFiles(outputFiles);
+
+        JobInfo parentJobInfo = getParentJobInfo(jobInfo.getJobNumber());
+
+        for (File f : outputFiles) {
+            log.debug("adding output file to output parameters " + f.getName() + " from " + outDirName);
+            addFileToOutputParameters(jobInfo, f.getName(), f.getName(), parentJobInfo);
+        }
+
+        if (stdoutFilename == null) {
+            stdoutFilename = STDOUT;
+        }
+        if (stderrFilename == null) {
+            stderrFilename = STDERR;
+        }
+        if (new File(outDir, stdoutFilename).exists()) {
+            addFileToOutputParameters(jobInfo, stdoutFilename, stdoutFilename, parentJobInfo);
+        }
+        if (new File(outDir, stderrFilename).exists()) {
+            addFileToOutputParameters(jobInfo, stderrFilename, stderrFilename, parentJobInfo);
+        }
+        if (stderrBuffer.length() > 0) {
+            writeStringToFile(outDirName, STDERR, stderrBuffer.toString());
+            addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
+        }
+        if (pipelineTaskLog != null) {
+            addFileToOutputParameters(jobInfo, pipelineTaskLog.getName(), pipelineTaskLog.getName(), parentJobInfo);
+        }
+        if (taskLog != null) {
+            addFileToOutputParameters(jobInfo, TASKLOG, TASKLOG, parentJobInfo);
+        }
     }
 
     private static final Comparator<File> fileComparator = new Comparator<File>() {
