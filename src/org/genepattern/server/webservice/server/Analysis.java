@@ -193,48 +193,45 @@ public class Analysis extends GenericWebService {
         AnalysisDAO ds = new AnalysisDAO();
         JobInfo jobInfo = ds.getJobInfo(jobId);
 
-	int beforeDeletionLength = 0;
-	ParameterInfo[] params = jobInfo.getParameterInfoArray();
-	if (params != null) {
-	    beforeDeletionLength = params.length;
-	}
+        int beforeDeletionLength = 0;
+        ParameterInfo[] params = jobInfo.getParameterInfoArray();
+        if (params != null) {
+            beforeDeletionLength = params.length;
+        }
 
-	jobInfo.setParameterInfoArray(removeOutputFileParameters(jobInfo, value));
+        jobInfo.setParameterInfoArray(removeOutputFileParameters(jobInfo, value));
 
-	if (jobInfo.getParameterInfoArray().length == beforeDeletionLength) {
-	    throw new WebServiceException(new FileNotFoundException());
-	}
+        if (jobInfo.getParameterInfoArray().length == beforeDeletionLength) {
+            throw new WebServiceException(new FileNotFoundException());
+        }
 
-	int fileCreationJobNumber = jobInfo.getJobNumber();
+        int fileCreationJobNumber = jobInfo.getJobNumber();
 
-	String fileName = value;
-	int index = StringUtils.lastIndexOfFileSeparator(fileName);
-	if (index != -1) {
-	    fileCreationJobNumber = Integer.parseInt(fileName.substring(0, index));
-	    fileName = fileName.substring(index + 1, fileName.length());
-	}
-	String jobDir = org.genepattern.server.genepattern.GenePatternAnalysisTask.getJobDir(String
-		.valueOf(fileCreationJobNumber));
-	File file = new File(jobDir, fileName);
-	if (file.exists()) {
-	    file.delete();
-	}
+        String fileName = value;
+        int index = StringUtils.lastIndexOfFileSeparator(fileName);
+        if (index != -1) {
+            fileCreationJobNumber = Integer.parseInt(fileName.substring(0, index));
+            fileName = fileName.substring(index + 1, fileName.length());
+        }
+        String jobDir = org.genepattern.server.genepattern.GenePatternAnalysisTask.getJobDir(String.valueOf(fileCreationJobNumber));
+        File file = new File(jobDir, fileName);
+        if (file.exists()) {
+            file.delete();
+        }
 
-	ds.updateJob(jobInfo.getJobNumber(), jobInfo.getParameterInfo(), ((Integer) JobStatus.STATUS_MAP.get(jobInfo
-		.getStatus())).intValue());
+        ds.updateJob(jobInfo.getJobNumber(), jobInfo.getParameterInfo(), ((Integer) JobStatus.STATUS_MAP.get(jobInfo.getStatus())).intValue());
 
-	if (fileCreationJobNumber != jobId) { // jobId is a parent job
-	    JobInfo childJob = ds.getJobInfo(fileCreationJobNumber);
-	    childJob.setParameterInfoArray(removeOutputFileParameters(childJob, value));
-	    ds.updateJob(childJob.getJobNumber(), childJob.getParameterInfo(), ((Integer) JobStatus.STATUS_MAP
-		    .get(childJob.getStatus())).intValue());
-	} else {
-	    JobInfo parent = ds.getParent(jobId);
-	    if (parent != null) { // jobId is a child job
-		parent.setParameterInfoArray(removeOutputFileParameters(parent, value));
-	    }
-	}
-
+        if (fileCreationJobNumber != jobId) { // jobId is a parent job
+            JobInfo childJob = ds.getJobInfo(fileCreationJobNumber);
+            childJob.setParameterInfoArray(removeOutputFileParameters(childJob, value));
+            ds.updateJob(childJob.getJobNumber(), childJob.getParameterInfo(), ((Integer) JobStatus.STATUS_MAP.get(childJob.getStatus())).intValue());
+        } 
+        else {
+            JobInfo parent = ds.getParent(jobId);
+            if (parent != null) { // jobId is a child job
+                parent.setParameterInfoArray(removeOutputFileParameters(parent, value));
+            }
+        }
     }
 
     public JobInfo[] findJobsThatCreatedFile(String fileURLOrJobNumber) throws WebServiceException {
