@@ -62,7 +62,6 @@ import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.WebServiceException;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -143,8 +142,6 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
        GET /jobResults/
        GET /jobResults/<job>
        GET /jobResults/<job>/
-       GET /jobResults/<job>?returnType=JSON
-       GET /jobResults/<job>/?returnType=JSON
        GET /jobResults/<job>/<file>
        GET /jobResults/<job>.zip
      * </pre>
@@ -196,28 +193,9 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         if (file == null) {
             String returnTypeParam = request.getParameter("returnType");
             if ("JSON".equalsIgnoreCase(returnTypeParam)) {
-                //return json formatted version of job 
-                JobInfoManager m = new JobInfoManager();
-                
-                String contextPath = request.getContextPath();
-                String cookie = request.getHeader("Cookie");
-
-                JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, useridFromSession, jobID);
-
-                try {
-                    response.setContentType("application/json");
-                    response.setHeader("Cache-Control", "no-cache");
-
-                    m.writeJobInfo(response.getWriter(), jobInfoWrapper);
-                    
-                    response.getWriter().flush();
-                    response.getWriter().close();
-                    
-                    return;
-                }
-                catch (JSONException e) {
-                    log.error("Error in ajax request for job info: "+e.getMessage(), e);
-                }
+                log.error("returnType=JSON not supported");
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "returnType=JSON not supported");
+                return;
             }
             String openVisualizers = request.getParameter("openVisualizers") == null ? "" : "&openVisualizers=true";
             
@@ -604,24 +582,6 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         try {
             PermissionsHelper permissionsHelper = new PermissionsHelper(currentUserId, jobNumber);
             permissionsHelper.setPermissions(updatedPermissions);
-            
-
-            /*boolean redirect = false;
-            String redirectParam = request.getParameter("redirect");
-            if (redirectParam != null) {
-                redirect = Boolean.valueOf(redirectParam);
-            }
-            if (redirect) {
-                String redirectTo = request.getHeader("Referer");
-                if (redirectTo == null || "".equals(redirectTo)) {
-                    redirectTo = request.getContextPath() + "/";
-                }
-                response.sendRedirect(redirectTo);
-            }
-            else {
-                response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-            }
-            */
 
             response.setContentType("text/javascript");
             JSONObject json = new JSONObject();
@@ -632,7 +592,6 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             
             response.getWriter().write(json.toString());
             return;
-            
         }
         catch (Exception e) {
             handleSetPermissionsException(response, "You are not authorized to change the permissions for this job", e);
