@@ -68,4 +68,15 @@ public class AboutBean {
         return versionBuildDate;
     }
 
+    /**
+     * @return the java version on which the server is running, <code>System.getProperty("java.version")</code>
+     */
+    public String getJavaVersion() {
+        String javaVersion = System.getProperty("java.version");
+        if (javaVersion == null) {
+            javaVersion = "";
+        }
+        return javaVersion;
+    }
+
 }
