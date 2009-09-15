@@ -36,7 +36,7 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.jfree.util.Log;
 
 /**
- * Wrapper class to access JobInfo from JSON and JSF formatted pages.
+ * Wrapper class to access JobInfo from JSF formatted pages.
  * Including support for pipelines and nested pipelines et cetera.
  * 
  * @author pcarr

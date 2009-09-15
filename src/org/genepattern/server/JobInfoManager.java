@@ -12,8 +12,6 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -27,7 +25,6 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.WritePipelineExecutionLog;
-import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -38,9 +35,6 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * Get job status information.
@@ -49,9 +43,6 @@ import org.json.JSONObject;
  */
 public class JobInfoManager {
     private static Logger log = Logger.getLogger(JobInfoManager.class);
-
-    final static private String dateFormatPattern = "MMM dd hh:mm:ss aa";
-    final static private DateFormat df = new SimpleDateFormat(dateFormatPattern);
     
     /**
      * Get the current job status information by doing a db query.
@@ -280,106 +271,6 @@ public class JobInfoManager {
             return "<p>Error in createVisualizerAppletTag: "+e.getLocalizedMessage()+"</p>";
             
         }
-    }
-    
-    public void writeJobInfo(Writer writer, JobInfoWrapper jobInfoWrapper) 
-    throws IOException,JSONException
-    {
-        JSONObject jobInfoObj = convertToJSON(jobInfoWrapper);
-        jobInfoObj.write(writer);
-    }
-    
-    private JSONObject convertToJSON(JobInfoWrapper jobInfoWrapper) throws JSONException {
-        JSONObject obj = new JSONObject();
-        obj.put("jobNumber", jobInfoWrapper.getJobNumber());
-        obj.put("formattedSize", jobInfoWrapper.getFormattedSize());
-        obj.put("userId", jobInfoWrapper.getUserId());
-        obj.put("taskName", jobInfoWrapper.getTaskName());
-        obj.put("truncatedTaskName", jobInfoWrapper.getTruncatedTaskName());
-        obj.put("dateSubmitted", formatDate( jobInfoWrapper.getDateSubmitted() ));
-        obj.put("dateCompleted", formatDate( jobInfoWrapper.getDateCompleted() ));
-        obj.put("elapsedTime",  jobInfoWrapper.getElapsedTimeMillis());
-        obj.put("status", jobInfoWrapper.getStatus());
-        obj.put("finished", jobInfoWrapper.isFinished());
-        obj.put("numAncestors", jobInfoWrapper.getNumAncestors().length);
-        obj.put("stepPath", jobInfoWrapper.getStepPath());
-        obj.put("rootJobNumber", jobInfoWrapper.getRoot().getJobNumber());
-        
-        obj.put("isPipeline", jobInfoWrapper.isPipeline());
-        obj.put("numStepsCompleted", jobInfoWrapper.getNumStepsCompleted());
-        obj.put("numSteps", jobInfoWrapper.getNumStepsInPipeline().length);
-
-        obj.put("isVisualizer", jobInfoWrapper.isVisualizer());
-        if (jobInfoWrapper.isVisualizer()) {
-            obj.put("visualizerAppletTag", jobInfoWrapper.getVisualizerAppletTag());
-        }
-        
-        //add input parameters
-        JSONArray inputParameters = new JSONArray();
-        for(JobInfoWrapper.ParameterInfoWrapper inputParam : jobInfoWrapper.getInputParameters()) {
-            JSONObject inp = new JSONObject();
-            inp.put("name", inputParam.getName());
-            inp.put("value", inputParam.getDisplayValue());
-            inp.put("truncatedDisplayValue", inputParam.getTruncatedDisplayValue());
-            inp.put("description", inputParam.getDescription());
-            
-            inputParameters.put(inp);
-        }
-        obj.put("inputParameters", inputParameters);
-        
-        //add input files
-        JSONArray inputFiles = new JSONArray();
-        for(JobInfoWrapper.InputFile inputFile : jobInfoWrapper.getInputFiles()) {
-            JSONObject inp = new JSONObject();
-            inp.put("name", inputFile.getDisplayName());
-            inp.put("value", inputFile.getDisplayValue());
-            inp.put("valueId", inputFile.getValueId());
-            inp.put("link", inputFile.getLink());
-            inp.put("truncatedDisplayValue", inputFile.getTruncatedDisplayValue());
-            inp.put("description", inputFile.getDescription());
-            
-            inputFiles.put(inp);
-        }
-        obj.put("inputFiles", inputFiles);
-        
-        //add output files
-        JSONArray outputFiles = new JSONArray();
-        for(JobInfoWrapper.OutputFile outputFile : jobInfoWrapper.getOutputFiles()) {
-            JSONObject inp = new JSONObject();
-            inp.put("name", outputFile.getDisplayName());
-            inp.put("value", outputFile.getDisplayValue());
-            inp.put("valueId", outputFile.getValueId());
-            inp.put("link", outputFile.getLink());
-            inp.put("truncatedDisplayValue", outputFile.getTruncatedDisplayValue());
-            inp.put("description", outputFile.getDescription());
-            inp.put("formattedSize", outputFile.getFormattedSize());
-            JSONArray moduleMenuItems = new JSONArray();
-            for (KeyValuePair pair : outputFile.getModuleMenuItems()) {
-            	JSONObject moduleMenuItem = new JSONObject();
-            	moduleMenuItem.put("key", pair.getKey());
-            	moduleMenuItem.put("value", pair.getValue());
-            	moduleMenuItems.put(moduleMenuItem);
-            }
-            inp.put("moduleMenuItems", moduleMenuItems);
-            outputFiles.put(inp);
-        }
-        obj.put("outputFiles", outputFiles);
-        
-
-        JSONArray children = new JSONArray();
-        for(JobInfoWrapper child : jobInfoWrapper.getChildren()) {
-            JSONObject childObj = convertToJSON(child);
-            children.put(childObj);
-        }
-        obj.put("children", children);
-        return obj;
-    }
-    
-    private String formatDate(Date date) {
-        if (date == null) {
-            return "";
-        }
-        return df.format(date);
     }
     
     public static File writeExecutionLog(String outDirName, JobInfoWrapper jobInfoWrapper, Properties props, ProcessBuilder processBuilder) {
