@@ -101,22 +101,24 @@ public class JobStatusBean {
         this.jobInfoWrapper = jobInfoManager.getJobInfo(cookie, contextPath, currentUserId, jobNumber);
           
         if (jobInfoWrapper == null) {
-            String errorMessage = "Job # "+jobInfoWrapper.getJobNumber() + " is deleted.";
+            String errorMessage = "Job # "+jobNumber+" is deleted.";
             UIBeanHelper.setErrorMessage(errorMessage);
             try {
                 HttpServletResponse response = UIBeanHelper.getResponse();
                 response.sendError(HttpServletResponse.SC_NOT_FOUND, errorMessage);
             }
             catch (IOException e) {
-                log.error("Error sending redirect: "+e.getMessage(), e);
+                log.error("Error sending error: "+e.getMessage(), e);
             }
         }
         
         //special-case for visualizers
-        visualizerStatus = new HashMap<Integer,String>(); 
-        for(JobInfoWrapper step : jobInfoWrapper.getAllSteps()) {
-            if (step.isVisualizer()) {
-                visualizerStatus.put(step.getJobNumber(), "PING");
+        if (jobInfoWrapper != null) {
+            visualizerStatus = new HashMap<Integer,String>(); 
+            for(JobInfoWrapper step : jobInfoWrapper.getAllSteps()) {
+                if (step.isVisualizer()) {
+                    visualizerStatus.put(step.getJobNumber(), "PING");
+                }
             }
         }
     }
