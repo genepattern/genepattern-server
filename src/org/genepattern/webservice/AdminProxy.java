@@ -16,7 +16,6 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -39,21 +38,17 @@ public class AdminProxy implements IAdminClient {
     AdminSoapBindingStub proxy;
 
     public AdminProxy(String url, String userName, String password)
-            throws WebServiceException {
+    throws WebServiceException 
+    {
         this(url, userName, password, true);
     }
 
-    public AdminProxy(String url, String userName, String password,
-            boolean maintainSession) throws WebServiceException {
+    public AdminProxy(String url, String userName, String password, boolean maintainSession) 
+    throws WebServiceException 
+    {
         try {
-            this.endpoint = url;
-            if (!(endpoint.startsWith("http://") || endpoint
-                    .startsWith("https://"))) {
-                this.endpoint = "http://" + this.endpoint;
-            }
-            String context = (String) System.getProperty("GP_Path", "/gp");
+            this.endpoint = ProxyUtil.createEndpoint(url, "/services/Admin");
 
-            this.endpoint = this.endpoint + context + "/services/Admin";
             this.service = new Service(new BasicClientConfig());
             proxy = new AdminSoapBindingStub(new URL(endpoint), service);
             proxy.setUsername(userName);
