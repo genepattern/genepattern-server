@@ -1,0 +1,78 @@
+<project default="jar">
+    <description>
+    Compile a custom authentication plugin into a jar file for deployment to a GenePattern Server.
+    Requires the java programming library.
+    </description>
+    
+    <!-- 
+      The IAuthenticationPlugin requires an implementation of the Servlet API
+      By default, this is installed with GenePattern here:
+      <GenePatternServer>/Tomcat/common/lib/servlet-api.jar
+    -->
+    <!-- property name="GenePatternServer" location="/Broad/Applications/gp-3.2.1/GenePatternServer" / -->
+    <!-- property name="servlet.api.jar" location="${GenePatternServer}/Tomcat/common/lib/servlet-api.jar" / -->
+    <property name="servlet.api.jar" location="./lib/javax.servlet.jar" />
+
+    <property name="client.lib.dir" location="gplib" />
+    <property name="client.genePatternUrl" value="http://genepattern.broadinstitute.org" />
+    <!-- property name="username" value="test" / -->
+    <!-- property name="password" value="test" / -->
+    
+    <property name="build.dir" value="build" description="location for extracting the client library and compiling the authentication plugin" />
+    <property name="dist.dir" value="dist" />
+    
+    <target name="init">
+        <mkdir dir="${client.lib.dir}" />
+        <mkdir dir="${build.dir}" />
+        <mkdir dir="${dist.dir}" />
+    </target>
+    
+    <path id="compile.classpath">
+        <pathelement location="${build.dir}" />
+        <pathelement location="${client.lib.dir}/GenePattern.jar" />
+        <pathelement location="${servlet.api.jar}" />
+    </path>
+
+    <target name="getClientLibrary" depends="init">
+        <description>Download the Java Programming Library from the server.</description>
+        <property name="http.url" value="${client.genePatternUrl}/gp/downloads/GenePattern.zip" />
+        <get src="${http.url}" dest="${client.lib.dir}/GenePattern.zip" usetimestamp="true" /> 
+        <unzip src="${client.lib.dir}/GenePattern.zip" dest="${client.lib.dir}" overwrite="true" />
+    </target>
+
+    <target name="compile" depends="getClientLibrary">
+        <available property="hasIAuthenticationPlugin" classpathref="compile.classpath" classname="org.genepattern.server.auth.IAuthenticationPlugin" />
+        <available property="hasHttpServletRequest" classpathref="compile.classpath" classname="javax.servlet.http.HttpServletRequest" />
+        <fail unless="hasIAuthenticationPlugin" message="requires org.genepattern.server.auth.IAuthenticationPlugin on classpath" />
+        <fail unless="hasHttpServletRequest" message="requires javax.servlet.http.HttpServletRequest on classpath" />
+        <javac srcdir="src" destdir="${build.dir}" classpathref="compile.classpath" />
+    </target>
+    
+    <target name="jar" depends="compile">
+        <property name="jar.file" location="${dist.dir}/custom_authentication.jar" />
+        <jar destfile="${jar.file}" basedir="${build.dir}" />
+        <echo>
+            To install the custom authentication plugin:
+            
+            1) Add the ${jar.file} and any required libraries to 
+               the &lt;GenePatternServer&gt;/Tomcat/webapps/gp/WEB-INF/lib/ directory.
+            
+            2) Edit your genepattern.properties file:
+               #the name of the [optional] IAuthenticationPlugin class
+               authentication.class=org.genepattern.server.auth.CustomAuthentication
+            
+            3) Restart your server.
+        </echo>
+    </target>
+    
+    <target name="clean">
+        <description>
+        Deletes everything, including the extracted client library and the downloaded client library zip file.
+        </description>
+        
+        <delete dir="${build.dir}" />
+        <delete dir="${client.lib.dir}" />
+        <delete dir="${dist.dir}" />
+    </target>
+    
+</project>
