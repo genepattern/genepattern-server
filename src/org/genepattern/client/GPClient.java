@@ -14,6 +14,7 @@ package org.genepattern.client;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskExecutor;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
+import org.jfree.util.Log;
 
 /**
  * This class is used to run modules on a GenePattern server.
@@ -71,11 +73,17 @@ public class GPClient {
      *                 If an error occurs while connecting to the server
      */
     public GPClient(String server, String username) throws WebServiceException {
-	this(server, username, null);
+        this(server, username, null);
     }
 
     /**
      * Creates a new instance.
+     * As initially implemented (circa GP 3.1 through 3.2.0) the server arg was expected to be of this form,
+     *     <protocol>://<host>[:<port>]
+     *     e.g. http://genepattern.broadinstitute.org or http://127.0.0.1:8080
+     * the following form for the server arg is also accepted (circa GP 3.2.1+),
+     *     <protocol>://<host>[:<port>][<path>]
+     *     e.g. http://genepattern.broadinstitute.org/gp/ or http://127.0.0.1:8080/gp
      * 
      * @param server
      *                The server, for example http://127.0.0.1:8080
@@ -87,25 +95,40 @@ public class GPClient {
      *                 If an error occurs while connecting to the server
      */
     public GPClient(String server, String username, String password) throws WebServiceException {
-        if (server != null && server.endsWith("/")) {
-            //if necessary, remove the trailing slash, because the job downloader expects the trailing slash removed
-            server = server.substring(0, server.length() - 1);
+        URL serverUrl = null;
+        try {
+            serverUrl = new URL(server);
+            if (serverUrl.getPort() == -1) {
+                server = serverUrl.getProtocol() + "://" + serverUrl.getHost();
+            }
+            else {
+                server = serverUrl.getProtocol() + "://" + serverUrl.getHost() + ":" + serverUrl.getPort();
+            }
         }
-	this.server = server;
-	this.username = username;
-	this.password = password;
-	this.cachedTasks = new LinkedHashMap<String, TaskInfo>(MAX_ENTRIES + 1, .75F, true) {
-	    @Override
-	    public boolean removeEldestEntry(Map.Entry<String, TaskInfo> eldest) {
-		return size() > MAX_ENTRIES;
-	    }
-	};
-	try {
-	    adminProxy = new AdminProxy(server, username, password);
-	} catch (Exception e) {
-	    throw new WebServiceException(e);
-	}
+        catch (MalformedURLException e) {
+            throw new WebServiceException(e);
+        }
 
+        String serverPath = serverUrl.getPath();
+        if (serverPath != null && !serverPath.equals("") && !serverPath.equals("/gp") && !serverPath.equals("/gp/")) {
+            Log.error("Ignoring server path: "+serverPath);
+        }
+        
+        this.server = server;
+        this.username = username;
+        this.password = password;
+        this.cachedTasks = new LinkedHashMap<String, TaskInfo>(MAX_ENTRIES + 1, .75F, true) {
+            @Override
+            public boolean removeEldestEntry(Map.Entry<String, TaskInfo> eldest) {
+                return size() > MAX_ENTRIES;
+            }
+        };
+        try {
+            adminProxy = new AdminProxy(this.server, this.username, this.password);
+        }
+        catch (Exception e) {
+            throw new WebServiceException(e);
+        }
     }
 
     /**

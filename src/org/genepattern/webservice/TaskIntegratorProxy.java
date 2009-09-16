@@ -46,12 +46,7 @@ public class TaskIntegratorProxy {
     public TaskIntegratorProxy(String url, String userName, String password, boolean maintainSession)
             throws WebServiceException {
         try {
-            this.endpoint = url;
-            String context = (String) System.getProperty("GP_Path", "/gp");
-            this.endpoint = this.endpoint + context + "/services/TaskIntegrator";
-            if (!(endpoint.startsWith("http://"))) {
-                this.endpoint = "http://" + this.endpoint;
-            }
+            this.endpoint = ProxyUtil.createEndpoint(url, "/services/TaskIntegrator");
             this.service = new Service(new BasicClientConfig());
             stub = new TaskIntegratorSoapBindingStub(new URL(endpoint), service);
             stub.setUsername(userName);

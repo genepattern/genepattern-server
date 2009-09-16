@@ -14,6 +14,7 @@ package org.genepattern.webservice;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import java.util.Set;
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
 
+import org.apache.axis.AxisFault;
 import org.apache.axis.client.Service;
 import org.apache.axis.configuration.BasicClientConfig;
 import org.apache.log4j.Logger;
@@ -35,7 +37,7 @@ import org.apache.log4j.Logger;
  */
 public class AnalysisWebServiceProxy {
     private static final Logger log = Logger.getLogger(AnalysisWebServiceProxy.class);
-
+    
     String endpoint = null;
     org.apache.axis.client.Service service = null;
     AnalysisSoapBindingStub stub;
@@ -44,33 +46,31 @@ public class AnalysisWebServiceProxy {
         this(url, userName, password, true);
     }
 
+    public AnalysisWebServiceProxy(String url, String userName, String password, boolean maintainSession)
+    throws WebServiceException {
+        try {
+            this.endpoint = ProxyUtil.createEndpoint(url, "/services/Analysis");
+            
+            this.service = new Service(new BasicClientConfig());
+            stub = new AnalysisSoapBindingStub(new URL(endpoint), service);
+            stub.setUsername(userName);
+            stub.setPassword(password);
+            stub.setMaintainSession(maintainSession);
+        } 
+        catch (MalformedURLException e) {
+            throw new Error(e);
+        } 
+        catch (AxisFault af) {
+            throw new WebServiceException(af);
+        }
+    }
+
     public void setTimeout(int timeout) {
         stub.setTimeout(timeout);
     }
 
     public AnalysisSoapBindingStub getStub() {
         return stub;
-    }
-
-    public AnalysisWebServiceProxy(String url, String userName, String password, boolean maintainSession)
-            throws WebServiceException {
-        try {
-            this.endpoint = url;
-            String context = (String) System.getProperty("GP_Path", "/gp");
-            this.endpoint = this.endpoint + context + "/services/Analysis";
-            if (!(endpoint.startsWith("http://") || endpoint.startsWith("https://"))) {
-                this.endpoint = "http://" + this.endpoint;
-            }
-            this.service = new Service(new BasicClientConfig());
-            stub = new AnalysisSoapBindingStub(new URL(endpoint), service);
-            stub.setUsername(userName);
-            stub.setPassword(password);
-            stub.setMaintainSession(maintainSession);
-        } catch (org.apache.axis.AxisFault af) {
-            throw new WebServiceException(af);
-        } catch (java.net.MalformedURLException me) {
-            throw new Error(me);
-        }
     }
 
     public JobInfo recordClientJob(int taskID, ParameterInfo[] params) throws WebServiceException {
