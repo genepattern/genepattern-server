@@ -22,8 +22,7 @@
   <ui:composition>
     <!--  Loop through output files -->
     <t:dataList var="p" value="#{recentJob.outputFileParameterInfos}" rowIndexVar="paramIndex">
-      <h:outputLink value="#{facesContext.externalContext.requestContextPath}/jobResults/#{recentJob.jobNumber}/#{p.name}">#{p.name}              
-      </h:outputLink>
+      <h:outputLink value="#{p.url}">#{p.truncatedDisplayName}</h:outputLink>
       
       <!-- Image for popup menu -->
       <img src="/gp/images/smallOptions.gif" 

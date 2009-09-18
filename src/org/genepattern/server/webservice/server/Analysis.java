@@ -35,11 +35,11 @@ import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.BatchJobDAO;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.GenericWebService;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
-import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.FileWrapper;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
@@ -142,8 +142,6 @@ public class Analysis extends GenericWebService {
      *                the job id
      */
     public void deleteJob(int jobId) throws WebServiceException {
-
-	JobInfo jobInfo = getJob(jobId);
 	try {
 	    terminateJob(jobId);
 	    File jobDir = new File(org.genepattern.server.genepattern.GenePatternAnalysisTask.getJobDir(String
@@ -192,45 +190,39 @@ public class Analysis extends GenericWebService {
 
         AnalysisDAO ds = new AnalysisDAO();
         JobInfo jobInfo = ds.getJobInfo(jobId);
+        if (jobInfo == null) {
+            log.error("AnalysisDAO.getJobInfo("+jobId+") return null");
+            throw new WebServiceException("jobResultFile not deleted: for jobId="+jobId+", value="+value+", null jobInfo");
+        }
+        if (jobInfo.getJobNumber() != jobId) {
+            log.error("mismatched job number: jobId="+jobId+", jobInfo.getJobNumber()="+jobInfo.getJobNumber());
+            throw new WebServiceException("jobResultFile not deleted: for jobId="+jobId+", value="+value+", mismatched jobId");
+        }
 
         int beforeDeletionLength = 0;
         ParameterInfo[] params = jobInfo.getParameterInfoArray();
         if (params != null) {
             beforeDeletionLength = params.length;
         }
-
-        jobInfo.setParameterInfoArray(removeOutputFileParameters(jobInfo, value));
+        
+        ParameterInfo[] after = removeOutputFileParameters(jobInfo, value);
+        jobInfo.setParameterInfoArray(after);
 
         if (jobInfo.getParameterInfoArray().length == beforeDeletionLength) {
             throw new WebServiceException(new FileNotFoundException());
         }
 
-        int fileCreationJobNumber = jobInfo.getJobNumber();
-
-        String fileName = value;
-        int index = StringUtils.lastIndexOfFileSeparator(fileName);
-        if (index != -1) {
-            fileCreationJobNumber = Integer.parseInt(fileName.substring(0, index));
-            fileName = fileName.substring(index + 1, fileName.length());
-        }
-        String jobDir = org.genepattern.server.genepattern.GenePatternAnalysisTask.getJobDir(String.valueOf(fileCreationJobNumber));
-        File file = new File(jobDir, fileName);
+        String jobDir = GenePatternAnalysisTask.getJobDir(""+jobId);
+        File file = new File(jobDir, value);
         if (file.exists()) {
             file.delete();
         }
 
         ds.updateJob(jobInfo.getJobNumber(), jobInfo.getParameterInfo(), ((Integer) JobStatus.STATUS_MAP.get(jobInfo.getStatus())).intValue());
-
-        if (fileCreationJobNumber != jobId) { // jobId is a parent job
-            JobInfo childJob = ds.getJobInfo(fileCreationJobNumber);
-            childJob.setParameterInfoArray(removeOutputFileParameters(childJob, value));
-            ds.updateJob(childJob.getJobNumber(), childJob.getParameterInfo(), ((Integer) JobStatus.STATUS_MAP.get(childJob.getStatus())).intValue());
-        } 
-        else {
-            JobInfo parent = ds.getParent(jobId);
-            if (parent != null) { // jobId is a child job
-                parent.setParameterInfoArray(removeOutputFileParameters(parent, value));
-            }
+        JobInfo parent = ds.getParent(jobId);
+        if (parent != null) { 
+            // jobId is a child job
+            parent.setParameterInfoArray(removeOutputFileParameters(parent, value));
         }
     }
 
@@ -238,6 +230,7 @@ public class Analysis extends GenericWebService {
 	String userID = getUsernameFromContext();
 	ProvenanceFinder pf = new ProvenanceFinder(userID);
 
+	//TODO: optimize, no need for this method
 	JobInfo job = pf.findJobThatCreatedFile(fileURLOrJobNumber);
 
 	Set<JobInfo> jobSet = pf.findJobsThatCreatedFile(fileURLOrJobNumber);
@@ -695,20 +688,20 @@ public class Analysis extends GenericWebService {
     }
 
     private ParameterInfo[] removeOutputFileParameters(JobInfo jobInfo, String value) {
-	ParameterInfo[] params = jobInfo.getParameterInfoArray();
-	if (params == null) {
-	    return new ParameterInfo[0];
-	}
-	List<ParameterInfo> newParams = new ArrayList<ParameterInfo>();
-	for (int i = 0; i < params.length; i++) {
-	    if (!(params[i].isOutputFile())) {
-		newParams.add(params[i]); // not an output file
-	    } else if (!(params[i].getValue().equals(value))) {
-		newParams.add(params[i]); // is a different op file
-
-	    }
-	}
-	return newParams.toArray(new ParameterInfo[newParams.size()]);
+        ParameterInfo[] params = jobInfo.getParameterInfoArray();
+        if (params == null) {
+            return new ParameterInfo[0];
+        }
+        List<ParameterInfo> newParams = new ArrayList<ParameterInfo>();
+        for (int i = 0; i < params.length; i++) {
+            if (!(params[i].isOutputFile())) {
+                newParams.add(params[i]); // not an output file
+            } 
+            else if (!(params[i].getValue().equals(value))) {
+                newParams.add(params[i]); // is a different op file
+            }
+        }
+        return newParams.toArray(new ParameterInfo[newParams.size()]);
     }
 
     // find any input files and concat axis name with original file name.

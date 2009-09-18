@@ -897,131 +897,125 @@ public class JobBean {
     }
 
     public static class OutputFileInfo {
+        private static final Comparator<KeyValuePair> COMPARATOR = new KeyValueComparator();
+        boolean exists;
+        Date lastModified;
+        List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
+        ParameterInfo p;
+        boolean selected = false;
+        long size;
+        int jobNumber;
+        List<KeyValuePair> moduleInputParameters;
+        String kind;
 
-	private static final Comparator<KeyValuePair> COMPARATOR = new KeyValueComparator();
+        public OutputFileInfo(ParameterInfo p, File file, Collection<TaskInfo> modules, int jobNumber, String kind) {
+            this.kind = kind;
+            this.p = p;
+            this.size = file.length();
+            this.exists = file.exists();
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeInMillis(file.lastModified());
+            this.lastModified = cal.getTime();
 
-	boolean exists;
+            if (modules != null) {
+                for (TaskInfo t : modules) {
+                    KeyValuePair mi = new KeyValuePair(t.getShortName(), UIBeanHelper.encode(t.getLsid()));
+                    moduleMenuItems.add(mi);
+                }
+                Collections.sort(moduleMenuItems, COMPARATOR);
+            }
 
-	Date lastModified;
+            this.jobNumber = jobNumber;
+        }
 
-	List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
+        public String getUrl() {
+            return UIBeanHelper.getServer() + "/jobResults/" + getValue();
+        }
 
-	ParameterInfo p;
+        public int getJobNumber() {
+            return jobNumber;
+        }
 
-	boolean selected = false;
+        public String getDescription() {
+            return p.getDescription();
+        }
 
-	long size;
+        public String getFormattedSize() {
+            return JobHelper.getFormattedSize(size);
+        }
 
-	int jobNumber;
+        public String getLabel() {
+            return p.getLabel();
+        }
 
-	List<KeyValuePair> moduleInputParameters;
+        public Date getLastModified() {
+            return lastModified;
+        }
 
-	String kind;
+        public List<KeyValuePair> getModuleMenuItems() {
+            return moduleMenuItems;
+        }
 
-	public OutputFileInfo(ParameterInfo p, File file, Collection<TaskInfo> modules, int jobNumber, String kind) {
-	    this.kind = kind;
-	    this.p = p;
-	    this.size = file.length();
-	    this.exists = file.exists();
-	    Calendar cal = Calendar.getInstance();
-	    cal.setTimeInMillis(file.lastModified());
-	    this.lastModified = cal.getTime();
+        public String getName() {
+            return p.getName();
+        }
 
-	    if (modules != null) {
-		for (TaskInfo t : modules) {
-		    KeyValuePair mi = new KeyValuePair(t.getShortName(), UIBeanHelper.encode(t.getLsid()));
-		    moduleMenuItems.add(mi);
-		}
-		Collections.sort(moduleMenuItems, COMPARATOR);
-	    }
+        public String getTruncatedDisplayName() {
+            String name = "";
+            if (p != null) {
+                name = p.getName();
+            }
+            if (name != null && name.length() > 70) {
+                name = name.substring(0, 35)+"..."+name.substring(name.length()-32);
+            }
+            return name;
+        }
 
-	    this.jobNumber = jobNumber;
-	}
+        public long getSize() {
+            return size;
+        }
 
-	public String getUrl() {
-	    return UIBeanHelper.getServer() + "/jobResults/" + getValue();
-	}
+        public String getUIValue(ParameterInfo formalParam) {
+            return p.getUIValue(formalParam);
+        }
 
-	public int getJobNumber() {
-	    return jobNumber;
-	}
+        public String getValue() {
+            return p.getValue();
+        }
 
-	public String getDescription() {
-	    return p.getDescription();
-	}
+        /**
+         * @return a valid value to be used for the 'id' attribute of an html
+         *         div tag. The '/' character is not allowed, so replace all '/'
+         *         with '_'.
+         */
+        public String getValueId() {
+            String str = getValue().replace('/', '_');
+            return str;
+        }
 
-	public String getFormattedSize() {
-	    return JobHelper.getFormattedSize(size);
-	}
+        public boolean hasChoices(String delimiter) {
+            return p.hasChoices(delimiter);
+        }
 
-	public String getLabel() {
-	    return p.getLabel();
-	}
+        public boolean isSelected() {
+            return selected;
+        }
 
-	public Date getLastModified() {
-	    return lastModified;
-	}
+        public void setSelected(boolean bool) {
+            this.selected = bool;
+        }
 
-	public List<KeyValuePair> getModuleMenuItems() {
-	    return moduleMenuItems;
-	}
+        public String toString() {
+            return p.toString();
+        }
 
-	public String getName() {
-	    return UIBeanHelper.encode(p.getName());
-	}
-	
-	public String getTruncatedDisplayName() {
-    	if (getName() != null && getName().length() > 70) {
-    		return UIBeanHelper.encode(getName().substring(0, 35)+"..." + getName().substring(getName().length()-32, getName().length()));
-    	} else {
-    		return UIBeanHelper.encode(getName());
-    	}
-    }
+        public List<KeyValuePair> getModuleInputParameters() {
+            return moduleInputParameters;
+        }
 
-	public long getSize() {
-	    return size;
-	}
-
-	public String getUIValue(ParameterInfo formalParam) {
-	    return p.getUIValue(formalParam);
-	}
-
-	public String getValue() {
-	    return p.getValue();
-	}
-
-	/**
-	 * @return a valid value to be used for the 'id' attribute of an html div tag. The '/' character is not allowed,
-	 *         so replace all '/' with '_'.
-	 */
-	public String getValueId() {
-	    String str = getValue().replace('/', '_');
-	    return str;
-	}
-
-	public boolean hasChoices(String delimiter) {
-	    return p.hasChoices(delimiter);
-	}
-
-	public boolean isSelected() {
-	    return selected;
-	}
-
-	public void setSelected(boolean bool) {
-	    this.selected = bool;
-	}
-
-	public String toString() {
-	    return p.toString();
-	}
-
-	public List<KeyValuePair> getModuleInputParameters() {
-	    return moduleInputParameters;
-	}
-
-	public String getKind() {
-	    return kind;
-	}
+        public String getKind() {
+            return kind;
+        }
     }
 
     private static class KeyValueComparator implements Comparator<KeyValuePair> {

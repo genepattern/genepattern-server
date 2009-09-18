@@ -73,6 +73,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -1309,11 +1310,11 @@ public class GenePatternAnalysisTask {
 	    }
 	    log.error(taskName + " error: " + e);
 	    try {
-	        File outFile = writeStringToFile(outDirName, STDERR, e.getMessage() + "\n\n");
-	        addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
-
+	        File stderrFile = writeStringToFile(outDirName, STDERR, e.getMessage() + "\n\n");
+	        addFileToOutputParameters(jobInfo, stderrFile.getName(), stderrFile.getName(), parentJobInfo);
 	        recordJobCompletion(jobInfo, parentJobInfo, JobStatus.JOB_ERROR, jobStartTime);
-	    } catch (Exception e2) {
+	    } 
+	    catch (Exception e2) {
 	        log.error(taskName + " error: unable to update job error status" + e2);
 	    }
 	    // IndexerDaemon.notifyJobComplete(jobInfo.getJobNumber());
@@ -1323,6 +1324,34 @@ public class GenePatternAnalysisTask {
 	        EncryptionUtil.getInstance().removePipelineUserKey(userKey);
 	    }
 	}
+    }
+
+    private List<File> findAllFiles(File root, FilenameFilter filenameFilter) {
+        List<File> all = new ArrayList<File>();
+        addAllFiles(all, root, filenameFilter);
+        return all;
+    }
+    
+    private void addAllFiles(List<File> all, File root, FilenameFilter filenameFilter) {
+        if (root == null) {
+            return;
+        }
+        if (!root.canRead()) {
+            log.error("Can't read file: "+root.getPath());
+            return;
+        }
+        if (root.isFile()) {
+            all.add(root);
+        }
+        else if (root.isDirectory()) {
+            File[] files = root.listFiles(filenameFilter);
+            for(File f : files) {
+                addAllFiles(all,f,filenameFilter);
+            }
+        }
+        else {
+            log.error("File is neither file nor directory: "+root.getPath());
+        }
     }
 
     /**
@@ -1346,14 +1375,20 @@ public class GenePatternAnalysisTask {
         filenameFilter.setGlob(System.getProperty(JobResultsFilenameFilter.KEY));
 
         File outputDir = new File(outDirName);
-        File[] outputFiles = outputDir.listFiles(filenameFilter);
-        sortOutputFiles(outputFiles);
-
+        List<File> outputFiles = findAllFiles(outputDir, filenameFilter);
+        //sort output files by last modified date
+        Collections.sort(outputFiles, fileComparator);
         JobInfo parentJobInfo = getParentJobInfo(jobInfo.getJobNumber());
 
+        String rootPath = outputDir.getAbsolutePath();
         for (File f : outputFiles) {
             log.debug("adding output file to output parameters " + f.getName() + " from " + outDirName);
-            addFileToOutputParameters(jobInfo, f.getName(), f.getName(), parentJobInfo);
+            //get the file path relative to the outputDir
+            String fPath = f.getAbsolutePath();
+            if (fPath.startsWith(rootPath)) {
+                fPath = fPath.substring(rootPath.length() + 1); //skip the file separator character
+            }
+            addFileToOutputParameters(jobInfo, fPath, fPath, parentJobInfo);
         }
 
         if (stdoutFilename == null) {
@@ -1393,14 +1428,6 @@ public class GenePatternAnalysisTask {
             return 1;
         }
     };
-    /**
-     * Sorted output files by lastModified() date.
-     * @param outputFiles
-     */
-    private void sortOutputFiles(File[] outputFiles) {
-        Arrays.sort(outputFiles, fileComparator);
-    }
-
 
     /**
      * Record job completion status in the database.
@@ -2745,7 +2772,7 @@ public class GenePatternAnalysisTask {
 	    parentJobInfo.addParameterInfo(paramOut);
 	}
     }
-
+    
     /**
      * takes a jobID and a Hashtable in which the jobID is putatively listed, and attempts to terminate the job. Note
      * that Process.destroy() is not always successful. If a process cannot be killed without a "kill -9", it seems not
