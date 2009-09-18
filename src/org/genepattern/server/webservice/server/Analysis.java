@@ -54,7 +54,7 @@ import org.genepattern.webservice.WebServiceException;
 public class Analysis extends GenericWebService {
 
     public enum JobSortOrder {
-	JOB_NUMBER, JOB_STATUS, SUBMITTED_DATE, COMPLETED_DATE, USER, MODULE_NAME
+        JOB_NUMBER, JOB_STATUS, SUBMITTED_DATE, COMPLETED_DATE, USER, MODULE_NAME
     }
 
     private static Logger log = Logger.getLogger(Analysis.class);
@@ -63,7 +63,6 @@ public class Analysis extends GenericWebService {
      * Default constructor. Constructs a <code>Analysis</code> web service object.
      */
     public Analysis() {
-
     }
 
     /**
@@ -99,17 +98,17 @@ public class Analysis extends GenericWebService {
      * @throws WebServiceException
      */
     public String createProvenancePipeline(JobInfo[] jobs, String pipelineName) throws WebServiceException {
-	if (!AuthorizationHelper.createPipeline(getUsernameFromContext())) {
-	    throw new WebServiceException("You are not authorized to perform this action.");
-	}
+        if (!AuthorizationHelper.createPipeline(getUsernameFromContext())) {
+            throw new WebServiceException("You are not authorized to perform this action.");
+        }
 
-	String userID = getUsernameFromContext();
-	ProvenanceFinder pf = new ProvenanceFinder(userID);
-	TreeSet<JobInfo> jobSet = new TreeSet<JobInfo>();
-	for (int i = 0; i < jobs.length; i++) {
-	    jobSet.add(jobs[i]);
-	}
-	return pf.createProvenancePipeline(jobSet, pipelineName);
+        String userID = getUsernameFromContext();
+        ProvenanceFinder pf = new ProvenanceFinder(userID);
+        TreeSet<JobInfo> jobSet = new TreeSet<JobInfo>();
+        for (int i = 0; i < jobs.length; i++) {
+            jobSet.add(jobs[i]);
+        }
+        return pf.createProvenancePipeline(jobSet, pipelineName);
     }
 
     /**
@@ -121,15 +120,14 @@ public class Analysis extends GenericWebService {
      * @throws WebServiceException
      */
     public String createProvenancePipeline(String fileUrlOrJobNumber, String pipelineName) throws WebServiceException {
-	if (!AuthorizationHelper.createPipeline(getUsernameFromContext())) {
-	    throw new WebServiceException("You are not authorized to perform this action.");
-	}
-	String userID = getUsernameFromContext();
+        if (!AuthorizationHelper.createPipeline(getUsernameFromContext())) {
+            throw new WebServiceException("You are not authorized to perform this action.");
+        }
+        String userID = getUsernameFromContext();
 
-	ProvenanceFinder pf = new ProvenanceFinder(userID);
-	JobInfo job = pf.findJobThatCreatedFile(fileUrlOrJobNumber);
-	String lsid = pf.createProvenancePipeline(fileUrlOrJobNumber, pipelineName);
-	return lsid;
+        ProvenanceFinder pf = new ProvenanceFinder(userID);
+        String lsid = pf.createProvenancePipeline(fileUrlOrJobNumber, pipelineName);
+        return lsid;
     }
 
     /**
