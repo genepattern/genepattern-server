@@ -230,9 +230,6 @@ public class Analysis extends GenericWebService {
 	String userID = getUsernameFromContext();
 	ProvenanceFinder pf = new ProvenanceFinder(userID);
 
-	//TODO: optimize, no need for this method
-	JobInfo job = pf.findJobThatCreatedFile(fileURLOrJobNumber);
-
 	Set<JobInfo> jobSet = pf.findJobsThatCreatedFile(fileURLOrJobNumber);
 	JobInfo[] jobs = new JobInfo[jobSet.size()];
 	int i = 0;
