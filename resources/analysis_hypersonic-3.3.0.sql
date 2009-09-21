@@ -14,4 +14,4 @@ constraint ba_bj_fk foreign key (BATCH_JOB) references BATCH_JOB(JOB_NO) on dele
 constraint ba_aj_fk foreign key (ANALYSIS_JOB) references ANALYSIS_JOB(JOB_NO) on delete cascade
 );
 -- update schema version
-update props set value='3.2.1' where key='schemaVersion';
+update props set value='3.3.0' where key='schemaVersion';
