@@ -389,10 +389,10 @@ public class JobInfoWrapper implements Serializable {
             File inputFileParent = inputFile.getParentFile();
             File inputFileGrandParent = inputFileParent == null ? null : inputFileParent.getParentFile();
             File webUploadDirectory = new File(System.getProperty("java.io.tmpdir"));
-            isWebUpload = inputFileGrandParent.equals(webUploadDirectory);
+            isWebUpload = inputFileGrandParent != null && inputFileGrandParent.equals(webUploadDirectory);
             if (!isWebUpload) {
                 File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
-                isSoapUpload = inputFileGrandParent.equals(soapAttachmentDir);
+                isSoapUpload = inputFileGrandParent != null && inputFileGrandParent.equals(soapAttachmentDir);
             }
             
             if (isWebUpload) {
