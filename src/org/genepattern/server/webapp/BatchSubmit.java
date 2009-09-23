@@ -47,6 +47,7 @@ public class BatchSubmit {
 	private boolean matchedFiles = true;
 	private Integer id;
 	List<ParameterInfo> missingParameters = new ArrayList<ParameterInfo>();
+	private final String multiSuffix = "_multifile";
 
 	// Collect input parameters.
 	// Find multi-file input file parameters
@@ -94,12 +95,12 @@ public class BatchSubmit {
 			String value;
 
 			value = formValues.get(pinfo.getName());
-			if (value != null) {
+			if (value != null && value.length() > 0) {
 				pinfo.setValue(value);
 			} else {
 				// Perhaps, this form value has been submitted as a url
 				value = formValues.get(pinfo.getName() + "_url");
-				if (value != null) {
+				if (value != null  && value.length() > 0) {
 					pinfo.getAttributes().put(ParameterInfo.MODE,
 							ParameterInfo.URL_INPUT_MODE);
 					pinfo.getAttributes().remove(ParameterInfo.TYPE);
@@ -110,7 +111,7 @@ public class BatchSubmit {
 			// Was this value required?
 			if ((value == null) || (value.trim().length() == 0)) {
 				// Is it going to be filled in by our multi file submit process
-				if (multiFileValues.get(pinfo.getName() + "_url") == null) {
+				if (multiFileValues.get(pinfo.getName()) == null) {
 					boolean isOptional = ((String) pinfo
 							.getAttributes()
 							.get(
@@ -151,7 +152,7 @@ public class BatchSubmit {
 				for (String parameter : multiFileValues.keySet()) {
 					String parameterValue = multiFileValues.get(parameter)
 							.getFilenames().get(i).fullPath();
-					assignParameter(undecorate(parameter), parameterValue,
+					assignParameter(parameter, parameterValue,
 							parameterInfoArray);
 				}
 				// The task runner can move files to the output directory.
@@ -159,34 +160,35 @@ public class BatchSubmit {
 				// we have to make copies of the file.
 				for (int p = 0; p < parameterInfoArray.length; p++) {
 					ParameterInfo pi = parameterInfoArray[p];
-					// Make sure it's not a parameter we just set
-					if (!multiFileValues.containsKey(pi.getName() + "_url")) {
-						String type = (String) pi.getAttributes().get(
-								ParameterInfo.TYPE);
-						if (type != null
-								&& type.compareTo(ParameterInfo.FILE_TYPE) == 0) {
-							String mode = (String) pi.getAttributes().get(
-									ParameterInfo.MODE);
-							if (mode != null
-									&& mode.compareTo(ParameterInfo.INPUT_MODE) == 0) {
-								File source = new File(pi.getValue());
-								if (!source.isDirectory()){
-									// It's an input file. Make a copy.								.
-									Filename filename = new Filename(pi.getValue());								
-	
-									File tempDir = File.createTempFile(userName
-											+ "_run", null);
-									tempDir.delete();
-									tempDir.mkdir();
-									File file = new File(tempDir, filename
-											.filenameWithExtension());
-									GenePatternAnalysisTask.copyFile(source, file);
-									pi.setValue(file.getCanonicalPath());
-								}
-							}
-						}
-					}
-
+    				if (pi.getValue() != null  && pi.getValue().trim().length() != 0){
+    					// Make sure it's not a parameter we just set
+    					if (!multiFileValues.containsKey(pi.getName())) {
+    						String type = (String) pi.getAttributes().get(
+    								ParameterInfo.TYPE);
+    						if (type != null
+    								&& type.compareTo(ParameterInfo.FILE_TYPE) == 0) {
+    							String mode = (String) pi.getAttributes().get(
+    									ParameterInfo.MODE);
+    							if (mode != null
+    									&& mode.compareTo(ParameterInfo.INPUT_MODE) == 0) {
+    								File source = new File(pi.getValue());
+    								if (!source.isDirectory()){
+    									// It's an input file. Make a copy.								.
+    									Filename filename = new Filename(pi.getValue());								
+    	
+    									File tempDir = File.createTempFile(userName
+    											+ "_run", null);
+    									tempDir.delete();
+    									tempDir.mkdir();
+    									File file = new File(tempDir, filename
+    											.filenameWithExtension());
+    									GenePatternAnalysisTask.copyFile(source, file);
+    									pi.setValue(file.getCanonicalPath());
+    								}
+    							}
+    						}
+    					}
+    				}
 				}
 				JobInfo job = analysisClient.submitJob(taskInfo.getID(),
 						parameterInfoArray);
@@ -240,11 +242,10 @@ public class BatchSubmit {
 		return true;
 	}
 
-	// The filename fields are decorated with the appendix "_url" to show that
-	// this
-	// was a textfield. Hack off the appendix here
-	private String undecorate(String urlKey) {
-		return urlKey.substring(0, urlKey.length() - 4);
+	//Submitted multifile fields for param XX arrive in the field XX_multiSuffix
+	//Get the root value here
+	private String undecorate(String key) {		
+		return key.substring(0, key.length() - multiSuffix.length());
 	}
 
 	private void assignParameter(String key, String val,
@@ -289,20 +290,23 @@ public class BatchSubmit {
 	private void readFormParameter(FileItem submission) {
 		String formName = submission.getFieldName();
 		String formValue = submission.getString();
-
-		MultiFileParameter multiFile = new MultiFileParameter(formValue);
-		if (multiFile.getNumFiles() > 1) {
-			multiFileValues.put(formName, multiFile);
+		
+		if (! formName.endsWith(multiSuffix)){
+			formValues.put(formName, formValue);					
 		} else {
-			if (formName.endsWith("_url") && formValue.endsWith(";")) {
-				formValues.put(formName.substring(0, formName.length() - 4),
+			MultiFileParameter multiFile = new MultiFileParameter(formValue);	
+			if (multiFile.getNumFiles() > 1) {
+				multiFileValues.put(undecorate(formName), multiFile);
+			} else if (formValue.endsWith(";")) {				
+			//Handle the special case where the user used the MultiFile uploader to upload a single file.
+			//If the formName is in the style XX_multifile, and the value ends with ;, then it's 
+			// a single value for parameter XX, so put it in formValues, not multiFileValues
+				formValues.put(undecorate(formName),
 						formValue.substring(0, formValue.length() - 1));
 			} else {
-				formValues.put(formName, formValue);
+				log.error ("Unexpected submission form parameter " + formName + ":" + formValue);
 			}
 		}
-
-		log.debug("Storing " + formName + " : " + submission.getString());
 	}
 
 	private void loadAttachedFile(String prefix, FileItem submission)
