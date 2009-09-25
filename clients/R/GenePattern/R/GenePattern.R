@@ -692,7 +692,7 @@ read.cls <- function(file) {
 #------------------------------------------------------------------------------------------------------
 write.cls <-
 #
-# write a CLS result to a file.
+# writes a cls result to a file. A cls results is a list containing names and labels
 function(cls, filename, check.file.extension=TRUE)
 {
 	if(check.file.extension) {
@@ -703,20 +703,30 @@ function(cls, filename, check.file.extension=TRUE)
 
 	cat(file=file, length(cls$labels), length(levels(cls$labels)), "1\n")
 
+    # write cls names
 	if(length(cls$names) > 0) {
 		cat(file=file, "# ")
-		for(i in 1:(length(cls$names) - 1)) {
+        i <- 1
+		while(i < length(cls$names)) {
 			cat(file=file, cls$names[i])
 			cat(file=file, " ")
+
+			i <- i+1
 		}
 		cat(file=file, cls$names[length(cls$names)])
 		cat(file=file, "\n")
 	}
-	for(i in 1:(length(cls$labels)-1)) {
-		cat(file=file, cls$labels[[i]]-1)
+
+   # write cls labels
+	i <-1
+	while(i < length(cls$labels)){
+		cat(file=file, as.numeric(cls$labels[[i]])-1)
 		cat(file=file, " ")
+
+		i <- i+1
 	}
-	cat(file=file, cls$labels[[length(cls$labels)]]-1)
+	cat(file=file, as.numeric(cls$labels[[length(cls$labels)]])-1)
+
 	return(filename)
 }
 #------------------------------------------------------------------------------------------------------
