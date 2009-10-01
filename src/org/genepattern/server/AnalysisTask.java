@@ -70,16 +70,6 @@ public class AnalysisTask implements Runnable {
         }
     }
 
-//    /**
-//     * Add an object to queue
-//     * 
-//     * @param o
-//     *            The feature to be added to the JobToQueue attribute
-//     */
-//    public void addJobToQueue(Object o) {
-//        jobQueue.add((JobInfo) o);
-//    }
-
     /** Clears the AnalysisTask's queue. */
     public void clear() {
         jobQueue.clear();
