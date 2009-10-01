@@ -96,9 +96,11 @@ public class AnalysisTask implements Runnable {
      * @param o
      *            The JobInfo object.
      */
-    public void onJobProcessFrameWork(Object o) {
-        doAcquire();// if max job running, then wait until some thread to finish
-        new JobThread(o).start();
+    public void onJobProcessFrameWork(JobInfo jobInfo) {
+        // if max job running, then wait until some thread to finish
+        doAcquire();
+        JobThread jobThread = new JobThread(jobInfo);
+        jobThread.start();
     }
 
     /** Main AnalysisTask's thread method. */
@@ -130,13 +132,18 @@ public class AnalysisTask implements Runnable {
             if (o == null) {
                 continue;
             }
-
-            try {
-                onJobProcessFrameWork(o);
-
-            } 
-            catch (Exception ex) {
-                log.error(ex);
+            
+            if (o instanceof JobInfo) {
+                try {
+                    JobInfo jobInfo = (JobInfo) o;
+                    onJobProcessFrameWork(jobInfo);
+                } 
+                catch (Exception ex) {
+                    log.error(ex);
+                }
+            }
+            else {
+                log.error("Can't handle object which is not of type JobInfo on the jobQueue");
             }
         }
     }
@@ -222,15 +229,15 @@ public class AnalysisTask implements Runnable {
     }
 
     private class JobThread extends Thread {
-        private Object obj;
+        private JobInfo jobInfo;
 
-        public JobThread(Object o) {
-            this.obj = o;
+        public JobThread(JobInfo o) {
+            this.jobInfo = o;
         }
 
         @Override
         public void run() {
-            genePattern.onJob(obj);// run job
+            genePattern.runJob(jobInfo);// run job
             doRelease();// signal completion of thread
         }
     }

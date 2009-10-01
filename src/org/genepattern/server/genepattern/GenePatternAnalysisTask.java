@@ -538,8 +538,7 @@ public class GenePatternAnalysisTask {
      * @param o
      *            JobInfo object
      */
-    public void onJob(Object o) {
-	JobInfo jobInfo = (JobInfo) o;
+    public void runJob(JobInfo jobInfo) {
 
 	if (log.isDebugEnabled()) {
 	    log.debug("Start onJob id=" + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName());
