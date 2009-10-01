@@ -70,15 +70,15 @@ public class AnalysisTask implements Runnable {
         }
     }
 
-    /**
-     * Add an object to queue
-     * 
-     * @param o
-     *            The feature to be added to the JobToQueue attribute
-     */
-    public void addJobToQueue(Object o) {
-        jobQueue.add((JobInfo) o);
-    }
+//    /**
+//     * Add an object to queue
+//     * 
+//     * @param o
+//     *            The feature to be added to the JobToQueue attribute
+//     */
+//    public void addJobToQueue(Object o) {
+//        jobQueue.add((JobInfo) o);
+//    }
 
     /** Clears the AnalysisTask's queue. */
     public void clear() {
@@ -124,7 +124,7 @@ public class AnalysisTask implements Runnable {
                 }
             }
 
-            Object o = null;
+            JobInfo o = null;
             if (!jobQueue.isEmpty()) {
                 o = jobQueue.remove(0);
             }
@@ -133,17 +133,12 @@ public class AnalysisTask implements Runnable {
                 continue;
             }
             
-            if (o instanceof JobInfo) {
-                try {
-                    JobInfo jobInfo = (JobInfo) o;
-                    onJobProcessFrameWork(jobInfo);
-                } 
-                catch (Exception ex) {
-                    log.error(ex);
-                }
-            }
-            else {
-                log.error("Can't handle object which is not of type JobInfo on the jobQueue");
+            try {
+                JobInfo jobInfo = (JobInfo) o;
+                onJobProcessFrameWork(jobInfo);
+            } 
+            catch (Exception ex) {
+                log.error(ex);
             }
         }
     }
