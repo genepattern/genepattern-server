@@ -139,6 +139,7 @@ import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager;
+import org.genepattern.server.webapp.RunPipelineInThread;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -1161,6 +1162,98 @@ public class GenePatternAnalysisTask {
 	        try {
 	            if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
 	                jobStatus = JobStatus.JOB_FINISHED;
+	            }
+	            else if (taskInfo.isPipeline()) {
+	                //TODO: don't create new JVM for pipeline execution, run pipeline in a new thread
+	                RunPipelineInThread rp = new RunPipelineInThread();
+	                //1) set server
+                    String gpUrl = System.getProperty("GenePatternURL");
+                    URL serverFromFile = null;
+                    try {
+                        serverFromFile = new URL(gpUrl);
+                    } 
+                    catch (MalformedURLException e) {
+                        throw new Exception("Invalid GenePatternURL: " + gpUrl, e);
+                    }
+                    String host = serverFromFile.getHost();
+                    String port = "";
+                    int portNum = serverFromFile.getPort();
+                    if (portNum >= 0) {
+                        port = ":" + portNum;
+                    }
+                    String server = serverFromFile.getProtocol() + "://" + host + port;
+                    rp.setServer(server);
+
+                    // 2) set user id
+                    rp.setUserId(jobInfo.getUserId());
+                    rp.setCmdLinePassword(userKey);
+
+                    // 3) set job id
+                    rp.setJobId(jobInfo.getJobNumber());
+                    
+                    // 4) set pipeline model
+                    PipelineModel model = null;
+                    if (taskInfo != null) {
+                        TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+                        if (tia != null) {
+                            String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
+                            if (serializedModel != null && serializedModel.length() > 0) {
+                                try {
+                                    model = PipelineModel.toPipelineModel(serializedModel);
+                                } 
+                                catch (Throwable x) {
+                                    log.error(x);
+                                }
+                            }
+                        }
+                    }
+                    rp.setPipelineModel(model);
+                    
+                    // 5) set additional arguments
+                    Properties additionalArguments = new Properties();
+                    commandTokens = translateCommandline(commandTokens);
+                    //HACK: remove all args up to org.genepattern.server.webapp.RunPipelineSoap
+                    List<String> modifiedCommandTokens = new ArrayList<String>();
+                    int startIdx = 0;
+                    for(int i=0; i<commandTokens.length; ++i) {
+                        if ("org.genepattern.server.webapp.RunPipelineSoap".equals(commandTokens[i])) {
+                            startIdx = i+1;
+                            break;
+                        }
+                    }
+                    for(int i=startIdx; i<commandTokens.length; ++i) {
+                        modifiedCommandTokens.add(commandTokens[i]);
+                    }
+                    String[] args = new String[modifiedCommandTokens.size()];
+                    args = modifiedCommandTokens.toArray(args);
+                    if (args.length > 2) {
+                        for (int i = 2; i < args.length; i++) {
+                            // assume args are in the form name=value
+                            String arg = args[i];
+                            StringTokenizer strtok = new StringTokenizer(arg, "=");
+                            String key = strtok.nextToken();
+                            StringBuffer valbuff = new StringBuffer("");
+                            int count = 0;
+                            while (strtok.hasMoreTokens()) {
+                                valbuff.append(strtok.nextToken());
+                                if ((strtok.hasMoreTokens()))
+                                    valbuff.append("=");
+                                count++;
+                            }
+                            additionalArguments.put(key, valbuff.toString());
+                        }
+                    }
+                    rp.setAdditionalArgs(additionalArguments);
+	                //RunPipelineInThread.main(mod);
+	                //RunPipelineInThread rp = new RunPipelineInThread(server, userId, userKey, jobId, pipelineModel);
+	                rp.runPipeline();
+                    if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0) {
+                        jobStatus = JobStatus.JOB_ERROR;
+                    }
+                    else {
+                        jobStatus = JobStatus.JOB_FINISHED;
+                    }
+                    log.info(taskName + " (" + jobInfo.getJobNumber() + ") done.");
 	            }
 	            else {
 	                processBuilder = runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
