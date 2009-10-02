@@ -502,7 +502,9 @@ public class RunTaskBean {
 		    choices[i] = new DefaultValueSelectItem(option, display, defaultOption);
 		}
 	    }
-	    if (pi.isPassword()) {
+	    if (pi.isDirectory()){
+	    	inputType = "directory";
+	    }else if (pi.isPassword()) {
 		inputType = "password";
 	    } else if (pi.isInputFile()) {
 		inputType = "file";
