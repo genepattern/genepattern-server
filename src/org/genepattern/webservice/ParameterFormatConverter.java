@@ -22,6 +22,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLStreamException;
+
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.jaxb.parameter.ANALYSISPARAMETERS;
 import org.genepattern.webservice.jaxb.parameter.ATTRIBUTE;
@@ -54,6 +59,10 @@ public class ParameterFormatConverter {
             return null;
 
         try {
+        	// jln
+        	JAXBContext context = JAXBContext.newInstance(ANALYSISPARAMETERS.class);
+        	Marshaller marshaller = context.createMarshaller();
+        	
             ParameterInfo parameterInfo = null;
             ANALYSISPARAMETERS jxbAnalysisParameter = null;
             List paraList = Arrays.asList(parameterInfoArray);
@@ -99,8 +108,13 @@ public class ParameterFormatConverter {
 
             }
             ByteArrayOutputStream fcout = new ByteArrayOutputStream();
-            jxbAnalysisParameter.validate();
-            jxbAnalysisParameter.marshal(fcout);
+
+            // jln
+//            jxbAnalysisParameter.validate();
+//            jxbAnalysisParameter.marshal(fcout);
+            marshaller.marshal(jxbAnalysisParameter, fcout);
+            
+            
             jaxbParameterString = fcout.toString();
             fcout.close();
         } catch (Exception ex) {
@@ -132,8 +146,14 @@ public class ParameterFormatConverter {
         }
 
         try {
-            ANALYSISPARAMETERS jxbAnalysisParameters = ANALYSISPARAMETERS.unmarshal(new ByteArrayInputStream(
-                    jxbParameterInfoString.getBytes()));
+        	// JLN
+        	JAXBContext context = JAXBContext.newInstance(ANALYSISPARAMETERS.class);
+        	Unmarshaller um = context.createUnmarshaller();
+        	
+//            ANALYSISPARAMETERS jxbAnalysisParameters = ANALYSISPARAMETERS.unmarshal(new ByteArrayInputStream(
+//                    jxbParameterInfoString.getBytes()));
+        	
+        	ANALYSISPARAMETERS jxbAnalysisParameters = (ANALYSISPARAMETERS) um.unmarshal(new ByteArrayInputStream(jxbParameterInfoString.getBytes()));
             List jxbParameterList = jxbAnalysisParameters.getPARAMETER();
             PARAMETER jxbParameter = null;
             Vector parameterVector = new Vector();
