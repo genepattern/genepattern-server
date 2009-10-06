@@ -22,6 +22,8 @@ rowNames = edata.getRowNames();
 rowDescriptions = edata.getRowDescriptions();
 
 colNames = edata.getColumnNames();
+
+extension = org.genepattern.io.IOUtil.getExtension(path);
 if (not (extension == '.gct'))
     colDescriptions = edata.getColumnDescriptions();
 end
