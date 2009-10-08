@@ -602,11 +602,7 @@ public class GenePatternAnalysisTask {
 	    validateOS(expected, "run " + taskName);
 	    validatePatches(taskInfo, null);
 
-	    User user = (new UserDAO()).findById(jobInfo.getUserId());
-	    userKey = EncryptionUtil.getInstance().pushPipelineUserKey(user);
-
 	    Map<String, String> environmentVariables = new HashMap<String, String>();
-	    environmentVariables.put(EncryptionUtil.PROP_PIPELINE_USER_KEY, userKey);
 
 	    JobInfo parentJI = getParentJobInfo(jobInfo.getJobNumber());
 	    int parent = -1;
@@ -983,23 +979,18 @@ public class GenePatternAnalysisTask {
 	        } // end for each parameter
 	    } // end if parameters not null
 
-	    // build the command line, replacing <variableName> with the same
-	    // name from the properties
+	    // build the command line, replacing <variableName> with the same name from the properties
 	    // (ParameterInfo[], System properties, environment variables, and built-ins merged)
 	    // build props again, now that downloaded files are set
-	    props = setupProps(taskInfo, taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(), taskInfoAttributes, params,
-	            environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
+	    props = setupProps(taskInfo, taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(), taskInfoAttributes, params, environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
 
 	    params = stripOutSpecialParams(params);
-	    // check that all parameters are used in the command line
-	    // and that all non-optional parameters that are cited actually exist
+	    // check that all parameters are used in the command line and that all non-optional parameters that are cited actually exist
 	    ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
-	    Vector<String> parameterProblems = validateParameters(props, taskName, taskInfoAttributes.get(COMMAND_LINE), params,
-	            formalParameters, true);
+	    Vector<String> parameterProblems = validateParameters(props, taskName, taskInfoAttributes.get(COMMAND_LINE), params, formalParameters, true);
 
 	    vProblems.addAll(parameterProblems);
-	    String c = substitute(substitute(taskInfoAttributes.get(COMMAND_LINE), props, formalParameters), props,
-	            formalParameters);
+	    String c = substitute(substitute(taskInfoAttributes.get(COMMAND_LINE), props, formalParameters), props, formalParameters);
 	    if (c == null || c.trim().length() == 0) {
 	        vProblems.add("Command line not defined");
 	    }
@@ -1043,13 +1034,15 @@ public class GenePatternAnalysisTask {
 	                i--;
 	            }
 	        }
-	    } else {
+	    } 
+	    else {
 	        // the user quoted the command, so it has to be handled specially
 	        int endQuote = cmdLine.indexOf("\"", 1);
 	        // find the matching closing quote
 	        if (endQuote == -1) {
 	            vProblems.add("Missing closing quote on command line: " + cmdLine);
-	        } else {
+	        } 
+	        else {
 	            firstToken = cmdLine.substring(1, endQuote);
 	            stCommandLine = new StringTokenizer(cmdLine.substring(endQuote + 1));
 	            commandTokens = new String[stCommandLine.countTokens() + 1];
@@ -1163,7 +1156,6 @@ public class GenePatternAnalysisTask {
 	                jobStatus = JobStatus.JOB_FINISHED;
 	            }
 	            else if (taskInfo.isPipeline()) {
-	                //TODO: don't create new JVM for pipeline execution, run pipeline in a new thread
 	                RunPipelineInThread rp = new RunPipelineInThread();
 	                //1) set server
                     String gpUrl = System.getProperty("GenePatternURL");
@@ -1185,10 +1177,12 @@ public class GenePatternAnalysisTask {
 
                     // 2) set user id
                     rp.setUserId(jobInfo.getUserId());
-                    rp.setCmdLinePassword(userKey);
 
                     // 3) set job id
                     rp.setJobId(jobInfo.getJobNumber());
+                    
+                    // 4) set the lsid of the pipeline
+                    rp.setPipelineTaskLsid(jobInfo.getTaskLSID());
                     
                     // 4) set pipeline model
                     PipelineModel model = null;
@@ -1243,8 +1237,6 @@ public class GenePatternAnalysisTask {
                         }
                     }
                     rp.setAdditionalArgs(additionalArguments);
-	                //RunPipelineInThread.main(mod);
-	                //RunPipelineInThread rp = new RunPipelineInThread(server, userId, userKey, jobId, pipelineModel);
 	                rp.runPipeline();
                     if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0) {
                         jobStatus = JobStatus.JOB_ERROR;
@@ -2558,7 +2550,7 @@ public class GenePatternAnalysisTask {
             formalParamsLength = formalParameters.length;
         }
         try {
-            // copy environment variables into props
+// copy environment variables into props
             String key = null;
             String value = null;
 
