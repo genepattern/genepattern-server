@@ -22,12 +22,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.webservice.server.AdminService;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
@@ -36,7 +39,8 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
 /**
- * Copied from RunPipelineSoap, for executing each pipeline in its own thread on the server JVM, 
+ * Run the pipeline, waiting for each job to complete.
+ * Based on a copy of RunPipelineSoap, for executing each pipeline in its own thread on the server JVM, 
  * instead of exec'ing in a new JVM.
  * 
  * Additionally, removed the SOAP client calls.
@@ -60,6 +64,7 @@ public class RunPipelineInThread {
     private String stopAfterTaskStr = null;
     
     private LocalAnalysisClient analysisClient;
+    private AdminService adminService;
     
     public RunPipelineInThread() {
     }
@@ -92,15 +97,53 @@ public class RunPipelineInThread {
         this.stopAfterTaskStr = stopAfterTaskStr;
     }
 
-    public RunPipelineInThread(String server, String userID, String cmdLinePassword, int jobId, PipelineModel model) {
-        this.userID = userID;
-        this.jobId = jobId;
-        this.model = model;
+    public static final class MissingTasksException extends Exception {
+        private int idx=0;
+        private SortedMap<Integer,String> errors = new TreeMap<Integer,String>();
+
+        public MissingTasksException() {
+        }
+
+        public void addError(JobSubmission jobSubmission) {
+            String errorMessage = "No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID() + ")";
+            errors.put(idx, errorMessage);
+            ++idx;
+        }
+        
+        public String getMessage() {
+            final StringBuffer buf = new StringBuffer();
+            for(String message : errors.values()) {
+                buf.append(message);
+            }
+            return buf.toString();
+        }
     }
 
-    public void runPipeline() throws WebServiceException {
+    private void checkForMissingTasks() throws MissingTasksException {
+        MissingTasksException ex = null;
+        for(JobSubmission jobSubmission : model.getTasks()) {
+            String lsid = jobSubmission.getLSID();
+            TaskInfo taskInfo = null;
+            try {
+                taskInfo = adminService.getTask(lsid);
+            }
+            catch (Exception e) {
+            }
+            if (taskInfo == null) {
+                if (ex == null) {
+                    ex = new MissingTasksException();
+                }
+                ex.addError(jobSubmission);
+            }
+        }
+        if (ex != null) {
+            throw ex;
+        }
+    }
+    
+    public void runPipeline() throws MissingTasksException, WebServiceException {
         this.analysisClient = new LocalAnalysisClient(userID);
-        //this.adminClient = new AdminService();
+        this.adminService = new AdminService(userID);
 
         int stopAfterTask = Integer.MAX_VALUE;
         if (stopAfterTaskStr != null && stopAfterTaskStr.trim().length() > 0) {
@@ -111,26 +154,8 @@ public class RunPipelineInThread {
                 log.error("Ignoring invalid number format for: stopAfterTaskStr=" + stopAfterTaskStr, nfe);
             }
         }
-
-//        boolean okayToRun = true;
-//        StringBuffer errorMessages = null;
-//        for(JobSubmission jobSubmission : model.getTasks()) {
-//            TaskInfo taskInfo = adminClient.getTask(jobSubmission.getLSID());
-//            if (taskInfo == null) {
-//                okayToRun = false;
-//                String errorMessage = "No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID() + ")";
-//                log.error(errorMessage);
-//                if (errorMessages == null) {
-//                    errorMessages = new StringBuffer(errorMessage);
-//                }
-//                else {
-//                    errorMessages.append(", "+errorMessage);
-//                }
-//            }
-//        }
-//        if (!okayToRun) {
-//            throw new IllegalArgumentException(errorMessages.toString());
-//        }
+        
+        checkForMissingTasks();
 
         JobInfo results[] = new JobInfo[model.getTasks().size()];
         int stepNum = 0;
@@ -155,10 +180,17 @@ public class RunPipelineInThread {
             JobInfo taskResult = executeTask(jobSubmission, params, results);
             taskResult = collectChildJobResults(taskResult);
             results[stepNum] = taskResult;
-                    
+            
             if (JobStatus.ERROR.equals(taskResult.getStatus())) {
                 //halt pipeline execution if one of the steps fails
-                throw new WebServiceException("Error in pipeline step " + (stepNum + 1) + ": "+ taskResult.getTaskName()+" [id: "+taskResult.getJobNumber()+"]");
+                String errorMessage = "Error in pipeline step " + (stepNum + 1) + ": ";
+                if (taskResult != null) {
+                    errorMessage += (taskResult.getTaskName()+" [id: "+taskResult.getJobNumber()+"]");
+                }
+                else {
+                    errorMessage += " taskResult==null, "+jobSubmission.getName() + " (" + jobSubmission.getLSID() + ")";
+                }
+                throw new WebServiceException(errorMessage);
             }
             ++stepNum;
         }
@@ -215,20 +247,21 @@ public class RunPipelineInThread {
             log.error("ignoring executeTask, jobSubmissions is null");
             return null;
         }
-        TaskInfo taskInfo = jobSubmission.getTaskInfo();
-        if (taskInfo == null) {
-            log.error("ignoring executeTask, jobSubmission.tasKInfo is null");
-            return null;
-        }
-        int taskNum = taskInfo.getID();
         String lsidOrTaskName = jobSubmission.getLSID();
         if (lsidOrTaskName == null || lsidOrTaskName.equals("")) {
             lsidOrTaskName = jobSubmission.getName();
         }
+        TaskInfo task = adminService.getTask(lsidOrTaskName);
+        if (task == null) {
+            log.error("Module " + lsidOrTaskName + " not found.");
+            return new JobInfo();
+        }
+        log.debug("taskInfo: " + task.getName() + ", " + task.getLsid());
+
         
-        JobInfo jobInfo = analysisClient.submitJob(taskNum, params, jobId);
+        JobInfo jobInfo = analysisClient.submitJob(task.getID(), params, jobId);
         if (jobInfo == null || "ERROR".equalsIgnoreCase(jobInfo.getStatus())) {
-            log.error("Unexpected error in execute task: taskNum="+taskNum+", lsidOrTaskName="+lsidOrTaskName);
+            log.error("Unexpected error in execute task: taskNum="+task.getID()+", lsidOrTaskName="+lsidOrTaskName);
             return jobInfo;
         }
         jobInfo = waitForErrorOrCompletion(jobInfo.getJobNumber());
@@ -352,8 +385,7 @@ public class RunPipelineInThread {
                     attributes.remove(PipelineModel.RUNTIME_PARAM);
                     String key = name + taskNum + "." + aParam.getName();
                     String val = (String) args.get(key);                    
-                    if ((val != null)) {
-                        
+                    if ((val != null)) { 
                         //We don't want to double prefix the arguments.  If this RunPipelineSoap was
                         //run from the GenePattern webpage, the arguments will have been prefixed as
                         //the "run pipeline" job was run to get us here.
@@ -363,7 +395,6 @@ public class RunPipelineInThread {
                                 val = val.substring(prefix.length());
                             }
                         }
-                        
                         aParam.setValue(val);
                     }
                 }
