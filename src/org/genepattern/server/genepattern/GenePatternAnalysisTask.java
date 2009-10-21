@@ -1177,7 +1177,11 @@ public class GenePatternAnalysisTask {
 	                    }
 	                    commandTokens = debugCmdLine;
 	                }
-	                processBuilder = runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer, taskInfo.isPipeline());
+	                processBuilder = runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
+	                if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0 && taskInfo.isPipeline()) {
+	                    //GP-2856, filter out bogus error messages	                    
+	                    suppressLinesFromStdErrFile(stderrFile, "[Deprecated] Xalan: org.apache.xml.xml_soap.MapItemBeanInfo");
+	                }
 	                if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0) {
 	                    jobStatus = JobStatus.JOB_ERROR;
 	                }
@@ -2644,7 +2648,7 @@ public class GenePatternAnalysisTask {
      * @author Jim Lerner
      */
     protected ProcessBuilder runCommand(String commandLine[], Map<String, String> environmentVariables, File runDir, File stdoutFile,
-	    File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer, boolean filterErrorStream) {
+	    File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {
     ProcessBuilder pb = null;
 	Process process = null;
 	String jobID = null;
@@ -2702,11 +2706,6 @@ public class GenePatternAnalysisTask {
 
 	    // the process will be dead by now
 	    process.waitFor();
-	    
-	    //optionally, filter lines from the error stream
-        if (filterErrorStream) {
-            this.suppressLinesFromStdErrFile(stderrFile, "[Deprecated] Xalan: org.apache.xml.xml_soap.MapItemBeanInfo");
-        }
 
 	    // TODO: cleanup input file(s)
 	} catch (Throwable t) {
@@ -4177,7 +4176,7 @@ public class GenePatternAnalysisTask {
     }
     
     /**
-     * Remove any lines which matching exactMatch from the errFile. This has the effect of deleting the errFile if
+     * Remove lines from the errFile which match exactMatch. This has the effect of deleting the errFile if
      * the errFile contains nothing but matching lines.
      * 
      * This is a workaround (HACK) for GP-2856, the following line
@@ -4248,6 +4247,11 @@ public class GenePatternAnalysisTask {
             if (!success) {
                 log.error("Unable to delete file "+errFile.getAbsolutePath());
             }
+        }
+        
+        success = origFile.delete();
+        if (!success) {
+            log.error("Unable to delete file "+origFile.getAbsolutePath());
         }
     }
     
