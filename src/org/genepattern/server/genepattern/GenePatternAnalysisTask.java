@@ -71,7 +71,9 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -1164,7 +1166,18 @@ public class GenePatternAnalysisTask {
 	                jobStatus = JobStatus.JOB_FINISHED;
 	            }
 	            else {
-	                processBuilder = runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
+	                if (false && taskInfo != null && taskInfo.isPipeline()) { // for debugging only
+	                    String[] debugCmdLine = new String[commandTokens.length + 3];
+	                    debugCmdLine[0] = commandTokens[0];
+	                    debugCmdLine[1] = "-Xdebug";
+	                    debugCmdLine[2] = "-Xnoagent";
+	                    debugCmdLine[3] = "-Xrunjdwp:transport=dt_socket,server=y,address=5001,suspend=y";
+	                    for (int i = 1; i < commandTokens.length; ++i) {
+	                        debugCmdLine[i + 3] = commandTokens[i];
+	                    }
+	                    commandTokens = debugCmdLine;
+	                }
+	                processBuilder = runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer, taskInfo.isPipeline());
 	                if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0) {
 	                    jobStatus = JobStatus.JOB_ERROR;
 	                }
@@ -2631,22 +2644,11 @@ public class GenePatternAnalysisTask {
      * @author Jim Lerner
      */
     protected ProcessBuilder runCommand(String commandLine[], Map<String, String> environmentVariables, File runDir, File stdoutFile,
-	    File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {
+	    File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer, boolean filterErrorStream) {
     ProcessBuilder pb = null;
 	Process process = null;
 	String jobID = null;
 	try {
-	    if (false) { // for debugging only
-	        String[] debugCmdLine = new String[commandLine.length + 3];
-	        debugCmdLine[0] = commandLine[0];
-	        debugCmdLine[1] = "-Xdebug";
-	        debugCmdLine[2] = "-Xnoagent";
-	        debugCmdLine[3] = "-Xrunjdwp:transport=dt_socket,server=y,address=5001,suspend=y";
-	        for (int i = 1; i < commandLine.length; ++i) {
-	            debugCmdLine[i + 3] = commandLine[i];
-	        }
-	        commandLine = debugCmdLine;
-	    }
 	    commandLine = translateCommandline(commandLine);
 
 	    pb = new ProcessBuilder(commandLine);
@@ -2686,8 +2688,7 @@ public class GenePatternAnalysisTask {
 	    jobID = "" + jobInfo.getJobNumber();
 	    htRunningJobs.put(jobID, process);
 
-	    // create threads to read from the command's stdout and stderr
-	    // streams
+	    // create threads to read from the command's stdout and stderr streams
 	    Thread outputReader = streamToFile(process.getInputStream(), stdoutFile);
 	    Thread errorReader = streamToFile(process.getErrorStream(), stderrFile);
 
@@ -2695,14 +2696,18 @@ public class GenePatternAnalysisTask {
 	    outputReader.start();
 	    errorReader.start();
 
-	    // wait for all output before attempting to send it back to the
-	    // client
+	    // wait for all output before attempting to send it back to the client
 	    outputReader.join();
 	    errorReader.join();
 
 	    // the process will be dead by now
-
 	    process.waitFor();
+	    
+	    //optionally, filter lines from the error stream
+        if (filterErrorStream) {
+            this.suppressLinesFromStdErrFile(stderrFile, "[Deprecated] Xalan: org.apache.xml.xml_soap.MapItemBeanInfo");
+        }
+
 	    // TODO: cleanup input file(s)
 	} catch (Throwable t) {
 	    log.error(t + " in runCommand, reporting to stderr");
@@ -4170,6 +4175,152 @@ public class GenePatternAnalysisTask {
 	    }
 	};
     }
+    
+    /**
+     * Remove any lines which matching exactMatch from the errFile. This has the effect of deleting the errFile if
+     * the errFile contains nothing but matching lines.
+     * 
+     * This is a workaround (HACK) for GP-2856, the following line
+     *     [Deprecated] Xalan: org.apache.xml.xml_soap.MapItemBeanInfo 
+     * is on the stderr stream of the pipeline process, causing GP to flag the pipeline as an ERROR.
+     * 
+     * @param errFile
+     * @param exactMatch
+     */
+    protected void suppressLinesFromStdErrFile(File errFile, String exactMatch) {
+        if (errFile == null || !errFile.exists()) {
+            log.error("File does not exist: " + (errFile == null ? "null" : errFile.getAbsolutePath()));
+            return;
+        }
+        if (!errFile.canRead()) {
+            log.error("Can't read file: "+errFile.getPath());
+            return;
+        }
+        
+        File origFile = new File(errFile.getParent(), errFile.getName() + ".orig");        
+        boolean success = errFile.renameTo(origFile);
+        if (!success) {
+            log.error("Not able to rename '"+errFile.getAbsolutePath()+"' to '"+origFile.getAbsolutePath()+"'");
+            return;
+        }
+        
+        //output filtered contents back to errFile
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter(errFile);
+        }
+        catch (IOException e) {
+            log.error("Not able to write to file: "+errFile.getAbsolutePath(), e);
+            return;
+        }
+        PrintWriter pw = new PrintWriter(fw);
+        
+        FileReader fr = null;
+        try {
+            fr = new FileReader(origFile);
+        }
+        catch (FileNotFoundException e) {
+            log.error("FileNotFound: "+origFile.getPath(), e);
+            return;
+        }
+        
+        boolean wroteLine = false;
+        try {
+            BufferedReader br = new BufferedReader(fr);
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                if (!line.trim().equals(exactMatch)) {
+                    pw.println(line);
+                    pw.flush();
+                    wroteLine = true;
+                }
+            }
+            pw.close();
+            br.close();
+        }
+        catch (IOException e) {
+            log.error("IOException while reading line", e);
+        }
+        
+        if (!wroteLine) {
+            //shouldn't have to do this
+            success = errFile.delete();
+            if (!success) {
+                log.error("Unable to delete file "+errFile.getAbsolutePath());
+            }
+        }
+    }
+    
+    /**
+     * Copy of streamToFile which filters out suppresses output of anything on the input stream which matches
+     * the given text, exactMatch.
+     * 
+     * @param is, InputStream to read from
+     * @param file, file to write to
+     * @param exactMatch, String to suppress from output to file
+     * 
+     * @author pcarr
+     */
+    protected Thread filteredStreamToFile(final InputStream is, final File file, final String exactMatch) {
+        // create thread to read from a process' output or error stream
+        return new Thread() {
+            public void run() {
+                final int BUFSIZE = 2048;
+                byte[] b = new byte[BUFSIZE];
+                int bytesRead = 0;
+                int prevBytesRead = 0;
+                BufferedOutputStream fis = null;
+                boolean wroteBytes = false;
+                try {
+                    fis = new BufferedOutputStream(new FileOutputStream(file));
+
+                    String s = "";
+                    String prevS = "";
+                    StringBuffer S12 = new StringBuffer(2*BUFSIZE);
+                    while ((bytesRead = is.read(b)) >= 0) {
+                        s = new String(b, 0, bytesRead);
+                        //always construct a string by contatenating the previous read to the current read
+                        int newLength = prevBytesRead + bytesRead;
+                        S12.setLength(newLength);
+                        S12.replace(0, prevS.length(), prevS);
+                        S12.replace(prevS.length(), prevS.length() + s.length(), s);
+
+                        int idx = -1;
+                        while((idx = S12.indexOf(exactMatch)) >= 0) {
+                            S12.delete(idx, exactMatch.length());
+                        }
+                        if (S12.length() > 0) { 
+                            wroteBytes = true;
+                            byte[] filtered = S12.toString().getBytes();
+                            fis.write(filtered, 0, filtered.length);
+                        }
+                        
+                        prevS = s;
+                        prevBytesRead = bytesRead;
+                    }
+                } 
+                catch (IOException e) {
+                    e.printStackTrace();
+                    log.error(e);
+                } 
+                finally {
+                    if (fis != null) {
+                        try {
+                            fis.flush();
+                            fis.close();
+                        } 
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (!wroteBytes) {
+                        file.delete();
+                    }
+                }
+            }
+        };
+    }
+
 
     /**
      * writes a string to a file
