@@ -65,9 +65,29 @@ import org.xml.sax.InputSource;
  */
 
 public class RunPipelineSoap {
-    private static final String logFile = "pipelineErrors.log"; // one log file per pipeline
-
+    private static final String logFile = ".pipelineErrors.log"; // one log file per pipeline
     private static final Logger log = setupLog4jConfig(logFile);
+    public static Logger setupLog4jConfig(String logFile) {
+        // System.setProperty("DEBUG", "true"); //don't delete logfile
+
+        Properties log4jconfig = new Properties();
+        log4jconfig.setProperty("log4j.debug", "false"); // set this to true to debug Log4j configuration
+        log4jconfig.setProperty("log4j.rootLogger", "error, R");
+        log4jconfig.setProperty("log4j.logger.org.genepattern", "error");
+
+        log4jconfig.setProperty("log4j.appender.R", "org.apache.log4j.RollingFileAppender");
+        log4jconfig.setProperty("log4j.appender.R.File", logFile);
+        log4jconfig.setProperty("log4j.appender.R.MaxFileSize", "256KB");
+        log4jconfig.setProperty("log4j.appender.R.MaxBackupIndex", "2");
+        log4jconfig.setProperty("log4j.appender.R.layout", "org.apache.log4j.PatternLayout");
+        log4jconfig.setProperty("log4j.appender.R.layout.ConversionPattern",
+            "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] (%F:%L) - %m%n");
+
+        System.setProperty("log4j.defaultInitOverride", "true"); // required to prevent stack trace to System.err
+        PropertyConfigurator.configure(log4jconfig);
+        return Logger.getLogger(RunPipelineSoap.class);
+        }
+
 
     private PipelineModel model;
     /** server to run the pipeline on */
@@ -92,7 +112,9 @@ public class RunPipelineSoap {
     }
 
     public void runPipeline(Map args) throws WebServiceException {
-        log.debug("runPipeline");
+        StringBuffer errorMessages = new StringBuffer();
+        boolean okayToRun = true;
+
         String stopAfterTaskStr = System.getProperty(GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM);
         int stopAfterTask = Integer.MAX_VALUE;
         if (stopAfterTaskStr != null) {
@@ -101,27 +123,20 @@ public class RunPipelineSoap {
                     stopAfterTask = Integer.parseInt(stopAfterTaskStr);
                 } 
                 catch (NumberFormatException nfe) {
-                    log.error("Ignoring invalid number format for: " + 
-                            GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM + "=" + stopAfterTask, nfe);
+                    okayToRun = false;
+                    errorMessages.append("Ignoring invalid number format for: " + GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM + "=" + stopAfterTask);
                 }
             }
         }
+
         TaskInfo taskInfo = null;
         ParameterInfo[] parameterInfo = null;
-        boolean okayToRun = true;
-        StringBuffer errorMessages = null;
         for(JobSubmission jobSubmission : model.getTasks()) {
             taskInfo = adminClient.getTask(jobSubmission.getLSID());
             if (taskInfo == null) {
                 okayToRun = false;
-                String errorMessage = "No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID() + ")";
-                log.error(errorMessage);
-                if (errorMessages == null) {
-                    errorMessages = new StringBuffer(errorMessage);
-                }
-                else {
-                    errorMessages.append(", "+errorMessage);
-                }
+                String errorMessage = "No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID() + ")\n";
+                errorMessages.append(errorMessage);
             }
         }
         if (!okayToRun) {
@@ -129,39 +144,36 @@ public class RunPipelineSoap {
         }
 
         JobInfo results[] = new JobInfo[model.getTasks().size()];
-        try {
-            int taskNum = 0;
-            for(JobSubmission jobSubmission : model.getTasks()) { 
-                if (taskNum >= stopAfterTask) {
-                    break; // stop and execute no further
-                }
-                parameterInfo = jobSubmission.giveParameterInfoArray();
-                try {
-                    setInheritedJobParameters(parameterInfo, results);
-                }
-                catch (FileNotFoundException e) {
-                    String errorMessage = "Execution for " + jobSubmission.getName() + " module failed: "+e.getMessage();
-                    throw new WebServiceException(errorMessage, e);
-                }
-                substituteLsidInInputFiles(parameterInfo);
-                ParameterInfo[] params = parameterInfo;
-                params = setJobParametersFromArgs(jobSubmission.getName(), taskNum + 1, params, results, args);
-                params = removeEmptyOptionalParams(parameterInfo);
-                JobInfo taskResult = executeTask(jobSubmission, params, taskNum, results);
-
-                // handle the special case where a task is a pipeline by adding
-                // all output files of the pipeline's children (recursively) to its
-                // taskResult so that they can be used downstream
-                taskResult = collectChildJobResults(taskResult);
-                results[taskNum] = taskResult;
-                    
-                if (JobStatus.ERROR.equals(taskResult.getStatus())) {
-                    throw new WebServiceException("Error in pipeline step " + (taskNum + 1) + ": "+ taskResult.getTaskName()+" [id: "+taskResult.getJobNumber()+"]");
-                }
-                ++taskNum;
+        int taskNum = 0;
+        for(JobSubmission jobSubmission : model.getTasks()) { 
+            if (taskNum >= stopAfterTask) {
+                // stop and execute no further
+                break;
             }
-        }
-	    finally {
+            parameterInfo = jobSubmission.giveParameterInfoArray();
+            try {
+                setInheritedJobParameters(parameterInfo, results);
+            }
+            catch (FileNotFoundException e) {
+                String errorMessage = "Execution for " + jobSubmission.getName() + " module failed: "+e.getMessage();
+                throw new WebServiceException(errorMessage, e);
+            }
+            substituteLsidInInputFiles(parameterInfo);
+            ParameterInfo[] params = parameterInfo;
+            params = setJobParametersFromArgs(jobSubmission.getName(), taskNum + 1, params, results, args);
+            params = removeEmptyOptionalParams(parameterInfo);
+            JobInfo taskResult = executeTask(jobSubmission, params, taskNum, results);
+
+            // handle the special case where a task is a pipeline by adding
+            // all output files of the pipeline's children (recursively) to its
+            // taskResult so that they can be used downstream
+            taskResult = collectChildJobResults(taskResult);
+            results[taskNum] = taskResult;
+                    
+            if (JobStatus.ERROR.equals(taskResult.getStatus())) {
+                throw new WebServiceException("Error in pipeline step " + (taskNum + 1) + ": "+ taskResult.getTaskName()+" [id: "+taskResult.getJobNumber()+"]");
+            }
+            ++taskNum;
         }
     }
 
@@ -171,37 +183,27 @@ public class RunPipelineSoap {
      * 
      * recurse through the children and add all output params to the parent
      */
-    protected JobInfo collectChildJobResults(JobInfo taskResult) {
-	if (taskResult == null) {
-	    log.debug("Invalid null arg to collectChildJobResults");
-	    return taskResult;
-	}
-	log.debug("collectChildJobResults for: " + taskResult.getJobNumber());
-	try {
-	    List<ParameterInfo> outs = new ArrayList<ParameterInfo>();
-
-	    if (taskResult == null) {
-		log.error("taskResult == null");
-	    }
-	    int[] children = analysisClient.getChildren(taskResult.getJobNumber());
-	    if (children.length == 0) {
-		return taskResult;
-	    }
-	    for (int i = 0; i < children.length; i++) {
-		getChildJobOutputs(children[i], outs);
-	    }
-	    // now add them to the parent
-	    if (outs.size() == 0) {
-		return taskResult;
-	    }
-	    for (ParameterInfo p : outs) {
-		taskResult.addParameterInfo(p);
-	    }
-
-	} catch (Exception wse) {
-	    wse.printStackTrace();
-	}
-	return taskResult;
+    private JobInfo collectChildJobResults(JobInfo taskResult) throws WebServiceException {
+        if (taskResult == null) {
+            //log.debug("Invalid null arg to collectChildJobResults");
+            return taskResult;
+        }
+        List<ParameterInfo> outs = new ArrayList<ParameterInfo>();
+        int[] children = analysisClient.getChildren(taskResult.getJobNumber());
+        if (children.length == 0) {
+            return taskResult;
+        }
+        for (int i = 0; i < children.length; i++) {
+            getChildJobOutputs(children[i], outs);
+        }
+        // now add them to the parent
+        if (outs.size() == 0) {
+            return taskResult;
+        }
+        for (ParameterInfo p : outs) {
+            taskResult.addParameterInfo(p);
+        }
+        return taskResult;
     }
 
     /**
@@ -209,24 +211,20 @@ public class RunPipelineSoap {
      * 
      * @throws WebServiceException
      */
-    protected JobInfo executeTask(JobSubmission jobSubmission, ParameterInfo[] params, int taskNum, JobInfo[] results)
+    private JobInfo executeTask(JobSubmission jobSubmission, ParameterInfo[] params, int taskNum, JobInfo[] results)
 	    throws WebServiceException {
-	log.debug("Begin executeTask");
 
 	String lsidOrTaskName = jobSubmission.getLSID();
 	if (lsidOrTaskName == null || lsidOrTaskName.equals("")) {
 	    lsidOrTaskName = jobSubmission.getName();
 	}
 
-	log.debug("lsid: " + lsidOrTaskName);
-
 	TaskInfo task = adminClient.getTask(lsidOrTaskName);
 
 	if (task == null) {
-	    log.error("Module " + lsidOrTaskName + " not found.");
+	    //log.error("Module " + lsidOrTaskName + " not found.");
 	    return new JobInfo();
 	}
-	log.debug("taskInfo: " + task.getName() + ", " + task.getLsid());
 
 	AnalysisService svc = new AnalysisService(server, task);
 	AnalysisJob job = submitJob(svc, params);
@@ -234,30 +232,24 @@ public class RunPipelineSoap {
 	return jobInfo;
     }
 
-    protected void getChildJobOutputs(int childJobID, List<ParameterInfo> outs) {
-	try {
-	    JobInfo childJobInfo = analysisClient.checkStatus(childJobID);
-	    getChildJobOutputs(childJobInfo, outs);
-	} catch (WebServiceException e) {
-	    log.error(e);
-	}
-
+    private void getChildJobOutputs(int childJobID, List<ParameterInfo> outs) throws WebServiceException {
+        JobInfo childJobInfo = analysisClient.checkStatus(childJobID);
+        getChildJobOutputs(childJobInfo, outs);
     }
 
-    protected void getChildJobOutputs(JobInfo child, List<ParameterInfo> outs) {
-	ParameterInfo[] childParams = child.getParameterInfoArray();
-	for (int i = 0; i < childParams.length; i++) {
-	    if (childParams[i].isOutputFile()) {
-		File f = new File(childParams[i].getValue());
-		if (!f.getName().equals(GPConstants.TASKLOG)) {
-		    outs.add(childParams[i]);
-		    // System.out.println("Adding child output: "+ childParams[i].getValue());
-		}
-	    }
-	}
+    private void getChildJobOutputs(JobInfo child, List<ParameterInfo> outs) {
+        ParameterInfo[] childParams = child.getParameterInfoArray();
+        for (int i = 0; i < childParams.length; i++) {
+            if (childParams[i].isOutputFile()) {
+                File f = new File(childParams[i].getValue());
+                if (!f.getName().equals(GPConstants.TASKLOG)) {
+                    outs.add(childParams[i]);
+                }
+            }
+        }
     }
 
-    protected String getInheritedFilename(Map attributes, JobInfo[] results) throws FileNotFoundException {
+    private String getInheritedFilename(Map attributes, JobInfo[] results) throws FileNotFoundException {
         // these params must be removed so that the soap lib doesn't try to send the file as an attachment
         String taskStr = (String) attributes.get(PipelineModel.INHERIT_TASKNAME);
         String fileStr = (String) attributes.get(PipelineModel.INHERIT_FILENAME);
@@ -273,33 +265,26 @@ public class RunPipelineSoap {
         return url;
     }
 
-    protected ParameterInfo[] removeEmptyOptionalParams(ParameterInfo[] parameterInfo) {
-	ArrayList<ParameterInfo> params = new ArrayList<ParameterInfo>();
-
-	for (int i = 0; i < parameterInfo.length; i++) {
-	    ParameterInfo aParam = parameterInfo[i];
-
-	    if (aParam.getAttributes() != null) {
-
-		String value = aParam.getValue();
-
-		if (value != null) {
-		    if ((value.trim().length() == 0) && aParam.isOptional()) {
-			log
-				.debug("Removing Param " + aParam.getName() + " has null value. Opt= "
-					+ aParam.isOptional());
-
-		    } else {
-			params.add(aParam);
-		    }
-		}
-
-	    }
-	}
-	return params.toArray(new ParameterInfo[params.size()]);
+    private ParameterInfo[] removeEmptyOptionalParams(ParameterInfo[] parameterInfo) {
+        ArrayList<ParameterInfo> params = new ArrayList<ParameterInfo>();
+        for (int i = 0; i < parameterInfo.length; i++) {
+            ParameterInfo aParam = parameterInfo[i];
+            if (aParam.getAttributes() != null) {
+                String value = aParam.getValue();
+                if (value != null) {
+                    if ((value.trim().length() == 0) && aParam.isOptional()) {
+                        //log.debug("Removing Param " + aParam.getName() + " has null value. Opt= " + aParam.isOptional());
+                    } 
+                    else {
+                        params.add(aParam);
+                    }
+                }
+            }
+        }
+        return params.toArray(new ParameterInfo[params.size()]);
     }
 
-    protected void setInheritedJobParameters(ParameterInfo[] parameterInfos, JobInfo[] results) throws FileNotFoundException {
+    private void setInheritedJobParameters(ParameterInfo[] parameterInfos, JobInfo[] results) throws FileNotFoundException {
         for (ParameterInfo param : parameterInfos) {
             boolean isInheritTaskName = false;
             HashMap attributes = param.getAttributes();
@@ -321,7 +306,7 @@ public class RunPipelineSoap {
      * 
      * @param parameterInfos
      */
-    protected void substituteLsidInInputFiles(ParameterInfo[] parameterInfos) {
+    private void substituteLsidInInputFiles(ParameterInfo[] parameterInfos) {
         for (ParameterInfo param : parameterInfos) {
             String value = param.getValue();
             if (value != null && value.startsWith("<GenePatternURL>")) {
@@ -337,7 +322,7 @@ public class RunPipelineSoap {
     /**
      * Look for parameters that are passed in on the command line and put them into the ParameterInfo array
      */
-    protected ParameterInfo[] setJobParametersFromArgs(String name, int taskNum, ParameterInfo[] parameterInfo, JobInfo[] results, Map args) {
+    private ParameterInfo[] setJobParametersFromArgs(String name, int taskNum, ParameterInfo[] parameterInfo, JobInfo[] results, Map args) {
         for (int i = 0; i < parameterInfo.length; i++) {
             ParameterInfo aParam = parameterInfo[i];
             if (aParam.getAttributes() != null) {
@@ -355,23 +340,11 @@ public class RunPipelineSoap {
     }
 
     /**
-     * Notify the server of the pipeline's status (Process, Finished, etc)
-     * 
-     * @throws WebServiceException
-     */
-    protected void setStatus(String status) throws WebServiceException {
-	if (log.isDebugEnabled()) {
-	    log.debug(("Setting job# " + jobId + " status to " + status));
-	}
-	analysisClient.setJobStatus(jobId, status);
-    }
-
-    /**
      * submit a job based on a service and its parameters
      * 
      * @throws WebServiceException
      */
-    protected AnalysisJob submitJob(AnalysisService svc, ParameterInfo[] parmInfos) throws WebServiceException {
+    private AnalysisJob submitJob(AnalysisService svc, ParameterInfo[] parmInfos) throws WebServiceException {
 	if (parmInfos != null) {
 	    for (int i = 0; i < parmInfos.length; i++) {
 		if (parmInfos[i].isInputFile()) {
@@ -409,10 +382,6 @@ public class RunPipelineSoap {
     private JobInfo waitForErrorOrCompletion(AnalysisJob job, int maxTries, int initialSleep)
 	    throws WebServiceException {
 
-	if (log.isDebugEnabled()) {
-	    log.debug("WaitForErrorOrCompletion jobId= " + job.getJobInfo().getJobNumber() + " taskName= "
-		    + job.getTaskName());
-	}
 	String status = "";
 	JobInfo jobInfo = null;
 	int count = 0;
@@ -426,30 +395,18 @@ public class RunPipelineSoap {
 
 	    }
 	    int jobID = job.getJobInfo().getJobNumber();
-	    log.debug("checking status for job " + jobID + " ...");
 	    jobInfo = analysisClient.checkStatus(jobID);
 	    status = jobInfo.getStatus();
-	    log.debug("   status=" + status);
 	    sleep = incrementSleep(initialSleep, maxTries, count);
 	} while (!(status.equalsIgnoreCase("ERROR") || (status.equalsIgnoreCase("Finished"))));
 
 	return jobInfo;
     }
 
-    public static String getFileType(File file) {
-	// ODF
-	if (file.getName().toLowerCase().endsWith("." + GPConstants.ODF.toLowerCase())) {
-	    return ODFModelType(file);
-	}
-	String filename = file.getName();
-	return filename.substring(filename.lastIndexOf(".") + 1);
-
-    }
-
     /**
      * return the file name for the previously run job by index or name
      */
-    public static String getOutputFileName(org.genepattern.webservice.JobInfo job, String fileStr)
+    private static String getOutputFileName(org.genepattern.webservice.JobInfo job, String fileStr)
 	    throws FileNotFoundException {
 	String fileName = null;
 	String fn = null;
@@ -518,23 +475,27 @@ public class RunPipelineSoap {
 	return fileName;
     }
 
-    public static boolean isFileType(File file, String fileFormat) {
-	if (file.getName().toLowerCase().endsWith(".odf")) {
-	    return ODFModelType(file).equalsIgnoreCase(fileFormat);
-	}
-	// when fileFormat does not contain the '.' character, assume that
-	// fileFormat
-	// refers to a file extension and prepend '.'. For example if value
-	// of fileFormat is 'gct',
-	// fileFormat becomes '.gct' when testing if file.getName() ends
-	// with fileFormat
-	// when the file format does contain the '.' character, assume
-	// fileFormat can refer to a complete
-	// filename (e.g. all_aml_train.gct).
-	if (fileFormat.indexOf('.') == -1) {
-	    fileFormat = "." + fileFormat;
-	}
-	return file.getName().toLowerCase().endsWith(fileFormat.toLowerCase());
+    private static boolean isFileType(File file, String fileFormat) {
+        if (file.getName().toLowerCase().endsWith(".odf")) {
+            String odfModelType = null;
+            try {
+                odfModelType = ODFModelType(file);
+                return odfModelType.equalsIgnoreCase(fileFormat);
+            }
+            catch (Exception e) {
+                //ignore
+                return false;
+            }
+        }
+        // when fileFormat does not contain the '.' character, assume that fileFormat
+        // refers to a file extension and prepend '.'. For example if value of fileFormat is 'gct',
+        // fileFormat becomes '.gct' when testing if file.getName() ends with fileFormat
+        // when the file format does contain the '.' character, 
+        // assume fileFormat can refer to a complete filename (e.g. all_aml_train.gct).
+        if (fileFormat.indexOf('.') == -1) {
+            fileFormat = "." + fileFormat;
+        }
+        return file.getName().toLowerCase().endsWith(fileFormat.toLowerCase());
     }
 
     /**
@@ -544,28 +505,28 @@ public class RunPipelineSoap {
      * @throws Exception
      */
     public static void main(String args[]) throws Exception {
-	log.debug("working dir: " + new File("test").getAbsolutePath());
+        try {
+        String userKey = "";
 
-	String userKey = "";
-	try {
-	    Properties additionalArguments = new Properties();
-	    String genePatternPropertiesFile = System.getProperty("genepattern.properties") + java.io.File.separator
-		    + "genepattern.properties";
+        Properties additionalArguments = new Properties();
+	    String genePatternPropertiesFile = System.getProperty("genepattern.properties") + java.io.File.separator + "genepattern.properties";
 	    FileInputStream fis = null;
 	    Properties genepatternProps = new Properties();
 	    try {
-		fis = new FileInputStream(genePatternPropertiesFile);
-		genepatternProps.load(fis);
-	    } catch (IOException x) {
-		log.error("Unable to open properties file.");
-	    } finally {
-		if (fis != null) {
-		    try {
-			fis.close();
-		    } catch (IOException e) {
-
-		    }
-		}
+	        fis = new FileInputStream(genePatternPropertiesFile);
+	        genepatternProps.load(fis);
+	    } 
+	    catch (IOException x) {
+	        throw new Exception("Unable to open genepattern.properties file:"+genePatternPropertiesFile);
+	    } 
+	    finally {
+	        if (fis != null) {
+	            try {
+	                fis.close();
+	            } 
+	            catch (IOException e) {
+	            }
+	        }
 	    }
 	    for (Iterator iter = genepatternProps.keySet().iterator(); iter.hasNext();) {
 		String key = (String) iter.next();
@@ -596,39 +557,40 @@ public class RunPipelineSoap {
 	    HttpsURLConnection.setDefaultHostnameVerifier(hv);
 
 	    if (args.length < 2) {
-		System.out.println("usage: RunPipeline pipelineFile username args");
-		System.out.println(java.util.Arrays.asList(args));
-		System.exit(1);
+	        System.out.println("usage: RunPipeline pipelineFile username args");
+	        System.out.println(java.util.Arrays.asList(args));
+	        System.exit(1);
 	    }
 	    if (args.length > 2) {
-		for (int i = 2; i < args.length; i++) {
-		    // assume args are in the form name=value
-		    String arg = args[i];
+	        for (int i = 2; i < args.length; i++) {
+	            // assume args are in the form name=value
+	            String arg = args[i];
 
-		    StringTokenizer strtok = new StringTokenizer(arg, "=");
-		    String key = strtok.nextToken();
-		    StringBuffer valbuff = new StringBuffer("");
-		    int count = 0;
-		    while (strtok.hasMoreTokens()) {
-			valbuff.append(strtok.nextToken());
-			if ((strtok.hasMoreTokens()))
-			    valbuff.append("=");
-			count++;
-		    }
-		    additionalArguments.put(key, valbuff.toString());
-		}
+	            StringTokenizer strtok = new StringTokenizer(arg, "=");
+	            String key = strtok.nextToken();
+	            StringBuffer valbuff = new StringBuffer("");
+	            int count = 0;
+	            while (strtok.hasMoreTokens()) {
+	                valbuff.append(strtok.nextToken());
+	                if ((strtok.hasMoreTokens())) {
+	                    valbuff.append("=");
+	                }
+	                count++;
+	            }
+	            additionalArguments.put(key, valbuff.toString());
+	        }
 	    }
 	    String pipelineLSID = System.getProperty(GPConstants.LSID);
-	    // set the tasklib. In the genepattern.properties it may be relative
-	    // to tomcat but we are
-	    // in a pipeline 2 dirs deeper. If it does not start wit a ".." use
-	    // it as it. if it does
-	    // start with ".." then add two more directory jumps up
+	    // set the tasklib. 
+	    // In the genepattern.properties it may be relative to tomcat but we are in a pipeline 2 dirs deeper. 
+	    // If it does not start wit a ".." use it as it. 
+	    // if it does start with ".." then add two more directory jumps up
 	    String taskLib = genepatternProps.getProperty("tasklib");
 	    if (taskLib == null) {
-		taskLib = "../../../../../tasklib";
-	    } else if (taskLib.startsWith("..")) {
-		taskLib = "../../../../" + taskLib;
+	        taskLib = "../../../../../tasklib";
+	    } 
+	    else if (taskLib.startsWith("..")) {
+	        taskLib = "../../../../" + taskLib;
 	    }
 	    System.setProperty("tasklib", taskLib);
 
@@ -648,7 +610,6 @@ public class RunPipelineSoap {
 	    if (userKey == null) {
 		userKey = System.getenv().get(EncryptionUtil.PROP_PIPELINE_USER_KEY);
 	    }
-	    log.debug("EncryptionUtil.PROP_PIPELINE_USER_KEY: " + userKey);
 
 	    int jobId = -1;
 	    if (System.getProperty("jobID") == null) {
@@ -704,87 +665,57 @@ public class RunPipelineSoap {
 	    String server = serverFromFile.getProtocol() + "://" + host + port;
 	    PipelineModel pipelineModel = getPipelineModel(pipelineFileName, pipelineLSID, server, userId, userKey);
 	    if (pipelineModel == null) {
-		log.error("Unable to construct pipeline model.");
-		System.exit(1);
+		throw new Exception("Unable to construct pipeline model.");
 	    }
 	    RunPipelineSoap rp = new RunPipelineSoap(server, userId, userKey, jobId, pipelineModel);
 	    rp.runPipeline(additionalArguments);
-	} finally {
-	    log.debug("DEBUG=" + System.getProperty("DEBUG"));
-	    if (System.getProperty("DEBUG") == null) {
-		File logFileInstance = new File(logFile);
-		if (logFileInstance.exists()) {
-		    log.debug("deleting: " + logFileInstance.getAbsolutePath());
-		    logFileInstance.delete();
-		}
-	    }
-	}
+        }
+        finally {
+            File logFileInstance = new File(logFile);
+            if (logFileInstance.exists()) {
+                logFileInstance.delete();
+            }
+        }
     }
 
-    public static String ODFModelType(File file) {
-	String model = "";
-	BufferedReader inputB = null;
-	try {
-	    if (!file.exists()) {
-		log.error("Can't find " + file.getCanonicalPath());
-	    }
-	    // System.out.println(file.getCanonicalPath());
-	    inputB = new BufferedReader(new FileReader(file));
-	    String modelLine = inputB.readLine();
-	    while (modelLine != null && !modelLine.startsWith("Model")) {
-		modelLine = inputB.readLine();
-	    }
+    private static String ODFModelType(File file) throws Exception {
+        String model = "";
+        BufferedReader inputB = null;
+        try {
+            if (!file.exists()) {
+                throw new Exception("Can't find " + file.getCanonicalPath());
+            }
+            inputB = new BufferedReader(new FileReader(file));
+            String modelLine = inputB.readLine();
+            while (modelLine != null && !modelLine.startsWith("Model")) {
+                modelLine = inputB.readLine();
+            }
 
-	    if (modelLine != null) {
-		model = modelLine.substring(modelLine.indexOf("=") + 1).trim();
-	    }
-	} catch (IOException e) {
-	    log.error("Error reading " + file);
-	} finally {
-	    if (inputB != null) {
-		try {
-		    inputB.close();
-		} catch (IOException x) {
-		}
-	    }
-	}
-	return model;
+            if (modelLine != null) {
+                model = modelLine.substring(modelLine.indexOf("=") + 1).trim();
+            }
+        } 
+        catch (IOException e) {
+            throw new Exception("Error reading " + file, e);
+        } 
+        finally {
+            if (inputB != null) {
+                try {
+                    inputB.close();
+                } 
+                catch (IOException x) {
+                }
+            }
+        }
+        return model;
     }
 
-    public static Logger setupLog4jConfig(String logFile) {
-	// System.setProperty("DEBUG", "true"); //don't delete logfile
-
-	Properties log4jconfig = new Properties();
-	log4jconfig.setProperty("log4j.debug", "false"); // set this to true to debug Log4j configuration
-	log4jconfig.setProperty("log4j.rootLogger", "error, R");
-	log4jconfig.setProperty("log4j.logger.org.genepattern", "error");
-
-	log4jconfig.setProperty("log4j.appender.R", "org.apache.log4j.RollingFileAppender");
-	log4jconfig.setProperty("log4j.appender.R.File", logFile);
-	log4jconfig.setProperty("log4j.appender.R.MaxFileSize", "256KB");
-	log4jconfig.setProperty("log4j.appender.R.MaxBackupIndex", "2");
-	log4jconfig.setProperty("log4j.appender.R.layout", "org.apache.log4j.PatternLayout");
-	log4jconfig.setProperty("log4j.appender.R.layout.ConversionPattern",
-		"%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] (%F:%L) - %m%n");
-
-	System.setProperty("log4j.defaultInitOverride", "true"); // required to prevent stack trace to System.err
-	PropertyConfigurator.configure(log4jconfig);
-	return Logger.getLogger(RunPipelineSoap.class);
-    }
-
-    protected static void dumpParameters(ParameterInfo[] params, String where) {
-	System.out.println("");
-	System.out.println(where);
-	for (int i = 0; params != null && i < params.length; i++) {
-	    System.out.println("RunPipeline.executeTask: " + params[i].getName() + "=" + params[i].toString());
-	}
-    }
 
     /**
      * make the sleep time go up as it takes longer to exec. eg for 100 tries of 1000ms (1 sec) first 20 are 1 sec each
      * next 20 are 2 sec each next 20 are 4 sec each next 20 are 8 sec each any beyond this are 16 sec each
      */
-    protected static int incrementSleep(int init, int maxTries, int count) {
+    private static int incrementSleep(int init, int maxTries, int count) {
 	if (count < (maxTries * 0.2))
 	    return init;
 	if (count < (maxTries * 0.4))
@@ -801,42 +732,45 @@ public class RunPipelineSoap {
      * 
      * @throws WebServiceException
      */
-    private static PipelineModel getPipelineModel(String pipelineFileName, String lsid, String server, String userId,
-	    String password) throws WebServiceException {
-	File file = new File(pipelineFileName);
-	BufferedReader reader = null;
-	PipelineModel model = null;
+    private static PipelineModel getPipelineModel(String pipelineFileName, String lsid, String server, String userId, String password) throws WebServiceException {
+        File file = new File(pipelineFileName);
+        BufferedReader reader = null;
+        PipelineModel model = null;
 
-	try {
-	    AdminProxy adminClient = new AdminProxy(server, userId, password);
-	    if (!file.exists()) {
-		TaskInfo ti = adminClient.getTask(lsid);
-		String serializedModel = (String) ti.getTaskInfoAttributes().get(GPConstants.SERIALIZED_MODEL);
-		reader = new BufferedReader(new StringReader(serializedModel));
-	    } else {
-		reader = new BufferedReader(new FileReader(pipelineFileName));
-		// file.deleteOnExit();
-	    }
+        try {
+            AdminProxy adminClient = new AdminProxy(server, userId, password);
+            if (!file.exists()) {
+                TaskInfo ti = adminClient.getTask(lsid);
+                String serializedModel = (String) ti.getTaskInfoAttributes().get(GPConstants.SERIALIZED_MODEL);
+                reader = new BufferedReader(new StringReader(serializedModel));
+            } 
+            else {
+                FileReader fr = new FileReader(pipelineFileName);
+                reader = new BufferedReader(fr);
+                // file.deleteOnExit();
+            }
 
-	    try {
-		model = PipelineModel.toPipelineModel(new InputSource(reader), false, adminClient);
-	    } catch (Exception e) {
-		return null;
-	    }
-	    model.setLsid(lsid);
-	    return model;
-	} catch (IOException e) {
-	    log.error("Error", e);
-	} finally {
-	    if (reader != null) {
-		try {
-		    reader.close();
-		} catch (IOException e) {
-
-		}
-	    }
-	}
-	return model;
+            try {
+                model = PipelineModel.toPipelineModel(new InputSource(reader), false, adminClient);
+            } 
+            catch (Exception e) {
+                return null;
+            }
+            model.setLsid(lsid);
+            return model;
+        } 
+        catch (IOException e) {
+            throw new WebServiceException("Error creating file reader for "+pipelineFileName, e);
+        } 
+        finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } 
+                catch (IOException e) {
+                }
+            }
+        }
     }
 
 }
