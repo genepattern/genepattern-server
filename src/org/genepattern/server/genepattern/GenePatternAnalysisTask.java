@@ -1166,16 +1166,51 @@ public class GenePatternAnalysisTask {
 	                jobStatus = JobStatus.JOB_FINISHED;
 	            }
 	            else {
-	                if (false && taskInfo != null && taskInfo.isPipeline()) { // for debugging only
-	                    String[] debugCmdLine = new String[commandTokens.length + 3];
-	                    debugCmdLine[0] = commandTokens[0];
-	                    debugCmdLine[1] = "-Xdebug";
-	                    debugCmdLine[2] = "-Xnoagent";
-	                    debugCmdLine[3] = "-Xrunjdwp:transport=dt_socket,server=y,address=5001,suspend=y";
-	                    for (int i = 1; i < commandTokens.length; ++i) {
-	                        debugCmdLine[i + 3] = commandTokens[i];
+	                if (taskInfo.isPipeline()) {
+	                    //FOR DEBUGGING ...
+	                    //    append command line args to pipeline command,
+	                    //    should only use this when developing/testing genepattern
+                        List<String> extraJvmArgs = new ArrayList<String>();
+
+                        final String prop_threshold = "pipeline.log4j.stdout.threshold"; //from genepattern.properties
+                        final String threshold = System.getProperty(prop_threshold);
+                        if (threshold != null && threshold.length() > 0) {
+                            extraJvmArgs.add("-D"+prop_threshold+"="+threshold);
+                        }
+                        final String prop_target = "pipeline.log4j.error.Target"; //from genepattern.properties
+                        final String target = System.getProperty(prop_target);
+                        if (target != null) {
+                            extraJvmArgs.add("-D"+prop_target+"="+target);
+                        }
+	                    boolean debugPipeline = new Boolean(System.getProperty("pipeline.waitForDebugger", "false")); //from genepattern.properties
+	                    if (debugPipeline) { 
+	                        //for debugging only, this causes the pipeline to wait for a connection from a debugger
+                            extraJvmArgs.add("-Xdebug");
+                            extraJvmArgs.add("-Xnoagent");
+                            extraJvmArgs.add("-Xrunjdwp:transport=dt_socket,server=y,address=5001,suspend=y");
 	                    }
-	                    commandTokens = debugCmdLine;
+	                    if (extraJvmArgs.size() > 0) {
+                            int K = extraJvmArgs.size();
+	                        String[] debugCmdLine = new String[commandTokens.length + K];
+	                        int i=0;
+	                        debugCmdLine[0] = commandTokens[0];
+	                        ++i;
+	                        for(String extraJvmArg : extraJvmArgs) {
+	                            debugCmdLine[i] = extraJvmArg;
+	                            ++i;
+	                        }
+	                        boolean skip = true;
+	                        for(String commandToken : commandTokens) {
+	                            if (skip) {
+	                                skip = false;
+	                            }
+	                            else {
+	                                debugCmdLine[i] = commandToken;
+	                                ++i;
+	                            }
+	                        }
+	                        commandTokens = debugCmdLine;
+	                    }
 	                }
 	                processBuilder = runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
 	                if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0 && taskInfo.isPipeline()) {

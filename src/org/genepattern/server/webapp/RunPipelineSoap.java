@@ -65,28 +65,56 @@ import org.xml.sax.InputSource;
  */
 
 public class RunPipelineSoap {
-    private static final String logFile = ".pipelineErrors.log"; // one log file per pipeline
-    private static final Logger log = setupLog4jConfig(logFile);
-    public static Logger setupLog4jConfig(String logFile) {
-        // System.setProperty("DEBUG", "true"); //don't delete logfile
-
+    private static final Logger log = setupLog4jConfig();
+    /**
+     * Log4J is used in some of the GP client calls made by this class.
+     * This method initializes log4j because the default classpath includes the
+     * log4j configuration for the gp server.
+     * 
+     * genepattern.properties defaults
+     * 
+     * <pre>
+     * option 1) send log4j messages to stdout (true or false), e.g.
+     *     pipeline.log4j.stdout.threshold=[(not set by default)|debug]
+     * option 2) send log4j error messages to stderr or stdout
+     *     pipeline.log4j.error.Target=[System.err (default)|System.out]
+     * </pre>
+     */
+    private static Logger setupLog4jConfig() {
         Properties log4jconfig = new Properties();
         log4jconfig.setProperty("log4j.debug", "false"); // set this to true to debug Log4j configuration
-        log4jconfig.setProperty("log4j.rootLogger", "error, R");
-        log4jconfig.setProperty("log4j.logger.org.genepattern", "error");
+        
+        String log4jDebugThreshold = System.getProperty("pipeline.log4j.stdout.threshold");
+        boolean sendDebugMessagesToStdOut = log4jDebugThreshold != null;
+        String pipelineErrorTarget = System.getProperty("pipeline.log4j.error.Target", "System.err");
 
-        log4jconfig.setProperty("log4j.appender.R", "org.apache.log4j.RollingFileAppender");
-        log4jconfig.setProperty("log4j.appender.R.File", logFile);
-        log4jconfig.setProperty("log4j.appender.R.MaxFileSize", "256KB");
-        log4jconfig.setProperty("log4j.appender.R.MaxBackupIndex", "2");
-        log4jconfig.setProperty("log4j.appender.R.layout", "org.apache.log4j.PatternLayout");
-        log4jconfig.setProperty("log4j.appender.R.layout.ConversionPattern",
+        // configure log.error messages
+        log4jconfig.setProperty("log4j.appender.stderr", "org.apache.log4j.ConsoleAppender");
+        log4jconfig.setProperty("log4j.appender.stderr.layout", "org.apache.log4j.PatternLayout");
+        log4jconfig.setProperty("log4j.appender.stderr.layout.ConversionPattern",
             "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] (%F:%L) - %m%n");
+        log4jconfig.setProperty("log4j.appender.stderr.threshold", "error");
+        log4jconfig.setProperty("log4j.appender.stderr.Target", pipelineErrorTarget);
+        
+        // [optionally] configure log.debug messages
+        log4jconfig.setProperty("log4j.appender.stdout", "org.apache.log4j.ConsoleAppender");
+        log4jconfig.setProperty("log4j.appender.stdout.Target", "System.out");
+        log4jconfig.setProperty("log4j.appender.stdout.layout", "org.apache.log4j.PatternLayout");
+        log4jconfig.setProperty("log4j.appender.stdout.layout.ConversionPattern", 
+            "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] (%F:%L) - %m%n");
+        log4jconfig.setProperty("log4j.appender.stdout.threshold", "debug");
+
+        if (sendDebugMessagesToStdOut) {
+            log4jconfig.setProperty("log4j.rootLogger", "debug, stderr, stdout");
+        }
+        else {
+            log4jconfig.setProperty("log4j.rootLogger", "debug, stderr");
+        }
 
         System.setProperty("log4j.defaultInitOverride", "true"); // required to prevent stack trace to System.err
         PropertyConfigurator.configure(log4jconfig);
         return Logger.getLogger(RunPipelineSoap.class);
-        }
+    }
 
 
     private PipelineModel model;
@@ -185,7 +213,7 @@ public class RunPipelineSoap {
      */
     private JobInfo collectChildJobResults(JobInfo taskResult) throws WebServiceException {
         if (taskResult == null) {
-            //log.debug("Invalid null arg to collectChildJobResults");
+            log.debug("Invalid null arg to collectChildJobResults");
             return taskResult;
         }
         List<ParameterInfo> outs = new ArrayList<ParameterInfo>();
@@ -222,7 +250,7 @@ public class RunPipelineSoap {
 	TaskInfo task = adminClient.getTask(lsidOrTaskName);
 
 	if (task == null) {
-	    //log.error("Module " + lsidOrTaskName + " not found.");
+	    log.error("Module " + lsidOrTaskName + " not found.");
 	    return new JobInfo();
 	}
 
@@ -273,7 +301,7 @@ public class RunPipelineSoap {
                 String value = aParam.getValue();
                 if (value != null) {
                     if ((value.trim().length() == 0) && aParam.isOptional()) {
-                        //log.debug("Removing Param " + aParam.getName() + " has null value. Opt= " + aParam.isOptional());
+                        log.debug("Removing Param " + aParam.getName() + " has null value. Opt= " + aParam.isOptional());
                     } 
                     else {
                         params.add(aParam);
@@ -505,7 +533,6 @@ public class RunPipelineSoap {
      * @throws Exception
      */
     public static void main(String args[]) throws Exception {
-        try {
         String userKey = "";
 
         Properties additionalArguments = new Properties();
@@ -667,15 +694,9 @@ public class RunPipelineSoap {
 	    if (pipelineModel == null) {
 		throw new Exception("Unable to construct pipeline model.");
 	    }
+	    
 	    RunPipelineSoap rp = new RunPipelineSoap(server, userId, userKey, jobId, pipelineModel);
 	    rp.runPipeline(additionalArguments);
-        }
-        finally {
-            File logFileInstance = new File(logFile);
-            if (logFileInstance.exists()) {
-                logFileInstance.delete();
-            }
-        }
     }
 
     private static String ODFModelType(File file) throws Exception {
