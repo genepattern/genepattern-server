@@ -81,7 +81,7 @@ public class ContactUsBean {
 
     public String send() {
         Properties p = new Properties();
-        String mailServer = System.getProperty("smtp.server", "imap.broadinstitute.org");
+        String mailServer = System.getProperty("smtp.server", "smtp.broadinstitute.org");
         p.put("mail.host", mailServer);
 
         Session mailSession = Session.getDefaultInstance(p, null);
