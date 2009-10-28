@@ -1,5 +1,6 @@
 package org.genepattern.server.webapp.jsf;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,7 +18,7 @@ import org.genepattern.server.auth.GroupPermission.Permission;
  * Should be request scope.
  * @author pcarr
  */
-public class JobPermissionsBean {
+public class JobPermissionsBean implements Serializable {
     private static Logger log = Logger.getLogger(JobPermissionsBean.class);
 
     private int jobId = -1;
