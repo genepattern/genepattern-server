@@ -433,20 +433,20 @@ public class AdminDAO extends BaseDAO {
     }
 
     public TaskInfo[] getLatestTasks(String username) {
-
-	TaskInfo[] tasks = getAllTasksForUser(username);
-	if (tasks == null) {
-	    return new TaskInfo[0];
-	}
-	try {
-	    Map lsidToTask = getLatestTasks(tasks);
-	    TaskInfo[] tasksArray = (TaskInfo[]) lsidToTask.values().toArray(new TaskInfo[0]);
-	    Arrays.sort(tasksArray, new TaskNameComparator());
-	    return tasksArray;
-	} catch (MalformedURLException mfe) {
-	    log.error(mfe);
-	    throw new OmnigeneException("Error fetching task:  Malformed URL: " + mfe.getMessage());
-	}
+        TaskInfo[] tasks = getAllTasksForUser(username);
+        if (tasks == null) {
+            return new TaskInfo[0];
+        }
+        try {
+            Map lsidToTask = getLatestTasks(tasks);
+            TaskInfo[] tasksArray = (TaskInfo[]) lsidToTask.values().toArray(new TaskInfo[0]);
+            Arrays.sort(tasksArray, new TaskNameComparator());
+            return tasksArray;
+        } 
+        catch (MalformedURLException mfe) {
+            log.error(mfe);
+            throw new OmnigeneException("Error fetching task:  Malformed URL: " + mfe.getMessage());
+        }
     }
 
     public TaskInfo getTask(int taskId) throws OmnigeneException {

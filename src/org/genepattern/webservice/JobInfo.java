@@ -12,8 +12,11 @@
 
 package org.genepattern.webservice;
 
-import java.util.*;
-import java.io.*;
+import java.io.Serializable;
+import java.util.Date;
+
+import org.genepattern.server.domain.AnalysisJob;
+
 
 /**
  * Used to hold information about particular job
@@ -67,11 +70,10 @@ public class JobInfo implements Serializable {
      * Construct a JobInfo object from an AnalysisJob
      * @param aJob
      */
-    public JobInfo(org.genepattern.server.domain.AnalysisJob aJob) {
+    public JobInfo(AnalysisJob aJob) {
         this(aJob.getJobNo().intValue(), aJob.getTaskId(), aJob.getJobStatus().getStatusName(),
-                aJob.getSubmittedDate(), aJob.getCompletedDate(), (new ParameterFormatConverter())
-                        .getParameterInfoArray(aJob.getParameterInfo()), aJob.getUserId(), aJob.getTaskLsid(), aJob
-                        .getTaskName());
+                aJob.getSubmittedDate(), aJob.getCompletedDate(), ParameterFormatConverter.getParameterInfoArray(aJob.getParameterInfo()),
+                aJob.getUserId(), aJob.getTaskLsid(), aJob.getTaskName());
         
         this.deleted = aJob.getDeleted();
     }
@@ -206,9 +208,8 @@ public class JobInfo implements Serializable {
      */
     public String getParameterInfo() throws OmnigeneException {
         String parameter_info = "";
-        ParameterFormatConverter converter = new ParameterFormatConverter();
         if (this.parameterInfoArray != null) {
-            parameter_info = converter.getJaxbString(this.parameterInfoArray);
+            parameter_info = ParameterFormatConverter.getJaxbString(this.parameterInfoArray);
         }
         return parameter_info;
     }

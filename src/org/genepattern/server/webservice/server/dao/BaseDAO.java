@@ -139,10 +139,8 @@ public class BaseDAO {
 
 
     public JobInfo jobInfoFromAnalysisJob(org.genepattern.server.domain.AnalysisJob aJob) throws OmnigeneException {
-        ParameterFormatConverter parameterFormatConverter = new ParameterFormatConverter();
-    
         return new JobInfo(aJob.getJobNo().intValue(), aJob.getTaskId(), aJob.getJobStatus().getStatusName(), aJob
-                .getSubmittedDate(), aJob.getCompletedDate(), parameterFormatConverter.getParameterInfoArray(aJob
+                .getSubmittedDate(), aJob.getCompletedDate(), ParameterFormatConverter.getParameterInfoArray(aJob
                 .getParameterInfo()), aJob.getUserId(), aJob.getTaskLsid(), aJob.getTaskName());
     
     }

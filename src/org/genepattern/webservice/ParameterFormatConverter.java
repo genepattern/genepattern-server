@@ -16,17 +16,17 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.stream.XMLStreamException;
 
+import org.apache.log4j.Logger;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.jaxb.parameter.ANALYSISPARAMETERS;
 import org.genepattern.webservice.jaxb.parameter.ATTRIBUTE;
@@ -39,44 +39,54 @@ import org.genepattern.webservice.jaxb.parameter.PARAMETER;
  * @version $Revision 1.2 $
  */
 public class ParameterFormatConverter {
+    private static Logger log = Logger.getLogger(ParameterFormatConverter.class);
+
+    //use singleton instance of JAXBContext to avoid memory leak, GP-2868
+    private static JAXBContext analysisParametersContext = null;
+    static {
+        try {
+            analysisParametersContext = JAXBContext.newInstance(ANALYSISPARAMETERS.class);
+        }
+        catch (JAXBException e) {
+            log.error("Configuration error in ParameterFormatConverter, JAXBException thrown: " + e.getLocalizedMessage(), e);
+        }
+    }
 
     /** Creates new ParameterFormatConverter */
-    public ParameterFormatConverter() {
+    private ParameterFormatConverter() {
     }
 
     /**
-     * Converts <CODE>ParameterInfo</CODE> to parameter jaxb string
+     * Converts <CODE>ParameterInfo</CODE> to parameter jaxb string for storing in DB.
      *
      * @param parameterInfoArray
      * @throws OmnigeneException
      * @return The string.
      */
     public static String getJaxbString(ParameterInfo[] parameterInfoArray) throws OmnigeneException {
-
-        String jaxbParameterString = "";
-
-        if (parameterInfoArray == null)
+        if (parameterInfoArray == null) {
             return null;
+        }
 
+        //marshaller is not thread-safe so must use on instance per method invocation
+        Marshaller marshaller = null;
         try {
-        	// jln
-        	JAXBContext context = JAXBContext.newInstance(ANALYSISPARAMETERS.class);
-        	Marshaller marshaller = context.createMarshaller();
-        	
-            ParameterInfo parameterInfo = null;
-            ANALYSISPARAMETERS jxbAnalysisParameter = null;
-            List paraList = Arrays.asList(parameterInfoArray);
+            marshaller = analysisParametersContext.createMarshaller();
+        }
+        catch (JAXBException e) {
+            log.error("getJaxbString error in createMarshaller: "+e.getLocalizedMessage(), e);
+            return null;
+        }
+        
+        String jaxbParameterString = "";
+        try { 
+            ANALYSISPARAMETERS jxbAnalysisParameter = new ANALYSISPARAMETERS();
+            List<PARAMETER> parameterList = jxbAnalysisParameter.getPARAMETER();
 
-            // To convert parameter object to jxb for storing in DB as string
-
-            jxbAnalysisParameter = new ANALYSISPARAMETERS();
-            List parameterList = jxbAnalysisParameter.getPARAMETER();
-
-            for (int i = 0; i < paraList.size(); i++) {
-                parameterInfo = (ParameterInfo) paraList.get(i);
+            for (ParameterInfo parameterInfo : parameterInfoArray) {
                 PARAMETER jxbParameter = new PARAMETER();
                 // create JAXB attribute list
-                List attributes = jxbParameter.getATTRIBUTE();
+                List<ATTRIBUTE> attributes = jxbParameter.getATTRIBUTE();
                 // gets ParameterInfo attribute list
                 HashMap attrs = parameterInfo.getAttributes();
                 if (attrs != null) {
@@ -100,30 +110,25 @@ public class ParameterFormatConverter {
                  * performed when they are unmarshalled.
                  */
                 String val = parameterInfo.getValue();
-                if (val == null)
+                if (val == null) {
                     val = "";
+                }
                 jxbParameter.setValue(URLEncoder.encode(val, GPConstants.UTF8));
                 jxbParameter.setDESCRIPTION(parameterInfo.getDescription());
                 parameterList.add(jxbParameter);
-
             }
             ByteArrayOutputStream fcout = new ByteArrayOutputStream();
 
             // jln
-//            jxbAnalysisParameter.validate();
-//            jxbAnalysisParameter.marshal(fcout);
             marshaller.marshal(jxbAnalysisParameter, fcout);
-            
-            
             jaxbParameterString = fcout.toString();
             fcout.close();
-        } catch (Exception ex) {
-            System.out.println("ParameterFormatConverter:getJaxbString Error " + ex.getMessage());
-            ex.printStackTrace();
-            throw new OmnigeneException(ex.toString());
+        } 
+        catch (Exception ex) {
+            log.error("ParameterFormatConverter:getJaxbString Error " + ex.getMessage(), ex);
+            throw new OmnigeneException(ex);
         }
         return jaxbParameterString;
-
     }
 
     /**
@@ -134,35 +139,29 @@ public class ParameterFormatConverter {
      * @return The parameter array.
      */
     public static ParameterInfo[] getParameterInfoArray(String jxbParameterInfoString) throws OmnigeneException {
-
-        //ParameterInfo[] parameterInfoArray = null;
         ParameterInfo[] parameterInfoArray = new ParameterInfo[0];
-
-        if (jxbParameterInfoString != null) {
-            if (jxbParameterInfoString.trim().length() == 0)
-                return new ParameterInfo[0];
-        } else {
-            return new ParameterInfo[0];
+        if (jxbParameterInfoString == null || jxbParameterInfoString.trim().length() == 0) {
+            return parameterInfoArray;
+        }
+        
+        Unmarshaller unmarshaller = null;
+        try {
+            unmarshaller = analysisParametersContext.createUnmarshaller();
+        }
+        catch (JAXBException e) {
+            log.error("getJaxbString error in createUnmarshaller: "+e.getLocalizedMessage(), e);
+            return parameterInfoArray;
         }
 
-        try {
-        	// JLN
-        	JAXBContext context = JAXBContext.newInstance(ANALYSISPARAMETERS.class);
-        	Unmarshaller um = context.createUnmarshaller();
-        	
-//            ANALYSISPARAMETERS jxbAnalysisParameters = ANALYSISPARAMETERS.unmarshal(new ByteArrayInputStream(
-//                    jxbParameterInfoString.getBytes()));
-        	
-        	ANALYSISPARAMETERS jxbAnalysisParameters = (ANALYSISPARAMETERS) um.unmarshal(new ByteArrayInputStream(jxbParameterInfoString.getBytes()));
-            List jxbParameterList = jxbAnalysisParameters.getPARAMETER();
+        try { 
+        	ANALYSISPARAMETERS jxbAnalysisParameters = (ANALYSISPARAMETERS) unmarshaller.unmarshal(new ByteArrayInputStream(jxbParameterInfoString.getBytes()));
+            List<PARAMETER> jxbParameterList = jxbAnalysisParameters.getPARAMETER();
             PARAMETER jxbParameter = null;
-            Vector parameterVector = new Vector();
+            List<ParameterInfo> parameterVector = new ArrayList<ParameterInfo>();
             for (int i = 0; i < jxbParameterList.size(); i++) {
                 jxbParameter = (PARAMETER) jxbParameterList.get(i);
                 HashMap attsMap = new HashMap();
-                List atts = jxbParameter.getATTRIBUTE();
-                for (int j = 0; j < atts.size(); j++) {
-                    ATTRIBUTE att = (ATTRIBUTE) atts.get(j);
+                for (ATTRIBUTE att : jxbParameter.getATTRIBUTE()) {
                     String content = att.getContent();
                     attsMap.put(att.getKey(), content != null ? URLDecoder.decode(content, "UTF-8") : null);
                 }
@@ -185,16 +184,15 @@ public class ParameterFormatConverter {
                 parameterInfoArray = (ParameterInfo[]) parameterVector
                         .toArray(new ParameterInfo[] { (ParameterInfo) parameterVector.get(0) });
 
-        } catch (Exception ex) {
-            System.out.println("ParameterFormatConverter:getParameterInfoArray Error " + ex.getMessage());
-            ex.printStackTrace();
+        } 
+        catch (Exception ex) {
+            log.error("ParameterFormatConverter:getParameterInfoArray Error " + ex.getMessage(), ex);
             throw new OmnigeneException(ex.toString());
         }
         return parameterInfoArray;
-
     }
 
-    public static ParameterInfo[] stripPasswords(ParameterInfo[] params) {
+    private static ParameterInfo[] stripPasswords(ParameterInfo[] params) {
         for (int i = 0; i < params.length; i++) {
             ParameterInfo p = params[i];
             if (p.isPassword()) {
@@ -209,42 +207,42 @@ public class ParameterFormatConverter {
         return getJaxbString(stripPasswords(params));
     }
 
-    /**
-     * @param args
-     */
-    public static void main(String args[]) {
-        ParameterFormatConverter pc = new ParameterFormatConverter();
-        try {
-
-            String jxbString = "<ANALYSISPARAMETERS><PARAMETER name=\"ParadiseHost\" value=\"anchor.turbogenomics.com\"/><PARAMETER name=\"InputSource\" value=\"/home/techarch/sequence.in\"/> "
-                    + " <PARAMETER name=\"DatabaseName\" value=\"ecoli.nt\"/></ANALYSISPARAMETERS>";
-
-            ParameterInfo[] paraInfoArray = (ParameterInfo[]) pc.getParameterInfoArray(jxbString);
-            if (paraInfoArray == null)
-                System.out.println("ParaInfoArray is null");
-            else {
-                System.out.println("Converted values  " + ((ParameterInfo) paraInfoArray[1]).getName());
-                System.out.println("Converted values  " + ((ParameterInfo) paraInfoArray[1]).getValue());
-            }
-
-            // System.out.println("Conveted values " +
-            // ((ParameterInfo)paraInfoArray[0]).getName());
-
-            // String str = pc.getJaxbString(paraInfoArray);
-            // System.out.println("Str = " + str);
-
-            /*
-             * ParameterFormatConverter paraConverter = new
-             * ParameterFormatConverter(); ParameterInfo[] paraInfoArray = null ;
-             * String paraString = paraConverter.getJaxbString(paraInfoArray);
-             * if (paraString==null) System.out.println("Null returned");
-             *
-             *
-             */
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    /**
+//     * @param args
+//     */
+//    public static void main(String args[]) {
+//        ParameterFormatConverter pc = new ParameterFormatConverter();
+//        try {
+//
+//            String jxbString = "<ANALYSISPARAMETERS><PARAMETER name=\"ParadiseHost\" value=\"anchor.turbogenomics.com\"/><PARAMETER name=\"InputSource\" value=\"/home/techarch/sequence.in\"/> "
+//                    + " <PARAMETER name=\"DatabaseName\" value=\"ecoli.nt\"/></ANALYSISPARAMETERS>";
+//
+//            ParameterInfo[] paraInfoArray = (ParameterInfo[]) pc.getParameterInfoArray(jxbString);
+//            if (paraInfoArray == null)
+//                System.out.println("ParaInfoArray is null");
+//            else {
+//                System.out.println("Converted values  " + ((ParameterInfo) paraInfoArray[1]).getName());
+//                System.out.println("Converted values  " + ((ParameterInfo) paraInfoArray[1]).getValue());
+//            }
+//
+//            // System.out.println("Conveted values " +
+//            // ((ParameterInfo)paraInfoArray[0]).getName());
+//
+//            // String str = pc.getJaxbString(paraInfoArray);
+//            // System.out.println("Str = " + str);
+//
+//            /*
+//             * ParameterFormatConverter paraConverter = new
+//             * ParameterFormatConverter(); ParameterInfo[] paraInfoArray = null ;
+//             * String paraString = paraConverter.getJaxbString(paraInfoArray);
+//             * if (paraString==null) System.out.println("Null returned");
+//             *
+//             *
+//             */
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
 }

@@ -99,8 +99,7 @@ public class AddNewTaskHandler extends RequestHandler {
 				}
 			}
 
-			ParameterFormatConverter pfc = new ParameterFormatConverter();
-			parameter_info = pfc.getJaxbString(parameterInfoArray);
+			parameter_info = ParameterFormatConverter.getJaxbString(parameterInfoArray);
 
 			//Invoke EJB function
 
