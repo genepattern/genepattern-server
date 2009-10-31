@@ -24,8 +24,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
 import org.genepattern.io.ParseException;
 import org.genepattern.io.odf.OdfHandler;
 import org.genepattern.io.odf.OdfParser;
@@ -34,6 +36,8 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
 public class SemanticUtil {
+    private static Logger log = Logger.getLogger(SemanticUtil.class);
+
     private SemanticUtil() {
     }
 
@@ -141,8 +145,8 @@ public class SemanticUtil {
         return kindToServices;
     }
 
-    protected static  HashMap<String, Collection<TaskInfo>> mapOfAllTasks = new HashMap<String, Collection<TaskInfo>>();
-    protected static HashSet loadedTasks = new HashSet<String>();
+    private static  HashMap<String, Collection<TaskInfo>> mapOfAllTasks = new HashMap<String, Collection<TaskInfo>>();
+    private static Set<String> loadedTasks = new HashSet<String>();
   
     public static Map<String, Collection<TaskInfo>> getKindToModulesMap(TaskInfo[] tasks) {
         Map<String, Collection<TaskInfo>> map = new HashMap<String, Collection<TaskInfo>>();
@@ -154,9 +158,13 @@ public class SemanticUtil {
          * first make sure we have this task already in the complete list
          */
         for (TaskInfo task : tasks) {
-            if (loadedTasks.contains(task.getLsid())){
+            if (task == null || task.getLsid() == null) {
+                // unexpected input
+            }
+            else if (loadedTasks.contains(task.getLsid())) {
                 // already have it loaded
-            } else {
+            } 
+            else {
                 addToInputTypeToModulesMap(mapOfAllTasks, task);
                 loadedTasks.add(task.getLsid());
             }
@@ -171,22 +179,21 @@ public class SemanticUtil {
             Collection<TaskInfo> modules = new HashSet<TaskInfo>();
             for (TaskInfo task: allModulesForInputType){
                 /* if this taskinfo is in the input array we use it */
-                
                 try {
-                if (task != null){
-                    if (userTasks.contains(task)) modules.add(task);
-                }
-                } catch (Exception e){
-                    System.out.println("error on task " + task.getName());
+                    if (task != null && userTasks != null) {
+                        if (userTasks.contains(task)) {
+                            modules.add(task);
+                        }
+                    }
+                } 
+                catch (Exception e) {
+                    log.error("error on task: " + (task != null ? task.getName() : "<null>"), e);
                 }
             }
             if (modules.size()> 0){
                 map.put(type, modules);
             }
         }
-        
-        
-        
         return map;
     }
 
