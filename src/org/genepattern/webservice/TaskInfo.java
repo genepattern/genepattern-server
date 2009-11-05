@@ -187,9 +187,8 @@ public class TaskInfo implements Serializable {
     public ParameterInfo[] getParameterInfoArray() {
         // add checking in here --Hui
         if (this.parameterInfoArray == null && this.parameter_info != null) {
-            ParameterFormatConverter converter = new ParameterFormatConverter();
             try {
-                this.parameterInfoArray = converter.getParameterInfoArray(this.parameter_info);
+                this.parameterInfoArray = ParameterFormatConverter.getParameterInfoArray(this.parameter_info);
             }
             catch (OmnigeneException e) {
             }
@@ -224,20 +223,31 @@ public class TaskInfo implements Serializable {
         return false;
     }
 
+    private boolean eq(Object o1, Object o2) {
+        if (o1 == o2) {
+            return true;
+        }
+        if (o1 != null) {
+            return o1.equals(o2);
+        }
+        return false;
+    }
+
     public boolean equals(Object otherThing) {
-        if (otherThing == null) return false;
-        if (!(otherThing instanceof TaskInfo)) return false;
+        if (otherThing == null) {
+            return false;
+        }
+        if (!(otherThing instanceof TaskInfo)) {
+            return false;
+        }
         TaskInfo other = (TaskInfo) otherThing;
-        return getUserId().equals(other.getUserId())
-                && getAccessId() == other.getAccessId()
-                && ((getTaskInfoAttributes() == null && other.getTaskInfoAttributes() == null) || (getTaskInfoAttributes() != null
-                        && other.getTaskInfoAttributes() != null && getTaskInfoAttributes().equals(
-                        other.getTaskInfoAttributes())))
-                && getName().equals(other.getName())
-                && getID() == other.getID()
-                && getDescription().equals(other.getDescription())
-                && ((getParameterInfo() == null && other.getParameterInfo() == null) || (getParameterInfo() != null
-                        && other.getParameterInfo() != null && getParameterInfo().equals(other.getParameterInfo())));
+        return eq(this.userId, other.userId)
+            && eq(this.accessId, other.accessId)
+            && eq(this.taskInfoAttributes, other.taskInfoAttributes)
+            && eq(this.taskName, other.taskName)
+            && eq(this.taskID, other.taskID)
+            && eq(this.description, other.description)
+            && eq(this.parameter_info, other.parameter_info);
     }
 
     public int hashCode() {
