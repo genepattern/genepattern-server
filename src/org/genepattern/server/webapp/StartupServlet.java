@@ -33,9 +33,7 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSession;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -64,6 +62,7 @@ public class StartupServlet extends HttpServlet {
     public static String NAME = "GenePatternStartupServlet";
     SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     public static Vector<Thread> vThreads = new Vector<Thread>();
+    
 
     public StartupServlet() {
         System.out.println("Creating StartupServlet");
@@ -99,17 +98,7 @@ public class StartupServlet extends HttpServlet {
 
         startDaemons(System.getProperties(), application);
         Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-        // 
-        // Probably best to put this code in a function somewhere...
-        // 
-        HostnameVerifier hv = new HostnameVerifier() {
-            public boolean verify(String urlHostName, SSLSession session) {
-                if (!urlHostName.equals(session.getPeerHost()))
-                    System.out.println("Warning: URL Host: " + urlHostName + " vs. " + session.getPeerHost());
-                return true;
-            }
-        };
-        HttpsURLConnection.setDefaultHostnameVerifier(hv);
+        HttpsURLConnection.setDefaultHostnameVerifier(new SessionHostnameVerifier());
 
         //clear system alert messages
         try {
