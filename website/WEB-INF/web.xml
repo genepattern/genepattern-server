@@ -337,17 +337,6 @@
   <url-pattern>/services/*</url-pattern>
  </servlet-mapping>
 
-  <servlet>
-  <display-name>AjaxServlet</display-name>
-  <servlet-name>AjaxServlet</servlet-name>
-  <servlet-class>org.genepattern.server.webapp.jsf.AjaxServlet</servlet-class>
-  <load-on-startup>1</load-on-startup>
- </servlet>
- <servlet-mapping>
-  <servlet-name>AjaxServlet</servlet-name>
-  <url-pattern>*.ajax</url-pattern>
- </servlet-mapping>
-
  <servlet>
   <display-name>JobResultsServlet</display-name>
   <servlet-name>JobResultsServlet</servlet-name>
