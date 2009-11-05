@@ -2329,14 +2329,6 @@ public class GenePatternAnalysisTask {
 		// path
 		replacement = new File(replacement).getAbsolutePath();
 	    }
-	    if (varName.equals("userid")) { // special treatment to catch spaces
-		// in names
-		replacement = props.getProperty(varName);
-		int idx = replacement.indexOf(" ");
-		if (idx >= 0) {
-		    replacement = "\"" + replacement + "\"";
-		}
-	    }
 	    if (replacement.length() == 0) {
 		log.debug("GPAT.substitute: replaced " + varName + " with empty string");
 	    }
