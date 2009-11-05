@@ -59,8 +59,7 @@ public class GetJobStatusHandler extends RequestHandler {
             AnalysisDAO ds = new AnalysisDAO();
 
             ji = ds.getJobInfo(jobNo);
-            ParameterFormatConverter pfc = new ParameterFormatConverter();
-            ji.setParameterInfoArray(pfc.getParameterInfoArray(ji.getParameterInfo()));
+            ji.setParameterInfoArray(ParameterFormatConverter.getParameterInfoArray(ji.getParameterInfo()));
         } catch (JobIDNotFoundException jex) {
             System.out.println("GetJobStatusRequest(executeRequest): JobIDNotFoundException " + jobNo);
             throw jex;

@@ -68,14 +68,9 @@ public class UpdateTaskHandler extends RequestHandler {
     public int executeRequest() throws OmnigeneException {
         int updatedRecord = 0;
         try {
-
-            ParameterFormatConverter pfc = new ParameterFormatConverter();
-            String parameter_info = pfc.getJaxbString(_parameterInfoArray);
-
+            String parameter_info = ParameterFormatConverter.getJaxbString(_parameterInfoArray);
             AnalysisDAO ds = new AnalysisDAO();
-
             updatedRecord = ds.updateTask(_taskID, parameter_info, _taskInfoAttributeString, _user_id, _access_id);
-
         }
         catch (Exception ex) {
             System.out.println("UpdateTaskRequest: Error " + ex.getMessage());

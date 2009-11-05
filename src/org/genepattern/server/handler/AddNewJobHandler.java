@@ -91,8 +91,7 @@ public class AddNewJobHandler extends RequestHandler {
             if(log.isDebugEnabled()) {
                 log.debug("executeRequest");
             }
-            ParameterFormatConverter pfc = new ParameterFormatConverter();
-            parameter_info = pfc.getJaxbString(parameterInfoArray);
+            parameter_info = ParameterFormatConverter.getJaxbString(parameterInfoArray);
             
             // Insert job record.  Transaction is committed to avoid deadlock.
             HibernateUtil.beginTransaction();
@@ -120,7 +119,7 @@ public class AddNewJobHandler extends RequestHandler {
             AnalysisTask.getInstance().wakeupJobQueue();
             
             // Reparse parameter_info before sending to client
-            ji.setParameterInfoArray(pfc.getParameterInfoArray(parameter_info));
+            ji.setParameterInfoArray(ParameterFormatConverter.getParameterInfoArray(parameter_info));
         } 
         catch (TaskIDNotFoundException taskEx) {
             HibernateUtil.rollbackTransaction();

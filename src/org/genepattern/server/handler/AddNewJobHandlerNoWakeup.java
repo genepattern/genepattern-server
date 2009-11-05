@@ -70,8 +70,7 @@ public class AddNewJobHandlerNoWakeup extends AddNewJobHandler {
     public JobInfo executeRequest() throws OmnigeneException, TaskIDNotFoundException {
         JobInfo ji = null;
         try {
-            ParameterFormatConverter pfc = new ParameterFormatConverter();
-            parameter_info = pfc.getJaxbString(parameterInfoArray);
+            parameter_info = ParameterFormatConverter.getJaxbString(parameterInfoArray);
             
             HibernateUtil.beginTransaction();
             AnalysisDAO ds = new AnalysisDAO();
@@ -91,7 +90,7 @@ public class AddNewJobHandlerNoWakeup extends AddNewJobHandler {
             //
             
             // Reparse parameter_info before sending to client
-            ji.setParameterInfoArray(pfc.getParameterInfoArray(parameter_info));
+            ji.setParameterInfoArray(ParameterFormatConverter.getParameterInfoArray(parameter_info));
         }
         catch (TaskIDNotFoundException taskEx) {
             HibernateUtil.rollbackTransaction();

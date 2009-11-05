@@ -71,11 +71,7 @@ public class GetAvailableTasksHandler extends RequestHandler {
 				TaskInfo taskInfo = null;
 				for (int i = 0; i < tasksVector.size(); i++) {
 					taskInfo = (TaskInfo) tasksVector.get(i);
-					ParameterFormatConverter pfc = new ParameterFormatConverter();
-					taskInfo
-							.setParameterInfoArray(pfc
-									.getParameterInfoArray(taskInfo
-											.getParameterInfo()));
+					taskInfo.setParameterInfoArray(ParameterFormatConverter.getParameterInfoArray(taskInfo.getParameterInfo()));
 				}
 			} else {
 				throw new OmnigeneException(
