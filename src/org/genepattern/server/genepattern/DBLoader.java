@@ -93,8 +93,7 @@ public abstract class DBLoader {
         catch (RemoteException re) {
             throw new OmnigeneException("Unable to load the task: " + re.getMessage());
         }
-        ParameterFormatConverter pfc = new ParameterFormatConverter();
-        String parameter_info = pfc.getJaxbString(this._params);
+        String parameter_info = ParameterFormatConverter.getJaxbString(this._params);
         // task doesn't exist
         if (taskID < 0) {
             // create new task
@@ -138,8 +137,7 @@ public abstract class DBLoader {
      */
     public void create() throws OmnigeneException {
         AnalysisDAO ds = new AnalysisDAO();
-        ParameterFormatConverter pfc = new ParameterFormatConverter();
-        String parameter_info = pfc.getJaxbString(this._params);
+        String parameter_info = ParameterFormatConverter.getJaxbString(this._params);
         /*
          * int taskID = -1; try{ // search for an existing task with the same
          * name taskID = getTaskIDByName(_name, user_id); }
@@ -213,8 +211,7 @@ public abstract class DBLoader {
             return;
         }
 
-        ParameterFormatConverter pfc = new ParameterFormatConverter();
-        String parameter_info = pfc.getJaxbString(this._params);
+        String parameter_info = ParameterFormatConverter.getJaxbString(this._params);
         try {
 
             ds.updateTask(taskID, this._taskDescription, parameter_info, this._taskInfoAttributes, user_id, access_id);

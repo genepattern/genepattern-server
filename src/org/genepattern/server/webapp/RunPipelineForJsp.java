@@ -206,29 +206,15 @@ public class RunPipelineForJsp {
         return;
     }
     
-    public  String[] generatePipelineCommandLine(
-            String name, 
-            String jobID, 
-            User user,
-            String baseURL,
-            TaskInfo taskInfo, 
-            HashMap commandLineParams, 
-            File tempDir) 
+    public  String[] generatePipelineCommandLine( String name, String jobID, User user, String baseURL, TaskInfo taskInfo, HashMap commandLineParams, File tempDir) 
     throws Exception 
     {
-        
-    	
-    	String JAVA = System.getProperty("java");
+        String JAVA = System.getProperty("java");
         if (JAVA == null) {
             JAVA = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
         }
         boolean savedPipeline = isSavedModel(taskInfo, name, user.getUserId());
-        // these jar files are required to execute
-        // gp-full.jar;
-        // log4j-1.2.4.jar; xerces.jar;
-        // activation.jar; saaj.jar
-        // axis.jar; jaxrpc.jar;
-        // commons-logging.jar; commons-discovery.jar;
+        // these jar files are required to execute gp-full.jar; log4j-1.2.4.jar; xerces.jar; activation.jar; saaj.jar axis.jar; jaxrpc.jar; commons-logging.jar; commons-discovery.jar;
         String tomcatLibDir = System.getProperty("tomcatCommonLib") + "/";
         String webappLibDir = System.getProperty("webappDir") + "/" + "WEB-INF" + "/" + "lib" + "/";
         String webappClassesDir = System.getProperty("webappDir") + "/WEB-INF/classes";
@@ -236,14 +222,6 @@ public class RunPipelineForJsp {
 
         List<String> cmdLine = new ArrayList<String>();
         cmdLine.add(JAVA);
-        if (false) {
-            //for debugging, launch the VM in debug mode
-            //   Use with caution, this will cause the process to suspend
-            //   see Sun's JPDA documentation for details
-            cmdLine.add("-Xdebug");
-            cmdLine.add("-Xnoagent");
-            cmdLine.add("-Xrunjdwp:transport=dt_socket,server=y,address=5000,suspend=y");
-        }
         cmdLine.add("-cp");
         StringBuffer classPath = new StringBuffer();
         classPath.append(webappClassesDir + File.pathSeparator);

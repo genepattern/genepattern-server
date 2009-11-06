@@ -179,7 +179,7 @@ public class HTMLPipelineView {
 		// build an array of Option(text, value, defaultSelected,
 		// selected)
 		try {
-		    parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo
+		    parameterInfoArray = ParameterFormatConverter.getParameterInfoArray(taskInfo
 			    .getParameterInfo());
 		} catch (OmnigeneException oe) {
 		}
@@ -733,7 +733,7 @@ public class HTMLPipelineView {
     public String getJavascript(PipelineModel model) {
 	try {
 	    TaskInfo ptask = new LocalAdminClient(userID).getTask(pipelineName);
-	    ParameterInfo tpi[] = new ParameterFormatConverter().getParameterInfoArray(ptask.getParameterInfo());
+	    ParameterInfo tpi[] = ParameterFormatConverter.getParameterInfoArray(ptask.getParameterInfo());
 
 	    StringBuffer s = new StringBuffer();
 	    s.append("	setField(\"pipeline_name\", \"" + javascriptEncode(model.getName()) + "\");\n");
@@ -797,7 +797,7 @@ public class HTMLPipelineView {
 		if (stopLoading) {
 		    continue;
 		}
-		ParameterInfo[] formals = new ParameterFormatConverter().getParameterInfoArray(taskInfo
+		ParameterInfo[] formals = ParameterFormatConverter.getParameterInfoArray(taskInfo
 			.getParameterInfo());
 		String taskName = jobSubmission.getName().replace('-', '.').replace('_', '.').replace(' ', '.');
 		s.append("	setTaskName(" + taskNum + ", \"" + javascriptEncode(taskName) + "\", \""
@@ -992,7 +992,7 @@ public class HTMLPipelineView {
 		System.out.println("taskName: " + taskName + ", lsid: "
 			+ taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID));
 		try {
-		    parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo
+		    parameterInfoArray = ParameterFormatConverter.getParameterInfoArray(taskInfo
 			    .getParameterInfo());
 		} catch (OmnigeneException oe) {
 		}
