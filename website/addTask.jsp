@@ -82,7 +82,7 @@ if(errors!=null) {
 		taskInfo = GenePatternAnalysisTask.getTaskInfo(taskName, userID);
 		if (taskInfo != null) {
 	taskName = taskInfo.getName();
-		   parameterInfoArray = new ParameterFormatConverter().getParameterInfoArray(taskInfo.getParameterInfo());
+		   parameterInfoArray = ParameterFormatConverter.getParameterInfoArray(taskInfo.getParameterInfo());
 	tia = taskInfo.giveTaskInfoAttributes();
 	LSID lsid = new LSID((String)tia.get(GPConstants.LSID));
 	boolean editable = createModuleAllowed && taskInfo.getUserId().equals(userID) && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
@@ -290,7 +290,7 @@ function addNewFileType(name, desc){
 				tmFileFormats.put(fileFormats[y], fileFormats[y]);
 			}
 		}
-	        ParameterInfo[] pia = new ParameterFormatConverter().getParameterInfoArray(ti.getParameterInfo());
+	        ParameterInfo[] pia = ParameterFormatConverter.getParameterInfoArray(ti.getParameterInfo());
 		if (pia != null) {
 			for (int pNum = 0; pNum < pia.length; pNum++) {
 				HashMap pAttributes = pia[pNum].getAttributes();

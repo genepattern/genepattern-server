@@ -305,7 +305,7 @@ try {
 		TaskInfoAttributes mTia = mTaskInfo.giveTaskInfoAttributes();
 		if (DEBUG) out.println("<br>" + mTaskInfo.getName() + "<br>");
 
-		ParameterInfo[] params = new ParameterFormatConverter().getParameterInfoArray(mTaskInfo.getParameterInfo());
+		ParameterInfo[] params = ParameterFormatConverter.getParameterInfoArray(mTaskInfo.getParameterInfo());
 		ParameterInfo p = null;
 		boolean[] runTimePrompt = (params != null ? new boolean[params.length] : null);
 		String inheritedTaskNum = null;
