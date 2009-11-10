@@ -1,9 +1,12 @@
-
 <%@ page
-        import="org.genepattern.server.webservice.server.DirectoryManager, org.genepattern.server.PermissionsHelper,
-        org.genepattern.util.GPConstants, java.io.BufferedInputStream, java.io.File,
-        java.io.FileInputStream,org.genepattern.server.webapp.jsf.AuthorizationHelper,java.io.InputStream,java.io.OutputStream,java.net.URLDecoder,java.io.UnsupportedEncodingException,java.net.MalformedURLException" %>
-<%
+import="org.genepattern.server.webservice.server.DirectoryManager,
+        org.genepattern.server.PermissionsHelper,
+        org.genepattern.util.GPConstants, 
+        java.io.BufferedInputStream, 
+        java.io.File,
+        java.io.FileInputStream,
+        java.io.InputStream,
+        java.io.OutputStream" %><%
 	String taskName = request.getParameter("task");
     if (taskName == null) {
         taskName = "";
@@ -105,11 +108,12 @@
     try {
         is = new BufferedInputStream(new FileInputStream(in));
         byte[] b = new byte[10000];
-        int bytesRead;
+        int bytesRead = -1;
         while ((bytesRead = is.read(b)) != -1) {
             os.write(b, 0, bytesRead);
         }
-    } finally {
+    } 
+    finally {
         if (is != null) {
             is.close();
         }
