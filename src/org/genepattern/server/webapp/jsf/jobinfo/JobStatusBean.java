@@ -48,7 +48,6 @@ public class JobStatusBean {
     private boolean openVisualizers = false;
 
     //track the list of automatically opened visualizers
-    //private List<Integer> runningVisualizers = new ArrayList<Integer>();
     private Map<Integer,String> visualizerStatus = new HashMap<Integer,String>();
     
     public JobStatusBean() {
@@ -56,18 +55,22 @@ public class JobStatusBean {
     }
     
     public void init(){
-        String jobNumberParameter = null;
-        int jobNumber = -1;
         allSteps = null;
+
+        //get the job number from the request parameter
+        int jobNumber = -1;
+        String jobNumberParameter = null;
+        jobNumberParameter = UIBeanHelper.getRequest().getParameter("jobNumber");
+        jobNumberParameter = UIBeanHelper.decode(jobNumberParameter);
+        if (jobNumberParameter == null) {
+            log.error("init(): Missing jobNumber.");
+            return;
+        }
         try {
-            jobNumberParameter = UIBeanHelper.getRequest().getParameter("jobNumber");
-            jobNumberParameter = UIBeanHelper.decode(jobNumberParameter);
             jobNumber = Integer.parseInt(jobNumberParameter);
         }
-        catch (NumberFormatException e1) {
-            String errorMessage = "JobStatusBean creation failed: Missing or invalid job id, jobNumber="+jobNumberParameter;
-            log.error(errorMessage, e1);
-            //    UIBeanHelper.setErrorMessage(errorMessage);
+        catch (NumberFormatException e) {
+            log.error("init(): Invalid jobNumber="+jobNumberParameter+": "+e.getLocalizedMessage());
             return;
         }
 
@@ -75,12 +78,12 @@ public class JobStatusBean {
         setOpenVisualizers(openVisualizersParameter != null);
 
         currentUserId = UIBeanHelper.getUserId();
-            UserDAO userDao = new UserDAO();
-            User user = userDao.findById(currentUserId);
-            if (user != null) {
-                currentUserEmail = user.getEmail();
-                showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUserId);
-            }
+        UserDAO userDao = new UserDAO();
+        User user = userDao.findById(currentUserId);
+        if (user != null) {
+            currentUserEmail = user.getEmail();
+            showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUserId);
+        }
 
         try {
             String key = UserProp.getEmailNotificationPropKey(jobNumber);
