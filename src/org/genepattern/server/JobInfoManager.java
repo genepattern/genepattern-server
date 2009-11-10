@@ -182,10 +182,12 @@ public class JobInfoManager {
             //process input file
             boolean isInputFile = false;
             ParameterInfo formalParam = formalParameters.get(paramName);
+            boolean isOptional = false;
             if (formalParam != null) {
                 ParameterInfo optionalParam = optionalParameters.remove(paramName);
                 if (optionalParam != null) {
                     log.debug("optional parameter: "+paramName+"="+paramValue);
+                    isOptional = true;
                 }
                 isInputFile = formalParam.isInputFile();
             }
@@ -205,8 +207,9 @@ public class JobInfoManager {
                     paramValue = link;
                 }
                 else {
-                    //TODO: prevent this from happening 
-                    log.error("link not set for inputFile: "+inputParam.getName()+"="+inputParam.getValue());
+                    if (!isOptional) {
+                        log.error("link not set for inputFile: "+inputParam.getName()+"="+inputParam.getValue());
+                    }
                 }
             }
             
