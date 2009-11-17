@@ -447,7 +447,7 @@
   <!-- created sessions by modifying the value below.                       -->
 
     <session-config>
-        <session-timeout>1440</session-timeout>
+        <session-timeout>2</session-timeout>
     </session-config>
 
 

@@ -183,8 +183,8 @@ public class UserAccountManager {
      * Create a new GenePattern user account.
      * 
      * @param username
-     * @param password
-     * @param email
+     * @param password, can be null
+     * @param email, can be null
      * @throws AuthenticationException - if the user is already registered.
      */
     public void createUser(String username, String password, String email) throws AuthenticationException {
