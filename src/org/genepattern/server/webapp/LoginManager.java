@@ -38,7 +38,10 @@ public class LoginManager {
     }
 
     /**
-     * Authenticate and then login.
+     * Authenticate and then login. 
+     * A new GenePattern user account is created during login the first time a userid is seen.
+     * When creating a new account, the following optional request parameters are used,
+     *     password and email.
      * 
      * @param request
      * @param response
@@ -54,8 +57,9 @@ public class LoginManager {
         }
         
         if (!UserAccountManager.instance().userExists(gp_username)) {
-            //TODO: optionally plug in to external authentication system to get user's email address and add it to gp database
-            UserAccountManager.instance().createUser(gp_username);
+            String gp_email = request.getParameter("email"); //can be null
+            String gp_password = request.getParameter("password"); //can be null
+            UserAccountManager.instance().createUser(gp_username, gp_password, gp_email);
         }
 
         addUserIdToSession(request, gp_username);
@@ -74,7 +78,22 @@ public class LoginManager {
         session.setAttribute(GPConstants.USERID, gp_username);
         //TODO: replace all references to 'userID' with 'userid'
         session.setAttribute("userID", gp_username);
-        
+
+        //dynamically modify session timeout on login
+        int maxInactiveInterval = 14400; //default to 4hrs.
+        //configurable in genepattern.properties
+        String maxInactiveIntervalProp = System.getProperty("session.maxInactiveInterval");
+        if (maxInactiveIntervalProp != null) {
+            maxInactiveIntervalProp = maxInactiveIntervalProp.trim();
+            try {
+                maxInactiveInterval = Integer.parseInt(maxInactiveIntervalProp);
+            }
+            catch (NumberFormatException e) {
+                log.error("Invalid value for property, 'session.maxInactiveInterval="+maxInactiveIntervalProp+"': "+e.getLocalizedMessage());
+            }
+        }
+        session.setMaxInactiveInterval(maxInactiveInterval);
+
         logUserLogin(gp_username, request);
     }
 
@@ -121,7 +140,7 @@ public class LoginManager {
     public void logout(HttpServletRequest request, HttpServletResponse response) 
     throws IOException
     {
-        this.logout(request, response, true);
+        logout(request, response, true);
     }
     
     public void logout(HttpServletRequest request, HttpServletResponse response, boolean redirect) 
