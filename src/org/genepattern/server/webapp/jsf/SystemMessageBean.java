@@ -1,5 +1,6 @@
 package org.genepattern.server.webapp.jsf;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.faces.event.ActionEvent;
@@ -9,7 +10,7 @@ import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.message.SystemMessage;
 
 /**
- * Session scope been for displaying the system alert message to the current user.
+ * Session scope bean for displaying the system alert message to the current user.
  * This bean keeps track of the view state of the message.
  * <pre>
        NEW -(open)--> OPEN -(close)--> CLOSED -(open)--> ...
@@ -17,15 +18,14 @@ import org.genepattern.server.message.SystemMessage;
  * 
  * @author pcarr
  */
-public class SystemMessageBean {
+public class SystemMessageBean implements Serializable {
     private static Logger log = Logger.getLogger(SystemMessageBean.class);    
 
     //the current system message, queried from the database
     private SystemMessage systemMessage = null;
 
-    //to prevent doing a database query for each page load, change the delay to some value
-    //other than zero.
-    private long delay = 1000; //number of  millisecs to wait before querying the database again
+    //to prevent doing a database query for each page load, change the delay to some value other than zero.
+    private static long delay = 1000; //number of  millisecs to wait before querying the database again
     private long lastLookup = System.currentTimeMillis() - delay;
 
     private boolean isNew = true;

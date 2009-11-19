@@ -1,5 +1,6 @@
 package org.genepattern.server.webapp.jsf;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -21,7 +22,7 @@ import org.genepattern.server.webservice.server.dao.AnalysisDAO;
  * 
  * @author pcarr
  */
-public class JobResultsFilterBean {
+public class JobResultsFilterBean implements Serializable {
     private String userId = null;
     private boolean showEveryonesJobs = false;
     private String selectedGroup = null;

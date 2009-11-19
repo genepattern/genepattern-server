@@ -15,6 +15,7 @@
  */
 package org.genepattern.server.webapp.jsf;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,7 +23,7 @@ import java.util.Map;
  * @author jrobinso
  * 
  */
-public class CollapsiblePanelState {
+public class CollapsiblePanelState implements Serializable {
     /** Maps panel id to state [closed, open] */
     private Map<String, String> panelStates = new HashMap<String, String>();
 
