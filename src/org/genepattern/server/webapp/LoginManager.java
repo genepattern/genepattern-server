@@ -157,8 +157,11 @@ public class LoginManager {
 
         //redirect to a page which doesn't require authentication
         if (redirect) {
-            String contextPath = request.getContextPath();
-            response.sendRedirect( contextPath + "/" );
+            String redirectTo = (String) request.getAttribute("redirectTo");
+            if (redirectTo == null) {
+                redirectTo = request.getContextPath() + "/";
+            }
+            response.sendRedirect( redirectTo );
         }
     }
     
