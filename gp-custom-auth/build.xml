@@ -1,14 +1,20 @@
-<project default="jar">
-    <description>
-    Compile custom authentication plugin into a jar file for deployment to a GenePattern Server.
-    Requirements:
-        1. A GenePattern Server installation, e.g.
-           /Applications/GenePatternServer
-        2. The GenePattern Java programming library, included with the server
-           /Applications/GenePatternServer/Tomcat/webapps/gp/downloads/GenePattern.zip
-           [also, available for download from here: http://genepattern.broadinstitute.org/gp/downloads/GenePattern.zip]
-        3. javax.servlet.jar, Java Servlet API, included in this project.
-    </description>
+<project default="describe">
+    <target name="describe">
+        <echo>
+            Compile custom authentication plugin into a jar file for deployment to a GenePattern Server.
+            Requirements:
+                1. A GenePattern Server installation, e.g.
+                   /Applications/GenePatternServer
+                2. The GenePattern Java programming library, included with the server
+                   /Applications/GenePatternServer/Tomcat/webapps/gp/downloads/GenePattern.zip
+                   [also, available for download from here: http://genepattern.broadinstitute.org/gp/downloads/GenePattern.zip]
+                3. javax.servlet.jar, Java Servlet API, included in this project.
+            
+            Example usage,
+                1. ant jar
+                   
+        </echo>
+    </target>
 
     <!-- the installation directory of your GenePattern Server -->
     <property name="GenePatternServer.dir" location="/Applications/GenePatternServer" />
@@ -42,6 +48,9 @@
         <pathelement location="${build.dir}" />
         <pathelement location="${GenePattern.jar}" />
         <pathelement location="${servlet.api.jar}" />
+        <fileset dir="lib">
+            <include name="**/*.jar"/>
+        </fileset>
     </path>
     
     <available property="GenePatternServer.dir.available" type="dir" file="${GenePatternServer.dir}" />
