@@ -17,8 +17,15 @@ import org.expressme.openid.Authentication;
 import org.expressme.openid.Endpoint;
 import org.expressme.openid.OpenIdException;
 import org.expressme.openid.OpenIdManager;
-import org.genepattern.server.UserAccountManager;
 
+/**
+ * This servlet handles authentication with OpenID providers.
+ * <b>Important note</b>: This is demo code. Do thorough testing before deploying in a production environment.
+ * 
+ * Based on example source code provided by the JOpenID project (http://code.google.com/p/jopenid/).
+ * 
+ * @author pcarr
+ */
 public class JOpenIdAuthenticationServlet extends HttpServlet {
     //TODO: customize this for your server
     private static final String RETURN_TO = "http://127.0.0.1:8080/gp/openId";
@@ -46,9 +53,29 @@ public class JOpenIdAuthenticationServlet extends HttpServlet {
         else if ("Google".equals(op)) {
             redirectToGoogle(request, response);
         }
+        // Yahoo not implemented
+        //else if ("Yahoo".equals(op)) {
+        //    redirectToYahoo(request, response);
+        //}
         else {
             throw new ServletException("Bad parameter op=" + op);
         }
+    }
+    
+    /**
+     * Redirect to OpenID provider sign on page.
+     * 
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
+    private void redirectToGoogle(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        Endpoint endpoint = manager.lookupEndpoint("Google");
+        Association association = manager.lookupAssociation(endpoint);
+        request.getSession().setAttribute(ATTR_MAC, association.getRawMacKey());
+        String url = manager.getAuthenticationUrl(endpoint, association);
+        response.sendRedirect(url);
     }
     
     private void handleSignOnCallback(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -61,17 +88,11 @@ public class JOpenIdAuthenticationServlet extends HttpServlet {
             String identity = authentication.getIdentity();
             String email = authentication.getEmail();
             
-            // use this session attribute for flagging a valid authentication
-            request.getSession().setAttribute("jopenid.userid", email);
-
-            //TODO: this example implementation will automatically (and silently) create a new genepattern user account
-            //    using the email address of the authenticated Google account
-            String gp_username = email;
-            String gp_email = email;
-            String gp_password = identity;
-            if (!UserAccountManager.instance().userExists(gp_username)) {
-                UserAccountManager.instance().createUser(gp_username, gp_password, gp_email);
-            }
+            // add these attributes to the session to ...
+            // 1) indicate successful login
+            request.getSession().setAttribute("jopenid.identity", identity);
+            // 2) set the email address to be used when creating a new GenePattern account
+            request.getSession().setAttribute("jopenid.email", email);
             
             //redirect to the originally requested page
             String targetURL = (String) request.getSession().getAttribute("origin");
@@ -81,26 +102,9 @@ public class JOpenIdAuthenticationServlet extends HttpServlet {
             response.sendRedirect(targetURL);
         }
         catch (Exception e) {
-            //for debuggin only, turn this off before deploying to production
+            //for debugging only, turn this off before deploying to production
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
         }
-    }
-
-    /**
-     * Redirect to Google sign on page.
-     * 
-     * @param request
-     * @param response
-     * @throws ServletException
-     * @throws IOException
-     */
-    private void redirectToGoogle(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // redirect to Google sign on page:
-        Endpoint endpoint = manager.lookupEndpoint("Google");
-        Association association = manager.lookupAssociation(endpoint);
-        request.getSession().setAttribute(ATTR_MAC, association.getRawMacKey());
-        String url = manager.getAuthenticationUrl(endpoint, association);
-        response.sendRedirect(url);
     }
 
     private void checkNonce(String nonce) {
@@ -123,7 +127,7 @@ public class JOpenIdAuthenticationServlet extends HttpServlet {
     }
 
     private boolean isNonceExist(String nonce) {
-        // TODO: check if nonce is exist in database:
+        // TODO: check if nonce is in database:
         return false;
     }
 

@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- /*
+ The Broad Institute
+ SOFTWARE COPYRIGHT NOTICE AGREEMENT
+ This software and its documentation are copyright (2003-2009) by the
+ Broad Institute/Massachusetts Institute of Technology. All rights are
+ reserved.
+ 
+ This software is supplied without any warranty or guaranteed support
+ whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+ use, misuse, or functionality.
+ */ -->
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk">
+
+
+<ui:composition template="/templates/common.xhtml">
+    <ui:define name="validationInit">
+        <script type="text/javascript" language="javascript"> 
+      /* <![CDATA[ */
+      function onLoad()
+      {
+        var objForm = document.forms["loginForm"];
+        objForm.username.required = 1;
+        objForm.username.err = "Username is required";
+      }
+       /* ]]> */
+
+    </script>
+    </ui:define>
+    <ui:define name="pageTitle">GenePattern Sign in</ui:define>
+    <ui:define name="body">
+
+        <h:form onsubmit="return validateForm(this);" id="loginForm">
+            <table width="330">
+                <tr>
+                    <td><span style="font-weight: bold;"> Sign in to
+                    GenePattern</span></td>
+                    <td align="right"><h:outputLink
+                        value="#{facesContext.externalContext.requestContextPath}/pages/registerUser.jsf"
+                        rendered="#{loginBean.createAccountAllowed and loginBean.showRegistrationLink}">
+                Click to register
+              </h:outputLink></td>
+                </tr>
+            </table>
+
+            <h:outputText
+                value="Username and password do not match."
+                style="color: red; font-weight: bold;"
+                rendered="#{loginBean.unknownUser and loginBean.createAccountAllowed}" />
+        
+            <h:outputText
+                value="Username and password do not match."
+                style="color: red; font-weight: bold;"
+                rendered="#{loginBean.unknownUser and !loginBean.createAccountAllowed}" />
+            
+
+            <h:outputText value="Username and password do not match."
+                rendered="#{loginBean.invalidPassword}"
+                style="color: red; font-weight: bold;" />
+
+            <h:panelGrid columns="2">
+                <h:outputLabel value="Username:" for="username"></h:outputLabel>
+                <t:inputText size="50" value="#{loginBean.username}" id="username"
+                    required="true" requiredMessage="Username is required" >
+                  <f:attribute name="forceId" value="true"/>
+                </t:inputText>
+                
+                <h:outputLabel value="Password:" for="password"
+                    rendered="#{loginBean.passwordRequired}"></h:outputLabel>
+                <t:inputSecret size="50" value="#{loginBean.password}" id="password" rendered="#{loginBean.passwordRequired}" >
+                  <f:attribute name="forceId" value="true"/>
+                </t:inputSecret>
+            </h:panelGrid>
+            <h:commandButton id="signIn" actionListener="#{loginBean.submitLogin}" value="Sign in" />
+            <br />
+            <h:outputLink
+                value="#{facesContext.externalContext.requestContextPath}/pages/forgotPassword.jsf"
+                rendered="#{loginBean.passwordRequired}">
+              Forgot your password?
+            </h:outputLink>
+            <br />
+            OpenID: <h:outputLink
+                value="#{facesContext.externalContext.requestContextPath}/openId?op=Google">Sign on using your Google account</h:outputLink> 
+            <br />Note, the first time you sign on a new GenePattern user account will be registered for you using your Google account email address as your username.           
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>
+</html>
