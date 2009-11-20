@@ -57,8 +57,8 @@ public class LoginManager {
         }
         
         if (!UserAccountManager.instance().userExists(gp_username)) {
-            String gp_email = request.getParameter("email"); //can be null
-            String gp_password = request.getParameter("password"); //can be null
+            String gp_email = (String) request.getAttribute("email"); //can be null
+            String gp_password = (String) request.getAttribute("password"); //can be null
             UserAccountManager.instance().createUser(gp_username, gp_password, gp_email);
         }
 
@@ -79,7 +79,7 @@ public class LoginManager {
         //TODO: replace all references to 'userID' with 'userid'
         session.setAttribute("userID", gp_username);
 
-        //dynamically modify session timeout on login
+        //dynamically modify session timeout on login (units=seconds)
         int maxInactiveInterval = 14400; //default to 4hrs.
         //configurable in genepattern.properties
         String maxInactiveIntervalProp = System.getProperty("session.maxInactiveInterval");
