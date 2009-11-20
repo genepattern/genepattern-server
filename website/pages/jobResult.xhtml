@@ -213,7 +213,7 @@
 <h:outputText rendered="#{!empty jobStatusBean.jobInfo}">
   <a4j:keepAlive beanName="visualizerStatusBean" />
   <h:form>
-    <a4j:poll id="poll_jobInfo"  eventsQueue="jobStatusQueue" interval="2500" enabled="#{!jobStatusBean.jobInfo.finished}" 
+    <a4j:poll id="poll_jobInfo"  eventsQueue="jobStatusQueue" interval="${jobStatusBean.interval}" enabled="#{!jobStatusBean.jobInfo.finished}" 
         ignoreDupResponses="true"
         actionListener="#{visualizerStatusBean.updateAjaxPoll}" 
         onsubmit="vizPollStarted = true;"

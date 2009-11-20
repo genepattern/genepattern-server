@@ -179,6 +179,31 @@ public class JobStatusBean {
         return currentUserEmail;        
     }
 
+    /**
+     * Support for variable a4j polling based on how long the job has been running.
+     * @return an interval, in milliseconds, between the previous response and the next request.
+     */
+    public int getInterval() {
+        if (jobInfoWrapper == null) {
+            return 2500;
+        }
+        long elapsedTime = jobInfoWrapper.getElapsedTimeMillis();
+        
+        if (elapsedTime <   60000) { //(1 min)
+            return 2500; //(2.5 sec)
+        }
+        if (elapsedTime <  120000) { //(2 min)
+            return 10000; //(10 sec)
+        }
+        if (elapsedTime <  300000) { //(5 min)
+            return 20000; //(20 sec)
+        }
+        if (elapsedTime < 3600000) { //(1 hr)
+            return 60000; //(1 min)
+        } 
+        return 300000; //(5 min)
+    }
+
     //migrate actions from JobBean
     public void downloadZip(ActionEvent event) {
         if (jobInfoWrapper == null) {
