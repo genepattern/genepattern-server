@@ -309,7 +309,7 @@
 			</tr>
             <tr>
             <td colspan="3" style="padding-left: 24px;">
-            <h:outputText rendered="${jobStatusBean.jobInfo.userId != jobStatusBean.currentUserId}" verbatim="true">
+            <h:outputText rendered="${jobStatusBean.jobInfo.userId != jobStatusBean.currentUserId}">
                 <em>owned by:</em> ${jobStatusBean.jobInfo.userId}<br /></h:outputText>
                 <em>submitted:</em><h:outputText value=" " /><h:outputText value="#{jobStatusBean.jobInfo.dateSubmitted}" converter="gp" />,<h:outputText value=" " />
                 <em>completed:</em><h:outputText value=" " /><h:outputText value="#{jobStatusBean.jobInfo.dateCompleted}" converter="gp" /><br />
