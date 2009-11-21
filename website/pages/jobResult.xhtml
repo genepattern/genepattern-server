@@ -261,7 +261,7 @@
 		<table class="title" cellpadding="0" cellspacing="0" border="0" id="jobTable#{jobStatusBean.jobInfo.jobNumber}">
 			<tr>
 				<td class="title">
-					#{jobStatusBean.jobInfo.jobNumber}.#{jobStatusBean.jobInfo.truncatedTaskName}
+					#{jobStatusBean.jobInfo.jobNumber}. #{jobStatusBean.jobInfo.truncatedTaskName}
 					<img src="/gp/images/smallOptions.gif"
 		                 name="Image2_#{jobStatusBean.jobInfo.jobNumber}" border="0" align="top"
 		                 id="Image2_#{jobStatusBean.jobInfo.jobNumber}" onclick="pm_showMenu('menuDiv_#{jobStatusBean.jobInfo.jobNumber}', Position.cumulativeOffset(this), 50, 50);"
@@ -307,6 +307,15 @@
 					</h:outputText>
 				</td>
 			</tr>
+            <tr>
+            <td colspan="3" style="padding-left: 24px;">
+            <h:outputText rendered="${jobStatusBean.jobInfo.userId != jobStatusBean.currentUserId}" verbatim="true">
+                <em>owned by:</em> ${jobStatusBean.jobInfo.userId}<br /></h:outputText>
+                <em>submitted:</em><h:outputText value=" " /><h:outputText value="#{jobStatusBean.jobInfo.dateSubmitted}" converter="gp" />,<h:outputText value=" " />
+                <em>completed:</em><h:outputText value=" " /><h:outputText value="#{jobStatusBean.jobInfo.dateCompleted}" converter="gp" /><br />
+                <em>size:</em><h:outputText value=" ${jobStatusBean.jobInfo.formattedSize}" />
+            </td>
+            </tr>
 		</table>
     </a4j:outputPanel>
 
