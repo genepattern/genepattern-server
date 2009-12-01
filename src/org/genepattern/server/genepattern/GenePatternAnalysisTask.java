@@ -683,13 +683,39 @@ public class GenePatternAnalysisTask {
                         Boolean isWebUpload = null;
                         Boolean isSoapUpload = null;
                         File inputFile = new File(originalPath);
-                        String inputFileDirectory = inputFile.getParentFile().getCanonicalPath();
-                        String inputFileGrandParent = inputFile.getParentFile().getParentFile().getCanonicalPath();
-                        String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
-                        isWebUpload = inputFileGrandParent.equals(webUploadDirectory);	                    
+                        File inputFileParent = inputFile.getParentFile();
+                        String inputFileGrandParent = null;
+                        if (inputFileParent != null) {
+                            File ifpp = inputFileParent.getParentFile();
+                            if (ifpp != null) {
+                                inputFileGrandParent = ifpp.getCanonicalPath();
+                            }
+                        }
+                        String webUploadDirectory = null;
+                        String tmpDir = System.getProperty("java.io.tmpdir");
+                        if (tmpDir != null) {
+                            try {
+                                webUploadDirectory = new File(tmpDir).getCanonicalPath();
+                            }
+                            catch (Throwable t) {
+                                log.error(t);
+                            }
+                        }
+                        isWebUpload = inputFileGrandParent != null && inputFileGrandParent.equals(webUploadDirectory);	                    
 	                    if (!isWebUpload) {
-	                        String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir") + File.separator + jobInfo.getUserId()).getCanonicalPath();
-	                        isSoapUpload = inputFileDirectory.equals(soapAttachmentDir);
+	                        String soapAttachmentDir = System.getProperty("soap.attachment.dir");
+	                        if (soapAttachmentDir != null) {
+	                            soapAttachmentDir = soapAttachmentDir + File.separator + jobInfo.getUserId();
+	                            try {
+	                                soapAttachmentDir = new File(soapAttachmentDir).getCanonicalPath();
+	                            }
+	                            catch (Throwable t) {
+	                                log.error(t);
+	                            }
+	                        }
+	                        File parentFile = inputFile.getParentFile();
+	                        String inputFileDirectory = parentFile == null ? null : parentFile.getCanonicalPath();
+	                        isSoapUpload = inputFileDirectory != null && inputFileDirectory.equals(soapAttachmentDir);
 	                    }
 
 	                    if (isWebUpload) {
