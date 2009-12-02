@@ -24,7 +24,6 @@ import java.net.URLClassLoader;
 import java.net.UnknownHostException;
 import java.security.Security;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,6 +38,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.AnalysisManager;
 import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.database.HsqlDbUtil;
@@ -59,19 +59,20 @@ import org.w3c.dom.NodeList;
  */
 
 public class StartupServlet extends HttpServlet {
+    private static Logger log = Logger.getLogger(StartupServlet.class);
+
     public static String NAME = "GenePatternStartupServlet";
     SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     public static Vector<Thread> vThreads = new Vector<Thread>();
     
 
     public StartupServlet() {
-        System.out.println("Creating StartupServlet");
+        log.info("Creating StartupServlet");
     }
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-
-        log("StartupServlet: user.dir=" + System.getProperty("user.dir"));
+        log.info("StartupServlet: user.dir=" + System.getProperty("user.dir"));
 
         ServletContext application = config.getServletContext();
         String genepatternProperties = config.getInitParameter("genepattern.properties");
@@ -105,7 +106,7 @@ public class StartupServlet extends HttpServlet {
             SystemAlertFactory.getSystemAlert().deleteOnRestart();
         }
         catch (Exception e) {
-            System.err.println("Error clearing system messages on restart: "+e.getLocalizedMessage());
+            log.error("Error clearing system messages on restart: "+e.getLocalizedMessage(), e);
         }
         announceReady(System.getProperties());
     }
@@ -202,12 +203,16 @@ public class StartupServlet extends HttpServlet {
 
         String stars = "******************************************************************************************************************************************"
             .substring(0, message.length());
-        System.out.println("Listening on " + System.getProperty("GenePatternURL"));
-        System.out.println("");
-        System.out.println(stars);
-        System.out.println(message);
-        System.out.println("\tJava Version: "+System.getProperty("java.version"));
-        System.out.println(stars);
+        StringBuffer startupMessage = new StringBuffer();
+        final String NL = System.getProperty("line.separator");
+        startupMessage.append(NL + "Listening on " + System.getProperty("GenePatternURL") + NL);
+        startupMessage.append(""+NL);
+        startupMessage.append(stars + NL);
+        startupMessage.append(message + NL);
+        startupMessage.append("\tJava Version: "+System.getProperty("java.version") + NL);
+        startupMessage.append(stars);
+        
+        log.info(startupMessage);
     }
 
     protected boolean findThreadByName(String name) {
@@ -218,42 +223,33 @@ public class StartupServlet extends HttpServlet {
 	return NAME;
     }
 
-    public void log(String message) {
-	super.log(dateTimeFormat.format(new Date()) + ": " + message);
-	// System.out.println(message);
-    }
-
-    public void log(String message, Throwable t) {
-	super.log(dateTimeFormat.format(new Date()) + ": " + message, t);
-	// System.out.println(message);
-    }
-
     public void destroy() {
+        log.info("StartupServlet: destroy called");
 
-	log("StartupServlet: destroy called");
+        String dbVendor = System.getProperty("database.vendor", "HSQL");
+        if (dbVendor.equals("HSQL")) {
+            HsqlDbUtil.shutdownDatabase();
+        }
 
-	String dbVendor = System.getProperty("database.vendor", "HSQL");
-	if (dbVendor.equals("HSQL")) {
-	    HsqlDbUtil.shutdownDatabase();
-	}
-
-	for (Enumeration<Thread> eThreads = vThreads.elements(); eThreads.hasMoreElements();) {
-	    Thread t = eThreads.nextElement();
-	    try {
-		if (t.isAlive()) {
-		    log("Interrupting " + t.getName());
-		    t.interrupt();
-		    t.setPriority(Thread.NORM_PRIORITY);
-		    t.join();
-		    log(t.getName() + " exited");
-		}
-	    } catch (Throwable e) {
-	    }
-	}
-	vThreads.removeAllElements();
-	GenePatternAnalysisTask.terminateAll("--> Shutting down server");
-	log("StartupServlet: destroy done");
-	dumpThreads();
+        for (Enumeration<Thread> eThreads = vThreads.elements(); eThreads.hasMoreElements();) {
+            Thread t = eThreads.nextElement();
+            try {
+                if (t.isAlive()) {
+                    log.info("Interrupting " + t.getName());
+                    t.interrupt();
+                    t.setPriority(Thread.NORM_PRIORITY);
+                    t.join();
+                    log.info(t.getName() + " exited");
+                }
+            } 
+            catch (Throwable e) {
+                log.error(e);
+            }
+        }
+        vThreads.removeAllElements();
+        GenePatternAnalysisTask.terminateAll("--> Shutting down server");
+        log.info("StartupServlet: destroy done");
+        dumpThreads();
     }
 
     // read a CSV list of tasks from the launchTask property. For each entry,
@@ -281,8 +277,8 @@ public class StartupServlet extends HttpServlet {
 		    if (threadName == null)
 			continue;
 		    if (threadName.startsWith(expectedThreadName)) {
-			System.out.println(expectedThreadName + " is already running");
-			continue nextTask;
+		        log.info(expectedThreadName + " is already running");
+		        continue nextTask;
 		    }
 		}
 		className = props.getProperty(taskName + ".class");
@@ -290,54 +286,45 @@ public class StartupServlet extends HttpServlet {
 		StringTokenizer classPathElements = new StringTokenizer(classPath, ";");
 		URL[] classPathURLs = new URL[classPathElements.countTokens()];
 		int i = 0;
-		// log(taskName + " has classpath URLs: ");
 		while (classPathElements.hasMoreTokens()) {
 		    classPathURLs[i++] = new File(classPathElements.nextToken()).toURL();
-		    // log(classPathURLs[i-1].toString());
 		}
 		String args = props.getProperty(taskName + ".args", "");
 		StringTokenizer stArgs = new StringTokenizer(args, " ");
 		String[] argsArray = new String[stArgs.countTokens()];
 		i = 0;
-		// log(" and args ");
 		while (stArgs.hasMoreTokens()) {
 		    argsArray[i++] = stArgs.nextToken();
-		    // log(argsArray[i-1]);
 		}
 		String userDir = props.getProperty(taskName + ".dir", System.getProperty("user.dir"));
 		System.setProperty("user.dir", userDir);
-		// log(" in directory " + System.getProperty("user.dir"));
 
 		URLClassLoader classLoader = new URLClassLoader(classPathURLs, null);
-		// log("Looking for " + className + ".main(String[] args)");
-		Class theClass = Class.forName(className); // , true,
-		// classLoader);
+		Class theClass = Class.forName(className);
 		if (theClass == null) {
 		    throw new ClassNotFoundException("unable to find class " + className + " using classpath "
 			    + classPathElements);
 		}
 		Method main = theClass.getMethod("main", new Class[] { String[].class });
-		// log("found main, creating LaunchThread");
 		LaunchThread thread = new LaunchThread(taskName, main, argsArray, this);
-		log("starting " + taskName + " with " + args);
-		// start the new thread and let it run until it is idle (ie.
-		// inited)
+		log.info("starting " + taskName + " with " + args);
+		// start the new thread and let it run until it is idle (ie. inited)
 		thread.setPriority(Thread.currentThread().getPriority() + 1);
 		thread.setDaemon(true);
 		thread.start();
 		// just in case, give other threads a chance
 		Thread.yield();
-		log(taskName + " thread running");
+		log.info(taskName + " thread running");
 	    } catch (SecurityException se) {
-		log("unable to launch " + taskName, se);
+		log.error("unable to launch " + taskName, se);
 	    } catch (MalformedURLException mue) {
-		log("Bad URL: ", mue);
+		log.error("Bad URL: ", mue);
 	    } catch (ClassNotFoundException cnfe) {
-		log("Can't find class " + className, cnfe);
+		log.error("Can't find class " + className, cnfe);
 	    } catch (NoSuchMethodException nsme) {
-		log("Can't find main in " + className, nsme);
+		log.error("Can't find main in " + className, nsme);
 	    } catch (Exception e) {
-		log("Exception while launching " + taskName, e);
+		log.error("Exception while launching " + taskName, e);
 	    }
 	} // end for each task
     }
@@ -369,12 +356,12 @@ public class StartupServlet extends HttpServlet {
 
 	    fis = new FileInputStream(propFile);
 	    props.load(fis);
-	    log("loaded GP properties from " + propFile.getCanonicalPath());
+	    log.info("loaded GP properties from " + propFile.getCanonicalPath());
 
 	    if (customPropFile.exists()) {
-		customFis = new FileInputStream(customPropFile);
-		props.load(customFis);
-		log("loaded Custom GP properties from " + customPropFile.getCanonicalPath());
+	        customFis = new FileInputStream(customPropFile);
+	        props.load(customFis);
+	        log.info("loaded Custom GP properties from " + customPropFile.getCanonicalPath());
 	    }
 
 	    // copy all of the new properties to System properties
@@ -416,7 +403,7 @@ public class StartupServlet extends HttpServlet {
 	    for (Iterator<?> iProps = tmProps.keySet().iterator(); iProps.hasNext();) {
 		String propName = (String) iProps.next();
 		String propValue = (String) tmProps.get(propName);
-		log(propName + "=" + propValue);
+		log.debug(propName + "=" + propValue);
 	    }
 	} catch (IOException ioe) {
 	    ioe.printStackTrace();
@@ -463,7 +450,7 @@ public class StartupServlet extends HttpServlet {
     }
 
     protected void dumpThreads() {
-	log("StartupServlet.dumpThreads: what's still running...");
+	log.info("StartupServlet.dumpThreads: what's still running...");
 	ThreadGroup tg = Thread.currentThread().getThreadGroup();
 	while (tg.getParent() != null) {
 	    tg = tg.getParent();
@@ -478,45 +465,48 @@ public class StartupServlet extends HttpServlet {
 		continue;
 	    if (!t.isAlive())
 		continue;
-	    log(t.getName() + " is running at " + t.getPriority() + " priority.  " + (t.isDaemon() ? "Is" : "Is not")
+	    log.info(t.getName() + " is running at " + t.getPriority() + " priority.  " + (t.isDaemon() ? "Is" : "Is not")
 		    + " daemon.  " + (t.isInterrupted() ? "Is" : "Is not") + " interrupted.  ");
 	}
 	if (numThreads == MAX_THREADS) {
-	    log("Possibly more than " + MAX_THREADS + " are running.");
+	    log.info("Possibly more than " + MAX_THREADS + " are running.");
 	}
     }
 }
 
 class LaunchThread extends Thread {
+    private static Logger log = Logger.getLogger(LaunchThread.class);
 
     Method mainMethod;
-
     String[] args;
-
     StartupServlet parent;
 
     public LaunchThread(String taskName, Method mainMethod, String[] args, StartupServlet parent) {
-	super(taskName);
-	this.mainMethod = mainMethod;
-	this.args = args;
-	this.parent = parent;
-	this.setDaemon(true);
+        super(taskName);
+        this.mainMethod = mainMethod;
+        this.args = args;
+        this.parent = parent;
+        this.setDaemon(true);
     }
 
     public void run() {
-	try {
-	    parent.log("invoking " + mainMethod.getDeclaringClass().getName() + "." + mainMethod.getName());
-	    mainMethod.invoke(null, new Object[] { args });
-	    parent.log(getName() + " " + mainMethod.getDeclaringClass().getName() + "." + mainMethod.getName()
-		    + " returned from execution");
-	} catch (IllegalAccessException iae) {
-	    parent.log("Can't invoke main in " + getName(), iae);
-	} catch (IllegalArgumentException iae2) {
-	    parent.log("Bad args for " + getName(), iae2);
-	} catch (InvocationTargetException ite) {
-	    parent.log("InvocationTargetException for " + getName(), ite.getTargetException());
-	} catch (Exception e) {
-	    parent.log("Exception for " + getName(), e);
-	}
+        try {
+            log.debug("invoking " + mainMethod.getDeclaringClass().getName() + "." + mainMethod.getName());
+            mainMethod.invoke(null, new Object[] { args });
+            parent.log(getName() + " " + mainMethod.getDeclaringClass().getName() + "." + mainMethod.getName()
+                    + " returned from execution");
+        } 
+        catch (IllegalAccessException iae) {
+            log.error("Can't invoke main in " + getName(), iae);
+        } 
+        catch (IllegalArgumentException iae2) {
+            log.error("Bad args for " + getName(), iae2);
+        } 
+        catch (InvocationTargetException ite) {
+            log.error("InvocationTargetException for " + getName(), ite.getTargetException());
+        } 
+        catch (Exception e) {
+            log.error("Exception for " + getName(), e);
+        }
     }
 }
