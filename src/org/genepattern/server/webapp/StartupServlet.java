@@ -84,7 +84,13 @@ public class StartupServlet extends HttpServlet {
 
         String dbVendor = System.getProperty("database.vendor", "HSQL");
         if (dbVendor.equals("HSQL")) {
-            HsqlDbUtil.startDatabase();
+            try {
+                HsqlDbUtil.startDatabase();
+            }
+            catch (Throwable t) {
+                log.error("Unable to start HSQL Database!", t);
+                return;
+            }
         }
 
         launchTasks();
