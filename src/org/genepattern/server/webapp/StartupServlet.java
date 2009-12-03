@@ -25,7 +25,6 @@ import java.net.UnknownHostException;
 import java.security.Security;
 import java.text.SimpleDateFormat;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -47,9 +46,6 @@ import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.process.JobPurger;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.webapp.jsf.AboutBean;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /*
  * GenePattern startup servlet
@@ -57,17 +53,18 @@ import org.w3c.dom.NodeList;
  * This servlet performs periodic maintenance, based on definitions in the <omnigene.conf>/genepattern.properties file
  * @author Jim Lerner
  */
-
 public class StartupServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(StartupServlet.class);
 
-    public static String NAME = "GenePatternStartupServlet";
-    SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    public static Vector<Thread> vThreads = new Vector<Thread>();
-    
+    private SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static Vector<Thread> vThreads = new Vector<Thread>();
 
     public StartupServlet() {
         log.info("Creating StartupServlet");
+    }
+    
+    public String getServletInfo() {
+        return "GenePatternStartupServlet";
     }
 
     public void init(ServletConfig config) throws ServletException {
@@ -155,42 +152,24 @@ public class StartupServlet extends HttpServlet {
     }
 
     protected void startDaemons(Properties props, ServletContext application) {
-	startJobPurger(props);
-	// startIndexerDaemon(props);
-	Thread.yield(); // allow a bit of runtime to the
-	// independent threads
+        startJobPurger(props);
+        // allow a bit of runtime to the independent threads
+        Thread.yield();
     }
 
     protected void startJobPurger(Properties props) {
-	Thread tJobPurger = JobPurger.startJobPurger(props);
-	addDaemonThread(tJobPurger);
+        Thread tJobPurger = JobPurger.startJobPurger(props);
+        addDaemonThread(tJobPurger);
     }
 
     public static void startJobPurger() {
-	Thread tJobPurger = JobPurger.startJobPurger(System.getProperties());
-	addDaemonThread(tJobPurger);
+        Thread tJobPurger = JobPurger.startJobPurger(System.getProperties());
+        addDaemonThread(tJobPurger);
     }
 
     protected static void addDaemonThread(Thread t) {
-	vThreads.add(t);
+        vThreads.add(t);
     }
-
-    // protected void startIndexerDaemon(Properties props) throws ServletException {
-    // String daemonName = "IndexerDaemon";
-    // if (!findThreadByName(daemonName)) {
-    // log("starting " + daemonName);
-    // try {
-    // Thread tIndexerDaemon = new Thread(IndexerDaemon.getDaemon(), daemonName);
-    // tIndexerDaemon.setPriority(Thread.NORM_PRIORITY - 2);
-    // tIndexerDaemon.setDaemon(true);
-    // tIndexerDaemon.start();
-    // addDaemonThread(tIndexerDaemon);
-    // }
-    // catch (IOException ioe) {
-    // throw new ServletException(ioe.getMessage() + " while starting " + daemonName);
-    // }
-    // }
-    // }
 
     protected void announceReady(Properties props) {
         AboutBean about = new AboutBean();
@@ -213,14 +192,6 @@ public class StartupServlet extends HttpServlet {
         startupMessage.append(stars);
         
         log.info(startupMessage);
-    }
-
-    protected boolean findThreadByName(String name) {
-	return false;
-    }
-
-    public String getServletInfo() {
-	return NAME;
     }
 
     public void destroy() {
@@ -252,225 +223,211 @@ public class StartupServlet extends HttpServlet {
         dumpThreads();
     }
 
-    // read a CSV list of tasks from the launchTask property. For each entry,
-    // lookup properties and
-    // launch the task in a separate thread in this JVM
+    /**
+     * Read a CSV list of tasks from the launchTask property. 
+     * For each entry, lookup properties and launch the task in a separate thread in this JVM.
+     */
     protected void launchTasks() {
-	Properties props = System.getProperties();
-	StringTokenizer stTasks = new StringTokenizer(props.getProperty("launchTasks", ""), ",");
+        Properties props = System.getProperties();
+        StringTokenizer stTasks = new StringTokenizer(props.getProperty("launchTasks", ""), ",");
 
-	String taskName = null;
-	String className = null;
-	String classPath = null;
+        String taskName = null;
+        String className = null;
+        String classPath = null;
 
-	Thread threads[] = new Thread[Thread.activeCount()];
-	Thread.enumerate(threads);
+        Thread threads[] = new Thread[Thread.activeCount()];
+        Thread.enumerate(threads);
+        nextTask: while (stTasks.hasMoreTokens()) {
+            try {
+                taskName = stTasks.nextToken();
+                String expectedThreadName = props.getProperty(taskName + ".taskName", taskName);
+                for (int t = 0; t < threads.length; t++) {
+                    if (threads[t] == null) {
+                        continue;
+                    }
+                    String threadName = threads[t].getName();
+                    if (threadName == null) {
+                        continue;
+                    }
+                    if (threadName.startsWith(expectedThreadName)) {
+                        log.info(expectedThreadName + " is already running");
+                        continue nextTask;
+                    }
+                }
+                className = props.getProperty(taskName + ".class");
+                classPath = props.getProperty(taskName + ".classPath", "");
+                StringTokenizer classPathElements = new StringTokenizer(classPath, ";");
+                URL[] classPathURLs = new URL[classPathElements.countTokens()];
+                int i = 0;
+                while (classPathElements.hasMoreTokens()) {
+                    classPathURLs[i++] = new File(classPathElements.nextToken()).toURL();
+                }
+                String args = props.getProperty(taskName + ".args", "");
+                StringTokenizer stArgs = new StringTokenizer(args, " ");
+                String[] argsArray = new String[stArgs.countTokens()];
+                i = 0;
+                while (stArgs.hasMoreTokens()) {
+                    argsArray[i++] = stArgs.nextToken();
+                }
+                String userDir = props.getProperty(taskName + ".dir", System.getProperty("user.dir"));
+                System.setProperty("user.dir", userDir);
 
-	nextTask: while (stTasks.hasMoreTokens()) {
-	    try {
-		taskName = stTasks.nextToken();
-		String expectedThreadName = props.getProperty(taskName + ".taskName", taskName);
-		for (int t = 0; t < threads.length; t++) {
-		    if (threads[t] == null)
-			continue;
-		    String threadName = threads[t].getName();
-		    if (threadName == null)
-			continue;
-		    if (threadName.startsWith(expectedThreadName)) {
-		        log.info(expectedThreadName + " is already running");
-		        continue nextTask;
-		    }
-		}
-		className = props.getProperty(taskName + ".class");
-		classPath = props.getProperty(taskName + ".classPath", "");
-		StringTokenizer classPathElements = new StringTokenizer(classPath, ";");
-		URL[] classPathURLs = new URL[classPathElements.countTokens()];
-		int i = 0;
-		while (classPathElements.hasMoreTokens()) {
-		    classPathURLs[i++] = new File(classPathElements.nextToken()).toURL();
-		}
-		String args = props.getProperty(taskName + ".args", "");
-		StringTokenizer stArgs = new StringTokenizer(args, " ");
-		String[] argsArray = new String[stArgs.countTokens()];
-		i = 0;
-		while (stArgs.hasMoreTokens()) {
-		    argsArray[i++] = stArgs.nextToken();
-		}
-		String userDir = props.getProperty(taskName + ".dir", System.getProperty("user.dir"));
-		System.setProperty("user.dir", userDir);
-
-		URLClassLoader classLoader = new URLClassLoader(classPathURLs, null);
-		Class theClass = Class.forName(className);
-		if (theClass == null) {
-		    throw new ClassNotFoundException("unable to find class " + className + " using classpath "
-			    + classPathElements);
-		}
-		Method main = theClass.getMethod("main", new Class[] { String[].class });
-		LaunchThread thread = new LaunchThread(taskName, main, argsArray, this);
-		log.info("starting " + taskName + " with " + args);
-		// start the new thread and let it run until it is idle (ie. inited)
-		thread.setPriority(Thread.currentThread().getPriority() + 1);
-		thread.setDaemon(true);
-		thread.start();
-		// just in case, give other threads a chance
-		Thread.yield();
-		log.info(taskName + " thread running");
-	    } catch (SecurityException se) {
-		log.error("unable to launch " + taskName, se);
-	    } catch (MalformedURLException mue) {
-		log.error("Bad URL: ", mue);
-	    } catch (ClassNotFoundException cnfe) {
-		log.error("Can't find class " + className, cnfe);
-	    } catch (NoSuchMethodException nsme) {
-		log.error("Can't find main in " + className, nsme);
-	    } catch (Exception e) {
-		log.error("Exception while launching " + taskName, e);
-	    }
-	} // end for each task
-    }
-
-    // set System properties to the union of all settings in:
-    // servlet init parameters
-    // resources/genepattern.properties
-    // resources/build.properties
-    protected void loadProperties(ServletConfig config) throws ServletException {
-	File propFile = null;
-	File customPropFile = null;
-	FileInputStream fis = null;
-	FileInputStream customFis = null;
-	try {
-	    for (Enumeration<String> eConfigProps = config.getInitParameterNames(); eConfigProps.hasMoreElements();) {
-		String propName = eConfigProps.nextElement();
-		String propValue = config.getInitParameter(propName);
-		if (propValue.startsWith(".")) {
-		    propValue = new File(propValue).getCanonicalPath();
-		}
-		System.setProperty(propName, propValue);
-	    }
-
-	    Properties sysProps = System.getProperties();
-	    String dir = sysProps.getProperty("genepattern.properties");
-	    propFile = new File(dir, "genepattern.properties");
-	    customPropFile = new File(dir, "custom.properties");
-	    Properties props = new Properties();
-
-	    fis = new FileInputStream(propFile);
-	    props.load(fis);
-	    log.info("loaded GP properties from " + propFile.getCanonicalPath());
-
-	    if (customPropFile.exists()) {
-	        customFis = new FileInputStream(customPropFile);
-	        props.load(customFis);
-	        log.info("loaded Custom GP properties from " + customPropFile.getCanonicalPath());
-	    }
-
-	    // copy all of the new properties to System properties
-	    for (Iterator<?> iter = props.keySet().iterator(); iter.hasNext();) {
-		String key = (String) iter.next();
-		String val = props.getProperty(key);
-		if (val.startsWith(".")) {
-		    //HACK: don't rewrite my value
-		    if (! key.equals(JobResultsFilenameFilter.KEY)) {
-		        // why? why  is this here? -- PJC
-		        val = new File(val).getAbsolutePath();
-		    }
-		}
-		sysProps.setProperty(key, val);
-	    }
-
-	    propFile = new File(dir, "build.properties");
-	    fis = new FileInputStream(propFile);
-	    props.load(fis);
-	    fis.close();
-	    fis = null;
-	    // copy all of the new properties to System properties
-	    for (Iterator<?> iter = props.keySet().iterator(); iter.hasNext();) {
-		String key = (String) iter.next();
-		String val = props.getProperty(key);
-		if (val.startsWith(".")) {
-            //HACK: don't rewrite my value
-            if (! key.equals(JobResultsFilenameFilter.KEY)) {
-                // why? why  is this here? -- PJC
-                val = new File(val).getAbsolutePath();
+                URLClassLoader classLoader = new URLClassLoader(classPathURLs, null);
+                Class theClass = Class.forName(className);
+                if (theClass == null) {
+                    throw new ClassNotFoundException("unable to find class " + className + " using classpath " + classPathElements);
+                }
+                Method main = theClass.getMethod("main", new Class[] { String[].class });
+                LaunchThread thread = new LaunchThread(taskName, main, argsArray, this);
+                log.info("starting " + taskName + " with " + args);
+                // start the new thread and let it run until it is idle (ie. inited)
+                thread.setPriority(Thread.currentThread().getPriority() + 1);
+                thread.setDaemon(true);
+                thread.start();
+                // just in case, give other threads a chance
+                Thread.yield();
+                log.info(taskName + " thread running");
+            } 
+            catch (SecurityException se) {
+                log.error("unable to launch " + taskName, se);
+            } 
+            catch (MalformedURLException mue) {
+                log.error("Bad URL: ", mue);
+            } 
+            catch (ClassNotFoundException cnfe) {
+                log.error("Can't find class " + className, cnfe);
+            } 
+            catch (NoSuchMethodException nsme) {
+                log.error("Can't find main in " + className, nsme);
+            } 
+            catch (Exception e) {
+                log.error("Exception while launching " + taskName, e);
             }
-		}
-		sysProps.setProperty(key, val);
-	    }
-
-	    System.setProperty("serverInfo", config.getServletContext().getServerInfo());
-
-	    TreeMap tmProps = new TreeMap(sysProps);
-	    for (Iterator<?> iProps = tmProps.keySet().iterator(); iProps.hasNext();) {
-		String propName = (String) iProps.next();
-		String propValue = (String) tmProps.get(propName);
-		log.debug(propName + "=" + propValue);
-	    }
-	} catch (IOException ioe) {
-	    ioe.printStackTrace();
-	    String path = null;
-	    try {
-		path = propFile.getCanonicalPath();
-	    } catch (IOException ioe2) {
-	    }
-	    throw new ServletException(path + " cannot be loaded.  " + ioe.getMessage());
-	} finally {
-	    try {
-		if (fis != null)
-		    fis.close();
-	    } catch (IOException ioe) {
-	    }
-	}
+        } // end for each task
     }
 
-    // read Tomcat's server.xml file and set the GenePatternURL and
-    // GENEPATTERN_PORT properties according to the actual configuration
+    /**
+     * Set System properties to the union of all settings in:
+     * servlet init parameters
+     * resources/genepattern.properties
+     * resources/build.properties
+     * 
+     * @param config
+     * @throws ServletException
+     */
+    protected void loadProperties(ServletConfig config) throws ServletException {
+        File propFile = null;
+        File customPropFile = null;
+        FileInputStream fis = null;
+        FileInputStream customFis = null;
+        try {
+            for (Enumeration<String> eConfigProps = config.getInitParameterNames(); eConfigProps.hasMoreElements();) {
+                String propName = eConfigProps.nextElement();
+                String propValue = config.getInitParameter(propName);
+                if (propValue.startsWith(".")) {
+                    propValue = new File(propValue).getCanonicalPath();
+                }
+                System.setProperty(propName, propValue);
+            }
+            Properties sysProps = System.getProperties();
+            String dir = sysProps.getProperty("genepattern.properties");
+            propFile = new File(dir, "genepattern.properties");
+            customPropFile = new File(dir, "custom.properties");
+            Properties props = new Properties();
+            fis = new FileInputStream(propFile);
+            props.load(fis);
+            log.info("loaded GP properties from " + propFile.getCanonicalPath());
 
-    protected void processNode(Node node, HashMap<String, String> hmProps) {
-	if (node.getNodeType() == Node.ELEMENT_NODE) {
-	    Element c_elt = (Element) node;
-	    if (c_elt.getTagName().equals("Connector")) {
-		String port = c_elt.hasAttribute("port") ? c_elt.getAttribute("port") : null;
-		hmProps.put("port", port);
-		String scheme = c_elt.hasAttribute("scheme") ? c_elt.getAttribute("scheme") : null;
-		hmProps.put("scheme", scheme);
+            if (customPropFile.exists()) {
+                customFis = new FileInputStream(customPropFile);
+                props.load(customFis);
+                log.info("loaded Custom GP properties from " + customPropFile.getCanonicalPath());
+            }
 
-	    } else if (c_elt.getTagName().equals("Context")) {
-		String path = c_elt.hasAttribute("path") ? c_elt.getAttribute("path") : "";
-		String docBase = c_elt.hasAttribute("docBase") ? c_elt.getAttribute("docBase") : "";
-		if (path.indexOf("gp") != -1 || docBase.indexOf("gp") != -1) {
-		    hmProps.put("path", path);
-		    hmProps.put("docBase", docBase);
-		}
-	    }
-	}
-	NodeList childNodes = node.getChildNodes();
-	for (int i = 0; i < childNodes.getLength(); i++) {
-	    processNode(childNodes.item(i), hmProps);
-	}
+            // copy all of the new properties to System properties
+            for (Iterator<?> iter = props.keySet().iterator(); iter.hasNext();) {
+                String key = (String) iter.next();
+                String val = props.getProperty(key);
+                if (val.startsWith(".")) {
+                    //HACK: don't rewrite my value
+                    if (! key.equals(JobResultsFilenameFilter.KEY)) {
+                        // why? why  is this here? -- PJC
+                        val = new File(val).getAbsolutePath();
+                    }
+                }
+                sysProps.setProperty(key, val);
+            }
+
+            propFile = new File(dir, "build.properties");
+            fis = new FileInputStream(propFile);
+            props.load(fis);
+            fis.close();
+            fis = null;
+            // copy all of the new properties to System properties
+            for (Iterator<?> iter = props.keySet().iterator(); iter.hasNext();) {
+                String key = (String) iter.next();
+                String val = props.getProperty(key);
+                if (val.startsWith(".")) {
+                    //HACK: don't rewrite my value
+                    if (! key.equals(JobResultsFilenameFilter.KEY)) {
+                        // why? why  is this here? -- PJC
+                        val = new File(val).getAbsolutePath();
+                    }
+                }
+                sysProps.setProperty(key, val);
+            }
+
+            System.setProperty("serverInfo", config.getServletContext().getServerInfo());
+	    
+            TreeMap tmProps = new TreeMap(sysProps);
+            for (Iterator<?> iProps = tmProps.keySet().iterator(); iProps.hasNext();) {
+                String propName = (String) iProps.next();
+                String propValue = (String) tmProps.get(propName);
+                log.debug(propName + "=" + propValue);
+            }
+        } 
+        catch (IOException ioe) {
+            ioe.printStackTrace();
+            String path = null;
+            try {
+                path = propFile.getCanonicalPath();
+            } 
+            catch (IOException ioe2) {
+            }
+            throw new ServletException(path + " cannot be loaded.  " + ioe.getMessage());
+        } 
+        finally {
+            try {
+                if (fis != null)
+                    fis.close();
+            } 
+            catch (IOException ioe) {
+            }
+        }
     }
 
     protected void dumpThreads() {
-	log.info("StartupServlet.dumpThreads: what's still running...");
-	ThreadGroup tg = Thread.currentThread().getThreadGroup();
-	while (tg.getParent() != null) {
-	    tg = tg.getParent();
-	}
-	int MAX_THREADS = 100;
-	Thread threads[] = new Thread[MAX_THREADS];
-	int numThreads = tg.enumerate(threads, true);
-	Thread t = null;
-	for (int i = 0; i < numThreads; i++) {
-	    t = threads[i];
-	    if (t == null)
-		continue;
-	    if (!t.isAlive())
-		continue;
-	    log.info(t.getName() + " is running at " + t.getPriority() + " priority.  " + (t.isDaemon() ? "Is" : "Is not")
-		    + " daemon.  " + (t.isInterrupted() ? "Is" : "Is not") + " interrupted.  ");
-	}
-	if (numThreads == MAX_THREADS) {
-	    log.info("Possibly more than " + MAX_THREADS + " are running.");
-	}
+        log.info("StartupServlet.dumpThreads: what's still running...");
+        ThreadGroup tg = Thread.currentThread().getThreadGroup();
+        while (tg.getParent() != null) {
+            tg = tg.getParent();
+        }
+        int MAX_THREADS = 100;
+        Thread threads[] = new Thread[MAX_THREADS];
+        int numThreads = tg.enumerate(threads, true);
+        Thread t = null;
+        for (int i = 0; i < numThreads; i++) {
+            t = threads[i];
+            if (t == null)
+                continue;
+            if (!t.isAlive())
+                continue;
+            log.info(t.getName() + " is running at " + t.getPriority() + " priority.  " + (t.isDaemon() ? "Is" : "Is not")
+                    + " daemon.  " + (t.isInterrupted() ? "Is" : "Is not") + " interrupted.  ");
+        }
+        if (numThreads == MAX_THREADS) {
+            log.info("Possibly more than " + MAX_THREADS + " are running.");
+        }
     }
 }
 
