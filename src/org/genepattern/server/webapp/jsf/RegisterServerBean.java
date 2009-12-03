@@ -38,6 +38,7 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.server.webservice.server.dao.BaseDAO;
 import org.genepattern.util.GPConstants;
@@ -283,7 +284,7 @@ public class RegisterServerBean {
         log.debug("checking registration");
         AboutBean about = new AboutBean();
         final String genepatternVersion = about.getGenePatternVersion();
-        String dbRegisteredVersion = getDbRegisteredVersion();
+        String dbRegisteredVersion = getDbRegisteredVersion(genepatternVersion);
         if (dbRegisteredVersion == null || dbRegisteredVersion.equals("")) {
             return false;
         }
@@ -312,11 +313,9 @@ public class RegisterServerBean {
      * if there is no entry in the database.
      * @return
      */
-    private static String getDbRegisteredVersion() {
+    private static String getDbRegisteredVersion(final String genepatternVersion) {
         log.debug("getting registration info from database");
         String dbRegisteredVersion = "";
-        AboutBean about = new AboutBean();
-        final String genepatternVersion = about.getGenePatternVersion();
         final String sql = "select value from props where key='registeredVersion"+genepatternVersion+"'";
         try {
             BaseDAO dao = new BaseDAO();
@@ -327,6 +326,9 @@ public class RegisterServerBean {
         } 
         catch (Exception e) {
             log.error("Didn't get registration info from database: "+e.getLocalizedMessage(), e);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
         }
         return dbRegisteredVersion;
     }
