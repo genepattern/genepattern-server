@@ -26,49 +26,43 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 
 public class HibernateUtil {
-    private static SessionFactory sessionFactory = null;
     private static Logger log = Logger.getLogger(HibernateUtil.class);
-
-    public static synchronized SessionFactory getSessionFactory() {
-        if (sessionFactory == null) {
-            createSessionFactory();
-        }
-        return sessionFactory;
-    }
-
-    static void createSessionFactory() {
-        try {
+    
+    private static class SessionFactorySingleton {
+        static SessionFactory sessionFactory = createSessionFactory();
+        static ExceptionInInitializerError sessionFactoryException;
+        
+        private static SessionFactory createSessionFactory() {
             // Create the SessionFactory from hibernate.cfg.xml
-            Configuration config = new Configuration();
-            config.configure("hibernate.cfg.xml");
-            mergeSystemProperties(config);
-            sessionFactory = config.buildSessionFactory();
-        } 
-        catch (Throwable ex) {
-            // Make sure you log the exception, as it might be swallowed
-            if (log != null) {
-                log.error("Initial SessionFactory creation failed.", ex);
-            } 
-            else {
-                System.err.println("Initial SessionFactory creation failed: " + ex.getLocalizedMessage());
-                ex.printStackTrace(System.err);
+            try {
+                Configuration config = new Configuration();
+                config.configure("hibernate.cfg.xml");
+                mergeSystemProperties(config);
+                return config.buildSessionFactory();
             }
-            throw new ExceptionInInitializerError(ex);
+            catch (Throwable ex) {
+                // Make sure you log the exception, as it might be swallowed
+                log.error("Error initializing SessionFactory", ex);
+                sessionFactoryException =  new ExceptionInInitializerError(ex);
+                return null;
+            }
         }
-    }
-
-    private static void mergeSystemProperties(Configuration config) {
-        Properties props = System.getProperties();
-        for (Object key : props.keySet()) {
-            String name = (String) key;
-            if (name.startsWith("hibernate.")) {
-                config.setProperty(name, (String) props.get(name));
+        private static void mergeSystemProperties(Configuration config) {
+            Properties props = System.getProperties();
+            for (Object key : props.keySet()) {
+                String name = (String) key;
+                if (name.startsWith("hibernate.")) {
+                    config.setProperty(name, (String) props.get(name));
+                }
             }
         }
     }
 
     public static Session getSession() {
-        return getSessionFactory().getCurrentSession();
+        if (SessionFactorySingleton.sessionFactory != null) {
+            return SessionFactorySingleton.sessionFactory.getCurrentSession();
+        }
+        throw SessionFactorySingleton.sessionFactoryException;
     }
 
     /**
@@ -155,9 +149,11 @@ public class HibernateUtil {
         StatelessSession session = null;
         try {
             // Open a new session and transaction. 
-            //It's neccessary that the sequence update be
-            // committed prior to exiting this method.
-            session = getSessionFactory().openStatelessSession();
+            // It's necessary that the sequence update be committed prior to exiting this method.
+            if (SessionFactorySingleton.sessionFactory == null) {
+                throw SessionFactorySingleton.sessionFactoryException;
+            }
+            session = SessionFactorySingleton.sessionFactory.openStatelessSession();
             session.beginTransaction();
 
             Query query = session.createQuery("from org.genepattern.server.domain.Sequence where name = :name");
@@ -178,12 +174,16 @@ public class HibernateUtil {
             }
         } 
         catch (Exception e) {
-            session.getTransaction().rollback();
+            if (session != null) {
+                session.getTransaction().rollback();
+            }
             log.error(e);
             throw new OmnigeneException(e);
         } 
         finally {
-            session.close();
+            if (session != null) {
+                session.close();
+            }
         }
     }
 }
