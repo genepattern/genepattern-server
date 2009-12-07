@@ -1430,26 +1430,26 @@ public class GenePatternAnalysisTask {
 
 	    recordJobCompletion(jobInfo, parentJobInfo, jobStatus, jobStartTime);
 	} 
-	catch (Throwable e) {
-	    if (e.getCause() != null) {
-	        e = e.getCause();
-	    }
-	    log.error(taskName + " error: " + e);
-	    try {
-	        File outFile = writeStringToFile(outDirName, STDERR, e.getMessage() + "\n\n");
-	        addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
-
-	        recordJobCompletion(jobInfo, parentJobInfo, JobStatus.JOB_ERROR, jobStartTime);
-	    } catch (Exception e2) {
-	        log.error(taskName + " error: unable to update job error status" + e2);
-	    }
-	    // IndexerDaemon.notifyJobComplete(jobInfo.getJobNumber());
-	} finally {
-	    // remove currPipelineUserKey from system memory
-	    if (userKey != null && !userKey.equals("")) {
-	        EncryptionUtil.getInstance().removePipelineUserKey(userKey);
-	    }
-	}
+    catch (Throwable e) {
+        if (e.getCause() != null) {
+            e = e.getCause();
+        }
+        log.error(taskName + " error: " + e.getLocalizedMessage(), e);
+        try {
+            File outFile = writeStringToFile(outDirName, STDERR, e.getMessage() + "\n\n");
+            addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
+            recordJobCompletion(jobInfo, parentJobInfo, JobStatus.JOB_ERROR, jobStartTime);
+        } 
+        catch (Exception e2) {
+            log.error(taskName + " error: unable to update job error status" + e2);
+        }
+    } 
+    finally {
+        // remove currPipelineUserKey from system memory
+        if (userKey != null && !userKey.equals("")) {
+            EncryptionUtil.getInstance().removePipelineUserKey(userKey);
+        }
+    }
     }
 
     private static final Comparator<File> fileComparator = new Comparator<File>() {
@@ -1483,27 +1483,28 @@ public class GenePatternAnalysisTask {
      * @param jobStartTime
      */
     private void recordJobCompletion(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, long jobStartTime) {
-	try {
-	    if (log.isDebugEnabled()) {
-		log.debug("Recording job completion for job: " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
-	    }
-	    HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
-	    HibernateUtil.beginTransaction();
-	    long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
-	    Date now = new Date(Calendar.getInstance().getTimeInMillis());
-	    updateJobInfo(jobInfo, parentJobInfo, jobStatus, now);
-	    HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
-	    HibernateUtil.beginTransaction(); // TODO: JTL 8/21/07 oracle
+        try {
+            if (log.isDebugEnabled()) {
+                log.debug("Recording job completion for job: " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
+            }
+            HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
+            HibernateUtil.beginTransaction();
+            long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
+            Date now = new Date(Calendar.getInstance().getTimeInMillis());
+            updateJobInfo(jobInfo, parentJobInfo, jobStatus, now);
+            HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
 
-	    UsageLog.logJobCompletion(jobInfo, parentJobInfo, now, elapsedTime);
-	    if (log.isDebugEnabled()) {
-		log.debug("Recording job completion complete " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
-	    }
-	    HibernateUtil.commitTransaction();
-	} catch (RuntimeException e) {
-	    log.error("Rolling back transaction", e);
-	    HibernateUtil.rollbackTransaction();
-	}
+            HibernateUtil.beginTransaction(); // TODO: JTL 8/21/07 oracle
+            UsageLog.logJobCompletion(jobInfo, parentJobInfo, now, elapsedTime);
+            if (log.isDebugEnabled()) {
+                log.debug("Recording job completion complete " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
+            }
+            HibernateUtil.commitTransaction();
+        } 
+        catch (RuntimeException e) {
+            log.error("Rolling back transaction", e);
+            HibernateUtil.rollbackTransaction();
+        }
     }
 
     /**
@@ -2788,13 +2789,17 @@ public class GenePatternAnalysisTask {
      * @author Jim Lerner
      */
     protected void addFileToOutputParameters(JobInfo jobInfo, String fileName, String label, JobInfo parentJobInfo) {
-	fileName = jobInfo.getJobNumber() + "/" + fileName;
-	ParameterInfo paramOut = new ParameterInfo(label, fileName, "");
-	paramOut.setAsOutputFile();
-	jobInfo.addParameterInfo(paramOut);
-	if (parentJobInfo != null) {
-	    parentJobInfo.addParameterInfo(paramOut);
-	}
+        if (jobInfo == null) {
+            log.error("null jobInfo arg!");
+            return;
+        }
+        fileName = jobInfo.getJobNumber() + "/" + fileName;
+        ParameterInfo paramOut = new ParameterInfo(label, fileName, "");
+        paramOut.setAsOutputFile();
+        jobInfo.addParameterInfo(paramOut);
+        if (parentJobInfo != null) {
+            parentJobInfo.addParameterInfo(paramOut);
+        }
     }
 
     /**
