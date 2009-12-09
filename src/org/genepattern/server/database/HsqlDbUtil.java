@@ -43,9 +43,6 @@ public class HsqlDbUtil {
         //  String dbName = System.getProperty("HSQL.dbName", "xdb");
         //  String[] args = new String[] { "-port", port, "-database.0", dbUrl, "-dbname.0", dbName };
         String args = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
-        
-        //TODO: shooting self in foot, this line is here for debugging, make sure to delete it!!!
-        //args = "-port 1 -database.0 file:../resources/GenePatternDB -dbname.0 xdb";
 
         StringTokenizer strTok = new StringTokenizer(args);
         List<String> argsList = new ArrayList<String>();
