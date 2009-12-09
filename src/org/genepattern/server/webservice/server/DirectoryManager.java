@@ -18,7 +18,6 @@ import java.net.MalformedURLException;
 import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -80,73 +79,72 @@ public class DirectoryManager {
      * $omnigene.conf/taskLib. TODO: involve userID in this, so that there is no conflict among same-named private
      * tasks. Creates the directory if it doesn't already exist.
      * 
-     * @param taskName
-     *                name of task to look up
+     * Warning: this method creates new DB connections, it is up to the calling method to close 
+     *     the db connection if necessary.
+     * 
+     * @param taskName, name of task to look up
      * @return directory name on server where taskName support files are stored
      * @author Jim Lerner
-     * @throws MalformedURLException
-     *                 If the lsid is not properly formed.
-     * @throws IllegalArgumentException
-     *                 If the task name or lsid is not found in the database.
+     * @throws MalformedURLException, If the lsid is not properly formed.
+     * @throws IllegalArgumentException, If the task name or lsid is not found in the database.
      */
     public static String getTaskLibDir(String taskName, String sLSID, String username) throws MalformedURLException {
-	String ret = null;
-	if (sLSID != null) {
-	    ret = (String) htTaskLibDir.get(sLSID);
-	    if (ret != null)
-		return ret;
-	}
+        String ret = null;
+        if (sLSID != null) {
+            ret = (String) htTaskLibDir.get(sLSID);
+            if (ret != null) {
+                return ret;
+            }
+        }
 
-	File f = null;
-	getLibDir();
-	LSID lsid = null;
-	TaskInfo taskInfo = null;
+        File f = null;
+        getLibDir();
+        LSID lsid = null;
+        TaskInfo taskInfo = null;
 
-	if (sLSID != null && sLSID.length() > 0) {
-	    lsid = new LSID(sLSID);
-	    if (taskName == null || taskInfo == null) {
-		// lookup task name for this LSID
-		HibernateUtil.commitTransaction();
-		HibernateUtil.beginTransaction();
+        if (sLSID != null && sLSID.length() > 0) {
+            lsid = new LSID(sLSID);
+            if (taskName == null || taskInfo == null) {
+                // lookup task name for this LSID
+                taskInfo = (new AdminDAO()).getTask(lsid.toString(), username);
+                if (taskInfo == null) {
+                    throw new IllegalArgumentException("can't get TaskInfo from " + lsid.toString());
+                }
+                if (taskInfo != null) {
+                    taskName = taskInfo.getName();
+                    if (username == null) {
+                        username = taskInfo.getUserId();
+                    }
+                }
+            }
+        }
 
-		taskInfo = (new AdminDAO()).getTask(lsid.toString(), username);
-		if (taskInfo == null) {
-		    throw new IllegalArgumentException("can't get TaskInfo from " + lsid.toString());
-		}
-		if (taskInfo != null) {
-		    taskName = taskInfo.getName();
-		    if (username == null)
-			username = taskInfo.getUserId();
-		}
-	    }
-	}
+        if (lsid == null && taskName != null) {
+            lsid = new LSID(taskName);
+            // lookup task name for this LSID
+            taskInfo = (new AdminDAO()).getTask(lsid.toString(), username);
+            if (taskInfo == null) {
+                throw new IllegalArgumentException("can't get TaskInfo from " + lsid.toString());
+            }
+            taskName = taskInfo.getName();
+            if (username == null) {
+                username = taskInfo.getUserId();
+            }
+        }
 
-	if (lsid == null && taskName != null) {
-	    lsid = new LSID(taskName);
-	    // lookup task name for this LSID
-	    taskInfo = (new AdminDAO()).getTask(lsid.toString(), username);
-	    if (taskInfo == null) {
-		throw new IllegalArgumentException("can't get TaskInfo from " + lsid.toString());
-	    }
-	    taskName = taskInfo.getName();
-	    if (username == null) {
-		username = taskInfo.getUserId();
-	    }
-
-	}
-	String dirName = makeDirName(lsid, taskName, taskInfo);
-	f = new File(taskLibDir, dirName);
-	f.mkdirs();
-	try {
-	    ret = f.getCanonicalPath();
-	} catch (IOException e) {
-	    ret = f.getPath();
-	}
-	if (lsid != null) {
-	    htTaskLibDir.put(lsid, ret);
-	}
-	return ret;
-
+        String dirName = makeDirName(lsid, taskName, taskInfo);
+        f = new File(taskLibDir, dirName);
+        f.mkdirs();
+        try {
+            ret = f.getCanonicalPath();
+        } 
+        catch (IOException e) {
+            ret = f.getPath();
+        }
+        if (lsid != null) {
+            htTaskLibDir.put(lsid, ret);
+        }
+        return ret;
     }
 
     /**

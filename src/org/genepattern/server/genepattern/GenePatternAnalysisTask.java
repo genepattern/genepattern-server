@@ -483,6 +483,9 @@ public class GenePatternAnalysisTask {
                 log.error(errorMessage, e);
                 throw new IllegalArgumentException(errorMessage,e);
             }
+            finally {
+                HibernateUtil.closeCurrentSession();
+            }
             file = new File(taskLibDir, filename);
             if (file.exists()) {
                 return file;
@@ -515,9 +518,7 @@ public class GenePatternAnalysisTask {
                 throw new IllegalArgumentException("You are not permitted to access the requested file: "+requestedFilename+", Error processing job number: "+job);
             }
             
-            PermissionsHelper perm = new PermissionsHelper(userId, jobNumber);
-            boolean canRead = perm.canReadJob();
-            if (canRead) {
+            if (canReadJob(userId, jobNumber)) {
                 File jobDir = new File(jobsDir, job);
                 File file = new File(jobDir, requestedFilename);
                 if (file.exists()) {
@@ -531,22 +532,20 @@ public class GenePatternAnalysisTask {
         return null;
     }
 
-    private void runJob(JobInfo jobInfo) {
-        prepareJob(jobInfo);
-        submitJob(jobInfo);
-        handleJobResults(jobInfo);
+    private boolean canReadJob(String userId, int jobNumber) {
+        try {
+            PermissionsHelper perm = new PermissionsHelper(userId, jobNumber);
+            return perm.canReadJob();
+        }
+        catch (Throwable t) {
+            log.error("Error checking permissions for userId="+userId+" and jobId="+jobNumber, t);
+            return false;
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
     }
-    
-    private void prepareJob(JobInfo jobInfo) {
-        
-    }
-    private void submitJob(JobInfo jobInfo) {
-        
-    }
-    private void handleJobResults(JobInfo jobInfo) {
-        
-    }
-    
+
     /**
      * Called by Omnigene Analysis engine to run a single analysis job, wait for completion, then report the results to
      * the analysis_job database table. Running a job involves looking up the TaskInfo and TaskInfoAttributes for the
@@ -628,11 +627,8 @@ public class GenePatternAnalysisTask {
             validateOS(expected, "run " + taskName);
             validatePatches(taskInfo, null);
 
-            User user = (new UserDAO()).findById(jobInfo.getUserId());
-            userKey = EncryptionUtil.getInstance().pushPipelineUserKey(user);
 
             Map<String, String> environmentVariables = new HashMap<String, String>();
-            environmentVariables.put(EncryptionUtil.PROP_PIPELINE_USER_KEY, userKey);
 
             JobInfo parentJI = getParentJobInfo(jobInfo.getJobNumber());
             int parent = -1;
@@ -689,9 +685,7 @@ public class GenePatternAnalysisTask {
                                 vProblems.add("You are not permitted to access the requested file: Invalid job number, job='"+job+"'");
                                 continue;
                             }
-                            PermissionsHelper perm = new PermissionsHelper(jobInfo.getUserId(), jobNumber);
-                            boolean canRead = perm.canReadJob();
-                            if (canRead) {
+                            if (canReadJob(jobInfo.getUserId(), jobNumber)) {
                                 originalPath = System.getProperty("jobs") + "/" + originalPath;
                             }
                             else {
@@ -742,9 +736,7 @@ public class GenePatternAnalysisTask {
                             }
 
                             if (isWebUpload) {
-                                PermissionsHelper perm = new PermissionsHelper(jobInfo.getUserId(), jobInfo.getJobNumber());
-                                boolean canRead = perm.canReadJob();
-                                if (!canRead) {
+                                if (!canReadJob(jobInfo.getUserId(), jobInfo.getJobNumber())) {
                                     vProblems.add("You are not permitted to access the requested file: "+inputFile.getName());
                                     continue;
                                 }
@@ -913,8 +905,7 @@ public class GenePatternAnalysisTask {
                                             try {
                                                 int jobNumber = Integer.parseInt(jobId);
                                                 //only allow access if the owner of this job has at least read access to the job which output this input file
-                                                PermissionsHelper perm = new PermissionsHelper(jobInfo.getUserId(), jobNumber);
-                                                boolean canRead = perm.canReadJob();
+                                                boolean canRead = canReadJob(jobInfo.getUserId(), jobNumber);
                                                 isAllowed = isJobOutput && canRead;
                                             }
                                             catch (NumberFormatException e) {
@@ -1264,7 +1255,18 @@ public class GenePatternAnalysisTask {
                                 }
                                 commandTokens = debugCmdLine;
                             }
-                        }
+                            try {
+                                HibernateUtil.beginTransaction();
+                                UserDAO userDao = new UserDAO();
+                                User user = userDao.findById(jobInfo.getUserId());
+                                userKey = EncryptionUtil.getInstance().pushPipelineUserKey(user);
+                                environmentVariables.put(EncryptionUtil.PROP_PIPELINE_USER_KEY, userKey);
+                            }
+                            finally {
+                                HibernateUtil.closeCurrentSession();
+                            } 
+                        } 
+                        
                         processBuilder = runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
                         if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0 && taskInfo.isPipeline()) {
                             //GP-2856, filter out bogus error messages	                    
@@ -1394,9 +1396,12 @@ public class GenePatternAnalysisTask {
             } // end if parameters not null
 
             // reload jobInfo to pick up any output parameters were added by the job explicitly (eg. pipelines)
-            HibernateUtil.beginTransaction();
-            jobInfo = (new AnalysisDAO()).getJobInfo(jobInfo.getJobNumber());
-            HibernateUtil.commitTransaction();
+            try {
+                jobInfo = getDS().getJobInfo(jobInfo.getJobNumber());
+            }
+            finally {
+                HibernateUtil.closeCurrentSession();
+            }
 
             // touch the taskLog file to make sure it is the oldest/last file
             if (pipelineTaskLog != null) {
@@ -1509,29 +1514,65 @@ public class GenePatternAnalysisTask {
      * @param jobStartTime
      */
     private void recordJobCompletion(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, long jobStartTime) {
+        if (jobInfo == null) {
+            log.error("Unable to record job completion for null job");
+            return;
+        }
+        long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
+        Date now = new Date(Calendar.getInstance().getTimeInMillis());
+        
         try {
-            if (log.isDebugEnabled()) {
-                log.debug("Recording job completion for job: " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
-            }
-            HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
             HibernateUtil.beginTransaction();
-            long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
-            Date now = new Date(Calendar.getInstance().getTimeInMillis());
             updateJobInfo(jobInfo, parentJobInfo, jobStatus, now);
-            HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
-
-            HibernateUtil.beginTransaction(); // TODO: JTL 8/21/07 oracle
             UsageLog.logJobCompletion(jobInfo, parentJobInfo, now, elapsedTime);
-            if (log.isDebugEnabled()) {
-                log.debug("Recording job completion complete " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
-            }
             HibernateUtil.commitTransaction();
-        } 
-        catch (RuntimeException e) {
-            log.error("Rolling back transaction", e);
+        }
+        catch (Throwable t) {
+            log.error("Error recording job completion for job: " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")", t);
             HibernateUtil.rollbackTransaction();
         }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
     }
+    
+    /**
+     * Update AnalysisJob
+     * 
+     * @param jobInfo
+     * @param parentJobInfo
+     * @param jobStatus
+     */
+    private void updateJobInfo(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, Date completionDate) {
+        try {
+            AnalysisJobDAO analysisJobDao = new AnalysisJobDAO();
+            AnalysisJob aJob = analysisJobDao.findById(jobInfo.getJobNumber());
+            aJob.setJobNo(jobInfo.getJobNumber());
+
+            String paramString = jobInfo.getParameterInfo();
+            if (jobStatus == JobStatus.JOB_ERROR || jobStatus == JobStatus.JOB_FINISHED || jobStatus == JobStatus.JOB_PROCESSING) {
+                paramString = ParameterFormatConverter.stripPasswords(paramString);
+            }
+
+            JobStatus newJobStatus = (new JobStatusDAO()).findById(jobStatus);
+            aJob.setParameterInfo(paramString);
+            aJob.setJobStatus(newJobStatus);
+            aJob.setCompletedDate(completionDate);
+
+            if (parentJobInfo != null) {
+                AnalysisJob parentJob = analysisJobDao.findById(parentJobInfo.getJobNumber());
+                parentJob.setCompletedDate(completionDate);
+            }
+            HibernateUtil.commitTransaction();
+        }
+        catch (Throwable t) {
+            HibernateUtil.rollbackTransaction();
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+    }
+
 
     /**
      * Get the appropriate command prefix to use for this module. The hierarchy goes like this; 1. task version specific
@@ -1570,77 +1611,38 @@ public class GenePatternAnalysisTask {
     }
 
     private TaskInfo getTaskInfo(JobInfo jobInfo) throws Exception {
-	if (log.isDebugEnabled()) {
-	    log.debug("getTaskInfo for job: " + jobInfo.getJobNumber());
-	}
-
-	try {
-	    HibernateUtil.beginTransaction();
-	    AdminDAO ds = new AdminDAO();
-	    TaskInfo taskInfo = ds.getTask(jobInfo.getTaskID());
-	    if (taskInfo == null) {
-		throw new Exception("No such taskID (" + jobInfo.getTaskID() + " for job " + jobInfo.getJobNumber());
-	    }
-	    HibernateUtil.commitTransaction();
-	    return taskInfo;
-	} catch (RuntimeException e) {
-	    log.error("Error getting taskInfo for job: " + jobInfo.getJobNumber());
-	    HibernateUtil.rollbackTransaction();
-	    throw e;
-	}
+        if (log.isDebugEnabled()) {
+            log.debug("getTaskInfo for job: " + jobInfo.getJobNumber());
+        }
+        try {
+            HibernateUtil.beginTransaction();
+            AdminDAO ds = new AdminDAO();
+            TaskInfo taskInfo = ds.getTask(jobInfo.getTaskID());
+            if (taskInfo == null) {
+                throw new Exception("No such taskID (" + jobInfo.getTaskID() + " for job " + jobInfo.getJobNumber());
+            }
+            HibernateUtil.commitTransaction();
+            return taskInfo;
+        } 
+        catch (RuntimeException e) {
+            log.error("Error getting taskInfo for job: " + jobInfo.getJobNumber());
+            HibernateUtil.rollbackTransaction();
+            throw e;
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
     }
 
-    /**
-     * Update AnalysisJob
-     * 
-     * @param jobInfo
-     * @param parentJobInfo
-     * @param jobStatus
-     */
-    private void updateJobInfo(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, Date completionDate) {
-	log.debug("Updating jobInfo");
-
-	AnalysisJobDAO home = new AnalysisJobDAO();
-
-	AnalysisJob aJob = home.findById(jobInfo.getJobNumber());
-	aJob.setJobNo(jobInfo.getJobNumber());
-
-	String paramString = jobInfo.getParameterInfo();
-	if (jobStatus == JobStatus.JOB_ERROR || jobStatus == JobStatus.JOB_FINISHED || jobStatus == JobStatus.JOB_PROCESSING) {
-	    paramString = ParameterFormatConverter.stripPasswords(paramString);
-	}
-
-	JobStatus newJobStatus = (new JobStatusDAO()).findById(jobStatus);
-	aJob.setParameterInfo(paramString);
-	aJob.setJobStatus(newJobStatus);
-	aJob.setCompletedDate(completionDate);
-
-	// TODO: JTL 8/21/07 oracle begin
-	HibernateUtil.commitTransaction();
-	HibernateUtil.isInTransaction();
-	HibernateUtil.beginTransaction();
-	// TODO: JTL 8/21/07 oracle end
-	if (parentJobInfo != null) {
-	    AnalysisJob parentJob = home.findById(parentJobInfo.getJobNumber());
-	    parentJob.setCompletedDate(completionDate);
-	}
-	// TODO: JTL 8/21/07 oracle begin
-	HibernateUtil.commitTransaction();
-	HibernateUtil.isInTransaction();
-	HibernateUtil.beginTransaction();
-	// TODO: JTL 8/21/07 oracle end
-    }
 
     private JobInfo getParentJobInfo(int jobNumber) {
-	try {
-	    HibernateUtil.beginTransaction();
-	    JobInfo parentJI = getDS().getParent(jobNumber);
-	    HibernateUtil.commitTransaction();
-	    return parentJI;
-	} catch (RuntimeException e) {
-	    HibernateUtil.rollbackTransaction();
-	    throw e;
-	}
+        try {
+            JobInfo parentJI = getDS().getParent(jobNumber);
+            return parentJI;
+        } 
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
     }
 
     /**
@@ -2348,33 +2350,33 @@ public class GenePatternAnalysisTask {
     /**
      * Deletes a task, by name, from the Omnigene task_master database.
      * 
-     * @param lsid
-     *            name of task to delete
+     * @param lsid, name of task to delete
      * @author Jim Lerner
      */
     public static void deleteTask(String lsid) throws OmnigeneException, RemoteException {
-	String username = null;
-	TaskInfo ti = GenePatternAnalysisTask.getTaskInfo(lsid, username);
-	File libdir = null;
-	try {
-	    libdir = new File(DirectoryManager.getTaskLibDir(ti.getName(), (String) ti.getTaskInfoAttributes().get(LSID),
-		    username));
-	} catch (Exception e) {
-	    // ignore
-	}
-	GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(lsid, null, null, null, username, 0);
-	int formerID = loader.getTaskIDByName(lsid, username);
-	loader.run(GenePatternTaskDBLoader.DELETE);
-	try {
-	    // remove taskLib directory for this task
-	    if (libdir != null) {
-		libdir.delete();
-	    }
-	    // delete all searchable indexes for this task
-	    // Indexer.deleteTask(formerID);
-	} catch (Exception ioe) {
-	    System.err.println(ioe + " while deleting taskLib and search index for task " + ti.getName());
-	}
+        String username = null;
+        TaskInfo ti = GenePatternAnalysisTask.getTaskInfo(lsid, username);
+        File libdir = null;
+        try {
+            libdir = new File(DirectoryManager.getTaskLibDir(ti.getName(), (String) ti.getTaskInfoAttributes().get(LSID), username));
+        } 
+        catch (Exception e) {
+            // ignore
+        }
+        GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(lsid, null, null, null, username, 0);
+        int formerID = loader.getTaskIDByName(lsid, username);
+        loader.run(GenePatternTaskDBLoader.DELETE);
+        try {
+            // remove taskLib directory for this task
+            if (libdir != null) {
+                libdir.delete();
+            }
+            // delete all searchable indexes for this task
+            // Indexer.deleteTask(formerID);
+        } 
+        catch (Exception ioe) {
+            System.err.println(ioe + " while deleting taskLib and search index for task " + ti.getName());
+        }
     }
 
     /**
@@ -2390,7 +2392,7 @@ public class GenePatternAnalysisTask {
     }
 
     public static AnalysisDAO getDS() {
-	return new AnalysisDAO();
+        return new AnalysisDAO();
     }
 
     /**
@@ -2556,10 +2558,19 @@ public class GenePatternAnalysisTask {
             String sLSID = taskInfoAttributes.get(LSID);
             props.put(LSID, sLSID);
             // as a convenience to the user, create a <libdir> property which is where DLLs, JARs, EXEs, etc. are dumped to when adding tasks
-            String taskLibDir = (taskID != -1 ? 
-                    new File(DirectoryManager.getTaskLibDir(taskName, sLSID, userID)).getPath() + System.getProperty("file.separator")
-                    : 
-                    "taskLibDir");
+            String taskLibDir = "taskLibDir";
+            if (taskID != -1) {
+                try {
+                    //getTaskLibDir starts a DB transaction ...
+                    taskLibDir = DirectoryManager.getTaskLibDir(taskName, sLSID, userID);
+                    File f = new File(taskLibDir);
+                    taskLibDir = f.getPath() + System.getProperty("file.separator");
+                }
+                finally {
+                    // ... which must be closed
+                    HibernateUtil.closeCurrentSession();
+                }
+            }
             props.put(LIBDIR, taskLibDir);
 
             // set the java flags if they have been overridden in the java_flags.properties file
