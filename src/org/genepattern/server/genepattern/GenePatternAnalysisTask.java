@@ -531,6 +531,22 @@ public class GenePatternAnalysisTask {
         return null;
     }
 
+    private void runJob(JobInfo jobInfo) {
+        prepareJob(jobInfo);
+        submitJob(jobInfo);
+        handleJobResults(jobInfo);
+    }
+    
+    private void prepareJob(JobInfo jobInfo) {
+        
+    }
+    private void submitJob(JobInfo jobInfo) {
+        
+    }
+    private void handleJobResults(JobInfo jobInfo) {
+        
+    }
+    
     /**
      * Called by Omnigene Analysis engine to run a single analysis job, wait for completion, then report the results to
      * the analysis_job database table. Running a job involves looking up the TaskInfo and TaskInfoAttributes for the
@@ -542,8 +558,12 @@ public class GenePatternAnalysisTask {
      *            JobInfo object
      */
     public void onJob(Object o) {
+        if (o == null || !(o instanceof JobInfo)) {
+            log.error("Invalid arg to onJob, o="+o);
+            return;
+        }
+        
         JobInfo jobInfo = (JobInfo) o;
-
         if (log.isDebugEnabled()) {
             log.debug("Start onJob id=" + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName());
         }
@@ -2638,42 +2658,43 @@ public class GenePatternAnalysisTask {
     }
 
     /**
-     * Takes care of quotes in command line. Ensures that quoted arguments are placed into a single element in the
-     * command array
+     * Takes care of quotes in command line. 
+     * Ensures that quoted arguments are placed into a single element in the command array.
      * 
      * @param commandLine
      * @return the new command line
      */
-    private static String[] translateCommandline(String[] commandLine) {
-	if (commandLine == null || commandLine.length == 0) {
-	    return commandLine;
-	}
-	ArrayList v = new ArrayList();
-	int end = commandLine.length;
-	int i = 0;
-	while (i < end) {
-	    // read until find another "
-	    if (commandLine[i].charAt(0) == '"' && commandLine[i].charAt(commandLine[i].length() - 1) != '"') {
-		StringBuffer buf = new StringBuffer();
-		buf.append(commandLine[i].substring(1, commandLine[i].length()));
-		i++;
-		boolean foundEndQuote = false;
-		while (i < end && !foundEndQuote) {
-		    foundEndQuote = commandLine[i].charAt(commandLine[i].length() - 1) == '"';
-		    buf.append(" ");
-		    buf.append(commandLine[i].substring(0, commandLine[i].length() - 1));
-		    i++;
-		}
-		if (!foundEndQuote) {
-		    throw new IllegalArgumentException("Missing end quote");
-		}
-		v.add(buf.toString());
-	    } else {
-		v.add(commandLine[i]);
-		i++;
-	    }
-	}
-	return (String[]) v.toArray(new String[0]);
+    protected static String[] translateCommandline(String[] commandLine) {
+        if (commandLine == null || commandLine.length == 0) {
+            return commandLine;
+        }
+        List<String> v = new ArrayList<String>();
+        int end = commandLine.length;
+        int i = 0;
+        while (i < end) {
+            // read until find another "
+            if (commandLine[i].charAt(0) == '"' && commandLine[i].charAt(commandLine[i].length() - 1) != '"') {
+                StringBuffer buf = new StringBuffer();
+                buf.append(commandLine[i].substring(0, commandLine[i].length()));
+                i++;
+                boolean foundEndQuote = false;
+                while (i < end && !foundEndQuote) {
+                    foundEndQuote = commandLine[i].charAt(commandLine[i].length() - 1) == '"';
+                    buf.append(" ");
+                    buf.append(commandLine[i].substring(0, commandLine[i].length()));
+                    i++;
+                }
+                if (!foundEndQuote) {
+                    throw new IllegalArgumentException("Missing end quote");
+                }
+                v.add(buf.toString());
+            } 
+            else {
+                v.add(commandLine[i]);
+                i++;
+            }
+        }
+        return (String[]) v.toArray(new String[0]);
     }
 
     /**
