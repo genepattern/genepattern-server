@@ -1537,39 +1537,33 @@ public class GenePatternAnalysisTask {
     }
     
     /**
-     * Update AnalysisJob
+     * Update AnalysisJob.
+     * 
+     * Warning: this method requires must be called within a hibernate transaction,
+     *     it is the responsibility of the calling method to commit/rollback and close the connection.
      * 
      * @param jobInfo
      * @param parentJobInfo
      * @param jobStatus
      */
     private void updateJobInfo(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, Date completionDate) {
-        try {
-            AnalysisJobDAO analysisJobDao = new AnalysisJobDAO();
-            AnalysisJob aJob = analysisJobDao.findById(jobInfo.getJobNumber());
-            aJob.setJobNo(jobInfo.getJobNumber());
+        AnalysisJobDAO analysisJobDao = new AnalysisJobDAO();
+        AnalysisJob aJob = analysisJobDao.findById(jobInfo.getJobNumber());
+        aJob.setJobNo(jobInfo.getJobNumber());
 
-            String paramString = jobInfo.getParameterInfo();
-            if (jobStatus == JobStatus.JOB_ERROR || jobStatus == JobStatus.JOB_FINISHED || jobStatus == JobStatus.JOB_PROCESSING) {
-                paramString = ParameterFormatConverter.stripPasswords(paramString);
-            }
-
-            JobStatus newJobStatus = (new JobStatusDAO()).findById(jobStatus);
-            aJob.setParameterInfo(paramString);
-            aJob.setJobStatus(newJobStatus);
-            aJob.setCompletedDate(completionDate);
-
-            if (parentJobInfo != null) {
-                AnalysisJob parentJob = analysisJobDao.findById(parentJobInfo.getJobNumber());
-                parentJob.setCompletedDate(completionDate);
-            }
-            HibernateUtil.commitTransaction();
+        String paramString = jobInfo.getParameterInfo();
+        if (jobStatus == JobStatus.JOB_ERROR || jobStatus == JobStatus.JOB_FINISHED || jobStatus == JobStatus.JOB_PROCESSING) {
+            paramString = ParameterFormatConverter.stripPasswords(paramString);
         }
-        catch (Throwable t) {
-            HibernateUtil.rollbackTransaction();
-        }
-        finally {
-            HibernateUtil.closeCurrentSession();
+
+        JobStatus newJobStatus = (new JobStatusDAO()).findById(jobStatus);
+        aJob.setParameterInfo(paramString);
+        aJob.setJobStatus(newJobStatus);
+        aJob.setCompletedDate(completionDate);
+
+        if (parentJobInfo != null) {
+            AnalysisJob parentJob = analysisJobDao.findById(parentJobInfo.getJobNumber());
+            parentJob.setCompletedDate(completionDate);
         }
     }
 
