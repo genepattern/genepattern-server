@@ -1514,41 +1514,43 @@ public class GenePatternAnalysisTask {
      * @param jobStartTime
      */
     private void recordJobCompletion(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, long jobStartTime) {
-        if (jobInfo == null) {
-            log.error("Unable to record job completion for null job");
-            return;
-        }
-        long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
-        Date now = new Date(Calendar.getInstance().getTimeInMillis());
-        
         try {
+            if (log.isDebugEnabled()) {
+                log.debug("Recording job completion for job: " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
+            }
+            HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
             HibernateUtil.beginTransaction();
+            long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
+            Date now = new Date(Calendar.getInstance().getTimeInMillis());
             updateJobInfo(jobInfo, parentJobInfo, jobStatus, now);
+            HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
+
+            HibernateUtil.beginTransaction(); // TODO: JTL 8/21/07 oracle
             UsageLog.logJobCompletion(jobInfo, parentJobInfo, now, elapsedTime);
+            if (log.isDebugEnabled()) {
+                log.debug("Recording job completion complete " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
+            }
             HibernateUtil.commitTransaction();
-        }
-        catch (Throwable t) {
-            log.error("Error recording job completion for job: " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")", t);
+        } 
+        catch (RuntimeException e) {
+            log.error("Rolling back transaction", e);
             HibernateUtil.rollbackTransaction();
-        }
-        finally {
-            HibernateUtil.closeCurrentSession();
         }
     }
     
     /**
-     * Update AnalysisJob.
-     * 
-     * Warning: this method requires must be called within a hibernate transaction,
-     *     it is the responsibility of the calling method to commit/rollback and close the connection.
+     * Update AnalysisJob
      * 
      * @param jobInfo
      * @param parentJobInfo
      * @param jobStatus
      */
     private void updateJobInfo(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, Date completionDate) {
-        AnalysisJobDAO analysisJobDao = new AnalysisJobDAO();
-        AnalysisJob aJob = analysisJobDao.findById(jobInfo.getJobNumber());
+        log.debug("Updating jobInfo");
+
+        AnalysisJobDAO home = new AnalysisJobDAO();
+
+        AnalysisJob aJob = home.findById(jobInfo.getJobNumber());
         aJob.setJobNo(jobInfo.getJobNumber());
 
         String paramString = jobInfo.getParameterInfo();
@@ -1561,12 +1563,21 @@ public class GenePatternAnalysisTask {
         aJob.setJobStatus(newJobStatus);
         aJob.setCompletedDate(completionDate);
 
+        // TODO: JTL 8/21/07 oracle begin
+        HibernateUtil.commitTransaction();
+        HibernateUtil.isInTransaction();
+        HibernateUtil.beginTransaction();
+        // TODO: JTL 8/21/07 oracle end
         if (parentJobInfo != null) {
-            AnalysisJob parentJob = analysisJobDao.findById(parentJobInfo.getJobNumber());
+            AnalysisJob parentJob = home.findById(parentJobInfo.getJobNumber());
             parentJob.setCompletedDate(completionDate);
         }
+        // TODO: JTL 8/21/07 oracle begin
+        HibernateUtil.commitTransaction();
+        HibernateUtil.isInTransaction();
+        HibernateUtil.beginTransaction();
+        // TODO: JTL 8/21/07 oracle end
     }
-
 
     /**
      * Get the appropriate command prefix to use for this module. The hierarchy goes like this; 1. task version specific
