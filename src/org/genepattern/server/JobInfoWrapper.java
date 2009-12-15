@@ -276,7 +276,7 @@ public class JobInfoWrapper implements Serializable {
             super(parameterInfo);
             initLinkValue(jobInfo.getJobNumber(), contextPath, paramValue);
         }
-        
+
         /**
          * Map parameter value to displayValue and link.
          * @param jobNumber
@@ -383,15 +383,13 @@ public class JobInfoWrapper implements Serializable {
 
             String displayValue = inputFile.getName();
             
-            Boolean isWebUpload = null;
-            Boolean isSoapUpload = null;
             File inputFileParent = inputFile.getParentFile();
-            File inputFileGrandParent = inputFileParent == null ? null : inputFileParent.getParentFile();
-            File webUploadDirectory = new File(System.getProperty("java.io.tmpdir"));
-            isWebUpload = inputFileGrandParent != null && inputFileGrandParent.equals(webUploadDirectory);
+            boolean isWebUpload = FileUtil.isWebUpload(inputFile);
+            boolean isSoapUpload = false;
             if (!isWebUpload) {
-                File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
-                isSoapUpload = inputFileGrandParent != null && inputFileGrandParent.equals(soapAttachmentDir);
+                isSoapUpload = FileUtil.isSoapUpload(inputFile);
+                //File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
+                //isSoapUpload = inputFileGrandParent != null && inputFileGrandParent.equals(soapAttachmentDir);
             }
             
             if (isWebUpload) {
