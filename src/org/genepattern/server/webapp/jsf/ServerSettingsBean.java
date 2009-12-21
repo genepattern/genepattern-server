@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -37,7 +38,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.util.PropertiesManager;
 import org.genepattern.server.webapp.StartupServlet;
 
-public class ServerSettingsBean {
+public class ServerSettingsBean implements Serializable {
     private static Logger log = Logger.getLogger("ServerSettingsBean.class");
     private Map<String, String[]> modes;
     private String[] clientModes = new String[] { "Local", "Any", "Specified" };
