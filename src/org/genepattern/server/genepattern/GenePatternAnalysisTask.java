@@ -1402,6 +1402,12 @@ public class GenePatternAnalysisTask {
             finally {
                 HibernateUtil.closeCurrentSession();
             }
+            
+            //TODO: handle special-case
+            if (jobInfo == null) {
+                log.debug("job was deleted while it was running, e.g. a running pipeline was deleted");
+                return;
+            }
 
             // touch the taskLog file to make sure it is the oldest/last file
             if (pipelineTaskLog != null) {
@@ -1514,10 +1520,13 @@ public class GenePatternAnalysisTask {
      * @param jobStartTime
      */
     private void recordJobCompletion(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, long jobStartTime) {
+        if (jobInfo == null) {
+            log.error("jobInfo == null, not recording job completion");
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Recording job completion for job: " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
+        }
         try {
-            if (log.isDebugEnabled()) {
-                log.debug("Recording job completion for job: " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
-            }
             HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
             HibernateUtil.beginTransaction();
             long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
@@ -1547,6 +1556,10 @@ public class GenePatternAnalysisTask {
      */
     private void updateJobInfo(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, Date completionDate) {
         log.debug("Updating jobInfo");
+        if (jobInfo == null) {
+            log.error("jobInfo == null");
+            return;
+        }
 
         AnalysisJobDAO home = new AnalysisJobDAO();
 
