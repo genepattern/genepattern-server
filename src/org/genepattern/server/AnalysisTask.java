@@ -232,7 +232,7 @@ public class AnalysisTask implements Runnable {
                 log.error("job not run, genePattern == null!");
             }
             else {
-                genePattern.runJob(jobInfo);
+                genePattern.onJob(jobInfo);
             }
             doRelease();// signal completion of thread
         }
