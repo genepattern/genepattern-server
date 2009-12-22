@@ -71,7 +71,9 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -135,8 +137,6 @@ import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.user.UsageLog;
-import org.genepattern.server.user.User;
-import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager;
 import org.genepattern.server.webapp.RunPipelineInThread;
@@ -1023,15 +1023,15 @@ public class GenePatternAnalysisTask {
                 } // end for each parameter
             } // end if parameters not null
 
-            // build the command line, replacing <variableName> with the same 
+            // build the command line, replacing <variableName> with the same
             // name from the properties
             // (ParameterInfo[], System properties, environment variables, and built-ins merged)
             // build props again, now that downloaded files are set
-            props = setupProps(taskInfo, taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(), taskInfoAttributes, params, 
+            props = setupProps(taskInfo, taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(), taskInfoAttributes, params,
                     environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
 
             params = stripOutSpecialParams(params);
-            // check that all parameters are used in the command line 
+            // check that all parameters are used in the command line
             // and that all non-optional parameters that are cited actually exist
             ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
             Vector<String> parameterProblems = validateParameters(props, taskName, taskInfoAttributes.get(COMMAND_LINE), params,
@@ -1138,21 +1138,21 @@ public class GenePatternAnalysisTask {
                         vProblems.add("Missing name for standard output redirect");
                     }
                     addLast = false;
-                } 
+                }
                 else if (commandTokens[j].equals(STDERR_REDIRECT)) {
                     stderrFilename = commandTokens[++j];
                     if ("".equals(stderrFilename)) {
                         vProblems.add("Missing name for standard error redirect");
                     }
                     addLast = false;
-                } 
+                }
                 else if (commandTokens[j].equals(STDIN_REDIRECT)) {
                     stdinFilename = commandTokens[++j];
                     if ("".equals(stdinFilename)) {
                         vProblems.add("Missing name for standard input redirect");
                     }
                     addLast = false;
-                } 
+                }
                 else {
                     addLast = true;
                     commandLine.append(commandTokens[j]);
@@ -1337,7 +1337,6 @@ public class GenePatternAnalysisTask {
                 String cookie = "";
                 JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, jobInfo.getUserId(), jobInfo.getJobNumber());
                 if (jobInfoWrapper == null) {
-
                 }
                 else if (jobInfoWrapper.isPipeline() && jobInfoWrapper.isRoot()) {
                     //output pipeline _execution_log only for the root pipeline, exclude nested pipelines
@@ -1369,27 +1368,28 @@ public class GenePatternAnalysisTask {
                         File originalFile = new File(originalPath);
 
                         // un-borrow the input file, moving it from the job's directory back to where it came from
-                        if (inFile.exists()
-                                && !originalFile.exists()
-                                && (inputFileMode == INPUT_FILE_MODE.COPY ? !inFile.delete()
-                                        : !rename(inFile, originalFile, true))) {
+                        if (inFile.exists() && 
+                            !originalFile.exists() && 
+                            (inputFileMode == INPUT_FILE_MODE.COPY ? !inFile.delete() : !rename(inFile, originalFile, true)))
+                        {
                             log.warn("Failed to rename " + inFile + " to " + originalFile + ".");
-                        } else {
+                        } 
+                        else {
                             if (inputLastModified[i] != originalFile.lastModified() || inputLength[i] != originalFile.length()) {
                                 if (inputLastModified[i] != originalFile.lastModified()) {
-                                    log.warn("File " + originalFile + ", job number " + jobInfo.getJobNumber()
-                                            + " last modfied date was changed. Original date: " + new Date(inputLastModified[i])
-                                    + ", current date: " + new Date(originalFile.lastModified()));
+                                    log.warn("File " + originalFile + ", job number " + jobInfo.getJobNumber() + 
+                                             " last modfied date was changed. Original date: " + new Date(inputLastModified[i]) + 
+                                             ", current date: " + new Date(originalFile.lastModified()));
                                 }
                                 if (inputLength[i] != originalFile.length()) {
-                                    log.warn("File " + originalFile + ", job number " + jobInfo.getJobNumber()
-                                            + " size was changed. Original size: " + inputLength[i] + ", current size: "
-                                            + originalFile.length());
+                                    log.warn("File " + originalFile + ", job number " + jobInfo.getJobNumber() + 
+                                             " size was changed. Original size: " + inputLength[i] + ", current size: " + originalFile.length());
                                 }
                             }
                             params[i].setValue(originalPath);
                         }
-                    } else {
+                    } 
+                    else {
                         // TODO: what if the input file is also supposed to be one of the outputs?
                         String originalPath = (String) params[i].getAttributes().remove(ORIGINAL_PATH);
                         boolean isURL = false;
@@ -1397,22 +1397,21 @@ public class GenePatternAnalysisTask {
                             try {
                                 new URL(originalPath);
                                 isURL = true;
-                            } catch (MalformedURLException e) {
+                            } 
+                            catch (MalformedURLException e) {
                             }
                         }
                         if (originalPath != null && isURL) {
                             File outFile = new File(params[i].getValue());
                             if (inputLastModified[i] != outFile.lastModified() || inputLength[i] != outFile.length()) {
-                                String errorMessage = outFile.toString()
-                                + " may have been overwritten during execution of module " + taskName + ", job number "
-                                + jobInfo.getJobNumber() + "\n";
+                                String errorMessage = outFile.toString() + 
+                                    " may have been overwritten during execution of module " + taskName + ", job number " + 
+                                    jobInfo.getJobNumber() + "\n";
                                 if (inputLastModified[i] != outFile.lastModified()) {
-                                    errorMessage = errorMessage + "original date: " + new Date(inputLastModified[i])
-                                    + ", current date: " + new Date(outFile.lastModified()) + "\n";
+                                    errorMessage = errorMessage + "original date: " + new Date(inputLastModified[i]) + ", current date: " + new Date(outFile.lastModified()) + "\n";
                                 }
                                 if (inputLength[i] != outFile.length()) {
-                                    errorMessage = errorMessage + "original size: " + inputLength[i] + ", current size: "
-                                    + outFile.length() + "\n";
+                                    errorMessage = errorMessage + "original size: " + inputLength[i] + ", current size: " + outFile.length() + "\n";
                                 }
                                 log.warn(errorMessage);
                             }
@@ -1431,6 +1430,12 @@ public class GenePatternAnalysisTask {
             finally {
                 HibernateUtil.closeCurrentSession();
             }
+            
+            //TODO: handle special-case
+            if (jobInfo == null) {
+                log.debug("job was deleted while it was running, e.g. a running pipeline was deleted");
+                return;
+            }
 
             // touch the taskLog file to make sure it is the oldest/last file
             if (pipelineTaskLog != null) {
@@ -1447,7 +1452,7 @@ public class GenePatternAnalysisTask {
             if (e.getCause() != null) {
                 e = e.getCause();
             }
-            log.error(taskName + " error: " + e);
+            log.error(taskName + " error: " + e.getLocalizedMessage(), e);
             try {
                 File stderrFile = writeStringToFile(outDirName, STDERR, e.getMessage() + "\n\n");
                 addFileToOutputParameters(jobInfo, stderrFile.getName(), stderrFile.getName(), parentJobInfo);
@@ -1456,7 +1461,6 @@ public class GenePatternAnalysisTask {
             catch (Exception e2) {
                 log.error(taskName + " error: unable to update job error status" + e2);
             }
-            // IndexerDaemon.notifyJobComplete(jobInfo.getJobNumber());
         } 
         finally {
             // remove currPipelineUserKey from system memory
@@ -1578,10 +1582,13 @@ public class GenePatternAnalysisTask {
      * @param jobStartTime
      */
     private void recordJobCompletion(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, long jobStartTime) {
+        if (jobInfo == null) {
+            log.error("jobInfo == null, not recording job completion");
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Recording job completion for job: " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
+        }
         try {
-            if (log.isDebugEnabled()) {
-                log.debug("Recording job completion for job: " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
-            }
             HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
             HibernateUtil.beginTransaction();
             long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
@@ -1611,6 +1618,10 @@ public class GenePatternAnalysisTask {
      */
     private void updateJobInfo(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, Date completionDate) {
         log.debug("Updating jobInfo");
+        if (jobInfo == null) {
+            log.error("jobInfo == null");
+            return;
+        }
 
         AnalysisJobDAO home = new AnalysisJobDAO();
 
@@ -1680,36 +1691,35 @@ public class GenePatternAnalysisTask {
     }
 
     private TaskInfo getTaskInfo(JobInfo jobInfo) throws Exception {
-	if (log.isDebugEnabled()) {
-	    log.debug("getTaskInfo for job: " + jobInfo.getJobNumber());
-	}
+        if (log.isDebugEnabled()) {
+            log.debug("getTaskInfo for job: " + jobInfo.getJobNumber());
+        }
 
-	try {
-	    HibernateUtil.beginTransaction();
-	    AdminDAO ds = new AdminDAO();
-	    TaskInfo taskInfo = ds.getTask(jobInfo.getTaskID());
-	    if (taskInfo == null) {
-		throw new Exception("No such taskID (" + jobInfo.getTaskID() + " for job " + jobInfo.getJobNumber());
-	    }
-	    HibernateUtil.commitTransaction();
-	    return taskInfo;
-	} catch (RuntimeException e) {
-	    log.error("Error getting taskInfo for job: " + jobInfo.getJobNumber());
-	    HibernateUtil.rollbackTransaction();
-	    throw e;
-	}
+        try {
+            HibernateUtil.beginTransaction();
+            AdminDAO ds = new AdminDAO();
+            TaskInfo taskInfo = ds.getTask(jobInfo.getTaskID());
+            if (taskInfo == null) {
+                throw new Exception("No such taskID (" + jobInfo.getTaskID() + " for job " + jobInfo.getJobNumber());
+            }
+            HibernateUtil.commitTransaction();
+            return taskInfo;
+        } 
+        catch (RuntimeException e) {
+            log.error("Error getting taskInfo for job: " + jobInfo.getJobNumber());
+            HibernateUtil.rollbackTransaction();
+            throw e;
+        }
     }
 
     private JobInfo getParentJobInfo(int jobNumber) {
-	try {
-	    HibernateUtil.beginTransaction();
-	    JobInfo parentJI = getDS().getParent(jobNumber);
-	    HibernateUtil.commitTransaction();
-	    return parentJI;
-	} catch (RuntimeException e) {
-	    HibernateUtil.rollbackTransaction();
-	    throw e;
-	}
+        try {
+            JobInfo parentJI = getDS().getParent(jobNumber);
+            return parentJI;
+        } 
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
     }
 
     /**
@@ -2417,33 +2427,33 @@ public class GenePatternAnalysisTask {
     /**
      * Deletes a task, by name, from the Omnigene task_master database.
      * 
-     * @param lsid
-     *            name of task to delete
+     * @param lsid, name of task to delete
      * @author Jim Lerner
      */
     public static void deleteTask(String lsid) throws OmnigeneException, RemoteException {
-	String username = null;
-	TaskInfo ti = GenePatternAnalysisTask.getTaskInfo(lsid, username);
-	File libdir = null;
-	try {
-	    libdir = new File(DirectoryManager.getTaskLibDir(ti.getName(), (String) ti.getTaskInfoAttributes().get(LSID),
-		    username));
-	} catch (Exception e) {
-	    // ignore
-	}
-	GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(lsid, null, null, null, username, 0);
-	int formerID = loader.getTaskIDByName(lsid, username);
-	loader.run(GenePatternTaskDBLoader.DELETE);
-	try {
-	    // remove taskLib directory for this task
-	    if (libdir != null) {
-		libdir.delete();
-	    }
-	    // delete all searchable indexes for this task
-	    // Indexer.deleteTask(formerID);
-	} catch (Exception ioe) {
-	    System.err.println(ioe + " while deleting taskLib and search index for task " + ti.getName());
-	}
+        String username = null;
+        TaskInfo ti = GenePatternAnalysisTask.getTaskInfo(lsid, username);
+        File libdir = null;
+        try {
+            libdir = new File(DirectoryManager.getTaskLibDir(ti.getName(), (String) ti.getTaskInfoAttributes().get(LSID), username));
+        } 
+        catch (Exception e) {
+            // ignore
+        }
+        GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(lsid, null, null, null, username, 0);
+        int formerID = loader.getTaskIDByName(lsid, username);
+        loader.run(GenePatternTaskDBLoader.DELETE);
+        try {
+            // remove taskLib directory for this task
+            if (libdir != null) {
+                libdir.delete();
+            }
+            // delete all searchable indexes for this task
+            // Indexer.deleteTask(formerID);
+        } 
+        catch (Exception ioe) {
+            System.err.println(ioe + " while deleting taskLib and search index for task " + ti.getName());
+        }
     }
 
     /**
@@ -2459,7 +2469,7 @@ public class GenePatternAnalysisTask {
     }
 
     public static AnalysisDAO getDS() {
-	return new AnalysisDAO();
+        return new AnalysisDAO();
     }
 
     /**
@@ -2518,32 +2528,33 @@ public class GenePatternAnalysisTask {
      * @author Jim Lerner
      */
     public static TaskInfo getTaskInfo(String taskName, String username) throws OmnigeneException {
-	TaskInfo taskInfo = null;
-	try {
-	    int taskID = -1;
+        TaskInfo taskInfo = null;
+        try {
+            int taskID = -1;
+            try {
+                if (org.genepattern.util.LSID.isLSID(taskName)) {
+                    taskName = new LSID(taskName).toString();
+                }
 
-	    try {
-		if (org.genepattern.util.LSID.isLSID(taskName)) {
-		    taskName = new LSID(taskName).toString();
-		}
-
-		// search for an existing task with the same name
-		GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(taskName, null, null, null, username, 0);
-		taskID = loader.getTaskIDByName(taskName, username);
-		if (taskID != -1) {
-		    taskInfo = (new AdminDAO()).getTask(taskID);
-		}
-	    } catch (OmnigeneException e) {
-		// this is a new task, no taskID exists
-		// do nothing
-		throw new OmnigeneException("no such task: " + taskName + " for user " + username);
-	    } catch (RemoteException re) {
-		throw new OmnigeneException("Unable to load the " + taskName + " task: " + re.getMessage());
-	    }
-	} catch (Exception e) {
-	    throw new OmnigeneException(e.getMessage() + " in getTaskInfo(" + taskName + ", " + username + ")");
-	}
-	return taskInfo;
+                // search for an existing task with the same name
+                GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(taskName, null, null, null, username, 0);
+                taskID = loader.getTaskIDByName(taskName, username);
+                if (taskID != -1) {
+                    taskInfo = (new AdminDAO()).getTask(taskID);
+                }
+            } 
+            catch (OmnigeneException e) {
+                // this is a new task, no taskID exists do nothing
+                throw new OmnigeneException("no such task: " + taskName + " for user " + username);
+            } 
+            catch (RemoteException re) {
+                throw new OmnigeneException("Unable to load the " + taskName + " task: " + re.getMessage());
+            }
+        } 
+        catch (Exception e) {
+            throw new OmnigeneException(e.getMessage() + " in getTaskInfo(" + taskName + ", " + username + ")");
+        }
+        return taskInfo;
     }
 
     /**
@@ -2599,7 +2610,7 @@ public class GenePatternAnalysisTask {
             formalParamsLength = formalParameters.length;
         }
         try {
-// copy environment variables into props
+            // copy environment variables into props
             String key = null;
             String value = null;
 
@@ -2625,10 +2636,19 @@ public class GenePatternAnalysisTask {
             String sLSID = taskInfoAttributes.get(LSID);
             props.put(LSID, sLSID);
             // as a convenience to the user, create a <libdir> property which is where DLLs, JARs, EXEs, etc. are dumped to when adding tasks
-            String taskLibDir = (taskID != -1 ? 
-                    new File(DirectoryManager.getTaskLibDir(taskName, sLSID, userID)).getPath() + System.getProperty("file.separator")
-                    : 
-                    "taskLibDir");
+            String taskLibDir = "taskLibDir";
+            if (taskID != -1) {
+                try {
+                    //getTaskLibDir starts a DB transaction ...
+                    taskLibDir = DirectoryManager.getTaskLibDir(taskName, sLSID, userID);
+                    File f = new File(taskLibDir);
+                    taskLibDir = f.getPath() + System.getProperty("file.separator");
+                }
+                finally {
+                    // ... which must be closed
+                    HibernateUtil.closeCurrentSession();
+                }
+            }
             props.put(LIBDIR, taskLibDir);
 
             // set the java flags if they have been overridden in the java_flags.properties file
@@ -2803,17 +2823,6 @@ public class GenePatternAnalysisTask {
 	Process process = null;
 	String jobID = null;
 	try {
-	    if (false) { // for debugging only
-	        String[] debugCmdLine = new String[commandLine.length + 3];
-	        debugCmdLine[0] = commandLine[0];
-	        debugCmdLine[1] = "-Xdebug";
-	        debugCmdLine[2] = "-Xnoagent";
-	        debugCmdLine[3] = "-Xrunjdwp:transport=dt_socket,server=y,address=5001,suspend=y";
-	        for (int i = 1; i < commandLine.length; ++i) {
-	            debugCmdLine[i + 3] = commandLine[i];
-	        }
-	        commandLine = debugCmdLine;
-	    }
 	    commandLine = translateCommandline(commandLine);
 
 	    pb = new ProcessBuilder(commandLine);
@@ -2853,8 +2862,7 @@ public class GenePatternAnalysisTask {
 	    jobID = "" + jobInfo.getJobNumber();
 	    htRunningJobs.put(jobID, process);
 
-	    // create threads to read from the command's stdout and stderr
-	    // streams
+	    // create threads to read from the command's stdout and stderr streams
 	    Thread outputReader = streamToFile(process.getInputStream(), stdoutFile);
 	    Thread errorReader = streamToFile(process.getErrorStream(), stderrFile);
 
@@ -2862,14 +2870,13 @@ public class GenePatternAnalysisTask {
 	    outputReader.start();
 	    errorReader.start();
 
-	    // wait for all output before attempting to send it back to the
-	    // client
+	    // wait for all output before attempting to send it back to the client
 	    outputReader.join();
 	    errorReader.join();
 
 	    // the process will be dead by now
-
 	    process.waitFor();
+
 	    // TODO: cleanup input file(s)
 	} catch (Throwable t) {
 	    log.error(t + " in runCommand, reporting to stderr");
@@ -2898,15 +2905,19 @@ public class GenePatternAnalysisTask {
      * @author Jim Lerner
      */
     protected void addFileToOutputParameters(JobInfo jobInfo, String fileName, String label, JobInfo parentJobInfo) {
-	fileName = jobInfo.getJobNumber() + "/" + fileName;
-	ParameterInfo paramOut = new ParameterInfo(label, fileName, "");
-	paramOut.setAsOutputFile();
-	jobInfo.addParameterInfo(paramOut);
-	if (parentJobInfo != null) {
-	    parentJobInfo.addParameterInfo(paramOut);
-	}
+        if (jobInfo == null) {
+            log.error("null jobInfo arg!");
+            return;
+        }
+        fileName = jobInfo.getJobNumber() + "/" + fileName;
+        ParameterInfo paramOut = new ParameterInfo(label, fileName, "");
+        paramOut.setAsOutputFile();
+        jobInfo.addParameterInfo(paramOut);
+        if (parentJobInfo != null) {
+            parentJobInfo.addParameterInfo(paramOut);
+        }
     }
-    
+
     /**
      * takes a jobID and a Hashtable in which the jobID is putatively listed, and attempts to terminate the job. Note
      * that Process.destroy() is not always successful. If a process cannot be killed without a "kill -9", it seems not
@@ -4305,38 +4316,189 @@ public class GenePatternAnalysisTask {
      * @author Jim Lerner
      */
     protected Thread streamToFile(final InputStream is, final File file) {
-	// create thread to read from a process' output or error stream
-	return new Thread() {
-	    public void run() {
-		byte[] b = new byte[2048];
-		int bytesRead;
-		BufferedOutputStream fis = null;
-		boolean wroteBytes = false;
-		try {
-		    fis = new BufferedOutputStream(new FileOutputStream(file));
-		    while ((bytesRead = is.read(b)) >= 0) {
-			wroteBytes = true;
-			fis.write(b, 0, bytesRead);
-		    }
-		} catch (IOException e) {
-		    e.printStackTrace();
-		    log.error(e);
-		} finally {
-		    if (fis != null) {
-			try {
-			    fis.flush();
-			    fis.close();
-			} catch (IOException e) {
-			    e.printStackTrace();
-			}
-		    }
-		    if (!wroteBytes) {
-			file.delete();
-		    }
-		}
-	    }
-	};
+    // create thread to read from a process' output or error stream
+    return new Thread() {
+        public void run() {
+        byte[] b = new byte[2048];
+        int bytesRead;
+        BufferedOutputStream fis = null;
+        boolean wroteBytes = false;
+        try {
+            fis = new BufferedOutputStream(new FileOutputStream(file));
+            while ((bytesRead = is.read(b)) >= 0) {
+            wroteBytes = true;
+            fis.write(b, 0, bytesRead);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error(e);
+        } finally {
+            if (fis != null) {
+            try {
+                fis.flush();
+                fis.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            }
+            if (!wroteBytes) {
+            file.delete();
+            }
+        }
+        }
+    };
     }
+    
+    /**
+     * Remove lines from the errFile which match exactMatch. This has the effect of deleting the errFile if
+     * the errFile contains nothing but matching lines.
+     * 
+     * This is a workaround (HACK) for GP-2856, the following line
+     *     [Deprecated] Xalan: org.apache.xml.xml_soap.MapItemBeanInfo 
+     * is on the stderr stream of the pipeline process, causing GP to flag the pipeline as an ERROR.
+     * 
+     * @param errFile
+     * @param exactMatch
+     */
+    protected void suppressLinesFromStdErrFile(File errFile, String exactMatch) {
+        if (errFile == null || !errFile.exists()) {
+            log.error("File does not exist: " + (errFile == null ? "null" : errFile.getAbsolutePath()));
+            return;
+        }
+        if (!errFile.canRead()) {
+            log.error("Can't read file: "+errFile.getPath());
+            return;
+        }
+        
+        File origFile = new File(errFile.getParent(), errFile.getName() + ".orig");        
+        boolean success = errFile.renameTo(origFile);
+        if (!success) {
+            log.error("Not able to rename '"+errFile.getAbsolutePath()+"' to '"+origFile.getAbsolutePath()+"'");
+            return;
+        }
+        
+        //output filtered contents back to errFile
+        FileWriter fw = null;
+        try {
+            fw = new FileWriter(errFile);
+        }
+        catch (IOException e) {
+            log.error("Not able to write to file: "+errFile.getAbsolutePath(), e);
+            return;
+        }
+        PrintWriter pw = new PrintWriter(fw);
+        
+        FileReader fr = null;
+        try {
+            fr = new FileReader(origFile);
+        }
+        catch (FileNotFoundException e) {
+            log.error("FileNotFound: "+origFile.getPath(), e);
+            return;
+        }
+        
+        boolean wroteLine = false;
+        try {
+            BufferedReader br = new BufferedReader(fr);
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                if (!line.trim().equals(exactMatch)) {
+                    pw.println(line);
+                    pw.flush();
+                    wroteLine = true;
+                }
+            }
+            pw.close();
+            br.close();
+        }
+        catch (IOException e) {
+            log.error("IOException while reading line", e);
+        }
+        
+        if (!wroteLine) {
+            //shouldn't have to do this
+            success = errFile.delete();
+            if (!success) {
+                log.error("Unable to delete file "+errFile.getAbsolutePath());
+            }
+        }
+        
+        success = origFile.delete();
+        if (!success) {
+            log.error("Unable to delete file "+origFile.getAbsolutePath());
+        }
+    }
+    
+    /**
+     * Copy of streamToFile which filters out suppresses output of anything on the input stream which matches
+     * the given text, exactMatch.
+     * 
+     * @param is, InputStream to read from
+     * @param file, file to write to
+     * @param exactMatch, String to suppress from output to file
+     * 
+     * @author pcarr
+     */
+    protected Thread filteredStreamToFile(final InputStream is, final File file, final String exactMatch) {
+        // create thread to read from a process' output or error stream
+        return new Thread() {
+            public void run() {
+                final int BUFSIZE = 2048;
+                byte[] b = new byte[BUFSIZE];
+                int bytesRead = 0;
+                int prevBytesRead = 0;
+                BufferedOutputStream fis = null;
+                boolean wroteBytes = false;
+                try {
+                    fis = new BufferedOutputStream(new FileOutputStream(file));
+
+                    String s = "";
+                    String prevS = "";
+                    StringBuffer S12 = new StringBuffer(2*BUFSIZE);
+                    while ((bytesRead = is.read(b)) >= 0) {
+                        s = new String(b, 0, bytesRead);
+                        //always construct a string by contatenating the previous read to the current read
+                        int newLength = prevBytesRead + bytesRead;
+                        S12.setLength(newLength);
+                        S12.replace(0, prevS.length(), prevS);
+                        S12.replace(prevS.length(), prevS.length() + s.length(), s);
+
+                        int idx = -1;
+                        while((idx = S12.indexOf(exactMatch)) >= 0) {
+                            S12.delete(idx, exactMatch.length());
+                        }
+                        if (S12.length() > 0) { 
+                            wroteBytes = true;
+                            byte[] filtered = S12.toString().getBytes();
+                            fis.write(filtered, 0, filtered.length);
+                        }
+                        
+                        prevS = s;
+                        prevBytesRead = bytesRead;
+                    }
+                } 
+                catch (IOException e) {
+                    e.printStackTrace();
+                    log.error(e);
+                } 
+                finally {
+                    if (fis != null) {
+                        try {
+                            fis.flush();
+                            fis.close();
+                        } 
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (!wroteBytes) {
+                        file.delete();
+                    }
+                }
+            }
+        };
+    }
+
 
     /**
      * writes a string to a file
