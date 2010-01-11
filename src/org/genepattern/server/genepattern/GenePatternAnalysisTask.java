@@ -1302,6 +1302,10 @@ public class GenePatternAnalysisTask {
                     }
                     else {
                         processBuilder = runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
+                        if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0 && taskInfo.isPipeline()) {
+                            //GP-2856, filter out bogus error messages                      
+                            suppressLinesFromStdErrFile(stderrFile, "[Deprecated] Xalan: org.apache.xml.xml_soap.MapItemBeanInfo");
+                        }
                         if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0) {
                             jobStatus = JobStatus.JOB_ERROR;
                         }
