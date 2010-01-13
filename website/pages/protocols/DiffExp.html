@@ -69,11 +69,7 @@ Although researchers generally preprocess data before differential analysis if d
     <li>Discretize or normalize the data. </li>
   </ol></li>
 
-    <li>When using ratios to compare gene expression between samples, 
-      convert values to log base 2 of the value to
-      bring up- and down-regulated genes to the same scale. 
-      For example, ratios of 2 and .5 indicating two-fold changes for up- and
-      down-regulated expression, respectively, are converted to +1 and -1. </li>
+    <li>ComparativeMarkerSelection expects non-log-transformed data. Some calculations, such as Fold Change, will produce incorrect results on log transformed data. </li>
     <li>If you did not generate the expression data, 
       check whether preprocessing steps have already been taken before 
       running the PreprocessDataset module. </li>
