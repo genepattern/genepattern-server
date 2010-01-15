@@ -90,10 +90,20 @@ public class LocalAnalysisClient {
     // in this submission, we do not expect files to all be data handlers, but rather to really be files
     // that do not need to be renamed
     public JobInfo submitJob(int taskID, ParameterInfo[] parameters) throws WebServiceException {
+        return submitJob(taskID, parameters, -1);
+    }
+    
+    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, int parentJobId) throws WebServiceException {
         // JL: fixes BUG in which responses from AxisServlet are sometimes empty
         Thread.yield(); 
 
-        AddNewJobHandler req = new AddNewJobHandler(taskID, userName, parameters);
+        AddNewJobHandler req = null;
+        if (parentJobId >=0) {
+            req = new AddNewJobHandler(taskID, userName, parameters, parentJobId);
+        }
+        else {
+            req = new AddNewJobHandler(taskID, userName, parameters);
+        }
         JobInfo jobInfo = req.executeRequest();
         return jobInfo;
     }

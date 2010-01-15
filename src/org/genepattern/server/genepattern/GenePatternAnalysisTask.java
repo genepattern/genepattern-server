@@ -126,7 +126,6 @@ import org.apache.tools.ant.taskdefs.Expand;
 import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.AnalysisServiceException;
-import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.PermissionsHelper;
@@ -136,10 +135,9 @@ import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.user.UsageLog;
-import org.genepattern.server.user.User;
-import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager;
+import org.genepattern.server.webapp.RunPipelineInThread;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -581,7 +579,7 @@ public class GenePatternAnalysisTask {
         File pipelineTaskLog = null;
         String taskName = "";
         long jobStartTime = System.currentTimeMillis();
-        String userKey = "";
+        //String userKey = "";
         try {
             // make directory to hold input and output files
             File outDir = new File(outDirName);
@@ -697,8 +695,10 @@ public class GenePatternAnalysisTask {
                             log.debug("IN " + params[i].getName() + "=" + originalPath);
                             //web form upload: <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>
                             //SOAP client upload: <soap.attachment.dir>/<user_id>/<filename>
+                            //inherited input file from parent pipeline job: <jobResults>/<different_job_id>/<filename>
                             Boolean isWebUpload = null;
                             Boolean isSoapUpload = null;
+                            Boolean isInherited = null;
                             File inputFile = new File(originalPath);
                             File inputFileParent = inputFile.getParentFile();
                             String inputFileGrandParent = null;
@@ -734,6 +734,14 @@ public class GenePatternAnalysisTask {
                                 String inputFileDirectory = parentFile == null ? null : parentFile.getCanonicalPath();
                                 isSoapUpload = inputFileDirectory != null && inputFileDirectory.equals(soapAttachmentDir);
                             }
+                            
+                            if (!isWebUpload && !isSoapUpload) {
+                                if (inputFileGrandParent != null) {
+                                    String jobs = System.getProperty("jobs");
+                                    File jobsDir = new File(jobs);
+                                    isInherited = inputFileGrandParent.equals(jobsDir.getCanonicalPath());
+                                }
+                            }
 
                             if (isWebUpload) {
                                 if (!canReadJob(jobInfo.getUserId(), jobInfo.getJobNumber())) {
@@ -741,8 +749,8 @@ public class GenePatternAnalysisTask {
                                     continue;
                                 }
                             } 
-                            else if (!isSoapUpload) {
-                                vProblems.add("Input file " + new File(originalPath).getName() + " must be in SOAP attachment directory or web upload directory.");
+                            else if (!isSoapUpload && !isInherited) {
+                                vProblems.add("Input file " + new File(originalPath).getName() + " must be in SOAP attachment directory or web upload directory or a parent job directory");
                                 continue;
                             }
                         } 
@@ -843,7 +851,8 @@ public class GenePatternAnalysisTask {
                                 }
                             }
                         }
-                        if (isURL && !TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes()) && !taskInfo.isPipeline()) { //don't translate input urls for visualizers and pipelines
+                        if (isURL && !TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes()) && !taskInfo.isPipeline()) { 
+                            //don't translate input urls for visualizers and pipelines
                             URI uri = new URI(originalPath);
                             final String userInfo = uri.getUserInfo();
                             if (userInfo != null) {
@@ -1209,64 +1218,98 @@ public class GenePatternAnalysisTask {
                     if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
                         jobStatus = JobStatus.JOB_FINISHED;
                     }
-                    else {
-                        if (taskInfo.isPipeline()) {
-                            //FOR DEBUGGING ...
-                            //    append command line args to pipeline command,
-                            //    should only use this when developing/testing genepattern
-                            List<String> extraJvmArgs = new ArrayList<String>();
-
-                            final String prop_threshold = "pipeline.log4j.stdout.threshold"; //from genepattern.properties
-                            final String threshold = System.getProperty(prop_threshold);
-                            if (threshold != null && threshold.length() > 0) {
-                                extraJvmArgs.add("-D"+prop_threshold+"="+threshold);
-                            }
-                            final String prop_target = "pipeline.log4j.error.Target"; //from genepattern.properties
-                            final String target = System.getProperty(prop_target);
-                            if (target != null) {
-                                extraJvmArgs.add("-D"+prop_target+"="+target);
-                            }
-                            boolean debugPipeline = new Boolean(System.getProperty("pipeline.waitForDebugger", "false")); //from genepattern.properties
-                            if (debugPipeline) { 
-                                //for debugging only, this causes the pipeline to wait for a connection from a debugger
-                                extraJvmArgs.add("-Xdebug");
-                                extraJvmArgs.add("-Xnoagent");
-                                extraJvmArgs.add("-Xrunjdwp:transport=dt_socket,server=y,address=5001,suspend=y");
-                            }
-                            if (extraJvmArgs.size() > 0) {
-                                int K = extraJvmArgs.size();
-                                String[] debugCmdLine = new String[commandTokens.length + K];
-                                int i=0;
-                                debugCmdLine[0] = commandTokens[0];
-                                ++i;
-                                for(String extraJvmArg : extraJvmArgs) {
-                                    debugCmdLine[i] = extraJvmArg;
-                                    ++i;
-                                }
-                                boolean skip = true;
-                                for(String commandToken : commandTokens) {
-                                    if (skip) {
-                                        skip = false;
-                                    }
-                                    else {
-                                        debugCmdLine[i] = commandToken;
-                                        ++i;
-                                    }
-                                }
-                                commandTokens = debugCmdLine;
-                            }
-                            try {
-                                HibernateUtil.beginTransaction();
-                                UserDAO userDao = new UserDAO();
-                                User user = userDao.findById(jobInfo.getUserId());
-                                userKey = EncryptionUtil.getInstance().pushPipelineUserKey(user);
-                                environmentVariables.put(EncryptionUtil.PROP_PIPELINE_USER_KEY, userKey);
-                            }
-                            finally {
-                                HibernateUtil.closeCurrentSession();
-                            } 
+                    else if (taskInfo.isPipeline()) {
+                        RunPipelineInThread rp = new RunPipelineInThread();
+                        //1) set server
+                        String gpUrl = System.getProperty("GenePatternURL");
+                        URL serverFromFile = null;
+                        try {
+                            serverFromFile = new URL(gpUrl);
                         } 
-                        
+                        catch (MalformedURLException e) {
+                            throw new Exception("Invalid GenePatternURL: " + gpUrl, e);
+                        }
+                        String host = serverFromFile.getHost();
+                        String port = "";
+                        int portNum = serverFromFile.getPort();
+                        if (portNum >= 0) {
+                            port = ":" + portNum;
+                        }
+                        String server = serverFromFile.getProtocol() + "://" + host + port;
+                        rp.setServer(server);
+
+                        // 2) set user id
+                        rp.setUserId(jobInfo.getUserId());
+
+                        // 3) set job id
+                        rp.setJobId(jobInfo.getJobNumber());
+
+                        // 4) set the lsid of the pipeline
+                        rp.setPipelineTaskLsid(jobInfo.getTaskLSID());
+
+                        // 4) set pipeline model
+                        PipelineModel model = null;
+                        if (taskInfo != null) {
+                            TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+                            if (tia != null) {
+                                String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
+                                if (serializedModel != null && serializedModel.length() > 0) {
+                                    try {
+                                        model = PipelineModel.toPipelineModel(serializedModel);
+                                    } 
+                                    catch (Throwable x) {
+                                        log.error(x);
+                                    }
+                                }
+                            }
+                        }
+                        rp.setPipelineModel(model);
+
+                        // 5) set additional arguments
+                        Properties additionalArguments = new Properties();
+                        commandTokens = translateCommandline(commandTokens);
+                        //HACK: remove all args up to org.genepattern.server.webapp.RunPipelineSoap
+                        List<String> modifiedCommandTokens = new ArrayList<String>();
+                        int startIdx = 0;
+                        for(int i=0; i<commandTokens.length; ++i) {
+                            if ("org.genepattern.server.webapp.RunPipelineSoap".equals(commandTokens[i])) {
+                                startIdx = i+1;
+                                break;
+                            }
+                        }
+                        for(int i=startIdx; i<commandTokens.length; ++i) {
+                            modifiedCommandTokens.add(commandTokens[i]);
+                        }
+                        String[] args = new String[modifiedCommandTokens.size()];
+                        args = modifiedCommandTokens.toArray(args);
+                        if (args.length > 2) {
+                            for (int i = 2; i < args.length; i++) {
+                                // assume args are in the form name=value
+                                String arg = args[i];
+                                StringTokenizer strtok = new StringTokenizer(arg, "=");
+                                String key = strtok.nextToken();
+                                StringBuffer valbuff = new StringBuffer("");
+                                int count = 0;
+                                while (strtok.hasMoreTokens()) {
+                                    valbuff.append(strtok.nextToken());
+                                    if ((strtok.hasMoreTokens()))
+                                        valbuff.append("=");
+                                    count++;
+                                }
+                                additionalArguments.put(key, valbuff.toString());
+                            }
+                        }
+                        rp.setAdditionalArgs(additionalArguments);
+                        rp.runPipeline();
+                        if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0) {
+                            jobStatus = JobStatus.JOB_ERROR;
+                        }
+                        else {
+                            jobStatus = JobStatus.JOB_FINISHED;
+                        }
+                        log.info(taskName + " (" + jobInfo.getJobNumber() + ") done.");
+                    } 
+                    else { 
                         processBuilder = runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
                         if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0 && taskInfo.isPipeline()) {
                             //GP-2856, filter out bogus error messages	                    
@@ -1308,11 +1351,9 @@ public class GenePatternAnalysisTask {
                 JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, jobInfo.getUserId(), jobInfo.getJobNumber());
                 if (jobInfoWrapper == null) {
                 }
-                else if (jobInfoWrapper.isPipeline()) {
+                else if (jobInfoWrapper.isPipeline() && jobInfoWrapper.isRoot()) {
                     //output pipeline _execution_log only for the root pipeline, exclude nested pipelines
-                    if (parent < 0) {
-                        pipelineTaskLog = JobInfoManager.writePipelineExecutionLog(outDirName, jobInfoWrapper);
-                    }
+                    pipelineTaskLog = JobInfoManager.writePipelineExecutionLog(outDirName, jobInfoWrapper);
                 }
                 else {
                     taskLog = JobInfoManager.writeExecutionLog(outDirName, jobInfoWrapper, props, processBuilder);
@@ -1481,12 +1522,6 @@ public class GenePatternAnalysisTask {
                 log.error(taskName + " error: unable to update job error status" + e2);
             }
         } 
-        finally {
-            // remove currPipelineUserKey from system memory
-            if (userKey != null && !userKey.equals("")) {
-                EncryptionUtil.getInstance().removePipelineUserKey(userKey);
-            }
-        }
     }
 
     private static final Comparator<File> fileComparator = new Comparator<File>() {
