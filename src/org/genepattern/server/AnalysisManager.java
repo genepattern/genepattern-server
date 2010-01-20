@@ -24,6 +24,7 @@ import java.rmi.RemoteException;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.OmnigeneException;
 
@@ -78,12 +79,7 @@ public class AnalysisManager {
         return threadGrp;
     }
     
-    /**
-     * Stop a running task
-     *
-     * @param String
-     *            Task Name
-     */
+    /** no op. */
     public boolean stop(String taskName) {
         // jgould: was previously used terminate AnalyisTask task and remove
         // from hashtable (key was taskName)
@@ -96,45 +92,24 @@ public class AnalysisManager {
         // from hashtable (key was taskName)
         return false;
     }
-    
-    /** Stops the main thread */
+
+    /** no op. */
     public void stopAllAnalysisTask() {
-        // jgould: was previously used terminate all AnalyisTask tasks and
-        // remove from hashtable (key was taskName)
+        // jgould: was previously used terminate all AnalyisTask tasks and remove from hashtable (key was taskName)
     }
     
-    /**
-     * Start a new Task
-     *
-     * @param AnalysisTask
-     */
-    public synchronized String startNewAnalysisTask(AnalysisTask task,
-            int taskID) throws OmnigeneException {
-        // jgould: was previously used to create new instances of AnalysisTask
-        // based on taskName
-        return AnalysisTask.getInstance().getTaskName();
-        
+    /** no op. */
+    public String startNewAnalysisTask(AnalysisTask task, int taskID) throws OmnigeneException {
+        return GenePatternAnalysisTask.TASK_NAME;
     }
     
-    /**
-     * Starts up an analysis task based on the task id
-     *
-     * @param taskID
-     *            analysis task id
-     * @return task name
-     * @throws OmnigeneException
-     */
-    public synchronized String startNewAnalysisTask(int taskID)
-    throws OmnigeneException {
-        // jgould: was previously used to create new instances of AnalysisTask
-        // based on taskName
-        return AnalysisTask.getInstance().getTaskName();
+    /** no op. */
+    public String startNewAnalysisTask(int taskID) throws OmnigeneException {
+        return GenePatternAnalysisTask.TASK_NAME;
     }
     
+    /** no op. */
     public synchronized void startAllAnalysisTask() throws OmnigeneException {
-        // jgould: was previously used to create new instances of AnalysisTask
-        // based on taskName
-        AnalysisTask.getInstance(); // start thread
     }
     
 }
