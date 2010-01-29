@@ -1344,7 +1344,9 @@ public class GenePatternAnalysisTask {
                 }
                 else if (jobInfoWrapper.isPipeline() && jobInfoWrapper.isRoot()) {
                     //output pipeline _execution_log only for the root pipeline, exclude nested pipelines
-                    pipelineTaskLog = JobInfoManager.writePipelineExecutionLog(outDirName, jobInfoWrapper);
+                    if (parent < 0) {
+                        pipelineTaskLog = JobInfoManager.writePipelineExecutionLog(outDirName, jobInfoWrapper);
+                    }
                 }
                 else {
                     taskLog = JobInfoManager.writeExecutionLog(outDirName, jobInfoWrapper, props, processBuilder);
