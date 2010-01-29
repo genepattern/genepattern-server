@@ -699,6 +699,20 @@ public class JobInfoWrapper implements Serializable {
                 inputParameters.add(inputParam);
             }
         }
+        
+        //for debugging only, 
+        //change this flag to include the raw xml from the analysis_job table in the input parameters
+        //which are displayed on the job status page
+        boolean debug = false;
+        debug = false;
+        if (debug) {
+            String name = "analysis_job.parameter_info";
+            String value = jobInfo.getParameterInfo();
+            String description = "The raw entry in the PARAMETER_INFO column of the ANALYSIS_JOB table";
+            ParameterInfo param = new ParameterInfo(name, value, description);
+            ParameterInfoWrapper paramInfoWrapper = new ParameterInfoWrapper(param);
+            inputParameters.add(paramInfoWrapper);
+        }
     }
 
     private boolean isInputFile(ParameterInfo param) {
