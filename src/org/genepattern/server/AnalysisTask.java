@@ -157,7 +157,7 @@ public class AnalysisTask implements Runnable {
         Vector<JobInfo> jobVector = new Vector<JobInfo>();
         try {
             HibernateUtil.beginTransaction();
-            String hql = "from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId = :statusId order by submittedDate ";
+            String hql = "from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId = :statusId and deleted = false order by submittedDate ";
             Query query = HibernateUtil.getSession().createQuery(hql);
             if (maxJobCount > 0) {
                 query.setMaxResults(maxJobCount);
