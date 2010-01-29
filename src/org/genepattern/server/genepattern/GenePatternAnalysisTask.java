@@ -1351,9 +1351,11 @@ public class GenePatternAnalysisTask {
                 JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, jobInfo.getUserId(), jobInfo.getJobNumber());
                 if (jobInfoWrapper == null) {
                 }
-                else if (jobInfoWrapper.isPipeline() && jobInfoWrapper.isRoot()) {
+                else if (jobInfoWrapper.isPipeline()) {
                     //output pipeline _execution_log only for the root pipeline, exclude nested pipelines
-                    pipelineTaskLog = JobInfoManager.writePipelineExecutionLog(outDirName, jobInfoWrapper);
+                    if (parent < 0) {
+                        pipelineTaskLog = JobInfoManager.writePipelineExecutionLog(outDirName, jobInfoWrapper);
+                    }
                 }
                 else {
                     taskLog = JobInfoManager.writeExecutionLog(outDirName, jobInfoWrapper, props, processBuilder);
