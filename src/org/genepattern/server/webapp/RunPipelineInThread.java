@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -258,7 +260,26 @@ public class RunPipelineInThread {
         }
         log.debug("taskInfo: " + task.getName() + ", " + task.getLsid());
 
-        
+        if (params != null) {
+            for (int i = 0; i < params.length; i++) {
+                if (params[i].isInputFile()) {
+                    String file = params[i].getValue(); // bug 724
+                    if (file != null && file.trim().length() != 0) {
+                        String val = file;
+                        try {
+                            new URL(file);
+                        } 
+                        catch (MalformedURLException e) {
+                            val = new File(file).toURI().toString();
+                        }
+                        params[i].setValue(val);
+                        params[i].getAttributes().remove("TYPE");
+                        params[i].getAttributes().remove("MODE");
+                    }
+                }
+            }
+        } 
+
         JobInfo jobInfo = analysisClient.submitJob(task.getID(), params, jobId);
         if (jobInfo == null || "ERROR".equalsIgnoreCase(jobInfo.getStatus())) {
             log.error("Unexpected error in execute task: taskNum="+task.getID()+", lsidOrTaskName="+lsidOrTaskName);
