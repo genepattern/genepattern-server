@@ -24,6 +24,8 @@ import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.user.UserProp;
+import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webapp.WritePipelineExecutionLog;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -59,6 +61,8 @@ public class JobInfoManager {
             HibernateUtil.beginTransaction();
             UserDAO userDao = new UserDAO();
             boolean showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUser);
+            String visualizerJavaFlags = getVisualizerJavaFlags(userDao, currentUser);
+
 
             AnalysisDAO analysisDao = new AnalysisDAO();
             JobInfo jobInfo = analysisDao.getJobInfo(jobNo);
@@ -70,7 +74,7 @@ public class JobInfoManager {
             TaskInfo[] latestTasks = adminDao.getLatestTasks(currentUser);
             Map<String, Collection<TaskInfo>> kindToModules = SemanticUtil.getKindToModulesMap(latestTasks);
 
-            JobInfoWrapper jobInfoWrapper = processChildren((JobInfoWrapper)null, showExecutionLogs, documentCookie, contextPath, analysisDao, adminDao, kindToModules, jobInfo);
+            JobInfoWrapper jobInfoWrapper = processChildren((JobInfoWrapper)null, showExecutionLogs, documentCookie, contextPath, analysisDao, adminDao, kindToModules, jobInfo, visualizerJavaFlags);
 
             //this call initializes the helper methods
             jobInfoWrapper.getPathFromRoot(); 
@@ -92,7 +96,7 @@ public class JobInfoManager {
      * @param jobInfo
      * @return a new JobInfoWrapper
      */
-    private JobInfoWrapper processChildren(JobInfoWrapper parent, boolean showExecutionLogs, String documentCookie, String contextPath, AnalysisDAO analysisDao, AdminDAO adminDao, Map<String, Collection<TaskInfo>> kindToModules, JobInfo jobInfo) {
+    private JobInfoWrapper processChildren(JobInfoWrapper parent, boolean showExecutionLogs, String documentCookie, String contextPath, AnalysisDAO analysisDao, AdminDAO adminDao, Map<String, Collection<TaskInfo>> kindToModules, JobInfo jobInfo, String visualizerJavaFlags) {
         TaskInfo taskInfo = null;
         try {
             //NOTE: an exception is thrown if the module has been deleted
@@ -112,20 +116,29 @@ public class JobInfoManager {
         
         //special case for visualizers
         if (taskInfo != null && TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
-            String tag = createVisualizerAppletTag(documentCookie, jobInfoWrapper, taskInfo);
+            String tag = createVisualizerAppletTag(documentCookie, jobInfoWrapper, taskInfo, visualizerJavaFlags);
             jobInfoWrapper.setVisualizerAppletTag(tag);
         }
 
         JobInfo[] children = analysisDao.getChildren(jobInfo.getJobNumber());
         for(JobInfo child : children) {
-            JobInfoWrapper nextChild = processChildren(jobInfoWrapper, showExecutionLogs, documentCookie, contextPath, analysisDao, adminDao, kindToModules, child);
+            JobInfoWrapper nextChild = processChildren(jobInfoWrapper, showExecutionLogs, documentCookie, contextPath, analysisDao, adminDao, kindToModules, child, visualizerJavaFlags);
             jobInfoWrapper.addChildJobInfo(nextChild);
         }
         
         return jobInfoWrapper;
     }
     
-    public static String createVisualizerAppletTag(String documentCookie, JobInfoWrapper jobInfoWrapper, TaskInfo taskInfo) 
+    private static String getVisualizerJavaFlags(UserDAO userDao, String userId) {
+        UserProp userProp = userDao.getProperty(userId, UserPropKey.VISUALIZER_JAVA_FLAGS);
+        String javaFlags = userProp.getValue();
+        if (javaFlags == null) {
+            javaFlags = System.getProperty(RunVisualizerConstants.JAVA_FLAGS_VALUE);
+        }
+        return javaFlags;
+    }
+    
+    private static String createVisualizerAppletTag(String documentCookie, JobInfoWrapper jobInfoWrapper, TaskInfo taskInfo, String visualizerJavaFlags) 
     {
         try {
 
@@ -136,11 +149,7 @@ public class JobInfoManager {
 
         String os = taskInfoAttributes.get(GPConstants.OS);
         String cpuType = taskInfoAttributes.get(GPConstants.CPU_TYPE);
-        //TODO: parameterize javaFlags
-        String javaFlags = null;
-        if(javaFlags==null) {
-            javaFlags = System.getProperty(RunVisualizerConstants.JAVA_FLAGS_VALUE);
-        }
+
         String contextPath = jobInfoWrapper.getServletContextPath();
         String commandLine = taskInfoAttributes.get(GPConstants.COMMAND_LINE);
         
@@ -162,7 +171,7 @@ public class JobInfoManager {
         appletTag.append("<param name=\"" + RunVisualizerConstants.NAME + "\" value=\"" + URLEncoder.encode(name, "UTF-8") + "\" >");
         appletTag.append("<param name=\"" + RunVisualizerConstants.OS + "\" value=\"" + URLEncoder.encode(os, "UTF-8") + "\">");
         appletTag.append("<param name=\"" + RunVisualizerConstants.CPU_TYPE + "\" value=\"" + URLEncoder.encode(cpuType, "UTF-8") + "\">");
-        appletTag.append("<param name=\"" + RunVisualizerConstants.JAVA_FLAGS_VALUE + "\" value=\"" + URLEncoder.encode(javaFlags, "UTF-8") + "\">");
+        appletTag.append("<param name=\"" + RunVisualizerConstants.JAVA_FLAGS_VALUE + "\" value=\"" + URLEncoder.encode(visualizerJavaFlags, "UTF-8") + "\">");
         appletTag.append("<param name=\"" + RunVisualizerConstants.CONTEXT_PATH + "\" value=\"" + URLEncoder.encode(contextPath, "UTF-8") + "\">");
 
         StringBuffer paramNameList = new StringBuffer();
