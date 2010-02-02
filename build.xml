@@ -37,12 +37,6 @@
 
     <!-- Get all the files in the /lib directory and add them to the -->
     <!-- Classpath -->
-
-
-    <target name="run-GPGE">
-        <java fork="true" jar="clients/JavaGE/gpge.jar" />
-    </target>
-
     <target name="targets">
         <echo>You probably want to use the following targets:</echo>
         <echo>website: builds website (including R and Java clients)</echo>
@@ -56,11 +50,9 @@
         <property name="genepattern.website" value="${genepattern.root}/website" />
         <property name="genepattern.clients" value="${genepattern.root}/clients" />
         <property name="genepattern.common" value="${genepattern.root}" />
-        <property name="genepattern.graphical.environment" value="${genepattern.clients}/JavaGE" />
         <property name="genepattern.build" value="${genepattern.root}/build" />
         <property name="defaultInstallDir" value="/xchip/genepattern/node256/gp-3.2-dev" />
         <property name="genepattern.installer" value="${genepattern.root}/installer" />
-        <property name="genepattern.gpge.installer" value="${genepattern.graphical.environment}/installer" />
         <property name="genepattern.package" value="org/genepattern" />
 
         <available file="post-compile.xml" property="post-compile.present" />
@@ -103,7 +95,6 @@
         <ant antfile="build.xml" dir="clients/R" target="clean" >
             <property name="R.client.downloads" location="${R.client.downloads}" />
         </ant>
-        <ant antfile="../build.xml" dir="clients/JavaGE/src" inheritall="true" inheritrefs="true" target="clean" />
     </target>
 
     <target name="compile" depends="init" description="Compiles all the source.">
@@ -239,13 +230,6 @@
             <property name="R.client.downloads" location="${R.client.downloads}" />
         </ant>
     </target>
-
-	<!--
-    <target name="GPGE" depends="init,common,runtask,uisupport,analysis">
-        <ant dir="." inheritall="false" inheritrefs="false" target="analysis" />
-        <ant antfile="../build.xml" dir="clients/JavaGE/src" target="package" />
-    </target>
-    -->
 	
     <target  name="matlabclient" depends="gp-library, analysis">
         <ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB" />
@@ -258,11 +242,6 @@
                 <include name="org/genepattern/**" />
             </fileset>
         </jar>
-    </target>
-
-
-    <target name="GPGEinstaller" depends="init">
-        <ant dir="${genepattern.gpge.installer}" inheritall="false" inheritrefs="false" target="installer" />
     </target>
 
     <target name="test" depends="initBuildProperties">

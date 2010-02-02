@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/gp-trunk/website/WEB-INF/lib/axis.jar"/>
+<listEntry value="/gp-trunk"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
-<listEntry value="1"/>
+<listEntry value="4"/>
 </listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.apache.axis.utils.tcpmon"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="gp-trunk"/>
