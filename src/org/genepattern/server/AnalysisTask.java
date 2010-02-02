@@ -44,6 +44,7 @@ public class AnalysisTask implements Runnable {
     static {
         try {
             NUM_THREADS = Integer.parseInt(System.getProperty(GPConstants.NUM_THREADS, "20"));
+            instance = new AnalysisTask(NUM_THREADS);
         } 
         catch (Exception e) {
             log.error(e);
@@ -243,11 +244,8 @@ public class AnalysisTask implements Runnable {
     }
 
     public static void startQueue() {
-        if (instance == null) {
-            instance = new AnalysisTask(NUM_THREADS);
-            Thread runner = new Thread(instance);
-            runner.start();
-        }
+        Thread runner = new Thread(instance);
+        runner.start();
     }
 
 }
