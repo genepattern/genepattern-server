@@ -757,7 +757,6 @@ public class GenePatternAnalysisTask {
                         }
 
                         if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                            params[i].setValue(inFile.getCanonicalPath());
                             attrsActual.remove(ParameterInfo.TYPE);
                             attrsActual.remove(ParameterInfo.INPUT_MODE);
                         } 
@@ -823,7 +822,6 @@ public class GenePatternAnalysisTask {
                                     vProblems.add("You are not permitted to access the requested file: "+originalPath);
                                     continue;
                                 }
-                                params[i].setValue(new File(originalPath).getCanonicalPath());
                                 attrsActual.remove(ParameterInfo.TYPE);
                                 attrsActual.remove(ParameterInfo.INPUT_MODE);
                             } 
@@ -866,7 +864,7 @@ public class GenePatternAnalysisTask {
                                 if ("file".equalsIgnoreCase(uri.getScheme()) && allowInputFilePaths) {
                                     File f = new File(uri);
                                     if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                                        params[i].setValue(f.getCanonicalPath());
+                                        params[i].setValue(f.getAbsolutePath());
                                         attrsActual.remove(ParameterInfo.TYPE);
                                         attrsActual.remove(ParameterInfo.INPUT_MODE);
                                         downloadUrl = false;
@@ -909,18 +907,18 @@ public class GenePatternAnalysisTask {
                                                 isAllowed = isJobOutput && canRead;
                                             }
                                             catch (NumberFormatException e) {
-                                                log.error("Invalid job number in file path: jobId="+jobId+", file="+inputFile.getCanonicalPath());
+                                                log.error("Invalid job number in file path: jobId="+jobId+", file="+inputFile.getAbsolutePath());
                                             }
                                         } 
                                     }
                                     if (!isAllowed) {
-                                        vProblems.add("File input URLs are not allowed on this GenePattern server: " + inputFile.getCanonicalPath());
+                                        vProblems.add("File input URLs are not allowed on this GenePattern server: " + inputFile.getAbsolutePath());
                                         continue;                                    
                                     }
 
                                     File f = new File(uri);
                                     if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                                        params[i].setValue(f.getCanonicalPath());
+                                        params[i].setValue(f.getAbsolutePath());
                                         attrsActual.remove(ParameterInfo.TYPE);
                                         attrsActual.remove(ParameterInfo.INPUT_MODE);
                                         downloadUrl = false;
@@ -937,7 +935,7 @@ public class GenePatternAnalysisTask {
                                             File file = localInputUrlToFile(url, jobInfo.getUserId());
                                             if (file != null) {
                                                 if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                                                    params[i].setValue(file.getCanonicalPath());
+                                                    params[i].setValue(file.getAbsolutePath());
                                                     attrsActual.remove(ParameterInfo.TYPE);
                                                     attrsActual.remove(ParameterInfo.INPUT_MODE);
                                                     downloadUrl = false;
@@ -987,7 +985,7 @@ public class GenePatternAnalysisTask {
                                         os.write(buf, 0, bytesRead);
                                     }
                                     params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
-                                    params[i].setValue(outFile.getCanonicalPath());
+                                    params[i].setValue(outFile.getAbsolutePath());
                                     inputLastModified[i] = outFile.lastModified();
                                     inputLength[i] = outFile.length();
                                 }
@@ -3793,26 +3791,19 @@ public class GenePatternAnalysisTask {
 			if (i != -1) {
 			    name = name.substring(i + 1);
 			}
-			try {
-			    // TODO: support directory structure within zip file
-			    outFile = new File(taskDir, name);
-			    if (outFile.exists()) {
-				File oldVersion = new File(taskDir, name + ".old");
-				log.warn("replacing " + name + " (" + outFile.length() + " bytes) in " + taskDir
+			//try {
+			// TODO: support directory structure within zip file
+			outFile = new File(taskDir, name);
+			if (outFile.exists()) {
+			    File oldVersion = new File(taskDir, name + ".old");
+			    log.warn("replacing " + name + " (" + outFile.length() + " bytes) in " + taskDir
 					+ ".  Renaming old one to " + oldVersion.getName());
-				oldVersion.delete(); // delete the previous
-				// .old
-				// file
+				oldVersion.delete(); 
+				// delete the previous .old file
 				boolean renamed = rename(outFile, oldVersion, true);
 				if (!renamed) {
-				    log.error("failed to rename " + outFile.getCanonicalPath() + " to "
-					    + oldVersion.getCanonicalPath());
+				    log.error("failed to rename " + outFile.getAbsolutePath() + " to " + oldVersion.getAbsolutePath());
 				}
-			    }
-
-			} catch (IOException ioe) {
-			    String msg = "error unzipping file " + name + " from " + zipFilename + ": " + ioe.getMessage();
-			    vProblems.add(msg);
 			}
 			is.close();
 			if (os != null) {
@@ -4614,10 +4605,7 @@ public class GenePatternAnalysisTask {
 	    } catch (InterruptedException ie) {
 	    }
 	}
-	try {
-	    log.info("Have to copy, rename failed: " + from.getCanonicalPath() + " -> " + to.getCanonicalPath());
-	} catch (IOException ioe) {
-	}
+	log.info("Have to copy, rename failed: " + from.getAbsolutePath() + " -> " + to.getAbsolutePath());
 	// if can't rename, then copy to destination and delete original
 	if (copyFile(from, to)) {
 	    if (deleteIfCopied) {
