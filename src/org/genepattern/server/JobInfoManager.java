@@ -16,13 +16,11 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
@@ -285,13 +283,13 @@ public class JobInfoManager {
         }
     }
     
-    public static File writeExecutionLog(String outDirName, JobInfoWrapper jobInfoWrapper, Properties props, ProcessBuilder processBuilder) {
+    public static File writeExecutionLog(String outDirName, JobInfoWrapper jobInfoWrapper) {
         File outDir = new File(outDirName);
         File gpExecutionLog = new File(outDir, TASKLOG);
         BufferedWriter writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(gpExecutionLog));
-            writeExecutionLog(writer, jobInfoWrapper, props, processBuilder);
+            writeExecutionLog(writer, jobInfoWrapper);
             return gpExecutionLog;
         } 
         catch (IOException e) {
@@ -310,7 +308,7 @@ public class JobInfoManager {
         }
     }
     
-    public static void writeExecutionLog(Writer writer, JobInfoWrapper jobInfoWrapper, Properties props, ProcessBuilder processBuilder) 
+    public static void writeExecutionLog(Writer writer, JobInfoWrapper jobInfoWrapper) 
     throws IOException
     {
         writer.write("# Created: " + new Date() + " by " + jobInfoWrapper.getUserId());
@@ -326,19 +324,19 @@ public class JobInfoManager {
         // [optionally output the command line], 
         // this is turned off for improved security
         // TODO: make this a configurable parameter
-        boolean debug = false;
-        if (debug && processBuilder != null) {
-            writer.write("\n# Command: ");
-            String working_dir = "";
-            if ( processBuilder.directory() != null ) {
-                working_dir = processBuilder.directory().getCanonicalPath();
-            }
-            writer.write("\n#\tworking directory: "+working_dir);
-            writer.write("\n#\tcommand line: ");
-            for(String n : processBuilder.command()) {
-                writer.write(n+" ");
-            }
-        }
+        //boolean debug = false;
+        //if (debug && processBuilder != null) {
+        //    writer.write("\n# Command: ");
+        //    String working_dir = "";
+        //    if ( processBuilder.directory() != null ) {
+        //        working_dir = processBuilder.directory().getCanonicalPath();
+        //    }
+        //    writer.write("\n#\tworking directory: "+working_dir);
+        //    writer.write("\n#\tcommand line: ");
+        //    for(String n : processBuilder.command()) {
+        //        writer.write(n+" ");
+        //    }
+        //}
         
         writer.write("\n# Parameters: ");
 
@@ -351,12 +349,12 @@ public class JobInfoManager {
             String link = inputParam.getLink();
             if(link == null) {
                 String displayValue = inputParam.getDisplayValue();
-                String value = inputParam.getValue();
-                String substitutedValue = GenePatternAnalysisTask.substitute(value, props, null);
+                //String value = inputParam.getValue();
+                //String substitutedValue = GenePatternAnalysisTask.substitute(value, props, null);
                 // bug 899 perform command line substitutions
-                if (substitutedValue != null && !(value.equals(substitutedValue))) {
-                    displayValue = substitutedValue + " (" + value + ")";
-                }
+                //if (substitutedValue != null && !(value.equals(substitutedValue))) {
+                //    displayValue = substitutedValue + " (" + value + ")";
+                //}
                 writer.write(displayValue);
             }
             //special case for input files
