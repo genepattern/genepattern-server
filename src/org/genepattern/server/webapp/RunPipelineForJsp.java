@@ -33,6 +33,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.LSIDManager;
+import org.genepattern.server.queue.RuntimeExecCommand;
 import org.genepattern.server.user.User;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -193,13 +194,13 @@ public class RunPipelineForJsp {
     public  void stopPipeline(String jobID) throws Exception {
         Process p = null;
         for (int i = 0; i < 10; i++) {
-            p = GenePatternAnalysisTask.terminatePipeline(jobID);
+            p = RuntimeExecCommand.terminatePipeline(jobID);
             if (p != null) {
                 break;
             }
             Thread.currentThread().sleep(1000);
         }
-        GenePatternAnalysisTask.updatePipelineStatus(Integer.parseInt(jobID), JobStatus.JOB_ERROR, null);
+        RuntimeExecCommand.updatePipelineStatus(Integer.parseInt(jobID), JobStatus.JOB_ERROR, null);
         if (p != null) {
             p.destroy();
         }
@@ -452,7 +453,7 @@ public class RunPipelineForJsp {
         }
         final Process process = Runtime.getRuntime().exec(commandLine, commandEnv, tempDir);
         
-        GenePatternAnalysisTask.storeProcessInHash(Integer.toString(jobID), process);
+        RuntimeExecCommand.storeProcessInHash(Integer.toString(jobID), process);
 
         WaitForPipelineCompletionThread waiter = new WaitForPipelineCompletionThread(process, jobID, currPipelineUserKey);
         waiter.start();
@@ -790,7 +791,7 @@ public class RunPipelineForJsp {
                     log.debug("Start WaitForCompletionThread");
                 }
                 process.waitFor();
-                GenePatternAnalysisTask.terminatePipeline(Integer.toString(jobID));
+                RuntimeExecCommand.terminatePipeline(Integer.toString(jobID));
                 if (pipelineUserKey != null) {
                     EncryptionUtil.getInstance().removePipelineUserKey(pipelineUserKey);
                 }
@@ -800,9 +801,8 @@ public class RunPipelineForJsp {
             } catch (Exception e) {
                 try {
                     log.error("Error in WaitForCompletionThread", e);
-                    GenePatternAnalysisTask.updatePipelineStatus(jobID, JobStatus.JOB_ERROR, null);
-                    GenePatternAnalysisTask.terminatePipeline(Integer
-                            .toString(jobID));
+                    RuntimeExecCommand.updatePipelineStatus(jobID, JobStatus.JOB_ERROR, null);
+                    RuntimeExecCommand.terminatePipeline(Integer.toString(jobID));
                 } catch (Exception ee) {
                     // ignore
                 }

@@ -34,7 +34,8 @@
 	org.genepattern.webservice.ParameterInfo,
 	org.genepattern.webservice.TaskInfo,
 	org.genepattern.util.StringUtils,
-	org.genepattern.server.genepattern.GenePatternAnalysisTask,
+    org.genepattern.server.genepattern.GenePatternAnalysisTask,
+    org.genepattern.server.queue.RuntimeExecCommand,
 	org.genepattern.data.pipeline.PipelineModel,
 	org.genepattern.server.webapp.RunPipelineForJsp,
 	org.genepattern.util.GPConstants,
@@ -176,8 +177,7 @@
                     }
 
                     // check all required params present and punt if not
-                    boolean paramsRequired = runPipelineForJsp.validateAllRequiredParametersPresent(taskInfo,
-                            commandLineParams);
+                    boolean paramsRequired = runPipelineForJsp.validateAllRequiredParametersPresent(taskInfo, commandLineParams);
                     if (paramsRequired) {
                         request.setAttribute("name", pipelineName);
                         request.getRequestDispatcher("cannotRunPipeline.jsp").forward(request, response);
@@ -194,14 +194,13 @@
                     if (isSaved) {
                         try {
                             if ((name != null) && (!(name.trim().length() == 0))) {
-                                taskInfo = GenePatternAnalysisTask
-                                        .getTaskInfo(URLDecoder.decode(name, "UTF-8"), userID);
-                            } else {
-
+                                taskInfo = GenePatternAnalysisTask.getTaskInfo(URLDecoder.decode(name, "UTF-8"), userID);
+                            } 
+                            else {
                                 taskInfo = GenePatternAnalysisTask.getTaskInfo(pipelineName, userID);
-
                             }
-                        } catch (Exception e) {
+                        } 
+                        catch (Exception e) {
                         }
                         if (taskInfo == null) {
                             request.setAttribute("name", pipelineName);
@@ -209,10 +208,10 @@
                             return;
                         }
                         description = taskInfo.getDescription();
-                    } else { // !isSaved
+                    } 
+                    else { // !isSaved
                         taskInfo = (TaskInfo) requestParamsAndAttributes.get("taskInfo");
                     }
-
                     String taskName = (String) request.getAttribute("taskName");
 %>
 
@@ -428,8 +427,7 @@ function toggleTask(idx, visibility) {
 	<tr>
 		<td valign="top" class="maintasknav" id="maintasknav"><input
 			type="checkbox" id="emailCheckbox"
-			onclick="setEmailNotification(<%=jobID%>);" value="checkbox" />email
-		notification&nbsp;&nbsp;&nbsp;&nbsp; <input type="hidden"
+			onclick="setEmailNotification(<%=jobID%>);" value="checkbox" />email notification&nbsp;&nbsp;&nbsp;&nbsp; <input type="hidden"
 			id="userEmail" value="<%= userEmail %>" /> <input type="hidden"
 			id="userID" value="<%= userID %>" /> <input name="showLogs"
 			id="logCheckbox" type="checkbox" onclick="toggleLogs()"
@@ -523,8 +521,7 @@ function toggleTask(idx, visibility) {
 
 <table with="100%">
 	<tr>
-		<td class="purge_notice">These job results are scheduled to be
-		purged from the server on <%=df.format(purgeTOD.getTime()).toLowerCase()%>
+		<td class="purge_notice">These job results are scheduled to be purged from the server on <%=df.format(purgeTOD.getTime()).toLowerCase()%>
 		</td>
 	</tr>
 	<tr><td><br>
@@ -547,8 +544,8 @@ function toggleTask(idx, visibility) {
                     out.println("</pre><br>");
 
                     if (jobID != UNDEFINED) {
-                        GenePatternAnalysisTask.updatePipelineStatus(jobID, JobStatus.JOB_ERROR, null);
-                        GenePatternAnalysisTask.terminatePipeline(Integer.toString(jobID));
+                        RuntimeExecCommand.updatePipelineStatus(jobID, JobStatus.JOB_ERROR, null);
+                        RuntimeExecCommand.terminatePipeline(Integer.toString(jobID));
                     }
                     return;
                 } finally {
@@ -565,8 +562,8 @@ function toggleTask(idx, visibility) {
                 t.printStackTrace();
                 out.println("</pre><br>");
                 if (jobID != UNDEFINED) {
-                    GenePatternAnalysisTask.updatePipelineStatus(jobID, JobStatus.JOB_ERROR, null);
-                    GenePatternAnalysisTask.terminatePipeline(Integer.toString(jobID));
+                    RuntimeExecCommand.updatePipelineStatus(jobID, JobStatus.JOB_ERROR, null);
+                    RuntimeExecCommand.terminatePipeline(Integer.toString(jobID));
                 }
             }
 %>

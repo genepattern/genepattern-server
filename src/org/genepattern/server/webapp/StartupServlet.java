@@ -44,6 +44,7 @@ import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.process.JobPurger;
+import org.genepattern.server.queue.RuntimeExecCommand;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.webapp.jsf.AboutBean;
 
@@ -224,7 +225,7 @@ public class StartupServlet extends HttpServlet {
             }
         }
         vThreads.removeAllElements();
-        GenePatternAnalysisTask.terminateAll("--> Shutting down server");
+        RuntimeExecCommand.terminateAll("--> Shutting down server");
         log.info("StartupServlet: destroy done");
         dumpThreads();
     }

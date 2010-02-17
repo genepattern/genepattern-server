@@ -35,6 +35,7 @@ import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.handler.AddNewJobHandler;
+import org.genepattern.server.queue.RuntimeExecCommand;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.GenericWebService;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -645,7 +646,7 @@ public class Analysis extends GenericWebService {
             canWriteJob(userId, jobId);
 
             AnalysisDAO ds = new AnalysisDAO();
-            Process p = org.genepattern.server.genepattern.GenePatternAnalysisTask.terminatePipeline("" + jobId);
+            Process p = RuntimeExecCommand.terminatePipeline("" + jobId);
             if (p != null) {
                 setJobStatus(jobId, JobStatus.ERROR);
             }
