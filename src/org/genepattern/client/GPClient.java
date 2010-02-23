@@ -366,21 +366,41 @@ public class GPClient {
      * @see #createJobResult
      */
     public int runAnalysisNoWait(String moduleNameOrLsid, Parameter[] parameters) throws WebServiceException {
-	try {
-	    TaskInfo taskInfo = getTask(moduleNameOrLsid);
-	    ParameterInfo[] actualParameters = GPClient.createParameterInfoArray(taskInfo, parameters);
-	    AnalysisWebServiceProxy analysisProxy = null;
-	    try {
-		analysisProxy = new AnalysisWebServiceProxy(server, username, password);
-		analysisProxy.setTimeout(Integer.MAX_VALUE);
-	    } catch (Exception x) {
-		throw new WebServiceException(x);
-	    }
-	    AnalysisJob job = submitJob(analysisProxy, taskInfo, actualParameters);
-	    return job.getJobInfo().getJobNumber();
-	} catch (org.genepattern.webservice.WebServiceException wse) {
-	    throw new WebServiceException(wse.getMessage(), wse.getRootCause());
-	}
+	    return runAnalysisNoWait(moduleNameOrLsid, parameters, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Submits the given module with the given parameters and does not wait for the job to complete.
+     * 
+     * @param moduleNameOrLsid
+     *                The module name or LSID. When an LSID is provided that does not include a version, the latest
+     *                available version of the task identified by the LSID will be used. If a module name is supplied,
+     *                the latest version of the module with the nearest authority is selected. The nearest authority is
+     *                the first match in the sequence: local authority, Broad authority, other authority.
+     * @param parameters
+     *                The parameters to run the module with.
+     * @return The job number.
+     * @throws WebServiceException
+     *                 If an error occurs during the job submission process.
+     * @see #isComplete
+     * @see #createJobResult
+     */
+    public int runAnalysisNoWait(String moduleNameOrLsid, Parameter[] parameters, int analysisProxyTimeout) throws WebServiceException {
+    try {
+        TaskInfo taskInfo = getTask(moduleNameOrLsid);
+        ParameterInfo[] actualParameters = GPClient.createParameterInfoArray(taskInfo, parameters);
+        AnalysisWebServiceProxy analysisProxy = null;
+        try {
+        analysisProxy = new AnalysisWebServiceProxy(server, username, password);
+        analysisProxy.setTimeout(analysisProxyTimeout);
+        } catch (Exception x) {
+        throw new WebServiceException(x);
+        }
+        AnalysisJob job = submitJob(analysisProxy, taskInfo, actualParameters);
+        return job.getJobInfo().getJobNumber();
+    } catch (org.genepattern.webservice.WebServiceException wse) {
+        throw new WebServiceException(wse.getMessage(), wse.getRootCause());
+    }
 
     }
 
