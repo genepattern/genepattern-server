@@ -38,6 +38,11 @@ public class RuntimeExecCommand implements CommandExecutor {
      * hashtable of running pipelines. key=jobID (as String), value=Process
      */
     private static Hashtable<String, Process> htRunningPipelines = new Hashtable<String, Process>();
+    
+    private int exitValue = 0;
+    public int getExitValue() {
+        return exitValue;
+    }
 
     /**
      * Spawns a separate process to execute the requested analysis task. It copies the stdout and stderr output streams
@@ -70,7 +75,7 @@ public class RuntimeExecCommand implements CommandExecutor {
      *            buffer to append GenePattern errors to
      * @author Jim Lerner
      */
-    public int runCommand(String commandLine[], Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {
+    public void runCommand(String commandLine[], Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {
         ProcessBuilder pb = null;
         Process process = null;
         String jobID = null;
@@ -124,13 +129,12 @@ public class RuntimeExecCommand implements CommandExecutor {
 
             // the process will be dead by now
             process.waitFor();
-            int exitValue = process.exitValue();
-            return exitValue;
+            exitValue = process.exitValue();
         } 
         catch (Throwable t) {
             log.error("Error in runCommand, reporting to stderr.", t);
             stderrBuffer.append(t.getLocalizedMessage());
-            return -1;
+            exitValue = -1;
         } 
         finally {
             if (jobID != null) {

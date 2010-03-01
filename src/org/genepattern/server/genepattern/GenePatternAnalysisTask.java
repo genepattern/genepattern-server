@@ -134,7 +134,7 @@ import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.domain.JobStatusDAO;
-import org.genepattern.server.queue.RuntimeExecCommand;
+import org.genepattern.server.queue.CommandExecutorServiceFactory;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager;
@@ -1294,7 +1294,7 @@ public class GenePatternAnalysisTask {
                     } 
                     else { 
                         commandTokens = translateCommandline(commandTokens);
-                        exitCode = new RuntimeExecCommand().runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
+                        CommandExecutorServiceFactory.instance().getAnalysisService(jobInfo).runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
                     }
                 } 
                 catch (Throwable t) {
@@ -1317,7 +1317,14 @@ public class GenePatternAnalysisTask {
                 addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
             }
 
-            handleJobCompletion(jobInfo.getJobNumber(), stdoutFilename, stderrFilename, exitCode);
+            //TODO: plug this into the RuntimeExecAnalysisService handler
+            //handleJobCompletion(jobInfo.getJobNumber(), stdoutFilename, stderrFilename, exitCode);
+            if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
+                handleJobCompletion(jobInfo.getJobNumber(), stdoutFilename, stderrFilename, exitCode);
+            }
+            else if (taskInfo.isPipeline()) {
+                handleJobCompletion(jobInfo.getJobNumber(), stdoutFilename, stderrFilename, exitCode);
+            }
         } 
         catch (Throwable e) {
             if (e.getCause() != null) {
