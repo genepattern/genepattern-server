@@ -1,13 +1,14 @@
-package org.genepattern.server.queue;
+package org.genepattern.server.queue.lsf;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.queue.CommandExecutor;
 import org.genepattern.webservice.JobInfo;
-import org.jfree.util.Log;
 
 import edu.mit.broad.core.lsf.LsfJob;
 import edu.mit.broad.core.lsf.LsfJob.JobCompletionListener;
@@ -18,6 +19,7 @@ import edu.mit.broad.core.lsf.LsfJob.JobCompletionListener;
  * @author pcarr
  */
 public class LsfCommand implements CommandExecutor {
+    private static Logger log = Logger.getLogger(LsfCommand.class);
     
     private int jobId;
     private File runDir;
@@ -105,7 +107,7 @@ public class LsfCommand implements CommandExecutor {
     public static class MyJobCompletionListener implements JobCompletionListener {
 
         public void jobCompleted(LsfJob job) throws Exception {
-            Log.debug("job completed...lsf_id="+job.getLsfJobId()+", gp_job_id="+job.getInternalJobId());
+            log.debug("job completed...lsf_id="+job.getLsfJobId()+", gp_job_id="+job.getInternalJobId());
             
             int jobId = job.getInternalJobId().intValue();
             String stdoutFilename = job.getOutputFilename();
