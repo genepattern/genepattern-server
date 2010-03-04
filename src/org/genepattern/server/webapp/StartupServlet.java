@@ -41,9 +41,9 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.AnalysisManager;
 import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.database.HsqlDbUtil;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.process.JobPurger;
+import org.genepattern.server.queue.CommandExecutorServiceFactory;
 import org.genepattern.server.queue.RuntimeExecCommand;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.webapp.jsf.AboutBean;
@@ -94,11 +94,10 @@ public class StartupServlet extends HttpServlet {
             }
         }
 
+        //start the command executors before starting the internal job queue (AnalysisTask.startQueue) ...
+        CommandExecutorServiceFactory.instance().start();
         launchTasks();
-
-        // This starts an analysis task thread through a chain of side effects.
-        // Do not remove!
-        AnalysisManager.getInstance();
+        AnalysisManager.getInstance(); //not sure if this is necessary anymore, pjc
         AnalysisTask.startQueue();
 
         startDaemons(System.getProperties(), application);
@@ -202,6 +201,7 @@ public class StartupServlet extends HttpServlet {
     }
 
     public void destroy() {
+        //TODO: plug this into the CommandExecutorServiceFactory
         log.info("StartupServlet: destroy called");
 
         String dbVendor = System.getProperty("database.vendor", "HSQL");

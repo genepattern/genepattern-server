@@ -1294,7 +1294,7 @@ public class GenePatternAnalysisTask {
                     } 
                     else { 
                         commandTokens = translateCommandline(commandTokens);
-                        CommandExecutorServiceFactory.instance().getAnalysisService(jobInfo).runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
+                        CommandExecutorServiceFactory.instance().getCommandExecutorService(jobInfo).runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
                     }
                 } 
                 catch (Throwable t) {

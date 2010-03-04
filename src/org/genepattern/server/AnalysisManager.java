@@ -20,8 +20,6 @@ package org.genepattern.server;
  * @author Rajesh Kuttan, Hui Gong
  */
 
-import java.rmi.RemoteException;
-
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -29,18 +27,14 @@ import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.OmnigeneException;
 
 public class AnalysisManager {
-    
     private static Logger log = Logger.getLogger(AnalysisManager.class);
     
     public static int defPriority = Thread.NORM_PRIORITY;
-    
     private static AnalysisManager analysisManager = null;
-    
-    private static ThreadGroup threadGrp = new ThreadGroup(
-            AnalysisManager.class.getName());
+    private static ThreadGroup threadGrp = new ThreadGroup(AnalysisManager.class.getName());
     
     // To make Singleton
-    protected AnalysisManager() {
+    private AnalysisManager() {
     }
     
     //Function to get singleton instance
@@ -48,6 +42,9 @@ public class AnalysisManager {
         if (analysisManager == null) {
             // System.out.println("creating new AnalysisManager");
             analysisManager = new AnalysisManager();
+            
+            //TODO: re-implement handling runtime exec jobs which need to be restarted
+            //      this code belongs in the RuntimeExecCmdExecSvc class
             try {
                 HibernateUtil.beginTransaction();
                 
@@ -55,8 +52,7 @@ public class AnalysisManager {
                 AnalysisDAO ds = new AnalysisDAO();
                 // were there interrupted jobs that need to be restarted?
                 if (ds.resetPreviouslyRunningJobs()) {
-                    System.out
-                            .println("There were previously running tasks, notifying threads.");
+                    System.out.println("There were previously running tasks, notifying threads.");
                     // yes, notify the threads to start processing
                     synchronized (ds) {
                         System.out.println("notifying ds of job to run");
@@ -81,15 +77,12 @@ public class AnalysisManager {
     
     /** no op. */
     public boolean stop(String taskName) {
-        // jgould: was previously used terminate AnalyisTask task and remove
-        // from hashtable (key was taskName)
+        // jgould: was previously used terminate AnalyisTask task and remove from hashtable (key was taskName)
         return false;
-        
     }
     
     public boolean stop(int taskID) {
-        // jgould: was previously used terminate AnalyisTask task and remove
-        // from hashtable (key was taskName)
+        // jgould: was previously used terminate AnalyisTask task and remove from hashtable (key was taskName)
         return false;
     }
 
@@ -144,6 +137,5 @@ class TaskObject {
     public void setNull() {
         this.threadInstance = null;
         this.taskObj = null;
-        ;
     }
 }

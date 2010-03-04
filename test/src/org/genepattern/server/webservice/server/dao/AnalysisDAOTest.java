@@ -165,13 +165,13 @@ public class AnalysisDAOTest extends DAOTestCase {
 
     }
     
-    /**
-     * 
-     * @throws Exception
-     */
-    public void testResetPreviouslyRunningJobs() throws Exception {
-        dao.resetPreviouslyRunningJobs();
-    }
+//    /**
+//     * 
+//     * @throws Exception
+//     */
+//    public void testResetPreviouslyRunningJobs() throws Exception {
+//        dao.resetPreviouslyRunningJobs();
+//    }
     
 
     /**

@@ -814,6 +814,8 @@ public class AnalysisDAO extends BaseDAO {
     }
 
     /**
+     * TODO: refactor this method ... it should be invoked for some jobs, but not all jobs.
+     * 
      * reset any previous running (but incomplete) jobs to waiting status, clear their output files
      * 
      * @return true if there were running jobs
