@@ -1,0 +1,87 @@
+<project name="gp-custom-queue" default="describe">
+    <target name="describe">
+        <echo>
+            Compile custom command executor service plugin into a jar file for deployment to a GenePattern Server.
+            Requirements:
+                1. A GenePattern Server installation, e.g.
+                   /Applications/GenePatternServer
+                2. The GenePattern Java programming library, included with the server
+                   /Applications/GenePatternServer/Tomcat/webapps/gp/downloads/GenePattern.zip
+                   [also, available for download from here: http://genepattern.broadinstitute.org/gp/downloads/GenePattern.zip]
+            Example usage,
+                1. ant jar
+        </echo>
+    </target>
+
+    <!-- path the gp library, required for CommandExecutorService and related classes. -->
+    <property name="gp.classes" location="../website/WEB-INF/classes" />
+
+    <!-- property name="client.lib.dir" location="gplib" / -->
+    <property name="build.dir" value="build"  />
+    <property name="dist.dir" value="dist" />
+
+    <target name="init">
+        <mkdir dir="${build.dir}" />
+        <mkdir dir="${dist.dir}" />
+    </target>
+
+    <path id="compile.classpath">
+        <pathelement location="${build.dir}" />
+        <!-- pathelement location="${GenePattern.jar}" / -->
+        <pathelement location="${gp.classes}" />
+        <fileset dir="lib">
+            <include name="**/*.jar"/>
+        </fileset>
+        <!-- include broad core jar files -->
+        <fileset dir="/Broad/Projects/BroadCore/lib/deploy/hibernate">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+    
+    <!-- target name="compile" depends="getClientLibrary" -->
+    <target name="compile" depends="init">
+        <available property="hasCommandExecutorService" classpathref="compile.classpath" classname="org.genepattern.server.queue.CommandExecutorService" />
+        <fail unless="hasCommandExecutorService" message="requires org.genepattern.server.queue.CommandExecutorService on classpath" />
+        <javac debug="true" srcdir="src" destdir="${build.dir}" classpathref="compile.classpath" />
+    </target>
+    
+    <target name="jar" depends="compile">
+        <property name="jar.file" location="${dist.dir}/custom_queue.jar" />
+        <jar destfile="${jar.file}" basedir="${build.dir}" />
+        <echo>
+            To install the custom queue plugin:
+            
+            1) Add the ${jar.file} and any required libraries to 
+               the ${GenePatternServer.dir}/Tomcat/webapps/gp/WEB-INF/lib/ directory.
+            
+            2) Edit your ${GenePatternServer.dir}/resources/queue.properties file, details are in the queue.properties file.
+               #add an entry of the form, queueId=classname, e.g.
+               queue.01=org.genepattern.server.queue.custom.CustomCommandExecutorService
+            
+            3) Restart your server.
+        </echo>
+    </target>
+    
+    <target name="clean">
+        <delete dir="${build.dir}" />
+        <delete dir="${dist.dir}" />
+    </target>
+    
+    <target name="cleanAll" depends="clean">
+        <description>
+        Deletes everything, including the extracted client library and the downloaded client library zip file.
+        </description>
+        <delete file="gp-lsf-queue.zip" />
+        <delete dir="${client.lib.dir}" />
+    </target>
+    
+    <target name="self.dist" depends="cleanAll">
+        <description>
+        Package up this ant project for distribution to the FTP downloads page.
+        </description>
+        <zip basedir=".." destfile="gp-lsf-queue.zip" 
+            includes="gp-lsf-queue/**/*" 
+            excludes="gp-lsf-queue/bin, gp-lsf-queue/.settings, gp-lsf-queue/.settings/**/*, gp-lsf-queue/.classpath, gp-lsf-queue/.project" />
+    </target>
+    
+</project>
