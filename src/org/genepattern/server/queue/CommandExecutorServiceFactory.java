@@ -3,6 +3,7 @@ package org.genepattern.server.queue;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -48,7 +49,9 @@ public class CommandExecutorServiceFactory {
     }
     
     private void init(Properties props) {
-        for(String propName : props.stringPropertyNames()) {
+        Enumeration e = props.propertyNames();
+        while(e.hasMoreElements()) {
+            String propName = (String) e.nextElement();
             String propValue = props.getProperty(propName);
             if (isQueueId(propName)) {
                 loadQueue(propName, propValue);
