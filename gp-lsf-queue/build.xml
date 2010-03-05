@@ -16,6 +16,9 @@
     <!-- path the gp library, required for CommandExecutorService and related classes. -->
     <property name="gp.classes" location="../website/WEB-INF/classes" />
 
+    <!-- this implementation requires the BroadCore libraries -->
+    <property name="broadcore" location="../../BroadCore" />
+
     <!-- property name="client.lib.dir" location="gplib" / -->
     <property name="build.dir" value="build"  />
     <property name="dist.dir" value="dist" />
@@ -33,7 +36,7 @@
             <include name="**/*.jar"/>
         </fileset>
         <!-- include broad core jar files -->
-        <fileset dir="/Broad/Projects/BroadCore/lib/deploy/hibernate">
+        <fileset dir="${broadcore}/lib/deploy/hibernate">
             <include name="**/*.jar"/>
         </fileset>
     </path>
@@ -46,7 +49,7 @@
     </target>
     
     <target name="jar" depends="compile">
-        <property name="jar.file" location="${dist.dir}/custom_queue.jar" />
+        <property name="jar.file" location="${dist.dir}/gp-lsf-queue.jar" />
         <jar destfile="${jar.file}" basedir="${build.dir}" />
         <echo>
             To install the custom queue plugin:

@@ -15,14 +15,18 @@ public class LsfCommandExecSvc implements CommandExecutorService {
     private LsfWrapper lsfWrapper = null;
 
     public void start() {
+        log.debug("starting LsfCommandExecSvc...");
         lsfWrapper = new LsfWrapper();
         lsfWrapper.start(10);
+        log.debug("done!");
     }
 
     public void stop() {
+        log.debug("stopping LsfCommandExecSvc...");
         if (lsfWrapper != null) {
             lsfWrapper.stop();
         }
+        log.debug("done!");
     }
 
     public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {

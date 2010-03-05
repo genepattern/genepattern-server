@@ -42,6 +42,7 @@ public class LsfCommand implements CommandExecutor {
         lsfJob = new LsfJob();
         
         String commandLineStr = getCommandLineStr(commandLine);
+        log.debug("lsf job commandLine: "+commandLineStr);
         lsfJob.setCommand(commandLineStr);
         lsfJob.setWorkingDirectory(this.runDir.getAbsolutePath());
         lsfJob.setInternalJobId((long)jobId);
