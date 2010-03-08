@@ -2,31 +2,50 @@ package org.genepattern.server.queue.lsf;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.queue.CommandExecutorService;
 import org.genepattern.webservice.JobInfo;
+import org.hibernate.cfg.Environment;
+import org.hibernate.transaction.JDBCTransactionFactory;
 
+import edu.mit.broad.core.Main;
 import edu.mit.broad.core.lsf.LsfJob;
 import edu.mit.broad.core.lsf.LsfWrapper;
 
 public class LsfCommandExecSvc implements CommandExecutorService {
     private static Logger log = Logger.getLogger(LsfCommandExecSvc.class);
-    private LsfWrapper lsfWrapper = null;
-
+    //private boolean isInitialized = false;
+    //private LsfWrapper lsfWrapper = null;
+    
     public void start() {
-        log.debug("starting LsfCommandExecSvc...");
-        lsfWrapper = new LsfWrapper();
-        lsfWrapper.start(10);
-        log.debug("done!");
+        log.info("Initializing BroadCore...");
+        try {
+            Main broadCore = Main.getInstance();
+            broadCore.setEnvironment("prod");
+            Properties props = new Properties();
+            props.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
+            props.put(Environment.TRANSACTION_STRATEGY, JDBCTransactionFactory.class.getName());
+            broadCore.setHibernateOptions(props);
+            broadCore.setLsfCheckFrequency(10);
+            broadCore.start();
+        }
+        catch (Throwable t) {
+            log.error("Error starting BroadCore: "+t.getLocalizedMessage(), t);
+        }
+        log.info("done!");
     }
 
     public void stop() {
-        log.debug("stopping LsfCommandExecSvc...");
-        if (lsfWrapper != null) {
-            lsfWrapper.stop();
+        log.info("stopping LsfCommandExecSvc...");
+        try {
+            Main.getInstance().stop();
         }
-        log.debug("done!");
+        catch (Throwable t) {
+            log.error("Error shutting down BroadCore: "+t.getLocalizedMessage(), t);
+        }
+        log.info("done!");
     }
 
     public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {
@@ -34,7 +53,7 @@ public class LsfCommandExecSvc implements CommandExecutorService {
         cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdin, stderrBuffer);
         
         LsfJob lsfJob = cmd.getLsfJob();
-        lsfJob = lsfWrapper.dispatchLsfJob(lsfJob);
+        lsfJob = new LsfWrapper().dispatchLsfJob(lsfJob);
     }
     
     public void terminateJob(JobInfo jobInfo) {
