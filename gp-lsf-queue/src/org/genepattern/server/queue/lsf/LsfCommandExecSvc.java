@@ -23,6 +23,11 @@ public class LsfCommandExecSvc implements CommandExecutorService {
         log.info("Initializing BroadCore...");
         try {
             Main broadCore = Main.getInstance();
+
+            String dataSourceName = System.getProperty("jndi.datasource.name", "java:comp/env/jdbc/myoracle");
+            log.info("using jndi.datasource.name="+dataSourceName);
+            //broadCore.setDataSourceName("jndi:/jdbc/our_pool");
+            broadCore.setDataSourceName(dataSourceName);
             broadCore.setEnvironment("prod");
             Properties props = new Properties();
             props.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
