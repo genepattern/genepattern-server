@@ -6,12 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.queue.CommandExecutor;
 import org.genepattern.webservice.JobInfo;
 
 import edu.mit.broad.core.lsf.LsfJob;
-import edu.mit.broad.core.lsf.LsfJob.JobCompletionListener;
 
 /**
  * Run the given command line on the LSF queue. This class depends on another thread which monitors the LSF queue for completed jobs.
@@ -82,7 +80,7 @@ public class LsfCommand implements CommandExecutor {
         List<String> preExecArgs = getPreExecCommandArgs(commandLine);
         extraBsubArgs.addAll(preExecArgs);
         
-        lsfJob.setCompletionListenerName(MyJobCompletionListener.class.getCanonicalName());
+        lsfJob.setCompletionListenerName(LsfJobCompletionListener.class.getName());
     }
     
     public LsfJob getLsfJob() {
@@ -125,22 +123,4 @@ public class LsfCommand implements CommandExecutor {
         List<String> rval = new ArrayList<String>();
         return rval;
     }
-    
-    public static class MyJobCompletionListener implements JobCompletionListener {
-
-        public void jobCompleted(LsfJob job) throws Exception {
-            log.debug("job completed...lsf_id="+job.getLsfJobId()+", gp_job_id="+job.getInternalJobId());
-            
-            int jobId = job.getInternalJobId().intValue();
-            String stdoutFilename = job.getOutputFilename();
-            String stderrFilename = job.getErrorFileName();
-                        
-            //TODO: figure out the exit code
-            int exitCode = 0;
-            
-            GenePatternAnalysisTask.handleJobCompletion(jobId, stdoutFilename, stderrFilename, exitCode);
-        }
-        
-    }
-
 }
