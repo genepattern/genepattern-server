@@ -11,10 +11,9 @@ import org.hibernate.SessionFactory;
 import edu.mit.broad.core.lsf.LsfWrapper;
 
 /**
- * Main class that is used to startup and shutdown BroadCore services as well
- * as to provide central access to various resources.
- *
- * @author Tim Fennell
+ * Override Main BroadCore class to use GenePattern HibernateUtil instead of a JNDI DataSource to connect to the database.
+ * 
+ * @author Peter Carr
  */
 public final class Main {
     private static Logger log = Logger.getLogger(Main.class);
