@@ -24,11 +24,27 @@ public class LsfCommand implements CommandExecutor {
     private int jobId;
     private File runDir;
     
-    //TODO: these properties should be configurable
-    private String project="genepattern";
-    private String queue="broad";
-    private String maxMemory="2"; //2G
-    //private String hosts = "hassium others+1";
+    private static String project="gp_3_2_3_dev";
+    private static String queue="genepattern";
+    private static String maxMemory="2"; //2G
+    
+    private static void initProperties() {
+        project=System.getProperty("LsfCommandExecSvc.project", "gp_dev");
+        queue=System.getProperty("LsfCommandExecSvc.queue", "genepattern");
+        maxMemory=System.getProperty("LsfCommandExecSvc.max.memory", "2");
+        
+        //validate maxMemory
+        if (maxMemory == null) {
+            maxMemory = "2";
+        }
+        try {
+            Integer.parseInt(maxMemory);
+        }
+        catch (NumberFormatException e) {
+            log.error("Invalid setting for 'LsfCommandExecSvc.max.memory="+maxMemory+"': "+e.getLocalizedMessage(), e);
+            maxMemory="2";
+        }
+    }
     
     private LsfJob lsfJob = null;
     
@@ -36,16 +52,23 @@ public class LsfCommand implements CommandExecutor {
     //bsub -P $project -q "$queue" -R "rusage[mem=$max_memory]" -M $max_memory -m "$hosts" -K -o .lsf_%J.out -e $lsf_err $"$@" \>\> $cmd_out
     
     public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {
+        //TODO: move this to global startup
+        initProperties();
+        
         this.jobId = jobInfo != null ? jobInfo.getJobNumber() : -1;
         this.runDir = runDir;
 
         lsfJob = new LsfJob();
+        lsfJob.setInternalJobId((long)jobId);
         
         String commandLineStr = getCommandLineStr(commandLine);
         log.debug("lsf job commandLine: "+commandLineStr);
         lsfJob.setCommand(commandLineStr);
         lsfJob.setWorkingDirectory(this.runDir.getAbsolutePath());
-        lsfJob.setInternalJobId((long)jobId);
+        //TODO: handle stdin, currently it is ignored
+        //lsfJob.setInputFilename(inputFilename);
+        lsfJob.setOutputFilename(stdoutFile.getAbsolutePath());
+        lsfJob.setErrorFileName(stderrFile.getAbsolutePath());
         
         lsfJob.setProject(project);
         lsfJob.setQueue(queue);
@@ -55,8 +78,6 @@ public class LsfCommand implements CommandExecutor {
         extraBsubArgs.add("rusage[mem="+maxMemory+"]");
         extraBsubArgs.add("-M");
         extraBsubArgs.add(maxMemory);
-        //extraBsubArgs.add("-m");
-        //extraBsubArgs.add(hosts);
         
         List<String> preExecArgs = getPreExecCommandArgs(commandLine);
         extraBsubArgs.addAll(preExecArgs);
