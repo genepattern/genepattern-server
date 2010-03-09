@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.queue.CommandExecutorService;
 import org.genepattern.webservice.JobInfo;
 import org.hibernate.cfg.Environment;
@@ -22,10 +23,10 @@ public class LsfCommandExecSvc implements CommandExecutorService {
         try {
             Main broadCore = Main.getInstance();
 
-            String dataSourceName = System.getProperty("jndi.datasource.name", "java:comp/env/jdbc/myoracle");
-            log.info("using jndi.datasource.name="+dataSourceName);
+            //String dataSourceName = System.getProperty("jndi.datasource.name", "java:comp/env/jdbc/myoracle");
+            //log.info("using jndi.datasource.name="+dataSourceName);
             //broadCore.setDataSourceName("jndi:/jdbc/our_pool");
-            broadCore.setDataSourceName(dataSourceName);
+            //broadCore.setDataSourceName(dataSourceName);
             broadCore.setEnvironment("prod");
             Properties props = new Properties();
             props.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
@@ -52,13 +53,24 @@ public class LsfCommandExecSvc implements CommandExecutorService {
     }
 
     public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {
-        log.debug("Running command for job "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName());
-        LsfCommand cmd = new LsfCommand();
-        cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdin, stderrBuffer);
+        HibernateUtil.beginTransaction();        
+        try {
+            log.debug("Running command for job "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName());
+            LsfCommand cmd = new LsfCommand();
+            cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdin, stderrBuffer);
         
-        LsfJob lsfJob = cmd.getLsfJob();
-        lsfJob = new LsfWrapper().dispatchLsfJob(lsfJob);
-        log.debug(jobInfo.getJobNumber()+". "+jobInfo.getTaskName()+" is dispatched.");
+            LsfJob lsfJob = cmd.getLsfJob();
+            lsfJob = new LsfWrapper().dispatchLsfJob(lsfJob);
+            HibernateUtil.commitTransaction();
+            log.debug(jobInfo.getJobNumber()+". "+jobInfo.getTaskName()+" is dispatched.");
+        }
+        catch (Throwable t) {
+            log.error("Error running lsf command for job "+jobInfo.getJobNumber(), t);
+            HibernateUtil.rollbackTransaction();
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
     }
     
     public void terminateJob(JobInfo jobInfo) {
