@@ -59,6 +59,11 @@ public class CommandExecutorServiceFactory {
             else if ("default".equals(propName)) {
                 setDefaultQueueId(propValue);
             }
+            else if(propName.startsWith("queue.prop.")) {
+                //add to system properties
+                String sysProp=propName.substring("queue.prop".length());
+                System.setProperty(sysProp, propValue);
+            }
             else {
                 appendTask(propName, propValue);
             }
