@@ -226,6 +226,10 @@ public class StartupServlet extends HttpServlet {
         }
         vThreads.removeAllElements();
         RuntimeExecCommand.terminateAll("--> Shutting down server");
+        
+        //stop the command executors ...
+        CommandExecutorServiceFactory.instance().stop();
+
         log.info("StartupServlet: destroy done");
         dumpThreads();
     }
