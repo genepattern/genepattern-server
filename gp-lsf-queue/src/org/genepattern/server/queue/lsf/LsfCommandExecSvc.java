@@ -16,11 +16,9 @@ import edu.mit.broad.core.lsf.LsfWrapper;
 
 public class LsfCommandExecSvc implements CommandExecutorService {
     private static Logger log = Logger.getLogger(LsfCommandExecSvc.class);
-    //private boolean isInitialized = false;
-    //private LsfWrapper lsfWrapper = null;
     
     public void start() {
-        log.info("Initializing BroadCore...");
+        log.info("Initializing LsfCommandExecSvc ...");
         try {
             Main broadCore = Main.getInstance();
 
@@ -43,7 +41,7 @@ public class LsfCommandExecSvc implements CommandExecutorService {
     }
 
     public void stop() {
-        log.info("stopping LsfCommandExecSvc...");
+        log.info("Stopping LsfCommandExecSvc ...");
         try {
             Main.getInstance().stop();
         }
@@ -54,11 +52,13 @@ public class LsfCommandExecSvc implements CommandExecutorService {
     }
 
     public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {
+        log.debug("Running command for job "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName());
         LsfCommand cmd = new LsfCommand();
         cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdin, stderrBuffer);
         
         LsfJob lsfJob = cmd.getLsfJob();
         lsfJob = new LsfWrapper().dispatchLsfJob(lsfJob);
+        log.debug(jobInfo.getJobNumber()+". "+jobInfo.getTaskName()+" is dispatched.");
     }
     
     public void terminateJob(JobInfo jobInfo) {
