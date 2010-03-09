@@ -9,8 +9,8 @@
     <property name="workingDirectory" type="string" column="WORKING_DIRECTORY" length="512" />
     <property name="inputFilename" type="string" column="INPUT_FILENAME" length="512" />
     <property name="outputFilename" type="string" column="OUTPUT_FILENAME" length="512" />
-    <property name="errorFilename" type="string" column="ERROR_FILENAME" length="512" />
-    <property name="jobName" type="string" column="JOB_NAME" length="512" />
+    <property name="errorFileName" type="string" column="ERROR_FILENAME" length="512" />
+    <property name="name" type="string" column="JOB_NAME" length="512" />
     <property name="queue" type="string" column="QUEUE" length="512" />
     <property name="project" type="string" column="PROJECT" length="512" />
     <property name="status" type="string" column="LSF_JOB_STATUS" length="512" />
