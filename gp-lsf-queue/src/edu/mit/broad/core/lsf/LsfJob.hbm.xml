@@ -2,10 +2,11 @@
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping package="edu.mit.broad.core.lsf"> 
   <class name="LsfJob" table="JOB_LSF"> 
-    <id name="internalJobId" type="long" unsaved-value="null">
+    <id name="internalJobId" type="long">
       <column name="INTERNAL_JOB_ID" not-null="true" unique="true" precision="22" scale="0"/>
-      <generator class="native"/>
-    </id>
+      <!--  note, this could be an FK to ANALYSIS_JOB.JOB_NO  -->
+      <generator class="assigned"/>
+    </id>    
     <property name="workingDirectory" type="string" column="WORKING_DIRECTORY" length="512" />
     <property name="inputFilename" type="string" column="INPUT_FILENAME" length="512" />
     <property name="outputFilename" type="string" column="OUTPUT_FILENAME" length="512" />
