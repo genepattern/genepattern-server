@@ -81,6 +81,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
@@ -134,6 +135,7 @@ import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.domain.JobStatusDAO;
+import org.genepattern.server.queue.CommandExecutorService;
 import org.genepattern.server.queue.CommandExecutorServiceFactory;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
@@ -1294,12 +1296,24 @@ public class GenePatternAnalysisTask {
                     } 
                     else { 
                         commandTokens = translateCommandline(commandTokens);
-                        CommandExecutorServiceFactory.instance().getCommandExecutorService(jobInfo).runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
-                    }
+                        CommandExecutorService svc = CommandExecutorServiceFactory.instance().getCommandExecutorService(jobInfo);
+                        svc.runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
+                   }
                 } 
                 catch (Throwable t) {
-                    log.error(taskName + " Error running job #" + jobInfo.getJobNumber() + ": "+t.getLocalizedMessage(), t);
-                    stderrBuffer.append(t.getLocalizedMessage() + "\n\n");
+                    //TODO: hard-coded exitCode when exceptions occur during job submission
+                    if (exitCode == 0) {
+                        exitCode = -1;
+                    }
+                    String message = "Error submitting job " + jobInfo.getJobNumber() + ". " + taskName;
+                    log.error(message, t);
+                    stderrBuffer.append(message + " - " + t.getLocalizedMessage());
+
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    t.printStackTrace(pw);
+
+                    stderrBuffer.append(sw.toString());
                 }
                 finally {
                     if (renameStdout) {
@@ -1311,15 +1325,17 @@ public class GenePatternAnalysisTask {
                 }
             }
             
-            if (stderrBuffer.length() > 0) {
-                exitCode = -1;
+            if (stderrBuffer.length()>0) {
+                if (exitCode == 0) {
+                    exitCode = -1;
+                }
                 writeStringToFile(outDirName, STDERR, stderrBuffer.toString());
-                addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
             }
-
-            //TODO: plug this into the RuntimeExecAnalysisService handler
-            //handleJobCompletion(jobInfo.getJobNumber(), stdoutFilename, stderrFilename, exitCode);
-            if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
+            
+            if (exitCode != 0) {
+                handleJobCompletion(jobInfo.getJobNumber(), stdoutFilename, stderrFilename, exitCode);
+            }
+            else if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
                 handleJobCompletion(jobInfo.getJobNumber(), stdoutFilename, stderrFilename, exitCode);
             }
             else if (taskInfo.isPipeline()) {
@@ -1341,8 +1357,9 @@ public class GenePatternAnalysisTask {
             }
         } 
     }
-    
-    public static void handleJobCompletion(int jobId, String stdoutFilename, String stderrFilename, int exitCode) throws Exception {
+
+    public static void handleJobCompletion(int jobId, String stdoutFilename, String stderrFilename, int exitCode) throws Exception 
+    {
         log.debug("job "+jobId+" completed with exitCode="+exitCode);
         int jobStatus = JobStatus.JOB_FINISHED;
 
@@ -1504,7 +1521,6 @@ public class GenePatternAnalysisTask {
         File outputDir = new File(outDirName);
         File[] outputFiles = outputDir.listFiles(filenameFilter);
         sortOutputFiles(outputFiles);
-        
 
         for (File f : outputFiles) {
             log.debug("adding output file to output parameters " + f.getName() + " from " + outDirName);
@@ -1521,9 +1537,6 @@ public class GenePatternAnalysisTask {
             addFileToOutputParameters(jobInfo, stdoutFilename, stdoutFilename, parentJobInfo);
         }
         File stderrFile = new File(outDir, stderrFilename);
-        if (stderrFile.exists()) {
-            addFileToOutputParameters(jobInfo, stderrFilename, stderrFilename, parentJobInfo);
-        }
         if (pipelineTaskLog != null) {
             addFileToOutputParameters(jobInfo, pipelineTaskLog.getName(), pipelineTaskLog.getName(), parentJobInfo);
         }
@@ -1537,6 +1550,7 @@ public class GenePatternAnalysisTask {
         }
         if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0) {
             jobStatus = JobStatus.JOB_ERROR;
+            addFileToOutputParameters(jobInfo, stderrFilename, stderrFilename, parentJobInfo);
         }
         else {
             jobStatus = JobStatus.JOB_FINISHED;

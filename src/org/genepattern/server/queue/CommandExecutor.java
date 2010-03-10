@@ -11,5 +11,6 @@ import org.genepattern.webservice.JobInfo;
  * @author pcarr
  */
 public interface CommandExecutor {
-    void runCommand(String commandLine[], Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer);
+    void runCommand(String commandLine[], Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer)
+    throws Exception;
 }
