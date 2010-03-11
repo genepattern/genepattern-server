@@ -52,10 +52,11 @@ public class LsfCommandExecSvc implements CommandExecutorService {
         log.info("done!");
     }
 
-    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {
-        HibernateUtil.beginTransaction();        
+    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) throws Exception 
+    {
         try {
             log.debug("Running command for job "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName());
+            HibernateUtil.beginTransaction();        
             LsfCommand cmd = new LsfCommand();
             cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdin, stderrBuffer);
         
@@ -65,8 +66,13 @@ public class LsfCommandExecSvc implements CommandExecutorService {
             log.debug(jobInfo.getJobNumber()+". "+jobInfo.getTaskName()+" is dispatched.");
         }
         catch (Throwable t) {
-            log.error("Error running lsf command for job "+jobInfo.getJobNumber(), t);
-            HibernateUtil.rollbackTransaction();
+            try {
+                HibernateUtil.rollbackTransaction();
+            }
+            catch (Throwable t1) {
+                log.error("Error in HibernateUtil.rollbackTransaction", t1);
+            }
+            throw new Exception(t);
         }
         finally {
             HibernateUtil.closeCurrentSession();
@@ -77,5 +83,4 @@ public class LsfCommandExecSvc implements CommandExecutorService {
         log.error("Terminate job not enabled");
         //TODO: implement terminate job in BroadCore library. It currently is not part of the library, pjc.
     }
-
 }
