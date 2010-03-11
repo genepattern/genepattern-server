@@ -1325,7 +1325,7 @@ public class GenePatternAnalysisTask {
                 }
             }
             
-            if (stderrBuffer.length()>0) {
+            if (stderrBuffer.length() > 0) {
                 if (exitCode == 0) {
                     exitCode = -1;
                 }
@@ -1357,9 +1357,8 @@ public class GenePatternAnalysisTask {
             }
         } 
     }
-
-    public static void handleJobCompletion(int jobId, String stdoutFilename, String stderrFilename, int exitCode) throws Exception 
-    {
+    
+    public static void handleJobCompletion(int jobId, String stdoutFilename, String stderrFilename, int exitCode) throws Exception {
         log.debug("job "+jobId+" completed with exitCode="+exitCode);
         int jobStatus = JobStatus.JOB_FINISHED;
 
