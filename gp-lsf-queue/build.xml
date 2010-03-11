@@ -46,10 +46,17 @@
         <available property="hasCommandExecutorService" classpathref="compile.classpath" classname="org.genepattern.server.queue.CommandExecutorService" />
         <fail unless="hasCommandExecutorService" message="requires org.genepattern.server.queue.CommandExecutorService on classpath" />
         <javac debug="true" srcdir="src" destdir="${build.dir}" classpathref="compile.classpath" />
+
+        <!-- copy non-java resource files to the output directory --> 
+        <copy todir="${build.dir}">
+            <fileset dir="src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
     </target>
     
     <target name="jar" depends="compile">
-        <property name="jar.file" location="${dist.dir}/gp-lsf-queue.jar" />
+        <property name="jar.file" location="${dist.dir}/a-gp-lsf-queue.jar" />
         <jar destfile="${jar.file}" basedir="${build.dir}" />
         <echo>
             To install the custom queue plugin:
