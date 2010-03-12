@@ -16,7 +16,7 @@ import edu.mit.broad.core.lsf.LsfJob;
  * 
  * @author pcarr
  */
-public class LsfCommand implements CommandExecutor {
+class LsfCommand {
     private static Logger log = Logger.getLogger(LsfCommand.class);
     
     private int jobId;

@@ -43,8 +43,8 @@
     
     <!-- target name="compile" depends="getClientLibrary" -->
     <target name="compile" depends="init">
-        <available property="hasCommandExecutorService" classpathref="compile.classpath" classname="org.genepattern.server.queue.CommandExecutorService" />
-        <fail unless="hasCommandExecutorService" message="requires org.genepattern.server.queue.CommandExecutorService on classpath" />
+        <available property="hasCommandExecutor" classpathref="compile.classpath" classname="org.genepattern.server.queue.CommandExecutor" />
+        <fail unless="hasCommandExecutor" message="requires org.genepattern.server.queue.CommandExecutor on classpath" />
         <javac debug="true" srcdir="src" destdir="${build.dir}" classpathref="compile.classpath" />
 
         <!-- copy non-java resource files to the output directory --> 

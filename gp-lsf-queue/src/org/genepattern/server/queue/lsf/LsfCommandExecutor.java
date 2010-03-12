@@ -6,7 +6,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.queue.CommandExecutorService;
+import org.genepattern.server.queue.CommandExecutor;
 import org.genepattern.webservice.JobInfo;
 import org.hibernate.cfg.Environment;
 import org.hibernate.transaction.JDBCTransactionFactory;
@@ -15,8 +15,8 @@ import edu.mit.broad.core.Main;
 import edu.mit.broad.core.lsf.LsfJob;
 import edu.mit.broad.core.lsf.LsfWrapper;
 
-public class LsfCommandExecSvc implements CommandExecutorService {
-    private static Logger log = Logger.getLogger(LsfCommandExecSvc.class);
+public class LsfCommandExecutor implements CommandExecutor {
+    private static Logger log = Logger.getLogger(LsfCommandExecutor.class);
     
     public void start() {
         log.info("Initializing LsfCommandExecSvc ...");
@@ -52,7 +52,8 @@ public class LsfCommandExecSvc implements CommandExecutorService {
         log.info("done!");
     }
 
-    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) throws Exception 
+    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) 
+    throws Exception
     {
         try {
             log.debug("Running command for job "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName());
