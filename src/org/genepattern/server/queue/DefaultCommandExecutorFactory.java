@@ -9,33 +9,23 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.genepattern.webservice.JobInfo;
 
 /**
- * Factory class for generating instances of CommandExecutorService, based on a given JobInfo.
- * This is here to enable configurable routing of jobs to different types of command executors.
- * By default, jobs are run with calls to RuntimeExec. This factory class can be updated to send jobs to LSF.
+ * Default implementation of the CommandExecutorFactory interface, it loads configuration settings 
+ * from a single configuration file, 'queue.properties', which is in the same directory as the 'genepattern.properties' file.
  * 
  * @author pcarr
  */
-public class CommandExecutorServiceFactory {
-    private static Logger log = Logger.getLogger(CommandExecutorServiceFactory.class);
-
-    public static CommandExecutorServiceFactory instance() {
-        return Singleton.commandExecutorServiceFactory;
-    }
-
-    private static class Singleton {
-        static CommandExecutorServiceFactory commandExecutorServiceFactory = new CommandExecutorServiceFactory();
-    }
+public class DefaultCommandExecutorFactory implements CommandExecutorFactory {
+    private static Logger log = Logger.getLogger(DefaultCommandExecutorFactory.class);
     
-    private String defaultQueueId="queue.default";
-    private Map<String,CommandExecutorService> map = new HashMap<String,CommandExecutorService>();
-    private Map<String,String> map2 = new HashMap<String,String>();
+    private Map<String,CommandExecutor> map = new HashMap<String,CommandExecutor>();
+    private DefaultCommandExecutorMapper mapper = null;
 
-    private CommandExecutorServiceFactory() {
+    public DefaultCommandExecutorFactory() {
+        init();
     }
-    
+
     private void init() {
         File queuePropertiesFile = new File(System.getProperty("genepattern.properties"), "queue.properties");
         Properties queueProperties = new Properties();
@@ -49,6 +39,8 @@ public class CommandExecutorServiceFactory {
     }
     
     private void init(Properties props) {
+        mapper = new DefaultCommandExecutorMapper();
+
         Enumeration e = props.propertyNames();
         while(e.hasMoreElements()) {
             String propName = (String) e.nextElement();
@@ -57,7 +49,7 @@ public class CommandExecutorServiceFactory {
                 loadQueue(propName, propValue);
             }
             else if ("default".equals(propName)) {
-                setDefaultQueueId(propValue);
+                mapper.setDefaultQueueId(propValue);
             }
             else if(propName.startsWith("queue.prop.")) {
                 //add to system properties
@@ -65,7 +57,7 @@ public class CommandExecutorServiceFactory {
                 System.setProperty(sysProp, propValue);
             }
             else {
-                appendTask(propName, propValue);
+                mapper.appendTask(propName, propValue);
             }
         }
     }
@@ -75,45 +67,41 @@ public class CommandExecutorServiceFactory {
     }
     
     private void loadQueue(String queueId, String classname) {
-        CommandExecutorService svc = loadCommandExecutorService(classname);
+        CommandExecutor svc = loadCommandExecutor(classname);
         if (svc != null) {
             map.put(queueId, svc);
+            mapper.addQueue(queueId, svc);
         }
         else {
             log.error("Failed to initialize queue, queue.id="+queueId+", classname="+classname);
         }
     }
     
-    private void setDefaultQueueId(String defaultQueueId) {
-        this.defaultQueueId=defaultQueueId;
-    }
-    
-    private void appendTask(String taskName, String queueId) {
-        map2.put(taskName, queueId);
-    }
-    
-    private CommandExecutorService loadCommandExecutorService(String svcClassname) {
-        CommandExecutorService svc = null;
+    private CommandExecutor loadCommandExecutor(String svcClassname) {
+        CommandExecutor svc = null;
         try {
             ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
             Class svcClass = Class.forName(svcClassname, false, classLoader);
-            if (!CommandExecutorService.class.isAssignableFrom(svcClass)) {
-                log.error(""+svcClass.getCanonicalName()+" does not implement "+CommandExecutorService.class.getCanonicalName());
+            if (!CommandExecutor.class.isAssignableFrom(svcClass)) {
+                log.error(""+svcClass.getCanonicalName()+" does not implement "+CommandExecutor.class.getCanonicalName());
                 return svc;
             }
-            svc = (CommandExecutorService) svcClass.newInstance();
+            svc = (CommandExecutor) svcClass.newInstance();
             return svc;
         }
         catch (Throwable t) {
-            log.error("Error loading CommandExecutorService for classname: "+svcClassname+", "+t.getLocalizedMessage(), t);
+            log.error("Error loading CommandExecutor for classname: "+svcClassname+", "+t.getLocalizedMessage(), t);
         }
         return svc;
     }
     
+    /**
+     * call this at system startup to initialize the list of CommandExecutorService instances.
+     */
     public void start() {
         init();
         
-        for(CommandExecutorService svc : map.values()) {
+        for(CommandExecutor svc : map.values()) {
             try {
                 svc.start();
             }
@@ -123,8 +111,11 @@ public class CommandExecutorServiceFactory {
         }
     }
     
+    /**
+     * call this at system shutdown to stop the list of running CommandExecutorService instances.
+     */
     public void stop() {
-        for(CommandExecutorService svc : map.values()) {
+        for(CommandExecutor svc : map.values()) {
             try {
                 svc.stop();
             }
@@ -134,21 +125,8 @@ public class CommandExecutorServiceFactory {
         }
     }
 
-    public CommandExecutorService getCommandExecutorService(JobInfo jobInfo) {
-        String taskName = jobInfo.getTaskName();
-        CommandExecutorService svc = null;
-        String queueId = null;
-
-        queueId = map2.get(taskName);
-        if (queueId == null) {
-            queueId = this.defaultQueueId;
-        }
-
-        svc = map.get(queueId);
-        //TODO: handle null
-        if (svc == null) {
-            log.error("no service found for job: "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName());
-        }
-        return svc;
+    public CommandExecutorMapper getCommandExecutorMapper() {
+        return mapper;
     }
+
 }

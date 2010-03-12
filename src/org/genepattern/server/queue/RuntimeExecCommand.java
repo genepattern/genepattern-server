@@ -26,7 +26,7 @@ import org.genepattern.webservice.ParameterInfo;
  * 
  * @author pcarr
  */
-public class RuntimeExecCommand implements CommandExecutor {
+public class RuntimeExecCommand {
     private static Logger log = Logger.getLogger(RuntimeExecCommand.class);
 
     /**

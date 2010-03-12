@@ -7,8 +7,8 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.JobInfo;
 
-public class RuntimeExecCmdExecSvc implements CommandExecutorService {
-    private static Logger log = Logger.getLogger(RuntimeExecCmdExecSvc.class);
+public class RuntimeCommandExecutor implements CommandExecutor {
+    private static Logger log = Logger.getLogger(RuntimeCommandExecutor.class);
 
     public void start() {
         // TODO Auto-generated method stub

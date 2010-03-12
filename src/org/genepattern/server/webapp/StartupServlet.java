@@ -43,7 +43,7 @@ import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.process.JobPurger;
-import org.genepattern.server.queue.CommandExecutorServiceFactory;
+import org.genepattern.server.queue.CommandExecutorManager;
 import org.genepattern.server.queue.RuntimeExecCommand;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.webapp.jsf.AboutBean;
@@ -95,7 +95,7 @@ public class StartupServlet extends HttpServlet {
         }
 
         //start the command executors before starting the internal job queue (AnalysisTask.startQueue) ...
-        CommandExecutorServiceFactory.instance().start();
+        CommandExecutorManager.instance().getCommandExecutorFactory().start();
         launchTasks();
         AnalysisManager.getInstance(); //not sure if this is necessary anymore, pjc
         AnalysisTask.startQueue();
@@ -228,7 +228,7 @@ public class StartupServlet extends HttpServlet {
         RuntimeExecCommand.terminateAll("--> Shutting down server");
         
         //stop the command executors ...
-        CommandExecutorServiceFactory.instance().stop();
+        CommandExecutorManager.instance().getCommandExecutorFactory().stop();
 
         log.info("StartupServlet: destroy done");
         dumpThreads();

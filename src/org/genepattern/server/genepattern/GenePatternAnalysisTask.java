@@ -135,8 +135,10 @@ import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.domain.JobStatusDAO;
-import org.genepattern.server.queue.CommandExecutorService;
-import org.genepattern.server.queue.CommandExecutorServiceFactory;
+import org.genepattern.server.queue.CommandExecutor;
+import org.genepattern.server.queue.CommandExecutorManager;
+import org.genepattern.server.queue.CommandExecutorNotFoundException;
+import org.genepattern.server.queue.DefaultCommandExecutorFactory;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager;
@@ -1296,8 +1298,18 @@ public class GenePatternAnalysisTask {
                     } 
                     else { 
                         commandTokens = translateCommandline(commandTokens);
-                        CommandExecutorService svc = CommandExecutorServiceFactory.instance().getCommandExecutorService(jobInfo);
-                        svc.runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
+
+                        CommandExecutor cmdExec = null;
+                        try {
+                            cmdExec = CommandExecutorManager.instance().getCommandExecutorMapper().getCommandExecutor(jobInfo);
+                            cmdExec.runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
+                        }
+                        catch (CommandExecutorNotFoundException e) {
+                            //TODO: handle this exception,
+                            // initial implementation rethrows, which causes the job to fail.
+                            // note: another option would be to keep the job in a pending state and retry later
+                            throw e;
+                        }
                    }
                 } 
                 catch (Throwable t) {

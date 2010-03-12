@@ -7,15 +7,15 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.JobInfo;
 
-public class TestCommandExecSvc implements CommandExecutorService {
-    private static Logger log = Logger.getLogger(TestCommandExecSvc.class);
+public class TestCommandExecutor implements CommandExecutor {
+    private static Logger log = Logger.getLogger(TestCommandExecutor.class);
 
     public void start() {
-        log.debug("starting CommandExecutorService ...");
+        log.debug("starting CommandExecutor ...");
     }
 
     public void stop() {
-        log.debug("stopping CommandExecutorService ...");
+        log.debug("stopping CommandExecutor ...");
     }
 
     public void terminateJob(JobInfo jobInfo) {
