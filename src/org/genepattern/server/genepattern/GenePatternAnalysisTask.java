@@ -138,7 +138,6 @@ import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.queue.CommandExecutor;
 import org.genepattern.server.queue.CommandExecutorManager;
 import org.genepattern.server.queue.CommandExecutorNotFoundException;
-import org.genepattern.server.queue.DefaultCommandExecutorFactory;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager;
@@ -1348,15 +1347,14 @@ public class GenePatternAnalysisTask {
                 writeStringToFile(outDirName, STDERR, stderrBuffer.toString());
             }
             
-            if (exitCode != 0) {
+            if ( exitCode != 0 
+                 ||
+                 TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes()) 
+                 ||
+                 taskInfo.isPipeline() ) 
+            {
                 handleJobCompletion(jobInfo.getJobNumber(), stdoutFilename, stderrFilename, exitCode);
-            }
-            else if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
-                handleJobCompletion(jobInfo.getJobNumber(), stdoutFilename, stderrFilename, exitCode);
-            }
-            else if (taskInfo.isPipeline()) {
-                handleJobCompletion(jobInfo.getJobNumber(), stdoutFilename, stderrFilename, exitCode);
-            }
+            } 
         } 
         catch (Throwable e) {
             if (e.getCause() != null) {
