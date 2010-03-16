@@ -1184,6 +1184,11 @@ public class GenePatternAnalysisTask {
             else {
                 // run the task and wait for completion.
                 log.info("running " + taskName + " (job " + jobInfo.getJobNumber() + ") command: " + commandLine.toString());
+                
+                //necessary to save parameter info changes which occurred before attempting to run the job
+                //.... otherwise, when a job submission fails, it is possible that the input files are not properly cleaned up
+                updateJobInfo(jobInfo, parentJobInfo, JobStatus.JOB_ERROR, new Date());
+                
                 File stdoutFile;
                 File stderrFile;
                 boolean renameStdout = stdoutFilename == null;
@@ -1324,11 +1329,7 @@ public class GenePatternAnalysisTask {
                     PrintWriter pw = new PrintWriter(sw);
                     t.printStackTrace(pw);
 
-                    stderrBuffer.append(sw.toString());
-                    
-                    //necessary to save parameter info changes which occurred before attempting to run the job
-                    //.... otherwise, when a job submission fails, it is possible that the input files are not properly cleaned up
-                    updateJobInfo(jobInfo, parentJobInfo, JobStatus.JOB_ERROR, new Date());
+                    stderrBuffer.append(sw.toString());                    
                 }
                 finally {
                     if (renameStdout) {
