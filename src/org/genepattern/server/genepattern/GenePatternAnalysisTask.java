@@ -1326,6 +1326,10 @@ public class GenePatternAnalysisTask {
                     t.printStackTrace(pw);
 
                     stderrBuffer.append(sw.toString());
+                    
+                    //necessary to save parameter info changes which occurred before attempting to run the job
+                    //.... otherwise, when a job submission fails, it is possible that the input files are not properly cleaned up
+                    updateJobInfo(jobInfo, parentJobInfo, JobStatus.JOB_ERROR, new Date());
                 }
                 finally {
                     if (renameStdout) {
