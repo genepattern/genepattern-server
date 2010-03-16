@@ -3,9 +3,9 @@ package org.genepattern.server.queue;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -19,28 +19,51 @@ import org.apache.log4j.Logger;
 public class DefaultCommandExecutorFactory implements CommandExecutorFactory {
     private static Logger log = Logger.getLogger(DefaultCommandExecutorFactory.class);
     
-    private Map<String,CommandExecutor> map = new HashMap<String,CommandExecutor>();
-    private DefaultCommandExecutorMapper mapper = null;
+    private List<CommandExecutor> cmdExecutorList = new ArrayList<CommandExecutor>();
+    private DefaultCommandExecutorMapper mapper = new DefaultCommandExecutorMapper();
 
     public DefaultCommandExecutorFactory() {
         init();
     }
 
+    /**
+     * Configuration when no properties file is found.
+     */
+    private void defaultInit() {
+        log.info("Using default configuration for command execution");
+        //use runtime exec for all jobs
+        CommandExecutor cmdExec = new RuntimeCommandExecutor();
+        cmdExecutorList.add(cmdExec);
+        mapper.addCommandExecutor("default", cmdExec);
+        mapper.setDefaultCmdExecId("default");
+    }
+    
+    /**
+     * Initialize by reading properties from the properties file.
+     */
     private void init() {
         File queuePropertiesFile = new File(System.getProperty("genepattern.properties"), "queue.properties");
+        if (!queuePropertiesFile.canRead()) {
+            if (!queuePropertiesFile.exists()) {
+                log.info("Command executor configuration file not found: "+queuePropertiesFile.getPath());
+            }
+            else {
+                log.error("Not able to read command executor configuration file: "+queuePropertiesFile.getPath());
+            }
+            defaultInit();
+            return;
+        }
         Properties queueProperties = new Properties();
         try {
             queueProperties.load(new FileInputStream(queuePropertiesFile));
             init(queueProperties);
         } 
         catch (IOException e) {
-            log.error("Failed to initialize job queue: "+e.getLocalizedMessage(), e);
+            log.error("Failed to initialize command executor factory: "+e.getLocalizedMessage(), e);
         }
     }
     
     private void init(Properties props) {
-        mapper = new DefaultCommandExecutorMapper();
-
         Enumeration e = props.propertyNames();
         while(e.hasMoreElements()) {
             String propName = (String) e.nextElement();
@@ -49,7 +72,7 @@ public class DefaultCommandExecutorFactory implements CommandExecutorFactory {
                 loadQueue(propName, propValue);
             }
             else if ("default".equals(propName)) {
-                mapper.setDefaultQueueId(propValue);
+                mapper.setDefaultCmdExecId(propValue);
             }
             else if(propName.startsWith("queue.prop.")) {
                 //add to system properties
@@ -69,8 +92,8 @@ public class DefaultCommandExecutorFactory implements CommandExecutorFactory {
     private void loadQueue(String queueId, String classname) {
         CommandExecutor svc = loadCommandExecutor(classname);
         if (svc != null) {
-            map.put(queueId, svc);
-            mapper.addQueue(queueId, svc);
+            cmdExecutorList.add(svc);
+            mapper.addCommandExecutor(queueId, svc);
         }
         else {
             log.error("Failed to initialize queue, queue.id="+queueId+", classname="+classname);
@@ -101,7 +124,7 @@ public class DefaultCommandExecutorFactory implements CommandExecutorFactory {
     public void start() {
         init();
         
-        for(CommandExecutor svc : map.values()) {
+        for(CommandExecutor svc : cmdExecutorList) {
             try {
                 svc.start();
             }
@@ -115,7 +138,7 @@ public class DefaultCommandExecutorFactory implements CommandExecutorFactory {
      * call this at system shutdown to stop the list of running CommandExecutorService instances.
      */
     public void stop() {
-        for(CommandExecutor svc : map.values()) {
+        for(CommandExecutor svc : cmdExecutorList) {
             try {
                 svc.stop();
             }

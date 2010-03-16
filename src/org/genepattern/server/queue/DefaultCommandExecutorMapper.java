@@ -9,33 +9,33 @@ import org.genepattern.webservice.JobInfo;
 final class DefaultCommandExecutorMapper implements CommandExecutorMapper {
     private static Logger log = Logger.getLogger(DefaultCommandExecutorMapper.class);
 
-    private String defaultQueueId="queue.default";
-    private Map<String,CommandExecutor> map = new HashMap<String,CommandExecutor>();
-    private Map<String,String> map2 = new HashMap<String,String>();
+    private String defaultCmdExecId="queue.default";
+    private Map<String,CommandExecutor> mapCmdExecIdToCmdExec = new HashMap<String,CommandExecutor>();
+    private Map<String,String> mapTaskNameToCmdExecId = new HashMap<String,String>();
     
-    public void setDefaultQueueId(String defaultQueueId) {
-        this.defaultQueueId=defaultQueueId;
+    public void setDefaultCmdExecId(String defaultCmdExecId) {
+        this.defaultCmdExecId=defaultCmdExecId;
     }
 
-    public void addQueue(String queueId, CommandExecutor cmdExec) {
-        map.put(queueId, cmdExec);        
+    public void addCommandExecutor(String cmdExecId, CommandExecutor cmdExec) {
+        mapCmdExecIdToCmdExec.put(cmdExecId, cmdExec);        
     }
 
-    public void appendTask(String taskName, String queueId) {
-        map2.put(taskName, queueId);
+    public void appendTask(String taskName, String cmdExecId) {
+        mapTaskNameToCmdExecId.put(taskName, cmdExecId);
     }
 
     public CommandExecutor getCommandExecutor(JobInfo jobInfo) throws CommandExecutorNotFoundException {
         String taskName = jobInfo.getTaskName();
         CommandExecutor cmdExec = null;
-        String queueId = null;
+        String cmdExecId = null;
 
-        queueId = map2.get(taskName);
-        if (queueId == null) {
-            queueId = this.defaultQueueId;
+        cmdExecId = mapTaskNameToCmdExecId.get(taskName);
+        if (cmdExecId == null) {
+            cmdExecId = this.defaultCmdExecId;
         }
 
-        cmdExec = map.get(queueId);
+        cmdExec = mapCmdExecIdToCmdExec.get(cmdExecId);
         //TODO: handle null
         if (cmdExec == null) {
             String errorMessage = "no CommandExecutor found for job: "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName();
