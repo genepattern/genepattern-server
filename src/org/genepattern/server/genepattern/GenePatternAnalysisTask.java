@@ -1187,7 +1187,8 @@ public class GenePatternAnalysisTask {
                 
                 //necessary to save parameter info changes which occurred before attempting to run the job
                 //.... otherwise, when a job submission fails, it is possible that the input files are not properly cleaned up
-                updateJobInfo(jobInfo, parentJobInfo, JobStatus.JOB_ERROR, new Date());
+                //TODO: need a new status code ... 'about to execute the job pending successful submission via a command executor'
+                updateJobInfo(jobInfo, parentJobInfo, JobStatus.JOB_PROCESSING, new Date());
                 
                 File stdoutFile;
                 File stderrFile;
@@ -1302,7 +1303,6 @@ public class GenePatternAnalysisTask {
                     } 
                     else { 
                         commandTokens = translateCommandline(commandTokens);
-
                         CommandExecutor cmdExec = null;
                         try {
                             cmdExec = CommandExecutorManager.instance().getCommandExecutorMapper().getCommandExecutor(jobInfo);
