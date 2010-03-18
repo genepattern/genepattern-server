@@ -2,10 +2,10 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="lib/broad-core-main-2.9.2.jar" sourcepath="/Broad/Projects/BroadCore/src/main"/>
-	<classpathentry exported="true" kind="lib" path="lib/log4j-1.2.11.jar"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/gp-3.2.3"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.11.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/gp-3.2.3"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry exported="true" kind="lib" path="lib/broad-core-main-2.9.2.jar" sourcepath="/Broad/Projects/BroadCore/src/main"/>
 	<classpathentry kind="lib" path="/gp-3.2.3/website/WEB-INF/lib/hibernate3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.queue.CommandExecutor;
 import org.genepattern.webservice.JobInfo;
 
 import edu.mit.broad.core.lsf.LsfJob;
