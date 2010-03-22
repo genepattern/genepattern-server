@@ -26,7 +26,7 @@ public class LsfTransactedCallable implements Callable<LsfJob> {
      * Starts a transaction, invokes runInTransaction and then commits or
      * rolls back the transaction as appropriate.
      */
-    public final LsfJob call() {
+    public final LsfJob call() throws LsfTransactionException, LsfJobSubmissionException {
         Transaction tx = null;
         Session session = null;
         try {
@@ -35,11 +35,9 @@ public class LsfTransactedCallable implements Callable<LsfJob> {
                 //tx = Main.getInstance().getHibernateSession().beginTransaction();
                 Session mySession = Main.getInstance().getHibernateSession();
                 if (mySession == null) {
-                    log.error("Main.getInstance().getHibernateSession returns null!");
-                }
-                if (mySession != null) {
-                    tx = mySession.beginTransaction();
-                }
+                    throw new LsfTransactionException("Main.getInstance().getHibernateSession returns null!");
+                } 
+                tx = mySession.beginTransaction();
             }
             catch (Throwable the) {
                 // But if that blows up...then try using a temporary session to initiate
@@ -52,15 +50,21 @@ public class LsfTransactedCallable implements Callable<LsfJob> {
             runInTransaction();
             tx.commit();
         }
-        catch (Throwable t) {
+        catch (LsfJobSubmissionException t) {
+            //separate DB connection errors from job submission errors
             log.error("Exception running transacted code.", t);
-
-            try { if (tx != null) {
-                tx.rollback();
-            } }
+            try { 
+                if (tx != null) {
+                    tx.rollback();
+                } 
+            }
             catch (Throwable t2) {
                 log.fatal("Error while attempting to rollback transaction.", t2);
             }
+            throw t;
+        }
+        catch (Throwable t) {
+            throw new LsfTransactionException("Exception running transacted code.", t);
         }
         return lsfJobOut;
     }
@@ -68,8 +72,42 @@ public class LsfTransactedCallable implements Callable<LsfJob> {
     /**
      * Override this method to do something different inside of the transaction.
      */
-    public void runInTransaction() throws Exception {
-        LsfWrapper lsfWrapper = new LsfWrapper();
-        lsfJobOut = lsfWrapper.dispatchLsfJob(lsfJobIn);
+    public void runInTransaction() throws LsfJobSubmissionException {
+        try {
+            LsfWrapper lsfWrapper = new LsfWrapper();
+            lsfJobOut = lsfWrapper.dispatchLsfJob(lsfJobIn);
+        }
+        catch (Throwable t) {
+            throw new LsfJobSubmissionException(t);
+        }
     }
+
+    /**
+     * For errors related to DB connections, transactions, updates, et cetera. 
+     * @author pcarr
+     */
+    public static class LsfTransactionException extends Exception {
+        public LsfTransactionException(String message) {
+            super(message);
+        }
+        public LsfTransactionException(Throwable t) {
+            this("DB error related to LSF integration: "+t.getLocalizedMessage(), t);
+        }
+        public LsfTransactionException(String message, Throwable t) {
+            super(message,t);
+        }
+    }
+    
+    /**
+     * For errors occurring while attempting to submit a job to the LSF queue.
+     * @author pcarr
+     *
+     */
+    public static class LsfJobSubmissionException extends Exception {
+        public LsfJobSubmissionException(Throwable t) {
+            super("Error while submitting job to the LSF queue: "+t.getLocalizedMessage(), t);
+        }        
+    }
+
+
 }
