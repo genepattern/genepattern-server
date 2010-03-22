@@ -28,17 +28,20 @@ public class LsfCommandExecutor implements CommandExecutor {
             System.setProperty("jboss.server.name", System.getProperty("fqHostName", "localhost"));
             
             Main broadCore = Main.getInstance();
-            broadCore.setEnvironment("prod");
+            broadCore.setEnvironment("prod");            
 
-            String dataSourceName = System.getProperty("jndi.datasource.name", "java:comp/env/jdbc/db1");
-            log.info("using jndi.datasource.name="+dataSourceName);
+            String dataSourceName = System.getProperty("hibernate.connection.datasource", "java:comp/env/jdbc/db1");
+            log.info("using hibernate.connection.datasource="+dataSourceName);
             broadCore.setDataSourceName(dataSourceName);
 
             Properties props = new Properties();
             props.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
             props.put(Environment.TRANSACTION_STRATEGY, JDBCTransactionFactory.class.getName());
-            props.put(Environment.DEFAULT_SCHEMA, "GENEPATTERN_DEV_01");
+            
+            String defaultSchema = System.getProperty("hibernate.default_schema", "GENEPATTERN_DEV_01");
+            props.put(Environment.DEFAULT_SCHEMA, defaultSchema);
             props.put(Environment.DIALECT, "org.genepattern.server.database.PlatformOracle9Dialect");
+
             broadCore.setHibernateOptions(props);
 
             //TODO: modify the check frequency, current we only check every 60 seconds
