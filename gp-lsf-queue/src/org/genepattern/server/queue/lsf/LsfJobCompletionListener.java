@@ -18,11 +18,23 @@ import edu.mit.broad.core.lsf.LsfJob.JobCompletionListener;
 public class LsfJobCompletionListener implements JobCompletionListener {
     private static Logger log = Logger.getLogger(LsfJobCompletionListener.class);
     private static ExecutorService executor = Executors.newFixedThreadPool(3);
+    
+    /**
+     * Note: using the JOB_LSF.NAME column for storing the GP_JOB_ID
+     * @param job
+     * @return
+     * @throws Exception
+     */
+    private static int getGpJobId(LsfJob job) throws Exception {
+        if (job == null) throw new Exception("Null arg");
+        if (job.getName() == null) throw new Exception("Null job.name");
+        String jobIdStr = job.getName();
+        return Integer.parseInt(jobIdStr);
+    }
 
     public void jobCompleted(LsfJob job) throws Exception {
-        log.debug("job completed...lsf_id="+job.getLsfJobId()+", gp_job_id="+job.getInternalJobId());
-        
-        final int jobId = job.getInternalJobId().intValue();
+        final int gpJobId = getGpJobId(job);
+        log.debug("job completed...lsf_id="+job.getLsfJobId()+", internal_job_id="+job.getInternalJobId()+", gp_job_id="+gpJobId);
         final String stdoutFilename = job.getOutputFilename();
         final String stderrFilename = job.getErrorFileName();
         final int exitCode = 0;
@@ -35,7 +47,7 @@ public class LsfJobCompletionListener implements JobCompletionListener {
             new FutureTask<Integer>(new Callable<Integer>() {
               public Integer call() throws Exception {
                   int rVal = 0;
-                  GenePatternAnalysisTask.handleJobCompletion(jobId, stdoutFilename, stderrFilename, exitCode);
+                  GenePatternAnalysisTask.handleJobCompletion(gpJobId, stdoutFilename, stderrFilename, exitCode);
                   return rVal;
             }});
           executor.execute(future);
@@ -43,11 +55,11 @@ public class LsfJobCompletionListener implements JobCompletionListener {
           //wait for the thread to complete before exiting
           try {
               int statusCode = future.get();
-              log.debug("job info saved to GP database, statusCode="+statusCode);
+              log.debug("job #"+gpJobId+" saved to GP database, statusCode="+statusCode);
           }
-          catch (Exception e) {
-              log.error("Error handling job completion for job #"+jobId);
-              throw e;
+          catch (Throwable t) {
+              String message = "Error handling job completion for job #"+gpJobId;
+              throw new Exception(message, t);
           }
     }
 }

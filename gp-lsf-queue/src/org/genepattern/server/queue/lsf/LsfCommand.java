@@ -56,7 +56,9 @@ class LsfCommand {
         this.runDir = runDir;
 
         lsfJob = new LsfJob();
-        lsfJob.setInternalJobId((long)jobId);
+        //note: use the name of the job (the bsub -J arg) to map the GP JOB ID to the JOB_LSF table
+        //    the internalJobId is (by default) configured as a primary key with a sequence
+        lsfJob.setName(""+jobId);
         
         String commandLineStr = getCommandLineStr(commandLine);
         log.debug("lsf job commandLine: "+commandLineStr);
