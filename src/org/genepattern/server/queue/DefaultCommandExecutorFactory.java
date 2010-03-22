@@ -74,9 +74,9 @@ public class DefaultCommandExecutorFactory implements CommandExecutorFactory {
             else if ("default".equals(propName)) {
                 mapper.setDefaultCmdExecId(propValue);
             }
-            else if(propName.startsWith("queue.prop.")) {
+            else if(propName.startsWith("prop.")) {
                 //add to system properties
-                String sysProp=propName.substring("queue.prop".length());
+                String sysProp=propName.substring("prop".length());
                 System.setProperty(sysProp, propValue);
             }
             else {
