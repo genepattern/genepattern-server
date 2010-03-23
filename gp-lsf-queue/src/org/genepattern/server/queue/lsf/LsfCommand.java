@@ -66,7 +66,9 @@ class LsfCommand {
         lsfJob.setWorkingDirectory(this.runDir.getAbsolutePath());
         //TODO: handle stdin, currently it is ignored
         //lsfJob.setInputFilename(inputFilename);
-        lsfJob.setOutputFilename(stdoutFile.getAbsolutePath());
+        lsfJob.setOutputFilename(".lsf_%J.out");
+        //lsfJob.setErrorFileName(".lsf.err");
+        //lsfJob.setOutputFilename(stdoutFile.getAbsolutePath());
         lsfJob.setErrorFileName(stderrFile.getAbsolutePath());
         
         lsfJob.setProject(project);
@@ -80,6 +82,10 @@ class LsfCommand {
         
         List<String> preExecArgs = getPreExecCommandArgs(commandLine);
         extraBsubArgs.addAll(preExecArgs);
+        
+        //HACK: special case for keeping the LSF output separate from the stdout of the process
+        extraBsubArgs.add(">>");
+        extraBsubArgs.add(stdoutFile.getAbsolutePath());
         
         lsfJob.setCompletionListenerName(LsfJobCompletionListener.class.getName());
     }
