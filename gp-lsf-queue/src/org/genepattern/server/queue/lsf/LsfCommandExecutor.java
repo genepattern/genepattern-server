@@ -1,6 +1,8 @@
 package org.genepattern.server.queue.lsf;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -22,30 +24,60 @@ public class LsfCommandExecutor implements CommandExecutor {
     //for submitting jobs to the LSF queue
     private static ExecutorService executor = Executors.newFixedThreadPool(3);
     
+    private Properties loadCustomProperties() {
+        //look for a file named 'lsf.properties' in the resources directory
+        Properties lsfProperties = new Properties();
+        File lsfPropertiesFile = new File(System.getProperty("genepattern.properties"), "lsf.properties");
+        if (!lsfPropertiesFile.canRead()) {
+            return lsfProperties;
+        } 
+        try {
+            lsfProperties.load(new FileInputStream(lsfPropertiesFile));
+        } 
+        catch (IOException e) {
+            log.error("Failed to initialize command executor factory: "+e.getLocalizedMessage(), e);
+        }
+        return lsfProperties;
+    }
+    
     public void start() {
         log.info("Initializing LsfCommandExecSvc ...");
         try {
             System.setProperty("jboss.server.name", System.getProperty("fqHostName", "localhost"));
             
             Main broadCore = Main.getInstance();
-            broadCore.setEnvironment("prod");            
-
-            String dataSourceName = System.getProperty("hibernate.connection.datasource", "java:comp/env/jdbc/db1");
+            broadCore.setEnvironment("prod"); 
+            
+            //load custom properties
+            Properties customProps = loadCustomProperties();
+            String dataSourceName = customProps.getProperty("hibernate.connection.datasource", "java:comp/env/jdbc/db1");
             log.info("using hibernate.connection.datasource="+dataSourceName);
             broadCore.setDataSourceName(dataSourceName);
 
-            Properties props = new Properties();
-            props.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
-            props.put(Environment.TRANSACTION_STRATEGY, JDBCTransactionFactory.class.getName());
-            
-            String defaultSchema = System.getProperty("hibernate.default_schema", "GENEPATTERN_DEV_01");
-            props.put(Environment.DEFAULT_SCHEMA, defaultSchema);
-            props.put(Environment.DIALECT, "org.genepattern.server.database.PlatformOracle9Dialect");
+            customProps.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, 
+                    customProps.getProperty(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread"));
+            customProps.put(Environment.TRANSACTION_STRATEGY,
+                    customProps.getProperty(Environment.TRANSACTION_STRATEGY, JDBCTransactionFactory.class.getName()));
+            customProps.put(Environment.DEFAULT_SCHEMA, 
+                    customProps.getProperty(Environment.DEFAULT_SCHEMA, "GENEPATTERN_DEV_01"));
+            customProps.put(Environment.DIALECT, 
+                    customProps.getProperty(Environment.DIALECT, "org.genepattern.server.database.PlatformOracle9Dialect"));
 
-            broadCore.setHibernateOptions(props);
+            broadCore.setHibernateOptions(customProps);
 
-            //TODO: modify the check frequency, current we only check every 60 seconds
-            broadCore.setLsfCheckFrequency(60);
+            int lsfCheckFrequency = 60;
+            String lsfCheckFrequencyProp = customProps.getProperty("lsf.check.frequency");
+            if (lsfCheckFrequencyProp != null) {
+                try {
+                    lsfCheckFrequency = Integer.parseInt(lsfCheckFrequencyProp);
+                }
+                catch (NumberFormatException e) {
+                    log.error("Invalid value, lsf.check.frequency="+lsfCheckFrequencyProp,e);
+                    log.error("Using lsf.check.frequency="+lsfCheckFrequency+" instead");
+                }
+            }
+            broadCore.setLsfCheckFrequency(lsfCheckFrequency);
+
             broadCore.start();
         }
         catch (Throwable t) {
