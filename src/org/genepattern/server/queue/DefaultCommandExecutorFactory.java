@@ -35,26 +35,30 @@ public class DefaultCommandExecutorFactory implements CommandExecutorFactory {
             return;
         }
         synchronized(this) {
-            File queuePropertiesFile = new File(System.getProperty("genepattern.properties"), "queue.properties");
-            if (!queuePropertiesFile.canRead()) {
-                if (!queuePropertiesFile.exists()) {
-                    log.info("Command executor configuration file not found: "+queuePropertiesFile.getPath());
-                }
-                else {
-                    log.error("Not able to read command executor configuration file: "+queuePropertiesFile.getPath());
-                }
-                defaultInit();
-                return;
-            }
-            Properties queueProperties = new Properties();
             try {
-                queueProperties.load(new FileInputStream(queuePropertiesFile));
-                initFromProperties(queueProperties);
-            } 
-            catch (IOException e) {
-                log.error("Failed to initialize command executor factory: "+e.getLocalizedMessage(), e);
+                File queuePropertiesFile = new File(System.getProperty("genepattern.properties"), "queue.properties");
+                if (!queuePropertiesFile.canRead()) {
+                    if (!queuePropertiesFile.exists()) {
+                        log.info("Command executor configuration file not found: "+queuePropertiesFile.getPath());
+                    }
+                    else {
+                        log.error("Not able to read command executor configuration file: "+queuePropertiesFile.getPath());
+                    }
+                    defaultInit();
+                    return;
+                }
+                Properties queueProperties = new Properties();
+                try {
+                    queueProperties.load(new FileInputStream(queuePropertiesFile));
+                    initFromProperties(queueProperties);
+                } 
+                catch (IOException e) {
+                    log.error("Failed to initialize command executor factory: "+e.getLocalizedMessage(), e);
+                }
             }
-            initialized=true;
+            finally {
+                initialized=true;
+            }
         }
     }
 
