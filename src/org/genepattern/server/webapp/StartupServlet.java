@@ -43,6 +43,7 @@ import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.process.JobPurger;
+import org.genepattern.server.queue.CommandExecutorFactory;
 import org.genepattern.server.queue.CommandExecutorManager;
 import org.genepattern.server.queue.RuntimeExecCommand;
 import org.genepattern.server.util.JobResultsFilenameFilter;
@@ -95,7 +96,9 @@ public class StartupServlet extends HttpServlet {
         }
 
         //start the command executors before starting the internal job queue (AnalysisTask.startQueue) ...
-        CommandExecutorManager.instance().getCommandExecutorFactory().start();
+        CommandExecutorManager cmdMgr = CommandExecutorManager.instance();
+        CommandExecutorFactory cmdFactory = cmdMgr.getCommandExecutorFactory();
+        cmdFactory.start();
         launchTasks();
         AnalysisManager.getInstance(); //not sure if this is necessary anymore, pjc
         AnalysisTask.startQueue();

@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 
 /**
  * Default implementation of the CommandExecutorFactory interface, it loads configuration settings 
- * from a single configuration file, 'queue.properties', which is in the same directory as the 'genepattern.properties' file.
+ * from a single properties file, 'queue.properties', which must be in the same directory as the 'genepattern.properties' file.
  * 
  * @author pcarr
  */
@@ -23,7 +23,39 @@ public class DefaultCommandExecutorFactory implements CommandExecutorFactory {
     private DefaultCommandExecutorMapper mapper = new DefaultCommandExecutorMapper();
 
     public DefaultCommandExecutorFactory() {
-        init();
+    }
+
+    private boolean initialized = false;
+
+    /**
+     * Initialize the list of CommandExecutors.
+     */
+    private void init() {
+        if (initialized) {
+            return;
+        }
+        synchronized(this) {
+            File queuePropertiesFile = new File(System.getProperty("genepattern.properties"), "queue.properties");
+            if (!queuePropertiesFile.canRead()) {
+                if (!queuePropertiesFile.exists()) {
+                    log.info("Command executor configuration file not found: "+queuePropertiesFile.getPath());
+                }
+                else {
+                    log.error("Not able to read command executor configuration file: "+queuePropertiesFile.getPath());
+                }
+                defaultInit();
+                return;
+            }
+            Properties queueProperties = new Properties();
+            try {
+                queueProperties.load(new FileInputStream(queuePropertiesFile));
+                initFromProperties(queueProperties);
+            } 
+            catch (IOException e) {
+                log.error("Failed to initialize command executor factory: "+e.getLocalizedMessage(), e);
+            }
+            initialized=true;
+        }
     }
 
     /**
@@ -38,51 +70,27 @@ public class DefaultCommandExecutorFactory implements CommandExecutorFactory {
         mapper.setDefaultCmdExecId("default");
     }
     
-    /**
-     * Initialize by reading properties from the properties file.
-     */
-    private void init() {
-        File queuePropertiesFile = new File(System.getProperty("genepattern.properties"), "queue.properties");
-        if (!queuePropertiesFile.canRead()) {
-            if (!queuePropertiesFile.exists()) {
-                log.info("Command executor configuration file not found: "+queuePropertiesFile.getPath());
+
+    private void initFromProperties(Properties props) {
+            Enumeration e = props.propertyNames();
+            while(e.hasMoreElements()) {
+                String propName = (String) e.nextElement();
+                String propValue = props.getProperty(propName);
+                if (isQueueId(propName)) {
+                    loadQueue(propName, propValue);
+                }
+                else if ("default".equals(propName)) {
+                    mapper.setDefaultCmdExecId(propValue);
+                }
+                else if(propName.startsWith("prop.")) {
+                    //add to system properties
+                    String sysProp=propName.substring("prop".length());
+                    System.setProperty(sysProp, propValue);
+                }
+                else {
+                    mapper.appendTask(propName, propValue);
+                }
             }
-            else {
-                log.error("Not able to read command executor configuration file: "+queuePropertiesFile.getPath());
-            }
-            defaultInit();
-            return;
-        }
-        Properties queueProperties = new Properties();
-        try {
-            queueProperties.load(new FileInputStream(queuePropertiesFile));
-            init(queueProperties);
-        } 
-        catch (IOException e) {
-            log.error("Failed to initialize command executor factory: "+e.getLocalizedMessage(), e);
-        }
-    }
-    
-    private void init(Properties props) {
-        Enumeration e = props.propertyNames();
-        while(e.hasMoreElements()) {
-            String propName = (String) e.nextElement();
-            String propValue = props.getProperty(propName);
-            if (isQueueId(propName)) {
-                loadQueue(propName, propValue);
-            }
-            else if ("default".equals(propName)) {
-                mapper.setDefaultCmdExecId(propValue);
-            }
-            else if(propName.startsWith("prop.")) {
-                //add to system properties
-                String sysProp=propName.substring("prop".length());
-                System.setProperty(sysProp, propValue);
-            }
-            else {
-                mapper.appendTask(propName, propValue);
-            }
-        }
     }
     
     private boolean isQueueId(String propName) {
