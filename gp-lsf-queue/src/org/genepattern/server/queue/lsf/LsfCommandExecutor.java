@@ -76,6 +76,7 @@ public class LsfCommandExecutor implements CommandExecutor {
                     log.error("Using lsf.check.frequency="+lsfCheckFrequency+" instead");
                 }
             }
+            log.info("broadCore.setLsfCheckFrequency="+lsfCheckFrequency);
             broadCore.setLsfCheckFrequency(lsfCheckFrequency);
 
             broadCore.start();
