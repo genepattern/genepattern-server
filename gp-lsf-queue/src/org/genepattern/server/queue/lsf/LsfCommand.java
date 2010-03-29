@@ -66,7 +66,7 @@ class LsfCommand {
         lsfJob.setWorkingDirectory(this.runDir.getAbsolutePath());
         //TODO: handle stdin, currently it is ignored
         //lsfJob.setInputFilename(inputFilename);
-        lsfJob.setOutputFilename(".lsf_%J.out");
+        lsfJob.setOutputFilename("cmd.out");
         //lsfJob.setErrorFileName(".lsf.err");
         //lsfJob.setOutputFilename(stdoutFile.getAbsolutePath());
         lsfJob.setErrorFileName(stderrFile.getAbsolutePath());
