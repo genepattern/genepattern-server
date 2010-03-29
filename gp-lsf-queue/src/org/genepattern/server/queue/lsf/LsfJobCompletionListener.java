@@ -59,6 +59,7 @@ public class LsfJobCompletionListener implements JobCompletionListener {
           }
           catch (Throwable t) {
               String message = "Error handling job completion for job #"+gpJobId;
+              log.error(message,t);
               throw new Exception(message, t);
           }
     }
