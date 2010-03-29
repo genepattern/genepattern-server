@@ -84,8 +84,8 @@ class LsfCommand {
         extraBsubArgs.addAll(preExecArgs);
         
         //HACK: special case for keeping the LSF output separate from the stdout of the process
-        extraBsubArgs.add(">>");
-        extraBsubArgs.add(stdoutFile.getAbsolutePath());
+        //extraBsubArgs.add(">>");
+        //extraBsubArgs.add(stdoutFile.getAbsolutePath());
         
         lsfJob.setCompletionListenerName(LsfJobCompletionListener.class.getName());
     }
