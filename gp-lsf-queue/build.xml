@@ -1,4 +1,4 @@
-<project name="gp-custom-queue" default="describe">
+<project name="gp-custom-lsf-executor" default="describe">
     <target name="describe">
         <echo>
             Compile custom command executor service plugin into a jar file for deployment to a GenePattern Server.
@@ -43,8 +43,8 @@
     
     <!-- target name="compile" depends="getClientLibrary" -->
     <target name="compile" depends="init">
-        <available property="hasCommandExecutor" classpathref="compile.classpath" classname="org.genepattern.server.queue.CommandExecutor" />
-        <fail unless="hasCommandExecutor" message="requires org.genepattern.server.queue.CommandExecutor on classpath" />
+        <available property="hasCommandExecutor" classpathref="compile.classpath" classname="org.genepattern.server.executor.CommandExecutor" />
+        <fail unless="hasCommandExecutor" message="requires org.genepattern.server.executor.CommandExecutor on classpath" />
         <javac debug="true" srcdir="src" destdir="${build.dir}" classpathref="compile.classpath" />
 
         <!-- copy non-java resource files to the output directory --> 
@@ -56,17 +56,17 @@
     </target>
     
     <target name="jar" depends="compile">
-        <property name="jar.file" location="${dist.dir}/a-gp-lsf-queue.jar" />
+        <property name="jar.file" location="${dist.dir}/gp-lsf-executor.jar" />
         <jar destfile="${jar.file}" basedir="${build.dir}" />
         <echo>
-            To install the custom queue plugin:
+            To install the custom lsf executor plugin:
             
             1) Add the ${jar.file} and any required libraries to 
                the ${GenePatternServer.dir}/Tomcat/webapps/gp/WEB-INF/lib/ directory.
             
-            2) Edit your ${GenePatternServer.dir}/resources/queue.properties file, details are in the queue.properties file.
-               #add an entry of the form, queueId=classname, e.g.
-               queue.01=org.genepattern.server.queue.custom.CustomCommandExecutorService
+            2) Edit your ${GenePatternServer.dir}/resources/exec.properties file.
+               #add an entry of the form, executorId=classname, e.g.
+               executor.01=org.genepattern.server.executor.custom.CustomCommandExecutorService
             
             3) Restart your server.
         </echo>

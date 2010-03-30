@@ -1,3 +1,5 @@
+Note: BroadCore requires Java 6
+
 To integrate this library into your GenePattern Server you need to:
 1. Configure Tomcat to provide a JNDI DataSource to the GP database
 2. Install the BroadCore library into your web app.
@@ -5,13 +7,14 @@ To integrate this library into your GenePattern Server you need to:
 
 1. Configuring the JNDI DataSource
     Note: These instructions are specific to Tomcat 5.5
+    See: http://tomcat.apache.org/tomcat-5.5-doc/jndi-datasource-examples-howto.html
     
-1.a) Add an entry in the Tomcat/conf/server.xml file. Use the correct password.
-  <GlobalNamingResources>
+1.a) Add an entry in the Tomcat/conf/context.xml file. Use the correct password.
+  <Context>
     ...
     <!-- DataSource to the GP Oracle DB  -->
     <Resource 
-        name="jdbc/db1"
+        name="jdbc/gpdb"
         auth="Container"
         type="oracle.jdbc.pool.OracleDataSource"
         driverClassName="oracle.jdbc.OracleDriver"
@@ -21,31 +24,28 @@ To integrate this library into your GenePattern Server you need to:
         password="****"
         maxActive="20"
         maxIdle="10"
-        maxWait="-1" />
-    ...
-  </GlobalNamingResources>
-
-1.b) Add an entry in the Tomcat/conf/context.xml file.
-  <Context>
-    ...
-    <ResourceLink global="jdbc/db1" name="jdbc/db1" type="oracle.jdbc.pool.OracleDataSource"/>
+        maxWait="-1" 
+        removeAbandoned="true"
+        removeAbandonedTimeout="60"
+        logAbandoned="true"
+    />
     ...
   </Context>
-  
-1.c) Instead of step (1a) you could configure the datasource within the web application. Edit Tomcat/webapps/gp/WEB-INF/web.xml. Add the following lines right after '<display-name>GenePattern</display-name>'.
+
+1.b) Add an entry in the WEB-INF/web.xml file.
   <!-- added JNDI datasource to oracle DB -->
   <resource-ref>
     <description>Reference to Oracle GP Database</description>
-    <res-ref-name>jdbc/db1</res-ref-name>
+    <res-ref-name>jdbc/gpdb</res-ref-name>
     <res-type>oracle.jdbc.pool.OracleDataSource</res-type>
     <res-auth>Container</res-auth>
   </resource-ref>
 
-1.d) finally, move your JDBC driver to the Tomcat/common/lib folder. For oracle it is ojdbc14.jar.
+1.c) finally, move your JDBC driver to the Tomcat/common/lib folder. For oracle it is ojdbc14.jar.
     mv webapps/gp/WEB-INF/lib/ojdbc14.jar common/lib
 
     
-1.e) replace the Tomcat/webapps/gp/WEB-INF/classes/hibernate.cfg.xml with the following
+1.d) replace the Tomcat/webapps/gp/WEB-INF/classes/hibernate.cfg.xml with the following
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
 
@@ -53,7 +53,7 @@ To integrate this library into your GenePattern Server you need to:
   <session-factory> 
     <!-- use a JNDI datasource provided by the Tomcat 5.5 container -->
     <property name="show_sql">false</property> 
-    <property name="hibernate.connection.datasource">java:comp/env/jdbc/db1</property>
+    <property name="hibernate.connection.datasource">java:comp/env/jdbc/gpdb</property>
     <property name="hibernate.default_schema">GENEPATTERN_DEV_01</property> <!-- does not work for sql named queries -->
     <property name="hibernate.current_session_context_class">thread</property>
     <property name="hibernate.transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
@@ -102,30 +102,20 @@ To integrate this library into your GenePattern Server you need to:
 3. Install the GP LSF library
     cp dist/*.jar Tomcat/webapps/gp/WEB-INF/lib 
     
-4. Edit the resources/queue.properties file.
-# part 1, map queue.id to implementing class which implements org.genepattern.server.queue.CommandExecutor                                                     
+4. Edit the resources/executor.properties file.
+# part 1, map executor.id to implementing class which implements org.genepattern.server.executor.CommandExecutor                                                     
 #                                                                                                                                                              
-queue.01.RuntimeExec=org.genepattern.server.queue.RuntimeCommandExecutor
-queue.02.LSF=org.genepattern.server.queue.lsf.LsfCommandExecutor
-queue.03.Test=org.genepattern.server.queue.TestCommandExecutor
-
-
-#                                                                                                                                                              
-# part 2, update system properties, using the naming convention, 'queue.prop.<propname>=<value>'                                                               
-#                                                                                                                                                              
-queue.prop.LsfCommandExecSvc.queue=genepattern
-queue.prop.LsfCommandExecSvc.project=gp_3_2_3_dev
-queue.prop.LsfCommandExecSvc.max.memory=2
+executor.01.RuntimeExec=org.genepattern.server.executor.RuntimeCommandExecutor
+executor.02.LSF=org.genepattern.server.executor.lsf.LsfCommandExecutor
 
 #                                                                                                                                                              
 # part 3, define the default queue, must match one of the queues defined in part 1                                                                             
 #                                                                                                                                                              
-default=queue.01.RuntimeExec
+default=executor.01.RuntimeExec
 
 #                                                                                                                                                              
 # part 4, map taskName to queue.id to override the default queue                                                                                               
 #                                                                                                                                                              
-ConvertLineEndings=queue.02.LSF
-testEchoSleeper=queue.02.LSF
-PreprocessDataset=queue.03.Test
+ConvertLineEndings=executor.02.LSF
+testEchoSleeper=executor.02.LSF
 
