@@ -41,11 +41,11 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.AnalysisManager;
 import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.database.HsqlDbUtil;
+import org.genepattern.server.executor.CommandExecutorFactory;
+import org.genepattern.server.executor.CommandExecutorManager;
+import org.genepattern.server.executor.RuntimeExecCommand;
 import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.process.JobPurger;
-import org.genepattern.server.queue.CommandExecutorFactory;
-import org.genepattern.server.queue.CommandExecutorManager;
-import org.genepattern.server.queue.RuntimeExecCommand;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.webapp.jsf.AboutBean;
 
