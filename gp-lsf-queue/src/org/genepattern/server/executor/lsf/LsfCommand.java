@@ -63,40 +63,41 @@ class LsfCommand {
                 s=f.getAbsolutePath();
             }
         }
+        log.debug("setting lsf.wrapper.script: "+lsfWrapperScript);
         lsfWrapperScript=s;
     }
 
-    private static void initProperties() {
-        project=System.getProperty("lsf.project", "gp_dev");
-        queue=System.getProperty("lsf.queue", "genepattern");
-        maxMemory=System.getProperty("lsf.max.memory", "2");
-        lsfWrapperScript=System.getProperty("lsf.wrapper.script");
-        if (lsfWrapperScript != null) {
-            File f = new File(lsfWrapperScript);
-            if (!f.isAbsolute()) {
-                f = new File(System.getProperty("genepattern.properties"), lsfWrapperScript);
-            }
-            if (!f.isFile() || !f.canExecute()) {
-                log.error("Configuration error, 'lsf.wrapper.script="+lsfWrapperScript+"', file is not executable': "+f.getAbsolutePath());
-                lsfWrapperScript=null;
-            }
-            else {
-                lsfWrapperScript=f.getAbsolutePath();
-            }
-        }
-        
-        //validate maxMemory
-        if (maxMemory == null) {
-            maxMemory = "2";
-        }
-        try {
-            Integer.parseInt(maxMemory);
-        }
-        catch (NumberFormatException e) {
-            log.error("Invalid setting for 'LsfCommandExecSvc.max.memory="+maxMemory+"': "+e.getLocalizedMessage(), e);
-            maxMemory="2";
-        }
-    }
+//    private static void initProperties() {
+//        project=System.getProperty("lsf.project", "gp_dev");
+//        queue=System.getProperty("lsf.queue", "genepattern");
+//        maxMemory=System.getProperty("lsf.max.memory", "2");
+//        lsfWrapperScript=System.getProperty("lsf.wrapper.script");
+//        if (lsfWrapperScript != null) {
+//            File f = new File(lsfWrapperScript);
+//            if (!f.isAbsolute()) {
+//                f = new File(System.getProperty("genepattern.properties"), lsfWrapperScript);
+//            }
+//            if (!f.isFile() || !f.canExecute()) {
+//                log.error("Configuration error, 'lsf.wrapper.script="+lsfWrapperScript+"', file is not executable': "+f.getAbsolutePath());
+//                lsfWrapperScript=null;
+//            }
+//            else {
+//                lsfWrapperScript=f.getAbsolutePath();
+//            }
+//        }
+//        
+//        //validate maxMemory
+//        if (maxMemory == null) {
+//            maxMemory = "2";
+//        }
+//        try {
+//            Integer.parseInt(maxMemory);
+//        }
+//        catch (NumberFormatException e) {
+//            log.error("Invalid setting for 'LsfCommandExecSvc.max.memory="+maxMemory+"': "+e.getLocalizedMessage(), e);
+//            maxMemory="2";
+//        }
+//    }
     
     private LsfJob lsfJob = null;
     
@@ -105,7 +106,7 @@ class LsfCommand {
     
     public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {
         //TODO: move this to global startup
-        initProperties();
+        //initProperties();
         
         this.jobId = jobInfo != null ? jobInfo.getJobNumber() : -1;
         this.runDir = runDir;
