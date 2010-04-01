@@ -50,21 +50,22 @@ class LsfCommand {
     }
 
     public static void setWrapperScript(String s) {
+        log.debug("setting lsf.wrapper.script: "+s+" ...");
         if (s != null) {
             File f = new File(s);
             if (!f.isAbsolute()) {
                 f = new File(System.getProperty("genepattern.properties"), s);
             }
-            if (!f.isFile() || !f.canExecute()) {
-                log.error("Configuration error, 'lsf.wrapper.script="+s+"', file is not executable: "+f.getAbsolutePath());
+            if (!f.isFile() || !f.canRead()) {
+                log.error("Configuration error, 'lsf.wrapper.script="+s+"' can't read: "+f.getAbsolutePath());
                 s=null;
             }
             else {
                 s=f.getAbsolutePath();
             }
         }
-        log.debug("setting lsf.wrapper.script: "+lsfWrapperScript);
         lsfWrapperScript=s;
+        log.debug("lsf.wrapper.script="+lsfWrapperScript);
     }
 
 //    private static void initProperties() {
