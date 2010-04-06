@@ -1,8 +1,6 @@
 package org.genepattern.server.executor.lsf;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -25,39 +23,9 @@ public class LsfCommandExecutor implements CommandExecutor {
     //for submitting jobs to the LSF queue
     private static ExecutorService executor = Executors.newFixedThreadPool(3);
     
-    /**
-     * Load custom properties from a file name 'lsf.properties' in the resources directory (same directory as genepattern.properties file).
-     * @return
-     */
-    private Properties loadLsfProperties() {
-        Properties lsfProperties = new Properties();
-        File lsfPropertiesFile = new File(System.getProperty("genepattern.properties"), "lsf.properties");
-        if (!lsfPropertiesFile.canRead()) {
-            return lsfProperties;
-        } 
-        try {
-            log.info("loading properties file: "+lsfPropertiesFile.getAbsolutePath());
-            lsfProperties.load(new FileInputStream(lsfPropertiesFile));
-        } 
-        catch (IOException e) {
-            log.error("Error loading properties file: "+lsfPropertiesFile.getAbsolutePath(), e);
-        }
-        return lsfProperties;
-    }
     
     private void initLsfCommandProperties(Properties lsfProperties) {
-        if (lsfProperties.containsKey("lsf.project")) {
-            LsfCommand.setProject(lsfProperties.getProperty("lsf.project"));
-        }
-        if (lsfProperties.containsKey("lsf.queue")) {
-            LsfCommand.setQueue(lsfProperties.getProperty("lsf.queue"));
-        }
-        if (lsfProperties.containsKey("lsf.max.memory")) {
-            LsfCommand.setMaxMemory(lsfProperties.getProperty("lsf.max.memory"));
-        }
-        if (lsfProperties.containsKey("lsf.wrapper.script")) {
-            LsfCommand.setWrapperScript(lsfProperties.getProperty("lsf.wrapper.script"));
-        } 
+        LsfProperties.setCustomProperties(lsfProperties);
     }
     
     public void start() {
@@ -69,7 +37,7 @@ public class LsfCommandExecutor implements CommandExecutor {
             broadCore.setEnvironment("prod"); 
             
             //load custom properties
-            Properties customProps = loadLsfProperties();
+            Properties customProps = LsfProperties.loadLsfProperties();
             initLsfCommandProperties(customProps);
             String dataSourceName = customProps.getProperty("hibernate.connection.datasource", "java:comp/env/jdbc/db1");
             log.info("using hibernate.connection.datasource="+dataSourceName);
