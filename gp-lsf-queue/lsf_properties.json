@@ -1,0 +1,43 @@
+{
+    "hibernate.connection.datasource": "java:comp/env/jdbc/cmap_dev/genepattern_dev_01",
+    "hibernate.default_schema": "GENEPATTERN_DEV_01",
+    "hibernate.dialect": "org.genepattern.server.database.PlatformOracle9Dialect",
+
+    "lsf.check.frequency": "15",
+
+    "lsf.project": "genepattern",
+    "lsf.queue": "broad",
+    "lsf.max.memory": "2",
+    "lsf.wrapper.script": "lsf_wrapper.sh",
+    "lsf.output.filename": ".lsf.out",
+    "lsf.use.pre.exec.command": "false",
+
+    "custom.props": {
+        "CBS": {
+            "lsf.max.memory": "4" },
+        "CopyNumberDivideByNormals": {
+            "lsf.max.memory": "16" },
+        "ESPPredictor": {
+            "lsf.max.memory": "8" },
+        "ExpressionFileCreator": {
+            "lsf.max.memory": "8" },
+        "GISTIC": {
+            "lsf.max.memory": "12" },
+        "GLAD": {
+            "lsf.max.memory": "8" },
+        "HierarchicalClustering": {
+            "lsf.max.memory": "4" },
+        "LOHPaired": {
+            "lsf.max.memory": "4" },
+        "NMFConsensus": {
+            "lsf.max.memory": "8" },
+        "SNPFileCreator": {
+            "lsf.max.memory": "8" },
+        "SNPFileSorter": {
+            "lsf.max.memory": "4" },
+        "SNPMultipleSampleAnalysis": {
+            "lsf.max.memory": "4" },
+        "XChromosomeCorrect": {
+            "lsf.max.memory": "4" },
+    }
+}

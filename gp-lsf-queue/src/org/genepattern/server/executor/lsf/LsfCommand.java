@@ -21,17 +21,19 @@ import edu.mit.broad.core.lsf.LsfJob;
 class LsfCommand {
     private static Logger log = Logger.getLogger(LsfCommand.class);
     
-    private int jobId;
-    private File runDir;
-    
+    private LsfProperties lsfProperties = null;
     private LsfJob lsfJob = null;
+    
+    public void setLsfProperties(LsfProperties p) {
+        this.lsfProperties = p;
+    }
     
     //example LSF command from the GP production server,
     //bsub -P $project -q "$queue" -R "rusage[mem=$max_memory]" -M $max_memory -m "$hosts" -K -o .lsf_%J.out -e $lsf_err $"$@" \>\> $cmd_out
     
     public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {        
-        this.jobId = jobInfo != null ? jobInfo.getJobNumber() : -1;
-        this.runDir = runDir;
+        int jobId = jobInfo != null ? jobInfo.getJobNumber() : -1;
+        //this.runDir = runDir;
 
         lsfJob = new LsfJob();
         //note: use the name of the job (the bsub -J arg) to map the GP JOB ID to the JOB_LSF table
@@ -41,26 +43,26 @@ class LsfCommand {
         String commandLineStr = getCommandLineStr(commandLine);
         //HACK: append a shell script to my command, whose only purpose is to separate stdout of the job from the LSF header information
         //      LSF does not have a bsub option for this
-        if (LsfProperties.getWrapperScript() != null) {
-            commandLineStr = LsfProperties.getWrapperScript() + " " + commandLineStr;
+        if (lsfProperties.getWrapperScript() != null) {
+            commandLineStr = lsfProperties.getWrapperScript() + " " + commandLineStr;
         }
         log.debug("lsf job commandLine: "+commandLineStr);
         lsfJob.setCommand(commandLineStr);
-        lsfJob.setWorkingDirectory(this.runDir.getAbsolutePath());
+        lsfJob.setWorkingDirectory(runDir.getAbsolutePath());
         //TODO: handle stdin, currently it is ignored
         //lsfJob.setInputFilename(inputFilename);
         //Note: BroadCore does not handle the %J idiom for the output file
-        lsfJob.setOutputFilename(LsfProperties.getLsfOutputFilename());
+        lsfJob.setOutputFilename(lsfProperties.getLsfOutputFilename());
         lsfJob.setErrorFileName(stderrFile.getAbsolutePath());
         
-        lsfJob.setProject(LsfProperties.getProject());
-        lsfJob.setQueue(LsfProperties.getQueue());
+        lsfJob.setProject(lsfProperties.getProject());
+        lsfJob.setQueue(lsfProperties.getQueue());
         
         List<String> extraBsubArgs = new ArrayList<String>();
         extraBsubArgs.add("-R");
-        extraBsubArgs.add("rusage[mem="+LsfProperties.getMaxMemory()+"]");
+        extraBsubArgs.add("rusage[mem="+lsfProperties.getMaxMemory()+"]");
         extraBsubArgs.add("-M");
-        extraBsubArgs.add(LsfProperties.getMaxMemory());
+        extraBsubArgs.add(lsfProperties.getMaxMemory());
         
         List<String> preExecArgs = getPreExecCommand(jobInfo);
         extraBsubArgs.addAll(preExecArgs);
@@ -106,7 +108,7 @@ class LsfCommand {
      */
     private List<String> getPreExecCommand(JobInfo jobInfo) { 
         List<String> rval = new ArrayList<String>();
-        if (!LsfProperties.getUsePreExecCommand()) {
+        if (!lsfProperties.getUsePreExecCommand()) {
             return rval;
         }
         Set<File> parentDirs = new HashSet<File>();        

@@ -11,8 +11,6 @@ import java.util.concurrent.FutureTask;
 import org.apache.log4j.Logger;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.webservice.JobInfo;
-import org.hibernate.cfg.Environment;
-import org.hibernate.transaction.JDBCTransactionFactory;
 
 import edu.mit.broad.core.Main;
 import edu.mit.broad.core.lsf.LsfJob;
@@ -22,11 +20,7 @@ public class LsfCommandExecutor implements CommandExecutor {
 
     //for submitting jobs to the LSF queue
     private static ExecutorService executor = Executors.newFixedThreadPool(3);
-    
-    
-    private void initLsfCommandProperties(Properties lsfProperties) {
-        LsfProperties.setCustomProperties(lsfProperties);
-    }
+    private LsfConfigurationJson lsfConfigurationJson = null;
     
     public void start() {
         log.info("Initializing LsfCommandExecSvc ...");
@@ -37,25 +31,17 @@ public class LsfCommandExecutor implements CommandExecutor {
             broadCore.setEnvironment("prod"); 
             
             //load custom properties
-            Properties customProps = LsfProperties.loadLsfProperties();
-            initLsfCommandProperties(customProps);
-            String dataSourceName = customProps.getProperty("hibernate.connection.datasource", "java:comp/env/jdbc/db1");
+            lsfConfigurationJson = LsfConfigurationJson.loadLsfProperties();
+            
+            String dataSourceName = lsfConfigurationJson.getProperty("hibernate.connection.datasource", "java:comp/env/jdbc/db1");
             log.info("using hibernate.connection.datasource="+dataSourceName);
             broadCore.setDataSourceName(dataSourceName);
-
-            customProps.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, 
-                    customProps.getProperty(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread"));
-            customProps.put(Environment.TRANSACTION_STRATEGY,
-                    customProps.getProperty(Environment.TRANSACTION_STRATEGY, JDBCTransactionFactory.class.getName()));
-            customProps.put(Environment.DEFAULT_SCHEMA, 
-                    customProps.getProperty(Environment.DEFAULT_SCHEMA, "GENEPATTERN_DEV_01"));
-            customProps.put(Environment.DIALECT, 
-                    customProps.getProperty(Environment.DIALECT, "org.genepattern.server.database.PlatformOracle9Dialect"));
-
-            broadCore.setHibernateOptions(customProps);
+            
+            Properties hibernateOptions = lsfConfigurationJson.getHibernateOptions();
+            broadCore.setHibernateOptions(hibernateOptions);
 
             int lsfCheckFrequency = 60;
-            String lsfCheckFrequencyProp = customProps.getProperty("lsf.check.frequency");
+            String lsfCheckFrequencyProp = lsfConfigurationJson.getProperty("lsf.check.frequency");
             if (lsfCheckFrequencyProp != null) {
                 try {
                     lsfCheckFrequency = Integer.parseInt(lsfCheckFrequencyProp);
@@ -92,6 +78,9 @@ public class LsfCommandExecutor implements CommandExecutor {
     {
         log.debug("Running command for job "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName());
         LsfCommand cmd = new LsfCommand();
+        
+        LsfProperties lsfProperties = lsfConfigurationJson.getLsfProperties(jobInfo);        
+        cmd.setLsfProperties(lsfProperties);
         cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdin, stderrBuffer);
         LsfJob lsfJob = cmd.getLsfJob();
         lsfJob = submitJob(lsfJob);
