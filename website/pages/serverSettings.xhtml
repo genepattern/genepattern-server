@@ -66,6 +66,9 @@
       <t:div rendered="#{serverSettingsBean.currentMode == 'Access'}">
         <ui:include src="serverSettingsAccess.xhtml"/>       
       </t:div>
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Command Execution'}">
+        <ui:include src="serverSettingsCommandExecutor.xhtml"/>       
+      </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'Command Line Prefix'}">
         <ui:include src="serverSettingsCLP.xhtml"/>       
       </t:div>

@@ -207,6 +207,11 @@
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  <managed-bean>
+  <managed-bean-name>commandExecutorsBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.CommandExecutorsBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+ </managed-bean>
+ <managed-bean>
   <managed-bean-name>importBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.ImportBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>

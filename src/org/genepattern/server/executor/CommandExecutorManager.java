@@ -38,8 +38,13 @@ public class CommandExecutorManager {
         return factory.getCommandExecutorMapper();
     }
     
-    public void reloadServiceMapperConfiguration() {
-        log.error("reload CommandExecutorServieMapper not implemented!");
+    public void reloadMapperConfiguration() throws Exception {
+        if (factory != null) {
+            factory.reloadMapperConfiguration();
+        }
+        else {
+            log.error("factory not initialized!");            
+        }
     }
     
     private void loadCommandExecutorFactory(String commandExecutorFactoryClass) {
