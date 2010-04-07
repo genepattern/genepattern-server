@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
@@ -36,30 +37,38 @@ public class DefaultCommandExecutorFactory implements CommandExecutorFactory {
         }
         synchronized(this) {
             try {
-                File executorPropertiesFile = new File(System.getProperty("genepattern.properties"), "executor.properties");
-                if (!executorPropertiesFile.canRead()) {
-                    if (!executorPropertiesFile.exists()) {
-                        log.info("Command executor configuration file not found: "+executorPropertiesFile.getPath());
-                    }
-                    else {
-                        log.error("Not able to read command executor configuration file: "+executorPropertiesFile.getPath());
-                    }
-                    defaultInit();
-                    return;
-                }
-                Properties executorProperties = new Properties();
-                try {
-                    executorProperties.load(new FileInputStream(executorPropertiesFile));
-                    initFromProperties(executorProperties);
-                } 
-                catch (IOException e) {
-                    log.error("Failed to initialize command executor factory: "+e.getLocalizedMessage(), e);
-                }
+                Properties executorProperties = loadExecutorProperties();
+                initFromProperties(executorProperties);
+            }
+            catch (Exception e) {
+                log.error("Unable to load executor properties, using default settings", e);
+                defaultInit();
+                return;
             }
             finally {
                 initialized=true;
             }
         }
+    }
+    
+    private Properties loadExecutorProperties() throws Exception {
+        File executorPropertiesFile = new File(System.getProperty("genepattern.properties"), "executor.properties");
+        if (!executorPropertiesFile.canRead()) {
+            if (!executorPropertiesFile.exists()) {
+                throw new Exception("Command executor configuration file not found: "+executorPropertiesFile.getPath());
+            }
+            else {
+                throw new Exception("Not able to read command executor configuration file: "+executorPropertiesFile.getPath());
+            }
+        }
+        Properties executorProperties = new Properties();
+        try {
+            executorProperties.load(new FileInputStream(executorPropertiesFile));
+        } 
+        catch (IOException e) {
+            throw new Exception("Failed to initialize command executor factory: "+e.getLocalizedMessage(), e);
+        }
+        return executorProperties;
     }
 
     /**
@@ -70,31 +79,40 @@ public class DefaultCommandExecutorFactory implements CommandExecutorFactory {
         //use runtime exec for all jobs
         CommandExecutor cmdExec = new RuntimeCommandExecutor();
         cmdExecutorList.add(cmdExec);
+        mapper = new DefaultCommandExecutorMapper();
         mapper.addCommandExecutor("default", cmdExec);
         mapper.setDefaultCmdExecId("default");
     }
     
-
     private void initFromProperties(Properties props) {
-            Enumeration e = props.propertyNames();
-            while(e.hasMoreElements()) {
-                String propName = (String) e.nextElement();
-                String propValue = props.getProperty(propName);
-                if (isExecutorId(propName)) {
+        initFromProperties(props, true);
+    }
+    private void reloadMapperFromProperties(Properties props) {
+        mapper = new DefaultCommandExecutorMapper();
+        initFromProperties(props, false);
+    }
+    private void initFromProperties(Properties props, boolean loadExecutors) {
+        Enumeration e = props.propertyNames();
+        while(e.hasMoreElements()) {
+            String propName = (String) e.nextElement();
+            String propValue = props.getProperty(propName);
+            if (isExecutorId(propName)) {
+                if (loadExecutors) {
                     loadExecutor(propName, propValue);
                 }
-                else if ("default".equals(propName)) {
-                    mapper.setDefaultCmdExecId(propValue);
-                }
-                else if(propName.startsWith("prop.")) {
-                    //add to system properties
-                    String sysProp=propName.substring("prop".length());
-                    System.setProperty(sysProp, propValue);
-                }
-                else {
-                    mapper.appendTask(propName, propValue);
-                }
             }
+            else if ("default".equals(propName)) {
+                mapper.setDefaultCmdExecId(propValue);
+            }
+            else if(propName.startsWith("prop.")) {
+                //add to system properties
+                String sysProp=propName.substring("prop".length());
+                System.setProperty(sysProp, propValue);
+            }
+            else {
+                mapper.appendTask(propName, propValue);
+            }
+        }
     }
     
     private boolean isExecutorId(String propName) {
@@ -162,6 +180,17 @@ public class DefaultCommandExecutorFactory implements CommandExecutorFactory {
 
     public CommandExecutorMapper getCommandExecutorMapper() {
         return mapper;
+    }
+    
+    public List<CommandExecutor> getCommandExecutors() {
+        return Collections.unmodifiableList(cmdExecutorList);
+    }
+    
+    public void reloadMapperConfiguration() throws Exception {
+        synchronized(this) {
+            Properties executorProperties = loadExecutorProperties();
+            reloadMapperFromProperties(executorProperties);
+        }
     }
 
 }
