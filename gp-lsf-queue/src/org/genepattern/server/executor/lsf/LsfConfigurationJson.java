@@ -78,30 +78,17 @@ public class LsfConfigurationJson {
 
     public void reloadPropertiesFromJsonObject(JSONObject lsfJson) {
         this.lsfJson = lsfJson;
+        JSONObject lsfJsonDefaultProps = (JSONObject) lsfJson.get("default.props");
         this.defaultLsfProperties = new LsfProperties();
-        updateLsfPropertiesFromCustom(defaultLsfProperties, lsfJson);
+        updateLsfPropertiesFromJson(defaultLsfProperties, lsfJsonDefaultProps);
     }
     
-    private static void updateLsfPropertiesFromCustom(LsfProperties propsToUpdate, JSONObject customPropsForTask) {
-        if (customPropsForTask.containsKey("lsf.project")) {
-            propsToUpdate.setProject( (String) customPropsForTask.get("lsf.project"));
+    private static void updateLsfPropertiesFromJson(LsfProperties lsfProperties, JSONObject jsonObject) {
+        for(LsfProperties.Key propertyName : LsfProperties.Key.values()) {
+            String key = propertyName.getKey();
+            lsfProperties.put(propertyName, (String) jsonObject.get(key));
         }
-        if (customPropsForTask.containsKey("lsf.queue")) {
-            propsToUpdate.setQueue( (String) customPropsForTask.get("lsf.queue"));
-        }
-        if (customPropsForTask.containsKey("lsf.max.memory")) {
-            propsToUpdate.setMaxMemory( (String) customPropsForTask.get("lsf.max.memory"));
-        }
-        if (customPropsForTask.containsKey("lsf.wrapper.script")) {
-            propsToUpdate.setWrapperScript( (String) customPropsForTask.get("lsf.wrapper.script"));
-        }
-        if (customPropsForTask.containsKey("lsf.output.filename")) {
-            propsToUpdate.setLsfOutputFilename( (String) customPropsForTask.get("lsf.output.filename"));
-        }
-        if (customPropsForTask.containsKey("lsf.use.pre.exec.command")) {
-            boolean b = Boolean.valueOf( (String) customPropsForTask.get("lsf.use.pre.exec.command") );
-            propsToUpdate.setUsePreExecCommand(b);
-        }        
+        lsfProperties.validate();
     }
     
     public Properties getHibernateOptions() {
@@ -170,27 +157,25 @@ public class LsfConfigurationJson {
         Lsid lsid = new Lsid(jobInfo.getTaskLSID());
         if (customProps.containsKey(jobInfo.getTaskName())) {
             extraProps = (JSONObject) customProps.get(taskName);
-            updateLsfPropertiesFromCustom(lsfProperties, extraProps);
+            updateLsfPropertiesFromJson(lsfProperties, extraProps);
         }
         else if (customProps.containsKey(lsid.getLsidNoVersion())) {
             extraProps = (JSONObject) customProps.get(lsid.getLsidNoVersion());
-            updateLsfPropertiesFromCustom(lsfProperties, extraProps);
+            updateLsfPropertiesFromJson(lsfProperties, extraProps);
         }
         else if (customProps.containsKey(lsid.getLsid())) {
             extraProps = (JSONObject) customProps.get(lsid.getLsid());
-            updateLsfPropertiesFromCustom(lsfProperties, extraProps);
+            updateLsfPropertiesFromJson(lsfProperties, extraProps);
         } 
         return lsfProperties;
     }
     
     private LsfProperties initFromDefault() {
         LsfProperties p = new LsfProperties();
-        p.setLsfOutputFilename(defaultLsfProperties.getLsfOutputFilename());
-        p.setMaxMemory(defaultLsfProperties.getMaxMemory());
-        p.setProject(defaultLsfProperties.getProject());
-        p.setQueue(defaultLsfProperties.getQueue());
-        p.setUsePreExecCommand(defaultLsfProperties.getUsePreExecCommand());
-        p.setWrapperScript(defaultLsfProperties.getWrapperScript());
+        for(LsfProperties.Key key : LsfProperties.Key.values()) {
+            p.put(key, defaultLsfProperties.get(key));
+        }
+        p.validate();
         return p;
     }
 

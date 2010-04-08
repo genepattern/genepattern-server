@@ -5,16 +5,28 @@
 
     "lsf.check.frequency": "15",
 
-    "lsf.project": "genepattern",
-    "lsf.queue": "broad",
-    "lsf.max.memory": "2",
-    "lsf.wrapper.script": "lsf_wrapper.sh",
-    "lsf.output.filename": ".lsf.out",
-    "lsf.use.pre.exec.command": "false",
+    "default.props: {
+        "lsf.project": "genepattern",
+        "lsf.queue": "broad",
+        "lsf.max.memory": "2",
+        "lsf.wrapper.script": "lsf_wrapper.sh",
+        "lsf.output.filename": ".lsf.out",
+        "lsf.use.pre.exec.command": "true",
+        "lsf.extra.bsub.args": null
+    }
 
     "custom.props": {
+        "Demo": {
+            "lsf.project": "gp-dev",
+            "lsf.queue": "genepattern",
+            "lsf.max.memory": "8",
+            "lsf.wrapper.script": null,
+            "lsf.output.filename": ".lsf.out",
+            "lsf.use.pre.exec.command": "true",
+        }
         "CBS": {
-            "lsf.max.memory": "4" },
+            "lsf.max.memory": "4" 
+        },
         "CopyNumberDivideByNormals": {
             "lsf.max.memory": "16" },
         "ESPPredictor": {

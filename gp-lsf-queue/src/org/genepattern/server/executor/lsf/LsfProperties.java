@@ -1,89 +1,88 @@
 package org.genepattern.server.executor.lsf;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-
 public class LsfProperties {
     private static Logger log = Logger.getLogger(LsfProperties.class);
-
-    //default values
-    private String project="gp_dev";
-    private String queue="genepattern";
-    private String maxMemory="2"; //2G
-    private String lsfWrapperScript=null;
-    private String lsfOutputFilename=".lsf.out";
-    private boolean usePreExecCommand=false;
-
-    public void setProject(String s) {
-        project=s;
+    
+    public enum Key {
+        PROJECT("lsf.project"),
+        QUEUE("lsf.queue"),
+        MAX_MEMORY("lsf.max.memory"),
+        WRAPPER_SCRIPT("lsf.wrapper.script"),
+        OUTPUT_FILENAME("lsf.output.filename"),
+        USE_PRE_EXEC_COMMAND("lsf.use.pre.exec.command"),
+        EXTRA_BSUB_ARGS("lsf.extra.bsub.args");
+        
+        private String key="lsf.key";
+        Key(String key) {
+            this.key = key;
+            if (key == null) {
+                key = name();
+            }
+        }
+        public String getKey() {
+            return key;
+        }
     }
-    public String getProject() {
-        return project;
+    
+    private Map<Key,String> props = new HashMap<Key,String>();
+    
+    public void put(Key key, String value) {
+        props.put(key, value);
     }
-
-    public void setQueue(String s) {
-        queue=s;
+    public String get(Key propertyName) {
+        return props.get(propertyName);
     }
-    public String getQueue() {
-        return queue;
+    public boolean getAsBoolean(Key propertyName) {
+        String v = props.get(propertyName);
+        return Boolean.valueOf(v);
     }
-
-    public void setMaxMemory(String s) {
-        //validate maxMemory
+    
+    public void validate() {
+        validateMaxMemory();
+        validateWrapperScript();
+    }
+    
+    private void validateMaxMemory() {
+        String s = props.get(Key.MAX_MEMORY);
         if (s == null) {
-            maxMemory = "2";
+            //Note: hard coded default setting
+            props.put(Key.MAX_MEMORY, "2");
+            return;
         }
         try {
             Integer.parseInt(s);
         }
         catch (NumberFormatException e) {
             log.error("Invalid setting for 'lsf.max.memory="+s+"': "+e.getLocalizedMessage(), e);
-            maxMemory="2";
+            //Note: hard coded default setting
+            props.put(Key.MAX_MEMORY, "2");
+            return;
         }
-        maxMemory=s;
     }
     
-    
-    public String getMaxMemory() {
-        return maxMemory;
-    }
-
-    public void setWrapperScript(String s) {
+    private void validateWrapperScript() {
+        String s = props.get(Key.WRAPPER_SCRIPT);
         log.debug("setting lsf.wrapper.script: "+s+" ...");
         if (s != null) {
-            File f = new File(s);
-            if (!f.isAbsolute()) {
-                f = new File(System.getProperty("genepattern.properties"), s);
-            }
-            if (!f.isFile() || !f.canRead()) {
-                log.error("Configuration error, 'lsf.wrapper.script="+s+"' can't read: "+f.getAbsolutePath());
-                s=null;
-            }
-            else {
-                s=f.getAbsolutePath();
-            }
-        }
-        lsfWrapperScript=s;
-        log.debug("lsf.wrapper.script="+lsfWrapperScript);
+          File f = new File(s);
+          if (!f.isAbsolute()) {
+              f = new File(System.getProperty("genepattern.properties"), s);
+          }
+          if (!f.isFile() || !f.canRead()) {
+              log.error("Configuration error, 'lsf.wrapper.script="+s+"' can't read: "+f.getAbsolutePath());
+              props.put(Key.WRAPPER_SCRIPT, null);
+          }
+          else {
+              s=f.getAbsolutePath();
+              props.put(Key.WRAPPER_SCRIPT, s);
+          }
+      }
+      log.debug("lsf.wrapper.script="+s);
     }
-    public String getWrapperScript() {
-        return lsfWrapperScript;
-    }
-    
-    public void setLsfOutputFilename(String s) {
-        lsfOutputFilename=s;
-    }
-    public String getLsfOutputFilename() {
-        return lsfOutputFilename;
-    }
-    
-    public void setUsePreExecCommand(boolean b) {
-        usePreExecCommand=b;
-    }
-    public boolean getUsePreExecCommand() {
-        return usePreExecCommand;
-    }
-
 }

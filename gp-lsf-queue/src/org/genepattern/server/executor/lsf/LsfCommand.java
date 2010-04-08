@@ -43,8 +43,9 @@ class LsfCommand {
         String commandLineStr = getCommandLineStr(commandLine);
         //HACK: append a shell script to my command, whose only purpose is to separate stdout of the job from the LSF header information
         //      LSF does not have a bsub option for this
-        if (lsfProperties.getWrapperScript() != null) {
-            commandLineStr = lsfProperties.getWrapperScript() + " " + commandLineStr;
+        String wrapperScript = lsfProperties.get(LsfProperties.Key.WRAPPER_SCRIPT);
+        if (wrapperScript != null) {
+            commandLineStr = wrapperScript + " " + commandLineStr;
         }
         log.debug("lsf job commandLine: "+commandLineStr);
         lsfJob.setCommand(commandLineStr);
@@ -52,17 +53,18 @@ class LsfCommand {
         //TODO: handle stdin, currently it is ignored
         //lsfJob.setInputFilename(inputFilename);
         //Note: BroadCore does not handle the %J idiom for the output file
-        lsfJob.setOutputFilename(lsfProperties.getLsfOutputFilename());
+        lsfJob.setOutputFilename(lsfProperties.get(LsfProperties.Key.OUTPUT_FILENAME));
         lsfJob.setErrorFileName(stderrFile.getAbsolutePath());
         
-        lsfJob.setProject(lsfProperties.getProject());
-        lsfJob.setQueue(lsfProperties.getQueue());
+        lsfJob.setProject(lsfProperties.get(LsfProperties.Key.PROJECT));
+        lsfJob.setQueue(lsfProperties.get(LsfProperties.Key.QUEUE));
         
         List<String> extraBsubArgs = new ArrayList<String>();
+        String maxMemory = lsfProperties.get(LsfProperties.Key.MAX_MEMORY);
         extraBsubArgs.add("-R");
-        extraBsubArgs.add("rusage[mem="+lsfProperties.getMaxMemory()+"]");
+        extraBsubArgs.add("rusage[mem="+maxMemory+"]");
         extraBsubArgs.add("-M");
-        extraBsubArgs.add(lsfProperties.getMaxMemory());
+        extraBsubArgs.add(maxMemory);
         
         List<String> preExecArgs = getPreExecCommand(jobInfo);
         extraBsubArgs.addAll(preExecArgs);
@@ -108,7 +110,7 @@ class LsfCommand {
      */
     private List<String> getPreExecCommand(JobInfo jobInfo) { 
         List<String> rval = new ArrayList<String>();
-        if (!lsfProperties.getUsePreExecCommand()) {
+        if (!lsfProperties.getAsBoolean(LsfProperties.Key.USE_PRE_EXEC_COMMAND)) {
             return rval;
         }
         Set<File> parentDirs = new HashSet<File>();        
