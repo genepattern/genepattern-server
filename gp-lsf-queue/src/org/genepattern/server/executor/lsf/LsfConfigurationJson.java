@@ -18,29 +18,21 @@ import org.json.simple.JSONValue;
  * Configure LSF default and custom properties by reading a JSON properties file, 'lsf_properties.json'.
  * @author pcarr
  */
-public class LsfConfigurationJson {
+public class LsfConfigurationJson implements LsfConfiguration {
     private static Logger log = Logger.getLogger(LsfConfigurationJson.class);
 
     private LsfProperties defaultLsfProperties = null;
     private JSONObject lsfJson = null;
     
-    public static LsfConfigurationJson loadLsfProperties() {
-        LsfConfigurationJson config = new LsfConfigurationJson();
-        try {
-            config.reloadPropertiesFromFile();
-        }
-        catch (Exception e) {
-            //ignoring, it is logged in the reloadPropertiesFromFile ...
-            return new LsfConfigurationJson();            
-        }
-        return config;
-    }
-    
-    private LsfConfigurationJson() {   
+    public LsfConfigurationJson() {   
     }
 
-    private LsfConfigurationJson(JSONObject lsfProperties) {
+    public LsfConfigurationJson(JSONObject lsfProperties) {
         reloadPropertiesFromJsonObject(lsfProperties);
+    }
+    
+    public void reloadConfiguration() throws Exception {
+        reloadPropertiesFromFile();
     }
     
     public void reloadPropertiesFromFile() throws Exception {

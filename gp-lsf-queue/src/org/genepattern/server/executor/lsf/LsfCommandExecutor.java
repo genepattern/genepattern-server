@@ -20,28 +20,37 @@ public class LsfCommandExecutor implements CommandExecutor {
 
     //for submitting jobs to the LSF queue
     private static ExecutorService executor = Executors.newFixedThreadPool(3);
-    private LsfConfigurationJson lsfConfigurationJson = null;
+    private LsfConfiguration lsfConfiguration = null;
+    
+    public void reloadConfiguration() throws Exception {
+        synchronized(this) {
+            if (lsfConfiguration != null) {
+                lsfConfiguration.reloadConfiguration();
+            }
+        }
+    }
     
     public void start() {
         log.info("Initializing LsfCommandExecSvc ...");
         try {
+            //load custom properties
+            lsfConfiguration = LsfConfigurationFactory.getLsfConfiguration();
+
             System.setProperty("jboss.server.name", System.getProperty("fqHostName", "localhost"));
             
             Main broadCore = Main.getInstance();
             broadCore.setEnvironment("prod"); 
             
-            //load custom properties
-            lsfConfigurationJson = LsfConfigurationJson.loadLsfProperties();
             
-            String dataSourceName = lsfConfigurationJson.getProperty("hibernate.connection.datasource", "java:comp/env/jdbc/db1");
+            String dataSourceName = lsfConfiguration.getProperty("hibernate.connection.datasource", "java:comp/env/jdbc/db1");
             log.info("using hibernate.connection.datasource="+dataSourceName);
             broadCore.setDataSourceName(dataSourceName);
             
-            Properties hibernateOptions = lsfConfigurationJson.getHibernateOptions();
+            Properties hibernateOptions = lsfConfiguration.getHibernateOptions();
             broadCore.setHibernateOptions(hibernateOptions);
 
             int lsfCheckFrequency = 60;
-            String lsfCheckFrequencyProp = lsfConfigurationJson.getProperty("lsf.check.frequency");
+            String lsfCheckFrequencyProp = lsfConfiguration.getProperty("lsf.check.frequency");
             if (lsfCheckFrequencyProp != null) {
                 try {
                     lsfCheckFrequency = Integer.parseInt(lsfCheckFrequencyProp);
@@ -79,7 +88,7 @@ public class LsfCommandExecutor implements CommandExecutor {
         log.debug("Running command for job "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName());
         LsfCommand cmd = new LsfCommand();
         
-        LsfProperties lsfProperties = lsfConfigurationJson.getLsfProperties(jobInfo);        
+        LsfProperties lsfProperties = lsfConfiguration.getLsfProperties(jobInfo);        
         cmd.setLsfProperties(lsfProperties);
         cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdin, stderrBuffer);
         LsfJob lsfJob = cmd.getLsfJob();
@@ -112,6 +121,8 @@ public class LsfCommandExecutor implements CommandExecutor {
         log.error("Terminate job not enabled");
         //TODO: implement terminate job in BroadCore library. It currently is not part of the library, pjc.
     }
+    
+    
     
 }
 
