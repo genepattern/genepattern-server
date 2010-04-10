@@ -55,6 +55,14 @@ public interface CommandExecutor {
      */
     void terminateJob(JobInfo jobInfo);
 
+    /**
+     * Reload configuration information from the file system.
+     *
+     * Use case: a gp server admin changes configuration files for a specific integration, e.g. LSF, and wants to reload the configuration without 
+     * stopping and then starting the command executor.
+     */
+    void reloadConfiguration() throws Exception;
+
     //TODO: add these methods to the interface
     //void pauseJob(JobInfo jobInfo);
     //public void resumeJob(JobInfo jobInfo);

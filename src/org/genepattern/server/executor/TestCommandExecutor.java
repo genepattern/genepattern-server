@@ -48,4 +48,8 @@ public class TestCommandExecutor implements CommandExecutor {
             log.error("Error handling job completion for job "+jobInfo.getJobNumber(), e);
         }
     }
+    
+    public void reloadConfiguration() {
+        //no-op
+    }
 }

@@ -40,5 +40,10 @@ public class RuntimeCommandExecutor implements CommandExecutor {
         // TODO Auto-generated method stub
         
     }
+    
+    public void reloadConfiguration() {
+        log.error("method not implemented: reloadConfiguration()");
+    }
+
 
 }
