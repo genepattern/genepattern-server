@@ -13,17 +13,32 @@ import org.genepattern.server.executor.CommandExecutorManager;
  * @author pcarr
  */
 public class CommandExecutorsBean {
+    /**
+     * Gui view of a command executor.
+     * @author pcarr
+     */
     public static class Obj {
-        private String id = "defaultId";
-        private String classname = "defaultClassname";
-        public String getId() {
-            return id;
-        }
+        private CommandExecutor exec = null;
+        private String id = "";
+        private String classname = "";
         
+        public Obj(CommandExecutor exec) {
+            this.exec = exec;
+            this.classname = exec.getClass().getCanonicalName();
+        }
+
+        public CommandExecutor getCommandExecutor() {
+            return exec;
+        }
+
         public String getClassname() {
             return classname;
-        } 
+        }
     }
+    
+    private List<Obj> commandExecutors = null;
+    private CommandExecutor cmdExecutor = null;
+
 
     /**
      * Reload the configuration file for the mapper.
@@ -36,21 +51,31 @@ public class CommandExecutorsBean {
     }
     
     public List<Obj> getCommandExecutors() {
-        List<Obj> rval = new ArrayList<Obj>();
+        if (commandExecutors != null) {
+            return commandExecutors;
+        }
+        commandExecutors = new ArrayList<Obj>();
 
         CommandExecutorManager mgr = CommandExecutorManager.instance();
         CommandExecutorFactory f = mgr.getCommandExecutorFactory();
         List<CommandExecutor> l = f.getCommandExecutors();
         for(CommandExecutor cmd : l) {
-            String classname = cmd.getClass().getCanonicalName();
-            if (classname != null) {
-                Obj obj = new Obj();
-                obj.classname = classname;
-                rval.add(obj);
-            }
+            commandExecutors.add(new Obj(cmd));
+        } 
+        return commandExecutors;
+    }
+    
+    public void setCmdExecutor(Obj obj) {
+        this.cmdExecutor = obj.getCommandExecutor();
+    }
+    
+    public void reloadConfigurationForItem() throws Exception {
+        if (this.cmdExecutor != null) {
+            cmdExecutor.reloadConfiguration();
         }
-        
-        return rval;
+        else {
+            System.err.println("unknown cmd executor!");
+        }
     }
 
 }

@@ -23,30 +23,27 @@
         <td>Command Execution</td>        
       </tr>
     </table>
-    
-    <div>
+
     <h:form>
     <h:commandLink immediate="false" action="#{commandExecutorsBean.reloadMapperConfiguration}">Reload mapper configuration</h:commandLink>
-    </h:form>
-    </div>
-    
-    <h3>Command Executors</h3>
     <table border="0" cellpadding="0" cellspacing="0" >
       <thead>
       <tr class="tableheader-row2">
         <td align="left">id</td>
         <td align="left">CommandExecutor</td>
-        <td align="left">col3</td>
-        <td align="left" style="padding-left: 10px; padding-right: 10px;">col4</td>
+        <td align="left" style="padding-left: 10px; padding-right: 10px;">action</td>
       </tr>
-      </thead>
-    <t:dataList var="cmdExecutor" value="#{commandExecutorsBean.commandExecutors}">
+      </thead>	
+	<t:dataList var="cmdExecutor" value="#{commandExecutorsBean.commandExecutors}">
       <tr class="admin-row">
         <td></td>
         <td>#{cmdExecutor.classname}</td>
-        <td></td>
-        <td></td>
+        <td><h:commandLink value="reload" action="#{commandExecutorsBean.reloadConfigurationForItem}">
+        	  <f:setPropertyActionListener target="#{commandExecutorsBean.cmdExecutor}" value="#{cmdExecutor}" />
+        	</h:commandLink></td>
       </tr>
     </t:dataList>
     </table>
+    </h:form>
+
 </html>
