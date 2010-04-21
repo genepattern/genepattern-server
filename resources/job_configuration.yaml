@@ -44,19 +44,8 @@ executors:
             lsf.use.pre.exec.command: "false"
             lsf.extra.bsub.args: "null"
 
-#mappings:
-#    echoTest: LSF.GPDEV
-#    ConvertLineEndings: Test
-#    <lsid>: <execId>
-#    <lsid:version>: <execId>
-#    <taskName>
-
-# &combat_env: 
-#     LD_LIBRARY_PATH: /broad/tools/Linux/x86_64/pkgs/cairo/lib:/broad/tools/Linux/x86_64/pkgs/pixman/lib:$LD_LIBRARY_PATH
-#     R_LIBS: /xchip/genepattern/gp_r_libs
-
 # override default.properties and <executor>.job.properties based on taskname or lsid
-# Note: <executor>.configuration.properties are intended to be applied at executor startup and may not make sense to be overwritten here
+# Note: <executor>.configuration.properties are intended to be applied at startup and may not make sense to be overwritten here
 custom.properties:
     echoTest:
         executor: RuntimeExec
