@@ -36,7 +36,8 @@ public class HibernateUtil {
             // Create the SessionFactory from hibernate.cfg.xml
             try {
                 Configuration config = new Configuration();
-                config.configure("hibernate.cfg.xml");
+                String configResource = System.getProperty("hibernate.configuration.file", "hibernate.cfg.xml");
+                config.configure(configResource);
                 mergeSystemProperties(config);
                 return config.buildSessionFactory();
             }
