@@ -1,0 +1,92 @@
+#
+# Configure job execution
+#
+# Note: this is a YAML file, indentation is important, TAB characters are not permitted
+#
+
+# apply these properties to all jobs
+default.properties: 
+    executor: RuntimeExec
+    java_flags: -Xmx4g
+
+# a list of command executors
+# a map of <id>:<obj>, where
+#    obj := <classname> | <struct>
+#    classname := fully qualified classname of a class which implements the org.genepattern.server.executor.CommandExecutor interface
+#    struct := classname=<classname> [configuration.file: <path_to_config_file> | configuration.properties: <map>] [job.properties: <map>]
+executors:
+    # simple declaration, of the form <id>:<classname>
+    RuntimeExec: org.genepattern.server.executor.RuntimeCommandExecutor
+
+    # nested declaration with configuration file, <id>: { classname: <classname>, configuration: <config_file.yaml> }
+    Test:
+        classname: org.genepattern.server.executor.TestCommandExecutor
+        configuration.file: test_command_executor.yaml
+
+    # nested declaration with embedded configuration, <id>: { classname: <classname>, configuration: {}} 
+    LSF:
+        classname: org.genepattern.server.executor.lsf.LsfCommandExecutor
+        #BroadCore configuration properties
+        configuration.properties:
+            hibernate.connection.datasource: java:comp/env/jdbc/cmap_dev/genepattern_dev_01
+            hibernate.default_schema: GENEPATTERN_DEV_01
+            hibernate.dialect: org.genepattern.server.database.PlatformOracle9Dialect
+            # number of seconds to check for completed jobs
+            lsf.check.frequency: 15
+        #job specific default properties applied to all jobs run with this executor
+        #note: to override defaults add entries to the custom.props section
+        job.properties:
+            lsf.project: genepattern
+            lsf.queue: broad
+            lsf.max.memory: 2
+            lsf.wrapper.script: lsf_wrapper.sh
+            lsf.output.filename: .lsf.out
+            lsf.use.pre.exec.command: "false"
+            lsf.extra.bsub.args: "null"
+
+#mappings:
+#    echoTest: LSF.GPDEV
+#    ConvertLineEndings: Test
+#    <lsid>: <execId>
+#    <lsid:version>: <execId>
+#    <taskName>
+
+# &combat_env: 
+#     LD_LIBRARY_PATH: /broad/tools/Linux/x86_64/pkgs/cairo/lib:/broad/tools/Linux/x86_64/pkgs/pixman/lib:$LD_LIBRARY_PATH
+#     R_LIBS: /xchip/genepattern/gp_r_libs
+
+# override default.properties and <executor>.job.properties based on taskname or lsid
+# Note: <executor>.configuration.properties are intended to be applied at executor startup and may not make sense to be overwritten here
+custom.properties:
+    echoTest:
+        executor: RuntimeExec
+    CBS:
+        executor: Test
+        lsf.max.memory: 16
+        java_flags: -Xmx16g
+    CopyNumberDivideByNormals:
+        executor: Test
+        lsf.max.memory: 16
+    ESPPredictor:
+        lsf.max.memory: 8
+    ExpressionFileCreator: 
+        lsf.max.memory: 8
+    GISTIC: 
+        lsf.max.memory: 12
+    GLAD: 
+        lsf.max.memory: 8
+    HierarchicalClustering: 
+        lsf.max.memory: 4
+    LOHPaired: 
+        lsf.max.memory: 4
+    NMFConsensus: 
+        lsf.max.memory: 8
+    #example usage of anchor '&' and '*' alias to reuse the same set of properties
+    SNPFileCreator: &snp_settings
+        executor: LSF
+        lsf.max.memory: 12
+        java_flags: -Xmx12g
+    SNPFileSorter: *snp_settings
+    SNPMultipleSampleAnalysis: *snp_settings
+    XChromosomeCorrect: 
+        lsf.max.memory: 4

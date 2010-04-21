@@ -136,7 +136,7 @@ import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.executor.CommandExecutor;
-import org.genepattern.server.executor.CommandExecutorManager;
+import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.CommandExecutorNotFoundException;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
@@ -1305,7 +1305,7 @@ public class GenePatternAnalysisTask {
                         commandTokens = translateCommandline(commandTokens);
                         CommandExecutor cmdExec = null;
                         try {
-                            cmdExec = CommandExecutorManager.instance().getCommandExecutorMapper().getCommandExecutor(jobInfo);
+                            cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
                             cmdExec.runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
                         }
                         catch (CommandExecutorNotFoundException e) {

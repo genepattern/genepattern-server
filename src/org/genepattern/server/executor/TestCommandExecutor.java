@@ -2,6 +2,7 @@ package org.genepattern.server.executor;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -9,17 +10,25 @@ import org.genepattern.webservice.JobInfo;
 
 public class TestCommandExecutor implements CommandExecutor {
     private static Logger log = Logger.getLogger(TestCommandExecutor.class);
+    
+    public void setConfigurationFilename(String filename) {
+        log.info("setting configuration filename: "+filename);
+    }
+    
+    public void setConfigurationProperties(Properties properties) {
+        log.info("setting configuration properties: "+properties.toString());
+    }
 
     public void start() {
-        log.debug("starting CommandExecutor ...");
+        log.info("starting CommandExecutor ...");
     }
 
     public void stop() {
-        log.debug("stopping CommandExecutor ...");
+        log.info("stopping CommandExecutor ...");
     }
 
     public void terminateJob(JobInfo jobInfo) {
-        log.debug("terminating job: "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName());
+        log.info("terminating job: "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName());
     }
 
     public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {

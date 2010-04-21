@@ -2,6 +2,7 @@ package org.genepattern.server.executor;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Properties;
 
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.JobInfo;
@@ -13,6 +14,18 @@ import org.genepattern.webservice.JobInfo;
  * @author pcarr
  */
 public interface CommandExecutor {
+    //configuration support
+    /**
+     * [optionally] set a path to a configuration file.
+     */
+    void setConfigurationFilename(String filename);
+
+    /**
+     * [optionally] provide properties.
+     * @param properties
+     */
+    void setConfigurationProperties(Properties properties);
+    
     /**
      * Start the service, typically called at application startup.
      */
@@ -54,7 +67,7 @@ public interface CommandExecutor {
      * @param jobInfo
      */
     void terminateJob(JobInfo jobInfo);
-
+    
     /**
      * Reload configuration information from the file system.
      *

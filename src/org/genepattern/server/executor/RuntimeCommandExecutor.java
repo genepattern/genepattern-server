@@ -2,6 +2,7 @@ package org.genepattern.server.executor;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -9,6 +10,20 @@ import org.genepattern.webservice.JobInfo;
 
 public class RuntimeCommandExecutor implements CommandExecutor {
     private static Logger log = Logger.getLogger(RuntimeCommandExecutor.class);
+    
+    public void reloadConfiguration() {
+        log.error("method not implemented: reloadConfiguration()");
+    }
+
+    public void setConfigurationFilename(String filename) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public void setConfigurationProperties(Properties properties) {
+        // TODO Auto-generated method stub
+        
+    }
 
     public void start() {
         // TODO Auto-generated method stub
@@ -40,10 +55,4 @@ public class RuntimeCommandExecutor implements CommandExecutor {
         // TODO Auto-generated method stub
         
     }
-    
-    public void reloadConfiguration() {
-        log.error("method not implemented: reloadConfiguration()");
-    }
-
-
 }

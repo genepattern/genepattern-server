@@ -41,8 +41,8 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.AnalysisManager;
 import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.database.HsqlDbUtil;
-import org.genepattern.server.executor.CommandExecutorFactory;
-import org.genepattern.server.executor.CommandExecutorManager;
+import org.genepattern.server.executor.CommandManager;
+import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.RuntimeExecCommand;
 import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.process.JobPurger;
@@ -96,9 +96,10 @@ public class StartupServlet extends HttpServlet {
         }
 
         //start the command executors before starting the internal job queue (AnalysisTask.startQueue) ...
-        CommandExecutorManager cmdMgr = CommandExecutorManager.instance();
-        CommandExecutorFactory cmdFactory = cmdMgr.getCommandExecutorFactory();
-        cmdFactory.start();
+        CommandManagerFactory.initializeCommandManager(System.getProperties());
+        CommandManager cmdManager = CommandManagerFactory.getCommandManager();
+        cmdManager.startCommandExecutors();
+
         launchTasks();
         AnalysisManager.getInstance(); //not sure if this is necessary anymore, pjc
         AnalysisTask.startQueue();
@@ -204,7 +205,6 @@ public class StartupServlet extends HttpServlet {
     }
 
     public void destroy() {
-        //TODO: plug this into the CommandExecutorServiceFactory
         log.info("StartupServlet: destroy called");
 
         String dbVendor = System.getProperty("database.vendor", "HSQL");
@@ -231,7 +231,7 @@ public class StartupServlet extends HttpServlet {
         RuntimeExecCommand.terminateAll("--> Shutting down server");
         
         //stop the command executors ...
-        CommandExecutorManager.instance().getCommandExecutorFactory().stop();
+        CommandManagerFactory.getCommandManager().stopCommandExecutors();
 
         log.info("StartupServlet: destroy done");
         dumpThreads();

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.genepattern.server.executor.CommandExecutor;
-import org.genepattern.server.executor.CommandExecutorFactory;
-import org.genepattern.server.executor.CommandExecutorManager;
+import org.genepattern.server.executor.CommandManager;
+import org.genepattern.server.executor.CommandManagerFactory;
 
 /**
  * Backing bean for configuring command executors via the web interface.
@@ -44,7 +44,7 @@ public class CommandExecutorsBean {
      * Reload the configuration file for the mapper.
      */
     public void reloadMapperConfiguration() throws Exception {
-        CommandExecutorManager.instance().reloadMapperConfiguration();
+        CommandManagerFactory.getCommandManager().reloadMapperConfiguration();
     }
 
     public void reloadCustomProperties() { 
@@ -56,9 +56,10 @@ public class CommandExecutorsBean {
         }
         commandExecutors = new ArrayList<Obj>();
 
-        CommandExecutorManager mgr = CommandExecutorManager.instance();
-        CommandExecutorFactory f = mgr.getCommandExecutorFactory();
-        List<CommandExecutor> l = f.getCommandExecutors();
+        CommandManager f = CommandManagerFactory.getCommandManager();
+        //List<CommandExecutor> l = f.getCommandExecutors();
+        Iterable<CommandExecutor> l = f.getCommandExecutorsMap().values();
+        //List<CommandExecutor> l = f.getCommandExecutorMap().;
         for(CommandExecutor cmd : l) {
             commandExecutors.add(new Obj(cmd));
         } 
