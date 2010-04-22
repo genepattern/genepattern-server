@@ -6,6 +6,7 @@ import java.util.List;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandManager;
 import org.genepattern.server.executor.CommandManagerFactory;
+import org.jfree.util.Log;
 
 /**
  * Backing bean for configuring command executors via the web interface.
@@ -44,7 +45,7 @@ public class CommandExecutorsBean {
      * Reload the configuration file for the mapper.
      */
     public void reloadMapperConfiguration() throws Exception {
-        CommandManagerFactory.getCommandManager().reloadMapperConfiguration();
+        CommandManagerFactory.reloadConfigFile();
     }
 
     public void reloadCustomProperties() { 
@@ -71,12 +72,7 @@ public class CommandExecutorsBean {
     }
     
     public void reloadConfigurationForItem() throws Exception {
-        if (this.cmdExecutor != null) {
-            cmdExecutor.reloadConfiguration();
-        }
-        else {
-            System.err.println("unknown cmd executor!");
-        }
+        Log.error("Ignoring reloadConfigurationForItem: "+cmdExecutor.getClass().getCanonicalName());
     }
 
 }
