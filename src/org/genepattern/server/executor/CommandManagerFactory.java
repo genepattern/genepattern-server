@@ -1,6 +1,9 @@
 package org.genepattern.server.executor;
 
+import java.util.Map;
 import java.util.Properties;
+import java.util.Map.Entry;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -106,6 +109,44 @@ public class CommandManagerFactory {
             log.error(e);
         }
         return commandManager;
+    }
+    
+    public static synchronized void reloadConfigFile() {
+        if (configParser == null || configFile == null || manager == null) {
+            return;
+        }
+        try {
+            CommandManagerConfigParser cmcp = (CommandManagerConfigParser) Class.forName(configParser).newInstance();
+            cmcp.reloadConfigFile(manager, configFile);
+        }
+        catch (Exception e) {
+            log.error("Unable to instantiate CommandManagerConfigParser for name: "+configParser, e);
+        }
+    }
+    
+    /**
+     * Helper method, get the id (key into the commandExecutorsMap) for the given CommandExecutor.
+     * @param cmdExecutor
+     * @return null if the CommandExecutor is not in the map
+     */
+    public static synchronized String getCommandExecutorId(CommandExecutor cmdExecutor) { 
+        if (cmdExecutor == null) {
+            log.error("null arg");
+            return null;
+        }
+        CommandManager mgr = getCommandManager();
+        Map<String,CommandExecutor> map = mgr.getCommandExecutorsMap();
+        if (!map.containsValue(cmdExecutor)) {
+            log.error("commandExecutorsMap does not contain value for "+cmdExecutor.getClass().getCanonicalName());
+            return null;
+        }
+        
+        for(Entry<String,CommandExecutor> entry : mgr.getCommandExecutorsMap().entrySet()) {
+            if(cmdExecutor == entry.getValue()) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
 }
