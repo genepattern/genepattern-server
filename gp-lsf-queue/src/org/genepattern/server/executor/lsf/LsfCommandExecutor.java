@@ -10,6 +10,7 @@ import java.util.concurrent.FutureTask;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.executor.CommandExecutor;
+import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.webservice.JobInfo;
 
 import edu.mit.broad.core.Main;
@@ -20,37 +21,36 @@ public class LsfCommandExecutor implements CommandExecutor {
 
     //for submitting jobs to the LSF queue
     private static ExecutorService executor = Executors.newFixedThreadPool(3);
-    private LsfConfiguration lsfConfiguration = null;
+    private Properties configurationProperties = new Properties();
     
     public void reloadConfiguration() throws Exception {
-        synchronized(this) {
-            if (lsfConfiguration != null) {
-                lsfConfiguration.reloadConfiguration();
-            }
-        }
+        log.error("method not implemented!");
+    }
+    
+    public void setConfigurationFilename(String filename) {
+        log.error("method not implemented, setConfigurationFilename( "+filename+" )");
+    }
+    
+    public void setConfigurationProperties(Properties properties) {
+        this.configurationProperties.putAll(properties);
     }
     
     public void start() {
         log.info("Initializing LsfCommandExecSvc ...");
         try {
             //load custom properties
-            lsfConfiguration = LsfConfigurationFactory.getLsfConfiguration();
-
             System.setProperty("jboss.server.name", System.getProperty("fqHostName", "localhost"));
-            
             Main broadCore = Main.getInstance();
             broadCore.setEnvironment("prod"); 
             
-            
-            String dataSourceName = lsfConfiguration.getProperty("hibernate.connection.datasource", "java:comp/env/jdbc/db1");
+            String dataSourceName = this.configurationProperties.getProperty("hibernate.connection.datasource", "java:comp/env/jdbc/db1");
             log.info("using hibernate.connection.datasource="+dataSourceName);
             broadCore.setDataSourceName(dataSourceName);
             
-            Properties hibernateOptions = lsfConfiguration.getHibernateOptions();
-            broadCore.setHibernateOptions(hibernateOptions);
+            broadCore.setHibernateOptions(configurationProperties);
 
             int lsfCheckFrequency = 60;
-            String lsfCheckFrequencyProp = lsfConfiguration.getProperty("lsf.check.frequency");
+            String lsfCheckFrequencyProp = configurationProperties.getProperty("lsf.check.frequency");
             if (lsfCheckFrequencyProp != null) {
                 try {
                     lsfCheckFrequency = Integer.parseInt(lsfCheckFrequencyProp);
@@ -88,7 +88,7 @@ public class LsfCommandExecutor implements CommandExecutor {
         log.debug("Running command for job "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName());
         LsfCommand cmd = new LsfCommand();
         
-        LsfProperties lsfProperties = lsfConfiguration.getLsfProperties(jobInfo);        
+        Properties lsfProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
         cmd.setLsfProperties(lsfProperties);
         cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdin, stderrBuffer);
         LsfJob lsfJob = cmd.getLsfJob();

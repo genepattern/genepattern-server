@@ -1,9 +1,5 @@
 package org.genepattern.server.executor.lsf;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.log4j.Logger;
 
 public class LsfProperties {
@@ -30,59 +26,59 @@ public class LsfProperties {
         }
     }
     
-    private Map<Key,String> props = new HashMap<Key,String>();
+    //private Map<Key,String> props = new HashMap<Key,String>();
     
-    public void put(Key key, String value) {
-        props.put(key, value);
-    }
-    public String get(Key propertyName) {
-        return props.get(propertyName);
-    }
-    public boolean getAsBoolean(Key propertyName) {
-        String v = props.get(propertyName);
-        return Boolean.valueOf(v);
-    }
+    //public void put(Key key, String value) {
+    //    props.put(key, value);
+    //}
+    //public String get(Key propertyName) {
+    //    return props.get(propertyName);
+    //}
+    //public boolean getAsBoolean(Key propertyName) {
+    //    String v = props.get(propertyName);
+    //    return Boolean.valueOf(v);
+    //}
     
-    public void validate() {
-        validateMaxMemory();
-        validateWrapperScript();
-    }
+    //public void validate() {
+    //    validateMaxMemory();
+    //    validateWrapperScript();
+    //}
     
-    private void validateMaxMemory() {
-        String s = props.get(Key.MAX_MEMORY);
-        if (s == null) {
-            //Note: hard coded default setting
-            props.put(Key.MAX_MEMORY, "2");
-            return;
-        }
-        try {
-            Integer.parseInt(s);
-        }
-        catch (NumberFormatException e) {
-            log.error("Invalid setting for 'lsf.max.memory="+s+"': "+e.getLocalizedMessage(), e);
-            //Note: hard coded default setting
-            props.put(Key.MAX_MEMORY, "2");
-            return;
-        }
-    }
-    
-    private void validateWrapperScript() {
-        String s = props.get(Key.WRAPPER_SCRIPT);
-        log.debug("setting lsf.wrapper.script: "+s+" ...");
-        if (s != null) {
-          File f = new File(s);
-          if (!f.isAbsolute()) {
-              f = new File(System.getProperty("genepattern.properties"), s);
-          }
-          if (!f.isFile() || !f.canRead()) {
-              log.error("Configuration error, 'lsf.wrapper.script="+s+"' can't read: "+f.getAbsolutePath());
-              props.put(Key.WRAPPER_SCRIPT, null);
-          }
-          else {
-              s=f.getAbsolutePath();
-              props.put(Key.WRAPPER_SCRIPT, s);
-          }
-      }
-      log.debug("lsf.wrapper.script="+s);
-    }
+//    private void validateMaxMemory() {
+//        String s = props.get(Key.MAX_MEMORY);
+//        if (s == null) {
+//            //Note: hard coded default setting
+//            props.put(Key.MAX_MEMORY, "2");
+//            return;
+//        }
+//        try {
+//            Integer.parseInt(s);
+//        }
+//        catch (NumberFormatException e) {
+//            log.error("Invalid setting for 'lsf.max.memory="+s+"': "+e.getLocalizedMessage(), e);
+//            //Note: hard coded default setting
+//            props.put(Key.MAX_MEMORY, "2");
+//            return;
+//        }
+//    }
+//    
+//    private void validateWrapperScript() {
+//        String s = props.get(Key.WRAPPER_SCRIPT);
+//        log.debug("setting lsf.wrapper.script: "+s+" ...");
+//        if (s != null) {
+//          File f = new File(s);
+//          if (!f.isAbsolute()) {
+//              f = new File(System.getProperty("genepattern.properties"), s);
+//          }
+//          if (!f.isFile() || !f.canRead()) {
+//              log.error("Configuration error, 'lsf.wrapper.script="+s+"' can't read: "+f.getAbsolutePath());
+//              props.put(Key.WRAPPER_SCRIPT, null);
+//          }
+//          else {
+//              s=f.getAbsolutePath();
+//              props.put(Key.WRAPPER_SCRIPT, s);
+//          }
+//      }
+//      log.debug("lsf.wrapper.script="+s);
+//    }
 }

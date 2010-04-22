@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -21,10 +22,10 @@ import edu.mit.broad.core.lsf.LsfJob;
 class LsfCommand {
     private static Logger log = Logger.getLogger(LsfCommand.class);
     
-    private LsfProperties lsfProperties = null;
+    private Properties lsfProperties = null;
     private LsfJob lsfJob = null;
     
-    public void setLsfProperties(LsfProperties p) {
+    public void setLsfProperties(Properties p) {
         this.lsfProperties = p;
     }
     
@@ -43,7 +44,7 @@ class LsfCommand {
         String commandLineStr = getCommandLineStr(commandLine);
         //HACK: append a shell script to my command, whose only purpose is to separate stdout of the job from the LSF header information
         //      LSF does not have a bsub option for this
-        String wrapperScript = lsfProperties.get(LsfProperties.Key.WRAPPER_SCRIPT);
+        String wrapperScript = lsfProperties.getProperty(LsfProperties.Key.WRAPPER_SCRIPT.getKey());
         if (wrapperScript != null) {
             commandLineStr = wrapperScript + " " + commandLineStr;
         }
@@ -53,14 +54,14 @@ class LsfCommand {
         //TODO: handle stdin, currently it is ignored
         //lsfJob.setInputFilename(inputFilename);
         //Note: BroadCore does not handle the %J idiom for the output file
-        lsfJob.setOutputFilename(lsfProperties.get(LsfProperties.Key.OUTPUT_FILENAME));
+        lsfJob.setOutputFilename(lsfProperties.getProperty(LsfProperties.Key.OUTPUT_FILENAME.getKey()));
         lsfJob.setErrorFileName(stderrFile.getAbsolutePath());
         
-        lsfJob.setProject(lsfProperties.get(LsfProperties.Key.PROJECT));
-        lsfJob.setQueue(lsfProperties.get(LsfProperties.Key.QUEUE));
+        lsfJob.setProject(lsfProperties.getProperty(LsfProperties.Key.PROJECT.getKey()));
+        lsfJob.setQueue(lsfProperties.getProperty(LsfProperties.Key.QUEUE.getKey()));
         
         List<String> extraBsubArgs = new ArrayList<String>();
-        String maxMemory = lsfProperties.get(LsfProperties.Key.MAX_MEMORY);
+        String maxMemory = lsfProperties.getProperty(LsfProperties.Key.MAX_MEMORY.getKey());
         extraBsubArgs.add("-R");
         extraBsubArgs.add("rusage[mem="+maxMemory+"]");
         extraBsubArgs.add("-M");
@@ -110,9 +111,10 @@ class LsfCommand {
      */
     private List<String> getPreExecCommand(JobInfo jobInfo) { 
         List<String> rval = new ArrayList<String>();
-        if (!lsfProperties.getAsBoolean(LsfProperties.Key.USE_PRE_EXEC_COMMAND)) {
+        
+        if (!Boolean.valueOf(lsfProperties.getProperty(LsfProperties.Key.USE_PRE_EXEC_COMMAND.getKey()))) {
             return rval;
-        }
+        }       
         Set<File> parentDirs = new HashSet<File>();        
         for(ParameterInfo param : jobInfo.getParameterInfoArray()) {
             if (param.isInputFile()) {
