@@ -15,9 +15,28 @@ import junit.framework.TestCase;
  * @author pcarr
  */
 public class CommandManagerFactoryTest extends TestCase {
-    private void validateDefaultConfig(CommandManager cmdMgr) {
+    /**
+     * assertions for all instance of CommandManager, can be called from all test cases.
+     * @param cmdMgr
+     */
+    private static void validateCommandManager(CommandManager cmdMgr) {
         assertNotNull("Expecting non-null cmdMgr", cmdMgr);
         assertNotNull("Expecting non-null cmdMgr.commandExecutorsMap", cmdMgr.getCommandExecutorsMap());
+        //prove that the map is not modifiable
+        try {
+            cmdMgr.getCommandExecutorsMap().put("test", (CommandExecutor)null);
+            fail("commandExecutorsMap should be unmodifiable");
+        }
+        catch (Exception e) {
+            //expecting an exception to be thrown
+        }
+    }
+    /**
+     * assertions for the default CommandManager, when no custom configuration is found.
+     * @param cmdMgr
+     */
+    private static void validateDefaultConfig(CommandManager cmdMgr) {
+        validateCommandManager(cmdMgr);
         assertEquals("By default, expecting only one CommandExecutor", 1, cmdMgr.getCommandExecutorsMap().size());
     }
 
@@ -123,5 +142,138 @@ public class CommandManagerFactoryTest extends TestCase {
         assertEquals("checking job properties: lsf.use.pre.exec.command", "false", ""+jobProperties.get("lsf.use.pre.exec.command"));
         assertEquals("checking job properties: lsf.extra.bsub.args", "null", jobProperties.get("lsf.extra.bsub.args"));
     }
+    
+    /**
+     * Helper class which initializes (or reinitializes) the CommandManager to parse the given
+     * yaml config file from the same location as the source files for the unit tests.
+     *
+     * @param filename
+     */
+    private static void initializeYamlConfigFile(String filename) {
+        String cname = CommandManagerFactoryTest.class.getCanonicalName();
+        int idx = cname.lastIndexOf('.');
+        String dname = cname.substring(0, idx);
+        dname = dname.replace('.', '/');
+        File resourceDir = new File("test/src/" + dname);
+        System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
+        
+        Properties props = new Properties();
+        String parserClass=YamlConfigParser.class.getCanonicalName();
+        props.put("command.manager.config.parser", parserClass);
+        props.put("command.manager.config.file", filename);
+        CommandManagerFactory.initializeCommandManager(props);
+        
+        validateCommandManager(CommandManagerFactory.getCommandManager());
+    }
+
+    /**
+     * Test default and custom properties in yaml configuration file.
+     */
+    public void testYamlConfig() {
+        initializeYamlConfigFile("test_config.yaml");
+        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
+        validateCommandManager(cmdMgr);
+        assertEquals("Expecting 2 executors", 2, cmdMgr.getCommandExecutorsMap().size() );
+        
+        String taskName = "ConvertLineEndings";
+        String taskLsid = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2";
+        String expectedCmdExecId = "Test";
+        String expectedFilename = "stdout.txt";
+        boolean expectingException = false;
+
+        validateJobConfig(
+                taskName, 
+                taskLsid, 
+                expectedCmdExecId, 
+                expectedFilename, 
+                expectingException);
+        
+        validateJobConfig(
+                "ComparativeMarkerSelection", 
+                "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:2",
+                "RuntimeExec",
+                "CMS.out",
+                false);
+        
+        validateJobConfig(
+                "ComparativeMarkerSelection",
+                "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4",
+                "RuntimeExec",
+                "CMS.v4.out",
+                false);
+
+        validateJobConfig(
+                "ComparativeMarkerSelection",
+                "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:5",
+                "Test",
+                "stdout.txt",
+                false);
+
+        validateJobConfig(
+                "moduleA",
+                (String)null,
+                "RuntimeExec",
+                "runtimeexec.out",
+                false);
+        
+        validateJobConfig(
+                "moduleB",
+                (String)null,
+                "Test",
+                "moduleB.out",
+                false);
+
+        validateJobConfig(
+                "moduleC",
+                (String)null,
+                "Test",
+                "stdout.txt",
+                true);
+    }
+    
+    private static void validateJobConfig(String taskName, String taskLsid, String expectedCmdExecId, String exepectedStdoutFilename, boolean expectingException) {
+        JobInfo jobInfo = new JobInfo();
+        jobInfo.setTaskName(taskName);
+        jobInfo.setTaskLSID(taskLsid);
+        
+        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
+        
+        CommandExecutor cmdExec = null;
+        try {
+            cmdExec = cmdMgr.getCommandExecutor(jobInfo);
+            if (expectingException) {
+                fail("Expecting CommandExecutorNotFoundException, but it wasn't thrown");
+            }
+        }
+        catch (CommandExecutorNotFoundException e) {
+            if (!expectingException) {
+                fail(""+e.getLocalizedMessage());
+            }
+            return;
+        }
+        Properties cmdProps = cmdMgr.getCommandProperties(jobInfo);
+        String cmdExecId = CommandManagerFactory.getCommandExecutorId(cmdExec);
+
+        assertNotNull("expecting non-null CommandExecutor", cmdExec);
+        assertEquals("expecting default CommandExecutor", expectedCmdExecId, cmdExecId);
+        assertNotNull("expecting non-null Properties", cmdProps);
+        assertEquals("checking # of properties", 3, cmdProps.size());
+
+        assertEquals("checking 'executor' property", expectedCmdExecId, cmdProps.getProperty("executor"));
+        assertEquals("checking 'stdout.filename' property", exepectedStdoutFilename, cmdProps.getProperty("stdout.filename"));
+        assertEquals("checking 'java_flags' property", "-Xmx4g", cmdProps.getProperty("java_flags"));
+    }
+    
+//    public void testReloadConfigFile() {
+//        setResourceDir();
+//        
+//        Properties props = new Properties();
+//        String parserClass=YamlConfigParser.class.getCanonicalName();
+//        props.put("command.manager.config.parser", parserClass);
+//        props.put("command.manager.config.file", "job_configuration.yaml");
+//
+//        CommandManagerFactory.initializeCommandManager(props);
+//        CommandManagerFactory.reloadConfigFile();
+//    }
 
 }

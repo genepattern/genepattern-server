@@ -1,0 +1,38 @@
+# test case: yaml parser 
+default.properties: &default_properties
+    executor: Test
+    stdout.filename: stdout.txt
+    java_flags: -Xmx4g
+
+executors:
+    Test: 
+        classname: org.genepattern.server.executor.TestCommandExecutor
+    RuntimeExec: 
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+        job.properties:
+            stdout.filename: runtimeexec.out
+
+custom.properties:
+    # 1) by taskName
+    ComparativeMarkerSelection:
+        executor: RuntimeExec
+        stdout.filename: CMS.never.used.out
+    # 2) by taskLsid (no version)
+    urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044: 
+        # executor is inherited from taskname setting
+        # custom properties by lsid take precedence over custom properties by taskName
+        stdout.filename: CMS.out
+    # 3) by taskLsid (version), with custom properties
+    urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4: 
+        stdout.filename: CMS.v4.out
+    # 4) by taskLsid (version 5), use default properties, which override RuntimeExec.job.properties
+    urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:5: *default_properties
+    # 4) RuntimeExec job.properties take precedence over default.properties
+    moduleA: 
+        executor: RuntimeExec
+    # 5) use default executor, with custom.properties
+    moduleB:
+        stdout.filename: moduleB.out
+    # 6) handle invalid executor id
+    moduleC:
+        executor: notset
