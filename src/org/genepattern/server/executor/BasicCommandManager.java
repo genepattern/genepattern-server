@@ -86,10 +86,13 @@ public class BasicCommandManager implements CommandManager {
         }
         //2. override by lsid, no version
         String taskLsid = jobInfo.getTaskLSID();
-        Lsid lsid = new Lsid(jobInfo.getTaskLSID());
-        cmdExecId = getCustomValue(lsid.getLsidNoVersion(), "executor", cmdExecId);
-        //3. override by lsid, including version
-        cmdExecId = getCustomValue(lsid.getLsid(), "executor", cmdExecId);
+        Lsid lsid = null;
+        if (taskLsid != null) {
+            lsid = new Lsid(jobInfo.getTaskLSID());
+            cmdExecId = getCustomValue(lsid.getLsidNoVersion(), "executor", cmdExecId);
+            //3. override by lsid, including version
+            cmdExecId = getCustomValue(lsid.getLsid(), "executor", cmdExecId);
+        }
         return cmdExecId;
     }
     
@@ -161,15 +164,18 @@ public class BasicCommandManager implements CommandManager {
             props.putAll(customMap);
         }
         // 3b) ... by task lsid no version ...
-        final Lsid lsid = new Lsid(jobInfo.getTaskLSID());
-        customMap = customPropertiesMap.get(lsid.getLsidNoVersion());
-        if (customMap != null) {
-            props.putAll(customMap);
-        }
-        // 3c) ... by task lsid (with version)
-        customMap = customPropertiesMap.get(lsid.getLsid());
-        if (customMap != null) {
-            props.putAll(customMap);
+        String taskLsid = jobInfo.getTaskLSID();
+        if (taskLsid != null) {
+            final Lsid lsid = new Lsid(jobInfo.getTaskLSID());
+            customMap = customPropertiesMap.get(lsid.getLsidNoVersion());
+            if (customMap != null) {
+                props.putAll(customMap);
+            }
+            // 3c) ... by task lsid (with version)
+            customMap = customPropertiesMap.get(lsid.getLsid());
+            if (customMap != null) {
+                props.putAll(customMap);
+            }
         }
         return props;
     }
