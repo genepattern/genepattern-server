@@ -1,5 +1,6 @@
 package org.genepattern.server.executor;
 
+import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
@@ -27,6 +28,9 @@ public class CommandManagerFactory {
     
     private final static String PROP_COMMAND_MANAGER_CONFIG_PARSER="command.manager.config.parser";
     private final static String PROP_COMMAND_MANAGER_CONFIG_FILE="command.manager.config.file";
+
+    //the place to load 
+    private static File resourceDirectory = null;
     
     private static String configParser = null;
     private static String configFile = null;
@@ -49,7 +53,7 @@ public class CommandManagerFactory {
     }
     
     /**
-     * Create a new default CommandManager.
+     * Create a new default CommandManager, replacing the current manager with a new instance.
      */
     public static synchronized void initializeCommandManager() {
         initializeCommandManager(new Properties());
@@ -81,6 +85,63 @@ public class CommandManagerFactory {
         }
         configParser = properties.getProperty(PROP_COMMAND_MANAGER_CONFIG_PARSER);
         configFile = properties.getProperty(PROP_COMMAND_MANAGER_CONFIG_FILE);
+    }
+    
+    /**
+     * Get a File object for the named configuration file as specified in the 'genepattern.properties' file. E.g.
+     * <code>
+     *     command.manager.config.file=job_configuration.yaml
+     *     or
+     *     command.manager.config.file=/fully/qualified/path/to/job_configuration.yaml
+     * </code>
+     * If a relative path is given, load the file relative to the resources directory as specified by the 
+     * system property, 'genepattern.properties'. The location of the resources directory can be overwritten by calling setResourceDirectory().
+     * If there is no resource directory, load the file relative to the current working directory.
+     * @param configuration
+     * @return a valid File or null
+     */
+    public static File getConfigurationFile(String configuration) {
+        File f = new File(configuration);
+        if (!f.isAbsolute()) {
+            //load the configuration file from the resources directory
+            File parent = getResourceDirectory();
+            if (parent != null) {
+                f = new File(parent, configuration);
+            }
+        }
+        if (!f.canRead()) {
+            if (!f.exists()) {
+                log.error("Configuration file not found: "+f.getAbsolutePath());
+            }
+            else {
+                log.error("Cannot read configuration file: "+f.getAbsolutePath());
+            }
+            f = null;
+        }
+        return f;
+    }
+    
+    public static void setResourceDirectory(File dir) {
+        resourceDirectory = dir;
+    }
+
+    /**
+     * Get the resource directory, the parent directory of the genepattern.properties file.
+     * @return a File or null if there is a configuration error 
+     */
+    public static File getResourceDirectory() {
+        if (resourceDirectory != null) {
+            return resourceDirectory;
+        }
+        File rval = null;
+        String pathToResourceDir = System.getProperty("genepattern.properties");
+        if (pathToResourceDir != null) {
+            rval = new File(pathToResourceDir);
+        }
+        else {
+            log.error("Missing required system property, 'genepattern.properties'");
+        }
+        return rval;
     }
 
     private static synchronized CommandManager createCommandManager(String configParserClass, String configFile) {

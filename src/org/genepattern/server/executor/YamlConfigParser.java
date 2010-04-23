@@ -48,57 +48,12 @@ public class YamlConfigParser implements CommandManagerConfigParser {
     
     private void setConfigFilename(String s) {
         this.configFilename = s;
-        this.configFile = getFileFromPath(configFilename);
+        this.configFile = CommandManagerFactory.getConfigurationFile(configFilename);
         if (this.configFile == null) {
             throw new RuntimeException("//TODO: default init");
         }
     }
     
-    /**
-     * Get a File object for the named configuration file, e.g.
-     * command.executor.factory.configuration=job_configuration.yaml
-     * command.executor.factory.configuration=/fully/qualified/path/to/job_configuration.yaml
-     *     
-     * @param configuration
-     * @return
-     */
-    private File getFileFromPath(String configuration) {
-        File f = new File(configuration);
-        if (!f.isAbsolute()) {
-            //load the configuration file from the resources directory
-            File resourceDir = getResourceDir();
-            if (resourceDir != null) {
-                f = new File(getResourceDir(), configuration);
-            }
-        }
-        if (!f.canRead()) {
-            if (!f.exists()) {
-                log.error("Configuration file not found: "+f.getAbsolutePath());
-            }
-            else {
-                log.error("Cannot read configuration file: "+f.getAbsolutePath());
-            }
-            f = null;
-        }
-        return f;
-    }
-
-    /**
-     * Get the resource directory, the parent directory of the genepattern.properties file.
-     * @return a File or null if there is a configuration error 
-     */
-    private File getResourceDir() {
-        File resourceDir = null;
-        String pathToResourceDir = System.getProperty("genepattern.properties");
-        if (pathToResourceDir != null) {
-            resourceDir = new File(pathToResourceDir);
-        }
-        else {
-            log.error("Missing required system property, 'genepattern.properties'");
-        }
-        return resourceDir;
-    }
-
     /**
      * Parse the config file, creating a new JobConfigObj.
      * @param configFile
