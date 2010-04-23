@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AdminProxy;
 import org.genepattern.webservice.AnalysisJob;
@@ -36,7 +37,6 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskExecutor;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
-import org.jfree.util.Log;
 
 /**
  * This class is used to run modules on a GenePattern server.
@@ -44,6 +44,8 @@ import org.jfree.util.Log;
  * @author Joshua Gould
  */
 public class GPClient {
+    private static Logger log = Logger.getLogger(GPClient.class);
+
     /**
      * number of modules to cache.
      */
@@ -111,7 +113,7 @@ public class GPClient {
 
         String serverPath = serverUrl.getPath();
         if (serverPath != null && !serverPath.equals("") && !serverPath.equals("/gp") && !serverPath.equals("/gp/")) {
-            Log.error("Ignoring server path: "+serverPath);
+            log.error("Ignoring server path: "+serverPath);
         }
         
         this.server = server;
