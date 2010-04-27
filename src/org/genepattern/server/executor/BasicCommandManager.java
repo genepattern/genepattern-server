@@ -190,11 +190,16 @@ public class BasicCommandManager implements CommandManager {
     public void startCommandExecutors() {
         for(String cmdExecId : cmdExecutorsMap.keySet()) {
             CommandExecutor cmdExec = cmdExecutorsMap.get(cmdExecId);
-            try {
-                cmdExec.start();
+            if (cmdExec == null) {
+                log.error("null CommandExecutor for cmdExecId: '"+cmdExecId+"'");
             }
-            catch (Throwable t) {
-                log.error("Error starting CommandExecutor, for class: "+cmdExec.getClass().getCanonicalName()+": "+t.getLocalizedMessage(), t);
+            else {
+                try {
+                    cmdExec.start();
+                }
+                catch (Throwable t) {
+                    log.error("Error starting CommandExecutor, for class: "+cmdExec.getClass().getCanonicalName()+": "+t.getLocalizedMessage(), t);
+                }
             }
         }
     }
