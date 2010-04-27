@@ -206,6 +206,13 @@ public class StartupServlet extends HttpServlet {
 
     public void destroy() {
         log.info("StartupServlet: destroy called");
+        
+        //terminate the job queue
+        AnalysisTask.stopQueue();
+
+        //RuntimeExecCommand.terminateAll("--> Shutting down server");
+        //stop the command executors ...
+        CommandManagerFactory.getCommandManager().stopCommandExecutors();
 
         String dbVendor = System.getProperty("database.vendor", "HSQL");
         if (dbVendor.equals("HSQL")) {
@@ -228,13 +235,10 @@ public class StartupServlet extends HttpServlet {
             }
         }
         vThreads.removeAllElements();
-        RuntimeExecCommand.terminateAll("--> Shutting down server");
-        
-        //stop the command executors ...
-        CommandManagerFactory.getCommandManager().stopCommandExecutors();
 
-        log.info("StartupServlet: destroy done");
+        log.info("StartupServlet: destroy, calling dumpThreads...");
         dumpThreads();
+        log.info("StartupServlet: destroy done");
     }
 
     /**
@@ -432,12 +436,30 @@ public class StartupServlet extends HttpServlet {
         Thread t = null;
         for (int i = 0; i < numThreads; i++) {
             t = threads[i];
-            if (t == null)
+            if (t == null) {
                 continue;
-            if (!t.isAlive())
+            } 
+            if (!t.isAlive()) {
                 continue;
+            }
             log.info(t.getName() + " is running at " + t.getPriority() + " priority.  " + (t.isDaemon() ? "Is" : "Is not")
                     + " daemon.  " + (t.isInterrupted() ? "Is" : "Is not") + " interrupted.  ");
+
+            //for debugging            
+            //if (t.getName().startsWith("Thread-")) {
+            //    log.info("what is this thread?");
+            //    t.dumpStack();
+            //    
+            //    for(StackTraceElement e : t.getStackTrace()) {
+            //        String m = ""+e.getClassName()+"."+e.getMethodName();
+            //        String f = ""+e.getFileName()+":"+ e.getLineNumber();
+            //        log.info(""+m+", "+f);
+            //    }
+            //
+            //    log.info("calling Thread.stop()...");
+            //    t.stop();
+            //}
+            
         }
         if (numThreads == MAX_THREADS) {
             log.info("Possibly more than " + MAX_THREADS + " are running.");

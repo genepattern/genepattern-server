@@ -40,6 +40,7 @@ public class AnalysisTask implements Runnable {
     private static int NUM_THREADS = 20;
     private final static String TASK_NAME = GenePatternAnalysisTask.TASK_NAME;
     private static AnalysisTask instance;
+    private static Thread runner;
 
     static {
         try {
@@ -244,8 +245,21 @@ public class AnalysisTask implements Runnable {
     }
 
     public static void startQueue() {
-        Thread runner = new Thread(instance);
-        runner.start();
+        if (runner == null) {
+            runner = new Thread(instance);
+            runner.setName("AnalysisTaskThread");
+            runner.setDaemon(true);
+            runner.start();
+        }
+        else {
+            log.error("can only call startQueue once!");
+        }
+    }
+    
+    public static void stopQueue() {
+        if (runner != null) {
+            runner.stop();
+        }
     }
 
 }
