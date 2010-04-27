@@ -184,16 +184,6 @@ public class BasicCommandManager implements CommandManager {
         return Collections.unmodifiableMap(cmdExecutorsMap);
     }
 
-    public void reloadMapperConfiguration() throws Exception {
-        // TODO Auto-generated method stub
-        
-    }
-
-    public void setConfiguration(String config) {
-        // TODO Auto-generated method stub
-        
-    }
-
     /**
      * call this at system startup to initialize the list of CommandExecutorService instances.
      */
@@ -223,18 +213,4 @@ public class BasicCommandManager implements CommandManager {
             }
         }
     }
-    
-//    
-//    //configuration file for the manager
-//    void setConfiguration(String config);
-//    
-//    void reloadMapperConfiguration() throws Exception;
-//    
-//    void startCommandExecutors();
-//    void stopCommandExecutors();
-//
-//    //CommandExecutorMapper getCommandExecutorMapper();
-//    //List<CommandExecutor> getCommandExecutors();
-//    Map<String,CommandExecutor> getCommandExecutorsMap();
-
 }
