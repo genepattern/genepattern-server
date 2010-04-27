@@ -69,6 +69,7 @@ public class HsqlDbUtil {
             try {
                 // 2) ...
                 updateSchema();
+                HibernateUtil.commitTransaction();
             }
             catch (Throwable t) {
                 // ... 2) can't update the schema
@@ -223,7 +224,7 @@ public class HsqlDbUtil {
         log.debug("createSchema ... Done!");
     }
 
-    protected static void processSchemaFile(File schemaFile) {
+    private static void processSchemaFile(File schemaFile) {
         log.info("updating database from schema " + schemaFile.getPath());
         String all = null;
         try {
