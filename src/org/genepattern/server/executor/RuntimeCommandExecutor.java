@@ -10,19 +10,13 @@ import org.genepattern.webservice.JobInfo;
 
 public class RuntimeCommandExecutor implements CommandExecutor {
     private static Logger log = Logger.getLogger(RuntimeCommandExecutor.class);
-    
-    public void reloadConfiguration() {
-        log.error("method not implemented: reloadConfiguration()");
-    }
 
     public void setConfigurationFilename(String filename) {
-        // TODO Auto-generated method stub
-        
+        log.error("ignoring: setCofigurationFilename("+filename+")");
     }
 
     public void setConfigurationProperties(Properties properties) {
-        // TODO Auto-generated method stub
-        
+        log.error("ignoring setConfigurationProperties");
     }
 
     public void start() {
@@ -31,8 +25,7 @@ public class RuntimeCommandExecutor implements CommandExecutor {
     }
 
     public void stop() {
-        // TODO Auto-generated method stub
-        
+        RuntimeExecCommand.terminateAll("--> Shutting down server");
     }
 
     public void runCommand(String[] commandLine,
@@ -52,7 +45,6 @@ public class RuntimeCommandExecutor implements CommandExecutor {
     }
 
     public void terminateJob(JobInfo jobInfo) {
-        // TODO Auto-generated method stub
-        
+        log.error("method not implemented: terminatJob("+jobInfo.getJobNumber()+")");
     }
 }
