@@ -13,11 +13,11 @@ import org.apache.log4j.Logger;
  * This extra layer of abstraction makes it possible to provide a different instance of the CommandManager
  * without requiring a full build and reinstall of GenePattern.
  * 
- * The command manager is created by passing a config file to a parser which implements the CommandManagerConfigParser interface.
- * Add the following properties to the  'genepattern.properties' file to override the default settings:
+ * The command manager is created by passing a config file to a parser which implements the CommandManagerParser interface.
+ * Add the following properties to the 'genepattern.properties' file to override the default settings:
  * 
  * <code>
- * command.manager.config.parser=<class which implements org.genepattern.server.exec.CommandManagerConfigParser>
+ * command.manager.parser=<class which implements org.genepattern.server.exec.CommandManagerParser>
  * command.manager.config.file=<configuration file>
  * </code>
  * 
@@ -25,14 +25,14 @@ import org.apache.log4j.Logger;
  */
 public class CommandManagerFactory {
     private static Logger log = Logger.getLogger(CommandManagerFactory.class);
-    
-    private final static String PROP_COMMAND_MANAGER_CONFIG_PARSER="command.manager.config.parser";
+
+    private final static String PROP_COMMAND_MANAGER_PARSER="command.manager.parser";
     private final static String PROP_COMMAND_MANAGER_CONFIG_FILE="command.manager.config.file";
 
-    //the place to load 
+    //aka the location of the genepattern.properties file
     private static File resourceDirectory = null;
     
-    private static String configParser = null;
+    private static String parser = null;
     private static String configFile = null;
 
     private static CommandManager manager = null;
@@ -70,7 +70,7 @@ public class CommandManagerFactory {
             log.info("replacing current command manager with a new instance");
         }
         setProperties(properties);
-        manager = createCommandManager(configParser, configFile);
+        manager = createCommandManager(parser, configFile);
     }
 
     /**
@@ -78,12 +78,12 @@ public class CommandManagerFactory {
      * If the properties is null check System properties.
      */
     private static void setProperties(Properties properties) {
-        configParser = null;
+        parser = null;
         configFile = null;
         if (properties == null) {
             properties = System.getProperties();
         }
-        configParser = properties.getProperty(PROP_COMMAND_MANAGER_CONFIG_PARSER);
+        parser = properties.getProperty(PROP_COMMAND_MANAGER_PARSER);
         configFile = properties.getProperty(PROP_COMMAND_MANAGER_CONFIG_FILE);
     }
     
@@ -145,13 +145,13 @@ public class CommandManagerFactory {
     }
 
     private static synchronized CommandManager createCommandManager(String configParserClass, String configFile) {
-        CommandManagerConfigParser configParser = null;
+        CommandManagerParser configParser = null;
         if (configParserClass == null) {
             return createDefaultCommandManager();
         }
         try {
             log.info("loading CommandManagerLoader from class "+configParserClass);
-            configParser = (CommandManagerConfigParser) Class.forName(configParserClass).newInstance();
+            configParser = (CommandManagerParser) Class.forName(configParserClass).newInstance();
             return configParser.parseConfigFile(configFile);
         } 
         catch (final Exception e) {
@@ -173,15 +173,15 @@ public class CommandManagerFactory {
     }
     
     public static synchronized void reloadConfigFile() {
-        if (configParser == null || configFile == null || manager == null) {
+        if (parser == null || configFile == null || manager == null) {
             return;
         }
         try {
-            CommandManagerConfigParser cmcp = (CommandManagerConfigParser) Class.forName(configParser).newInstance();
+            CommandManagerParser cmcp = (CommandManagerParser) Class.forName(parser).newInstance();
             cmcp.reloadConfigFile(manager, configFile);
         }
         catch (Exception e) {
-            log.error("Unable to instantiate CommandManagerConfigParser for name: "+configParser, e);
+            log.error("Unable to instantiate CommandManagerConfigParser for name: "+parser, e);
         }
     }
     

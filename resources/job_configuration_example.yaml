@@ -28,8 +28,8 @@ executors:
         classname: org.genepattern.server.executor.lsf.LsfCommandExecutor
         #BroadCore configuration properties
         configuration.properties:
-            hibernate.connection.datasource: java:comp/env/jdbc/cmap_dev/genepattern_dev_01
-            hibernate.default_schema: GENEPATTERN_DEV_01
+            hibernate.connection.datasource: java:comp/env/jdbc/cmap_dev/genepattern
+            hibernate.default_schema: GENEPATTERN
             hibernate.dialect: org.genepattern.server.database.PlatformOracle9Dialect
             # number of seconds to check for completed jobs
             lsf.check.frequency: 15
@@ -47,28 +47,33 @@ executors:
 # override default.properties and <executor>.job.properties based on taskname or lsid
 # Note: <executor>.configuration.properties are intended to be applied at startup and may not make sense to be overwritten here
 custom.properties:
-    echoTest:
-        executor: RuntimeExec
     CBS:
-        executor: Test
+        executor: LSF
         lsf.max.memory: 16
         java_flags: -Xmx16g
     CopyNumberDivideByNormals:
-        executor: Test
+        executor: LSF
         lsf.max.memory: 16
     ESPPredictor:
+        executor: LSF
         lsf.max.memory: 8
     ExpressionFileCreator: 
+        executor: LSF
         lsf.max.memory: 8
     GISTIC: 
+        executor: LSF
         lsf.max.memory: 12
     GLAD: 
+        executor: LSF
         lsf.max.memory: 8
     HierarchicalClustering: 
+        executor: LSF
         lsf.max.memory: 4
     LOHPaired: 
+        executor: LSF
         lsf.max.memory: 4
     NMFConsensus: 
+        executor: LSF
         lsf.max.memory: 8
     #example usage of anchor '&' and '*' alias to reuse the same set of properties
     SNPFileCreator: &snp_settings
@@ -78,4 +83,5 @@ custom.properties:
     SNPFileSorter: *snp_settings
     SNPMultipleSampleAnalysis: *snp_settings
     XChromosomeCorrect: 
+        executor: LSF
         lsf.max.memory: 4

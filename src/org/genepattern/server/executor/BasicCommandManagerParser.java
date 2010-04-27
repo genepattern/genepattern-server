@@ -16,14 +16,14 @@ import org.yaml.snakeyaml.Yaml;
  * 
  * @author pcarr
  */
-public class YamlConfigParser implements CommandManagerConfigParser {
-    private static Logger log = Logger.getLogger(YamlConfigParser.class);
+public class BasicCommandManagerParser implements CommandManagerParser {
+    private static Logger log = Logger.getLogger(BasicCommandManagerParser.class);
     
     private String configFilename = null;
     private File configFile = null;
     private BasicCommandManager commandManager = null;
     
-    public YamlConfigParser() {
+    public BasicCommandManagerParser() {
         this.commandManager = new BasicCommandManager();
     }
 
@@ -42,7 +42,6 @@ public class YamlConfigParser implements CommandManagerConfigParser {
         setConfigFilename(pathToConfiguration);
         synchronized(commandManager) {
             log.error("Method not implemented!");
-            
         }
     }
     

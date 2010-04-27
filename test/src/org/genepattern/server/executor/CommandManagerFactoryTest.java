@@ -73,7 +73,7 @@ public class CommandManagerFactoryTest extends TestCase {
      */
     public void testMissingConfigFile() {
         Properties props = new Properties();
-        props.put("command.manager.config.parser", YamlConfigParser.class.getCanonicalName());
+        props.put("command.manager.parser", BasicCommandManagerParser.class.getCanonicalName());
         //load the config file from the same directory as this class file
         //Note: make sure your test build copies the test files into the classpath
         String classname = this.getClass().getCanonicalName();
@@ -84,35 +84,35 @@ public class CommandManagerFactoryTest extends TestCase {
         validateDefaultConfig(cmdMgr);
     }
     
-    public void testYamlConfigFromSystemProps() {
+    public void testSampleYamlConfigFromSystemProps() {
         File resourceDir = new File("resources");
         String pathToResourceDir = resourceDir.getAbsolutePath();
+        String parserClass=BasicCommandManagerParser.class.getCanonicalName();
         System.setProperty("genepattern.properties", pathToResourceDir);
-        String parserClass=YamlConfigParser.class.getCanonicalName();
-        System.setProperty("command.manager.config.parser", parserClass);
-        System.setProperty("command.manager.config.file", "job_configuration.yaml");
+        System.setProperty("command.manager.parser", parserClass);
+        System.setProperty("command.manager.config.file", "job_configuration_example.yaml");
 
         CommandManagerFactory.initializeCommandManager(System.getProperties());
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        validateJobConfigYaml(cmdMgr);
+        validateSampleJobConfigYaml(cmdMgr);
     }
 
-    public void testYamlConfigFromProps() throws Exception {
+    public void testSampleYamlConfigFromProps() throws Exception {
         File resourceDir = new File("resources");
         String pathToResourceDir = resourceDir.getAbsolutePath();
         System.setProperty("genepattern.properties", pathToResourceDir);
 
         Properties props = new Properties();
-        String parserClass=YamlConfigParser.class.getCanonicalName();
-        props.put("command.manager.config.parser", parserClass);
-        props.put("command.manager.config.file", "job_configuration.yaml");
+        String parserClass=BasicCommandManagerParser.class.getCanonicalName();
+        props.put("command.manager.parser", parserClass);
+        props.put("command.manager.config.file", "job_configuration_example.yaml");
 
         CommandManagerFactory.initializeCommandManager(props);
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        validateJobConfigYaml(cmdMgr);
+        validateSampleJobConfigYaml(cmdMgr);
     }
 
-    private void validateJobConfigYaml(CommandManager cmdMgr) {
+    private void validateSampleJobConfigYaml(CommandManager cmdMgr) {
         assertNotNull("Expecting non-null cmdMgr", cmdMgr);
         
         Map<String,CommandExecutor> map = cmdMgr.getCommandExecutorsMap();
@@ -142,7 +142,20 @@ public class CommandManagerFactoryTest extends TestCase {
         assertEquals("checking job properties: lsf.use.pre.exec.command", "false", ""+jobProperties.get("lsf.use.pre.exec.command"));
         assertEquals("checking job properties: lsf.extra.bsub.args", "null", jobProperties.get("lsf.extra.bsub.args"));
     }
-    
+
+    /**
+     * Helper class which returns the parent File of this source file.
+     * @return
+     */
+    private static File getSourceDir() {
+        String cname = CommandManagerFactoryTest.class.getCanonicalName();
+        int idx = cname.lastIndexOf('.');
+        String dname = cname.substring(0, idx);
+        dname = dname.replace('.', '/');
+        File sourceDir = new File("test/src/" + dname);
+        return sourceDir;
+    }
+
     /**
      * Helper class which initializes (or reinitializes) the CommandManager to parse the given
      * yaml config file from the same location as the source files for the unit tests.
@@ -150,16 +163,12 @@ public class CommandManagerFactoryTest extends TestCase {
      * @param filename
      */
     private static void initializeYamlConfigFile(String filename) {
-        String cname = CommandManagerFactoryTest.class.getCanonicalName();
-        int idx = cname.lastIndexOf('.');
-        String dname = cname.substring(0, idx);
-        dname = dname.replace('.', '/');
-        File resourceDir = new File("test/src/" + dname);
+        File resourceDir = getSourceDir();
         System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
         
         Properties props = new Properties();
-        String parserClass=YamlConfigParser.class.getCanonicalName();
-        props.put("command.manager.config.parser", parserClass);
+        String parserClass=BasicCommandManagerParser.class.getCanonicalName();
+        props.put("command.manager.parser", parserClass);
         props.put("command.manager.config.file", filename);
         CommandManagerFactory.initializeCommandManager(props);
         
@@ -263,17 +272,5 @@ public class CommandManagerFactoryTest extends TestCase {
         assertEquals("checking 'stdout.filename' property", exepectedStdoutFilename, cmdProps.getProperty("stdout.filename"));
         assertEquals("checking 'java_flags' property", "-Xmx4g", cmdProps.getProperty("java_flags"));
     }
-    
-//    public void testReloadConfigFile() {
-//        setResourceDir();
-//        
-//        Properties props = new Properties();
-//        String parserClass=YamlConfigParser.class.getCanonicalName();
-//        props.put("command.manager.config.parser", parserClass);
-//        props.put("command.manager.config.file", "job_configuration.yaml");
-//
-//        CommandManagerFactory.initializeCommandManager(props);
-//        CommandManagerFactory.reloadConfigFile();
-//    }
 
 }

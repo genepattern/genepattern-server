@@ -4,7 +4,7 @@ package org.genepattern.server.executor;
  * Parse a config file and create a new instance of a CommandManager.
  * @author pcarr
  */
-public interface CommandManagerConfigParser {
+public interface CommandManagerParser {
     /**
      * Create a new instance of a CommandManager by [optionally] reading settings from the given configuration file.
      * @param pathToConfigFile
