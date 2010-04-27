@@ -43,7 +43,6 @@ import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.executor.CommandManager;
 import org.genepattern.server.executor.CommandManagerFactory;
-import org.genepattern.server.executor.RuntimeExecCommand;
 import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.process.JobPurger;
 import org.genepattern.server.util.JobResultsFilenameFilter;
