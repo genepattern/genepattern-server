@@ -207,11 +207,11 @@ public class StartupServlet extends HttpServlet {
     public void destroy() {
         log.info("StartupServlet: destroy called");
         
-        //terminate the job queue
-        AnalysisTask.stopQueue();
+        //TODO: terminate the job queue properly
+        //this method, as presently implemented, can cause deadlock
+        //AnalysisTask.stopQueue();
 
-        //RuntimeExecCommand.terminateAll("--> Shutting down server");
-        //stop the command executors ...
+       //stop the command executors ...
         CommandManagerFactory.getCommandManager().stopCommandExecutors();
 
         String dbVendor = System.getProperty("database.vendor", "HSQL");
