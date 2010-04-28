@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.AnalysisManager;
+import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.domain.Lsid;
 import org.genepattern.webservice.JobInfo;
 
@@ -17,6 +19,17 @@ import org.genepattern.webservice.JobInfo;
  */
 public class BasicCommandManager implements CommandManager {
     private static Logger log = Logger.getLogger(BasicCommandManager.class);
+    
+    public void startAnalysisService() {
+        log.info("starting analysis service...");
+        AnalysisManager.getInstance();
+        AnalysisTask.startQueue();
+        log.info("...analysis service started!");
+    }
+    
+    public void shutdownAnalysisService() {
+        log.info("shutting down analysis service...done!");
+    }
     
     //map cmdExecId - commandExecutor
     private LinkedHashMap<String,CommandExecutor> cmdExecutorsMap = new LinkedHashMap<String,CommandExecutor>();
