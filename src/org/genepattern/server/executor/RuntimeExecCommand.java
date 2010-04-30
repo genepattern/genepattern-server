@@ -296,7 +296,7 @@ public class RuntimeExecCommand {
      * @author Jim Lerner
      * @see org.genepattern.webservice.JobStatus
      */
-    private static void updatePipelineStatus(int jobNumber, int jobStatus, ParameterInfo[] additionalParams)
+    public static void updatePipelineStatus(int jobNumber, int jobStatus, ParameterInfo[] additionalParams)
     throws OmnigeneException, RemoteException {
         if (log.isDebugEnabled()) {
             log.debug("Updating pipeline status.  job# = " + jobNumber);
