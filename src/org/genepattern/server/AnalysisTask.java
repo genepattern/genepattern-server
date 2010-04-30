@@ -244,7 +244,7 @@ public class AnalysisTask implements Runnable {
         return instance;
     }
 
-    public static void startQueue() {
+    public static synchronized void startQueue() {
         if (runner == null) {
             runner = new Thread(instance);
             runner.setName("AnalysisTaskThread");
@@ -256,9 +256,10 @@ public class AnalysisTask implements Runnable {
         }
     }
     
-    public static void stopQueue() {
+    public static synchronized void stopQueue() {
         if (runner != null) {
             runner.stop();
+            runner = null;
         }
     }
 
