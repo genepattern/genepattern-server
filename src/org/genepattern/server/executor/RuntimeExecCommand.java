@@ -225,15 +225,14 @@ public class RuntimeExecCommand {
     }
 
     /**
-     * accepts a jobID and attempts to terminate the running pipeline process. Pipelines are notable only in that they
-     * are sometimes run not as Omnigene tasks, but as R code that runs through each task serially. The running R
-     * process itself is the "pipeline", although it isn't strictly speaking a task. When the pipeline is run as a task,
-     * it is not treated as a pipeline in this code. The pipeline behavior only occurs when run via runPipeline.jsp,
-     * allowing intermediate results of the task to appear, which would not happen if it were run as a task (all or none
-     * for output).
+     * Accepts a jobID and attempts to terminate the running pipeline process. 
      * 
-     * @param jobID
-     *            JobInfo jobNumber
+     * Pipelines are notable only in that they are sometimes run not as Omnigene tasks, but as R code that runs through each task serially. 
+     * The running R process itself is the "pipeline", although it isn't strictly speaking a task. 
+     * When the pipeline is run as a task, it is not treated as a pipeline in this code. 
+     * 
+     * 
+     * @param jobID, JobInfo jobNumber
      * @return Process of the pipeline if running, else null
      * @author Jim Lerner
      */
@@ -253,11 +252,9 @@ public class RuntimeExecCommand {
 
     public static void terminateAll(String message) {
         log.debug(message);
-        String jobID;
-        Enumeration eJobs;
         int numTerminated = 0;
-        for (eJobs = htRunningPipelines.keys(); eJobs.hasMoreElements();) {
-            jobID = (String) eJobs.nextElement();
+        
+        for(String jobID : htRunningPipelines.keySet()) {
             log.info("Terminating job " + jobID);
             Process p = terminatePipeline(jobID);
             if (p != null) {
@@ -265,20 +262,17 @@ public class RuntimeExecCommand {
                     updatePipelineStatus(Integer.parseInt(jobID), JobStatus.JOB_ERROR, null);
                 } 
                 catch (Exception e) { /* ignore */
+                    log.error("error thrown in updatePipelineStatus for job "+jobID, e);
                 }
             }
             numTerminated++;
         }
-        for (eJobs = htRunningJobs.keys(); eJobs.hasMoreElements();) {
-            jobID = (String) eJobs.nextElement();
+        for(String jobID : htRunningJobs.keySet()) {
             log.info("Terminating job " + jobID);
             terminateJob(jobID, htRunningJobs);
             numTerminated++;
         }
-        if (numTerminated > 0) {
-            // let the processes terminate, clean up, and record their outputs in the database
-            Thread.yield();
-        }
+        Thread.yield();
     }
     
     /**
@@ -302,7 +296,7 @@ public class RuntimeExecCommand {
      * @author Jim Lerner
      * @see org.genepattern.webservice.JobStatus
      */
-    public static void updatePipelineStatus(int jobNumber, int jobStatus, ParameterInfo[] additionalParams)
+    private static void updatePipelineStatus(int jobNumber, int jobStatus, ParameterInfo[] additionalParams)
     throws OmnigeneException, RemoteException {
         if (log.isDebugEnabled()) {
             log.debug("Updating pipeline status.  job# = " + jobNumber);
@@ -324,41 +318,6 @@ public class RuntimeExecCommand {
         catch (OmnigeneException ex) {
             log.error("Error updating pipeline status.  jobNumber=" + jobNumber);
             HibernateUtil.rollbackTransaction();
-        }
-    }
-
-    /**
-     * Changes the JobStatus of a pipeline job, and appends zero or one output parameters (output filenames) to the
-     * jobs's JobInfo ParameterInfo array for eventual return to the invoker. This routine is actually invoked from
-     * updatePipelineStatus.jsp. The jobStatus constants are those defined in
-     * edu.mit.wi.omnigene.framework.analysis.JobStatus
-     * 
-     * @param jobNumber
-     *            jobID of the pipeline whose status is to be updated
-     * @param jobStatus
-     *            new status (eg. JobStatus.PROCESSING, JobStatus.DONE, etc.)
-     * @param name
-     *            optional [short] name of filename parameter, ie. without directory information
-     * @param additionalFilename
-     *            optional filename of output file for this job
-     * @throws OmnigeneException
-     *             if thrown by Omnigene
-     * @throws RemoteException
-     *             if thrown by Omnigene
-     * @author Jim Lerner
-     * @see org.genepattern.webservice.JobStatus
-     */
-    private static void updatePipelineStatus(int jobNumber, int jobStatus, String name, String additionalFilename)
-    throws OmnigeneException, RemoteException {
-        if (name != null && additionalFilename != null) {
-            ParameterInfo additionalParam = new ParameterInfo();
-            additionalParam.setAsOutputFile();
-            additionalParam.setName(name);
-            additionalParam.setValue(additionalFilename);
-            updatePipelineStatus(jobNumber, jobStatus, new ParameterInfo[] { additionalParam });
-        } 
-        else {
-            updatePipelineStatus(jobNumber, jobStatus, null);
         }
     }
 }

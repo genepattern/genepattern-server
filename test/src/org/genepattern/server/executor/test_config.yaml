@@ -9,10 +9,10 @@ executors:
         classname: org.genepattern.server.executor.TestCommandExecutor
     RuntimeExec: 
         classname: org.genepattern.server.executor.RuntimeCommandExecutor
-        job.properties:
+        default.properties:
             stdout.filename: runtimeexec.out
 
-custom.properties:
+module.properties:
     # 1) by taskName
     ComparativeMarkerSelection:
         executor: RuntimeExec
@@ -36,3 +36,43 @@ custom.properties:
     # 6) handle invalid executor id
     moduleC:
         executor: notset
+
+# user and group specific configuration
+# example use cases:
+# 1) for all users in the 'broadusers' group, use lsf.queue=broad
+group.properties:
+    admingroup:
+        stdout.filename: stdout_admingroup.out
+    broadgroup:
+        stdout.filename: stdout_broadgroup.out
+        # ... except for ComparativeMarkerSelection ... 
+        module.properties:
+            ComparativeMarkerSelection: 
+                stdout.filename: CMS.broadgroup.out
+
+# 2) when user 'testuser' runs the 'ComparativeMarkerSelection' module, stdout.filename=CMS.testuser.out (rather than the default) 
+user.properties:
+    testuser:
+        module.properties:
+            ComparativeMarkerSelection: 
+                stdout.filename: CMS.testuser.out
+
+    # ... also, run all of adminuser's jobs with the Test executor
+    adminuser:
+        executor: Test
+
+# Note: user and group specific configuration options are not thoroughly tested for precedence rules...
+#    here is what is supposed to happen:
+#    1) determine which executor to use;
+#    2) then determine properties in the following order:
+#        default.properties
+#        executor.default.properties
+#        module.properties
+#        group.properties
+#        group.properties.module.properties
+#        user.properties
+#        user.properties.module.properties
+#    the order described in step 2 is used to determine the executor.
+
+# Note: when a user is a member of more than one group, precedence is based on the order in which the group appears in this file
+# 

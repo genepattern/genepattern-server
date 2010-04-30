@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 
+import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.executor.lsf.LsfCommandExecutor;
 import org.genepattern.webservice.JobInfo;
 
@@ -15,6 +17,7 @@ import junit.framework.TestCase;
  * @author pcarr
  */
 public class CommandManagerFactoryTest extends TestCase {
+    
     /**
      * assertions for all instance of CommandManager, can be called from all test cases.
      * @param cmdMgr
@@ -183,7 +186,45 @@ public class CommandManagerFactoryTest extends TestCase {
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
         validateCommandManager(cmdMgr);
         assertEquals("Expecting 2 executors", 2, cmdMgr.getCommandExecutorsMap().size() );
+        validateYamlConfig();
         
+        //additional tests for user and group properties
+        //set up group membership
+        UserAccountManager.instance().refreshUsersAndGroups();
+        IGroupMembershipPlugin groups = UserAccountManager.instance().getGroupMembership();
+        assertTrue("userA is in admingroup", groups.isMember("userA", "admingroup"));
+        assertTrue("userA is in broadgroup", groups.isMember("userA", "broadgroup"));
+        assertTrue("adminuser is in admingroup", groups.isMember("adminuser", "admingroup"));
+
+        String userId = "adminuser";
+        String taskName = "ComparativeMarkerSelection";
+        String taskLsid = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:6";
+        String expectedCmdExecId = "Test";
+        String expectedFilename = "stdout_admingroup.out";
+        boolean expectingException = false;
+        
+        validateJobConfig(
+                userId,
+                taskName, 
+                taskLsid, 
+                expectedCmdExecId, 
+                expectedFilename, 
+                expectingException);
+    }
+
+    /**
+     * Test default and custom properties in yaml configuration file which has no indenting.
+     */
+    public void testYamlConfigNoIndent() {
+        initializeYamlConfigFile("test_config_noindent.yaml");
+        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
+        validateCommandManager(cmdMgr);
+        assertEquals("Expecting 2 executors", 2, cmdMgr.getCommandExecutorsMap().size() );
+        validateYamlConfig();
+    }
+
+    private void validateYamlConfig() {
+        String userId = "test_user";
         String taskName = "ConvertLineEndings";
         String taskLsid = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00002:2";
         String expectedCmdExecId = "Test";
@@ -191,6 +232,7 @@ public class CommandManagerFactoryTest extends TestCase {
         boolean expectingException = false;
 
         validateJobConfig(
+                userId,
                 taskName, 
                 taskLsid, 
                 expectedCmdExecId, 
@@ -198,6 +240,7 @@ public class CommandManagerFactoryTest extends TestCase {
                 expectingException);
         
         validateJobConfig(
+                userId,
                 "ComparativeMarkerSelection", 
                 "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:2",
                 "RuntimeExec",
@@ -205,6 +248,7 @@ public class CommandManagerFactoryTest extends TestCase {
                 false);
         
         validateJobConfig(
+                userId,
                 "ComparativeMarkerSelection",
                 "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4",
                 "RuntimeExec",
@@ -212,6 +256,7 @@ public class CommandManagerFactoryTest extends TestCase {
                 false);
 
         validateJobConfig(
+                userId,
                 "ComparativeMarkerSelection",
                 "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:5",
                 "Test",
@@ -219,6 +264,7 @@ public class CommandManagerFactoryTest extends TestCase {
                 false);
 
         validateJobConfig(
+                userId,
                 "moduleA",
                 (String)null,
                 "RuntimeExec",
@@ -226,6 +272,7 @@ public class CommandManagerFactoryTest extends TestCase {
                 false);
         
         validateJobConfig(
+                userId,
                 "moduleB",
                 (String)null,
                 "Test",
@@ -233,6 +280,7 @@ public class CommandManagerFactoryTest extends TestCase {
                 false);
 
         validateJobConfig(
+                userId,
                 "moduleC",
                 (String)null,
                 "Test",
@@ -240,8 +288,9 @@ public class CommandManagerFactoryTest extends TestCase {
                 true);
     }
     
-    private static void validateJobConfig(String taskName, String taskLsid, String expectedCmdExecId, String exepectedStdoutFilename, boolean expectingException) {
+    private static void validateJobConfig(String userId, String taskName, String taskLsid, String expectedCmdExecId, String exepectedStdoutFilename, boolean expectingException) {
         JobInfo jobInfo = new JobInfo();
+        jobInfo.setUserId(userId);
         jobInfo.setTaskName(taskName);
         jobInfo.setTaskLSID(taskLsid);
         

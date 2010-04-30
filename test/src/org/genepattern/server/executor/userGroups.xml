@@ -1,0 +1,14 @@
+<!-- map of users to groups -->
+
+<userGroups>
+
+<group name="admingroup">
+    <user name="adminuser"/>
+    <user name="userA"/>
+</group>
+
+<group name="broadgroup">
+    <user name="userA" />
+</group>
+
+</userGroups>

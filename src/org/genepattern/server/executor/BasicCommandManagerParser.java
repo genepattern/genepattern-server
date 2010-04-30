@@ -7,12 +7,14 @@ import java.io.Reader;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.yaml.snakeyaml.Yaml;
 
 /**
- * Configure command execution and job properties from a YAML configuration file.
+ * Parse job configuration properties from a file in YAML format.
  * 
  * @author pcarr
  */
@@ -41,6 +43,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
         }
         setConfigFilename(pathToConfiguration);
         synchronized(commandManager) {
+            //TODO: reloadable job configuration
             log.error("Method not implemented!");
         }
     }
@@ -49,7 +52,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
         this.configFilename = s;
         this.configFile = CommandManagerFactory.getConfigurationFile(configFilename);
         if (this.configFile == null) {
-            throw new RuntimeException("//TODO: default init");
+            throw new RuntimeException("Error in setConfigFilename("+s+"): Using default job configuration instead.");
         }
     }
     
@@ -66,14 +69,19 @@ public class BasicCommandManagerParser implements CommandManagerParser {
             Yaml yaml = new Yaml();
             Object obj = yaml.load(reader);
             if (obj != null) {
-                if (obj instanceof Map) {
-                    Map config = (Map) obj;
+                if (obj instanceof Map<?,?>) {
+                    Map<?,?> config = (Map<?,?>) obj;
                     Object executors = config.get("executors");
-                    parseExecutors(configObj, (Map) executors);
+                    parseExecutors(configObj, (Map<?,?>) executors);
                     Object defaultProperties = config.get("default.properties");
                     parseDefaultProperties(configObj, defaultProperties);
-                    Object customProperties = config.get("custom.properties");
-                    parseCustomProperties(configObj, customProperties);
+                    Object moduleProperties = config.get("module.properties");
+                    parseModuleProperties(configObj, moduleProperties);
+                    
+                    Object groupProperties = config.get("group.properties"); 
+                    configObj.addGroupPropertiesObj(groupProperties);
+                    Object userProperties = config.get("user.properties");
+                    configObj.addUserPropertiesObj(userProperties);
                 }
             }
         }
@@ -94,11 +102,12 @@ public class BasicCommandManagerParser implements CommandManagerParser {
         return configObj;
     }
     
-    private void parseExecutors(JobConfigObj configObj, Map map) throws Exception {
-        for(Object cmdExecId : map.keySet()) {
-            Object val = map.get(cmdExecId);
+    private void parseExecutors(JobConfigObj configObj, Map<?,?> map) throws Exception {
+        for(Object key : map.keySet()) {
+            String cmdExecId = ""+key;
+            Object val = map.get(key);
             CmdExecConfigObj cmdExecConfigObj = new CmdExecConfigObj(val);
-            configObj.executors.put((String)cmdExecId, cmdExecConfigObj);
+            configObj.addExecutor(cmdExecId, cmdExecConfigObj);
         }
     }
 
@@ -107,7 +116,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
             log.info("No 'default.properties' in configuration");
             return;
         }
-        if (!(defaultPropertiesObj instanceof Map)) {
+        if (!(defaultPropertiesObj instanceof Map<?,?>)) {
             String errorMessage = "Error in 'default.properties' section of configuration file, expected a map, but found a ";
             if (defaultPropertiesObj != null) {
                 errorMessage += defaultPropertiesObj.getClass().getCanonicalName();
@@ -118,58 +127,69 @@ public class BasicCommandManagerParser implements CommandManagerParser {
             log.error(errorMessage);
             return;
         }
-        Map map = (Map) defaultPropertiesObj;
-        for(Object key : map.keySet()) {
-            Object value = map.get(key);
-            if (value instanceof String) {
-                configObj.defaultProperties.put((String)key, (String) value);
-            }
-            else {
-                String errorMessage = "Error in 'default.properties' section of configuration file, expected a string, but found a ";
-                if (value != null) {
-                    errorMessage += value.getClass().getCanonicalName();
-                }
-                else {
-                    errorMessage += "null object";
-                }
-                log.error(errorMessage);
+        Map<?,?> map = (Map<?,?>) defaultPropertiesObj;
+        for(Entry<?,?> entry : map.entrySet()) {
+            String key = ""+entry.getKey();
+            String value = ""+entry.getValue();
+            configObj.addDefaultProperty(key, value);
+        }
+    }
+    
+    private void parseModuleProperties(JobConfigObj configObj, Object modulePropertiesObj) {
+        if (modulePropertiesObj == null) {
+            log.info("No 'module.properties' in configuration");
+            return;
+        }
+        if (!(modulePropertiesObj instanceof Map<?,?>)) {
+            log.error("Error in 'module.properties' section of configuration file, expected a Map, but found a "+modulePropertiesObj.getClass());
+            return;
+        }
+        Map<?,?> modulePropertiesMap = (Map<?,?>) modulePropertiesObj;
+        for(Object keyObj : modulePropertiesMap.keySet()) {
+            Object valObj = modulePropertiesMap.get(keyObj);
+            if ((valObj instanceof Map<?,?>)) {
+                String key = ""+keyObj;
+                Map<?,?> val = (Map<?,?>) valObj;
+                configObj.addModuleProperty(key, val);
             }
         }
     }
     
-    private void parseCustomProperties(JobConfigObj configObj, Object customPropertiesObj) {
-        if (customPropertiesObj == null) {
-            log.info("No 'custom.properties' in configuration, using default settings for all jobs");
-            return;
-        }
-        if (!(customPropertiesObj instanceof Map)) {
-            log.error("Error in 'custom.properties' section of configuration file, expected a Map, but found a "+customPropertiesObj.getClass());
-            return;
-        }
-        Map fromConfig = (Map) customPropertiesObj;
-        for( Object key : fromConfig.keySet() ) {
-            Object val = fromConfig.get(key);
-            if ((val instanceof LinkedHashMap<?,?>)) {
-                configObj.customProperties.put((String) key, (LinkedHashMap<String,String>) val);
-            }
-        }
-    }
-    
-    private BasicCommandManager initializeFromJobConfigObj(JobConfigObj configObj) throws Exception {
+    private BasicCommandManager initializeFromJobConfigObj(JobConfigObj jobConfigObj) throws Exception {
         BasicCommandManager cmdMgr = new BasicCommandManager();
-        for(String execId : configObj.executors.keySet()) {
-            CmdExecConfigObj execObj = configObj.executors.get(execId);
+        CommandManagerProperties config = cmdMgr.getConfigProperties();
+
+        //initialize executors list
+        for(String execId : jobConfigObj.getExecutors().keySet()) {
+            CmdExecConfigObj execObj = jobConfigObj.getExecutors().get(execId);
             CommandExecutor cmdExecutor = initializeCommandExecutor(execObj);
             cmdMgr.addCommandExecutor(execId, cmdExecutor);
-            if (execObj.jobProperties != null) {
-                cmdMgr.setJobProperties(execId, execObj.jobProperties);
+            //store executor.default.properties
+            if (execObj.executorDefaultProperties != null) { 
+                PropObj propObj = config.getPropsForExecutor(execId);
+                for (String key : (Set<String>) (Set) execObj.executorDefaultProperties.keySet()) {
+                    String value = execObj.executorDefaultProperties.getProperty(key);
+                    propObj.addDefaultProperty(key, value);
+                }
             }
         }
-        cmdMgr.setDefaultProperties(configObj.defaultProperties);
-        cmdMgr.setCustomProperties(configObj.customProperties);
+        //store top level default.properties
+        config.getTop().setDefaultProperties(jobConfigObj.getDefaultProperties());
+        //store top level module.properties
+        config.getTop().setModuleProperties(jobConfigObj.getModuleProperties());
+        //store custom group.properties
+        initializeCustomProperties(config, jobConfigObj.getGroupPropertiesObj(), true);
+        //store custom user.properties
+        initializeCustomProperties(config, jobConfigObj.getUserPropertiesObj(), false);
         return cmdMgr;
     }
-    
+
+    /**
+     * Initialize an instance of a CommandExecutor from the settings stored in the given CmdExecConfigObj.
+     * This method calls the constructor and [optionally] calls setConfigurationFilename and setConfigurationProperties.
+     * @param execObj
+     * @return
+     */
     private CommandExecutor initializeCommandExecutor(CmdExecConfigObj execObj) {
         CommandExecutor cmdExecutor = null;
         //1) load cmdExecutor from classname
@@ -196,29 +216,152 @@ public class BasicCommandManagerParser implements CommandManagerParser {
         }
         return cmdExecutor;
     }
+
+    private void initializeCustomProperties(CommandManagerProperties config, Object userOrGroupPropertiesObj, boolean forGroup) {
+        if (userOrGroupPropertiesObj == null) {
+            return;
+        }
+        //for logging and debugging
+        String parentKey = forGroup ? "group.properties" : "user.properties";
+
+        if (userOrGroupPropertiesObj == null) {
+            log.debug("No '"+parentKey+"' in configuration");
+            return;
+        }
+        if (!(userOrGroupPropertiesObj instanceof Map)) {
+            String errorMessage = "Error in '"+parentKey+"' section of configuration file, expected a map, but found a ";
+            if (userOrGroupPropertiesObj != null) {
+                errorMessage += userOrGroupPropertiesObj.getClass().getCanonicalName();
+            }
+            else {
+                errorMessage += "null object";
+            }
+            log.error(errorMessage);
+            return;
+        }
+        Map<?,?> groupPropertiesMap = (Map<?,?>) userOrGroupPropertiesObj;
+        for(Entry<?,?> entry : groupPropertiesMap.entrySet()) {
+            String userOrGroupId = "" + entry.getKey();
+            PropObj propObj = null;
+            if (forGroup) {
+                propObj = config.getPropsForGroup(userOrGroupId);
+            }
+            else {
+                propObj = config.getPropsForUser(userOrGroupId);
+            }
+            initializePropertiesInto(propObj, userOrGroupId, entry.getValue());
+        }
+    }
+    
+    private void initializePropertiesInto(PropObj propObj, String groupOrUserId, Object propertiesObj) {
+        Map<?,?> map = (Map<?,?>) propertiesObj;
+        for(Entry<?,?> entry : map.entrySet() ) {
+            String propname = "" + entry.getKey();
+            if ("module.properties".equals(propname)) {
+                initializeModulePropertiesInto(propObj, groupOrUserId, entry.getValue());
+            }
+            else {
+                String value = "" + entry.getValue();
+                propObj.addDefaultProperty(propname, value);
+            }
+        }
+    }
+
+    private void initializeModulePropertiesInto(PropObj propObj, String groupOrUserId, Object modulePropertiesMapObj) {
+        if (modulePropertiesMapObj == null) {
+            log.debug("No module.properties set for: "+groupOrUserId);
+            return;
+        }
+        if (!(modulePropertiesMapObj instanceof Map<?,?>)) {
+            String errorMessage = "Error in 'module.properties' section of configuration file for: "+groupOrUserId+". Expected a map, but found a ";
+            if (modulePropertiesMapObj != null) {
+                errorMessage += modulePropertiesMapObj.getClass().getCanonicalName();
+            }
+            else {
+                errorMessage += "null object";
+            }
+            log.error(errorMessage);
+            return;
+        }
+        Map<?,?> map = (Map<?,?>) modulePropertiesMapObj;
+        for(Entry<?,?> entry : map.entrySet()) {
+            String moduleId = ""+entry.getKey();
+            Object modulePropertiesObj = entry.getValue();
+            if (modulePropertiesObj instanceof Map<?,?>) {
+                for(Entry<?,?> propEntry : ((Map<?,?>)modulePropertiesObj).entrySet()) {
+                    String propKey = ""+propEntry.getKey();
+                    String propValue = ""+propEntry.getValue();
+                    propObj.addModuleProperty(moduleId, propKey, propValue);
+                }
+            }
+        }
+    }
 }
 
 //helper class for yaml parser
-class JobConfigObj {
-    Properties defaultProperties = new Properties();
-    Map<String,CmdExecConfigObj> executors = new LinkedHashMap<String,CmdExecConfigObj>();
-    Map<String,Map<String,String>> customProperties = new LinkedHashMap<String,Map<String,String>>();
+final class JobConfigObj {
+    private Properties defaultProperties = new Properties();
+    private Map<String,CmdExecConfigObj> executors = new LinkedHashMap<String,CmdExecConfigObj>();
+    private Map<String,Map<?,?>> moduleProperties = new LinkedHashMap<String,Map<?,?>>();
+
+    private Object groupPropertiesObj = null;
+    private Object userPropertiesObj = null;
+
+    public void addExecutor(String cmdExecId, CmdExecConfigObj cmdExecConfigObj) {
+        this.executors.put(cmdExecId, cmdExecConfigObj);            
+    }
+    
+    public void addDefaultProperty(String key, String value) {
+        defaultProperties.put(key, value);
+    }
+    
+    public void addModuleProperty(String key, Map<?,?> val) {
+        moduleProperties.put(key, val);
+    }
+
+    public void addGroupPropertiesObj(Object obj) {
+        this.groupPropertiesObj = obj;
+    }
+    
+    public void addUserPropertiesObj(Object obj) {
+        this.userPropertiesObj = obj;
+    }
+    
+    public Map<String,CmdExecConfigObj> getExecutors() {
+        return executors;
+    }
+    
+    public Properties getDefaultProperties() {
+        return defaultProperties;
+    }
+    
+    public Map<String,Map<?,?>> getModuleProperties() {
+        return moduleProperties;
+    }
+    
+    public Object getGroupPropertiesObj() {
+        return this.groupPropertiesObj;
+    }
+    
+    public Object getUserPropertiesObj() {
+        return this.userPropertiesObj;
+    }
 }
 
-class CmdExecConfigObj {
+final class CmdExecConfigObj {
     String classname;
     String configurationFile;
     Properties configurationProperties = new Properties();
-    Properties jobProperties = new Properties();
+    Properties executorDefaultProperties = new Properties();
     
     CmdExecConfigObj(Object yamlObj) throws Exception {
         if (yamlObj instanceof String) {
             // <id>:<classname>
             this.classname = (String) yamlObj;
         }
-        else if (yamlObj instanceof Map) {
+        else if (yamlObj instanceof Map<?,?>) {
             // <id>:<map>
-            parseMap((Map) yamlObj);            
+            parseMap((Map<?,?>) yamlObj);            
         }
         else {
             String errorMessage = "Invalid input in config file, expecting a String or a Map but found a ";
@@ -232,7 +375,7 @@ class CmdExecConfigObj {
         }
     }
 
-    private void parseMap(Map map) throws Exception {
+    private void parseMap(Map<?,?> map) throws Exception {
         // <id>: 
         //    classname: <classname>
         //    [configuration.file: <configuration_file>| configuration.properties: <map>]
@@ -254,18 +397,25 @@ class CmdExecConfigObj {
         }
         Object configPropsObj = map.get("configuration.properties");
         if (configPropsObj != null) {
-            if (configPropsObj instanceof Map) {
-                this.configurationProperties.putAll( (Map) configPropsObj);
-            }
-            else {
+            if (!(configPropsObj instanceof Map<?,?>)) {
                 throw new Exception("'configuration.properties' is not of type Map");
+            }
+            Map<?,?> configPropsMap = (Map<?,?>) configPropsObj;
+            for(Entry<?,?> entry : configPropsMap.entrySet()) {
+                String key = ""+entry.getKey();
+                String value = ""+entry.getValue();
+                this.configurationProperties.setProperty(key, value);
             }
         }
         
-        Object jobPropsObj = map.get("job.properties");
-        if (jobPropsObj != null) {
-            if (jobPropsObj instanceof Map) {
-                this.jobProperties.putAll( (Map) jobPropsObj );
+        Object executorDefaultPropertiesObj = map.get("default.properties");
+        if (executorDefaultPropertiesObj != null && executorDefaultPropertiesObj instanceof Map<?,?>) {
+            //perform string conversion here
+            Map<?,?> executorDefaultPropertiesMap = (Map<?,?>) executorDefaultPropertiesObj;
+            for(Entry<?,?> entry : executorDefaultPropertiesMap.entrySet()) {
+                String key = ""+entry.getKey();
+                String value = ""+entry.getValue();
+                this.executorDefaultProperties.setProperty(key, value);
             }
         } 
     }

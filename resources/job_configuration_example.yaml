@@ -11,9 +11,9 @@ default.properties:
 
 # a list of command executors
 # a map of <id>:<obj>, where
-#    obj := <classname> | <struct>
+#    obj := <classname> | <map>
 #    classname := fully qualified classname of a class which implements the org.genepattern.server.executor.CommandExecutor interface
-#    struct := classname=<classname> [configuration.file: <path_to_config_file> | configuration.properties: <map>] [job.properties: <map>]
+#    map := classname=<classname> [configuration.file: <path_to_config_file> | configuration.properties: <map>] [default.properties: <map>]
 executors:
     # simple declaration, of the form <id>:<classname>
     RuntimeExec: org.genepattern.server.executor.RuntimeCommandExecutor
@@ -34,8 +34,8 @@ executors:
             # number of seconds to check for completed jobs
             lsf.check.frequency: 15
         #job specific default properties applied to all jobs run with this executor
-        #note: to override defaults add entries to the custom.props section
-        job.properties:
+        #note: to override executor specific default properties add entries to module.properties, group.properties, or user.properties
+        default.properties:
             lsf.project: genepattern
             lsf.queue: broad
             lsf.max.memory: 2
@@ -46,7 +46,7 @@ executors:
 
 # override default.properties and <executor>.job.properties based on taskname or lsid
 # Note: <executor>.configuration.properties are intended to be applied at startup and may not make sense to be overwritten here
-custom.properties:
+module.properties:
     CBS:
         executor: LSF
         lsf.max.memory: 16
@@ -85,3 +85,25 @@ custom.properties:
     XChromosomeCorrect: 
         executor: LSF
         lsf.max.memory: 4
+
+# custom configuration settings
+# by group id
+group.properties:
+    test:
+        # override default properties for all users in group 'test'
+        executor: Test
+        java_flags: -Xmx2g
+        # override module.properties for all users in group 'test'
+        module.properties:
+            ExpressionFileCreator:
+                lsf.max.memory: 2
+        
+# by user id
+user.properties:
+    admin:
+        # override default properties for 'admin' user
+        lsf.output.filename: lsf.out
+        # override module.properties for 'admin' user
+        module.properties:
+            ExpressionFileCreator:
+                lsf.max.memory: 24
