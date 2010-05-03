@@ -44,11 +44,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpState;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
-
 public class RunVisualizer {
 
     protected boolean debug = true;
@@ -344,68 +339,45 @@ public class RunVisualizer {
     }
 
     /**
+     * Download a URL to a local file and return a File object for it.
      * 
-     * download a URL to a local file and return a File object for it
-     * 
-     * @param url
-     *                The url to download.
-     * @param dir
-     *                The directory to download the URL to.
-     * @param filename
-     *                The filename to download the URL to.
+     * @param url, The url to download.
+     * @param dir, The directory to download the URL to.
+     * @param filename, The filename to download the URL to.
      */
     protected File downloadFile(URL url, File dir, String filename) throws IOException {
-	InputStream is = null;
-	FileOutputStream fos = null;
-	File file = null;
-	GetMethod get = null;
-	try {
-	    // use Http Client if url is a GP server URL
-	    if (url.getHost().equals(documentBase.getHost()) && url.getPort() == documentBase.getPort()) {
-		HttpClient client = new HttpClient();
-		client.setState(new HttpState());
-		// client.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
-		get = new GetMethod(url.toString());
-		get.addRequestHeader("Cookie", cookie);
-		int statusCode = client.executeMethod(get);
-		if (statusCode != HttpStatus.SC_OK) {
-		    System.err.println("Failed to download " + url + ": " + get.getStatusLine());
-		}
-		is = get.getResponseBodyAsStream();
-	    } else {
-		URLConnection conn = url.openConnection();
-		is = conn.getInputStream();
-	    }
-
-	    dir.mkdirs();
-	    file = new File(dir, filename);
-	    fos = new FileOutputStream(file);
-	    byte[] buf = new byte[100000];
-	    int j;
-	    while ((j = is.read(buf, 0, buf.length)) != -1) {
-		fos.write(buf, 0, j);
-	    }
-	} finally {
-	    if (is != null) {
-		try {
-		    is.close();
-		} catch (IOException e) {
-
-		}
-	    }
-	    if (fos != null) {
-		try {
-		    fos.close();
-		} catch (IOException e) {
-
-		}
-	    }
-	    if (get != null) {
-		get.releaseConnection();
-	    }
-	}
-
-	return file;
+        InputStream is = null;
+        FileOutputStream fos = null;
+        File file = null;
+        try {
+            URLConnection conn = url.openConnection();
+            is = conn.getInputStream();
+            dir.mkdirs();
+            file = new File(dir, filename);
+            fos = new FileOutputStream(file);
+            byte[] buf = new byte[100000];
+            int j;
+            while ((j = is.read(buf, 0, buf.length)) != -1) {
+                fos.write(buf, 0, j);
+            }
+        } 
+        finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } 
+                catch (IOException e) {
+                }
+            }
+            if (fos != null) {
+                try {
+                    fos.close();
+                } 
+                catch (IOException e) {
+                }
+            }
+        }
+        return file;
     }
 
     protected boolean validateCPU() throws IOException {
