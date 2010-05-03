@@ -3,10 +3,12 @@ package org.genepattern.server.executor.lsf;
 import java.io.File;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.executor.CommandExecutor;
@@ -20,12 +22,8 @@ public class LsfCommandExecutor implements CommandExecutor {
     private static Logger log = Logger.getLogger(LsfCommandExecutor.class);
 
     //for submitting jobs to the LSF queue
-    private static ExecutorService executor = Executors.newFixedThreadPool(3);
+    private static ExecutorService executor = null;
     private Properties configurationProperties = new Properties();
-    
-    public void reloadConfiguration() throws Exception {
-        log.error("method not implemented!");
-    }
     
     public void setConfigurationFilename(String filename) {
         log.error("method not implemented, setConfigurationFilename( "+filename+" )");
@@ -37,16 +35,21 @@ public class LsfCommandExecutor implements CommandExecutor {
     
     public void start() {
         log.info("Initializing LsfCommandExecSvc ...");
+        executor = Executors.newFixedThreadPool(3);
         try {
+            
             //load custom properties
             System.setProperty("jboss.server.name", System.getProperty("fqHostName", "localhost"));
             Main broadCore = Main.getInstance();
             broadCore.setEnvironment("prod"); 
             
-            String dataSourceName = this.configurationProperties.getProperty("hibernate.connection.datasource", "java:comp/env/jdbc/db1");
+            String dataSourceName = this.configurationProperties.getProperty("hibernate.connection.datasource", "java:comp/env/jdbc/cmap_dev/genepattern_dev_01");
             log.info("using hibernate.connection.datasource="+dataSourceName);
             broadCore.setDataSourceName(dataSourceName);
-            
+            log.info("setting hibernate options...");
+            for(Entry<?,?> entry : configurationProperties.entrySet()) {
+                log.info(""+entry.getKey()+": "+entry.getValue());
+            }
             broadCore.setHibernateOptions(configurationProperties);
 
             int lsfCheckFrequency = 60;
@@ -74,10 +77,25 @@ public class LsfCommandExecutor implements CommandExecutor {
     public void stop() {
         log.info("Stopping LsfCommandExecSvc ...");
         try {
+            log.debug("stopping BroadCore...");
             Main.getInstance().stop();
         }
         catch (Throwable t) {
             log.error("Error shutting down BroadCore: "+t.getLocalizedMessage(), t);
+        }
+        if (executor != null) {
+            log.debug("stopping executor...");
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+                    log.error("executor shutdown timed out after 30 seconds.");
+                    executor.shutdownNow();
+                }
+            }
+            catch (InterruptedException e) {
+                log.error("executor.shutdown was interrupted", e);
+                Thread.currentThread().interrupt();
+            }
         }
         log.info("done!");
     }
@@ -94,7 +112,7 @@ public class LsfCommandExecutor implements CommandExecutor {
         LsfJob lsfJob = cmd.getLsfJob();
         lsfJob = submitJob(lsfJob);
         log.debug(jobInfo.getJobNumber()+". "+jobInfo.getTaskName()+" is dispatched.");
-    }        
+    }
 
     /**
      * Uses the BroadCore library to submit the job to LSF, must handle database transactions in this method.
@@ -102,6 +120,10 @@ public class LsfCommandExecutor implements CommandExecutor {
      * @return the value returned from LsfWrapper#dispatchLsfJob
      */
     private LsfJob submitJob(final LsfJob lsfJob) throws Exception { 
+        if (executor == null) {
+            log.error("service not started ... ignoring submitJob("+lsfJob.getName()+")");
+            return lsfJob;
+        }
         Callable<LsfJob> c = new LsfTransactedCallable(lsfJob);
         FutureTask<LsfJob> future = new FutureTask<LsfJob>(c);
         executor.execute(future);
@@ -118,12 +140,11 @@ public class LsfCommandExecutor implements CommandExecutor {
     }
     
     public void terminateJob(JobInfo jobInfo) {
-        log.error("Terminate job not enabled");
-        //TODO: implement terminate job in BroadCore library. It currently is not part of the library, pjc.
+        //TODO: implement terminate job using the BroadCore library.
+        String jobId = jobInfo != null ? ""+jobInfo.getJobNumber() : "null";
+        log.error("Terminating job "+jobId+": terminateJob not implemented");
     }
-    
-    
-    
+
 }
 
 
