@@ -106,7 +106,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
         for(Object key : map.keySet()) {
             String cmdExecId = ""+key;
             Object val = map.get(key);
-            CmdExecConfigObj cmdExecConfigObj = new CmdExecConfigObj(val);
+            ExecutorConfig cmdExecConfigObj = new ExecutorConfig(val);
             configObj.addExecutor(cmdExecId, cmdExecConfigObj);
         }
     }
@@ -161,14 +161,14 @@ public class BasicCommandManagerParser implements CommandManagerParser {
 
         //initialize executors list
         for(String execId : jobConfigObj.getExecutors().keySet()) {
-            CmdExecConfigObj execObj = jobConfigObj.getExecutors().get(execId);
+            ExecutorConfig execObj = jobConfigObj.getExecutors().get(execId);
             CommandExecutor cmdExecutor = initializeCommandExecutor(execObj);
             cmdMgr.addCommandExecutor(execId, cmdExecutor);
             //store executor.default.properties
-            if (execObj.executorDefaultProperties != null) { 
+            if (execObj.defaultProperties != null) { 
                 PropObj propObj = config.getPropsForExecutor(execId);
-                for (String key : (Set<String>) (Set) execObj.executorDefaultProperties.keySet()) {
-                    String value = execObj.executorDefaultProperties.getProperty(key);
+                for (String key : (Set<String>) (Set) execObj.defaultProperties.keySet()) {
+                    String value = execObj.defaultProperties.getProperty(key);
                     propObj.addDefaultProperty(key, value);
                 }
             }
@@ -190,7 +190,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
      * @param execObj
      * @return
      */
-    private CommandExecutor initializeCommandExecutor(CmdExecConfigObj execObj) {
+    private CommandExecutor initializeCommandExecutor(ExecutorConfig execObj) {
         CommandExecutor cmdExecutor = null;
         //1) load cmdExecutor from classname
         try {
@@ -301,13 +301,13 @@ public class BasicCommandManagerParser implements CommandManagerParser {
 //helper class for yaml parser
 final class JobConfigObj {
     private Properties defaultProperties = new Properties();
-    private Map<String,CmdExecConfigObj> executors = new LinkedHashMap<String,CmdExecConfigObj>();
+    private Map<String,ExecutorConfig> executors = new LinkedHashMap<String,ExecutorConfig>();
     private Map<String,Map<?,?>> moduleProperties = new LinkedHashMap<String,Map<?,?>>();
 
     private Object groupPropertiesObj = null;
     private Object userPropertiesObj = null;
 
-    public void addExecutor(String cmdExecId, CmdExecConfigObj cmdExecConfigObj) {
+    public void addExecutor(String cmdExecId, ExecutorConfig cmdExecConfigObj) {
         this.executors.put(cmdExecId, cmdExecConfigObj);            
     }
     
@@ -327,7 +327,7 @@ final class JobConfigObj {
         this.userPropertiesObj = obj;
     }
     
-    public Map<String,CmdExecConfigObj> getExecutors() {
+    public Map<String,ExecutorConfig> getExecutors() {
         return executors;
     }
     
@@ -348,13 +348,17 @@ final class JobConfigObj {
     }
 }
 
-final class CmdExecConfigObj {
+/**
+ * internal representation of a configuration file entry in the list of 'executors'.
+ * @author pcarr
+ */
+final class ExecutorConfig {
     String classname;
     String configurationFile;
     Properties configurationProperties = new Properties();
-    Properties executorDefaultProperties = new Properties();
+    Properties defaultProperties = new Properties();
     
-    CmdExecConfigObj(Object yamlObj) throws Exception {
+    ExecutorConfig(Object yamlObj) throws Exception {
         if (yamlObj instanceof String) {
             // <id>:<classname>
             this.classname = (String) yamlObj;
@@ -379,7 +383,7 @@ final class CmdExecConfigObj {
         // <id>: 
         //    classname: <classname>
         //    [configuration.file: <configuration_file>| configuration.properties: <map>]
-        //    job.properties: <map>
+        //    default.properties: <map>
         Object classname = map.get("classname");
         if (!(classname instanceof String)) {
             throw new Exception("Invalid or missing value for property, 'classname'");
@@ -408,14 +412,14 @@ final class CmdExecConfigObj {
             }
         }
         
-        Object executorDefaultPropertiesObj = map.get("default.properties");
-        if (executorDefaultPropertiesObj != null && executorDefaultPropertiesObj instanceof Map<?,?>) {
+        Object defaultPropertiesObj = map.get("default.properties");
+        if (defaultPropertiesObj != null && defaultPropertiesObj instanceof Map<?,?>) {
             //perform string conversion here
-            Map<?,?> executorDefaultPropertiesMap = (Map<?,?>) executorDefaultPropertiesObj;
-            for(Entry<?,?> entry : executorDefaultPropertiesMap.entrySet()) {
+            Map<?,?> defaultPropertiesMap = (Map<?,?>) defaultPropertiesObj;
+            for(Entry<?,?> entry : defaultPropertiesMap.entrySet()) {
                 String key = ""+entry.getKey();
                 String value = ""+entry.getValue();
-                this.executorDefaultProperties.setProperty(key, value);
+                this.defaultProperties.setProperty(key, value);
             }
         } 
     }

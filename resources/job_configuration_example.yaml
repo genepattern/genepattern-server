@@ -28,11 +28,14 @@ executors:
         classname: org.genepattern.server.executor.lsf.LsfCommandExecutor
         #BroadCore configuration properties
         configuration.properties:
-            hibernate.connection.datasource: java:comp/env/jdbc/cmap_dev/genepattern
-            hibernate.default_schema: GENEPATTERN
+            hibernate.connection.datasource: java:comp/env/jdbc/gpdb
+            hibernate.default_schema: GENEPATTERN_DEV_01
             hibernate.dialect: org.genepattern.server.database.PlatformOracle9Dialect
+            hibernate.current_session_context_class: thread
+            hibernate.transaction.factory_class: org.hibernate.transaction.JDBCTransactionFactory
             # number of seconds to check for completed jobs
             lsf.check.frequency: 15
+
         #job specific default properties applied to all jobs run with this executor
         #note: to override executor specific default properties add entries to module.properties, group.properties, or user.properties
         default.properties:

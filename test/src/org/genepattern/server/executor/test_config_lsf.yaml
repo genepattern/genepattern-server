@@ -1,0 +1,46 @@
+# example of config file for production gp server
+default.properties:
+    executor: LSF
+    java_flags: -Xmx512m
+
+executors:
+    # run jobs on Broad LSF 
+    LSF:
+        classname: org.genepattern.server.executor.lsf.LsfCommandExecutor
+        #BroadCore configuration properties
+        configuration.properties:
+            hibernate.connection.datasource: java:comp/env/jdbc/gpdb
+            hibernate.default_schema: GENEPATTERN
+            hibernate.dialect: org.genepattern.server.database.PlatformOracle9Dialect
+            # number of seconds to check for completed jobs
+            lsf.check.frequency: 15
+        default.properties:
+            lsf.project: genepattern
+            lsf.queue: genepattern
+            lsf.max.memory: 2
+            lsf.wrapper.script: lsf_wrapper.sh
+            lsf.output.filename: ".lsf.out"
+            lsf.use.pre.exec.command: "false"
+            lsf.extra.bsub.args: "null"
+
+    RuntimeExec: org.genepattern.server.executor.RuntimeCommandExecutor
+
+# override default.properties and <executor>.job.properties based on taskname or lsid
+# Note: <executor>.configuration.properties are intended to be applied at startup and may not make sense to be overwritten here
+module.properties:
+    CBS:
+        lsf.max.memory: 16
+        lsf.output.filename: .lsf.fromCBS.out
+
+# user and group specific configuration
+# example use cases:
+# 1) for all users in the 'broadusers' group, use lsf.queue=broad
+group.properties:
+    admingroup:
+        # this is here to test a user which is a member of both 'admin' and 'broadusers'
+        lsf.output.filename: lsf.out
+
+# 2) when user 'test' runs ExpressionFileCreator, make sure to use lsf.max.memory=24g (rather than the default of 4g) 
+user.properties:
+    adminuser:
+        lsf.output.filename: lsf.out

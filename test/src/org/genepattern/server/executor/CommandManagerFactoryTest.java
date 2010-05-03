@@ -321,5 +321,16 @@ public class CommandManagerFactoryTest extends TestCase {
         assertEquals("checking 'stdout.filename' property", exepectedStdoutFilename, cmdProps.getProperty("stdout.filename"));
         assertEquals("checking 'java_flags' property", "-Xmx4g", cmdProps.getProperty("java_flags"));
     }
+    
+    public void testLsfConfig() {
+        initializeYamlConfigFile("test_config_lsf.yaml");
+        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
+        
+        JobInfo jobInfo = new JobInfo();
+        jobInfo.setTaskName("ComparativeMarkerSelection");
+        jobInfo.setTaskLSID("urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:5");
+        Properties props = cmdMgr.getCommandProperties(jobInfo);
+        assertEquals("checking 'lsf.output.filename'", ".lsf.out", props.getProperty("lsf.output.filename"));
+    }
 
 }
