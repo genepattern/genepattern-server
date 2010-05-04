@@ -35,15 +35,14 @@ public class LsfCommandExecutor implements CommandExecutor {
     
     public void start() {
         log.info("Initializing LsfCommandExecSvc ...");
-        executor = Executors.newFixedThreadPool(3);
-        try {
-            
+        executor = Executors.newCachedThreadPool();
+        try { 
             //load custom properties
             System.setProperty("jboss.server.name", System.getProperty("fqHostName", "localhost"));
             Main broadCore = Main.getInstance();
             broadCore.setEnvironment("prod"); 
             
-            String dataSourceName = this.configurationProperties.getProperty("hibernate.connection.datasource", "java:comp/env/jdbc/cmap_dev/genepattern_dev_01");
+            String dataSourceName = this.configurationProperties.getProperty("hibernate.connection.datasource", "java:comp/env/jdbc/gpdb");
             log.info("using hibernate.connection.datasource="+dataSourceName);
             broadCore.setDataSourceName(dataSourceName);
             log.info("setting hibernate options...");
