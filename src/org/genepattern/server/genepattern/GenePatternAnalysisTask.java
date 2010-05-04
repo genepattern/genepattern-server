@@ -1028,6 +1028,12 @@ public class GenePatternAnalysisTask {
             // build props again, now that downloaded files are set
             props = setupProps(taskInfo, taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(), taskInfoAttributes, params,
                     environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
+            
+            // optionally, override the java flags if they have been overridden in the job configuration file
+            Properties cmdProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
+            if (cmdProperties.containsKey("java_flags")) {
+                props.setProperty("java_flags", cmdProperties.getProperty("java_flags"));
+            }
 
             params = stripOutSpecialParams(params);
             // check that all parameters are used in the command line
