@@ -7,7 +7,7 @@
 # apply these properties to all jobs
 default.properties: 
     executor: RuntimeExec
-    java_flags: -Xmx4g
+    java_flags: -Xmx512m
 
 # a list of command executors
 # a map of <id>:<obj>, where
@@ -18,7 +18,7 @@ executors:
     # simple declaration, of the form <id>:<classname>
     RuntimeExec: org.genepattern.server.executor.RuntimeCommandExecutor
 
-    # nested declaration with configuration file, <id>: { classname: <classname>, configuration: <config_file.yaml> }
+    # nested declaration with configuration file, <id>: { classname: <classname>, configuration: <config_file> }
     Test:
         classname: org.genepattern.server.executor.TestCommandExecutor
         configuration.file: test_command_executor.yaml
@@ -47,8 +47,8 @@ executors:
             lsf.use.pre.exec.command: "false"
             lsf.extra.bsub.args: "null"
 
-# override default.properties and <executor>.job.properties based on taskname or lsid
-# Note: <executor>.configuration.properties are intended to be applied at startup and may not make sense to be overwritten here
+# override default.properties and executor->default.properties based on taskname or lsid
+# Note: executor->configuration.properties are intended to be applied at startup and are not overwritten here
 module.properties:
     CBS:
         executor: LSF
@@ -110,3 +110,4 @@ user.properties:
         module.properties:
             ExpressionFileCreator:
                 lsf.max.memory: 24
+                java_flags: -Xmx24g

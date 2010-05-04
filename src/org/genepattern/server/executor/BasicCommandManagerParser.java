@@ -32,19 +32,20 @@ public class BasicCommandManagerParser implements CommandManagerParser {
     public CommandManager parseConfigFile(String pathToConfiguration) throws Exception {
         setConfigFilename(pathToConfiguration);
         JobConfigObj jobConfigObj = this.parse(this.configFile);
-        this.commandManager = this.initializeFromJobConfigObj(jobConfigObj);
+        this.commandManager = this.initializeCommandManager(jobConfigObj);
         return this.commandManager;
     }
     
     public void reloadConfigFile(CommandManager cmdMgr, String pathToConfiguration) throws Exception {
-        if (cmdMgr != commandManager) {
-            log.error("Error: attempt to reload config file for a different instance of the CommandManager.");
+        if (!(cmdMgr instanceof BasicCommandManager)) {
+            log.error("Expecting an instanceof "+this.getClass().getCanonicalName());
             return;
         }
+        this.commandManager = (BasicCommandManager) cmdMgr;
         setConfigFilename(pathToConfiguration);
         synchronized(commandManager) {
-            //TODO: reloadable job configuration
-            log.error("Method not implemented!");
+            JobConfigObj jobConfigObj = this.parse(this.configFile);
+            reloadCommandManagerProperties(jobConfigObj);
         }
     }
     
@@ -155,16 +156,42 @@ public class BasicCommandManagerParser implements CommandManagerParser {
         }
     }
     
-    private BasicCommandManager initializeFromJobConfigObj(JobConfigObj jobConfigObj) throws Exception {
+    /**
+     * Create a new instance of a CommandManager, initialize the list of CommandExecutors, and store
+     * all default and custom properties.
+     * 
+     * @param jobConfigObj
+     * @return
+     * @throws Exception
+     */
+    private BasicCommandManager initializeCommandManager(JobConfigObj jobConfigObj) throws Exception {
         BasicCommandManager cmdMgr = new BasicCommandManager();
-        CommandManagerProperties config = cmdMgr.getConfigProperties();
-
-        //initialize executors list
+        initializeCommandExecutors(cmdMgr, jobConfigObj);
+        setCommandManagerProperties(cmdMgr, jobConfigObj);
+        return cmdMgr;
+    }
+    
+    //initialize executors list
+    private void initializeCommandExecutors(BasicCommandManager cmdMgr, JobConfigObj jobConfigObj) throws Exception {
         for(String execId : jobConfigObj.getExecutors().keySet()) {
             ExecutorConfig execObj = jobConfigObj.getExecutors().get(execId);
             CommandExecutor cmdExecutor = initializeCommandExecutor(execObj);
             cmdMgr.addCommandExecutor(execId, cmdExecutor);
-            //store executor.default.properties
+        }
+    }
+
+    private void reloadCommandManagerProperties(JobConfigObj jobConfigObj) {
+        CommandManagerProperties config = this.commandManager.getConfigProperties();
+        config.clear();
+        setCommandManagerProperties(this.commandManager, jobConfigObj);
+    }
+
+    private void setCommandManagerProperties(BasicCommandManager cmdMgr, JobConfigObj jobConfigObj) {
+        CommandManagerProperties config = cmdMgr.getConfigProperties();
+
+        for(String execId : jobConfigObj.getExecutors().keySet()) {
+            ExecutorConfig execObj = jobConfigObj.getExecutors().get(execId);
+            //load executor->default.properties
             if (execObj.defaultProperties != null) { 
                 PropObj propObj = config.getPropsForExecutor(execId);
                 for (String key : (Set<String>) (Set) execObj.defaultProperties.keySet()) {
@@ -181,7 +208,6 @@ public class BasicCommandManagerParser implements CommandManagerParser {
         initializeCustomProperties(config, jobConfigObj.getGroupPropertiesObj(), true);
         //store custom user.properties
         initializeCustomProperties(config, jobConfigObj.getUserPropertiesObj(), false);
-        return cmdMgr;
     }
 
     /**

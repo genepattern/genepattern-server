@@ -39,6 +39,14 @@ public class CommandManagerFactory {
     
     private CommandManagerFactory() {
     }
+    
+    public static String getParser() {
+        return parser;
+    }
+    
+    public static String getConfigFile() {
+        return configFile;
+    }
 
     /**
      * Get the command manager. This method initializes the manager from system properties if necessary.
@@ -70,6 +78,17 @@ public class CommandManagerFactory {
             log.info("replacing current command manager with a new instance");
         }
         setProperties(properties);
+        manager = createCommandManager(parser, configFile);
+    }
+
+    /**
+     * Create a new instance of the CommandManager, using the given parser and configuration file.
+     * @param parserClass
+     * @param configFilePath
+     */
+    public static synchronized void initializeCommandManager(final String parserClass, final String configFilePath) {
+        parser = parserClass;
+        configFile = configFilePath;
         manager = createCommandManager(parser, configFile);
     }
 
@@ -173,12 +192,18 @@ public class CommandManagerFactory {
     }
     
     public static synchronized void reloadConfigFile() {
+        reloadConfigFile(configFile);
+    }
+    
+    public static synchronized void reloadConfigFile(String filepath) {
+        configFile = filepath;
         if (parser == null || configFile == null || manager == null) {
+            log.error("reloadConfigFile("+filepath+") ignored!");
             return;
         }
         try {
-            CommandManagerParser cmcp = (CommandManagerParser) Class.forName(parser).newInstance();
-            cmcp.reloadConfigFile(manager, configFile);
+            CommandManagerParser parserInstance = (CommandManagerParser) Class.forName(parser).newInstance();
+            parserInstance.reloadConfigFile(manager, configFile);
         }
         catch (Exception e) {
             log.error("Unable to instantiate CommandManagerConfigParser for name: "+parser, e);

@@ -66,9 +66,6 @@
       <t:div rendered="#{serverSettingsBean.currentMode == 'Access'}">
         <ui:include src="serverSettingsAccess.xhtml"/>       
       </t:div>
-      <t:div rendered="#{serverSettingsBean.currentMode == 'Command Execution'}">
-        <ui:include src="serverSettingsCommandExecutor.xhtml"/>       
-      </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'Command Line Prefix'}">
         <ui:include src="serverSettingsCLP.xhtml"/>       
       </t:div>
@@ -77,6 +74,9 @@
       </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'Gene Pattern Log'}">
         <ui:include src="serverSettingsGPLog.xhtml"/>       
+      </t:div>
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Job Configuration'}">
+        <ui:include src="serverSettingsJobConfiguration.xhtml"/>       
       </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'Web Server Log'}">
         <ui:include src="serverSettingsWSLog.xhtml"/>       

@@ -100,7 +100,7 @@ public class ServerSettingsBean implements Serializable {
 	    modes.put("Shut Down Server", null);
 	    modes.put("System Message", null);
 	    modes.put("Users and Groups", null);
-	    modes.put("Command Execution", null);
+	    modes.put("Job Configuration", null);
 	}
 	currentMode = (String) modes.keySet().toArray()[0];
 	if (settings == null) {

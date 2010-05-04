@@ -1,0 +1,85 @@
+<!-- /*
+ The Broad Institute
+ SOFTWARE COPYRIGHT NOTICE AGREEMENT
+ This software and its documentation are copyright (2003-2009) by the
+ Broad Institute/Massachusetts Institute of Technology. All rights are
+ reserved.
+ 
+ This software is supplied without any warranty or guaranteed support
+ whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+ use, misuse, or functionality.
+ */
+ -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:ui="http://java.sun.com/jsf/facelets" 
+      xmlns:h="http://java.sun.com/jsf/html" 
+      xmlns:f="http://java.sun.com/jsf/core" 
+      xmlns:t="http://myfaces.apache.org/tomahawk" 
+      xmlns:c="http://java.sun.com/jstl/core">
+
+    <h:form>
+
+    <table width="100%" class="barhead-other">
+      <tr>
+        <td>Job Configuration</td>        
+      </tr>
+    </table>
+    <table border="0" cellpadding="0" cellspacing="0" >
+      <thead>
+      <tr class="tableheader-row2">
+        <td align="left"></td>
+        <td align="left">CommandManager Actions</td>
+      </tr>
+      </thead> 
+      <tr class="admin-row"><td></td><td>
+        <h:commandLink immediate="false" rendered="false" action="#{jobConfigurationBean.startAnalysisService}">Start analysis service</h:commandLink>
+        </td>
+      </tr>
+      <tr class="admin-row"><td></td><td>
+        <h:commandLink immediate="false" rendered="false" action="#{jobConfigurationBean.shutdownAnalysisService}">Shutdown analysis service</h:commandLink>
+        </td>
+      </tr>
+      <tr class="admin-row"><td></td><td>
+        <h:commandLink immediate="false" rendered="false" action="#{jobConfigurationBean.startCommandExecutors}">Start command executors</h:commandLink>
+        </td>
+      </tr>
+
+      <tr class="admin-row"><td></td><td>
+        <h:commandLink immediate="false" rendered="false" action="#{jobConfigurationBean.stopCommandExecutors}">Stop command executors</h:commandLink>     
+      </td></tr>
+
+      <tr class="admin-row"><td></td><td>
+        <h:commandLink immediate="false" action="#{jobConfigurationBean.reloadJobConfiguration}">Reload job configuration</h:commandLink>     
+      </td></tr>
+
+	  <tr class="admin-row"><td></td><td>
+        <h:commandLink immediate="false" rendered="false" action="#{jobConfigurationBean.stopAndRestartAllExecutors}">Reload executors and job configuration</h:commandLink>     
+      </td></tr>
+    </table>
+		
+    <table width="100%" class="barhead-other">
+      <tr>
+        <td>Command Executors</td>        
+      </tr>
+    </table>
+    <table border="0" cellpadding="0" cellspacing="0" >
+      <thead>
+      <tr class="tableheader-row2">
+        <td align="left">id</td>
+        <td align="left">CommandExecutor</td>
+        <td align="left" style="padding-left: 10px; padding-right: 10px;">action</td>
+      </tr>
+      </thead>  
+    <t:dataList var="cmdExecutor" value="#{jobConfigurationBean.commandExecutors}">
+      <tr class="admin-row">
+        <td>#{cmdExecutor.id}</td>
+        <td>#{cmdExecutor.classname}</td>
+        <td> </td>
+      </tr>
+    </t:dataList>
+    </table>
+
+    </h:form>
+
+</html>

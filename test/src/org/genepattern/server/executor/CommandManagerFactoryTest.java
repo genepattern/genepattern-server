@@ -321,7 +321,7 @@ public class CommandManagerFactoryTest extends TestCase {
         assertEquals("checking 'stdout.filename' property", exepectedStdoutFilename, cmdProps.getProperty("stdout.filename"));
         assertEquals("checking 'java_flags' property", "-Xmx4g", cmdProps.getProperty("java_flags"));
     }
-    
+        
     public void testLsfConfig() {
         initializeYamlConfigFile("test_config_lsf.yaml");
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
@@ -331,6 +331,35 @@ public class CommandManagerFactoryTest extends TestCase {
         jobInfo.setTaskLSID("urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:5");
         Properties props = cmdMgr.getCommandProperties(jobInfo);
         assertEquals("checking 'lsf.output.filename'", ".lsf.out", props.getProperty("lsf.output.filename"));
+    }
+    
+    public void testReloadConfiguration() throws CommandExecutorNotFoundException {
+        initializeYamlConfigFile("test_config.yaml");
+        CommandManagerFactory.reloadConfigFile("test_config_reload.yaml");
+        
+        JobInfo jobInfo = new JobInfo();
+        jobInfo.setUserId("testuser");
+        jobInfo.setTaskName("PreprocessDataset");
+        jobInfo.setTaskLSID(null);
+        
+        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
+        CommandExecutor cmdExec = cmdMgr.getCommandExecutor(jobInfo);
+        Properties cmdProps = cmdMgr.getCommandProperties(jobInfo);
+        String cmdExecId = CommandManagerFactory.getCommandExecutorId(cmdExec);
+
+        assertEquals("changed default java_flags", "-Xmx16g", cmdProps.getProperty("java_flags"));
+        assertEquals("changed default executor", "RuntimeExec", cmdExecId);
+        assertEquals("changed default stdout.filename for RuntimeExec", "runtimeexec_modified.out", cmdProps.getProperty("stdout.filename"));
+        
+        jobInfo = new JobInfo();
+        jobInfo.setUserId("testuser");
+        jobInfo.setTaskName("ComparativeMarkerSelection");
+        cmdExec = cmdMgr.getCommandExecutor(jobInfo);
+        cmdProps = cmdMgr.getCommandProperties(jobInfo);
+        cmdExecId = CommandManagerFactory.getCommandExecutorId(cmdExec);
+        
+        assertEquals("set java_flags for ComparativeMarkerSelection", "-Xmx2g", cmdProps.getProperty("java_flags"));
+        assertEquals("executor for ComparativeMarkerSelection", "RuntimeExec", cmdExecId);
     }
 
 }

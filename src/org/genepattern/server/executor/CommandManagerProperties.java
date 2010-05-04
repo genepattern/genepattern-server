@@ -27,15 +27,11 @@ public class CommandManagerProperties {
         return rootProps;
     }
 
-    public void clearExecutorProperties() {
+    public void clear() {
+        rootProps.clearDefaultProperties();
+        rootProps.clearModuleProperties();
         this.executorPropertiesMap.clear();
-    }
-    
-    public void clearGroupProperties() {
         this.groupPropertiesMap.clear();
-    }
-    
-    public void clearUserProperties() {
         this.userPropertiesMap.clear();
     }
 
