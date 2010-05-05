@@ -54,7 +54,7 @@ public class RunPipelineInThread {
     private static final Logger log = setupLog4jConfig(logFile);
 
     private String userID;
-    private String server;
+    //private String server;
     
     /** job id for the pipeline */
     private int jobId;
@@ -74,11 +74,7 @@ public class RunPipelineInThread {
     public void setUserId(String userId) {
         this.userID = userId;
     }
-    
-    public void setServer(String server) {
-        this.server = server;
-    }
-    
+
     public void setJobId(int jobId) {
         this.jobId = jobId;
     }
@@ -312,7 +308,31 @@ public class RunPipelineInThread {
     }
     }
 
-    protected String getInheritedFilename(Map attributes, JobInfo[] results) throws FileNotFoundException {
+    private String server = null;
+    private String getServer() {
+        if (server != null) {
+            return server;
+        }
+        //1) set server
+        String gpUrl = System.getProperty("GenePatternURL");
+        URL serverFromFile = null;
+        try {
+            serverFromFile = new URL(gpUrl);
+        } 
+        catch (MalformedURLException e) {
+            log.error("Invalid GenePatternURL: " + gpUrl, e);
+        }
+        String host = serverFromFile.getHost();
+        String port = "";
+        int portNum = serverFromFile.getPort();
+        if (portNum >= 0) {
+            port = ":" + portNum;
+        }
+        server = serverFromFile.getProtocol() + "://" + host + port;
+        return server;
+    }
+
+    private String getInheritedFilename(Map attributes, JobInfo[] results) throws FileNotFoundException {
         // these params must be removed so that the soap lib doesn't try to send the file as an attachment
         String taskStr = (String) attributes.get(PipelineModel.INHERIT_TASKNAME);
         String fileStr = (String) attributes.get(PipelineModel.INHERIT_FILENAME);
@@ -324,7 +344,7 @@ public class RunPipelineInThread {
         String fileName = getOutputFileName(job, fileStr);
 
         String context = System.getProperty("GP_Path", "/gp");
-        String url = server + context + "/jobResults/" + fileName;
+        String url = getServer() + context + "/jobResults/" + fileName;
         return url;
     }
 

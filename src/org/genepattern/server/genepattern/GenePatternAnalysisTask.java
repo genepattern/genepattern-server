@@ -1219,31 +1219,13 @@ public class GenePatternAnalysisTask {
                     }
                     else if (taskInfo.isPipeline()) {
                         RunPipelineInThread rp = new RunPipelineInThread();
-                        //1) set server
-                        String gpUrl = System.getProperty("GenePatternURL");
-                        URL serverFromFile = null;
-                        try {
-                            serverFromFile = new URL(gpUrl);
-                        } 
-                        catch (MalformedURLException e) {
-                            throw new Exception("Invalid GenePatternURL: " + gpUrl, e);
-                        }
-                        String host = serverFromFile.getHost();
-                        String port = "";
-                        int portNum = serverFromFile.getPort();
-                        if (portNum >= 0) {
-                            port = ":" + portNum;
-                        }
-                        String server = serverFromFile.getProtocol() + "://" + host + port;
-                        rp.setServer(server);
-
-                        // 2) set user id
+                        // 1) set user id
                         rp.setUserId(jobInfo.getUserId());
 
-                        // 3) set job id
+                        // 2) set job id
                         rp.setJobId(jobInfo.getJobNumber());
 
-                        // 4) set the lsid of the pipeline
+                        // 3) set the lsid of the pipeline
                         rp.setPipelineTaskLsid(jobInfo.getTaskLSID());
 
                         // 4) set pipeline model
@@ -2785,7 +2767,7 @@ public class GenePatternAnalysisTask {
      * @param commandLine
      * @return the new command line
      */
-    protected static String[] translateCommandline(String[] commandLine) {
+    public static String[] translateCommandline(String[] commandLine) {
         if (commandLine == null || commandLine.length == 0) {
             return commandLine;
         }
