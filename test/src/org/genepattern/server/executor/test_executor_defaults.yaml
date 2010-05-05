@@ -1,0 +1,30 @@
+default.properties:
+    executor: RuntimeExec
+    java_flags: -Xmx256m
+
+executors:
+    # simple declaration, of the form <id>:<classname>
+    RuntimeExec: org.genepattern.server.executor.RuntimeCommandExecutor
+
+    # nested declaration with embedded configuration, <id>: { classname: <classname>, configuration: {}}
+    LSF:
+        classname: org.genepattern.server.executor.lsf.LsfCommandExecutor
+        configuration.properties:
+            lsf.check.frequency: 15
+        default.properties:
+            java_flags: -Xmx4g
+            lsf.output.filename: .lsf.out
+
+# override default.properties and <executor>.job.properties based on taskname or lsid
+# Note: <executor>.configuration.properties are intended to be applied at startup and may not make sense to be overwritten here
+module.properties:
+    testEchoSleeper:
+        executor: LSF
+
+user.properties:
+    admin: &custom_user_props
+        module.properties:
+            PreprocessDataset:
+                java_flags: -Xmx512m
+
+    test: *custom_user_props

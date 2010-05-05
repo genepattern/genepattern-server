@@ -361,5 +361,25 @@ public class CommandManagerFactoryTest extends TestCase {
         assertEquals("set java_flags for ComparativeMarkerSelection", "-Xmx2g", cmdProps.getProperty("java_flags"));
         assertEquals("executor for ComparativeMarkerSelection", "RuntimeExec", cmdExecId);
     }
+    
+    /**
+     * Check properties set in the 'default.properties' section for a given executor.
+     * @throws CommandExecutorNotFoundException
+     */
+    public void testExecutorDefaultProperties() throws CommandExecutorNotFoundException {
+        initializeYamlConfigFile("test_executor_defaults.yaml");
+        
+        JobInfo jobInfo = new JobInfo();
+        jobInfo.setUserId("admin");
+        jobInfo.setTaskName("testEchoSleeper");
+        
+        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
+        CommandExecutor cmdExec = cmdMgr.getCommandExecutor(jobInfo);
+        Properties cmdProps = cmdMgr.getCommandProperties(jobInfo);
+        
+        assertEquals("Expecting LSF", "LSF", CommandManagerFactory.getCommandExecutorId(cmdExec));
+        assertEquals("checking property set in executors->LSF->default.properties ", ".lsf.out", cmdProps.getProperty("lsf.output.filename"));
+        assertEquals("checking property override in executors->LSF->default.properties ", "-Xmx4g", cmdProps.getProperty("java_flags"));
+    }
 
 }
