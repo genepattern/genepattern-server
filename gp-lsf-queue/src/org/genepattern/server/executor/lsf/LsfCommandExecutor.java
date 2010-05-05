@@ -36,11 +36,19 @@ public class LsfCommandExecutor implements CommandExecutor {
     public void start() {
         log.info("Initializing LsfCommandExecSvc ...");
         executor = Executors.newCachedThreadPool();
-        try { 
-            //load custom properties
-            System.setProperty("jboss.server.name", System.getProperty("fqHostName", "localhost"));
+        try {
+            //initialize the GAP_SERVER_ID column of the LSF_JOB table
+            String broadCoreEnv = this.configurationProperties.getProperty("broadcore.env", "prod");
+            String broadCoreServerName = this.configurationProperties.getProperty("broadcore.server.name");
+            if (broadCoreServerName == null) {
+                broadCoreServerName = System.getProperty("jboss.server.name");
+            }
+            if (broadCoreServerName == null) {
+                broadCoreServerName = System.getProperty("fqHostName", "localhost");
+            }
+            System.setProperty("jboss.server.name", broadCoreServerName);
             Main broadCore = Main.getInstance();
-            broadCore.setEnvironment("prod"); 
+            broadCore.setEnvironment(broadCoreEnv); 
             
             String dataSourceName = this.configurationProperties.getProperty("hibernate.connection.datasource", "java:comp/env/jdbc/gpdb");
             log.info("using hibernate.connection.datasource="+dataSourceName);
@@ -138,9 +146,13 @@ public class LsfCommandExecutor implements CommandExecutor {
         return lsfJob;
     }
     
-    public void terminateJob(JobInfo jobInfo) {
+    public void terminateJob(JobInfo jobInfo) { 
         //TODO: implement terminate job using the BroadCore library.
-        String jobId = jobInfo != null ? ""+jobInfo.getJobNumber() : "null";
+        if (jobInfo == null) {
+            log.error("Terminating job with null jobInfo!");
+            return;
+        }
+        String jobId = ""+jobInfo.getJobNumber();
         log.error("Terminating job "+jobId+": terminateJob not implemented");
     }
 
