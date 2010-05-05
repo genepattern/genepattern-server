@@ -36,6 +36,14 @@ executors:
             # number of seconds to check for completed jobs
             lsf.check.frequency: 15
 
+            # set the GAP_SERVER_ID column of the JOB_LSF table
+            #     <broadcore.env>:<hostname>:<jboss.server.name>
+            # where hostname is the result of InetAddress.getLocalHost().getHostName()
+            # and jboss.server.name = System.getProperty("jboss.server.name")
+            broadcore.env: prod
+            # use 'broadcore.server.name' to replace the 'jboss.server.name'
+            broadcore.server.name: genepattern
+
         #job specific default properties applied to all jobs run with this executor
         #note: to override executor specific default properties add entries to module.properties, group.properties, or user.properties
         default.properties:
