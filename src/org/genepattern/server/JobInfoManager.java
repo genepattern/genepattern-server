@@ -44,6 +44,59 @@ import org.genepattern.webservice.TaskInfoAttributes;
 public class JobInfoManager {
     private static Logger log = Logger.getLogger(JobInfoManager.class);
     
+    public static boolean isPipeline(JobInfo jobInfo) {
+        boolean isPipeline = false;
+        if (jobInfo == null) {
+            return false;
+        }
+        try {
+            TaskInfo taskInfo = getTaskInfo(jobInfo);
+            isPipeline = taskInfo.isPipeline();
+        }
+        catch (Exception e) {
+            log.error(e);
+        }
+        return isPipeline;
+    }
+    
+    public static boolean isVisualizer(JobInfo jobInfo) {
+        boolean isVisualizer = false;
+        if (jobInfo == null) {
+            return false;
+        }
+        try {
+            TaskInfo taskInfo = getTaskInfo(jobInfo);
+            isVisualizer = TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes());
+        }
+        catch (Exception e) {
+            log.error(e);
+        }
+        return isVisualizer;
+    }
+
+    public static TaskInfo getTaskInfo(JobInfo jobInfo) throws Exception {
+        if (log.isDebugEnabled()) {
+            log.debug("getTaskInfo for job: " + jobInfo.getJobNumber());
+        }
+        try {
+            AdminDAO ds = new AdminDAO(); //calls HibernateUtil.beginTransaction...
+            TaskInfo taskInfo = ds.getTask(jobInfo.getTaskID());
+            if (taskInfo == null) {
+                throw new Exception("No such taskID (" + jobInfo.getTaskID() + " for job " + jobInfo.getJobNumber());
+            }
+            HibernateUtil.commitTransaction();
+            return taskInfo;
+        } 
+        catch (RuntimeException e) {
+            log.error("Error getting taskInfo for job: " + jobInfo.getJobNumber());
+            HibernateUtil.rollbackTransaction();
+            throw e;
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+    }
+    
     /**
      * Get the current job status information by doing a db query.
      * 
