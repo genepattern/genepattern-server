@@ -1,24 +1,13 @@
 package org.genepattern.server.executor;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.rmi.RemoteException;
-import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.domain.JobStatus;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.OmnigeneException;
-import org.genepattern.webservice.ParameterInfo;
 
 /**
  * Run a job using RuntimeExec. This implementation of the CommandExecutor interface
@@ -28,17 +17,22 @@ import org.genepattern.webservice.ParameterInfo;
  */
 public class RuntimeExecCommand {
     private static Logger log = Logger.getLogger(RuntimeExecCommand.class);
-
-    /**
-     * hashtable of running jobs. key=jobID (as String), value=Process
-     */
-    private static Hashtable<String, Process> htRunningJobs = new Hashtable<String, Process>();
-
-    /**
-     * hashtable of running pipelines. key=jobID (as String), value=Process
-     */
-    private static Hashtable<String, Process> htRunningPipelines = new Hashtable<String, Process>();
     
+    enum Status { 
+        PENDING,
+        RUNNING,
+        TERMINATED
+    }
+
+    private Process process = null;
+    private CopyStreamThread outputReader = null;
+    private CopyStreamThread errorReader = null;
+
+    private Status internalJobStatus = Status.PENDING;
+    public Status getInternalJobStatus() {
+        return internalJobStatus;
+    }
+
     private int exitValue = 0;
     public int getExitValue() {
         return exitValue;
@@ -77,7 +71,6 @@ public class RuntimeExecCommand {
      */
     public void runCommand(String commandLine[], Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {
         ProcessBuilder pb = null;
-        Process process = null;
         String jobID = null;
         try {
             pb = new ProcessBuilder(commandLine);
@@ -86,6 +79,9 @@ public class RuntimeExecCommand {
             pb.directory(runDir);
 
             // spawn the command
+            log.debug("starting job: "+jobInfo.getJobNumber());
+            long stime = System.currentTimeMillis();
+
             process = pb.start();
             // BUG: there is race condition during a tiny time window between the exec and the close
             // (the lines above and below this comment) during which it is possible for an application
@@ -113,22 +109,54 @@ public class RuntimeExecCommand {
                 }
             }
             jobID = "" + jobInfo.getJobNumber();
-            htRunningJobs.put(jobID, process);
 
             // create threads to read from the command's stdout and stderr streams
-            Thread outputReader = streamToFile(process.getInputStream(), stdoutFile);
-            Thread errorReader = streamToFile(process.getErrorStream(), stderrFile);
+            outputReader = new CopyStreamThread(process.getInputStream(), new FileOutputStream(stdoutFile));
+            errorReader = new CopyStreamThread(process.getErrorStream(), new FileOutputStream(stderrFile));
 
             // drain the output and error streams
             outputReader.start();
             errorReader.start();
 
-            // wait for all output before attempting to send it back to the client
-            outputReader.join();
-            errorReader.join();
+            log.debug(jobID+": process.waitFor()...");
+            long ctime = System.currentTimeMillis();
 
-            // the process will be dead by now
             process.waitFor();
+
+            long dtime = System.currentTimeMillis();
+            log.debug(jobID+": process.watiFor()...done! took "+(Math.round(0.001*(dtime - ctime)))+" s");
+
+            // wait for all output before attempting to send it back to the client
+            long waitTime = 60*1000L; //don't wait more than a minute during normal job execution
+            if (internalJobStatus == Status.TERMINATED) {
+                waitTime = 10*1000L;
+            }
+
+            log.debug(jobID+": outputReader.join()...");
+            ctime = System.currentTimeMillis();
+
+            outputReader.join(waitTime);
+
+            dtime = System.currentTimeMillis();
+            log.debug(jobID+": outputReader.join()...done! took "+(dtime - ctime)+" ms");
+            log.debug(jobID+": errorReader.join()...");
+            ctime = System.currentTimeMillis();
+
+            errorReader.join(waitTime);
+
+            dtime = System.currentTimeMillis();
+            log.debug(jobID+": errorReader.join()...done! took "+(dtime - ctime)+" ms");
+            
+            if (!outputReader.wroteBytes()) {
+                stdoutFile.delete();
+            }
+            if (!errorReader.wroteBytes()) {
+                stderrFile.delete();
+            }
+            
+            long d = Math.round(0.001*(System.currentTimeMillis()-stime));
+            log.debug(jobID+": job completed in "+d+" s");
+
             exitValue = process.exitValue();
         } 
         catch (Throwable t) {
@@ -136,188 +164,18 @@ public class RuntimeExecCommand {
             stderrBuffer.append(t.getLocalizedMessage());
             exitValue = -1;
         } 
-        finally {
-            if (jobID != null) {
-                htRunningJobs.remove(jobID);
-            }
-        }
-    }
-
-    /**
-     * Creates a new Thread which blocks on reads to an InputStream, appends their output to the given file. 
-     * The thread terminates upon EOF from the InputStream.
-     * 
-     * @param is, InputStream to read from
-     * @param file, file to write to
-     * @author Jim Lerner
-     */
-    private Thread streamToFile(final InputStream is, final File file) {
-        // create thread to read from a process' output or error stream
-        return new Thread() {
-            public void run() {
-                byte[] b = new byte[2048];
-                int bytesRead;
-                BufferedOutputStream fis = null;
-                boolean wroteBytes = false;
-                try {
-                    fis = new BufferedOutputStream(new FileOutputStream(file));
-                    while ((bytesRead = is.read(b)) >= 0) {
-                        wroteBytes = true;
-                        fis.write(b, 0, bytesRead);
-                    }
-                } 
-                catch (IOException e) {
-                    e.printStackTrace();
-                    log.error(e);
-                } 
-                finally {
-                    if (fis != null) {
-                        try {
-                            fis.flush();
-                            fis.close();
-                        } 
-                        catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    if (!wroteBytes) {
-                        file.delete();
-                    }
-                }
-            }
-        };
-    }
-
-    /**
-     * accepts a jobID and Process object, logging them in the htRunningPipelines Hashtable. When the pipeline
-     * terminates, they will be removed from the Hashtable by terminateJob.
-     * 
-     * @param jobID
-     *            job ID number
-     * @param p
-     *            Process object for running R pipeline
-     * @author Jim Lerner
-     * @see #terminateJob(String,Hashtable)
-     * @see #terminatePipeline(String)
-     */
-    public static void storeProcessInHash(String jobID, Process p) {
-        htRunningPipelines.put(jobID, p);
-    }
-
-    /**
-     * takes a jobID and a Hashtable in which the jobID is putatively listed, and attempts to terminate the job. Note
-     * that Process.destroy() is not always successful. If a process cannot be killed without a "kill -9", it seems not
-     * to die from a Process.destroy() either.
-     * 
-     * @param jobID
-     *            JobInfo jobID number
-     * @param htWhere
-     *            Hashtable in which the job was listed when it was invoked
-     * @return true if the job was found, false if not listed (already deleted)
-     * @author Jim Lerner
-     */
-    public static boolean terminateJob(String jobID, Hashtable htWhere) {
-        Process p = (Process) htWhere.get(jobID);
-        if (p != null) {
-            p.destroy();
-        }
-        return (p != null);
-    }
-
-    /**
-     * Accepts a jobID and attempts to terminate the running pipeline process. 
-     * 
-     * Pipelines are notable only in that they are sometimes run not as Omnigene tasks, but as R code that runs through each task serially. 
-     * The running R process itself is the "pipeline", although it isn't strictly speaking a task. 
-     * When the pipeline is run as a task, it is not treated as a pipeline in this code. 
-     * 
-     * 
-     * @param jobID, JobInfo jobNumber
-     * @return Process of the pipeline if running, else null
-     * @author Jim Lerner
-     */
-    public static Process terminatePipeline(String jobID) {
-        Process p = (Process) htRunningPipelines.remove(jobID);
-        if (p != null) {
-            p.destroy();
-        } 
-        else {
-            p = (Process) htRunningJobs.get(jobID);
-            if (p != null) {
-                p.destroy();
-            }
-        }
-        return p;
-    }
-
-    public static void terminateAll(String message) {
-        log.debug(message);
-        int numTerminated = 0;
-        
-        for(String jobID : htRunningPipelines.keySet()) {
-            log.info("Terminating job " + jobID);
-            Process p = terminatePipeline(jobID);
-            if (p != null) {
-                try {
-                    updatePipelineStatus(Integer.parseInt(jobID), JobStatus.JOB_ERROR, null);
-                } 
-                catch (Exception e) { /* ignore */
-                    log.error("error thrown in updatePipelineStatus for job "+jobID, e);
-                }
-            }
-            numTerminated++;
-        }
-        for(String jobID : htRunningJobs.keySet()) {
-            log.info("Terminating job " + jobID);
-            terminateJob(jobID, htRunningJobs);
-            numTerminated++;
-        }
-        Thread.yield();
     }
     
-    /**
-     * Changes the JobStatus of a pipeline job, and appends zero or more output parameters (output filenames) to the
-     * JobInfo ParameterInfo array for eventual return to the invoker. The jobStatus constants are those defined in
-     * edu.mit.wi.omnigene.framework.analysis.JobStatus
-     * 
-     * This method gets called from many threads which might or might not be wrapped in transactions. This needs to be
-     * committed immediately since other threads or processes might be waiting on the update.
-     * 
-     * @param jobNumber
-     *            jobID of the pipeline whose status is to be updated
-     * @param jobStatus
-     *            new status (eg. JobStatus.PROCESSING, JobStatus.DONE, etc.)
-     * @param additionalParams
-     *            array of ParameterInfo objects which represent additional output parameters from the pipeline job
-     * @throws OmnigeneException
-     *             if thrown by Omnigene
-     * @throws RemoteException
-     *             if thrown by Omnigene
-     * @author Jim Lerner
-     * @see org.genepattern.webservice.JobStatus
-     */
-    public static void updatePipelineStatus(int jobNumber, int jobStatus, ParameterInfo[] additionalParams)
-    throws OmnigeneException, RemoteException {
-        if (log.isDebugEnabled()) {
-            log.debug("Updating pipeline status.  job# = " + jobNumber);
+    public void terminateProcess() {
+        if (outputReader != null) {
+            outputReader.interrupt();
         }
-        try {
-            HibernateUtil.beginTransaction();
-            JobInfo jobInfo = GenePatternAnalysisTask.getDS().getJobInfo(jobNumber);
-            if (additionalParams != null) {
-                for (int i = 0; i < additionalParams.length; i++) {
-                    jobInfo.addParameterInfo(additionalParams[i]);
-                }
-            }
-            if (jobStatus < JobStatus.JOB_PENDING) {
-                jobStatus = ((Integer) JobStatus.STATUS_MAP.get(jobInfo.getStatus())).intValue();
-            }
-            GenePatternAnalysisTask.getDS().updateJob(jobNumber, jobInfo.getParameterInfo(), jobStatus);
-            HibernateUtil.commitTransaction();
-        } 
-        catch (OmnigeneException ex) {
-            log.error("Error updating pipeline status.  jobNumber=" + jobNumber);
-            HibernateUtil.rollbackTransaction();
+        if (errorReader != null) {
+            errorReader.interrupt();
         }
+        if (process != null) {
+            process.destroy();
+        }
+        this.internalJobStatus = Status.TERMINATED;
     }
 }
