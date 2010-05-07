@@ -91,8 +91,8 @@ public class StartupServlet extends HttpServlet {
         //start the command executors before starting the internal job queue (AnalysisTask.startQueue) ...
         CommandManagerFactory.initializeCommandManager(System.getProperties());
         CommandManager cmdManager = CommandManagerFactory.getCommandManager();
-        cmdManager.startAnalysisService();
         cmdManager.startCommandExecutors();
+        cmdManager.startAnalysisService();
 
         startDaemons(System.getProperties(), application);
         Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
@@ -201,9 +201,12 @@ public class StartupServlet extends HttpServlet {
         //this method, as presently implemented, can cause deadlock
         //AnalysisTask.stopQueue();
 
-        //stop the command executors ...
-        CommandManagerFactory.getCommandManager().stopCommandExecutors();
+        //first, stop the internal job queue
         CommandManagerFactory.getCommandManager().shutdownAnalysisService();
+        //then stop any running pipelines
+        
+        //then stop the command executors, which are responsible for stopping/suspending/or allowing to continue each running job ...
+        CommandManagerFactory.getCommandManager().stopCommandExecutors();
 
         String dbVendor = System.getProperty("database.vendor", "HSQL");
         if (dbVendor.equals("HSQL")) {
