@@ -23,12 +23,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.domain.JobStatus;
@@ -50,8 +48,7 @@ import org.genepattern.webservice.WebServiceException;
  * @author pcarr
  */
 public class RunPipelineInThread {
-    private static final String logFile = "pipelineErrors.log"; // one log file per pipeline
-    private static final Logger log = setupLog4jConfig(logFile);
+    private static Logger log = Logger.getLogger(RunPipelineInThread.class);
 
     private String userID;
     //private String server;
@@ -605,23 +602,23 @@ public class RunPipelineInThread {
     return model;
     }
 
-    public static Logger setupLog4jConfig(String logFile) {
-        Properties log4jconfig = new Properties();
-        log4jconfig.setProperty("log4j.debug", "false"); // set this to true to debug Log4j configuration
-        log4jconfig.setProperty("log4j.rootLogger", "error, R");
-        log4jconfig.setProperty("log4j.logger.org.genepattern", "error");
-
-        log4jconfig.setProperty("log4j.appender.R", "org.apache.log4j.RollingFileAppender");
-        log4jconfig.setProperty("log4j.appender.R.File", logFile);
-        log4jconfig.setProperty("log4j.appender.R.MaxFileSize", "256KB");
-        log4jconfig.setProperty("log4j.appender.R.MaxBackupIndex", "2");
-        log4jconfig.setProperty("log4j.appender.R.layout", "org.apache.log4j.PatternLayout");
-        log4jconfig.setProperty("log4j.appender.R.layout.ConversionPattern", "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] (%F:%L) - %m%n");
-
-        //System.setProperty("log4j.defaultInitOverride", "true"); // required to prevent stack trace to System.err
-        PropertyConfigurator.configure(log4jconfig);
-        return Logger.getLogger(RunPipelineInThread.class);
-    }
+//    public static Logger setupLog4jConfig(String logFile) {
+//        Properties log4jconfig = new Properties();
+//        log4jconfig.setProperty("log4j.debug", "false"); // set this to true to debug Log4j configuration
+//        log4jconfig.setProperty("log4j.rootLogger", "error, R");
+//        log4jconfig.setProperty("log4j.logger.org.genepattern", "error");
+//
+//        log4jconfig.setProperty("log4j.appender.R", "org.apache.log4j.RollingFileAppender");
+//        log4jconfig.setProperty("log4j.appender.R.File", logFile);
+//        log4jconfig.setProperty("log4j.appender.R.MaxFileSize", "256KB");
+//        log4jconfig.setProperty("log4j.appender.R.MaxBackupIndex", "2");
+//        log4jconfig.setProperty("log4j.appender.R.layout", "org.apache.log4j.PatternLayout");
+//        log4jconfig.setProperty("log4j.appender.R.layout.ConversionPattern", "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] (%F:%L) - %m%n");
+//
+//        //System.setProperty("log4j.defaultInitOverride", "true"); // required to prevent stack trace to System.err
+//        PropertyConfigurator.configure(log4jconfig);
+//        return Logger.getLogger(RunPipelineInThread.class);
+//    }
 
     /**
      * make the sleep time go up as it takes longer to exec. eg for 100 tries of 1000ms (1 sec) first 20 are 1 sec each
