@@ -32,9 +32,11 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
-import org.genepattern.server.executor.RuntimeExecCommand;
+import org.genepattern.server.executor.CommandExecutor;
+import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.GenericWebService;
@@ -634,33 +636,28 @@ public class Analysis extends GenericWebService {
 
     /**
      * Terminates the execution of the given job
-     * 
-     * 
-     * 
+     *
      * @param jobId
-     *                the job id
      */
     public void terminateJob(int jobId) throws WebServiceException {
         try {
             String userId = getUsernameFromContext();
             canWriteJob(userId, jobId);
-
-            AnalysisDAO ds = new AnalysisDAO();
-            Process p = RuntimeExecCommand.terminatePipeline("" + jobId);
-            if (p != null) {
-                setJobStatus(jobId, JobStatus.ERROR);
-            }
-            JobInfo[] children = ds.getChildren(jobId);
-            // terminate all child jobs
-            for (int i = 0; i < children.length; i++) {
-                terminateJob(children[i].getJobNumber());
-            }
-        } 
-        catch (WebServiceException wse) {
-            throw wse;
-        } 
-        catch (Exception e) {
-            throw new WebServiceException(e);
+            JobInfo jobInfo = getJob(jobId);
+            terminateJob(jobInfo);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+    }
+    
+    private void terminateJob(JobInfo jobInfo) throws WebServiceException {
+        try {
+            CommandExecutor cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
+            cmdExec.terminateJob(jobInfo);
+        }
+        catch (Throwable t) {
+            throw new WebServiceException(t);
         }
     }
 

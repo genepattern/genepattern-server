@@ -8,6 +8,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.genepattern.server.AnalysisManager;
 import org.genepattern.server.AnalysisTask;
+import org.genepattern.server.JobInfoManager;
 import org.genepattern.webservice.JobInfo;
 
 /**
@@ -39,6 +40,8 @@ public class BasicCommandManager implements CommandManager {
     
     //map cmdExecId - commandExecutor
     private LinkedHashMap<String,CommandExecutor> cmdExecutorsMap = new LinkedHashMap<String,CommandExecutor>();
+    //hold a single executor for all pipelines
+    private static final String PIPELINE_EXEC_ID = "org.genepattern.server.executor.PipelineExecutor";
     
     public void addCommandExecutor(String id, CommandExecutor cmdExecutor) throws Exception {
         if (cmdExecutorsMap.containsKey(id)) {
@@ -50,10 +53,23 @@ public class BasicCommandManager implements CommandManager {
     public CommandExecutor getCommandExecutorById(String cmdExecutorId) {
         return cmdExecutorsMap.get(cmdExecutorId);
     }
-    
+
     //implement the CommandExecutorMapper interface
     public CommandExecutor getCommandExecutor(JobInfo jobInfo) throws CommandExecutorNotFoundException {
         CommandExecutor cmdExec = null;
+        
+        //special case for pipelines ...
+        boolean isPipeline = JobInfoManager.isPipeline(jobInfo);
+        if (isPipeline) {
+            log.debug("job "+jobInfo.getJobNumber()+" is a pipeline");
+            return getPipelineExecutor();
+        }
+        //TODO: special case for visualizers ... if a job is a visualizer ignore it
+        //boolean isVisualizer = JobInfoManager.isVisualizer(jobInfo);
+        //if (isVisualizer) {
+        //    
+        //}
+
         //initialize to default executor
         String cmdExecId = this.configProperties.getCommandExecutorId(jobInfo);
         if (cmdExecId == null) {
@@ -91,7 +107,7 @@ public class BasicCommandManager implements CommandManager {
     /**
      * call this at system startup to initialize the list of CommandExecutorService instances.
      */
-    public void startCommandExecutors() {
+    public void startCommandExecutors() { 
         for(String cmdExecId : cmdExecutorsMap.keySet()) {
             CommandExecutor cmdExec = cmdExecutorsMap.get(cmdExecId);
             if (cmdExec == null) {
@@ -106,6 +122,9 @@ public class BasicCommandManager implements CommandManager {
                 }
             }
         }
+        
+        //start pipeline executor
+        startPipelineExecutor();
     }
     
     /**
@@ -121,5 +140,24 @@ public class BasicCommandManager implements CommandManager {
                 log.error("Error stopping CommandExecutorService, for class: "+cmdExec.getClass().getCanonicalName()+": "+t.getLocalizedMessage(), t);
             }
         }
+        
+        stopPipelineExecutor();
+    }
+    
+    private CommandExecutor getPipelineExecutor() {
+        CommandExecutor exec = cmdExecutorsMap.get(PIPELINE_EXEC_ID);
+        if (exec == null) {
+            exec = new PipelineExecutor();
+            cmdExecutorsMap.put(PIPELINE_EXEC_ID, exec);
+        }
+        return exec;
+    }
+    
+    private void startPipelineExecutor() {
+        getPipelineExecutor().start();
+    }
+    
+    private void stopPipelineExecutor() {
+        getPipelineExecutor().stop();
     }
 }

@@ -30,6 +30,9 @@ import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.executor.CommandExecutor;
+import org.genepattern.server.executor.CommandExecutorNotFoundException;
+import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.webservice.server.AdminService;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
@@ -65,6 +68,12 @@ public class RunPipelineInThread {
     private LocalAnalysisClient analysisClient;
     private AdminService adminService;
     
+    //status of pipeline
+    boolean isInterrupted = false;
+    private int pipelineJobStatus = JobStatus.JOB_PROCESSING;
+    private int currentStepJobId = jobId;
+    private JobInfo currentStepJobInfo = null;
+    
     public RunPipelineInThread() {
     }
     
@@ -90,6 +99,31 @@ public class RunPipelineInThread {
 
     public void setStopAfterTaskNum(String stopAfterTaskStr) {
         this.stopAfterTaskStr = stopAfterTaskStr;
+    }
+    
+    public int getJobStatus() {
+        return this.pipelineJobStatus;
+    }
+    
+    public int getCurrentJobId() {
+        return this.currentStepJobId;
+    }
+    
+    public void interrupt() {         
+        if (currentStepJobInfo != null) {
+            CommandExecutor cmdExec = null;
+            try {
+                cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(currentStepJobInfo);
+                cmdExec.terminateJob(currentStepJobInfo);
+            }
+            catch (CommandExecutorNotFoundException e) {
+                log.error("Error terminating job "+jobId+"->"+currentStepJobInfo.getJobNumber(), e);
+            }
+            catch (Exception e) {
+                log.error("Error terminating job "+jobId+"->"+currentStepJobInfo.getJobNumber(), e);
+            }
+        }
+        this.isInterrupted = true;
     }
 
     public static final class MissingTasksException extends Exception {
@@ -137,6 +171,7 @@ public class RunPipelineInThread {
     }
     
     public void runPipeline() throws MissingTasksException, WebServiceException {
+        this.currentStepJobId = this.jobId;
         this.analysisClient = new LocalAnalysisClient(userID);
         this.adminService = new AdminService(userID);
 
@@ -197,7 +232,7 @@ public class RunPipelineInThread {
      * 
      * recurse through the children and add all output params to the parent
      */
-    protected JobInfo collectChildJobResults(JobInfo taskResult) {
+    private JobInfo collectChildJobResults(JobInfo taskResult) {
         if (taskResult == null) {
             log.debug("Invalid null arg to collectChildJobResults");
             return taskResult;
@@ -235,7 +270,7 @@ public class RunPipelineInThread {
      * 
      * @throws WebServiceException
      */
-    protected JobInfo executeTask(JobSubmission jobSubmission, ParameterInfo[] params, JobInfo[] results)
+    private JobInfo executeTask(JobSubmission jobSubmission, ParameterInfo[] params, JobInfo[] results)
     throws WebServiceException {
         log.debug("Begin executeTask");
         if (jobSubmission == null) {
@@ -278,21 +313,22 @@ public class RunPipelineInThread {
             log.error("Unexpected error in execute task: taskNum="+task.getID()+", lsidOrTaskName="+lsidOrTaskName);
             return jobInfo;
         }
+        this.currentStepJobInfo = jobInfo;
         jobInfo = waitForErrorOrCompletion(jobInfo.getJobNumber());
         return jobInfo;
     }
 
-    protected void getChildJobOutputs(int childJobID, List<ParameterInfo> outs) {
-    try {
-        JobInfo childJobInfo = analysisClient.checkStatus(childJobID);
-        getChildJobOutputs(childJobInfo, outs);
-    } catch (WebServiceException e) {
-        log.error(e);
-    }
+//    private void getChildJobOutputs(int childJobID, List<ParameterInfo> outs) {
+//    try {
+//        JobInfo childJobInfo = analysisClient.checkStatus(childJobID);
+//        getChildJobOutputs(childJobInfo, outs);
+//    } catch (WebServiceException e) {
+//        log.error(e);
+//    }
+//
+//    }
 
-    }
-
-    protected void getChildJobOutputs(JobInfo child, List<ParameterInfo> outs) {
+    private void getChildJobOutputs(JobInfo child, List<ParameterInfo> outs) {
     ParameterInfo[] childParams = child.getParameterInfoArray();
     for (int i = 0; i < childParams.length; i++) {
         if (childParams[i].isOutputFile()) {
@@ -345,7 +381,7 @@ public class RunPipelineInThread {
         return url;
     }
 
-    protected ParameterInfo[] removeEmptyOptionalParams(ParameterInfo[] parameterInfo) {
+    private ParameterInfo[] removeEmptyOptionalParams(ParameterInfo[] parameterInfo) {
     ArrayList<ParameterInfo> params = new ArrayList<ParameterInfo>();
 
     for (int i = 0; i < parameterInfo.length; i++) {
@@ -371,7 +407,7 @@ public class RunPipelineInThread {
     return params.toArray(new ParameterInfo[params.size()]);
     }
 
-    protected void setInheritedJobParameters(ParameterInfo[] parameterInfos, JobInfo[] results) throws FileNotFoundException {
+    private void setInheritedJobParameters(ParameterInfo[] parameterInfos, JobInfo[] results) throws FileNotFoundException {
         for (ParameterInfo param : parameterInfos) {
             boolean isInheritTaskName = false;
             HashMap attributes = param.getAttributes();
@@ -398,7 +434,7 @@ public class RunPipelineInThread {
      * 
      * @param parameterInfos
      */
-    protected void substituteLsidInInputFiles(String lsidValue, ParameterInfo[] parameterInfos) {
+    private void substituteLsidInInputFiles(String lsidValue, ParameterInfo[] parameterInfos) {
         final String lsidTag = "<LSID>";
         final String gpUrlTag = "<GenePatternURL>";
         for (ParameterInfo param : parameterInfos) {
@@ -414,7 +450,7 @@ public class RunPipelineInThread {
     /**
      * Look for parameters that are passed in on the command line and put them into the ParameterInfo array
      */
-    protected ParameterInfo[] setJobParametersFromArgs(String name, int taskNum, ParameterInfo[] parameterInfo, JobInfo[] results, Map args) {
+    private ParameterInfo[] setJobParametersFromArgs(String name, int taskNum, ParameterInfo[] parameterInfo, JobInfo[] results, Map args) {
         for (int i = 0; i < parameterInfo.length; i++) {
             ParameterInfo aParam = parameterInfo[i];
             HashMap attributes = aParam.getAttributes();
@@ -471,20 +507,20 @@ public class RunPipelineInThread {
         return jobInfo;
     }
 
-    public static String getFileType(File file) {
-    // ODF
-    if (file.getName().toLowerCase().endsWith("." + GPConstants.ODF.toLowerCase())) {
-        return ODFModelType(file);
-    }
-    String filename = file.getName();
-    return filename.substring(filename.lastIndexOf(".") + 1);
-
-    }
+//    private static String getFileType(File file) {
+//    // ODF
+//    if (file.getName().toLowerCase().endsWith("." + GPConstants.ODF.toLowerCase())) {
+//        return ODFModelType(file);
+//    }
+//    String filename = file.getName();
+//    return filename.substring(filename.lastIndexOf(".") + 1);
+//
+//    }
 
     /**
      * return the file name for the previously run job by index or name
      */
-    public static String getOutputFileName(JobInfo job, String fileStr) throws FileNotFoundException {
+    private static String getOutputFileName(JobInfo job, String fileStr) throws FileNotFoundException {
         String fileName = null;
         String fn = null;
         int j;
@@ -553,7 +589,7 @@ public class RunPipelineInThread {
         return fileName;
     }
 
-    public static boolean isFileType(File file, String fileFormat) {
+    private static boolean isFileType(File file, String fileFormat) {
     if (file.getName().toLowerCase().endsWith(".odf")) {
         return ODFModelType(file).equalsIgnoreCase(fileFormat);
     }
@@ -572,7 +608,7 @@ public class RunPipelineInThread {
     return file.getName().toLowerCase().endsWith(fileFormat.toLowerCase());
     }
 
-    public static String ODFModelType(File file) {
+    private static String ODFModelType(File file) {
     String model = "";
     BufferedReader inputB = null;
     try {
@@ -624,7 +660,7 @@ public class RunPipelineInThread {
      * make the sleep time go up as it takes longer to exec. eg for 100 tries of 1000ms (1 sec) first 20 are 1 sec each
      * next 20 are 2 sec each next 20 are 4 sec each next 20 are 8 sec each any beyond this are 16 sec each
      */
-    protected static int incrementSleep(int init, int maxTries, int count) {
+    private static int incrementSleep(int init, int maxTries, int count) {
     if (count < (maxTries * 0.2))
         return init;
     if (count < (maxTries * 0.4))

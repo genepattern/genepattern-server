@@ -10,6 +10,8 @@ default.properties:
     java_flags: -Xmx512m
 
 # a list of command executors
+# The executor id, 'org.genepattern.server.executor.PipelineExecutor', is reserved for the internal executor which runs all GP pipelines.
+# Don't use this as an executor id in this file.
 # a map of <id>:<obj>, where
 #    obj := <classname> | <map>
 #    classname := fully qualified classname of a class which implements the org.genepattern.server.executor.CommandExecutor interface

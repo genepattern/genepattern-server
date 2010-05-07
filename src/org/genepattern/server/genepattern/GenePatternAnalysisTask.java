@@ -1134,6 +1134,7 @@ public class GenePatternAnalysisTask {
             String stderrFilename = STDERR;
             String stdinFilename = null;
             int exitCode = 0;
+            int jobStatus = JobStatus.JOB_PROCESSING;
             StringBuffer commandLine = new StringBuffer();
             List<String> commandLineList = new ArrayList<String>(commandTokens.length);
             boolean addLast = true;
@@ -1194,7 +1195,8 @@ public class GenePatternAnalysisTask {
                 //necessary to save parameter info changes which occurred before attempting to run the job
                 //.... otherwise, when a job submission fails, it is possible that the input files are not properly cleaned up
                 //TODO: need a new status code ... 'about to execute the job pending successful submission via a command executor'
-                updateJobInfo(jobInfo, parentJobInfo, JobStatus.JOB_PROCESSING, new Date());
+                //updateJobInfo(jobInfo, parentJobInfo, JobStatus.JOB_PROCESSING, new Date());
+                updateJobInfo(jobInfo, parentJobInfo, JobStatus.JOB_PROCESSING,  null);
                 
                 File stdoutFile;
                 File stderrFile;
@@ -1216,79 +1218,81 @@ public class GenePatternAnalysisTask {
                 }
                 try {
                     if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
+                        jobStatus = JobStatus.JOB_FINISHED;
                     }
-                    else if (taskInfo.isPipeline()) {
-                        RunPipelineInThread rp = new RunPipelineInThread();
-                        // 1) set user id
-                        rp.setUserId(jobInfo.getUserId());
-
-                        // 2) set job id
-                        rp.setJobId(jobInfo.getJobNumber());
-
-                        // 3) set the lsid of the pipeline
-                        rp.setPipelineTaskLsid(jobInfo.getTaskLSID());
-
-                        // 4) set pipeline model
-                        PipelineModel model = null;
-                        if (taskInfo != null) {
-                            TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-                            if (tia != null) {
-                                String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
-                                if (serializedModel != null && serializedModel.length() > 0) {
-                                    try {
-                                        model = PipelineModel.toPipelineModel(serializedModel);
-                                    } 
-                                    catch (Throwable x) {
-                                        log.error(x);
-                                    }
-                                }
-                            }
-                        }
-                        rp.setPipelineModel(model);
-
-                        // 5) set additional arguments
-                        Properties additionalArguments = new Properties();
-                        commandTokens = translateCommandline(commandTokens);
-                        //HACK: remove all args up to org.genepattern.server.webapp.RunPipelineSoap
-                        List<String> modifiedCommandTokens = new ArrayList<String>();
-                        int startIdx = 0;
-                        for(int i=0; i<commandTokens.length; ++i) {
-                            if ("org.genepattern.server.webapp.RunPipelineSoap".equals(commandTokens[i])) {
-                                startIdx = i+1;
-                                break;
-                            }
-                        }
-                        for(int i=startIdx; i<commandTokens.length; ++i) {
-                            modifiedCommandTokens.add(commandTokens[i]);
-                        }
-                        String[] args = new String[modifiedCommandTokens.size()];
-                        args = modifiedCommandTokens.toArray(args);
-                        if (args.length > 2) {
-                            for (int i = 2; i < args.length; i++) {
-                                // assume args are in the form name=value
-                                String arg = args[i];
-                                StringTokenizer strtok = new StringTokenizer(arg, "=");
-                                String key = strtok.nextToken();
-                                StringBuffer valbuff = new StringBuffer("");
-                                int count = 0;
-                                while (strtok.hasMoreTokens()) {
-                                    valbuff.append(strtok.nextToken());
-                                    if ((strtok.hasMoreTokens()))
-                                        valbuff.append("=");
-                                    count++;
-                                }
-                                additionalArguments.put(key, valbuff.toString());
-                            }
-                        }
-                        rp.setAdditionalArgs(additionalArguments);
-                        try {
-                            rp.runPipeline();
-                        }
-                        catch (WebServiceException e) {
-                            stderrBuffer.append(e.getLocalizedMessage());
-                            exitCode = -1;
-                        }
-                    } 
+//                    else if (taskInfo.isPipeline()) {
+//                        RunPipelineInThread rp = new RunPipelineInThread();
+//                        // 1) set user id
+//                        rp.setUserId(jobInfo.getUserId());
+//
+//                        // 2) set job id
+//                        rp.setJobId(jobInfo.getJobNumber());
+//
+//                        // 3) set the lsid of the pipeline
+//                        rp.setPipelineTaskLsid(jobInfo.getTaskLSID());
+//
+//                        // 4) set pipeline model
+//                        PipelineModel model = null;
+//                        if (taskInfo != null) {
+//                            TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+//                            if (tia != null) {
+//                                String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
+//                                if (serializedModel != null && serializedModel.length() > 0) {
+//                                    try {
+//                                        model = PipelineModel.toPipelineModel(serializedModel);
+//                                    } 
+//                                    catch (Throwable x) {
+//                                        log.error(x);
+//                                    }
+//                                }
+//                            }
+//                        }
+//                        rp.setPipelineModel(model);
+//
+//                        // 5) set additional arguments
+//                        Properties additionalArguments = new Properties();
+//                        commandTokens = translateCommandline(commandTokens);
+//                        //HACK: remove all args up to org.genepattern.server.webapp.RunPipelineSoap
+//                        List<String> modifiedCommandTokens = new ArrayList<String>();
+//                        int startIdx = 0;
+//                        for(int i=0; i<commandTokens.length; ++i) {
+//                            if ("org.genepattern.server.webapp.RunPipelineSoap".equals(commandTokens[i])) {
+//                                startIdx = i+1;
+//                                break;
+//                            }
+//                        }
+//                        for(int i=startIdx; i<commandTokens.length; ++i) {
+//                            modifiedCommandTokens.add(commandTokens[i]);
+//                        }
+//                        String[] args = new String[modifiedCommandTokens.size()];
+//                        args = modifiedCommandTokens.toArray(args);
+//                        if (args.length > 2) {
+//                            for (int i = 2; i < args.length; i++) {
+//                                // assume args are in the form name=value
+//                                String arg = args[i];
+//                                StringTokenizer strtok = new StringTokenizer(arg, "=");
+//                                String key = strtok.nextToken();
+//                                StringBuffer valbuff = new StringBuffer("");
+//                                int count = 0;
+//                                while (strtok.hasMoreTokens()) {
+//                                    valbuff.append(strtok.nextToken());
+//                                    if ((strtok.hasMoreTokens()))
+//                                        valbuff.append("=");
+//                                    count++;
+//                                }
+//                                additionalArguments.put(key, valbuff.toString());
+//                            }
+//                        }
+//                        rp.setAdditionalArgs(additionalArguments);
+//                        try {
+//                            rp.runPipeline();
+//                        }
+//                        catch (WebServiceException e) {
+//                            stderrBuffer.append(e.getLocalizedMessage());
+//                            exitCode = -1;
+//                            jobStatus = JobStatus.JOB_ERROR;
+//                        }
+//                    } 
                     else { 
                         commandTokens = translateCommandline(commandTokens);
                         CommandExecutor cmdExec = null;
@@ -1300,11 +1304,14 @@ public class GenePatternAnalysisTask {
                             //TODO: handle this exception,
                             // initial implementation rethrows, which causes the job to fail.
                             // note: another option would be to keep the job in a pending state and retry later
+                            //     jobStatus = JobStatus.JOB_PENDING;
+                            jobStatus = JobStatus.JOB_ERROR;
                             throw e;
                         }
                    }
                 } 
                 catch (Throwable t) {
+                    jobStatus = JobStatus.JOB_ERROR;
                     //TODO: hard-coded exitCode when exceptions occur during job submission
                     if (exitCode == 0) {
                         exitCode = -1;
@@ -1330,6 +1337,7 @@ public class GenePatternAnalysisTask {
             }
             
             if (stderrBuffer.length() > 0) {
+                jobStatus = JobStatus.JOB_ERROR;
                 if (exitCode == 0) {
                     exitCode = -1;
                 }
@@ -1337,13 +1345,12 @@ public class GenePatternAnalysisTask {
             }
             
             if ( exitCode != 0 
-                 ||
-                 TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes()) 
-                 ||
-                 taskInfo.isPipeline() ) 
+                 || TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes()) 
+                 //|| taskInfo.isPipeline() //pipeline executor calls handleJobCompletion directly
+                 ) 
             {
-                handleJobCompletion(jobInfo.getJobNumber(), stdoutFilename, stderrFilename, exitCode);
-            } 
+                handleJobCompletion(jobInfo.getJobNumber(), stdoutFilename, stderrFilename, exitCode, jobStatus);
+            }
         } 
         catch (Throwable e) {
             if (e.getCause() != null) {
@@ -1361,9 +1368,9 @@ public class GenePatternAnalysisTask {
         } 
     }
     
-    public static void handleJobCompletion(int jobId, String stdoutFilename, String stderrFilename, int exitCode) throws Exception {
+    public static void handleJobCompletion(int jobId, String stdoutFilename, String stderrFilename, int exitCode, int jobStatus) throws Exception {
         log.debug("job "+jobId+" completed with exitCode="+exitCode);
-        int jobStatus = JobStatus.JOB_FINISHED;
+        //int jobStatus = JobStatus.JOB_FINISHED;
 
         JobInfo jobInfo = getDS().getJobInfo(jobId);
         //TODO: handle special-case
@@ -1551,11 +1558,11 @@ public class GenePatternAnalysisTask {
             suppressLinesFromStdErrFile(stderrFile, "[Deprecated] Xalan: org.apache.xml.xml_soap.MapItemBeanInfo");
         }
         if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0) {
-            jobStatus = JobStatus.JOB_ERROR;
+            //jobStatus = JobStatus.JOB_ERROR;
             addFileToOutputParameters(jobInfo, stderrFilename, stderrFilename, parentJobInfo);
         }
         else {
-            jobStatus = JobStatus.JOB_FINISHED;
+            //jobStatus = JobStatus.JOB_FINISHED;
         }
 
         recordJobCompletion(jobInfo, parentJobInfo, jobStatus);

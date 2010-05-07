@@ -65,8 +65,9 @@ public interface CommandExecutor {
     /**
      * Request the service to terminate a GenePattern job which is running via this service.
      * @param jobInfo
+     * @throws Exception indicating that the job was not properly terminated.
      */
-    void terminateJob(JobInfo jobInfo);
+    void terminateJob(JobInfo jobInfo) throws Exception;
 
     //TODO: add these methods to the interface
     //void pauseJob(JobInfo jobInfo);
