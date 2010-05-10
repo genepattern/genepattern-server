@@ -9,8 +9,6 @@
   whatsoever. Neither the Broad Institute nor MIT can be responsible for its
   use, misuse, or functionality.
 --%>
-
-
 <%@ page
 	import="
 	java.io.BufferedReader,
@@ -35,9 +33,9 @@
 	org.genepattern.webservice.TaskInfo,
 	org.genepattern.util.StringUtils,
     org.genepattern.server.genepattern.GenePatternAnalysisTask,
-    org.genepattern.server.queue.RuntimeExecCommand,
+    org.genepattern.server.executor.RuntimeExecCommand,
 	org.genepattern.data.pipeline.PipelineModel,
-	org.genepattern.server.webapp.RunPipelineForJsp,
+    org.genepattern.data.pipeline.PipelineUtil,
 	org.genepattern.util.GPConstants,
 	java.net.URLDecoder"
 	session="false" language="Java" buffer="1kb"%>
@@ -66,7 +64,6 @@
             int jobID = UNDEFINED;
             byte[] userPassword = new byte[0];
             String userEmail = null;
-            RunPipelineForJsp runPipelineForJsp = new RunPipelineForJsp();
             try {
                 boolean DEBUG = false;
                 if (!DEBUG && requestParamsAndAttributes.get("DEBUG") != null)
@@ -100,8 +97,9 @@
 
                 String name = (String) requestParamsAndAttributes.get(NAME);
                 String command = (String) requestParamsAndAttributes.get(CMD);
-                if (command == null)
+                if (command == null) {
                     command = RUN;
+                }
                 String description = null;
                 boolean isSaved = (requestParamsAndAttributes.get("saved") == null);
                 TaskInfo taskInfo = null;
@@ -137,13 +135,13 @@
                 baseURL = baseURL.substring(0, baseURL.lastIndexOf("/") + 1);
                 try {
                     if (command.equals(STOP)) {
-                        runPipelineForJsp.stopPipeline((String) requestParamsAndAttributes.get(JOBID));
 %>
 <script language="Javascript">
+        self.window.alert('STOP button not working');
 		self.window.close();
 		</script>
 <%
-                    return;
+                        return;
                     }
 
                     /**
@@ -177,7 +175,7 @@
                     }
 
                     // check all required params present and punt if not
-                    boolean paramsRequired = runPipelineForJsp.validateAllRequiredParametersPresent(taskInfo, commandLineParams);
+                    boolean paramsRequired = PipelineUtil.validateAllRequiredParametersPresent(taskInfo, commandLineParams);
                     if (paramsRequired) {
                         request.setAttribute("name", pipelineName);
                         request.getRequestDispatcher("cannotRunPipeline.jsp").forward(request, response);
@@ -236,302 +234,10 @@ var outputFileCount = new Array();
 <%
                     out.flush();
                     if (command.equals(RUN)) {
-                        String serializedModel = (String) taskInfo.giveTaskInfoAttributes().get(
-                                GPConstants.SERIALIZED_MODEL);
-                        PipelineModel model = null;
-                        int numTasks = 50;
-                        try {
-                            model = PipelineModel.toPipelineModel(serializedModel);
-                            numTasks = model.getTasks().size();
-                        } catch (Exception e) {
-                            out.println("An error occurred while attempting to run the pipeline.");
-                            return;
-                        }
-
-                        try {
-                            if (runPipelineForJsp.isMissingTasks(model, new java.io.PrintWriter(out), userID)) {
-                                return;
-                            }
-                        } catch (Exception e) {
-                            out.println("An error occurred while processing your request. Please try again.");
-                            return;
-                        }
-                        Process process = runPipelineForJsp.runPipeline(taskInfo, name, baseURL, user, commandLineParams);
-                        jobID = runPipelineForJsp.getJobID();
-
-                        // stuff to write view file
-                        String jobDir = GenePatternAnalysisTask.getJobDir("" + jobID);
-                        File jobDirFile = new File(jobDir);
-                        
-                        
-                        jobDirFile.mkdirs();
-                                          
-                        StringBuffer cc = new StringBuffer();
-                        // create threads to read from the command's stdout and stderr streams
-                        Thread stdoutReader = copyStream(process.getInputStream(), cc, DEBUG, false);
-                        Thread stderrReader = copyStream(process.getErrorStream(), cc, DEBUG, true);
-                        stderrReader.setPriority(stdoutReader.getPriority() - 1);
-                        OutputStream stdin = process.getOutputStream();
-
-                        // drain the output and error streams
-                        stdoutReader.start();
-                        stderrReader.start();
-%>
-<script language="Javascript">
-
-function checkAll(frm, bChecked) {
-	frm = document.forms["results"];
-	for (i = 0; i < frm.elements.length; i++) {
-		if (frm.elements[i].type != "checkbox") continue;
-		frm.elements[i].checked = bChecked;
-	}
-}
-
-// check all the files in the job by its index
-function checkAllInTask(idx, taskcb) {
-	frm = document.forms["results"];
-    var fileCount = outputFileCount[idx];
-
-	for (i = 1; i < (fileCount+1); i++) {
-		cb = document.getElementById('outFileCB'+idx+"_"+i);
-
-		cb.checked = taskcb.checked;
-
-	}
-}
-
-
-function setEmailNotification(jobId){
-		var cb = document.getElementById('emailCheckbox');
-		var ue = document.getElementById("userEmail");
-		var uid = document.getElementById("userID");
-		var valid = jcv_checkEmail(ue.value);
-		if (!valid){
-			var em = prompt("Email on completion to?:");
-			if (em == null){
-				cb.checked = false;
-				return;
-			} else {
-				ue.value = em;
-				valid = jcv_checkEmail(ue.value);
-				if (!valid){
-					cb.checked = false;
-					alert(ue.value + ' is not a valid email address');
-					return;
-				}
-			}
-		}
- 	  	if (cb.checked) {
-			requestEmailNotification(ue.value, uid.value, jobId);
-	 	} else {
-			cancelEmailNotification(ue.value, uid.value, jobId);
-		}
-   }
-var numTasks = <%=numTasks%>;
-
-function toggleLogs() {
-	var cb = document.getElementById('logCheckbox');
-	var visible = cb.checked;
-	var frm = document.forms["results"];
-
-	for(var i = 0; i < (numTasks + 1); i++) {
-
-		divObj = document.getElementById('executionLogRow'+i);
-
-		if(!visible) {
-			divObj.style.display = "none";
-			divObj.visibility=false;
-		} else {
-			divObj.style.display = "";
-			divObj.visibility=true;
-		}
-
-
-	}
-}
-
-function openAllTasks(){
-	for(var i = 1; i < (numTasks + 1); i++) {
-		toggleTask(i, false);
-	}
-}
-function closeAllTasks(){
-	for(var i = 1; i < (numTasks + 1); i++) {
-		toggleTask(i, true);
-	}
-}
-
-function setVisibility(anObj, visibility){
-
-	if (visibility == null){
-		visibility = anObj.visibility;
-	}
-	if (visibility == false){
-		anObj.style.display = "";
-		anObj.visibility=true;
-	} else {
-		anObj.style.display = "none";
-		anObj.visibility=false;
-	}
-
-}
-
-function toggleTask(idx, visibility) {
-	var idBase = 'fileRow'+idx+"_";
-	var fileCount = outputFileCount[idx];
-
-	arrowdown = document.getElementById('downarrow'+idx);
-	setVisibility(arrowdown, visibility);
-
-	arrowright = document.getElementById('rightarrow'+idx);
-	setVisibility(arrowright, !visibility);
-
-	logRow = document.getElementById('executionLogRow'+idx);
-	setVisibility(logRow, visibility);
-
-	for(var i = 0; i < (fileCount + 1); i++) {
-
-		adiv  = document.getElementById(idBase +i);
-		if (adiv != null){
-		setVisibility(adiv, visibility);
-		}
-	}
-
-}
-
-  function deleteCheckedFiles(){
-	 var frm = document.forms["results"];
-       var really = confirm('Really delete the checked files?');
-       if (!really) return;
-	cmd = frm.elements['cmdElement'];
-	cmd.name="delete";
-	cmd.value="true";
- 	frm.submit();
-
-	cmd.name="cmdElement";
-  }
-
- function downloadCheckedFiles(){
-	 var frm = document.forms["results"];
-
-	cmd = frm.elements['cmdElement'];
-	cmd.name="download";
-	cmd.value="true";
-	frm.submit();
-	cmd.name="cmdElement";
-    }
-
-</script>
-
-<table width="100%" border="0" cellspacing="0" cellpadding="0">
-	<tr>
-		<td valign="top" class="maintasknav" id="maintasknav"><input
-			type="checkbox" id="emailCheckbox"
-			onclick="setEmailNotification(<%=jobID%>);" value="checkbox" />email notification&nbsp;&nbsp;&nbsp;&nbsp; <input type="hidden"
-			id="userEmail" value="<%= userEmail %>" /> <input type="hidden"
-			id="userID" value="<%= userID %>" /> <input name="showLogs"
-			id="logCheckbox" type="checkbox" onclick="toggleLogs()"
-			value="showLogs" checked="checked" /> show execution logs</td>
-	</tr>
-</table>
-<table width="100%" border="0" cellpadding="0" cellspacing="0"
-	class="barhead-task">
-	<tr>
-		<td><%=taskInfo.getName()%> Status</td>
-	</tr>
-</table>
-
-<table width='100%' cellpadding="0">
-	<tr>
-		<td width="50px"><input name="stopCmd" id="stopCmd" type="button"
-			value="Stop..." onclick="stopJob(this, <%= jobID%>)" class="little">
-		</td>
-		<td>Running <a
-			href="viewPipeline.jsp?view=1&name=<%=taskInfo.getTaskInfoAttributes().get("LSID")%>"><%=taskInfo.getName()%>
-		</a> as job # <%=jobID%> on <%=java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.LONG, java.text.DateFormat.LONG).format(new Date())%>.
-	</tr>
-</table>
-
-
-<!--span id='output'-->
-<%
+                        out.println("Pipeline RUN command not working <br>");
                         out.flush();
-
-                        // copy the generated code to the stdin of the R process
-                        if (DEBUG)
-                            out.println("<pre>");
-
-                        // wait for all output so that nothing is left buffered at end of process
-                        stdoutReader.join();
-                        stderrReader.join();
-                        
-                        // *************XXXX********
-                       
-                        File[] outFiles = jobDirFile.listFiles();
-                        for (int g = 0; g < outFiles.length; g++){
-                        	RunPipelineForJsp.addOutFileParameter(jobID, outFiles[g].getName());
-                        }
-                        
-                    	
-                        // *************XXXX********
-                         
-                        
-                        out.println("<p>");
-                        out.println(cc.toString());
-                        out.println("</p>");
-                        // output an extra </table> tag in case the pipeline was stopped, which would leave an open table tag and cause the
-                        // supposedly trailing output to come out before the table itself!
-                        if (DEBUG)
-                            out.println("</pre>");
-%>
-<!--/span-->
-
-<script language="Javascript">
-	document.getElementById("stopCmd").disabled=true;
-	document.getElementById("stopCmd").visibility=false;
-
-
-
-		</script>
-<%
-                        GregorianCalendar purgeTOD = new GregorianCalendar();
-
-                        try {
-
-                            SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
-                            GregorianCalendar gcPurge = new GregorianCalendar();
-                            gcPurge.setTime(dateFormat.parse(System.getProperty("purgeTime", "23:00")));
-                            purgeTOD.set(GregorianCalendar.HOUR_OF_DAY, gcPurge.get(GregorianCalendar.HOUR_OF_DAY));
-                            purgeTOD.set(GregorianCalendar.MINUTE, gcPurge.get(GregorianCalendar.MINUTE));
-                        } catch (ParseException pe) {
-                            purgeTOD.set(GregorianCalendar.HOUR_OF_DAY, 23);
-                            purgeTOD.set(GregorianCalendar.MINUTE, 0);
-                        }
-                        purgeTOD.set(GregorianCalendar.SECOND, 0);
-                        purgeTOD.set(GregorianCalendar.MILLISECOND, 0);
-                        int purgeInterval;
-                        try {
-                            purgeInterval = Integer.parseInt(System.getProperty("purgeJobsAfter", "-1"));
-                        } catch (NumberFormatException nfe) {
-                            purgeInterval = 7;
-                        }
-                        purgeTOD.add(GregorianCalendar.DATE, purgeInterval);
-                        DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
-%>
-
-<table with="100%">
-	<tr>
-		<td class="purge_notice">These job results are scheduled to be purged from the server on <%=df.format(purgeTOD.getTime()).toLowerCase()%>
-		</td>
-	</tr>
-	<tr><td><br>
-	<a href="pages/index.jsf">Return to Modules & Pipelines Start</a>
-</td></tr>
-</table>
-
-<%
-                  
-                    } else {
+                    }
+                    else {
                         out.println("unknown command: " + command + "<br>");
                     }
                 } catch (Throwable e) {
@@ -544,8 +250,8 @@ function toggleTask(idx, visibility) {
                     out.println("</pre><br>");
 
                     if (jobID != UNDEFINED) {
-                        RuntimeExecCommand.updatePipelineStatus(jobID, JobStatus.JOB_ERROR, null);
-                        RuntimeExecCommand.terminatePipeline(Integer.toString(jobID));
+                        // RuntimeExecCommand.updatePipelineStatus(jobID, JobStatus.JOB_ERROR, null);
+                        // RuntimeExecCommand.terminatePipeline(Integer.toString(jobID));
                     }
                     return;
                 } finally {
@@ -561,44 +267,5 @@ function toggleTask(idx, visibility) {
                 out.println("<br><pre>");
                 t.printStackTrace();
                 out.println("</pre><br>");
-                if (jobID != UNDEFINED) {
-                    RuntimeExecCommand.updatePipelineStatus(jobID, JobStatus.JOB_ERROR, null);
-                    RuntimeExecCommand.terminatePipeline(Integer.toString(jobID));
-                }
             }
 %>
-<%!Thread copyStream(final InputStream is, final StringBuffer cc, final boolean DEBUG,
-            final boolean htmlEncode) throws IOException {
-        // create thread to read from the a process' output or error stream
-        Thread copyThread = new Thread(new Runnable() {
-            public void run() {
-                BufferedReader in = new BufferedReader(new InputStreamReader(is));
-                String line;
-                // copy stdout to JspWriter
-
-                try {
-                    boolean bNeedsBreak;
-                    while ((line = in.readLine()) != null) {
-                        if (!DEBUG)
-                            if (line.startsWith("> ") || line.startsWith("+ "))
-                                continue;
-                        if (htmlEncode) {
-                            line = StringUtils.htmlEncode(line);
-                        }
-                        bNeedsBreak = (line.length() > 0 && (line.indexOf("<") == -1 || line.indexOf("<-") != -1) && line
-                                .indexOf(">") == -1);
-
-
-                        cc.append(line);
-                        if (bNeedsBreak)
-                            cc.append("<br>\n");
-                    }
-                } catch (IOException ioe) {
-                    cc.append("</td></tr></table><br>Pipeline terminated before completion.<br>\n");
-                }
-            }
-        }, "runPipelineCopyThread");
-        copyThread.setPriority(Thread.currentThread().getPriority() + 1);
-        copyThread.setDaemon(true);
-        return copyThread;
-    }%>
