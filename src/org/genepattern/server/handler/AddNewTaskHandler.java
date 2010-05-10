@@ -10,21 +10,16 @@
   use, misuse, or functionality.
 */
 
-
 package org.genepattern.server.handler;
 
 import java.util.List;
-import java.util.Vector;
 
-import org.genepattern.server.AnalysisManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-
-//import edu.mit.wi.omnigene.omnidas.*;
 
 /**
  * AddNewTaskHandler to submit a job request and get back <CODE>TaskInfo
@@ -75,12 +70,9 @@ public class AddNewTaskHandler extends RequestHandler {
 	 */
 	public int executeRequest() throws OmnigeneException {
 		int taskID = 0;
-
 		try {
-
 			//Get EJB reference
             AdminDAO ds = new AdminDAO();
-			AnalysisManager analysisManager = AnalysisManager.getInstance();
 
 			GetAvailableTasksHandler th = new GetAvailableTasksHandler();
 			List vTasks = th.executeRequest();
@@ -90,9 +82,7 @@ public class AddNewTaskHandler extends RequestHandler {
 					taskInfo = (TaskInfo) vTasks.get(i);
 					if (taskInfo.getName().equalsIgnoreCase(this.taskName)) {
 						taskID = taskInfo.getID();
-						System.out.println("updating existing task ID: "
-								+ taskID);
-						analysisManager.stop(taskInfo.getName());
+						System.out.println("updating existing task ID: " + taskID);
 						ds.deleteTask(taskID);
 						break;
 					}
@@ -102,11 +92,7 @@ public class AddNewTaskHandler extends RequestHandler {
 			parameter_info = ParameterFormatConverter.getJaxbString(parameterInfoArray);
 
 			//Invoke EJB function
-
-			taskID = (new AnalysisDAO()).addNewTask(taskName, userId, accessId, description,
-					parameter_info, taskInfoAttributes);
-			analysisManager.startNewAnalysisTask(taskID);
-
+			taskID = (new AnalysisDAO()).addNewTask(taskName, userId, accessId, description, parameter_info, taskInfoAttributes);
 		} catch (Exception ex) {
 			System.out.println("AddNewTaskRequest(execute): Error "
 					+ ex.getMessage());
@@ -115,14 +101,4 @@ public class AddNewTaskHandler extends RequestHandler {
 		}
 		return taskID;
 	}
-
-	public static void main(String args[]) {
-		AddNewTaskHandler arequest = new AddNewTaskHandler();
-		try {
-			System.out.println("Execute Result " + arequest.executeRequest());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 }
