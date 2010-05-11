@@ -124,7 +124,7 @@ public class RuntimeExecCommand {
             process.waitFor();
 
             long dtime = System.currentTimeMillis();
-            log.debug(jobID+": process.watiFor()...done! took "+(Math.round(0.001*(dtime - ctime)))+" s");
+            log.debug(jobID+": process.waitFor()...done! took "+(Math.round(0.001*(dtime - ctime)))+" s");
 
             // wait for all output before attempting to send it back to the client
             long waitTime = 60*1000L; //don't wait more than a minute during normal job execution

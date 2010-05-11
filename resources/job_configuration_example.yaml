@@ -18,7 +18,10 @@ default.properties:
 #    map := classname=<classname> [configuration.file: <path_to_config_file> | configuration.properties: <map>] [default.properties: <map>]
 executors:
     # simple declaration, of the form <id>:<classname>
-    RuntimeExec: org.genepattern.server.executor.RuntimeCommandExecutor
+    RuntimeExec: 
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+        configuration.properties:
+            num.threads: 20
 
     # nested declaration with configuration file, <id>: { classname: <classname>, configuration: <config_file> }
     Test:

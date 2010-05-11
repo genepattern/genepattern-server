@@ -109,7 +109,7 @@ public class RunPipelineInThread {
         return this.currentStepJobId;
     }
     
-    public void interrupt() {         
+    public synchronized void interrupt() {         
         if (currentStepJobInfo != null) {
             CommandExecutor cmdExec = null;
             try {
@@ -206,6 +206,10 @@ public class RunPipelineInThread {
             ParameterInfo[] params = parameterInfo;
             params = setJobParametersFromArgs(jobSubmission.getName(), stepNum + 1, params, results, additionalArgs);
             params = removeEmptyOptionalParams(parameterInfo);
+            
+            if (this.isInterrupted) {
+                throw new WebServiceException("pipeline terminated before execution of step "+stepNum);
+            }
                 
             JobInfo taskResult = executeTask(jobSubmission, params, results);
             taskResult = collectChildJobResults(taskResult);

@@ -172,6 +172,16 @@ public class PipelineCommand {
     }
     
     public void terminate() {
+        //special case when pipeline thread has not yet started
+        if (rp == null) {
+            try {
+                GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), stdoutFile.getAbsolutePath(), stderrFile.getAbsolutePath(), exitCode, JobStatus.JOB_ERROR);
+            }
+            catch (Exception e) {
+                log.error("Error terminating pipeline: "+jobInfo.getJobNumber(), e);
+            }
+            return;
+        }
         if (rp != null) {
             rp.interrupt();
         }
