@@ -145,13 +145,20 @@ public class PipelineCommand {
             jobStatus = JobStatus.JOB_FINISHED;
             exitCode = 0;
         }
+        catch (InterruptedException e) {
+            stderrBuffer.append("pipeline interrupted: "+e.getLocalizedMessage());
+            jobStatus = JobStatus.JOB_ERROR;
+            exitCode = -1;
+        }
         catch (MissingTasksException e) {
             stderrBuffer.append(e.getLocalizedMessage());
             jobStatus = JobStatus.JOB_ERROR;
+            exitCode = -1;
         }
         catch (WebServiceException e) {
             stderrBuffer.append(e.getLocalizedMessage());
             jobStatus = JobStatus.JOB_ERROR;
+            exitCode = -1;
         }
         
         String stdoutFilename = STDOUT;
@@ -161,6 +168,16 @@ public class PipelineCommand {
         String stderrFilename = STDERR;
         if (stderrFile != null) {
             stderrFilename = stderrFile.getAbsolutePath();
+        }
+        
+        //output stderrBuffer to STDERR file
+        if (stderrBuffer.length() > 0) {
+            jobStatus = JobStatus.JOB_ERROR;
+            if (exitCode == 0) {
+                exitCode = -1;
+            }
+            String outDirName = GenePatternAnalysisTask.getJobDir(Integer.toString(jobInfo.getJobNumber()));
+            GenePatternAnalysisTask.writeStringToFile(outDirName, STDERR, stderrBuffer.toString());
         }
         
         try {
@@ -183,7 +200,7 @@ public class PipelineCommand {
             return;
         }
         if (rp != null) {
-            rp.interrupt();
+            rp.terminate();
         }
     }
 

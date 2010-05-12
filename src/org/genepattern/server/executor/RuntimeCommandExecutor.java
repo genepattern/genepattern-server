@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.executor.RuntimeExecCommand.Status;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.JobInfo;
 
@@ -83,7 +84,7 @@ public class RuntimeCommandExecutor implements CommandExecutor {
         log.debug(message);        
         for(Entry<String, CallableRuntimeExecCommand> entry : runningJobs.entrySet()) {
             CallableRuntimeExecCommand cmd = entry.getValue();
-            cmd.cancel();
+            cmd.cancel(Status.SERVER_SHUTDOWN);
             Thread.yield();
         }
     }
@@ -124,7 +125,14 @@ public class RuntimeCommandExecutor implements CommandExecutor {
             log.debug("terminateJob("+jobInfo.getJobNumber()+"): job not running");
             return;
         }
-        cmd.cancel();
+        cmd.cancel(Status.TERMINATED);
+    }
+    
+    public int handleRunningJob(JobInfo jobInfo) {
+        if (JobStatus.PROCESSING.equals(jobInfo.getStatus())) {
+            return JobStatus.JOB_PENDING;
+        }
+        return -1;
     }
     
     private class CallableRuntimeExecCommand implements Callable<RuntimeExecCommand> 
@@ -177,29 +185,39 @@ public class RuntimeCommandExecutor implements CommandExecutor {
             if (exitValue != 0) {
                 jobStatus = JobStatus.JOB_ERROR;
             }
-            try {
-                GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), stdoutFile.getName(), stderrFile.getName(), exitValue, jobStatus);
+            
+            if (RuntimeExecCommand.Status.SERVER_SHUTDOWN.equals( cmd.getInternalJobStatus() )) {
+                //don't handle job completion
             }
-            catch (Exception e) {
-                log.error("Error handling job completion for job "+jobInfo.getJobNumber(), e);
+            else {
+                try {
+                    GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), stdoutFile.getName(), stderrFile.getName(), exitValue, jobStatus);
+                }
+                catch (Exception e) {
+                    log.error("Error handling job completion for job "+jobInfo.getJobNumber(), e);
+                }
             }
             return cmd;
         }
         
-        public void cancel() {
+        //if updateJobStatus 
+        public void cancel(Status status) {
             if (cmd != null) {
-                cmd.terminateProcess();
+                cmd.terminateProcess(status);
             }
             else {
                 //special-case: job has not started
                 if (future != null) {
                     future.cancel(false);
                 }
-                try {
-                    GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), stdoutFile.getName(), stderrFile.getName(), -1, JobStatus.JOB_ERROR);
-                }
-                catch (Exception e) {
-                    log.error("Error terminating job "+jobInfo.getJobNumber(), e);
+                
+                if (status == Status.TERMINATED) {
+                    try {
+                        GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), stdoutFile.getName(), stderrFile.getName(), -1, JobStatus.JOB_ERROR);
+                    }
+                    catch (Exception e) {
+                        log.error("Error terminating job "+jobInfo.getJobNumber(), e);
+                    }
                 }
             }
         }

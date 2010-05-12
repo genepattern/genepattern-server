@@ -61,8 +61,10 @@ public class TestCommandExecutor implements CommandExecutor {
             log.error("Error handling job completion for job "+jobInfo.getJobNumber(), e);
         }
     }
-    
-    public void reloadConfiguration() {
-        //no-op
+
+    public int handleRunningJob(JobInfo jobInfo) throws Exception {
+        log.info("handle running job #"+jobInfo.getJobNumber()+" on startup");
+        return JobStatus.JOB_PENDING;
     }
+
 }

@@ -29,17 +29,21 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorNotFoundException;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.webservice.server.AdminService;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
+import org.hibernate.Query;
+import org.hibernate.Session;
 
 /**
  * Run the pipeline, waiting for each job to complete.
@@ -54,7 +58,6 @@ public class RunPipelineInThread {
     private static Logger log = Logger.getLogger(RunPipelineInThread.class);
 
     private String userID;
-    //private String server;
     
     /** job id for the pipeline */
     private int jobId;
@@ -69,9 +72,7 @@ public class RunPipelineInThread {
     private AdminService adminService;
     
     //status of pipeline
-    boolean isInterrupted = false;
-    private int pipelineJobStatus = JobStatus.JOB_PROCESSING;
-    private int currentStepJobId = jobId;
+    boolean isTerminated = false;
     private JobInfo currentStepJobInfo = null;
     
     public RunPipelineInThread() {
@@ -101,15 +102,7 @@ public class RunPipelineInThread {
         this.stopAfterTaskStr = stopAfterTaskStr;
     }
     
-    public int getJobStatus() {
-        return this.pipelineJobStatus;
-    }
-    
-    public int getCurrentJobId() {
-        return this.currentStepJobId;
-    }
-    
-    public synchronized void interrupt() {         
+    public synchronized void terminate() { 
         if (currentStepJobInfo != null) {
             CommandExecutor cmdExec = null;
             try {
@@ -123,7 +116,7 @@ public class RunPipelineInThread {
                 log.error("Error terminating job "+jobId+"->"+currentStepJobInfo.getJobNumber(), e);
             }
         }
-        this.isInterrupted = true;
+        this.isTerminated = true;
     }
 
     public static final class MissingTasksException extends Exception {
@@ -170,8 +163,7 @@ public class RunPipelineInThread {
         }
     }
     
-    public void runPipeline() throws MissingTasksException, WebServiceException {
-        this.currentStepJobId = this.jobId;
+    public void runPipeline() throws InterruptedException, MissingTasksException, WebServiceException {
         this.analysisClient = new LocalAnalysisClient(userID);
         this.adminService = new AdminService(userID);
 
@@ -207,11 +199,11 @@ public class RunPipelineInThread {
             params = setJobParametersFromArgs(jobSubmission.getName(), stepNum + 1, params, results, additionalArgs);
             params = removeEmptyOptionalParams(parameterInfo);
             
-            if (this.isInterrupted) {
+            if (this.isTerminated) {
                 throw new WebServiceException("pipeline terminated before execution of step "+stepNum);
             }
                 
-            JobInfo taskResult = executeTask(jobSubmission, params, results);
+            JobInfo taskResult = executeTask(jobSubmission, params);
             taskResult = collectChildJobResults(taskResult);
             results[stepNum] = taskResult;
             
@@ -274,11 +266,11 @@ public class RunPipelineInThread {
      * 
      * @throws WebServiceException
      */
-    private JobInfo executeTask(JobSubmission jobSubmission, ParameterInfo[] params, JobInfo[] results)
-    throws WebServiceException {
+    private JobInfo executeTask(JobSubmission jobSubmission, ParameterInfo[] params)
+    throws InterruptedException, WebServiceException {
         log.debug("Begin executeTask");
         if (jobSubmission == null) {
-            log.error("ignoring executeTask, jobSubmissions is null");
+            log.error("ignoring executeTask, jobSubmission is null");
             return null;
         }
         String lsidOrTaskName = jobSubmission.getLSID();
@@ -485,41 +477,53 @@ public class RunPipelineInThread {
      * 
      * @throws WebServiceException
      */
-    private JobInfo waitForErrorOrCompletion(int jobNumber) throws WebServiceException {
+    private JobInfo waitForErrorOrCompletion(int jobNumber) throws WebServiceException, InterruptedException {
         int maxtries = 100; // used only to increment sleep, not a hard limit
         int sleep = 1000;
         return waitForErrorOrCompletion(jobNumber, maxtries, sleep);
     }
 
-    private JobInfo waitForErrorOrCompletion(int jobNumber, int maxTries, int initialSleep) throws WebServiceException {
-        String status = "";
-        JobInfo jobInfo = null;
+    private JobInfo waitForErrorOrCompletion(int jobNumber, int maxTries, int initialSleep) throws WebServiceException, InterruptedException {
+        int statusId = JobStatus.JOB_PROCESSING;
         int count = 0;
         int sleep = initialSleep;
-        do {
+        while (statusId == JobStatus.JOB_PROCESSING) {
             count++;
-            try {
-                Thread.sleep(sleep);
-            } 
-            catch (InterruptedException e) {
-            }
-            jobInfo = analysisClient.checkStatus(jobNumber);
-            status = jobInfo.getStatus();
+            Thread.sleep(sleep);
+            statusId = getJobStatusId(jobNumber);
             sleep = incrementSleep(initialSleep, maxTries, count);
-        } 
-        while (!(status.equalsIgnoreCase("ERROR") || (status.equalsIgnoreCase("Finished"))));
-        return jobInfo;
+        }
+        try {
+            HibernateUtil.beginTransaction();
+            return new AnalysisDAO().getJobInfo(jobNumber);
+        }
+        catch (Exception e) {
+            log.error("Error getting jobInfo for job #"+jobNumber, e);
+            throw new WebServiceException(e);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
     }
-
-//    private static String getFileType(File file) {
-//    // ODF
-//    if (file.getName().toLowerCase().endsWith("." + GPConstants.ODF.toLowerCase())) {
-//        return ODFModelType(file);
-//    }
-//    String filename = file.getName();
-//    return filename.substring(filename.lastIndexOf(".") + 1);
-//
-//    }
+    
+    //replaces call to analysisClient.checkStatus
+    private int getJobStatusId(int jobId) {
+        final String hql = 
+            "select jobStatus.statusId from org.genepattern.server.domain.AnalysisJob job "+
+            " where job.jobNo = :jobNo ";
+        
+        try { 
+            HibernateUtil.beginTransaction();
+            Session session = HibernateUtil.getSession();
+            Query query = session.createQuery(hql);
+            query.setInteger("jobNo", jobId);
+            Object rval = query.uniqueResult();
+            return AnalysisDAO.getCount(rval);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+    }
 
     /**
      * return the file name for the previously run job by index or name
@@ -641,24 +645,6 @@ public class RunPipelineInThread {
     }
     return model;
     }
-
-//    public static Logger setupLog4jConfig(String logFile) {
-//        Properties log4jconfig = new Properties();
-//        log4jconfig.setProperty("log4j.debug", "false"); // set this to true to debug Log4j configuration
-//        log4jconfig.setProperty("log4j.rootLogger", "error, R");
-//        log4jconfig.setProperty("log4j.logger.org.genepattern", "error");
-//
-//        log4jconfig.setProperty("log4j.appender.R", "org.apache.log4j.RollingFileAppender");
-//        log4jconfig.setProperty("log4j.appender.R.File", logFile);
-//        log4jconfig.setProperty("log4j.appender.R.MaxFileSize", "256KB");
-//        log4jconfig.setProperty("log4j.appender.R.MaxBackupIndex", "2");
-//        log4jconfig.setProperty("log4j.appender.R.layout", "org.apache.log4j.PatternLayout");
-//        log4jconfig.setProperty("log4j.appender.R.layout.ConversionPattern", "%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] (%F:%L) - %m%n");
-//
-//        //System.setProperty("log4j.defaultInitOverride", "true"); // required to prevent stack trace to System.err
-//        PropertyConfigurator.configure(log4jconfig);
-//        return Logger.getLogger(RunPipelineInThread.class);
-//    }
 
     /**
      * make the sleep time go up as it takes longer to exec. eg for 100 tries of 1000ms (1 sec) first 20 are 1 sec each

@@ -21,7 +21,8 @@ public class RuntimeExecCommand {
     enum Status { 
         PENDING,
         RUNNING,
-        TERMINATED
+        TERMINATED, //terminated by user request
+        SERVER_SHUTDOWN //terminated on server shutdown
     }
 
     private Process process = null;
@@ -166,7 +167,7 @@ public class RuntimeExecCommand {
         } 
     }
     
-    public void terminateProcess() {
+    public void terminateProcess(Status status) {
         if (outputReader != null) {
             outputReader.interrupt();
         }
@@ -176,6 +177,6 @@ public class RuntimeExecCommand {
         if (process != null) {
             process.destroy();
         }
-        this.internalJobStatus = Status.TERMINATED;
+        this.internalJobStatus = status;
     }
 }

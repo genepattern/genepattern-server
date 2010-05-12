@@ -73,4 +73,15 @@ public interface CommandExecutor {
     //void pauseJob(JobInfo jobInfo);
     //public void resumeJob(JobInfo jobInfo);
     //public List<JobStatus> getJobs();
+
+    /**
+     * This method is called on server startup for each RUNNING job for this queue.
+     * 
+     * For RuntimeExec, tell the GP server to delete the job results directory and requeue the job.
+     * For other executors, (such as LSF), you may want to ignore this message.
+     * For PipelineExec, you may need to determine the last successfully completed step before resuming the pipeline.
+     * 
+     * @return an optional int flag to update the JOB_STATUS_ID in the GP database, ignore if it is less than zero
+     */
+    int handleRunningJob(JobInfo jobInfo) throws Exception;
 }

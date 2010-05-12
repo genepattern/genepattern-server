@@ -13,6 +13,8 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.JobInfoManager;
+import org.genepattern.server.domain.JobStatus;
 import org.genepattern.webservice.JobInfo;
 
 /**
@@ -41,7 +43,8 @@ public class PipelineExecutor implements CommandExecutor {
     }
 
     public void start() {
-        String pipelineNumThreadsProp = System.getProperty("pipeline.num.threads", "20");
+        String numThreadsProp = System.getProperty("num.threads", "20");
+        String pipelineNumThreadsProp = System.getProperty("pipeline.num.threads", numThreadsProp);
         try {
             this.numPipelines = Integer.parseInt(pipelineNumThreadsProp);
         }
@@ -49,6 +52,7 @@ public class PipelineExecutor implements CommandExecutor {
             log.error("Configuration error in 'genepattern.properties': 'pipeline.num.threads="+pipelineNumThreadsProp+"'");
             this.numPipelines = 20;
         }
+        log.info("Initializing pipeline executor with newFixedThreadPool("+numPipelines+") ");
         executor = Executors.newFixedThreadPool(numPipelines);
     }
 
@@ -103,15 +107,42 @@ public class PipelineExecutor implements CommandExecutor {
         log.debug(message);        
         for(Entry<String, PipelineObj> entry : runningPipelines.entrySet()) {
             PipelineObj cmd = entry.getValue();
-            cmd.cancel();
+            if (cmd != null) {
+                cmd.handleServerShutdown();
+            }
+            else {
+                log.error("Unexpected null entry in runningPipelines");
+            }
         }
     }
 
     public void terminateJob(JobInfo jobInfo) throws Exception {
         PipelineObj cmd = runningPipelines.get(""+jobInfo.getJobNumber());
         if (cmd != null) {
-            cmd.cancel();
+            cmd.terminateJob();
         }
+    }
+    
+    public int handleRunningJob(JobInfo jobInfo) throws Exception {
+        //what do do with a running pipeline on server startup ...
+        //... terminate all child steps, then delete each child step
+        return resetRunningPipeline(jobInfo);
+    }
+    
+    private int resetRunningPipeline(JobInfo jobInfo) {
+        if (jobInfo == null) {
+            log.error("null jobInfo arg");
+            return JobStatus.JOB_ERROR;
+        }
+        boolean isPipeline = JobInfoManager.isPipeline(jobInfo);
+        if (!isPipeline) {
+            log.error("job #"+jobInfo.getJobNumber()+" is not a pipeline");
+            return JobStatus.JOB_ERROR;
+        }
+        
+        //set its status to ERROR
+        log.info("handling pipeline job on server restart, set status to "+JobStatus.ERROR);
+        return JobStatus.JOB_ERROR;
     }
     
     //helper class to keep the PipelineCommand and its Future instance in the same hashmap
@@ -140,14 +171,29 @@ public class PipelineExecutor implements CommandExecutor {
             }
         }
 
-        //Callable imeplementation. This runs the pipeline.
+        //Callable implementation. This runs the pipeline.
         public Integer call() throws Exception { 
             cmd.runPipeline();
             runningPipelines.remove(jobId);
             return cmd.getJobStatus();
         }
-  
-        public void cancel() {
+        
+        /**
+         * response to server shutdown request.
+         */
+        public void handleServerShutdown() {
+            log.error("handleServerShutdown not implemented!");
+        }
+
+        /**
+         * response to user request to cancel execution of the pipeline.
+         * updates the job status accordingly.
+         */
+        public void terminateJob() {
+            //immediately terminate the runpipeline thread ...
+            //... clean up any running jobs ...
+            //... update the job status
+            
             if (future != null) {
                 future.cancel(true);
             }

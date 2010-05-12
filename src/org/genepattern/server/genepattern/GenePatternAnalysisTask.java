@@ -1196,7 +1196,7 @@ public class GenePatternAnalysisTask {
                 //.... otherwise, when a job submission fails, it is possible that the input files are not properly cleaned up
                 //TODO: need a new status code ... 'about to execute the job pending successful submission via a command executor'
                 //updateJobInfo(jobInfo, parentJobInfo, JobStatus.JOB_PROCESSING, new Date());
-                updateJobInfo(jobInfo, parentJobInfo, JobStatus.JOB_PROCESSING,  null);
+                //updateJobInfo(jobInfo, parentJobInfo, JobStatus.JOB_PROCESSING,  null);
                 
                 File stdoutFile;
                 File stderrFile;
@@ -4249,7 +4249,7 @@ public class GenePatternAnalysisTask {
      * @return File that was written
      * @author Jim Lerner
      */
-    protected File writeStringToFile(String dirName, String filename, String outputString) {
+    public static File writeStringToFile(String dirName, String filename, String outputString) {
 	File outFile = null;
 	try {
 	    outFile = new File(dirName, filename);
@@ -4257,13 +4257,9 @@ public class GenePatternAnalysisTask {
 	    fw.write(outputString != null ? outputString : "");
 	    fw.close();
 	} catch (NullPointerException npe) {
-	    log.error(getClass().getName() + ": writeStringToFile(" + dirName + ", " + filename + ", " + outputString + "): "
-		    + npe.getMessage());
-	    npe.printStackTrace();
+	    log.error("writeStringToFile(" + dirName + ", " + filename + ", " + outputString + "): " + npe.getMessage(), npe);
 	} catch (IOException ioe) {
-	    log.error(getClass().getName() + ": writeStringToFile(" + dirName + ", " + filename + ", " + outputString + "): "
-		    + ioe.getMessage());
-	    ioe.printStackTrace();
+	    log.error("writeStringToFile(" + dirName + ", " + filename + ", " + outputString + "): " + ioe.getMessage(), ioe);
 	} finally {
 	    if (true) {
 		return outFile;

@@ -1,15 +1,22 @@
 package org.genepattern.server.executor;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.AnalysisManager;
 import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.JobInfoManager;
+import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.domain.AnalysisJob;
+import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
+import org.hibernate.Query;
+import org.hibernate.Session;
 
 /**
  * Default implementation of the CommandManager interface.
@@ -19,9 +26,9 @@ import org.genepattern.webservice.JobInfo;
 public class BasicCommandManager implements CommandManager {
     private static Logger log = Logger.getLogger(BasicCommandManager.class);
     
-    public void startAnalysisService() {
+    public void startAnalysisService() { 
         log.info("starting analysis service...");
-        AnalysisManager.getInstance();
+        handleRunningJobsOnServerStartup();
         AnalysisTask.startQueue();
         log.info("...analysis service started!");
     }
@@ -29,7 +36,94 @@ public class BasicCommandManager implements CommandManager {
     public void shutdownAnalysisService() {
         log.info("shutting down analysis service...done!");
     }
+
+    //TODO: use paged results to handle large number of 'Processing' jobs
+    private void handleRunningJobsOnServerStartup() {
+        log.info("handling 'RUNNING' jobs on server startup ...");
+        List<JobInfo> runningJobs = getRunningJobs();
+        for(JobInfo jobInfo : runningJobs) {
+            String jobId = ""+jobInfo.getJobNumber();
+            try {
+                CommandExecutor cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
+                int updatedStatusId = cmdExec.handleRunningJob(jobInfo);
+                if (updatedStatusId > 0) {
+                    setJobStatus(jobInfo, updatedStatusId);
+                }
+            }
+            catch (CommandExecutorNotFoundException e) {
+                log.error("error getting command executor for job #"+jobId, e);
+                setJobStatusToError(jobInfo);
+            }
+            catch (Exception e) {
+                log.error("error handling running job on server startup for job #"+jobId, e);
+                setJobStatusToError(jobInfo);
+            }
+        }
+        log.info("... done handling 'RUNNING' jobs on server startup.");
+    }
     
+    private void setJobStatusToError(JobInfo jobInfo) {
+        setJobStatus(jobInfo, JobStatus.JOB_ERROR);
+    }
+    
+    private void setJobStatus(JobInfo jobInfo, int jobStatus) {
+        String jobId = ""+jobInfo.getJobNumber();
+        try {
+            HibernateUtil.beginTransaction();
+            new AnalysisDAO().updateJobStatus(jobInfo.getJobNumber(), jobStatus);
+        }
+        catch (Exception e) {
+            HibernateUtil.rollbackTransaction();
+            log.error("Unable to set status to "+jobStatus+" for job #"+jobId);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        } 
+    }
+
+    private List<JobInfo> getRunningJobs() {
+        try {
+            HibernateUtil.beginTransaction();
+            Session session = HibernateUtil.getSession();
+            int numRunningJobs = getNumRunningJobs(session);
+            return getRunningJobs(session, numRunningJobs);
+        }
+        catch (Throwable t) {
+            log.error("error getting list of running jobs from the server", t);
+            return new ArrayList<JobInfo>();
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+    }
+    
+    private int getNumRunningJobs(Session session) { 
+        final String hql = 
+            "select count(*) from org.genepattern.server.domain.AnalysisJob "+
+            " where jobStatus.statusId = :statusId and deleted = false order by submittedDate ";
+        
+        Query query = session.createQuery(hql);
+        query.setInteger("statusId", JobStatus.JOB_PROCESSING);
+        Object rval = query.uniqueResult();
+        return AnalysisDAO.getCount(rval);
+    }
+
+    private static List<JobInfo> getRunningJobs(Session session, int maxJobCount) {
+        List<JobInfo> runningJobs = new ArrayList<JobInfo>();
+        final String hql = "from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId = :statusId and deleted = false order by submittedDate ";
+        Query query = session.createQuery(hql);
+        if (maxJobCount > 0) {
+            query.setMaxResults(maxJobCount);
+        }
+        query.setInteger("statusId", JobStatus.JOB_PROCESSING);
+        List<AnalysisJob> jobList = query.list();
+        for(AnalysisJob aJob : jobList) {
+            JobInfo singleJobInfo = new JobInfo(aJob);
+            runningJobs.add(singleJobInfo);
+        }
+        return runningJobs;
+    }
+
     private CommandManagerProperties configProperties = new CommandManagerProperties();
     public CommandManagerProperties getConfigProperties() {
         return configProperties;
@@ -128,20 +222,32 @@ public class BasicCommandManager implements CommandManager {
     }
     
     /**
-     * call this at system shutdown to stop the list of running CommandExecutorService instances.
+     * Call this at system shutdown to stop the list of running CommandExecutorService instances.
+     * 
+     * Implementation note: pipeline execution is treated as a special-case. First, terminate all running pipelines, then terminate any remaining jobs.
      */
     public void stopCommandExecutors() {
+        CommandExecutor pipelineExec = getPipelineExecutor();
+        if (pipelineExec != null) {
+            try {
+                pipelineExec.stop();
+            }
+            catch (Throwable t) {
+                log.error("Error stopping PipelineExecutor", t);
+            }
+        }
+        
         for(String cmdExecId : cmdExecutorsMap.keySet()) {
             CommandExecutor cmdExec = cmdExecutorsMap.get(cmdExecId);
             try {
-                cmdExec.stop();
+                if (cmdExec != pipelineExec) {
+                    cmdExec.stop();
+                }
             }
             catch (Throwable t) {
                 log.error("Error stopping CommandExecutorService, for class: "+cmdExec.getClass().getCanonicalName()+": "+t.getLocalizedMessage(), t);
             }
         }
-        
-        stopPipelineExecutor();
     }
     
     private CommandExecutor getPipelineExecutor() {
@@ -155,9 +261,5 @@ public class BasicCommandManager implements CommandManager {
     
     private void startPipelineExecutor() {
         getPipelineExecutor().start();
-    }
-    
-    private void stopPipelineExecutor() {
-        getPipelineExecutor().stop();
     }
 }
