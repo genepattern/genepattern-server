@@ -443,7 +443,7 @@ public class AnalysisDAO extends BaseDAO {
      * @param rval
      * @return
      */
-    private int getCount(Object rval) {
+    public static int getCount(Object rval) {
         if (rval instanceof Long) {
             return ((Long)rval).intValue();
         }
