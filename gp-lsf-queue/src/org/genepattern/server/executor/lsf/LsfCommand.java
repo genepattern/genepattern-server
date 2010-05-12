@@ -33,13 +33,13 @@ class LsfCommand {
     //bsub -P $project -q "$queue" -R "rusage[mem=$max_memory]" -M $max_memory -m "$hosts" -K -o .lsf_%J.out -e $lsf_err $"$@" \>\> $cmd_out
     
     public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {        
-        int jobId = jobInfo != null ? jobInfo.getJobNumber() : -1;
-        //this.runDir = runDir;
+        long jobId = jobInfo != null ? jobInfo.getJobNumber() : -1L;
 
         lsfJob = new LsfJob();
         //note: use the name of the job (the bsub -J arg) to map the GP JOB ID to the JOB_LSF table
         //    the internalJobId is (by default) configured as a primary key with a sequence
         lsfJob.setName(""+jobId);
+        lsfJob.setInternalJobId(jobId);
         
         String commandLineStr = getCommandLineStr(commandLine);
         //HACK: append a shell script to my command, whose only purpose is to separate stdout of the job from the LSF header information
@@ -71,6 +71,15 @@ class LsfCommand {
         extraBsubArgs.addAll(preExecArgs);
         
         lsfJob.setCompletionListenerName(LsfJobCompletionListener.class.getName());
+    }
+    
+    public void prepareToTerminate(JobInfo jobInfo) {
+        int jobId = jobInfo != null ? jobInfo.getJobNumber() : -1;
+        lsfJob = new LsfJob();
+        //note: use the name of the job (the bsub -J arg) to map the GP JOB ID to the JOB_LSF table
+        //    the internalJobId is (by default) configured as a primary key with a sequence
+        lsfJob.setName(""+jobId);
+        
     }
     
     public LsfJob getLsfJob() {

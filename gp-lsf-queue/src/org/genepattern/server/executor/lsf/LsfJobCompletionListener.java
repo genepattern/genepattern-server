@@ -6,6 +6,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 
 import edu.mit.broad.core.lsf.LsfJob;
@@ -34,6 +35,8 @@ public class LsfJobCompletionListener implements JobCompletionListener {
 
     public void jobCompleted(LsfJob job) throws Exception {
         final int gpJobId = getGpJobId(job);
+        String jobStatus = job.getStatus();
+        //TODO: check for error or terminated status
         log.debug("job completed...lsf_id="+job.getLsfJobId()+", internal_job_id="+job.getInternalJobId()+", gp_job_id="+gpJobId);
         final String stdoutFilename = job.getOutputFilename();
         final String stderrFilename = job.getErrorFileName();
@@ -47,7 +50,7 @@ public class LsfJobCompletionListener implements JobCompletionListener {
             new FutureTask<Integer>(new Callable<Integer>() {
               public Integer call() throws Exception {
                   int rVal = 0;
-                  GenePatternAnalysisTask.handleJobCompletion(gpJobId, stdoutFilename, stderrFilename, exitCode);
+                  GenePatternAnalysisTask.handleJobCompletion(gpJobId, stdoutFilename, stderrFilename, exitCode, JobStatus.JOB_FINISHED);
                   return rVal;
             }});
           executor.execute(future);
