@@ -44,14 +44,28 @@ import org.genepattern.webservice.TaskInfoAttributes;
 public class JobInfoManager {
     private static Logger log = Logger.getLogger(JobInfoManager.class);
     
+    //cache pipeline status so we don't need to make so many DB queries
+    private static Map<Integer,Boolean> isPipelineCache = new HashMap<Integer,Boolean>();
+    
     public static boolean isPipeline(JobInfo jobInfo) {
-        boolean isPipeline = false;
         if (jobInfo == null) {
             return false;
         }
+        
+        //check the cache
+        int taskId = jobInfo.getTaskID();
+        if (taskId >= 0) {
+            Boolean status = isPipelineCache.get(taskId);
+            if (status != null) {
+                return status;
+            }
+        }
+        
+        boolean isPipeline = false;
         try {
             TaskInfo taskInfo = getTaskInfo(jobInfo);
             isPipeline = taskInfo.isPipeline();
+            isPipelineCache.put(taskInfo.getID(), isPipeline);
         }
         catch (Exception e) {
             log.error(e);
