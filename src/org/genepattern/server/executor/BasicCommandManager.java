@@ -100,7 +100,7 @@ public class BasicCommandManager implements CommandManager {
     private int getNumRunningJobs(Session session) { 
         final String hql = 
             "select count(*) from org.genepattern.server.domain.AnalysisJob "+
-            " where jobStatus.statusId = :statusId and deleted = false order by submittedDate ";
+            " where jobStatus.statusId = :statusId and deleted = false ";
         
         Query query = session.createQuery(hql);
         query.setInteger("statusId", JobStatus.JOB_PROCESSING);
