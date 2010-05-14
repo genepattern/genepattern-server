@@ -159,26 +159,34 @@ public class DirectoryManager {
      *                 if genepattern.properties System property not defined
      * @author Jim Lerner (Moved to DirManager from GenePatternAnalysisTask by Ted Liefeld)
      */
-    public static String getTaskLibDir(TaskInfo taskInfo) throws Exception {
-	File f = null;
-	getLibDir();
+    public static String getTaskLibDir(TaskInfo taskInfo) {
+        File f = null;
+        getLibDir();
 
-	String taskName = taskInfo.getName();
-	TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-	LSID lsid = null;
-	try {
-	    lsid = new LSID(tia.get(GPConstants.LSID));
-	} catch (MalformedURLException mue) {
-	    // ignore -- not an LSID
-	} catch (Exception e2) {
-	}
+        String taskName = taskInfo.getName();
+        String sLsid = taskInfo.getLsid();
+        LSID lsid = null;
+        try {
+            lsid = new LSID(sLsid);
+        }
+        catch (MalformedURLException e) {
+            //ignore, null lsid arg handled in makeDirName
+        }
+        catch (Exception e2) {
+        }
 
-	String dirName = makeDirName(lsid, taskName, taskInfo);
-	f = new File(taskLibDir, dirName);
-	f.mkdirs();
-	return f.getCanonicalPath();
+        String dirName = makeDirName(lsid, taskName, taskInfo);
+        f = new File(taskLibDir, dirName);
+        f.mkdirs();
+        try {
+            return f.getCanonicalPath();
+        }
+        catch (IOException e) {
+            _cat.error("Error getting canonical path for "+f.getAbsolutePath(), e);
+            return f.getAbsolutePath();
+        }
     }
-
+    
     protected static String makeDirName(LSID lsid, String taskName, TaskInfo taskInfo) {
 	String dirName;
 	int MAX_DIR_LENGTH = 255; // Mac OS X directory name limit
