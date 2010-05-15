@@ -652,6 +652,16 @@ public class Analysis extends GenericWebService {
     }
     
     private void terminateJob(JobInfo jobInfo) throws WebServiceException {
+        if (jobInfo == null) {
+            log.error("invalid null arg to terminateJob");
+            return;
+        }
+        //note: don't terminate completed jobs
+        boolean isFinished = isFinished(jobInfo); 
+        if (isFinished) {
+            log.debug("job "+jobInfo.getJobNumber()+"is already finished");
+            return;
+        }
         try {
             CommandExecutor cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
             cmdExec.terminateJob(jobInfo);
@@ -659,6 +669,18 @@ public class Analysis extends GenericWebService {
         catch (Throwable t) {
             throw new WebServiceException(t);
         }
+    }
+    
+    private static boolean isFinished(JobInfo jobInfo) {
+        return isFinished(jobInfo.getStatus());
+    }
+    
+    private static boolean isFinished(String jobStatus) {
+        if ( JobStatus.FINISHED.equals(jobStatus) ||
+                JobStatus.ERROR.equals(jobStatus) ) {
+            return true;
+        }
+        return false;        
     }
 
     /**
