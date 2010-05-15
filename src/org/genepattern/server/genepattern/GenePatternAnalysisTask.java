@@ -71,9 +71,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -136,12 +134,11 @@ import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.executor.CommandExecutor;
-import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.CommandExecutorNotFoundException;
+import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager;
-import org.genepattern.server.webapp.RunPipelineInThread;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -238,6 +235,12 @@ public class GenePatternAnalysisTask {
      * indicates whether version string has been displayed by init already
      */
     protected static boolean bAnnounced = false;
+
+    public enum JOB_TYPE {
+        JOB,
+        VISUALIZER,
+        PIPELINE
+    };
 
     private enum INPUT_FILE_MODE {
         COPY, MOVE, PATH
@@ -465,19 +468,12 @@ public class GenePatternAnalysisTask {
                 log.error(errorMessage);
                 throw new IllegalArgumentException(errorMessage);
             }
-            //else taskInfo != null
             File file = null;
-            String taskLibDir = null;
-            try {
-                taskLibDir = DirectoryManager.getTaskLibDir(lsid, lsid, userId);
-            }
-            catch (MalformedURLException e) {
-                String errorMessage = "Unable to find file: "+filename+ " ("+url+"). Invalid LSID: "+lsid;
-                log.error(errorMessage, e);
-                throw new IllegalArgumentException(errorMessage,e);
-            }
-            finally {
-                HibernateUtil.closeCurrentSession();
+            String taskLibDir = DirectoryManager.getTaskLibDir(taskInfo);
+            if (taskLibDir == null) {
+                String errorMessage = "You are not permitted to access the requested file: "+filename+ " ("+url+")";
+                log.error(errorMessage);
+                throw new IllegalArgumentException(errorMessage);
             }
             file = new File(taskLibDir, filename);
             if (file.exists()) {
@@ -556,8 +552,9 @@ public class GenePatternAnalysisTask {
         }
         
         JobInfo jobInfo = (JobInfo) o;
+        int jobId = jobInfo.getJobNumber();
         if (log.isDebugEnabled()) {
-            log.debug("Start onJob id=" + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName());
+            log.debug("Start onJob id=" + jobId + " (" + jobInfo.getTaskName());
         }
 
         // pipelines run from the webapp show up as BaseDAO.UNPROCESSABLE_TASKID
@@ -568,7 +565,7 @@ public class GenePatternAnalysisTask {
         }
 
         JobInfo parentJobInfo = null;
-        String outDirName = getJobDir(Integer.toString(jobInfo.getJobNumber()));
+        String outDirName = getJobDir(""+jobId);
         String taskName = "";
         
         INPUT_FILE_MODE inputFileMode = getInputFileMode();
@@ -597,6 +594,13 @@ public class GenePatternAnalysisTask {
             if (log.isDebugEnabled()) {
                 log.debug("taskName=" + taskName);
             }
+            JOB_TYPE jobType = JOB_TYPE.JOB;
+            if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
+                jobType = JOB_TYPE.VISUALIZER;
+            }
+            else if (taskInfo.isPipeline()) {
+                jobType = JOB_TYPE.PIPELINE;
+            }
 
             int formalParamsLength = 0;
             ParameterInfo[] formalParams = taskInfo.getParameterInfoArray();
@@ -620,13 +624,14 @@ public class GenePatternAnalysisTask {
 
             Map<String, String> environmentVariables = new HashMap<String, String>();
 
-            JobInfo parentJI = getParentJobInfo(jobInfo.getJobNumber());
+            //JobInfo parentJI = getParentJobInfo(jobId);
+            JobInfo parentJI = new AnalysisDAO().getParent(jobId);
             int parent = -1;
             if (parentJI != null) {
                 parent = parentJI.getJobNumber();
             }
             ParameterInfo[] params = jobInfo.getParameterInfoArray();
-            Properties props = setupProps(taskInfo, taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(),
+            Properties props = setupProps(taskInfo, taskName, parent, jobId, jobInfo.getTaskID(),
                     taskInfoAttributes, params, environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
             Vector<String> vProblems = new Vector<String>();
             long inputLastModified[] = new long[0];
@@ -635,7 +640,14 @@ public class GenePatternAnalysisTask {
                 inputLastModified = new long[params.length];
                 inputLength = new long[params.length];
                 for (int i = 0; i < params.length; i++) {
-                    HashMap<String, String> attrsActual = params[i].getAttributes();
+                    HashMap attrsActualOrig = params[i].getAttributes();
+                    //operate on a copy of these parameters, so that they are not written back to the DB
+                    Map<String,String> attrsActual = new HashMap<String,String>();
+                    for(Object key : attrsActualOrig.keySet()) {
+                        Object val = attrsActualOrig.get(key);
+                        attrsActual.put(""+key, ""+val);
+                    }
+                    
                     if (attrsActual == null) {
                         attrsActual = new HashMap<String, String>();
                     }
@@ -736,7 +748,7 @@ public class GenePatternAnalysisTask {
                             }
 
                             if (isWebUpload) {
-                                if (!canReadJob(jobInfo.getUserId(), jobInfo.getJobNumber())) {
+                                if (!canReadJob(jobInfo.getUserId(), jobId)) {
                                     vProblems.add("You are not permitted to access the requested file: "+inputFile.getName());
                                     continue;
                                 }
@@ -757,6 +769,7 @@ public class GenePatternAnalysisTask {
                         }
 
                         if (inputFileMode == INPUT_FILE_MODE.PATH) {
+                            //TODO: don't do this for uploaded files
                             attrsActual.remove(ParameterInfo.TYPE);
                             attrsActual.remove(ParameterInfo.INPUT_MODE);
                         } 
@@ -822,6 +835,7 @@ public class GenePatternAnalysisTask {
                                     vProblems.add("You are not permitted to access the requested file: "+originalPath);
                                     continue;
                                 }
+                                //TODO: don't remove
                                 attrsActual.remove(ParameterInfo.TYPE);
                                 attrsActual.remove(ParameterInfo.INPUT_MODE);
                             } 
@@ -841,7 +855,8 @@ public class GenePatternAnalysisTask {
                                 }
                             }
                         }
-                        if (isURL && !TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes()) && !taskInfo.isPipeline()) { 
+                        if (isURL && jobType != JOB_TYPE.VISUALIZER && jobType != JOB_TYPE.PIPELINE) {
+                            //TODO: may need to revist this as input urls are not working for pipelines after the rewrite 
                             //don't translate input urls for visualizers and pipelines
                             URI uri = new URI(originalPath);
                             final String userInfo = uri.getUserInfo();
@@ -866,6 +881,7 @@ public class GenePatternAnalysisTask {
                                     File f = new File(uri);
                                     if (inputFileMode == INPUT_FILE_MODE.PATH) {
                                         params[i].setValue(f.getAbsolutePath());
+                                        //TODO: don't remove
                                         attrsActual.remove(ParameterInfo.TYPE);
                                         attrsActual.remove(ParameterInfo.INPUT_MODE);
                                         downloadUrl = false;
@@ -900,9 +916,9 @@ public class GenePatternAnalysisTask {
                                         String jobsDirectory = new File(System.getProperty("jobs")).getCanonicalPath();
                                         boolean isJobOutput = jobsDirectory.equals(inputFileGrandParent);
                                         if (isJobOutput) {
-                                            String jobId = inputFile.getParentFile().getName();
                                             try {
-                                                int jobNumber = Integer.parseInt(jobId);
+                                                String parentFileName = inputFile.getParentFile().getName();
+                                                int jobNumber = Integer.parseInt(parentFileName);
                                                 //only allow access if the owner of this job has at least read access to the job which output this input file
                                                 boolean canRead = canReadJob(jobInfo.getUserId(), jobNumber);
                                                 isAllowed = isJobOutput && canRead;
@@ -920,6 +936,7 @@ public class GenePatternAnalysisTask {
                                     File f = new File(uri);
                                     if (inputFileMode == INPUT_FILE_MODE.PATH) {
                                         params[i].setValue(f.getAbsolutePath());
+                                        //TODO: don't remove
                                         attrsActual.remove(ParameterInfo.TYPE);
                                         attrsActual.remove(ParameterInfo.INPUT_MODE);
                                         downloadUrl = false;
@@ -937,6 +954,7 @@ public class GenePatternAnalysisTask {
                                             if (file != null) {
                                                 if (inputFileMode == INPUT_FILE_MODE.PATH) {
                                                     params[i].setValue(file.getAbsolutePath());
+                                                    //TODO: don't remove
                                                     attrsActual.remove(ParameterInfo.TYPE);
                                                     attrsActual.remove(ParameterInfo.INPUT_MODE);
                                                     downloadUrl = false;
@@ -1026,7 +1044,7 @@ public class GenePatternAnalysisTask {
             // name from the properties
             // (ParameterInfo[], System properties, environment variables, and built-ins merged)
             // build props again, now that downloaded files are set
-            props = setupProps(taskInfo, taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(), taskInfoAttributes, params,
+            props = setupProps(taskInfo, taskName, parent, jobId, jobInfo.getTaskID(), taskInfoAttributes, params,
                     environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
             
             // optionally, override the java flags if they have been overridden in the job configuration file
@@ -1048,7 +1066,7 @@ public class GenePatternAnalysisTask {
                 vProblems.add("Command line not defined");
             }
 
-            if (!TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
+            if (jobType != JOB_TYPE.VISUALIZER) {
                 //TODO: special case for visualizer
                 setCommandPrefix(taskInfoAttributes);
             }
@@ -1190,13 +1208,7 @@ public class GenePatternAnalysisTask {
             } 
             else {
                 // run the task and wait for completion.
-                log.info("running " + taskName + " (job " + jobInfo.getJobNumber() + ") command: " + commandLine.toString());
-                
-                //necessary to save parameter info changes which occurred before attempting to run the job
-                //.... otherwise, when a job submission fails, it is possible that the input files are not properly cleaned up
-                //TODO: need a new status code ... 'about to execute the job pending successful submission via a command executor'
-                //updateJobInfo(jobInfo, parentJobInfo, JobStatus.JOB_PROCESSING, new Date());
-                //updateJobInfo(jobInfo, parentJobInfo, JobStatus.JOB_PROCESSING,  null);
+                log.info("running " + taskName + " (job " + jobId + ") command: " + commandLine.toString());
                 
                 File stdoutFile;
                 File stderrFile;
@@ -1216,97 +1228,33 @@ public class GenePatternAnalysisTask {
                 else {
                     stderrFile = new File(outDir, stderrFilename);
                 }
+
                 try {
-                    if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
+                    if (jobType == JOB_TYPE.VISUALIZER) {
                         jobStatus = JobStatus.JOB_FINISHED;
                     }
-//                    else if (taskInfo.isPipeline()) {
-//                        RunPipelineInThread rp = new RunPipelineInThread();
-//                        // 1) set user id
-//                        rp.setUserId(jobInfo.getUserId());
-//
-//                        // 2) set job id
-//                        rp.setJobId(jobInfo.getJobNumber());
-//
-//                        // 3) set the lsid of the pipeline
-//                        rp.setPipelineTaskLsid(jobInfo.getTaskLSID());
-//
-//                        // 4) set pipeline model
-//                        PipelineModel model = null;
-//                        if (taskInfo != null) {
-//                            TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-//                            if (tia != null) {
-//                                String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
-//                                if (serializedModel != null && serializedModel.length() > 0) {
-//                                    try {
-//                                        model = PipelineModel.toPipelineModel(serializedModel);
-//                                    } 
-//                                    catch (Throwable x) {
-//                                        log.error(x);
-//                                    }
-//                                }
-//                            }
-//                        }
-//                        rp.setPipelineModel(model);
-//
-//                        // 5) set additional arguments
-//                        Properties additionalArguments = new Properties();
-//                        commandTokens = translateCommandline(commandTokens);
-//                        //HACK: remove all args up to org.genepattern.server.webapp.RunPipelineSoap
-//                        List<String> modifiedCommandTokens = new ArrayList<String>();
-//                        int startIdx = 0;
-//                        for(int i=0; i<commandTokens.length; ++i) {
-//                            if ("org.genepattern.server.webapp.RunPipelineSoap".equals(commandTokens[i])) {
-//                                startIdx = i+1;
-//                                break;
-//                            }
-//                        }
-//                        for(int i=startIdx; i<commandTokens.length; ++i) {
-//                            modifiedCommandTokens.add(commandTokens[i]);
-//                        }
-//                        String[] args = new String[modifiedCommandTokens.size()];
-//                        args = modifiedCommandTokens.toArray(args);
-//                        if (args.length > 2) {
-//                            for (int i = 2; i < args.length; i++) {
-//                                // assume args are in the form name=value
-//                                String arg = args[i];
-//                                StringTokenizer strtok = new StringTokenizer(arg, "=");
-//                                String key = strtok.nextToken();
-//                                StringBuffer valbuff = new StringBuffer("");
-//                                int count = 0;
-//                                while (strtok.hasMoreTokens()) {
-//                                    valbuff.append(strtok.nextToken());
-//                                    if ((strtok.hasMoreTokens()))
-//                                        valbuff.append("=");
-//                                    count++;
-//                                }
-//                                additionalArguments.put(key, valbuff.toString());
-//                            }
-//                        }
-//                        rp.setAdditionalArgs(additionalArguments);
-//                        try {
-//                            rp.runPipeline();
-//                        }
-//                        catch (WebServiceException e) {
-//                            stderrBuffer.append(e.getLocalizedMessage());
-//                            exitCode = -1;
-//                            jobStatus = JobStatus.JOB_ERROR;
-//                        }
-//                    } 
                     else { 
                         commandTokens = translateCommandline(commandTokens);
                         CommandExecutor cmdExec = null;
                         try {
                             cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
-                            cmdExec.runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
                         }
                         catch (CommandExecutorNotFoundException e) {
-                            //TODO: handle this exception,
-                            // initial implementation rethrows, which causes the job to fail.
-                            // note: another option would be to keep the job in a pending state and retry later
-                            //     jobStatus = JobStatus.JOB_PENDING;
+                            //cause job to fail when not able to find a command executor
+                            //    typically because of a server configuration error
+                            //TODO: could improve this by setting the status to PENDING
                             jobStatus = JobStatus.JOB_ERROR;
                             throw e;
+                        }
+                        //close hibernate session before running the job
+                        HibernateUtil.closeCurrentSession();
+                        try {
+                            cmdExec.runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
+                        }
+                        catch (Throwable t) {
+                            //TODO: improve error handling when an executor throws an exception when trying to submit a job
+                            jobStatus = JobStatus.JOB_ERROR;
+                            throw t;
                         }
                    }
                 } 
@@ -1316,7 +1264,7 @@ public class GenePatternAnalysisTask {
                     if (exitCode == 0) {
                         exitCode = -1;
                     }
-                    String message = "Error submitting job " + jobInfo.getJobNumber() + ". " + taskName;
+                    String message = "Error submitting job " + jobId + ". " + taskName;
                     log.error(message, t);
                     stderrBuffer.append(message + " - " + t.getLocalizedMessage());
 
@@ -1345,11 +1293,10 @@ public class GenePatternAnalysisTask {
             }
             
             if ( exitCode != 0 
-                 || TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes()) 
-                 //|| taskInfo.isPipeline() //pipeline executor calls handleJobCompletion directly
+                 || jobType == JOB_TYPE.VISUALIZER
                  ) 
             {
-                handleJobCompletion(jobInfo.getJobNumber(), stdoutFilename, stderrFilename, exitCode, jobStatus);
+                handleJobCompletion(jobId, stdoutFilename, stderrFilename, exitCode, jobStatus, jobType);
             }
         } 
         catch (Throwable e) {
@@ -1365,28 +1312,47 @@ public class GenePatternAnalysisTask {
             catch (Exception e2) {
                 log.error(taskName + " error: unable to update job error status" + e2);
             }
-        } 
+        }
+        finally {
+            //release db connections on exit
+            HibernateUtil.closeCurrentSession();
+        }
+    }
+
+    public static void handleJobCompletion(int jobId, String stdoutFilename, String stderrFilename, int exitCode, int jobStatus) throws Exception {
+        handleJobCompletion(jobId, stdoutFilename, stderrFilename, exitCode, jobStatus, JOB_TYPE.JOB);
     }
     
-    public static void handleJobCompletion(int jobId, String stdoutFilename, String stderrFilename, int exitCode, int jobStatus) throws Exception {
+    public static void handleJobCompletion(int jobId, String stdoutFilename, String stderrFilename, int exitCode, int jobStatus, JOB_TYPE jobType) throws Exception {
+        try {
+            doHandleJobCompletion(jobId, stdoutFilename, stderrFilename, exitCode,jobStatus, jobType);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+    }
+    
+    private static void doHandleJobCompletion(int jobId, String stdoutFilename, String stderrFilename, int exitCode, int jobStatus, JOB_TYPE jobType) {
         log.debug("job "+jobId+" completed with exitCode="+exitCode);
-        //int jobStatus = JobStatus.JOB_FINISHED;
 
-        JobInfo jobInfo = getDS().getJobInfo(jobId);
-        //TODO: handle special-case
+        AnalysisDAO dao = new AnalysisDAO();
+        JobInfo jobInfo = dao.getJobInfo(jobId);
+        //handle special-case when the job is deleted before we get to handle the job results, e.g. a running pipeline was deleted
         if (jobInfo == null) {
-            log.debug("job was deleted while it was running, e.g. a running pipeline was deleted");
+            log.error("job #"+jobId+"was deleted before handleJobCompletion");
             return;
         }
+        JobInfo parentJobInfo = dao.getParent(jobId);
+        JobInfoManager m = new JobInfoManager();
+        String contextPath = System.getProperty("GP_Path", "/gp");
+        if (!contextPath.startsWith("/")) {
+            contextPath = "/" + contextPath;
+        }
+        String cookie = "";
+        JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, jobInfo.getUserId(), jobInfo.getJobNumber());
         
         INPUT_FILE_MODE inputFileMode = getInputFileMode();
 
-        TaskInfo taskInfo = getTaskInfo(jobInfo);
-        JobInfo parentJobInfo = getParentJobInfo(jobId);
-        int parentJobId = -1;
-        if (parentJobInfo != null) {
-            parentJobId = parentJobInfo.getJobNumber();
-        }
         String outDirName = getJobDir(Integer.toString(jobId));
         File outDir = new File(outDirName);
 
@@ -1397,41 +1363,42 @@ public class GenePatternAnalysisTask {
                 HashMap attrsActual = params[i].getAttributes();
                 String fileType = (attrsActual != null ? (String) attrsActual.get(ParameterInfo.TYPE) : null);
                 String mode = (attrsActual != null ? (String) attrsActual.get(ParameterInfo.MODE) : null);
-                if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null
-                        && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
-                    if (params[i].getValue() == null) {
-                        throw new IOException(params[i].getName() + " has no filename association");
+                if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
+                    String inFilename = params[i].getValue();
+                    if (inFilename == null) {
+                        log.error("Error handling input files after job completion: '" + params[i].getName() + "' has no filename association");
                     }
-                    File inFile = new File(params[i].getValue());
-                    String originalPath = (String) params[i].getAttributes().remove(ORIGINAL_PATH);
-                    log.debug(params[i].getName() + ", original path='" + originalPath + "', inFile " + params[i].getValue()
-                            + ", exists " + inFile.exists());
-                    if (originalPath == null || originalPath.length() == 0) {
-                        continue;
-                    }
-                    File originalFile = new File(originalPath);
-
-                    // un-borrow the input file, moving it from the job's directory back to where it came from
-                    if (inFile.exists() && 
-                        !originalFile.exists() && 
-                        (inputFileMode == INPUT_FILE_MODE.COPY ? !inFile.delete() : !rename(inFile, originalFile, true)))
-                    {
-                        log.warn("Failed to rename " + inFile + " to " + originalFile + ".");
-                    } 
                     else {
-                        //TODO: these warnings are no longer logged
-                        //if (inputLastModified[i] != originalFile.lastModified() || inputLength[i] != originalFile.length()) {
-                        //    if (inputLastModified[i] != originalFile.lastModified()) {
-                        //        log.warn("File " + originalFile + ", job number " + jobInfo.getJobNumber() + 
-                        //                " last modfied date was changed. Original date: " + new Date(inputLastModified[i]) + 
-                        //                 ", current date: " + new Date(originalFile.lastModified()));
-                        //    }
-                        //    if (inputLength[i] != originalFile.length()) {
-                        //        log.warn("File " + originalFile + ", job number " + jobInfo.getJobNumber() + 
-                        //                 " size was changed. Original size: " + inputLength[i] + ", current size: " + originalFile.length());
-                        //    }
-                        //}
-                        params[i].setValue(originalPath);
+                        File inFile = new File(inFilename);
+                        String originalPath = (String) params[i].getAttributes().remove(ORIGINAL_PATH);
+                        log.debug(params[i].getName() + ", original path='" + originalPath + "', inFile " + params[i].getValue() + ", exists " + inFile.exists());
+                        if (originalPath == null || originalPath.length() == 0) {
+                            continue;
+                        }
+                        File originalFile = new File(originalPath);
+    
+                        // un-borrow the input file, moving it from the job's directory back to where it came from
+                        if (inFile.exists() && 
+                            !originalFile.exists() && 
+                            (inputFileMode == INPUT_FILE_MODE.COPY ? !inFile.delete() : !rename(inFile, originalFile, true)))
+                        {
+                            log.warn("Failed to rename " + inFile + " to " + originalFile + ".");
+                        } 
+                        else {
+                            //TODO: these warnings are no longer logged
+                            //if (inputLastModified[i] != originalFile.lastModified() || inputLength[i] != originalFile.length()) {
+                            //    if (inputLastModified[i] != originalFile.lastModified()) {
+                            //        log.warn("File " + originalFile + ", job number " + jobInfo.getJobNumber() + 
+                            //                " last modfied date was changed. Original date: " + new Date(inputLastModified[i]) + 
+                            //                 ", current date: " + new Date(originalFile.lastModified()));
+                            //    }
+                            //    if (inputLength[i] != originalFile.length()) {
+                            //        log.warn("File " + originalFile + ", job number " + jobInfo.getJobNumber() + 
+                            //                 " size was changed. Original size: " + inputLength[i] + ", current size: " + originalFile.length());
+                            //    }
+                            //}
+                            params[i].setValue(originalPath);
+                        }
                     }
                 } 
                 else {
@@ -1469,36 +1436,15 @@ public class GenePatternAnalysisTask {
             } // end for each parameter
         } // end if parameters not null
 
-        // reload jobInfo to pick up any output parameters were added by the job explicitly (eg. pipelines)
-        try {
-            jobInfo = getDS().getJobInfo(jobInfo.getJobNumber());
-        }
-        finally {
-            HibernateUtil.closeCurrentSession();
-        }
-        
-        //TODO: handle special-case
-        if (jobInfo == null) {
-            log.debug("job was deleted while it was running, e.g. a running pipeline was deleted");
-            return;
-        }
-
         //write execution log
         File taskLog = null;
         File pipelineTaskLog = null;
-        if (!TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
-            JobInfoManager m = new JobInfoManager();
-            String contextPath = System.getProperty("GP_Path", "/gp");
-            if (!contextPath.startsWith("/")) {
-                contextPath = "/" + contextPath;
-            }
-            String cookie = "";
-            JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, jobInfo.getUserId(), jobInfo.getJobNumber());
+        if (jobType != JOB_TYPE.VISUALIZER) {
             if (jobInfoWrapper == null) {
             }
             else if (jobInfoWrapper.isPipeline()) {
                 //output pipeline _execution_log only for the root pipeline, exclude nested pipelines
-                if (parentJobId < 0) {
+                if (jobInfoWrapper.isRoot()) {
                     pipelineTaskLog = JobInfoManager.writePipelineExecutionLog(outDirName, jobInfoWrapper);
                 }
             }
@@ -1553,16 +1499,8 @@ public class GenePatternAnalysisTask {
             addFileToOutputParameters(jobInfo, TASKLOG, TASKLOG, parentJobInfo);
         }
         
-        if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0 && taskInfo.isPipeline()) {
-            //GP-2856, filter out bogus error messages                      
-            suppressLinesFromStdErrFile(stderrFile, "[Deprecated] Xalan: org.apache.xml.xml_soap.MapItemBeanInfo");
-        }
         if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0) {
-            //jobStatus = JobStatus.JOB_ERROR;
             addFileToOutputParameters(jobInfo, stderrFilename, stderrFilename, parentJobInfo);
-        }
-        else {
-            //jobStatus = JobStatus.JOB_FINISHED;
         }
 
         recordJobCompletion(jobInfo, parentJobInfo, jobStatus);
@@ -1733,15 +1671,15 @@ public class GenePatternAnalysisTask {
     }
 
 
-    private static JobInfo getParentJobInfo(int jobNumber) {
-        try {
-            JobInfo parentJI = getDS().getParent(jobNumber);
-            return parentJI;
-        } 
-        finally {
-            HibernateUtil.closeCurrentSession();
-        }
-    }
+//    private static JobInfo getParentJobInfo(int jobNumber) {
+//        //try {
+//            JobInfo parentJI = getDS().getParent(jobNumber);
+//            return parentJI;
+//        //} 
+//        //finally {
+//        //    HibernateUtil.closeCurrentSession();
+//        //}
+//    }
 
     /**
      * remove special params that should not be added to the command line.
@@ -4041,130 +3979,6 @@ public class GenePatternAnalysisTask {
     }
 
     // utility methods:
-
-//    /**
-//     * Creates a new Thread which blocks on reads to an InputStream, appends their output to the given file. The thread
-//     * terminates upon EOF from the InputStream.
-//     * 
-//     * @param is
-//     *            InputStream to read from
-//     * @param file
-//     *            file to write to
-//     * @author Jim Lerner
-//     */
-//    protected Thread streamToFile(final InputStream is, final File file) {
-//	// create thread to read from a process' output or error stream
-//	return new Thread() {
-//	    public void run() {
-//		byte[] b = new byte[2048];
-//		int bytesRead;
-//		BufferedOutputStream fis = null;
-//		boolean wroteBytes = false;
-//		try {
-//		    fis = new BufferedOutputStream(new FileOutputStream(file));
-//		    while ((bytesRead = is.read(b)) >= 0) {
-//			wroteBytes = true;
-//			fis.write(b, 0, bytesRead);
-//		    }
-//		} catch (IOException e) {
-//		    e.printStackTrace();
-//		    log.error(e);
-//		} finally {
-//		    if (fis != null) {
-//			try {
-//			    fis.flush();
-//			    fis.close();
-//			} catch (IOException e) {
-//			    e.printStackTrace();
-//			}
-//		    }
-//		    if (!wroteBytes) {
-//			file.delete();
-//		    }
-//		}
-//	    }
-//	};
-//    }
-    
-    /**
-     * Remove lines from the errFile which match exactMatch. This has the effect of deleting the errFile if
-     * the errFile contains nothing but matching lines.
-     * 
-     * This is a workaround (HACK) for GP-2856, the following line
-     *     [Deprecated] Xalan: org.apache.xml.xml_soap.MapItemBeanInfo 
-     * is on the stderr stream of the pipeline process, causing GP to flag the pipeline as an ERROR.
-     * 
-     * @param errFile
-     * @param exactMatch
-     */
-    private static void suppressLinesFromStdErrFile(File errFile, String exactMatch) {
-        if (errFile == null || !errFile.exists()) {
-            log.error("File does not exist: " + (errFile == null ? "null" : errFile.getAbsolutePath()));
-            return;
-        }
-        if (!errFile.canRead()) {
-            log.error("Can't read file: "+errFile.getPath());
-            return;
-        }
-        
-        File origFile = new File(errFile.getParent(), errFile.getName() + ".orig");        
-        boolean success = errFile.renameTo(origFile);
-        if (!success) {
-            log.error("Not able to rename '"+errFile.getAbsolutePath()+"' to '"+origFile.getAbsolutePath()+"'");
-            return;
-        }
-        
-        //output filtered contents back to errFile
-        FileWriter fw = null;
-        try {
-            fw = new FileWriter(errFile);
-        }
-        catch (IOException e) {
-            log.error("Not able to write to file: "+errFile.getAbsolutePath(), e);
-            return;
-        }
-        PrintWriter pw = new PrintWriter(fw);
-        
-        FileReader fr = null;
-        try {
-            fr = new FileReader(origFile);
-        }
-        catch (FileNotFoundException e) {
-            log.error("FileNotFound: "+origFile.getPath(), e);
-            return;
-        }
-        
-        boolean wroteLine = false;
-        try {
-            BufferedReader br = new BufferedReader(fr);
-            String line = null;
-            while ((line = br.readLine()) != null) {
-                if (!line.trim().equals(exactMatch)) {
-                    pw.println(line);
-                    pw.flush();
-                    wroteLine = true;
-                }
-            }
-            pw.close();
-            br.close();
-        }
-        catch (IOException e) {
-            log.error("IOException while reading line", e);
-        }
-        
-        if (!wroteLine) {
-            //shouldn't have to do this
-            success = errFile.delete();
-            if (!success) {
-                log.error("Unable to delete file "+errFile.getAbsolutePath());
-            }
-        }
-        
-        success = origFile.delete();
-        if (!success) {
-            log.error("Unable to delete file "+origFile.getAbsolutePath());
-        }
-    }
     
     /**
      * Copy of streamToFile which filters out suppresses output of anything on the input stream which matches

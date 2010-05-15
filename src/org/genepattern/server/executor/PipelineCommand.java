@@ -181,7 +181,7 @@ public class PipelineCommand {
         }
         
         try {
-            GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), stdoutFilename, stderrFilename, exitCode, jobStatus);
+            GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), stdoutFilename, stderrFilename, exitCode, jobStatus, GenePatternAnalysisTask.JOB_TYPE.PIPELINE);
         }
         catch (Exception e) {
             log.error("Error handling job completion for pipeline: "+jobInfo.getJobNumber(), e);
@@ -192,7 +192,7 @@ public class PipelineCommand {
         //special case when pipeline thread has not yet started
         if (rp == null) {
             try {
-                GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), stdoutFile.getAbsolutePath(), stderrFile.getAbsolutePath(), exitCode, JobStatus.JOB_ERROR);
+                GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), stdoutFile.getAbsolutePath(), stderrFile.getAbsolutePath(), exitCode, JobStatus.JOB_ERROR, GenePatternAnalysisTask.JOB_TYPE.PIPELINE);
             }
             catch (Exception e) {
                 log.error("Error terminating pipeline: "+jobInfo.getJobNumber(), e);
