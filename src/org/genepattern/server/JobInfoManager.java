@@ -122,32 +122,25 @@ public class JobInfoManager {
      * @return null if the job is deleted.
      */
     public JobInfoWrapper getJobInfo(String documentCookie, String contextPath, String currentUser, int jobNo) {
-        try {
-            HibernateUtil.beginTransaction();
-            UserDAO userDao = new UserDAO();
-            boolean showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUser);
-            String visualizerJavaFlags = getVisualizerJavaFlags(userDao, currentUser);
+        UserDAO userDao = new UserDAO();
+        boolean showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUser);
+        String visualizerJavaFlags = getVisualizerJavaFlags(userDao, currentUser);
 
-
-            AnalysisDAO analysisDao = new AnalysisDAO();
-            JobInfo jobInfo = analysisDao.getJobInfo(jobNo);
-            if (jobInfo == null) {
-                return null;
-            }
+        AnalysisDAO analysisDao = new AnalysisDAO();
+        JobInfo jobInfo = analysisDao.getJobInfo(jobNo);
+        if (jobInfo == null) {
+            return null;
+        }
             
-            AdminDAO adminDao = new AdminDAO();
-            TaskInfo[] latestTasks = adminDao.getLatestTasks(currentUser);
-            Map<String, Collection<TaskInfo>> kindToModules = SemanticUtil.getKindToModulesMap(latestTasks);
+        AdminDAO adminDao = new AdminDAO();
+        TaskInfo[] latestTasks = adminDao.getLatestTasks(currentUser);
+        Map<String, Collection<TaskInfo>> kindToModules = SemanticUtil.getKindToModulesMap(latestTasks);
 
-            JobInfoWrapper jobInfoWrapper = processChildren((JobInfoWrapper)null, showExecutionLogs, documentCookie, contextPath, analysisDao, adminDao, kindToModules, jobInfo, visualizerJavaFlags);
+        JobInfoWrapper jobInfoWrapper = processChildren((JobInfoWrapper)null, showExecutionLogs, documentCookie, contextPath, analysisDao, adminDao, kindToModules, jobInfo, visualizerJavaFlags);
 
-            //this call initializes the helper methods
-            jobInfoWrapper.getPathFromRoot(); 
-            return jobInfoWrapper;
-        }
-        finally {
-            HibernateUtil.closeCurrentSession();
-        }
+        //this call initializes the helper methods
+        jobInfoWrapper.getPathFromRoot(); 
+        return jobInfoWrapper;
     }
     
     /**
