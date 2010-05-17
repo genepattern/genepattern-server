@@ -48,6 +48,11 @@ public class JobInfoManager {
     private static Map<Integer,Boolean> isPipelineCache = new HashMap<Integer,Boolean>();
     
     public static boolean isPipeline(JobInfo jobInfo) {
+        boolean closeDbSession = true;
+        return isPipeline(jobInfo, closeDbSession);
+    }
+    
+    public static boolean isPipeline(JobInfo jobInfo, boolean closeDbSession) {
         if (jobInfo == null) {
             return false;
         }
@@ -63,7 +68,7 @@ public class JobInfoManager {
         
         boolean isPipeline = false;
         try {
-            TaskInfo taskInfo = getTaskInfo(jobInfo);
+            TaskInfo taskInfo = getTaskInfo(jobInfo, closeDbSession);
             isPipeline = taskInfo.isPipeline();
             isPipelineCache.put(taskInfo.getID(), isPipeline);
         }
@@ -71,6 +76,7 @@ public class JobInfoManager {
             log.error(e);
         }
         return isPipeline;
+        
     }
     
     public static boolean isVisualizer(JobInfo jobInfo) {
@@ -89,6 +95,11 @@ public class JobInfoManager {
     }
 
     public static TaskInfo getTaskInfo(JobInfo jobInfo) throws Exception {
+        boolean closeDbSession = true;
+        return getTaskInfo(jobInfo, closeDbSession);
+    }
+    
+    public static TaskInfo getTaskInfo(JobInfo jobInfo, boolean closeDbSession) throws Exception {
         if (log.isDebugEnabled()) {
             log.debug("getTaskInfo for job: " + jobInfo.getJobNumber());
         }
@@ -98,16 +109,22 @@ public class JobInfoManager {
             if (taskInfo == null) {
                 throw new Exception("No such taskID (" + jobInfo.getTaskID() + " for job " + jobInfo.getJobNumber());
             }
-            HibernateUtil.commitTransaction();
+            if (closeDbSession) {
+                HibernateUtil.commitTransaction();
+            }
             return taskInfo;
         } 
         catch (RuntimeException e) {
             log.error("Error getting taskInfo for job: " + jobInfo.getJobNumber());
-            HibernateUtil.rollbackTransaction();
+            if (closeDbSession) {
+                HibernateUtil.rollbackTransaction();
+            }
             throw e;
         }
         finally {
-            HibernateUtil.closeCurrentSession();
+            if (closeDbSession) {
+                HibernateUtil.closeCurrentSession();
+            }
         }
     }
     
