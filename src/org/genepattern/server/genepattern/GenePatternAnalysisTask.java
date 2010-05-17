@@ -1488,17 +1488,17 @@ public class GenePatternAnalysisTask {
         if (stderrFilename == null) {
             stderrFilename = STDERR;
         }
-        if (new File(outDir, stdoutFilename).exists()) {
+        File stdoutFile = new File(outDir, stdoutFilename);
+        if (stdoutFile.exists()) {
             addFileToOutputParameters(jobInfo, stdoutFilename, stdoutFilename, parentJobInfo);
         }
-        File stderrFile = new File(outDir, stderrFilename);
         if (pipelineTaskLog != null) {
             addFileToOutputParameters(jobInfo, pipelineTaskLog.getName(), pipelineTaskLog.getName(), parentJobInfo);
         }
         if (taskLog != null) {
             addFileToOutputParameters(jobInfo, TASKLOG, TASKLOG, parentJobInfo);
         }
-        
+        File stderrFile = new File(outDir, stderrFilename);
         if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0) {
             addFileToOutputParameters(jobInfo, stderrFilename, stderrFilename, parentJobInfo);
         }

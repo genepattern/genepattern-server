@@ -31,15 +31,26 @@ public class PipelineCommand {
     private JobInfo jobInfo = null;
     private int jobStatus = JobStatus.JOB_PROCESSING;
     private int exitCode = -1;
-    private File stdoutFile = null;
-    private File stderrFile = null;
+    private String stdoutFilename = STDOUT;
+    private String stderrFilename = STDERR;
     private StringBuffer stderrBuffer = new StringBuffer();
     
     public void setStdoutFile(File stdoutFile) {
-        this.stdoutFile = stdoutFile;
+        if (stdoutFile != null) {
+            stdoutFilename = stdoutFile.getName();
+        }
+        else {
+            stdoutFilename = STDOUT;
+        }
     }
+    
     public void setStderrFile(File stderrFile) {
-        this.stderrFile = stderrFile;
+        if (stderrFile != null) {
+            stderrFilename = stderrFile.getName();
+        }
+        else {
+            stderrFilename = STDERR;
+        }
     }
 
     public void setJobInfo(JobInfo jobInfo) {
@@ -161,17 +172,8 @@ public class PipelineCommand {
             exitCode = -1;
         }
         
-        String stdoutFilename = STDOUT;
-        if (stdoutFile != null) {
-            stdoutFilename = stdoutFile.getAbsolutePath();
-        }
-        String stderrFilename = STDERR;
-        if (stderrFile != null) {
-            stderrFilename = stderrFile.getAbsolutePath();
-        }
-        
         //output stderrBuffer to STDERR file
-        if (stderrBuffer.length() > 0) {
+        if (stderrBuffer != null && stderrBuffer.length() > 0) {
             jobStatus = JobStatus.JOB_ERROR;
             if (exitCode == 0) {
                 exitCode = -1;
@@ -192,7 +194,7 @@ public class PipelineCommand {
         //special case when pipeline thread has not yet started
         if (rp == null) {
             try {
-                GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), stdoutFile.getAbsolutePath(), stderrFile.getAbsolutePath(), exitCode, JobStatus.JOB_ERROR, GenePatternAnalysisTask.JOB_TYPE.PIPELINE);
+                GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), stdoutFilename, stderrFilename, exitCode, JobStatus.JOB_ERROR, GenePatternAnalysisTask.JOB_TYPE.PIPELINE);
             }
             catch (Exception e) {
                 log.error("Error terminating pipeline: "+jobInfo.getJobNumber(), e);
