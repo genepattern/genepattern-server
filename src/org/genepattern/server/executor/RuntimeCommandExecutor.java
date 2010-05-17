@@ -26,35 +26,60 @@ public class RuntimeCommandExecutor implements CommandExecutor {
     //the total number of jobs which should be executing concurrently
     //TODO: enable setting this without requiring a server restart;
     //    at the moment you must restart your GP server to modify this setting
-    private int numThreads = 20;
-
+    final int defaultNumThreads = 20;
+    private int numThreads = defaultNumThreads;
+    private String numThreadsProp = null; //set in configuration.properties
+    
     public void setConfigurationFilename(String filename) {
-        log.error("ignoring: setCofigurationFilename("+filename+")");
+        log.error("ignoring: setConfigurationFilename("+filename+"): must set configuration.properties directly in the job configuration file!");
     }
 
     public void setConfigurationProperties(Properties properties) {
-        setNumThreads(properties.getProperty("num.threads"));
+        numThreadsProp = properties.getProperty("num.threads");
     }
     
-    private void setNumThreads(String numThreadsProp) {
-        if (numThreadsProp == null || numThreadsProp.trim().length() == 0) {
-            //expected
-            numThreads = 20;
+    private void initNumThreads() {  
+        //1) load 'num.threads' from the 'configuration.properties' section of the job configuration file
+        if (numThreadsProp != null) {
+            log.info("reading 'num.threads="+numThreadsProp+"' from configuration.properties");
+            try {
+                numThreadsProp = numThreadsProp.trim();
+                numThreads = Integer.parseInt(numThreadsProp);
+                return;
+            }
+            catch (NumberFormatException e) {
+                log.error("Error in 'configuration.properties', num.threads="+numThreadsProp, e);
+            }
+            numThreads = defaultNumThreads;
             return;
         }
-        try {
-            numThreads = Integer.parseInt(numThreadsProp);
+
+        //2) if not set in configuration.properties, load from the 'genepattern.properties' file (via System.properties)
+        numThreadsProp = System.getProperty("num.threads");
+        if (numThreadsProp != null) {
+            log.info("reading 'num.threads="+numThreadsProp+"' from genepattern.properties");
+            try {
+                numThreadsProp = numThreadsProp.trim();
+                numThreads = Integer.parseInt(numThreadsProp);
+                return;
+            }
+            catch (NumberFormatException e) {
+                log.error("Error in 'genepattern.properties', num.threads="+numThreadsProp, e);
+            }
+            numThreads = defaultNumThreads;
+            return;
         }
-        catch (NumberFormatException e) {
-            numThreads = 20;
-            log.error("Invalid configuration property: num.threads="+numThreadsProp, e);
-        }
+        
+        //3) otherwise use the hard-coded default
+        numThreads = defaultNumThreads;
     }
     
     //----- keep references to all currently running jobs which were started by this executor
     private Map<String,CallableRuntimeExecCommand> runningJobs = new HashMap<String,CallableRuntimeExecCommand>();
 
     public void start() {
+        initNumThreads();
+        log.info("Initializing runtime command executor with newFixedThreadPool("+numThreads+") ");
         executor = Executors.newFixedThreadPool(numThreads);
     }
 
