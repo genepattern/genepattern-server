@@ -69,8 +69,9 @@ public class BasicCommandManager implements CommandManager {
     private void setJobStatus(JobInfo jobInfo, int jobStatus) {
         String jobId = ""+jobInfo.getJobNumber();
         try {
-            HibernateUtil.beginTransaction();
-            new AnalysisDAO().updateJobStatus(jobInfo.getJobNumber(), jobStatus);
+            AnalysisDAO dao = new AnalysisDAO();
+            dao.updateJobStatus(jobInfo.getJobNumber(), jobStatus);
+            HibernateUtil.commitTransaction();
         }
         catch (Exception e) {
             HibernateUtil.rollbackTransaction();
