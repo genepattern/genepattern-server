@@ -484,10 +484,10 @@ public class RunPipelineInThread {
     }
 
     private JobInfo waitForErrorOrCompletion(int jobNumber, int maxTries, int initialSleep) throws WebServiceException, InterruptedException {
-        int statusId = JobStatus.JOB_PROCESSING;
+        int statusId = JobStatus.JOB_PENDING;
         int count = 0;
         int sleep = initialSleep;
-        while (statusId == JobStatus.JOB_PROCESSING) {
+        while (statusId != JobStatus.JOB_FINISHED || statusId != JobStatus.JOB_ERROR) {
             count++;
             Thread.sleep(sleep);
             statusId = getJobStatusId(jobNumber);
