@@ -40,23 +40,36 @@ public class BasicCommandManager implements CommandManager {
     //TODO: use paged results to handle large number of 'Processing' jobs
     private void handleRunningJobsOnServerStartup() {
         log.info("handling 'RUNNING' jobs on server startup ...");
-        List<JobInfo> runningJobs = getRunningJobs();
-        for(JobInfo jobInfo : runningJobs) {
+        List<MyJobInfoWrapper> runningJobs = getRunningJobs();
+
+        for(MyJobInfoWrapper jobInfoWrapper : runningJobs) {
+            JobInfo jobInfo = jobInfoWrapper.jobInfo;
             String jobId = ""+jobInfo.getJobNumber();
-            try {
-                CommandExecutor cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
-                int updatedStatusId = cmdExec.handleRunningJob(jobInfo);
-                if (updatedStatusId > 0) {
-                    setJobStatus(jobInfo, updatedStatusId);
+            boolean isPipeline = jobInfoWrapper.isPipeline;
+            boolean isInPipeline = jobInfoWrapper.isInPipeline;
+            
+            if (isPipeline) {
+                setJobStatus(jobInfo, JobStatus.JOB_ERROR);
+            }
+            else if (isInPipeline) {
+                setJobStatus(jobInfo, JobStatus.JOB_ERROR);
+            }
+            else {
+                try {
+                    CommandExecutor cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
+                    int updatedStatusId = cmdExec.handleRunningJob(jobInfo);
+                    if (updatedStatusId > 0) {
+                        setJobStatus(jobInfo, updatedStatusId);
+                    }
                 }
-            }
-            catch (CommandExecutorNotFoundException e) {
-                log.error("error getting command executor for job #"+jobId, e);
-                setJobStatusToError(jobInfo);
-            }
-            catch (Exception e) {
-                log.error("error handling running job on server startup for job #"+jobId, e);
-                setJobStatusToError(jobInfo);
+                catch (CommandExecutorNotFoundException e) {
+                    log.error("error getting command executor for job #"+jobId, e);
+                    setJobStatusToError(jobInfo);
+                }
+                catch (Exception e) {
+                    log.error("error handling running job on server startup for job #"+jobId, e);
+                    setJobStatusToError(jobInfo);
+                }
             }
         }
         log.info("... done handling 'RUNNING' jobs on server startup.");
@@ -82,35 +95,37 @@ public class BasicCommandManager implements CommandManager {
         } 
     }
 
-    private List<JobInfo> getRunningJobs() {
+    private List<MyJobInfoWrapper> getRunningJobs() {
         try {
             HibernateUtil.beginTransaction();
             Session session = HibernateUtil.getSession();
-            int numRunningJobs = getNumRunningJobs(session);
+            //int numRunningJobs = getNumRunningJobs(session);
+            int numRunningJobs = -1;
             return getRunningJobs(session, numRunningJobs);
         }
         catch (Throwable t) {
             log.error("error getting list of running jobs from the server", t);
-            return new ArrayList<JobInfo>();
+            return new ArrayList<MyJobInfoWrapper>();
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
     }
     
-    private int getNumRunningJobs(Session session) { 
-        final String hql = 
-            "select count(*) from org.genepattern.server.domain.AnalysisJob "+
-            " where jobStatus.statusId = :statusId and deleted = false ";
-        
-        Query query = session.createQuery(hql);
-        query.setInteger("statusId", JobStatus.JOB_PROCESSING);
-        Object rval = query.uniqueResult();
-        return AnalysisDAO.getCount(rval);
-    }
+    //private int getNumRunningJobs(Session session) { 
+    //    final String hql = 
+    //        "select count(*) from org.genepattern.server.domain.AnalysisJob "+
+    //        " where jobStatus.statusId = :statusId and deleted = false ";
+    //    
+    //    Query query = session.createQuery(hql);
+    //    query.setInteger("statusId", JobStatus.JOB_PROCESSING);
+    //    Object rval = query.uniqueResult();
+    //    return AnalysisDAO.getCount(rval);
+    //}
 
-    private static List<JobInfo> getRunningJobs(Session session, int maxJobCount) {
-        List<JobInfo> runningJobs = new ArrayList<JobInfo>();
+    private static List<MyJobInfoWrapper> getRunningJobs(Session session, int maxJobCount) {
+        List<MyJobInfoWrapper> runningJobs = new ArrayList<MyJobInfoWrapper>();
+        AnalysisDAO dao = new AnalysisDAO();
         final String hql = "from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId = :statusId and deleted = false order by submittedDate ";
         Query query = session.createQuery(hql);
         if (maxJobCount > 0) {
@@ -120,9 +135,28 @@ public class BasicCommandManager implements CommandManager {
         List<AnalysisJob> jobList = query.list();
         for(AnalysisJob aJob : jobList) {
             JobInfo singleJobInfo = new JobInfo(aJob);
-            runningJobs.add(singleJobInfo);
+            
+            final boolean closeDbSession = false;
+            boolean isPipeline = JobInfoManager.isPipeline(singleJobInfo, closeDbSession);
+            boolean isInPipeline = false;
+            if (!isPipeline) {
+                //find out if it is a top-level job
+                JobInfo parentJobInfo = dao.getParent(singleJobInfo.getJobNumber());
+                isInPipeline = parentJobInfo != null;
+            }
+            MyJobInfoWrapper m = new MyJobInfoWrapper();
+            m.jobInfo = singleJobInfo;
+            m.isPipeline = isPipeline;
+            m.isInPipeline = isInPipeline;
+            runningJobs.add(m);
         }
         return runningJobs;
+    }
+    
+    private static class MyJobInfoWrapper {
+        JobInfo jobInfo;
+        boolean isPipeline;
+        boolean isInPipeline;
     }
 
     private CommandManagerProperties configProperties = new CommandManagerProperties();
