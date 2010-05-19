@@ -484,14 +484,18 @@ public class RunPipelineInThread {
     }
 
     private JobInfo waitForErrorOrCompletion(int jobNumber, int maxTries, int initialSleep) throws WebServiceException, InterruptedException {
+        boolean isRunning = true;
         int statusId = JobStatus.JOB_PENDING;
         int count = 0;
         int sleep = initialSleep;
-        while (statusId != JobStatus.JOB_FINISHED || statusId != JobStatus.JOB_ERROR) {
-            count++;
-            Thread.sleep(sleep);
+        while (isRunning) {
             statusId = getJobStatusId(jobNumber);
-            sleep = incrementSleep(initialSleep, maxTries, count);
+            isRunning = !(statusId == JobStatus.JOB_FINISHED || statusId == JobStatus.JOB_ERROR);
+            if (isRunning) {
+                count++;
+                Thread.sleep(sleep);
+                sleep = incrementSleep(initialSleep, maxTries, count);
+            }
         }
         try {
             HibernateUtil.beginTransaction();
@@ -505,7 +509,7 @@ public class RunPipelineInThread {
             HibernateUtil.closeCurrentSession();
         }
     }
-    
+
     //replaces call to analysisClient.checkStatus
     private int getJobStatusId(int jobId) {
         final String hql = 
