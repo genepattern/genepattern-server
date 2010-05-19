@@ -68,9 +68,6 @@ public class RunPipelineInThread {
     // was: System.getProperty(GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM);
     private String stopAfterTaskStr = null;
     
-    private LocalAnalysisClient analysisClient;
-    private AdminService adminService;
-    
     //status of pipeline
     boolean isTerminated = false;
     private JobInfo currentStepJobInfo = null;
@@ -101,7 +98,7 @@ public class RunPipelineInThread {
     public void setStopAfterTaskNum(String stopAfterTaskStr) {
         this.stopAfterTaskStr = stopAfterTaskStr;
     }
-    
+
     public synchronized void terminate() { 
         if (currentStepJobInfo != null) {
             CommandExecutor cmdExec = null;
@@ -118,6 +115,27 @@ public class RunPipelineInThread {
         }
         this.isTerminated = true;
     }
+    
+//    public synchronized void terminate() { 
+//        if (currentStepJobInfo != null) {
+//            String status = currentStepJobInfo.getStatus();
+//            boolean isFinished = JobStatus.FINISHED.equals(status) || JobStatus.ERROR.equals(status);
+//            if (!isFinished) {
+//                CommandExecutor cmdExec = null;
+//                try {
+//                    cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(currentStepJobInfo);
+//                    cmdExec.terminateJob(currentStepJobInfo);
+//                }
+//                catch (CommandExecutorNotFoundException e) {
+//                    log.error("Error terminating job "+jobId+"->"+currentStepJobInfo.getJobNumber(), e);
+//                }
+//                catch (Exception e) {
+//                    log.error("Error terminating job "+jobId+"->"+currentStepJobInfo.getJobNumber(), e);
+//                }
+//            }
+//        }
+//        this.isTerminated = true;
+//    }
 
     public static final class MissingTasksException extends Exception {
         private int idx=0;
@@ -141,32 +159,36 @@ public class RunPipelineInThread {
         }
     }
 
-    private void checkForMissingTasks() throws MissingTasksException {
+    private static void checkForMissingTasks(String userID, PipelineModel model) throws MissingTasksException {
         MissingTasksException ex = null;
-        for(JobSubmission jobSubmission : model.getTasks()) {
-            String lsid = jobSubmission.getLSID();
-            TaskInfo taskInfo = null;
-            try {
-                taskInfo = adminService.getTask(lsid);
-            }
-            catch (Exception e) {
-            }
-            if (taskInfo == null) {
-                if (ex == null) {
-                    ex = new MissingTasksException();
+        try { 
+            //adminService constructor starts a DB transaction
+            AdminService adminService = new AdminService(userID);
+            for(JobSubmission jobSubmission : model.getTasks()) {
+                String lsid = jobSubmission.getLSID();
+                TaskInfo taskInfo = null;
+                try {
+                    taskInfo = adminService.getTask(lsid);
                 }
-                ex.addError(jobSubmission);
+                catch (Exception e) {
+                }
+                if (taskInfo == null) {
+                    if (ex == null) {
+                        ex = new MissingTasksException();
+                    }
+                    ex.addError(jobSubmission);
+                }
+            }
+            if (ex != null) {
+                throw ex;
             }
         }
-        if (ex != null) {
-            throw ex;
+        finally {
+            HibernateUtil.closeCurrentSession();
         }
     }
     
     public void runPipeline() throws InterruptedException, MissingTasksException, WebServiceException {
-        this.analysisClient = new LocalAnalysisClient(userID);
-        this.adminService = new AdminService(userID);
-
         int stopAfterTask = Integer.MAX_VALUE;
         if (stopAfterTaskStr != null && stopAfterTaskStr.trim().length() > 0) {
             try {
@@ -177,7 +199,7 @@ public class RunPipelineInThread {
             }
         }
         
-        checkForMissingTasks();
+        checkForMissingTasks(userID, model);
 
         JobInfo results[] = new JobInfo[model.getTasks().size()];
         int stepNum = 0;
@@ -198,7 +220,7 @@ public class RunPipelineInThread {
             ParameterInfo[] params = parameterInfo;
             params = setJobParametersFromArgs(jobSubmission.getName(), stepNum + 1, params, results, additionalArgs);
             params = removeEmptyOptionalParams(parameterInfo);
-            
+                
             if (this.isTerminated) {
                 throw new WebServiceException("pipeline terminated before execution of step "+stepNum);
             }
@@ -229,12 +251,15 @@ public class RunPipelineInThread {
      * recurse through the children and add all output params to the parent
      */
     private JobInfo collectChildJobResults(JobInfo taskResult) {
+        LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
+        
         if (taskResult == null) {
             log.debug("Invalid null arg to collectChildJobResults");
             return taskResult;
         }
         log.debug("collectChildJobResults for: " + taskResult.getJobNumber());
         try {
+            HibernateUtil.beginTransaction();
             List<ParameterInfo> outs = new ArrayList<ParameterInfo>();
             if (taskResult == null) {
                 log.error("taskResult == null");
@@ -254,9 +279,13 @@ public class RunPipelineInThread {
             for (ParameterInfo p : outs) {
                 taskResult.addParameterInfo(p);
             }
+            HibernateUtil.commitTransaction();
         } 
         catch (Exception wse) {
             wse.printStackTrace();
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
         }
         return taskResult;
     }
@@ -277,12 +306,23 @@ public class RunPipelineInThread {
         if (lsidOrTaskName == null || lsidOrTaskName.equals("")) {
             lsidOrTaskName = jobSubmission.getName();
         }
-        TaskInfo task = adminService.getTask(lsidOrTaskName);
-        if (task == null) {
-            log.error("Module " + lsidOrTaskName + " not found.");
-            return new JobInfo();
+
+        int taskId = -1;
+        try {
+            AdminService adminService = new AdminService(userID);
+            TaskInfo task = adminService.getTask(lsidOrTaskName);
+            if (task == null) {
+                log.error("Module " + lsidOrTaskName + " not found.");
+                return new JobInfo();
+            }
+            log.debug("taskInfo: " + task.getName() + ", " + task.getLsid());
+            taskId = jobSubmission.getTaskInfo().getID();
+            taskId = task.getID();
         }
-        log.debug("taskInfo: " + task.getName() + ", " + task.getLsid());
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+        
 
         if (params != null) {
             for (int i = 0; i < params.length; i++) {
@@ -303,10 +343,18 @@ public class RunPipelineInThread {
                 }
             }
         } 
-
-        JobInfo jobInfo = analysisClient.submitJob(task.getID(), params, jobId);
+        
+        //int taskId = task.getID();
+        JobInfo jobInfo = null;
+        try {
+            LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
+            jobInfo = analysisClient.submitJob(taskId, params, jobId);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
         if (jobInfo == null || "ERROR".equalsIgnoreCase(jobInfo.getStatus())) {
-            log.error("Unexpected error in execute task: taskNum="+task.getID()+", lsidOrTaskName="+lsidOrTaskName);
+            log.error("Unexpected error in execute task: taskNum="+taskId+", lsidOrTaskName="+lsidOrTaskName);
             return jobInfo;
         }
         this.currentStepJobInfo = jobInfo;
@@ -378,29 +426,22 @@ public class RunPipelineInThread {
     }
 
     private ParameterInfo[] removeEmptyOptionalParams(ParameterInfo[] parameterInfo) {
-    ArrayList<ParameterInfo> params = new ArrayList<ParameterInfo>();
-
-    for (int i = 0; i < parameterInfo.length; i++) {
-        ParameterInfo aParam = parameterInfo[i];
-
-        if (aParam.getAttributes() != null) {
-
-        String value = aParam.getValue();
-
-        if (value != null) {
-            if ((value.trim().length() == 0) && aParam.isOptional()) {
-            log
-                .debug("Removing Param " + aParam.getName() + " has null value. Opt= "
-                    + aParam.isOptional());
-
-            } else {
-            params.add(aParam);
+        ArrayList<ParameterInfo> params = new ArrayList<ParameterInfo>();
+        for (int i = 0; i < parameterInfo.length; i++) {
+            ParameterInfo aParam = parameterInfo[i];
+            if (aParam.getAttributes() != null) {
+                String value = aParam.getValue();
+                if (value != null) {
+                    if ((value.trim().length() == 0) && aParam.isOptional()) {
+                        log.debug("Removing Param " + aParam.getName() + " has null value. Opt= " + aParam.isOptional());
+                    } 
+                    else {
+                        params.add(aParam);
+                    }
+                }
             }
         }
-
-        }
-    }
-    return params.toArray(new ParameterInfo[params.size()]);
+        return params.toArray(new ParameterInfo[params.size()]);
     }
 
     private void setInheritedJobParameters(ParameterInfo[] parameterInfos, JobInfo[] results) throws FileNotFoundException {
@@ -509,7 +550,7 @@ public class RunPipelineInThread {
             HibernateUtil.closeCurrentSession();
         }
     }
-
+    
     //replaces call to analysisClient.checkStatus
     private int getJobStatusId(int jobId) {
         final String hql = 
