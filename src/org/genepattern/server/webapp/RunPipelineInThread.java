@@ -101,21 +101,21 @@ public class RunPipelineInThread {
 
     public synchronized void terminate() { 
         if (currentStepJobInfo != null) {
-            CommandExecutor cmdExec = null;
-            try {
-                cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(currentStepJobInfo);
-                cmdExec.terminateJob(currentStepJobInfo);
+                CommandExecutor cmdExec = null;
+                try {
+                    cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(currentStepJobInfo);
+                    cmdExec.terminateJob(currentStepJobInfo);
+                }
+                catch (CommandExecutorNotFoundException e) {
+                    log.error("Error terminating job "+jobId+"->"+currentStepJobInfo.getJobNumber(), e);
+                }
+                catch (Exception e) {
+                    log.error("Error terminating job "+jobId+"->"+currentStepJobInfo.getJobNumber(), e);
+                }
             }
-            catch (CommandExecutorNotFoundException e) {
-                log.error("Error terminating job "+jobId+"->"+currentStepJobInfo.getJobNumber(), e);
-            }
-            catch (Exception e) {
-                log.error("Error terminating job "+jobId+"->"+currentStepJobInfo.getJobNumber(), e);
-            }
-        }
         this.isTerminated = true;
-    }
-    
+        }
+
 //    public synchronized void terminate() { 
 //        if (currentStepJobInfo != null) {
 //            String status = currentStepJobInfo.getStatus();
@@ -302,27 +302,32 @@ public class RunPipelineInThread {
             log.error("ignoring executeTask, jobSubmission is null");
             return null;
         }
+
         String lsidOrTaskName = jobSubmission.getLSID();
         if (lsidOrTaskName == null || lsidOrTaskName.equals("")) {
             lsidOrTaskName = jobSubmission.getName();
         }
 
-        int taskId = -1;
-        try {
-            AdminService adminService = new AdminService(userID);
-            TaskInfo task = adminService.getTask(lsidOrTaskName);
-            if (task == null) {
-                log.error("Module " + lsidOrTaskName + " not found.");
-                return new JobInfo();
-            }
-            log.debug("taskInfo: " + task.getName() + ", " + task.getLsid());
+        int taskId = 0;
+        if (jobSubmission.getTaskInfo() != null) {
             taskId = jobSubmission.getTaskInfo().getID();
-            taskId = task.getID();
         }
-        finally {
-            HibernateUtil.closeCurrentSession();
+        if (taskId <= 0) {
+            log.error("jobSubmission.taskInfo.ID not set ... calling adminService.getTask("+lsidOrTaskName+")");
+            try {
+                AdminService adminService = new AdminService(userID);
+                TaskInfo task = adminService.getTask(lsidOrTaskName);
+                if (task == null) {
+                    log.error("Module " + lsidOrTaskName + " not found.");
+                    return new JobInfo();
+                }
+                taskId = task.getID();
+                log.debug("taskInfo: " + task.getName() + ", " + task.getLsid());
+            }
+            finally {
+                HibernateUtil.closeCurrentSession();
+            }
         }
-        
 
         if (params != null) {
             for (int i = 0; i < params.length; i++) {
@@ -342,12 +347,11 @@ public class RunPipelineInThread {
                     }
                 }
             }
-        } 
+        }
         
-        //int taskId = task.getID();
         JobInfo jobInfo = null;
+        LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
         try {
-            LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
             jobInfo = analysisClient.submitJob(taskId, params, jobId);
         }
         finally {
