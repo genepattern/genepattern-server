@@ -88,7 +88,10 @@ public class CommandManagerProperties {
         
         // 4) add/replace with group properties
         String userId = jobInfo.getUserId();
-        Set<String> groupIds = UserAccountManager.instance().getGroupMembership().getGroups(userId);
+        Set<String> groupIds = null;
+        if (groupPropertiesMap != null && groupPropertiesMap.size() > 0) {
+            groupIds = UserAccountManager.instance().getGroupMembership().getGroups(userId);
+        }
         if (groupIds != null) {
             if (groupIds.size() == 1) {
                 //get first element from the set
@@ -125,7 +128,6 @@ public class CommandManagerProperties {
         final String key = "executor";
         //TODO: null check
         String userId = jobInfo.getUserId();
-        Set<String> groupIds = UserAccountManager.instance().getGroupMembership().getGroups(userId);
         
         //1) check root properties
         String value = rootProps.getDefaultProperty(key);
@@ -134,6 +136,10 @@ public class CommandManagerProperties {
         value = rootProps.getModuleProperty(jobInfo, key, value);
         
         //3) check group.properties
+        Set<String> groupIds = null;
+        if (groupPropertiesMap != null && groupPropertiesMap.size() > 0) {
+            groupIds = UserAccountManager.instance().getGroupMembership().getGroups(userId);
+        }
         if (groupIds != null) {
             if (groupIds.size() == 1) {
                 //get first element from the set
