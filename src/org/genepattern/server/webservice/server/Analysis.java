@@ -640,15 +640,16 @@ public class Analysis extends GenericWebService {
      * @param jobId
      */
     public void terminateJob(int jobId) throws WebServiceException {
+        JobInfo jobInfo = null;
         try {
             String userId = getUsernameFromContext();
             canWriteJob(userId, jobId);
-            JobInfo jobInfo = getJob(jobId);
-            terminateJob(jobInfo);
+            jobInfo = getJob(jobId);
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
+        terminateJob(jobInfo);
     }
     
     private void terminateJob(JobInfo jobInfo) throws WebServiceException {
