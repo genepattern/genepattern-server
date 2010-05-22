@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandExecutor;
+import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.webservice.JobInfo;
 import org.hibernate.Query;
@@ -113,15 +114,15 @@ public class LsfCommandExecutor implements CommandExecutor {
         log.info("done!");
     }
 
-    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) 
-    throws Exception
+    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin) 
+    throws CommandExecutorException
     {
         log.debug("Running command for job "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName());
         LsfCommand cmd = new LsfCommand();
         
         Properties lsfProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
         cmd.setLsfProperties(lsfProperties);
-        cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdin, stderrBuffer);
+        cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdin);
         LsfJob lsfJob = cmd.getLsfJob();
         lsfJob = submitJob(lsfJob);
         log.debug(jobInfo.getJobNumber()+". "+jobInfo.getTaskName()+" is dispatched.");
@@ -132,7 +133,7 @@ public class LsfCommandExecutor implements CommandExecutor {
      * @param lsfJob
      * @return the value returned from LsfWrapper#dispatchLsfJob
      */
-    private LsfJob submitJob(final LsfJob lsfJob) throws Exception { 
+    private LsfJob submitJob(final LsfJob lsfJob) throws CommandExecutorException { 
         if (executor == null) {
             log.error("service not started ... ignoring submitJob("+lsfJob.getName()+")");
             return lsfJob;
@@ -146,8 +147,7 @@ public class LsfCommandExecutor implements CommandExecutor {
                     +", lsfId= "+lsfJobOut.getLsfJobId());
         }
         catch (Exception e) {
-            log.error("Error submitting job to LSF, job #"+lsfJob.getInternalJobId());
-            throw e;
+            throw new CommandExecutorException("Error submitting job to LSF, job #"+lsfJob.getInternalJobId(), e);
         }
         return lsfJob;
     }
