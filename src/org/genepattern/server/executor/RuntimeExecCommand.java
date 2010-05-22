@@ -38,6 +38,11 @@ public class RuntimeExecCommand {
     public int getExitValue() {
         return exitValue;
     }
+    
+    private StringBuffer stderrBuffer = new StringBuffer();
+    public String getStderr() {
+        return stderrBuffer.toString();
+    }
 
     /**
      * Spawns a separate process to execute the requested analysis task. It copies the stdout and stderr output streams
@@ -70,7 +75,7 @@ public class RuntimeExecCommand {
      *            buffer to append GenePattern errors to
      * @author Jim Lerner
      */
-    public void runCommand(String commandLine[], Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {
+    public void runCommand(String commandLine[], Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin) {
         ProcessBuilder pb = null;
         String jobID = null;
         try {

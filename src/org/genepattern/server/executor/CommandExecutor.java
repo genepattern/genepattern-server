@@ -48,8 +48,8 @@ public interface CommandExecutor {
      * @param stderrFile
      * @param jobInfo
      * @param stdin
-     * @param stderrBuffer
-     * @throws Exception
+     * 
+     * @throws CommandExecutorException when errors occur attempting to submit the job
      */
     void runCommand(
             String commandLine[], 
@@ -58,9 +58,8 @@ public interface CommandExecutor {
             File stdoutFile, 
             File stderrFile, 
             JobInfo jobInfo, 
-            String stdin, 
-            StringBuffer stderrBuffer) 
-    throws Exception;
+            String stdin) 
+    throws CommandExecutorException;
     
     /**
      * Request the service to terminate a GenePattern job which is running via this service.
@@ -85,3 +84,4 @@ public interface CommandExecutor {
      */
     int handleRunningJob(JobInfo jobInfo) throws Exception;
 }
+

@@ -136,6 +136,7 @@ import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.executor.CommandExecutor;
+import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandExecutorNotFoundException;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.user.UsageLog;
@@ -1255,33 +1256,28 @@ public class GenePatternAnalysisTask {
                             cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
                         }
                         catch (CommandExecutorNotFoundException e) {
-                            //cause job to fail when not able to find a command executor
-                            //    typically because of a server configuration error
-                            //TODO: could improve this by setting the status to PENDING
-                            jobStatus = JobStatus.JOB_ERROR;
+                            //throw this to the outer catch
                             throw e;
                         }
                         //close hibernate session before running the job, but don't save the parameter info ...
                         HibernateUtil.closeCurrentSession();
                         try {
-                            cmdExec.runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
+                            cmdExec.runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename);
                         }
-                        catch (Throwable t) {
-                            //TODO: improve error handling when an executor throws an exception when trying to submit a job
-                            jobStatus = JobStatus.JOB_ERROR;
-                            throw t;
+                        catch (CommandExecutorException e) {
+                            //typically thrown when the job submission fails (rather than an error during the run of the job)
+                            //throw this to the outer catch
+                            throw e;
                         }
                    }
                 } 
                 catch (Throwable t) {
                     jobStatus = JobStatus.JOB_ERROR;
-                    //TODO: hard-coded exitCode when exceptions occur during job submission
                     if (exitCode == 0) {
                         exitCode = -1;
                     }
-                    String message = "Error submitting job " + jobId + ". " + taskName;
-                    log.error(message, t);
-                    stderrBuffer.append(message + " - " + t.getLocalizedMessage());
+                    stderrBuffer.append("Error submitting job " + jobId + ". " + taskName);
+                    stderrBuffer.append("\n" + t.getLocalizedMessage());
 
                     StringWriter sw = new StringWriter();
                     PrintWriter pw = new PrintWriter(sw);

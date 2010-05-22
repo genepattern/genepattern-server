@@ -1,5 +1,7 @@
 package org.genepattern.server.executor;
 
+import static org.genepattern.util.GPConstants.STDERR;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -116,11 +118,10 @@ public class RuntimeCommandExecutor implements CommandExecutor {
 
     public void runCommand(String[] commandLine,
             Map<String, String> environmentVariables, File runDir,
-            File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin,
-            StringBuffer stderrBuffer) {
+            File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin) throws CommandExecutorException {
         
         String jobId = ""+jobInfo.getJobNumber();
-        CallableRuntimeExecCommand task = new CallableRuntimeExecCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdin, stderrBuffer);
+        CallableRuntimeExecCommand task = new CallableRuntimeExecCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdin);
         runningJobs.put(jobId, task);
         try {
             Future<?> f = executor.submit(task);
@@ -129,8 +130,7 @@ public class RuntimeCommandExecutor implements CommandExecutor {
         catch (RejectedExecutionException e) {
             //TODO: when the queue is full, reset the job status back to PENDING
             runningJobs.remove(jobId);
-            stderrBuffer.append("job #"+jobId+" was not scheduled for execution");
-            throw(e);
+            throw new CommandExecutorException("job #"+jobId+" was not scheduled for execution", e);
         }
         catch (Throwable t) {
             log.error("unexpected error starting job #"+jobId, t);
@@ -169,7 +169,6 @@ public class RuntimeCommandExecutor implements CommandExecutor {
         private File stderrFile = null;
         private JobInfo jobInfo = null;
         private String stdin = null;
-        private StringBuffer stderrBuffer = null;
         
         private RuntimeExecCommand cmd = null;
         
@@ -185,8 +184,7 @@ public class RuntimeCommandExecutor implements CommandExecutor {
                 File stdoutFile, 
                 File stderrFile, 
                 JobInfo jobInfo, 
-                String stdin,
-                StringBuffer stderrBuffer) {
+                String stdin) {
             this.commandLine = commandLine;
             this.environmentVariables = environmentVariables;
             this.runDir = runDir;
@@ -194,12 +192,11 @@ public class RuntimeCommandExecutor implements CommandExecutor {
             this.stderrFile = stderrFile;
             this.jobInfo = jobInfo;
             this.stdin = stdin;
-            this.stderrBuffer = stderrBuffer;
         }
 
         public RuntimeExecCommand call() throws Exception {
             cmd = new RuntimeExecCommand();
-            cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdin, stderrBuffer);
+            cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdin);
             String jobId = ""+jobInfo.getJobNumber();
             runningJobs.remove(jobId);
             int exitValue = cmd.getExitValue();
@@ -215,6 +212,17 @@ public class RuntimeCommandExecutor implements CommandExecutor {
                 //don't handle job completion
             }
             else {
+                //handle stderr messages stored in the cmd object
+                String stderr = cmd.getStderr();
+                if (stderr != null && stderr.length() > 0) {
+                    jobStatus = JobStatus.JOB_ERROR;
+                    if (exitValue == 0) {
+                        exitValue = -1;
+                    }
+                    String outDirName = GenePatternAnalysisTask.getJobDir(jobId);
+                    GenePatternAnalysisTask.writeStringToFile(outDirName, STDERR, stderr);
+                }
+                
                 try {
                     GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), stdoutFile.getName(), stderrFile.getName(), exitValue, jobStatus);
                 }
