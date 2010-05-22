@@ -38,7 +38,6 @@ public class AnalysisTask implements Runnable {
      * maximum number of concurrent jobs to run before next one will have to wait
      */
     private static int NUM_THREADS = 20;
-    private final static String TASK_NAME = GenePatternAnalysisTask.TASK_NAME;
     private static AnalysisTask instance;
     private static Thread runner;
 
@@ -63,24 +62,6 @@ public class AnalysisTask implements Runnable {
         if (threadCount > 0) {
             sem = new Semaphore(threadCount);
         }
-    }
-
-    /**
-     * Add an object to queue
-     * 
-     * @param o, The feature to be added to the JobToQueue attribute
-     */
-    public void addJobToQueue(Object o) {
-        jobQueue.add((JobInfo) o);
-    }
-
-    /** Clears the AnalysisTask's queue. */
-    public void clear() {
-        jobQueue.clear();
-    }
-
-    public String getTaskName() {
-        return TASK_NAME;
     }
 
     /**
