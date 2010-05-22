@@ -128,6 +128,8 @@ import org.genepattern.server.AnalysisServiceException;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.PermissionsHelper;
+import org.genepattern.server.JobInfoManager.TaskInfoNotFoundException;
+import org.genepattern.server.JobInfoWrapper.InputFile;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
@@ -589,7 +591,14 @@ public class GenePatternAnalysisTask {
                 }
             }
 
-            TaskInfo taskInfo = getTaskInfo(jobInfo);
+            TaskInfo taskInfo = null;
+            int taskId = jobInfo.getTaskID();
+            try {
+                taskInfo = JobInfoManager.getTaskInfo(taskId);
+            }
+            catch (TaskInfoNotFoundException e) {
+                throw e;
+            }
             taskName = taskInfo.getName();
             if (log.isDebugEnabled()) {
                 log.debug("taskName=" + taskName);
@@ -621,15 +630,20 @@ public class GenePatternAnalysisTask {
             validateOS(expected, "run " + taskName);
             validatePatches(taskInfo, null);
 
-
             Map<String, String> environmentVariables = new HashMap<String, String>();
 
-            //JobInfo parentJI = getParentJobInfo(jobId);
-            JobInfo parentJI = new AnalysisDAO().getParent(jobId);
             int parent = -1;
-            if (parentJI != null) {
-                parent = parentJI.getJobNumber();
+            try {
+                AnalysisDAO dao = new AnalysisDAO();
+                JobInfo parentJI = dao.getParent(jobId);
+                if (parentJI != null) {
+                    parent = parentJI.getJobNumber();
+                }
             }
+            finally {
+                HibernateUtil.closeCurrentSession();
+            }
+
             ParameterInfo[] params = jobInfo.getParameterInfoArray();
             Properties props = setupProps(taskInfo, taskName, parent, jobId, jobInfo.getTaskID(),
                     taskInfoAttributes, params, environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
@@ -641,7 +655,7 @@ public class GenePatternAnalysisTask {
                 inputLength = new long[params.length];
                 for (int i = 0; i < params.length; i++) {
                     HashMap attrsActualOrig = params[i].getAttributes();
-                    //operate on a copy of these parameters, so that they are not written back to the DB
+                    //operate on a copy of these parameters
                     Map<String,String> attrsActual = new HashMap<String,String>();
                     for(Object key : attrsActualOrig.keySet()) {
                         Object val = attrsActualOrig.get(key);
@@ -651,8 +665,8 @@ public class GenePatternAnalysisTask {
                     if (attrsActual == null) {
                         attrsActual = new HashMap<String, String>();
                     }
-                    String fileType = attrsActual.get(ParameterInfo.TYPE);
-                    String mode = attrsActual.get(ParameterInfo.MODE);
+                    String fileType = (String) attrsActual.get(ParameterInfo.TYPE);
+                    String mode = (String) attrsActual.get(ParameterInfo.MODE);
                     String originalPath = params[i].getValue();
                     // allow parameter value substitutions within file input parameters
                     originalPath = substitute(originalPath, props, params);
@@ -1185,6 +1199,7 @@ public class GenePatternAnalysisTask {
                     commandLineList.add(commandTokens[j]);
                 }
             }
+            
             if (addLast) {
                 commandLineList.add(commandTokens[commandTokens.length - 1]);
                 commandLine.append(commandTokens[commandTokens.length - 1]);
@@ -1246,7 +1261,7 @@ public class GenePatternAnalysisTask {
                             jobStatus = JobStatus.JOB_ERROR;
                             throw e;
                         }
-                        //close hibernate session before running the job
+                        //close hibernate session before running the job, but don't save the parameter info ...
                         HibernateUtil.closeCurrentSession();
                         try {
                             cmdExec.runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
@@ -1300,11 +1315,12 @@ public class GenePatternAnalysisTask {
             }
         } 
         catch (Throwable e) {
-            if (e.getCause() != null) {
-                e = e.getCause();
-            }
-            log.error(taskName + " error: " + e.getLocalizedMessage(), e);
             try {
+                if (e.getCause() != null) {
+                    e = e.getCause();
+                }
+                String errorMessage = "Error submitting job "+jobId+". "+taskName;
+                log.error(errorMessage, e);
                 File outFile = writeStringToFile(outDirName, STDERR, e.getMessage() + "\n\n");
                 addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
                 recordJobCompletion(jobInfo, parentJobInfo, JobStatus.JOB_ERROR);
@@ -1313,12 +1329,23 @@ public class GenePatternAnalysisTask {
                 log.error(taskName + " error: unable to update job error status" + e2);
             }
         }
+    }
+
+    private static JobInfoWrapper getJobInfoWrapper(String userId, int jobNumber) {
+        try {
+            JobInfoManager m = new JobInfoManager();
+            String contextPath = System.getProperty("GP_Path", "/gp");
+            if (!contextPath.startsWith("/")) {
+                contextPath = "/" + contextPath;
+            }
+            String cookie = "";
+            return m.getJobInfo(cookie, contextPath, userId, jobNumber);
+        }
         finally {
-            //release db connections on exit
             HibernateUtil.closeCurrentSession();
         }
     }
-
+    
     public static void handleJobCompletion(int jobId, String stdoutFilename, String stderrFilename, int exitCode, int jobStatus) throws Exception {
         handleJobCompletion(jobId, stdoutFilename, stderrFilename, exitCode, jobStatus, JOB_TYPE.JOB);
     }
@@ -1334,29 +1361,64 @@ public class GenePatternAnalysisTask {
     
     private static void doHandleJobCompletion(int jobId, String stdoutFilename, String stderrFilename, int exitCode, int jobStatus, JOB_TYPE jobType) {
         log.debug("job "+jobId+" completed with exitCode="+exitCode);
-
+        
         AnalysisDAO dao = new AnalysisDAO();
         JobInfo jobInfo = dao.getJobInfo(jobId);
+        JobInfo parentJobInfo = dao.getParent(jobId);
         //handle special-case when the job is deleted before we get to handle the job results, e.g. a running pipeline was deleted
         if (jobInfo == null) {
             log.error("job #"+jobId+"was deleted before handleJobCompletion");
             return;
         }
-        JobInfo parentJobInfo = dao.getParent(jobId);
-        JobInfoManager m = new JobInfoManager();
-        String contextPath = System.getProperty("GP_Path", "/gp");
-        if (!contextPath.startsWith("/")) {
-            contextPath = "/" + contextPath;
-        }
-        String cookie = "";
-        JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, jobInfo.getUserId(), jobInfo.getJobNumber());
         
-        INPUT_FILE_MODE inputFileMode = getInputFileMode();
-
-        String outDirName = getJobDir(Integer.toString(jobId));
+        String outDirName = getJobDir(""+jobId);
         File outDir = new File(outDirName);
+        JobInfoWrapper jobInfoWrapper = getJobInfoWrapper(jobInfo.getUserId(), jobInfo.getJobNumber());
+       
+        // move or delete input files from job results
+        //1) if the file is a link to an external URL, delete it
+        //2) if the file was uploaded to the server
+        //    a) for inputMode == MOVE, move the file back
+        //    b) for inputMode == COPY, delete the file
+        //    c) for inputMode == PATH, do nothing
+        //3) if the file is a link to a previous job result
+        //4) if the file is a link to a module file in the taskLib
+
+        // Note: for some reason, after splitting onJob into two methods, onJob and handleJobCompletion, some of the
+        //    handling of input files stopped working
+        // this next section was added to handle external URLs ...
+        for (InputFile inputFile : jobInfoWrapper.getInputFiles()) {
+            if (inputFile.isUrl()) {
+                if (inputFile.isExternalLink()) {
+                    log.debug("isExternalLink");
+                    String link = inputFile.getLink();
+                    try {
+                        URL url = new URL(link);
+                        String path = url.getPath();
+                        if (path != null) {
+                            String filename = path;
+                            int idx = path.lastIndexOf('/');
+                            if (idx > 0) {
+                                ++idx;
+                                filename = path.substring(idx);
+                            }
+                            File inputFileToDelete = new File(outDirName, filename);
+                            if (inputFileToDelete.canWrite()) {
+                                boolean deleted = inputFileToDelete.delete();
+                                log.debug("deleting input file from job results directory, '"+inputFileToDelete.getAbsolutePath()+"', deleted="+deleted);
+                            }
+                        }
+                    }
+                    catch (MalformedURLException e1) {
+                        log.error("not a url: "+link, e1);
+                    }
+                }
+            }
+        }
 
         // move input files back into Axis attachments directory
+        // Note: original code from handleJobCompletion is still here
+        INPUT_FILE_MODE inputFileMode = getInputFileMode();
         ParameterInfo[] params = jobInfo.getParameterInfoArray();
         if (params != null) {
             for (int i = 0; i < params.length; i++) {
@@ -1645,41 +1707,6 @@ public class GenePatternAnalysisTask {
 	    taskInfoAttributes.put(COMMAND_LINE, commandPrefix + " " + taskInfoAttributes.get(COMMAND_LINE));
 	}
     }
-
-    private static TaskInfo getTaskInfo(JobInfo jobInfo) throws Exception {
-        if (log.isDebugEnabled()) {
-            log.debug("getTaskInfo for job: " + jobInfo.getJobNumber());
-        }
-        try {
-            HibernateUtil.beginTransaction();
-            AdminDAO ds = new AdminDAO();
-            TaskInfo taskInfo = ds.getTask(jobInfo.getTaskID());
-            if (taskInfo == null) {
-                throw new Exception("No such taskID (" + jobInfo.getTaskID() + " for job " + jobInfo.getJobNumber());
-            }
-            HibernateUtil.commitTransaction();
-            return taskInfo;
-        } 
-        catch (RuntimeException e) {
-            log.error("Error getting taskInfo for job: " + jobInfo.getJobNumber());
-            HibernateUtil.rollbackTransaction();
-            throw e;
-        }
-        finally {
-            HibernateUtil.closeCurrentSession();
-        }
-    }
-
-
-//    private static JobInfo getParentJobInfo(int jobNumber) {
-//        //try {
-//            JobInfo parentJI = getDS().getParent(jobNumber);
-//            return parentJI;
-//        //} 
-//        //finally {
-//        //    HibernateUtil.closeCurrentSession();
-//        //}
-//    }
 
     /**
      * remove special params that should not be added to the command line.

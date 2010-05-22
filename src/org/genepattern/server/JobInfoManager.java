@@ -32,6 +32,7 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.visualizer.RunVisualizerConstants;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
@@ -72,8 +73,8 @@ public class JobInfoManager {
             isPipeline = taskInfo.isPipeline();
             isPipelineCache.put(taskInfo.getID(), isPipeline);
         }
-        catch (Exception e) {
-            log.error(e);
+        catch (Throwable t) {
+            log.error(t);
         }
         return isPipeline;
         
@@ -94,34 +95,39 @@ public class JobInfoManager {
         return isVisualizer;
     }
 
-    public static TaskInfo getTaskInfo(JobInfo jobInfo) throws Exception {
+    public static class TaskInfoNotFoundException extends Exception {
+        public TaskInfoNotFoundException(int taskId, Exception e) {
+            super("Error getting taskInfo for taskId: " + taskId, e);
+        }
+    }
+
+    public static TaskInfo getTaskInfo(JobInfo jobInfo) throws TaskInfoNotFoundException {
         boolean closeDbSession = true;
         return getTaskInfo(jobInfo, closeDbSession);
     }
     
-    public static TaskInfo getTaskInfo(JobInfo jobInfo, boolean closeDbSession) throws Exception {
-        if (log.isDebugEnabled()) {
-            log.debug("getTaskInfo for job: " + jobInfo.getJobNumber());
-        }
-        try {
-            AdminDAO ds = new AdminDAO(); //calls HibernateUtil.beginTransaction...
-            TaskInfo taskInfo = ds.getTask(jobInfo.getTaskID());
-            if (taskInfo == null) {
-                throw new Exception("No such taskID (" + jobInfo.getTaskID() + " for job " + jobInfo.getJobNumber());
-            }
-            if (closeDbSession) {
-                HibernateUtil.commitTransaction();
-            }
+    public static TaskInfo getTaskInfo(JobInfo jobInfo, boolean closeDbSession) throws TaskInfoNotFoundException {
+        return getTaskInfo(jobInfo.getTaskID(), closeDbSession);
+    }
+    
+    public static TaskInfo getTaskInfo(int taskId) throws TaskInfoNotFoundException {
+        boolean closeDbSession = true;
+        return getTaskInfo(taskId, closeDbSession);
+    }
+
+    public static TaskInfo getTaskInfo(int taskId, boolean closeDbSession) throws TaskInfoNotFoundException {
+        TaskInfo taskInfo = null;
+        try { 
+            //calls HibernateUtil.beginTransaction...
+            AdminDAO ds = new AdminDAO();
+            taskInfo = ds.getTask(taskId);
             return taskInfo;
         } 
-        catch (RuntimeException e) {
-            log.error("Error getting taskInfo for job: " + jobInfo.getJobNumber());
-            if (closeDbSession) {
-                HibernateUtil.rollbackTransaction();
-            }
-            throw e;
+        catch (OmnigeneException e) {
+            throw new TaskInfoNotFoundException(taskId, e);
         }
         finally {
+            //...must close the session here, or in an enclosing method
             if (closeDbSession) {
                 HibernateUtil.closeCurrentSession();
             }
