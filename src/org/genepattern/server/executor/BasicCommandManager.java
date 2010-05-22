@@ -97,11 +97,9 @@ public class BasicCommandManager implements CommandManager {
 
     private List<MyJobInfoWrapper> getRunningJobs() {
         try {
-            HibernateUtil.beginTransaction();
-            Session session = HibernateUtil.getSession();
-            //int numRunningJobs = getNumRunningJobs(session);
+            AnalysisDAO dao = new AnalysisDAO();
             int numRunningJobs = -1;
-            return getRunningJobs(session, numRunningJobs);
+            return getRunningJobs(dao, numRunningJobs);
         }
         catch (Throwable t) {
             log.error("error getting list of running jobs from the server", t);
@@ -123,9 +121,9 @@ public class BasicCommandManager implements CommandManager {
     //    return AnalysisDAO.getCount(rval);
     //}
 
-    private static List<MyJobInfoWrapper> getRunningJobs(Session session, int maxJobCount) {
+    private static List<MyJobInfoWrapper> getRunningJobs(AnalysisDAO dao, int maxJobCount) {
         List<MyJobInfoWrapper> runningJobs = new ArrayList<MyJobInfoWrapper>();
-        AnalysisDAO dao = new AnalysisDAO();
+        Session session = HibernateUtil.getSession();
         final String hql = "from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId = :statusId and deleted = false order by submittedDate ";
         Query query = session.createQuery(hql);
         if (maxJobCount > 0) {
