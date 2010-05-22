@@ -252,6 +252,27 @@ public class JobInfoWrapper implements Serializable {
     }
     
     public static class InputFile extends ParameterInfoWrapper {
+        private Boolean isUrl = null;
+        private Boolean isInternalLink = null;
+        private Boolean isExternalLink = null;
+        private Boolean isServerFilePath = null;
+        
+        public Boolean isUrl() {
+            return isUrl;
+        }
+        
+        public Boolean isInternalLink() {
+            return isInternalLink;
+        }
+        
+        public Boolean isExternalLink() {
+            return isExternalLink;
+        }
+        
+        public Boolean isServerFilePath() {
+            return isServerFilePath;
+        }
+
         /**
          *
 <pre>
@@ -317,7 +338,7 @@ public class JobInfoWrapper implements Serializable {
             if (value.startsWith("file:")) {
                 value = value.substring(5);
             }
-            boolean isUrl = false;
+            isUrl = false;
             URL url = null;
             try {
                 url = new URL(value);
@@ -327,9 +348,9 @@ public class JobInfoWrapper implements Serializable {
                 isUrl = false;
             }
             
-            boolean isInternalLink = value.startsWith(genePatternUrl);
-            boolean isExternalLink = isUrl && !isInternalLink;
-            boolean isServerFilePath = !isInternalLink && !isExternalLink;
+            isInternalLink = value.startsWith(genePatternUrl);
+            isExternalLink = isUrl && !isInternalLink;
+            isServerFilePath = !isInternalLink && !isExternalLink;
             
             //case A
             if (isExternalLink) {
@@ -421,13 +442,13 @@ public class JobInfoWrapper implements Serializable {
             else {
                 log.debug("isServerFilePath");
                 displayValue = origValue;
-                //File file = new File(origValue);
                 if (inputFile.canRead()) {
+                    //TODO: set a link for downloading (via the web client) a server file path
                     try {
                         URI inputFileURI = inputFile.toURI();
                         URL inputFileURL = inputFileURI.toURL();
-                        String inputFilePath = inputFileURL.getPath();
-                        setLink(contextPath + "/serverFilePath/" + inputFilePath);
+                        //String inputFilePath = inputFileURL.getPath();
+                        //setLink(contextPath + "/serverFilePath/" + inputFilePath);
                     }
                     catch (MalformedURLException e) {
                         log.error(e);
@@ -703,7 +724,7 @@ public class JobInfoWrapper implements Serializable {
         //change this flag to include the raw xml from the analysis_job table in the input parameters
         //which are displayed on the job status page
         boolean debug = false;
-        debug = false;
+        //debug = true;
         if (debug) {
             String name = "analysis_job.parameter_info";
             String value = jobInfo.getParameterInfo();
