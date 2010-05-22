@@ -2,14 +2,17 @@ package org.genepattern.server.executor;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.Map.Entry;
-import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
@@ -18,7 +21,13 @@ import org.genepattern.server.domain.JobStatus;
 import org.genepattern.webservice.JobInfo;
 
 /**
- * Run all GP pipelines via with this executor service.
+ * Run all pipelines with this CommandExecutor.
+ * 
+ * This (initial) implementation uses a single thread for each pipeline using code ported from when each pipeline 
+ * was run in a new JVM processes.
+ * 
+ * Manage submission of pipeline jobs, so that they can be terminated by jobId 
+ * in response to user request or server shutdown.
  * 
  * @author pcarr
  */
@@ -28,11 +37,10 @@ public class PipelineExecutor implements CommandExecutor {
     //'pipeline.num.threads' from genepattern.properties
     private int numPipelines = 20;
     
-    private ExecutorService executor = null;
+    ExecutorService pipelineExecutorService = null;
+    private PipelineCompletionService completionService = null;
+    private ExecutorService monitorCompletionService = null;
    
-    //initial implementation uses a single thread for each pipeline ... 
-    //    ... using code ported from when pipelines were exectuing in separate JVM processes
-    private Map<String,PipelineObj> runningPipelines = new HashMap<String,PipelineObj>();
     
     public void setConfigurationFilename(String filename) {
         // TODO Auto-generated method stub
@@ -41,6 +49,151 @@ public class PipelineExecutor implements CommandExecutor {
     public void setConfigurationProperties(Properties properties) {
         // TODO Auto-generated method stub
     }
+    
+    final static class PipelineCompletionService  {
+        //store running pipelines in a map from jobId to future
+        private Map<String,Future<PipelineCommand>> futuresByJobId = new HashMap<String,Future<PipelineCommand>>();
+        private Map<Future<PipelineCommand>,String> jobIdsByFuture = new HashMap<Future<PipelineCommand>,String>();
+        private Map<String,PipelineCommand> pipelineCmdsByJobId = new HashMap<String,PipelineCommand>();
+        //handle special-case where a job is terminated before it is submitted
+        private Set<String> prematurelyTerminatedJobs = new HashSet<String>();
+        
+        private ExecutorService executor = null;
+        private ExecutorCompletionService<PipelineCommand> completionService = null;
+        
+        PipelineCompletionService(ExecutorService executor) {
+            this.executor = executor;
+            completionService = new ExecutorCompletionService<PipelineCommand>(this.executor);
+        }
+        
+        public void submit(PipelineCommand pipelineCmd) {
+            String jobId = ""+pipelineCmd.getJobNumber();
+
+            synchronized (this) {
+                if (prematurelyTerminatedJobs.contains(jobId)) {
+                    prematurelyTerminatedJobs.remove(jobId);
+                    pipelineCmd.terminatePipelineBeforeStart();
+                    return;
+                }
+            
+                Future<PipelineCommand> future = completionService.submit(pipelineCmd);
+                jobIdsByFuture.put(future, jobId);
+                futuresByJobId.put(jobId, future);
+                pipelineCmdsByJobId.put(jobId, pipelineCmd);
+            }
+        }
+        
+        public Wrapper wrapTake() throws InterruptedException {
+            //wait for the next task to complete ...
+            Future<PipelineCommand> future = completionService.take();
+            
+            //... remove items from hash maps ...
+            String jobId = null;
+            PipelineCommand cmd = null;
+            synchronized (this) {
+                jobId = jobIdsByFuture.remove(future);
+                if (jobId == null) {
+                    jobId = "";
+                    log.error("Unable to map future to jobId for running pipeline");
+                }
+                Future<PipelineCommand> removed = futuresByJobId.remove(jobId);
+                if (removed == null || !removed.equals(future)) {
+                    log.error("Unable to remove job from list of running pipelines for job #"+jobId);
+                }
+                cmd = pipelineCmdsByJobId.remove(jobId);
+            }
+
+            //... wrap results 
+            return new Wrapper(jobId, future, cmd);
+        }
+        
+        public void terminateJob(String jobId) {
+            final Future<PipelineCommand> future;
+            synchronized (this) {
+                future = futuresByJobId.remove(jobId);
+                if (future == null) {
+                    this.prematurelyTerminatedJobs.add(jobId);
+                    return;
+                }
+            }
+            boolean cancelled = future.cancel(true);
+            log.debug("cancelled job #"+jobId+":  "+cancelled);
+        }
+
+        public void terminateAllJobs(String message) {
+            log.debug(message);
+            for(Entry<String, Future<PipelineCommand>> entry : futuresByJobId.entrySet()) {
+                terminateJob(entry.getKey());
+            }
+        }
+        
+        static class Wrapper {
+            String jobId;
+            Future<PipelineCommand> future;
+            PipelineCommand cmd;
+            
+            Wrapper(String jobId, Future<PipelineCommand> future, PipelineCommand cmd) {
+                this.jobId = jobId;
+                this.future = future;
+                this.cmd = cmd;
+            }
+            
+            public String getJobId() {
+                return jobId;
+            }
+            public Future<PipelineCommand> getFuture() {
+                return future;
+            }
+            public PipelineCommand getPipelineCommand() {
+                return cmd;
+            }
+        }
+    }
+
+    /* This code requires Java 6; but makes it a lot easier to handle cancellation 
+    private interface CancellableTask<T> extends Callable<T> {
+        void cancel();
+        RunnableFuture<T> newTask();
+    }
+
+    private static class CancellingExecutor extends ThreadPoolExecutor {
+        public CancellingExecutor(int corePoolSize,
+        int maximumPoolSize,
+        long keepAliveTime,
+        TimeUnit unit,
+        BlockingQueue<Runnable> workQueue) {
+            super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
+        }
+        
+        protected<T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
+            if (callable instanceof CancellableTask<?>) {
+                return ((CancellableTask<T>) callable).newTask();
+            }
+            else {
+                return super.newTaskFor(callable);
+            }
+        }
+    }
+    
+    private abstract class PipelineTask<T> implements CancellableTask<T> {
+        public synchronized void cancel() {
+            
+        }
+        
+        public RunnableFuture<T> newTask() {
+            return new FutureTask<T>(this) {
+                public boolean cancel(boolean mayInterruptIfRunning) {
+                    try {
+                        PipelineTask.this.cancel();
+                    }
+                    finally {
+                        return super.cancel(mayInterruptIfRunning);
+                    }
+                }
+            };
+        }
+    }
+    */
 
     public void start() {
         String numThreadsProp = System.getProperty("num.threads", "20");
@@ -52,28 +205,69 @@ public class PipelineExecutor implements CommandExecutor {
             log.error("Configuration error in 'genepattern.properties': 'pipeline.num.threads="+pipelineNumThreadsProp+"'");
             this.numPipelines = 20;
         }
+        
         log.info("Initializing pipeline executor with newFixedThreadPool("+numPipelines+") ");
-        executor = Executors.newFixedThreadPool(numPipelines);
+        pipelineExecutorService = Executors.newFixedThreadPool(numPipelines);
+        completionService = new PipelineCompletionService(pipelineExecutorService);
+        
+        //TODO: include this code in the PipelineCompletionService class
+        // ... e.g. PipelineCompletionServer#startHandlingJobCompletion()
+        monitorCompletionService = Executors.newSingleThreadExecutor(); 
+        monitorCompletionService.execute(new Runnable() {
+            public void run() {
+                try {
+                    while(true) {
+                        PipelineCompletionService.Wrapper wrapper = completionService.wrapTake();
+                        String jobId = wrapper.getJobId();
+                        Future<PipelineCommand> future = wrapper.getFuture();
+                        PipelineCommand cmd = wrapper.getPipelineCommand();
+                        try {
+                            PipelineCommand result = future.get();
+                            log.debug("job #"+jobId+" completed!"+
+                                    " wrapper.cmd.jobNumber="+cmd.getJobNumber()+
+                                    " result.jobNumber="+result.getJobNumber());
+                        }
+                        catch (ExecutionException e) {
+                            //here is where we call GenePatternAnalysisTask.handleJobCompletion
+                            log.debug("job #"+jobId+" threw unhandled ExecutionException", e);
+                        }
+                        catch (CancellationException e) {
+                            log.debug("job #"+jobId+" was cancelled");
+                        }
+                    }
+                }
+                catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        });
     }
 
     public void stop() {
-        if (executor != null) {
-            executor.shutdown();
+        if (pipelineExecutorService != null) {
+            pipelineExecutorService.shutdown();
         }
         terminateAll("stopping service");
-        if (executor != null) {
-            executor.shutdown();
+        if (monitorCompletionService != null) {
+            monitorCompletionService.shutdown();
+        }
+        if (pipelineExecutorService != null) {
+            pipelineExecutorService.shutdown();
             try {
-                if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
+                if (!pipelineExecutorService.awaitTermination(30, TimeUnit.SECONDS)) {
                     log.error("executor shutdown timed out after 30 seconds.");
-                    executor.shutdownNow();
+                    pipelineExecutorService.shutdownNow();
                 }
             }
             catch (InterruptedException e) {
                 log.error("executor.shutdown was interrupted", e);
                 Thread.currentThread().interrupt();
             }
-        } 
+        }
+        if (monitorCompletionService != null) {
+            monitorCompletionService.shutdown();
+            monitorCompletionService.shutdownNow();
+        }
     }
 
     public void runCommand(final String[] commandLine,
@@ -82,45 +276,28 @@ public class PipelineExecutor implements CommandExecutor {
             final File stdoutFile, 
             final File stderrFile, 
             final JobInfo jobInfo, 
-            final String stdin,
-            final StringBuffer stderrBuffer) 
-    throws Exception {
+            final String stdin) 
+    throws CommandExecutorException {
         
         if (jobInfo == null) {
-            stderrBuffer.append("null jobInfo");
-            return;
+            throw new CommandExecutorException("null jobInfo");
         }
-        final String jobId = ""+jobInfo.getJobNumber();
+        
         PipelineCommand cmd = new PipelineCommand();
         cmd.setCommandTokens(commandLine);
         cmd.setStdoutFile(stdoutFile);
         cmd.setStderrFile(stderrFile);
         cmd.setJobInfo(jobInfo);
-        cmd.setStderrBuffer(stderrBuffer);
-        
-        PipelineObj p = new PipelineObj(jobId, cmd);
-        runningPipelines.put(jobId, p);
-        p.start();
+        completionService.submit(cmd);
     }
-
+    
     private synchronized void terminateAll(String message) {
-        log.debug(message);        
-        for(Entry<String, PipelineObj> entry : runningPipelines.entrySet()) {
-            PipelineObj cmd = entry.getValue();
-            if (cmd != null) {
-                cmd.handleServerShutdown();
-            }
-            else {
-                log.error("Unexpected null entry in runningPipelines");
-            }
-        }
+        completionService.terminateAllJobs(message);
     }
-
+    
     public void terminateJob(JobInfo jobInfo) throws Exception {
-        PipelineObj cmd = runningPipelines.get(""+jobInfo.getJobNumber());
-        if (cmd != null) {
-            cmd.terminateJob();
-        }
+        String jobId = ""+jobInfo.getJobNumber();
+        completionService.terminateJob(jobId);
     }
     
     public int handleRunningJob(JobInfo jobInfo) throws Exception {
@@ -141,67 +318,8 @@ public class PipelineExecutor implements CommandExecutor {
         }
         
         //set its status to ERROR
-        log.info("handling pipeline job on server restart, set status to "+JobStatus.ERROR);
+        log.info("terminating pipeline job #"+jobInfo.getJobNumber()+" on server restart");
         return JobStatus.JOB_ERROR;
     }
     
-    //helper class to keep the PipelineCommand and its Future instance in the same hashmap
-    private class PipelineObj implements Callable<Integer> {
-        String jobId = null;
-        private PipelineCommand cmd = null;
-        private Future<Integer> future = null;
-        
-        public PipelineObj(String jobId, PipelineCommand cmd) {
-            this.jobId = jobId;
-            this.cmd = cmd;
-        }
-        
-        public void start() throws Exception {
-            try {
-                future = executor.submit(this);
-            }
-            catch (RejectedExecutionException e) {
-                log.error("pipeline #"+jobId+" was not scheduled for execution");
-                runningPipelines.remove(jobId);
-                throw(e);
-            }
-            catch (Throwable t) {
-                log.error("unexpected error starting job #"+jobId, t);
-                runningPipelines.remove(jobId);
-            }
-        }
-
-        //Callable implementation. This runs the pipeline.
-        public Integer call() throws Exception { 
-            cmd.runPipeline();
-            runningPipelines.remove(jobId);
-            return cmd.getJobStatus();
-        }
-        
-        /**
-         * response to server shutdown request.
-         */
-        public void handleServerShutdown() {
-            log.error("handleServerShutdown not implemented!");
-        }
-
-        /**
-         * response to user request to cancel execution of the pipeline.
-         * updates the job status accordingly.
-         */
-        public void terminateJob() {
-            //immediately terminate the runpipeline thread ...
-            //... clean up any running jobs ...
-            //... update the job status
-            
-            if (future != null) {
-                future.cancel(true);
-            }
-            if (cmd != null) {
-                cmd.terminate();
-            }
-            runningPipelines.remove(jobId);
-        }
-        
-    }
 }

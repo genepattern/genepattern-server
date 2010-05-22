@@ -62,15 +62,29 @@ public class RunPipelineInThread {
     /** job id for the pipeline */
     private int jobId;
     // was: System.getProperty(GPConstants.LSID)
+    private int pipelineTaskId;
     private String pipelineTaskLsid;
     private PipelineModel model;
     private Map additionalArgs;
     // was: System.getProperty(GPConstants.PIPELINE_ARG_STOP_AFTER_TASK_NUM);
     private String stopAfterTaskStr = null;
+    private int stopAfterTask = Integer.MAX_VALUE;
     
     //status of pipeline
-    boolean isTerminated = false;
-    private JobInfo currentStepJobInfo = null;
+    boolean isPipelineTerminated = false;
+    private int jobStatus = JobStatus.JOB_PENDING;
+    public int getJobStatus() {
+        return jobStatus;
+    }
+    private int exitCode = -1;
+    public int getExitCode() {
+        return exitCode;
+    }
+    
+    private StringBuffer stderrBuffer = new StringBuffer();
+    public String getErrorMessage() {
+        return stderrBuffer.toString();
+    }
     
     public RunPipelineInThread() {
     }
@@ -83,6 +97,14 @@ public class RunPipelineInThread {
         this.jobId = jobId;
     }
     
+    public void setPipelineTaskId(int pipelineTaskId) {
+        this.pipelineTaskId = pipelineTaskId;
+    }
+
+    public int getPipelineTaskId() {
+        return this.pipelineTaskId;
+    }
+
     public void setPipelineTaskLsid(String lsid) {
         this.pipelineTaskLsid = lsid;
     }
@@ -97,45 +119,50 @@ public class RunPipelineInThread {
 
     public void setStopAfterTaskNum(String stopAfterTaskStr) {
         this.stopAfterTaskStr = stopAfterTaskStr;
+        if (stopAfterTaskStr != null && stopAfterTaskStr.trim().length() > 0) {
+            try {
+                stopAfterTask = Integer.parseInt(stopAfterTaskStr);
+            } 
+            catch (NumberFormatException nfe) {
+                log.error("Ignoring invalid number format for: stopAfterTaskStr=" + stopAfterTaskStr, nfe);
+                stopAfterTask = Integer.MAX_VALUE;
+            }
+        }
     }
 
-    public synchronized void terminate() { 
-        if (currentStepJobInfo != null) {
-                CommandExecutor cmdExec = null;
-                try {
-                    cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(currentStepJobInfo);
-                    cmdExec.terminateJob(currentStepJobInfo);
-                }
-                catch (CommandExecutorNotFoundException e) {
-                    log.error("Error terminating job "+jobId+"->"+currentStepJobInfo.getJobNumber(), e);
-                }
-                catch (Exception e) {
-                    log.error("Error terminating job "+jobId+"->"+currentStepJobInfo.getJobNumber(), e);
-                }
-            }
-        this.isTerminated = true;
+    //in response to a user or server request to terminate this pipeline, terminate the current running step
+    //ideally this method would signal the running job to terminate, but then allow termination to happen ...
+    //... and handleJobCompletion for the interrupted job to complete before proceeding with pipeline termination
+    private void terminatePipelineStep(int jobNumber) {
+        JobInfo currentStep = null;
+        try {
+            HibernateUtil.beginTransaction();
+            currentStep = new AnalysisDAO().getJobInfo(jobNumber);
         }
-
-//    public synchronized void terminate() { 
-//        if (currentStepJobInfo != null) {
-//            String status = currentStepJobInfo.getStatus();
-//            boolean isFinished = JobStatus.FINISHED.equals(status) || JobStatus.ERROR.equals(status);
-//            if (!isFinished) {
-//                CommandExecutor cmdExec = null;
-//                try {
-//                    cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(currentStepJobInfo);
-//                    cmdExec.terminateJob(currentStepJobInfo);
-//                }
-//                catch (CommandExecutorNotFoundException e) {
-//                    log.error("Error terminating job "+jobId+"->"+currentStepJobInfo.getJobNumber(), e);
-//                }
-//                catch (Exception e) {
-//                    log.error("Error terminating job "+jobId+"->"+currentStepJobInfo.getJobNumber(), e);
-//                }
-//            }
-//        }
-//        this.isTerminated = true;
-//    }
+        catch (Exception e) {
+            log.error("Error getting jobInfo for job #"+jobNumber, e);
+            return;
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+        
+        String status = currentStep.getStatus();
+        boolean isFinished = JobStatus.FINISHED.equals(status) || JobStatus.ERROR.equals(status);
+        if (!isFinished) {
+            CommandExecutor cmdExec = null;
+            try {
+                cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(currentStep);
+                cmdExec.terminateJob(currentStep);
+            }
+            catch (CommandExecutorNotFoundException e) {
+                log.error("Error terminating job "+jobId+"->"+currentStep.getJobNumber(), e);
+            }
+            catch (Exception e) {
+                log.error("Error terminating job "+jobId+"->"+currentStep.getJobNumber(), e);
+            }
+        } 
+    }
 
     public static final class MissingTasksException extends Exception {
         private int idx=0;
@@ -188,21 +215,37 @@ public class RunPipelineInThread {
         }
     }
     
-    public void runPipeline() throws InterruptedException, MissingTasksException, WebServiceException {
-        int stopAfterTask = Integer.MAX_VALUE;
-        if (stopAfterTaskStr != null && stopAfterTaskStr.trim().length() > 0) {
-            try {
-                stopAfterTask = Integer.parseInt(stopAfterTaskStr);
-            } 
-            catch (NumberFormatException nfe) {
-                log.error("Ignoring invalid number format for: stopAfterTaskStr=" + stopAfterTaskStr, nfe);
-            }
+    private void checkInterrupt() {
+        checkInterrupt("Pipeline execution thread interrupted");        
+    }
+
+    private void checkInterrupt(String errorMessage) {
+        if (Thread.interrupted()) {
+            this.isPipelineTerminated = true;
+            this.jobStatus = JobStatus.JOB_ERROR;
+            this.exitCode = -1;
+            this.stderrBuffer.append(errorMessage);
+            //terminatePipelineStep(jobNumber);
+            //throw new InterruptedException(errorMessage);
         }
-        
+    }
+
+    public void runPipeline() 
+    throws 
+        InterruptedException, 
+        MissingTasksException, 
+        WebServiceException {  
+
+        checkInterrupt();
+        if (this.isPipelineTerminated) {
+            return;
+        }
+
         checkForMissingTasks(userID, model);
 
         JobInfo results[] = new JobInfo[model.getTasks().size()];
         int stepNum = 0;
+        //try {
         for(JobSubmission jobSubmission : model.getTasks()) { 
             if (stepNum >= stopAfterTask) {
                 break; // stop and execute no further
@@ -220,14 +263,21 @@ public class RunPipelineInThread {
             ParameterInfo[] params = parameterInfo;
             params = setJobParametersFromArgs(jobSubmission.getName(), stepNum + 1, params, results, additionalArgs);
             params = removeEmptyOptionalParams(parameterInfo);
-                
-            if (this.isTerminated) {
-                throw new WebServiceException("pipeline terminated before execution of step "+stepNum);
+            
+            checkInterrupt();
+            if (this.isPipelineTerminated) {
+                return;
             }
                 
             JobInfo taskResult = executeTask(jobSubmission, params);
             taskResult = collectChildJobResults(taskResult);
             results[stepNum] = taskResult;
+            
+            if (this.isPipelineTerminated) {
+                this.exitCode = -1;
+                this.jobStatus = JobStatus.JOB_ERROR;
+                return;
+            }
             
             if (JobStatus.ERROR.equals(taskResult.getStatus())) {
                 //halt pipeline execution if one of the steps fails
@@ -242,6 +292,14 @@ public class RunPipelineInThread {
             }
             ++stepNum;
         }
+        this.exitCode = 0;
+        this.jobStatus = JobStatus.JOB_FINISHED;
+        //}
+        //catch (InterruptedException e) {
+        //    log.debug("handle thread interruption while the pipeline is still running");
+        //    this.exitCode = -1;
+        //    this.jobStatus = JobStatus.JOB_ERROR;
+        //}
     }
 
     /**
@@ -251,8 +309,6 @@ public class RunPipelineInThread {
      * recurse through the children and add all output params to the parent
      */
     private JobInfo collectChildJobResults(JobInfo taskResult) {
-        LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
-        
         if (taskResult == null) {
             log.debug("Invalid null arg to collectChildJobResults");
             return taskResult;
@@ -261,10 +317,7 @@ public class RunPipelineInThread {
         try {
             HibernateUtil.beginTransaction();
             List<ParameterInfo> outs = new ArrayList<ParameterInfo>();
-            if (taskResult == null) {
-                log.error("taskResult == null");
-                return taskResult;
-            }
+            LocalAnalysisClient analysisClient = new LocalAnalysisClient(userID);
             JobInfo[] children = analysisClient.getChildren(taskResult.getJobNumber());
             if (children.length == 0) {
                 return taskResult;
@@ -361,7 +414,6 @@ public class RunPipelineInThread {
             log.error("Unexpected error in execute task: taskNum="+taskId+", lsidOrTaskName="+lsidOrTaskName);
             return jobInfo;
         }
-        this.currentStepJobInfo = jobInfo;
         jobInfo = waitForErrorOrCompletion(jobInfo.getJobNumber());
         return jobInfo;
     }
@@ -533,12 +585,36 @@ public class RunPipelineInThread {
         int statusId = JobStatus.JOB_PENDING;
         int count = 0;
         int sleep = initialSleep;
-        while (isRunning) {
+        while (isRunning && !isPipelineTerminated) {
             statusId = getJobStatusId(jobNumber);
             isRunning = !(statusId == JobStatus.JOB_FINISHED || statusId == JobStatus.JOB_ERROR);
             if (isRunning) {
                 count++;
-                Thread.sleep(sleep);
+                try {
+                    Thread.sleep(sleep);
+                }
+                catch (InterruptedException e) {
+                    //special-case, the pipeline is interrupted while waiting for the current step to complete
+                    isPipelineTerminated = true;
+                    //reset the interrupted flag
+                    Thread.interrupted();
+                    //attempt to terminate the job
+                    terminatePipelineStep(jobNumber);
+                    //give the job at most 30 seconds to terminate
+                    isRunning = waitForTermination(jobNumber, 30000L);
+                    this.stderrBuffer.append("Pipeline terminated while running job #"+jobNumber+". Job was ");
+                    if (isRunning) {
+                        stderrBuffer.append("not ");
+                    }
+                    stderrBuffer.append("terminated.");
+                    
+                    this.jobStatus = JobStatus.JOB_ERROR;
+                    this.exitCode = -1;
+
+                    break;
+
+                    //throw new InterruptedException("pipeline interrupted while waiting for job #"+jobNumber+" to complete");
+                }
                 sleep = incrementSleep(initialSleep, maxTries, count);
             }
         }
@@ -554,7 +630,29 @@ public class RunPipelineInThread {
             HibernateUtil.closeCurrentSession();
         }
     }
-    
+
+    private boolean waitForTermination(int jobNumber, long timeout) {
+        long startTime = System.currentTimeMillis();
+        long elapsedTime = 0L;
+        long sleepInterval = 1000L;
+        boolean isRunning = true;
+        int statusId = JobStatus.JOB_PENDING;
+        
+        try {
+            while(elapsedTime < timeout && isRunning ) {
+                Thread.sleep(sleepInterval);
+                statusId = getJobStatusId(jobNumber);
+                isRunning = !(statusId == JobStatus.JOB_FINISHED || statusId == JobStatus.JOB_ERROR);
+                elapsedTime = System.currentTimeMillis() - startTime;
+            }
+        }
+        catch (InterruptedException e) {
+            Thread.interrupted();
+        }
+        
+        return isRunning;
+    }
+
     //replaces call to analysisClient.checkStatus
     private int getJobStatusId(int jobId) {
         final String hql = 
@@ -710,6 +808,5 @@ public class RunPipelineInThread {
         return init * 8;
     return init * 16;
     }
-
 
 }
