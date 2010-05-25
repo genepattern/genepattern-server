@@ -77,7 +77,6 @@ public class RuntimeExecCommand {
      */
     public void runCommand(String commandLine[], Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin) {
         ProcessBuilder pb = null;
-        String jobID = null;
         try {
             pb = new ProcessBuilder(commandLine);
             Map<String, String> env = pb.environment();
@@ -86,7 +85,7 @@ public class RuntimeExecCommand {
 
             // spawn the command
             log.debug("starting job: "+jobInfo.getJobNumber());
-            long stime = System.currentTimeMillis();
+            long start_time = System.currentTimeMillis();
 
             process = pb.start();
             // BUG: there is race condition during a tiny time window between the exec and the close
@@ -114,7 +113,6 @@ public class RuntimeExecCommand {
                     standardInStream.close();
                 }
             }
-            jobID = "" + jobInfo.getJobNumber();
 
             // create threads to read from the command's stdout and stderr streams
             outputReader = new CopyStreamThread(process.getInputStream(), new FileOutputStream(stdoutFile));
@@ -124,13 +122,14 @@ public class RuntimeExecCommand {
             outputReader.start();
             errorReader.start();
 
+            String jobID = ""+jobInfo.getJobNumber();
             log.debug(jobID+": process.waitFor()...");
-            long ctime = System.currentTimeMillis();
+            long t0 = System.currentTimeMillis();
 
             process.waitFor();
 
-            long dtime = System.currentTimeMillis();
-            log.debug(jobID+": process.waitFor()...done! took "+(Math.round(0.001*(dtime - ctime)))+" s");
+            long t1 = System.currentTimeMillis();
+            log.debug(jobID+": process.waitFor()...done! took "+(Math.round(0.001*(t1 - t0)))+" s");
 
             // wait for all output before attempting to send it back to the client
             long waitTime = 60*1000L; //don't wait more than a minute during normal job execution
@@ -139,28 +138,35 @@ public class RuntimeExecCommand {
             }
 
             log.debug(jobID+": outputReader.join()...");
-            ctime = System.currentTimeMillis();
+            t0 = System.currentTimeMillis();
 
             outputReader.join(waitTime);
 
-            dtime = System.currentTimeMillis();
-            log.debug(jobID+": outputReader.join()...done! took "+(dtime - ctime)+" ms");
+            t1 = System.currentTimeMillis();
+            log.debug(jobID+": outputReader.join()...done! took "+(t1 - t0)+" ms");
+
             log.debug(jobID+": errorReader.join()...");
-            ctime = System.currentTimeMillis();
+            t0 = System.currentTimeMillis();
 
             errorReader.join(waitTime);
 
-            dtime = System.currentTimeMillis();
-            log.debug(jobID+": errorReader.join()...done! took "+(dtime - ctime)+" ms");
+            t1 = System.currentTimeMillis();
+            log.debug(jobID+": errorReader.join()...done! took "+(t1 - t0)+" ms");
             
             if (!outputReader.wroteBytes()) {
-                stdoutFile.delete();
+                boolean success = stdoutFile.delete();
+                if (!success) {
+                    log.error("Error deleting empty stdout file: "+stdoutFile.getAbsolutePath());
+                }
             }
             if (!errorReader.wroteBytes()) {
-                stderrFile.delete();
+                boolean success = stderrFile.delete();
+                if (!success) {
+                    log.error("Error deleting empty stderr file: "+stderrFile.getAbsolutePath());
+                }
             }
             
-            long d = Math.round(0.001*(System.currentTimeMillis()-stime));
+            long d = Math.round(0.001*(System.currentTimeMillis()-start_time));
             log.debug(jobID+": job completed in "+d+" s");
 
             exitValue = process.exitValue();
@@ -171,7 +177,7 @@ public class RuntimeExecCommand {
             exitValue = -1;
         } 
     }
-    
+
     public void terminateProcess(Status status) {
         if (outputReader != null) {
             outputReader.interrupt();

@@ -47,7 +47,7 @@ public class CopyStreamThread extends Thread {
         try {
             while (!hasBeenInterrupted()) {
                 int n = source.read(buf, 0, buflen);
-                if (n == -1) {
+                if (n < 0) {
                     break;
                 }
                 wroteBytes = true;
@@ -60,6 +60,7 @@ public class CopyStreamThread extends Thread {
         }
         try {
             dest.flush();
+            dest.close();
             source.close();
         } 
         catch (IOException e) {
