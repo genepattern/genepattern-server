@@ -39,14 +39,18 @@ class LsfCommand {
         lsfJob = new LsfJob();
         //note: use the name of the job (the bsub -J arg) to map the GP JOB ID to the JOB_LSF table
         //    the internalJobId is (by default) configured as a primary key with a sequence
-        lsfJob.setName(""+jobId);
         lsfJob.setInternalJobId(jobId);
+        lsfJob.setName(""+jobId);
         lsfJob.setWorkingDirectory(runDir.getAbsolutePath());
         //TODO: handle stdin, currently it is ignored
         //lsfJob.setInputFilename(inputFilename);
+
+        //TODO: use job properties for this
         //Note: BroadCore does not handle the %J idiom for the output file
-        lsfJob.setOutputFilename(lsfProperties.getProperty(LsfProperties.Key.OUTPUT_FILENAME.getKey()));
-        lsfJob.setErrorFileName(stderrFile.getAbsolutePath());
+        //lsfJob.setOutputFilename(lsfProperties.getProperty(LsfProperties.Key.OUTPUT_FILENAME.getKey()));
+        //lsfJob.setErrorFileName(stderrFile.getAbsolutePath());
+        lsfJob.setOutputFilename(".lsf.out");
+        lsfJob.setErrorFileName("stderr.txt");
         
         lsfJob.setProject(lsfProperties.getProperty(LsfProperties.Key.PROJECT.getKey()));
         lsfJob.setQueue(lsfProperties.getProperty(LsfProperties.Key.QUEUE.getKey()));
@@ -60,34 +64,20 @@ class LsfCommand {
         
         List<String> preExecArgs = getPreExecCommand(jobInfo);
         extraBsubArgs.addAll(preExecArgs);
-        
-        //HACK: append a shell script to the command, whose only purpose is to separate stdout of the command from the LSF header information
-        //      LSF does not have a bsub option for this
+
+        String commandLineStr = getCommandLineStr(commandLine);
+        //HACK: wrap the GP command with a shell script whose only purpose is to save stdout from the command in a different file
+        //    than the LSF output file. LSF does not have a bsub option for this
         String wrapperScript = lsfProperties.getProperty(LsfProperties.Key.WRAPPER_SCRIPT.getKey());
         if (wrapperScript != null) {
-            extraBsubArgs.add(wrapperScript);
-            String stdoutPath = stdoutFile.getAbsolutePath();
-            if (stdoutPath.contains(" ")) {
-                stdoutPath = "\""+stdoutPath+"\"";
+            if (wrapperScript.contains(" ")) {
+                wrapperScript = "\""+wrapperScript+"\"";
             }
-            extraBsubArgs.add(stdoutPath);
+            commandLineStr = wrapperScript + " " + commandLineStr;
         }
-
-        //workaround for current implementation of Broad Core lsfJob
-        // it only accepts a single String for the command line, but it would be better if it were treated as a List<String>        
-        String commandLineStr = getCommandLineStr(commandLine);
+        log.debug("lsf job commandLine: "+commandLineStr);
         lsfJob.setCommand(commandLineStr);
-        // use extraBsubArgs instead
-        //int lastIdx = commandLine.length - 1;
-        //if (commandLine.length > 1) {
-        //    for(int i=0; i<(commandLine.length-1); ++i) {
-        //        extraBsubArgs.add(commandLine[i]);
-        //    }
-        //}
-        //if (lastIdx >= 0) {
-        //    lsfJob.setCommand(commandLine[lastIdx]);
-        //}
-
+        
         //TODO: make this a configuration option
         lsfJob.setCompletionListenerName(LsfJobCompletionListener.class.getName());
     }
