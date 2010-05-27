@@ -9,6 +9,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 
@@ -32,7 +33,7 @@ class LsfCommand {
     //example LSF command from the GP production server,
     //bsub -P $project -q "$queue" -R "rusage[mem=$max_memory]" -M $max_memory -m "$hosts" -K -o .lsf_%J.out -e $lsf_err $"$@" \>\> $cmd_out
     
-    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin) {        
+    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin) { 
         long jobId = jobInfo != null ? jobInfo.getJobNumber() : -1L;
 
         lsfJob = new LsfJob();
@@ -40,16 +41,6 @@ class LsfCommand {
         //    the internalJobId is (by default) configured as a primary key with a sequence
         lsfJob.setName(""+jobId);
         lsfJob.setInternalJobId(jobId);
-        
-        String commandLineStr = getCommandLineStr(commandLine);
-        //HACK: append a shell script to my command, whose only purpose is to separate stdout of the job from the LSF header information
-        //      LSF does not have a bsub option for this
-        String wrapperScript = lsfProperties.getProperty(LsfProperties.Key.WRAPPER_SCRIPT.getKey());
-        if (wrapperScript != null) {
-            commandLineStr = wrapperScript + " " + commandLineStr;
-        }
-        log.debug("lsf job commandLine: "+commandLineStr);
-        lsfJob.setCommand(commandLineStr);
         lsfJob.setWorkingDirectory(runDir.getAbsolutePath());
         //TODO: handle stdin, currently it is ignored
         //lsfJob.setInputFilename(inputFilename);
@@ -70,6 +61,34 @@ class LsfCommand {
         List<String> preExecArgs = getPreExecCommand(jobInfo);
         extraBsubArgs.addAll(preExecArgs);
         
+        //HACK: append a shell script to the command, whose only purpose is to separate stdout of the command from the LSF header information
+        //      LSF does not have a bsub option for this
+        String wrapperScript = lsfProperties.getProperty(LsfProperties.Key.WRAPPER_SCRIPT.getKey());
+        if (wrapperScript != null) {
+            extraBsubArgs.add(wrapperScript);
+            String stdoutPath = stdoutFile.getAbsolutePath();
+            if (stdoutPath.contains(" ")) {
+                stdoutPath = "\""+stdoutPath+"\"";
+            }
+            extraBsubArgs.add(stdoutPath);
+        }
+
+        //workaround for current implementation of Broad Core lsfJob
+        // it only accepts a single String for the command line, but it would be better if it were treated as a List<String>        
+        String commandLineStr = getCommandLineStr(commandLine);
+        lsfJob.setCommand(commandLineStr);
+        // use extraBsubArgs instead
+        //int lastIdx = commandLine.length - 1;
+        //if (commandLine.length > 1) {
+        //    for(int i=0; i<(commandLine.length-1); ++i) {
+        //        extraBsubArgs.add(commandLine[i]);
+        //    }
+        //}
+        //if (lastIdx >= 0) {
+        //    lsfJob.setCommand(commandLine[lastIdx]);
+        //}
+
+        //TODO: make this a configuration option
         lsfJob.setCompletionListenerName(LsfJobCompletionListener.class.getName());
     }
     
@@ -123,33 +142,43 @@ class LsfCommand {
         
         if (!Boolean.valueOf(lsfProperties.getProperty(LsfProperties.Key.USE_PRE_EXEC_COMMAND.getKey()))) {
             return rval;
-        }       
-        Set<File> parentDirs = new HashSet<File>();        
+        }
+
+        Set<String> filePaths = new HashSet<String>();
+
+        //add the working directory for the job
+        String jobDirName = GenePatternAnalysisTask.getJobDir(""+jobInfo.getJobNumber());
+        File jobDir = new File(jobDirName);
+        if (jobDir.exists()) {
+            String path = jobDir.getAbsolutePath();
+            filePaths.add(path);
+        }
+
+        //for each input parameter, if it is a file which exists, add its parent to the list
         for(ParameterInfo param : jobInfo.getParameterInfoArray()) {
-            if (param.isInputFile()) {
-                File inputFile = new File(param.getValue());
-                if (inputFile != null && inputFile.canRead()) {
-                    File parentFile = inputFile.getParentFile();
-                    if (parentFile != null && parentFile.canRead()) {
-                        parentDirs.add(parentFile);
-                    }
-                }
+            String val = param.getValue();
+            File file = new File(val);
+            File parentFile = file.getParentFile();
+            if (parentFile != null && parentFile.exists()) {
+                String path = parentFile.getAbsolutePath();
+                filePaths.add(path);
             }
         }
-        if (parentDirs.isEmpty()) {
+        
+        if (filePaths.isEmpty()) {
             return rval;
         }
+        
         String preExecCommand="";
         boolean first = true;
-        for(File parentDir : parentDirs) {
-            //java 5 and no join?
+        for(String path : filePaths) {
             if (!first) {
                 preExecCommand += " && ";
             }
             else {
                 first = false;
             }
-            preExecCommand += "cd \""+parentDir.getAbsolutePath()+"\"";
+            preExecCommand += "cd \""+path+"\"";
         }
 
         log.debug("setting pre_exec_command to: -E \""+preExecCommand+"\"");
