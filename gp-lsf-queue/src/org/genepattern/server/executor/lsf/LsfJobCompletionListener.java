@@ -122,11 +122,16 @@ public class LsfJobCompletionListener implements JobCompletionListener {
                 String arg0 = commandLineArgs.get(0);
                 String arg1 = commandLineArgs.get(1);
                 if (wrapperScript.equals(arg0)) {
-                    return arg1;
+                    stdoutFilename = arg1;
                 }
             }
         }
-        return stdoutFilename;        
+        
+        log.debug("computed output file name is: "+stdoutFilename);
+        log.debug("using 'stdout.txt' instead!");
+        //TODO: fix this!
+        stdoutFilename = "stdout.txt";
+        return stdoutFilename;
     }
 
     public void jobCompleted(final LsfJob job) throws Exception {
