@@ -56,17 +56,24 @@ class LsfCommand {
         lsfJob.setQueue(lsfProperties.getProperty(LsfProperties.Key.QUEUE.getKey()));
         
         List<String> extraBsubArgs = new ArrayList<String>();
-        String maxMemory = lsfProperties.getProperty(LsfProperties.Key.MAX_MEMORY.getKey());
+        String maxMemory = lsfProperties.getProperty(LsfProperties.Key.MAX_MEMORY.getKey(), "2");
         extraBsubArgs.add("-R");
         extraBsubArgs.add("rusage[mem="+maxMemory+"]");
         extraBsubArgs.add("-M");
         extraBsubArgs.add(maxMemory);
-        String extraBsubArgsProp = lsfProperties.getProperty(LsfProperties.Key.EXTRA_BSUB_ARGS.getKey());
-        if (extraBsubArgsProp != null && !"".equals(extraBsubArgsProp.trim())) {
-            extraBsubArgs.add(extraBsubArgsProp);
+        
+        String host = lsfProperties.getProperty(LsfProperties.Key.HOST_OS.getKey());
+        if (host != null) {
+            //-R select[suse]
+            extraBsubArgs.add("-R");
+            extraBsubArgs.add("select["+host+"]");
         }
-        List<String> preExecArgs = getPreExecCommand(jobInfo);
-        extraBsubArgs.addAll(preExecArgs);
+        //String extraBsubArgsProp = lsfProperties.getProperty(LsfProperties.Key.EXTRA_BSUB_ARGS.getKey());
+        //if (extraBsubArgsProp != null && !"".equals(extraBsubArgsProp.trim())) {
+        //    extraBsubArgs.add(extraBsubArgsProp);
+        //}
+        //List<String> preExecArgs = getPreExecCommand(jobInfo);
+        //extraBsubArgs.addAll(preExecArgs);
         lsfJob.setExtraBsubArgs(extraBsubArgs);
 
         String commandLineStr = getCommandLineStr(commandLine);

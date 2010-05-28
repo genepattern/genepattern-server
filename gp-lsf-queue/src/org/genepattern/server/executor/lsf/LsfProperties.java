@@ -12,6 +12,7 @@ public class LsfProperties {
         WRAPPER_SCRIPT("lsf.wrapper.script"),
         OUTPUT_FILENAME("lsf.output.filename"),
         USE_PRE_EXEC_COMMAND("lsf.use.pre.exec.command"),
+        HOST_OS("lsf.host.os"),
         EXTRA_BSUB_ARGS("lsf.extra.bsub.args");
         
         private String key="lsf.key";
