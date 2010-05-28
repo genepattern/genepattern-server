@@ -61,9 +61,13 @@ class LsfCommand {
         extraBsubArgs.add("rusage[mem="+maxMemory+"]");
         extraBsubArgs.add("-M");
         extraBsubArgs.add(maxMemory);
-        
+        String extraBsubArgsProp = lsfProperties.getProperty(LsfProperties.Key.EXTRA_BSUB_ARGS.getKey());
+        if (extraBsubArgsProp != null && !"".equals(extraBsubArgsProp.trim())) {
+            extraBsubArgs.add(extraBsubArgsProp);
+        }
         List<String> preExecArgs = getPreExecCommand(jobInfo);
         extraBsubArgs.addAll(preExecArgs);
+        lsfJob.setExtraBsubArgs(extraBsubArgs);
 
         String commandLineStr = getCommandLineStr(commandLine);
         //HACK: wrap the GP command with a shell script whose only purpose is to save stdout from the command in a different file
