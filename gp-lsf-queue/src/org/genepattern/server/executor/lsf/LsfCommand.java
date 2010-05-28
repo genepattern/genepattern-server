@@ -58,7 +58,7 @@ class LsfCommand {
         List<String> extraBsubArgs = new ArrayList<String>();
         String maxMemory = lsfProperties.getProperty(LsfProperties.Key.MAX_MEMORY.getKey(), "2");
         extraBsubArgs.add("-R");
-        extraBsubArgs.add("'rusage[mem="+maxMemory+"]'");
+        extraBsubArgs.add("rusage[mem="+maxMemory+"]");
         extraBsubArgs.add("-M");
         extraBsubArgs.add(maxMemory);
         
@@ -66,7 +66,7 @@ class LsfCommand {
         if (host != null) {
             //-R select[suse]
             extraBsubArgs.add("-R");
-            extraBsubArgs.add("'select["+host+"]'");
+            extraBsubArgs.add("select["+host+"]");
         }
         //String extraBsubArgsProp = lsfProperties.getProperty(LsfProperties.Key.EXTRA_BSUB_ARGS.getKey());
         //if (extraBsubArgsProp != null && !"".equals(extraBsubArgsProp.trim())) {
