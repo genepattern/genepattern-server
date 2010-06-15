@@ -411,5 +411,38 @@ public class CommandManagerFactoryTest extends TestCase {
         assertEquals("checking property set in executors->LSF->default.properties ", ".lsf.out", cmdProps.getProperty("lsf.output.filename"));
         assertEquals("checking property override in executors->LSF->default.properties ", "-Xmx4g", cmdProps.getProperty("java_flags"));
     }
+    
+    /**
+     * Unit tests to validate setting a null value.
+     */
+    public void testNullValues() throws CommandExecutorNotFoundException {
+        initializeYamlConfigFile("test_null_values.yaml");
+        JobInfo jobInfo = new JobInfo();
+        jobInfo.setUserId("test");
+        jobInfo.setTaskName("testEchoSleeper");
+        
+        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
+        CommandExecutor cmdExec = cmdMgr.getCommandExecutor(jobInfo);
+        Properties cmdProps = cmdMgr.getCommandProperties(jobInfo);
+        assertEquals("Expecting LSF", "LSF", CommandManagerFactory.getCommandExecutorId(cmdExec));
+        assertEquals("default.properties->debug.mode", "true", cmdProps.getProperty("debug.mode"));
+        
+        jobInfo = new JobInfo();
+        jobInfo.setUserId("adminuser");
+        jobInfo.setTaskName("testEchoSleeper");
+        cmdExec = cmdMgr.getCommandExecutor(jobInfo);
+        cmdProps = cmdMgr.getCommandProperties(jobInfo);
+
+        assertEquals("Expecting RuntimeExec", "RuntimeExec", CommandManagerFactory.getCommandExecutorId(cmdExec));
+        assertEquals("", cmdProps.getProperty("debug.mode"));
+        
+        jobInfo = new JobInfo();
+        jobInfo.setUserId("testuser");
+        jobInfo.setTaskName("testEchoSleeper");
+        cmdExec = cmdMgr.getCommandExecutor(jobInfo);
+        cmdProps = cmdMgr.getCommandProperties(jobInfo);
+        assertEquals("Expecting LSF", "LSF", CommandManagerFactory.getCommandExecutorId(cmdExec));
+        assertEquals("Expecting empty string", "", cmdProps.getProperty("debug.mode"));
+    }
 
 }
