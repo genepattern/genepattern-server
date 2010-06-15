@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+#
+# wrapper script invoked by remote ssh
+#
+
+# cwd to the job results directory for the job
+#    note, broad core initialization calls 'bsub -V', 
+#    which does not require cd to the job results directory on the host machine
+#    as a matter of fact, the cd command will fail because on startup there cwd on the client
+#    machine does not exist on the host machine
+client_wd="$1";
+shift;
+if [ -e "$client_wd" ]
+then
+    cd "$client_wd";
+fi
+
+# expect a space limited list of dotkits as the next arg
+dotkit_list="$1";
+shift;
+
+# exec the bsub command, setting up LSF first
+# special case for '-h' or '-V' because redirect (>>) to a file doesn't make sense and
+# will cause broad core init to fail silently
+if [ "$1" == "-V" ]; then
+    exec -- /broad/tools/scripts/s "$dotkit_list" bsub "$@";
+elif [ "$1" == "-n" ]; then
+    exec -- /broad/tools/scripts/s "$dotkit_list" bsub "$@";
+else 
+    # this is here to facilitate separating stdout of the job from the lsf output
+    exec -- /broad/tools/scripts/s "$dotkit_list" bsub "$@ >> stdout.txt";
+fi
