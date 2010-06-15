@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+exec -- ssh gpint01 "/broad/tools/scripts/s 'LSF' bjobs $@"
+

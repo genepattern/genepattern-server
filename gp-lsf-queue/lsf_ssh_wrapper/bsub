@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+#
+# wrapper script which runs bsub via ssh to a remote host
+#
+# I wrote this so that I can submit LSF jobs from gpint01 from my GP server running on my MacBook.
+#
+
+remote_host="gpint01";
+remote_bsub_wrapper="/xchip/gpdev/users/pcarr/scripts/wrap_bsub"
+# TODO: configure dotkit_list from genepattern
+dotkit_list="LSF\ Java-1.6";
+
+#wrap each cmd line arg in single quotes
+#TODO: handle single quote characters within the cmd line args
+quote_arg() {
+    echo "'$1'";
+}
+
+arg_list="";
+for x in "$@"
+do
+    arg=$(quote_arg "$x");
+    arg_list="$arg_list $arg "
+done
+
+wd=`pwd`;
+exec -- ssh "$remote_host" "$remote_bsub_wrapper" "$wd" "$dotkit_list" "$arg_list";
