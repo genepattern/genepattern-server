@@ -274,8 +274,15 @@ public class Analysis extends GenericWebService {
     }
 
     public JobInfo getJob(int jobId) throws WebServiceException {
-        String userId = getUsernameFromContext();
-        this.canReadJob(userId, jobId);
+        boolean checkPermission = true;
+        return getJob(jobId, checkPermission);
+    }
+    
+    private JobInfo getJob(int jobId, boolean checkPermission) throws WebServiceException {
+        if (checkPermission) {
+            String userId = getUsernameFromContext();
+            this.canReadJob(userId, jobId);
+        }
         AnalysisDAO ds = new AnalysisDAO();
         JobInfo job = ds.getJobInfo(jobId);
         return job;
@@ -657,12 +664,30 @@ public class Analysis extends GenericWebService {
             log.error("invalid null arg to terminateJob");
             return;
         }
+
+        //terminate pending jobs immediately
+        boolean isPending = isPending(jobInfo);
+        if (isPending) {
+            log.debug("Terminating PENDING job #"+jobInfo.getJobNumber());
+            
+            try { 
+                AnalysisDAO ds = new AnalysisDAO();
+                ds.updateJobStatus(jobInfo.getJobNumber(), JobStatus.JOB_ERROR);
+                HibernateUtil.commitTransaction();
+            }
+            catch (Throwable t) {
+                HibernateUtil.rollbackTransaction();
+            }
+            return;
+        } 
+        
         //note: don't terminate completed jobs
         boolean isFinished = isFinished(jobInfo); 
         if (isFinished) {
             log.debug("job "+jobInfo.getJobNumber()+"is already finished");
             return;
         }
+
         try {
             CommandExecutor cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
             cmdExec.terminateJob(jobInfo);
@@ -672,6 +697,14 @@ public class Analysis extends GenericWebService {
         }
     }
     
+    private static boolean isPending(JobInfo jobInfo) {
+        return isPending(jobInfo.getStatus());
+    }
+
+    private static boolean isPending(String jobStatus) {
+        return JobStatus.PENDING.equals(jobStatus);
+    }
+
     private static boolean isFinished(JobInfo jobInfo) {
         return isFinished(jobInfo.getStatus());
     }
