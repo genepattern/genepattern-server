@@ -33,19 +33,16 @@ class LsfCommand {
     //example LSF command from the GP production server,
     //bsub -P $project -q "$queue" -R "rusage[mem=$max_memory]" -M $max_memory -m "$hosts" -K -o .lsf_%J.out -e $lsf_err $"$@" \>\> $cmd_out
     
-    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin) { 
+    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) { 
         long jobId = jobInfo != null ? jobInfo.getJobNumber() : -1L;
 
         lsfJob = new LsfJob();
-        //note: use the name of the job (the bsub -J arg) to map the GP JOB ID to the JOB_LSF table
-        //    the internalJobId is (by default) configured as a primary key with a sequence
-        lsfJob.setInternalJobId(jobId);
         lsfJob.setName(""+jobId);
         lsfJob.setWorkingDirectory(runDir.getAbsolutePath());
-        //TODO: handle stdin, currently it is ignored
-        //lsfJob.setInputFilename(inputFilename);
-
-        //TODO: use job properties for this
+        if (stdinFile != null) {
+            lsfJob.setInputFilename(stdinFile.getAbsolutePath());
+        }
+        //TODO: use job properties to set output and error file names
         //Note: BroadCore does not handle the %J idiom for the output file
         //lsfJob.setOutputFilename(lsfProperties.getProperty(LsfProperties.Key.OUTPUT_FILENAME.getKey()));
         //lsfJob.setErrorFileName(stderrFile.getAbsolutePath());
@@ -105,25 +102,28 @@ class LsfCommand {
     public LsfJob getLsfJob() {
         return lsfJob;
     }
-    
+
     /**
      * helper method which converts a list of String args into a single command line string for LSF submission.
+     * Because current version of BroadCore can only pass a single string arg as the bsub command (rather than a list of string)
+     * we need to wrap each arg in the original list in quotes, escaping special characters if necessary.
      * @param commandLine
      * @return
      */
     private String getCommandLineStr(String[] commandLine) {
+        final char[] special_chars = {'!', '$', '\"', '`'};
         String rval = "";
         boolean first = true;
         for(String arg : commandLine) {
+            for(char c : special_chars) {
+                arg = arg.replace(""+c, "\\"+c);
+            }
+            arg = "\""+arg+"\"";
             if (first) {
                 first = false;
             }
             else {
                 rval += " ";
-            }
-            //wrap args with space characters in quotes
-            if (arg.contains(" ")) {
-                arg = "\""+arg+"\"";
             }
             rval += arg;
         }
