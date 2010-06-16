@@ -58,7 +58,7 @@ public interface CommandExecutor {
             File stdoutFile, 
             File stderrFile, 
             JobInfo jobInfo, 
-            String stdin) 
+            File stdinFile) 
     throws CommandExecutorException;
     
     /**

@@ -32,7 +32,7 @@ public class TestCommandExecutor implements CommandExecutor {
         log.info("terminating job: "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName());
     }
 
-    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin) {
+    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) {
         int exitCode = 0;
         int jobStatus = JobStatus.JOB_PROCESSING;
         try {

@@ -118,10 +118,10 @@ public class RuntimeCommandExecutor implements CommandExecutor {
 
     public void runCommand(String[] commandLine,
             Map<String, String> environmentVariables, File runDir,
-            File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin) throws CommandExecutorException {
+            File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) throws CommandExecutorException {
         
         String jobId = ""+jobInfo.getJobNumber();
-        CallableRuntimeExecCommand task = new CallableRuntimeExecCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdin);
+        CallableRuntimeExecCommand task = new CallableRuntimeExecCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile);
         runningJobs.put(jobId, task);
         try {
             Future<?> f = executor.submit(task);
@@ -168,7 +168,7 @@ public class RuntimeCommandExecutor implements CommandExecutor {
         private File stdoutFile = null;
         private File stderrFile = null;
         private JobInfo jobInfo = null;
-        private String stdin = null;
+        private File stdinFile = null;
         
         private RuntimeExecCommand cmd = null;
         
@@ -184,19 +184,19 @@ public class RuntimeCommandExecutor implements CommandExecutor {
                 File stdoutFile, 
                 File stderrFile, 
                 JobInfo jobInfo, 
-                String stdin) {
+                File stdinFile) {
             this.commandLine = commandLine;
             this.environmentVariables = environmentVariables;
             this.runDir = runDir;
             this.stdoutFile = stdoutFile;
             this.stderrFile = stderrFile;
             this.jobInfo = jobInfo;
-            this.stdin = stdin;
+            this.stdinFile = stdinFile;
         }
 
         public RuntimeExecCommand call() throws Exception {
             cmd = new RuntimeExecCommand();
-            cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdin);
+            cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile);
             String jobId = ""+jobInfo.getJobNumber();
             runningJobs.remove(jobId);
             int exitValue = cmd.getExitValue();

@@ -1240,7 +1240,23 @@ public class GenePatternAnalysisTask {
             } 
             else if (lastToken.equals(STDIN_REDIRECT)) {
                 vProblems.add("Missing name for standard input redirect");
+            } 
+            //check for stdin before starting the process...
+            File stdinFile = null;
+            if (stdinFilename != null) {
+                stdinFile = new File(stdinFilename);
+                if (!stdinFile.isAbsolute()) {
+                    //if not absolute use a path relative to the output directory
+                    stdinFile = new File(outDir, stdinFilename);
+                }
+                if (!stdinFile.canRead()) {
+                    //... so that errors can be thrown before starting the process
+                    stdinFile = null;
+                    vProblems.add("Can't read file for standard input redirect: "+stdinFile.getAbsolutePath());
+                }
+                stdinFilename=stdinFile.getAbsolutePath();
             }
+            
             StringBuffer stderrBuffer = new StringBuffer();
             if (vProblems.size() > 0) {
                 for (Enumeration<String> eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
@@ -1287,7 +1303,7 @@ public class GenePatternAnalysisTask {
                         //close hibernate session before running the job, but don't save the parameter info ...
                         HibernateUtil.closeCurrentSession();
                         try {
-                            cmdExec.runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename);
+                            cmdExec.runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
                         }
                         catch (CommandExecutorException e) {
                             //typically thrown when the job submission fails (rather than an error during the run of the job)

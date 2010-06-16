@@ -276,7 +276,7 @@ public class PipelineExecutor implements CommandExecutor {
             final File stdoutFile, 
             final File stderrFile, 
             final JobInfo jobInfo, 
-            final String stdin) 
+            final File stdinFile) 
     throws CommandExecutorException {
         
         if (jobInfo == null) {

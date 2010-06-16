@@ -75,7 +75,7 @@ public class RuntimeExecCommand {
      *            buffer to append GenePattern errors to
      * @author Jim Lerner
      */
-    public void runCommand(String commandLine[], Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin) {
+    public void runCommand(String commandLine[], Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) {
         ProcessBuilder pb = null;
         try {
             pb = new ProcessBuilder(commandLine);
@@ -93,7 +93,8 @@ public class RuntimeExecCommand {
             // to imagine that there might be useful input coming from stdin.
             // This seemed to be the case for Perl 5.0.1, and might be a problem in other applications as well.
             OutputStream standardInStream = process.getOutputStream();
-            if (stdin == null) {
+            
+            if (stdinFile == null) {
                 standardInStream.close();
             } 
             else {
@@ -101,7 +102,7 @@ public class RuntimeExecCommand {
                 int bytesRead;
                 FileInputStream fis = null;
                 try {
-                    fis = new FileInputStream(new File(runDir, stdin));
+                    fis = new FileInputStream(stdinFile);
                     while ((bytesRead = fis.read(b)) >= 0) {
                         standardInStream.write(b, 0, bytesRead);
                     }
