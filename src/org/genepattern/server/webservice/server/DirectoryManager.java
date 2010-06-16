@@ -13,7 +13,6 @@
 package org.genepattern.server.webservice.server;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Hashtable;
 
@@ -21,12 +20,10 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
-import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.util.LSIDUtil;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.TaskInfoAttributes;
 
 /**
  * Directory Manager - does the heavy lifting of creating and finding directories for suites, pipelines and tasks
@@ -135,12 +132,7 @@ public class DirectoryManager {
         String dirName = makeDirName(lsid, taskName, taskInfo);
         f = new File(taskLibDir, dirName);
         f.mkdirs();
-        try {
-            ret = f.getCanonicalPath();
-        } 
-        catch (IOException e) {
-            ret = f.getPath();
-        }
+        ret = f.getAbsolutePath();
         if (lsid != null) {
             htTaskLibDir.put(lsid, ret);
         }
@@ -178,13 +170,7 @@ public class DirectoryManager {
         String dirName = makeDirName(lsid, taskName, taskInfo);
         f = new File(taskLibDir, dirName);
         f.mkdirs();
-        try {
-            return f.getCanonicalPath();
-        }
-        catch (IOException e) {
-            _cat.error("Error getting canonical path for "+f.getAbsolutePath(), e);
-            return f.getAbsolutePath();
-        }
+        return f.getAbsolutePath();
     }
     
     protected static String makeDirName(LSID lsid, String taskName, TaskInfo taskInfo) {
@@ -245,21 +231,16 @@ public class DirectoryManager {
 	return dirName;
     }
 
-    protected static String getLibDir() {
-	if (taskLibDir == null) {
-	    taskLibDir = System.getProperty("tasklib");
-	    if (taskLibDir == null || !new File(taskLibDir).exists()) {
-		taskLibDir = ".." + File.separator + "taskLib";
-	    }
-	    File f = new File(taskLibDir);
-	    try {
-		taskLibDir = f.getCanonicalPath();
-	    } catch (IOException e) {
-		e.printStackTrace();
-		taskLibDir = f.getPath();
-	    }
-	}
-	return taskLibDir;
+    private static String getLibDir() {
+        if (taskLibDir == null) {
+            taskLibDir = System.getProperty("tasklib");
+            if (taskLibDir == null || !new File(taskLibDir).exists()) {
+                taskLibDir = ".." + File.separator + "taskLib";
+            }
+            File f = new File(taskLibDir);
+            taskLibDir = f.getAbsolutePath();
+        }
+        return taskLibDir;
     }
 
     /**
@@ -274,39 +255,33 @@ public class DirectoryManager {
      *                 if genepattern.properties System property not defined
      * @author Jim Lerner
      */
-    public static String getSuiteLibDir(String suiteName, String sLSID, String username) throws Exception {
-	String ret = null;
-	String name = suiteName;
-	if (suiteName == null) {
-	    IAdminClient adminClient = new LocalAdminClient(username);
-	    SuiteInfo si = adminClient.getSuite(sLSID);
-	    name = si.getName();
-	}
+    public static String getSuiteLibDir(String suiteName, String sLSID, String username) throws Exception  {
+        String ret = null;
 
-	if (sLSID != null) {
-	    ret = (String) htSuiteLibDir.get(sLSID);
-	    if (ret != null)
-		return ret;
-	}
+        if (sLSID != null) {
+            ret = (String) htSuiteLibDir.get(sLSID);
+            if (ret != null) {
+                return ret;
+            }
+        }
 
-	try {
-	    File f = null;
-	    getLibDir();
-
-	    LSID lsid = null;
-
-	    String dirName = makeDirName(lsid, name);
-	    f = new File(taskLibDir, dirName);
-	    f.mkdirs();
-	    ret = f.getCanonicalPath();
-	    if (lsid != null) {
-		htTaskLibDir.put(lsid, ret);
-	    }
-	    return ret;
-	} catch (Exception e) {
-	    // e.printStackTrace();
-	    throw e;
-	}
+        File f = null;
+        getLibDir();
+        LSID lsid = null;
+        String name = suiteName;
+        if (suiteName == null) {
+            IAdminClient adminClient = new LocalAdminClient(username);
+            SuiteInfo si = adminClient.getSuite(sLSID);
+            name = si.getName();
+        }
+        String dirName = makeDirName(lsid, name);
+        f = new File(taskLibDir, dirName);
+        f.mkdirs();
+        ret = f.getAbsolutePath();
+        if (lsid != null) {
+            htTaskLibDir.put(lsid, ret);
+        }
+        return ret;
     }
 
 }
