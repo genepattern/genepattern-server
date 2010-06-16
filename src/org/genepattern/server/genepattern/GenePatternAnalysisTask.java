@@ -96,8 +96,6 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
@@ -157,6 +155,8 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
+import org.hibernate.Query;
+import org.hibernate.Session;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -537,6 +537,24 @@ public class GenePatternAnalysisTask {
             HibernateUtil.closeCurrentSession();
         }
     }
+    
+    private int getJobStatusId(int jobId) {
+        final String hql = 
+            "select jobStatus.statusId from org.genepattern.server.domain.AnalysisJob job "+
+            " where job.jobNo = :jobNo ";
+        
+        try { 
+            HibernateUtil.beginTransaction();
+            Session session = HibernateUtil.getSession();
+            Query query = session.createQuery(hql);
+            query.setInteger("jobNo", jobId);
+            Object rval = query.uniqueResult();
+            return AnalysisDAO.getCount(rval);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+    }
 
     /**
      * Called by Omnigene Analysis engine to run a single analysis job, wait for completion, then report the results to
@@ -558,6 +576,13 @@ public class GenePatternAnalysisTask {
         int jobId = jobInfo.getJobNumber();
         if (log.isDebugEnabled()) {
             log.debug("Start onJob id=" + jobId + " (" + jobInfo.getTaskName());
+        }
+        
+        // handle special-case: job was terminated before it was started
+        int statusId = getJobStatusId(jobId);
+        if (JobStatus.JOB_ERROR == statusId || JobStatus.JOB_FINISHED == statusId) {
+            log.info("job #"+jobId+" already finished, statusId="+statusId);
+            return;
         }
 
         // pipelines run from the webapp show up as BaseDAO.UNPROCESSABLE_TASKID
@@ -1558,6 +1583,7 @@ public class GenePatternAnalysisTask {
         }
         File stderrFile = new File(outDir, stderrFilename);
         if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0) {
+            //TODO: set error flag
             addFileToOutputParameters(jobInfo, stderrFilename, stderrFilename, parentJobInfo);
         }
 
@@ -2438,66 +2464,14 @@ public class GenePatternAnalysisTask {
         }
     }
 
-    /**
-     * Provides a TreeMap, sorted by case-insensitive task name, of all of the tasks registered in the task_master table
-     * that are handled by the GenePatternAnalysisTask class.
-     * 
-     * @return TreeMap whose key is task name, and whose value is a TaskInfo object (with nested TaskInfoAttributes and
-     *         ParameterInfo[]).
-     * @author Jim Lerner
-     */
-    public static Collection getTasks() throws OmnigeneException, RemoteException {
-	return getTasks(null);
-    }
-
     public static AnalysisDAO getDS() {
         return new AnalysisDAO();
     }
 
-    /**
-     * getTasks for a specific userID returns a TreeMap of all of the GenePatternAnalysisTask-supported tasks that are
-     * visible to a particular userID. Tasks are presented in case-insensitive alphabetical order.
-     * 
-     * @param userID
-     *            userID controlling which private tasks will be returned. All public tasks are also returned, and are
-     *            interleaved alphabetically with the private tasks.
-     * @return TreeMap whose key is task name, and whose value is a TaskInfo object (with nested TaskInfoAttributes and
-     *         ParameterInfo[]).
-     * @author Jim Lerner
-     */
-
-    public static List getTasksSorted(String userID) throws OmnigeneException, RemoteException {
-	List vTasks = getTasks(userID); // get vector of TaskInfos
-	if (vTasks != null) {
-	    Collections.sort(vTasks, new Comparator() {
-		// case-insensitive compare on task name, then LSID
-		public int compare(Object o1, Object o2) {
-		    TaskInfo t1 = (TaskInfo) o1;
-		    TaskInfo t2 = (TaskInfo) o2;
-		    int c = t1.getName().compareToIgnoreCase(t2.getName());
-		    if (c == 0) {
-			String lsid1 = t1.giveTaskInfoAttributes().get(LSID);
-			String lsid2 = t2.giveTaskInfoAttributes().get(LSID);
-			if (lsid1 == null) {
-			    return 1;
-			}
-			if (lsid2 == null) {
-			    return -1;
-			}
-			return -lsid1.compareToIgnoreCase(lsid2);
-		    }
-		    return c;
-		}
-	    });
-	}
-	return vTasks;
-    }
-
     public static List getTasks(String userID) throws OmnigeneException, RemoteException {
-	AdminDAO adminDAO = new AdminDAO();
-	TaskInfo[] taskArray = (userID == null ? adminDAO.getAllTasks() : adminDAO.getAllTasksForUser(userID));
-	return Arrays.asList(taskArray);
-
+        AdminDAO adminDAO = new AdminDAO();
+        TaskInfo[] taskArray = (userID == null ? adminDAO.getAllTasks() : adminDAO.getAllTasksForUser(userID));
+        return Arrays.asList(taskArray);
     }
 
     /**
@@ -2620,16 +2594,9 @@ public class GenePatternAnalysisTask {
             // as a convenience to the user, create a <libdir> property which is where DLLs, JARs, EXEs, etc. are dumped to when adding tasks
             String taskLibDir = "taskLibDir";
             if (taskID != -1) {
-                try {
-                    //getTaskLibDir starts a DB transaction ...
-                    taskLibDir = DirectoryManager.getTaskLibDir(taskName, sLSID, userID);
-                    File f = new File(taskLibDir);
-                    taskLibDir = f.getPath() + System.getProperty("file.separator");
-                }
-                finally {
-                    // ... which must be closed
-                    HibernateUtil.closeCurrentSession();
-                }
+                taskLibDir = DirectoryManager.getTaskLibDir(taskInfo);
+                File f = new File(taskLibDir);
+                taskLibDir = f.getPath() + System.getProperty("file.separator");
             }
             props.put(LIBDIR, taskLibDir);
 
