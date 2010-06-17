@@ -1249,14 +1249,14 @@ public class GenePatternAnalysisTask {
                     //if not absolute use a path relative to the output directory
                     stdinFile = new File(outDir, stdinFilename);
                 }
+                stdinFilename=stdinFile.getAbsolutePath();
                 if (!stdinFile.canRead()) {
                     //... so that errors can be thrown before starting the process
+                    vProblems.add("Can't read file for standard input redirect: "+stdinFilename);
                     stdinFile = null;
-                    vProblems.add("Can't read file for standard input redirect: "+stdinFile.getAbsolutePath());
                 }
-                stdinFilename=stdinFile.getAbsolutePath();
             }
-            
+
             StringBuffer stderrBuffer = new StringBuffer();
             if (vProblems.size() > 0) {
                 for (Enumeration<String> eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
