@@ -233,6 +233,12 @@ public class GenePatternAnalysisTask {
     protected static final String OUTPUT_FILENAME = "output_filename";
     protected static final String ORIGINAL_PATH = "originalPath";
     public static final String TASK_NAME = "GenePatternAnalysisTask";
+    
+    //these flags are for input files which have been moved, copied, or downloaded into the working directory for the job
+    //properties get set during onJob and removed during handleJobCompletion
+    //private static final String ORIGINAL_FILENAME = "originalFilename";
+    //private static final String ORIGINAL_LAST_MODIFIED="originalLastModified";
+    //private static final String ORIGINAL_LENGTH="originalLength";
 
     /**
      * indicates whether version string has been displayed by init already
@@ -670,39 +676,33 @@ public class GenePatternAnalysisTask {
                 HibernateUtil.closeCurrentSession();
             }
 
-            ParameterInfo[] params = jobInfo.getParameterInfoArray();
+            //ParameterInfo[] paramsActual = jobInfo.getParameterInfoArray();
+            ParameterInfo[] paramsCopy = copyParameterInfoArray(jobInfo);
             Properties props = setupProps(taskInfo, taskName, parent, jobId, jobInfo.getTaskID(),
-                    taskInfoAttributes, params, environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
+                    taskInfoAttributes, paramsCopy, environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
             Vector<String> vProblems = new Vector<String>();
-            long inputLastModified[] = new long[0];
-            long inputLength[] = new long[0];
-            if (params != null) {
-                inputLastModified = new long[params.length];
-                inputLength = new long[params.length];
-                for (int i = 0; i < params.length; i++) {
-                    HashMap attrsActualOrig = params[i].getAttributes();
-                    //operate on a copy of these parameters
-                    Map<String,String> attrsActual = new HashMap<String,String>();
-                    for(Object key : attrsActualOrig.keySet()) {
-                        Object val = attrsActualOrig.get(key);
-                        attrsActual.put(""+key, ""+val);
+            if (paramsCopy != null) {
+                for (int i = 0; i < paramsCopy.length; i++) {
+                    //HashMap attrsActual = paramsActual[i].getAttributes();
+                    HashMap attrsCopy = paramsCopy[i].getAttributes();
+                    if (attrsCopy == null) {
+                        attrsCopy = new HashMap();
                     }
-                    
-                    if (attrsActual == null) {
-                        attrsActual = new HashMap<String, String>();
-                    }
-                    String fileType = (String) attrsActual.get(ParameterInfo.TYPE);
-                    String mode = (String) attrsActual.get(ParameterInfo.MODE);
-                    String originalPath = params[i].getValue();
+                    //if (attrsActual == null) {
+                    //    attrsActual = new HashMap();
+                    //}
+                    String fileType = (String) attrsCopy.get(ParameterInfo.TYPE);
+                    String mode = (String) attrsCopy.get(ParameterInfo.MODE);
+                    String originalPath = paramsCopy[i].getValue();
                     // allow parameter value substitutions within file input parameters
-                    originalPath = substitute(originalPath, props, params);
-                    boolean isOptional = "on".equals(attrsActual.get("optional"));
+                    originalPath = substitute(originalPath, props, paramsCopy);
+                    boolean isOptional = "on".equals(attrsCopy.get("optional"));
                     if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
                         if (originalPath == null) {
                             if (isOptional) {
                                 continue;
                             }
-                            throw new IOException("Non-optional parameter " + params[i].getName() + " has not been assigned a filename.");
+                            throw new IOException("Non-optional parameter " + paramsCopy[i].getName() + " has not been assigned a filename.");
                         }
                         if (mode.equals("CACHED_IN")) {
                             //param is existing job output file
@@ -736,7 +736,7 @@ public class GenePatternAnalysisTask {
                             }
                         } 
                         else if (mode.equals(ParameterInfo.INPUT_MODE)) {
-                            log.debug("IN " + params[i].getName() + "=" + originalPath);
+                            log.debug("IN " + paramsCopy[i].getName() + "=" + originalPath);
                             //web form upload: <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>
                             //SOAP client upload: <soap.attachment.dir>/<user_id>/<filename>
                             //inherited input file from parent pipeline job: <jobResults>/<different_job_id>/<filename>
@@ -799,7 +799,7 @@ public class GenePatternAnalysisTask {
                             }
                         } 
                         else {
-                            vProblems.add("Unknown mode for parameter " + params[i].getName() + ".");
+                            vProblems.add("Unknown mode for parameter " + paramsCopy[i].getName() + ".");
                             continue;
                         }
                         File inFile = new File(originalPath);
@@ -810,8 +810,8 @@ public class GenePatternAnalysisTask {
 
                         if (inputFileMode == INPUT_FILE_MODE.PATH) {
                             //TODO: don't do this for uploaded files
-                            attrsActual.remove(ParameterInfo.TYPE);
-                            attrsActual.remove(ParameterInfo.INPUT_MODE);
+                            attrsCopy.remove(ParameterInfo.TYPE);
+                            attrsCopy.remove(ParameterInfo.INPUT_MODE);
                         } 
                         else {
                             File outFile = null;
@@ -834,6 +834,7 @@ public class GenePatternAnalysisTask {
                                     vProblems.add("Unable to copy " + inFile + " to " + outFile);
                                     continue;
                                 }
+                                //TODO: mark for delete on handleJobCompletion
                                 outFile.deleteOnExit(); // mark for delete, just in case
                             } 
                             else if (inputFileMode == INPUT_FILE_MODE.MOVE) {
@@ -841,15 +842,20 @@ public class GenePatternAnalysisTask {
                                     vProblems.add("Unable to move " + inFile + " to " + outFile);
                                     continue;
                                 }
+                                //TODO: mark for move back on handleJobCompletion
                             }
-                            params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
-                            params[i].setValue(outFile.getCanonicalPath());
-                            inputLastModified[i] = outFile.lastModified();
-                            inputLength[i] = outFile.length();
+
+                            attrsCopy.put(ORIGINAL_PATH, originalPath);
+                            paramsCopy[i].setValue(outFile.getCanonicalPath());
+                            
+                            //attrsActual.put(ORIGINAL_PATH, originalPath);
+                            //attrsActual.put(ORIGINAL_FILENAME, outFile.getName());
+                            //attrsActual.put(ORIGINAL_LAST_MODIFIED, ""+outFile.lastModified());
+                            //attrsActual.put(ORIGINAL_LENGTH, ""+outFile.length());
                         }
                     } 
                     else if (i >= formalParamsLength) {
-                        log.debug("params[" + i + "]=" + params[i].getName() + " has no formal parameter defined");
+                        log.debug("params[" + i + "]=" + paramsCopy[i].getName() + " has no formal parameter defined");
                     } 
                     else {
                         // check formal parameters for a file input type that
@@ -860,7 +866,7 @@ public class GenePatternAnalysisTask {
                         fileType = null;
                         mode = null;
                         for (int formal = 0; formals != null && formal < formals.length; formal++) {
-                            if (formals[formal].getName().equals(params[i].getName())) {
+                            if (formals[formal].getName().equals(paramsCopy[i].getName())) {
                                 attrFormals = formals[formal].getAttributes();
                                 fileType = attrFormals.get(ParameterInfo.TYPE);
                                 mode = attrFormals.get(ParameterInfo.MODE);
@@ -876,8 +882,8 @@ public class GenePatternAnalysisTask {
                                     continue;
                                 }
                                 //TODO: don't remove
-                                attrsActual.remove(ParameterInfo.TYPE);
-                                attrsActual.remove(ParameterInfo.INPUT_MODE);
+                                attrsCopy.remove(ParameterInfo.TYPE);
+                                attrsCopy.remove(ParameterInfo.INPUT_MODE);
                             } 
                             else {
                                 try {
@@ -896,7 +902,7 @@ public class GenePatternAnalysisTask {
                             }
                         }
                         if (isURL && jobType != JOB_TYPE.VISUALIZER && jobType != JOB_TYPE.PIPELINE) {
-                            //TODO: may need to revist this as input urls are not working for pipelines after the rewrite 
+                            //TODO: may need to revisit this as input urls are not working for pipelines after the rewrite 
                             //don't translate input urls for visualizers and pipelines
                             URI uri = new URI(originalPath);
                             final String userInfo = uri.getUserInfo();
@@ -920,10 +926,10 @@ public class GenePatternAnalysisTask {
                                 if ("file".equalsIgnoreCase(uri.getScheme()) && allowInputFilePaths) {
                                     File f = new File(uri);
                                     if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                                        params[i].setValue(f.getAbsolutePath());
+                                        paramsCopy[i].setValue(f.getAbsolutePath());
                                         //TODO: don't remove
-                                        attrsActual.remove(ParameterInfo.TYPE);
-                                        attrsActual.remove(ParameterInfo.INPUT_MODE);
+                                        attrsCopy.remove(ParameterInfo.TYPE);
+                                        attrsCopy.remove(ParameterInfo.INPUT_MODE);
                                         downloadUrl = false;
                                     } 
                                     else {
@@ -975,10 +981,10 @@ public class GenePatternAnalysisTask {
 
                                     File f = new File(uri);
                                     if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                                        params[i].setValue(f.getAbsolutePath());
+                                        paramsCopy[i].setValue(f.getAbsolutePath());
                                         //TODO: don't remove
-                                        attrsActual.remove(ParameterInfo.TYPE);
-                                        attrsActual.remove(ParameterInfo.INPUT_MODE);
+                                        attrsCopy.remove(ParameterInfo.TYPE);
+                                        attrsCopy.remove(ParameterInfo.INPUT_MODE);
                                         downloadUrl = false;
                                     } 
                                     else {
@@ -993,10 +999,10 @@ public class GenePatternAnalysisTask {
                                             File file = localInputUrlToFile(url, jobInfo.getUserId());
                                             if (file != null) {
                                                 if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                                                    params[i].setValue(file.getAbsolutePath());
+                                                    paramsCopy[i].setValue(file.getAbsolutePath());
                                                     //TODO: don't remove
-                                                    attrsActual.remove(ParameterInfo.TYPE);
-                                                    attrsActual.remove(ParameterInfo.INPUT_MODE);
+                                                    attrsCopy.remove(ParameterInfo.TYPE);
+                                                    attrsCopy.remove(ParameterInfo.INPUT_MODE);
                                                     downloadUrl = false;
                                                 } 
                                                 else {
@@ -1043,10 +1049,14 @@ public class GenePatternAnalysisTask {
                                     while ((bytesRead = is.read(buf, 0, buf.length)) != -1) {
                                         os.write(buf, 0, bytesRead);
                                     }
-                                    params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
-                                    params[i].setValue(outFile.getAbsolutePath());
-                                    inputLastModified[i] = outFile.lastModified();
-                                    inputLength[i] = outFile.length();
+                                    //TODO: mark file for delete from job results directory on handle job completion
+                                    attrsCopy.put(ORIGINAL_PATH, originalPath);
+                                    paramsCopy[i].setValue(outFile.getAbsolutePath());
+
+                                    //attrsActual.put(ORIGINAL_PATH, originalPath);
+                                    //attrsActual.put(ORIGINAL_FILENAME, outFile.getName());
+                                    //attrsActual.put(ORIGINAL_LAST_MODIFIED, ""+outFile.lastModified());
+                                    //attrsActual.put(this.ORIGINAL_LENGTH, ""+outFile.length());
                                 }
                             } 
                             catch (IOException ioe) {
@@ -1072,7 +1082,7 @@ public class GenePatternAnalysisTask {
                                 }
                                 // don't set this until after the close...
                                 if (outFile != null) {
-                                    inputLastModified[i] = outFile.lastModified();
+                                    //attrsActual.put(ORIGINAL_LAST_MODIFIED, ""+outFile.lastModified());
                                 }
                             }
                         }
@@ -1084,7 +1094,7 @@ public class GenePatternAnalysisTask {
             // name from the properties
             // (ParameterInfo[], System properties, environment variables, and built-ins merged)
             // build props again, now that downloaded files are set
-            props = setupProps(taskInfo, taskName, parent, jobId, jobInfo.getTaskID(), taskInfoAttributes, params,
+            props = setupProps(taskInfo, taskName, parent, jobId, jobInfo.getTaskID(), taskInfoAttributes, paramsCopy,
                     environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
             
             // optionally, override the java flags if they have been overridden in the job configuration file
@@ -1093,11 +1103,11 @@ public class GenePatternAnalysisTask {
                 props.setProperty("java_flags", cmdProperties.getProperty("java_flags"));
             }
 
-            params = stripOutSpecialParams(params);
+            paramsCopy = stripOutSpecialParams(paramsCopy);
             // check that all parameters are used in the command line
             // and that all non-optional parameters that are cited actually exist
             ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
-            Vector<String> parameterProblems = validateParameters(props, taskName, taskInfoAttributes.get(COMMAND_LINE), params,
+            Vector<String> parameterProblems = validateParameters(props, taskName, taskInfoAttributes.get(COMMAND_LINE), paramsCopy,
                     formalParameters, true);
 
             vProblems.addAll(parameterProblems);
@@ -1300,7 +1310,8 @@ public class GenePatternAnalysisTask {
                             //throw this to the outer catch
                             throw e;
                         }
-                        //close hibernate session before running the job, but don't save the parameter info ...
+                        //close hibernate session before running the job, but don't save the parameter info
+                        //updateParameterInfo(jobInfo.getJobNumber(), jobInfo.getParameterInfo());
                         HibernateUtil.closeCurrentSession();
                         try {
                             cmdExec.runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
@@ -1367,6 +1378,38 @@ public class GenePatternAnalysisTask {
             }
         }
     }
+    
+    /**
+     * Make a deep copy of the ParameterInfo[] for the given job info. 
+     * So that onJob can work on a local copy of the array without inadvertently
+     * saving changes back to the DB.
+     * 
+     * @param jobInfo
+     */
+    private static final ParameterInfo[] copyParameterInfoArray(JobInfo jobInfo) {
+        final ParameterInfo[] paramsOrig = jobInfo.getParameterInfoArray();
+        ParameterInfo[] params = null;
+        if (paramsOrig != null) {
+            params = new ParameterInfo[paramsOrig.length];
+            int i=0;
+            for(ParameterInfo paramOrig : paramsOrig) {
+                params[i++]=copyParameterInfo(paramOrig);
+            }
+        }
+        return params;
+    }
+
+    private static final ParameterInfo copyParameterInfo(ParameterInfo orig) {
+        ParameterInfo copy = new ParameterInfo(orig.getName(), orig.getValue(), orig.getDescription());
+        HashMap origAttributes = orig.getAttributes();
+        HashMap copyAttributes = new HashMap();
+        //this works as a deep copy because we know that the attributes are a Map<String,String>
+        copyAttributes.putAll(orig.getAttributes());
+        copy.setAttributes(copyAttributes);
+        return copy;
+    }
+    
+
 
     private static JobInfoWrapper getJobInfoWrapper(String userId, int jobNumber) {
         try {
@@ -1450,90 +1493,146 @@ public class GenePatternAnalysisTask {
                         log.error("not a url: "+link, e1);
                     }
                 }
+                else if (inputFile.isInternalLink()) {
+                    String value = inputFile.getValue();
+                    String link = inputFile.getLink();
+                    log.debug("isInternalLink value="+value+", link="+link);
+                }
+            }
+            else if (inputFile.isServerFilePath()) {
+                String value = inputFile.getValue();
+                String link = inputFile.getLink();
+                log.debug("isServerFilePath value="+value+", link="+link);
             }
         }
 
-        // move input files back into Axis attachments directory
-        // Note: original code from handleJobCompletion is still here
-        INPUT_FILE_MODE inputFileMode = getInputFileMode();
-        ParameterInfo[] params = jobInfo.getParameterInfoArray();
-        if (params != null) {
-            for (int i = 0; i < params.length; i++) {
-                HashMap attrsActual = params[i].getAttributes();
-                String fileType = (attrsActual != null ? (String) attrsActual.get(ParameterInfo.TYPE) : null);
-                String mode = (attrsActual != null ? (String) attrsActual.get(ParameterInfo.MODE) : null);
-                if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
-                    String inFilename = params[i].getValue();
-                    if (inFilename == null) {
-                        log.error("Error handling input files after job completion: '" + params[i].getName() + "' has no filename association");
-                    }
-                    else {
-                        File inFile = new File(inFilename);
-                        String originalPath = (String) params[i].getAttributes().remove(ORIGINAL_PATH);
-                        log.debug(params[i].getName() + ", original path='" + originalPath + "', inFile " + params[i].getValue() + ", exists " + inFile.exists());
-                        if (originalPath == null || originalPath.length() == 0) {
-                            continue;
-                        }
-                        File originalFile = new File(originalPath);
-    
-                        // un-borrow the input file, moving it from the job's directory back to where it came from
-                        if (inFile.exists() && 
-                            !originalFile.exists() && 
-                            (inputFileMode == INPUT_FILE_MODE.COPY ? !inFile.delete() : !rename(inFile, originalFile, true)))
-                        {
-                            log.warn("Failed to rename " + inFile + " to " + originalFile + ".");
-                        } 
-                        else {
-                            //TODO: these warnings are no longer logged
-                            //if (inputLastModified[i] != originalFile.lastModified() || inputLength[i] != originalFile.length()) {
-                            //    if (inputLastModified[i] != originalFile.lastModified()) {
-                            //        log.warn("File " + originalFile + ", job number " + jobInfo.getJobNumber() + 
-                            //                " last modfied date was changed. Original date: " + new Date(inputLastModified[i]) + 
-                            //                 ", current date: " + new Date(originalFile.lastModified()));
-                            //    }
-                            //    if (inputLength[i] != originalFile.length()) {
-                            //        log.warn("File " + originalFile + ", job number " + jobInfo.getJobNumber() + 
-                            //                 " size was changed. Original size: " + inputLength[i] + ", current size: " + originalFile.length());
-                            //    }
-                            //}
-                            params[i].setValue(originalPath);
-                        }
-                    }
-                } 
-                else {
-                    // TODO: what if the input file is also supposed to be one of the outputs?
-                    String originalPath = (String) params[i].getAttributes().remove(ORIGINAL_PATH);
-                    boolean isURL = false;
-                    if (originalPath != null) {
-                        try {
-                            new URL(originalPath);
-                            isURL = true;
-                        } 
-                        catch (MalformedURLException e) {
-                        }
-                    }
-                    if (originalPath != null && isURL) {
-                        File outFile = new File(params[i].getValue());
-                        //TODO: these warnings are no longer logged
-                        //    if (inputLastModified[i] != outFile.lastModified() || inputLength[i] != outFile.length()) {
-                        //        String errorMessage = outFile.toString() + 
-                        //            " may have been overwritten during execution of module " + taskName + ", job number " + 
-                        //            jobInfo.getJobNumber() + "\n";
-                        //        if (inputLastModified[i] != outFile.lastModified()) {
-                        //            errorMessage = errorMessage + "original date: " + new Date(inputLastModified[i]) + ", current date: " + new Date(outFile.lastModified()) + "\n";
-                        //        }
-                        //        if (inputLength[i] != outFile.length()) {
-                        //            errorMessage = errorMessage + "original size: " + inputLength[i] + ", current size: " + outFile.length() + "\n";
-                        //        }
-                        //        log.warn(errorMessage);
-                        //    }
-                        outFile.delete();
-                        params[i].setValue(originalPath);
-                        continue;
-                    }
-                }
-            } // end for each parameter
-        } // end if parameters not null
+//        // move input files back into Axis attachments directory
+//        INPUT_FILE_MODE inputFileMode = getInputFileMode();
+//        // Note: original code from handleJobCompletion is still here
+//        ParameterInfo[] params = jobInfo.getParameterInfoArray();
+//        if (params != null) {
+//            for (int i = 0; i < params.length; i++) {
+//                 HashMap attrsActual = params[i].getAttributes();
+//                String fileType = (attrsActual != null ? (String) attrsActual.get(ParameterInfo.TYPE) : null);
+//                String mode = (attrsActual != null ? (String) attrsActual.get(ParameterInfo.MODE) : null);
+//                if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
+//                    //String inFilename = params[i].getValue();
+//                    //String inFilename = (String) params[i].getAttributes().remove(ORIGINAL_VALUE);
+//                    String originalFilename = (String) params[i].getAttributes().remove(ORIGINAL_FILENAME);
+//                    if (originalFilename == null) {
+//                        log.error("Error handling input files after job completion: '" + params[i].getName() + "' has no input filename association");
+//                    }
+//                    //if (inFilename == null) {
+//                    //    log.error("Error handling input files after job completion: '" + params[i].getName() + "' has no filename association");
+//                    //}
+//                    else {
+//                        //File inFile = new File(inFilename);
+//                        File inFile = new File(outDir, originalFilename);
+//                        String originalPath = (String) params[i].getAttributes().remove(ORIGINAL_PATH);
+//                        Long inputLastModified = null;
+//                        try {
+//                            String originalLastModifiedStr = (String) params[i].getAttributes().remove(ORIGINAL_LAST_MODIFIED);
+//                            if (originalLastModifiedStr != null) {
+//                                inputLastModified=Long.parseLong(originalLastModifiedStr);
+//                            }
+//                        }
+//                        catch (NumberFormatException e) {
+//                            log.error(e);
+//                        }
+//                        Long inputLength = null;
+//                        try {
+//                            String originalLengthStr = (String) params[i].getAttributes().remove(ORIGINAL_LENGTH);
+//                            if (originalLengthStr != null) {
+//                                inputLength = Long.parseLong(originalLengthStr);
+//                            }
+//                        }
+//                        catch (NumberFormatException e) {
+//                            log.error(e);
+//                        }
+//                        //log.debug(params[i].getName() + ", original path='" + originalPath + "', inFile " + inFilename + ", exists " + inFile.exists());
+//                        if (originalPath == null || originalPath.length() == 0) {
+//                            continue;
+//                        }
+//                        File originalFile = new File(originalPath);
+//    
+//                        // un-borrow the input file, moving it from the job's directory back to where it came from
+//                        if (inFile.exists() && 
+//                            !originalFile.exists() && 
+//                            (inputFileMode == INPUT_FILE_MODE.COPY ? !inFile.delete() : !rename(inFile, originalFile, true)))
+//                        {
+//                            log.warn("Failed to rename " + inFile + " to " + originalFile + ".");
+//                        } 
+//                        else {
+//                            if (inputLastModified != originalFile.lastModified() || inputLength != originalFile.length()) {
+//                                if (inputLastModified != originalFile.lastModified()) {
+//                                    log.warn("File " + originalFile + ", job number " + jobInfo.getJobNumber() + 
+//                                            " last modfied date was changed. Original date: " + new Date(inputLastModified) + 
+//                                             ", current date: " + new Date(originalFile.lastModified()));
+//                                }
+//                                if (inputLength != originalFile.length()) {
+//                                    log.warn("File " + originalFile + ", job number " + jobInfo.getJobNumber() + 
+//                                             " size was changed. Original size: " + inputLength + ", current size: " + originalFile.length());
+//                                }
+//                            }
+//                            params[i].setValue(originalPath);
+//                        }
+//                    }
+//                } 
+//                else {
+//                    // TODO: what if the input file is also supposed to be one of the outputs?
+//                    //String originalValue = (String) params[i].getAttributes().remove(ORIGINAL_VALUE);
+//                    String originalPath = (String) params[i].getAttributes().remove(ORIGINAL_PATH);
+//                    Long inputLastModified = null;
+//                    try {
+//                        String originalLastModifiedStr = (String) params[i].getAttributes().remove(ORIGINAL_LAST_MODIFIED);
+//                        if (originalLastModifiedStr != null) {
+//                            inputLastModified=Long.parseLong(originalLastModifiedStr);
+//                        }
+//                    }
+//                    catch (NumberFormatException e) {
+//                        log.error(e);
+//                    }
+//                    Long inputLength = null;
+//                    try {
+//                        String originalLengthStr = (String) params[i].getAttributes().remove(ORIGINAL_LENGTH);
+//                        if (originalLengthStr != null) {
+//                            inputLength = Long.parseLong(originalLengthStr);
+//                        }
+//                    }
+//                    catch (NumberFormatException e) {
+//                        log.error(e);
+//                    }
+//
+//                    boolean isURL = false;
+//                    if (originalPath != null) {
+//                        try {
+//                            new URL(originalPath);
+//                            isURL = true;
+//                        } 
+//                        catch (MalformedURLException e) {
+//                        }
+//                    }
+//                    if (originalPath != null && isURL) {
+//                        File outFile = new File(params[i].getValue());
+//                        if (inputLastModified != outFile.lastModified() || inputLength != outFile.length()) {
+//                            String errorMessage = outFile.toString() + 
+//                                " may have been overwritten during execution of job number " + 
+//                                jobInfo.getJobNumber() + "\n";
+//                            if (inputLastModified != outFile.lastModified()) {
+//                                errorMessage = errorMessage + "original date: " + new Date(inputLastModified) + ", current date: " + new Date(outFile.lastModified()) + "\n";
+//                            }
+//                            if (inputLength != outFile.length()) {
+//                                errorMessage = errorMessage + "original size: " + inputLength + ", current size: " + outFile.length() + "\n";
+//                            }
+//                            log.warn(errorMessage);
+//                        }
+//                        outFile.delete();
+//                        params[i].setValue(originalPath);
+//                        continue;
+//                    }
+//                }
+//            } // end for each parameter
+//        } // end if parameters not null
 
         //write execution log
         File taskLog = null;
@@ -1661,6 +1760,23 @@ public class GenePatternAnalysisTask {
         } 
         catch (RuntimeException e) {
             log.error("Rolling back transaction", e);
+            HibernateUtil.rollbackTransaction();
+        }
+    }
+    
+    /**
+     * Helper method (could go into AnalysisDAO) for saving updates to the ANALYSIS_JOB.PARAMETER_INFO table before running a job.
+     * @param jobInfo
+     */
+    private static void updateParameterInfo(int jobId, String paramString) {
+        try {
+            HibernateUtil.beginTransaction();
+            AnalysisJob aJob = (AnalysisJob) HibernateUtil.getSession().get(AnalysisJob.class, jobId);
+            aJob.setParameterInfo(paramString);
+            HibernateUtil.getSession().update(aJob);
+            HibernateUtil.commitTransaction();
+        }
+        catch (Exception e) {
             HibernateUtil.rollbackTransaction();
         }
     }
