@@ -1044,7 +1044,7 @@ public class GenePatternAnalysisTask {
                                         outFile = File.createTempFile(name, null, new File(outDirName));
                                     }
                                     os = new FileOutputStream(outFile);
-                                    byte[] buf = new byte[100000];
+                                    byte[] buf = new byte[1024];
                                     int bytesRead;
                                     while ((bytesRead = is.read(buf, 0, buf.length)) != -1) {
                                         os.write(buf, 0, bytesRead);
