@@ -44,11 +44,22 @@ class LsfCommand {
         }
         //TODO: use job properties to set output and error file names
         //Note: BroadCore does not handle the %J idiom for the output file
-        //lsfJob.setOutputFilename(lsfProperties.getProperty(LsfProperties.Key.OUTPUT_FILENAME.getKey()));
-        //lsfJob.setErrorFileName(stderrFile.getAbsolutePath());
-        lsfJob.setOutputFilename(".lsf.out");
-        lsfJob.setErrorFileName("stderr.txt");
         
+        String jobReportFilename=lsfProperties.getProperty(LsfProperties.Key.JOB_REPORT_FILE.getKey());
+        if (jobReportFilename != null && jobReportFilename.length() > 0 ) {
+            lsfJob.setOutputFilename(jobReportFilename);
+        }
+        else {
+            lsfJob.setOutputFilename(stdoutFile.getName());
+        }
+        
+        if (stderrFile != null) {
+            lsfJob.setErrorFileName(stderrFile.getName());
+        }
+        else {
+            log.error("Missing required parameter, stderrFile, using 'stderr.txt'");
+            lsfJob.setErrorFileName("stderr.txt");
+        }
         lsfJob.setProject(lsfProperties.getProperty(LsfProperties.Key.PROJECT.getKey()));
         lsfJob.setQueue(lsfProperties.getProperty(LsfProperties.Key.QUEUE.getKey()));
         
@@ -61,7 +72,6 @@ class LsfCommand {
         
         String host = lsfProperties.getProperty(LsfProperties.Key.HOST_OS.getKey());
         if (host != null) {
-            //-R select[suse]
             extraBsubArgs.add("-R");
             extraBsubArgs.add("select["+host+"]");
         }
@@ -73,15 +83,17 @@ class LsfCommand {
         //extraBsubArgs.addAll(preExecArgs);
         lsfJob.setExtraBsubArgs(extraBsubArgs);
 
-        String commandLineStr = getCommandLineStr(commandLine);
-        //HACK: wrap the GP command with a shell script whose only purpose is to save stdout from the command in a different file
-        //    than the LSF output file. LSF does not have a bsub option for this
-        String wrapperScript = lsfProperties.getProperty(LsfProperties.Key.WRAPPER_SCRIPT.getKey());
-        if (wrapperScript != null) {
-            if (wrapperScript.contains(" ")) {
-                wrapperScript = "\""+wrapperScript+"\"";
-            }
-            commandLineStr = wrapperScript + " " + commandLineStr;
+        String commandLineStr = wrapCommandLineArgsInSingleQuotes(commandLine);
+
+        //String wrapperScript = lsfProperties.getProperty(LsfProperties.Key.WRAPPER_SCRIPT.getKey());
+        //if (wrapperScript != null) {
+        //    if (wrapperScript.contains(" ")) {
+        //        wrapperScript = "\""+wrapperScript+"\"";
+        //    }
+        //    commandLineStr = wrapperScript + " " + commandLineStr;
+        //}
+        if (jobReportFilename != null && jobReportFilename.length() > 0) {
+            commandLineStr += " >> " + wrapInSingleQuotes(stdoutFile.getName());
         }
         log.debug("lsf job commandLine: "+commandLineStr);
         lsfJob.setCommand(commandLineStr);
@@ -102,6 +114,38 @@ class LsfCommand {
     public LsfJob getLsfJob() {
         return lsfJob;
     }
+    
+    /**
+     * Construct a command line string from the list of args.
+     * Wrap each arg in single quote characters, make sure to escape any single quote characters in the args.
+     * 
+     * @param commandLine
+     * @return
+     */
+    private String wrapCommandLineArgsInSingleQuotes(String[] commandLine) {
+        String rval = "";
+        boolean first = true;
+        for(String arg : commandLine) {
+            arg = wrapInSingleQuotes(arg);
+            if (first) {
+                first = false;
+            }
+            else {
+                rval += " ";
+            }
+            rval += arg;
+        }
+        return rval;
+    }
+
+    private String wrapInSingleQuotes(String arg) {
+        if (arg.contains("'")) {
+            // replace each ' with '\''
+            arg = arg.replace("'", "'\\''");
+        }
+        arg = "'"+arg+"'";
+        return arg;
+    }
 
     /**
      * helper method which converts a list of String args into a single command line string for LSF submission.
@@ -110,7 +154,7 @@ class LsfCommand {
      * @param commandLine
      * @return
      */
-    private String getCommandLineStr(String[] commandLine) {
+    private String wrapCommandLineInDoubleQuotes(String[] commandLine) {
         final char[] special_chars = {'!', '$', '\"', '`'};
         String rval = "";
         boolean first = true;

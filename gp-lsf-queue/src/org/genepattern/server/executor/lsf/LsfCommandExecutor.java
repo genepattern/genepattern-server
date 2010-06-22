@@ -114,7 +114,7 @@ public class LsfCommandExecutor implements CommandExecutor {
         log.info("done!");
     }
 
-    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin) 
+    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) 
     throws CommandExecutorException
     {
         log.debug("Running command for job "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName());
@@ -122,7 +122,7 @@ public class LsfCommandExecutor implements CommandExecutor {
         
         Properties lsfProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
         cmd.setLsfProperties(lsfProperties);
-        cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdin);
+        cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile);
         LsfJob lsfJob = cmd.getLsfJob();
         lsfJob = submitJob(lsfJob);
         log.debug(jobInfo.getJobNumber()+". "+jobInfo.getTaskName()+" is dispatched.");
