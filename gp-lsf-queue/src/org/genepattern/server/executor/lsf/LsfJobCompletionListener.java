@@ -1,6 +1,6 @@
 package org.genepattern.server.executor.lsf;
 
-import java.util.ArrayList;
+import java.io.File;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -32,80 +32,11 @@ public class LsfJobCompletionListener implements JobCompletionListener {
      * @return
      * @throws Exception
      */
-    private static int getGpJobId(LsfJob job) throws Exception {
+    public static int getGpJobId(LsfJob job) throws Exception {
         if (job == null) throw new Exception("Null arg");
         if (job.getName() == null) throw new Exception("Null job.name");
         String jobIdStr = job.getName();
         return Integer.parseInt(jobIdStr);
-    }
-    
-    //split the given command line into tokens delimited by space char, or enclosed within quotes
-    //make sure to handle escaped quote characters
-    private static List<String> splitCommandLine(String commandLine) {
-        List<String> rval = new ArrayList<String>();
-        
-        int idx = 0;
-        while(true) {
-            int startIdx = nextNonWsIdx(idx, commandLine);
-            if (startIdx >= commandLine.length()) {
-                //no more tokens
-                break;
-            }
-            char delim = ' ';
-            if (commandLine.charAt(startIdx) == '\"') {
-                delim = '\"';
-            }
-            //jump to the end, ignoring escape ('\') characters
-            int endIdx = nextIdx(1+idx, delim, commandLine);
-            String token = commandLine.substring(startIdx, endIdx);
-            rval.add(token);
-            idx = endIdx + 1;
-        }
-        
-        return rval;
-    }
-    
-    private static String getNextToken(int idx, String commandLine) {
-        int startIdx = nextNonWsIdx(idx, commandLine);
-        if (startIdx >= commandLine.length()) {
-            //no more tokens
-            return null;
-        }
-        char delim = ' ';
-        if (commandLine.charAt(startIdx) == '\"') {
-            delim = '\"';
-        }
-        //jump to the end, ignoring escape ('\') characters
-        int endIdx = nextIdx(1+idx, delim, commandLine);
-        return commandLine.substring(startIdx, endIdx);
-    }
-
-    //get the next non whitespace character from the string
-    private static int nextNonWsIdx(int idx, String commandLine) {
-        while(idx < commandLine.length()) {
-            char c = commandLine.charAt(idx);
-            if (!Character.isWhitespace(c)) {
-                break;
-            }
-            ++idx;
-        }
-        return idx;
-    }
-    
-    //get the end index of the current token
-    private static int nextIdx(int idx, char delim, String commandLine) {
-        while(idx < commandLine.length()) {
-            char c = commandLine.charAt(idx);
-            if (c == '\\') {
-                //escape char
-                ++idx;
-            }
-            else if (c == delim) {
-                return idx;
-            }
-            ++idx;
-        }
-        return idx;
     }
 
     private static String getOutputFilename(int gpJobId, LsfJob job) {
@@ -128,9 +59,30 @@ public class LsfJobCompletionListener implements JobCompletionListener {
         }
         
         log.debug("computed output file name is: "+stdoutFilename);
+        //NOTE: this code is buggy, at the moment we would be deleting the wrapper script ...
+        //    TODO: set up user account so that the gpdev account running the server cannot delete the wrapper scripts and other 
+        //        server files
+        //    TODO: fix the bug so that the correct output file name is detected when a wrapper script is being used
         log.debug("using 'stdout.txt' instead!");
         //TODO: fix this!
         stdoutFilename = "stdout.txt";
+        
+        //special-case, delete the stdoutFile if it is empty
+        //TODO: this should be part of the GenePatternAnalysisTask#handleJobCompletion method
+        File stdoutFile = new File(stdoutFilename);
+        if (stdoutFile.getParent() == null) {
+            stdoutFile = new File(job.getWorkingDirectory(), stdoutFilename);
+        }
+        if (stdoutFile.canWrite() && stdoutFile.length() <= 0L) {
+            boolean deleted = stdoutFile.delete();
+            if (deleted) {
+                log.debug("deleted empty stdout file: "+stdoutFile.getAbsolutePath());
+            }
+            else {
+                log.error("unable to delete empty stdout file: "+stdoutFile.getAbsolutePath());
+            }
+        }
+        
         return stdoutFilename;
     }
 
@@ -140,6 +92,7 @@ public class LsfJobCompletionListener implements JobCompletionListener {
         log.debug("job completed...lsf_id="+job.getLsfJobId()+", internal_job_id="+job.getInternalJobId()+", gp_job_id="+gpJobId);
         
         final String stderrFilename = job.getErrorFileName();
+        //TODO: get the exit code from the lsf job and send it along to genepattern
         final int exitCode = 0;
 
         //must run this in a new thread because this callback is run from within a hibernate transaction
@@ -159,7 +112,17 @@ public class LsfJobCompletionListener implements JobCompletionListener {
                       log.error("Error getting stdout filename for LSF job, using the lsf output filename instead: "+stdoutFilename, t);
                   }
                   int rVal = 0;
-                  GenePatternAnalysisTask.handleJobCompletion(gpJobId, stdoutFilename, stderrFilename, exitCode, JobStatus.JOB_FINISHED);
+                  int gpJobStatus = JobStatus.JOB_FINISHED;
+                  if (stderrFilename != null) {
+                      File errFile = new File(stderrFilename);
+                      if (errFile.getParent() == null) {
+                          errFile = new File(job.getWorkingDirectory(), stderrFilename);
+                      }
+                      if (errFile.exists() && errFile.length() > 0L) {
+                          gpJobStatus = JobStatus.JOB_ERROR;
+                      }
+                  }
+                  GenePatternAnalysisTask.handleJobCompletion(gpJobId, stdoutFilename, stderrFilename, exitCode, gpJobStatus);
                   return rVal;
             }});
           executor.execute(future);
