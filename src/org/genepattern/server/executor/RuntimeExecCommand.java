@@ -171,6 +171,11 @@ public class RuntimeExecCommand {
             log.debug(jobID+": job completed in "+d+" s");
 
             exitValue = process.exitValue();
+            if (exitValue != 0) {
+                if (stderrBuffer.length() == 0) {
+                    stderrBuffer.append("Process exited with status code: "+exitValue);
+                }
+            }
         } 
         catch (Throwable t) {
             log.error("Error in runCommand, reporting to stderr.", t);

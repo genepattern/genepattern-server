@@ -1425,7 +1425,7 @@ public class GenePatternAnalysisTask {
             HibernateUtil.closeCurrentSession();
         }
     }
-    
+
     public static void handleJobCompletion(int jobId, String stdoutFilename, String stderrFilename, int exitCode, int jobStatus) throws Exception {
         handleJobCompletion(jobId, stdoutFilename, stderrFilename, exitCode, jobStatus, JOB_TYPE.JOB);
     }
@@ -1464,7 +1464,7 @@ public class GenePatternAnalysisTask {
         //3) if the file is a link to a previous job result
         //4) if the file is a link to a module file in the taskLib
 
-        // Note: for some reason, after splitting onJob into two methods, onJob and handleJobCompletion, some of the
+        // Note: for some reason, after splitting onJob into two methods (onJob and handleJobCompletion), some of the
         //    handling of input files stopped working
         // this next section was added to handle external URLs ...
         for (InputFile inputFile : jobInfoWrapper.getInputFiles()) {
@@ -1659,16 +1659,45 @@ public class GenePatternAnalysisTask {
             taskLog.setLastModified(System.currentTimeMillis() + 500);
         }
 
+        //prepare stdout and stderr files
+        //note: GP 3.2.3 and early require that [optional] stdout and stderr streamed output files are in the job results directory
+        //    because this is unclear in the spec (and possibly incorrect, which will be fixed in a future release) ...
+        //    replace fully qualified pathnames with pathnames relative to the job result directory.
+        if (stdoutFilename == null) {
+            stdoutFilename = STDOUT;
+        }
+        else {
+            File stdoutFile = new File(stdoutFilename);
+            File relativePath = getRelativePath(outDir, stdoutFile);
+            if (relativePath!=null) {
+                stdoutFilename=relativePath.getPath();
+            }
+            else {
+                log.error("Invalid STDOUT file: "+stdoutFilename);
+            }
+        }
+        if (stderrFilename == null) {
+            stderrFilename = STDERR;
+        }
+        else {
+            File stderrFile = new File(stderrFilename);
+            File relativePath = getRelativePath(outDir, stderrFile);
+            if (relativePath!=null) {
+                stderrFilename=relativePath.getPath();
+            }
+            else {
+                log.error("Invalid STDERR file: "+stderrFilename);
+            }
+        }
+        
         // any files that are left in outDir are output files
         JobResultsFilenameFilter filenameFilter = new JobResultsFilenameFilter();
-        filenameFilter.addExactMatch(STDERR);
-        filenameFilter.addExactMatch(STDOUT);
+        filenameFilter.addExactMatch(stderrFilename);
+        filenameFilter.addExactMatch(stdoutFilename);
         filenameFilter.addExactMatch(TASKLOG);
         if (pipelineTaskLog != null) {
             filenameFilter.addExactMatch(pipelineTaskLog.getName());
         }
-        filenameFilter.addExactMatch(stdoutFilename);
-        filenameFilter.addExactMatch(stderrFilename);
         filenameFilter.setGlob(System.getProperty(JobResultsFilenameFilter.KEY));
 
         File outputDir = new File(outDirName);
@@ -1680,16 +1709,20 @@ public class GenePatternAnalysisTask {
             addFileToOutputParameters(jobInfo, f.getName(), f.getName(), parentJobInfo);
         }
 
-        if (stdoutFilename == null) {
-            stdoutFilename = STDOUT;
-        }
-        if (stderrFilename == null) {
-            stderrFilename = STDERR;
-        }
         File stdoutFile = new File(outDir, stdoutFilename);
         if (stdoutFile.exists()) {
-            addFileToOutputParameters(jobInfo, stdoutFilename, stdoutFilename, parentJobInfo);
+            if (stdoutFile.length() > 0) {
+                addFileToOutputParameters(jobInfo, stdoutFilename, stdoutFilename, parentJobInfo);
+            }
+            else {
+                log.debug("deleting empty stdout file from job results: "+stdoutFile.getAbsolutePath());
+                boolean deleted = stdoutFile.delete();
+                if (!deleted) {
+                    log.error("Error deleting empty stdout file from job results: "+stdoutFile.getAbsolutePath());
+                }
+            }
         }
+        
         if (pipelineTaskLog != null) {
             addFileToOutputParameters(jobInfo, pipelineTaskLog.getName(), pipelineTaskLog.getName(), parentJobInfo);
         }
@@ -1697,14 +1730,55 @@ public class GenePatternAnalysisTask {
             addFileToOutputParameters(jobInfo, TASKLOG, TASKLOG, parentJobInfo);
         }
         File stderrFile = new File(outDir, stderrFilename);
-        if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0) {
-            //TODO: set error flag
-            addFileToOutputParameters(jobInfo, stderrFilename, stderrFilename, parentJobInfo);
+        if (stderrFile != null && stderrFile.exists()) {
+            if (stderrFile.length() > 0) {
+                //set error flag
+                jobStatus = JobStatus.JOB_ERROR;
+                addFileToOutputParameters(jobInfo, stderrFilename, stderrFilename, parentJobInfo);
+            }
+            else {
+                log.debug("deleting empty stderr file from job results: "+stderrFile.getAbsolutePath());
+                boolean deleted = stderrFile.delete();
+                if (!deleted) {
+                    log.error("Error deleting empty stderr file from job results: "+stderrFile.getAbsolutePath());
+                }
+            }
         }
 
         recordJobCompletion(jobInfo, parentJobInfo, jobStatus);
     }
 
+    /**
+     * Get the relative path from the given jobResultDir to the given outputFile.
+     * This helper method is here to resolve stdout and stderr files passed as fully qualified
+     * path names to handleJobCompletion.
+     * 
+     * Expecting a file relative to the job results directory for the given job,
+     *     e.g. /GenePatternServer/Tomcat/webapps/gp/jobResults/<jobid>/stdout.txt
+     * If the given outputFile is absolute, return its path relative to the jobResultsDir.
+     * 
+     * @param jobResultDir, e.g. /GenePatternServer/Tomcat/webapps/gp/jobResults/<jobid>
+     * @param outputFile, e.g. stdout.txt or /GenePatternServer/Tomcat/webapps/gp/jobResults/<jobid>/stdout.txt
+     * 
+     * @return a relative File or null if the outputFile is not an ancestor of the jobResultDir.
+     */
+    private static File getRelativePath(File jobResultDir, File outputFile) {
+        File p=outputFile.getParentFile();
+        if(p==null) {
+            return outputFile;
+        }
+
+        String rval = outputFile.getName();
+        while(p!=null) {
+            if (jobResultDir.equals(p)) {
+                return new File(rval);
+            }
+            rval = p.getName() + File.separator + rval;
+            p = p.getParentFile();
+        }
+        return null;
+    }
+    
     private static final Comparator<File> fileComparator = new Comparator<File>() {
         public int compare(File o1, File o2) {
             long f1Date = o1.lastModified();
@@ -1764,22 +1838,22 @@ public class GenePatternAnalysisTask {
         }
     }
     
-    /**
-     * Helper method (could go into AnalysisDAO) for saving updates to the ANALYSIS_JOB.PARAMETER_INFO table before running a job.
-     * @param jobInfo
-     */
-    private static void updateParameterInfo(int jobId, String paramString) {
-        try {
-            HibernateUtil.beginTransaction();
-            AnalysisJob aJob = (AnalysisJob) HibernateUtil.getSession().get(AnalysisJob.class, jobId);
-            aJob.setParameterInfo(paramString);
-            HibernateUtil.getSession().update(aJob);
-            HibernateUtil.commitTransaction();
-        }
-        catch (Exception e) {
-            HibernateUtil.rollbackTransaction();
-        }
-    }
+//    /**
+//     * Helper method (could go into AnalysisDAO) for saving updates to the ANALYSIS_JOB.PARAMETER_INFO table before running a job.
+//     * @param jobInfo
+//     */
+//    private static void updateParameterInfo(int jobId, String paramString) {
+//        try {
+//            HibernateUtil.beginTransaction();
+//            AnalysisJob aJob = (AnalysisJob) HibernateUtil.getSession().get(AnalysisJob.class, jobId);
+//            aJob.setParameterInfo(paramString);
+//            HibernateUtil.getSession().update(aJob);
+//            HibernateUtil.commitTransaction();
+//        }
+//        catch (Exception e) {
+//            HibernateUtil.rollbackTransaction();
+//        }
+//    }
     
     /**
      * Update AnalysisJob
