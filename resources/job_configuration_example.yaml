@@ -10,18 +10,21 @@ default.properties:
     java_flags: -Xmx512m
 
 # a list of command executors
-# The executor id, 'org.genepattern.server.executor.PipelineExecutor', is reserved for the internal executor which runs all GP pipelines.
+# The executor id, 'org.genepattern.server.executor.PipelineExecutor', is reserved for the default executor which runs all GP pipelines.
 # Don't use this as an executor id in this file.
 # a map of <id>:<obj>, where
 #    obj := <classname> | <map>
 #    classname := fully qualified classname of a class which implements the org.genepattern.server.executor.CommandExecutor interface
 #    map := classname=<classname> [configuration.file: <path_to_config_file> | configuration.properties: <map>] [default.properties: <map>]
 executors:
-    # simple declaration, of the form <id>:<classname>
+    # default executor for all jobs, it is included in GenePattern
     RuntimeExec: 
         classname: org.genepattern.server.executor.RuntimeCommandExecutor
         configuration.properties:
+            # the total number of jobs to run concurrently
             num.threads: 20
+            # the total number of jobs to keep on the queue, not yet implemented
+            #max.pending.jobs: 20000
 
     # nested declaration with configuration file, <id>: { classname: <classname>, configuration: <config_file> }
     Test:
@@ -55,10 +58,16 @@ executors:
             lsf.project: genepattern
             lsf.queue: broad
             lsf.max.memory: 2
-            lsf.wrapper.script: lsf_wrapper.sh
-            lsf.output.filename: .lsf.out
+            lsf.wrapper.script: ""
+      	    lsf.stdout.file: stdout.txt
+            lsf.job.report.file: .lsf.out
             lsf.use.pre.exec.command: "false"
-            lsf.extra.bsub.args: "null"
+            lsf.extra.bsub.args: ""
+            # default setting, no need to set
+            #lsf.job.completion.listener: org.genepattern.server.executor.lsf.LsfJobCompletionListener
+            # special case for scatter gather jobs, not yet implemented
+            #lsf.firehose.scatter.gather: [true | false]
+            #lsf.firehose.scatter.gather.output.filename: scatter.gather.out
 
 # override default.properties and executor->default.properties based on taskname or lsid
 # Note: executor->configuration.properties are intended to be applied at startup and are not overwritten here
