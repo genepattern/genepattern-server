@@ -10,8 +10,6 @@ To integrate this library into your GenePattern Server you need to:
     See: http://tomcat.apache.org/tomcat-5.5-doc/jndi-datasource-examples-howto.html
     
 1.a) Add an entry in the Tomcat/conf/context.xml file. Use the correct password.
-  <Context>
-    ...
     <!-- DataSource to the GP Oracle DB  -->
     <Resource 
         name="jdbc/gpdb"
@@ -29,8 +27,6 @@ To integrate this library into your GenePattern Server you need to:
         removeAbandonedTimeout="60"
         logAbandoned="true"
     />
-    ...
-  </Context>
 
 1.b) Add an entry in the WEB-INF/web.xml file.
   <!-- added JNDI datasource to oracle DB -->
