@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 
@@ -42,15 +43,24 @@ class LsfCommand {
         if (stdinFile != null) {
             lsfJob.setInputFilename(stdinFile.getAbsolutePath());
         }
-        //TODO: use job properties to set output and error file names
-        //Note: BroadCore does not handle the %J idiom for the output file
+
+        String stdoutFilename=null;
+        if (stdoutFile != null) {
+            stdoutFilename = stdoutFile.getName();
+        }
+        if (!GPConstants.STDOUT.equals(stdoutFilename)) {
+            //NOTE: this is only a problem for a module which streams stdout to a non-default location, and which happens to have an empty stdout
+            //    the job will run, but the stdout file will not be deleted
+            log.error("Unexpected setting for stdoutFile.name: "+stdoutFilename+"\n This version of GP can only handle '"+GPConstants.STDOUT+"'");
+        }
         
+        //Note: BroadCore does not handle the %J idiom for the output file
         String jobReportFilename=lsfProperties.getProperty(LsfProperties.Key.JOB_REPORT_FILE.getKey());
         if (jobReportFilename != null && jobReportFilename.length() > 0 ) {
             lsfJob.setOutputFilename(jobReportFilename);
         }
         else {
-            lsfJob.setOutputFilename(stdoutFile.getName());
+            lsfJob.setOutputFilename(stdoutFilename);
         }
         
         if (stderrFile != null) {
@@ -93,7 +103,7 @@ class LsfCommand {
         //    commandLineStr = wrapperScript + " " + commandLineStr;
         //}
         if (jobReportFilename != null && jobReportFilename.length() > 0) {
-            commandLineStr += " >> " + wrapInSingleQuotes(stdoutFile.getName());
+            commandLineStr += " >> " + wrapInSingleQuotes(stdoutFilename);
         }
         log.debug("lsf job commandLine: "+commandLineStr);
         lsfJob.setCommand(commandLineStr);
