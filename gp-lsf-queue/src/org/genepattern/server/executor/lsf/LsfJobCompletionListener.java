@@ -20,7 +20,6 @@ import edu.mit.broad.core.lsf.LsfJob.JobCompletionListener;
  */
 public class LsfJobCompletionListener implements JobCompletionListener {
     private static Logger log = Logger.getLogger(LsfJobCompletionListener.class);
-    private static ExecutorService executor = Executors.newFixedThreadPool(3);
     
     /**
      * Note: using the JOB_LSF.NAME column for storing the GP_JOB_ID
@@ -148,17 +147,23 @@ public class LsfJobCompletionListener implements JobCompletionListener {
                   GenePatternAnalysisTask.handleJobCompletion(gpJobId, stdoutFilename, stderrFilename, exitCode, gpJobStatus);
                   return rVal;
             }});
-          executor.execute(future);
+        ExecutorService jobCompletionService = LsfCommandExecutor.getJobCompletionService();
+        if (jobCompletionService == null) {
+            String message = "Error handling job completion for job #"+gpJobId+". LsfCommandExecutor returned null jobCompletionService.";
+            log.error(message);
+            throw new Exception(message);
+        }
+        jobCompletionService.execute(future);
 
-          //wait for the thread to complete before exiting
-          try {
-              int statusCode = future.get();
-              log.debug("job #"+gpJobId+" saved to GP database, statusCode="+statusCode);
-          }
-          catch (Throwable t) {
-              String message = "Error handling job completion for job #"+gpJobId;
-              log.error(message,t);
-              throw new Exception(message, t);
-          }
+        //wait for the thread to complete before exiting
+        try {
+            int statusCode = future.get();
+            log.debug("job #"+gpJobId+" saved to GP database, statusCode="+statusCode);
+        }
+        catch (Throwable t) {
+            String message = "Error handling job completion for job #"+gpJobId;
+            log.error(message,t);
+            throw new Exception(message, t);
+        }
     }
 }

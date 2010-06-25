@@ -29,7 +29,9 @@ public class LsfCommandExecutor implements CommandExecutor {
 
     //for submitting jobs to the LSF queue
     private Main broadCore = null;
-    private static ExecutorService executor = null;
+    private static ExecutorService jobSubmissionService = null;
+    private static ExecutorService jobCompletionService = null;
+    
     private Properties configurationProperties = new Properties();
     
     public void setConfigurationFilename(String filename) {
@@ -40,9 +42,32 @@ public class LsfCommandExecutor implements CommandExecutor {
         this.configurationProperties.putAll(properties);
     }
     
+    private static ExecutorService getJobSubmissionService() {
+        if (jobSubmissionService == null) {
+            jobSubmissionService = Executors.newCachedThreadPool();            
+        }
+        return jobSubmissionService;
+    }
+
+    public static ExecutorService getJobCompletionService() {
+        if (jobCompletionService == null) {
+            jobCompletionService = Executors.newFixedThreadPool(3);
+        }
+        if (jobCompletionService != null) {
+            return jobCompletionService;
+        }
+        else {
+            log.error("Invalid call to getJobCompletionService before call to start");
+            return jobCompletionService;
+        }
+    }
+    
     public void start() {
         log.info("Initializing LsfCommandExecSvc ...");
-        executor = Executors.newCachedThreadPool();
+        
+        getJobSubmissionService();
+        getJobCompletionService();
+
         try {
             //initialize the GAP_SERVER_ID column of the LSF_JOB table
             String broadCoreEnv = this.configurationProperties.getProperty("broadcore.env", "prod");
@@ -97,21 +122,26 @@ public class LsfCommandExecutor implements CommandExecutor {
         catch (Throwable t) {
             log.error("Error shutting down BroadCore: "+t.getLocalizedMessage(), t);
         }
-        if (executor != null) {
-            log.debug("stopping executor...");
-            executor.shutdown();
+        shutdownService("jobSubmissionService", jobSubmissionService);
+        shutdownService("jobCompletionService", jobCompletionService);
+        log.info("done!");
+    }
+    
+    private static void shutdownService(String serviceName, ExecutorService executorService) {
+        if (executorService != null) {
+            log.debug("stopping "+serviceName+" executor...");
+            executorService.shutdown();
             try {
-                if (!executor.awaitTermination(30, TimeUnit.SECONDS)) {
-                    log.error("executor shutdown timed out after 30 seconds.");
-                    executor.shutdownNow();
+                if (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
+                    log.error(serviceName+" executor shutdown timed out after 30 seconds.");
+                    executorService.shutdownNow();
                 }
             }
             catch (InterruptedException e) {
-                log.error("executor.shutdown was interrupted", e);
+                log.error(serviceName+" executor.shutdown was interrupted", e);
                 Thread.currentThread().interrupt();
             }
         }
-        log.info("done!");
     }
 
     public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) 
@@ -134,13 +164,13 @@ public class LsfCommandExecutor implements CommandExecutor {
      * @return the value returned from LsfWrapper#dispatchLsfJob
      */
     private LsfJob submitJob(final LsfJob lsfJob) throws CommandExecutorException { 
-        if (executor == null) {
+        if (jobSubmissionService == null) {
             log.error("service not started ... ignoring submitJob("+lsfJob.getName()+")");
             return lsfJob;
         }
         Callable<LsfJob> c = new LsfTransactedCallable(lsfJob);
         FutureTask<LsfJob> future = new FutureTask<LsfJob>(c);
-        executor.execute(future);
+        jobSubmissionService.execute(future);
         try {
             LsfJob lsfJobOut = future.get();
             log.debug("submitted job to LSF queue: internalJobId="+lsfJobOut.getInternalJobId()
