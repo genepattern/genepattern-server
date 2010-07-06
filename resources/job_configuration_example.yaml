@@ -59,7 +59,7 @@ executors:
             lsf.queue: broad
             lsf.max.memory: 2
             lsf.wrapper.script: ""
-      	    lsf.stdout.file: stdout.txt
+            lsf.stdout.file: stdout.txt
             lsf.job.report.file: .lsf.out
             lsf.use.pre.exec.command: "false"
             lsf.extra.bsub.args: ""

@@ -170,10 +170,10 @@ public class CommandManagerFactoryTest extends TestCase {
         assertEquals("checking job properties: java_flags", "-Xmx12g", jobProperties.get("java_flags"));
         assertEquals("checking job properties: lsf.project", "genepattern", jobProperties.get("lsf.project"));
         assertEquals("checking job properties: lsf.queue", "broad", jobProperties.get("lsf.queue"));
-        assertEquals("checking job properties: lsf.wrapper.script", "lsf_wrapper.sh", jobProperties.get("lsf.wrapper.script"));
-        assertEquals("checking job properties: lsf.output.filename", ".lsf.out", jobProperties.get("lsf.output.filename"));
+        assertEquals("checking job properties: lsf.wrapper.script", "", jobProperties.get("lsf.wrapper.script"));
+        assertEquals("checking job properties: lsf.job.report.file", ".lsf.out", jobProperties.get("lsf.job.report.file"));
         assertEquals("checking job properties: lsf.use.pre.exec.command", "false", ""+jobProperties.get("lsf.use.pre.exec.command"));
-        assertEquals("checking job properties: lsf.extra.bsub.args", "null", jobProperties.get("lsf.extra.bsub.args"));
+        assertEquals("checking job properties: lsf.extra.bsub.args", "", jobProperties.get("lsf.extra.bsub.args"));
     }
 
     /**
