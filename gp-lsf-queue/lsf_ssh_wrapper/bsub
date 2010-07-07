@@ -21,6 +21,12 @@ quote_arg() {
 
     # escape single quote (') characters
     #arg=${arg//\'/\'\\\'\'}
+    # escape all '!' in $1
+    #q_arg=`echo $q_arg | sed 's,!,\!,g'`
+    # escape all '$' in $q_arg
+    #q_arg=`echo $q_arg | sed 's,$,\$,g'`
+    # escape all '"' in $q_arg
+    #arg=`echo $q_arg | sed 's,",\",g'`
 
     # wrap each arg in double quotes
     echo "\"$arg\"";
