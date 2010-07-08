@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.11.jar"/>
 	<classpathentry kind="lib" path="lib/json_simple-1.1.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/gp-3.2.3"/>
+	<classpathentry kind="lib" path="lib/junit-4.8.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry exported="true" kind="lib" path="lib/broad-core-main-2.9.2.jar" sourcepath="/Broad/Projects/BroadCore/src/main"/>
-	<classpathentry kind="lib" path="/gp-3.2.3/website/WEB-INF/lib/hibernate3.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/gp-3.2"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/BroadCore"/>
+	<classpathentry kind="lib" path="/BroadCore/lib/deploy/hibernate/hibernate3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

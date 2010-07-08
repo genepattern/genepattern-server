@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>gp-3.2.3-lsf-queue</name>
+	<name>gp-lsf-queue</name>
 	<comment></comment>
 	<projects>
 		<project>BroadCore</project>
