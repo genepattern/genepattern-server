@@ -231,7 +231,7 @@ public class DirectoryManager {
 	return dirName;
     }
 
-    private static String getLibDir() {
+    public static String getLibDir() {
         if (taskLibDir == null) {
             taskLibDir = System.getProperty("tasklib");
             if (taskLibDir == null || !new File(taskLibDir).exists()) {

@@ -463,8 +463,8 @@ public class GenePatternAnalysisTask {
             }
             // check that user can access requested module
             TaskInfo taskInfo = null;
-            LocalAdminClient adminClient = new LocalAdminClient(userId);
             try {
+                LocalAdminClient adminClient = new LocalAdminClient(userId);
                 taskInfo = adminClient.getTask(lsid);
             }
             catch (WebServiceException e) {
@@ -877,7 +877,12 @@ public class GenePatternAnalysisTask {
                         if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE) && originalPath != null) {
                             // handle http files by downloading them and substituting the downloaded filename for the URL in the command line.
                             if (inputFileMode == INPUT_FILE_MODE.PATH && new File(originalPath).exists()) {
+                                boolean isInTaskLib = false;
                                 if (!allowInputFilePaths) {
+                                    //special-case: check if this is a file in the taskLib
+                                    isInTaskLib = isInTaskLib(taskInfo, originalPath);
+                                }
+                                if (!allowInputFilePaths && !isInTaskLib) {
                                     vProblems.add("You are not permitted to access the requested file: "+originalPath);
                                     continue;
                                 }
@@ -1379,6 +1384,28 @@ public class GenePatternAnalysisTask {
         }
     }
     
+    /**
+     * 
+     * @param taskInfo
+     * @param serverFilePath
+     * @return true iff the originalPath is to a file in the taskLib directory for the given taskInfo.
+     */
+    private static boolean isInTaskLib(TaskInfo taskInfo, String originalPath) {
+        if (taskInfo == null) {
+            log.error("Null taskInfo arg");
+            return false;
+        }
+        String taskLibDir = DirectoryManager.getTaskLibDir(taskInfo);
+        if (taskLibDir == null) {
+            log.error("Unable to get taskLibDir for taskInfo: "+taskInfo.getName());
+            return false;
+        }
+        File serverFile = new File(originalPath);
+        String filename = serverFile.getName();
+        File file = new File(taskLibDir, filename);
+        return file != null && file.canRead();
+    }
+
     /**
      * Make a deep copy of the ParameterInfo[] for the given job info. 
      * So that onJob can work on a local copy of the array without inadvertently

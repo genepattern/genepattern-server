@@ -27,6 +27,7 @@ import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.server.webapp.jsf.JobPermissionsBean;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.JobInfo;
@@ -293,9 +294,9 @@ public class JobInfoWrapper implements Serializable {
 </pre>
          * @param parameterInfo
          */
-        InputFile(JobInfo jobInfo, String contextPath, String paramValue, ParameterInfo parameterInfo) {
+        InputFile(TaskInfo taskInfo, JobInfo jobInfo, String contextPath, String paramValue, ParameterInfo parameterInfo) {
             super(parameterInfo);
-            initLinkValue(jobInfo.getJobNumber(), contextPath, paramValue);
+            initLinkValue(taskInfo, jobInfo.getJobNumber(), contextPath, paramValue);
         }
 
         /**
@@ -304,7 +305,7 @@ public class JobInfoWrapper implements Serializable {
          * @param contextPath
          * @param value
          */
-        private void initLinkValue( int jobNumber, String contextPath, String value ) {  
+        private void initLinkValue( TaskInfo taskInfo, int jobNumber, String contextPath, String value ) {  
             //A. External link, e.g. ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
 
             //B. Internal links
@@ -317,19 +318,22 @@ public class JobInfoWrapper implements Serializable {
             //   4. to file uploaded when creating a pipeline, e.g.
             //      <GenePatternURL>getFile.jsp?task=urn%3Alsid%3A8080.pcarr.gm971-3d7.broadinstitute.org%3Agenepatternmodules%3A127%3A9&file=all_aml_test.gct
             //      http://127.0.0.1:8080/gp/getFile.jsp?task=urn%3Alsid%3A8080.pcarr.gm971-3d7.broadinstitute.org%3Agenepatternmodules%3A127%3A9&file=all_aml_test.gct
+            //   5. to file uploaded when creating a module, e.g.
+            //      <libdir>stdin.txt
             
             //C. Server file path
             //   1. uploaded from web client,
             //      /xchip/genepattern/node256/gp-trunk/Tomcat/temp/test_run30301.tmp/all_aml_test.gct
             //   2. upload from SOAP client,
             //      /xchip/genepattern/node256/gp-trunk/temp/attachments/test/Axis30302.att_all_aml_test.gct
-            //   3. other server file path, 
+            //   3. file in <libdir>,
+            //      /xchip/genepattern/node256/gp-trunk/taskLib/testCat.1.3361/stdin.txt
+            //   4. other server file path, 
             //      a) allow.input.file.paths=true
             //      b) allow.input.file.paths=false, handle error 
             //      c) allow.input.file.paths=true, but path is to a restricted area
             
             String origValue = value;
-
             String genePatternUrl = UIBeanHelper.getServer();
             //substitute <GenePatternURL>
             if (value.startsWith("<GenePatternURL>")) {
@@ -337,6 +341,12 @@ public class JobInfoWrapper implements Serializable {
             }
             if (value.startsWith("file:")) {
                 value = value.substring(5);
+            }
+            //substitute <libdir>
+            String taskLibDir=null;
+            if (value.startsWith("<libdir>")) {
+                taskLibDir = DirectoryManager.getTaskLibDir(taskInfo);
+                value = taskLibDir + "/" + value.substring("<libdir>".length());
             }
             isUrl = false;
             URL url = null;
@@ -407,11 +417,15 @@ public class JobInfoWrapper implements Serializable {
             File inputFileParent = inputFile.getParentFile();
             boolean isWebUpload = FileUtil.isWebUpload(inputFile);
             boolean isSoapUpload = false;
+            //boolean isInLibdir = false;
             if (!isWebUpload) {
                 isSoapUpload = FileUtil.isSoapUpload(inputFile);
                 //File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
                 //isSoapUpload = inputFileGrandParent != null && inputFileGrandParent.equals(soapAttachmentDir);
             }
+            //if (!isWebUpload && !isSoapUpload) {
+            //    isInLibdir = FileUtil.isInLibdir(inputFile);
+            //}
             
             if (isWebUpload) {
                 log.debug("isWebUpload");
@@ -438,6 +452,11 @@ public class JobInfoWrapper implements Serializable {
                 if (displayValue.startsWith("Axis")) {
                     displayValue = displayValue.substring(displayValue.indexOf('_') + 1);
                 }
+            }
+            else if (taskLibDir != null) {
+                //String taskId=inputFileParent == null ? "" : inputFileParent.getName();
+                String taskId = taskInfo.getLsid();
+                setLink(contextPath + "/getFile.jsp?task="+taskId+"&file="+inputFile.getName());
             }
             else {
                 log.debug("isServerFilePath");
@@ -695,7 +714,7 @@ public class JobInfoWrapper implements Serializable {
                 String value = param.getValue();
                 if (value != null && !"".equals(value)) {
                     if (isInputFile(param)) {
-                        InputFile inputFile = new InputFile(jobInfo, servletContextPath, value, param);
+                       InputFile inputFile = new InputFile(taskInfo, jobInfo, servletContextPath, value, param);
                         inputFiles.add(inputFile);
                         inputParam = inputFile;
                     } 
