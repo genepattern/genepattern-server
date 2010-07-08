@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>gp-3.2.3</name>
+	<name>gp-3.2</name>
 	<comment></comment>
 	<projects>
+		<project>gp-lsf-queue</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
