@@ -173,15 +173,12 @@ public class Analysis extends GenericWebService {
     }
 
     /**
-     * 
      * Deletes the given output file for the given job and removes the output file from the parameter info array for the
      * job. If <tt>jobId</tt> is a parent job and value was created by it's child, the child will be updated as well.
      * Additionally, if <tt>jobId</tt> is a child job, the parent will be updated too.
      * 
-     * @param jobId
-     *                the job id
-     * @param value
-     *                the value of the parameter info object for the output file to delete
+     * @param jobId, the job id
+     * @param value, the value of the parameter info object for the output file to delete
      */
     public void deleteJobResultFile(int jobId, String value) throws WebServiceException {
         String userId = getUsernameFromContext();
@@ -189,49 +186,47 @@ public class Analysis extends GenericWebService {
 
         AnalysisDAO ds = new AnalysisDAO();
         JobInfo jobInfo = ds.getJobInfo(jobId);
+        if (jobInfo == null) {
+            throw new WebServiceException("Unable to get jobInfo for jobId="+jobId);
+        }
 
-	int beforeDeletionLength = 0;
-	ParameterInfo[] params = jobInfo.getParameterInfoArray();
-	if (params != null) {
-	    beforeDeletionLength = params.length;
-	}
+        int beforeDeletionLength = 0;
+        ParameterInfo[] params = jobInfo.getParameterInfoArray();
+        if (params != null) {
+            beforeDeletionLength = params.length;
+        }
+        jobInfo.setParameterInfoArray(removeOutputFileParameters(jobInfo, value));
+        if (jobInfo.getParameterInfoArray().length == beforeDeletionLength) {
+            throw new WebServiceException(new FileNotFoundException());
+        }
 
-	jobInfo.setParameterInfoArray(removeOutputFileParameters(jobInfo, value));
+        int fileCreationJobNumber = jobInfo.getJobNumber();
 
-	if (jobInfo.getParameterInfoArray().length == beforeDeletionLength) {
-	    throw new WebServiceException(new FileNotFoundException());
-	}
+        String fileName = value;
+        int index = StringUtils.lastIndexOfFileSeparator(fileName);
+        if (index != -1) {
+            fileCreationJobNumber = Integer.parseInt(fileName.substring(0, index));
+            fileName = fileName.substring(index + 1, fileName.length());
+        }
+        String jobDir = org.genepattern.server.genepattern.GenePatternAnalysisTask.getJobDir(String.valueOf(fileCreationJobNumber));
+        File file = new File(jobDir, fileName);
+        if (file.exists()) {
+            file.delete();
+        }
 
-	int fileCreationJobNumber = jobInfo.getJobNumber();
+        ds.updateJob(jobInfo.getJobNumber(), jobInfo.getParameterInfo(), ((Integer) JobStatus.STATUS_MAP.get(jobInfo.getStatus())).intValue());
 
-	String fileName = value;
-	int index = StringUtils.lastIndexOfFileSeparator(fileName);
-	if (index != -1) {
-	    fileCreationJobNumber = Integer.parseInt(fileName.substring(0, index));
-	    fileName = fileName.substring(index + 1, fileName.length());
-	}
-	String jobDir = org.genepattern.server.genepattern.GenePatternAnalysisTask.getJobDir(String
-		.valueOf(fileCreationJobNumber));
-	File file = new File(jobDir, fileName);
-	if (file.exists()) {
-	    file.delete();
-	}
-
-	ds.updateJob(jobInfo.getJobNumber(), jobInfo.getParameterInfo(), ((Integer) JobStatus.STATUS_MAP.get(jobInfo
-		.getStatus())).intValue());
-
-	if (fileCreationJobNumber != jobId) { // jobId is a parent job
-	    JobInfo childJob = ds.getJobInfo(fileCreationJobNumber);
-	    childJob.setParameterInfoArray(removeOutputFileParameters(childJob, value));
-	    ds.updateJob(childJob.getJobNumber(), childJob.getParameterInfo(), ((Integer) JobStatus.STATUS_MAP
-		    .get(childJob.getStatus())).intValue());
-	} else {
-	    JobInfo parent = ds.getParent(jobId);
-	    if (parent != null) { // jobId is a child job
-		parent.setParameterInfoArray(removeOutputFileParameters(parent, value));
-	    }
-	}
-
+        if (fileCreationJobNumber != jobId) { // jobId is a parent job
+            JobInfo childJob = ds.getJobInfo(fileCreationJobNumber);
+            childJob.setParameterInfoArray(removeOutputFileParameters(childJob, value));
+            ds.updateJob(childJob.getJobNumber(), childJob.getParameterInfo(), ((Integer) JobStatus.STATUS_MAP.get(childJob.getStatus())).intValue());
+        } 
+        else {
+            JobInfo parent = ds.getParent(jobId);
+            if (parent != null) { // jobId is a child job
+                parent.setParameterInfoArray(removeOutputFileParameters(parent, value));
+            }
+        }
     }
 
     public JobInfo[] findJobsThatCreatedFile(String fileURLOrJobNumber) throws WebServiceException {
