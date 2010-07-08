@@ -417,15 +417,10 @@ public class JobInfoWrapper implements Serializable {
             File inputFileParent = inputFile.getParentFile();
             boolean isWebUpload = FileUtil.isWebUpload(inputFile);
             boolean isSoapUpload = false;
-            //boolean isInLibdir = false;
+            boolean isInLibdir = taskLibDir != null;
             if (!isWebUpload) {
                 isSoapUpload = FileUtil.isSoapUpload(inputFile);
-                //File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
-                //isSoapUpload = inputFileGrandParent != null && inputFileGrandParent.equals(soapAttachmentDir);
             }
-            //if (!isWebUpload && !isSoapUpload) {
-            //    isInLibdir = FileUtil.isInLibdir(inputFile);
-            //}
             
             if (isWebUpload) {
                 log.debug("isWebUpload");
@@ -453,8 +448,7 @@ public class JobInfoWrapper implements Serializable {
                     displayValue = displayValue.substring(displayValue.indexOf('_') + 1);
                 }
             }
-            else if (taskLibDir != null) {
-                //String taskId=inputFileParent == null ? "" : inputFileParent.getName();
+            else if (isInLibdir) {
                 String taskId = taskInfo.getLsid();
                 setLink(contextPath + "/getFile.jsp?task="+taskId+"&file="+inputFile.getName());
             }

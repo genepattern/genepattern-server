@@ -65,22 +65,4 @@ public class FileUtil {
         File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
         return fileEquals(inputFileGrandParent, soapAttachmentDir);
     }
-
-    /**
-     * Is the given input file included in the modules libdir?
-     * @param inputFile
-     * @return
-     */
-    public static boolean isInLibdir(File inputFile) {
-        if (inputFile == null) {
-            log.error("Invalid input, null");
-            return false;
-        }
-        File inputFileParent = inputFile.getParentFile();
-        File inputFileGrandParent = inputFileParent == null ? null : inputFileParent.getParentFile();
-        String libdirPath = DirectoryManager.getLibDir();
-        File libdir = new File(libdirPath);
-        return fileEquals(inputFileGrandParent, libdir);
-    }
-
 }
