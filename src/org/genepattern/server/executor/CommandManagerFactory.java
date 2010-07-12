@@ -106,6 +106,10 @@ public class CommandManagerFactory {
         configFile = properties.getProperty(PROP_COMMAND_MANAGER_CONFIG_FILE);
     }
     
+    public static File getConfigurationFile() {
+        return getConfigurationFile(configFile);
+    }
+    
     /**
      * Get a File object for the named configuration file as specified in the 'genepattern.properties' file. E.g.
      * <code>

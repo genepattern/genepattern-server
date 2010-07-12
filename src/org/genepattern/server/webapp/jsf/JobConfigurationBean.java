@@ -1,12 +1,16 @@
 package org.genepattern.server.webapp.jsf;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandManager;
 import org.genepattern.server.executor.CommandManagerFactory;
-import org.jfree.util.Log;
 
 /**
  * Backing bean for configuring command executors via the web interface.
@@ -14,6 +18,8 @@ import org.jfree.util.Log;
  * @author pcarr
  */
 public class JobConfigurationBean {
+    private static Logger log = Logger.getLogger(JobConfigurationBean.class);
+
     /**
      * Gui view of a command executor.
      * @author pcarr
@@ -79,6 +85,33 @@ public class JobConfigurationBean {
         CommandManagerFactory.getCommandManager().startCommandExecutors();
         CommandManagerFactory.getCommandManager().startAnalysisService();
     }
+    
+    public File getConfigurationFile() {
+        return CommandManagerFactory.getConfigurationFile();
+    }
+
+    public String getConfigurationFilepath() {
+        File configFile = getConfigurationFile();
+        if (configFile != null) {
+            return configFile.getAbsolutePath();
+        }
+        return "";
+    }
+    
+    /**
+     * Display the contents of the configuration file.
+     * @return
+     */
+    public String getConfigurationFileContent() {
+        File configFile = getConfigurationFile();
+        if (configFile == null) {
+            return "";
+        }
+        if (!configFile.canRead()) {
+            return "File is not readable";
+        }
+        return ServerSettingsBean.getLog(configFile);
+    }
 
     public List<Obj> getCommandExecutors() {
         if (commandExecutors != null) {
@@ -87,9 +120,7 @@ public class JobConfigurationBean {
         commandExecutors = new ArrayList<Obj>();
 
         CommandManager f = CommandManagerFactory.getCommandManager();
-        //List<CommandExecutor> l = f.getCommandExecutors();
         Iterable<CommandExecutor> l = f.getCommandExecutorsMap().values();
-        //List<CommandExecutor> l = f.getCommandExecutorMap().;
         for(CommandExecutor cmd : l) {
             commandExecutors.add(new Obj(cmd));
         } 
@@ -101,7 +132,7 @@ public class JobConfigurationBean {
     }
     
     public void reloadConfigurationForItem() throws Exception {
-        Log.error("Ignoring reloadConfigurationForItem: "+cmdExecutor.getClass().getCanonicalName());
+        log.error("Ignoring reloadConfigurationForItem: "+cmdExecutor.getClass().getCanonicalName());
     }
 
 }

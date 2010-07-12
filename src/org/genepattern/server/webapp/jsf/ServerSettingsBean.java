@@ -285,7 +285,7 @@ public class ServerSettingsBean implements Serializable {
      * @return
      * @throws IOException
      */
-    public String getLog(File logFile) {
+    static public String getLog(File logFile) {
 	StringBuffer buf = new StringBuffer();
 	BufferedReader br = null;
 

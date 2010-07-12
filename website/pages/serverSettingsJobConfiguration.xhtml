@@ -25,7 +25,7 @@
         <td>Job Configuration</td>        
       </tr>
     </table>
-    <table border="0" cellpadding="0" cellspacing="0" >
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" >
       <thead>
       <tr class="tableheader-row2">
         <td align="left"></td>
@@ -33,28 +33,26 @@
       </tr>
       </thead> 
       <tr class="admin-row"><td></td><td>
-        <h:commandLink immediate="false" rendered="false" action="#{jobConfigurationBean.startAnalysisService}">Start analysis service</h:commandLink>
+        <h:commandLink immediate="false" rendered="true" action="#{jobConfigurationBean.startAnalysisService}">Start analysis service</h:commandLink>
         </td>
       </tr>
       <tr class="admin-row"><td></td><td>
-        <h:commandLink immediate="false" rendered="false" action="#{jobConfigurationBean.shutdownAnalysisService}">Shutdown analysis service</h:commandLink>
+        <h:commandLink immediate="false" rendered="true" action="#{jobConfigurationBean.shutdownAnalysisService}">Shutdown analysis service</h:commandLink>
         </td>
       </tr>
       <tr class="admin-row"><td></td><td>
-        <h:commandLink immediate="false" rendered="false" action="#{jobConfigurationBean.startCommandExecutors}">Start command executors</h:commandLink>
+        <h:commandLink immediate="false" rendered="true" action="#{jobConfigurationBean.startCommandExecutors}">Start command executors</h:commandLink>
         </td>
       </tr>
-
       <tr class="admin-row"><td></td><td>
-        <h:commandLink immediate="false" rendered="false" action="#{jobConfigurationBean.stopCommandExecutors}">Stop command executors</h:commandLink>     
+        <h:commandLink immediate="false" rendered="true" action="#{jobConfigurationBean.stopCommandExecutors}">Stop command executors</h:commandLink>     
+        </td>
+	  </tr>
+      <tr class="admin-row"><td></td><td>
+        <h:commandLink immediate="false" rendered="true" action="#{jobConfigurationBean.reloadJobConfiguration}">Reload job configuration</h:commandLink>     
       </td></tr>
-
-      <tr class="admin-row"><td></td><td>
-        <h:commandLink immediate="false" action="#{jobConfigurationBean.reloadJobConfiguration}">Reload job configuration</h:commandLink>     
-      </td></tr>
-
 	  <tr class="admin-row"><td></td><td>
-        <h:commandLink immediate="false" rendered="false" action="#{jobConfigurationBean.stopAndRestartAllExecutors}">Reload executors and job configuration</h:commandLink>     
+        <h:commandLink immediate="false" rendered="true" action="#{jobConfigurationBean.stopAndRestartAllExecutors}">Reload executors and job configuration</h:commandLink>     
       </td></tr>
     </table>
 		
@@ -63,7 +61,7 @@
         <td>Command Executors</td>        
       </tr>
     </table>
-    <table border="0" cellpadding="0" cellspacing="0" >
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" >
       <thead>
       <tr class="tableheader-row2">
         <td align="left">id</td>
@@ -78,6 +76,20 @@
         <td> </td>
       </tr>
     </t:dataList>
+    </table>
+	
+	<table width="100%" class="barhead-other" >
+      <tr><td>Job Configuration File Contents</td></tr>
+	</table>
+	<table width="100%" border="0" cellpadding="0" cellspacing="0" >
+      <tr class="admin-row">
+        <td>configuration file name: #{jobConfigurationBean.configurationFilepath}</td>
+      </tr>
+      <tr class="admin-row">
+        <td colspan="2">
+            <pre>#{jobConfigurationBean.configurationFileContent}</pre>
+        </td>
+      </tr>
     </table>
 
     </h:form>
