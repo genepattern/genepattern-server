@@ -13,25 +13,42 @@
         </echo>
     </target>
 
-    <!-- path the gp library, required for CommandExecutorService and related classes. -->
+    <!-- path to the gp library, required for CommandExecutorService and related classes. -->
+    <!-- configured for both a dev environment (from svn co of gp server source code), or a server install -->
     <property name="gp.classes" location="../website/WEB-INF/classes" />
-
+    <property name="gp.server.lib" location="../website/WEB-INF/lib" />
+    
     <!-- this implementation requires the BroadCore libraries -->
     <property name="broadcore" location="../../BroadCore" />
 
     <!-- property name="client.lib.dir" location="gplib" / -->
     <property name="build.dir" value="build"  />
     <property name="dist.dir" value="dist" />
+    
+    <!-- svn required for including the version number in  the jar file name -->
+    <property name="svn.cmd" value="svn" />
+    <!-- must be set explicitly when launching from Eclipse on Mac OS X -->
+    <!-- property name="svn.cmd" value="/opt/subversion/bin/svn" / -->
 
     <target name="init">
         <mkdir dir="${build.dir}" />
         <mkdir dir="${dist.dir}" />
     </target>
+    
+    <path id="gp.server.classpath">
+        <!-- include GenePattern jar files -->
+        <fileset dir="${gp.server.lib}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+    <path id="gp.dev.classpath">
+        <pathelement location="${gp.classes}" />
+    </path>
 
     <path id="compile.classpath">
         <pathelement location="${build.dir}" />
-        <!-- pathelement location="${GenePattern.jar}" / -->
-        <pathelement location="${gp.classes}" />
+        <path refid="gp.server.classpath" />
+        <path refid="gp.dev.classpath" />
         <fileset dir="lib">
             <include name="**/*.jar"/>
         </fileset>
@@ -55,21 +72,37 @@
         </copy>
     </target>
     
-    <target name="jar" depends="compile">
-        <property name="jar.file" location="${dist.dir}/gp-lsf-executor.jar" />
+    <target name="getBuildVersionId" unless="build.version.id" depends="getSvnVersion">
+        <property name="build.version.id" value="${svn.info.lastRev}" />
+    </target>
+    
+    <!-- helper target to label the jar file based on svn revision -->
+    <target name="getSvnVersion" unless="svn.info.lastRev"
+        description="Sets property 'svn.info.lastRev' to the head svn Last Changed Rev">
+
+        <!-- find out revision number of HEAD, need svn.cmd on the path of the local machine -->
+        <exec executable="${svn.cmd}" outputproperty="svninfo.out"> 
+            <arg line="info -r HEAD" />
+        </exec>
+        <exec executable="grep" inputstring="${svninfo.out}" outputproperty="grep.out">
+            <arg line="'Last Changed Rev:'" />
+        </exec>
+        <exec executable="sed" inputstring="${grep.out}" outputproperty="svn.info.lastRev">
+            <arg value="s/Last\ Changed\ Rev:\ //" />
+        </exec>
+    </target>
+
+    <target name="echoSvnVersion" depends="getSvnVersion">
+        <echo>svn.info.lastRev: ${svn.info.lastRev}</echo>
+    </target>
+    
+    <target name="echoBuildVersionId" depends="getBuildVersionId">
+        <echo>build.version.id: ${build.version.id}</echo>
+    </target>
+    
+    <target name="jar" depends="compile,getBuildVersionId">
+        <property name="jar.file" location="${dist.dir}/gp-lsf-executor-${build.version.id}.jar" />
         <jar destfile="${jar.file}" basedir="${build.dir}" />
-        <echo>
-            To install the custom lsf executor plugin:
-            
-            1) Add the ${jar.file} and any required libraries to 
-               the ${GenePatternServer.dir}/Tomcat/webapps/gp/WEB-INF/lib/ directory.
-            
-            2) Edit your ${GenePatternServer.dir}/resources/exec.properties file.
-               #add an entry of the form, executorId=classname, e.g.
-               executor.01=org.genepattern.server.executor.custom.CustomCommandExecutorService
-            
-            3) Restart your server.
-        </echo>
     </target>
     
     <target name="clean">
