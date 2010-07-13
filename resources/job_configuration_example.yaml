@@ -3,6 +3,9 @@
 #
 # Note: this is a YAML file, indentation is important, TAB characters are not permitted
 #
+# The GP server uses the snakeyaml parser (http://code.google.com/p/snakeyaml/). 
+# For more details about the YAML format, see: http://www.yaml.org/
+#
 
 # apply these properties to all jobs
 default.properties: 
