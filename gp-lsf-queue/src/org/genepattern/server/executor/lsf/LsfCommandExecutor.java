@@ -31,27 +31,53 @@ public class LsfCommandExecutor implements CommandExecutor {
     private Main broadCore = null;
     private static ExecutorService jobSubmissionService = null;
     private static ExecutorService jobCompletionService = null;
+    private static int numJobSubmissionThreads = 3;
+    private static int numJobCompletionThreads = 3;
     
     private Properties configurationProperties = new Properties();
     
     public void setConfigurationFilename(String filename) {
         log.error("method not implemented, setConfigurationFilename( "+filename+" )");
     }
-    
+
     public void setConfigurationProperties(Properties properties) {
         this.configurationProperties.putAll(properties);
+        
+        //WARNING: setting a static variable because the getJobCompletionService must be static
+        String key = "lsf.num.job.submission.threads";
+        String prop = configurationProperties.getProperty(key);
+        if (prop != null) {
+            try {
+                numJobSubmissionThreads = Integer.parseInt( prop );
+            }
+            catch (Exception e) {
+                log.error("Error in configuration file: "+key+"="+prop);
+            }
+        }
+        key = "lsf.num.job.completion.threads";
+        prop = configurationProperties.getProperty(key);
+        if (prop != null) {
+            try {
+                numJobCompletionThreads = Integer.parseInt( prop );
+            }
+            catch (Exception e) {
+                log.error("Error in configuration file: "+key+"="+prop);
+            }
+        }
     }
     
-    private static ExecutorService getJobSubmissionService() {
+    private static ExecutorService getJobSubmissionService() { 
         if (jobSubmissionService == null) {
-            jobSubmissionService = Executors.newCachedThreadPool();            
+            log.info("Initializing jobSubmissionService with a fixed thread pool of size "+numJobSubmissionThreads);
+            jobSubmissionService = Executors.newFixedThreadPool(numJobSubmissionThreads);
         }
         return jobSubmissionService;
     }
 
-    public static ExecutorService getJobCompletionService() {
+    public static ExecutorService getJobCompletionService() { 
         if (jobCompletionService == null) {
-            jobCompletionService = Executors.newFixedThreadPool(3);
+            log.info("Initializing jobCompletionService with a fixed thread pool of size "+numJobCompletionThreads);
+            jobCompletionService = Executors.newFixedThreadPool(numJobCompletionThreads);
         }
         if (jobCompletionService != null) {
             return jobCompletionService;
@@ -287,7 +313,31 @@ public class LsfCommandExecutor implements CommandExecutor {
         log.debug("handle running job #"+jobInfo.getJobNumber()+" on startup");
         return JobStatus.JOB_PROCESSING;
     }
-
 }
 
+//used these classes for debugging a Thread leak in the BroadCore library
+//    Do ThreadLocal and Thread pools mix well? Probably not.
+//class LsfJobSubmissionThreadPoolExecutor extends ThreadPoolExecutor {
+//    public LsfJobSubmissionThreadPoolExecutor(int corePoolSize,
+//                              int maximumPoolSize,
+//                              long keepAliveTime,
+//                              TimeUnit unit,
+//                              BlockingQueue<Runnable> workQueue,
+//                              ThreadFactory threadFactory) {
+//        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory);
+//    }
+//
+//    public void afterExecute(Runnable r, Throwable t) {
+//        String cName = r.getClass().getName();
+//        super.afterExecute(r, t);
+//    }
+//}
+//
+//class MyThreadFactory implements ThreadFactory {
+//    private static long COUNT=0;
+//    public Thread newThread(Runnable r) {
+//        Thread jobSubmissionThread = new Thread(r, "JobSubmission_"+(COUNT++));
+//        return jobSubmissionThread;
+//    }
+//}
 
