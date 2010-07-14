@@ -1,0 +1,3 @@
+go /gp/pages/index.jsf?lsid=javaEchoSleeper
+fv taskForm taskName javaEchoSleeper
+submit
