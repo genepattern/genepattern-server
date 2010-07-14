@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.log4j.Logger;
@@ -46,7 +47,7 @@ public class JobInfoManager {
     private static Logger log = Logger.getLogger(JobInfoManager.class);
     
     //cache pipeline status so we don't need to make so many DB queries
-    private static Map<Integer,Boolean> isPipelineCache = new HashMap<Integer,Boolean>();
+    private static Map<Integer,Boolean> isPipelineCache = new ConcurrentHashMap<Integer,Boolean>();
     
     public static boolean isPipeline(JobInfo jobInfo) {
         boolean closeDbSession = true;
@@ -77,7 +78,6 @@ public class JobInfoManager {
             log.error(t);
         }
         return isPipeline;
-        
     }
     
     public static boolean isVisualizer(JobInfo jobInfo) {
