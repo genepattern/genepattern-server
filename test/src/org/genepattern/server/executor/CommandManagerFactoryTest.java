@@ -7,7 +7,6 @@ import java.util.Properties;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.database.HsqlDbUtil;
-import org.genepattern.server.executor.lsf.LsfCommandExecutor;
 import org.genepattern.webservice.JobInfo;
 
 import junit.framework.TestCase;
@@ -159,7 +158,9 @@ public class CommandManagerFactoryTest extends TestCase {
         
         try {
             CommandExecutor cmdExecutor = cmdMgr.getCommandExecutor(jobInfo);
-            assertTrue("expecting LsfCommandExecutor for SNPFileSorter but found "+cmdExecutor.getClass().getCanonicalName()+" instead", (cmdExecutor instanceof LsfCommandExecutor));
+            String canonicalName = cmdExecutor.getClass().getCanonicalName();
+            assertEquals("expecting LsfCommandExecutor for SNPFileSorter", "org.genepattern.server.executor.lsf.LsfCommandExecutor", canonicalName);
+            //assertTrue("expecting LsfCommandExecutor for SNPFileSorter but found "+cmdExecutor.getClass().getCanonicalName()+" instead", (cmdExecutor instanceof LsfCommandExecutor));
         }
         catch (Exception e) {
             fail("Exception thrown in getCommandExecutor: "+e.getLocalizedMessage());
