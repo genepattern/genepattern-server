@@ -46,6 +46,10 @@ executors:
             hibernate.transaction.factory_class: org.hibernate.transaction.JDBCTransactionFactory
             # number of seconds to check for completed jobs
             lsf.check.frequency: 15
+            # number of threads in job submission pool
+            lsf.num.job.submission.threads: 3
+            # number of threads in job completion pool
+            lsf.num.job.completion.threads: 3
 
             # set the GAP_SERVER_ID column of the JOB_LSF table
             #     <broadcore.env>:<hostname>:<jboss.server.name>
