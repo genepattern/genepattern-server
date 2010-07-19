@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The contents of this file will be loaded for each web application -->
+<Context>
+
+    <!-- Default set of monitored resources -->
+    <WatchedResource>WEB-INF/web.xml</WatchedResource>
+    
+    <!-- Uncomment this to disable session persistence across Tomcat restarts -->
+    <!--
+    <Manager pathname="" />
+    -->
+
+    <!-- DataSource to the default HSQL DB -->
+    <Resource 
+        name="jdbc/gp/hsql" 
+        auth="Container" 
+        type="javax.sql.DataSource" 
+        maxActive="20"
+        maxIdle="5" 
+        maxWait="10000" 
+        username="sa" password=""
+        factory="org.apache.tomcat.dbcp.dbcp.BasicDataSourceFactory"
+        driverClassName="org.hsqldb.jdbcDriver"
+        url="jdbc:hsqldb:hsql://127.0.0.1:9001/xdb" 
+    />    
+    <ResourceLink global="jdbc/gp/hsql" name="jdbc/gp/hsql" type="javax.sql.DataSource" />
+
+    <!-- DataSource to the GP Oracle DB -->
+    <Resource 
+        name="jdbc/gp/oracle"
+        auth="Container"
+        type="oracle.jdbc.pool.OracleDataSource"
+        driverClassName="oracle.jdbc.OracleDriver"
+        factory="oracle.jdbc.pool.OracleDataSourceFactory"
+        url="jdbc:oracle:thin:@cmapdb01.broadinstitute.org:1521:cmap_dev"
+        user="GENEPATTERN_DEV_01"
+        password="GENEPATTERN_DEV_01"
+        maxActive="120"
+        maxIdle="10"
+        maxWait="60" 
+        removeAbandoned="true"
+        removeAbandonedTimeout="60"
+        logAbandoned="true"
+    />
+    <ResourceLink global="jdbc/gp/oracle" name="jdbc/gp/oracle" type="oracle.jdbc.pool.OracleDataSource" />
+</Context>
