@@ -3,18 +3,18 @@
 
 <hibernate-configuration> 
   <!-- session-factory --> 
-  <session-factory name="java:hibernate/SessionFactory"> 
+  <session-factory name="hibernateSessionFactory"> 
     <property name="hibernate.connection.datasource">java:comp/env/jdbc/gp/hsql</property>
     <property name="hibernate.current_session_context_class">thread</property>
-
     <property name="hibernate.transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
+
+    <!--  hsql settings -->
     <property name="hibernate.default_schema">PUBLIC</property>
     <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property> 
     
     <!--  Misc settings -->
     <property name="hibernate.jdbc.batch_size">20</property>
     <property name="hibernate.statement_cache.size">0</property>
-    <property name="hibernate.transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
 
     <!--  for debugging -->
     <property name="show_sql">false</property> 

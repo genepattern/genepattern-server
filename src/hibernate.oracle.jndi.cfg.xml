@@ -3,18 +3,18 @@
 
 <hibernate-configuration> 
   <!-- session-factory --> 
-  <session-factory name="java:hibernate/SessionFactory"> 
+  <session-factory name="hibernateSessionFactory"> 
     <property name="hibernate.connection.datasource">java:comp/env/jdbc/gp/oracle</property>
     <property name="hibernate.current_session_context_class">thread</property>
-	<!-- required for oracle -->
     <property name="hibernate.transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
+
+	<!-- oracle settings -->
     <property name="hibernate.default_schema">GENEPATTERN_DEV_01</property>
     <property name="hibernate.dialect">org.genepattern.server.database.PlatformOracle9Dialect</property> 
     
     <!--  Misc settings -->
     <property name="hibernate.jdbc.batch_size">20</property>
     <property name="hibernate.statement_cache.size">0</property>
-    <property name="hibernate.transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
     
     <!--  for debugging -->
     <property name="show_sql">false</property>
