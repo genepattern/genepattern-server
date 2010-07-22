@@ -20,7 +20,6 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.Security;
-import java.text.SimpleDateFormat;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Properties;
@@ -45,17 +44,16 @@ import org.genepattern.server.webapp.jsf.AboutBean;
 /*
  * GenePattern startup servlet
  * 
- * This servlet performs periodic maintenance, based on definitions in the <omnigene.conf>/genepattern.properties file
+ * This servlet performs periodic maintenance, based on definitions in the <genepattern.properties>/genepattern.properties file
  * @author Jim Lerner
  */
 public class StartupServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(StartupServlet.class);
 
-    private SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static Vector<Thread> vThreads = new Vector<Thread>();
 
     public StartupServlet() {
-        log.info("Creating StartupServlet");
+        announceStartup();
     }
     
     public String getServletInfo() {
@@ -64,8 +62,8 @@ public class StartupServlet extends HttpServlet {
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        log.info("StartupServlet: user.dir=" + System.getProperty("user.dir"));
 
+        log.info("\tinitializing properties...");
         ServletContext application = config.getServletContext();
         String genepatternProperties = config.getInitParameter("genepattern.properties");
         application.setAttribute("genepattern.properties", genepatternProperties);
@@ -80,6 +78,7 @@ public class StartupServlet extends HttpServlet {
         String dbVendor = System.getProperty("database.vendor", "HSQL");
         if (dbVendor.equals("HSQL")) {
             try {
+                log.info("\tstarting HSQL database...");
                 HsqlDbUtil.startDatabase();
             }
             catch (Throwable t) {
@@ -89,23 +88,26 @@ public class StartupServlet extends HttpServlet {
         }
 
         //start the command executors before starting the internal job queue (AnalysisTask.startQueue) ...
+        log.info("\tstarting job queue...");
         CommandManagerFactory.initializeCommandManager(System.getProperties());
         CommandManager cmdManager = CommandManagerFactory.getCommandManager();
         cmdManager.startCommandExecutors();
         cmdManager.startAnalysisService();
 
+        log.info("\tstarting daemons...");
         startDaemons(System.getProperties(), application);
         Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         HttpsURLConnection.setDefaultHostnameVerifier(new SessionHostnameVerifier());
 
         //clear system alert messages
+        log.info("\tinitializing system messages...");
         try {
             SystemAlertFactory.getSystemAlert().deleteOnRestart();
         }
         catch (Exception e) {
             log.error("Error clearing system messages on restart: "+e.getLocalizedMessage(), e);
         }
-        announceReady(System.getProperties());
+        announceReady();
     }
 
     /**
@@ -170,12 +172,18 @@ public class StartupServlet extends HttpServlet {
     protected static void addDaemonThread(Thread t) {
         vThreads.add(t);
     }
-
-    protected void announceReady(Properties props) {
+    
+    private void announceStartup() {
+        final String NL = System.getProperty("line.separator");
+        final String STARS = "****************************************************************************";
+        StringBuffer startupMessage = new StringBuffer();
+        startupMessage.append(NL + STARS + NL);
+        startupMessage.append("Starting GenePatternServer ... ");
+        log.info(startupMessage);
+    }
+ 
+    protected void announceReady() {
         AboutBean about = new AboutBean();
-        about.getFull();
-        about.getBuildTag();
-        about.getDate();
         String message = "GenePattern server version " + about.getFull() + 
             " build " + about.getBuildTag() + 
             " built " + about.getDate() + " is ready.";
@@ -184,11 +192,16 @@ public class StartupServlet extends HttpServlet {
             .substring(0, message.length());
         StringBuffer startupMessage = new StringBuffer();
         final String NL = System.getProperty("line.separator");
-        startupMessage.append(NL + "Listening on " + System.getProperty("GenePatternURL") + NL);
         startupMessage.append(""+NL);
         startupMessage.append(stars + NL);
         startupMessage.append(message + NL);
-        startupMessage.append("\tJava Version: "+System.getProperty("java.version") + NL);
+        startupMessage.append("\tGenePatternURL: " + System.getProperty("GenePatternURL") + NL );
+        startupMessage.append("\tJava Version: "+System.getProperty("java.version") + NL );
+        startupMessage.append("\tuser.dir: "+System.getProperty("user.dir") + NL);
+        startupMessage.append("\ttasklib: "+System.getProperty("tasklib") + NL);
+        startupMessage.append("\tjobs: "+System.getProperty("jobs") + NL);
+        startupMessage.append("\tjava.io.tmpdir: "+System.getProperty("java.io.tmpdir") + NL);
+        startupMessage.append("\tsoap.attachment.dir: "+System.getProperty("soap.attachment.dir") + NL);
         startupMessage.append(stars);
         
         log.info(startupMessage);
@@ -261,12 +274,12 @@ public class StartupServlet extends HttpServlet {
             Properties props = new Properties();
             fis = new FileInputStream(propFile);
             props.load(fis);
-            log.info("loaded GP properties from " + propFile.getCanonicalPath());
+            log.info("\tloaded GP properties from " + propFile.getCanonicalPath());
 
             if (customPropFile.exists()) {
                 customFis = new FileInputStream(customPropFile);
                 props.load(customFis);
-                log.info("loaded Custom GP properties from " + customPropFile.getCanonicalPath());
+                log.info("\tloaded Custom GP properties from " + customPropFile.getCanonicalPath());
             }
 
             // copy all of the new properties to System properties

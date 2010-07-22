@@ -307,14 +307,6 @@
   <servlet-name>StartupServlet</servlet-name>
   <servlet-class>org.genepattern.server.webapp.StartupServlet</servlet-class>
   <init-param>
-   <param-name>java.io.tmpdir</param-name>
-   <param-value>./temp</param-value>
-  </init-param>
-  <init-param>
-   <param-name>omnigene.conf</param-name>
-   <param-value>../resources</param-value>
-  </init-param>
-  <init-param>
    <param-name>genepattern.properties</param-name>
    <param-value>../resources</param-value>
   </init-param>

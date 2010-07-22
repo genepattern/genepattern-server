@@ -60,7 +60,6 @@ import static org.genepattern.util.GPConstants.TASKLOG;
 import static org.genepattern.util.GPConstants.TASK_ID;
 import static org.genepattern.util.GPConstants.TASK_NAMESPACE;
 import static org.genepattern.util.GPConstants.TASK_TYPE_VISUALIZER;
-import static org.genepattern.util.GPConstants.TOMCAT;
 import static org.genepattern.util.GPConstants.UNREQUIRED_PARAMETER_NAMES;
 import static org.genepattern.util.GPConstants.USERID;
 import static org.genepattern.util.GPConstants.UTF8;
@@ -223,7 +222,6 @@ import org.w3c.dom.NodeList;
  * 
  * @author Jim Lerner
  * @version 1.0
- * @see org.genepattern.server.AnalysisTask
  * @see org.genepattern.webservice.TaskInfoAttributes
  */
 
@@ -281,23 +279,6 @@ public class GenePatternAnalysisTask {
                 } 
                 catch (IOException ioe) {
                 }
-            }
-        }
-
-        String canonicalPathNames[] = new String[] { TOMCAT };
-        String oldName;
-        String newName;
-        for (int i = 0; i < canonicalPathNames.length; i++) {
-            oldName = System.getProperty(canonicalPathNames[i]);
-            if (oldName == null) {
-                continue;
-            }
-            try {
-                newName = new File(oldName).getCanonicalPath();
-                System.setProperty(canonicalPathNames[i], newName);
-            } 
-            catch (IOException ioe) {
-                log.error("GenePattern init: " + ioe + " while getting canonical path for " + oldName);
             }
         }
 

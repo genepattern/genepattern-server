@@ -46,8 +46,6 @@ public class GPConstants {
     /** task ID (task_master ID) of running job */
     public static final String TASK_ID = "task_id";
 
-    public static final String TOMCAT = "tomcat";
-
     public static final String ANT = "ant";
 
     public static final String COMMAND_PREFIX = "commandPrefix"; // eg. LSF
