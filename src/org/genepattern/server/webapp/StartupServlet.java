@@ -33,6 +33,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.executor.CommandManager;
 import org.genepattern.server.executor.CommandManagerFactory;
@@ -85,6 +86,24 @@ public class StartupServlet extends HttpServlet {
                 log.error("Unable to start HSQL Database!", t);
                 return;
             }
+        }
+        
+        log.info("\tchecking database connection...");
+        try {
+            HibernateUtil.beginTransaction();
+        }
+        catch (Throwable t) {
+            log.debug("Error connecting to the database", t);
+            Throwable cause = t.getCause();
+            if (cause == null) {
+                cause = t;
+            }
+            log.error("Error connecting to the database: "+cause);
+            log.error("Error starting GenePatternServer, abandoning servlet init, throwing servlet exception.");
+            throw new ServletException(t);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
         }
 
         //start the command executors before starting the internal job queue (AnalysisTask.startQueue) ...

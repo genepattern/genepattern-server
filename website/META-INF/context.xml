@@ -15,29 +15,35 @@
         name="jdbc/gp/hsql" 
         auth="Container" 
         type="javax.sql.DataSource" 
+        driverClassName="org.hsqldb.jdbcDriver"
+        factory="org.apache.tomcat.dbcp.dbcp.BasicDataSourceFactory"
+        url="jdbc:hsqldb:hsql://127.0.0.1:9001/xdb" 
+        username="sa" password=""
         maxActive="20"
         maxIdle="5" 
         maxWait="10000" 
-        username="sa" password=""
-        factory="org.apache.tomcat.dbcp.dbcp.BasicDataSourceFactory"
-        driverClassName="org.hsqldb.jdbcDriver"
-        url="jdbc:hsqldb:hsql://127.0.0.1:9001/xdb" 
+        removeAbandoned="true"
+        removeAbandonedTimeout="60"
+        logAbandoned="true"
     />    
     <ResourceLink global="jdbc/gp/hsql" name="jdbc/gp/hsql" type="javax.sql.DataSource" />
 
     <!-- DataSource to the GP Oracle DB -->
+    <!-- Because auth="Application" rather than "Container", the 'user' and 'password' attributes are set by the application.
+         In this case they are set in the hibernate.oracle.jndi.cfg.xml file with the following properties:
+         hibernate.connection.username
+         hibernate.connection.password
+     -->
     <Resource 
         name="jdbc/gp/oracle"
-        auth="Container"
+        auth="Application"
         type="oracle.jdbc.pool.OracleDataSource"
         driverClassName="oracle.jdbc.OracleDriver"
         factory="oracle.jdbc.pool.OracleDataSourceFactory"
         url="jdbc:oracle:thin:@cmapdb01.broadinstitute.org:1521:cmap_dev"
-        user="GENEPATTERN_DEV_01"
-        password="GENEPATTERN_DEV_01"
-        maxActive="120"
-        maxIdle="10"
-        maxWait="60" 
+        maxActive="20"
+        maxIdle="5"
+        maxWait="10000" 
         removeAbandoned="true"
         removeAbandonedTimeout="60"
         logAbandoned="true"
