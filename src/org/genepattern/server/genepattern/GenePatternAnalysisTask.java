@@ -238,11 +238,6 @@ public class GenePatternAnalysisTask {
     //private static final String ORIGINAL_LAST_MODIFIED="originalLastModified";
     //private static final String ORIGINAL_LENGTH="originalLength";
 
-    /**
-     * indicates whether version string has been displayed by init already
-     */
-    protected static boolean bAnnounced = false;
-
     public enum JOB_TYPE {
         JOB,
         VISUALIZER,
@@ -254,48 +249,18 @@ public class GenePatternAnalysisTask {
     };
 
     /** set with property allow.input.file.paths */
-    private boolean allowInputFilePaths = true;
+    private boolean allowInputFilePaths = false;
 
     /**
      * GenePatternAnalysisTask constructor. Loads properties from genepattern.properties
      */
     public GenePatternAnalysisTask() {
-        if (System.getProperty("GenePatternVersion") == null) {
-            // System properties are already loaded by StartupServlet
-            File propFile = new File(System.getProperty("genepattern.properties"), "genepattern.properties");
-            FileInputStream fis = null;
-            try {
-                fis = new FileInputStream(propFile);
-                System.getProperties().load(fis);
-            } 
-            catch (IOException ioe) {
-                log.error(propFile.getName() + " cannot be loaded.  " + ioe.getMessage());
-            } 
-            finally {
-                try {
-                    if (fis != null) {
-                        fis.close();
-                    }
-                } 
-                catch (IOException ioe) {
-                }
-            }
-        }
-
-        if (!bAnnounced) {
-            log.info("GenePattern version " + System.getProperty("GenePatternVersion") + " build " + System.getProperty("tag") + " loaded");
-            bAnnounced = true;
-        }
-
         String inputFilePathProp = System.getProperty("allow.input.file.paths");
         if (inputFilePathProp != null) {
             if (inputFilePathProp.equalsIgnoreCase("true") || inputFilePathProp.equals("1")) {
                 allowInputFilePaths = true;
-                log.info("Allowing input file paths.");
+                log.debug("Allowing input file paths.");
             } 
-            else if (inputFilePathProp.equalsIgnoreCase("false") || inputFilePathProp.equals("0")) {
-                allowInputFilePaths = false;
-            }
         }
     }
 
