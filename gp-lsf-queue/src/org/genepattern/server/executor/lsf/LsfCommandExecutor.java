@@ -180,7 +180,7 @@ public class LsfCommandExecutor implements CommandExecutor {
         cmd.setLsfProperties(lsfProperties);
         cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile);
         LsfJob lsfJob = cmd.getLsfJob();
-        lsfJob = submitJob(lsfJob);
+        lsfJob = submitJob(""+jobInfo.getJobNumber(), lsfJob);
         log.debug(jobInfo.getJobNumber()+". "+jobInfo.getTaskName()+" is dispatched.");
     }
 
@@ -189,7 +189,7 @@ public class LsfCommandExecutor implements CommandExecutor {
      * @param lsfJob
      * @return the value returned from LsfWrapper#dispatchLsfJob
      */
-    private LsfJob submitJob(final LsfJob lsfJob) throws CommandExecutorException { 
+    private LsfJob submitJob(final String gpJobId, final LsfJob lsfJob) throws CommandExecutorException { 
         if (jobSubmissionService == null) {
             log.error("service not started ... ignoring submitJob("+lsfJob.getName()+")");
             return lsfJob;
@@ -203,7 +203,7 @@ public class LsfCommandExecutor implements CommandExecutor {
                     +", lsfId= "+lsfJobOut.getLsfJobId());
         }
         catch (Exception e) {
-            throw new CommandExecutorException("Error submitting job to LSF, job #"+lsfJob.getInternalJobId(), e);
+            throw new CommandExecutorException("Error submitting job to LSF, job #"+gpJobId, e);
         }
         return lsfJob;
     }
