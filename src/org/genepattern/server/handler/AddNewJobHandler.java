@@ -13,9 +13,9 @@
 package org.genepattern.server.handler;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
@@ -116,7 +116,7 @@ public class AddNewJobHandler extends RequestHandler {
             if(log.isDebugEnabled()) {
                 log.debug("Waking up job queue");
             }
-            AnalysisTask.getInstance().wakeupJobQueue();
+            CommandManagerFactory.getCommandManager().wakeupJobQueue();
             
             // Reparse parameter_info before sending to client
             ji.setParameterInfoArray(ParameterFormatConverter.getParameterInfoArray(parameter_info));

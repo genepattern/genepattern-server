@@ -37,4 +37,6 @@ public interface CommandManager extends CommandExecutorMapper {
     void startCommandExecutors();
     void stopCommandExecutors();
     Map<String,CommandExecutor> getCommandExecutorsMap();
+
+    void wakeupJobQueue();
 }

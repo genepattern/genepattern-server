@@ -295,4 +295,8 @@ public class BasicCommandManager implements CommandManager {
     private void startPipelineExecutor() {
         getPipelineExecutor().start();
     }
+    
+    public void wakeupJobQueue() {
+        AnalysisTask.getInstance().wakeupJobQueue();
+    }
 }
