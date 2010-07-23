@@ -249,12 +249,16 @@ public class GenePatternAnalysisTask {
     };
 
     /** set with property allow.input.file.paths */
-    private boolean allowInputFilePaths = false;
+    //private boolean allowInputFilePaths = false;
 
     /**
      * GenePatternAnalysisTask constructor. Loads properties from genepattern.properties
      */
     public GenePatternAnalysisTask() {
+    }
+
+    private static boolean getAllowInputFilePaths() {
+        boolean allowInputFilePaths = false;
         String inputFilePathProp = System.getProperty("allow.input.file.paths");
         if (inputFilePathProp != null) {
             if (inputFilePathProp.equalsIgnoreCase("true") || inputFilePathProp.equals("1")) {
@@ -262,6 +266,7 @@ public class GenePatternAnalysisTask {
                 log.debug("Allowing input file paths.");
             } 
         }
+        return allowInputFilePaths;
     }
 
     private static INPUT_FILE_MODE getInputFileMode() {
@@ -549,6 +554,7 @@ public class GenePatternAnalysisTask {
         String taskName = "";
         
         INPUT_FILE_MODE inputFileMode = getInputFileMode();
+        boolean allowInputFilePaths = getAllowInputFilePaths();
         try {
             // make directory to hold input and output files
             File outDir = new File(outDirName);
