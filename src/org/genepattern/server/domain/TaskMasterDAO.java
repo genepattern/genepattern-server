@@ -16,8 +16,7 @@ package org.genepattern.server.domain;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.genepattern.server.database.BaseDAO;
 import org.genepattern.server.database.HibernateUtil;
 import org.hibernate.Query;
@@ -29,8 +28,7 @@ import org.hibernate.Query;
  * @author Hibernate Tools
  */
 public class TaskMasterDAO extends BaseDAO {
-
-    private static final Log log = LogFactory.getLog(TaskMasterDAO.class);
+    private static Logger log = Logger.getLogger(TaskMasterDAO.class);
 
     public TaskMaster findById(Integer id) {
         log.debug("getting TaskMaster instance with id: " + id);
