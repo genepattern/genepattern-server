@@ -270,7 +270,7 @@ public class GenePatternAnalysisTask {
     }
 
     private static INPUT_FILE_MODE getInputFileMode() {
-        INPUT_FILE_MODE inputFileMode = INPUT_FILE_MODE.MOVE;
+        INPUT_FILE_MODE inputFileMode = INPUT_FILE_MODE.PATH;
         String inputFileModeProp = System.getProperty("input.file.mode");
         if (inputFileModeProp != null) {
             if (inputFileModeProp.equals("copy")) {
