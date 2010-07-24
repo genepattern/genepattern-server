@@ -45,15 +45,13 @@ public class DirectoryManager {
     private static Logger _cat = Logger.getLogger("org.genepattern.server.webservice.server.DirectoryManager");
 
     /**
-     * Locates the directory where the a particular task's files are stored. It is one level below
-     * $omnigene.conf/taskLib. TODO: involve userID in this, so that there is no conflict among same-named private
-     * tasks. Creates the directory if it doesn't already exist.
+     * Locates the directory where the a particular task's files are stored. It is one level below taskLib. 
+     * TODO: involve userID in this, so that there is no conflict among same-named private tasks. 
+     * Creates the directory if it doesn't already exist.
      * 
-     * @param taskName
-     *                name of task to look up
+     * @param taskName, name of task to look up
      * @return directory name on server where taskName support files are stored
-     * @throws Exception
-     *                 if genepattern.properties System property not defined
+     * @throws Exception, if genepattern.properties System property not defined
      * @author Jim Lerner
      */
 
@@ -72,9 +70,9 @@ public class DirectoryManager {
     }
 
     /**
-     * Locates the directory where the a particular task's files are stored. It is one level below
-     * $omnigene.conf/taskLib. TODO: involve userID in this, so that there is no conflict among same-named private
-     * tasks. Creates the directory if it doesn't already exist.
+     * Locates the directory where the a particular task's files are stored. It is one level below taskLib. 
+     * TODO: involve userID in this, so that there is no conflict among same-named private tasks. 
+     * Creates the directory if it doesn't already exist.
      * 
      * Warning: this method creates new DB connections, it is up to the calling method to close 
      *     the db connection if necessary.
@@ -140,15 +138,13 @@ public class DirectoryManager {
     }
 
     /**
-     * Locates the directory where the a particular task's files are stored. It is one level below
-     * $omnigene.conf/taskLib. TODO: involve userID in this, so that there is no conflict among same-named private
-     * tasks. Creates the directory if it doesn't already exist.
+     * Locates the directory where the a particular task's files are stored. It is one level below taskLib. 
+     * TODO: involve userID in this, so that there is no conflict among same-named private tasks. 
+     * Creates the directory if it doesn't already exist.
      * 
-     * @param taskName
-     *                name of task to look up
+     * @param taskName, name of task to look up
      * @return directory name on server where taskName support files are stored
-     * @throws Exception
-     *                 if genepattern.properties System property not defined
+     * @throws Exception, if genepattern.properties System property not defined
      * @author Jim Lerner (Moved to DirManager from GenePatternAnalysisTask by Ted Liefeld)
      */
     public static String getTaskLibDir(TaskInfo taskInfo) {
@@ -244,15 +240,13 @@ public class DirectoryManager {
     }
 
     /**
-     * Locates the directory where the a particular task's files are stored. It is one level below
-     * $omnigene.conf/taskLib. TODO: involve userID in this, so that there is no conflict among same-named private
-     * tasks. Creates the directory if it doesn't already exist.
+     * Locates the directory where the a particular task's files are stored. It is one level below taskLib. 
+     * TODO: involve userID in this, so that there is no conflict among same-named private tasks. 
+     * Creates the directory if it doesn't already exist.
      * 
-     * @param taskName
-     *                name of task to look up
+     * @param taskName, name of task to look up
      * @return directory name on server where taskName support files are stored
-     * @throws Exception
-     *                 if genepattern.properties System property not defined
+     * @throws Exception, if genepattern.properties System property not defined
      * @author Jim Lerner
      */
     public static String getSuiteLibDir(String suiteName, String sLSID, String username) throws Exception  {
