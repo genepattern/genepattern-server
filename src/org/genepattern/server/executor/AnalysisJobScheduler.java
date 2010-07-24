@@ -29,9 +29,7 @@ import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 
 /**
- * Runnable AnalysisTask - Adapts a Runnable to run within a pre-created thread. This object class is used by
- * AnalysisManager.
- * 
+ * Polls the db for new PENDING jobs and submits them to GenePatternAnalysisTask for execution.
  */
 public class AnalysisJobScheduler implements Runnable {
     private static Logger log = Logger.getLogger(AnalysisJobScheduler.class);
@@ -43,6 +41,16 @@ public class AnalysisJobScheduler implements Runnable {
         }
     };
     
+    //TODO: replace jobQueue with pendingJobQueue
+    private Vector<JobInfo> jobQueue = new Vector<JobInfo>();
+    private final int BOUND = 10000;
+    private final BlockingQueue<JobInfo> pendingJobQueue = new LinkedBlockingQueue<JobInfo>(BOUND);
+
+    private Object jobQueueWaitObject = new Object();
+    //the batch size, the max number of pending jobs to fetch from the db at a time
+    private int batchSize = 20;
+    private int numJobSubmissionThreads = 3;
+
     private Thread runner = null;
     private List<Thread> jobSubmissionThreads = null;
 
@@ -55,9 +63,7 @@ public class AnalysisJobScheduler implements Runnable {
         runner.setDaemon(true);
 
         jobSubmissionThreads = new ArrayList<Thread>();
-        //TODO: add configuration option to replace hard-coded number
-        int numWorkers = 1;
-        for (int i=0; i<numWorkers; ++i) { 
+        for (int i=0; i<numJobSubmissionThreads; ++i) { 
             Thread jobSubmissionThread = new Thread(THREAD_GROUP, new ProcessingJobsHandler(pendingJobQueue));
             jobSubmissionThread.setName("AnalysisTaskJobSubmissionThread-"+i);
             jobSubmissionThread.setDaemon(true);
@@ -81,14 +87,6 @@ public class AnalysisJobScheduler implements Runnable {
         }
         jobSubmissionThreads.clear();
     }
-    
-    //TODO: replace jobQueue with pendingJobQueue
-    private Vector<JobInfo> jobQueue = new Vector<JobInfo>();
-    private final int BOUND = 10000;
-    private final BlockingQueue<JobInfo> pendingJobQueue = new LinkedBlockingQueue<JobInfo>(BOUND);
-
-    private Object jobQueueWaitObject = new Object();
-    private int NUM_THREADS = 20; //this is the batch size, the max number of pending jobs to fetch from the db
 
     /** Main AnalysisTask's thread method. */
     public void run() {
@@ -100,8 +98,7 @@ public class AnalysisJobScheduler implements Runnable {
                 synchronized (jobQueueWaitObject) {
                     if (jobQueue.isEmpty()) {
                         // Fetch another batch of jobs.
-                        //TODO: NUM_THREADS is the batch size, the max number of pending jobs to fetch from the db at a time
-                        jobQueue = this.getWaitingJobs(NUM_THREADS);
+                        jobQueue = this.getWaitingJobs(batchSize);
                         if (jobQueue != null && !jobQueue.isEmpty()) {
                             jobQueue = this.updateJobStatusToProcessing(jobQueue);
                         }
@@ -154,9 +151,9 @@ public class AnalysisJobScheduler implements Runnable {
         
     private Vector<JobInfo> updateJobStatusToProcessing(Vector<JobInfo> jobs) {
         Vector<JobInfo> updatedJobs = new Vector<JobInfo>();
-        // No longer doing this ...
         // Commit each time through since any large CLOBs (>4k) will fail if they are committed inside a
         // transaction with ANY other object
+        // No longer doing this ... because we don't involve the CLOB in the update statement
         HibernateUtil.beginTransaction();
         try {
             for(JobInfo jobInfo : jobs) {
@@ -168,7 +165,7 @@ public class AnalysisJobScheduler implements Runnable {
         catch (Throwable t) {
             // don't add it to updated jobs, record the failure and move on
             updatedJobs.clear();
-            log.error("Error updating job status to processing in AnalysisTask", t);
+            log.error("Error updating job status to processing", t);
             HibernateUtil.rollbackTransaction();
         } 
         return updatedJobs;
