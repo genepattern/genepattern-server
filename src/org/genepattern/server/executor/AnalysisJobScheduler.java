@@ -12,6 +12,7 @@
 
 package org.genepattern.server.executor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
@@ -24,7 +25,6 @@ import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.OmnigeneException;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 
@@ -44,7 +44,7 @@ public class AnalysisJobScheduler implements Runnable {
     };
     
     private Thread runner = null;
-    private Thread jobSubmissionThread = null;
+    private List<Thread> jobSubmissionThreads = null;
 
     public AnalysisJobScheduler() {
     }
@@ -53,22 +53,33 @@ public class AnalysisJobScheduler implements Runnable {
         runner = new Thread(THREAD_GROUP, this);
         runner.setName("AnalysisTaskThread");
         runner.setDaemon(true);
-        
-        jobSubmissionThread = new Thread(new ProcessingJobsHandler(pendingJobQueue));
+
+        jobSubmissionThreads = new ArrayList<Thread>();
+        //TODO: add configuration option to replace hard-coded number
+        int numWorkers = 1;
+        for (int i=0; i<numWorkers; ++i) { 
+            Thread jobSubmissionThread = new Thread(THREAD_GROUP, new ProcessingJobsHandler(pendingJobQueue));
+            jobSubmissionThread.setName("AnalysisTaskJobSubmissionThread-"+i);
+            jobSubmissionThread.setDaemon(true);
+            jobSubmissionThreads.add(jobSubmissionThread);
+            jobSubmissionThread.start();
+        }
         runner.start();
-        jobSubmissionThread.start();
     }
     
     public void stopQueue() {
         if (runner != null) {
-            runner.stop();
+            runner.interrupt();
             runner = null;
         }
-        if (jobSubmissionThread != null) {
-            //TODO: we could set the status back to PENDING for any jobs left on the queue
-            jobSubmissionThread.stop();
-            jobSubmissionThread = null;
+        for(Thread jobSubmissionThread : jobSubmissionThreads) {
+            if (jobSubmissionThread != null) {
+                //TODO: we could set the status back to PENDING for any jobs left on the queue
+                jobSubmissionThread.interrupt();
+                jobSubmissionThread = null;
+            }
         }
+        jobSubmissionThreads.clear();
     }
     
     //TODO: replace jobQueue with pendingJobQueue
@@ -83,40 +94,36 @@ public class AnalysisJobScheduler implements Runnable {
     public void run() {
         log.debug("Starting AnalysisTask thread");
 
-        while (true) {
-            // Load input data to input queue
-            synchronized (jobQueueWaitObject) {
-                if (jobQueue.isEmpty()) {
-                    // Fetch another batch of jobs.
-                    //TODO: NUM_THREADS is the batch size, the max number of pending jobs to process at a time
-                    jobQueue = this.getWaitingJobs(NUM_THREADS);
-                    if (jobQueue != null && !jobQueue.isEmpty()) {
-                        jobQueue = this.updateJobStatusToProcessing(jobQueue);
+        try {
+            while (true) {
+                // Load input data to input queue
+                synchronized (jobQueueWaitObject) {
+                    if (jobQueue.isEmpty()) {
+                        // Fetch another batch of jobs.
+                        //TODO: NUM_THREADS is the batch size, the max number of pending jobs to fetch from the db at a time
+                        jobQueue = this.getWaitingJobs(NUM_THREADS);
+                        if (jobQueue != null && !jobQueue.isEmpty()) {
+                            jobQueue = this.updateJobStatusToProcessing(jobQueue);
+                        }
                     }
-                }
 
-                if (jobQueue.isEmpty()) {
-                    try {
+                    if (jobQueue.isEmpty()) {
                         jobQueueWaitObject.wait();
-                    } 
-                    catch (InterruptedException ie) {
                     }
                 }
-            }
 
-            JobInfo o = null;
-            if (!jobQueue.isEmpty()) {
-                o = jobQueue.remove(0);
-            }
-            if (o == null) {
-                continue;
-            }
-            try {
+                JobInfo o = null;
+                if (!jobQueue.isEmpty()) {
+                    o = jobQueue.remove(0);
+                }
+                if (o == null) {
+                    continue;
+                }
                 pendingJobQueue.put(o);
-            } 
-            catch (Exception ex) {
-                log.error(ex);
             }
+        }
+        catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
         }
     }
         
@@ -147,21 +154,23 @@ public class AnalysisJobScheduler implements Runnable {
         
     private Vector<JobInfo> updateJobStatusToProcessing(Vector<JobInfo> jobs) {
         Vector<JobInfo> updatedJobs = new Vector<JobInfo>();
-        for(JobInfo jobInfo : jobs) {
-            try {
-                // Commit each time through since any large CLOBs (>4k) will fail if they are committed inside a
-                // transaction with ANY other object
-                HibernateUtil.beginTransaction();
+        // No longer doing this ...
+        // Commit each time through since any large CLOBs (>4k) will fail if they are committed inside a
+        // transaction with ANY other object
+        HibernateUtil.beginTransaction();
+        try {
+            for(JobInfo jobInfo : jobs) {
                 setJobStatus(jobInfo.getJobNumber(), JobStatus.JOB_PROCESSING);
                 updatedJobs.add(jobInfo);
-                HibernateUtil.commitTransaction();
-            } 
-            catch (Throwable t) {
-                // don't add it to updated jobs, record the failure and move on
-                log.error("Error updating job status to processing in AnalysisTask", t);
-                HibernateUtil.rollbackTransaction();
-            } 
+            }
+            HibernateUtil.commitTransaction();
         }
+        catch (Throwable t) {
+            // don't add it to updated jobs, record the failure and move on
+            updatedJobs.clear();
+            log.error("Error updating job status to processing in AnalysisTask", t);
+            HibernateUtil.rollbackTransaction();
+        } 
         return updatedJobs;
     }
         
