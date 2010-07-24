@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.AnalysisTask;
+//import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
@@ -26,14 +26,23 @@ import org.hibernate.Session;
 public class BasicCommandManager implements CommandManager {
     private static Logger log = Logger.getLogger(BasicCommandManager.class);
     
+    private AnalysisJobScheduler analysisTaskScheduler = null;
+    
     public void startAnalysisService() { 
         log.info("starting analysis service...");
         handleRunningJobsOnServerStartup();
-        AnalysisTask.startQueue();
+        
+        if (analysisTaskScheduler == null) {
+            analysisTaskScheduler = new AnalysisJobScheduler();
+        }
+        analysisTaskScheduler.startQueue();
         log.info("...analysis service started!");
     }
     
     public void shutdownAnalysisService() {
+        if (analysisTaskScheduler != null) {
+            analysisTaskScheduler.stopQueue();
+        }
         log.info("shutting down analysis service...done!");
     }
 
@@ -297,6 +306,9 @@ public class BasicCommandManager implements CommandManager {
     }
     
     public void wakeupJobQueue() {
-        AnalysisTask.getInstance().wakeupJobQueue();
+        if (analysisTaskScheduler == null) {
+            log.error("analysisTaskScheduler is null");
+        }
+        analysisTaskScheduler.wakeupJobQueue();
     }
 }
