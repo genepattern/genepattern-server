@@ -24,7 +24,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -44,40 +43,27 @@ import org.genepattern.server.genepattern.GenePatternAnalysisTask;
  */
 
 public class CommandLineAction {
+    boolean hadToStartDB = false;
+    Connection conn = null;
+    GenePatternAnalysisTask gp = new GenePatternAnalysisTask();
+    protected boolean DEBUG = false;
+    Properties props = null;
 
-	boolean hadToStartDB = false;
-
-	Connection conn = null;
-
-	GenePatternAnalysisTask gp = new GenePatternAnalysisTask();
-
-	protected boolean DEBUG = false;
-
-	Properties props = null;
-
-	public void preRun(String[] args) {
-
-		DEBUG = (System.getProperty("DEBUG") != null);
-		try {
-			String resourcesDir = new File(System.getProperty("resources"))
-					.getCanonicalPath();
-			if (DEBUG)
-				System.out.println("resourcesDir="
-						+ new File(resourcesDir).getCanonicalPath());
-			Properties props = loadProps(resourcesDir);
-			if (DEBUG)
-				System.out.println(props);
-			System.setProperty("genepattern.properties", resourcesDir);
-			System.setProperty("omnigene.conf", resourcesDir);
-			//		System.setProperty("user.dir", new
-			// File(props.getProperty("Tomcat")).getCanonicalPath());
-			//		System.setProperty("user.dir", resourcesDir);
-			
-			// Database startup handled by hibernate JTR
-			// hadToStartDB = connectDatabase(resourcesDir, props);
-
-		} catch (Throwable e) {
-			System.err.println(e.getMessage());
+    public void preRun(String[] args) {
+        DEBUG = (System.getProperty("DEBUG") != null);
+        try {
+            String resourcesDir = new File(System.getProperty("resources")).getCanonicalPath();
+            if (DEBUG) {
+                System.out.println("resourcesDir=" + new File(resourcesDir).getCanonicalPath());
+            }
+            Properties props = loadProps(resourcesDir);
+            if (DEBUG) {
+                System.out.println(props);
+            }
+            System.setProperty("genepattern.properties", resourcesDir);
+        }
+        catch (Throwable e) {
+            System.err.println(e.getMessage());
 			e.printStackTrace();
 			System.exit(1);
 		}
