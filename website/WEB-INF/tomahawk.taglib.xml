@@ -183,20 +183,6 @@
         </component>
     </tag>
     <tag>
-        <tag-name>navigationMenuItems</tag-name>
-        <component>
-                <component-type>
-                        javax.faces.SelectItems
-                </component-type>
-        </component>
-    </tag> 
-    <tag>
-        <tag-name>navigationMenuItem</tag-name>
-        <component>
-            <component-type>org.apache.myfaces.NavigationMenuItem</component-type>
-        </component>
-    </tag>
-    <tag>
         <tag-name>newspaperTable</tag-name>
         <component>
             <component-type>org.apache.myfaces.HtmlNewspaperTable</component-type>
@@ -215,13 +201,6 @@
         <component>
             <component-type>org.apache.myfaces.HtmlPanelNavigation</component-type>
             <renderer-type>org.apache.myfaces.Navigation</renderer-type>
-        </component>
-    </tag>
-    <tag>
-        <tag-name>panelNavigation2</tag-name>
-        <component>
-            <component-type>org.apache.myfaces.HtmlPanelNavigationMenu</component-type>
-            <renderer-type>org.apache.myfaces.NavigationMenu</renderer-type>
         </component>
     </tag>
     <tag>

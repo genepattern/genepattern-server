@@ -155,12 +155,6 @@
   <managed-bean-class>org.genepattern.server.webapp.jsf.NavBarBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
- <!--  Beans for example programs -->
- <managed-bean>
-  <managed-bean-name>navigationMenu</managed-bean-name>
-  <managed-bean-class>org.apache.myfaces.examples.misc.NavigationMenu</managed-bean-class>
-  <managed-bean-scope>application</managed-bean-scope>
- </managed-bean>
  <managed-bean>
   <managed-bean-name>taskInstallBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.TaskInstallBean</managed-bean-class>
