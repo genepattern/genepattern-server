@@ -522,22 +522,32 @@ public class GenePatternAnalysisTask {
      * @param o
      *            JobInfo object
      */
-    public void onJob(Object o) {
-        if (o == null || !(o instanceof JobInfo)) {
-            log.error("Invalid arg to onJob, o="+o);
+    public void onJob(Integer jobId) {
+        log.debug("onJob("+jobId+")");
+        if (jobId == null) {
+            log.error("Invalid arg to onJob, jobId="+jobId);
             return;
         }
-        
-        JobInfo jobInfo = (JobInfo) o;
-        int jobId = jobInfo.getJobNumber();
-        if (log.isDebugEnabled()) {
-            log.debug("Start onJob id=" + jobId + " (" + jobInfo.getTaskName());
+
+        JobInfo jobInfo = null;
+        int parent = -1;
+        try {
+            AnalysisDAO dao = new AnalysisDAO();
+            jobInfo = dao.getJobInfo(jobId);
+            parent = dao.getParentJobId(jobId);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
         }
         
+        if (jobInfo == null) {
+            log.error("Not able to load jobInfo for jobId: "+jobId);
+            return;
+        }
+
         // handle special-case: job was terminated before it was started
-        int statusId = getJobStatusId(jobId);
-        if (JobStatus.JOB_ERROR == statusId || JobStatus.JOB_FINISHED == statusId) {
-            log.info("job #"+jobId+" already finished, statusId="+statusId);
+        if (JobStatus.ERROR.equals(jobInfo.getStatus()) || JobStatus.FINISHED.equals(jobInfo.getStatus())) {
+            log.info("job #"+jobId+" already finished, status="+jobInfo.getStatus());
             return;
         }
 
@@ -548,7 +558,6 @@ public class GenePatternAnalysisTask {
             return;
         }
 
-        JobInfo parentJobInfo = null;
         String outDirName = getJobDir(""+jobId);
         String taskName = "";
         
@@ -614,18 +623,6 @@ public class GenePatternAnalysisTask {
             validatePatches(taskInfo, null);
 
             Map<String, String> environmentVariables = new HashMap<String, String>();
-
-            int parent = -1;
-            try {
-                AnalysisDAO dao = new AnalysisDAO();
-                JobInfo parentJI = dao.getParent(jobId);
-                if (parentJI != null) {
-                    parent = parentJI.getJobNumber();
-                }
-            }
-            finally {
-                HibernateUtil.closeCurrentSession();
-            }
 
             //ParameterInfo[] paramsActual = jobInfo.getParameterInfoArray();
             ParameterInfo[] paramsCopy = copyParameterInfoArray(jobInfo);
@@ -1326,11 +1323,15 @@ public class GenePatternAnalysisTask {
                 String errorMessage = "Error submitting job "+jobId+". "+taskName;
                 log.error(errorMessage, e);
                 File outFile = writeStringToFile(outDirName, STDERR, e.getMessage() + "\n\n");
+                JobInfo parentJobInfo = new AnalysisDAO().getParent(jobId);
                 addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
                 recordJobCompletion(jobInfo, parentJobInfo, JobStatus.JOB_ERROR);
             } 
             catch (Exception e2) {
                 log.error(taskName + " error: unable to update job error status" + e2);
+            }
+            finally {
+                HibernateUtil.closeCurrentSession();
             }
         }
     }

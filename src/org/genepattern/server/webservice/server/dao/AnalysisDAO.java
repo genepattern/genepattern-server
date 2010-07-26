@@ -758,6 +758,18 @@ public class AnalysisDAO extends BaseDAO {
 	}
     }
 
+    public Integer getParentJobId(int jobId) {
+        String hql = " select parent from org.genepattern.server.domain.AnalysisJob where jobNo = :jobNo";
+        Query query = getSession().createQuery(hql);
+        query.setInteger("jobNo", jobId);
+        Integer parentJobId = (Integer) query.uniqueResult();
+        if (parentJobId != null) {
+            return parentJobId;
+        }
+        log.error("Unable to get parent job id for job: "+jobId);
+        return -1;
+    }
+
     public JobInfo getParent(int jobId) throws OmnigeneException {
 
 	String hql = " select parent from org.genepattern.server.domain.AnalysisJob as parent, "

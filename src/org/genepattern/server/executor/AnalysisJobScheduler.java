@@ -14,17 +14,14 @@ package org.genepattern.server.executor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.webservice.JobInfo;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 
@@ -41,10 +38,8 @@ public class AnalysisJobScheduler implements Runnable {
         }
     };
     
-    //TODO: replace jobQueue with pendingJobQueue
-    private Vector<JobInfo> jobQueue = new Vector<JobInfo>();
     private final int BOUND = 10000;
-    private final BlockingQueue<JobInfo> pendingJobQueue = new LinkedBlockingQueue<JobInfo>(BOUND);
+    private final BlockingQueue<Integer> pendingJobQueue = new LinkedBlockingQueue<Integer>(BOUND);
 
     private Object jobQueueWaitObject = new Object();
     //the batch size, the max number of pending jobs to fetch from the db at a time
@@ -91,86 +86,78 @@ public class AnalysisJobScheduler implements Runnable {
     /** Main AnalysisTask's thread method. */
     public void run() {
         log.debug("Starting AnalysisTask thread");
-
         try {
             while (true) {
                 // Load input data to input queue
+                List<Integer> waitingJobs = null;
                 synchronized (jobQueueWaitObject) {
-                    if (jobQueue.isEmpty()) {
-                        // Fetch another batch of jobs.
-                        jobQueue = this.getWaitingJobs(batchSize);
-                        if (jobQueue != null && !jobQueue.isEmpty()) {
-                            jobQueue = this.updateJobStatusToProcessing(jobQueue);
+                    if (pendingJobQueue.isEmpty()) {
+                        waitingJobs = this.getWaitingJobs(batchSize);
+                        if (waitingJobs != null && !waitingJobs.isEmpty()) {
+                            waitingJobs = updateJobStatusToProcessing(waitingJobs);
+                            if (waitingJobs != null) {
+                                for(Integer jobId : waitingJobs) {
+                                    pendingJobQueue.put(jobId);
+                                }
+                            }
+                        }
+                        else {
+                            //insurance against deadlock, poll for new PENDING jobs every 60 seconds, regardless of whether notify has been called
+                            final long timeout = 60*1000;
+                            jobQueueWaitObject.wait(timeout);
                         }
                     }
-
-                    if (jobQueue.isEmpty()) {
-                        jobQueueWaitObject.wait();
-                    }
                 }
-
-                JobInfo o = null;
-                if (!jobQueue.isEmpty()) {
-                    o = jobQueue.remove(0);
-                }
-                if (o == null) {
-                    continue;
-                }
-                pendingJobQueue.put(o);
             }
         }
         catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
     }
-        
-    private Vector<JobInfo> getWaitingJobs(int maxJobCount) {
-        Vector<JobInfo> jobVector = new Vector<JobInfo>();
+
+    private List<Integer> getWaitingJobs(int maxJobCount) {
         try {
             HibernateUtil.beginTransaction();
-            String hql = "from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId = :statusId and deleted = false order by submittedDate ";
+            String hql = "select jobNo from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId = :statusId and deleted = false order by submittedDate ";
             Query query = HibernateUtil.getSession().createQuery(hql);
             if (maxJobCount > 0) {
                 query.setMaxResults(maxJobCount);
             }
             query.setInteger("statusId", JobStatus.JOB_PENDING);
-            List<AnalysisJob> jobList = query.list();
-            for(AnalysisJob aJob : jobList) {
-                JobInfo singleJobInfo = new JobInfo(aJob);
-                jobVector.add(singleJobInfo);
-            }
+            List<Integer> jobIds = query.list();
+            return jobIds;
         }
         catch (Throwable t) {
             log.error("Error getting list of pending jobs from queue", t);
+            return new ArrayList<Integer>();
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
-        return jobVector;
     }
-        
-    private Vector<JobInfo> updateJobStatusToProcessing(Vector<JobInfo> jobs) {
-        Vector<JobInfo> updatedJobs = new Vector<JobInfo>();
+
+    private List<Integer> updateJobStatusToProcessing(List<Integer> jobIds) {
+        List<Integer> updatedJobIds = new ArrayList<Integer>();
         // Commit each time through since any large CLOBs (>4k) will fail if they are committed inside a
         // transaction with ANY other object
         // No longer doing this ... because we don't involve the CLOB in the update statement
         HibernateUtil.beginTransaction();
         try {
-            for(JobInfo jobInfo : jobs) {
-                setJobStatus(jobInfo.getJobNumber(), JobStatus.JOB_PROCESSING);
-                updatedJobs.add(jobInfo);
+            for(Integer jobId : jobIds) {
+                setJobStatus(jobId, JobStatus.JOB_PROCESSING);
+                updatedJobIds.add(jobId);
             }
             HibernateUtil.commitTransaction();
         }
         catch (Throwable t) {
             // don't add it to updated jobs, record the failure and move on
-            updatedJobs.clear();
+            updatedJobIds.clear();
             log.error("Error updating job status to processing", t);
             HibernateUtil.rollbackTransaction();
         } 
-        return updatedJobs;
+        return updatedJobIds;
     }
-        
+
     /**
      * @param jobNo
      * @param jobStatus
@@ -202,17 +189,18 @@ public class AnalysisJobScheduler implements Runnable {
     }
 
     private static class ProcessingJobsHandler implements Runnable {
-        private final BlockingQueue<JobInfo> pendingJobQueue;
+        private final BlockingQueue<Integer> pendingJobQueue;
         private final GenePatternAnalysisTask genePattern = new GenePatternAnalysisTask();
         
-        public ProcessingJobsHandler(BlockingQueue<JobInfo> pendingJobQueue) {
+        public ProcessingJobsHandler(BlockingQueue<Integer> pendingJobQueue) {
             this.pendingJobQueue = pendingJobQueue;
         }
         
         public void run() {
             try {
                 while (true) {
-                    submitJob(pendingJobQueue.take());
+                    Integer jobId = pendingJobQueue.take();
+                    submitJob(jobId);
                 }
             }
             catch (InterruptedException e) {
@@ -220,12 +208,12 @@ public class AnalysisJobScheduler implements Runnable {
             }
         }
         
-        private void submitJob(JobInfo jobInfo) {
+        private void submitJob(Integer jobId) {
             if (genePattern == null) {
                 log.error("job not run, genePattern == null!");
             }
             else {
-                genePattern.onJob(jobInfo);
+                genePattern.onJob(jobId);
             }
         }
     }
