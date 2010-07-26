@@ -121,7 +121,6 @@ import org.apache.tools.ant.taskdefs.Execute;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.AnalysisServiceException;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.PermissionsHelper;
@@ -561,7 +560,7 @@ public class GenePatternAnalysisTask {
             if (!outDir.exists()) {
                 if (!outDir.mkdirs()) {
                     log.error("onJob error making directory " + outDirName);
-                    throw new AnalysisServiceException("Error creating output directory " + outDirName);
+                    throw new Exception("Error creating output directory " + outDirName);
                 }
             } 
             else {
