@@ -135,6 +135,7 @@ public class RuntimeExecCommand {
             // wait for all output before attempting to send it back to the client
             long waitTime = 60*1000L; //don't wait more than a minute during normal job execution
             if (internalJobStatus == Status.TERMINATED) {
+                stderrBuffer.append("Job was terminated by user");
                 waitTime = 10*1000L;
             }
 
