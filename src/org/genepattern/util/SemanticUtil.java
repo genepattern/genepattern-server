@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +30,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.io.ParseException;
 import org.genepattern.io.odf.OdfHandler;
 import org.genepattern.io.odf.OdfParser;
-import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
@@ -111,38 +109,6 @@ public class SemanticUtil {
             return true;
         }
         return Arrays.asList(inputTypes).contains(kind);
-    }
-
-    /**
-     *
-     * Gets a map which maps the input type as a string to a list of analysis
-     * services that take that input type as an input parameter
-     *
-     */
-    public static Map<String, List<AnalysisService>> getKindToModulesMap(Collection<AnalysisService> analysisServices) {
-        Iterator<AnalysisService> temp = analysisServices.iterator();
-        String server = null;
-        if (temp.hasNext()) {
-            server = temp.next().getServer();
-        }
-        Map<String, Collection<TaskInfo>> map = new HashMap<String, Collection<TaskInfo>>();
-        for (Iterator<AnalysisService> it = analysisServices.iterator(); it.hasNext();) {
-            AnalysisService svc = it.next();
-            addToInputTypeToModulesMap(map, svc.getTaskInfo());
-        }
-        Map<String, List<AnalysisService>> kindToServices = new HashMap<String, List<AnalysisService>>();
-        for (Iterator<String> it = map.keySet().iterator(); it.hasNext();) {
-            String kind = it.next();
-            Collection<TaskInfo> tasks = map.get(kind);
-            if (tasks != null) {
-                List<AnalysisService> modules = new ArrayList<AnalysisService>();
-                for (Iterator<TaskInfo> taskIt = tasks.iterator(); taskIt.hasNext();) {
-                    modules.add(new AnalysisService(server, taskIt.next()));
-                }
-                kindToServices.put(kind, modules);
-            }
-        }
-        return kindToServices;
     }
 
     private static  HashMap<String, Collection<TaskInfo>> mapOfAllTasks = new HashMap<String, Collection<TaskInfo>>();
