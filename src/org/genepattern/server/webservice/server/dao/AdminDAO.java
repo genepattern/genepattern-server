@@ -117,7 +117,6 @@ public class AdminDAO extends BaseDAO {
             return null;
         }
 
-        boolean startTransaction = false;
         try {
             if (!HibernateUtil.getSession().getTransaction().isActive()) {
                 HibernateUtil.beginTransaction();
@@ -246,15 +245,9 @@ public class AdminDAO extends BaseDAO {
                 }
             }
 
-            if (startTransaction) {
-                HibernateUtil.commitTransaction();
-            }
             return latestTask;
         }
         catch (RuntimeException e) {
-            if (startTransaction) {
-                HibernateUtil.getSession().getTransaction().rollback();
-            }
             throw e;
         }
     }
