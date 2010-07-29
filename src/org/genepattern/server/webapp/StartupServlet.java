@@ -41,6 +41,7 @@ import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.process.JobPurger;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.webapp.jsf.AboutBean;
+import org.genepattern.webservice.TaskInfoCache;
 
 /*
  * GenePattern startup servlet
@@ -105,6 +106,19 @@ public class StartupServlet extends HttpServlet {
         finally {
             HibernateUtil.closeCurrentSession();
         }
+        
+        //initialize the TaskInfoCache
+        log.info("\tinitializing taskInfo cache...");
+        //for debugging
+        long start=System.currentTimeMillis();
+        try {
+            TaskInfoCache.instance().loadAllTasks();
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        long loadTime=System.currentTimeMillis()-start;
+        log.debug("loaded in "+loadTime+" ms");
 
         //start the command executors before starting the internal job queue (AnalysisTask.startQueue) ...
         log.info("\tstarting job queue...");
