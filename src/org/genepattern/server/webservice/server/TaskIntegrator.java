@@ -54,7 +54,6 @@ import org.genepattern.server.TaskUtil;
 import org.genepattern.server.TaskUtil.ZipFileType;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
-import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.domain.TaskMasterDAO;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.LSIDManager;
@@ -1299,17 +1298,14 @@ public class TaskIntegrator {
     }
 
     private boolean isTaskOwner(String user, String lsid) {
-	TaskMaster tm = (new TaskMasterDAO()).findByIdLsid(lsid, user);
-	if (tm == null)
-	    return false; // can't own what you can't see
-	return user.equals(tm.getUserId());
+        TaskMasterDAO dao = new TaskMasterDAO();
+        return dao.isTaskOwner(user, lsid);
     }
 
     private void isTaskOwnerOrAuthorized(String user, String lsid, String permission) throws WebServiceException {
-
-	if (!isTaskOwner(user, lsid)) {
-	    isAuthorized(user, permission);
-	}
+        if (!isTaskOwner(user, lsid)) {
+            isAuthorized(user, permission);
+        }
     }
 
     public static String filenameFromURL(String url) {

@@ -55,6 +55,15 @@ public class TaskMasterDAO extends BaseDAO {
         
         return (TaskMaster) null;
     }
+    
+    public boolean isTaskOwner(String user, String lsid) {
+        String hql = "select userId, lsid from org.genepattern.server.domain.TaskMaster where lsid = :lsid and userId = :userId";
+        Query query = HibernateUtil.getSession().createQuery(hql);
+        query.setString("lsid", lsid);
+        query.setString("userId", user);
+        List<Object[]> results = query.list();
+        return results != null && results.size() > 0;
+    }
 
     public List<TaskMaster> findAll() {
         try {
