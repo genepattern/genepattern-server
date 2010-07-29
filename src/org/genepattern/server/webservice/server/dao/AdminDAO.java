@@ -18,7 +18,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -45,6 +44,7 @@ import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 import org.hibernate.Query;
 
@@ -297,6 +297,20 @@ public class AdminDAO extends BaseDAO {
         }
         return allTasks;
     }
+    
+    /**
+     * Get the list of lsids for tasks owned by the user.
+     * @param username
+     * @return
+     */
+    private List<String> getAllLsidsForUser(String username) {
+        String hql = "select lsid from org.genepattern.server.domain.TaskMaster where userId = :userId or accessId = :accessId order by TASK_NAME asc";
+        Query query = getSession().createQuery(hql);
+        query.setString("userId", username);
+        query.setInteger("accessId", PUBLIC_ACCESS_ID);
+        List<String> results = query.list();
+        return results;
+    }
 
     /**
      * @param username
@@ -440,20 +454,52 @@ public class AdminDAO extends BaseDAO {
     }
 
     public TaskInfo[] getLatestTasks(String username) {
-        TaskInfo[] tasks = getAllTasksForUser(username);
-        if (tasks == null) {
+        List<LSID> lsids = getLatestLsidsForUser(username);
+        if (lsids == null || lsids.size() == 0) {
             return new TaskInfo[0];
         }
-        try {
-            Map lsidToTask = getLatestTasks(tasks);
-            TaskInfo[] tasksArray = (TaskInfo[]) lsidToTask.values().toArray(new TaskInfo[0]);
-            Arrays.sort(tasksArray, new TaskNameComparator());
-            return tasksArray;
-        } 
-        catch (MalformedURLException mfe) {
-            log.error(mfe);
-            throw new OmnigeneException("Error fetching task:  Malformed URL: " + mfe.getMessage());
+        TaskInfo[] taskInfos = new TaskInfo[lsids.size()];
+        int i=0;
+        for(LSID lsid : lsids) {
+            //taskInfos[i++] = getTaskInfoFromCache(lsid);
+            taskInfos[i++] = TaskInfoCache.instance().get(lsid.toString());
         }
+        return taskInfos;
+    }
+    
+    private List<LSID> getLatestLsidsForUser(String username) {
+        //optimize, to prevent getting too many clobs, and parsing too many clobs,
+        //first, get all lsids, then pare down the list by username before instantiating taskinfo objects
+        int numTotal = 0;
+        int numLatest = 0;
+        Map<String, LSID> latestTasks = new HashMap<String, LSID>();
+        List<String> lsidStrs = getAllLsidsForUser(username);
+        
+        //for debugging
+        numTotal = lsidStrs.size();
+        
+        for(String lsidStr : lsidStrs) {
+            try {
+            LSID lsid = new LSID(lsidStr);
+            LSID altTi = latestTasks.get(lsid.toStringNoVersion());
+            if (altTi == null) {
+                latestTasks.put(lsid.toStringNoVersion(), lsid);
+            } 
+            else {
+                if (altTi.compareTo(lsid) > 0) {
+                    latestTasks.put(lsid.toStringNoVersion(), lsid);
+                }
+            }
+            }
+            catch (MalformedURLException e) {
+                log.error("error creating LSID from '"+lsidStr+"', Ignoring this lsid");
+                log.debug("exception was: "+e.getMessage(), e);
+            }
+        }
+        //for debugging
+        numLatest = latestTasks.size();
+        log.debug("Pruned "+(numTotal-numLatest)+" tasks");
+        return new ArrayList<LSID>(latestTasks.values());
     }
 
     public TaskInfo getTask(int taskId) throws OmnigeneException {
