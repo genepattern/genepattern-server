@@ -44,6 +44,7 @@ import org.genepattern.util.LSID;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
 import org.hibernate.Query;
 
@@ -56,6 +57,17 @@ public class AdminDAO extends BaseDAO {
 
     private static int PUBLIC_ACCESS_ID = 1;
 
+    private static TaskInfo taskInfoFromTaskMaster(TaskMaster tm) {
+        TaskInfoAttributes taskInfoAttributes = TaskInfoAttributes.decode(tm.getTaskinfoattributes());
+        return new TaskInfo(
+                tm.getTaskId(), 
+                tm.getTaskName(), 
+                tm.getDescription(), 
+                tm.getParameterInfo(),
+                taskInfoAttributes, 
+                tm.getUserId(), 
+                tm.getAccessId());
+    }
 
     /**
      * Returns the versions of the tasks with the same versionless LSID as the given LSID. The returned list is in

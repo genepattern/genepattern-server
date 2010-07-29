@@ -12,15 +12,19 @@
 
 package org.genepattern.server.webservice.server.dao;
 
-import java.io.*;
+import java.io.File;
 import java.rmi.RemoteException;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
-import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.webservice.*;
 import org.hibernate.*;
@@ -92,14 +96,7 @@ public class BaseDAO {
             }
 
     }
-
   
-    protected static TaskInfo taskInfoFromTaskMaster(TaskMaster tm) {
-        return new TaskInfo(tm.getTaskId(), tm.getTaskName(), tm.getDescription(), tm.getParameterInfo(),
-                TaskInfoAttributes.decode(tm.getTaskinfoattributes()), tm.getUserId(), tm.getAccessId());
-
-    }
-
     protected SuiteInfo suiteInfoFromSuite(Suite suite) throws OmnigeneException {
 
         String lsid = suite.getLsid();
