@@ -118,10 +118,6 @@ public class AdminDAO extends BaseDAO {
         }
 
         try {
-            if (!HibernateUtil.getSession().getTransaction().isActive()) {
-                HibernateUtil.beginTransaction();
-            }
-
             LSID lsid = new LSID(lsidOrTaskName);
             String version = lsid.getVersion();
 
