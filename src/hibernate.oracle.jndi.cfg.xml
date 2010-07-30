@@ -9,6 +9,8 @@
     <property name="hibernate.transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
 
 	<!-- oracle settings -->
+    <property name="hibernate.connection.username">GENEPATTERN_DEV_01</property>
+    <property name="hibernate.connection.password">*****</property>
     <property name="hibernate.default_schema">GENEPATTERN_DEV_01</property>
     <property name="hibernate.dialect">org.genepattern.server.database.PlatformOracle9Dialect</property> 
     
