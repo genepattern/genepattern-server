@@ -7,8 +7,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Use ConcurrentHashMap to cache results of computations.
@@ -53,34 +51,6 @@ public class Memoizer<A,V> implements Computable<A, V> {
                 throw LaunderThrowable.launderThrowable(e.getCause());
             }
         }
-    }
-
-    /**
-     * Add precomputed value to the cache.
-     * @param pre
-     */
-    public void put(final A key, final V pre) {
-        Future<V> f = new Future<V>() {
-            public boolean cancel(boolean mayInterruptIfRunning) {
-                return false;
-            }
-            public V get() throws InterruptedException, ExecutionException {
-                return pre;
-            }
-
-            public V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                return pre;
-            }
-
-            public boolean isCancelled() {
-                return false;
-            }
-
-            public boolean isDone() {
-                return true;
-            }
-        };
-        cache.putIfAbsent(key, f);
     }
 }
 

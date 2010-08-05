@@ -33,10 +33,10 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.visualizer.RunVisualizerConstants;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
-import org.genepattern.webservice.TaskInfoCache;
 
 /**
  * Get job status information.
@@ -96,9 +96,6 @@ public class JobInfoManager {
     }
 
     public static class TaskInfoNotFoundException extends Exception {
-        public TaskInfoNotFoundException(int taskId) {
-            super("No taskInfo found for taskId: "+taskId);
-        }
         public TaskInfoNotFoundException(int taskId, Exception e) {
             super("Error getting taskInfo for taskId: " + taskId, e);
         }
@@ -122,8 +119,12 @@ public class JobInfoManager {
         TaskInfo taskInfo = null;
         try { 
             //calls HibernateUtil.beginTransaction...
-            taskInfo = TaskInfoCache.instance().getTaskInfoFromDb(taskId);
+            AdminDAO ds = new AdminDAO();
+            taskInfo = ds.getTask(taskId);
             return taskInfo;
+        } 
+        catch (OmnigeneException e) {
+            throw new TaskInfoNotFoundException(taskId, e);
         }
         finally {
             //...must close the session here, or in an enclosing method

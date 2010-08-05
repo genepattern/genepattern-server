@@ -32,6 +32,7 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.TaskIDNotFoundException;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.genepattern.LSIDManager;
@@ -42,6 +43,7 @@ import org.genepattern.util.LSID;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 import org.hibernate.Query;
@@ -54,6 +56,18 @@ public class AdminDAO extends BaseDAO {
     static Logger log = Logger.getLogger(AdminDAO.class);
 
     private static int PUBLIC_ACCESS_ID = 1;
+
+    private static TaskInfo taskInfoFromTaskMaster(TaskMaster tm) {
+        TaskInfoAttributes taskInfoAttributes = TaskInfoAttributes.decode(tm.getTaskinfoattributes());
+        return new TaskInfo(
+                tm.getTaskId(), 
+                tm.getTaskName(), 
+                tm.getDescription(), 
+                tm.getParameterInfo(),
+                taskInfoAttributes, 
+                tm.getUserId(), 
+                tm.getAccessId());
+    }
 
     /**
      * Returns the versions of the tasks with the same versionless LSID as the given LSID. The returned list is in
@@ -97,12 +111,18 @@ public class AdminDAO extends BaseDAO {
         return versions;
     }
 
+    // FIXME see doc for AdminDAO.getTaskId
     public TaskInfo getTask(String lsidOrTaskName, String username) throws OmnigeneException {
         if (lsidOrTaskName == null || lsidOrTaskName.trim().equals("")) {
             return null;
         }
 
+        boolean startTransaction = false;
         try {
+            if (!HibernateUtil.getSession().getTransaction().isActive()) {
+                HibernateUtil.beginTransaction();
+            }
+
             LSID lsid = new LSID(lsidOrTaskName);
             String version = lsid.getVersion();
 
@@ -111,7 +131,7 @@ public class AdminDAO extends BaseDAO {
                 if (username != null) {
                     IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
                     boolean isAdmin = (authManager.checkPermission("adminServer", username) || authManager.checkPermission("adminModules", username));
-                    String hql = "select taskId from org.genepattern.server.domain.TaskMaster where lsid = :lsid";
+                    String hql = "from org.genepattern.server.domain.TaskMaster where lsid = :lsid";
                     if (!isAdmin) {
                         hql += " and (userId = :userId or accessId = :accessId)";
                     }
@@ -123,14 +143,20 @@ public class AdminDAO extends BaseDAO {
                     }
                 } 
                 else {
-                    String hql = "select taskId from org.genepattern.server.domain.TaskMaster where lsid = :lsid";
+                    // sql = "SELECT * FROM task_Master WHERE lsid='" +
+                    // lsidOrTaskName + "'";
+                    String hql = "from org.genepattern.server.domain.TaskMaster where lsid = :lsid";
                     query = getSession().createQuery(hql);
                     query.setString("lsid", lsidOrTaskName);
                 }
             } 
             else { // lsid with no version
                 if (username != null) {
-                    String hql = "select taskId from org.genepattern.server.domain.TaskMaster where lsid like :lsid"
+                    // sql = "SELECT * FROM task_master WHERE LSID LIKE '" +
+                    // lsidOrTaskName + "%' AND (user_id='"
+                    // + username + "' OR access_id=" +
+                    // GPConstants.ACCESS_PUBLIC + ")";
+                    String hql = "from org.genepattern.server.domain.TaskMaster where lsid like :lsid"
                         + " and (userId = :userId or accessId = :accessId)";
                     query = getSession().createQuery(hql);
                     query.setString("lsid", lsidOrTaskName + "%");
@@ -138,33 +164,28 @@ public class AdminDAO extends BaseDAO {
                     query.setInteger("accessId", GPConstants.ACCESS_PUBLIC);
                 } 
                 else {
-                    String hql = "select taskId from org.genepattern.server.domain.TaskMaster where lsid like :lsid";
+                    // sql = "SELECT * FROM task_master WHERE LSID LIKE '" +
+                    // lsidOrTaskName + "%'";
+                    String hql = "from org.genepattern.server.domain.TaskMaster where lsid like :lsid";
                     query = getSession().createQuery(hql);
                     query.setString("lsid", lsidOrTaskName + "%");
                 }
             }
-            List<Integer> taskIds = query.list();
+            List<TaskMaster> results = query.list();
             TaskInfo latestTask = null;
             LSID latestLSID = null;
-            
-            TaskInfo[] taskInfos = TaskInfoCache.instance().getAllTasks(taskIds);
-            if (taskInfos != null && taskInfos.length > 0) {
-                latestTask = taskInfos[0];
-                latestLSID = new LSID(taskInfos[0].getLsid());
+
+            Iterator<TaskMaster> iter = results.iterator();
+            if (iter.hasNext()) {
+                latestTask = taskInfoFromTaskMaster(iter.next());
+                latestLSID = new LSID((String) latestTask.getTaskInfoAttributes().get(GPConstants.LSID));
             }
-            boolean first = true;
-            for(TaskInfo taskInfo : taskInfos) {
-                if (first) {
-                    first = false;
-                    latestTask = taskInfo;
-                    latestLSID = new LSID(taskInfo.getLsid());
-                }
-                else {
-                    LSID l = new LSID(taskInfo.getLsid());
-                    if (l.compareTo(latestLSID) < 0) {
-                        latestTask = taskInfo;
-                        latestLSID = l;
-                    }
+            while (iter.hasNext()) {
+                TaskMaster tm = iter.next();
+                LSID l = new LSID(tm.getLsid());
+                if (l.compareTo(latestLSID) < 0) {
+                    latestTask = taskInfoFromTaskMaster(tm);
+                    latestLSID = l;
                 }
             }
             return latestTask;
@@ -173,7 +194,10 @@ public class AdminDAO extends BaseDAO {
             // no lsid specified, find the 'best' match
             Query query = null;
             if (username != null) {
-                String hql = "select taskId from org.genepattern.server.domain.TaskMaster where taskName = :taskName "
+                // sql = "SELECT * FROM task_master WHERE task_name='" +
+                // lsidOrTaskName + "' AND (user_id='" + username
+                // + "' OR access_id=" + GPConstants.ACCESS_PUBLIC + ")";
+                String hql = "from org.genepattern.server.domain.TaskMaster where taskName = :taskName "
                     + " and (userId = :userId or accessId = :accessId)";
                 query = getSession().createQuery(hql);
                 query.setString("taskName", lsidOrTaskName);
@@ -181,16 +205,21 @@ public class AdminDAO extends BaseDAO {
                 query.setInteger("accessId", GPConstants.ACCESS_PUBLIC);
             } 
             else {
-                String hql = "select taskId from org.genepattern.server.domain.TaskMaster where lsid = :taskName";
+                // sql = "SELECT * FROM task_master WHERE task_name='" +
+                // lsidOrTaskName + "'";
+                String hql = "from org.genepattern.server.domain.TaskMaster where lsid = :taskName";
                 query = getSession().createQuery(hql);
                 query.setString("taskName", lsidOrTaskName);
             }
 
-            List<Integer> taskIds = query.list();
-            TaskInfo[] taskInfos = TaskInfoCache.instance().getAllTasks(taskIds);
+            List<TaskMaster> results = query.list();
+            List<TaskInfo> tasksWithGivenName = new ArrayList<TaskInfo>();
+            for (TaskMaster tm : results) {
+                tasksWithGivenName.add(taskInfoFromTaskMaster(tm));
+            }
             Collection latestTasks = null;
             try {
-                latestTasks = getLatestTasks(taskInfos).values();
+                latestTasks = getLatestTasks((TaskInfo[]) tasksWithGivenName.toArray(new TaskInfo[0])).values();
             } 
             catch (MalformedURLException e1) {
                 throw new OmnigeneException(e1);
@@ -217,40 +246,69 @@ public class AdminDAO extends BaseDAO {
                 }
             }
 
+            if (startTransaction) {
+                HibernateUtil.commitTransaction();
+            }
             return latestTask;
         }
         catch (RuntimeException e) {
+            if (startTransaction) {
+                HibernateUtil.getSession().getTransaction().rollback();
+            }
             throw e;
         }
     }
 
     public TaskInfo[] getAllTasks() {
-        return TaskInfoCache.instance().getAllTasks();
+        String hql = "from org.genepattern.server.domain.TaskMaster";
+        Query query = getSession().createQuery(hql);
+        List<TaskMaster> results = query.list();
+
+        TaskInfo[] allTasks = new TaskInfo[results.size()];
+        for (int i = 0; i < allTasks.length; i++) {
+            allTasks[i] = taskInfoFromTaskMaster(results.get(i));
+        }
+        return allTasks;
     }
 
     public TaskInfo[] getTasksOwnedBy(String username) {
-        String hql = "select taskId from org.genepattern.server.domain.TaskMaster where userId = :userId";
+        String hql = "from org.genepattern.server.domain.TaskMaster where userId = :userId";
         Query query = getSession().createQuery(hql);
         query.setString("userId", username);
-        List<Integer> taskIds = query.list();
-        return TaskInfoCache.instance().getAllTasks(taskIds);
+        List<TaskMaster> results = query.list();
+
+        TaskInfo[] allTasks = new TaskInfo[results.size()];
+        for (int i = 0; i < allTasks.length; i++) {
+            allTasks[i] = taskInfoFromTaskMaster(results.get(i));
+        }
+        return allTasks;
     }
 
     public TaskInfo[] getAllTasksForUser(String username) {
-        return TaskInfoCache.instance().getAllTasksForUser(username);
+        String hql = "from org.genepattern.server.domain.TaskMaster where userId = :userId or accessId = :accessId order by TASK_NAME asc";
+        Query query = getSession().createQuery(hql);
+        query.setString("userId", username);
+        query.setInteger("accessId", PUBLIC_ACCESS_ID);
+        List<TaskMaster> results = query.list();
+
+        TaskInfo[] allTasks = new TaskInfo[results.size()];
+        for (int i = 0; i < allTasks.length; i++) {
+            allTasks[i] = taskInfoFromTaskMaster(results.get(i));
+        }
+        return allTasks;
     }
     
     /**
      * Get the list of lsids for tasks owned by the user.
      * @param username
-     * @return a List<Object[]>, where arg0=(int)taskId and arg1=(String)lsid
+     * @return
      */
-    private List<Object[]> getAllLsidsForUser(String username) {
-        String hql = "select taskId, lsid from org.genepattern.server.domain.TaskMaster where userId = :userId or accessId = :accessId order by TASK_NAME asc";
+    private List<String> getAllLsidsForUser(String username) {
+        String hql = "select lsid from org.genepattern.server.domain.TaskMaster where userId = :userId or accessId = :accessId order by TASK_NAME asc";
         Query query = getSession().createQuery(hql);
         query.setString("userId", username);
         query.setInteger("accessId", PUBLIC_ACCESS_ID);
-        List<Object[]> results = query.list();
+        List<String> results = query.list();
         return results;
     }
 
@@ -260,7 +318,7 @@ public class AdminDAO extends BaseDAO {
      * @return
      */
     public Map<String, TaskInfo> getAllTasksForUserWithLsids(String username, List<String> lsids) {
-        String hql = "select taskId from org.genepattern.server.domain.TaskMaster where (userId = :userId or accessId = :accessId) and lsid like :lsids";
+        String hql = "from org.genepattern.server.domain.TaskMaster where (userId = :userId or accessId = :accessId) and lsid like :lsids";
         Query query = getSession().createQuery(hql);
         query.setString("userId", username);
         query.setInteger("accessId", PUBLIC_ACCESS_ID);
@@ -268,12 +326,12 @@ public class AdminDAO extends BaseDAO {
         Map<String, TaskInfo> queriedTasks = new HashMap<String, TaskInfo>();
         for (String lsid : lsids) {
             query.setString("lsids", lsid + "%");
-            List<Integer> results = query.list();
-            for (Integer taskId : results) {
-                TaskInfo taskInfo = TaskInfoCache.instance().getTaskInfo(taskId);
-                queriedTasks.put(lsid, taskInfo);
+            List<TaskMaster> results = query.list();
+            for (int i = 0; i < results.size(); i++) {
+                queriedTasks.put(lsid, taskInfoFromTaskMaster(results.get(i)));
             }
         }
+        TaskInfo[] tasksArray = new TaskInfo[queriedTasks.size()];
         return queriedTasks;
     }
 
@@ -294,9 +352,9 @@ public class AdminDAO extends BaseDAO {
         if (recentLsids.isEmpty()) {
             return new TaskInfo[0];
         }
-
         StringBuffer hql = new StringBuffer();
-        hql.append("select taskId from org.genepattern.server.domain.TaskMaster tm where lsid in (");
+
+        hql.append("select tm from org.genepattern.server.domain.TaskMaster tm where lsid in (");
         Set<String> versionlessLsids = new HashSet<String>();
 
         for (int i = 0, size = recentLsids.size(); i < size; i++) {
@@ -310,6 +368,7 @@ public class AdminDAO extends BaseDAO {
                         hql.append(", ");
                     }
                     hql.append("'" + lsid + "'");
+
                 }
             } 
             catch (MalformedURLException e) {
@@ -322,8 +381,13 @@ public class AdminDAO extends BaseDAO {
         hql.append(")");
 
         query = getSession().createQuery(hql.toString());
-        List<Integer> taskIds = query.list();
-        return TaskInfoCache.instance().getAllTasks(taskIds);
+        List<TaskMaster> results = query.list();
+
+        TaskInfo[] allTasks = new TaskInfo[results.size()];
+        for (int i = 0; i < allTasks.length; i++) {
+            allTasks[i] = taskInfoFromTaskMaster(results.get(i));
+        }
+        return allTasks;
     }
 
     /**
@@ -390,44 +454,44 @@ public class AdminDAO extends BaseDAO {
     }
 
     public TaskInfo[] getLatestTasks(String username) {
-        List<Integer> taskIds = getLatestTaskIdsForUser(username);
-        if (taskIds == null || taskIds.size() == 0) {
+        //TODO: implement this
+        
+        List<LSID> lsids = getLatestLsidsForUser(username);
+        if (lsids == null || lsids.size() == 0) {
             return new TaskInfo[0];
         }
-        TaskInfo[] taskInfos = new TaskInfo[taskIds.size()];
+        TaskInfo[] taskInfos = new TaskInfo[lsids.size()];
         int i=0;
-        for(Integer taskId : taskIds) {
-            taskInfos[i++] = TaskInfoCache.instance().getTaskInfo(taskId);
+        for(LSID lsid : lsids) {
+            //taskInfos[i++] = getTaskInfoFromCache(lsid);
+            taskInfos[i++] = TaskInfoCache.instance().get(lsid.toString());
         }
         return taskInfos;
     }
     
-    private List<Integer> getLatestTaskIdsForUser(String username) {
+    private List<LSID> getLatestLsidsForUser(String username) {
+        //optimize, to prevent getting too many clobs, and parsing too many clobs,
+        //first, get all lsids, then pare down the list by username before instantiating taskinfo objects
         int numTotal = 0;
         int numLatest = 0;
-        Map<String, Object[]> latestTasks = new HashMap<String, Object[]>();
-        List<Object[]> allLsids = getAllLsidsForUser(username);
+        Map<String, LSID> latestTasks = new HashMap<String, LSID>();
+        List<String> lsidStrs = getAllLsidsForUser(username);
         
         //for debugging
-        numTotal = allLsids.size();
-        for(Object[] row : allLsids) {
-            //for each row, taskId=(int)row[0], lsid=(String)row[1]
-            String lsidStr = (String) row[1];
+        numTotal = lsidStrs.size();
+        
+        for(String lsidStr : lsidStrs) {
             try {
-                LSID lsid = new LSID(lsidStr);
-                LSID altTi = null;
-                Object[] altTiWrapper = latestTasks.get(lsid.toStringNoVersion());
-                if (altTiWrapper != null) {
-                    altTi = new LSID((String)altTiWrapper[1]);
+            LSID lsid = new LSID(lsidStr);
+            LSID altTi = latestTasks.get(lsid.toStringNoVersion());
+            if (altTi == null) {
+                latestTasks.put(lsid.toStringNoVersion(), lsid);
+            } 
+            else {
+                if (altTi.compareTo(lsid) > 0) {
+                    latestTasks.put(lsid.toStringNoVersion(), lsid);
                 }
-                if (altTi == null) {
-                    latestTasks.put(lsid.toStringNoVersion(), row);
-                } 
-                else {
-                    if (altTi.compareTo(lsid) > 0) {
-                        latestTasks.put(lsid.toStringNoVersion(), row);
-                    }
-                }
+            }
             }
             catch (MalformedURLException e) {
                 log.error("error creating LSID from '"+lsidStr+"', Ignoring this lsid");
@@ -437,15 +501,18 @@ public class AdminDAO extends BaseDAO {
         //for debugging
         numLatest = latestTasks.size();
         log.debug("Pruned "+(numTotal-numLatest)+" tasks");
-        List<Integer> taskIds = new ArrayList<Integer>();
-        for(Object[] row : latestTasks.values()) {
-            taskIds.add((Integer)row[0]);
-        }
-        return taskIds;
+        return new ArrayList<LSID>(latestTasks.values());
     }
 
     public TaskInfo getTask(int taskId) throws OmnigeneException {
-        return TaskInfoCache.instance().getTaskInfo(taskId);
+        String hql = "from org.genepattern.server.domain.TaskMaster where  taskId = :taskId";
+        Query query = getSession().createQuery(hql);
+        query.setInteger("taskId", taskId);
+        TaskMaster tm = (TaskMaster) query.uniqueResult();
+        if (tm != null) {
+            return taskInfoFromTaskMaster(tm);
+        }
+        throw new OmnigeneException("task id " + taskId + " not found");
     }
 
     /**
@@ -469,11 +536,9 @@ public class AdminDAO extends BaseDAO {
             // If no record updated
             if (updatedRecord == 0) {
                 log.error("deleteTask Could not delete task, taskID not found");
-                throw new TaskIDNotFoundException("AnalysisHypersonicDAO:deleteTask TaskID " + taskID + " not a valid TaskID ");
+                throw new TaskIDNotFoundException("AnalysisHypersonicDAO:deleteTask TaskID " + taskID
+                        + " not a valid TaskID ");
             }
-            
-            TaskInfo taskInfoRemoved = TaskInfoCache.instance().remove(taskID);
-            log.debug("removed taskInfo from cache: "+ (taskInfoRemoved != null ? taskInfoRemoved.getID() : "null"));
             return updatedRecord;
         } 
         catch (Exception e) {

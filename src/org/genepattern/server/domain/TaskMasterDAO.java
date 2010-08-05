@@ -29,7 +29,6 @@ import org.hibernate.Query;
  */
 public class TaskMasterDAO extends BaseDAO {
     private static Logger log = Logger.getLogger(TaskMasterDAO.class);
-    private static int PUBLIC_ACCESS_ID = 1;
 
     public TaskMaster findById(Integer id) {
         log.debug("getting TaskMaster instance with id: " + id);
@@ -95,25 +94,6 @@ public class TaskMasterDAO extends BaseDAO {
             log.error("get failed", re);
             throw re;
         }
-    }
-    
-    public List<Integer> findAllTaskIds() {
-        try {
-            return HibernateUtil.getSession().createQuery("select taskId from org.genepattern.server.domain.TaskMaster").list();
-        } 
-        catch (RuntimeException re) {
-            log.error("get failed", re);
-            throw re;
-        }
-    }
-    
-    public List<Integer> findAllTaskIdsForUser(String username) {
-        String hql = "select taskId from org.genepattern.server.domain.TaskMaster where userId = :userId or accessId = :accessId order by TASK_NAME asc";
-        Query query = HibernateUtil.getSession().createQuery(hql);
-        query.setString("userId", username);
-        query.setInteger("accessId", PUBLIC_ACCESS_ID);
-        List<Integer> results = query.list();
-        return results;
     }
 
 }
