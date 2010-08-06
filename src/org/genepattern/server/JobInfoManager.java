@@ -96,6 +96,9 @@ public class JobInfoManager {
     }
 
     public static class TaskInfoNotFoundException extends Exception {
+        public TaskInfoNotFoundException(int taskId) {
+            super("No entry in the database for taskId: "+taskId);
+        }
         public TaskInfoNotFoundException(int taskId, Exception e) {
             super("Error getting taskInfo for taskId: " + taskId, e);
         }

@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.JobInfoManager.TaskInfoNotFoundException;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.TaskMaster;
 import org.hibernate.Query;
@@ -95,14 +96,13 @@ public class TaskInfoCache {
         return taskMaster;
     }
     
-    public TaskInfo get(Integer taskId) {
+    public TaskInfo getTask(Integer taskId) throws TaskInfoNotFoundException {
         TaskMaster taskMaster = taskMasterCache.get(taskId);
         if (taskMaster == null) {
             //fetch from DB, then add to cache
             taskMaster = findById(taskId);
             if (taskMaster == null) {
-                //TODO: error
-                return null;
+                throw new TaskInfoNotFoundException(taskId);
             }
             taskMasterCache.put(taskId, taskMaster);
         }
@@ -118,13 +118,22 @@ public class TaskInfoCache {
     
     public TaskInfo[] getAllTasks() {
         List<Integer> allTaskIds = findAllTaskIds();
+        return getTasks(allTaskIds);
+    }
+    
+    public TaskInfo[] getTasks(List<Integer> taskIds) {
         List<TaskInfo> allTaskInfos = new ArrayList<TaskInfo>();
-        for(Integer taskId : allTaskIds) {
-            TaskInfo taskInfo = get(taskId);
-            allTaskInfos.add(taskInfo);
+        for(Integer taskId : taskIds) {
+            try {
+                TaskInfo taskInfo = getTask(taskId);
+                allTaskInfos.add(taskInfo);
+            }
+            catch (TaskInfoNotFoundException e) {
+                log.error("Missing task info: ", e);
+            }
         }
         TaskInfo[] taskInfoArray = allTaskInfos.toArray(new TaskInfo[allTaskInfos.size()]);
-        return taskInfoArray;
+        return taskInfoArray;        
     }
 
 }
