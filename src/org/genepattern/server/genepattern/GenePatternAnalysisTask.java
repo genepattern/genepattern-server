@@ -4392,54 +4392,63 @@ public class GenePatternAnalysisTask {
     }
 
     /**
-     * return boolean indicating whether a filename represents a code file
+     * return boolean indicating whether a filename represents a code file.
      */
     public static boolean isCodeFile(String filename) {
-	return hasEnding(filename, "code");
+        return hasEnding(filename, codeEndings);
     }
 
     /**
-     * return boolean indicating whether a filename represents a documentation file
+     * return boolean indicating whether a filename represents a documentation file.
      */
     public static boolean isDocFile(String filename) {
-	return hasEnding(filename, "doc");
+        return hasEnding(filename, docEndings);
     }
 
     /**
-     * return boolean indicating whether a filename represents a binary file
+     * return boolean indicating whether a filename represents a binary file.
      */
     public static boolean isBinaryFile(String filename) {
-	return hasEnding(filename, "binary");
+        return hasEnding(filename, binaryEndings);
+    }
+
+    //initialize hasEnding support     
+    private static List<String> codeEndings;
+    private static List<String> docEndings;
+    private static List<String> binaryEndings;
+    static {
+        codeEndings = csvToList(System.getProperty("files.code", "").toLowerCase());
+        docEndings = csvToList(System.getProperty("files.doc", "").toLowerCase());
+        binaryEndings = csvToList(System.getProperty("files.binary", "").toLowerCase());
     }
 
     /**
      * return boolean indicating whether a filename represents a file type (as found in
      * System.getProperties(files.{code,doc,binary}))
      */
-    protected static boolean hasEnding(String filename, String fileType) {
-	String endings = System.getProperty("files." + fileType, "");
-	Vector vEndings = csvToVector(endings.toLowerCase());
-	boolean ret = false;
-	filename = new File(filename).getName().toLowerCase();
-	int lastDot = filename.lastIndexOf(".");
-	if (lastDot == -1) {
-	    ret = vEndings.contains("");
-	} else {
-	    ret = vEndings.contains(filename.substring(lastDot + 1));
-	}
-	return ret;
+    private static boolean hasEnding(String filename, List<String> fileEndings) {
+        boolean ret = false;
+        filename = new File(filename).getName().toLowerCase();
+        int lastDot = filename.lastIndexOf(".");
+        if (lastDot == -1) {
+            ret = fileEndings.contains("");
+        }
+        else {
+            ret = fileEndings.contains(filename.substring(lastDot + 1));
+        }
+        return ret;
     }
 
     /**
-     * convert a CSV list into a Vector
+     * convert a CSV list into a List<String>.
      */
-    protected static Vector csvToVector(String csv) {
-	StringTokenizer stEntries = new StringTokenizer(csv, ",; ");
-	Vector vEntries = new Vector();
-	while (stEntries.hasMoreTokens()) {
-	    vEntries.add(stEntries.nextToken());
-	}
-	return vEntries;
+    private static List<String> csvToList(String csv) {
+        StringTokenizer stEntries = new StringTokenizer(csv, ",; ");
+        List<String> vEntries = new ArrayList<String>();
+        while (stEntries.hasMoreTokens()) {
+            vEntries.add(stEntries.nextToken());
+        }
+        return vEntries;
     }
 
     // implements FilenameFilter, but static
