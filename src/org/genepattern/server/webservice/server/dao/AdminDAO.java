@@ -47,6 +47,7 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 import org.hibernate.Query;
+import org.hibernate.SQLQuery;
 
 /**
  * @author Joshua Gould
@@ -454,54 +455,44 @@ public class AdminDAO extends BaseDAO {
     }
 
     public TaskInfo[] getLatestTasks(String username) {
-        //TODO: implement this
-        
-        List<LSID> lsids = getLatestLsidsForUser(username);
-        if (lsids == null || lsids.size() == 0) {
+        List<Integer> taskIds = getLatestTaskIdsForUser(username);
+        if (taskIds == null || taskIds.size() == 0) {
             return new TaskInfo[0];
         }
-        TaskInfo[] taskInfos = new TaskInfo[lsids.size()];
+        TaskInfo[] taskInfos = new TaskInfo[taskIds.size()];
         int i=0;
-        for(LSID lsid : lsids) {
-            //taskInfos[i++] = getTaskInfoFromCache(lsid);
-            taskInfos[i++] = TaskInfoCache.instance().get(lsid.toString());
+        for(Integer taskId : taskIds) {
+            TaskInfo taskInfo = TaskInfoCache.instance().get(taskId);
+            taskInfos[i++]=taskInfo;
         }
         return taskInfos;
     }
-    
-    private List<LSID> getLatestLsidsForUser(String username) {
-        //optimize, to prevent getting too many clobs, and parsing too many clobs,
-        //first, get all lsids, then pare down the list by username before instantiating taskinfo objects
-        int numTotal = 0;
-        int numLatest = 0;
-        Map<String, LSID> latestTasks = new HashMap<String, LSID>();
-        List<String> lsidStrs = getAllLsidsForUser(username);
-        
-        //for debugging
-        numTotal = lsidStrs.size();
-        
-        for(String lsidStr : lsidStrs) {
-            try {
-            LSID lsid = new LSID(lsidStr);
-            LSID altTi = latestTasks.get(lsid.toStringNoVersion());
-            if (altTi == null) {
-                latestTasks.put(lsid.toStringNoVersion(), lsid);
-            } 
-            else {
-                if (altTi.compareTo(lsid) > 0) {
-                    latestTasks.put(lsid.toStringNoVersion(), lsid);
-                }
-            }
-            }
-            catch (MalformedURLException e) {
-                log.error("error creating LSID from '"+lsidStr+"', Ignoring this lsid");
-                log.debug("exception was: "+e.getMessage(), e);
-            }
+
+    /**
+     * Query the DB for the list of latest task_ids for the given user.
+     * @param username
+     * @return
+     */
+    private List<Integer> getLatestTaskIdsForUser(String username) {
+        final String sqlStr = 
+            "select max(t.task_id) task_id, max(t.lsid) lsid "+
+            " from lsids l inner join task_master t on l.lsid = t.lsid "+
+            " where "+
+            " t.user_id = :userId or t.access_id = 1 "+
+            " group by lsid_no_version "+
+            " order by task_id";
+        SQLQuery sqlQuery = getSession().createSQLQuery(sqlStr);
+        sqlQuery.setString("userId", username);
+        List<Object[]> results = sqlQuery.list();
+        List<Integer> taskIds = new ArrayList<Integer>();
+        for(Object[] row : results) {
+            String taskIdStr = ""+row[0];
+            Integer taskId = new Integer(taskIdStr);
+            //Integer taskId = (Integer) row[0];
+            String lsid = (String) row[1];
+            taskIds.add( taskId );
         }
-        //for debugging
-        numLatest = latestTasks.size();
-        log.debug("Pruned "+(numTotal-numLatest)+" tasks");
-        return new ArrayList<LSID>(latestTasks.values());
+        return taskIds;
     }
 
     public TaskInfo getTask(int taskId) throws OmnigeneException {
