@@ -358,39 +358,39 @@ public class TaskIntegrator {
      *                    If an error occurs
      */
     public DataHandler[] getDocFiles(String lsid) throws WebServiceException {
-	String taskLibDir = null;
-
-	try {
-	    taskLibDir = DirectoryManager.getLibDir(lsid);
-	} catch (Exception e) {
-	    log.error(e);
-	    throw new WebServiceException(e);
-	}
-	File[] docFiles = new File(taskLibDir).listFiles(new FilenameFilter() {
-	    public boolean accept(File dir, String name) {
-		return GenePatternAnalysisTask.isDocFile(name) && !name.equals("version.txt");
-	    }
-	});
-	boolean hasDoc = docFiles != null && docFiles.length > 0;
-	if (hasDoc) {
-	    // put version.txt last, all others alphabetically
-	    Arrays.sort(docFiles, new Comparator() {
-		public int compare(Object o1, Object o2) {
-		    if (((File) o1).getName().equals("version.txt")) {
-			return 1;
-		    }
-		    return ((File) o1).getName().compareToIgnoreCase(((File) o2).getName());
-		}
-	    });
-	}
-	if (docFiles == null) {
-	    return new DataHandler[0];
-	}
-	DataHandler[] dh = new DataHandler[docFiles.length];
-	for (int i = 0, length = docFiles.length; i < length; i++) {
-	    dh[i] = new DataHandler(new FileDataSource(docFiles[i]));
-	}
-	return dh;
+        String taskLibDir = null;
+        try {
+            taskLibDir = DirectoryManager.getLibDir(lsid);
+        } 
+        catch (Exception e) {
+            log.error(e);
+            throw new WebServiceException(e);
+        }
+        File[] docFiles = new File(taskLibDir).listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return GenePatternAnalysisTask.isDocFile(name) && !name.equals("version.txt");
+            }
+        });
+        boolean hasDoc = docFiles != null && docFiles.length > 0;
+        if (hasDoc) {
+            // put version.txt last, all others alphabetically
+            Arrays.sort(docFiles, new Comparator() {
+                public int compare(Object o1, Object o2) {
+                    if (((File) o1).getName().equals("version.txt")) {
+                        return 1;
+                    }
+                    return ((File) o1).getName().compareToIgnoreCase(((File) o2).getName());
+                }
+            });
+        }
+        if (docFiles == null) {
+            return new DataHandler[0];
+        }
+        DataHandler[] dh = new DataHandler[docFiles.length];
+        for (int i = 0, length = docFiles.length; i < length; i++) {
+            dh[i] = new DataHandler(new FileDataSource(docFiles[i]));
+        }
+        return dh;
     }
 
     /**
