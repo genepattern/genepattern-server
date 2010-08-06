@@ -261,15 +261,7 @@ public class AdminDAO extends BaseDAO {
     }
 
     public TaskInfo[] getAllTasks() {
-        String hql = "from org.genepattern.server.domain.TaskMaster";
-        Query query = getSession().createQuery(hql);
-        List<TaskMaster> results = query.list();
-
-        TaskInfo[] allTasks = new TaskInfo[results.size()];
-        for (int i = 0; i < allTasks.length; i++) {
-            allTasks[i] = taskInfoFromTaskMaster(results.get(i));
-        }
-        return allTasks;
+        return TaskInfoCache.instance().getAllTasks();
     }
 
     public TaskInfo[] getTasksOwnedBy(String username) {

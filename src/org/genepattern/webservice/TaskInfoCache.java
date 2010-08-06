@@ -1,5 +1,6 @@
 package org.genepattern.webservice;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -76,13 +77,13 @@ public class TaskInfoCache {
         }
     }
 
-    //private List<Integer> findAllTaskIds() {
-    //    String hql = "select taskId from org.genepattern.server.domain.TaskMaster";
-    //    Session session = HibernateUtil.getSession();
-    //    Query query = session.createQuery(hql);
-    //    List<Integer> results = query.list();
-    //    return results;
-    //}
+    private List<Integer> findAllTaskIds() {
+        String hql = "select taskId from org.genepattern.server.domain.TaskMaster";
+        Session session = HibernateUtil.getSession();
+        Query query = session.createQuery(hql);
+        List<Integer> results = query.list();
+        return results;
+    }
 
     public TaskMaster findById(Integer taskId) {
         String hql = "from org.genepattern.server.domain.TaskMaster where taskId = :taskId";
@@ -114,4 +115,16 @@ public class TaskInfoCache {
         TaskInfo taskInfo = taskInfoFromTaskMaster(taskMaster, taskInfoAttributes);
         return taskInfo;
     }
+    
+    public TaskInfo[] getAllTasks() {
+        List<Integer> allTaskIds = findAllTaskIds();
+        List<TaskInfo> allTaskInfos = new ArrayList<TaskInfo>();
+        for(Integer taskId : allTaskIds) {
+            TaskInfo taskInfo = get(taskId);
+            allTaskInfos.add(taskInfo);
+        }
+        TaskInfo[] taskInfoArray = allTaskInfos.toArray(new TaskInfo[allTaskInfos.size()]);
+        return taskInfoArray;
+    }
+
 }
