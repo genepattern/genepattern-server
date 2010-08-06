@@ -32,7 +32,6 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.TaskIDNotFoundException;
-import org.genepattern.server.JobInfoManager.TaskInfoNotFoundException;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.TaskMaster;
@@ -208,7 +207,7 @@ public class AdminDAO extends BaseDAO {
                     TaskInfo taskInfo = TaskInfoCache.instance().getTask(taskId);
                     tasksWithGivenName.add(taskInfo);
                 }
-                catch (TaskInfoNotFoundException ex) {
+                catch (TaskIDNotFoundException ex) {
                     log.error("", ex);
                 }
             }
@@ -308,7 +307,7 @@ public class AdminDAO extends BaseDAO {
                 try {
                     queriedTasks.put(lsid, TaskInfoCache.instance().getTask(taskId));
                 }
-                catch (TaskInfoNotFoundException e) {
+                catch (TaskIDNotFoundException e) {
                     log.error("Unexpected error getting TaskInfo from cache", e);
                 }
             }
@@ -440,7 +439,7 @@ public class AdminDAO extends BaseDAO {
                 TaskInfo taskInfo = TaskInfoCache.instance().getTask(taskId);
                 taskInfos[i++]=taskInfo;
             }
-            catch (TaskInfoNotFoundException e) {
+            catch (TaskIDNotFoundException e) {
                 ++i;
                 log.error("Unexpected error getting TaskInfo from cache", e);
             }
@@ -475,13 +474,8 @@ public class AdminDAO extends BaseDAO {
         return taskIds;
     }
 
-    public TaskInfo getTask(int taskId) throws OmnigeneException {
-        try {
-            return TaskInfoCache.instance().getTask(taskId);
-        }
-        catch (TaskInfoNotFoundException e) {
-            throw new OmnigeneException(e);
-        }
+    public TaskInfo getTask(int taskId) throws TaskIDNotFoundException {
+        return TaskInfoCache.instance().getTask(taskId);
     }
 
     /**
@@ -505,8 +499,7 @@ public class AdminDAO extends BaseDAO {
             // If no record updated
             if (updatedRecord == 0) {
                 log.error("deleteTask Could not delete task, taskID not found");
-                throw new TaskIDNotFoundException("AnalysisHypersonicDAO:deleteTask TaskID " + taskID
-                        + " not a valid TaskID ");
+                throw new TaskIDNotFoundException(taskID);
             }
             return updatedRecord;
         } 

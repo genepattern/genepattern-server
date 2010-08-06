@@ -13,7 +13,7 @@ import java.util.concurrent.Callable;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.JobInfoManager;
-import org.genepattern.server.JobInfoManager.TaskInfoNotFoundException;
+import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webapp.RunPipelineInThread;
@@ -115,7 +115,7 @@ public class PipelineCommand implements Callable<PipelineCommand> {
         try {
             taskInfo = JobInfoManager.getTaskInfo(taskId);
         }
-        catch (TaskInfoNotFoundException e) {
+        catch (TaskIDNotFoundException e) {
             stderrBuffer.append(e.getLocalizedMessage()+" for pipeline job #"+jobNumber);
             jobStatus = JobStatus.JOB_ERROR;
             exitCode = -1;

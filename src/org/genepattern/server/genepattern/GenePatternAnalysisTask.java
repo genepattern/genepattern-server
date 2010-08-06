@@ -124,7 +124,7 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.PermissionsHelper;
-import org.genepattern.server.JobInfoManager.TaskInfoNotFoundException;
+import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.JobInfoWrapper.InputFile;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
@@ -588,7 +588,7 @@ public class GenePatternAnalysisTask {
             try {
                 taskInfo = JobInfoManager.getTaskInfo(taskId);
             }
-            catch (TaskInfoNotFoundException e) {
+            catch (TaskIDNotFoundException e) {
                 throw e;
             }
             taskName = taskInfo.getName();

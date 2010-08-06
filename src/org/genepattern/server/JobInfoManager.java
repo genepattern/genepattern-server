@@ -95,30 +95,21 @@ public class JobInfoManager {
         return isVisualizer;
     }
 
-    public static class TaskInfoNotFoundException extends Exception {
-        public TaskInfoNotFoundException(int taskId) {
-            super("No entry in the database for taskId: "+taskId);
-        }
-        public TaskInfoNotFoundException(int taskId, Exception e) {
-            super("Error getting taskInfo for taskId: " + taskId, e);
-        }
-    }
-
-    public static TaskInfo getTaskInfo(JobInfo jobInfo) throws TaskInfoNotFoundException {
+    public static TaskInfo getTaskInfo(JobInfo jobInfo) throws TaskIDNotFoundException  {
         boolean closeDbSession = true;
         return getTaskInfo(jobInfo, closeDbSession);
     }
     
-    public static TaskInfo getTaskInfo(JobInfo jobInfo, boolean closeDbSession) throws TaskInfoNotFoundException {
+    public static TaskInfo getTaskInfo(JobInfo jobInfo, boolean closeDbSession) throws TaskIDNotFoundException  {
         return getTaskInfo(jobInfo.getTaskID(), closeDbSession);
     }
     
-    public static TaskInfo getTaskInfo(int taskId) throws TaskInfoNotFoundException {
+    public static TaskInfo getTaskInfo(int taskId) throws TaskIDNotFoundException  {
         boolean closeDbSession = true;
         return getTaskInfo(taskId, closeDbSession);
     }
 
-    public static TaskInfo getTaskInfo(int taskId, boolean closeDbSession) throws TaskInfoNotFoundException {
+    public static TaskInfo getTaskInfo(int taskId, boolean closeDbSession) throws TaskIDNotFoundException {
         TaskInfo taskInfo = null;
         try { 
             //calls HibernateUtil.beginTransaction...
@@ -126,9 +117,6 @@ public class JobInfoManager {
             taskInfo = ds.getTask(taskId);
             return taskInfo;
         } 
-        catch (OmnigeneException e) {
-            throw new TaskInfoNotFoundException(taskId, e);
-        }
         finally {
             //...must close the session here, or in an enclosing method
             if (closeDbSession) {

@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.JobInfoManager.TaskInfoNotFoundException;
+import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.TaskMaster;
 import org.hibernate.Query;
@@ -96,13 +96,13 @@ public class TaskInfoCache {
         return taskMaster;
     }
     
-    public TaskInfo getTask(Integer taskId) throws TaskInfoNotFoundException {
+    public TaskInfo getTask(Integer taskId) throws TaskIDNotFoundException {
         TaskMaster taskMaster = taskMasterCache.get(taskId);
         if (taskMaster == null) {
             //fetch from DB, then add to cache
             taskMaster = findById(taskId);
             if (taskMaster == null) {
-                throw new TaskInfoNotFoundException(taskId);
+                throw new TaskIDNotFoundException(taskId);
             }
             taskMasterCache.put(taskId, taskMaster);
         }
@@ -128,7 +128,7 @@ public class TaskInfoCache {
                 TaskInfo taskInfo = getTask(taskId);
                 allTaskInfos.add(taskInfo);
             }
-            catch (TaskInfoNotFoundException e) {
+            catch (TaskIDNotFoundException e) {
                 log.error("Missing task info: ", e);
             }
         }
