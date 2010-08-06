@@ -14,6 +14,8 @@ package org.genepattern.server.database;
 
 import java.math.BigDecimal;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.Sequence;
@@ -27,43 +29,86 @@ import org.hibernate.cfg.Configuration;
 
 public class HibernateUtil {
     private static Logger log = Logger.getLogger(HibernateUtil.class);
+    private static ConcurrentMap<String,SessionFactory> sessionFactoryMap = new ConcurrentHashMap<String,SessionFactory>();
     
-    private static class SessionFactorySingleton {
-        static SessionFactory sessionFactory = createSessionFactory();
-        static ExceptionInInitializerError sessionFactoryException;
+    static {
+        init();
+    }
+    
+    private static void init() {
+        //create the default session factory
+        String configResource = System.getProperty("hibernate.configuration.file", "hibernate.cfg.xml");
+        try {
+            SessionFactory sessionFactory = createSessionFactory(configResource, true, null);
+            sessionFactoryMap.put("default", sessionFactory);
+        }
+        catch (Throwable ex) {
+            log.error("Error initializing SessionFactory from '"+configResource+"': "+ex);
+            log.debug("", ex);
+        }
         
-        private static SessionFactory createSessionFactory() {
-            // Create the SessionFactory from hibernate.cfg.xml
+        //[optionally] create a secondary session factory dedicated to handling analysis jobs
+        String analysis_job_datasource = System.getProperty("hibernate.connection.datasource.analysis_job");
+        if (analysis_job_datasource != null) {
             try {
-                Configuration config = new Configuration();
-                String configResource = System.getProperty("hibernate.configuration.file", "hibernate.cfg.xml");
-                config.configure(configResource);
-                mergeSystemProperties(config);
-                return config.buildSessionFactory();
+                SessionFactory sessionFactory = createSessionFactory(configResource, false, analysis_job_datasource);
+                sessionFactoryMap.put("analysis_job", sessionFactory);
             }
             catch (Throwable ex) {
-                // Make sure you log the exception, as it might be swallowed
-                log.error("Error initializing SessionFactory", ex);
-                sessionFactoryException =  new ExceptionInInitializerError(ex);
-                return null;
-            }
-        }
-        private static void mergeSystemProperties(Configuration config) {
-            Properties props = System.getProperties();
-            for (Object key : props.keySet()) {
-                String name = (String) key;
-                if (name.startsWith("hibernate.")) {
-                    config.setProperty(name, (String) props.get(name));
-                }
+                log.error("Error initializing sessionFactory for secondary datasource '"+analysis_job_datasource+"': "+ex);
+                log.debug("", ex);
             }
         }
     }
 
-    public static Session getSession() {
-        if (SessionFactorySingleton.sessionFactory != null) {
-            return SessionFactorySingleton.sessionFactory.getCurrentSession();
+    private static SessionFactory createSessionFactory(String configResource, boolean mergeSystemProperties, String datasource) {
+        Configuration config = new Configuration();
+        config.configure(configResource);
+        if (mergeSystemProperties) {
+            mergeSystemProperties(config);
         }
-        throw SessionFactorySingleton.sessionFactoryException;
+        if (datasource != null) {
+            config.setProperty("hibernate.connection.datasource", datasource);
+        }
+        return config.buildSessionFactory();
+    }
+
+    private static void mergeSystemProperties(Configuration config) {
+        Properties props = System.getProperties();
+        for (Object key : props.keySet()) {
+            String name = (String) key;
+            if (name.startsWith("hibernate.")) {
+                config.setProperty(name, (String) props.get(name));
+            }
+        }
+    }
+
+    public static SessionFactory getSessionFactory() {
+        //String threadName = Thread.currentThread().getName();
+        //ThreadGroup threadGroup = Thread.currentThread().getThreadGroup();
+        //choose the thread factory based on thread group
+        return getSessionFactory("default");
+    }
+ 
+    private static SessionFactory getSessionFactory(String key) {
+        SessionFactory sessionFactory = sessionFactoryMap.get(key);
+        return sessionFactory;
+    }
+
+    public static Session getSession() {
+        SessionFactory sessionFactory = getSessionFactory();
+        if (sessionFactory != null) {
+            return sessionFactory.getCurrentSession();
+        }
+        throw new ExceptionInInitializerError("Hibernate session factory is not initialized");
+    }
+    
+    public static Session getSession(String sessionType) {
+        SessionFactory sessionFactory = getSessionFactory(sessionType);
+        if (sessionFactory != null) {
+            return sessionFactory.getCurrentSession();
+        }
+        throw new ExceptionInInitializerError("Hibernate session factory is not initialized");
     }
 
     /**
@@ -72,7 +117,7 @@ public class HibernateUtil {
      */
     public static void closeCurrentSession() {
         Session session = getSession();
-        if (session.isOpen()) {
+        if (session != null && session.isOpen()) {
             session.close();
         }
     }
@@ -151,10 +196,11 @@ public class HibernateUtil {
         try {
             // Open a new session and transaction. 
             // It's necessary that the sequence update be committed prior to exiting this method.
-            if (SessionFactorySingleton.sessionFactory == null) {
-                throw SessionFactorySingleton.sessionFactoryException;
+            SessionFactory sessionFactory = getSessionFactory();
+            if (sessionFactory == null) {
+                throw new ExceptionInInitializerError("Hibernate session factory is not initialized");
             }
-            session = SessionFactorySingleton.sessionFactory.openStatelessSession();
+            session = sessionFactory.openStatelessSession();
             session.beginTransaction();
 
             Query query = session.createQuery("from org.genepattern.server.domain.Sequence where name = :name");
