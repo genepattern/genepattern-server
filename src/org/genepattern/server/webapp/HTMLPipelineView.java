@@ -390,162 +390,158 @@ public class HTMLPipelineView {
     }
 
     protected void addPipelineDoc() throws IOException {
-	try {
-	    writer.write("<tr><td valign='top'>Documentation:</td><td>");
-	    TaskInfo task = new LocalAdminClient(userID).getTask(pipelineName);
-	    LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, null);
-	    File[] docFiles = taskIntegratorClient.getDocFiles(task);
+        try {
+            writer.write("<tr><td valign='top'>Documentation:</td><td>");
+            TaskInfo task = new LocalAdminClient(userID).getTask(pipelineName);
+            LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(userID, null);
+            File[] docFiles = taskIntegratorClient.getDocFiles(task);
 
-	    if (docFiles != null) {
+            if (docFiles != null) {
+                if (docFiles.length > 0) {
+                    for (int i = 0; i < docFiles.length; i++) {
+                        if (i > 0)
+                            writer.write("  ,");
+                        writer.write("<a href='getTaskDoc.jsp?name=" + pipelineName + "'&file=" + docFiles[i].getName()
+                                + " target='_new'>" + docFiles[i].getName() + "</a>");
+                    }
 
-		if (docFiles.length > 0) {
-		    for (int i = 0; i < docFiles.length; i++) {
-			if (i > 0)
-			    writer.write("  ,");
-			writer.write("<a href='getTaskDoc.jsp?name=" + pipelineName + "'&file=" + docFiles[i].getName()
-				+ " target='_new'>" + docFiles[i].getName() + "</a>");
-		    }
+                    if (docFiles.length > 1) {
+                        writer.write("<nobr><select name='deleteFiles' width='30'>");
+                        writer.write("<option value=''>Remove doc files from pipeline...</option>");
+                        for (int i = 0; i < docFiles.length; i++) {
+                            writer.write("<option value='" + StringUtils.htmlEncode(docFiles[i].getName()) + "'>"
+                                    + docFiles[i].getName() + "</option>");
+                        }
+                        writer.write("</select>");
 
-		    if (docFiles.length > 1) {
-
-			writer.write("<nobr><select name='deleteFiles' width='30'>");
-			writer.write("<option value=''>Remove doc files from pipeline...</option>");
-			for (int i = 0; i < docFiles.length; i++) {
-			    writer.write("<option value='" + StringUtils.htmlEncode(docFiles[i].getName()) + "'>"
-				    + docFiles[i].getName() + "</option>");
-			}
-			writer.write("</select>");
-
-			writer
-				.write("<input type='button' value='Remove doc from pipeline...' class='little' onclick='deleteDocFiles()'></nobr>");
-		    } else {
-			writer.write("<input type='hidden' name='deleteFiles' value='" + docFiles[0].getName() + "'>");
-			writer.write("<input type='button' value='Remove " + docFiles[0].getName()
-				+ " from pipeline'  onclick='deleteDocFiles()'>");
-
-		    }
-		    writer.write("</td></tr><tr><td></td><td>Add doc file");
-		}
-
-		writer
-			.write("<input type='file' name='doc' size='80' class=\"pipelineperameterinputFile\" ></td></tr>");
-
-	    }
-
-	} catch (WebServiceException e) {
-	    // no doc displayed
-	    writer.write("<input type='file' name='doc' size='80' class=\"pipelineperameterinputFile\" ></td></tr>");
-
-	} catch (IOException ioe) {
-	    writer.write("<input type='file' name='doc' size='80' class=\"pipelineperameterinputFile\" ></td></tr>");
-
-	    throw ioe;
-	} catch (Exception e) {
-	    // no doc displayed
-	    writer.write("<input type='file' name='doc' size='80' class=\"pipelineperameterinputFile\" ></td></tr>");
-
-	}
+                        writer
+                        .write("<input type='button' value='Remove doc from pipeline...' class='little' onclick='deleteDocFiles()'></nobr>");
+                    } 
+                    else {
+                        writer.write("<input type='hidden' name='deleteFiles' value='" + docFiles[0].getName() + "'>");
+                        writer.write("<input type='button' value='Remove " + docFiles[0].getName()
+                                + " from pipeline'  onclick='deleteDocFiles()'>");
+                    }
+                    writer.write("</td></tr><tr><td></td><td>Add doc file");
+                }
+                writer
+                .write("<input type='file' name='doc' size='80' class=\"pipelineperameterinputFile\" ></td></tr>");
+            }
+        } 
+        catch (WebServiceException e) {
+            // no doc displayed
+            writer.write("<input type='file' name='doc' size='80' class=\"pipelineperameterinputFile\" ></td></tr>");
+        } 
+        catch (IOException ioe) {
+            writer.write("<input type='file' name='doc' size='80' class=\"pipelineperameterinputFile\" ></td></tr>");
+            throw ioe;
+        } 
+        catch (Exception e) {
+            // no doc displayed
+            writer.write("<input type='file' name='doc' size='80' class=\"pipelineperameterinputFile\" ></td></tr>");
+        }
     }
 
     protected int numVersionsAvailable(TaskInfo taskInfo) {
-	int numVersions = 0;
-	if (taskInfo != null) {
-	    LSID l;
-	    LSID taskLSID = null;
-	    try {
-		taskLSID = new LSID((String) taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID));
-	    } catch (MalformedURLException mue) {
-		// ignore
-		return 0;
-	    }
-	    String thisLSIDNoVersion = taskLSID.toStringNoVersion();
-	    for (Iterator itTasks = tmCatalog.iterator(); itTasks.hasNext();) {
-		TaskInfo ti = (TaskInfo) itTasks.next();
-		TaskInfoAttributes tia2 = ti.giveTaskInfoAttributes();
-		String lsid = tia2.get(GPConstants.LSID);
-		try {
-		    l = new LSID(lsid);
-		    String versionlessLSID = l.toStringNoVersion();
-		    if (versionlessLSID.equals(thisLSIDNoVersion)) {
-			numVersions++;
-		    }
-		} catch (MalformedURLException mue) {
-		    // ignore
-		}
-
-	    }
-
-	}
-	return numVersions;
+        int numVersions = 0;
+        if (taskInfo != null) {
+            LSID l;
+            LSID taskLSID = null;
+            try {
+                taskLSID = new LSID((String) taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID));
+            } 
+            catch (MalformedURLException mue) {
+                // ignore
+                return 0;
+            }
+            String thisLSIDNoVersion = taskLSID.toStringNoVersion();
+            for (Iterator itTasks = tmCatalog.iterator(); itTasks.hasNext();) {
+                TaskInfo ti = (TaskInfo) itTasks.next();
+                TaskInfoAttributes tia2 = ti.giveTaskInfoAttributes();
+                String lsid = tia2.get(GPConstants.LSID);
+                try {
+                    l = new LSID(lsid);
+                    String versionlessLSID = l.toStringNoVersion();
+                    if (versionlessLSID.equals(thisLSIDNoVersion)) {
+                        numVersions++;
+                    }
+                } 
+                catch (MalformedURLException mue) {
+                    // ignore
+                }
+            }
+        }
+        return numVersions;
     }
 
     protected String versionSelector(TaskInfo taskInfo) {
-	// build version selector
-
-	StringBuffer sb = new StringBuffer();
-	if (taskInfo != null) {
-	    LSID l;
-	    LSID taskLSID = null;
-	    try {
-		taskLSID = new LSID((String) taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID));
-	    } catch (MalformedURLException mue) {
-		// ignore
-		return "";
-	    }
-	    String thisLSIDNoVersion = taskLSID.toStringNoVersion();
-	    for (Iterator itTasks = tmCatalog.iterator(); itTasks.hasNext();) {
-		TaskInfo ti = (TaskInfo) itTasks.next();
-		TaskInfoAttributes tia2 = ti.giveTaskInfoAttributes();
-		String lsid = tia2.get(GPConstants.LSID);
-		try {
-		    l = new LSID(lsid);
-		    String versionlessLSID = l.toStringNoVersion();
-		    if (versionlessLSID.equals(thisLSIDNoVersion)) {
-			sb.append("<option value=\"" + l.toString() + "\""
-				+ (lsid.equals(taskLSID.toString()) ? " selected" : "") + ">" + l.getVersion()
-				+ "</option>\n");
-		    }
-		} catch (MalformedURLException mue) {
-		    // ignore
-		}
-	    }
-	}
-
-	return sb.toString();
+        // build version selector
+        StringBuffer sb = new StringBuffer();
+        if (taskInfo != null) {
+            LSID l;
+            LSID taskLSID = null;
+            try {
+                taskLSID = new LSID((String) taskInfo.giveTaskInfoAttributes().get(GPConstants.LSID));
+            } 
+            catch (MalformedURLException mue) {
+                // ignore
+                return "";
+            }
+            String thisLSIDNoVersion = taskLSID.toStringNoVersion();
+            for (Iterator itTasks = tmCatalog.iterator(); itTasks.hasNext();) {
+                TaskInfo ti = (TaskInfo) itTasks.next();
+                TaskInfoAttributes tia2 = ti.giveTaskInfoAttributes();
+                String lsid = tia2.get(GPConstants.LSID);
+                try {
+                    l = new LSID(lsid);
+                    String versionlessLSID = l.toStringNoVersion();
+                    if (versionlessLSID.equals(thisLSIDNoVersion)) {
+                        sb.append("<option value=\"" + l.toString() + "\""
+                                + (lsid.equals(taskLSID.toString()) ? " selected" : "") + ">" + l.getVersion()
+                                + "</option>\n");
+                    }
+                } 
+                catch (MalformedURLException mue) {
+                    // ignore
+                }
+            }
+        }
+        return sb.toString();
     }
 
     public void begin() {
-	taskNum = 0;
-	try {
-	    writeTaskData();
-	    writeEndHead();
-	    writeStartBody();
-	    writer.flush();
-	} catch (IOException ioe) {
-	}
+        taskNum = 0;
+        try {
+            writeTaskData();
+            writeEndHead();
+            writeStartBody();
+            writer.flush();
+        } 
+        catch (IOException ioe) {
+        }
     }
 
     public void head() {
-	taskNum = 0;
-	try {
-	    writeTaskData();
-	    writeEndHead();
-	    // writeStartBody();
-	    writer.flush();
-	} catch (IOException ioe) {
-	}
+        taskNum = 0;
+        try {
+            writeTaskData();
+            writeEndHead();
+            // writeStartBody();
+            writer.flush();
+        } catch (IOException ioe) {
+        }
     }
 
     public void generateTask(TaskInfo taskInfo) {
-	// System.out.println("HTMLPipelineView.generateTask\n");
+        // System.out.println("HTMLPipelineView.generateTask\n");
     }
 
     public void onSubmit() {
-	System.out.println("HTMLPipelineView.onSubmit\n");
+        System.out.println("HTMLPipelineView.onSubmit\n");
     }
 
     public void onCancel() {
-	System.out.println("HTMLPipelineView.onCancel\n");
+        System.out.println("HTMLPipelineView.onCancel\n");
     }
 
     /**
@@ -556,7 +552,6 @@ public class HTMLPipelineView {
      */
     public void end() {
         try {
-
             // remove this line when visualization is enabled again
             writer
             .write("<br><hr class=\"pipelineDesigner\"><input type=\"hidden\" name=\"display\" value=\"\"><br>\n");
@@ -647,7 +642,8 @@ public class HTMLPipelineView {
             // writer.write("}\n");
             writer.write("</script>\n");
             writer.flush();
-        } catch (IOException ioe) {
+        } 
+        catch (IOException ioe) {
             System.err.println(ioe + " while outputting end");
         }
     }
