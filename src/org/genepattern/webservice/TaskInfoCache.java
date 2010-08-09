@@ -1,6 +1,10 @@
 package org.genepattern.webservice;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -9,6 +13,8 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.TaskMaster;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.webservice.server.DirectoryManager;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -41,6 +47,7 @@ public class TaskInfoCache {
 
     private final ConcurrentMap<Integer, TaskMaster> taskMasterCache = new ConcurrentHashMap<Integer, TaskMaster>();
     private final ConcurrentMap<Integer, TaskInfoAttributes> taskInfoAttributesCache = new ConcurrentHashMap<Integer, TaskInfoAttributes>();
+    private final ConcurrentMap<Integer, List<String>> taskDocFilenameCache = new ConcurrentHashMap<Integer, List<String>>();
     
     public void initializeCache() {
         boolean closeDbSession = true;
@@ -50,9 +57,53 @@ public class TaskInfoCache {
             taskMasterCache.put(taskId, taskMaster);
             TaskInfoAttributes taskInfoAttributes = TaskInfoAttributes.decode(taskMaster.getTaskinfoattributes());
             taskInfoAttributesCache.put(taskId, taskInfoAttributes);
+            List<String> docFilenames = listDocFilenames(taskMaster.getLsid());
+            taskDocFilenameCache.putIfAbsent(taskId, docFilenames);
         }
     }
     
+    private static class IsDocFilenameFilter implements FilenameFilter {
+        public boolean accept(File dir, String name) {
+            return GenePatternAnalysisTask.isDocFile(name) && !name.equals("version.txt");
+        }
+    }
+    private static FilenameFilter isDocFilenameFilter = new IsDocFilenameFilter();
+    private static class DocFilenameComparator implements Comparator { 
+        public int compare(Object o1, Object o2) {
+            if (((File) o1).getName().equals("version.txt")) {
+                return 1;
+            }
+            return ((File) o1).getName().compareToIgnoreCase(((File) o2).getName());
+        }
+    }
+    private static Comparator docFilenameComparator = new DocFilenameComparator();
+    private List<String> listDocFilenames(String lsid) {
+        List<String> docFilenames = new ArrayList<String>();
+        File taskLibDir = null;
+        try {
+            String libDir = DirectoryManager.getLibDir(lsid);
+            taskLibDir = new File(libDir);
+        } 
+        catch (Exception e) {
+            log.error(e);
+            return docFilenames;
+        }
+        File[] docFiles = taskLibDir.listFiles(isDocFilenameFilter);
+        boolean hasDoc = docFiles != null && docFiles.length > 0;
+        if (hasDoc) {
+            // put version.txt last, all others alphabetically
+            Arrays.sort(docFiles, docFilenameComparator);
+        }
+        if (docFiles == null) {
+            return docFilenames;
+        }
+        for(File docFile : docFiles) {
+            docFilenames.add(docFile.getName());
+        }
+        return docFilenames;
+    }
+
+   
     //helper DAO methods
     private List<TaskMaster> findAll(boolean closeTransaction) throws ExceptionInInitializerError {
         StatelessSession session = null;
@@ -135,5 +186,13 @@ public class TaskInfoCache {
         TaskInfo[] taskInfoArray = allTaskInfos.toArray(new TaskInfo[allTaskInfos.size()]);
         return taskInfoArray;        
     }
-
+    
+    public List<String> getDocFilenames(Integer taskId, String lsid) {
+        List<String> docFilenames = taskDocFilenameCache.get(taskId);
+        if (docFilenames == null) {
+            docFilenames = this.listDocFilenames(lsid);
+            taskDocFilenameCache.putIfAbsent(taskId, docFilenames);
+        }
+        return docFilenames;
+    }
 }

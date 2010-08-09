@@ -31,9 +31,9 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
@@ -75,6 +75,7 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceErrorMessageException;
 import org.genepattern.webservice.WebServiceException;
 
@@ -325,28 +326,27 @@ public class TaskIntegrator {
      * @throws WebServiceException
      */
     public String[] getDocFileNames(String lsid) throws WebServiceException {
-	if (lsid == null || lsid.equals("")) {
-	    throw new WebServiceException("Invalid LSID");
-	}
-
-	try {
-
-	    String taskLibDir = DirectoryManager.getLibDir(lsid);
-	    String[] docFiles = new File(taskLibDir).list(new FilenameFilter() {
-		public boolean accept(File dir, String name) {
-		    return GenePatternAnalysisTask.isDocFile(name) && !name.equals("version.txt");
-		}
-	    });
-	    if (docFiles == null) {
-		docFiles = new String[0];
-	    }
-	    return docFiles;
-	} catch (Exception e) {
-	    log.error(e);
-	    throw new WebServiceException("while getting doc filenames", e);
-	}
+        if (lsid == null || lsid.equals("")) {
+            throw new WebServiceException("Invalid LSID");
+        }
+        try {
+            String taskLibDir = DirectoryManager.getLibDir(lsid);
+            String[] docFiles = new File(taskLibDir).list(new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    return GenePatternAnalysisTask.isDocFile(name) && !name.equals("version.txt");
+                }
+            });
+            if (docFiles == null) {
+                docFiles = new String[0];
+            }
+            return docFiles;
+        } 
+        catch (Exception e) {
+            log.error(e);
+            throw new WebServiceException("while getting doc filenames", e);
+        }
     }
-
+    
     /**
      * Gets the files that belong to the given task or suite that are considered to be documentation files. Returned as
      * an array of DataHandlers.
@@ -357,38 +357,25 @@ public class TaskIntegrator {
      * @exception WebServiceException
      *                    If an error occurs
      */
-    public DataHandler[] getDocFiles(String lsid) throws WebServiceException {
-        String taskLibDir = null;
+    private DataHandler[] getDocFiles(Integer taskId, String lsid) throws WebServiceException {
+        List<String> docFilenames = TaskInfoCache.instance().getDocFilenames(taskId, lsid);
+
+        File taskLibDir = null;
         try {
-            taskLibDir = DirectoryManager.getLibDir(lsid);
+            String libDir = DirectoryManager.getLibDir(lsid);
+            taskLibDir = new File(libDir);
         } 
         catch (Exception e) {
             log.error(e);
             throw new WebServiceException(e);
         }
-        File[] docFiles = new File(taskLibDir).listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return GenePatternAnalysisTask.isDocFile(name) && !name.equals("version.txt");
-            }
-        });
-        boolean hasDoc = docFiles != null && docFiles.length > 0;
-        if (hasDoc) {
-            // put version.txt last, all others alphabetically
-            Arrays.sort(docFiles, new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    if (((File) o1).getName().equals("version.txt")) {
-                        return 1;
-                    }
-                    return ((File) o1).getName().compareToIgnoreCase(((File) o2).getName());
-                }
-            });
-        }
-        if (docFiles == null) {
-            return new DataHandler[0];
-        }
-        DataHandler[] dh = new DataHandler[docFiles.length];
-        for (int i = 0, length = docFiles.length; i < length; i++) {
-            dh[i] = new DataHandler(new FileDataSource(docFiles[i]));
+        
+        DataHandler[] dh = new DataHandler[docFilenames.size()];
+        int i=0;
+        for(String docFilename : docFilenames) {
+            File f = new File(taskLibDir, docFilename);
+            dh[i] = new DataHandler(new FileDataSource(f));
+            ++i;
         }
         return dh;
     }
