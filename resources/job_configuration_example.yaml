@@ -40,6 +40,8 @@ executors:
         #BroadCore configuration properties
         configuration.properties:
             hibernate.connection.datasource: java:comp/env/jdbc/gpdb
+            hibernate.connection.username: GENEPATTERN_DEV_01
+            hibernate.connection.password: ****
             hibernate.default_schema: GENEPATTERN_DEV_01
             hibernate.dialect: org.genepattern.server.database.PlatformOracle9Dialect
             hibernate.current_session_context_class: thread
