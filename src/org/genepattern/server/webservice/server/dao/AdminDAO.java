@@ -501,6 +501,9 @@ public class AdminDAO extends BaseDAO {
                 log.error("deleteTask Could not delete task, taskID not found");
                 throw new TaskIDNotFoundException(taskID);
             }
+            
+            //remove the entry from the cache
+            TaskInfoCache.instance().deleteTask(taskID);
             return updatedRecord;
         } 
         catch (Exception e) {

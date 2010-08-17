@@ -195,4 +195,10 @@ public class TaskInfoCache {
         }
         return docFilenames;
     }
+
+    public void deleteTask(Integer taskId) {
+        taskMasterCache.remove(taskId);
+        taskInfoAttributesCache.remove(taskId);
+        taskDocFilenameCache.remove(taskId);
+    }
 }
