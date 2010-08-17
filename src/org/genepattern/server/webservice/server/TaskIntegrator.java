@@ -226,14 +226,14 @@ public class TaskIntegrator {
      *                    If an error occurs
      */
     public void delete(String lsid) throws WebServiceException {
-	if (LSIDUtil.isSuiteLSID(lsid)) {
-	    isSuiteOwnerOrAuthorized(getUserName(), lsid, "adminSuites");
-	    TaskIntegratorDAO dao = new TaskIntegratorDAO();
-	    dao.deleteSuite(lsid);
-
-	} else {
-	    deleteTask(lsid);
-	}
+        if (LSIDUtil.isSuiteLSID(lsid)) {
+            isSuiteOwnerOrAuthorized(getUserName(), lsid, "adminSuites");
+            TaskIntegratorDAO dao = new TaskIntegratorDAO();
+            dao.deleteSuite(lsid);
+        } 
+        else {
+            deleteTask(lsid);
+        }
     }
 
     /**
@@ -247,29 +247,29 @@ public class TaskIntegrator {
     public void deleteTask(String lsid) throws WebServiceException {
     	String username = getUserName();
     	 
-	isTaskOwnerOrAuthorized(username, lsid, "adminModules");
-	if (lsid == null || lsid.equals("")) {
-	    throw new WebServiceException("Invalid LSID");
-	}
-	try {
-	    TaskInfo taskInfo = new LocalAdminClient(username).getTask(lsid);
-	    
-	    if (taskInfo == null) {
-	    	throw new WebServiceException("no such module " + lsid);
-	    }
-	    String moduleDirectory = DirectoryManager.getTaskLibDir(taskInfo);
-	    
-	    GenePatternAnalysisTask.deleteTask(lsid);
-	    Delete del = new Delete();
-	    del.setDir(new File(moduleDirectory));
-	    del.setIncludeEmptyDirs(true);
-	    del.setProject(new Project());
-	    del.execute();
-	} catch (Throwable e) {
-		e.printStackTrace();
-	    log.error(e);
-	    throw new WebServiceException("while deleting module " + lsid, e);
-	}
+    	isTaskOwnerOrAuthorized(username, lsid, "adminModules");
+    	if (lsid == null || lsid.equals("")) {
+    	    throw new WebServiceException("Invalid LSID");
+    	}
+    	try {
+    	    TaskInfo taskInfo = new LocalAdminClient(username).getTask(lsid);
+    	    if (taskInfo == null) {
+    	        throw new WebServiceException("no such module " + lsid);
+    	    }
+    	    String moduleDirectory = DirectoryManager.getTaskLibDir(taskInfo);
+
+    	    GenePatternAnalysisTask.deleteTask(lsid);
+    	    Delete del = new Delete();
+    	    del.setDir(new File(moduleDirectory));
+    	    del.setIncludeEmptyDirs(true);
+    	    del.setProject(new Project());
+    	    del.execute();
+    	} 
+    	catch (Throwable e) {
+    	    e.printStackTrace();
+    	    log.error(e);
+    	    throw new WebServiceException("while deleting module " + lsid, e);
+    	}
     }
 
     public DataHandler exportSuiteToZip(String lsid) throws WebServiceException {

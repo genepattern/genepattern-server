@@ -87,20 +87,20 @@ public class ManageTasksBean {
     }
 
     private void deleteTasks(String[] taskLsids) {
-	if (taskLsids != null) {
-	    LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(UIBeanHelper.getUserId());
-	    for (String lsid : taskLsids) {
-		try {
-		    taskIntegratorClient.deleteTask(lsid);
-		} catch (Exception e) {
-			e.printStackTrace();
-		    log.error(e);
-		    throw new RuntimeException(e);
-		}
-	    }
-	    updateModules();
-	}
-
+        if (taskLsids != null) {
+            LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(UIBeanHelper.getUserId());
+            for (String lsid : taskLsids) {
+                try {
+                    taskIntegratorClient.deleteTask(lsid);
+                } 
+                catch (Exception e) {
+                    e.printStackTrace();
+                    log.error(e);
+                    throw new RuntimeException(e);
+                }
+            }
+            updateModules();
+        }
     }
 
     private Collection<TaskInfo> getModulesFromDatabase() {

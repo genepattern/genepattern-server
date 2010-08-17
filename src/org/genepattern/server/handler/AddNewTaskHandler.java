@@ -14,6 +14,7 @@ package org.genepattern.server.handler;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.OmnigeneException;
@@ -30,13 +31,14 @@ import org.genepattern.webservice.TaskInfo;
  */
 
 public class AddNewTaskHandler extends RequestHandler {
+    private static Logger log = Logger.getLogger(AddNewTaskHandler.class);
 
-	private String taskName = "", description = "", parameter_info = "", taskInfoAttributes = null;
-
+    private String taskName = "";
+	private String description = "";
+	private String parameter_info = "";
+	private String taskInfoAttributes = null;
 	private ParameterInfo[] parameterInfoArray = null;
-
 	private String userId;
-
 	private int accessId;
 
 	/** Creates new GetAvailableTaskHandler */
@@ -71,7 +73,6 @@ public class AddNewTaskHandler extends RequestHandler {
 	public int executeRequest() throws OmnigeneException {
 		int taskID = 0;
 		try {
-			//Get EJB reference
             AdminDAO ds = new AdminDAO();
 
 			GetAvailableTasksHandler th = new GetAvailableTasksHandler();
@@ -82,7 +83,7 @@ public class AddNewTaskHandler extends RequestHandler {
 					taskInfo = (TaskInfo) vTasks.get(i);
 					if (taskInfo.getName().equalsIgnoreCase(this.taskName)) {
 						taskID = taskInfo.getID();
-						System.out.println("updating existing task ID: " + taskID);
+						log.info("updating existing task ID: " + taskID);
 						ds.deleteTask(taskID);
 						break;
 					}
@@ -90,13 +91,10 @@ public class AddNewTaskHandler extends RequestHandler {
 			}
 
 			parameter_info = ParameterFormatConverter.getJaxbString(parameterInfoArray);
-
-			//Invoke EJB function
 			taskID = (new AnalysisDAO()).addNewTask(taskName, userId, accessId, description, parameter_info, taskInfoAttributes);
-		} catch (Exception ex) {
-			System.out.println("AddNewTaskRequest(execute): Error "
-					+ ex.getMessage());
-			ex.printStackTrace();
+		} 
+		catch (Exception ex) {
+			log.error("AddNewTaskRequest(execute): Error " + ex.getMessage(), ex);
 			throw new OmnigeneException(ex.getMessage());
 		}
 		return taskID;
