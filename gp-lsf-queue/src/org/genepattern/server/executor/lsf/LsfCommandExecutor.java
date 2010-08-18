@@ -1,10 +1,12 @@
 package org.genepattern.server.executor.lsf;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,6 +18,7 @@ import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandManagerFactory;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.JobInfo;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -23,6 +26,7 @@ import org.hibernate.Session;
 import edu.mit.broad.core.Main;
 import edu.mit.broad.core.lsf.LocalLsfJob;
 import edu.mit.broad.core.lsf.LsfJob;
+import edu.mit.broad.core.lsf.LsfJob.JobCompletionListener;
 
 public class LsfCommandExecutor implements CommandExecutor {
     private static Logger log = Logger.getLogger(LsfCommandExecutor.class);
@@ -34,33 +38,33 @@ public class LsfCommandExecutor implements CommandExecutor {
     private static int numJobSubmissionThreads = 3;
     private static int numJobCompletionThreads = 3;
     
-    private Properties configurationProperties = new Properties();
+    private final Properties configurationProperties = new Properties();
     
-    public void setConfigurationFilename(String filename) {
+    public void setConfigurationFilename(final String filename) {
         log.error("method not implemented, setConfigurationFilename( "+filename+" )");
     }
 
-    public void setConfigurationProperties(Properties properties) {
+    public void setConfigurationProperties(final Properties properties) {
         this.configurationProperties.putAll(properties);
         
         //WARNING: setting a static variable because the getJobCompletionService must be static
         String key = "lsf.num.job.submission.threads";
-        String prop = configurationProperties.getProperty(key);
+        String prop = this.configurationProperties.getProperty(key);
         if (prop != null) {
             try {
                 numJobSubmissionThreads = Integer.parseInt( prop );
             }
-            catch (Exception e) {
+            catch (final Exception e) {
                 log.error("Error in configuration file: "+key+"="+prop);
             }
         }
         key = "lsf.num.job.completion.threads";
-        prop = configurationProperties.getProperty(key);
+        prop = this.configurationProperties.getProperty(key);
         if (prop != null) {
             try {
                 numJobCompletionThreads = Integer.parseInt( prop );
             }
-            catch (Exception e) {
+            catch (final Exception e) {
                 log.error("Error in configuration file: "+key+"="+prop);
             }
         }
@@ -96,7 +100,7 @@ public class LsfCommandExecutor implements CommandExecutor {
 
         try {
             //initialize the GAP_SERVER_ID column of the LSF_JOB table
-            String broadCoreEnv = this.configurationProperties.getProperty("broadcore.env", "prod");
+            final String broadCoreEnv = this.configurationProperties.getProperty("broadcore.env", "prod");
             String broadCoreServerName = this.configurationProperties.getProperty("broadcore.server.name");
             if (broadCoreServerName == null) {
                 broadCoreServerName = System.getProperty("jboss.server.name");
@@ -105,35 +109,35 @@ public class LsfCommandExecutor implements CommandExecutor {
                 broadCoreServerName = System.getProperty("fqHostName", "localhost");
             }
             System.setProperty("jboss.server.name", broadCoreServerName);
-            broadCore = Main.getInstance();
-            broadCore.setEnvironment(broadCoreEnv); 
+            this.broadCore = Main.getInstance();
+            this.broadCore.setEnvironment(broadCoreEnv); 
             
-            String dataSourceName = this.configurationProperties.getProperty("hibernate.connection.datasource", "java:comp/env/jdbc/gpdb");
+            final String dataSourceName = this.configurationProperties.getProperty("hibernate.connection.datasource", "java:comp/env/jdbc/gpdb");
             log.info("using hibernate.connection.datasource="+dataSourceName);
-            broadCore.setDataSourceName(dataSourceName);
+            this.broadCore.setDataSourceName(dataSourceName);
             log.info("setting hibernate options...");
-            for(Entry<?,?> entry : configurationProperties.entrySet()) {
+            for(final Entry<?,?> entry : this.configurationProperties.entrySet()) {
                 log.info(""+entry.getKey()+": "+entry.getValue());
             }
-            broadCore.setHibernateOptions(configurationProperties);
+            this.broadCore.setHibernateOptions(this.configurationProperties);
 
             int lsfCheckFrequency = 60;
-            String lsfCheckFrequencyProp = configurationProperties.getProperty("lsf.check.frequency");
+            final String lsfCheckFrequencyProp = this.configurationProperties.getProperty("lsf.check.frequency");
             if (lsfCheckFrequencyProp != null) {
                 try {
                     lsfCheckFrequency = Integer.parseInt(lsfCheckFrequencyProp);
                 }
-                catch (NumberFormatException e) {
+                catch (final NumberFormatException e) {
                     log.error("Invalid value, lsf.check.frequency="+lsfCheckFrequencyProp,e);
                     log.error("Using lsf.check.frequency="+lsfCheckFrequency+" instead");
                 }
             }
             log.info("broadCore.setLsfCheckFrequency="+lsfCheckFrequency);
-            broadCore.setLsfCheckFrequency(lsfCheckFrequency);
+            this.broadCore.setLsfCheckFrequency(lsfCheckFrequency);
 
-            broadCore.start();
+            this.broadCore.start();
         }
-        catch (Throwable t) {
+        catch (final Throwable t) {
             log.error("Error starting BroadCore: "+t.getLocalizedMessage(), t);
         }
         log.info("done!");
@@ -145,7 +149,7 @@ public class LsfCommandExecutor implements CommandExecutor {
             log.debug("stopping BroadCore...");
             Main.getInstance().stop();
         }
-        catch (Throwable t) {
+        catch (final Throwable t) {
             log.error("Error shutting down BroadCore: "+t.getLocalizedMessage(), t);
         }
         shutdownService("jobSubmissionService", jobSubmissionService);
@@ -153,7 +157,7 @@ public class LsfCommandExecutor implements CommandExecutor {
         log.info("done!");
     }
     
-    private static void shutdownService(String serviceName, ExecutorService executorService) {
+    private static void shutdownService(final String serviceName, final ExecutorService executorService) {
         if (executorService != null) {
             log.debug("stopping "+serviceName+" executor...");
             executorService.shutdown();
@@ -163,26 +167,35 @@ public class LsfCommandExecutor implements CommandExecutor {
                     executorService.shutdownNow();
                 }
             }
-            catch (InterruptedException e) {
+            catch (final InterruptedException e) {
                 log.error(serviceName+" executor.shutdown was interrupted", e);
                 Thread.currentThread().interrupt();
             }
         }
     }
 
-    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) 
+    public void runCommand(final String[] commandLine, final Map<String, String> environmentVariables, final File runDir, final File stdoutFile, final File stderrFile, final JobInfo jobInfo, final File stdinFile) 
     throws CommandExecutorException
     {
-        log.debug("Running command for job "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName());
-        LsfCommand cmd = new LsfCommand();
+        runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile, LsfJobCompletionListener.class);
+    }
+
+    public void runCommand(final String[] commandLine,
+			final Map<String, String> environmentVariables, final File runDir,
+			final File stdoutFile, final File stderrFile,
+			final JobInfo jobInfo, final File stdinFile,
+			final Class<? extends JobCompletionListener> completionListenerClass)
+			throws CommandExecutorException {
+		log.debug("Running command for job "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName());
+        final LsfCommand cmd = new LsfCommand();
         
-        Properties lsfProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
+        final Properties lsfProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
         cmd.setLsfProperties(lsfProperties);
-        cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile);
+        cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile, completionListenerClass);
         LsfJob lsfJob = cmd.getLsfJob();
         lsfJob = submitJob(""+jobInfo.getJobNumber(), lsfJob);
         log.debug(jobInfo.getJobNumber()+". "+jobInfo.getTaskName()+" is dispatched.");
-    }
+	}
 
     /**
      * Uses the BroadCore library to submit the job to LSF, must handle database transactions in this method.
@@ -194,60 +207,79 @@ public class LsfCommandExecutor implements CommandExecutor {
             log.error("service not started ... ignoring submitJob("+lsfJob.getName()+")");
             return lsfJob;
         }
-        Callable<LsfJob> c = new LsfTransactedCallable(lsfJob);
-        FutureTask<LsfJob> future = new FutureTask<LsfJob>(c);
+        final Callable<LsfJob> c = new LsfTransactedCallable(lsfJob);
+        final FutureTask<LsfJob> future = new FutureTask<LsfJob>(c);
         jobSubmissionService.execute(future);
         try {
-            LsfJob lsfJobOut = future.get();
+            final LsfJob lsfJobOut = future.get();
             log.debug("submitted job to LSF queue: internalJobId="+lsfJobOut.getInternalJobId()
                     +", lsfId= "+lsfJobOut.getLsfJobId());
         }
-        catch (Exception e) {
+        catch (final Exception e) {
             throw new CommandExecutorException("Error submitting job to LSF, job #"+gpJobId, e);
         }
         return lsfJob;
     }
     
-    public void terminateJob(JobInfo jobInfo) {
+    public void terminateJob(final JobInfo jobInfo) {
         if (jobInfo == null) {
             log.error("Terminating job with null jobInfo!");
             return;
         }
-        String jobId = ""+jobInfo.getJobNumber();
-        LsfJob lsfJob = getLsfJobByGpJobId(jobId);
-        if (lsfJob == null) {
-            log.error("Didn't find lsf job for gp job: "+jobId);
-            return;
+        final String gpJobId = ""+jobInfo.getJobNumber();
+        final List<LsfJob> lsfJobs = getLsfJobByGpJobId(gpJobId);
+        if (lsfJobs.isEmpty()) {
+            log.error("Didn't find lsf job for gp job: "+gpJobId);
+        } else {
+        	terminateJobs(gpJobId, lsfJobs);
+        	final LsfJob initialJob = lsfJobs.get(0);
+        	try {
+				GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), initialJob.getOutputFilename(), initialJob.getErrorFileName(), -1, JobStatus.JOB_ERROR);
+			} catch (final Exception e) {
+                log.error("Error terminating job "+jobInfo.getJobNumber(), e);
+			}
         }
-        
-        LocalLsfJob localLsfJob = convert(lsfJob);
-        boolean waitForExit = true;
-        try {
-            localLsfJob.cancel(waitForExit);
+
+}
+
+	public static void terminateJobs(final String gpJobId,
+			final Collection<LsfJob> lsfJobs) {
+		final Collection<LocalLsfJob> localLsfJobs = new ArrayList<LocalLsfJob>(lsfJobs.size());
+        for (final LsfJob lsfJob : lsfJobs) {
+        	localLsfJobs.add(convert(lsfJob));
         }
-        catch (InterruptedException e) {
-            log.error("Terminating job "+jobId+": InterruptedException", e);
-        }
-    }
+
+    	LocalLsfJob.cancel(localLsfJobs);
+    	waitForTermination(gpJobId, localLsfJobs);
+	}
+
+	private static void waitForTermination(final String jobId,
+			final Collection<LocalLsfJob> localLsfJobs) {
+		try {
+    		for (final LocalLsfJob localLsfJob : localLsfJobs) {
+    			while (localLsfJob.getStatus().isInstance(LocalLsfJob.ACTIVE)) {
+    				Thread.sleep(3000);
+    				LocalLsfJob.updateStatus(localLsfJobs);
+    			}
+			}
+    	}
+    	catch (final InterruptedException e) {
+    		log.error("Terminating job "+jobId+": InterruptedException", e);
+    		Thread.currentThread().interrupt();
+    	}
+	}
     
     //NOTE: based on assumption that the GenePattern ANALYSIS_JOB.JOB_NO is stored in the LSF_JOB.JOB_NAME column
-    private LsfJob getLsfJobByGpJobId(String gpJobId) {
-        Session session = this.broadCore.getHibernateSession();
+	/**
+	 * gets the list of all lsf jobs related to this gp job id in the order in which they were submitted.
+	 */
+    private List<LsfJob> getLsfJobByGpJobId(final String gpJobId) {
+        final Session session = this.broadCore.getHibernateSession();
         session.beginTransaction();
         try {
-            Query query = session.createQuery("from LsfJob as lsfJob where lsfJob.name = ?");
+            final Query query = session.createQuery("from LsfJob as lsfJob where lsfJob.name = ? order by lsfJob.internalJobId");
             query.setString(0, gpJobId);
-            List r = query.list();
-            if (r.size() == 0) {
-                return null;
-            }
-            if (r.size() == 1) {
-                Object obj = r.get(0);
-                if (obj instanceof LsfJob) {
-                    return (LsfJob) obj;
-                }
-            }
-            return null;
+            return query.list();
         }
         finally {
             if (session != null) {
@@ -263,8 +295,8 @@ public class LsfCommandExecutor implements CommandExecutor {
      * fields are null on the incoming LsfJob, and only sets non-null properties
      * on the LocalLsfJob.
      */
-    private LocalLsfJob convert(LsfJob job) {
-        LocalLsfJob localJob = new LocalLsfJob();
+    private static LocalLsfJob convert(final LsfJob job) {
+        final LocalLsfJob localJob = new LocalLsfJob();
         localJob.setCommand(job.getCommand());
         localJob.setName(job.getName());
         localJob.setQueue(job.getQueue());
@@ -301,7 +333,7 @@ public class LsfCommandExecutor implements CommandExecutor {
         return localJob;
     }
 
-    private File getAbsoluteFile(String dir, String filename) {
+    private static File getAbsoluteFile(final String dir, final String filename) {
         if (filename.startsWith(File.separator)) {
             return new File(filename);
         } else {
@@ -309,7 +341,7 @@ public class LsfCommandExecutor implements CommandExecutor {
         }
     }
     
-    public int handleRunningJob(JobInfo jobInfo) throws Exception {
+    public int handleRunningJob(final JobInfo jobInfo) throws Exception {
         log.debug("handle running job #"+jobInfo.getJobNumber()+" on startup");
         return JobStatus.JOB_PROCESSING;
     }

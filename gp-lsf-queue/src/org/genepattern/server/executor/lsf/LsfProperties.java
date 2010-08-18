@@ -12,7 +12,7 @@ public class LsfProperties {
         HOST_OS("lsf.host.os"),
         EXTRA_BSUB_ARGS("lsf.extra.bsub.args"),
         JOB_COMPLETION_LISTENER("lsf.job.completion.listener"),
-        IS_SCATTER_GATHER("lsf.scatter.gather"); //[true|false]
+        PRIORITY("lsf.priority");
         
         private String key="lsf.key";
         Key(String key) {
@@ -22,7 +22,7 @@ public class LsfProperties {
             }
         }
         public String getKey() {
-            return key;
+            return this.key;
         }
     }
 }

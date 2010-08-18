@@ -10,11 +10,13 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 
 import edu.mit.broad.core.lsf.LsfJob;
+import edu.mit.broad.core.lsf.LsfJob.JobCompletionListener;
 
 /**
  * Run the given command line on the LSF queue. This class depends on another thread which monitors the LSF queue for completed jobs.
@@ -27,21 +29,21 @@ class LsfCommand {
     private Properties lsfProperties = null;
     private LsfJob lsfJob = null;
     
-    public void setLsfProperties(Properties p) {
+    public void setLsfProperties(final Properties p) {
         this.lsfProperties = p;
     }
     
     //example LSF command from the GP production server,
     //bsub -P $project -q "$queue" -R "rusage[mem=$max_memory]" -M $max_memory -m "$hosts" -K -o .lsf_%J.out -e $lsf_err $"$@" \>\> $cmd_out
     
-    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) { 
-        long jobId = jobInfo != null ? jobInfo.getJobNumber() : -1L;
+    public void runCommand(final String[] commandLine, final Map<String, String> environmentVariables, final File runDir, final File stdoutFile, final File stderrFile, final JobInfo jobInfo, final File stdinFile, final Class<? extends JobCompletionListener> completionListenerClass) { 
+        final long jobId = jobInfo != null ? jobInfo.getJobNumber() : -1L;
 
-        lsfJob = new LsfJob();
-        lsfJob.setName(""+jobId);
-        lsfJob.setWorkingDirectory(runDir.getAbsolutePath());
+        this.lsfJob = new LsfJob();
+        this.lsfJob.setName(""+jobId);
+        this.lsfJob.setWorkingDirectory(runDir.getAbsolutePath());
         if (stdinFile != null) {
-            lsfJob.setInputFilename(stdinFile.getAbsolutePath());
+            this.lsfJob.setInputFilename(stdinFile.getAbsolutePath());
         }
 
         String stdoutFilename=null;
@@ -55,43 +57,50 @@ class LsfCommand {
         }
         
         //Note: BroadCore does not handle the %J idiom for the output file
-        String jobReportFilename=lsfProperties.getProperty(LsfProperties.Key.JOB_REPORT_FILE.getKey());
+        final String jobReportFilename=this.lsfProperties.getProperty(LsfProperties.Key.JOB_REPORT_FILE.getKey());
         if (jobReportFilename != null && jobReportFilename.length() > 0 ) {
-            lsfJob.setOutputFilename(jobReportFilename);
+            this.lsfJob.setOutputFilename(jobReportFilename);
         }
         else {
-            lsfJob.setOutputFilename(stdoutFilename);
+            this.lsfJob.setOutputFilename(stdoutFilename);
         }
         
         if (stderrFile != null) {
-            lsfJob.setErrorFileName(stderrFile.getName());
+            this.lsfJob.setErrorFileName(stderrFile.getName());
         }
         else {
             log.error("Missing required parameter, stderrFile, using 'stderr.txt'");
-            lsfJob.setErrorFileName("stderr.txt");
+            this.lsfJob.setErrorFileName("stderr.txt");
         }
-        lsfJob.setProject(lsfProperties.getProperty(LsfProperties.Key.PROJECT.getKey()));
-        lsfJob.setQueue(lsfProperties.getProperty(LsfProperties.Key.QUEUE.getKey()));
+        this.lsfJob.setProject(this.lsfProperties.getProperty(LsfProperties.Key.PROJECT.getKey()));
+        this.lsfJob.setQueue(this.lsfProperties.getProperty(LsfProperties.Key.QUEUE.getKey()));
         
-        List<String> extraBsubArgs = new ArrayList<String>();
-        String maxMemory = lsfProperties.getProperty(LsfProperties.Key.MAX_MEMORY.getKey(), "2");
+        final List<String> extraBsubArgs = new ArrayList<String>();
+        final String maxMemory = this.lsfProperties.getProperty(LsfProperties.Key.MAX_MEMORY.getKey(), "2");
         extraBsubArgs.add("-R");
         extraBsubArgs.add("rusage[mem="+maxMemory+"]");
         extraBsubArgs.add("-M");
         extraBsubArgs.add(maxMemory);
-        
-        String host = lsfProperties.getProperty(LsfProperties.Key.HOST_OS.getKey());
+
+        final String priority = this.lsfProperties.getProperty(LsfProperties.Key.PRIORITY.getKey());
+        if (priority != null) {
+            extraBsubArgs.add("-sp");
+            extraBsubArgs.add(priority);
+        }
+
+        final String host = this.lsfProperties.getProperty(LsfProperties.Key.HOST_OS.getKey());
         if (host != null) {
             extraBsubArgs.add("-R");
             extraBsubArgs.add("select["+host+"]");
         }
+        
         //String extraBsubArgsProp = lsfProperties.getProperty(LsfProperties.Key.EXTRA_BSUB_ARGS.getKey());
         //if (extraBsubArgsProp != null && !"".equals(extraBsubArgsProp.trim())) {
         //    extraBsubArgs.add(extraBsubArgsProp);
         //}
-        //List<String> preExecArgs = getPreExecCommand(jobInfo);
-        //extraBsubArgs.addAll(preExecArgs);
-        lsfJob.setExtraBsubArgs(extraBsubArgs);
+        
+        extraBsubArgs.addAll(getPreExecCommand(jobInfo));
+        this.lsfJob.setExtraBsubArgs(extraBsubArgs);
 
         String commandLineStr = wrapCommandLineArgsInSingleQuotes(commandLine);
 
@@ -106,23 +115,22 @@ class LsfCommand {
             commandLineStr += " >> " + wrapInSingleQuotes(stdoutFilename);
         }
         log.debug("lsf job commandLine: "+commandLineStr);
-        lsfJob.setCommand(commandLineStr);
+        this.lsfJob.setCommand(commandLineStr);
         
-        //TODO: make this a configuration option
-        lsfJob.setCompletionListenerName(LsfJobCompletionListener.class.getName());
+        this.lsfJob.setCompletionListenerName(completionListenerClass.getName());
     }
     
-    public void prepareToTerminate(JobInfo jobInfo) {
-        int jobId = jobInfo != null ? jobInfo.getJobNumber() : -1;
-        lsfJob = new LsfJob();
+    public void prepareToTerminate(final JobInfo jobInfo) {
+        final int jobId = jobInfo != null ? jobInfo.getJobNumber() : -1;
+        this.lsfJob = new LsfJob();
         //note: use the name of the job (the bsub -J arg) to map the GP JOB ID to the JOB_LSF table
         //    the internalJobId is (by default) configured as a primary key with a sequence
-        lsfJob.setName(""+jobId);
+        this.lsfJob.setName(""+jobId);
         
     }
     
     public LsfJob getLsfJob() {
-        return lsfJob;
+        return this.lsfJob;
     }
     
     /**
@@ -132,7 +140,7 @@ class LsfCommand {
      * @param commandLine
      * @return
      */
-    private String wrapCommandLineArgsInSingleQuotes(String[] commandLine) {
+    private String wrapCommandLineArgsInSingleQuotes(final String[] commandLine) {
         String rval = "";
         boolean first = true;
         for(String arg : commandLine) {
@@ -164,12 +172,12 @@ class LsfCommand {
      * @param commandLine
      * @return
      */
-    private String wrapCommandLineInDoubleQuotes(String[] commandLine) {
+    private String wrapCommandLineInDoubleQuotes(final String[] commandLine) {
         final char[] special_chars = {'!', '$', '\"', '`'};
         String rval = "";
         boolean first = true;
         for(String arg : commandLine) {
-            for(char c : special_chars) {
+            for(final char c : special_chars) {
                 arg = arg.replace(""+c, "\\"+c);
             }
             arg = "\""+arg+"\"";
@@ -192,30 +200,33 @@ class LsfCommand {
      * 
      * @return a List of extra args to include with the bsub command, an empty list if no pre_exec_command is required.
      */
-    private List<String> getPreExecCommand(JobInfo jobInfo) { 
-        List<String> rval = new ArrayList<String>();
+    private List<String> getPreExecCommand(final JobInfo jobInfo) { 
+        final List<String> rval = new ArrayList<String>();
         
-        if (!Boolean.valueOf(lsfProperties.getProperty(LsfProperties.Key.USE_PRE_EXEC_COMMAND.getKey()))) {
+        if (!Boolean.valueOf(this.lsfProperties.getProperty(LsfProperties.Key.USE_PRE_EXEC_COMMAND.getKey()))) {
             return rval;
         }
 
-        Set<String> filePaths = new HashSet<String>();
+        final Set<String> filePaths = new HashSet<String>();
+        
+        // add libdir
+		filePaths.add(getLibDir(jobInfo));
 
         //add the working directory for the job
-        String jobDirName = GenePatternAnalysisTask.getJobDir(""+jobInfo.getJobNumber());
-        File jobDir = new File(jobDirName);
+        final String jobDirName = GenePatternAnalysisTask.getJobDir(""+jobInfo.getJobNumber());
+        final File jobDir = new File(jobDirName);
         if (jobDir.exists()) {
-            String path = jobDir.getAbsolutePath();
+            final String path = jobDir.getAbsolutePath();
             filePaths.add(path);
         }
 
         //for each input parameter, if it is a file which exists, add its parent to the list
-        for(ParameterInfo param : jobInfo.getParameterInfoArray()) {
-            String val = param.getValue();
-            File file = new File(val);
-            File parentFile = file.getParentFile();
-            if (parentFile != null && parentFile.exists()) {
-                String path = parentFile.getAbsolutePath();
+        for(final ParameterInfo param : jobInfo.getParameterInfoArray()) {
+            final String val = param.getValue();
+            final File file = new File(val);
+            final File parentFile = file.getParentFile();
+            if (parentFile != null && parentFile.exists() && parentFile.isDirectory()) {
+                final String path = parentFile.getAbsolutePath();
                 filePaths.add(path);
             }
         }
@@ -226,7 +237,7 @@ class LsfCommand {
         
         String preExecCommand="";
         boolean first = true;
-        for(String path : filePaths) {
+        for(final String path : filePaths) {
             if (!first) {
                 preExecCommand += " && ";
             }
@@ -240,5 +251,13 @@ class LsfCommand {
         rval.add("-E");
         rval.add(preExecCommand);
         return rval;
+    }
+
+    private String getLibDir(final JobInfo jobInfo) {
+    	try {
+    		return new File(DirectoryManager.getLibDir(jobInfo.getTaskLSID())).getAbsolutePath() + File.separator;
+    	} catch (final Exception e) {
+    		throw new RuntimeException("Exception getting libdir", e);
+    	}
     }
 }
