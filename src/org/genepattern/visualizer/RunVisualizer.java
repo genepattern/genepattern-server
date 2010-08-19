@@ -331,6 +331,9 @@ public class RunVisualizer {
 		    }
 		    URL url = new URL(server + contextPath + "/getFile.jsp?task=" + encode(lsid) + "&file="
 			    + encode(filename));
+            if (debug) {
+                System.out.println("downloading URL " + url + " to directory " + libdir + " as " + filename);
+            }
 		    File f = downloadFile(url, libdir, filename);
 		    f.setLastModified(supportFileDates[i]);
 		}
