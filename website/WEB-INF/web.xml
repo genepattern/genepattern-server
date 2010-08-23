@@ -391,6 +391,17 @@
   <servlet-name>ModuleDocServlet</servlet-name>
   <url-pattern>/module/doc/*</url-pattern>
  </servlet-mapping>
+
+ <servlet>
+  <display-name>JobConfigurationServlet</display-name>
+  <servlet-name>JobConfigurationServlet</servlet-name>
+  <servlet-class>org.genepattern.server.webapp.JobConfigurationServlet</servlet-class>
+ </servlet>
+ <servlet-mapping>
+  <servlet-name>JobConfigurationServlet</servlet-name>
+  <url-pattern>/rest/JobConfiguration</url-pattern>
+ </servlet-mapping>
+
  <welcome-file-list>
   <welcome-file>/index.jsp</welcome-file>
  </welcome-file-list>
