@@ -1,9 +1,6 @@
 package org.genepattern.server.webapp.jsf;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
