@@ -68,7 +68,7 @@ public class JobConfigurationServlet extends HttpServlet {
     }
     
     public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-        //TODO: require login
+        //require login
         if (!checkPermissions(req, resp)) {
             return;
         }
