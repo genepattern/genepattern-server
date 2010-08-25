@@ -131,6 +131,13 @@
   <managed-bean-class>org.genepattern.server.webapp.jsf.ModuleChooserBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
+
+ <managed-bean>
+  <managed-bean-name>userSessionBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.UserSessionBean</managed-bean-class>
+  <managed-bean-scope>session</managed-bean-scope>
+ </managed-bean>
+ 
  <managed-bean>
   <managed-bean-name>jobsBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.JobBean</managed-bean-class>
@@ -138,6 +145,10 @@
   <managed-property>
     <property-name>jobResultsFilterBean</property-name>
     <value>#{jobResultsFilterBean}</value>
+  </managed-property>
+  <managed-property>
+    <property-name>userSessionBean</property-name>
+    <value>#{userSessionBean}</value>
   </managed-property>
  </managed-bean>
  <managed-bean>

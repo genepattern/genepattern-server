@@ -57,6 +57,7 @@ import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.util.EmailNotificationManager;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.RunTaskBean;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
@@ -174,7 +175,8 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         if (useridFromSession != null) {
             try {
                 jobID = Integer.parseInt(jobNumber);
-                PermissionsHelper ph = new PermissionsHelper(useridFromSession, jobID);
+                final boolean isAdmin = AuthorizationHelper.adminJobs(useridFromSession);
+                PermissionsHelper ph = new PermissionsHelper(isAdmin, useridFromSession, jobID);
                 allowed = ph.canReadJob();            
             }
             catch (NumberFormatException e) {
@@ -580,7 +582,8 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         }
         
         try {
-            PermissionsHelper permissionsHelper = new PermissionsHelper(currentUserId, jobNumber);
+            final boolean isAdmin = AuthorizationHelper.adminJobs(currentUserId);
+            PermissionsHelper permissionsHelper = new PermissionsHelper(isAdmin, currentUserId, jobNumber);
             permissionsHelper.setPermissions(updatedPermissions);
 
             response.setContentType("text/javascript");
@@ -616,7 +619,8 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
     private void deleteJob(String currentUserId, int jobNumber, HttpServletRequest request, HttpServletResponse response) 
     throws IOException
     {
-        PermissionsHelper perm = new PermissionsHelper(currentUserId, jobNumber);
+        final boolean isAdmin = AuthorizationHelper.adminJobs(currentUserId);
+        PermissionsHelper perm = new PermissionsHelper(isAdmin, currentUserId, jobNumber);
         if (!perm.canWriteJob()) {
             response.setHeader("X-genepattern-deleteJobException", "User "+currentUserId+" does not have permission to delete job "+jobNumber);
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -657,7 +661,8 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
     throws IOException
     {
         String jobFileName = request.getParameter("jobFile");
-        PermissionsHelper perm = new PermissionsHelper(currentUserId, jobNumber);
+        final boolean isAdmin = AuthorizationHelper.adminJobs(currentUserId);
+        PermissionsHelper perm = new PermissionsHelper(isAdmin, currentUserId, jobNumber);
         if (!perm.canWriteJob()) {
             response.setHeader("X-genepattern-deleteFileException", "User "+currentUserId+" does not have permission to delete file "+jobNumber+" : "+jobFileName);
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);

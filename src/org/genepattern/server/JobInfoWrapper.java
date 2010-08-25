@@ -23,6 +23,7 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.process.JobPurgerUtil;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.server.webapp.jsf.JobPermissionsBean;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
@@ -1125,14 +1126,19 @@ public class JobInfoWrapper implements Serializable {
     }
     
     private void initGroupPermissions() { 
-        jobPermissionsBean = new JobPermissionsBean();
-        if (jobInfo != null) {
-            jobPermissionsBean.setJobId(jobInfo.getJobNumber());
-            //this.deleteAllowed = jobPermissionsBean.isDeleteAllowed();
-        }
-        else {
+        if (jobInfo == null) {
             log.error("jobInfo is null");
+            return;
         }
+
+        String currentUserId = UIBeanHelper.getUserId();
+        final boolean isAdmin = AuthorizationHelper.adminJobs(currentUserId);
+        JobInfoWrapper root = this.getRoot();
+        String rootJobOwner = root.getUserId();
+        int rootJobNumber = root.getJobNumber();
+
+        PermissionsHelper ph = new  PermissionsHelper(isAdmin, currentUserId, jobInfo.getJobNumber(), rootJobOwner, rootJobNumber);
+        jobPermissionsBean = new JobPermissionsBean(ph);
     }
     
     //for debugging

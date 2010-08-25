@@ -52,7 +52,6 @@ import org.genepattern.webservice.WebServiceException;
  * Analysis Web Service.
  * 
  */
-
 public class Analysis extends GenericWebService {
 
     public enum JobSortOrder {
@@ -65,7 +64,6 @@ public class Analysis extends GenericWebService {
      * Default constructor. Constructs a <code>Analysis</code> web service object.
      */
     public Analysis() {
-
     }
 
     /**
@@ -78,12 +76,14 @@ public class Analysis extends GenericWebService {
      *                    thrown if problems are encountered
      */
     public JobInfo checkStatus(int jobID) throws WebServiceException {
+        Boolean isAdmin = null;
         String userId = null;
         JobInfo jobInfo = null;
         try {
             userId = getUsernameFromContext();
+            isAdmin = AuthorizationHelper.adminJobs(jobInfo.getUserId());
             jobInfo = (new AnalysisDAO()).getJobInfo(jobID);
-            this.canReadJob(userId, jobID);
+            this.canReadJob(isAdmin, userId, jobID);
         } 
         catch (Throwable t) {
             logAndThrow(t);
@@ -182,7 +182,8 @@ public class Analysis extends GenericWebService {
      */
     public void deleteJobResultFile(int jobId, String value) throws WebServiceException {
         String userId = getUsernameFromContext();
-        canWriteJob(userId, jobId);
+        boolean isAdmin = AuthorizationHelper.adminJobs(userId);
+        canWriteJob(isAdmin, userId, jobId);
 
         AnalysisDAO ds = new AnalysisDAO();
         JobInfo jobInfo = ds.getJobInfo(jobId);
@@ -263,7 +264,8 @@ public class Analysis extends GenericWebService {
     
     public JobInfo[] getChildJobInfos(int parentJobId) throws WebServiceException {
         String userId = getUsernameFromContext();
-        this.canReadJob(userId, parentJobId);
+        boolean isAdmin = AuthorizationHelper.adminJobs(userId);
+        this.canReadJob(isAdmin, userId, parentJobId);
         AnalysisDAO ds = new AnalysisDAO();
         return ds.getChildren(parentJobId);
     }
@@ -276,7 +278,8 @@ public class Analysis extends GenericWebService {
     private JobInfo getJob(int jobId, boolean checkPermission) throws WebServiceException {
         if (checkPermission) {
             String userId = getUsernameFromContext();
-            this.canReadJob(userId, jobId);
+            boolean isAdmin = AuthorizationHelper.adminJobs(userId);
+            this.canReadJob(isAdmin, userId, jobId);
         }
         AnalysisDAO ds = new AnalysisDAO();
         JobInfo job = ds.getJobInfo(jobId);
@@ -395,7 +398,8 @@ public class Analysis extends GenericWebService {
 
     public FileWrapper[] getResultFiles(int jobId, String[] filenames) throws WebServiceException {
         String userId = getUsernameFromContext();
-        canReadJob(userId, jobId);
+        boolean isAdmin = AuthorizationHelper.adminJobs(userId);
+        canReadJob(isAdmin, userId, jobId);
         FileWrapper[] result = new FileWrapper[filenames.length];
         for (int i = 0; i < filenames.length; i++) {
             String path = System.getProperty("jobs") + File.separator + jobId + File.separator + filenames[i];
@@ -421,7 +425,8 @@ public class Analysis extends GenericWebService {
      */
     public FileWrapper[] getResultFiles(int jobId) throws WebServiceException {
         String userId = getUsernameFromContext();
-        this.canReadJob(userId, jobId);
+        boolean isAdmin = AuthorizationHelper.adminJobs(userId);
+        this.canReadJob(isAdmin, userId, jobId);
 
         ArrayList<String> filenames = new ArrayList<String>();
         JobInfo jobInfo = getJob(jobId);
@@ -477,7 +482,8 @@ public class Analysis extends GenericWebService {
      */
     public void purgeJob(int jobId) throws WebServiceException {
         String userId = getUsernameFromContext();
-        canWriteJob(userId, jobId);
+        boolean isAdmin = AuthorizationHelper.adminJobs(userId);
+        canWriteJob(isAdmin, userId, jobId);
 
         try {
             deleteJob(jobId);
@@ -558,7 +564,8 @@ public class Analysis extends GenericWebService {
         try {
             log.debug("Analysis.SetStatus " + jobId);
             String userId = getUsernameFromContext();
-            canWriteJob(userId, jobId);
+            boolean isAdmin = AuthorizationHelper.adminJobs(userId);
+            canWriteJob(isAdmin, userId, jobId);
 
             AnalysisDAO ds = new AnalysisDAO();
             Integer intStatus = JobStatus.STATUS_MAP.get(status);
@@ -645,7 +652,8 @@ public class Analysis extends GenericWebService {
         JobInfo jobInfo = null;
         try {
             String userId = getUsernameFromContext();
-            canWriteJob(userId, jobId);
+            boolean isAdmin = AuthorizationHelper.adminJobs(userId);
+            canWriteJob(isAdmin, userId, jobId);
             jobInfo = getJob(jobId);
         }
         finally {
@@ -718,23 +726,26 @@ public class Analysis extends GenericWebService {
      * @return a String containing the username or an empty string if one not found.
      */
     protected String getUsernameFromContext() {
-	// get the context then the username from the soap header
-	MessageContext context = MessageContext.getCurrentContext();
-	String username = context.getUsername();
-	if (username == null) {
-	    username = "";
-	}
-	return username;
+        // get the context then the username from the soap header
+        MessageContext context = MessageContext.getCurrentContext();
+        String username = context.getUsername();
+        if (username == null) {
+            username = "";
+        }
+        return username;
     }
 
-    private void canReadJob(String userId, int jobId) throws WebServiceException {
-        PermissionsHelper ph = new PermissionsHelper(userId, jobId);
+    private synchronized PermissionsHelper getPermissionsHelper(boolean isAdmin, String userId, int jobId) {
+        return new PermissionsHelper(isAdmin, userId, jobId);
+    }
+    private void canReadJob(boolean isAdmin, String userId, int jobId) throws WebServiceException {
+        PermissionsHelper ph = getPermissionsHelper(isAdmin, userId, jobId);
         if (!ph.canReadJob()) {
             throw new WebServiceException("You do not have permission to read the job: "+jobId);
         }
     }
-    private void canWriteJob(String userId, int jobId) throws WebServiceException {
-        PermissionsHelper ph = new PermissionsHelper(userId, jobId);
+    private void canWriteJob(boolean isAdmin, String userId, int jobId) throws WebServiceException {
+        PermissionsHelper ph = getPermissionsHelper(isAdmin, userId, jobId);
         if (!ph.canWriteJob()) {
             throw new WebServiceException("You do not have permission to edit the job: "+jobId);
         }

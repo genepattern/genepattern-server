@@ -40,6 +40,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
+import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
@@ -96,6 +97,11 @@ public class JobBean {
     /** Current page displayed */
     private int pageNumber = 1;
     
+    private UserSessionBean userSessionBean = null;
+    public void setUserSessionBean(final UserSessionBean u) {
+        this.userSessionBean = u;
+    }
+    
     private JobResultsFilterBean jobResultsFilterBean = null;
     public void setJobResultsFilterBean(JobResultsFilterBean j) {
         this.jobResultsFilterBean = j;
@@ -103,10 +109,10 @@ public class JobBean {
 
     public JobBean() {
         try {
-            pageSize = Integer.parseInt(System.getProperty("job.results.per.page", "50"));
+            pageSize = Integer.parseInt(System.getProperty("job.results.per.page", "20"));
         } 
         catch (NumberFormatException nfe) {
-            pageSize = 50;
+            pageSize = 20;
         }
 	
         String userId = UIBeanHelper.getUserId();
@@ -438,24 +444,41 @@ public class JobBean {
      * @param event
      */
     protected void deleteJob(int jobNumber) {
-	try {
-	    LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
-	    ac.deleteJob(jobNumber);
-	    HibernateUtil.getSession().flush();
-	} catch (WebServiceException e) {
-	    log.error("Error deleting job " + jobNumber, e);
-	}
+        try {
+            LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
+            ac.deleteJob(jobNumber);
+            HibernateUtil.getSession().flush();
+        } 
+        catch (WebServiceException e) {
+            log.error("Error deleting job " + jobNumber, e);
+        }
     }
 
     private List<JobResultsWrapper> wrapJobs(JobInfo[] jobInfoArray) {
+        boolean isAdmin = false;
+        if (userSessionBean != null) {
+            isAdmin = userSessionBean.isAdmin();
+        }
+        String currentUserId = UIBeanHelper.getUserId();
 
-	List<JobResultsWrapper> wrappedJobs = new ArrayList<JobResultsWrapper>(jobInfoArray.length);
-	for (int i = 0; i < jobInfoArray.length; i++) {
-	    JobResultsWrapper wrappedJob = new JobResultsWrapper(jobInfoArray[i], kindToModules, getSelectedFiles(),
-		    getSelectedJobs(), 0, 0, kindToInputParameters, showExecutionLogs);
-	    wrappedJobs.add(wrappedJob);
-	}
-	return wrappedJobs;
+        List<JobResultsWrapper> wrappedJobs = new ArrayList<JobResultsWrapper>(jobInfoArray.length);
+        for(JobInfo jobInfo : jobInfoArray) {
+            PermissionsHelper ph = new PermissionsHelper(isAdmin, currentUserId, jobInfo.getJobNumber(), jobInfo.getUserId(), jobInfo.getJobNumber());
+            JobPermissionsBean jobPermissionsBean = new JobPermissionsBean(ph);
+
+            JobResultsWrapper wrappedJob = new JobResultsWrapper(
+                    jobPermissionsBean,
+                    jobInfo, 
+                    kindToModules, 
+                    getSelectedFiles(),
+                    getSelectedJobs(), 
+                    0, 
+                    0, 
+                    kindToInputParameters, 
+                    showExecutionLogs);
+            wrappedJobs.add(wrappedJob);
+        }
+        return wrappedJobs;
     }
 
     private JobSortOrder getJobSortOrder() {

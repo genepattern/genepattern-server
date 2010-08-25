@@ -21,39 +21,31 @@ import org.genepattern.server.auth.GroupPermission.Permission;
 public class JobPermissionsBean implements Serializable {
     private static Logger log = Logger.getLogger(JobPermissionsBean.class);
 
+    private PermissionsHelper _ph = null;
+
     private int jobId = -1;
-    private Permission publicAccessPermission;
     private List<GroupPermission> groupAccessPermissions;
     
-    private boolean isPublic = false;
-    private boolean isShared = false;
-    
-    //is the current user allowed to delete the job
-    private boolean isDeleteAllowed = false;
-    
-    //is the current user allowed to edit permissions
-    private boolean isEditPermissionsAllowed = false;
-
     //for displaying read-only summary information (e.g. in Job Results Page)
     private List<String> groupIdsWithFullAccess;
     private List<String> groupIdsWithReadOnlyAccess;
 
-    public JobPermissionsBean() {
+    public JobPermissionsBean(final boolean isAdmin, final String rootJobOwner, final Integer rootJobId) {
+        String currentUserId = UIBeanHelper.getUserId();
+        PermissionsHelper ph = new PermissionsHelper(isAdmin, currentUserId, jobId, rootJobOwner, rootJobId);
+        this._ph = ph;
+        reset();
+    }
+    public JobPermissionsBean(PermissionsHelper ph) {
+        this._ph = ph;
+        reset();
     }
     
     /**
      * Load (or reload) the values from the database. Requires a valid jobId.
      */
     private void reset() { 
-        String currentUserId = UIBeanHelper.getUserId();
-        PermissionsHelper permissionsHelper = new PermissionsHelper(currentUserId, jobId);
-        this.isPublic = permissionsHelper.isPublic();
-        this.isShared = permissionsHelper.isShared();
-        this.publicAccessPermission = permissionsHelper.getPublicAccessPermission();
-        this.isDeleteAllowed = permissionsHelper.canWriteJob();
-        this.isEditPermissionsAllowed = permissionsHelper.canSetJobPermissions();
-        
-        List<GroupPermission> currentPermissions = permissionsHelper.getNonPublicPermissions();
+        List<GroupPermission> currentPermissions = this._ph.getNonPublicPermissions();
         //copy
         groupAccessPermissions = new ArrayList<GroupPermission>();
         for (GroupPermission gp : currentPermissions) {
@@ -62,7 +54,7 @@ public class JobPermissionsBean implements Serializable {
         
         SortedSet<String> g_full_access = new TreeSet<String>();
         SortedSet<String> g_read_only_access = new TreeSet<String>();
-        for(GroupPermission gp : permissionsHelper.getJobResultPermissions(false)) {
+        for(GroupPermission gp : _ph.getJobResultPermissions(false)) {
             if (gp.getPermission() == Permission.READ_WRITE) {
                 g_full_access.add(gp.getGroupId());
             }
@@ -84,11 +76,7 @@ public class JobPermissionsBean implements Serializable {
     }
     
     public Permission getPublicAccessPermission() {
-        return publicAccessPermission;
-    }
-    
-    public void setPublicAccessPermission(Permission p) {
-        this.publicAccessPermission = p;
+        return _ph.getPublicAccessPermission();
     }
     
     public int getNumGroupAccessPermissions() {
@@ -100,19 +88,19 @@ public class JobPermissionsBean implements Serializable {
     }
     
     public boolean isDeleteAllowed() {
-        return isDeleteAllowed;
+        return _ph.canWriteJob();
     }
 
     public boolean isEditPermissionsAllowed() {
-        return isEditPermissionsAllowed;        
+        return _ph.canSetJobPermissions();
     }
 
     public boolean isPublic() {
-        return isPublic;
+        return _ph.isPublic();
     }
 
     public boolean isShared() {
-        return isShared;
+        return _ph.isShared();
     }
     
     //helpers for read only view on 'Job Results' page
@@ -141,5 +129,4 @@ public class JobPermissionsBean implements Serializable {
     public List<String> getGroupsWithReadOnlyAccess() {
         return Collections.unmodifiableList(groupIdsWithReadOnlyAccess);
     }
-    
 }

@@ -138,6 +138,7 @@ import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -335,7 +336,7 @@ public class GenePatternAnalysisTask {
      * @throws IllegalArgumentException, If the URL refers to a file that the specified userId does not have permission to access.
      * @return The file or <tt>null</tt>
      */
-    protected File localInputUrlToFile(URL url, String userId) {
+    protected File localInputUrlToFile(URL url, boolean isAdmin, String userId) {
         String path = url.getPath();
         try {
             path = URLDecoder.decode(path, "UTF-8");
@@ -396,7 +397,7 @@ public class GenePatternAnalysisTask {
                 File in = new File(System.getProperty("java.io.tmpdir"), filename);
                 if (in.exists() && jobNumber >= 0) {
                     // check whether the current user has access to the job
-                    PermissionsHelper perm = new PermissionsHelper(userId, jobNumber);
+                    PermissionsHelper perm = new PermissionsHelper(isAdmin, userId, jobNumber);
                     boolean canRead = perm.canReadJob();
                     if (canRead) {
                         return in;
@@ -466,7 +467,7 @@ public class GenePatternAnalysisTask {
                 throw new IllegalArgumentException("You are not permitted to access the requested file: "+requestedFilename+", Error processing job number: "+job);
             }
             
-            if (canReadJob(userId, jobNumber)) {
+            if (canReadJob(isAdmin, userId, jobNumber)) {
                 File jobDir = new File(jobsDir, job);
                 File file = new File(jobDir, requestedFilename);
                 if (file.exists()) {
@@ -480,9 +481,9 @@ public class GenePatternAnalysisTask {
         return null;
     }
 
-    private boolean canReadJob(String userId, int jobNumber) {
+    private boolean canReadJob(boolean isAdmin, String userId, int jobNumber) {
         try {
-            PermissionsHelper perm = new PermissionsHelper(userId, jobNumber);
+            PermissionsHelper perm = new PermissionsHelper(isAdmin, userId, jobNumber);
             return perm.canReadJob();
         }
         catch (Throwable t) {
@@ -556,6 +557,15 @@ public class GenePatternAnalysisTask {
         if (jobInfo.getTaskID() == BaseDAO.UNPROCESSABLE_TASKID) {
             log.error("pipelines run from the webapp should no longer show with taskID="+BaseDAO.UNPROCESSABLE_TASKID);
             return;
+        }
+        
+        // is the job owner an admin?
+        final boolean isAdmin;
+        if (jobInfo.getUserId() != null) {
+            isAdmin = AuthorizationHelper.adminJobs(jobInfo.getUserId());
+        }
+        else {
+            isAdmin = false;
         }
 
         String outDirName = getJobDir(""+jobId);
@@ -675,7 +685,7 @@ public class GenePatternAnalysisTask {
                                 vProblems.add("You are not permitted to access the requested file: Invalid job number, job='"+job+"'");
                                 continue;
                             }
-                            if (canReadJob(jobInfo.getUserId(), jobNumber)) {
+                            if (canReadJob(isAdmin, jobInfo.getUserId(), jobNumber)) {
                                 originalPath = System.getProperty("jobs") + "/" + originalPath;
                             }
                             else {
@@ -736,7 +746,7 @@ public class GenePatternAnalysisTask {
                             }
 
                             if (isWebUpload) {
-                                if (!canReadJob(jobInfo.getUserId(), jobId)) {
+                                if (!canReadJob(isAdmin, jobInfo.getUserId(), jobId)) {
                                     vProblems.add("You are not permitted to access the requested file: "+inputFile.getName());
                                     continue;
                                 }
@@ -919,7 +929,7 @@ public class GenePatternAnalysisTask {
                                                 String parentFileName = inputFile.getParentFile().getName();
                                                 int jobNumber = Integer.parseInt(parentFileName);
                                                 //only allow access if the owner of this job has at least read access to the job which output this input file
-                                                boolean canRead = canReadJob(jobInfo.getUserId(), jobNumber);
+                                                boolean canRead = canReadJob(isAdmin, jobInfo.getUserId(), jobNumber);
                                                 isAllowed = isJobOutput && canRead;
                                             }
                                             catch (NumberFormatException e) {
@@ -949,7 +959,7 @@ public class GenePatternAnalysisTask {
                                     URL url = uri.toURL();
                                     if (isLocalHost(url)) {
                                         try {
-                                            File file = localInputUrlToFile(url, jobInfo.getUserId());
+                                            File file = localInputUrlToFile(url, isAdmin, jobInfo.getUserId());
                                             if (file != null) {
                                                 if (inputFileMode == INPUT_FILE_MODE.PATH) {
                                                     paramsCopy[i].setValue(file.getAbsolutePath());

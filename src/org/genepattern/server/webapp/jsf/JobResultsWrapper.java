@@ -12,13 +12,12 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webapp.jsf.JobBean.OutputFileInfo;
-import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.WebServiceException;
 
 /**
  * Represents a job result. Wraps JobInfo and adds methods for getting the output files and the expansion state of
@@ -27,36 +26,52 @@ import org.genepattern.webservice.WebServiceException;
 public class JobResultsWrapper {
     private static Logger log = Logger.getLogger(JobResultsWrapper.class);
 
-    private List<JobResultsWrapper> childJobs;
     private JobInfo jobInfo;
     private int level = 0;
-    private List<OutputFileInfo> outputFiles;
     private boolean selected = false;
     private int sequence = 0;
     private long totalSize = 0l;
-    /**
-     * Is current user allowed to delete this job?
-     */
-    private boolean deleteAllowed = false;
+    private boolean showExecutionLogs = false;
+    private Map<String,Collection<TaskInfo>> kindToModules;
+    private Set<String> selectedFiles;
+    private Set<String> selectedJobs;
+    private Map<String, List<KeyValuePair>> kindToInputParameters;
 
+    private JobPermissionsBean _jobPermissionsBean = null;
+    
     public JobResultsWrapper(
-            JobInfo jobInfo, 
-            Map<String,Collection<TaskInfo>> kindToModules,
-            Set<String> selectedFiles, 
-            Set<String> selectedJobs, 
-            int level, 
-            int sequence,
-            Map<String, List<KeyValuePair>> kindToInputParameters, boolean showExecutionLogs) 
+            final JobPermissionsBean jobPermissionsBean,
+            final JobInfo jobInfo, 
+            final Map<String,Collection<TaskInfo>> kindToModules,
+            final Set<String> selectedFiles, 
+            final Set<String> selectedJobs, 
+            final int level, 
+            final int sequence,
+            final Map<String, List<KeyValuePair>> kindToInputParameters, 
+            final boolean showExecutionLogs) 
     {
+        this._jobPermissionsBean = jobPermissionsBean;
         this.jobInfo = jobInfo;
+        this.kindToModules = kindToModules;
+        this.selectedFiles = selectedFiles;
+        this.selectedJobs = selectedJobs;
+        this.kindToInputParameters = kindToInputParameters;
         this.selected = selectedJobs.contains(String.valueOf(jobInfo.getJobNumber()));
         this.level = level;
         this.sequence = sequence;
-
-        this.initGroupPermissions();
-
+        this.showExecutionLogs = showExecutionLogs;
+    }
+    
+    private List<OutputFileInfo> _outputFiles = null;
+    private List<OutputFileInfo> getOutputFiles() {
+        if (_outputFiles == null) {
+            _outputFiles = initOutputFiles();
+        }
+        return _outputFiles;
+    }
+    private List<OutputFileInfo> initOutputFiles() {
         // Build the list of output files from the parameter info array.
-        outputFiles = new ArrayList<OutputFileInfo>();
+        List<OutputFileInfo> outputFiles = new ArrayList<OutputFileInfo>();
         ParameterInfo[] parameterInfoArray = jobInfo.getParameterInfoArray();
         if (parameterInfoArray != null) {
             File outputDir = new File(GenePatternAnalysisTask.getJobDir("" + jobInfo.getJobNumber()));
@@ -83,26 +98,23 @@ public class JobResultsWrapper {
                 }
             }
         }
+        return outputFiles;
+    }
 
-        // Child jobs
-        childJobs = new ArrayList<JobResultsWrapper>();
-        String userId = UIBeanHelper.getUserId();
-        LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
-        try {
-            JobInfo[] children = analysisClient.getChildren(jobInfo.getJobNumber());
-            int seq = 1;
-            int childLevel = getLevel() + 1;
-            for (JobInfo child : children) {
-                JobResultsWrapper childJob = new JobResultsWrapper(child, kindToModules, selectedFiles, selectedJobs, childLevel, seq, kindToInputParameters, showExecutionLogs);
-                childJob.deleteAllowed = this.deleteAllowed;
-                childJobs.add(childJob);
-                totalSize += childJob.getTotalSize();
-                seq++;
-            }
-        } 
-        catch (WebServiceException e) {
-            log.error("Error getting child jobs", e);
+    private List<JobResultsWrapper> _childJobs = null;
+    private List<JobResultsWrapper> initChildJobs() {
+        List<JobResultsWrapper> childJobs = new ArrayList<JobResultsWrapper>();
+        AnalysisDAO ds = new AnalysisDAO();
+        JobInfo[] children = ds.getChildren(jobInfo.getJobNumber());
+        int seq = 1;
+        int childLevel = getLevel() + 1;
+        for (JobInfo child : children) {
+            JobResultsWrapper childJob = new JobResultsWrapper(_jobPermissionsBean, child, kindToModules, selectedFiles, selectedJobs, childLevel, seq, kindToInputParameters, showExecutionLogs);
+            childJobs.add(childJob);
+            totalSize += childJob.getTotalSize();
+            seq++;
         }
+        return childJobs;
     }
 
     public String getFormattedSize() {
@@ -117,6 +129,7 @@ public class JobResultsWrapper {
      * @return The list all descendant jobs, basically a flattened tree.
      */
     public List<JobResultsWrapper> getDescendantJobs() {
+        List<JobResultsWrapper> childJobs = getChildJobs();
         List<JobResultsWrapper> descendantJobs = new ArrayList<JobResultsWrapper>();
         descendantJobs.addAll(childJobs);
         for (JobResultsWrapper childJob : childJobs) {
@@ -126,8 +139,9 @@ public class JobResultsWrapper {
     }
 
     public List<OutputFileInfo> getAllFileInfos() {
+        List<JobResultsWrapper> childJobs = getChildJobs();
         List<OutputFileInfo> allFiles = new ArrayList<OutputFileInfo>();
-        allFiles.addAll(outputFiles);
+        allFiles.addAll(getOutputFiles());
         for (JobResultsWrapper child : childJobs) {
             allFiles.addAll(child.getAllFileInfos());
         }
@@ -135,7 +149,10 @@ public class JobResultsWrapper {
     }
 
     public List<JobResultsWrapper> getChildJobs() {
-        return childJobs;
+        if (_childJobs == null) {
+            _childJobs = initChildJobs();
+        }
+        return _childJobs;
     }
 
     public Date getDateCompleted() {
@@ -155,7 +172,7 @@ public class JobResultsWrapper {
     }
 
     public List<OutputFileInfo> getOutputFileParameterInfos() {
-        return outputFiles;
+        return getOutputFiles();
     }
 
     public int getSequence() {
@@ -189,33 +206,25 @@ public class JobResultsWrapper {
     public String getUserId() {
         return jobInfo.getUserId();
     }
-
-    private JobPermissionsBean jobPermissionsBean;
-
-    private void initGroupPermissions() { 
-        jobPermissionsBean = new JobPermissionsBean();
-        jobPermissionsBean.setJobId(jobInfo.getJobNumber());
-        this.deleteAllowed = jobPermissionsBean.isDeleteAllowed();
-    }
     
     public String getPermissionsLabel() {
-        return jobPermissionsBean.getPermissionsLabel();
+        return _jobPermissionsBean.getPermissionsLabel();
     }
 
     public List<String> getGroupPermissionsWrite() {
-        return jobPermissionsBean.getGroupsWithFullAcess();
+        return _jobPermissionsBean.getGroupsWithFullAcess();
     }
 
     public List<String> getGroupPermissionsReadOnly() {
-        return jobPermissionsBean.getGroupsWithReadOnlyAccess();
+        return _jobPermissionsBean.getGroupsWithReadOnlyAccess();
     }
 
     public int getNumGroupPermissionsWrite() {
-        return jobPermissionsBean.getNumGroupsWithFullAccess();
+        return _jobPermissionsBean.getNumGroupsWithFullAccess();
     }
     
     public int getNumGroupPermissionsReadOnly() {
-        return jobPermissionsBean.getNumGroupsWithReadOnlyAccess();
+        return _jobPermissionsBean.getNumGroupsWithReadOnlyAccess();
     }
 
     /**
@@ -258,25 +267,48 @@ public class JobResultsWrapper {
         this.sequence = sequence;
     }
 
+    /**
+     * Is current user allowed to delete this job?
+     */
     public boolean isDeleteAllowed() {
-        return deleteAllowed;
+        return _jobPermissionsBean.isDeleteAllowed();
     }
 
     public String getPermissionInfo() {
-    	String info = "Public: " + jobPermissionsBean.getPublicAccessPermission() + "<br/>";
-    	for (GroupPermission perm : jobPermissionsBean.getGroupAccessPermissions()) {
+    	String info = "Public: " + _jobPermissionsBean.getPublicAccessPermission() + "<br/>";
+    	for (GroupPermission perm : _jobPermissionsBean.getGroupAccessPermissions()) {
     		info += perm.getGroupId() + ": " + perm.getPermission() + "<br/>";
     	}
     	return info;
     }
 
+    private Boolean _hasOutputFiles = null;
+    private boolean hasOutputFiles() {
+        if (_hasOutputFiles != null) {
+            return _hasOutputFiles;
+        }
+        List o = this.getOutputFiles();
+        if (o.size() > 0) {
+            _hasOutputFiles = true;
+            return _hasOutputFiles;
+        }
+        for(JobResultsWrapper wrapper : getChildJobs()) {
+            if (wrapper.hasOutputFiles()) {
+                _hasOutputFiles = true;
+                return _hasOutputFiles;
+            }
+        }
+        _hasOutputFiles = false;
+        return _hasOutputFiles;
+    }
+    
     /**
      * Flag indicating whether or not to enable the 'download' popup menu for this job.
      * @return
      */
     public boolean isDownloadAllowed() {
         //HACK: quick and dirty way to disable the download menu for a visualizer.
-        List<OutputFileInfo> outputFiles = this.getAllFileInfos();
-        return outputFiles != null && outputFiles.size() > 0;
+        boolean hasOutputFiles = hasOutputFiles();
+        return hasOutputFiles;
     }
 }

@@ -269,7 +269,8 @@ public class RunTaskBean {
         LocalAnalysisClient ac = new LocalAnalysisClient(currentUser);
 		JobInfo matchJobInfo = ac.getJob(Integer.parseInt(matchJob));
 		File outputDir = new File(GenePatternAnalysisTask.getJobDir("" + matchJobInfo.getJobNumber()));
-        PermissionsHelper perm = new PermissionsHelper(currentUser, matchJobInfo.getJobNumber());
+        final boolean isAdmin = AuthorizationHelper.adminJobs(currentUser);
+        PermissionsHelper perm = new PermissionsHelper(isAdmin, currentUser, matchJobInfo.getJobNumber());
 		if (perm.canReadJob()) {
 		    ParameterInfo[] params = matchJobInfo.getParameterInfoArray();
 		    if (params != null) {
@@ -336,7 +337,8 @@ public class RunTaskBean {
             JobInfo reloadJob = ac.getJob(reloadJobNumber);
             
             //check permissions
-            PermissionsHelper perm = new PermissionsHelper(currentUser, reloadJobNumber);
+            final boolean isAdmin = AuthorizationHelper.adminJobs(currentUser);
+            PermissionsHelper perm = new PermissionsHelper(isAdmin, currentUser, reloadJobNumber);
             if (perm.canReadJob()) {
                 ParameterInfo[] reloadParams = reloadJob.getParameterInfoArray();
                 if (reloadParams != null) {
