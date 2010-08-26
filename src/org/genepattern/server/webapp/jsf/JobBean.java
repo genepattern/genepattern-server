@@ -47,6 +47,7 @@ import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
@@ -117,6 +118,9 @@ public class JobBean {
 	
         String userId = UIBeanHelper.getUserId();
         kindToModules = SemanticUtil.getKindToModulesMap(new AdminDAO().getLatestTasks(userId));
+        
+        //TODO: use single instance of UserDAO, cache the current User
+        //UserDAO userDao = new UserDAO();
         this.showExecutionLogs = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showExecutionLogs", String.valueOf(showExecutionLogs)));
 
         // Attributes to support job results page
@@ -476,6 +480,8 @@ public class JobBean {
                     0, 
                     kindToInputParameters, 
                     showExecutionLogs);
+            wrappedJob.setFileSortColumn(getFileSortColumn());
+            wrappedJob.setFileSortAscending(fileSortAscending);
             wrappedJobs.add(wrappedJob);
         }
         return wrappedJobs;
@@ -600,22 +606,19 @@ public class JobBean {
             Set<String> selectedGroups = jobResultsFilterBean.getSelectedGroups();
             boolean showEveryonesJobs = jobResultsFilterBean.isShowEveryonesJobs();
 
-            LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
             try {
                 JobInfo[] jobInfos = new JobInfo[0];
+                AnalysisDAO ds = new AnalysisDAO();
                 if (selectedGroup != null) {
-                    jobInfos = 
-                        analysisClient.getJobsInGroup(selectedGroups, maxJobNumber, maxEntries, false, getJobSortOrder(), jobSortAscending);
+                    jobInfos = ds.getJobsInGroup(selectedGroups, maxJobNumber, maxEntries, false, getJobSortOrder(), jobSortAscending);
                 }
                 else {
-                    jobInfos = 
-                        analysisClient.getJobs(showEveryonesJobs ? null : userId, maxJobNumber, maxEntries, false, getJobSortOrder(), jobSortAscending);
+                    jobInfos = ds.getJobs(showEveryonesJobs ? null : userId, maxJobNumber, maxEntries, false, getJobSortOrder(), jobSortAscending);
                 }
                 allJobs = wrapJobs( jobInfos );
-                sortFiles();
             } 
-            catch (WebServiceException wse) {
-                log.error(wse);
+            catch (Exception e) {
+                log.error(e);
                 allJobs = new ArrayList<JobResultsWrapper>();
             }
         }
@@ -774,25 +777,23 @@ public class JobBean {
     }
 
     public void setFileSortAscending(boolean fileSortAscending) {
-	this.fileSortAscending = fileSortAscending;
-	new UserDAO().setProperty(UIBeanHelper.getUserId(), "fileSortAscending", String.valueOf(fileSortAscending));
+        this.fileSortAscending = fileSortAscending;
+        new UserDAO().setProperty(UIBeanHelper.getUserId(), "fileSortAscending", String.valueOf(fileSortAscending));
     }
 
     public void setFileSortColumn(String fileSortField) {
-	this.fileSortColumn = fileSortField;
-	new UserDAO().setProperty(UIBeanHelper.getUserId(), "fileSortColumn", String.valueOf(fileSortField));
-
+        this.fileSortColumn = fileSortField;
+        new UserDAO().setProperty(UIBeanHelper.getUserId(), "fileSortColumn", String.valueOf(fileSortField));
     }
 
     public void setJobSortAscending(boolean jobSortAscending) {
-	this.jobSortAscending = jobSortAscending;
-	new UserDAO().setProperty(UIBeanHelper.getUserId(), "jobSortAscending", String.valueOf(jobSortAscending));
-
+        this.jobSortAscending = jobSortAscending;
+        new UserDAO().setProperty(UIBeanHelper.getUserId(), "jobSortAscending", String.valueOf(jobSortAscending));
     }
 
     public void setJobSortColumn(String jobSortField) {
-	this.jobSortColumn = jobSortField;
-	new UserDAO().setProperty(UIBeanHelper.getUserId(), "jobSortColumn", String.valueOf(jobSortColumn));
+        this.jobSortColumn = jobSortField;
+        new UserDAO().setProperty(UIBeanHelper.getUserId(), "jobSortColumn", String.valueOf(jobSortColumn));
     }
 
     /**
@@ -802,7 +803,7 @@ public class JobBean {
      * @return
      */
     public String sort() {
-	return null;
+        return null;
     }
 
     /**
@@ -835,45 +836,6 @@ public class JobBean {
 	if (jobErrors.size() > 0) {
 	    String msg = "An error occurred while deleting job(s) " + sb.toString() + ".";
 	    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg));
-	}
-
-    }
-
-    private void sortFiles() {
-	final String column = getFileSortColumn();
-	Comparator<OutputFileInfo> comparator = new Comparator<OutputFileInfo>() {
-
-	    public int compare(OutputFileInfo c1, OutputFileInfo c2) {
-
-		if (column == null) {
-		    return 0;
-		} else if (column.equals("name")) {
-		    return fileSortAscending ? c1.getName().compareToIgnoreCase(c2.getName()) : c2.getName()
-			    .compareToIgnoreCase(c1.getName());
-		} else if (column.equals("size")) {
-		    return fileSortAscending ? new Long(c1.getSize()).compareTo(c2.getSize()) : new Long(c2.getSize())
-			    .compareTo(c1.getSize());
-		} else if (column.equals("lastModified")) {
-		    return fileSortAscending ? c1.getLastModified().compareTo(c2.getLastModified()) : c2
-			    .getLastModified().compareTo(c1.getLastModified());
-		}
-
-		else {
-		    return 0;
-		}
-	    }
-	};
-
-	for (JobResultsWrapper jobResult : allJobs) {
-	    sortFilesRecursive(jobResult, comparator);
-	}
-
-    }
-
-    private void sortFilesRecursive(JobResultsWrapper jobResult, Comparator<OutputFileInfo> comparator) {
-	Collections.sort(jobResult.getOutputFileParameterInfos(), comparator);
-	for (JobResultsWrapper child : jobResult.getChildJobs()) {
-	    sortFilesRecursive(child, comparator);
 	}
 
     }

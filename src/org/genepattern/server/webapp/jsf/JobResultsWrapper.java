@@ -3,6 +3,8 @@ package org.genepattern.server.webapp.jsf;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +40,9 @@ public class JobResultsWrapper {
     private Map<String, List<KeyValuePair>> kindToInputParameters;
 
     private JobPermissionsBean _jobPermissionsBean = null;
+
+    private boolean fileSortAscending = false;
+    private String fileSortColumn = "";
     
     public JobResultsWrapper(
             final JobPermissionsBean jobPermissionsBean,
@@ -60,6 +65,14 @@ public class JobResultsWrapper {
         this.level = level;
         this.sequence = sequence;
         this.showExecutionLogs = showExecutionLogs;
+    }
+    
+    public void setFileSortAscending(final boolean b) {
+        this.fileSortAscending = b;
+    }
+
+    public void setFileSortColumn(final String s) {
+        this.fileSortColumn = s;
     }
     
     private List<OutputFileInfo> _outputFiles = null;
@@ -98,8 +111,59 @@ public class JobResultsWrapper {
                 }
             }
         }
+
+        //sort the list
+        Comparator<OutputFileInfo> comparator = getOutputFileComparator(fileSortColumn, fileSortAscending);
+        if (comparator != null) {
+            Collections.sort(outputFiles, comparator);
+        }
         return outputFiles;
     }
+    
+    private static Comparator<OutputFileInfo> getOutputFileComparator(final String fileSortColumn, final boolean fileSortAscending) {
+        if (fileSortColumn == null) {
+            return null;
+        } 
+        else if (fileSortColumn.equals("name")) {
+            return new FileNameComparator(fileSortAscending);
+        } 
+        else if (fileSortColumn.equals("size")) {
+            return new FileSizeComparator(fileSortAscending);
+        } 
+        else if (fileSortColumn.equals("lastModified")) {
+            return new FileLastModifiedComparator(fileSortAscending);
+        }
+        return null;
+     }
+
+    private static class FileNameComparator implements Comparator<OutputFileInfo> {
+        private boolean fileSortAscending;
+        public FileNameComparator(final boolean fileSortAscending) {
+            this.fileSortAscending = fileSortAscending;
+        }
+        public int compare(OutputFileInfo c1, OutputFileInfo c2) {
+            return fileSortAscending ? c1.getName().compareToIgnoreCase(c2.getName()) : c2.getName().compareToIgnoreCase(c1.getName());
+        }
+    }
+    private static class FileSizeComparator implements Comparator<OutputFileInfo> {
+        private boolean fileSortAscending;
+        public FileSizeComparator(final boolean fileSortAscending) {
+            this.fileSortAscending = fileSortAscending;
+        }
+        public int compare(OutputFileInfo c1, OutputFileInfo c2) {
+            return fileSortAscending ? new Long(c1.getSize()).compareTo(c2.getSize()) : new Long(c2.getSize()).compareTo(c1.getSize());
+        }
+    }
+    private static class FileLastModifiedComparator implements Comparator<OutputFileInfo> {
+        private boolean fileSortAscending;
+        public FileLastModifiedComparator(final boolean fileSortAscending) {
+            this.fileSortAscending = fileSortAscending;
+        }
+        public int compare(OutputFileInfo c1, OutputFileInfo c2) {
+            return fileSortAscending ? c1.getLastModified().compareTo(c2.getLastModified()) : c2.getLastModified().compareTo(c1.getLastModified());
+        }
+    }
+
 
     private List<JobResultsWrapper> _childJobs = null;
     private List<JobResultsWrapper> initChildJobs() {
