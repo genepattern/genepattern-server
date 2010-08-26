@@ -14,6 +14,7 @@ package org.genepattern.server.user;
 
 // Generated Sep 21, 2006 12:36:06 PM by Hibernate Tools 3.1.0.beta5
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -108,6 +109,25 @@ public class UserDAO extends BaseDAO {
             userProps.add(rval);
         }
         return rval;
+    }
+    
+    public Set<UserProp> getUserProps(String userId) {
+        Set<UserProp> rval = null;
+        User user = findById(userId);
+        if (user == null) {
+            log.error("Error in UserDAO.getProps("+userId+"): User not found: "+userId);
+            return Collections.EMPTY_SET;
+        }
+        return user.getProps();
+    }
+    
+    public static String getPropertyValue(Set<UserProp> userProps, String key, String defaultValue) {
+        for(UserProp prop : userProps) {
+            if (key.equals(prop.getKey())) {
+                return prop.getValue();
+            }
+        }
+        return defaultValue;
     }
 
     /**

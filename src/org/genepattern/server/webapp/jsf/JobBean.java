@@ -44,6 +44,7 @@ import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -119,15 +120,16 @@ public class JobBean {
         String userId = UIBeanHelper.getUserId();
         kindToModules = SemanticUtil.getKindToModulesMap(new AdminDAO().getLatestTasks(userId));
         
-        //TODO: use single instance of UserDAO, cache the current User
-        //UserDAO userDao = new UserDAO();
-        this.showExecutionLogs = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showExecutionLogs", String.valueOf(showExecutionLogs)));
+        UserDAO userDao = new UserDAO();
+        Set<UserProp> userProps = userDao.getUserProps(userId);
+        
+        this.showExecutionLogs = Boolean.valueOf(UserDAO.getPropertyValue(userProps, "showExecutionLogs", String.valueOf(showExecutionLogs)));
 
         // Attributes to support job results page
-        this.fileSortAscending = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "fileSortAscending", String.valueOf(fileSortAscending)));
-        this.fileSortColumn = new UserDAO().getPropertyValue(userId, "fileSortColumn", fileSortColumn);
-        this.jobSortColumn = new UserDAO().getPropertyValue(userId, "jobSortColumn", jobSortColumn);
-        this.jobSortAscending = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "jobSortAscending", String.valueOf(jobSortAscending)));
+        this.fileSortAscending = Boolean.valueOf(UserDAO.getPropertyValue(userProps, "fileSortAscending", String.valueOf(fileSortAscending)));
+        this.fileSortColumn = UserDAO.getPropertyValue(userProps, "fileSortColumn", fileSortColumn);
+        this.jobSortColumn = UserDAO.getPropertyValue(userProps, "jobSortColumn", jobSortColumn);
+        this.jobSortAscending = Boolean.valueOf(UserDAO.getPropertyValue(userProps, "jobSortAscending", String.valueOf(jobSortAscending)));
     }
 
     public void createPipeline(ActionEvent e) {
@@ -235,7 +237,7 @@ public class JobBean {
     }
 
     public boolean isShowExecutionLogs() {
-	return showExecutionLogs;
+        return showExecutionLogs;
     }
     
     /**
@@ -346,9 +348,9 @@ public class JobBean {
     }
 
     public void setShowExecutionLogs(boolean showExecutionLogs) {
-	this.showExecutionLogs = showExecutionLogs;
-	new UserDAO().setProperty(UIBeanHelper.getUserId(), "showExecutionLogs", String.valueOf(showExecutionLogs));
-	resetJobs();
+        this.showExecutionLogs = showExecutionLogs;
+        new UserDAO().setProperty(UIBeanHelper.getUserId(), "showExecutionLogs", String.valueOf(showExecutionLogs));
+        resetJobs();
     }
 
     public void terminateJob(ActionEvent event) {
@@ -488,19 +490,22 @@ public class JobBean {
     }
 
     private JobSortOrder getJobSortOrder() {
-	if ("jobNumber".equals(jobSortColumn)) {
-	    return JobSortOrder.JOB_NUMBER;
-	} else if ("taskName".equals(jobSortColumn)) {
-	    return JobSortOrder.MODULE_NAME;
-	} else if ("dateSubmitted".equals(jobSortColumn)) {
-	    return JobSortOrder.SUBMITTED_DATE;
-	} else if ("dateCompleted".equals(jobSortColumn)) {
-	    return JobSortOrder.COMPLETED_DATE;
-	} else if ("status".equals(jobSortColumn)) {
-	    return JobSortOrder.JOB_STATUS;
-	}
-
-	return JobSortOrder.JOB_NUMBER;
+        if ("jobNumber".equals(jobSortColumn)) {
+            return JobSortOrder.JOB_NUMBER;
+        } 
+        else if ("taskName".equals(jobSortColumn)) {
+            return JobSortOrder.MODULE_NAME;
+        } 
+        else if ("dateSubmitted".equals(jobSortColumn)) {
+            return JobSortOrder.SUBMITTED_DATE;
+        } 
+        else if ("dateCompleted".equals(jobSortColumn)) {
+            return JobSortOrder.COMPLETED_DATE;
+        } 
+        else if ("status".equals(jobSortColumn)) {
+            return JobSortOrder.JOB_STATUS;
+        }
+        return JobSortOrder.JOB_NUMBER;
     }
 
     public List<JobResultsWrapper> getRecentJobs() {
@@ -765,15 +770,15 @@ public class JobBean {
     }
 
     public String getFileSortColumn() {
-	return fileSortColumn;
+        return fileSortColumn;
     }
 
     public String getJobSortColumn() {
-	return jobSortColumn;
+        return jobSortColumn;
     }
 
     public boolean isFileSortAscending() {
-	return fileSortAscending;
+        return fileSortAscending;
     }
 
     public void setFileSortAscending(boolean fileSortAscending) {
