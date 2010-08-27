@@ -164,11 +164,13 @@ public class JobResultsWrapper {
         }
     }
 
-
     private List<JobResultsWrapper> _childJobs = null;
-    private List<JobResultsWrapper> initChildJobs() {
+    private List<JobResultsWrapper> _descendantJobs = null;
+
+    private List<JobResultsWrapper> initChildJobs() { 
         List<JobResultsWrapper> childJobs = new ArrayList<JobResultsWrapper>();
         AnalysisDAO ds = new AnalysisDAO();
+        //TODO: eliminate recursive calls 
         JobInfo[] children = ds.getChildren(jobInfo.getJobNumber());
         int seq = 1;
         int childLevel = getLevel() + 1;
@@ -193,13 +195,26 @@ public class JobResultsWrapper {
      * @return The list all descendant jobs, basically a flattened tree.
      */
     public List<JobResultsWrapper> getDescendantJobs() {
-        List<JobResultsWrapper> childJobs = getChildJobs();
+        if (_descendantJobs == null) {
+            _descendantJobs = initDescendantJobs();
+        }
+        return _descendantJobs;
+    }
+    
+    private List<JobResultsWrapper> initDescendantJobs() {
         List<JobResultsWrapper> descendantJobs = new ArrayList<JobResultsWrapper>();
-        descendantJobs.addAll(childJobs);
+        List<JobResultsWrapper> childJobs = getChildJobs();
         for (JobResultsWrapper childJob : childJobs) {
-            descendantJobs.addAll(childJob.getDescendantJobs());
+            addDescendantJobs(descendantJobs, childJob);
         }
         return descendantJobs;
+    }
+    
+    private void addDescendantJobs(List<JobResultsWrapper> jobList, JobResultsWrapper node) {
+        jobList.add(node);
+        for(JobResultsWrapper child : node.getChildJobs()) {
+            addDescendantJobs(jobList, child);
+        }
     }
 
     public List<OutputFileInfo> getAllFileInfos() {

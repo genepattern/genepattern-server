@@ -82,7 +82,6 @@ public class JobBean {
      */
     private String fileSortColumn = "name";
 
-
     /**
      * Specifies job column to sort on. Possible values are jobNumber taskName dateSubmitted dateCompleted status
      */
@@ -92,6 +91,8 @@ public class JobBean {
      * Job sort direction (true for ascending, false for descending)
      */
     private boolean jobSortAscending = false;
+    
+    private int recentJobsToShow = 10;
 
     /** Number of job results shown per page */
     private int pageSize;
@@ -130,6 +131,9 @@ public class JobBean {
         this.fileSortColumn = UserDAO.getPropertyValue(userProps, "fileSortColumn", fileSortColumn);
         this.jobSortColumn = UserDAO.getPropertyValue(userProps, "jobSortColumn", jobSortColumn);
         this.jobSortAscending = Boolean.valueOf(UserDAO.getPropertyValue(userProps, "jobSortAscending", String.valueOf(jobSortAscending)));
+        
+        // Attributes to support recent jobs menu
+        this.recentJobsToShow = Integer.parseInt(UserDAO.getPropertyValue(userProps,UserPropKey.RECENT_JOBS_TO_SHOW, "10"));
     }
 
     public void createPipeline(ActionEvent e) {
@@ -509,22 +513,19 @@ public class JobBean {
     }
 
     public List<JobResultsWrapper> getRecentJobs() {
-	if (recentJobs == null) {
-	    String userId = UIBeanHelper.getUserId();
-	    assert userId != null;
-	    int recentJobsToShow = Integer.parseInt(new UserDAO().getPropertyValue(userId,
-		    UserPropKey.RECENT_JOBS_TO_SHOW, "10"));
-	    LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
-	    try {
-		recentJobs = wrapJobs(analysisClient.getJobs(userId, -1, recentJobsToShow, false,
-			JobSortOrder.JOB_NUMBER, false));
-	    } catch (WebServiceException wse) {
-		log.error(wse);
-		recentJobs = new ArrayList<JobResultsWrapper>();
-	    }
-	}
-	return recentJobs;
-    }
+        if (recentJobs != null) {
+            return recentJobs;
+        }
+        String userId = UIBeanHelper.getUserId();
+        if (userId == null) {
+            recentJobs = Collections.EMPTY_LIST;
+            return recentJobs;
+        }
+        AnalysisDAO ds = new AnalysisDAO();
+        JobInfo[] recentJobInfos = ds.getJobs(userId, -1, recentJobsToShow, false, JobSortOrder.JOB_NUMBER, false);
+        recentJobs = wrapJobs(recentJobInfos);
+        return recentJobs;
+    } 
 
     public List<JobResultsWrapper> getPagedJobs() {
         int offset = (getPageNumber() - 1) * pageSize;	
@@ -1004,81 +1005,84 @@ public class JobBean {
     }
 
     private static class KeyValueComparator implements Comparator<KeyValuePair> {
-
-	public int compare(KeyValuePair o1, KeyValuePair o2) {
-	    return o1.getKey().compareToIgnoreCase(o2.getKey());
-	}
-
+        public int compare(KeyValuePair o1, KeyValuePair o2) {
+            return o1.getKey().compareToIgnoreCase(o2.getKey());
+        }
     }
 
     public void setSelectedModule(String selectedModule) {
-	List<JobResultsWrapper> recentJobs = getRecentJobs();
-	if (selectedModule == null || recentJobs == null || recentJobs.size() == 0) {
-	    return;
-	}
-	kindToInputParameters = new HashMap<String, List<KeyValuePair>>();
+        if (selectedModule == null || selectedModule.length() == 0) {
+            return;
+        }
+        List<JobResultsWrapper> recentJobs = getRecentJobs();
+        if (recentJobs == null || recentJobs.size() == 0) {
+            return;
+        }
+        
+        AdminDAO adminDao = new AdminDAO();
+        String currentUserId = UIBeanHelper.getUserId();
+        TaskInfo taskInfo = adminDao.getTask(selectedModule, currentUserId);
+        if (taskInfo == null) {
+            log.error("Error getting TaskInfo for selectedModule="+selectedModule);
+            return;
+        }
 
-	TaskInfo taskInfo = null;
-	try {
-	    taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(selectedModule);
-	} catch (WebServiceException e) {
-	    log.error("Could not get module", e);
-	    return;
-	}
-	ParameterInfo[] inputParameters = taskInfo != null ? taskInfo.getParameterInfoArray() : null;
-	List<KeyValuePair> unannotatedParameters = new ArrayList<KeyValuePair>();
-	if (inputParameters != null) {
-	    for (ParameterInfo inputParameter : inputParameters) {
-		if (inputParameter.isInputFile()) {
-		    List<String> fileFormats = SemanticUtil.getFileFormats(inputParameter);
-		    String displayValue = (String) inputParameter.getAttributes().get("altName");
+        
+        kindToInputParameters = new HashMap<String, List<KeyValuePair>>();
 
-		    if (displayValue == null) {
-			displayValue = inputParameter.getName();
-		    }
-		    displayValue = displayValue.replaceAll("\\.", " ");
+        ParameterInfo[] inputParameters = taskInfo != null ? taskInfo.getParameterInfoArray() : null;
+        List<KeyValuePair> unannotatedParameters = new ArrayList<KeyValuePair>();
+        if (inputParameters != null) {
+            for (ParameterInfo inputParameter : inputParameters) {
+                if (inputParameter.isInputFile()) {
+                    List<String> fileFormats = SemanticUtil.getFileFormats(inputParameter);
+                    String displayValue = (String) inputParameter.getAttributes().get("altName");
 
-		    KeyValuePair kvp = new KeyValuePair();
-		    kvp.setKey(inputParameter.getName());
-		    kvp.setValue(displayValue);
+                    if (displayValue == null) {
+                        displayValue = inputParameter.getName();
+                    }
+                    displayValue = displayValue.replaceAll("\\.", " ");
 
-		    if (fileFormats.size() == 0) {
-			unannotatedParameters.add(kvp);
-		    }
-		    for (String format : fileFormats) {
-			List<KeyValuePair> inputParameterNames = kindToInputParameters.get(format);
-			if (inputParameterNames == null) {
-			    inputParameterNames = new ArrayList<KeyValuePair>();
-			    kindToInputParameters.put(format, inputParameterNames);
-			}
-			inputParameterNames.add(kvp);
-		    }
-		}
-	    }
-	}
+                    KeyValuePair kvp = new KeyValuePair();
+                    kvp.setKey(inputParameter.getName());
+                    kvp.setValue(displayValue);
 
-	// add unannotated parameters to end of list for each kind
-	if (unannotatedParameters.size() > 0) {
-	    for (Iterator<String> it = kindToInputParameters.keySet().iterator(); it.hasNext();) {
-		List<KeyValuePair> inputParameterNames = kindToInputParameters.get(it.next());
-		inputParameterNames.addAll(unannotatedParameters);
-	    }
-	}
+                    if (fileFormats.size() == 0) {
+                        unannotatedParameters.add(kvp);
+                    }
+                    for (String format : fileFormats) {
+                        List<KeyValuePair> inputParameterNames = kindToInputParameters.get(format);
+                        if (inputParameterNames == null) {
+                            inputParameterNames = new ArrayList<KeyValuePair>();
+                            kindToInputParameters.put(format, inputParameterNames);
+                        }
+                        inputParameterNames.add(kvp);
+                    }
+                }
+            }
+        }
 
-	for (JobResultsWrapper job : recentJobs) {
-	    List<OutputFileInfo> outputFiles = job.getOutputFileParameterInfos();
-	    if (outputFiles != null) {
-		for (OutputFileInfo o : outputFiles) {
-		    List<KeyValuePair> moduleInputParameters = kindToInputParameters.get(o.getKind());
+        // add unannotated parameters to end of list for each kind
+        if (unannotatedParameters.size() > 0) {
+            for (Iterator<String> it = kindToInputParameters.keySet().iterator(); it.hasNext();) {
+                List<KeyValuePair> inputParameterNames = kindToInputParameters.get(it.next());
+                inputParameterNames.addAll(unannotatedParameters);
+            }
+        }
 
-		    if (moduleInputParameters == null) {
-			moduleInputParameters = unannotatedParameters;
-		    }
-		    o.moduleInputParameters = moduleInputParameters;
-		}
-	    }
-	}
+        for (JobResultsWrapper job : recentJobs) {
+            List<OutputFileInfo> outputFiles = job.getOutputFileParameterInfos();
+            if (outputFiles != null) {
+                for (OutputFileInfo o : outputFiles) {
+                    List<KeyValuePair> moduleInputParameters = kindToInputParameters.get(o.getKind());
 
+                    if (moduleInputParameters == null) {
+                        moduleInputParameters = unannotatedParameters;
+                    }
+                    o.moduleInputParameters = moduleInputParameters;
+                }
+            }
+        }
     }
 
 }
