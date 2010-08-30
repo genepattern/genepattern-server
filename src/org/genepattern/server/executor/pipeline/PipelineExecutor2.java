@@ -16,7 +16,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
-import org.genepattern.data.pipeline.PipelineCommand2;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandExecutor;
