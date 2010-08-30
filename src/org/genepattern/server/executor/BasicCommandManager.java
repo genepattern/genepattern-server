@@ -20,6 +20,25 @@ import org.hibernate.Session;
 
 /**
  * Default implementation of the CommandManager interface.
+ * Note, there is special-handling for pipeline execution. There is one, and only one, CommandExecutor for pipelines.
+ * By default this is set implicitly (no need for anything in the job_configuration file) with the following private class variables:
+ *     {@link #DEFAULT_PIPELINE_EXEC_ID}
+ *     {@link #DEFAULT_PIPELINE_EXEC_CLASS}
+ * 
+ * To override the default, set a 'pipeline.executor' in the 'default.properties' section of the job configuration file.
+ * This is an id to an executor which must be defined in the 'executors' section of the configuration file.
+ * For example:
+<code>
+default.properties:
+    executor: RuntimeExec
+    pipeline.executor: PipelineExec
+
+executors:
+    # simple declaration, of the form <id>:<classname>
+    RuntimeExec: org.genepattern.server.executor.RuntimeCommandExecutor
+    # explicitly declare pipeline executor
+    PipelineExec: org.genepattern.server.executor.pipeline.CustomPipelineExecutor
+</code>
  * 
  * @author pcarr
  */
@@ -177,13 +196,18 @@ public class BasicCommandManager implements CommandManager {
     //map cmdExecId - commandExecutor
     private LinkedHashMap<String,CommandExecutor> cmdExecutorsMap = new LinkedHashMap<String,CommandExecutor>();
     //hold a single executor for all pipelines
-    private static final String PIPELINE_EXEC_ID = "org.genepattern.server.executor.PipelineExecutor";
+    private static final String DEFAULT_PIPELINE_EXEC_ID = "org.genepattern.server.executor.PipelineExecutor";
     
     public void addCommandExecutor(String id, CommandExecutor cmdExecutor) throws Exception {
         if (cmdExecutorsMap.containsKey(id)) {
             throw new Exception("duplicate id: "+id);
         }
         cmdExecutorsMap.put(id, cmdExecutor);
+    }
+    
+    private String pipelineExecId = DEFAULT_PIPELINE_EXEC_ID;
+    public void setPipelineExecutor(String id) {
+        this.pipelineExecId = id;
     }
     
     public CommandExecutor getCommandExecutorById(String cmdExecutorId) {
@@ -241,26 +265,35 @@ public class BasicCommandManager implements CommandManager {
     }
 
     /**
-     * call this at system startup to initialize the list of CommandExecutorService instances.
+     * Call this at system startup to initialize the list of CommandExecutorService instances.
+     * Don't start the pipeline executor until all of the other executors have started.
      */
     public void startCommandExecutors() { 
+        //need this first to identify which executor in the list is the pipeline executor
+        initPipelineExecutor();
+
         for(String cmdExecId : cmdExecutorsMap.keySet()) {
-            CommandExecutor cmdExec = cmdExecutorsMap.get(cmdExecId);
-            if (cmdExec == null) {
-                log.error("null CommandExecutor for cmdExecId: '"+cmdExecId+"'");
+            if (cmdExecId.equals(pipelineExecId)) {
+                //don't start the pipeline executor
             }
             else {
-                try {
-                    cmdExec.start();
+                CommandExecutor cmdExec = cmdExecutorsMap.get(cmdExecId);
+                if (cmdExec == null) {
+                    log.error("null CommandExecutor for cmdExecId: '"+cmdExecId+"'");
                 }
-                catch (Throwable t) {
-                    log.error("Error starting CommandExecutor, for class: "+cmdExec.getClass().getCanonicalName()+": "+t.getLocalizedMessage(), t);
+                else {
+                    try {
+                        cmdExec.start();
+                    }
+                    catch (Throwable t) {
+                        log.error("Error starting CommandExecutor, for class: "+cmdExec.getClass().getCanonicalName()+": "+t.getLocalizedMessage(), t);
+                    }
                 }
             }
         }
         
         //start pipeline executor
-        startPipelineExecutor();
+        getPipelineExecutor().start();
     }
     
     /**
@@ -292,17 +325,32 @@ public class BasicCommandManager implements CommandManager {
         }
     }
     
-    private CommandExecutor getPipelineExecutor() {
-        CommandExecutor exec = cmdExecutorsMap.get(PIPELINE_EXEC_ID);
-        if (exec == null) {
-            exec = new PipelineExecutor();
-            cmdExecutorsMap.put(PIPELINE_EXEC_ID, exec);
+    private synchronized void initPipelineExecutor() {
+        log.debug("initializing pipeline executor");
+        String defaultPipelineExecId = this.configProperties.getTop().getDefaultProperty("pipeline.executor");
+        if (defaultPipelineExecId == null) {
+            defaultPipelineExecId = DEFAULT_PIPELINE_EXEC_ID;
         }
-        return exec;
+        this.pipelineExecId = defaultPipelineExecId;
+        CommandExecutor pipelineExec = cmdExecutorsMap.get(pipelineExecId);
+        if (pipelineExec == null) {
+            //initialize to default setting
+            pipelineExec = new PipelineExecutor();
+            cmdExecutorsMap.put(pipelineExecId, pipelineExec);
+        }
+        log.info("pipeline.executor, id="+pipelineExecId);
+        log.info("pipeline.executor, class="+pipelineExec.getClass().getCanonicalName());
     }
     
-    private void startPipelineExecutor() {
-        getPipelineExecutor().start();
+    private CommandExecutor getPipelineExecutor() {
+        CommandExecutor pipelineExec = cmdExecutorsMap.get(pipelineExecId);
+        if (pipelineExec == null) {
+            log.error("Pipeline configuration error: no CommandExecutor exists with id="+pipelineExecId);
+            //hard-coded to default pipeline execution in spite of config file error
+            pipelineExec = new PipelineExecutor();
+            cmdExecutorsMap.put(pipelineExecId, pipelineExec);
+        }
+        return pipelineExec;
     }
     
     public void wakeupJobQueue() {

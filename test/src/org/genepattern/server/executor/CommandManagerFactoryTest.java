@@ -4,12 +4,12 @@ import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 
+import junit.framework.TestCase;
+
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.webservice.JobInfo;
-
-import junit.framework.TestCase;
 
 /**
  * Unit tests for the CommandManagerFactory.
@@ -18,13 +18,15 @@ import junit.framework.TestCase;
  */
 public class CommandManagerFactoryTest extends TestCase {
     private static boolean isDbInitialized = false;
+    
     public void setUp() throws Exception {
         super.setUp();
 
         //some of the classes being tested require a Hibernate Session connected to a GP DB
         if (!isDbInitialized) {
             //TODO: use DbUnit to improve Hibernate and DB configuration for the unit tests 
-
+            System.setProperty("hibernate.configuration.file", "hibernate.junit.cfg.xml");
+            
             //String args = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
             System.setProperty("HSQL.args", " -port 9001  -database.0 file:testdb/GenePatternDB -dbname.0 xdb");
             System.setProperty("hibernate.connection.url", "jdbc:hsqldb:hsql://127.0.0.1:9001/xdb");
@@ -150,8 +152,8 @@ public class CommandManagerFactoryTest extends TestCase {
         Map<String,CommandExecutor> map = cmdMgr.getCommandExecutorsMap();
         assertNotNull("Expecting non-null cmdMgr.commandExecutorsMap", map);
         int numExecutors = map.size();
-        assertEquals("Expecting 3 executors in configuration", 3, numExecutors);
-        
+        assertEquals("Number of executors", 4, numExecutors);
+
         JobInfo jobInfo = new JobInfo();
         jobInfo.setTaskName("SNPFileSorter");
         jobInfo.setTaskLSID("urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00096:1");
@@ -444,6 +446,15 @@ public class CommandManagerFactoryTest extends TestCase {
         cmdProps = cmdMgr.getCommandProperties(jobInfo);
         assertEquals("Expecting LSF", "LSF", CommandManagerFactory.getCommandExecutorId(cmdExec));
         assertEquals("Expecting empty string", "", cmdProps.getProperty("debug.mode"));
+    }
+    
+    /**
+     * Unit tests for custom pipeline executors.
+     */
+    public void testCustomPipelineExecutor() {
+        initializeYamlConfigFile("test_custom_pipeline_executor.yaml");
+        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
+        assertEquals("# of command executors", 2, cmdMgr.getCommandExecutorsMap().size());
     }
 
 }
