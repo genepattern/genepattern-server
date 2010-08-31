@@ -61,42 +61,24 @@ import org.genepattern.webservice.WebServiceException;
 
 public class JobBean { 
     private static Logger log = Logger.getLogger(JobBean.class);
+
     private List<JobResultsWrapper> recentJobs;
     private List<JobResultsWrapper> allJobs;
-    private Map<String, Collection<TaskInfo>> kindToModules;
     private Map<String, List<KeyValuePair>> kindToInputParameters = Collections.emptyMap();
 
-    /**
-     * Indicates whether execution logs should be shown. Manipulated by checkbox on job results page, always false on
-     * recent jobs page.
-     */
-    private boolean showExecutionLogs = false;
-
-    /**
-     * File sort direction (true for ascending, false for descending)
-     */
-    private boolean fileSortAscending = false;
-
-    /**
-     * Specifies file column to sort on. Possible values are name size lastModified
-     */
-    private String fileSortColumn = "name";
-
-    /**
-     * Specifies job column to sort on. Possible values are jobNumber taskName dateSubmitted dateCompleted status
-     */
-    private String jobSortColumn = "jobNumber";
-
-    /**
-     * Job sort direction (true for ascending, false for descending)
-     */
-    private boolean jobSortAscending = false;
-    
-    private int recentJobsToShow = 10;
-
     /** Number of job results shown per page */
-    private int pageSize;
-
+    private Integer _pageSize;
+    private int getPageSize() {
+        if (_pageSize == null) {
+            try {
+                _pageSize = Integer.parseInt(System.getProperty("job.results.per.page", "20"));
+            } 
+            catch (NumberFormatException nfe) {
+                _pageSize = 20;
+            }
+        }
+        return _pageSize;
+    }
     /** Current page displayed */
     private int pageNumber = 1;
     
@@ -111,29 +93,16 @@ public class JobBean {
     }
 
     public JobBean() {
-        try {
-            pageSize = Integer.parseInt(System.getProperty("job.results.per.page", "20"));
-        } 
-        catch (NumberFormatException nfe) {
-            pageSize = 20;
-        }
-	
-        String userId = UIBeanHelper.getUserId();
-        kindToModules = SemanticUtil.getKindToModulesMap(new AdminDAO().getLatestTasks(userId));
-        
-        UserDAO userDao = new UserDAO();
-        Set<UserProp> userProps = userDao.getUserProps(userId);
-        
-        this.showExecutionLogs = Boolean.valueOf(UserDAO.getPropertyValue(userProps, "showExecutionLogs", String.valueOf(showExecutionLogs)));
+    }
 
-        // Attributes to support job results page
-        this.fileSortAscending = Boolean.valueOf(UserDAO.getPropertyValue(userProps, "fileSortAscending", String.valueOf(fileSortAscending)));
-        this.fileSortColumn = UserDAO.getPropertyValue(userProps, "fileSortColumn", fileSortColumn);
-        this.jobSortColumn = UserDAO.getPropertyValue(userProps, "jobSortColumn", jobSortColumn);
-        this.jobSortAscending = Boolean.valueOf(UserDAO.getPropertyValue(userProps, "jobSortAscending", String.valueOf(jobSortAscending)));
-        
-        // Attributes to support recent jobs menu
-        this.recentJobsToShow = Integer.parseInt(UserDAO.getPropertyValue(userProps,UserPropKey.RECENT_JOBS_TO_SHOW, "10"));
+    private Set<UserProp> _userProps = null;
+    private Set<UserProp> getUserProps() {
+        if (_userProps == null) {
+            String userId = UIBeanHelper.getUserId();
+            UserDAO userDao = new UserDAO();
+            _userProps = userDao.getUserProps(userId);
+        }
+        return _userProps;
     }
 
     public void createPipeline(ActionEvent e) {
@@ -240,8 +209,17 @@ public class JobBean {
 	return "";
     }
 
+    private Boolean _showExecutionLogs = null;
+    /**
+     * Indicates whether execution logs should be shown. Manipulated by checkbox on job results page, always false on
+     * recent jobs page.
+     */
     public boolean isShowExecutionLogs() {
-        return showExecutionLogs;
+        if (_showExecutionLogs == null) {
+            Set<UserProp> userProps = getUserProps();
+            this._showExecutionLogs = Boolean.valueOf(UserDAO.getPropertyValue(userProps, "showExecutionLogs", String.valueOf("false")));
+        }
+        return _showExecutionLogs;
     }
     
     /**
@@ -352,7 +330,7 @@ public class JobBean {
     }
 
     public void setShowExecutionLogs(boolean showExecutionLogs) {
-        this.showExecutionLogs = showExecutionLogs;
+        this._showExecutionLogs = showExecutionLogs;
         new UserDAO().setProperty(UIBeanHelper.getUserId(), "showExecutionLogs", String.valueOf(showExecutionLogs));
         resetJobs();
     }
@@ -470,7 +448,10 @@ public class JobBean {
             isAdmin = userSessionBean.isAdmin();
         }
         String currentUserId = UIBeanHelper.getUserId();
-
+        AdminDAO dao = new AdminDAO();
+        TaskInfo[] latestTasks = dao.getLatestTasks(currentUserId);
+        Map<String, Collection<TaskInfo>> kindToModules = SemanticUtil.getKindToModulesMap(latestTasks);        
+        final boolean showExecutionLogs = isShowExecutionLogs();
         List<JobResultsWrapper> wrappedJobs = new ArrayList<JobResultsWrapper>(jobInfoArray.length);
         for(JobInfo jobInfo : jobInfoArray) {
             PermissionsHelper ph = new PermissionsHelper(isAdmin, currentUserId, jobInfo.getJobNumber(), jobInfo.getUserId(), jobInfo.getJobNumber());
@@ -487,13 +468,14 @@ public class JobBean {
                     kindToInputParameters, 
                     showExecutionLogs);
             wrappedJob.setFileSortColumn(getFileSortColumn());
-            wrappedJob.setFileSortAscending(fileSortAscending);
+            wrappedJob.setFileSortAscending(isFileSortAscending());
             wrappedJobs.add(wrappedJob);
         }
         return wrappedJobs;
     }
 
     private JobSortOrder getJobSortOrder() {
+        final String jobSortColumn = getJobSortColumn();
         if ("jobNumber".equals(jobSortColumn)) {
             return JobSortOrder.JOB_NUMBER;
         } 
@@ -521,6 +503,8 @@ public class JobBean {
             recentJobs = Collections.EMPTY_LIST;
             return recentJobs;
         }
+        
+        int recentJobsToShow = Integer.parseInt(UserDAO.getPropertyValue(getUserProps(),UserPropKey.RECENT_JOBS_TO_SHOW, "10"));
         AnalysisDAO ds = new AnalysisDAO();
         JobInfo[] recentJobInfos = ds.getJobs(userId, -1, recentJobsToShow, false, JobSortOrder.JOB_NUMBER, false);
         recentJobs = wrapJobs(recentJobInfos);
@@ -528,6 +512,7 @@ public class JobBean {
     } 
 
     public List<JobResultsWrapper> getPagedJobs() {
+        final int pageSize = getPageSize();
         int offset = (getPageNumber() - 1) * pageSize;	
         return this.getJobs(offset, pageSize);
     }
@@ -591,6 +576,7 @@ public class JobBean {
 
     private int pageCount = -1;
     public int getPageCount() {
+        final int pageSize = getPageSize();
         if (jobResultsFilterBean != null) {
             int jobCount = jobResultsFilterBean.getJobCount();
             return (int) Math.ceil(jobCount / (double) pageSize);
@@ -611,7 +597,8 @@ public class JobBean {
             String selectedGroup = jobResultsFilterBean.getSelectedGroup();
             Set<String> selectedGroups = jobResultsFilterBean.getSelectedGroups();
             boolean showEveryonesJobs = jobResultsFilterBean.isShowEveryonesJobs();
-
+            
+            final boolean jobSortAscending = isJobSortAscending();
             try {
                 JobInfo[] jobInfos = new JobInfo[0];
                 AnalysisDAO ds = new AnalysisDAO();
@@ -712,8 +699,9 @@ public class JobBean {
     }
     
     private void toggleFileSortColumn(String fileSortColumn) {
-        if (fileSortColumn.equals(this.fileSortColumn)) {
-            this.setFileSortAscending(!this.fileSortAscending);            
+        if (fileSortColumn.equals(this._fileSortColumn)) {
+            final boolean fileSortAscending = isFileSortAscending();
+            this.setFileSortAscending(!fileSortAscending);            
         }
         else {
             this.setFileSortColumn(fileSortColumn);
@@ -721,8 +709,10 @@ public class JobBean {
     }
     
     public String sortJobsById() {
-        if ("jobNumber".equals(this.jobSortColumn)) {
-            this.setJobSortAscending(!this.jobSortAscending);
+        final String jobSortColumn = this.getJobSortColumn();
+        if ("jobNumber".equals(jobSortColumn)) {
+            final boolean jobSortAscending = this.isJobSortAscending();
+            this.setJobSortAscending(!jobSortAscending);
         }
         else {
             this.setJobSortColumn("jobNumber");
@@ -731,8 +721,10 @@ public class JobBean {
     }
     
     public String sortJobsByModule() {
-        if ("taskName".equals(this.jobSortColumn)) {
-            this.setJobSortAscending(!this.jobSortAscending);
+        final String jobSortColumn = this.getJobSortColumn();
+        if ("taskName".equals(jobSortColumn)) {
+            final boolean jobSortAscending = this.isJobSortAscending();
+            this.setJobSortAscending(!jobSortAscending);
         }
         else {
             this.setJobSortColumn("taskName");
@@ -741,8 +733,10 @@ public class JobBean {
     }
     
     public String sortJobsByDateSubmitted() {
-        if ("dateSubmitted".equals(this.jobSortColumn)) {
-            this.setJobSortAscending(!this.jobSortAscending);
+        final String jobSortColumn = this.getJobSortColumn();
+        if ("dateSubmitted".equals(jobSortColumn)) {
+            final boolean jobSortAscending = this.isJobSortAscending();
+            this.setJobSortAscending(!jobSortAscending);
         }
         else {
             this.setJobSortColumn("dateSubmitted");
@@ -751,8 +745,10 @@ public class JobBean {
     }
     
     public String sortJobsByDateCompleted() {
-        if ("dateCompleted".equals(this.jobSortColumn)) {
-            this.setJobSortAscending(!this.jobSortAscending);
+        final String jobSortColumn = this.getJobSortColumn();
+        if ("dateCompleted".equals(jobSortColumn)) {
+            final boolean jobSortAscending = this.isJobSortAscending();
+            this.setJobSortAscending(!jobSortAscending);
         }
         else {
             this.setJobSortColumn("dateCompleted");
@@ -761,8 +757,10 @@ public class JobBean {
     }
 
     public String sortJobsByStatus() {
-        if ("status".equals(this.jobSortColumn)) {
-            this.setJobSortAscending(!this.jobSortAscending);
+        final String jobSortColumn = this.getJobSortColumn();
+        if ("status".equals(jobSortColumn)) {
+            final boolean jobSortAscending = this.isJobSortAscending();
+            this.setJobSortAscending(!jobSortAscending);
         }
         else {
             this.setJobSortColumn("status");
@@ -770,36 +768,59 @@ public class JobBean {
         return "success";
     }
 
+    private String _fileSortColumn = null;
+    /**
+     * Specifies file column to sort on. Possible values are name size lastModified
+     */
     public String getFileSortColumn() {
-        return fileSortColumn;
+        if (_fileSortColumn == null) {
+            this._fileSortColumn = UserDAO.getPropertyValue(getUserProps(), "fileSortColumn", "name");
+
+        }
+        return this._fileSortColumn;
     }
 
+    private String _jobSortColumn = null;
+
+    /**
+     * Specifies job column to sort on. Possible values are jobNumber taskName dateSubmitted dateCompleted status
+     */
     public String getJobSortColumn() {
-        return jobSortColumn;
+        if (_jobSortColumn == null) {
+            this._jobSortColumn = UserDAO.getPropertyValue(getUserProps(), "jobSortColumn", "jobNumber");
+        }
+        return this._jobSortColumn;
     }
 
+    private Boolean _fileSortAscending = null;
+    /**
+     * File sort direction (true for ascending, false for descending)
+     */
     public boolean isFileSortAscending() {
-        return fileSortAscending;
+        if (_fileSortAscending == null) {
+            this._fileSortAscending = Boolean.valueOf(UserDAO.getPropertyValue(getUserProps(), "fileSortAscending", "false"));
+        }
+        return _fileSortAscending;
     }
 
     public void setFileSortAscending(boolean fileSortAscending) {
-        this.fileSortAscending = fileSortAscending;
+        this._fileSortAscending = fileSortAscending;
         new UserDAO().setProperty(UIBeanHelper.getUserId(), "fileSortAscending", String.valueOf(fileSortAscending));
     }
 
     public void setFileSortColumn(String fileSortField) {
-        this.fileSortColumn = fileSortField;
+        this._fileSortColumn = fileSortField;
         new UserDAO().setProperty(UIBeanHelper.getUserId(), "fileSortColumn", String.valueOf(fileSortField));
     }
 
     public void setJobSortAscending(boolean jobSortAscending) {
-        this.jobSortAscending = jobSortAscending;
+        this._jobSortAscending = jobSortAscending;
         new UserDAO().setProperty(UIBeanHelper.getUserId(), "jobSortAscending", String.valueOf(jobSortAscending));
     }
 
     public void setJobSortColumn(String jobSortField) {
-        this.jobSortColumn = jobSortField;
-        new UserDAO().setProperty(UIBeanHelper.getUserId(), "jobSortColumn", String.valueOf(jobSortColumn));
+        this._jobSortColumn = jobSortField;
+        new UserDAO().setProperty(UIBeanHelper.getUserId(), "jobSortColumn", String.valueOf(this._jobSortColumn));
     }
 
     /**
@@ -846,12 +867,20 @@ public class JobBean {
 
     }
 
+    
+    /**
+     * Job sort direction (true for ascending, false for descending)
+     */
+    private Boolean _jobSortAscending = null;
     public boolean isJobSortAscending() {
-	return jobSortAscending;
+        if (_jobSortAscending == null) {
+            this._jobSortAscending = Boolean.valueOf(UserDAO.getPropertyValue(getUserProps(), "jobSortAscending", "false"));
+        }
+        return this._jobSortAscending;
     }
     
     public String getJobSortFlag() {
-        if (jobSortAscending) {
+        if (isJobSortAscending()) {
             return "up";
         }
         else {
@@ -860,7 +889,7 @@ public class JobBean {
     }
     
     public String getFileSortFlag() {
-        if (fileSortAscending) {
+        if (isFileSortAscending()) {
             return "up";
         }
         else {
