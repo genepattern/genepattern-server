@@ -12,23 +12,19 @@ import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.executor.pipeline.PipelineUtil.PipelineModelException;
+import org.genepattern.server.executor.pipeline.RunPipelineAsynchronously.MissingTasksException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.webapp.RunPipelineInThread;
-import org.genepattern.server.webapp.RunPipelineInThread.MissingTasksException;
-import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
 
 public class PipelineCommand2 implements Callable<PipelineCommand2> {
     private static Logger log = Logger.getLogger(PipelineCommand2.class);
 
     private int jobNumber;
-    private RunPipelineInThread rp = new RunPipelineInThread();
+    private RunPipelineAsynchronously rp = new RunPipelineAsynchronously();
 
     private String[] commandTokens = null;
     private int jobStatus = JobStatus.JOB_PROCESSING;
@@ -110,10 +106,10 @@ public class PipelineCommand2 implements Callable<PipelineCommand2> {
     
     public void runPipeline() {
         // 4) set pipeline model
-        int taskId = rp.getPipelineTaskId();
-        TaskInfo taskInfo = null;
+        final int pipelineTaskId = rp.getPipelineTaskId();
+        PipelineModel model = null;
         try {
-            taskInfo = JobInfoManager.getTaskInfo(taskId);
+            model = PipelineUtil.getPipelineModel(pipelineTaskId);
         }
         catch (TaskIDNotFoundException e) {
             stderrBuffer.append(e.getLocalizedMessage()+" for pipeline job #"+jobNumber);
@@ -121,21 +117,12 @@ public class PipelineCommand2 implements Callable<PipelineCommand2> {
             exitCode = -1;
             return;
         }
-        PipelineModel model = null;
-        TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-        if (tia != null) {
-            String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
-            if (serializedModel != null && serializedModel.length() > 0) {
-                try {
-                    model = PipelineModel.toPipelineModel(serializedModel);
-                } 
-                catch (Throwable x) {
-                    stderrBuffer.append(x.getLocalizedMessage());
-                    jobStatus = JobStatus.JOB_ERROR;
-                    return;
-                }
-            }
+        catch (PipelineModelException e) {
+            stderrBuffer.append(e.getLocalizedMessage());
+            jobStatus = JobStatus.JOB_ERROR;
+            return;
         }
+
         rp.setPipelineModel(model);
 
         // 5) set additional arguments

@@ -135,6 +135,8 @@ import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandExecutorNotFoundException;
 import org.genepattern.server.executor.CommandManagerFactory;
+import org.genepattern.server.executor.pipeline.LegacyPipelineHandler;
+import org.genepattern.server.executor.pipeline.PipelineHandler;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager;
@@ -550,6 +552,11 @@ public class GenePatternAnalysisTask {
         if (JobStatus.ERROR.equals(jobInfo.getStatus()) || JobStatus.FINISHED.equals(jobInfo.getStatus())) {
             log.info("job #"+jobId+" already finished, status="+jobInfo.getStatus());
             return;
+        }
+        
+        // handle special-case: this job is part of a pipeline, update input file parameters which use the output of previous steps
+        if (parent >= 0) {
+            jobInfo = LegacyPipelineHandler.prepareNextStep(parent, jobInfo);
         }
 
         // pipelines run from the webapp show up as BaseDAO.UNPROCESSABLE_TASKID
@@ -1735,6 +1742,8 @@ public class GenePatternAnalysisTask {
         }
 
         recordJobCompletion(jobInfo, parentJobInfo, jobStatus);
+        
+        //TODO: notify the pipeline manager that a job has completed
     }
 
     /**
