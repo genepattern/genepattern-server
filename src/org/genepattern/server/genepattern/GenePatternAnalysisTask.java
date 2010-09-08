@@ -136,7 +136,6 @@ import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandExecutorNotFoundException;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.pipeline.LegacyPipelineHandler;
-import org.genepattern.server.executor.pipeline.PipelineHandler;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager;
@@ -156,8 +155,6 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
-import org.hibernate.Query;
-import org.hibernate.Session;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -497,24 +494,6 @@ public class GenePatternAnalysisTask {
         }
     }
     
-    private int getJobStatusId(int jobId) {
-        final String hql = 
-            "select jobStatus.statusId from org.genepattern.server.domain.AnalysisJob job "+
-            " where job.jobNo = :jobNo ";
-        
-        try { 
-            HibernateUtil.beginTransaction();
-            Session session = HibernateUtil.getSession();
-            Query query = session.createQuery(hql);
-            query.setInteger("jobNo", jobId);
-            Object rval = query.uniqueResult();
-            return AnalysisDAO.getCount(rval);
-        }
-        finally {
-            HibernateUtil.closeCurrentSession();
-        }
-    }
-
     /**
      * Called by Omnigene Analysis engine to run a single analysis job, wait for completion, then report the results to
      * the analysis_job database table. Running a job involves looking up the TaskInfo and TaskInfoAttributes for the
@@ -551,18 +530,6 @@ public class GenePatternAnalysisTask {
         // handle special-case: job was terminated before it was started
         if (JobStatus.ERROR.equals(jobInfo.getStatus()) || JobStatus.FINISHED.equals(jobInfo.getStatus())) {
             log.info("job #"+jobId+" already finished, status="+jobInfo.getStatus());
-            return;
-        }
-        
-        // handle special-case: this job is part of a pipeline, update input file parameters which use the output of previous steps
-        if (parent >= 0) {
-            jobInfo = LegacyPipelineHandler.prepareNextStep(parent, jobInfo);
-        }
-
-        // pipelines run from the webapp show up as BaseDAO.UNPROCESSABLE_TASKID
-        // and are being run by other means so bail out now
-        if (jobInfo.getTaskID() == BaseDAO.UNPROCESSABLE_TASKID) {
-            log.error("pipelines run from the webapp should no longer show with taskID="+BaseDAO.UNPROCESSABLE_TASKID);
             return;
         }
         
@@ -641,6 +608,11 @@ public class GenePatternAnalysisTask {
 
             Map<String, String> environmentVariables = new HashMap<String, String>();
 
+            // handle special-case: this job is part of a pipeline, update input file parameters which use the output of previous steps
+            if (parent >= 0) {
+                LegacyPipelineHandler.prepareNextStep(parent, jobInfo);
+            }
+            
             //ParameterInfo[] paramsActual = jobInfo.getParameterInfoArray();
             ParameterInfo[] paramsCopy = copyParameterInfoArray(jobInfo);
             Properties props = setupProps(taskInfo, taskName, parent, jobId, jobInfo.getTaskID(),
@@ -1343,9 +1315,11 @@ public class GenePatternAnalysisTask {
                 JobInfo parentJobInfo = new AnalysisDAO().getParent(jobId);
                 addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
                 recordJobCompletion(jobInfo, parentJobInfo, JobStatus.JOB_ERROR);
+                HibernateUtil.commitTransaction();
             } 
             catch (Exception e2) {
                 log.error(taskName + " error: unable to update job error status" + e2);
+                HibernateUtil.rollbackTransaction();
             }
             finally {
                 HibernateUtil.closeCurrentSession();
@@ -1741,9 +1715,27 @@ public class GenePatternAnalysisTask {
             }
         }
 
-        recordJobCompletion(jobInfo, parentJobInfo, jobStatus);
+        try {
+            HibernateUtil.beginTransaction();
+            recordJobCompletion(jobInfo, parentJobInfo, jobStatus);
+            HibernateUtil.commitTransaction();
+        }
+        catch (Throwable t) {
+            log.error("Error recording job completion for job #"+jobInfo.getJobNumber(), t);
+            HibernateUtil.rollbackTransaction();
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
         
-        //TODO: notify the pipeline manager that a job has completed
+        //if the job is in a pipeline, notify the pipeline handler
+        if (parentJobInfo != null) {
+            boolean wakeupJobQueue = LegacyPipelineHandler.handleJobCompletion(jobInfo.getJobNumber());
+            if (wakeupJobQueue) {
+                //if the pipeline has more steps, wake up the job queue
+                CommandManagerFactory.getCommandManager().wakeupJobQueue();
+            }
+        }
     }
 
     /**
@@ -1807,68 +1799,59 @@ public class GenePatternAnalysisTask {
      * @param jobStatus
      * @param jobStartTime
      */
-    private static void recordJobCompletion(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus) {
-        if (jobInfo == null) {
-            log.error("jobInfo == null, not recording job completion");
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Recording job completion for job: " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
-        }
-        long jobStartTime = jobInfo.getDateSubmitted().getTime();
-        try {
-            HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
-            HibernateUtil.beginTransaction();
-            long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
-            Date now = new Date(Calendar.getInstance().getTimeInMillis());
-            updateJobInfo(jobInfo, parentJobInfo, jobStatus, now);
-            HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
-
-            HibernateUtil.beginTransaction(); // TODO: JTL 8/21/07 oracle
-            UsageLog.logJobCompletion(jobInfo, parentJobInfo, now, elapsedTime);
-            if (log.isDebugEnabled()) {
-                log.debug("Recording job completion complete " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
-            }
-            HibernateUtil.commitTransaction();
-        } 
-        catch (RuntimeException e) {
-            log.error("Rolling back transaction", e);
-            HibernateUtil.rollbackTransaction();
-        }
-    }
-    
-//    /**
-//     * Helper method (could go into AnalysisDAO) for saving updates to the ANALYSIS_JOB.PARAMETER_INFO table before running a job.
-//     * @param jobInfo
-//     */
-//    private static void updateParameterInfo(int jobId, String paramString) {
-//        try {
-//            HibernateUtil.beginTransaction();
-//            AnalysisJob aJob = (AnalysisJob) HibernateUtil.getSession().get(AnalysisJob.class, jobId);
-//            aJob.setParameterInfo(paramString);
-//            HibernateUtil.getSession().update(aJob);
-//            HibernateUtil.commitTransaction();
+//    private static void recordJobCompletion(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus) {
+//        if (jobInfo == null) {
+//            log.error("jobInfo == null, not recording job completion");
 //        }
-//        catch (Exception e) {
+//        if (log.isDebugEnabled()) {
+//            log.debug("Recording job completion for job: " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
+//        }
+//        long jobStartTime = jobInfo.getDateSubmitted().getTime();
+//        try {
+//            HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
+//            HibernateUtil.beginTransaction();
+//            long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
+//            Date now = new Date(Calendar.getInstance().getTimeInMillis());
+//            updateJobInfo(jobInfo, parentJobInfo, jobStatus, now);
+//            HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
+//
+//            HibernateUtil.beginTransaction(); // TODO: JTL 8/21/07 oracle
+//            UsageLog.logJobCompletion(jobInfo, parentJobInfo, now, elapsedTime);
+//            if (log.isDebugEnabled()) {
+//                log.debug("Recording job completion complete " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
+//            }
+//            HibernateUtil.commitTransaction();
+//        } 
+//        catch (RuntimeException e) {
+//            log.error("Rolling back transaction", e);
 //            HibernateUtil.rollbackTransaction();
 //        }
 //    }
     
-    /**
-     * Update AnalysisJob
-     * 
-     * @param jobInfo
-     * @param parentJobInfo
-     * @param jobStatus
-     */
-    private static void updateJobInfo(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, Date completionDate) {
-        log.debug("Updating jobInfo");
+    private static void recordJobCompletion(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus) {
+        if (jobInfo == null) {
+            log.error("jobInfo == null, not recording job completion");
+            return;
+        }
+        long jobStartTime = jobInfo.getDateSubmitted().getTime();
+        try {
+            long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
+            Date now = new Date(Calendar.getInstance().getTimeInMillis());
+            updateJobInfo(jobInfo, parentJobInfo, jobStatus, now);
+            UsageLog.logJobCompletion(jobInfo, parentJobInfo, now, elapsedTime);
+        } 
+        catch (RuntimeException e) {
+            log.error(e);
+        }
+    }
+    
+    private static void updateJobInfo(final JobInfo jobInfo, final JobInfo parentJobInfo, final int jobStatus, final Date completionDate) {
         if (jobInfo == null) {
             log.error("jobInfo == null");
             return;
         }
 
         AnalysisJobDAO home = new AnalysisJobDAO();
-
         AnalysisJob aJob = home.findById(jobInfo.getJobNumber());
         aJob.setJobNo(jobInfo.getJobNumber());
 
@@ -1876,27 +1859,59 @@ public class GenePatternAnalysisTask {
         if (jobStatus == JobStatus.JOB_ERROR || jobStatus == JobStatus.JOB_FINISHED || jobStatus == JobStatus.JOB_PROCESSING) {
             paramString = ParameterFormatConverter.stripPasswords(paramString);
         }
+        aJob.setParameterInfo(paramString);
 
         JobStatus newJobStatus = (new JobStatusDAO()).findById(jobStatus);
-        aJob.setParameterInfo(paramString);
         aJob.setJobStatus(newJobStatus);
         aJob.setCompletedDate(completionDate);
-
-        // TODO: JTL 8/21/07 oracle begin
-        HibernateUtil.commitTransaction();
-        HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
-        // TODO: JTL 8/21/07 oracle end
-        if (parentJobInfo != null) {
-            AnalysisJob parentJob = home.findById(parentJobInfo.getJobNumber());
-            parentJob.setCompletedDate(completionDate);
-        }
-        // TODO: JTL 8/21/07 oracle begin
-        HibernateUtil.commitTransaction();
-        HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
-        // TODO: JTL 8/21/07 oracle end
+        
+        HibernateUtil.getSession().update(aJob);
     }
+
+//    /**
+//     * Update AnalysisJob
+//     * 
+//     * @param jobInfo
+//     * @param parentJobInfo
+//     * @param jobStatus
+//     */
+//    private static void updateJobInfo(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, Date completionDate) {
+//        log.debug("Updating jobInfo");
+//        if (jobInfo == null) {
+//            log.error("jobInfo == null");
+//            return;
+//        }
+//
+//        AnalysisJobDAO home = new AnalysisJobDAO();
+//
+//        AnalysisJob aJob = home.findById(jobInfo.getJobNumber());
+//        aJob.setJobNo(jobInfo.getJobNumber());
+//
+//        String paramString = jobInfo.getParameterInfo();
+//        if (jobStatus == JobStatus.JOB_ERROR || jobStatus == JobStatus.JOB_FINISHED || jobStatus == JobStatus.JOB_PROCESSING) {
+//            paramString = ParameterFormatConverter.stripPasswords(paramString);
+//        }
+//
+//        JobStatus newJobStatus = (new JobStatusDAO()).findById(jobStatus);
+//        aJob.setParameterInfo(paramString);
+//        aJob.setJobStatus(newJobStatus);
+//        aJob.setCompletedDate(completionDate);
+//
+//        // TODO: JTL 8/21/07 oracle begin
+//        HibernateUtil.commitTransaction();
+//        HibernateUtil.isInTransaction();
+//        HibernateUtil.beginTransaction();
+//        // TODO: JTL 8/21/07 oracle end
+//        if (parentJobInfo != null) {
+//            AnalysisJob parentJob = home.findById(parentJobInfo.getJobNumber());
+//            parentJob.setCompletedDate(completionDate);
+//        }
+//        // TODO: JTL 8/21/07 oracle begin
+//        HibernateUtil.commitTransaction();
+//        HibernateUtil.isInTransaction();
+//        HibernateUtil.beginTransaction();
+//        // TODO: JTL 8/21/07 oracle end
+//    }
 
     /**
      * Get the appropriate command prefix to use for this module. The hierarchy goes like this; 1. task version specific

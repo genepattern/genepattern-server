@@ -1,6 +1,7 @@
 package org.genepattern.server;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
@@ -28,12 +29,12 @@ public class JobManager {
         }
     }
 
-    static public JobInfo addJobToQueue(int taskID, String userID, ParameterInfo[] parameterInfoArray, Integer parentJobID) 
+    static public JobInfo addJobToQueue(final int taskID, final String userID, final ParameterInfo[] parameterInfoArray, final Integer parentJobID, final Integer jobStatusId) 
     throws JobSubmissionException
     {
         JobInfo jobInfo = null;
         try {
-            jobInfo = executeRequest(taskID, userID, parameterInfoArray, parentJobID);
+            jobInfo = executeRequest(taskID, userID, parameterInfoArray, parentJobID, jobStatusId);
             return jobInfo;
         }
         catch (Throwable t) {
@@ -49,17 +50,29 @@ public class JobManager {
      * @throws OmnigeneException
      * @return <CODE>JobIndo</CODE>
      */
-    static private JobInfo executeRequest(int taskID, String userID, ParameterInfo[] parameterInfoArray, Integer parentJobID) throws TaskIDNotFoundException {
+    static private JobInfo executeRequest(int taskID, String userID, ParameterInfo[] parameterInfoArray, Integer parentJobID, Integer jobStatusId) throws TaskIDNotFoundException {
         JobInfo ji = null;
         String parameter_info = ParameterFormatConverter.getJaxbString(parameterInfoArray);
         AnalysisDAO ds = new AnalysisDAO();
-        boolean hasParent = parentJobID != null;
-        if (hasParent) {
-            ji = ds.addNewJob(taskID, userID, parameter_info, parentJobID);
-        } 
-        else {
-            ji = ds.addNewJob(taskID, userID, parameter_info, -1);
+        //boolean hasParent = parentJobID != null;
+        if (parentJobID == null) {
+            parentJobID = -1;
         }
+        if (jobStatusId == null) {
+            jobStatusId = JobStatus.JOB_PENDING;
+        }
+        
+        
+        //if (hasParent) {
+            //ji = ds.addNewJob(taskID, userID, parameter_info, parentJobID);
+            Integer jobNo = ds.addNewJob(taskID, userID, parameter_info, null, parentJobID, null, jobStatusId);
+            ji = ds.getJobInfo(jobNo);
+        //} 
+        //else {
+        //    //ji = ds.addNewJob(taskID, userID, parameter_info, -1);
+        //    Integer jobNo = ds.addNewJob(taskID, userID, parameter_info, null, -1, null, jobStatusId);
+        //    ji = ds.getJobInfo(jobNo);
+        //}
 
         // Checking for null
         if (ji == null) {
