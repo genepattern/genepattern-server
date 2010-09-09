@@ -12,6 +12,7 @@ import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.lsf.LsfCommandExecutor;
+import org.genepattern.server.executor.lsf.LsfProperties;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.webservice.JobInfo;
 
@@ -48,7 +49,7 @@ public class ScatterGatherCommandExecutor implements CommandExecutor {
         newCommandLine.add(this.scatterGatherScriptLocation);
         newCommandLine.add("--job-suffix");
         newCommandLine.add(String.valueOf(jobInfo.getJobNumber()));
-        final String priority = commandProperties.getProperty("scatter.gather.priority");
+        final String priority = commandProperties.getProperty(LsfProperties.Key.PRIORITY.getKey());
         if (priority != null) {
         	newCommandLine.add("--priority");
         	newCommandLine.add(priority);
