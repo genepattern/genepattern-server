@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -140,7 +142,8 @@ class LsfCommand {
      * @param commandLine
      * @return
      */
-    private String wrapCommandLineArgsInSingleQuotes(final String[] commandLine) {
+    private String wrapCommandLineArgsInSingleQuotes(String[] commandLine) {
+    	commandLine = hackFixForGP2866(commandLine);
         String rval = "";
         boolean first = true;
         for(String arg : commandLine) {
@@ -163,6 +166,34 @@ class LsfCommand {
         }
         arg = "'"+arg+"'";
         return arg;
+    }
+    
+    /**
+     * finds members of the commandLine array that were created using the prefix when specified option
+     * and splits them into 2 parts if appropriate. e.g. "--intervals path_to_file" would come in
+     * as a single element but really should be 2, "--intervals" and "path_to_file". This method
+     * will convert anything matching the regular expression (-[^ ]+) (.+) into 2 elements.
+     * 
+     * See jira GP-2866.
+     * 
+     * @param commandLine
+     * @return
+     */
+    //TODO remove this when GP-2866 is fixed
+    private String[] hackFixForGP2866(final String[] commandLine) {
+    	final List<String> fixedCommandLine = new ArrayList<String>();
+    	final Pattern pattern = Pattern.compile("(-[^ ]+) (.+)");
+    	for (final String arg : commandLine) {
+    		final Matcher matcher = pattern.matcher(arg);
+			if (matcher.matches()) {
+				fixedCommandLine.add(matcher.group(1));
+				fixedCommandLine.add(matcher.group(2));
+			} else {
+				fixedCommandLine.add(arg);
+			}
+		}
+    	
+    	return fixedCommandLine.toArray(new String[fixedCommandLine.size()]);
     }
 
     /**
