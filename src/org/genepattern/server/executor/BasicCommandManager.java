@@ -159,13 +159,14 @@ public class BasicCommandManager implements CommandManager {
     private static List<MyJobInfoWrapper> getRunningJobs(AnalysisDAO dao, int maxJobCount) {
         List<MyJobInfoWrapper> runningJobs = new ArrayList<MyJobInfoWrapper>();
         Session session = HibernateUtil.getSession();
-        final String hql = "from org.genepattern.server.domain.AnalysisJob where ( jobStatus.statusId = :statusId or jobStatus.statusId = :dispatchingStatusId ) and deleted = false order by submittedDate ";
+        //final String hql = "from org.genepattern.server.domain.AnalysisJob where ( jobStatus.statusId = :statusId or jobStatus.statusId = :dispatchingStatusId ) and deleted = false order by submittedDate ";
+        final String hql = "from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId = :statusId and deleted = false order by submittedDate ";
         Query query = session.createQuery(hql);
         if (maxJobCount > 0) {
             query.setMaxResults(maxJobCount);
         }
         query.setInteger("statusId", JobStatus.JOB_PROCESSING);
-        query.setInteger("dispatchingStatusId", JobStatus.JOB_DISPATCHING);
+        //query.setInteger("dispatchingStatusId", JobStatus.JOB_DISPATCHING);
         List<AnalysisJob> jobList = query.list();
         for(AnalysisJob aJob : jobList) {
             JobInfo singleJobInfo = new JobInfo(aJob);
