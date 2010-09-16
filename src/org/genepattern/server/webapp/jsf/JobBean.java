@@ -41,6 +41,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
 import org.genepattern.server.PermissionsHelper;
+import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
@@ -442,7 +444,7 @@ public class JobBean {
         }
     }
 
-    private List<JobResultsWrapper> wrapJobs(JobInfo[] jobInfoArray) {
+    private List<JobResultsWrapper> wrapJobs(List<JobInfo> jobInfos) {
         boolean isAdmin = false;
         if (userSessionBean != null) {
             isAdmin = userSessionBean.isAdmin();
@@ -452,8 +454,8 @@ public class JobBean {
         TaskInfo[] latestTasks = dao.getLatestTasks(currentUserId);
         Map<String, Collection<TaskInfo>> kindToModules = SemanticUtil.getKindToModulesMap(latestTasks);        
         final boolean showExecutionLogs = isShowExecutionLogs();
-        List<JobResultsWrapper> wrappedJobs = new ArrayList<JobResultsWrapper>(jobInfoArray.length);
-        for(JobInfo jobInfo : jobInfoArray) {
+        List<JobResultsWrapper> wrappedJobs = new ArrayList<JobResultsWrapper>(jobInfos.size());
+        for(JobInfo jobInfo : jobInfos) {
             PermissionsHelper ph = new PermissionsHelper(isAdmin, currentUserId, jobInfo.getJobNumber(), jobInfo.getUserId(), jobInfo.getJobNumber());
             JobPermissionsBean jobPermissionsBean = new JobPermissionsBean(ph);
 
@@ -506,10 +508,11 @@ public class JobBean {
         
         int recentJobsToShow = Integer.parseInt(UserDAO.getPropertyValue(getUserProps(),UserPropKey.RECENT_JOBS_TO_SHOW, "10"));
         AnalysisDAO ds = new AnalysisDAO();
-        JobInfo[] recentJobInfos = ds.getJobs(userId, -1, recentJobsToShow, false, JobSortOrder.JOB_NUMBER, false);
-        recentJobs = wrapJobs(recentJobInfos);
+        
+        List<JobInfo> recentJobInfos = ds.getRecentJobsForUser(userId, recentJobsToShow, JobSortOrder.JOB_NUMBER);
+        recentJobs = wrapJobs(new ArrayList<JobInfo>(recentJobInfos));
         return recentJobs;
-    } 
+    }
 
     public List<JobResultsWrapper> getPagedJobs() {
         final int pageSize = getPageSize();
@@ -590,26 +593,46 @@ public class JobBean {
         int maxEntries = Integer.MAX_VALUE;
         return getJobs(maxJobNumber, maxEntries);
     }
-
+    
     private List<JobResultsWrapper> getJobs(int maxJobNumber, int maxEntries) { 
         if (allJobs == null) {
-            String userId = UIBeanHelper.getUserId(); 
+            //the first page is page 1
+            final int pageNum = this.getPageNumber();
+            final int pageSize = this.getPageSize();
+            final JobSortOrder jobSortOrder = this.getJobSortOrder();
+            final boolean ascending = isJobSortAscending();
+            
+            final String userId = UIBeanHelper.getUserId(); 
+            boolean isAdmin = false;
+            if (userSessionBean != null) {
+                isAdmin = userSessionBean.isAdmin();
+            }
             String selectedGroup = jobResultsFilterBean.getSelectedGroup();
-            Set<String> selectedGroups = jobResultsFilterBean.getSelectedGroups();
             boolean showEveryonesJobs = jobResultsFilterBean.isShowEveryonesJobs();
             
-            final boolean jobSortAscending = isJobSortAscending();
             try {
-                JobInfo[] jobInfos = new JobInfo[0];
-                AnalysisDAO ds = new AnalysisDAO();
-                if (selectedGroup != null) {
-                    jobInfos = ds.getJobsInGroup(selectedGroups, maxJobNumber, maxEntries, false, getJobSortOrder(), jobSortAscending);
+            AnalysisDAO ds = new AnalysisDAO();
+            List<JobInfo> jobInfos = new ArrayList<JobInfo>();
+            if (showEveryonesJobs) {
+                if (isAdmin) {
+                    jobInfos = ds.getAllPagedJobsForAdmin(pageNum, pageSize, jobSortOrder, ascending);
                 }
                 else {
-                    jobInfos = ds.getJobs(showEveryonesJobs ? null : userId, maxJobNumber, maxEntries, false, getJobSortOrder(), jobSortAscending);
+                    IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
+                    Set<String> groupIds = new HashSet<String>(groupMembership.getGroups(userId));
+                    jobInfos = ds.getAllPagedJobsForUser(userId, groupIds, pageNum, pageSize, jobSortOrder, ascending);
                 }
-                allJobs = wrapJobs( jobInfos );
-            } 
+            }
+            else {
+                if (selectedGroup != null) {
+                    jobInfos = ds.getPagedJobsInGroup(selectedGroup, pageNum, pageSize, jobSortOrder, ascending);
+                }
+                else {
+                    jobInfos = ds.getPagedJobsOwnedByUser(userId, pageNum, pageSize, jobSortOrder, ascending);
+                }
+            }
+            allJobs = wrapJobs( jobInfos );
+            }
             catch (Exception e) {
                 log.error(e);
                 allJobs = new ArrayList<JobResultsWrapper>();

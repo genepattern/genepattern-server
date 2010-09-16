@@ -46,17 +46,165 @@ import org.hibernate.LockMode;
 import org.hibernate.Query;
 
 /**
- * AnalysisHypersonicDAO.java
+ * AnalysisDAO.java
  * 
  * @author rajesh kuttan, Hui Gong
  * @version
  */
 public class AnalysisDAO extends BaseDAO {
-
     static Logger log = Logger.getLogger(AnalysisDAO.class);
 
-    /** Creates new AnalysisHypersonicAccess */
     public AnalysisDAO() {
+    }
+
+    /**
+     * Get the list of recent jobs for the current user. Jobs are sorted in descending order.
+     * 
+     * @param userId - jobs owned by this user
+     * @param numJobsToShow - the total number of jobs to show
+     * @param jobSortOrder - the sort order
+     * @return
+     */
+    public List<JobInfo> getRecentJobsForUser(String userId, int numJobsToShow, JobSortOrder jobSortOrder) {
+        int pageNum = 1;
+        int pageSize = numJobsToShow;
+        boolean ascending = false;
+        Query query = getPagedAnalysisJobsQuery("getPagedJobsOwnedByUser", pageNum, pageSize, jobSortOrder, ascending);
+        query.setString("userId", userId);
+        List<AnalysisJob> results = query.list();
+        List<JobInfo> jobInfos = convertResults(results);
+        return jobInfos;
+    }
+
+    /**
+     * For an admin user, get the list of all jobs, paged and sorted.
+     * 
+     * @param pageNum, the current page, numbering starts at 1.
+     * @param pageSize, the number of jobs on a page.
+     * @param jobSortOrder
+     * @param ascending
+     * @return
+     */
+    public List<JobInfo> getAllPagedJobsForAdmin(final int pageNum, final int pageSize, final JobSortOrder jobSortOrder, final boolean ascending) {
+        Query query = getPagedAnalysisJobsQuery("getAllPagedJobs", pageNum, pageSize, jobSortOrder, ascending);
+        List<AnalysisJob> results = query.list();
+        List<JobInfo> jobInfos = convertResults(results);
+        return jobInfos;
+    }
+    
+    /**
+     * For the current (non-admin) user, get the list of all jobs which are readable by this user, paged and sorted.
+     * 
+     * @param userId, the current user id
+     * @param groupIds, the list of groups to which the current user belongs
+     * @param pageNum
+     * @param pageSize
+     * @param jobSortOrder
+     * @param ascending
+     * @return
+     */
+    public List<JobInfo> getAllPagedJobsForUser(final String userId, final Set<String> groupIds, final int pageNum, final int pageSize, final JobSortOrder jobSortOrder, final boolean ascending) {
+        Query query = getPagedAnalysisJobsQuery("getPagedJobsForUser", pageNum, pageSize, jobSortOrder, ascending);
+        query.setString("userId", userId);
+        query.setParameterList("groupIds", groupIds);
+        List<AnalysisJob> results = query.list();
+        List<JobInfo> jobInfos = convertResults(results);
+        return jobInfos;
+    }
+    
+    /**
+     * Get the list of jobs owned by the current user, paged and sorted.
+     * 
+     * @param userId
+     * @param pageNum
+     * @param pageSize
+     * @param jobSortOrder
+     * @param ascending
+     * @return
+     */
+    public List<JobInfo> getPagedJobsOwnedByUser(final String userId, final int pageNum, final int pageSize, final JobSortOrder jobSortOrder, final boolean ascending) {
+        Query query = getPagedAnalysisJobsQuery("getPagedJobsOwnedByUser", pageNum, pageSize, jobSortOrder, ascending);
+        query.setString("userId", userId);
+        List<AnalysisJob> results = query.list();
+        List<JobInfo> jobInfos = convertResults(results);
+        return jobInfos;
+    }
+    
+    /**
+     * Get the list of jobs which are in the given group, paged and sorted.
+     * 
+     * @param groupId
+     * @param pageNum
+     * @param pageSize
+     * @param jobSortOrder
+     * @param ascending
+     * @return
+     */
+    public List<JobInfo> getPagedJobsInGroup(final String groupId, final int pageNum, final int pageSize, final JobSortOrder jobSortOrder, final boolean ascending) {
+        Query query = getPagedAnalysisJobsQuery("getPagedJobsForGroup", pageNum, pageSize, jobSortOrder, ascending);
+        query.setString("groupId", groupId);
+        List<AnalysisJob> results = query.list();
+        List<JobInfo> jobInfos = convertResults(results);
+        return jobInfos;
+    }
+    
+    /**
+     * 
+     * @param queryName
+     * @param pageNum, the current page number (starting with page 1)
+     * @param pageSize, the number of root jobs to display per page
+     * @param jobSortOrder
+     * @param ascending
+     * @return
+     */
+    private Query getPagedAnalysisJobsQuery(
+            final String queryName, final int pageNum, final int pageSize, final JobSortOrder jobSortOrder, final boolean ascending) 
+    {
+        int firstResult = (pageNum-1) * pageSize;
+        int maxResults = pageSize;
+        
+        Query namedQuery = getSession().getNamedQuery(queryName);
+        StringBuffer hql = new StringBuffer(namedQuery.getQueryString());
+        appendSortOrder(hql, jobSortOrder, ascending);
+        
+        Query query = getSession().createQuery(hql.toString());
+        query.setBoolean("deleted", false);
+        query.setFirstResult(firstResult);
+        query.setMaxResults(maxResults);
+        return query;
+    }
+
+    private void appendSortOrder(StringBuffer hql, JobSortOrder jobSortOrder, boolean ascending) {
+        switch (jobSortOrder) {
+        case JOB_NUMBER:
+            hql.append(" ORDER BY a.jobNo");
+            break;
+        case JOB_STATUS:
+            hql.append(" ORDER BY a.jobStatus");
+            break;
+        case SUBMITTED_DATE:
+            hql.append(" ORDER BY a.submittedDate");
+            break;
+        case COMPLETED_DATE:
+            hql.append(" ORDER BY a.completedDate");
+            break;
+        case USER:
+            hql.append(" ORDER BY a.userId");
+            break;
+        case MODULE_NAME:
+            hql.append(" ORDER BY a.taskName");
+            break;
+        }
+        hql.append(ascending ? " ASC" : " DESC");
+    }
+
+    private List<JobInfo> convertResults(List<AnalysisJob> analysisJobs) {
+        List<JobInfo> jobInfos = new ArrayList<JobInfo>(analysisJobs.size());
+        for(AnalysisJob analysisJob : analysisJobs) {
+            JobInfo jobInfo = new JobInfo(analysisJob);
+            jobInfos.add(jobInfo);
+        }
+        return jobInfos;
     }
 
     /**
@@ -490,7 +638,7 @@ public class AnalysisDAO extends BaseDAO {
         return getPagedJobs(getAllJobs, filterByGroup, includeGroups, null, groups, firstResult, maxResults, includeDeletedJobs, sortOrder, ascending);
     }
 
-    public JobInfo[] getPagedJobs(String ownedByUsername, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending)
+    private JobInfo[] getPagedJobs(String ownedByUsername, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending)
     throws OmnigeneException 
     {
         return getPagedJobs(ownedByUsername, null, firstResult, maxResults, includeDeletedJobs, sortOrder, ascending);
@@ -518,7 +666,7 @@ public class AnalysisDAO extends BaseDAO {
      * @return
      * @throws OmnigeneException
      */
-    public JobInfo[] getPagedJobs(String username, Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending)
+    private JobInfo[] getPagedJobs(String username, Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending)
     throws OmnigeneException 
     {
         //three exclusive states: [owned_by_user | all_jobs | viewable_by_user]
@@ -532,12 +680,12 @@ public class AnalysisDAO extends BaseDAO {
         return getPagedJobs(getAllJobs, includeGroups, username, groups, firstResult, maxResults, includeDeletedJobs, sortOrder, ascending);
     }
     
-    public JobInfo[] getPagedJobs(boolean getAllJobs, boolean includeGroups, String username, Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending) {
+    private JobInfo[] getPagedJobs(boolean getAllJobs, boolean includeGroups, String username, Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending) {
         boolean filterByGroup = false;
         return getPagedJobs(getAllJobs, filterByGroup, includeGroups, username, groups, firstResult, maxResults, includeDeletedJobs, sortOrder, ascending);
     }
 
-    public JobInfo[] getPagedJobs(boolean getAllJobs, boolean filterByGroup, boolean includeGroups, String username, Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending) {
+    private JobInfo[] getPagedJobs(boolean getAllJobs, boolean filterByGroup, boolean includeGroups, String username, Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending) {
 
         StringBuffer hql = new StringBuffer(
                 getAnalysisJobQuery(filterByGroup, groups, includeGroups, getAllJobs, includeDeletedJobs)
