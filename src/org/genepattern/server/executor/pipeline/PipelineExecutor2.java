@@ -72,7 +72,9 @@ public class PipelineExecutor2 implements CommandExecutor {
     
     public int handleRunningJob(JobInfo jobInfo) throws Exception {
         log.error("handleRunningJob("+jobInfo.getJobNumber()+")  Not Implemented!");
-        //TODO: implement startup for pipeline
+        //TODO: handle corner cases:
+        // a) all of the child jobs are 'FINISHED' but the pipeline's status is still 'PROCESSING'
+        // b) one of the child jobs is 'ERROR', but the pipeline's status is still 'PROCESSING'
         return JobStatus.JOB_PROCESSING;
     }
 }

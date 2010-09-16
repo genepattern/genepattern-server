@@ -49,7 +49,7 @@ public class BasicCommandManager implements CommandManager {
     
     public void startAnalysisService() { 
         log.info("starting analysis service...");
-        handleRunningJobsOnServerStartup();
+        handleJobsOnServerStartup();
         
         if (analysisTaskScheduler == null) {
             analysisTaskScheduler = new AnalysisJobScheduler();
@@ -66,41 +66,48 @@ public class BasicCommandManager implements CommandManager {
     }
 
     //TODO: use paged results to handle large number of 'Processing' jobs
-    private void handleRunningJobsOnServerStartup() {
-        log.info("handling 'RUNNING' jobs on server startup ...");
+    private void handleJobsOnServerStartup() {
+        log.info("handling 'DISPATCHING' and 'PROCESSING' jobs on server startup ...");
         List<MyJobInfoWrapper> runningJobs = getRunningJobs();
 
         for(MyJobInfoWrapper jobInfoWrapper : runningJobs) {
             JobInfo jobInfo = jobInfoWrapper.jobInfo;
             String jobId = ""+jobInfo.getJobNumber();
-            boolean isPipeline = jobInfoWrapper.isPipeline;
-            boolean isInPipeline = jobInfoWrapper.isInPipeline;
-            
-            if (isPipeline) {
-                setJobStatus(jobInfo, JobStatus.JOB_ERROR);
+
+            //boolean isPipeline = jobInfoWrapper.isPipeline;
+            //boolean isInPipeline = jobInfoWrapper.isInPipeline;
+            //if (isPipeline) {
+            //    setJobStatus(jobInfo, JobStatus.JOB_ERROR);
+            //}
+            //else if (isInPipeline) {
+            //    setJobStatus(jobInfo, JobStatus.JOB_ERROR);
+            //}
+            //else {
+            try {
+                String curStatus = jobInfo.getStatus();
+                CommandExecutor cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
+                int updatedStatusId = cmdExec.handleRunningJob(jobInfo);
+                
+                if (statusChanged(curStatus, updatedStatusId)) {
+                    setJobStatus(jobInfo, updatedStatusId);
+                }
+                //TODO: if necessary notify the parent pipeline, which would be necessary when the status is changed to 'error' or 'finished'
             }
-            else if (isInPipeline) {
-                setJobStatus(jobInfo, JobStatus.JOB_ERROR);
+            catch (CommandExecutorNotFoundException e) {
+                log.error("error getting command executor for job #"+jobId, e);
+                setJobStatusToError(jobInfo);
             }
-            else {
-                try {
-                    CommandExecutor cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
-                    int updatedStatusId = cmdExec.handleRunningJob(jobInfo);
-                    if (updatedStatusId > 0) {
-                        setJobStatus(jobInfo, updatedStatusId);
-                    }
-                }
-                catch (CommandExecutorNotFoundException e) {
-                    log.error("error getting command executor for job #"+jobId, e);
-                    setJobStatusToError(jobInfo);
-                }
-                catch (Exception e) {
-                    log.error("error handling running job on server startup for job #"+jobId, e);
-                    setJobStatusToError(jobInfo);
-                }
+            catch (Exception e) {
+                log.error("error handling running job on server startup for job #"+jobId, e);
+                setJobStatusToError(jobInfo);
             }
         }
-        log.info("... done handling 'RUNNING' jobs on server startup.");
+        log.info("... done handling 'DISPATCHING' and 'PROCESSING' jobs on server startup.");
+    }
+    
+    private static boolean statusChanged(String origStatus, int updatedStatusId) {
+        int origStatusId = JobStatus.STATUS_MAP.get(origStatus);
+        return origStatusId != updatedStatusId;
     }
     
     private void setJobStatusToError(JobInfo jobInfo) {
@@ -152,12 +159,13 @@ public class BasicCommandManager implements CommandManager {
     private static List<MyJobInfoWrapper> getRunningJobs(AnalysisDAO dao, int maxJobCount) {
         List<MyJobInfoWrapper> runningJobs = new ArrayList<MyJobInfoWrapper>();
         Session session = HibernateUtil.getSession();
-        final String hql = "from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId = :statusId and deleted = false order by submittedDate ";
+        final String hql = "from org.genepattern.server.domain.AnalysisJob where ( jobStatus.statusId = :statusId or jobStatus.statusId = :dispatchingStatusId ) and deleted = false order by submittedDate ";
         Query query = session.createQuery(hql);
         if (maxJobCount > 0) {
             query.setMaxResults(maxJobCount);
         }
         query.setInteger("statusId", JobStatus.JOB_PROCESSING);
+        query.setInteger("dispatchingStatusId", JobStatus.JOB_DISPATCHING);
         List<AnalysisJob> jobList = query.list();
         for(AnalysisJob aJob : jobList) {
             JobInfo singleJobInfo = new JobInfo(aJob);
