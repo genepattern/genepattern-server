@@ -21,11 +21,11 @@ import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.JobManager;
-import org.genepattern.server.JobManager.JobSubmissionException;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandManagerFactory;
+import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.executor.pipeline.RunPipelineAsynchronously.MissingTasksException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.AdminService;
@@ -150,7 +150,7 @@ public class LegacyPipelineHandler {
         try {
             AnalysisDAO ds = new AnalysisDAO();
             JobInfo jobInfo = ds.getJobInfo(jobNumber);
-            int parentJobNumber = jobInfo.getJobNumber();
+            int parentJobNumber = jobInfo.getParentJobNumber();
             if (parentJobNumber < 0) {
                 log.error("Invalid parentJobNumber: "+parentJobNumber);
                 return false;

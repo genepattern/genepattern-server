@@ -27,6 +27,7 @@ import org.genepattern.server.domain.AnalysisJob;
 
 public class JobInfo implements Serializable {
     private int jobNo = 0;
+    private int parentJobNo = -1;
     private int taskID = 0;
     private String status = "";
     private ParameterInfo[] parameterInfoArray = null;
@@ -75,6 +76,7 @@ public class JobInfo implements Serializable {
                 aJob.getSubmittedDate(), aJob.getCompletedDate(), ParameterFormatConverter.getParameterInfoArray(aJob.getParameterInfo()),
                 aJob.getUserId(), aJob.getTaskLsid(), aJob.getTaskName());
         
+        this.parentJobNo = aJob.getParent();
         this.deleted = aJob.getDeleted();
     }
 
@@ -115,6 +117,10 @@ public class JobInfo implements Serializable {
      */
     public void setJobNumber(int jobNo) {
         this.jobNo = jobNo;
+    }
+    
+    public int getParentJobNumber() {
+        return this.parentJobNo;
     }
 
     /**

@@ -92,12 +92,17 @@ public class AnalysisJobScheduler implements Runnable {
                 List<Integer> waitingJobs = null;
                 synchronized (jobQueueWaitObject) {
                     if (pendingJobQueue.isEmpty()) {
-                        waitingJobs = this.getWaitingJobs(batchSize);
+                        waitingJobs = AnalysisJobScheduler.getWaitingJobs(batchSize);
                         if (waitingJobs != null && !waitingJobs.isEmpty()) {
-                            waitingJobs = updateJobStatusToProcessing(waitingJobs);
+                            waitingJobs = updateJobStatus(waitingJobs, JobStatus.JOB_DISPATCHING);
                             if (waitingJobs != null) {
-                                for(Integer jobId : waitingJobs) {
-                                    pendingJobQueue.put(jobId);
+                                for(Integer jobId : waitingJobs) { 
+                                    if (pendingJobQueue.contains(jobId)) {
+                                        log.error("duplicate entry in pending jobs queue: "+jobId);
+                                    }
+                                    else {
+                                        pendingJobQueue.put(jobId);
+                                    }
                                 }
                             }
                         }
@@ -115,7 +120,7 @@ public class AnalysisJobScheduler implements Runnable {
         }
     }
 
-    private List<Integer> getWaitingJobs(int maxJobCount) {
+    static private List<Integer> getWaitingJobs(int maxJobCount) {
         try {
             HibernateUtil.beginTransaction();
             String hql = "select jobNo from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId = :statusId and deleted = false order by submittedDate ";
@@ -136,15 +141,12 @@ public class AnalysisJobScheduler implements Runnable {
         }
     }
 
-    private List<Integer> updateJobStatusToProcessing(List<Integer> jobIds) {
+    static private List<Integer> updateJobStatus(List<Integer> jobIds, int jobStatusId) {
         List<Integer> updatedJobIds = new ArrayList<Integer>();
-        // Commit each time through since any large CLOBs (>4k) will fail if they are committed inside a
-        // transaction with ANY other object
-        // No longer doing this ... because we don't involve the CLOB in the update statement
         HibernateUtil.beginTransaction();
         try {
             for(Integer jobId : jobIds) {
-                setJobStatus(jobId, JobStatus.JOB_PROCESSING);
+                AnalysisJobScheduler.setJobStatus(jobId, jobStatusId);
                 updatedJobIds.add(jobId);
             }
             HibernateUtil.commitTransaction();
@@ -164,7 +166,7 @@ public class AnalysisJobScheduler implements Runnable {
      * @return number of rows successfully updated
      * @throws Exception if the job status was not successfully updated
      */
-    private int setJobStatus(int jobNo, int jobStatus) throws Exception {
+    static public int setJobStatus(int jobNo, int jobStatus) throws Exception {
         //SQL update statement:
         //    update analysis_job set status_id=statusId where job_no=jobNo
         String sqlUpdate = "update ANALYSIS_JOB set status_id=:jobStatus where job_no=:jobNo";
@@ -211,9 +213,22 @@ public class AnalysisJobScheduler implements Runnable {
         private void submitJob(Integer jobId) {
             if (genePattern == null) {
                 log.error("job not run, genePattern == null!");
+                return;
             }
-            else {
+            try {
                 genePattern.onJob(jobId);
+            }
+            catch (JobDispatchException e) {
+                //TODO: implement genePattern.handleError(jobId);
+                try {
+                    HibernateUtil.beginTransaction();
+                    setJobStatus(jobId, JobStatus.JOB_ERROR);
+                    HibernateUtil.commitTransaction();
+                }
+                catch (Throwable t) {
+                    log.error("", t);
+                    HibernateUtil.rollbackTransaction();
+                }
             }
         }
     }

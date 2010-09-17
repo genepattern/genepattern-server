@@ -131,10 +131,12 @@ import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.domain.JobStatusDAO;
+import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandExecutorNotFoundException;
 import org.genepattern.server.executor.CommandManagerFactory;
+import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.executor.pipeline.LegacyPipelineHandler;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
@@ -501,14 +503,17 @@ public class GenePatternAnalysisTask {
      * any input URLs to the local filesystem, executing the application, and then returning any of the output files
      * from the sandbox directory where it ran to the analysis_job database (and ultimately to the caller).
      * 
-     * @param o
-     *            JobInfo object
+     * TODO: improve error handling for this method, exceptions should include:
+     *     1) null arg
+     *     2) server error (hibernate, db, et cetera)
+     *     3) job already PROCESSING or TERMINATED or ERROR
+     * 
+     * @param jobId, the job_no from the ANALYSIS_JOB table
      */
-    public void onJob(Integer jobId) {
+    public void onJob(Integer jobId) throws JobDispatchException {
         log.debug("onJob("+jobId+")");
         if (jobId == null) {
-            log.error("Invalid arg to onJob, jobId="+jobId);
-            return;
+            throw new JobDispatchException("Invalid arg to onJob, jobId="+jobId);
         }
 
         JobInfo jobInfo = null;
@@ -518,17 +523,20 @@ public class GenePatternAnalysisTask {
             jobInfo = dao.getJobInfo(jobId);
             parent = dao.getParentJobId(jobId);
         }
+        catch (Throwable t) {
+            throw new JobDispatchException("Server error: Not able to load jobInfo for jobId: "+jobId, t);
+        }
         finally {
             HibernateUtil.closeCurrentSession();
         }
         
         if (jobInfo == null) {
-            log.error("Not able to load jobInfo for jobId: "+jobId);
-            return;
+            throw new JobDispatchException("Server error: Not able to load jobInfo for jobId: "+jobId);
         }
 
         // handle special-case: job was terminated before it was started
         if (JobStatus.ERROR.equals(jobInfo.getStatus()) || JobStatus.FINISHED.equals(jobInfo.getStatus())) {
+            //TODO: should an exception be thrown ?
             log.info("job #"+jobId+" already finished, status="+jobInfo.getStatus());
             return;
         }
@@ -1255,6 +1263,14 @@ public class GenePatternAnalysisTask {
                         //close hibernate session before running the job, but don't save the parameter info
                         //updateParameterInfo(jobInfo.getJobNumber(), jobInfo.getParameterInfo());
                         HibernateUtil.closeCurrentSession();
+                        HibernateUtil.beginTransaction();
+                        try {
+                            AnalysisJobScheduler.setJobStatus(jobId, JobStatus.JOB_PROCESSING);
+                            HibernateUtil.commitTransaction();
+                        }
+                        finally {
+                            HibernateUtil.closeCurrentSession();
+                        }
                         try {
                             cmdExec.runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
                         }

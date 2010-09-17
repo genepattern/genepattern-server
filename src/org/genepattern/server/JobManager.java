@@ -2,6 +2,7 @@ package org.genepattern.server;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
@@ -17,18 +18,16 @@ public class JobManager {
     private static Logger log = Logger.getLogger(JobManager.class);
     
     /**
-     * thrown when a job is not added to the queue.
-     * @author pcarr
+     * Adds a new job entry to the ANALYSIS_JOB table, with initial status either PENDING or WAITING.
+     * 
+     * @param taskID
+     * @param userID
+     * @param parameterInfoArray
+     * @param parentJobID
+     * @param jobStatusId
+     * @return
+     * @throws JobSubmissionException
      */
-    public static class JobSubmissionException extends Exception {
-        public JobSubmissionException(Throwable t) {
-            this("Error adding job to the queue", t);
-        }
-        public JobSubmissionException(String message, Throwable t) {
-            super(message, t);
-        }
-    }
-
     static public JobInfo addJobToQueue(final int taskID, final String userID, final ParameterInfo[] parameterInfoArray, final Integer parentJobID, final Integer jobStatusId) 
     throws JobSubmissionException
     {

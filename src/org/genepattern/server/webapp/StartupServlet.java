@@ -107,9 +107,12 @@ public class StartupServlet extends HttpServlet {
             HibernateUtil.closeCurrentSession();
         }
         
-        log.info("\tinitializing TaskInfoCache...");
-        TaskInfoCache.instance().initializeCache();
-
+        boolean initializeTaskInfoCache = false;
+        if (initializeTaskInfoCache) {
+            log.info("\tinitializing TaskInfoCache...");
+            TaskInfoCache.instance().initializeCache();
+        }
+        
         //start the command executors before starting the internal job queue (AnalysisTask.startQueue) ...
         log.info("\tstarting job queue...");
         CommandManagerFactory.initializeCommandManager(System.getProperties());
