@@ -66,14 +66,9 @@ public class AnalysisDAO extends BaseDAO {
      * @return
      */
     public List<JobInfo> getRecentJobsForUser(String userId, int numJobsToShow, JobSortOrder jobSortOrder) {
-        int pageNum = 1;
-        int pageSize = numJobsToShow;
-        boolean ascending = false;
-        Query query = getPagedAnalysisJobsQuery("getPagedJobsOwnedByUser", pageNum, pageSize, jobSortOrder, ascending);
-        query.setString("userId", userId);
-        List<AnalysisJob> results = query.list();
-        List<JobInfo> jobInfos = convertResults(results);
-        return jobInfos;
+        final int pageNum = 1;
+        final boolean ascending = false;
+        return getPagedJobsOwnedByUser(userId, pageNum, numJobsToShow, jobSortOrder, ascending);
     }
 
     /**

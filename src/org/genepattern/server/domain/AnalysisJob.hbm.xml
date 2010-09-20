@@ -30,12 +30,11 @@
     </set>
     
   </class>
-    
 
   <query name="getNumJobs">
   <![CDATA[
-      select count(distinct a.jobNo) 
-      from org.genepattern.server.domain.AnalysisJob as a left join a.permissions as p 
+      select count(a.jobNo) 
+      from org.genepattern.server.domain.AnalysisJob as a
       where 
         ((a.parent = null) OR (a.parent = -1))  
         AND 
@@ -44,8 +43,8 @@
 
   <query name="getNumJobsByUser">
   <![CDATA[
-      select count(distinct a.jobNo) 
-      from org.genepattern.server.domain.AnalysisJob as a left join a.permissions as p 
+      select count(a.jobNo) 
+      from org.genepattern.server.domain.AnalysisJob as a
       where 
         ((a.parent = null) OR (a.parent = -1))  
         AND 
@@ -80,8 +79,7 @@
   
     <query name="getAllPagedJobs">
   <![CDATA[
-      select distinct a
-      from org.genepattern.server.domain.AnalysisJob as a left join a.permissions as p 
+      from org.genepattern.server.domain.AnalysisJob as a 
       where 
         a.deleted = :deleted  
         AND 
@@ -90,8 +88,7 @@
   
     <query name="getPagedJobsOwnedByUser">
   <![CDATA[
-      select distinct a
-      from org.genepattern.server.domain.AnalysisJob as a left join a.permissions as p 
+      from org.genepattern.server.domain.AnalysisJob as a
       where 
         a.deleted = :deleted  
         AND 
@@ -99,34 +96,37 @@
         AND
         a.userId = :userId
   ]]></query>
-  
-  <!-- get the list of all jobs which the currentUser can read -->
+
   <query name="getPagedJobsForUser">
   <![CDATA[
-    select distinct a
-    from org.genepattern.server.domain.AnalysisJob as a left outer join a.permissions as p
-    where
-      a.deleted = :deleted 
-      AND
-      ( (a.parent = null) OR (a.parent < 0) )
-      AND
-      ( a.userId = :userId 
-        OR
-        p.groupId in ( :groupIds ) 
+      from org.genepattern.server.domain.AnalysisJob a where a.jobNo in
+      ( select distinct a.jobNo
+          from org.genepattern.server.domain.AnalysisJob as a left outer join a.permissions as p
+          where
+            a.deleted = :deleted 
+            AND
+            ( (a.parent = null) OR (a.parent < 0) )
+            AND
+            ( a.userId = :userId 
+              OR
+              p.groupId in ( :groupIds ) 
+            )
       )
   ]]></query>
 
   <!-- get the list of jobs which can be read by members of the given group -->
   <query name="getPagedJobsForGroup">
   <![CDATA[
-    select distinct a
-    from org.genepattern.server.domain.AnalysisJob as a left join a.permissions as p
-    where
-      a.deleted = :deleted 
-      AND
-      ( (a.parent = null) OR (a.parent < 0) )
-      AND
-      p.groupId = :groupId
+    from org.genepattern.server.domain.AnalysisJob a where a.jobNo in
+      ( select distinct a.jobNo
+          from org.genepattern.server.domain.AnalysisJob as a left join a.permissions as p
+          where
+            a.deleted = :deleted 
+            AND
+            ( (a.parent = null) OR (a.parent < 0) )
+            AND
+            p.groupId = :groupId
+      )
   ]]></query>
 
 </hibernate-mapping>
