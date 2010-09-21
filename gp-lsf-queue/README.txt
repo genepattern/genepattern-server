@@ -60,3 +60,5 @@ To integrate this library into your GenePattern Server you need to:
 You need to configure that path to the broad core library and the GP server libraries.
 After you build, deploy.
     cp dist/*.jar Tomcat/webapps/gp/WEB-INF/lib 
+
+    Run one of the lsf_schema_*.sql scripts to create teh gp_lsf tables.
