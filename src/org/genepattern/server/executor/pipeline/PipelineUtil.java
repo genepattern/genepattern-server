@@ -4,6 +4,7 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.util.GPConstants;
+import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 
@@ -18,12 +19,12 @@ public class PipelineUtil {
             super(t);
         }
     }
-
-    static public PipelineModel getPipelineModel(int pipelineTaskId) 
+    
+    static public PipelineModel getPipelineModel(JobInfo pipelineJobInfo) 
     throws TaskIDNotFoundException, PipelineModelException
     {
         PipelineModel model = null;
-        TaskInfo taskInfo = JobInfoManager.getTaskInfo(pipelineTaskId);
+        TaskInfo taskInfo = JobInfoManager.getTaskInfo(pipelineJobInfo.getTaskID());
         TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
         if (tia != null) {
             String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
@@ -36,11 +37,29 @@ public class PipelineUtil {
                 }
             }
         }
+        model.setLsid(pipelineJobInfo.getTaskLSID());
         return model;
     }
-    
 
-    //public int getFirstStep(int jobId) {
-    //    
-    //}
+
+//    static public PipelineModel getPipelineModel(int pipelineTaskId) 
+//    throws TaskIDNotFoundException, PipelineModelException
+//    {
+//        PipelineModel model = null;
+//        TaskInfo taskInfo = JobInfoManager.getTaskInfo(pipelineTaskId);
+//        TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+//        if (tia != null) {
+//            String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
+//            if (serializedModel != null && serializedModel.length() > 0) {
+//                try {
+//                    model = PipelineModel.toPipelineModel(serializedModel);
+//                } 
+//                catch (Throwable x) {
+//                    throw new PipelineModelException(x);
+//                }
+//            }
+//        }
+//        return model;
+//    }
+//    
 }

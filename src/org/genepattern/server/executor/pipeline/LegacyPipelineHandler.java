@@ -26,6 +26,7 @@ import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobSubmissionException;
+import org.genepattern.server.executor.pipeline.PipelineUtil.PipelineModelException;
 import org.genepattern.server.executor.pipeline.RunPipelineAsynchronously.MissingTasksException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.AdminService;
@@ -35,6 +36,7 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
+import org.hibernate.Query;
 
 /**
  * Refactor code from GP 3.2.3 PipelineExecutor. This uses almost the same code base, but makes some changes
@@ -57,13 +59,11 @@ public class LegacyPipelineHandler {
      */
     public static void startPipeline(String[] commandLine, JobInfo pipelineJobInfo, int stopAfterTask) throws Exception {
         boolean success = false;
+        Integer firstStep = null;
         try {
-            String userId = pipelineJobInfo.getUserId();
-            int pipelineJobId = pipelineJobInfo.getJobNumber();
-            int pipelineTaskId = pipelineJobInfo.getTaskID();
-            PipelineModel pipelineModel = PipelineUtil.getPipelineModel(pipelineTaskId);
             Map additionalArgs = getAdditionalArgs(commandLine);
-            runPipeline(pipelineJobId, userId, pipelineModel, stopAfterTask, additionalArgs);
+            firstStep = runPipeline(pipelineJobInfo, stopAfterTask, additionalArgs);
+            new AnalysisDAO().updateJobStatus(firstStep, JobStatus.JOB_PENDING);
             HibernateUtil.commitTransaction();
             success = true;
         }
@@ -115,24 +115,19 @@ public class LegacyPipelineHandler {
         HibernateUtil.getSession().update(aJob);
     }
     
-    //private int getJobStatusId(int jobId) {
-    //    final String hql = 
-    //        "select jobStatus.statusId from org.genepattern.server.domain.AnalysisJob job "+
-    //        " where job.jobNo = :jobNo ";
-    //    
-    //    try { 
-    //        HibernateUtil.beginTransaction();
-    //        Session session = HibernateUtil.getSession();
-    //        Query query = session.createQuery(hql);
-    //        query.setInteger("jobNo", jobId);
-    //        Object rval = query.uniqueResult();
-    //        return AnalysisDAO.getCount(rval);
-    //    }
-    //    finally {
-    //        HibernateUtil.closeCurrentSession();
-    //    }
-    //}
-
+    //DAO helpers
+    private static List<Object[]> getChildJobObjs(int parentJobId) {
+        final int maxChildJobs = 1000; //limit total number of results to 1000
+        String hql = "select a.jobNo, jobStatus.statusId from org.genepattern.server.domain.AnalysisJob a where a.parent = :jobNo ";
+        hql += " ORDER BY jobNo ASC";
+        Query query = HibernateUtil.getSession().createQuery(hql);
+        query.setInteger("jobNo", parentJobId);
+        query.setFetchSize(maxChildJobs);
+        
+        List<Object[]> rval = query.list();
+        return rval;
+    }
+    
     /**
      * Called when a step in a pipeline job has completed, put the next job on the queue.
      * Check for and handle pipeline termination.
@@ -165,7 +160,6 @@ public class LegacyPipelineHandler {
         
                 //if there is another job to run, change the status of the next job to pending
                 if (nextJobId != null) {
-                    //update analysis_job set status_id = 1 where job_no = ?
                     ds.updateJobStatus(nextJobId, JobStatus.JOB_PENDING);
                     HibernateUtil.commitTransaction();
                     return true;
@@ -177,8 +171,13 @@ public class LegacyPipelineHandler {
                 return false;
             }
             else {
-                //TODO: handle error conditions
-                log.error("error handling for pipeline jobs is not implemented! handleJobCompletion(jobNumber="+jobNumber+",parentJobNumber="+parentJobNumber+")");
+                List<Integer> waitingJobIds = getIncompleteJobs(parentJobNumber);
+                for(Integer jobId : waitingJobIds) {
+                    //TODO: terminate or delete the jobs which have not yet started?
+                    ds.updateJobStatus(jobId, JobStatus.JOB_ERROR);
+                }
+                ds.updateJobStatus(parentJobNumber, JobStatus.JOB_ERROR);
+                HibernateUtil.commitTransaction();
             }
         }
         finally {
@@ -187,23 +186,42 @@ public class LegacyPipelineHandler {
         return false;
     }
 
-    //terminate all WAITING and PENDING jobs then change the status of the pipeline
-    private static void terminatePipeline(int jobNumber) {
-        log.error("method not implemented: terminatePipeline("+jobNumber+")");
-    }
-    
     private static Integer getNextJobId(final int parentJobId, final JobInfo jobInfo) {
-        AnalysisDAO ds = new AnalysisDAO();
-        JobInfo[] results = ds.getChildren(parentJobId);
-        for(JobInfo result : results) {
-            if (result.getJobNumber() == jobInfo.getJobNumber()) {
+        List<Object[]> jobInfoObjs = getChildJobObjs(parentJobId);
+        for(Object[] row : jobInfoObjs) {
+            int jobNo = (Integer) row[0];
+            if (jobNo == jobInfo.getJobNumber()) {
                 //skip
             }
-            else if (JobStatus.WAITING.equals( result.getStatus() )) {
-                return result.getJobNumber();
+            else {
+                int statusId = (Integer) row[1];
+                if (JobStatus.JOB_WAITING == statusId) {
+                    return jobNo;
+                }
             }
         }
         return null;
+    }
+
+    /**
+     * For the given pipeline, get the list of child jobs which have not yet finished.
+     * Only get immediate child jobs.
+     * 
+     * @param parentJobId
+     * @return
+     */
+    private static List<Integer> getIncompleteJobs(final int parentJobId) {
+        List<Object[]> jobInfoObjs = getChildJobObjs(parentJobId);
+        List<Integer> waitingJobs = new ArrayList<Integer>();
+        for(Object[] row : jobInfoObjs) {
+            int jobId = (Integer) row[0];
+            int statusId = (Integer) row[1];
+            //ignore completed jobs
+            if (JobStatus.JOB_FINISHED != statusId && JobStatus.JOB_ERROR != statusId) {
+                waitingJobs.add(jobId);
+            }
+        }
+        return waitingJobs;
     }
     
     private static Map getAdditionalArgs(String[] commandTokens) {
@@ -242,61 +260,50 @@ public class LegacyPipelineHandler {
         return additionalArguments;
     }
 
-    private static void runPipeline(int pipelineJobId, String userID, PipelineModel model, int stopAfterTask, Map additionalArgs) 
-    throws MissingTasksException, WebServiceException, JobSubmissionException
+    /**
+     * 
+     * @param pipelineJobId
+     * @param userID
+     * @param model
+     * @param stopAfterTask
+     * @param additionalArgs
+     * 
+     * @return the jobNumber of the first step of the pipeline
+     * 
+     * @throws MissingTasksException
+     * @throws WebServiceException
+     * @throws JobSubmissionException
+     */
+    private static Integer runPipeline(JobInfo pipelineJobInfo, int stopAfterTask, Map additionalArgs) 
+    throws PipelineModelException, MissingTasksException, WebServiceException, JobSubmissionException
     {  
-        checkForMissingTasks(userID, model);
+        PipelineModel pipelineModel = PipelineUtil.getPipelineModel(pipelineJobInfo);
+        pipelineModel.setLsid(pipelineJobInfo.getTaskLSID());
+
+        checkForMissingTasks(pipelineJobInfo.getUserId(), pipelineModel);
 
         int stepNum = 0;
-        Vector<JobSubmission> tasks = model.getTasks();
-        boolean first = true;
+        Vector<JobSubmission> tasks = pipelineModel.getTasks();
+        Integer firstStep = null;
         for(JobSubmission jobSubmission : tasks) { 
             if (stepNum >= stopAfterTask) {
                 break; // stop and execute no further
             }
             
             ParameterInfo[] parameterInfo = jobSubmission.giveParameterInfoArray();
-
-            substituteLsidInInputFiles(model.getLsid(), parameterInfo);
+            substituteLsidInInputFiles(pipelineJobInfo.getTaskLSID(), parameterInfo);
             ParameterInfo[] params = parameterInfo;
             params = setJobParametersFromArgs(jobSubmission.getName(), stepNum + 1, params, additionalArgs);
             params = removeEmptyOptionalParams(parameterInfo);
 
             int jobStatusId = JobStatus.JOB_WAITING;
-            if (first) {
-                first = false;
-                jobStatusId = JobStatus.JOB_PENDING;
+            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), jobSubmission, params, jobStatusId);
+            if (firstStep == null) {
+                firstStep = submittedJob.getJobNumber();
             }
-            JobInfo submittedJob = addJobToPipeline(pipelineJobId, userID, jobSubmission, params, jobStatusId);
-            
-            
-//            if (this.isPipelineTerminated) {
-//                this.exitCode = -1;
-//                this.jobStatus = JobStatus.JOB_ERROR;
-//                return;
-//            }
-//            
-//            if (JobStatus.ERROR.equals(taskResult.getStatus())) {
-//                //halt pipeline execution if one of the steps fails
-//                String errorMessage = "Error in pipeline step " + (stepNum + 1) + ": ";
-//                if (taskResult != null) {
-//                    errorMessage += (taskResult.getTaskName()+" [id: "+taskResult.getJobNumber()+"]");
-//                }
-//                else {
-//                    errorMessage += " taskResult==null, "+jobSubmission.getName() + " (" + jobSubmission.getLSID() + ")";
-//                }
-//                throw new WebServiceException(errorMessage);
-//            }
             ++stepNum;
         }
-//        this.exitCode = 0;
-//        this.jobStatus = JobStatus.JOB_FINISHED;
-        //}
-        //catch (InterruptedException e) {
-        //    log.debug("handle thread interruption while the pipeline is still running");
-        //    this.exitCode = -1;
-        //    this.jobStatus = JobStatus.JOB_ERROR;
-        //}
+        return firstStep;
     }
     
     /**

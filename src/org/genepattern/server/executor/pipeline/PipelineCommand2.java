@@ -23,6 +23,7 @@ import org.genepattern.webservice.WebServiceException;
 public class PipelineCommand2 implements Callable<PipelineCommand2> {
     private static Logger log = Logger.getLogger(PipelineCommand2.class);
 
+    private JobInfo jobInfo;
     private int jobNumber;
     private RunPipelineAsynchronously rp = new RunPipelineAsynchronously();
 
@@ -52,6 +53,7 @@ public class PipelineCommand2 implements Callable<PipelineCommand2> {
     }
 
     public void setJobInfo(JobInfo jobInfo) {
+        this.jobInfo = jobInfo;
         this.jobNumber = jobInfo.getJobNumber();
         // 1) set user id
         rp.setUserId(jobInfo.getUserId());
@@ -109,7 +111,7 @@ public class PipelineCommand2 implements Callable<PipelineCommand2> {
         final int pipelineTaskId = rp.getPipelineTaskId();
         PipelineModel model = null;
         try {
-            model = PipelineUtil.getPipelineModel(pipelineTaskId);
+            model = PipelineUtil.getPipelineModel(jobInfo);
         }
         catch (TaskIDNotFoundException e) {
             stderrBuffer.append(e.getLocalizedMessage()+" for pipeline job #"+jobNumber);
