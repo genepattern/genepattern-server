@@ -76,12 +76,10 @@ public class Analysis extends GenericWebService {
      *                    thrown if problems are encountered
      */
     public JobInfo checkStatus(int jobID) throws WebServiceException {
-        Boolean isAdmin = null;
-        String userId = null;
         JobInfo jobInfo = null;
         try {
-            userId = getUsernameFromContext();
-            isAdmin = AuthorizationHelper.adminJobs(jobInfo.getUserId());
+            final String userId = getUsernameFromContext();
+            final Boolean isAdmin = AuthorizationHelper.adminJobs(userId);
             jobInfo = (new AnalysisDAO()).getJobInfo(jobID);
             this.canReadJob(isAdmin, userId, jobID);
         } 
