@@ -28,25 +28,42 @@
     />    
     <ResourceLink global="jdbc/gp/hsql" name="jdbc/gp/hsql" type="javax.sql.DataSource" />
 
-    <!-- DataSource to the GP Oracle DB -->
+    <!-- DataSource to the Oracle DB -->
     <!-- Because auth="Application" rather than "Container", the 'user' and 'password' attributes are set by the application.
          In this case they are set in the hibernate.oracle.jndi.cfg.xml file with the following properties:
          hibernate.connection.username
          hibernate.connection.password
      -->
-    <Resource 
+    <!-- 
+      Oracle DB with Oracle connection pool.
+      Note: even though auth=Application, we need to include the user and password properties.
+     -->
+    <Resource auth="Application"
         name="jdbc/gp/oracle"
-        auth="Application"
         type="oracle.jdbc.pool.OracleDataSource"
-        driverClassName="oracle.jdbc.OracleDriver"
         factory="oracle.jdbc.pool.OracleDataSourceFactory"
         url="jdbc:oracle:thin:@cmapdb01.broadinstitute.org:1521:cmap_dev"
-        maxActive="20"
-        maxIdle="5"
-        maxWait="10000" 
-        removeAbandoned="true"
-        removeAbandonedTimeout="60"
-        logAbandoned="true"
+        user="GENEPATTERN_DEV_01"
+        password="****"
+        connectionCachingEnabled="true" 
+        connectionCacheProperties="(InitialLimit=5,MinLimit=5,MaxLimit=20,ValidateConnection=true)" 
     />
-    <ResourceLink global="jdbc/gp/oracle" name="jdbc/gp/oracle" type="oracle.jdbc.pool.OracleDataSource" />
+
+    <!--  
+      Oracle DB with c3p0 connection pool.
+     -->
+    <Resource auth="Application"
+        name="jdbc/gp/oracle_c3p0"
+        description="Pooled DB Connection"
+        driverClass="oracle.jdbc.driver.OracleDriver"
+        maxPoolSize="20"
+        minPoolSize="5"
+        acquireIncrement="1"
+        factory="org.apache.naming.factory.BeanFactory"
+        type="com.mchange.v2.c3p0.ComboPooledDataSource"
+        jdbcUrl="jdbc:oracle:thin:@cmapdb01.broadinstitute.org:1521:cmap_dev" 
+    />
+
+    <ResourceLink global="jdbc/gp/oracle" name="jdbc/gp/oracle" type="javax.sql.DataSource" />
+    
 </Context>
