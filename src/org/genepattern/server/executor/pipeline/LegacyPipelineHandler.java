@@ -294,7 +294,6 @@ public class LegacyPipelineHandler {
             substituteLsidInInputFiles(pipelineJobInfo.getTaskLSID(), parameterInfo);
             ParameterInfo[] params = parameterInfo;
             params = setJobParametersFromArgs(jobSubmission.getName(), stepNum + 1, params, additionalArgs);
-            params = removeEmptyOptionalParams(parameterInfo);
 
             int jobStatusId = JobStatus.JOB_WAITING;
             JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), jobSubmission, params, jobStatusId);
