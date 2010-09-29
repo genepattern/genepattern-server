@@ -147,32 +147,6 @@ public class AnalysisDAOTest extends DAOTestCase {
 
     }
 
-    /**
-     * 
-     */
-    public void testSetJobDeleted() throws Exception {
-
-        int jobCount = dao.getJobs("twomey", 10, 10000000, false).length;
-
-        int jobNo = 1;
-        JobInfo jobInfo = dao.getJobInfo(jobNo);
-        assertNotNull(jobInfo);
-
-        dao.setJobDeleted(jobNo, true);
-
-        int newJobCount = dao.getJobs("twomey", 10, 10000000, false).length;
-        assertEquals(jobCount - 1, newJobCount);
-
-    }
-    
-//    /**
-//     * 
-//     * @throws Exception
-//     */
-//    public void testResetPreviouslyRunningJobs() throws Exception {
-//        dao.resetPreviouslyRunningJobs();
-//    }
-    
 
     /**
      * 
@@ -193,20 +167,6 @@ public class AnalysisDAOTest extends DAOTestCase {
     public void testExecuteUpdate() throws Exception {
         String sql = "CHECKPOINT";
         dao.executeUpdate(sql);
-    }
-
-    /**
-     * 
-     */
-    public void testGetJobsByUser() throws Exception {
-        int jobCount = dao.getJobs("twomey", 10, 10000000, false).length;
-        assertEquals(10, jobCount);
-
-        jobCount = dao.getJobs("twomey", 10, 5, false).length;
-        assertEquals(5, jobCount);
-
-        jobCount = dao.getJobs(null, -1, 5, false).length;
-        assertEquals(5, jobCount);
     }
 
     /**
