@@ -21,8 +21,8 @@ import org.genepattern.webservice.JobInfo;
  * 
  * @author pcarr
  */
-public class PipelineExecutor2 implements CommandExecutor {
-    private static Logger log = Logger.getLogger(PipelineExecutor2.class);
+public class PipelineExecutor implements CommandExecutor {
+    private static Logger log = Logger.getLogger(PipelineExecutor.class);
 
     //'pipeline.num.threads' from genepattern.properties
     //private int numPipelines = 20;   
@@ -57,7 +57,7 @@ public class PipelineExecutor2 implements CommandExecutor {
         }
         
         try {
-            LegacyPipelineHandler.startPipeline(commandLine, jobInfo, Integer.MAX_VALUE);
+            PipelineHandler.startPipeline(commandLine, jobInfo, Integer.MAX_VALUE);
         }
         catch (Exception e) {
             throw new CommandExecutorException("Server error starting pipeline job #"+jobInfo.getJobNumber(), e);

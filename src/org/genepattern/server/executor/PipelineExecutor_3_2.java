@@ -31,8 +31,8 @@ import org.genepattern.webservice.JobInfo;
  * 
  * @author pcarr
  */
-public class PipelineExecutor implements CommandExecutor {
-    private static Logger log = Logger.getLogger(PipelineExecutor.class);
+public class PipelineExecutor_3_2 implements CommandExecutor {
+    private static Logger log = Logger.getLogger(PipelineExecutor_3_2.class);
 
     //'pipeline.num.threads' from genepattern.properties
     private int numPipelines = 20;
@@ -52,21 +52,21 @@ public class PipelineExecutor implements CommandExecutor {
     
     final static class PipelineCompletionService  {
         //store running pipelines in a map from jobId to future
-        private Map<String,Future<PipelineCommand>> futuresByJobId = new HashMap<String,Future<PipelineCommand>>();
-        private Map<Future<PipelineCommand>,String> jobIdsByFuture = new HashMap<Future<PipelineCommand>,String>();
-        private Map<String,PipelineCommand> pipelineCmdsByJobId = new HashMap<String,PipelineCommand>();
+        private Map<String,Future<PipelineCommand_3_2>> futuresByJobId = new HashMap<String,Future<PipelineCommand_3_2>>();
+        private Map<Future<PipelineCommand_3_2>,String> jobIdsByFuture = new HashMap<Future<PipelineCommand_3_2>,String>();
+        private Map<String,PipelineCommand_3_2> pipelineCmdsByJobId = new HashMap<String,PipelineCommand_3_2>();
         //handle special-case where a job is terminated before it is submitted
         private Set<String> prematurelyTerminatedJobs = new HashSet<String>();
         
         private ExecutorService executor = null;
-        private ExecutorCompletionService<PipelineCommand> completionService = null;
+        private ExecutorCompletionService<PipelineCommand_3_2> completionService = null;
         
         PipelineCompletionService(ExecutorService executor) {
             this.executor = executor;
-            completionService = new ExecutorCompletionService<PipelineCommand>(this.executor);
+            completionService = new ExecutorCompletionService<PipelineCommand_3_2>(this.executor);
         }
         
-        public void submit(PipelineCommand pipelineCmd) {
+        public void submit(PipelineCommand_3_2 pipelineCmd) {
             String jobId = ""+pipelineCmd.getJobNumber();
 
             synchronized (this) {
@@ -76,7 +76,7 @@ public class PipelineExecutor implements CommandExecutor {
                     return;
                 }
             
-                Future<PipelineCommand> future = completionService.submit(pipelineCmd);
+                Future<PipelineCommand_3_2> future = completionService.submit(pipelineCmd);
                 jobIdsByFuture.put(future, jobId);
                 futuresByJobId.put(jobId, future);
                 pipelineCmdsByJobId.put(jobId, pipelineCmd);
@@ -85,18 +85,18 @@ public class PipelineExecutor implements CommandExecutor {
         
         public Wrapper wrapTake() throws InterruptedException {
             //wait for the next task to complete ...
-            Future<PipelineCommand> future = completionService.take();
+            Future<PipelineCommand_3_2> future = completionService.take();
             
             //... remove items from hash maps ...
             String jobId = null;
-            PipelineCommand cmd = null;
+            PipelineCommand_3_2 cmd = null;
             synchronized (this) {
                 jobId = jobIdsByFuture.remove(future);
                 if (jobId == null) {
                     jobId = "";
                     log.error("Unable to map future to jobId for running pipeline");
                 }
-                Future<PipelineCommand> removed = futuresByJobId.remove(jobId);
+                Future<PipelineCommand_3_2> removed = futuresByJobId.remove(jobId);
                 if (removed == null || !removed.equals(future)) {
                     log.error("Unable to remove job from list of running pipelines for job #"+jobId);
                 }
@@ -108,7 +108,7 @@ public class PipelineExecutor implements CommandExecutor {
         }
         
         public void terminateJob(String jobId) {
-            final Future<PipelineCommand> future;
+            final Future<PipelineCommand_3_2> future;
             synchronized (this) {
                 future = futuresByJobId.remove(jobId);
                 if (future == null) {
@@ -122,17 +122,17 @@ public class PipelineExecutor implements CommandExecutor {
 
         public void terminateAllJobs(String message) {
             log.debug(message);
-            for(Entry<String, Future<PipelineCommand>> entry : futuresByJobId.entrySet()) {
+            for(Entry<String, Future<PipelineCommand_3_2>> entry : futuresByJobId.entrySet()) {
                 terminateJob(entry.getKey());
             }
         }
         
         static class Wrapper {
             String jobId;
-            Future<PipelineCommand> future;
-            PipelineCommand cmd;
+            Future<PipelineCommand_3_2> future;
+            PipelineCommand_3_2 cmd;
             
-            Wrapper(String jobId, Future<PipelineCommand> future, PipelineCommand cmd) {
+            Wrapper(String jobId, Future<PipelineCommand_3_2> future, PipelineCommand_3_2 cmd) {
                 this.jobId = jobId;
                 this.future = future;
                 this.cmd = cmd;
@@ -141,10 +141,10 @@ public class PipelineExecutor implements CommandExecutor {
             public String getJobId() {
                 return jobId;
             }
-            public Future<PipelineCommand> getFuture() {
+            public Future<PipelineCommand_3_2> getFuture() {
                 return future;
             }
-            public PipelineCommand getPipelineCommand() {
+            public PipelineCommand_3_2 getPipelineCommand() {
                 return cmd;
             }
         }
@@ -219,10 +219,10 @@ public class PipelineExecutor implements CommandExecutor {
                     while(true) {
                         PipelineCompletionService.Wrapper wrapper = completionService.wrapTake();
                         String jobId = wrapper.getJobId();
-                        Future<PipelineCommand> future = wrapper.getFuture();
-                        PipelineCommand cmd = wrapper.getPipelineCommand();
+                        Future<PipelineCommand_3_2> future = wrapper.getFuture();
+                        PipelineCommand_3_2 cmd = wrapper.getPipelineCommand();
                         try {
-                            PipelineCommand result = future.get();
+                            PipelineCommand_3_2 result = future.get();
                             log.debug("job #"+jobId+" completed!"+
                                     " wrapper.cmd.jobNumber="+cmd.getJobNumber()+
                                     " result.jobNumber="+result.getJobNumber());
@@ -283,7 +283,7 @@ public class PipelineExecutor implements CommandExecutor {
             throw new CommandExecutorException("null jobInfo");
         }
         
-        PipelineCommand cmd = new PipelineCommand();
+        PipelineCommand_3_2 cmd = new PipelineCommand_3_2();
         cmd.setCommandTokens(commandLine);
         cmd.setStdoutFile(stdoutFile);
         cmd.setStderrFile(stderrFile);

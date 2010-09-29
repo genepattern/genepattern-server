@@ -13,6 +13,7 @@ import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.executor.pipeline.PipelineExecutor;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.hibernate.Query;
@@ -105,10 +106,6 @@ public class BasicCommandManager implements CommandManager {
     private static boolean statusChanged(String origStatus, int updatedStatusId) {
         int origStatusId = JobStatus.STATUS_MAP.get(origStatus);
         return origStatusId != updatedStatusId;
-    }
-    
-    private void setJobStatusToError(JobInfo jobInfo) {
-        setJobStatus(jobInfo, JobStatus.JOB_ERROR);
     }
     
     private void setJobStatus(JobInfo jobInfo, int jobStatus) {
@@ -208,8 +205,8 @@ public class BasicCommandManager implements CommandManager {
     
     //map cmdExecId - commandExecutor
     private LinkedHashMap<String,CommandExecutor> cmdExecutorsMap = new LinkedHashMap<String,CommandExecutor>();
-    //hold a single executor for all pipelines
-    private static final String DEFAULT_PIPELINE_EXEC_ID = "org.genepattern.server.executor.PipelineExecutor";
+    //the cmdExecutorsMap.get( DEFAULT_PIPELINE_EXEC_ID ) ... the name for the default pipeline executor when none is specified in the config file
+    private static final String DEFAULT_PIPELINE_EXEC_ID = "DefaultGenePatternPipelineExecutor";
     
     public void addCommandExecutor(String id, CommandExecutor cmdExecutor) throws Exception {
         if (cmdExecutorsMap.containsKey(id)) {

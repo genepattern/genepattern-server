@@ -40,26 +40,5 @@ public class PipelineUtil {
         model.setLsid(pipelineJobInfo.getTaskLSID());
         return model;
     }
-
-
-//    static public PipelineModel getPipelineModel(int pipelineTaskId) 
-//    throws TaskIDNotFoundException, PipelineModelException
-//    {
-//        PipelineModel model = null;
-//        TaskInfo taskInfo = JobInfoManager.getTaskInfo(pipelineTaskId);
-//        TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-//        if (tia != null) {
-//            String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
-//            if (serializedModel != null && serializedModel.length() > 0) {
-//                try {
-//                    model = PipelineModel.toPipelineModel(serializedModel);
-//                } 
-//                catch (Throwable x) {
-//                    throw new PipelineModelException(x);
-//                }
-//            }
-//        }
-//        return model;
-//    }
-//    
+    
 }

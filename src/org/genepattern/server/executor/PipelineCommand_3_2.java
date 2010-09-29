@@ -24,8 +24,8 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.WebServiceException;
 
-public class PipelineCommand implements Callable<PipelineCommand> {
-    private static Logger log = Logger.getLogger(PipelineCommand.class);
+class PipelineCommand_3_2 implements Callable<PipelineCommand_3_2> {
+    private static Logger log = Logger.getLogger(PipelineCommand_3_2.class);
 
     private int jobNumber;
     private RunPipelineInThread rp = new RunPipelineInThread();
@@ -85,8 +85,8 @@ public class PipelineCommand implements Callable<PipelineCommand> {
     //override equals and hashCode based on the jobNumber
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof PipelineCommand) {
-            PipelineCommand cmdObj = (PipelineCommand) obj;
+        if (obj instanceof PipelineCommand_3_2) {
+            PipelineCommand_3_2 cmdObj = (PipelineCommand_3_2) obj;
             return this.jobNumber == cmdObj.jobNumber;
         }
         return false;
@@ -97,7 +97,7 @@ public class PipelineCommand implements Callable<PipelineCommand> {
         return this.jobNumber;
     }
 
-    public PipelineCommand call() throws Exception {
+    public PipelineCommand_3_2 call() throws Exception {
         try {
             runPipeline();
         } 
