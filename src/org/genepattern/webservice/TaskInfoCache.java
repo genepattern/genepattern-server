@@ -25,7 +25,9 @@ import org.hibernate.StatelessSession;
  * @author pcarr
  */
 public class TaskInfoCache {
-    static Logger log = Logger.getLogger(TaskInfoCache.class);
+    private static Logger log = Logger.getLogger(TaskInfoCache.class);
+    private static boolean enableCache = true; //set this for false for debugging
+    
     public static TaskInfoCache instance() {
         return Singleton.taskInfoCache;
     }
@@ -50,6 +52,9 @@ public class TaskInfoCache {
     private final ConcurrentMap<Integer, List<String>> taskDocFilenameCache = new ConcurrentHashMap<Integer, List<String>>();
     
     public void initializeCache() {
+        if (!enableCache) {
+            return;
+        }
         boolean closeDbSession = true;
         List<TaskMaster> allTaskMasters = findAll(closeDbSession);
         for(TaskMaster taskMaster : allTaskMasters) {
@@ -102,7 +107,6 @@ public class TaskInfoCache {
         }
         return docFilenames;
     }
-
    
     //helper DAO methods
     private List<TaskMaster> findAll(boolean closeTransaction) throws ExceptionInInitializerError {
@@ -148,22 +152,46 @@ public class TaskInfoCache {
     }
     
     public TaskInfo getTask(Integer taskId) throws TaskIDNotFoundException {
+        TaskInfo taskInfo = null;
+        if (enableCache) {
+            taskInfo = getTaskInfoFromCache(taskId);
+        }
+        if (taskInfo == null) {
+            taskInfo = getTaskInfoFromDb(taskId, enableCache);
+        }
+        return taskInfo;
+    }
+
+    private TaskInfo getTaskInfoFromCache(Integer taskId) throws TaskIDNotFoundException {
         TaskMaster taskMaster = taskMasterCache.get(taskId);
         if (taskMaster == null) {
-            //fetch from DB, then add to cache
-            taskMaster = findById(taskId);
-            if (taskMaster == null) {
-                throw new TaskIDNotFoundException(taskId);
-            }
-            taskMasterCache.put(taskId, taskMaster);
+            return null;
         }
         TaskInfoAttributes taskInfoAttributes = taskInfoAttributesCache.get(taskId);
         if (taskInfoAttributes == null) {
+            log.error("taskInfoAttributes for task id "+taskId+" is not in the taskInfoAttributesCache");
             taskInfoAttributes = TaskInfoAttributes.decode(taskMaster.getTaskinfoattributes());
-            taskInfoAttributesCache.put(taskId, taskInfoAttributes);
+            taskInfoAttributesCache.putIfAbsent(taskId, taskInfoAttributes);
         }
-        
         TaskInfo taskInfo = taskInfoFromTaskMaster(taskMaster, taskInfoAttributes);
+        return taskInfo;
+    }
+
+    private TaskInfo getTaskInfoFromDb(final Integer taskId, final boolean addToCache) throws TaskIDNotFoundException {
+        //fetch from DB, then [optionally] add to cache
+        TaskMaster taskMaster = findById(taskId);
+        if (taskMaster == null) {
+            throw new TaskIDNotFoundException(taskId);
+        }
+        TaskInfoAttributes taskInfoAttributes = null;
+        if (taskInfoAttributes == null) {
+            taskInfoAttributes = TaskInfoAttributes.decode(taskMaster.getTaskinfoattributes());
+        } 
+        TaskInfo taskInfo = taskInfoFromTaskMaster(taskMaster, taskInfoAttributes);
+        if (addToCache) {
+            taskMasterCache.putIfAbsent(taskId, taskMaster);
+            taskInfoAttributesCache.putIfAbsent(taskId, taskInfoAttributes);
+        }
         return taskInfo;
     }
     
@@ -188,17 +216,24 @@ public class TaskInfoCache {
     }
     
     public List<String> getDocFilenames(Integer taskId, String lsid) {
-        List<String> docFilenames = taskDocFilenameCache.get(taskId);
+        List<String> docFilenames = null;
+        if (enableCache) {
+            docFilenames = taskDocFilenameCache.get(taskId);
+        }
         if (docFilenames == null) {
             docFilenames = this.listDocFilenames(lsid);
-            taskDocFilenameCache.putIfAbsent(taskId, docFilenames);
+            if (enableCache) {
+                taskDocFilenameCache.putIfAbsent(taskId, docFilenames);
+            }
         }
         return docFilenames;
     }
 
     public void deleteTask(Integer taskId) {
-        taskMasterCache.remove(taskId);
-        taskInfoAttributesCache.remove(taskId);
-        taskDocFilenameCache.remove(taskId);
+        if (enableCache) {
+            taskMasterCache.remove(taskId);
+            taskInfoAttributesCache.remove(taskId);
+            taskDocFilenameCache.remove(taskId);
+        }
     }
 }
