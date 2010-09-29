@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- The contents of this file will be loaded for each web application -->
 <Context>
-
     <!-- Default set of monitored resources -->
     <WatchedResource>WEB-INF/web.xml</WatchedResource>
     
@@ -10,60 +9,86 @@
     <Manager pathname="" />
     -->
 
-    <!-- DataSource to the default HSQL DB -->
-    <Resource 
-        name="jdbc/gp/hsql" 
-        auth="Container" 
+    <!-- Configure JNDI DataSource -->
+    <Resource name="jdbc/gp/hsql"
+        description="hsqldb using c3p0 connection pool"
+        auth="Application"
+        type="com.mchange.v2.c3p0.ComboPooledDataSource"
+        driverClass="org.hsqldb.jdbcDriver"
+        factory="org.apache.naming.factory.BeanFactory"
+        jdbcUrl="jdbc:hsqldb:hsql://127.0.0.1:9001/xdb" 
+        maxPoolSize="20"
+        minPoolSize="5"
+        acquireIncrement="1"
+    />
+    <ResourceLink name="jdbc/gp/hsql" type="com.mchange.v2.c3p0.ComboPooledDataSource" />
+
+    <!--
+        Example configuration for HSQLDB using Tomcat's built in connection pool.
+        
+        Note: the user and password properties must be set here, and they must be
+            removed from the hibernate.cfg.xml file. 
+            
+            This appears to be a bug in the org.apache.tomcat.dbcp.dbcp.BasicDataSourceFactory.
+            The method DataSource.getConnection(user,password) is not supported. 
+            Instead, DataSource.getConnection() must be used for this to work.
+    -->
+    <Resource name="jdbc/gp/hsql_tomcat" 
+        description="hsqldb using tomcat packaged dbcp connection pool"
+        auth="Application"
         type="javax.sql.DataSource" 
         driverClassName="org.hsqldb.jdbcDriver"
         factory="org.apache.tomcat.dbcp.dbcp.BasicDataSourceFactory"
-        url="jdbc:hsqldb:hsql://127.0.0.1:9001/xdb" 
-        username="sa" password=""
+        url="jdbc:hsqldb:hsql://127.0.0.1:9001/xdb"
+        user="sa" password=""
         maxActive="20"
         maxIdle="5" 
         maxWait="10000" 
         removeAbandoned="true"
         removeAbandonedTimeout="60"
         logAbandoned="true"
-    />    
-    <ResourceLink global="jdbc/gp/hsql" name="jdbc/gp/hsql" type="javax.sql.DataSource" />
+    />
+    <ResourceLink name="jdbc/gp/hsql_tomcat" type="javax.sql.DataSource" />
 
     <!-- DataSource to the Oracle DB -->
-    <!-- Because auth="Application" rather than "Container", the 'user' and 'password' attributes are set by the application.
-         In this case they are set in the hibernate.oracle.jndi.cfg.xml file with the following properties:
+    <!-- The Oracle 'use' and 'password' are set in the hibernate.oracle.jndi.cfg.xml file with the following properties:
          hibernate.connection.username
          hibernate.connection.password
      -->
-    <!-- 
-      Oracle DB with Oracle connection pool.
-      Note: even though auth=Application, we need to include the user and password properties.
-     -->
-    <Resource auth="Application"
-        name="jdbc/gp/oracle"
+    <Resource name="jdbc/gp/oracle_oracle_ds"
+        description="GP Oracle DB and Oracle connection pool"
+        auth="Application"
         type="oracle.jdbc.pool.OracleDataSource"
         factory="oracle.jdbc.pool.OracleDataSourceFactory"
         url="jdbc:oracle:thin:@cmapdb01.broadinstitute.org:1521:cmap_dev"
+        connectionCachingEnabled="true" 
+        maxActive="20"
+        maxIdle="5"
+        maxWait="10000"
+    />
+    <!-- 
+        Note: the following properties can be used instead of maxActive, maxIdle, and maxWait, 
+        but there appears to be a bug in the oracle drivers. 
+        In order to use this you also need to include the 'user' and 'password' properties,
+        and you must remove the username and password entries in the hibernate configuration file (hibernate.oracle.jndi.dev.cfg.xml).
+
+        connectionCacheProperties="(InitialLimit=5,MinLimit=5,MaxLimit=20,ValidateConnection=true)" 
         user="GENEPATTERN_DEV_01"
         password="****"
-        connectionCachingEnabled="true" 
-        connectionCacheProperties="(InitialLimit=5,MinLimit=5,MaxLimit=20,ValidateConnection=true)" 
-    />
+    -->
+    <ResourceLink name="jdbc/gp/oracle_oracle_ds" type="oracle.jdbc.pool.OracleDataSource" />
 
-    <!--  
-      Oracle DB with c3p0 connection pool.
-     -->
-    <Resource auth="Application"
-        name="jdbc/gp/oracle_c3p0"
-        description="Pooled DB Connection"
+    <Resource name="jdbc/gp/oracle"
+        description="GP Oracle DB and c3p0 connection pool"
+        auth="Application"
+        type="com.mchange.v2.c3p0.ComboPooledDataSource"
         driverClass="oracle.jdbc.driver.OracleDriver"
+        factory="org.apache.naming.factory.BeanFactory"
+        jdbcUrl="jdbc:oracle:thin:@cmapdb01.broadinstitute.org:1521:cmap_dev" 
         maxPoolSize="20"
         minPoolSize="5"
         acquireIncrement="1"
-        factory="org.apache.naming.factory.BeanFactory"
-        type="com.mchange.v2.c3p0.ComboPooledDataSource"
-        jdbcUrl="jdbc:oracle:thin:@cmapdb01.broadinstitute.org:1521:cmap_dev" 
     />
-
-    <ResourceLink global="jdbc/gp/oracle" name="jdbc/gp/oracle" type="javax.sql.DataSource" />
+    <ResourceLink name="jdbc/gp/oracle" type="com.mchange.v2.c3p0.ComboPooledDataSource" />
     
 </Context>

@@ -9,6 +9,8 @@
     <property name="hibernate.transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
 
     <!--  hsql settings -->
+    <property name="hibernate.connection.username">sa</property>
+    <property name="hibernate.connection.password"></property>
     <property name="hibernate.default_schema">PUBLIC</property>
     <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property> 
     
