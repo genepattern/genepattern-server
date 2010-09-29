@@ -14,7 +14,6 @@ package org.genepattern.server.webservice.server.local;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
@@ -24,7 +23,6 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.handler.AddNewJobHandlerNoWakeup;
 import org.genepattern.server.webservice.server.Analysis;
-import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.WebServiceException;
