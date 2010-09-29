@@ -740,6 +740,20 @@ public class JobInfoWrapper implements Serializable {
         boolean debug = false;
         //debug = true;
         if (debug) {
+            //list each item in the parameter info array (including nested parameter attributes)
+            int i=0;
+            for(ParameterInfo p : jobInfo.getParameterInfoArray()) {
+                inputParameters.add(new ParameterInfoWrapper(new ParameterInfo("p["+i+"]: "+p.getName(), p.getValue(), "")));
+                ++i;
+                int j=0;
+                for(Object attrName : p.getAttributes().keySet()) {
+                    Object attrVal = p.getAttributes().get(attrName);
+                    inputParameters.add(new ParameterInfoWrapper(new ParameterInfo("     attr["+j+"]: "+attrName, ""+attrVal, "")));
+                    ++j;
+                }
+            }
+            
+            //also show the parameter_info CLOB
             String name = "analysis_job.parameter_info";
             String value = jobInfo.getParameterInfo();
             String description = "The raw entry in the PARAMETER_INFO column of the ANALYSIS_JOB table";
