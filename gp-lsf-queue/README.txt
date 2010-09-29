@@ -22,15 +22,12 @@ To integrate this library into your GenePattern Server you need to:
     You also need to enter the correct db username, password, and default schema.
 
 1.d) Edit the resources/job_configuration.yaml file 
-    Don't forget to include the DB username and password. Here is an example:
     ...
     LSF:
         classname: org.genepattern.server.executor.lsf.LsfCommandExecutor
         #BroadCore configuration properties
         configuration.properties:
             hibernate.connection.datasource: java:comp/env/jdbc/gp/oracle
-            hibernate.connection.username: GENEPATTERN_DEV_01
-            hibernate.connection.password: ****
             hibernate.default_schema: GENEPATTERN_DEV_01
             hibernate.dialect: org.genepattern.server.database.PlatformOracle9Dialect
             hibernate.current_session_context_class: thread
@@ -40,8 +37,8 @@ To integrate this library into your GenePattern Server you need to:
             lsf.num.job.submission.threads: 3
             lsf.num.job.completion.threads: 3    
 
-1.e) move your JDBC driver to the Tomcat/common/lib folder. For oracle it is ojdbc14.jar.
-    mv webapps/gp/WEB-INF/lib/ojdbc14.jar common/lib
+1.e) Double check that your JDBC driver is on the classpath. You can put it in the Tomcat/webapps/gp/WEB-INF/lib or Tomcat/common/lib folder. 
+    Drivers for oracle (ojdbc14.jar) and HSQLDB (hsqldb.jar) are already included by the GenePattern installer.
 
 2. Checkout, build, and deploy the Broad Core library
 2.a) e.g. mkdir ~/Projects/BroadCore; cd Projects
