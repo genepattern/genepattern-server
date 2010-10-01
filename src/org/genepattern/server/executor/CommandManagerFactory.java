@@ -124,6 +124,9 @@ public class CommandManagerFactory {
      * @return a valid File or null
      */
     public static File getConfigurationFile(String configuration) {
+        if (configuration == null || configuration.length() == 0) {
+            return null;
+        }
         File f = new File(configuration);
         if (!f.isAbsolute()) {
             //load the configuration file from the resources directory
