@@ -3623,297 +3623,288 @@ public class GenePatternAnalysisTask {
      * @author Jim Lerner
      * @see #installTask
      */
-    public static String installNewTask(String zipFilename, String username, int access_id, boolean recursive,
-	    Status taskIntegrator) throws TaskInstallationException {
-	Vector vProblems = new Vector();
-	int i;
-	ZipFile zipFile = null;
-	InputStream is = null;
-	File outFile = null;
-	FileOutputStream os = null;
-	String taskName = zipFilename;
-	String lsid = null;
-	try {
-	    String name;
-	    try {
-		zipFile = new ZipFile(zipFilename);
-	    } catch (IOException ioe) {
-		throw new Exception("Couldn't open " + zipFilename + ": " + ioe.getMessage());
-	    }
-	    ZipEntry manifestEntry = zipFile.getEntry(MANIFEST_FILENAME);
-	    ZipEntry zipEntry = null;
-	    long fileLength = 0;
-	    int numRead = 0;
-	    if (manifestEntry == null) {
-		// is it a zip of zips?
-		for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
-		    zipEntry = (ZipEntry) eEntries.nextElement();
-		    if (zipEntry.getName().endsWith(".zip")) {
-			continue;
-		    }
-		    throw new Exception(MANIFEST_FILENAME + " file not found in " + zipFilename);
-		}
-		// if we get here, the zip file contains only other zip files
-		// recursively install them
-		String firstLSID = null;
-		for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
-		    zipEntry = (ZipEntry) eEntries.nextElement();
-		    is = zipFile.getInputStream(zipEntry);
-		    outFile = new File(System.getProperty("java.io.tmpdir"), zipEntry.getName());
-		    outFile.deleteOnExit();
-		    os = new FileOutputStream(outFile);
-		    fileLength = zipEntry.getSize();
-		    numRead = 0;
-		    byte[] buf = new byte[100000];
-		    while ((i = is.read(buf, 0, buf.length)) > 0) {
-			os.write(buf, 0, i);
-			numRead += i;
-		    }
-		    os.close();
-		    os = null;
-		    outFile.setLastModified(zipEntry.getTime());
-		    if (numRead != fileLength) {
-			vProblems.add("only read " + numRead + " of " + fileLength + " bytes in " + zipFilename + "'s "
-				+ zipEntry.getName());
-		    }
-		    is.close();
-		    log.info("installing " + outFile.getAbsolutePath());
-		    lsid = installNewTask(outFile.getAbsolutePath(), username, access_id, taskIntegrator);
-		    log.info("installed " + lsid);
-		    if (firstLSID == null) {
-			firstLSID = lsid;
-		    }
-		    outFile.delete();
-		    if (!recursive) {
-			break; // only install the top level (first entry)
-		    }
-		}
-		return firstLSID;
-	    }
+    public static String installNewTask(String zipFilename, String username, int access_id, boolean recursive, Status taskIntegrator) 
+    throws TaskInstallationException {
+        Vector vProblems = new Vector();
+        int i;
+        ZipFile zipFile = null;
+        InputStream is = null;
+        File outFile = null;
+        FileOutputStream os = null;
+        String taskName = zipFilename;
+        String lsid = null;
+        try {
+            String name;
+            try {
+                zipFile = new ZipFile(zipFilename);
+            } 
+            catch (IOException ioe) {
+                throw new Exception("Couldn't open " + zipFilename + ": " + ioe.getMessage());
+            }
+            ZipEntry manifestEntry = zipFile.getEntry(MANIFEST_FILENAME);
+            ZipEntry zipEntry = null;
+            long fileLength = 0;
+            int numRead = 0;
+            if (manifestEntry == null) {
+                // is it a zip of zips?
+                for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
+                    zipEntry = (ZipEntry) eEntries.nextElement();
+                    if (zipEntry.getName().endsWith(".zip")) {
+                        continue;
+                    }
+                    throw new Exception(MANIFEST_FILENAME + " file not found in " + zipFilename);
+                }
+                // if we get here, the zip file contains only other zip files recursively install them
+                String firstLSID = null;
+                for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
+                    zipEntry = (ZipEntry) eEntries.nextElement();
+                    is = zipFile.getInputStream(zipEntry);
+                    outFile = new File(System.getProperty("java.io.tmpdir"), zipEntry.getName());
+                    outFile.deleteOnExit();
+                    os = new FileOutputStream(outFile);
+                    fileLength = zipEntry.getSize();
+                    numRead = 0;
+                    byte[] buf = new byte[100000];
+                    while ((i = is.read(buf, 0, buf.length)) > 0) {
+                        os.write(buf, 0, i);
+                        numRead += i;
+                    }
+                    os.close();
+                    os = null;
+                    outFile.setLastModified(zipEntry.getTime());
+                    if (numRead != fileLength) {
+                        vProblems.add("only read " + numRead + " of " + fileLength + " bytes in " + zipFilename + "'s " + zipEntry.getName());
+                    }
+                    is.close();
+                    log.info("installing " + outFile.getAbsolutePath());
+                    lsid = installNewTask(outFile.getAbsolutePath(), username, access_id, taskIntegrator);
+                    log.info("installed " + lsid);
+                    if (firstLSID == null) {
+                        firstLSID = lsid;
+                    }
+                    outFile.delete();
+                    if (!recursive) {
+                        break; // only install the top level (first entry)
+                    }
+                }
+                return firstLSID;
+            }
 
-	    // TODO: see TaskUtil.getTaskInfoFromManifest, may be able to get rid of duplicate code
-	    Properties props = new Properties();
-	    props.load(zipFile.getInputStream(manifestEntry));
+            // TODO: see TaskUtil.getTaskInfoFromManifest, may be able to get rid of duplicate code
+            Properties props = new Properties();
+            props.load(zipFile.getInputStream(manifestEntry));
 
-	    taskName = (String) props.remove(NAME);
-	    lsid = (String) props.get(LSID);
-	    LSID l = new LSID(lsid); // ; throw MalformedURLException if this
-	    // is
-	    // a bad LSID
-	    if (taskName == null || taskName.length() == 0) {
-		vProblems.add("Missing task name in manifest in " + new File(zipFilename).getName());
-		throw new TaskInstallationException(vProblems); // abandon ship!
-	    }
-	    String taskDescription = (String) props.remove(DESCRIPTION);
+            taskName = (String) props.remove(NAME);
+            lsid = (String) props.get(LSID);
+            LSID l = new LSID(lsid); 
+            if (taskName == null || taskName.length() == 0) {
+                // ; throw MalformedURLException if this is a bad LSID
+                vProblems.add("Missing task name in manifest in " + new File(zipFilename).getName());
+                throw new TaskInstallationException(vProblems); // abandon ship!
+            }
 
-	    // ParameterInfo entries consist of name/value/description triplets,
-	    // of which the value and description are optional
-	    // It is assumed that the names are p[1-n]_name, p[1-n]_value, and
-	    // p[1-n]_description
-	    // and that the numbering runs consecutively. When there is no
-	    // p[m]_name value, then there are m-1 ParameterInfos
-	    String value;
-	    String description;
-	    Vector vParams = new Vector();
-	    ParameterInfo pi = null;
-	    boolean found = true;
-	    for (i = 1; found; i++) { // loop until we don't find p_i_name
-		name = (String) props.remove("p" + i + "_name");
-		if (name == null) {
-		    found = false;
-		    continue;
-		}
-		if (name == null || name.length() == 0) {
-		    throw new Exception("missing parameter name for " + "p" + i + "_name");
-		}
-		value = (String) props.remove("p" + i + "_value");
-		if (value == null) {
-		    value = "";
-		}
-		description = (String) props.remove("p" + i + "_description");
-		if (description == null) {
-		    description = "";
-		}
-		pi = new ParameterInfo(name, value, description);
-		HashMap attributes = new HashMap();
-		for (int attribute = 0; attribute < PARAM_INFO_ATTRIBUTES.length; attribute++) {
-		    name = (String) PARAM_INFO_ATTRIBUTES[attribute][0];
-		    value = (String) props.remove("p" + i + "_" + name);
-		    if (value != null) {
-			attributes.put(name, value);
-		    }
-		    if (name.equals(PARAM_INFO_TYPE[0]) && value != null && value.equals(PARAM_INFO_TYPE_INPUT_FILE)) {
-			attributes.put(ParameterInfo.MODE, ParameterInfo.INPUT_MODE);
-			attributes.put(ParameterInfo.TYPE, ParameterInfo.FILE_TYPE);
-		    }
-		}
-		for (Enumeration p = props.propertyNames(); p.hasMoreElements();) {
-		    name = (String) p.nextElement();
-		    if (!name.startsWith("p" + i + "_")) {
-			continue;
-		    }
-		    value = (String) props.remove(name);
-		    // _cat.debug("installTask: " + taskName + ": parameter " +
-		    // name + "=" + value);
-		    name = name.substring(name.indexOf("_") + 1);
-		    attributes.put(name, value);
-		}
-		if (attributes.size() > 0) {
-		    pi.setAttributes(attributes);
-		}
-		vParams.add(pi);
-	    }
-	    ParameterInfo[] params = new ParameterInfo[vParams.size()];
-	    vParams.copyInto(params);
+            String taskDescription = (String) props.remove(DESCRIPTION);
+            // ParameterInfo entries consist of name/value/description triplets,
+            // of which the value and description are optional
+            // It is assumed that the names are p[1-n]_name, p[1-n]_value, and p[1-n]_description
+            // and that the numbering runs consecutively. 
+            // When there is no p[m]_name value, then there are m-1 ParameterInfos
+            String value;
+            String description;
+            Vector vParams = new Vector();
+            ParameterInfo pi = null;
+            boolean found = true;
+            for (i = 1; found; i++) { // loop until we don't find p_i_name
+                name = (String) props.remove("p" + i + "_name");
+                if (name == null) {
+                    found = false;
+                    continue;
+                }
+                if (name == null || name.length() == 0) {
+                    throw new Exception("missing parameter name for " + "p" + i + "_name");
+                }
+                value = (String) props.remove("p" + i + "_value");
+                if (value == null) {
+                    value = "";
+                }
+                description = (String) props.remove("p" + i + "_description");
+                if (description == null) {
+                    description = "";
+                }
+                pi = new ParameterInfo(name, value, description);
+                HashMap attributes = new HashMap();
+                for (int attribute = 0; attribute < PARAM_INFO_ATTRIBUTES.length; attribute++) {
+                    name = (String) PARAM_INFO_ATTRIBUTES[attribute][0];
+                    value = (String) props.remove("p" + i + "_" + name);
+                    if (value != null) {
+                        attributes.put(name, value);
+                    }
+                    if (name.equals(PARAM_INFO_TYPE[0]) && value != null && value.equals(PARAM_INFO_TYPE_INPUT_FILE)) {
+                        attributes.put(ParameterInfo.MODE, ParameterInfo.INPUT_MODE);
+                        attributes.put(ParameterInfo.TYPE, ParameterInfo.FILE_TYPE);
+                    }
+                }
+                for (Enumeration p = props.propertyNames(); p.hasMoreElements();) {
+                    name = (String) p.nextElement();
+                    if (!name.startsWith("p" + i + "_")) {
+                        continue;
+                    }
+                    value = (String) props.remove(name);
+                    // _cat.debug("installTask: " + taskName + ": parameter " + name + "=" + value);
+                    name = name.substring(name.indexOf("_") + 1);
+                    attributes.put(name, value);
+                }
+                if (attributes.size() > 0) {
+                    pi.setAttributes(attributes);
+                }
+                vParams.add(pi);
+            }
+            ParameterInfo[] params = new ParameterInfo[vParams.size()];
+            vParams.copyInto(params);
 
-	    // if it's a pipeline, generate the commandLine (bug 2105)
-	    String taskType = props.getProperty(GPConstants.TASK_TYPE);
-	    if (taskType.toLowerCase().endsWith("pipeline")) {
-		// it is a pipeline
-		// replace command line with generated command line for pipelines
-		String serializedModel = props.getProperty("serializedModel");
-		PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
-		String commandLine = AbstractPipelineCodeGenerator.generateCommandLine(model);
-		props.setProperty(GPConstants.COMMAND_LINE, commandLine);
-	    }
+            // if it's a pipeline, generate the commandLine (bug 2105)
+            String taskType = props.getProperty(GPConstants.TASK_TYPE);
+            //TODO: no longer need special-case pipeline command line
+            if (taskType.toLowerCase().endsWith("pipeline")) {
+                // replace command line with generated command line for pipelines
+                String serializedModel = props.getProperty("serializedModel");
+                PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
+                String commandLine = AbstractPipelineCodeGenerator.generateCommandLine(model);
+                props.setProperty(GPConstants.COMMAND_LINE, commandLine);
+            }
 
-	    // all remaining properties are assumed to be TaskInfoAttributes
-	    TaskInfoAttributes tia = new TaskInfoAttributes();
-	    for (Enumeration eProps = props.propertyNames(); eProps.hasMoreElements();) {
-		name = (String) eProps.nextElement();
-		value = props.getProperty(name);
-		tia.put(name, value);
-	    }
+            // all remaining properties are assumed to be TaskInfoAttributes
+            TaskInfoAttributes tia = new TaskInfoAttributes();
+            for (Enumeration eProps = props.propertyNames(); eProps.hasMoreElements();) {
+                name = (String) eProps.nextElement();
+                value = props.getProperty(name);
+                tia.put(name, value);
+            }
 
-	    // System.out.println("installTask (zip): username=" + username + ",
-	    // access_id=" + access_id + ", tia.owner=" + tia.get(USERID) + ",
-	    // tia.privacy=" + tia.get(PRIVACY));
-	    if (vProblems.size() == 0) {
-		log.info("installing " + taskName + " into database");
-		vProblems = GenePatternAnalysisTask.installTask(taskName, taskDescription, params, tia, username, access_id,
-			taskIntegrator);
-		if (vProblems == null) {
-		    vProblems = new Vector();
-		}
-		if (vProblems.size() == 0) {
-		    // get the newly assigned LSID
-		    lsid = (String) tia.get(GPConstants.LSID);
+            // System.out.println("installTask (zip): username=" + username + ",
+            // access_id=" + access_id + ", tia.owner=" + tia.get(USERID) + ",
+            // tia.privacy=" + tia.get(PRIVACY));
+            if (vProblems.size() == 0) {
+                log.info("installing " + taskName + " into database");
+                vProblems = GenePatternAnalysisTask.installTask(taskName, taskDescription, params, tia, username, access_id, taskIntegrator);
+                if (vProblems == null) {
+                    vProblems = new Vector();
+                }
+                if (vProblems.size() == 0) {
+                    // get the newly assigned LSID
+                    lsid = (String) tia.get(GPConstants.LSID);
 
-		    // extract files from zip file
-		    String taskDir = DirectoryManager.getTaskLibDir(null, (String) tia.get(GPConstants.LSID), username);
-		    File dir = new File(taskDir);
+                    // extract files from zip file
+                    String taskDir = DirectoryManager.getTaskLibDir(null, (String) tia.get(GPConstants.LSID), username);
+                    File dir = new File(taskDir);
 
-		    // if there are any existing files from a previous
-		    // installation
-		    // of this task,
-		    // clean them out so there is no interference
-		    File[] fileList = dir.listFiles();
-		    for (i = 0; i < fileList.length; i++) {
-			fileList[i].delete();
-		    }
+                    // if there are any existing files from a previous installation of this task,
+                    // clean them out so there is no interference
+                    File[] fileList = dir.listFiles();
+                    for (i = 0; i < fileList.length; i++) {
+                        fileList[i].delete();
+                    }
 
-		    // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-		    String folder = null;
-		    for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
-			zipEntry = (ZipEntry) eEntries.nextElement();
-			if (zipEntry.getName().equals(MANIFEST_FILENAME)) {
-			    continue;
-			}
-			is = zipFile.getInputStream(zipEntry);
-			name = zipEntry.getName();
-			if (zipEntry.isDirectory() || name.indexOf("/") != -1 || name.indexOf("\\") != -1) {
-			    // TODO: mkdirs()
-			    log.warn("installTask: skipping hierarchically-entered name: " + name);
-			    continue;
-			}
+                    // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                    String folder = null;
+                    for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
+                        zipEntry = (ZipEntry) eEntries.nextElement();
+                        if (zipEntry.getName().equals(MANIFEST_FILENAME)) {
+                            continue;
+                        }
+                        is = zipFile.getInputStream(zipEntry);
+                        name = zipEntry.getName();
+                        if (zipEntry.isDirectory() || name.indexOf("/") != -1 || name.indexOf("\\") != -1) {
+                            // TODO: mkdirs()
+                            log.warn("installTask: skipping hierarchically-entered name: " + name);
+                            continue;
+                        }
 
-			// copy attachments to the taskLib BEFORE installing the
-			// task, so that there is no time window when
-			// the task is installed in Omnigene's database but the
-			// files aren't decoded and so the task can't yet
-			// be properly invoked
+                        // copy attachments to the taskLib BEFORE installing the task, 
+                        // so that there is no time window when the task is installed in Omnigene's database 
+                        // but the files aren't decoded and so the task can't yet be properly invoked
 
-			// TODO: allow names to have paths, so long as they are
-			// below the current point and not above or a peer
-			// strip absolute or ../relative path names from zip
-			// entry
-			// name so that they dump into the tasklib directory
-			// only
-			i = name.lastIndexOf("/");
-			if (i != -1) {
-			    name = name.substring(i + 1);
-			}
-			i = name.lastIndexOf("\\");
-			if (i != -1) {
-			    name = name.substring(i + 1);
-			}
-			//try {
-			// TODO: support directory structure within zip file
-			outFile = new File(taskDir, name);
-			if (outFile.exists()) {
-			    File oldVersion = new File(taskDir, name + ".old");
-			    log.warn("replacing " + name + " (" + outFile.length() + " bytes) in " + taskDir
-					+ ".  Renaming old one to " + oldVersion.getName());
-				oldVersion.delete(); 
-				// delete the previous .old file
-				boolean renamed = rename(outFile, oldVersion, true);
-				if (!renamed) {
-				    log.error("failed to rename " + outFile.getAbsolutePath() + " to " + oldVersion.getAbsolutePath());
-				}
-			}
-			is.close();
-			if (os != null) {
-			    os.close();
-			    os = null;
-			}
-		    }
-		    //
-		    // unzip using ants classes to allow file permissions to be
-		    // retained
-		    boolean useAntUnzip = true;
-		    if (!System.getProperty("os.name").toLowerCase().startsWith("windows")) {
-			useAntUnzip = false;
-			Execute execute = new Execute();
-			execute.setCommandline(new String[] { "unzip", zipFilename, "-d", taskDir });
-			try {
-			    int result = execute.execute();
-			    if (result != 0) {
-				useAntUnzip = true;
-			    }
-			} catch (IOException ioe) {
-			    log.error(ioe);
-			    useAntUnzip = true;
-			}
-		    }
-		    if (useAntUnzip) {
-			Expander expander = new Expander();
-			expander.setSrc(new File(zipFilename));
-			expander.setDest(new File(taskDir));
-			expander.execute();
-		    }
+                        // TODO: allow names to have paths, 
+                        // so long as they are below the current point and not above or a peer
+                        // strip absolute or ../relative path names from zip entry name so that they dump into the tasklib directory only
+                        i = name.lastIndexOf("/");
+                        if (i != -1) {
+                            name = name.substring(i + 1);
+                        }
+                        i = name.lastIndexOf("\\");
+                        if (i != -1) {
+                            name = name.substring(i + 1);
+                        }
+                        //try {
+                        // TODO: support directory structure within zip file
+                        outFile = new File(taskDir, name);
+                        if (outFile.exists()) {
+                            File oldVersion = new File(taskDir, name + ".old");
+                            log.warn("replacing " + name + " (" + outFile.length() + " bytes) in " + taskDir
+                                    + ".  Renaming old one to " + oldVersion.getName());
+                            oldVersion.delete(); 
+                            // delete the previous .old file
+                            boolean renamed = rename(outFile, oldVersion, true);
+                            if (!renamed) {
+                                log.error("failed to rename " + outFile.getAbsolutePath() + " to " + oldVersion.getAbsolutePath());
+                            }
+                        }
+                        is.close();
+                        if (os != null) {
+                            os.close();
+                            os = null;
+                        }
+                    }
 
-		    // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-		}
-	    }
-	} catch (Exception e) {
-	    log.error(e);
-	    e.printStackTrace();
-	    vProblems.add(e.getMessage() + " while installing task");
-	} finally {
-	    try {
-		if (zipFile != null) {
-		    zipFile.close();
-		}
-	    } catch (IOException ioe) {
-	    }
-	}
-	if ((vProblems != null) && (vProblems.size() > 0)) {
-	    for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
-		log.error(eProblems.nextElement());
-	    }
-	    throw new TaskInstallationException(vProblems);
-	}
-	return lsid;
+                    // unzip using ants classes to allow file permissions to be retained
+                    boolean useAntUnzip = true;
+                    if (!System.getProperty("os.name").toLowerCase().startsWith("windows")) {
+                        useAntUnzip = false;
+                        Execute execute = new Execute();
+                        execute.setCommandline(new String[] { "unzip", zipFilename, "-d", taskDir });
+                        try {
+                            int result = execute.execute();
+                            if (result != 0) {
+                                useAntUnzip = true;
+                            }
+                        } 
+                        catch (IOException ioe) {
+                            log.error(ioe);
+                            useAntUnzip = true;
+                        }
+                    }
+                    if (useAntUnzip) {
+                        Expander expander = new Expander();
+                        expander.setSrc(new File(zipFilename));
+                        expander.setDest(new File(taskDir));
+                        expander.execute();
+                    }
+
+                    // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                }
+            }
+        } 
+        catch (Exception e) {
+            log.error(e);
+            e.printStackTrace();
+            vProblems.add(e.getMessage() + " while installing task");
+        } 
+        finally {
+            try {
+                if (zipFile != null) {
+                    zipFile.close();
+                }
+            } 
+            catch (IOException ioe) {
+            }
+        }
+        if ((vProblems != null) && (vProblems.size() > 0)) {
+            for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
+                log.error(eProblems.nextElement());
+            }
+            throw new TaskInstallationException(vProblems);
+        }
+        return lsid;
     }
 
     public static String installNewTask(String zipFilename, String username, int access_id, Status taskIntegrator)
