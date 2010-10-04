@@ -1,7 +1,5 @@
 package org.genepattern.server.executor.pipeline;
 
-import static org.genepattern.util.GPConstants.STDERR;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,6 +22,7 @@ import org.genepattern.server.JobManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.executor.pipeline.PipelineUtil.PipelineModelException;
@@ -47,7 +46,6 @@ import org.hibernate.Query;
  *     a) server error in startPipeline
  *     b) server error in prepareNextStep
  *     c) job is canceled (should cause the pipeline to cancel)
- *     d) job error (should cause the pipeline to be flagged as an error)
  * 
  * @author pcarr
  */
@@ -142,50 +140,100 @@ public class PipelineHandler {
         if (jobNumber < 0) {
             log.error("Invalid jobNumber: "+jobNumber);
         }
+        JobInfo jobInfo = null;
+        int parentJobNumber = -1;
         try {
             AnalysisDAO ds = new AnalysisDAO();
-            JobInfo jobInfo = ds.getJobInfo(jobNumber);
-            int parentJobNumber = jobInfo.getParentJobNumber();
+            jobInfo = ds.getJobInfo(jobNumber);
+            parentJobNumber = jobInfo.getParentJobNumber();
             if (parentJobNumber < 0) {
                 log.error("Invalid parentJobNumber: "+parentJobNumber);
                 return false;
-            }
-           
-            collectChildJobResults(jobInfo);
-        
-            //check the status of the job
-            if (JobStatus.FINISHED.equals(jobInfo.getStatus())) { 
-                //get the next step in the pipeline, by jobId
-                Integer nextJobId = getNextJobId(parentJobNumber, jobInfo);
-        
-                //if there is another job to run, change the status of the next job to pending
-                if (nextJobId != null) {
-                    ds.updateJobStatus(nextJobId, JobStatus.JOB_PENDING);
-                    HibernateUtil.commitTransaction();
-                    return true;
-                }
-
-                //otherwise, assume the pipeline is complete, update the status of the pipeline
-                ds.updateJobStatus(parentJobNumber, JobStatus.JOB_FINISHED);
-                HibernateUtil.commitTransaction();
-                return false;
-            }
-            else {
-                List<Integer> waitingJobIds = getIncompleteJobs(parentJobNumber);
-                for(Integer jobId : waitingJobIds) {
-                    //TODO: terminate or delete the jobs which have not yet started?
-                    ds.updateJobStatus(jobId, JobStatus.JOB_ERROR);
-                }
-                ds.updateJobStatus(parentJobNumber, JobStatus.JOB_ERROR);
-                HibernateUtil.commitTransaction();
-            }
+            } 
+            //not sure if this is necessary
+            collectChildJobResults(ds, jobInfo);
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
+        
+        //check the status of the job
+        if (JobStatus.FINISHED.equals(jobInfo.getStatus())) { 
+            //get the next step in the pipeline, by jobId
+            HibernateUtil.beginTransaction();
+            Integer nextJobId = getNextJobId(parentJobNumber, jobInfo);
+            HibernateUtil.closeCurrentSession();
+            if (nextJobId != null) {
+                //if there is another job to run, change the status of the next job to pending
+                startNextStep(nextJobId);
+                //indicate there is another step waiting on the queue
+                return true;
+            }
+            else {
+                //it's the last step in the pipeline, update its status
+                handlePipelineJobCompletion(parentJobNumber, 0, JobStatus.JOB_FINISHED);
+                return false;
+            }
+        }
+        else {
+            //handle an error in a pipeline step
+            terminatePipelineSteps(parentJobNumber);
+            handlePipelineJobCompletion(parentJobNumber, -1, JobStatus.JOB_ERROR);
+        }
         return false;
     }
+    
+    private static void startNextStep(int nextJobId) {
+        try {
+            HibernateUtil.beginTransaction();
+            AnalysisJobScheduler.setJobStatus(nextJobId, JobStatus.JOB_PENDING);
+            HibernateUtil.commitTransaction();
+        }
+        catch (Throwable t) {
+            HibernateUtil.rollbackTransaction();
+        }
+    }
+    
+    private static void terminatePipelineSteps(int parentJobNumber) {
+        try {
+            HibernateUtil.beginTransaction();
+            List<Integer> incompleteJobIds = getIncompleteJobs(parentJobNumber);
+            for(Integer jobId : incompleteJobIds) {
+                AnalysisJobScheduler.setJobStatus(jobId, JobStatus.JOB_ERROR);
+            }
+            HibernateUtil.commitTransaction();
+        }
+        catch (Throwable t) {
+            log.error("Error updating job status for child jobs in pipeline #"+parentJobNumber, t);
+            HibernateUtil.rollbackTransaction();
+        }
+        
+    }
 
+    /**
+     * For the given pipeline, set its status to complete (and notify any interested listeners).
+     * Delegated to the GenePatternAnalysisTask.
+     * 
+     * @param parentJobNumber
+     * @param errorCode
+     * @param jobStatus
+     */
+    private static void handlePipelineJobCompletion(int parentJobNumber, int errorCode, int jobStatus) {
+        try {
+            GenePatternAnalysisTask.handleJobCompletion(parentJobNumber, GPConstants.STDOUT, GPConstants.STDERR, errorCode, jobStatus, GenePatternAnalysisTask.JOB_TYPE.PIPELINE);
+        }
+        catch (Throwable t) {
+            log.error("Error recording pipeline job completion for job #"+parentJobNumber, t);
+        }
+    }
+
+    /**
+     * For the given pipeline, get the next 'WAITING' job id.
+     * 
+     * @param parentJobId
+     * @param jobInfo
+     * @return
+     */
     private static Integer getNextJobId(final int parentJobId, final JobInfo jobInfo) {
         List<Object[]> jobInfoObjs = getChildJobObjs(parentJobId);
         for(Object[] row : jobInfoObjs) {
@@ -311,13 +359,12 @@ public class PipelineHandler {
      * 
      * recurse through the children and add all output params to the parent
      */
-    private static JobInfo collectChildJobResults(JobInfo jobInfo) {
+    private static JobInfo collectChildJobResults(AnalysisDAO ds, JobInfo jobInfo) {
         if (jobInfo == null) {
             log.debug("Invalid null arg to collectChildJobResults");
             return jobInfo;
         }
         log.debug("collectChildJobResults for: " + jobInfo.getJobNumber());
-        AnalysisDAO ds = new AnalysisDAO();
         JobInfo[] children = ds.getChildren(jobInfo.getJobNumber());
         if (children.length == 0) {
             return jobInfo;
@@ -348,7 +395,6 @@ public class PipelineHandler {
         }
     }
 
-    
     /**
      * submit the job and wait for it to complete
      * 
@@ -686,27 +732,27 @@ public class PipelineHandler {
         return parameterInfo;
     }
     
-    /**
-     * called to notify the gp server that a pipeline job has completed.
-     */
-    private static void recordPipelineJobCompletion(int rootJobId, String stdoutFilename, String stderrFilename, int exitCode, StringBuffer stderrBuffer) {
-        //output stderrBuffer to STDERR file
-        int jobStatus = JobStatus.JOB_FINISHED;
-        if (stderrBuffer != null && stderrBuffer.length() > 0) {
-            jobStatus = JobStatus.JOB_ERROR;
-            if (exitCode == 0) {
-                exitCode = -1;
-            }
-            String outDirName = GenePatternAnalysisTask.getJobDir(Integer.toString(rootJobId));
-            GenePatternAnalysisTask.writeStringToFile(outDirName, STDERR, stderrBuffer.toString());
-        }
-
-        try {
-            GenePatternAnalysisTask.handleJobCompletion(rootJobId, stdoutFilename, stderrFilename, exitCode, jobStatus, GenePatternAnalysisTask.JOB_TYPE.PIPELINE);
-        }
-        catch (Exception e) {
-            log.error("Error handling job completion for pipeline: "+rootJobId, e);
-        }
-    }
+//    /**
+//     * called to notify the gp server that a pipeline job has completed.
+//     */
+//    private static void recordPipelineJobCompletion(int rootJobId, String stdoutFilename, String stderrFilename, int exitCode, StringBuffer stderrBuffer) {
+//        //output stderrBuffer to STDERR file
+//        int jobStatus = JobStatus.JOB_FINISHED;
+//        if (stderrBuffer != null && stderrBuffer.length() > 0) {
+//            jobStatus = JobStatus.JOB_ERROR;
+//            if (exitCode == 0) {
+//                exitCode = -1;
+//            }
+//            String outDirName = GenePatternAnalysisTask.getJobDir(Integer.toString(rootJobId));
+//            GenePatternAnalysisTask.writeStringToFile(outDirName, STDERR, stderrBuffer.toString());
+//        }
+//
+//        try {
+//            GenePatternAnalysisTask.handleJobCompletion(rootJobId, stdoutFilename, stderrFilename, exitCode, jobStatus, GenePatternAnalysisTask.JOB_TYPE.PIPELINE);
+//        }
+//        catch (Exception e) {
+//            log.error("Error handling job completion for pipeline: "+rootJobId, e);
+//        }
+//    }
 
 }
