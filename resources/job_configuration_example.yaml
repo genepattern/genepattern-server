@@ -11,7 +11,6 @@
 default.properties: 
     executor: RuntimeExec
     java_flags: -Xmx512m
-    pipeline.executor: PipelineExec
 
 # a list of command executors
 # The executor id, 'org.genepattern.server.executor.PipelineExecutor', is reserved for the default executor which runs all GP pipelines.
@@ -78,11 +77,6 @@ executors:
             # special case for scatter gather jobs, not yet implemented
             #lsf.firehose.scatter.gather: [true | false]
             #lsf.firehose.scatter.gather.output.filename: scatter.gather.out
-    # executor for all pipeline jobs, 
-    #     include this last, because each executor is instantiated and started 
-    #     in the order in which it appears in this file.  
-    PipelineExec:
-        classname: org.genepattern.server.executor.PipelineExecutor
 
 # override default.properties and executor->default.properties based on taskname or lsid
 # Note: executor->configuration.properties are intended to be applied at startup and are not overwritten here
