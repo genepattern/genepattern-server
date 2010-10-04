@@ -517,11 +517,11 @@ public class GenePatternAnalysisTask {
         }
 
         JobInfo jobInfo = null;
-        int parent = -1;
+        int parentJobId = -1;
         try {
             AnalysisDAO dao = new AnalysisDAO();
             jobInfo = dao.getJobInfo(jobId);
-            parent = dao.getParentJobId(jobId);
+            parentJobId = dao.getParentJobId(jobId);
         }
         catch (Throwable t) {
             throw new JobDispatchException("Server error: Not able to load jobInfo for jobId: "+jobId, t);
@@ -617,13 +617,13 @@ public class GenePatternAnalysisTask {
             Map<String, String> environmentVariables = new HashMap<String, String>();
 
             // handle special-case: this job is part of a pipeline, update input file parameters which use the output of previous steps
-            if (parent >= 0) {
-                PipelineHandler.prepareNextStep(parent, jobInfo);
+            if (parentJobId >= 0) {
+                PipelineHandler.prepareNextStep(parentJobId, jobInfo);
             }
             
             //ParameterInfo[] paramsActual = jobInfo.getParameterInfoArray();
             ParameterInfo[] paramsCopy = copyParameterInfoArray(jobInfo);
-            Properties props = setupProps(taskInfo, taskName, parent, jobId, jobInfo.getTaskID(),
+            Properties props = setupProps(taskInfo, taskName, parentJobId, jobId, jobInfo.getTaskID(),
                     taskInfoAttributes, paramsCopy, environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
             Vector<String> vProblems = new Vector<String>();
             if (paramsCopy != null) {
@@ -1044,7 +1044,7 @@ public class GenePatternAnalysisTask {
             // name from the properties
             // (ParameterInfo[], System properties, environment variables, and built-ins merged)
             // build props again, now that downloaded files are set
-            props = setupProps(taskInfo, taskName, parent, jobId, jobInfo.getTaskID(), taskInfoAttributes, paramsCopy,
+            props = setupProps(taskInfo, taskName, parentJobId, jobId, jobInfo.getTaskID(), taskInfoAttributes, paramsCopy,
                     environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
             
             // optionally, override the java flags if they have been overridden in the job configuration file
@@ -1320,25 +1320,23 @@ public class GenePatternAnalysisTask {
                 handleJobCompletion(jobId, stdoutFilename, stderrFilename, exitCode, jobStatus, jobType);
             }
         } 
-        catch (Throwable e) {
-            try {
-                if (e.getCause() != null) {
-                    e = e.getCause();
-                }
-                String errorMessage = "Error submitting job "+jobId+". "+taskName;
-                log.error(errorMessage, e);
-                File outFile = writeStringToFile(outDirName, STDERR, e.getMessage() + "\n\n");
-                JobInfo parentJobInfo = new AnalysisDAO().getParent(jobId);
-                addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
-                recordJobCompletion(jobInfo, parentJobInfo, JobStatus.JOB_ERROR);
-                HibernateUtil.commitTransaction();
-            } 
-            catch (Exception e2) {
-                log.error(taskName + " error: unable to update job error status" + e2);
-                HibernateUtil.rollbackTransaction();
+        catch (Throwable t) {
+            if (t.getCause() != null) {
+                t = t.getCause();
             }
-            finally {
-                HibernateUtil.closeCurrentSession();
+            String errorMessage = "Error submitting job "+jobId+". "+taskName;
+            log.error(errorMessage, t);
+            File outFile = writeStringToFile(outDirName, STDERR, "GenePattern Server error preparing job for execution.\n"+t.getMessage() + "\n\n");
+            int exitCode = -1;
+            JOB_TYPE jobType = JOB_TYPE.JOB;
+            if (parentJobId >= 0) {
+                jobType = JOB_TYPE.PIPELINE;
+            }
+            try {
+                handleJobCompletion(jobId, STDOUT, STDERR, exitCode, JobStatus.JOB_ERROR, jobType);
+            }
+            catch (Throwable t1) {
+                log.error("Error handling job completion for job #"+jobId, t1);
             }
         }
     }
