@@ -123,12 +123,13 @@ public class AnalysisJobScheduler implements Runnable {
     static private List<Integer> getWaitingJobs(int maxJobCount) {
         try {
             HibernateUtil.beginTransaction();
-            String hql = "select jobNo from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId = :statusId and deleted = false order by submittedDate ";
+            String hql = "select jobNo from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId = :statusId and :deleted = false order by submittedDate ";
             Query query = HibernateUtil.getSession().createQuery(hql);
             if (maxJobCount > 0) {
                 query.setMaxResults(maxJobCount);
             }
             query.setInteger("statusId", JobStatus.JOB_PENDING);
+            query.setBoolean("deleted", false);
             List<Integer> jobIds = query.list();
             return jobIds;
         }
