@@ -35,8 +35,8 @@ import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
-import org.genepattern.server.executor.CommandExecutor;
-import org.genepattern.server.executor.CommandManagerFactory;
+import org.genepattern.server.executor.JobTerminationException;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.GenericWebService;
@@ -660,64 +660,21 @@ public class Analysis extends GenericWebService {
         terminateJob(jobInfo);
     }
     
+    /**
+     * Delegate job termination to GenePatternAnalysisTask.
+     * 
+     * @param jobInfo
+     * @throws WebServiceException
+     */
     private void terminateJob(JobInfo jobInfo) throws WebServiceException {
-        if (jobInfo == null) {
-            log.error("invalid null arg to terminateJob");
-            return;
-        }
-
-        //terminate pending jobs immediately
-        boolean isPending = isPending(jobInfo);
-        if (isPending) {
-            log.debug("Terminating PENDING job #"+jobInfo.getJobNumber());
-            
-            try { 
-                AnalysisDAO ds = new AnalysisDAO();
-                ds.updateJobStatus(jobInfo.getJobNumber(), JobStatus.JOB_ERROR);
-                HibernateUtil.commitTransaction();
-            }
-            catch (Throwable t) {
-                HibernateUtil.rollbackTransaction();
-            }
-            return;
-        } 
-        
-        //note: don't terminate completed jobs
-        boolean isFinished = isFinished(jobInfo); 
-        if (isFinished) {
-            log.debug("job "+jobInfo.getJobNumber()+"is already finished");
-            return;
-        }
-
         try {
-            CommandExecutor cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
-            cmdExec.terminateJob(jobInfo);
+            GenePatternAnalysisTask.terminateJob(jobInfo);
         }
-        catch (Throwable t) {
-            throw new WebServiceException(t);
+        catch (JobTerminationException e) {
+            throw new WebServiceException(e);
         }
     }
     
-    private static boolean isPending(JobInfo jobInfo) {
-        return isPending(jobInfo.getStatus());
-    }
-
-    private static boolean isPending(String jobStatus) {
-        return JobStatus.PENDING.equals(jobStatus);
-    }
-
-    private static boolean isFinished(JobInfo jobInfo) {
-        return isFinished(jobInfo.getStatus());
-    }
-    
-    private static boolean isFinished(String jobStatus) {
-        if ( JobStatus.FINISHED.equals(jobStatus) ||
-                JobStatus.ERROR.equals(jobStatus) ) {
-            return true;
-        }
-        return false;        
-    }
-
     /**
      * Returns the username trying to access this service. The username is retrieved from the incoming soap header.
      * 

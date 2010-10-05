@@ -137,6 +137,7 @@ import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandExecutorNotFoundException;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobDispatchException;
+import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.executor.pipeline.PipelineHandler;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
@@ -1340,7 +1341,65 @@ public class GenePatternAnalysisTask {
             }
         }
     }
+
+    public static void terminateJob(JobInfo jobInfo) throws JobTerminationException {
+        if (jobInfo == null) {
+            log.error("invalid null arg to terminateJob");
+            return;
+        }
+
+        //note: don't terminate completed jobs
+        boolean isFinished = isFinished(jobInfo); 
+        if (isFinished) {
+            log.debug("job "+jobInfo.getJobNumber()+"is already finished");
+            return;
+        }
+
+        //terminate pending jobs immediately
+        boolean isPending = isPending(jobInfo);
+        if (isPending) {
+            log.debug("Terminating PENDING job #"+jobInfo.getJobNumber());
+            
+            try { 
+                AnalysisDAO ds = new AnalysisDAO();
+                ds.updateJobStatus(jobInfo.getJobNumber(), JobStatus.JOB_ERROR);
+                HibernateUtil.commitTransaction();
+            }
+            catch (Throwable t) {
+                HibernateUtil.rollbackTransaction();
+            }
+            return;
+        } 
+        
+        try {
+            CommandExecutor cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
+            cmdExec.terminateJob(jobInfo);
+        }
+        catch (Throwable t) {
+            throw new JobTerminationException(t);
+        }
+    }
+
+    private static boolean isPending(JobInfo jobInfo) {
+        return isPending(jobInfo.getStatus());
+    }
+
+    private static boolean isPending(String jobStatus) {
+        return JobStatus.PENDING.equals(jobStatus);
+    }
+
+    private static boolean isFinished(JobInfo jobInfo) {
+        return isFinished(jobInfo.getStatus());
+    }
     
+    private static boolean isFinished(String jobStatus) {
+        if ( JobStatus.FINISHED.equals(jobStatus) ||
+                JobStatus.ERROR.equals(jobStatus) ) {
+            return true;
+        }
+        return false;        
+    }
+
     /**
      * 
      * @param taskInfo
