@@ -18,7 +18,6 @@ import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandManagerFactory;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.JobInfo;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -230,17 +229,19 @@ public class LsfCommandExecutor implements CommandExecutor {
         final List<LsfJob> lsfJobs = getLsfJobByGpJobId(gpJobId);
         if (lsfJobs.isEmpty()) {
             log.error("Didn't find lsf job for gp job: "+gpJobId);
-        } else {
-        	terminateJobs(gpJobId, lsfJobs);
-        	final LsfJob initialJob = lsfJobs.get(0);
-        	try {
-				GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), initialJob.getOutputFilename(), initialJob.getErrorFileName(), -1, JobStatus.JOB_ERROR);
-			} catch (final Exception e) {
-                log.error("Error terminating job "+jobInfo.getJobNumber(), e);
-			}
+        } 
+        else {
+            terminateJobs(gpJobId, lsfJobs);
+            //no longer need this code, this should be handled by the callback
+            //final LsfJob initialJob = lsfJobs.get(0);
+            //try {
+            //    GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), initialJob.getOutputFilename(), initialJob.getErrorFileName(), -1, JobStatus.JOB_ERROR);
+            //} 
+            //catch (final Exception e) {
+            //    log.error("Error terminating job "+jobInfo.getJobNumber(), e);
+            //}
         }
-
-}
+    }
 
 	public static void terminateJobs(final String gpJobId,
 			final Collection<LsfJob> lsfJobs) {
