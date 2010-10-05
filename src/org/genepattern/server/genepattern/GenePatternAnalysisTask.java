@@ -1342,6 +1342,24 @@ public class GenePatternAnalysisTask {
         }
     }
 
+    public static void terminateJob(Integer jobId) throws JobTerminationException {
+        if (jobId == null) {
+            throw new JobTerminationException("Invalid null arg");
+        }
+        JobInfo jobInfo = null;
+        try {
+            AnalysisDAO dao = new AnalysisDAO();
+            jobInfo = dao.getJobInfo(jobId);
+        }
+        catch (Throwable t) {
+            throw new JobTerminationException("Server error: Not able to load jobInfo for jobId: "+jobId, t);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+        terminateJob(jobInfo);
+    }
+
     public static void terminateJob(JobInfo jobInfo) throws JobTerminationException {
         if (jobInfo == null) {
             log.error("invalid null arg to terminateJob");

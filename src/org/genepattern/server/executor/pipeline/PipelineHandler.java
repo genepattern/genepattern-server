@@ -25,6 +25,7 @@ import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobSubmissionException;
+import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.executor.pipeline.PipelineUtil.PipelineModelException;
 import org.genepattern.server.executor.pipeline.RunPipelineAsynchronously.MissingTasksException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -75,6 +76,45 @@ public class PipelineHandler {
         if (success) {
             CommandManagerFactory.getCommandManager().wakeupJobQueue();
         }
+    }
+    
+    public static void terminatePipeline(JobInfo jobInfo) {
+        if (jobInfo == null) {
+            log.error("Ignoring null arg");
+            return;
+        }
+        // handle special-case: pipeline already finished before user terminated event was processed
+        if (JobStatus.ERROR.equals(jobInfo.getStatus()) || JobStatus.FINISHED.equals(jobInfo.getStatus())) {
+            log.info("job #"+jobInfo.getJobNumber()+" already finished, status="+jobInfo.getStatus());
+            return;
+        }
+        
+        //get current job and terminate it ... if all steps have already completed ... log an error but do nothing
+        int processingJobId = -1;
+        HibernateUtil.beginTransaction();
+        List<Object[]> jobInfoObjs = getChildJobObjs(jobInfo.getJobNumber());
+        HibernateUtil.closeCurrentSession();
+        for(Object[] row : jobInfoObjs) {
+            int jobId = (Integer) row[0];
+            int statusId = (Integer) row[1];
+            if (JobStatus.JOB_PROCESSING == statusId) {
+                processingJobId = jobId;
+            }
+        }
+        if (processingJobId >= 0) {
+            try {
+                GenePatternAnalysisTask.terminateJob(processingJobId);
+            }
+            catch (JobTerminationException e) {
+                log.error("Error terminating job #"+processingJobId+" in pipeline "+jobInfo.getJobNumber(), e);
+                return;
+            }
+            return;
+        }
+        
+        //very likely corner-case
+        terminatePipelineSteps(jobInfo.getJobNumber());
+        handlePipelineJobCompletion(jobInfo.getJobNumber(), -1, JobStatus.JOB_ERROR);
     }
 
     /**
@@ -207,7 +247,6 @@ public class PipelineHandler {
             log.error("Error updating job status for child jobs in pipeline #"+parentJobNumber, t);
             HibernateUtil.rollbackTransaction();
         }
-        
     }
 
     /**
@@ -226,7 +265,7 @@ public class PipelineHandler {
             log.error("Error recording pipeline job completion for job #"+parentJobNumber, t);
         }
     }
-
+    
     /**
      * For the given pipeline, get the next 'WAITING' job id.
      * 

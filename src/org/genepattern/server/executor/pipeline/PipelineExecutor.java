@@ -65,9 +65,7 @@ public class PipelineExecutor implements CommandExecutor {
     }
     
     public void terminateJob(JobInfo jobInfo) throws Exception {
-        //TODO: implement terminate for the pipeline
-        String jobId = ""+jobInfo.getJobNumber();
-        log.error("terminateJob("+jobId+")  Not Implemented!");
+        PipelineHandler.terminatePipeline(jobInfo);
     }
     
     public int handleRunningJob(JobInfo jobInfo) throws Exception {
