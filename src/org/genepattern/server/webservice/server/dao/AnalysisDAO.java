@@ -428,7 +428,7 @@ public class AnalysisDAO extends BaseDAO {
         query.setInteger("jobNo", jobNo);
         List<Integer> rval = query.list();
         if (rval.size() != 1) {
-            log.error("getRootJobNumber: couldn't query AnalysisJob.parent from database");
+            log.error("getRootJobNumber("+jobNo+"): couldn't query AnalysisJob.parent from database");
             return -1;
         }
         Integer parentJobNo = rval.get(0);
@@ -445,6 +445,7 @@ public class AnalysisDAO extends BaseDAO {
         List<String> rval = query.list();
         if (rval.size() != 1) {
             log.error("getJobOwner: couldn't get jobOwner for job_id: "+jobNo);
+            log.debug("", new Exception());
             return "";
         }
         return rval.get(0);
@@ -942,30 +943,31 @@ public class AnalysisDAO extends BaseDAO {
      * 
      */
     public Integer recordClientJob(int taskID, String user_id, String parameter_info, int parentJobNumber)
-	    throws OmnigeneException {
-	Integer jobNo = null;
-	try {
+    throws OmnigeneException {
+        Integer jobNo = null;
+        try {
+            Integer parent = null;
+            if (parentJobNumber != -1) {
+                parent = new Integer(parentJobNumber);
+            }
+            jobNo = addNewJob(taskID, user_id, parameter_info, null, parent, null);
 
-	    Integer parent = null;
-	    if (parentJobNumber != -1) {
-		parent = new Integer(parentJobNumber);
-	    }
-	    jobNo = addNewJob(taskID, user_id, parameter_info, null, parent, null);
+            AnalysisJobDAO aHome = new AnalysisJobDAO();
+            org.genepattern.server.domain.AnalysisJob aJob = aHome.findById(jobNo);
 
-	    AnalysisJobDAO aHome = new AnalysisJobDAO();
-	    org.genepattern.server.domain.AnalysisJob aJob = aHome.findById(jobNo);
+            JobStatus newStatus = (JobStatus) getSession().get(JobStatus.class, JobStatus.JOB_FINISHED);
+            aJob.setStatus(newStatus);
+            aJob.setDeleted(true);
 
-	    JobStatus newStatus = (JobStatus) getSession().get(JobStatus.class, JobStatus.JOB_FINISHED);
-	    aJob.setStatus(newStatus);
-	    aJob.setDeleted(true);
-
-	    return jobNo;
-	} catch (OmnigeneException e) {
-	    if (jobNo != null) {
-		deleteJob(jobNo);
-	    }
-	    throw e;
-	}
+            return jobNo;
+        } 
+        catch (OmnigeneException e) {
+            log.error("Error in recordClientJob(taskID="+taskID+", user_id="+user_id+", parentJobNumber="+parentJobNumber+")", e);
+            if (jobNo != null) {
+                deleteJob(jobNo);
+            }
+            throw e;
+        }
     }
 
     /**
