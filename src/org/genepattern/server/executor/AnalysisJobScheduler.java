@@ -12,6 +12,10 @@
 
 package org.genepattern.server.executor;
 
+import static org.genepattern.util.GPConstants.STDERR;
+import static org.genepattern.util.GPConstants.STDOUT;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -22,6 +26,9 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask.JOB_TYPE;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.webservice.JobInfo;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 
@@ -38,7 +45,7 @@ public class AnalysisJobScheduler implements Runnable {
         }
     };
     
-    private final int BOUND = 10000;
+    private final int BOUND = 20000;
     private final BlockingQueue<Integer> pendingJobQueue = new LinkedBlockingQueue<Integer>(BOUND);
 
     private Object jobQueueWaitObject = new Object();
@@ -59,7 +66,7 @@ public class AnalysisJobScheduler implements Runnable {
 
         jobSubmissionThreads = new ArrayList<Thread>();
         for (int i=0; i<numJobSubmissionThreads; ++i) { 
-            Thread jobSubmissionThread = new Thread(THREAD_GROUP, new ProcessingJobsHandler(pendingJobQueue));
+            Thread jobSubmissionThread = new Thread(THREAD_GROUP, new ProcessingJobsHandler(jobQueueWaitObject, pendingJobQueue));
             jobSubmissionThread.setName("AnalysisTaskJobSubmissionThread-"+i);
             jobSubmissionThread.setDaemon(true);
             jobSubmissionThreads.add(jobSubmissionThread);
@@ -92,9 +99,9 @@ public class AnalysisJobScheduler implements Runnable {
                 List<Integer> waitingJobs = null;
                 synchronized (jobQueueWaitObject) {
                     if (pendingJobQueue.isEmpty()) {
-                        waitingJobs = AnalysisJobScheduler.getWaitingJobs(batchSize);
+                        waitingJobs = AnalysisJobScheduler.getJobsWithStatusId(JobStatus.JOB_PENDING, batchSize);
                         if (waitingJobs != null && !waitingJobs.isEmpty()) {
-                            waitingJobs = updateJobStatus(waitingJobs, JobStatus.JOB_DISPATCHING);
+                            waitingJobs = changeJobStatus(waitingJobs, JobStatus.JOB_PENDING, JobStatus.JOB_DISPATCHING);
                             if (waitingJobs != null) {
                                 for(Integer jobId : waitingJobs) { 
                                     if (pendingJobQueue.contains(jobId)) {
@@ -120,7 +127,7 @@ public class AnalysisJobScheduler implements Runnable {
         }
     }
 
-    static private List<Integer> getWaitingJobs(int maxJobCount) {
+    static private List<Integer> getJobsWithStatusId(int statusId, int maxJobCount) {
         try {
             HibernateUtil.beginTransaction();
             String hql = "select jobNo from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId = :statusId and :deleted = false order by submittedDate ";
@@ -128,7 +135,7 @@ public class AnalysisJobScheduler implements Runnable {
             if (maxJobCount > 0) {
                 query.setMaxResults(maxJobCount);
             }
-            query.setInteger("statusId", JobStatus.JOB_PENDING);
+            query.setInteger("statusId", statusId);
             query.setBoolean("deleted", false);
             List<Integer> jobIds = query.list();
             return jobIds;
@@ -142,12 +149,12 @@ public class AnalysisJobScheduler implements Runnable {
         }
     }
 
-    static private List<Integer> updateJobStatus(List<Integer> jobIds, int jobStatusId) {
+    static private List<Integer> changeJobStatus(List<Integer> jobIds, int fromStatusId, int toStatusId) {
         List<Integer> updatedJobIds = new ArrayList<Integer>();
         HibernateUtil.beginTransaction();
         try {
             for(Integer jobId : jobIds) {
-                AnalysisJobScheduler.setJobStatus(jobId, jobStatusId);
+                AnalysisJobScheduler.changeJobStatus(jobId, fromStatusId, toStatusId);
                 updatedJobIds.add(jobId);
             }
             HibernateUtil.commitTransaction();
@@ -162,22 +169,37 @@ public class AnalysisJobScheduler implements Runnable {
     }
 
     /**
+     * Change the statusId for the given job, only if the job's current status id is the same as the fromStatusId.
+     * This condition is helpful to guard against another thread which has already changed the job status.
+     * 
      * @param jobNo
-     * @param jobStatus
+     * @param fromStatusId
+     * @param toStatusId
      * @return number of rows successfully updated
-     * @throws Exception if the job status was not successfully updated
      */
-    static public int setJobStatus(int jobNo, int jobStatus) throws Exception {
-        //SQL update statement:
-        //    update analysis_job set status_id=statusId where job_no=jobNo
-        String sqlUpdate = "update ANALYSIS_JOB set status_id=:jobStatus where job_no=:jobNo";
+    static public int changeJobStatus(int jobNo, int fromStatusId, int toStatusId) {
+        String sqlUpdate = "update ANALYSIS_JOB set status_id=:toStatusId where job_no=:jobNo and status_id=:fromStatusId";
         SQLQuery sqlQuery = HibernateUtil.getSession().createSQLQuery(sqlUpdate);
-        sqlQuery.setInteger("jobStatus", jobStatus);
+        sqlQuery.setInteger("toStatusId", toStatusId);
+        sqlQuery.setInteger("jobNo", jobNo);
+        sqlQuery.setInteger("fromStatusId", fromStatusId);
+
+        int rval = sqlQuery.executeUpdate();
+        if (rval != 1) {
+            log.error("changeJobStatus(jobNo="+jobNo+", fromStatusId="+fromStatusId+", toStatusId="+toStatusId+") ignored, statusId for jobNo was already changed in another thread");
+        }
+        return rval;
+    }
+    
+    static public int setJobStatus(int jobNo, int toStatusId) {
+        String sqlUpdate = "update ANALYSIS_JOB set status_id=:toStatusId where job_no=:jobNo";
+        SQLQuery sqlQuery = HibernateUtil.getSession().createSQLQuery(sqlUpdate);
+        sqlQuery.setInteger("toStatusId", toStatusId);
         sqlQuery.setInteger("jobNo", jobNo);
 
         int rval = sqlQuery.executeUpdate();
         if (rval != 1) {
-            throw new Exception("Did not update job status for jobNo="+jobNo);
+            log.error("setJobStatus(jobNo="+jobNo+", toStatusId="+toStatusId+") had no effect");
         }
         return rval;
     }
@@ -191,11 +213,89 @@ public class AnalysisJobScheduler implements Runnable {
         }
     }
 
+    public static void terminateJob(Integer jobId) throws JobTerminationException {
+        if (jobId == null) {
+            throw new JobTerminationException("Invalid null arg");
+        }
+        JobInfo jobInfo = null;
+        try {
+            AnalysisDAO dao = new AnalysisDAO();
+            jobInfo = dao.getJobInfo(jobId);
+        }
+        catch (Throwable t) {
+            throw new JobTerminationException("Server error: Not able to load jobInfo for jobId: "+jobId, t);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+        AnalysisJobScheduler.terminateJob(jobInfo);
+    }
+    
+    public static void terminateJob(JobInfo jobInfo) throws JobTerminationException {
+        if (jobInfo == null) {
+            log.error("invalid null arg to terminateJob");
+            return;
+        }
+    
+        //note: don't terminate completed jobs
+        boolean isFinished = isFinished(jobInfo); 
+        if (isFinished) {
+            log.debug("job "+jobInfo.getJobNumber()+"is already finished");
+            return;
+        }
+    
+        //terminate pending jobs immediately
+        boolean isPending = isPending(jobInfo);
+        if (isPending) {
+            log.debug("Terminating PENDING job #"+jobInfo.getJobNumber());
+            
+            try { 
+                AnalysisDAO ds = new AnalysisDAO();
+                ds.updateJobStatus(jobInfo.getJobNumber(), JobStatus.JOB_ERROR);
+                HibernateUtil.commitTransaction();
+            }
+            catch (Throwable t) {
+                HibernateUtil.rollbackTransaction();
+            }
+            return;
+        } 
+        
+        try {
+            CommandExecutor cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
+            cmdExec.terminateJob(jobInfo);
+        }
+        catch (Throwable t) {
+            throw new JobTerminationException(t);
+        }
+    }
+
+    public static boolean isPending(JobInfo jobInfo) {
+        return isPending(jobInfo.getStatus());
+    }
+
+    private static boolean isPending(String jobStatus) {
+        return JobStatus.PENDING.equals(jobStatus);
+    }
+
+    public static boolean isFinished(JobInfo jobInfo) {
+        return isFinished(jobInfo.getStatus());
+    }
+    
+    private static boolean isFinished(String jobStatus) {
+        if ( JobStatus.FINISHED.equals(jobStatus) ||
+                JobStatus.ERROR.equals(jobStatus) ) {
+            return true;
+        }
+        return false;        
+    }
+
     private static class ProcessingJobsHandler implements Runnable {
+        private final Object jobQueueWaitObject;
         private final BlockingQueue<Integer> pendingJobQueue;
         private final GenePatternAnalysisTask genePattern = new GenePatternAnalysisTask();
         
-        public ProcessingJobsHandler(BlockingQueue<Integer> pendingJobQueue) {
+        public ProcessingJobsHandler(Object jobQueueWaitObject, BlockingQueue<Integer> pendingJobQueue) {
+            this.jobQueueWaitObject = jobQueueWaitObject;
             this.pendingJobQueue = pendingJobQueue;
         }
         
@@ -216,22 +316,55 @@ public class AnalysisJobScheduler implements Runnable {
                 log.error("job not run, genePattern == null!");
                 return;
             }
-            try {
-                genePattern.onJob(jobId);
-            }
-            catch (JobDispatchException e) {
-                //TODO: implement genePattern.handleError(jobId);
+            synchronized(jobQueueWaitObject) {
                 try {
-                    HibernateUtil.beginTransaction();
-                    setJobStatus(jobId, JobStatus.JOB_ERROR);
-                    HibernateUtil.commitTransaction();
+                    genePattern.onJob(jobId);
                 }
-                catch (Throwable t) {
-                    log.error("", t);
-                    HibernateUtil.rollbackTransaction();
+                catch (JobDispatchException e) {
+                    handleJobDispatchException(jobId, e);
                 }
+            }
+        }
+
+        //handle errors during job dispatch (moved from GPAT.onJob)
+        private void handleJobDispatchException(int jobId, Throwable t) {
+            if (t.getCause() != null) {
+              t = t.getCause();
+            }
+            String errorMessage = "Error submitting job #"+jobId;
+            log.error(errorMessage, t);
+            
+            GenePatternAnalysisTask.getJobDir(""+jobId);
+            
+            String outDirName = GenePatternAnalysisTask.getJobDir(""+jobId);
+            File outFile = GenePatternAnalysisTask.writeStringToFile(outDirName, STDERR, "GenePattern Server error preparing job for execution.\n"+t.getMessage() + "\n\n");
+            int exitCode = -1;
+            JOB_TYPE jobType = JOB_TYPE.JOB;
+            
+            
+            int parentJobId = -1;
+            try {
+                AnalysisDAO dao = new AnalysisDAO();
+                parentJobId = dao.getParentJobId(jobId);
+            }
+            catch (Throwable t1) {
+                log.error("Error getting parentJobId for job #"+jobId);
+            }
+            finally {
+                HibernateUtil.closeCurrentSession();
+            }
+            
+            if (parentJobId >= 0) {
+              jobType = JOB_TYPE.PIPELINE;
+            }
+            try {
+                GenePatternAnalysisTask.handleJobCompletion(jobId, STDOUT, STDERR, exitCode, JobStatus.JOB_ERROR, jobType);
+            }
+            catch (Throwable t1) {
+                log.error("Error handling job completion for job #"+jobId, t1);
             }
         }
     }
 
 }
+

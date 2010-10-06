@@ -103,7 +103,7 @@ public class PipelineHandler {
         }
         if (processingJobId >= 0) {
             try {
-                GenePatternAnalysisTask.terminateJob(processingJobId);
+                AnalysisJobScheduler.terminateJob(processingJobId);
             }
             catch (JobTerminationException e) {
                 log.error("Error terminating job #"+processingJobId+" in pipeline "+jobInfo.getJobNumber(), e);
@@ -124,7 +124,7 @@ public class PipelineHandler {
      *
      * @param jobInfo - the job which is about to run
      */
-    public static void prepareNextStep(int parentJobId, JobInfo jobInfo) throws Exception { 
+    public static void prepareNextStep(int parentJobId, JobInfo jobInfo) throws PipelineException { 
         try {
             AnalysisDAO ds = new AnalysisDAO();
             JobInfo[] results = ds.getChildren(parentJobId);
@@ -226,7 +226,7 @@ public class PipelineHandler {
     private static void startNextStep(int nextJobId) {
         try {
             HibernateUtil.beginTransaction();
-            AnalysisJobScheduler.setJobStatus(nextJobId, JobStatus.JOB_PENDING);
+            int rval = AnalysisJobScheduler.changeJobStatus(nextJobId, JobStatus.JOB_WAITING, JobStatus.JOB_PENDING);
             HibernateUtil.commitTransaction();
         }
         catch (Throwable t) {

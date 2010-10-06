@@ -35,8 +35,8 @@ import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.JobTerminationException;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.GenericWebService;
@@ -668,7 +668,7 @@ public class Analysis extends GenericWebService {
      */
     private void terminateJob(JobInfo jobInfo) throws WebServiceException {
         try {
-            GenePatternAnalysisTask.terminateJob(jobInfo);
+            AnalysisJobScheduler.terminateJob(jobInfo);
         }
         catch (JobTerminationException e) {
             throw new WebServiceException(e);
