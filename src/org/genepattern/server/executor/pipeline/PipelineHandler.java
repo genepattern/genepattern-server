@@ -154,6 +154,12 @@ public class PipelineHandler {
     }
     
     //DAO helpers
+    
+    /**
+     * Get all of the immediate child jobs for the given pipeline.
+     * 
+     * @return a List of [jobNo(Integer),statusId(Integer)]
+     */
     private static List<Object[]> getChildJobObjs(int parentJobId) {
         final int maxChildJobs = 1000; //limit total number of results to 1000
         String hql = "select a.jobNo, jobStatus.statusId from org.genepattern.server.domain.AnalysisJob a where a.parent = :jobNo ";
@@ -221,6 +227,45 @@ public class PipelineHandler {
             handlePipelineJobCompletion(parentJobNumber, -1, JobStatus.JOB_ERROR);
         }
         return false;
+    }
+    
+    public static void handleRunningPipeline(JobInfo pipeline) {
+        if (pipeline == null) {
+            log.error("Invalid null arg");
+            return;
+        }
+        if (pipeline.getJobNumber() < 0) {
+            log.error("Invalid arg: pipeline.jobNumber="+pipeline.getJobNumber());
+        }
+
+        //the number of child steps which have not yet finshed
+        int numStepsToGo = 0;
+        //true if at least one of the steps finished with an error
+        boolean errorFlag = false;
+        List<Object[]> jobInfoObjs = getChildJobObjs(pipeline.getJobNumber());
+        for(Object[] row : jobInfoObjs) {
+            int jobId = (Integer) row[0];
+            int statusId = (Integer) row[1];
+            if (JobStatus.JOB_FINISHED == statusId) {
+            }
+            else if (JobStatus.JOB_ERROR == statusId) {
+                errorFlag = true;
+            }
+            else {
+                ++numStepsToGo;
+            }
+        }
+        
+        if (numStepsToGo == 0 || errorFlag) {
+            if (errorFlag) {
+                //handle an error in a pipeline step
+                terminatePipelineSteps(pipeline.getJobNumber());
+                handlePipelineJobCompletion(pipeline.getJobNumber(), -1, JobStatus.JOB_ERROR);
+            }
+            else {
+                PipelineHandler.handlePipelineJobCompletion(pipeline.getJobNumber(), 0, JobStatus.JOB_FINISHED);
+            }
+        }
     }
     
     private static void startNextStep(int nextJobId) {

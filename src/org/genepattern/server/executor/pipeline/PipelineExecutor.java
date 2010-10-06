@@ -68,11 +68,15 @@ public class PipelineExecutor implements CommandExecutor {
         PipelineHandler.terminatePipeline(jobInfo);
     }
     
+    /**
+     * Cleanup running pipelines which no longer have any active steps:
+     * a) all of the child jobs are 'FINISHED' but the pipeline's status is still 'PROCESSING'
+     * b) one of the child jobs is 'ERROR', but the pipeline's status is still 'PROCESSING'
+     */
     public int handleRunningJob(JobInfo jobInfo) throws Exception {
-        log.error("handleRunningJob("+jobInfo.getJobNumber()+")  Not Implemented!");
-        //TODO: handle corner cases:
-        // a) all of the child jobs are 'FINISHED' but the pipeline's status is still 'PROCESSING'
-        // b) one of the child jobs is 'ERROR', but the pipeline's status is still 'PROCESSING'
-        return JobStatus.JOB_PROCESSING;
+        String origStatus = jobInfo.getStatus();
+        int origStatusId = JobStatus.STATUS_MAP.get(origStatus);
+        PipelineHandler.handleRunningPipeline(jobInfo);
+        return origStatusId;
     }
 }
