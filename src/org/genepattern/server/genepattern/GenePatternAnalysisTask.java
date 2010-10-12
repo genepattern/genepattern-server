@@ -106,6 +106,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -133,7 +139,6 @@ import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.CommandExecutor;
-import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandExecutorNotFoundException;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobDispatchException;
@@ -250,13 +255,17 @@ public class GenePatternAnalysisTask {
         COPY, MOVE, PATH
     };
 
-    /** set with property allow.input.file.paths */
-    //private boolean allowInputFilePaths = false;
+    /**
+     * Use an executor to dispatch jobs so that job dispatch can be cancelled after a timeout period.
+     */
+    private ExecutorService executor = null;
 
     /**
-     * GenePatternAnalysisTask constructor. Loads properties from genepattern.properties
+     * 
+     * @param executor, an ExecutorService instance for dispatching jobs.
      */
-    public GenePatternAnalysisTask() {
+    public GenePatternAnalysisTask(ExecutorService executor) {
+        this.executor = executor;
     }
 
     private static boolean getAllowInputFilePaths() {
@@ -1343,24 +1352,48 @@ public class GenePatternAnalysisTask {
         catch (CommandExecutorNotFoundException e) {
             throw new JobDispatchException(e);
         }
+        
+        String jobDispatchTimeoutStr = cmdProperties.getProperty("job.dispatch.timeout", "300000");
+        long jobDispatchTimeout = 300000;
         try {
-            HibernateUtil.beginTransaction();
-            AnalysisJobScheduler.changeJobStatus(jobId, JobStatus.JOB_DISPATCHING, JobStatus.JOB_PROCESSING);
-            HibernateUtil.commitTransaction();
+            jobDispatchTimeout = Long.parseLong(jobDispatchTimeoutStr);
         }
-        catch (Throwable t) {
-            HibernateUtil.rollbackTransaction();
-            throw new JobDispatchException("Error changing job status for job #"+jobId, t);
+        catch (Exception e) {
+            log.error("Error parsing 'job.dispatch.timeout="+jobDispatchTimeoutStr, e);
         }
+        runCommand(cmdExec, jobDispatchTimeout, commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
+    }
+
+    private void runCommand(final CommandExecutor cmdExec, final long jobDispatchTimeout, final String[] commandTokens, final Map<String, String> environmentVariables, final File outDir, final File stdoutFile, final File stderrFile, final JobInfo jobInfo, final File stdinFile) 
+    throws JobDispatchException
+    {
+        Future<Integer> task = executor.submit(new Callable<Integer>() {
+            public Integer call() throws Exception {
+                cmdExec.runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
+                return JobStatus.JOB_PROCESSING;
+            }
+        });
         try {
-            //TODO: wrap this in a method with some kind of timeout, so that if there are problems with job submission 
-            //    it won't block all other tasks from being started (this has happened with LSF bsub command never returned)
-            cmdExec.runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
+            int job_status = task.get(jobDispatchTimeout, TimeUnit.MILLISECONDS);
+            try {
+                HibernateUtil.beginTransaction();
+                AnalysisJobScheduler.changeJobStatus(jobInfo.getJobNumber(), JobStatus.JOB_DISPATCHING, job_status);
+                HibernateUtil.commitTransaction();
+            }
+            catch (Throwable t) {
+                HibernateUtil.rollbackTransaction();
+                throw new JobDispatchException("Error changing job status for job #"+jobInfo.getJobNumber(), t);
+            }
         }
-        catch (CommandExecutorException e) {
-            //typically thrown when the job submission fails (rather than an error during the run of the job)
-            //throw this to the outer catch
+        catch (ExecutionException e) {
             throw new JobDispatchException(e);
+        }
+        catch (TimeoutException e) {
+            task.cancel(true);
+            throw new JobDispatchException("Timeout after "+jobDispatchTimeout+" ms while dispatching job #"+jobInfo.getJobNumber()+" to queue.", e);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -2845,7 +2878,7 @@ public class GenePatternAnalysisTask {
      * @return Properties Properties object with all substitution name/value pairs defined
      * @author Jim Lerner
      */
-    private Properties setupProps(TaskInfo taskInfo, String taskName, int parentJobNumber, int jobNumber, int taskID,
+    private static Properties setupProps(TaskInfo taskInfo, String taskName, int parentJobNumber, int jobNumber, int taskID,
 	    TaskInfoAttributes taskInfoAttributes, ParameterInfo[] actuals, Map<String, String> env,
 	    ParameterInfo[] formalParameters, String userID) 
     throws MalformedURLException 
@@ -3075,7 +3108,7 @@ public class GenePatternAnalysisTask {
      * @return Vector of error messages (zero length if no problems found)
      * @author Jim Lerner
      */
-    protected Vector<String> validateParameters(Properties props, String taskName, String commandLine,
+    protected static Vector<String> validateParameters(Properties props, String taskName, String commandLine,
 	    ParameterInfo[] actualParams, ParameterInfo[] formalParams, boolean enforceOptionalNonBlank) {
 	Vector<String> vProblems = new Vector<String>();
 	String name;
@@ -3234,7 +3267,7 @@ public class GenePatternAnalysisTask {
      * @return Vector of error messages (vProblems with new errors appended)
      * @author Jim Lerner
      */
-    protected Vector<String> validateSubstitutions(Properties props, 
+    protected static Vector<String> validateSubstitutions(Properties props, 
             String taskName, String commandLine,
 	    String source, Vector<String> vProblems, ParameterInfo[] formalParams) {
 	// check that each substitution variable listed in the command line is
@@ -3296,11 +3329,10 @@ public class GenePatternAnalysisTask {
      * @author Jim Lerner
      */
     public static Vector<String> validateInputs(TaskInfo taskInfo, String taskName, TaskInfoAttributes tia, ParameterInfo[] params) {
-	GenePatternAnalysisTask gp = new GenePatternAnalysisTask();
 	Vector<String> vProblems = null;
 	try {
-	    Properties props = gp.setupProps(taskInfo, taskName, -1, 0, -1, tia, params, new HashMap<String, String>(), params, null);
-	    vProblems = gp.validateParameters(props, taskName, tia.get(COMMAND_LINE), params, params, false);
+	    Properties props = GenePatternAnalysisTask.setupProps(taskInfo, taskName, -1, 0, -1, tia, params, new HashMap<String, String>(), params, null);
+	    vProblems = GenePatternAnalysisTask.validateParameters(props, taskName, tia.get(COMMAND_LINE), params, params, false);
 	} catch (Exception e) {
 	    vProblems = new Vector<String>();
 	    vProblems.add(e.toString() + " while validating inputs for " + tia.get(GPConstants.LSID));
@@ -4484,8 +4516,7 @@ public class GenePatternAnalysisTask {
     }
 
     public static void announceReady() {
-	GenePatternAnalysisTask gpat = new GenePatternAnalysisTask();
-	log.info("GenePattern server version " + System.getProperty("GenePatternVersion") + " is ready.");
+        log.info("GenePattern server version " + System.getProperty("GenePatternVersion") + " is ready.");
     }
 
     /**

@@ -11,6 +11,8 @@
 default.properties: 
     executor: RuntimeExec
     java_flags: -Xmx512m
+    # the number of milliseconds to wait before canceling a job submission (default to 5 minutes)
+    job.dispatch.timeout: 300000
 
 # a list of command executors
 # The executor id, 'org.genepattern.server.executor.PipelineExecutor', is reserved for the default executor which runs all GP pipelines.

@@ -19,8 +19,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
@@ -29,8 +32,8 @@ import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask.JOB_TYPE;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
-import org.hibernate.Query;
 import org.hibernate.SQLQuery;
+import org.hibernate.Session;
 
 /**
  * Polls the db for new PENDING jobs and submits them to GenePatternAnalysisTask for execution.
@@ -66,7 +69,7 @@ public class AnalysisJobScheduler implements Runnable {
 
         jobSubmissionThreads = new ArrayList<Thread>();
         for (int i=0; i<numJobSubmissionThreads; ++i) { 
-            Thread jobSubmissionThread = new Thread(THREAD_GROUP, new ProcessingJobsHandler(jobQueueWaitObject, pendingJobQueue));
+            Thread jobSubmissionThread = new Thread(THREAD_GROUP, new ProcessingJobsHandler(pendingJobQueue));
             jobSubmissionThread.setName("AnalysisTaskJobSubmissionThread-"+i);
             jobSubmissionThread.setDaemon(true);
             jobSubmissionThreads.add(jobSubmissionThread);
@@ -130,14 +133,50 @@ public class AnalysisJobScheduler implements Runnable {
     static private List<Integer> getJobsWithStatusId(int statusId, int maxJobCount) {
         try {
             HibernateUtil.beginTransaction();
-            String hql = "select jobNo from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId = :statusId and :deleted = false order by submittedDate ";
-            Query query = HibernateUtil.getSession().createQuery(hql);
+            //String hql = "select jobNo from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId = :statusId and :deleted = false order by submittedDate ";
+            //Query query = session.createQuery(hql);
+            //if (maxJobCount > 0) {
+            //    query.setMaxResults(maxJobCount);
+            //}
+            //query.setInteger("statusId", statusId);
+            //query.setBoolean("deleted", false);
+            //query.setInteger("parentStatusId", JobStatus.JOB_DISPATCHING);
+            //List results = query.list();
+            //List<Integer> jobIds = query.list();
+            
+            //special-case: ignore 'pending' job in 'dispatching' pipeline
+            String sql = "select a.job_no from analysis_job a left outer join analysis_job p "+
+              " on ( a.parent = p.job_no ) "+
+              " where "+
+              "    a.deleted = :deleted "+
+              "    and "+
+              "    a.status_id = :statusId "+
+              "    and "+
+              "    ( a.parent < 0 or p.status_id != :parentStatusId ) "+
+              " order by a.date_submitted ";
+
+            Session session = HibernateUtil.getSession();
+            SQLQuery sqlQuery = session.createSQLQuery(sql);
+            sqlQuery.setInteger("statusId", statusId);
+            sqlQuery.setBoolean("deleted", false);
+            sqlQuery.setInteger("parentStatusId", JobStatus.JOB_DISPATCHING);
             if (maxJobCount > 0) {
-                query.setMaxResults(maxJobCount);
+                sqlQuery.setMaxResults(maxJobCount);
             }
-            query.setInteger("statusId", statusId);
-            query.setBoolean("deleted", false);
-            List<Integer> jobIds = query.list();
+            List results = sqlQuery.list();
+            List<Integer> jobIds = new ArrayList<Integer>();
+            for(Object result : results) {
+                if (result instanceof Integer)  {
+                    jobIds.add( (Integer) result);
+                }
+                else if (result instanceof Number) {
+                    jobIds.add(((Number) result).intValue());
+                }
+                else {
+                    log.error("Invalid value returned from sqlQuery, expecting a Number by the type was "+result.getClass().getCanonicalName());
+                }
+            }
+                        
             return jobIds;
         }
         catch (Throwable t) {
@@ -290,13 +329,14 @@ public class AnalysisJobScheduler implements Runnable {
     }
 
     private static class ProcessingJobsHandler implements Runnable {
-        private final Object jobQueueWaitObject;
+        private ExecutorService jobSubmissionService;
         private final BlockingQueue<Integer> pendingJobQueue;
-        private final GenePatternAnalysisTask genePattern = new GenePatternAnalysisTask();
+        private final GenePatternAnalysisTask genePattern;
         
-        public ProcessingJobsHandler(Object jobQueueWaitObject, BlockingQueue<Integer> pendingJobQueue) {
-            this.jobQueueWaitObject = jobQueueWaitObject;
+        public ProcessingJobsHandler(BlockingQueue<Integer> pendingJobQueue) {
             this.pendingJobQueue = pendingJobQueue;
+            this.jobSubmissionService = Executors.newSingleThreadExecutor();
+            this.genePattern = new GenePatternAnalysisTask(jobSubmissionService);
         }
         
         public void run() {
@@ -309,6 +349,19 @@ public class AnalysisJobScheduler implements Runnable {
             catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
+            if (jobSubmissionService != null) {
+                jobSubmissionService.shutdown();
+                try {
+                    if (!jobSubmissionService.awaitTermination(30, TimeUnit.SECONDS)) {
+                        log.error("jobSubmissionService shutdown timed out after 30 seconds.");
+                        jobSubmissionService.shutdownNow();
+                    }
+                }
+                catch (final InterruptedException e) {
+                    log.error("jobSubmissionService executor.shutdown was interrupted", e);
+                    Thread.currentThread().interrupt();
+                }
+            }
         }
         
         private void submitJob(Integer jobId) {
@@ -316,13 +369,11 @@ public class AnalysisJobScheduler implements Runnable {
                 log.error("job not run, genePattern == null!");
                 return;
             }
-            synchronized(jobQueueWaitObject) {
-                try {
-                    genePattern.onJob(jobId);
-                }
-                catch (JobDispatchException e) {
-                    handleJobDispatchException(jobId, e);
-                }
+            try {
+                genePattern.onJob(jobId);
+            }
+            catch (JobDispatchException e) {
+                handleJobDispatchException(jobId, e);
             }
         }
 

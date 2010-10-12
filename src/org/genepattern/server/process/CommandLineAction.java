@@ -33,7 +33,6 @@ import java.util.Comparator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 
 /**
  * install a set of zipped GenePattern tasks into the local GenePattern server.
@@ -45,7 +44,6 @@ import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 public class CommandLineAction {
     boolean hadToStartDB = false;
     Connection conn = null;
-    GenePatternAnalysisTask gp = new GenePatternAnalysisTask();
     protected boolean DEBUG = false;
     Properties props = null;
 
