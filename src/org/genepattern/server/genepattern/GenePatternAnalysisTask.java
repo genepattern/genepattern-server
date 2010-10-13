@@ -1361,10 +1361,10 @@ public class GenePatternAnalysisTask {
         catch (Exception e) {
             log.error("Error parsing 'job.dispatch.timeout="+jobDispatchTimeoutStr, e);
         }
-        runCommand(cmdExec, jobDispatchTimeout, commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
+        runCommand(taskInfo.isPipeline(), cmdExec, jobDispatchTimeout, commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
     }
 
-    private void runCommand(final CommandExecutor cmdExec, final long jobDispatchTimeout, final String[] commandTokens, final Map<String, String> environmentVariables, final File outDir, final File stdoutFile, final File stderrFile, final JobInfo jobInfo, final File stdinFile) 
+    private void runCommand(final boolean isPipeline, final CommandExecutor cmdExec, final long jobDispatchTimeout, final String[] commandTokens, final Map<String, String> environmentVariables, final File outDir, final File stdoutFile, final File stderrFile, final JobInfo jobInfo, final File stdinFile) 
     throws JobDispatchException
     {
         Future<Integer> task = executor.submit(new Callable<Integer>() {
@@ -1378,7 +1378,13 @@ public class GenePatternAnalysisTask {
             try {
                 HibernateUtil.beginTransaction();
                 AnalysisJobScheduler.changeJobStatus(jobInfo.getJobNumber(), JobStatus.JOB_DISPATCHING, job_status);
+                if (isPipeline) {
+                    PipelineHandler.startNextJob(jobInfo.getJobNumber());
+                }
                 HibernateUtil.commitTransaction();
+                if (isPipeline) {
+                    CommandManagerFactory.getCommandManager().wakeupJobQueue();
+                }
             }
             catch (Throwable t) {
                 HibernateUtil.rollbackTransaction();

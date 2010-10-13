@@ -23,7 +23,6 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.AnalysisJobScheduler;
-import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.executor.pipeline.PipelineUtil.PipelineModelException;
@@ -62,7 +61,6 @@ public class PipelineHandler {
         try {
             Map additionalArgs = getAdditionalArgs(commandLine);
             firstStep = runPipeline(pipelineJobInfo, stopAfterTask, additionalArgs);
-            new AnalysisDAO().updateJobStatus(firstStep, JobStatus.JOB_PENDING);
             HibernateUtil.commitTransaction();
             success = true;
         }
@@ -72,9 +70,6 @@ public class PipelineHandler {
         }
         finally {
             HibernateUtil.closeCurrentSession();
-        }
-        if (success) {
-            CommandManagerFactory.getCommandManager().wakeupJobQueue();
         }
     }
     
@@ -172,6 +167,17 @@ public class PipelineHandler {
         return rval;
     }
     
+    public static boolean startNextJob(int parentJobNumber) {
+        Integer nextJobId = getNextJobId(parentJobNumber);
+        if (nextJobId != null) {
+            //if there is another job to run, change the status of the next job to pending
+            int rval = AnalysisJobScheduler.changeJobStatus(nextJobId, JobStatus.JOB_WAITING, JobStatus.JOB_PENDING);
+            //indicate there is another step waiting on the queue
+            return true;
+        }
+        return false;
+    }
+    
     /**
      * Called when a step in a pipeline job has completed, put the next job on the queue.
      * Check for and handle pipeline termination.
@@ -207,7 +213,7 @@ public class PipelineHandler {
         if (JobStatus.FINISHED.equals(jobInfo.getStatus())) { 
             //get the next step in the pipeline, by jobId
             HibernateUtil.beginTransaction();
-            Integer nextJobId = getNextJobId(parentJobNumber, jobInfo);
+            Integer nextJobId = getNextJobId(parentJobNumber);
             HibernateUtil.closeCurrentSession();
             if (nextJobId != null) {
                 //if there is another job to run, change the status of the next job to pending
@@ -314,22 +320,16 @@ public class PipelineHandler {
     /**
      * For the given pipeline, get the next 'WAITING' job id.
      * 
-     * @param parentJobId
-     * @param jobInfo
-     * @return
+     * @param parentJobId, the jobId of the pipeline
+     * @return the jobId if the first job whose status is WAITING, or null if no waiting jobs are found
      */
-    private static Integer getNextJobId(final int parentJobId, final JobInfo jobInfo) {
+    private static Integer getNextJobId(final int parentJobId) {
         List<Object[]> jobInfoObjs = getChildJobObjs(parentJobId);
         for(Object[] row : jobInfoObjs) {
             int jobNo = (Integer) row[0];
-            if (jobNo == jobInfo.getJobNumber()) {
-                //skip
-            }
-            else {
-                int statusId = (Integer) row[1];
-                if (JobStatus.JOB_WAITING == statusId) {
-                    return jobNo;
-                }
+            int statusId = (Integer) row[1];
+            if (JobStatus.JOB_WAITING == statusId) {
+                return jobNo;
             }
         }
         return null;

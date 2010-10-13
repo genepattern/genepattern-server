@@ -32,6 +32,7 @@ import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask.JOB_TYPE;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
+import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 
@@ -118,7 +119,7 @@ public class AnalysisJobScheduler implements Runnable {
                         }
                         else {
                             //insurance against deadlock, poll for new PENDING jobs every 60 seconds, regardless of whether notify has been called
-                            final long timeout = 60*1000;
+                            final long timeout = 1000;
                             jobQueueWaitObject.wait(timeout);
                         }
                     }
@@ -132,51 +133,16 @@ public class AnalysisJobScheduler implements Runnable {
 
     static private List<Integer> getJobsWithStatusId(int statusId, int maxJobCount) {
         try {
+            String hql = "select jobNo from org.genepattern.server.domain.AnalysisJob where deleted = :deleted and jobStatus.statusId = :statusId order by submittedDate ";
             HibernateUtil.beginTransaction();
-            //String hql = "select jobNo from org.genepattern.server.domain.AnalysisJob where jobStatus.statusId = :statusId and :deleted = false order by submittedDate ";
-            //Query query = session.createQuery(hql);
-            //if (maxJobCount > 0) {
-            //    query.setMaxResults(maxJobCount);
-            //}
-            //query.setInteger("statusId", statusId);
-            //query.setBoolean("deleted", false);
-            //query.setInteger("parentStatusId", JobStatus.JOB_DISPATCHING);
-            //List results = query.list();
-            //List<Integer> jobIds = query.list();
-            
-            //special-case: ignore 'pending' job in 'dispatching' pipeline
-            String sql = "select a.job_no from analysis_job a left outer join analysis_job p "+
-              " on ( a.parent = p.job_no ) "+
-              " where "+
-              "    a.deleted = :deleted "+
-              "    and "+
-              "    a.status_id = :statusId "+
-              "    and "+
-              "    ( a.parent < 0 or p.status_id != :parentStatusId ) "+
-              " order by a.date_submitted ";
-
             Session session = HibernateUtil.getSession();
-            SQLQuery sqlQuery = session.createSQLQuery(sql);
-            sqlQuery.setInteger("statusId", statusId);
-            sqlQuery.setBoolean("deleted", false);
-            sqlQuery.setInteger("parentStatusId", JobStatus.JOB_DISPATCHING);
+            Query query = session.createQuery(hql);
             if (maxJobCount > 0) {
-                sqlQuery.setMaxResults(maxJobCount);
+                query.setMaxResults(maxJobCount);
             }
-            List results = sqlQuery.list();
-            List<Integer> jobIds = new ArrayList<Integer>();
-            for(Object result : results) {
-                if (result instanceof Integer)  {
-                    jobIds.add( (Integer) result);
-                }
-                else if (result instanceof Number) {
-                    jobIds.add(((Number) result).intValue());
-                }
-                else {
-                    log.error("Invalid value returned from sqlQuery, expecting a Number by the type was "+result.getClass().getCanonicalName());
-                }
-            }
-                        
+            query.setInteger("statusId", statusId);
+            query.setBoolean("deleted", false);
+            List<Integer> jobIds = query.list();
             return jobIds;
         }
         catch (Throwable t) {
