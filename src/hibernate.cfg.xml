@@ -12,6 +12,12 @@
     <property name="hibernate.default_schema">PUBLIC</property>
     <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property> 
     
+    <!-- oracle settings -->
+    <!-- replace the hql settings with these oracle settings when connecting to an oracle db, don't forget to enter a valid schema   
+    <property name="hibernate.default_schema">GP_SCHEMA</property>
+    <property name="hibernate.dialect">org.genepattern.server.database.PlatformOracle9Dialect</property> 
+    -->    
+    
     <!--  Misc settings -->
     <property name="hibernate.jdbc.batch_size">20</property>
     <property name="hibernate.statement_cache.size">0</property>
