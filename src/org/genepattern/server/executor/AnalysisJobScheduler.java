@@ -118,8 +118,8 @@ public class AnalysisJobScheduler implements Runnable {
                             }
                         }
                         else {
-                            //insurance against deadlock, poll for new PENDING jobs every 60 seconds, regardless of whether notify has been called
-                            final long timeout = 1000;
+                            //insurance against deadlock, poll for new PENDING jobs every 5 minutes, regardless of whether notify has been called
+                            final long timeout = 300000;
                             jobQueueWaitObject.wait(timeout);
                         }
                     }
