@@ -74,7 +74,7 @@ public class PipelineModel implements Serializable {
     protected String lsid = "";
     protected IAdminClient adminClient = null;
 
-    public IAdminClient getAdminClient() {
+    private IAdminClient getAdminClient() {
         if (adminClient == null) {
             adminClient = new LocalAdminClient(getUserID());
         }
@@ -86,8 +86,8 @@ public class PipelineModel implements Serializable {
     }
 
 
-    TreeMap<String, ParameterInfo> hmParameters = new TreeMap<String, ParameterInfo>(); // run-time prompt for these
-    Vector<JobSubmission> vTasks = new Vector<JobSubmission>(); // Vector of JobSubmission objects
+    private TreeMap<String, ParameterInfo> hmParameters = new TreeMap<String, ParameterInfo>(); // run-time prompt for these
+    private Vector<JobSubmission> vTasks = new Vector<JobSubmission>(); // Vector of JobSubmission objects
 
     public PipelineModel() {
     }
@@ -103,7 +103,7 @@ public class PipelineModel implements Serializable {
      * @see getTasks
      * @return The <tt>JobSubmission</tt> at the given index
      */
-    public JobSubmission getTask(int index) {
+    private JobSubmission getTask(int index) {
         return vTasks.get(index);
     }
 
@@ -434,7 +434,7 @@ public class PipelineModel implements Serializable {
      * e.g. 
      *     ImputeMissingValues.KNN1.output.file
      */
-    protected void addRTParameter(String name) {
+    private void addRTParameter(String name) {
         int taskNum = 0;
         for (JobSubmission job : vTasks) { //Enumeration eTasks = getTasks().elements(); eTasks.hasMoreElements(); taskNum++) {
             ++taskNum;
@@ -464,16 +464,16 @@ public class PipelineModel implements Serializable {
         }
     }
 
-    protected void addTask(NamedNodeMap task, boolean verify) throws Exception, OmnigeneException {
+    private void addTask(NamedNodeMap task, boolean verify) throws Exception, OmnigeneException {
         addTaskToModel(task, verify, TAG_TASK);
     }
 
-    protected void addVisualizer(NamedNodeMap task, boolean verify) throws Exception, OmnigeneException {
+    private void addVisualizer(NamedNodeMap task, boolean verify) throws Exception, OmnigeneException {
         addTaskToModel(task, verify, TAG_VISUALIZER);
     }
 
     // throws Exception if verification is requested and it fails
-    protected void addTaskToModel(NamedNodeMap task, boolean verify, String tag) throws Exception, OmnigeneException {
+    private void addTaskToModel(NamedNodeMap task, boolean verify, String tag) throws Exception, OmnigeneException {
         String taskNumber = null;
         String lsid = null;
         String value = null;
@@ -669,7 +669,7 @@ public class PipelineModel implements Serializable {
         addTask(job, Integer.parseInt(taskNumber) - 1);
     }
 
-    protected static String dumpDOM(Node node, int indent) {
+    private static String dumpDOM(Node node, int indent) {
         if (node.getNodeType() != Node.ELEMENT_NODE) {
             // most likely a comment or text node
             System.out.println(node.getNodeName() + ", type=" + node.getNodeType() + ", value=" + node.getNodeValue());

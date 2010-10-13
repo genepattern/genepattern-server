@@ -53,7 +53,6 @@ public class JobManager {
         JobInfo ji = null;
         String parameter_info = ParameterFormatConverter.getJaxbString(parameterInfoArray);
         AnalysisDAO ds = new AnalysisDAO();
-        //boolean hasParent = parentJobID != null;
         if (parentJobID == null) {
             parentJobID = -1;
         }
@@ -61,17 +60,8 @@ public class JobManager {
             jobStatusId = JobStatus.JOB_PENDING;
         }
         
-        
-        //if (hasParent) {
-            //ji = ds.addNewJob(taskID, userID, parameter_info, parentJobID);
-            Integer jobNo = ds.addNewJob(taskID, userID, parameter_info, null, parentJobID, null, jobStatusId);
-            ji = ds.getJobInfo(jobNo);
-        //} 
-        //else {
-        //    //ji = ds.addNewJob(taskID, userID, parameter_info, -1);
-        //    Integer jobNo = ds.addNewJob(taskID, userID, parameter_info, null, -1, null, jobStatusId);
-        //    ji = ds.getJobInfo(jobNo);
-        //}
+        Integer jobNo = ds.addNewJob(taskID, userID, parameter_info, null, parentJobID, null, jobStatusId);
+        ji = ds.getJobInfo(jobNo);
 
         // Checking for null
         if (ji == null) {
@@ -79,23 +69,8 @@ public class JobManager {
             "AddNewJobRequest:executeRequest Operation failed, null value returned for JobInfo");
         }
 
-        //TODO: should wakeup the job queue from the calling method
-        //CommandManagerFactory.getCommandManager().wakeupJobQueue();
-
         // Reparse parameter_info before sending to client
         ji.setParameterInfoArray(ParameterFormatConverter.getParameterInfoArray(parameter_info));
-        //} 
-        //catch (TaskIDNotFoundException taskEx) {
-            //HibernateUtil.rollbackTransaction();
-            //log.error("AddNewJob(executeRequest) " + taskID, taskEx);
-            //throw taskEx;
-        //} 
-        //catch (Exception ex) {
-        //    HibernateUtil.rollbackTransaction();
-        //    log.error("AddNewJob(executeRequest): Error ",  ex);
-        //    throw new OmnigeneException(ex.getMessage());
-        //}
-        
         return ji;
     }
 
