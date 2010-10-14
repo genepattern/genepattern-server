@@ -244,11 +244,21 @@ public class PipelineHandler {
             log.error("Invalid arg: pipeline.jobNumber="+pipeline.getJobNumber());
         }
 
-        //the number of child steps which have not yet finshed
+        //the number of child steps which have not yet finished
         int numStepsToGo = 0;
         //true if at least one of the steps finished with an error
         boolean errorFlag = false;
-        List<Object[]> jobInfoObjs = getChildJobObjs(pipeline.getJobNumber());
+        List<Object[]> jobInfoObjs = null;
+        try {
+            HibernateUtil.beginTransaction();
+            jobInfoObjs = getChildJobObjs(pipeline.getJobNumber());
+        }
+        catch (Throwable t) {
+            jobInfoObjs = new ArrayList<Object[]>();
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
         for(Object[] row : jobInfoObjs) {
             int jobId = (Integer) row[0];
             int statusId = (Integer) row[1];
