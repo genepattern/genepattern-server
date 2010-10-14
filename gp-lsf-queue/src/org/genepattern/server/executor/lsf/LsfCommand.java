@@ -2,6 +2,7 @@ package org.genepattern.server.executor.lsf;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -239,6 +240,11 @@ class LsfCommand {
         }
 
         final Set<String> filePaths = new HashSet<String>();
+        
+        final String standardDirectories = this.lsfProperties.getProperty(LsfProperties.Key.PRE_EXEC_STANDARD_DIRECTORIES.getKey());
+        if (standardDirectories != null) {
+        	filePaths.addAll(Arrays.asList(standardDirectories.split(";")));
+        }
         
         // add libdir
 		filePaths.add(getLibDir(jobInfo));

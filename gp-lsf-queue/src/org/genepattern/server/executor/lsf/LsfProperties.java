@@ -9,6 +9,7 @@ public class LsfProperties {
         STDOUT_FILE("lsf.stdout.file"),
         JOB_REPORT_FILE("lsf.job.report.file"), //the -o arg to bsub
         USE_PRE_EXEC_COMMAND("lsf.use.pre.exec.command"),
+        PRE_EXEC_STANDARD_DIRECTORIES("lsf.pre.exec.standard.directories"),
         HOST_OS("lsf.host.os"),
         EXTRA_BSUB_ARGS("lsf.extra.bsub.args"),
         JOB_COMPLETION_LISTENER("lsf.job.completion.listener"),
