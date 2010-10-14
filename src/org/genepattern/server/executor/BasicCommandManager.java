@@ -2,6 +2,7 @@ package org.genepattern.server.executor;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,7 @@ public class BasicCommandManager implements CommandManager {
     public void startAnalysisService() { 
         log.info("starting analysis service...");
         handleJobsOnServerStartup();
-        
+
         if (analysisTaskScheduler == null) {
             analysisTaskScheduler = new AnalysisJobScheduler();
         }
@@ -76,29 +77,21 @@ public class BasicCommandManager implements CommandManager {
             String jobId = ""+jobInfo.getJobNumber();
             String curStatus = jobInfo.getStatus();
             int updatedStatusId = JobStatus.JOB_ERROR;
-            if (JobStatus.DISPATCHING.equalsIgnoreCase(curStatus)) {
-                //special-case for jobs with were DISPATCHING at the time of server startup
-                //TODO: defer to each CommandExecutor how it wants to handle dispatching jobs
-                //    e.g. for LSF if the job was successfully started, but the status did not get updated in the GP database
-                log.error("job #"+jobInfo.getJobNumber()+" is "+JobStatus.DISPATCHING+" at server startup, setting status to "+JobStatus.ERROR);
-                updatedStatusId = JobStatus.JOB_ERROR;
+            
+            //Note: handle special-case for DISPATCHING jobs
+            try {
+                CommandExecutor cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
+                updatedStatusId = cmdExec.handleRunningJob(jobInfo);
             }
-            else {
-                try {
-                    CommandExecutor cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
-                    updatedStatusId = cmdExec.handleRunningJob(jobInfo);
-                }
-                catch (CommandExecutorNotFoundException e) {
-                    log.error("error getting command executor for job #"+jobId, e); 
-                }
-                catch (Exception e) {
-                    log.error("error handling running job on server startup for job #"+jobId, e);
-                }
+            catch (CommandExecutorNotFoundException e) {
+                log.error("error getting command executor for job #"+jobId, e); 
+            }
+            catch (Exception e) {
+                log.error("error handling running job on server startup for job #"+jobId, e);
             }
             if (statusChanged(curStatus, updatedStatusId)) {
                 setJobStatus(jobInfo, updatedStatusId);
             }
-            //TODO: if necessary notify the parent pipeline, which would be necessary when the status is changed to 'error' or 'finished'
         }
         log.info("... done handling 'DISPATCHING' and 'PROCESSING' jobs on server startup.");
     }
@@ -125,13 +118,14 @@ public class BasicCommandManager implements CommandManager {
     }
 
     private List<MyJobInfoWrapper> getOpenJobs() {
+        List<MyJobInfoWrapper> openJobs = new ArrayList<MyJobInfoWrapper>();
         try {
             AnalysisDAO dao = new AnalysisDAO();
             int numRunningJobs = -1;
             List<Integer> statusIds = new ArrayList<Integer>();
             statusIds.add(JobStatus.JOB_DISPATCHING);
             statusIds.add(JobStatus.JOB_PROCESSING);
-            return getJobsWithStatusId(statusIds, dao, numRunningJobs);
+            openJobs = getJobsWithStatusId(statusIds, dao, numRunningJobs);
         }
         catch (Throwable t) {
             log.error("error getting list of running jobs from the server", t);
@@ -140,19 +134,41 @@ public class BasicCommandManager implements CommandManager {
         finally {
             HibernateUtil.closeCurrentSession();
         }
+        
+        //sort the open jobs ....
+        Collections.sort(openJobs, new Comparator<MyJobInfoWrapper>() {
+            //crude ranking for sorting jobs 
+            private int rank(MyJobInfoWrapper o) {
+                //first all jobs which are not in pipelines
+                if (!o.isInPipeline && !o.isPipeline) {
+                    return 0;
+                }
+                //then all jobs which are in pipelines
+                if (o.isInPipeline && !o.isPipeline) {
+                    return 1;
+                }
+                //then all nested pipelines
+                if (o.isInPipeline && o.isPipeline) {
+                    return 2;
+                }
+                //then all root pipelines
+                return 3;
+            }
+
+            public int compare(MyJobInfoWrapper o1, MyJobInfoWrapper o2) {
+                int r1 = rank(o1);
+                int r2 = rank(o2);
+                if (r1 == r2) {
+                    return o1.jobInfo.getJobNumber() - o2.jobInfo.getJobNumber();
+                }
+                else {
+                    return r1 - r2;
+                }
+            }
+        });
+        return openJobs;
     }
     
-    //private int getNumRunningJobs(Session session) { 
-    //    final String hql = 
-    //        "select count(*) from org.genepattern.server.domain.AnalysisJob "+
-    //        " where jobStatus.statusId = :statusId and deleted = false ";
-    //    
-    //    Query query = session.createQuery(hql);
-    //    query.setInteger("statusId", JobStatus.JOB_PROCESSING);
-    //    Object rval = query.uniqueResult();
-    //    return AnalysisDAO.getCount(rval);
-    //}
-
     /**
      * Get the list of jobs whose status is running or dispatching
      */
