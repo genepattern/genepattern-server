@@ -12,15 +12,10 @@
 
 package org.genepattern.server.webapp;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -101,25 +96,7 @@ public class WritePipelineExecutionLog {
     } 
 
     private void includeStyleSheet(PrintWriter logWriter) {
-        try {
-            URL url = new URL(genepatternUrl + "skin/stylesheet.css");
-            HttpURLConnection uconn = (HttpURLConnection) url.openConnection();
-            uconn.setDoInput(true);
-            InputStream in = uconn.getInputStream();
-
-            // read reply
-            StringBuffer b = new StringBuffer("<head><STYLE TYPE=\"text/css\"> <!--");
-            BufferedReader r = new BufferedReader(new InputStreamReader(in));
-            String line;
-            while ((line = r.readLine()) != null) {
-                b.append(line);
-            }
-            b.append("--> </style>");
-            logWriter.println(b.toString());
-        } 
-        catch (Exception e) {
-
-        }       
+        logWriter.println("<link  rel=\"stylesheet\" type=\"text/css\" href=\"/gp/skin/stylesheet.css\" />");
     }
 
     private void recordTaskExecution(PrintWriter logWriter, JobInfoWrapper jobInfo) {
