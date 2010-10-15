@@ -1,8 +1,13 @@
 package org.genepattern.server;
 
+import java.io.File;
+
 import org.apache.log4j.Logger;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.executor.JobDeletionException;
 import org.genepattern.server.executor.JobSubmissionException;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
@@ -72,6 +77,74 @@ public class JobManager {
         // Reparse parameter_info before sending to client
         ji.setParameterInfoArray(ParameterFormatConverter.getParameterInfoArray(parameter_info));
         return ji;
+    }
+
+    /**
+     * Delete the given job and any child jobs if the job is a pipeline This method deletes all input and output files as well as removes the record from the database.
+     * Assume permission check has passed and that the job is terminated.
+     * 
+     * TODO: this method does not clean up uploaded input files (either uploaded via soap or web interface).
+     * 
+     * @param jobNumber
+     */
+    static public void deleteJob(int jobNumber) throws JobDeletionException {
+        try {
+            HibernateUtil.beginTransaction();
+            AnalysisDAO dao = new AnalysisDAO();
+            deleteJob(dao, jobNumber);
+            HibernateUtil.commitTransaction();
+        }
+        catch (Exception e) {
+            HibernateUtil.rollbackTransaction();
+            log.error("Error deleting job #"+jobNumber, e);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+    }
+
+    static private void deleteJob(AnalysisDAO dao, int jobNumber) {
+        JobInfo[] children = dao.getChildren(jobNumber);
+        for(JobInfo child : children) {
+            deleteJob(dao, child.getJobNumber());
+        }
+        dao.deleteJob(jobNumber);
+    }
+
+    private static void deleteJobDir(int jobNumber) throws JobDeletionException {
+        File jobDir = new File(GenePatternAnalysisTask.getJobDir(""+jobNumber));
+        if (!jobDir.canWrite()) {
+            throw new JobDeletionException("Error deleting job #"+jobNumber+": gp account does not have write permission on jobDir: "+jobDir.getPath());
+        }
+        boolean success = deleteDir(jobDir);
+        if (!success) {
+            throw new JobDeletionException("Error deleting job #"+jobNumber+": did not delete all files from jobDir: "+jobDir.getPath());
+        }
+    }
+    private static boolean deleteDir(File dir) {
+        boolean success = true;
+        File[] files = dir.listFiles();
+        for(File file : files) {
+            if (file.isDirectory()) {
+                boolean deleted = deleteDir(file);
+                if (!deleted) {
+                    success = false;
+                }
+            }
+            else {
+                boolean deleted = file.delete();
+                if (!deleted) {
+                    success = false;
+                }
+            }
+        }
+        if (success) {
+            boolean deleted = dir.delete();
+            if (!deleted) {
+                success = false; 
+            }
+        }
+        return success;
     }
 
 }

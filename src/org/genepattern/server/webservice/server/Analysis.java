@@ -29,6 +29,7 @@ import javax.xml.soap.SOAPException;
 import org.apache.axis.MessageContext;
 import org.apache.axis.attachments.AttachmentPart;
 import org.apache.log4j.Logger;
+import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
@@ -36,6 +37,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.AnalysisJobScheduler;
+import org.genepattern.server.executor.JobDeletionException;
 import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
@@ -470,34 +472,28 @@ public class Analysis extends GenericWebService {
     }
 
     /**
-     * Purges the all the input and output files for the given job and expunges the job from the stored history. If the
-     * job is running if will be terminated.
+     * Purges the all the input and output files for the given job and expunges the job from the stored history. 
+     * If the job is running if will be terminated.
      * 
-     * user identity is checked by deleteJob to ensure it is the job owner
+     * user identity is checked to ensure it is the job owner
      * 
-     * @param jobId
-     *                the job id
+     * @param jobId, the job id
      */
-    public void purgeJob(int jobId) throws WebServiceException {
+    public void purgeJob(int jobNumber) throws WebServiceException {
         String userId = getUsernameFromContext();
         boolean isAdmin = AuthorizationHelper.adminJobs(userId);
-        canWriteJob(isAdmin, userId, jobId);
-
+        canWriteJob(isAdmin, userId, jobNumber);
         try {
-            deleteJob(jobId);
-            AnalysisDAO ds = new AnalysisDAO();
-            JobInfo[] children = ds.getChildren(jobId);
-            ds.deleteJob(jobId);
-
-            for (int i = 0; i < children.length; i++) {
-                purgeJob(children[i].getJobNumber());
-            }
-        } 
-        catch (WebServiceException wse) {
-            throw wse;
-        } 
-        catch (Exception e) {
-            throw new WebServiceException(e);
+            //first terminate the job
+            AnalysisJobScheduler.terminateJob(jobNumber);
+            //then delete the job
+            JobManager.deleteJob(jobNumber);
+        }
+        catch (JobTerminationException e) {
+            throw new WebServiceException("Error terminating job #"+jobNumber, e);
+        }
+        catch (JobDeletionException e) {
+            throw new WebServiceException("Error deleting job #"+jobNumber, e);            
         }
     }
 
