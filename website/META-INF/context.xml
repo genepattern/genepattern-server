@@ -89,7 +89,7 @@
         type="com.mchange.v2.c3p0.ComboPooledDataSource"
         driverClass="oracle.jdbc.driver.OracleDriver"
         factory="org.apache.naming.factory.BeanFactory"
-        url="jdbc:oracle:thin:@oraclehost:1521:sid"
+        jdbcUrl="jdbc:oracle:thin:@oraclehost:1521:sid"
         user="scott"
         password="tiger"
         minPoolSize="3"
