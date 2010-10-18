@@ -135,41 +135,14 @@ public class Analysis extends GenericWebService {
     }
 
     /**
-     * Deletes the input and output files for the given job and removes the job from the stored history. If the job is
-     * running if will be terminated.
+     * Deletes the input and output files for the given job and removes the job from the stored history. 
+     * If the job is running if will be terminated.
+     * User identity is checked by terminateJob to ensure it is the job owner or someone with admin privileges.
      * 
-     * user identity is checked by terminateJob to ensure it is the job owner or someone with admin provileges
-     * 
-     * @param jobId
-     *                the job id
+     * @param jobId, the job id
      */
     public void deleteJob(int jobId) throws WebServiceException {
-
-	JobInfo jobInfo = getJob(jobId);
-	try {
-	    terminateJob(jobId);
-	    File jobDir = new File(org.genepattern.server.genepattern.GenePatternAnalysisTask.getJobDir(String
-		    .valueOf(jobId)));
-	    File[] files = jobDir.listFiles();
-	    if (files != null) {
-		for (int i = 0; i < files.length; i++) {
-		    files[i].delete();
-		}
-	    }
-	    jobDir.delete();
-
-	    AnalysisJobDAO aHome = new AnalysisJobDAO();
-	    org.genepattern.server.domain.AnalysisJob aJob = aHome.findById(jobId);
-	    aJob.setDeleted(true);
-
-	    AnalysisDAO ds = new AnalysisDAO();
-	    JobInfo[] children = ds.getChildren(jobId);
-	    for (int i = 0; i < children.length; i++) {
-		deleteJob(children[i].getJobNumber());
-	    }
-	} catch (Exception e) {
-	    throw new WebServiceException(e);
-	}
+        purgeJob(jobId);
     }
 
     /**
@@ -479,21 +452,21 @@ public class Analysis extends GenericWebService {
      * 
      * @param jobId, the job id
      */
-    public void purgeJob(int jobNumber) throws WebServiceException {
+    public void purgeJob(int jobId) throws WebServiceException {
         String userId = getUsernameFromContext();
         boolean isAdmin = AuthorizationHelper.adminJobs(userId);
-        canWriteJob(isAdmin, userId, jobNumber);
+        canWriteJob(isAdmin, userId, jobId);
         try {
-            //first terminate the job
-            AnalysisJobScheduler.terminateJob(jobNumber);
-            //then delete the job
-            JobManager.deleteJob(jobNumber);
+            //first terminate the job including child jobs
+            AnalysisJobScheduler.terminateJob(jobId);
+            //then delete the job including child jobs
+            JobManager.deleteJob(jobId);
         }
         catch (JobTerminationException e) {
-            throw new WebServiceException("Error terminating job #"+jobNumber, e);
+            throw new WebServiceException("Error terminating job #"+jobId, e);
         }
         catch (JobDeletionException e) {
-            throw new WebServiceException("Error deleting job #"+jobNumber, e);            
+            throw new WebServiceException("Error deleting job #"+jobId, e);            
         }
     }
 
