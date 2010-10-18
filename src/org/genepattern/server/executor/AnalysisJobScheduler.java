@@ -19,11 +19,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
@@ -49,9 +53,9 @@ public class AnalysisJobScheduler implements Runnable {
         }
     };
     
-    private final int BOUND = 20000;
+    private static final int BOUND = 20000;
     private final BlockingQueue<Integer> pendingJobQueue = new LinkedBlockingQueue<Integer>(BOUND);
-
+    private static ExecutorService jobTerminationService = Executors.newFixedThreadPool(5);
     private Object jobQueueWaitObject = new Object();
     //the batch size, the max number of pending jobs to fetch from the db at a time
     private int batchSize = 20;
@@ -64,6 +68,9 @@ public class AnalysisJobScheduler implements Runnable {
     }
 
     public void startQueue() {
+        if (!jobTerminationService.isTerminated()) {
+            jobTerminationService = Executors.newFixedThreadPool(5);
+        }
         runner = new Thread(THREAD_GROUP, this);
         runner.setName("AnalysisTaskThread");
         runner.setDaemon(true);
@@ -92,6 +99,23 @@ public class AnalysisJobScheduler implements Runnable {
             }
         }
         jobSubmissionThreads.clear();
+        shutdownJobTerminationService();
+    }
+    
+    private void shutdownJobTerminationService() {
+        if (jobTerminationService != null) {
+            jobTerminationService.shutdown();
+            try {
+                if (!jobTerminationService.awaitTermination(30, TimeUnit.SECONDS)) {
+                    log.error("jobTerminationService shutdown timed out after 30 seconds.");
+                    jobTerminationService.shutdownNow();
+                }
+            }
+            catch (final InterruptedException e) {
+                log.error("jobTerminationService executor.shutdown was interrupted", e);
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     /** Main AnalysisTask's thread method. */
@@ -252,8 +276,10 @@ public class AnalysisJobScheduler implements Runnable {
         //terminate pending jobs immediately
         boolean isPending = isPending(jobInfo);
         if (isPending) {
+            //TODO: may want to call handleJobCompletion to output a meaningful error message: 'Job was terminated' 
+            //TODO: may need to call handleJobCompletion in order to notify parent pipeline jobs, note: this is theoretically not necessary,
+            //    because child jobs should only be terminated via the root job 
             log.debug("Terminating PENDING job #"+jobInfo.getJobNumber());
-            
             try { 
                 AnalysisDAO ds = new AnalysisDAO();
                 ds.updateJobStatus(jobInfo.getJobNumber(), JobStatus.JOB_ERROR);
@@ -264,13 +290,89 @@ public class AnalysisJobScheduler implements Runnable {
             }
             return;
         } 
-        
-        try {
-            CommandExecutor cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
-            cmdExec.terminateJob(jobInfo);
+        //terminate the underlying job
+        terminateJobWTimeout(jobInfo);
+    }
+    
+    private static void terminateJobWTimeout(final JobInfo jobInfo) throws JobTerminationException {
+        final long jobTerminateTimeout = 5*60*1000; //5 minutes
+        final int jobNumber;
+        if (jobInfo != null) {
+            jobNumber = jobInfo.getJobNumber();
         }
-        catch (Throwable t) {
-            throw new JobTerminationException(t);
+        else {
+            jobNumber = -1;
+        }
+        //Future<Integer> task = jobTerminationService.submit( new Callable<Integer>() {
+        FutureTask<Integer> task = new FutureTask<Integer>( new Callable<Integer>() {
+            public Integer call() throws Exception {
+                if (jobInfo == null) {
+                    log.error("invalid null arg to terminateJob");
+                    return -1;
+                }
+            
+                //note: don't terminate completed jobs
+                boolean isFinished = isFinished(jobInfo); 
+                if (isFinished) {
+                    log.debug("job "+jobInfo.getJobNumber()+"is already finished");
+                    return -1;
+                }
+            
+                //terminate pending jobs immediately
+                boolean isPending = isPending(jobInfo);
+                if (isPending) {
+                    log.debug("Terminating PENDING job #"+jobInfo.getJobNumber());
+                    try { 
+                        AnalysisDAO ds = new AnalysisDAO();
+                        ds.updateJobStatus(jobInfo.getJobNumber(), JobStatus.JOB_ERROR);
+                        HibernateUtil.commitTransaction();
+                        return jobInfo.getJobNumber();
+                    }
+                    catch (Throwable t) {
+                        HibernateUtil.rollbackTransaction();
+                    }
+                    return -1;
+                } 
+                
+                try {
+                    CommandExecutor cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
+                    cmdExec.terminateJob(jobInfo);
+                    return jobInfo.getJobNumber();
+                }
+                catch (Throwable t) {
+                    throw new JobTerminationException(t);
+                }
+            }
+        });
+        try {
+            jobTerminationService.execute(task);
+            int job_id = task.get(jobTerminateTimeout, TimeUnit.MILLISECONDS);
+            if (job_id >= 0) {
+                log.debug("terminated job #"+job_id);
+                //update the job status in the db
+                try {
+                    HibernateUtil.beginTransaction();
+                    int rval = setJobStatus(job_id, JobStatus.JOB_ERROR);
+                    HibernateUtil.commitTransaction();
+                }
+                catch (Throwable t) {
+                    log.error("Error setting job status to "+JobStatus.JOB_ERROR+" for job #"+job_id);
+                    HibernateUtil.rollbackTransaction();
+                }
+            }
+            else {
+                log.debug("did not terminate job #"+jobNumber);
+            }
+        }
+        catch (ExecutionException e) {
+            throw new JobTerminationException(e);
+        }
+        catch (TimeoutException e) {
+            task.cancel(true);
+            throw new JobTerminationException("Timeout after "+jobTerminateTimeout+" ms while terminating job #", e);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
