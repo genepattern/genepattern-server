@@ -34,7 +34,6 @@ import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.JobDeletionException;
