@@ -5,14 +5,17 @@ import java.io.File;
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.JobDeletionException;
 import org.genepattern.server.executor.JobSubmissionException;
+import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.WebServiceException;
 
 /**
  * Submit jobs for execution. Consolidates duplicate code invoked via the web client and the soap client.
@@ -80,6 +83,43 @@ public class JobManager {
     }
 
     /**
+     * Delete the given job by first terminating it if it is running, deleting its files, and the removing its entry from the database.
+     * If necessary, validate that the current user has permission to delete the job.
+     * 
+     * @param isAdmin
+     * @param currentUser
+     * @param jobId
+     * 
+     * @throws WebServiceException
+     */
+    static public void deleteJob(boolean isAdmin, String currentUser, int jobId) throws WebServiceException {
+        canDeleteJob(isAdmin, currentUser, jobId);
+        try {
+            //first terminate the job including child jobs
+            AnalysisJobScheduler.terminateJob(jobId);
+            //then delete the job including child jobs
+            deleteJobNoCheck(jobId);
+        }
+        catch (JobTerminationException e) {
+            throw new WebServiceException("Error terminating job #"+jobId, e);
+        }
+        catch (JobDeletionException e) {
+            throw new WebServiceException("Error deleting job #"+jobId, e);            
+        }
+    }
+    
+    static private void canDeleteJob(boolean isAdmin, String userId, int jobId) throws WebServiceException {
+        if (isAdmin) {
+            //all admin users have full permissions
+            return;
+        }
+        PermissionsHelper ph = new PermissionsHelper(isAdmin, userId, jobId);
+        if (!ph.canWriteJob()) {
+            throw new WebServiceException("You do not have permission to edit the job: "+jobId);
+        }
+    }
+
+    /**
      * Delete the given job and any child jobs if the job is a pipeline This method deletes all input and output files as well as removes the record from the database.
      * Assume permission check has passed and that the job is terminated.
      * 
@@ -87,11 +127,11 @@ public class JobManager {
      * 
      * @param jobNumber
      */
-    static public void deleteJob(int jobNumber) throws JobDeletionException {
+    static private void deleteJobNoCheck(int jobNumber) throws JobDeletionException {
         try {
             HibernateUtil.beginTransaction();
             AnalysisDAO dao = new AnalysisDAO();
-            deleteJob(dao, jobNumber);
+            deleteJobNoCheck(dao, jobNumber);
             HibernateUtil.commitTransaction();
         }
         catch (Exception e) {
@@ -103,10 +143,10 @@ public class JobManager {
         }
     }
 
-    static private void deleteJob(AnalysisDAO dao, int jobNumber) {
+    static private void deleteJobNoCheck(AnalysisDAO dao, int jobNumber) {
         JobInfo[] children = dao.getChildren(jobNumber);
         for(JobInfo child : children) {
-            deleteJob(dao, child.getJobNumber());
+            deleteJobNoCheck(dao, child.getJobNumber());
         }
         dao.deleteJob(jobNumber);
     }

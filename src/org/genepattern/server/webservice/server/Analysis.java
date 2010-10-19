@@ -36,7 +36,6 @@ import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.AnalysisJobScheduler;
-import org.genepattern.server.executor.JobDeletionException;
 import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
@@ -454,19 +453,7 @@ public class Analysis extends GenericWebService {
     public void purgeJob(int jobId) throws WebServiceException {
         String userId = getUsernameFromContext();
         boolean isAdmin = AuthorizationHelper.adminJobs(userId);
-        canWriteJob(isAdmin, userId, jobId);
-        try {
-            //first terminate the job including child jobs
-            AnalysisJobScheduler.terminateJob(jobId);
-            //then delete the job including child jobs
-            JobManager.deleteJob(jobId);
-        }
-        catch (JobTerminationException e) {
-            throw new WebServiceException("Error terminating job #"+jobId, e);
-        }
-        catch (JobDeletionException e) {
-            throw new WebServiceException("Error deleting job #"+jobId, e);            
-        }
+        JobManager.deleteJob(isAdmin, userId, jobId);
     }
 
     /**
