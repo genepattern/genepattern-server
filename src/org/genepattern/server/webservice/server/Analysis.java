@@ -658,17 +658,14 @@ public class Analysis extends GenericWebService {
         return username;
     }
 
-    private synchronized PermissionsHelper getPermissionsHelper(boolean isAdmin, String userId, int jobId) {
-        return new PermissionsHelper(isAdmin, userId, jobId);
-    }
     private void canReadJob(boolean isAdmin, String userId, int jobId) throws WebServiceException {
-        PermissionsHelper ph = getPermissionsHelper(isAdmin, userId, jobId);
+        PermissionsHelper ph = new PermissionsHelper(isAdmin, userId, jobId);
         if (!ph.canReadJob()) {
             throw new WebServiceException("You do not have permission to read the job: "+jobId);
         }
     }
     private void canWriteJob(boolean isAdmin, String userId, int jobId) throws WebServiceException {
-        PermissionsHelper ph = getPermissionsHelper(isAdmin, userId, jobId);
+        PermissionsHelper ph = new PermissionsHelper(isAdmin, userId, jobId);
         if (!ph.canWriteJob()) {
             throw new WebServiceException("You do not have permission to edit the job: "+jobId);
         }
