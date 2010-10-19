@@ -152,7 +152,6 @@ import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
-import org.genepattern.server.webservice.server.dao.BaseDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -4227,65 +4226,6 @@ public class GenePatternAnalysisTask {
 	    zipFile.close();
 	}
 	return vTaskInfos;
-    }
-
-    // pipeline support:
-
-    /**
-     * Creates an Omnigene database entry in the analysis_job table. Unlike other entries, this one is not dispatchable
-     * to any known analysis task because it has a bogus taskID. Since it is a pipeline, it is actually being invoked by
-     * a separate process (not GenePatternAnalysisTask), but is using the rest of the infrastructure to get input files,
-     * store output files, and retrieve status and result files.
-     * 
-     * @param userID
-     *            user who owns this pipeline data instance
-     * @param parameter_info
-     *            ParameterInfo array containing pipeline data file output entries
-     * @throws OmnigeneException
-     *             if thrown by Omnigene
-     * @throws RemoteException
-     *             if thrown by Omnigene
-     * @author Jim Lerner
-     * @see #startPipeline(String,Process)
-     */
-    public static JobInfo createPipelineJob(String userID, String parameter_info, String pipelineName, String lsid) {
-	return createPipelineJob(userID, parameter_info, pipelineName, lsid, JobStatus.JOB_PENDING);
-    }
-
-    public static JobInfo createPipelineJob(String userID, String parameter_info, String pipelineName, String lsid, int status) {
-	JobInfo job;
-	try {
-	    HibernateUtil.beginTransaction();
-	    if (log.isDebugEnabled()) {
-		log.debug("Creating pipeline job");
-	    }
-	    Integer jobNo = getDS().addNewJob(BaseDAO.UNPROCESSABLE_TASKID, userID, parameter_info, pipelineName, null, lsid,
-		    status);
-	    job = getDS().getJobInfo(jobNo);
-
-	    if (log.isDebugEnabled()) {
-		log.debug("New pipeline jobNo= " + jobNo);
-	    }
-	    HibernateUtil.commitTransaction();
-	} catch (RuntimeException e) {
-	    log.error("Error creating pipeline.", e);
-	    HibernateUtil.rollbackTransaction();
-	    throw e;
-	}
-
-	return job;
-    }
-
-    public static JobInfo createVisualizerJob(String userID, String parameter_info, String visualizerName, String lsid)
-	    throws OmnigeneException, RemoteException {
-	try {
-	    int taskId = new org.genepattern.server.webservice.server.local.LocalAdminClient(userID).getTask(lsid).getID();
-	    Integer jobNo = getDS().recordClientJob(taskId, userID, parameter_info, -1);
-	    return getDS().getJobInfo(jobNo);
-
-	} catch (org.genepattern.webservice.WebServiceException wse) {
-	    throw new OmnigeneException("Unable to record job");
-	}
     }
 
     // utility methods:

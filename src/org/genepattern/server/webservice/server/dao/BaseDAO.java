@@ -32,12 +32,9 @@ import org.hibernate.*;
 import com.sun.rowset.CachedRowSetImpl;
 
 public class BaseDAO {
-
     private static Logger log = Logger.getLogger(TaskIntegratorDAO.class);
-    public static final int UNPROCESSABLE_TASKID = -1;
-    public int PROCESSING_STATUS = 2;
-    public static int JOB_WAITING_STATUS = 1;
 
+    public static final int UNPROCESSABLE_TASKID = -1;
 
     public BaseDAO() {
     	// Start a transaction if not begun already

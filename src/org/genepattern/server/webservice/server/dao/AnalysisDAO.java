@@ -971,29 +971,6 @@ public class AnalysisDAO extends BaseDAO {
     }
 
     /**
-     * TODO: refactor this method ... it should be invoked for some jobs, but not all jobs.
-     * 
-     * reset any previous running (but incomplete) jobs to waiting status, clear their output files
-     * 
-     * @return true if there were running jobs
-     * @author Jim Lerner
-     * 
-     */
-    public boolean resetPreviouslyRunningJobs() {
-
-	String hql = "update org.genepattern.server.domain.AnalysisJob set "
-		+ " jobStatus.statusId = :waitStatus where jobStatus.statusId = :processingStatus ";
-	Query query = getSession().createQuery(hql);
-	query.setInteger("waitStatus", JOB_WAITING_STATUS);
-	query.setInteger("processingStatus", PROCESSING_STATUS);
-
-	getSession().flush();
-	getSession().clear();
-	boolean exist = (query.executeUpdate() > 0);
-	return exist;
-    }
-
-    /**
      * 
      */
     public void setJobDeleted(int jobNumber, boolean deleted) throws OmnigeneException {
