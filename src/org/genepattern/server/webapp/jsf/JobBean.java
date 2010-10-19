@@ -32,18 +32,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
+import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
-import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
@@ -155,16 +153,19 @@ public class JobBean {
      * @param event
      */
     public void delete(ActionEvent event) {
+        String jobNumberParam = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber"));
         try {
-            int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
+            int jobNumber = Integer.parseInt(jobNumberParam);
             deleteJob(jobNumber);
-            UIBeanHelper.setErrorMessage("Job "+jobNumber+" has been deleted");
-        	
+            UIBeanHelper.setErrorMessage("Deleted job #"+jobNumber);
             resetJobs();
         } 
         catch (NumberFormatException e) {
             log.error("Error deleting job.", e);
             return;
+        }
+        catch (WebServiceException e) {
+            log.error("Error deleting job #"+jobNumberParam, e);
         }
     }
 
@@ -429,19 +430,17 @@ public class JobBean {
     }
 
     /**
-     * Delete the selected job. Should this also delete the files?
-     * 
-     * @param event
+     * Delete the selected job, including child jobs, first terminating it if it is running.
+     * This method deletes all output files and removes the job entry from the database.
      */
-    protected void deleteJob(int jobNumber) {
-        try {
-            LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
-            ac.deleteJob(jobNumber);
-            HibernateUtil.getSession().flush();
-        } 
-        catch (WebServiceException e) {
-            log.error("Error deleting job " + jobNumber, e);
+    private void deleteJob(int jobNumber) throws WebServiceException {
+        boolean isAdmin = false;
+        String userId = "";
+        if (userSessionBean != null) {
+            isAdmin = userSessionBean.isAdmin();
+            userId = userSessionBean.getUserId();
         }
+        JobManager.deleteJob(isAdmin, userId, jobNumber);
     }
 
     private List<JobResultsWrapper> wrapJobs(List<JobInfo> jobInfos) {
@@ -862,34 +861,34 @@ public class JobBean {
      * @param jobNumbers
      */
     private void deleteJobs(String[] jobNumbers) {
-	List<Integer> jobErrors = new ArrayList<Integer>();
+        if (jobNumbers == null) {
+            log.error("Invalid null arg to deleteJobs");
+            return;
+        }
 
-	if (jobNumbers != null) {
-	    for (String job : jobNumbers) {
-		int jobNumber = Integer.parseInt(job);
-		try {
-		    deleteJob(jobNumber);
-		} catch (NumberFormatException e) {
-		    log.error(e);
-		}
-	    }
-	}
-
-	// Create error messages
-	StringBuffer sb = new StringBuffer();
-	for (int i = 0, size = jobErrors.size(); i < size; i++) {
-	    if (i > 0) {
-		sb.append(", ");
-	    }
-	    sb.append(jobErrors.get(i));
-	}
-	if (jobErrors.size() > 0) {
-	    String msg = "An error occurred while deleting job(s) " + sb.toString() + ".";
-	    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg));
-	}
-
+        List<Integer> deletedJobs = new ArrayList<Integer>();
+        for (String job : jobNumbers) {
+            try {
+                int jobNumber = Integer.parseInt(job);
+                deleteJob(jobNumber);
+                deletedJobs.add(jobNumber);
+            } 
+            catch (NumberFormatException e) {
+                log.error(e);
+                UIBeanHelper.setErrorMessage("Error deleting job #"+job+": "+e.getLocalizedMessage());
+            }
+            catch (WebServiceException e) {
+                log.error(e);
+                UIBeanHelper.setErrorMessage("Error deleting job #"+job+": "+e.getLocalizedMessage());
+            }
+        }
+        if (deletedJobs.size() == 1) {
+            UIBeanHelper.setErrorMessage("Deleted job #"+deletedJobs.get(0));
+        }
+        else if (deletedJobs.size() > 1) {
+            UIBeanHelper.setErrorMessage("Deleted "+deletedJobs.size()+ " jobs");
+        }
     }
-
     
     /**
      * Job sort direction (true for ascending, false for descending)
@@ -926,6 +925,9 @@ public class JobBean {
     private void resetJobs() {
         recentJobs = null;
         allJobs = null;
+        if (jobResultsFilterBean != null) {
+            jobResultsFilterBean.resetJobCount();
+        }
     }
 
     public static class OutputFileInfo {

@@ -22,7 +22,7 @@ public class UserSessionBean {
         log.info("isAdmin: "+isAdmin());
     }
 
-    private String getUserId() {
+    public String getUserId() {
         if (userId == null) {
             userId = UIBeanHelper.getUserId();
         }

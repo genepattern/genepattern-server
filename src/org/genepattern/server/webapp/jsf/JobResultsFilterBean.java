@@ -106,6 +106,10 @@ public class JobResultsFilterBean implements Serializable {
         return rval;
     }
     
+    public void resetJobCount() {
+        this.jobCount = -1;
+    }
+
     public int getJobCount() {
         if (jobCount < 0) {
             if (selectedGroup != null) {                
