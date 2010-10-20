@@ -1,6 +1,8 @@
 package org.genepattern.server;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
@@ -91,14 +93,15 @@ public class JobManager {
      * @param jobId
      * 
      * @throws WebServiceException
+     * @return the list of jobNumbers that were deleted
      */
-    static public void deleteJob(boolean isAdmin, String currentUser, int jobId) throws WebServiceException {
+    static public List<Integer> deleteJob(boolean isAdmin, String currentUser, int jobId) throws WebServiceException {
         canDeleteJob(isAdmin, currentUser, jobId);
         try {
             //first terminate the job including child jobs
             AnalysisJobScheduler.terminateJob(jobId);
             //then delete the job including child jobs
-            deleteJobNoCheck(jobId);
+            return deleteJobNoCheck(jobId);
         }
         catch (JobTerminationException e) {
             throw new WebServiceException("Error terminating job #"+jobId, e);
@@ -126,12 +129,14 @@ public class JobManager {
      * TODO: this method does not clean up uploaded input files (either uploaded via soap or web interface).
      * 
      * @param jobNumber
+     * @return the list of jobNumbers that were deleted
      */
-    static private void deleteJobNoCheck(int jobNumber) throws JobDeletionException {
+    static private List<Integer> deleteJobNoCheck(int jobNumber) throws JobDeletionException {
+        List<Integer> deletedJobIds = new ArrayList<Integer>();
         try {
             HibernateUtil.beginTransaction();
             AnalysisDAO dao = new AnalysisDAO();
-            deleteJobNoCheck(dao, jobNumber);
+            deleteJobNoCheck(deletedJobIds, dao, jobNumber);
             HibernateUtil.commitTransaction();
         }
         catch (Exception e) {
@@ -141,14 +146,22 @@ public class JobManager {
         finally {
             HibernateUtil.closeCurrentSession();
         }
+        return deletedJobIds;
     }
 
-    static private void deleteJobNoCheck(AnalysisDAO dao, int jobNumber) {
+    /**
+     * 
+     * @param dao
+     * @param jobNumber
+     * @return the list of deleted jobs, including this job
+     */
+    static private void deleteJobNoCheck(List<Integer> deletedJobIds, AnalysisDAO dao, int jobNumber) {
         JobInfo[] children = dao.getChildren(jobNumber);
         for(JobInfo child : children) {
-            deleteJobNoCheck(dao, child.getJobNumber());
+            deleteJobNoCheck(deletedJobIds, dao, child.getJobNumber());
         }
         dao.deleteJob(jobNumber);
+        deletedJobIds.add(jobNumber);
     }
 
     private static void deleteJobDir(int jobNumber) throws JobDeletionException {

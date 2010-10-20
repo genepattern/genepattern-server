@@ -433,14 +433,14 @@ public class JobBean {
      * Delete the selected job, including child jobs, first terminating it if it is running.
      * This method deletes all output files and removes the job entry from the database.
      */
-    private void deleteJob(int jobNumber) throws WebServiceException {
+    private List<Integer> deleteJob(int jobNumber) throws WebServiceException {
         boolean isAdmin = false;
         String userId = "";
         if (userSessionBean != null) {
             isAdmin = userSessionBean.isAdmin();
             userId = userSessionBean.getUserId();
         }
-        JobManager.deleteJob(isAdmin, userId, jobNumber);
+        return JobManager.deleteJob(isAdmin, userId, jobNumber);
     }
 
     private List<JobResultsWrapper> wrapJobs(List<JobInfo> jobInfos) {
@@ -671,20 +671,20 @@ public class JobBean {
     }
 
     /**
-     * Get the list of selected jobs (LSIDs) from the request parameters. This is converted to a set to make membership
-     * tests efficient.
+     * Get the list of selected jobs (LSIDs) from the request parameters. 
+     * This is converted to a set to make membership tests efficient.
      * 
      * @return The selected jobs.
      */
     private Set<String> getSelectedJobs() {
-	HashSet<String> selectedJobs = new HashSet<String>();
-	String[] tmp = UIBeanHelper.getRequest().getParameterValues("selectedJobs");
-	if (tmp != null) {
-	    for (String job : tmp) {
-		selectedJobs.add(job);
-	    }
-	}
-	return selectedJobs;
+        HashSet<String> selectedJobs = new HashSet<String>();
+        String[] tmp = UIBeanHelper.getRequest().getParameterValues("selectedJobs");
+        if (tmp != null) {
+            for (String job : tmp) {
+                selectedJobs.add(job);
+            }
+        }
+        return selectedJobs;
     }
 
     /**
@@ -693,16 +693,94 @@ public class JobBean {
      * @return
      */
     public String delete() {
-        String[] selectedFiles = UIBeanHelper.getRequest().getParameterValues("selectedFiles");
-        if (selectedFiles != null) {
-            for (String jobFileName : selectedFiles) {
-                deleteFile(jobFileName);
+        String[] selectedJobs = UIBeanHelper.getRequest().getParameterValues("selectedJobs");
+        List<Integer> jobsToDelete = new ArrayList<Integer>();
+        if (selectedJobs != null) {
+            for(String selectedJob : selectedJobs) {
+                try {
+                    int jobNumber = Integer.parseInt(selectedJob);
+                    jobsToDelete.add(jobNumber);
+                }
+                catch (NumberFormatException e) {
+                    log.error(e);
+                    UIBeanHelper.setErrorMessage("Error deleting job #"+selectedJob+": "+e.getLocalizedMessage());
+                }
             }
         }
-        String[] selectedJobs = UIBeanHelper.getRequest().getParameterValues("selectedJobs");
-        deleteJobs(selectedJobs);
+
+        String[] selectedFiles = UIBeanHelper.getRequest().getParameterValues("selectedFiles");
+        Map<Integer,List<JobFileEntry>> selectedFileEntries = new HashMap<Integer,List<JobFileEntry>>();
+        if (selectedFiles != null) {
+            for(String selectedFile : selectedFiles) {
+                JobFileEntry entry = JobFileEntry.parse(selectedFile);
+                if (entry != null) {
+                    List<JobFileEntry> list = selectedFileEntries.get(entry.jobNumber);
+                    if (list == null) {
+                        list = new ArrayList<JobFileEntry>();
+                        selectedFileEntries.put(entry.jobNumber, list);
+                    }
+                    list.add(entry);
+                }
+            }
+        }
+        
+        //delete the jobs
+        List<Integer> deletedJobs = deleteJobs(jobsToDelete);
+        
+        //prevent duplicate deletion of files from deleted jobs
+        for(Integer jobToDelete : deletedJobs) {
+            List<JobFileEntry> list = selectedFileEntries.remove(jobToDelete);
+            //for debugging only
+            if (list != null) {
+                for(JobFileEntry entry : list) {
+                    log.debug("Ignoring duplicate fileEntry: "+entry.jobNumber+", "+entry.fileName);
+                }
+            }
+        }
+        
+        //delete files
+        for(List<JobFileEntry> list : selectedFileEntries.values()) {
+            for(JobFileEntry entry : list) {
+                deleteFile(entry.fileName);
+            }
+        }
+
         this.resetJobs();
         return null;
+    }
+    
+    private static class JobFileEntry {
+        Integer jobNumber;
+        String fileName;
+        
+        private static JobFileEntry parse(String entry) {
+            //parse encodedJobFileName for <jobNumber> and <filename>, add support for directories
+            //from Job Summary page jobFileName="1/all_aml_test.preprocessed.gct"
+            //from Job Status page jobFileName="/gp/jobResults/1/all_aml_test.preprocessed.gct"
+            String contextPath = UIBeanHelper.getRequest().getContextPath();
+            String pathToJobResults = contextPath + "/jobResults/";
+            if (entry.startsWith(pathToJobResults)) {
+                entry = entry.substring(pathToJobResults.length());
+            }
+            int idx = entry.indexOf('/');
+            if (idx <= 0) {
+                UIBeanHelper.setErrorMessage("Error deleting file: "+entry);
+                return null;
+            }
+            int jobNumber = -1;
+            String jobId = entry.substring(0, idx);
+            try {
+                jobNumber = Integer.parseInt(jobId);
+            }
+            catch (NumberFormatException e) {
+                UIBeanHelper.setErrorMessage("Error deleting file: "+entry+", "+e.getMessage());
+                return null;
+            }
+            JobFileEntry jr = new JobFileEntry();
+            jr.jobNumber = jobNumber;
+            jr.fileName = entry;
+            return jr;
+        }
     }
     
     public String sortFilesByName() {
@@ -860,34 +938,32 @@ public class JobBean {
      * 
      * @param jobNumbers
      */
-    private void deleteJobs(String[] jobNumbers) {
+    private List<Integer> deleteJobs(List<Integer> jobNumbers) {
         if (jobNumbers == null) {
             log.error("Invalid null arg to deleteJobs");
-            return;
+            return Collections.EMPTY_LIST;
         }
 
-        List<Integer> deletedJobs = new ArrayList<Integer>();
-        for (String job : jobNumbers) {
+        List<Integer> topLevelDeletedJobs = new ArrayList<Integer>();
+        List<Integer> allDeletedJobs = new ArrayList<Integer>();
+        for (Integer jobNumber : jobNumbers) {
             try {
-                int jobNumber = Integer.parseInt(job);
-                deleteJob(jobNumber);
-                deletedJobs.add(jobNumber);
-            } 
-            catch (NumberFormatException e) {
-                log.error(e);
-                UIBeanHelper.setErrorMessage("Error deleting job #"+job+": "+e.getLocalizedMessage());
+                List<Integer> rval = deleteJob(jobNumber);
+                topLevelDeletedJobs.add(jobNumber);
+                allDeletedJobs.addAll(rval);
             }
             catch (WebServiceException e) {
                 log.error(e);
-                UIBeanHelper.setErrorMessage("Error deleting job #"+job+": "+e.getLocalizedMessage());
+                UIBeanHelper.setErrorMessage("Error deleting job #"+jobNumber+": "+e.getLocalizedMessage());
             }
         }
-        if (deletedJobs.size() == 1) {
-            UIBeanHelper.setErrorMessage("Deleted job #"+deletedJobs.get(0));
+        if (topLevelDeletedJobs.size() == 1) {
+            UIBeanHelper.setErrorMessage("Deleted job #"+topLevelDeletedJobs.get(0));
         }
-        else if (deletedJobs.size() > 1) {
-            UIBeanHelper.setErrorMessage("Deleted "+deletedJobs.size()+ " jobs");
+        else if (topLevelDeletedJobs.size() > 1) {
+            UIBeanHelper.setErrorMessage("Deleted "+topLevelDeletedJobs.size()+ " jobs");
         }
+        return allDeletedJobs;
     }
     
     /**
