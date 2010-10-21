@@ -155,13 +155,13 @@ public class GPClient {
      * @see #isComplete
      */
     public JobResult createJobResult(int jobNumber) throws WebServiceException {
-	AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, username, password, false);
-	analysisProxy.setTimeout(Integer.MAX_VALUE);
-	JobInfo info = analysisProxy.checkStatus(jobNumber);
-	if (info == null) {
-	    return null;
-	}
-	return createJobResult(info);
+        AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, username, password, false);
+        analysisProxy.setTimeout(Integer.MAX_VALUE);
+        JobInfo info = analysisProxy.checkStatus(jobNumber);
+        if (info == null) {
+            return null;
+        }
+        return createJobResult(info);
     }
 
     /**
@@ -486,46 +486,62 @@ public class GPClient {
     }
 
     private JobResult createJobResult(JobInfo info) throws WebServiceException {
-	String status = info.getStatus();
-	if (!(status.equalsIgnoreCase("ERROR") || (status.equalsIgnoreCase("Finished")))) {
-	    return null;
-	}
-	TaskInfo taskInfo = getTask(info.getTaskLSID());
-	ArrayList<String> resultFiles = new ArrayList<String>();
-	ParameterInfo[] jobParameterInfo = info.getParameterInfoArray();
-	boolean stderr = false;
-	boolean stdout = false;
-	ArrayList<Parameter> jobParameters = new ArrayList<Parameter>();
-	for (int j = 0; j < jobParameterInfo.length; j++) {
-	    if (jobParameterInfo[j].isOutputFile()) {
-		String fileName = jobParameterInfo[j].getValue();
-		int index1 = fileName.lastIndexOf('/');
-		int index2 = fileName.lastIndexOf('\\');
-		int index = (index1 > index2 ? index1 : index2);
-		if (index != -1) {
-		    fileName = fileName.substring(index + 1, fileName.length());
-		}
-		if (fileName.equals(GPConstants.STDOUT)) {
-		    stdout = true;
-		} else if (fileName.equals(GPConstants.STDERR)) {
-		    stderr = true;
-		} else if (fileName.equals(GPConstants.TASKLOG)) {
-		    // ignore
-		} else {
-		    resultFiles.add(fileName);
-		}
-	    } else {
-		jobParameters.add(new Parameter(jobParameterInfo[j].getName(), jobParameterInfo[j].getValue()));
-	    }
-	}
-	try {
-	    return new JobResult(new URL(server), info.getJobNumber(), resultFiles.toArray(new String[0]), stdout,
-		    stderr, jobParameters.toArray(new Parameter[0]), taskInfo.getTaskInfoAttributes().get(
-			    GPConstants.LSID), username, password);
-	} catch (java.net.MalformedURLException mfe) {
-	    throw new Error(mfe);
-	}
-
+        String status = info.getStatus();
+        if (!(status.equalsIgnoreCase("ERROR") || (status.equalsIgnoreCase("Finished")))) {
+            return null;
+        }
+        TaskInfo taskInfo = getTask(info.getTaskLSID());
+        ArrayList<String> resultFiles = new ArrayList<String>();
+        ParameterInfo[] jobParameterInfo = info.getParameterInfoArray();
+        boolean stderr = false;
+        boolean stdout = false;
+        ArrayList<Parameter> jobParameters = new ArrayList<Parameter>();
+        for(ParameterInfo paramInfo : jobParameterInfo) {
+            if (paramInfo.isOutputFile()) {
+                String fileName = paramInfo.getValue();
+                int index1 = fileName.lastIndexOf('/');
+                int index2 = fileName.lastIndexOf('\\');
+                int index = (index1 > index2 ? index1 : index2);
+                if (index != -1) {
+                    fileName = fileName.substring(index + 1, fileName.length());
+                }
+                if (fileName.equals(GPConstants.STDOUT)) {
+                    stdout = true;
+                } 
+                else if (fileName.equals(GPConstants.STDERR)) {
+                    stderr = true;
+                } 
+                else if (fileName.equals(GPConstants.TASKLOG)) {
+                    // ignore
+                } 
+                else {
+                    resultFiles.add(fileName);
+                }
+            } 
+            else {
+                jobParameters.add(new Parameter(paramInfo.getName(), paramInfo.getValue()));
+            }
+        }
+        try {
+            final URL serverUrl = new URL(server);
+            final int jobNumber = info.getJobNumber();
+            final String[] resultFilenames = resultFiles.toArray(new String[0]);
+            final Parameter[] jobParametersArray = jobParameters.toArray(new Parameter[0]);
+            final String taskLsid = taskInfo.getTaskInfoAttributes().get(GPConstants.LSID);
+            return new JobResult(
+                    serverUrl, 
+                    jobNumber, 
+                    resultFilenames, 
+                    stdout, 
+                    stderr, 
+                    jobParametersArray, 
+                    taskLsid, 
+                    username, 
+                    password);
+        } 
+        catch (java.net.MalformedURLException mfe) {
+            throw new Error(mfe);
+        }
     }
 
     private TaskInfo getTask(String lsid) throws WebServiceException {
