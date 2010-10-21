@@ -498,14 +498,24 @@ public class GPClient {
         ArrayList<Parameter> jobParameters = new ArrayList<Parameter>();
         for(ParameterInfo paramInfo : jobParameterInfo) {
             if (paramInfo.isOutputFile()) {
+                int fileJobNumber = info.getJobNumber();
                 String fileName = paramInfo.getValue();
                 int index1 = fileName.lastIndexOf('/');
                 int index2 = fileName.lastIndexOf('\\');
                 int index = (index1 > index2 ? index1 : index2);
                 if (index != -1) {
+                    try {
+                        fileJobNumber = Integer.parseInt( fileName.substring(0, index) );
+                    }
+                    catch (NumberFormatException e) {
+                        log.error("Error getting job number from resultFile: "+fileName, e);
+                    }
                     fileName = fileName.substring(index + 1, fileName.length());
                 }
-                if (fileName.equals(GPConstants.STDOUT)) {
+                if (fileJobNumber != info.getJobNumber()) {
+                    // ignore
+                }
+                else if (fileName.equals(GPConstants.STDOUT)) {
                     stdout = true;
                 } 
                 else if (fileName.equals(GPConstants.STDERR)) {
@@ -514,6 +524,9 @@ public class GPClient {
                 else if (fileName.equals(GPConstants.TASKLOG)) {
                     // ignore
                 } 
+                else if (fileName.endsWith(GPConstants.PIPELINE_TASKLOG_ENDING)) {
+                    // ignore
+                }
                 else {
                     resultFiles.add(fileName);
                 }
