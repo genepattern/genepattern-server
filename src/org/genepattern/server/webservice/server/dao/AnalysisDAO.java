@@ -1025,6 +1025,14 @@ public class AnalysisDAO extends BaseDAO {
 	return 1;
 
     }
+    
+    public int updateParameterInfo(Integer jobNo, String parameterInfo) {
+        String hqlUpdate = "update org.genepattern.server.domain.AnalysisJob job set job.parameterInfo = :parameterInfo where jobNo = :jobNo";
+        Query query = HibernateUtil.getSession().createQuery( hqlUpdate );
+        query.setString("parameterInfo", parameterInfo);
+        query.setInteger("jobNo", jobNo);
+        return query.executeUpdate();
+    }
 
     /**
      * Updates task parameters

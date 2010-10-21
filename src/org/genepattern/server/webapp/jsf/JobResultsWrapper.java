@@ -38,6 +38,7 @@ public class JobResultsWrapper {
     private Set<String> selectedFiles;
     private Set<String> selectedJobs;
     private Map<String, List<KeyValuePair>> kindToInputParameters;
+    private boolean showPipelineOutputFiles = false;
 
     private JobPermissionsBean _jobPermissionsBean = null;
 
@@ -88,25 +89,38 @@ public class JobResultsWrapper {
         ParameterInfo[] parameterInfoArray = jobInfo.getParameterInfoArray();
         if (parameterInfoArray != null) {
             File outputDir = new File(GenePatternAnalysisTask.getJobDir("" + jobInfo.getJobNumber()));
-            for (int i = 0; i < parameterInfoArray.length; i++) {
-                if (parameterInfoArray[i].isOutputFile()) {
-                    boolean isTaskLog = (parameterInfoArray[i].getName().equals(GPConstants.TASKLOG) || parameterInfoArray[i].getName().endsWith(GPConstants.PIPELINE_TASKLOG_ENDING));
+            for(ParameterInfo param : parameterInfoArray) {
+                if (param.isOutputFile()) {
+                    boolean isTaskLog = (param.getName().equals(GPConstants.TASKLOG) || param.getName().endsWith(GPConstants.PIPELINE_TASKLOG_ENDING));
+                    // is this file an output result of this job, false if it's a result of a child job of this pipeline
+                    boolean isChildOutput = true;
 
                     if (showExecutionLogs || !isTaskLog) {
-                        File file = new File(outputDir, parameterInfoArray[i].getName());
-                        String kind = SemanticUtil.getKind(file);
-                        Collection<TaskInfo> modules;
-
-                        if (parameterInfoArray[i].getName().equals(GPConstants.TASKLOG)) {
-                            modules = new ArrayList<TaskInfo>();
-                        } 
-                        else {
-                            modules = kindToModules.get(kind);
+                        File file = new File(outputDir.getParent(), param.getValue());
+                        if (!file.exists()) {
+                            file = new File(outputDir, param.getName());
                         }
-                        OutputFileInfo pInfo = new OutputFileInfo(parameterInfoArray[i], file, modules, jobInfo.getJobNumber(), kind);
-                        totalSize += pInfo.getSize();
-                        pInfo.setSelected(selectedFiles.contains(pInfo.getValue()));
-                        outputFiles.add(pInfo);
+                        if (!showPipelineOutputFiles) {
+                            File relativePath = GenePatternAnalysisTask.getRelativePath(outputDir, file);
+                            if (relativePath == null) {
+                                isChildOutput = false;
+                            }
+                        }
+                        if (isChildOutput || showPipelineOutputFiles) {
+                            String kind = SemanticUtil.getKind(file);
+                            Collection<TaskInfo> modules;
+
+                            if (param.getName().equals(GPConstants.TASKLOG)) {
+                                modules = new ArrayList<TaskInfo>();
+                            } 
+                            else {
+                                modules = kindToModules.get(kind);
+                            }
+                            OutputFileInfo pInfo = new OutputFileInfo(param, file, modules, jobInfo.getJobNumber(), kind);
+                            totalSize += pInfo.getSize();
+                            pInfo.setSelected(selectedFiles.contains(pInfo.getValue()));
+                            outputFiles.add(pInfo);
+                        }
                     }
                 }
             }

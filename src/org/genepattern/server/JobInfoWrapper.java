@@ -218,12 +218,35 @@ public class JobInfoWrapper implements Serializable {
         }
 
         private boolean isTaskLog = false;
+        private boolean isChildJobResult = false;
+        
+        /**
+         * 
+         * @return true iff this output file is an output of the given job.
+         */
+        public boolean isChildJobResult() {
+            return isChildJobResult;
+        }
 
         OutputFile(Map<String, Collection<TaskInfo>>  kindToModules, File outputDir, String contextPath, JobInfo jobInfo, ParameterInfo parameterInfo) {
             super(parameterInfo);
-            this.outputFile = new File(outputDir, parameterInfo.getName());
+
+            boolean exists = false;
+            if (outputDir != null) {
+                this.outputFile = new File(outputDir.getParent(), parameterInfo.getValue());
+                exists = outputFile.exists();
+                if (exists) {
+                    File relativePath = GenePatternAnalysisTask.getRelativePath(outputDir, outputFile);
+                    if (relativePath == null) {
+                        this.isChildJobResult = true;
+                    }
+                }
+            }
+            if (!exists) {
+                this.outputFile = new File(outputDir, parameterInfo.getName());
+                exists = outputFile.exists();
+            }
             //Set the size and lastModified properties for each output file
-            boolean exists = outputFile.exists();
             if (exists) {
                 setSize(outputFile.length());
                 Calendar cal = Calendar.getInstance();
@@ -699,7 +722,9 @@ public class JobInfoWrapper implements Serializable {
                 outputFilesAndTaskLogs.add(outputFile);
                 if (!outputFile.isTaskLog()) {
                     //don't add execution logs
-                    outputFiles.add(outputFile);
+                    if (!outputFile.isChildJobResult) {
+                        outputFiles.add(outputFile);
+                    }
                 }
             }
             else {

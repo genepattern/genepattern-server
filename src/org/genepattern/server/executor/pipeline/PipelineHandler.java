@@ -45,13 +45,12 @@ import org.hibernate.Query;
  * TODO: handle exceptions
  *     a) server error in startPipeline
  *     b) server error in prepareNextStep
- *     c) job is canceled (should cause the pipeline to cancel)
  * 
  * @author pcarr
  */
 public class PipelineHandler {
     private static Logger log = Logger.getLogger(PipelineHandler.class);
-
+    
     /**
      * Initialize the pipeline and add the first job to the queue.
      */
@@ -188,29 +187,30 @@ public class PipelineHandler {
      * @param completionDate
      * @return
      */
-    public static boolean handleJobCompletion(int jobNumber) {
-        if (jobNumber < 0) {
-            log.error("Invalid jobNumber: "+jobNumber);
+    public static boolean handleJobCompletion(int childJobNumber) {
+        if (childJobNumber < 0) {
+            log.error("Invalid jobNumber: "+childJobNumber);
         }
-        JobInfo jobInfo = null;
+        JobInfo childJobInfo = null;
         int parentJobNumber = -1;
         try {
             AnalysisDAO ds = new AnalysisDAO();
-            jobInfo = ds.getJobInfo(jobNumber);
-            parentJobNumber = jobInfo.getParentJobNumber();
-            if (parentJobNumber < 0) {
-                log.error("Invalid parentJobNumber: "+parentJobNumber);
-                return false;
-            } 
-            //not sure if this is necessary
-            collectChildJobResults(ds, jobInfo);
+            childJobInfo = ds.getJobInfo(childJobNumber);
+            parentJobNumber = childJobInfo.getParentJobNumber();
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
+
+        if (parentJobNumber < 0) {
+            log.error("Invalid parentJobNumber: "+parentJobNumber);
+            return false;
+        } 
+        //add any output files from the completed job to the parent
+        collectChildJobResults(parentJobNumber, childJobInfo);
         
         //check the status of the job
-        if (JobStatus.FINISHED.equals(jobInfo.getStatus())) { 
+        if (JobStatus.FINISHED.equals(childJobInfo.getStatus())) { 
             //get the next step in the pipeline, by jobId
             HibernateUtil.beginTransaction();
             Integer nextJobId = getNextJobId(parentJobNumber);
@@ -447,44 +447,41 @@ public class PipelineHandler {
         return firstStep;
     }
     
-    /**
-     * handle the special case where a task is a pipeline by adding all output files of the pipeline's children
-     * (recursively) to its taskResult so that they can be used downstream
-     * 
-     * recurse through the children and add all output params to the parent
-     */
-    private static JobInfo collectChildJobResults(AnalysisDAO ds, JobInfo jobInfo) {
-        if (jobInfo == null) {
-            log.debug("Invalid null arg to collectChildJobResults");
-            return jobInfo;
-        }
-        log.debug("collectChildJobResults for: " + jobInfo.getJobNumber());
-        JobInfo[] children = ds.getChildren(jobInfo.getJobNumber());
-        if (children.length == 0) {
-            return jobInfo;
-        }
-        List<ParameterInfo> outs = new ArrayList<ParameterInfo>();            
-        for (int i = 0; i < children.length; i++) {
-            getChildJobOutputs(children[i], outs);
-        }
-        // now add them to the parent
-        if (outs.size() == 0) {
-            return jobInfo;
-        }
-        for (ParameterInfo p : outs) {
-            jobInfo.addParameterInfo(p);
-        }
-        return jobInfo;
-    }
-
-    private static void getChildJobOutputs(JobInfo child, List<ParameterInfo> outs) {
+    private static List<ParameterInfo> getChildJobOutputs(JobInfo child) {
+        List<ParameterInfo> outs = new ArrayList<ParameterInfo>();
         ParameterInfo[] childParams = child.getParameterInfoArray();
-        for (int i = 0; i < childParams.length; i++) {
-            if (childParams[i].isOutputFile()) {
-                File f = new File(childParams[i].getValue());
+        for (ParameterInfo childParam : childParams) {
+            if (childParam.isOutputFile()) {
+                File f = new File(childParam.getValue());
                 if (!f.getName().equals(GPConstants.TASKLOG)) {
-                    outs.add(childParams[i]);
+                    outs.add(childParam);
                 }
+            }
+        }
+        return outs;
+    }
+    
+    /**
+     * Add output files from the given completed child job to the parent job.
+     */
+    private static void collectChildJobResults(int parentJobNumber, JobInfo childJobInfo) {
+        List<ParameterInfo> childJobOutputs = getChildJobOutputs(childJobInfo);
+        if (childJobOutputs.size() > 0) {
+            try {
+                HibernateUtil.beginTransaction();
+                AnalysisDAO ds = new AnalysisDAO();
+                JobInfo parentJobInfo = ds.getJobInfo(parentJobNumber);
+                for(ParameterInfo childJobOutput : childJobOutputs) {
+                    parentJobInfo.addParameterInfo(childJobOutput);
+                }
+                
+                String paramString = parentJobInfo.getParameterInfo();
+                ds.updateParameterInfo(parentJobInfo.getJobNumber(), paramString);
+                HibernateUtil.commitTransaction();
+            }
+            catch (Throwable t) {
+                log.error("error updating parameter_info for parent job #"+parentJobNumber, t);
+                HibernateUtil.rollbackTransaction();
             }
         }
     }
@@ -825,28 +822,4 @@ public class PipelineHandler {
         }
         return parameterInfo;
     }
-    
-//    /**
-//     * called to notify the gp server that a pipeline job has completed.
-//     */
-//    private static void recordPipelineJobCompletion(int rootJobId, String stdoutFilename, String stderrFilename, int exitCode, StringBuffer stderrBuffer) {
-//        //output stderrBuffer to STDERR file
-//        int jobStatus = JobStatus.JOB_FINISHED;
-//        if (stderrBuffer != null && stderrBuffer.length() > 0) {
-//            jobStatus = JobStatus.JOB_ERROR;
-//            if (exitCode == 0) {
-//                exitCode = -1;
-//            }
-//            String outDirName = GenePatternAnalysisTask.getJobDir(Integer.toString(rootJobId));
-//            GenePatternAnalysisTask.writeStringToFile(outDirName, STDERR, stderrBuffer.toString());
-//        }
-//
-//        try {
-//            GenePatternAnalysisTask.handleJobCompletion(rootJobId, stdoutFilename, stderrFilename, exitCode, jobStatus, GenePatternAnalysisTask.JOB_TYPE.PIPELINE);
-//        }
-//        catch (Exception e) {
-//            log.error("Error handling job completion for pipeline: "+rootJobId, e);
-//        }
-//    }
-
 }

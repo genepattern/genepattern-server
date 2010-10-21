@@ -1827,7 +1827,7 @@ public class GenePatternAnalysisTask {
      * 
      * @return a relative File or null if the outputFile is not an ancestor of the jobResultDir.
      */
-    private static File getRelativePath(File jobResultDir, File outputFile) {
+    public static File getRelativePath(File jobResultDir, File outputFile) {
         File p=outputFile.getParentFile();
         if(p==null) {
             return outputFile;
@@ -1942,51 +1942,6 @@ public class GenePatternAnalysisTask {
         
         HibernateUtil.getSession().update(aJob);
     }
-
-//    /**
-//     * Update AnalysisJob
-//     * 
-//     * @param jobInfo
-//     * @param parentJobInfo
-//     * @param jobStatus
-//     */
-//    private static void updateJobInfo(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, Date completionDate) {
-//        log.debug("Updating jobInfo");
-//        if (jobInfo == null) {
-//            log.error("jobInfo == null");
-//            return;
-//        }
-//
-//        AnalysisJobDAO home = new AnalysisJobDAO();
-//
-//        AnalysisJob aJob = home.findById(jobInfo.getJobNumber());
-//        aJob.setJobNo(jobInfo.getJobNumber());
-//
-//        String paramString = jobInfo.getParameterInfo();
-//        if (jobStatus == JobStatus.JOB_ERROR || jobStatus == JobStatus.JOB_FINISHED || jobStatus == JobStatus.JOB_PROCESSING) {
-//            paramString = ParameterFormatConverter.stripPasswords(paramString);
-//        }
-//
-//        JobStatus newJobStatus = (new JobStatusDAO()).findById(jobStatus);
-//        aJob.setParameterInfo(paramString);
-//        aJob.setJobStatus(newJobStatus);
-//        aJob.setCompletedDate(completionDate);
-//
-//        // TODO: JTL 8/21/07 oracle begin
-//        HibernateUtil.commitTransaction();
-//        HibernateUtil.isInTransaction();
-//        HibernateUtil.beginTransaction();
-//        // TODO: JTL 8/21/07 oracle end
-//        if (parentJobInfo != null) {
-//            AnalysisJob parentJob = home.findById(parentJobInfo.getJobNumber());
-//            parentJob.setCompletedDate(completionDate);
-//        }
-//        // TODO: JTL 8/21/07 oracle begin
-//        HibernateUtil.commitTransaction();
-//        HibernateUtil.isInTransaction();
-//        HibernateUtil.beginTransaction();
-//        // TODO: JTL 8/21/07 oracle end
-//    }
 
     /**
      * Get the appropriate command prefix to use for this module. The hierarchy goes like this; 1. task version specific
