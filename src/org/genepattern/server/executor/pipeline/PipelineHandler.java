@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.StringTokenizer;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -54,12 +52,11 @@ public class PipelineHandler {
     /**
      * Initialize the pipeline and add the first job to the queue.
      */
-    public static void startPipeline(String[] commandLine, JobInfo pipelineJobInfo, int stopAfterTask) throws Exception {
+    public static void startPipeline(JobInfo pipelineJobInfo, int stopAfterTask) throws Exception {
         boolean success = false;
         Integer firstStep = null;
         try {
-            Map additionalArgs = getAdditionalArgs(commandLine);
-            firstStep = runPipeline(pipelineJobInfo, stopAfterTask, additionalArgs);
+            firstStep = runPipeline(pipelineJobInfo, stopAfterTask);
             HibernateUtil.commitTransaction();
             success = true;
         }
@@ -365,42 +362,6 @@ public class PipelineHandler {
         }
         return waitingJobs;
     }
-    
-    private static Map getAdditionalArgs(String[] commandTokens) {
-        Properties additionalArguments = new Properties();
-        //HACK: remove all args up to org.genepattern.server.webapp.RunPipelineSoap
-        List<String> modifiedCommandTokens = new ArrayList<String>();
-        int startIdx = 0;
-        for(int i=0; i<commandTokens.length; ++i) {
-            if ("org.genepattern.server.webapp.RunPipelineSoap".equals(commandTokens[i])) {
-                startIdx = i+1;
-                break;
-            }
-        }
-        for(int i=startIdx; i<commandTokens.length; ++i) {
-            modifiedCommandTokens.add(commandTokens[i]);
-        }
-        String[] args = new String[modifiedCommandTokens.size()];
-        args = modifiedCommandTokens.toArray(args);
-        if (args.length > 2) {
-            for (int i = 2; i < args.length; i++) {
-                // assume args are in the form name=value
-                String arg = args[i];
-                StringTokenizer strtok = new StringTokenizer(arg, "=");
-                String key = strtok.nextToken();
-                StringBuffer valbuff = new StringBuffer("");
-                int count = 0;
-                while (strtok.hasMoreTokens()) {
-                    valbuff.append(strtok.nextToken());
-                    if ((strtok.hasMoreTokens()))
-                        valbuff.append("=");
-                    count++;
-                }
-                additionalArguments.put(key, valbuff.toString());
-            }
-        }
-        return additionalArguments;
-    }
 
     /**
      * 
@@ -416,13 +377,19 @@ public class PipelineHandler {
      * @throws WebServiceException
      * @throws JobSubmissionException
      */
-    private static Integer runPipeline(JobInfo pipelineJobInfo, int stopAfterTask, Map additionalArgs) 
+    private static Integer runPipeline(JobInfo pipelineJobInfo, int stopAfterTask) 
     throws PipelineModelException, MissingTasksException, WebServiceException, JobSubmissionException
     {  
         PipelineModel pipelineModel = PipelineUtil.getPipelineModel(pipelineJobInfo);
         pipelineModel.setLsid(pipelineJobInfo.getTaskLSID());
-
         checkForMissingTasks(pipelineJobInfo.getUserId(), pipelineModel);
+        
+        //initialize the pipeline args
+        Map<String,String> additionalArgs = new HashMap<String,String>();
+        ParameterInfo[] pipelineJobParameterInfos = pipelineJobInfo.getParameterInfoArray();
+        for(ParameterInfo param : pipelineJobInfo.getParameterInfoArray()) {
+            additionalArgs.put(param.getName(), param.getValue());
+        }
 
         int stepNum = 0;
         Vector<JobSubmission> tasks = pipelineModel.getTasks();

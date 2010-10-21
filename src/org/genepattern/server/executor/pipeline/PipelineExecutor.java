@@ -57,7 +57,8 @@ public class PipelineExecutor implements CommandExecutor {
         }
         
         try {
-            PipelineHandler.startPipeline(commandLine, jobInfo, Integer.MAX_VALUE);
+            //no longer using commandLine for processing pipelines
+            PipelineHandler.startPipeline(jobInfo, Integer.MAX_VALUE);
         }
         catch (Exception e) {
             throw new CommandExecutorException("Server error starting pipeline job #"+jobInfo.getJobNumber(), e);
