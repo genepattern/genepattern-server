@@ -148,10 +148,13 @@ public class AuthenticationFilter implements Filter {
         }
         else {
             //if we are here, request authentication
-            
-            //first, keep track of the target URL,see UIBeanHelper#getReferrer
-            //    redirect to targetURL after successful login
+
+            //first, store the target URL as a session parameter
             String targetURL = request.getRequestURI();
+            String queryString = request.getQueryString();
+            if (queryString != null) {
+                targetURL += "?" + queryString;
+            }
             request.getSession().setAttribute("origin", targetURL);
 
             //second, request authentication, by default a redirect to the webapp's login page

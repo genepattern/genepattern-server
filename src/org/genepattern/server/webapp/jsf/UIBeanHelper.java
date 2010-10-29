@@ -109,19 +109,6 @@ public class UIBeanHelper {
     }
     }
 
-    public static String getReferrer(HttpServletRequest request) {
-    String referrer = (String) request.getSession().getAttribute("origin");
-    request.getSession().removeAttribute("origin");
-    if (referrer == null || referrer.length() == 0) {
-        referrer = request.getParameter("origin");
-    }
-
-    if (referrer == null || referrer.length() == 0) {
-        referrer = request.getContextPath() + "/pages/index.jsf";
-    }
-    return referrer;
-    }
-
     public static String getUserId() {
         HttpServletRequest request = getRequest();
         if (request == null) {

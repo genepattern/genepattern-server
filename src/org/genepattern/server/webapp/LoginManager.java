@@ -36,6 +36,19 @@ public class LoginManager {
         }
         return loginManager;
     }
+    
+    public static String getReferrer(HttpServletRequest request) {
+        String referrer = (String) request.getSession().getAttribute("origin");
+        request.getSession().removeAttribute("origin");
+        if (referrer == null || referrer.length() == 0) {
+            referrer = request.getParameter("origin");
+        }
+
+        if (referrer == null || referrer.length() == 0) {
+            referrer = request.getContextPath() + "/pages/index.jsf";
+        }
+        return referrer;
+    }
 
     /**
      * Authenticate and then login. 
@@ -129,7 +142,7 @@ public class LoginManager {
     private void redirect(HttpServletRequest request, HttpServletResponse response) 
     throws IOException
     {
-        String referrer = UIBeanHelper.getReferrer(request);
+        String referrer = LoginManager.getReferrer(request);
         response.sendRedirect(referrer);
         FacesContext fc = FacesContext.getCurrentInstance();
         if (fc != null) {
