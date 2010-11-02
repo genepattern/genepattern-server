@@ -198,24 +198,16 @@ class PipelineCommand_3_2 implements Callable<PipelineCommand_3_2> {
     }
     
     public void handleJobCompletion() {
-        //output stderrBuffer to STDERR file
+        String errorMessage = null;
         if (stderrBuffer != null && stderrBuffer.length() > 0) {
-            jobStatus = JobStatus.JOB_ERROR;
             if (exitCode == 0) {
                 exitCode = -1;
             }
-            String outDirName = GenePatternAnalysisTask.getJobDir(Integer.toString(jobNumber));
-            GenePatternAnalysisTask.writeStringToFile(outDirName, STDERR, stderrBuffer.toString());
-        }
-
-        try {
-            GenePatternAnalysisTask.handleJobCompletion(jobNumber, stdoutFilename, stderrFilename, exitCode, jobStatus, GenePatternAnalysisTask.JOB_TYPE.PIPELINE);
-        }
-        catch (Exception e) {
-            log.error("Error handling job completion for pipeline: "+jobNumber, e);
-        }
+            errorMessage = stderrBuffer.toString();
+       }
+        GenePatternAnalysisTask.handleJobCompletion(jobNumber, exitCode, errorMessage);
     }
-    
+
     public void terminatePipelineBeforeStart() {
         stderrBuffer.append("Pipeline cancelled before starting");
         jobStatus = JobStatus.JOB_ERROR;

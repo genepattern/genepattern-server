@@ -105,7 +105,7 @@ public class PipelineHandler {
         
         //very likely corner-case
         terminatePipelineSteps(jobInfo.getJobNumber());
-        handlePipelineJobCompletion(jobInfo.getJobNumber(), -1, JobStatus.JOB_ERROR);
+        handlePipelineJobCompletion(jobInfo.getJobNumber(), -1);
     }
 
     /**
@@ -220,14 +220,14 @@ public class PipelineHandler {
             }
             else {
                 //it's the last step in the pipeline, update its status
-                handlePipelineJobCompletion(parentJobNumber, 0, JobStatus.JOB_FINISHED);
+                handlePipelineJobCompletion(parentJobNumber, 0);
                 return false;
             }
         }
         else {
             //handle an error in a pipeline step
             terminatePipelineSteps(parentJobNumber);
-            handlePipelineJobCompletion(parentJobNumber, -1, JobStatus.JOB_ERROR);
+            handlePipelineJobCompletion(parentJobNumber, -1);
         }
         return false;
     }
@@ -273,10 +273,10 @@ public class PipelineHandler {
             if (errorFlag) {
                 //handle an error in a pipeline step
                 terminatePipelineSteps(pipeline.getJobNumber());
-                handlePipelineJobCompletion(pipeline.getJobNumber(), -1, JobStatus.JOB_ERROR);
+                handlePipelineJobCompletion(pipeline.getJobNumber(), -1);
             }
             else {
-                PipelineHandler.handlePipelineJobCompletion(pipeline.getJobNumber(), 0, JobStatus.JOB_FINISHED);
+                PipelineHandler.handlePipelineJobCompletion(pipeline.getJobNumber(), 0);
             }
         }
     }
@@ -315,9 +315,9 @@ public class PipelineHandler {
      * @param errorCode
      * @param jobStatus
      */
-    private static void handlePipelineJobCompletion(int parentJobNumber, int errorCode, int jobStatus) {
+    private static void handlePipelineJobCompletion(int parentJobNumber, int errorCode) {
         try {
-            GenePatternAnalysisTask.handleJobCompletion(parentJobNumber, GPConstants.STDOUT, GPConstants.STDERR, errorCode, jobStatus, GenePatternAnalysisTask.JOB_TYPE.PIPELINE);
+            GenePatternAnalysisTask.handleJobCompletion(parentJobNumber, errorCode);
         }
         catch (Throwable t) {
             log.error("Error recording pipeline job completion for job #"+parentJobNumber, t);

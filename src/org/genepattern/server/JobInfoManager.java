@@ -356,8 +356,7 @@ public class JobInfoManager {
         }
     }
     
-    public static File writeExecutionLog(String outDirName, JobInfoWrapper jobInfoWrapper) {
-        File outDir = new File(outDirName);
+    public static File writeExecutionLog(File outDir, JobInfoWrapper jobInfoWrapper) {
         File gpExecutionLog = new File(outDir, TASKLOG);
         BufferedWriter writer = null;
         try {
@@ -454,16 +453,14 @@ public class JobInfoManager {
         writer.write("\n");
     }
     
-    public static File writePipelineExecutionLog(String jobDirName, JobInfoWrapper jobInfo) {
-        File jobDir = new File(jobDirName);
+    public static File writePipelineExecutionLog(File jobDir, JobInfoWrapper jobInfo) {
         File logFile = new File(jobDir, jobInfo.getTaskName() + "_execution_log.html");
         WritePipelineExecutionLog w = new WritePipelineExecutionLog(logFile, jobInfo);
         w.writeLogFile();
         return logFile;        
     }
     
-    public static File writeOutputFilesToZipFile(String jobDirName, JobInfoWrapper jobInfo) {
-        File jobDir = new File(jobDirName);
+    public static File writeOutputFilesToZipFile(File jobDir, JobInfoWrapper jobInfo) {
         File zipFile = new File(jobDir, jobInfo.getJobNumber() + ".zip");
         JobInfoZipFileWriter w = new JobInfoZipFileWriter(zipFile, jobInfo);
         w.writeZipFile();

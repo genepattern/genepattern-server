@@ -450,34 +450,10 @@ public class AnalysisJobScheduler implements Runnable {
             if (t.getCause() != null) {
               t = t.getCause();
             }
-            String errorMessage = "Error submitting job #"+jobId;
-            log.error(errorMessage, t);
-            
-            GenePatternAnalysisTask.getJobDir(""+jobId);
-            
-            String outDirName = GenePatternAnalysisTask.getJobDir(""+jobId);
-            File outFile = GenePatternAnalysisTask.writeStringToFile(outDirName, STDERR, "GenePattern Server error preparing job for execution.\n"+t.getMessage() + "\n\n");
-            int exitCode = -1;
-            JOB_TYPE jobType = JOB_TYPE.JOB;
-            
-            
-            int parentJobId = -1;
+            log.error("Error submitting job #"+jobId, t);
             try {
-                AnalysisDAO dao = new AnalysisDAO();
-                parentJobId = dao.getParentJobId(jobId);
-            }
-            catch (Throwable t1) {
-                log.error("Error getting parentJobId for job #"+jobId);
-            }
-            finally {
-                HibernateUtil.closeCurrentSession();
-            }
-            
-            if (parentJobId >= 0) {
-              jobType = JOB_TYPE.PIPELINE;
-            }
-            try {
-                GenePatternAnalysisTask.handleJobCompletion(jobId, STDOUT, STDERR, exitCode, JobStatus.JOB_ERROR, jobType);
+                String errorMessage = "GenePattern Server error preparing job "+jobId+" for execution.\n"+t.getMessage() + "\n\n";
+                GenePatternAnalysisTask.handleJobCompletion(jobId, -1, errorMessage);
             }
             catch (Throwable t1) {
                 log.error("Error handling job completion for job #"+jobId, t1);

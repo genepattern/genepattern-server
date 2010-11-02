@@ -34,7 +34,7 @@ public class TestCommandExecutor implements CommandExecutor {
 
     public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) {
         int exitCode = 0;
-        int jobStatus = JobStatus.JOB_PROCESSING;
+        String errorMessage = null;
         try {
             String cmdLine = "";
             for(String arg : commandLine) {
@@ -48,14 +48,12 @@ public class TestCommandExecutor implements CommandExecutor {
                 cmdLine += arg + " ";
             }
             log.debug("Running command: "+cmdLine);
-            jobStatus = JobStatus.JOB_FINISHED;
         }
         catch (RuntimeException e) {
             exitCode = -1;
-            jobStatus = JobStatus.JOB_ERROR;
         }
         try { 
-            GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), stdoutFile.getName(), stderrFile.getName(), exitCode, jobStatus);
+            GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), exitCode, null, runDir, stdoutFile, stderrFile);
         }
         catch (Exception e) {
             log.error("Error handling job completion for job "+jobInfo.getJobNumber(), e);

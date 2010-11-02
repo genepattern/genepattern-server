@@ -1,7 +1,5 @@
 package org.genepattern.server.executor;
 
-import static org.genepattern.util.GPConstants.STDERR;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -106,9 +104,7 @@ public class RuntimeCommandExecutor implements CommandExecutor {
     }
     
     private void terminateAll(String message) {
-        //TODO: globally terminate all running pipelines
-        //    pipelines used to be terminated here
-        log.debug(message);        
+        log.debug(message);
         for(Entry<String, CallableRuntimeExecCommand> entry : runningJobs.entrySet()) {
             CallableRuntimeExecCommand cmd = entry.getValue();
             cmd.cancel(Status.SERVER_SHUTDOWN);
@@ -116,10 +112,10 @@ public class RuntimeCommandExecutor implements CommandExecutor {
         }
     }
 
-    public void runCommand(String[] commandLine,
-            Map<String, String> environmentVariables, File runDir,
-            File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) throws CommandExecutorException {
-        
+    public void runCommand(String[] commandLine, Map<String, String> environmentVariables, 
+            File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) 
+    throws CommandExecutorException 
+    { 
         String jobId = ""+jobInfo.getJobNumber();
         CallableRuntimeExecCommand task = new CallableRuntimeExecCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile);
         runningJobs.put(jobId, task);
@@ -200,12 +196,10 @@ public class RuntimeCommandExecutor implements CommandExecutor {
             String jobId = ""+jobInfo.getJobNumber();
             runningJobs.remove(jobId);
             int exitValue = cmd.getExitValue();
-            int jobStatus = JobStatus.JOB_FINISHED;
             if (RuntimeExecCommand.Status.TERMINATED.equals( cmd.getInternalJobStatus() )) {
-                jobStatus = JobStatus.JOB_ERROR;
-            }
-            if (exitValue != 0) {
-                jobStatus = JobStatus.JOB_ERROR;
+                if (exitValue == 0) {
+                    exitValue = -1;
+                }
             }
             
             if (RuntimeExecCommand.Status.SERVER_SHUTDOWN.equals( cmd.getInternalJobStatus() )) {
@@ -213,21 +207,13 @@ public class RuntimeCommandExecutor implements CommandExecutor {
             }
             else {
                 //handle stderr messages stored in the cmd object
-                String stderr = cmd.getStderr();
-                if (stderr != null && stderr.length() > 0) {
-                    jobStatus = JobStatus.JOB_ERROR;
-                    if (exitValue == 0) {
-                        exitValue = -1;
-                    }
-                    String outDirName = GenePatternAnalysisTask.getJobDir(jobId);
-                    GenePatternAnalysisTask.writeStringToFile(outDirName, STDERR, stderr);
-                }
-                
+                String errorMessage = cmd.getStderr();
+                int exitCode = cmd.getExitValue();
                 try {
-                    GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), stdoutFile.getName(), stderrFile.getName(), exitValue, jobStatus);
+                    GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), exitCode, errorMessage, runDir, stdoutFile, stderrFile);
                 }
-                catch (Exception e) {
-                    log.error("Error handling job completion for job "+jobInfo.getJobNumber(), e);
+                catch (Throwable t) {
+                    log.error("Error handling job completion for job "+jobInfo.getJobNumber(), t);
                 }
             }
             return cmd;
@@ -246,10 +232,12 @@ public class RuntimeCommandExecutor implements CommandExecutor {
                 
                 if (status == Status.TERMINATED) {
                     try {
-                        GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), stdoutFile.getName(), stderrFile.getName(), -1, JobStatus.JOB_ERROR);
+                        String errorMessage = "Job #"+jobInfo.getJobNumber()+" terminated by user";
+                        int exitCode = -1;
+                        GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), exitCode, errorMessage, runDir, stdoutFile, stderrFile);
                     }
-                    catch (Exception e) {
-                        log.error("Error terminating job "+jobInfo.getJobNumber(), e);
+                    catch (Throwable t) {
+                        log.error("Error terminating job "+jobInfo.getJobNumber(), t);
                     }
                 }
             }

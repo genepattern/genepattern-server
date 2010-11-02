@@ -3,11 +3,9 @@ package org.genepattern.server.executor.lsf;
 import java.io.File;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 
@@ -34,84 +32,26 @@ public class LsfJobCompletionListener implements JobCompletionListener {
         return Integer.parseInt(jobIdStr);
     }
 
-//    private static String getOutputFilename(int gpJobId, LsfJob job) {
-//        String stdoutFilename = job.getOutputFilename();
-//
-//        AnalysisDAO dao = new AnalysisDAO();
-//        JobInfo jobInfo = dao.getJobInfo(gpJobId);
-//        Properties lsfProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
-//        String wrapperScript = lsfProperties.getProperty(LsfProperties.Key.WRAPPER_SCRIPT.getKey());
-//        if (wrapperScript != null) {
-//            String commandLine = job.getCommand();
-//            List<String> commandLineArgs = StringUtil.splitCommandLine(commandLine);
-//            if (commandLineArgs.size() >= 2) {
-//                String arg0 = commandLineArgs.get(0);
-//                String arg1 = commandLineArgs.get(1);
-//                if (wrapperScript.equals(arg0)) {
-//                    stdoutFilename = arg1;
-//                }
-//            }
-//        }
-//        
-//        log.debug("computed output file name is: "+stdoutFilename);
-//        //NOTE: this code is buggy, at the moment we would be deleting the wrapper script ...
-//        //    TODO: set up user account so that the gpdev account running the server cannot delete the wrapper scripts and other 
-//        //        server files
-//        //    TODO: fix the bug so that the correct output file name is detected when a wrapper script is being used
-//        log.debug("using 'stdout.txt' instead!");
-//        //TODO: fix this!
-//        stdoutFilename = "stdout.txt";
-//        
-//        //special-case, delete the stdoutFile if it is empty
-//        //TODO: this should be part of the GenePatternAnalysisTask#handleJobCompletion method
-//        File stdoutFile = new File(stdoutFilename);
-//        if (stdoutFile.getParent() == null) {
-//            stdoutFile = new File(job.getWorkingDirectory(), stdoutFilename);
-//        }
-//        if (stdoutFile.canWrite() && stdoutFile.length() <= 0L) {
-//            boolean deleted = stdoutFile.delete();
-//            if (deleted) {
-//                log.debug("deleted empty stdout file: "+stdoutFile.getAbsolutePath());
-//            }
-//            else {
-//                log.error("unable to delete empty stdout file: "+stdoutFile.getAbsolutePath());
-//            }
-//        }
-//        
-//        return stdoutFilename;
-//    }
-
-    //TODO: this is hard-coded, must update this to handle modules which override the default setting
-    private String getStdoutFilename() {
-        return GPConstants.STDOUT;
-    }
-
-    //special-case, delete the stdoutFile if it is empty
-    private boolean deleteStdoutIfEmpty(LsfJob job, String stdoutFilename) {
-        //TODO: this should be part of the GenePatternAnalysisTask#handleJobCompletion method
-        boolean deleted = false;
-        File stdoutFile = new File(stdoutFilename);
-        if (stdoutFile.getParent() == null) {
-            stdoutFile = new File(job.getWorkingDirectory(), stdoutFilename);
+    private File getStderrFile(final LsfJob lsfJob) {
+        String stderrFilename = lsfJob.getErrorFileName();
+        if (stderrFilename == null) {
+            stderrFilename = GPConstants.STDERR;
         }
-        if (stdoutFile.canWrite() && stdoutFile.length() <= 0L) {
-            deleted = stdoutFile.delete();
-            if (deleted) {
-                log.debug("deleted empty stdout file: "+stdoutFile.getAbsolutePath());
-            }
-            else {
-                log.error("unable to delete empty stdout file: "+stdoutFile.getAbsolutePath());
-            }
+        File stderrFile = new File(stderrFilename);
+        if (stderrFile.getParent() == null) {
+            stderrFile = new File(lsfJob.getWorkingDirectory(), stderrFilename);
         }
-        return deleted;        
+        return stderrFile;
     }
 
     public void jobCompleted(final LsfJob job) throws Exception {
         final int gpJobId = getGpJobId(job);
-        //TODO: check for error or terminated status
         log.debug("job completed...lsf_id="+job.getLsfJobId()+", internal_job_id="+job.getInternalJobId()+", gp_job_id="+gpJobId);
-        
-        final String stderrFilename = job.getErrorFileName();
+        final File jobDir = new File(job.getWorkingDirectory());
+        //TODO: this is hard-coded, must update this to handle modules which override the default setting
+        final File stdoutFile = new File(jobDir, GPConstants.STDOUT);
+        final File stderrFile = getStderrFile(job);
+        final String errorMessage = null;
 
         //must run this in a new thread because this callback is run from within a hibernate transaction
         //and the GenePatternAnalyisTask.handleJobCompletion closes that transaction
@@ -121,31 +61,14 @@ public class LsfJobCompletionListener implements JobCompletionListener {
             new FutureTask<Integer>(new Callable<Integer>() {
               public Integer call() throws Exception {
                   //TODO: get the exit code from the lsf job and send it along to genepattern
-                  int exitCode = 0;
-
-                  //special handling for stdoutFilename as it could be the case the the bsub -o arg is a different file than the stdout from the gp command
-                  String lsfJobReportFilename = job.getOutputFilename();
-                  String stdoutFilename = getStdoutFilename();
-                  boolean deleted = deleteStdoutIfEmpty(job, stdoutFilename);
-                  int rVal = 0;
-                  int gpJobStatus = JobStatus.JOB_FINISHED;
-                  if (stderrFilename != null) {
-                      File errFile = new File(stderrFilename);
-                      if (errFile.getParent() == null) {
-                          errFile = new File(job.getWorkingDirectory(), stderrFilename);
-                      }
-                      if (errFile.exists() && errFile.length() > 0L) {
-                          gpJobStatus = JobStatus.JOB_ERROR;
-                      }
-                  }
+                  int exitValue = 0;
                   String lsfJobStatus = job.getStatus();
                   if (!("DONE".equalsIgnoreCase(lsfJobStatus))) {
                       //job did not complete as expected, flag as error
-                      gpJobStatus = JobStatus.JOB_ERROR;
-                      exitCode = -1;
+                      exitValue = -1;
                   }
-                  GenePatternAnalysisTask.handleJobCompletion(gpJobId, stdoutFilename, stderrFilename, exitCode, gpJobStatus);
-                  return rVal;
+                  GenePatternAnalysisTask.handleJobCompletion(gpJobId, exitValue, errorMessage, jobDir, stdoutFile, stderrFile);
+                  return exitValue;
             }});
         ExecutorService jobCompletionService = LsfCommandExecutor.getJobCompletionService();
         if (jobCompletionService == null) {
@@ -157,8 +80,8 @@ public class LsfJobCompletionListener implements JobCompletionListener {
 
         //wait for the thread to complete before exiting
         try {
-            int statusCode = future.get();
-            log.debug("job #"+gpJobId+" saved to GP database, statusCode="+statusCode);
+            int exitValue = future.get();
+            log.debug("job #"+gpJobId+" saved to GP database, exitValue="+exitValue);
         }
         catch (Throwable t) {
             String message = "Error handling job completion for job #"+gpJobId;

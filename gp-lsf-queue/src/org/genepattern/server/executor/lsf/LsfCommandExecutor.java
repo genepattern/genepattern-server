@@ -18,6 +18,7 @@ import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandManagerFactory;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.JobInfo;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -228,34 +229,30 @@ public class LsfCommandExecutor implements CommandExecutor {
         final String gpJobId = ""+jobInfo.getJobNumber();
         final List<LsfJob> lsfJobs = getLsfJobByGpJobId(gpJobId);
         if (lsfJobs.isEmpty()) {
+            //handle special-case, terminating a job which has not yet been added to the LSF queue
             log.error("Didn't find lsf job for gp job: "+gpJobId);
+            try {
+                GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), -1, "User terminated job #"+jobInfo.getJobNumber()+" before it was added to the LSF queue");
+            } 
+            catch (final Exception e) {
+                log.error("Error terminating job "+jobInfo.getJobNumber(), e);
+            }
         } 
         else {
             terminateJobs(gpJobId, lsfJobs);
-            //no longer need this code, this should be handled by the callback
-            //final LsfJob initialJob = lsfJobs.get(0);
-            //try {
-            //    GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), initialJob.getOutputFilename(), initialJob.getErrorFileName(), -1, JobStatus.JOB_ERROR);
-            //} 
-            //catch (final Exception e) {
-            //    log.error("Error terminating job "+jobInfo.getJobNumber(), e);
-            //}
         }
     }
 
-	public static void terminateJobs(final String gpJobId,
-			final Collection<LsfJob> lsfJobs) {
+	public static void terminateJobs(final String gpJobId, final Collection<LsfJob> lsfJobs) {
 		final Collection<LocalLsfJob> localLsfJobs = new ArrayList<LocalLsfJob>(lsfJobs.size());
         for (final LsfJob lsfJob : lsfJobs) {
         	localLsfJobs.add(convert(lsfJob));
         }
-
     	LocalLsfJob.cancel(localLsfJobs);
     	waitForTermination(gpJobId, localLsfJobs);
 	}
 
-	private static void waitForTermination(final String jobId,
-			final Collection<LocalLsfJob> localLsfJobs) {
+	private static void waitForTermination(final String jobId, final Collection<LocalLsfJob> localLsfJobs) {
 		try {
     		for (final LocalLsfJob localLsfJob : localLsfJobs) {
     			while (localLsfJob.getStatus().isInstance(LocalLsfJob.ACTIVE)) {
@@ -347,30 +344,3 @@ public class LsfCommandExecutor implements CommandExecutor {
         return JobStatus.JOB_PROCESSING;
     }
 }
-
-//used these classes for debugging a Thread leak in the BroadCore library
-//    Do ThreadLocal and Thread pools mix well? Probably not.
-//class LsfJobSubmissionThreadPoolExecutor extends ThreadPoolExecutor {
-//    public LsfJobSubmissionThreadPoolExecutor(int corePoolSize,
-//                              int maximumPoolSize,
-//                              long keepAliveTime,
-//                              TimeUnit unit,
-//                              BlockingQueue<Runnable> workQueue,
-//                              ThreadFactory threadFactory) {
-//        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory);
-//    }
-//
-//    public void afterExecute(Runnable r, Throwable t) {
-//        String cName = r.getClass().getName();
-//        super.afterExecute(r, t);
-//    }
-//}
-//
-//class MyThreadFactory implements ThreadFactory {
-//    private static long COUNT=0;
-//    public Thread newThread(Runnable r) {
-//        Thread jobSubmissionThread = new Thread(r, "JobSubmission_"+(COUNT++));
-//        return jobSubmissionThread;
-//    }
-//}
-
