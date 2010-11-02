@@ -13,6 +13,12 @@ default.properties:
     java_flags: -Xmx512m
     # the number of milliseconds to wait before canceling a job submission (default to 5 minutes)
     job.dispatch.timeout: 300000
+    # policy for flagging a job as an error, by default, a non-empty stderr stream causes a job to be flagged as an error
+    # optionally, a non-zero exitValue of the job can cause a job to be flagged as an error
+    job.error_status.stderr: true
+    job.error_status.exit_value: false
+    # filter job results based on the given comma separated list of glob patterns
+    #job.FilenameFilter: .nfs*,.lsf
 
 # a list of command executors
 # The executor id, 'org.genepattern.server.executor.PipelineExecutor', is reserved for the default executor which runs all GP pipelines.
