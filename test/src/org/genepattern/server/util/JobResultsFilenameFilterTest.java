@@ -110,6 +110,15 @@ public class JobResultsFilenameFilterTest extends TestCase {
         assertTrue("whitespace pattern", filter.accept(dir, nfsExample));
         assertTrue("whitespace pattern", filter.accept(dir, gctExample));        
     }
+    
+    public void testListOfGlobs() {
+        filter.setGlob(".lsf*,.nfs*");
+        
+        assertFalse("accept('"+nfsExample+"')", filter.accept(dir, nfsExample));
+        assertFalse("accept('"+lsfExample+"')", filter.accept(dir, lsfExample));
+        assertTrue("accept('"+ds_store+"')", filter.accept(dir, ds_store));
+        assertTrue("accept('"+gctExample+"')", filter.accept(dir, gctExample));
+    }
 
     /**
      * <pre>
