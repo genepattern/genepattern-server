@@ -237,7 +237,7 @@ public class JobInfoWrapper implements Serializable {
                 exists = outputFile.exists();
                 if (exists) {
                     File relativePath = GenePatternAnalysisTask.getRelativePath(outputDir, outputFile);
-                    if (relativePath == null) {
+                    if (relativePath != null) {
                         this.isChildJobResult = true;
                     }
                 }
@@ -719,10 +719,9 @@ public class JobInfoWrapper implements Serializable {
         for(ParameterInfo param : jobInfo.getParameterInfoArray()) {
             if (param.isOutputFile()) {
                 OutputFile outputFile = new OutputFile(kindToModules, outputDir, servletContextPath, jobInfo, param);
-                outputFilesAndTaskLogs.add(outputFile);
-                if (!outputFile.isTaskLog()) {
-                    //don't add execution logs
-                    if (!outputFile.isChildJobResult) {
+                if (outputFile.isChildJobResult) {
+                    outputFilesAndTaskLogs.add(outputFile);
+                    if (!outputFile.isTaskLog()) {
                         outputFiles.add(outputFile);
                     }
                 }
