@@ -14,6 +14,7 @@ package org.genepattern.server.genepattern;
 
 import java.rmi.RemoteException;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
@@ -37,6 +38,7 @@ import org.genepattern.webservice.TaskInfoAttributes;
  */
 
 public abstract class DBLoader {
+    static Logger log = Logger.getLogger(DBLoader.class);
 
     public static int CREATE = 1;
     public static int UPDATE = 2;
@@ -93,7 +95,7 @@ public abstract class DBLoader {
             try {
                 id = ds.addNewTask(this._name, this.user_id, this.access_id, this._taskDescription, parameter_info,
                         this._taskInfoAttributes);
-                System.out.println(this._name + " has been created with id " + id);
+                log.info(this._name + " has been created with id " + id);
             }
             catch (Exception e) {
                 throw new OmnigeneException("Unable to create new task! " + e.getMessage());
@@ -103,7 +105,7 @@ public abstract class DBLoader {
         else {
             try {
                 ds.updateTask(taskID, this._taskDescription, parameter_info, this._taskInfoAttributes, user_id, access_id);
-                System.out.println(this._name + " has been updated.");
+                log.info(this._name + " has been updated.");
             }
             catch (Exception e) {
                 throw new OmnigeneException("Unable to update task" + e.getMessage());
@@ -172,7 +174,7 @@ public abstract class DBLoader {
         String parameter_info = ParameterFormatConverter.getJaxbString(this._params);
         try {
             ds.updateTask(taskID, this._taskDescription, parameter_info, this._taskInfoAttributes, user_id, access_id);
-            System.out.println(this._name + " updated.");
+            log.info("Task (taskId="+taskID+") " + this._name + " updated.");
         }
         catch (Exception e) {
             throw new OmnigeneException("Unable to update " + _name + ": " + e.getMessage());
@@ -182,8 +184,7 @@ public abstract class DBLoader {
     /**
      * Deletes a task from the database
      * 
-     * @throws OmnigeneException,
-     *             RemoteException
+     * @throws OmnigeneException, RemoteException
      */
     public void delete() throws OmnigeneException, RemoteException {
         int taskID;
@@ -195,7 +196,7 @@ public abstract class DBLoader {
         }
         try {
             ds.deleteTask(taskID);
-            System.out.println("Task " + this._name + " deleted from database.");
+            log.info("Task (taskId="+taskID+") " + this._name + " deleted from database.");
         }
         catch (Exception e) {
             throw new OmnigeneException("Unable to delete " + this._name + ". " + e.getMessage());
@@ -231,8 +232,17 @@ public abstract class DBLoader {
 
     // search for an existing task with the same name
     public int getTaskIDByName(String name, String user_id) throws OmnigeneException, RemoteException {
+        log.debug("getTaskIDByName...\n\tname="+name+"\tuser_id="+user_id);
         AdminDAO ds = new AdminDAO();
         TaskInfo taskInfo = ds.getTask(name, user_id);
+        if (log.isDebugEnabled()) {
+            if (taskInfo == null) {
+                log.debug("\ttaskInfo == null");
+            }
+            else {
+                log.debug("\ttaskId="+taskInfo.getID());
+            }
+        }
         return (taskInfo == null ? -1 : taskInfo.getID());
     }
 
