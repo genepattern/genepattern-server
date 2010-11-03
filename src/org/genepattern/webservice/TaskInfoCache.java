@@ -63,8 +63,20 @@ public class TaskInfoCache {
             TaskInfoAttributes taskInfoAttributes = TaskInfoAttributes.decode(taskMaster.getTaskinfoattributes());
             taskInfoAttributesCache.put(taskId, taskInfoAttributes);
             List<String> docFilenames = listDocFilenames(taskMaster.getLsid());
-            taskDocFilenameCache.putIfAbsent(taskId, docFilenames);
+            taskDocFilenameCache.put(taskId, docFilenames);
         }
+    }
+    
+    public void clearCache() {
+        taskMasterCache.clear();
+        taskInfoAttributesCache.clear();
+        taskDocFilenameCache.clear();
+    }
+    
+    public void removeFromCache(Integer taskId) {
+        taskMasterCache.remove(taskId);
+        taskInfoAttributesCache.remove(taskId);
+        taskDocFilenameCache.remove(taskId);
     }
     
     private static class IsDocFilenameFilter implements FilenameFilter {

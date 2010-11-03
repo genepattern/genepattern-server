@@ -42,6 +42,7 @@ import org.genepattern.util.LSID;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.TaskInfoCache;
 import org.hibernate.LockMode;
 import org.hibernate.Query;
 
@@ -334,36 +335,36 @@ public class AnalysisDAO extends BaseDAO {
      * @throws OmnigeneException
      * @return task ID
      */
-    public int addNewTask(String taskName, String user_id, int access_id, String description, String parameter_info,
-	    String taskInfoAttributes) throws OmnigeneException {
+    public int addNewTask(String taskName, String user_id, int access_id, String description, String parameter_info, String taskInfoAttributes) 
+    throws OmnigeneException {
+        try {
+            TaskInfoAttributes tia = TaskInfoAttributes.decode(taskInfoAttributes);
+            String sLSID = null;
+            if (tia != null) {
+                sLSID = tia.get(GPConstants.LSID);
+            }
 
-	try {
-	    TaskInfoAttributes tia = TaskInfoAttributes.decode(taskInfoAttributes);
-	    String sLSID = null;
-	    if (tia != null) {
-		sLSID = tia.get(GPConstants.LSID);
-	    }
+            TaskMaster tm = new TaskMaster();
+            tm.setTaskName(taskName);
+            tm.setDescription(description);
+            tm.setParameterInfo(parameter_info);
+            tm.setTaskinfoattributes(taskInfoAttributes);
+            tm.setUserId(user_id);
+            tm.setAccessId(access_id);
+            tm.setLsid(sLSID.toString());
+            int taskID = (Integer) getSession().save(tm);
 
-	    TaskMaster tm = new TaskMaster();
-	    tm.setTaskName(taskName);
-	    tm.setDescription(description);
-	    tm.setParameterInfo(parameter_info);
-	    tm.setTaskinfoattributes(taskInfoAttributes);
-	    tm.setUserId(user_id);
-	    tm.setAccessId(access_id);
-	    tm.setLsid(sLSID.toString());
-	    int taskID = (Integer) getSession().save(tm);
-
-	    if (sLSID != null && !sLSID.equals("")) {
-		Lsid lsid = new Lsid(sLSID);
-		getSession().save(lsid);
-	    }
-
-	    return taskID;
-	} catch (Exception e) {
-	    log.error(e);
-	    throw new OmnigeneException(e);
-	}
+            if (sLSID != null && !sLSID.equals("")) {
+                Lsid lsid = new Lsid(sLSID);
+                getSession().save(lsid);
+            }
+            TaskInfoCache.instance().removeFromCache(taskID);
+            return taskID;
+        } 
+        catch (Exception e) {
+            log.error(e);
+            throw new OmnigeneException(e);
+        }
     }
 
     /**
@@ -1037,156 +1038,151 @@ public class AnalysisDAO extends BaseDAO {
     /**
      * Updates task parameters
      * 
-     * @param taskID
-     *                task ID
-     * @param parameter_info
-     *                parameters as a xml string
+     * @param taskID, task ID
+     * @param parameter_info, parameters as a xml string
      * @throws OmnigeneException
      * @throws RemoteException
      * @return No. of updated records
      */
     public int updateTask(int taskId, String parameter_info, String taskInfoAttributes, String user_id, int access_id)
-	    throws OmnigeneException {
+    throws OmnigeneException {
+        try {
+            TaskMaster task = (TaskMaster) getSession().get(TaskMaster.class, taskId);
+            String oldLSID = task.getLsid();
+            task.setParameterInfo(parameter_info);
+            task.setTaskinfoattributes(taskInfoAttributes);
+            task.setUserId(user_id);
+            task.setAccessId(access_id);
 
-	try {
-	    TaskMaster task = (TaskMaster) getSession().get(TaskMaster.class, taskId);
+            TaskInfoAttributes tia = TaskInfoAttributes.decode(taskInfoAttributes);
+            String sLSID = null;
+            LSID lsid = null;
+            if (tia != null) {
+                sLSID = tia.get(GPConstants.LSID);
+            }
+            if (sLSID != null && !sLSID.equals("")) {
+                lsid = new LSID(sLSID);
+                task.setLsid(sLSID);
+            } 
+            else {
+                task.setLsid(null);
+            }
 
-	    String oldLSID = task.getLsid();
+            getSession().update(task);
 
-	    task.setParameterInfo(parameter_info);
-	    task.setTaskinfoattributes(taskInfoAttributes);
-	    task.setUserId(user_id);
-	    task.setAccessId(access_id);
+            if (oldLSID != null) {
+                // delete the old LSID record
+                String deleteHql = "delete from org.genepattern.server.domain.Lsid where lsid = :lsid";
+                Query deleteQuery = getSession().createQuery(deleteHql);
+                deleteQuery.setString("lsid", oldLSID);
+                deleteQuery.executeUpdate();
+            }
 
-	    TaskInfoAttributes tia = TaskInfoAttributes.decode(taskInfoAttributes);
-	    String sLSID = null;
-	    LSID lsid = null;
-	    if (tia != null) {
-		sLSID = tia.get(GPConstants.LSID);
-	    }
-	    if (sLSID != null && !sLSID.equals("")) {
-		lsid = new LSID(sLSID);
-		task.setLsid(sLSID);
-	    } else {
-		task.setLsid(null);
-	    }
+            if (sLSID != null) {
+                Lsid lsidHibernate = new Lsid(lsid.toString());
+                getSession().save(lsidHibernate);
+            }
+            
+            TaskInfoCache.instance().removeFromCache(taskId);
 
-	    getSession().update(task);
-
-	    if (oldLSID != null) {
-		// delete the old LSID record
-		String deleteHql = "delete from org.genepattern.server.domain.Lsid where lsid = :lsid";
-		Query deleteQuery = getSession().createQuery(deleteHql);
-		deleteQuery.setString("lsid", oldLSID);
-		deleteQuery.executeUpdate();
-
-	    }
-
-	    if (sLSID != null) {
-		Lsid lsidHibernate = new Lsid(lsid.toString());
-		getSession().save(lsidHibernate);
-
-	    }
-
-	    return 1;
-	} catch (Exception e) {
-	    log.error(e);
-	    throw new OmnigeneException(e);
-	}
+            return 1;
+        } 
+        catch (Exception e) {
+            log.error(e);
+            throw new OmnigeneException(e);
+        }
     }
 
     /**
      * Updates task description and parameters
      * 
-     * @param taskID
-     *                task ID
-     * @param description
-     *                task description
-     * @param parameter_info
-     *                parameters as a xml string
+     * @param taskID, task ID
+     * @param description, task description
+     * @param parameter_info, parameters as a xml string
      * @return No. of updated records
      * @throws OmnigeneException
      * @throws RemoteException
      */
-    public int updateTask(int taskId, String taskDescription, String parameter_info, String taskInfoAttributes,
-	    String user_id, int access_id) throws OmnigeneException {
+    public int updateTask(int taskId, String taskDescription, String parameter_info, String taskInfoAttributes, String user_id, int access_id) 
+    throws OmnigeneException {
+        try {
+            TaskMaster task = (TaskMaster) getSession().get(TaskMaster.class, taskId);
+            String oldLSID = task.getLsid();
+            task.setParameterInfo(parameter_info);
+            task.setDescription(taskDescription);
+            task.setTaskinfoattributes(taskInfoAttributes);
+            task.setUserId(user_id);
+            task.setAccessId(access_id);
 
-	try {
+            TaskInfoAttributes tia = TaskInfoAttributes.decode(taskInfoAttributes);
+            String sLSID = null;
+            LSID lsid = null;
+            if (tia != null) {
+                sLSID = tia.get(GPConstants.LSID);
+            }
+            if (sLSID != null && !sLSID.equals("")) {
+                lsid = new LSID(sLSID);
+                task.setLsid(sLSID);
+            } 
+            else {
+                task.setLsid(null);
+            }
 
-	    TaskMaster task = (TaskMaster) getSession().get(TaskMaster.class, taskId);
+            getSession().update(task); // Not neccessary ?
 
-	    String oldLSID = task.getLsid();
+            if (oldLSID != null) {
+                // delete the old LSID record
+                String deleteHql = "delete from org.genepattern.server.domain.Lsid where lsid = :lsid";
+                Query deleteQuery = getSession().createQuery(deleteHql);
+                deleteQuery.setString("lsid", oldLSID);
+                deleteQuery.executeUpdate();
+            }
 
-	    task.setParameterInfo(parameter_info);
-	    task.setDescription(taskDescription);
-	    task.setTaskinfoattributes(taskInfoAttributes);
-	    task.setUserId(user_id);
-	    task.setAccessId(access_id);
+            if (sLSID != null) {
+                Lsid lsidHibernate = new Lsid();
+                lsidHibernate.setLsid(lsid.toString());
+                lsidHibernate.setLsidNoVersion(lsid.toStringNoVersion());
+                lsidHibernate.setVersion(lsid.getVersion());
+                getSession().save(lsidHibernate);
+            }
+            getSession().flush();
+            getSession().clear();
+            
+            TaskInfoCache.instance().removeFromCache(taskId);
 
-	    TaskInfoAttributes tia = TaskInfoAttributes.decode(taskInfoAttributes);
-	    String sLSID = null;
-	    LSID lsid = null;
-	    if (tia != null) {
-		sLSID = tia.get(GPConstants.LSID);
-	    }
-	    if (sLSID != null && !sLSID.equals("")) {
-		lsid = new LSID(sLSID);
-		task.setLsid(sLSID);
-	    } else {
-		task.setLsid(null);
-	    }
-
-	    getSession().update(task); // Not neccessary ?
-
-	    if (oldLSID != null) {
-		// delete the old LSID record
-		String deleteHql = "delete from org.genepattern.server.domain.Lsid where lsid = :lsid";
-		Query deleteQuery = getSession().createQuery(deleteHql);
-		deleteQuery.setString("lsid", oldLSID);
-		deleteQuery.executeUpdate();
-
-	    }
-
-	    if (sLSID != null) {
-		Lsid lsidHibernate = new Lsid();
-		lsidHibernate.setLsid(lsid.toString());
-		lsidHibernate.setLsidNoVersion(lsid.toStringNoVersion());
-		lsidHibernate.setVersion(lsid.getVersion());
-		getSession().save(lsidHibernate);
-
-	    }
-	    getSession().flush();
-	    getSession().clear();
-
-	    return 1;
-	} catch (Exception e) {
-	    log.error(e);
-	    throw new OmnigeneException(e);
-	}
+            return 1;
+        } 
+        catch (Exception e) {
+            log.error(e);
+            throw new OmnigeneException(e);
+        }
     }
 
     private int getLsidCount(LSID lsid) {
-	int count = 0;
-
-	final String sql = "select count(*) from lsids where lsid = :newLSID";
-	Query query = getSession().createSQLQuery(sql);
-	query.setString("newLSID", lsid.toString());
-	query.setReadOnly(true);
-	Object result = query.uniqueResult();
-	if (result instanceof Integer) {
-	    count = (Integer) result;
-	} else if (result instanceof BigInteger) {
-	    count = ((BigInteger) result).intValue();
-	} else if (result instanceof BigDecimal) {
-	    try {
-		count = ((BigDecimal) result).intValueExact();
-	    } catch (ArithmeticException e) {
-		log.error("Invalid conversion from BigDecimal to int", e);
-	    }
-	} else {
-	    log.error("Unknown type returned from query: " + result.getClass().getName());
-	}
-	return count;
+        int count = 0;
+        final String sql = "select count(*) from lsids where lsid = :newLSID";
+        Query query = getSession().createSQLQuery(sql);
+        query.setString("newLSID", lsid.toString());
+        query.setReadOnly(true);
+        Object result = query.uniqueResult();
+        if (result instanceof Integer) {
+            count = (Integer) result;
+        } 
+        else if (result instanceof BigInteger) {
+            count = ((BigInteger) result).intValue();
+        }
+        else if (result instanceof BigDecimal) {
+            try {
+                count = ((BigDecimal) result).intValueExact();
+            } 
+            catch (ArithmeticException e) {
+                log.error("Invalid conversion from BigDecimal to int", e);
+            }
+        } 
+        else {
+            log.error("Unknown type returned from query: " + result.getClass().getName());
+        }
+        return count;
     }
 
 }
