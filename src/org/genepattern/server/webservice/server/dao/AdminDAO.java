@@ -58,18 +58,16 @@ public class AdminDAO extends BaseDAO {
     private static int PUBLIC_ACCESS_ID = 1;
 
     /**
-     * Returns the versions of the tasks with the same versionless LSID as the given LSID. The returned list is in
-     * ascending order.
+     * Returns the versions of the tasks with the same versionless LSID as the given LSID. 
+     * The returned list is in ascending order.
      * 
-     * @param lsid
-     *                the LSID.
-     * @param username
-     *                the username.
+     * @param lsid, the LSID.
+     * @param username, the username.
+     * 
      * @return The versions.
      */
     public List<String> getVersions(LSID lsid, String username) {
-        String hql = "from org.genepattern.server.domain.TaskMaster where lsid like :lsid"
-            + " and (userId = :userId or accessId = :accessId)";
+        String hql = "from org.genepattern.server.domain.TaskMaster where lsid like :lsid" + " and (userId = :userId or accessId = :accessId)";
         Query query = getSession().createQuery(hql);
         query.setString("lsid", lsid.toStringNoVersion() + "%");
         query.setString("userId", username);
@@ -104,6 +102,7 @@ public class AdminDAO extends BaseDAO {
         if (lsidOrTaskName == null || lsidOrTaskName.trim().equals("")) {
             return null;
         }
+        log.debug("getTask ... \n\tlsidOrTaskName="+lsidOrTaskName+"\n\tusername="+username);
 
         boolean startTransaction = false;
         try {
@@ -160,6 +159,11 @@ public class AdminDAO extends BaseDAO {
                 }
             }
             List<Integer> taskIds = query.list();
+            if (log.isDebugEnabled()) {
+                for(int taskId : taskIds) {
+                    log.debug("\tfetched taskId="+taskId);
+                }
+            }
             TaskInfo[] results = TaskInfoCache.instance().getTasks(taskIds);
             TaskInfo latestTask = null;
             LSID latestLSID = null;
@@ -175,6 +179,12 @@ public class AdminDAO extends BaseDAO {
                     latestTask = ti;
                     latestLSID = l;
                 }
+            }
+            if (latestTask == null) {
+                log.debug("latestTask == null");
+            }
+            else {
+                log.debug("latestTask.taskId="+latestTask.getID());
             }
             return latestTask;
         } 
@@ -201,6 +211,11 @@ public class AdminDAO extends BaseDAO {
             }
 
             List<Integer> taskIds = query.list();
+            if (log.isDebugEnabled()) {
+                for(int taskId : taskIds) {
+                    log.debug("fetched taskId="+taskId);
+                }
+            }
             List<TaskInfo> tasksWithGivenName = new ArrayList<TaskInfo>();
             for (Integer taskId : taskIds) {
                 try {
@@ -242,6 +257,12 @@ public class AdminDAO extends BaseDAO {
 
             if (startTransaction) {
                 HibernateUtil.commitTransaction();
+            }
+            if (latestTask == null) {
+                log.debug("latestTask == null");
+            }
+            else {
+                log.debug("latestTask.taskId="+latestTask.getID());
             }
             return latestTask;
         }
