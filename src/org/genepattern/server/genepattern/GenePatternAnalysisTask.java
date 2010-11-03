@@ -3249,87 +3249,78 @@ public class GenePatternAnalysisTask {
      * updated task database entry (via a DBLoader invocation). If there are validation errors, the task is not created
      * and the error message(s) are returned to the caller. Otherwise (all okay), null is returned.
      * 
-     * @param name
-     *            task name
-     * @param description
-     *            description of task
-     * @param params
-     *            ParameterInfo[] of formal parameters for the task
-     * @param taskInfoAttributes
-     *            GenePattern TaskInfoAttributes describing metadata for the task
+     * @param name, task name
+     * @param description, description of task
+     * @param params, ParameterInfo[] of formal parameters for the task
+     * @param taskInfoAttributes, GenePattern TaskInfoAttributes describing metadata for the task
+     * 
      * @return Vector of String error messages if there was an error validating the command line and input parameters,
      *         otherwise null to indicate success
-     * @throws OmnigeneException
-     *             if DBLoader is unhappy when connecting to Omnigene
-     * @throws RemoteException
-     *             if DBLoader is unhappy when connecting to Omnigene
+     * @throws OmnigeneException, if DBLoader is unhappy when connecting to Omnigene
+     * @throws RemoteException, if DBLoader is unhappy when connecting to Omnigene
+     * 
      * @author Jim Lerner
      */
-    public static Vector installTask(String name, String description, ParameterInfo[] params,
-	    TaskInfoAttributes taskInfoAttributes, String username, int access_id, Status taskIntegrator)
-	    throws OmnigeneException, RemoteException {
-	String originalUsername = username;
-	TaskInfo taskInfo = new TaskInfo();
-	taskInfo.setName(name);
-	taskInfo.setDescription(description);
-	taskInfo.setUserId(username);
-	taskInfo.setTaskInfoAttributes(taskInfoAttributes);
-	taskInfo.setParameterInfoArray(params);
-	Vector vProblems = GenePatternAnalysisTask.validateInputs(taskInfo, name, taskInfoAttributes, params);
+    public static Vector installTask(String name, String description, ParameterInfo[] params, TaskInfoAttributes taskInfoAttributes, String username, int access_id, Status taskIntegrator)
+    throws OmnigeneException, RemoteException 
+    {
+        String originalUsername = username;
+        TaskInfo taskInfo = new TaskInfo();
+        taskInfo.setName(name);
+        taskInfo.setDescription(description);
+        taskInfo.setUserId(username);
+        taskInfo.setTaskInfoAttributes(taskInfoAttributes);
+        taskInfo.setParameterInfoArray(params);
+        Vector vProblems = GenePatternAnalysisTask.validateInputs(taskInfo, name, taskInfoAttributes, params);
 
-	try {
-	    String expected = taskInfoAttributes.get(OS);
-	    if (validateOS(expected, "install " + name)) {
-		validatePatches(taskInfo, taskIntegrator);
-	    }
-	} catch (Throwable e) {
-	    if (e.getCause() != null) {
-		e = e.getCause();
-	    }
-	    System.err.println(e.toString() + " while installing " + name);
-	    vProblems.add(e.getMessage());
-	}
-	if (vProblems.size() > 0) {
-	    return vProblems;
-	}
+        try {
+            String expected = taskInfoAttributes.get(OS);
+            if (validateOS(expected, "install " + name)) {
+                validatePatches(taskInfo, taskIntegrator);
+            }
+        } 
+        catch (Throwable e) {
+            if (e.getCause() != null) {
+                e = e.getCause();
+            }
+            System.err.println(e.toString() + " while installing " + name);
+            vProblems.add(e.getMessage());
+        }
+        if (vProblems.size() > 0) {
+            return vProblems;
+        }
 
-	// System.out.println("GPAT.installTask: installing " + name + " with
-	// LSID " + taskInfoAttributes.get(LSID));
+        // privacy is stored both in the task_master table as a field, and in the taskInfoAttributes
+        taskInfoAttributes.put(PRIVACY, access_id == ACCESS_PRIVATE ? PRIVATE : PUBLIC);
+        if (access_id == ACCESS_PRIVATE) {
+            taskInfoAttributes.put(USERID, username);
+        }
+        String lsid = taskInfoAttributes.get(LSID);
+        if (lsid == null || lsid.equals("")) {
+            // System.out.println("installTask: creating new LSID");
+            lsid = LSIDManager.getInstance().createNewID(TASK_NAMESPACE).toString();
+            taskInfoAttributes.put(LSID, lsid);
+        }
 
-	// privacy is stored both in the task_master table as a field, and in
-	// the taskInfoAttributes
-	taskInfoAttributes.put(PRIVACY, access_id == ACCESS_PRIVATE ? PRIVATE : PUBLIC);
-	if (access_id == ACCESS_PRIVATE) {
-	    taskInfoAttributes.put(USERID, username);
-	}
-	String lsid = taskInfoAttributes.get(LSID);
-	if (lsid == null || lsid.equals("")) {
-	    // System.out.println("installTask: creating new LSID");
-	    lsid = LSIDManager.getInstance().createNewID(TASK_NAMESPACE).toString();
-	    taskInfoAttributes.put(LSID, lsid);
-	}
-
-	// TODO: if the task is a pipeline, generate the serialized model right
-	// now too
-	GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(name, description, params, taskInfoAttributes.encode(),
-		username, access_id);
-	int formerID = loader.getTaskIDByName(lsid, originalUsername);
-	boolean isNew = (formerID == -1);
-	if (!isNew) {
-	    try {
-		// delete the search engine indexes for this task so that it
-		// will be reindexed
-		log.debug("installTask: deleting index for previous task ID " + formerID);
-		// Indexer.deleteTask(formerID);
-		log.debug("installTask: deleted index");
-	    } catch (Exception ioe) {
-		log.info(ioe + " while deleting search index for task " + name + " during update");
-		System.err.println(ioe + " while deleting search index for task " + name + " during update");
-	    }
-	}
-	loader.run(isNew ? GenePatternTaskDBLoader.CREATE : GenePatternTaskDBLoader.UPDATE);
-	// IndexerDaemon.notifyTaskUpdate(loader.getTaskIDByName(LSID != null ? lsid : name, username));
-	return null;
+        // TODO: if the task is a pipeline, generate the serialized model right now too
+        GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(name, description, params, taskInfoAttributes.encode(), username, access_id);
+        int formerID = loader.getTaskIDByName(lsid, originalUsername);
+        boolean isNew = (formerID == -1);
+        if (!isNew) {
+            try {
+                // delete the search engine indexes for this task so that it will be reindexed
+                log.debug("installTask: deleting index for previous task ID " + formerID);
+                // Indexer.deleteTask(formerID);
+                log.debug("installTask: deleted index");
+            } 
+            catch (Exception ioe) {
+                log.info(ioe + " while deleting search index for task " + name + " during update");
+                System.err.println(ioe + " while deleting search index for task " + name + " during update");
+            }
+        }
+        loader.run(isNew ? GenePatternTaskDBLoader.CREATE : GenePatternTaskDBLoader.UPDATE);
+        // IndexerDaemon.notifyTaskUpdate(loader.getTaskIDByName(LSID != null ? lsid : name, username));
+        return null;
     }
 
     public static LSID getNextTaskLsid(String requestedLSID) throws java.rmi.RemoteException {
@@ -3359,22 +3350,17 @@ public class GenePatternAnalysisTask {
      * use installTask but first manage the LSID. if it has one, keep it unchanged. If not, create a new one to be used
      * when creating a new task or installing from a zip file
      */
-    public static String installNewTask(String name, String description, ParameterInfo[] params,
-	    TaskInfoAttributes taskInfoAttributes, String username, int access_id, Status taskIntegrator)
-	    throws OmnigeneException, RemoteException, TaskInstallationException {
-	LSID taskLSID = null;
-	String requestedLSID = taskInfoAttributes.get(LSID);
-
-	taskLSID = getNextTaskLsid(requestedLSID);
-
-	taskInfoAttributes.put(GPConstants.LSID, taskLSID.toString());
-	// System.out.println("GPAT.installNewTask: new LSID=" +
-	// taskLSID.toString());
-	Vector probs = installTask(name, description, params, taskInfoAttributes, username, access_id, taskIntegrator);
-	if ((probs != null) && (probs.size() > 0)) {
-	    throw new TaskInstallationException(probs);
-	}
-	return taskLSID.toString();
+    public static String installNewTask(String name, String description, ParameterInfo[] params, TaskInfoAttributes taskInfoAttributes, String username, int access_id, Status taskIntegrator)
+    throws OmnigeneException, RemoteException, TaskInstallationException {
+        LSID taskLSID = null;
+        String requestedLSID = taskInfoAttributes.get(LSID);
+        taskLSID = getNextTaskLsid(requestedLSID);
+        taskInfoAttributes.put(GPConstants.LSID, taskLSID.toString());
+        Vector probs = installTask(name, description, params, taskInfoAttributes, username, access_id, taskIntegrator);
+        if ((probs != null) && (probs.size() > 0)) {
+            throw new TaskInstallationException(probs);
+        }
+        return taskLSID.toString();
     }
 
     /**
@@ -3563,7 +3549,8 @@ public class GenePatternAnalysisTask {
      * @see #installTask
      */
     public static String installNewTask(String zipFilename, String username, int access_id, boolean recursive, Status taskIntegrator) 
-    throws TaskInstallationException {
+    throws TaskInstallationException 
+    {
         Vector vProblems = new Vector();
         int i;
         ZipFile zipFile = null;
