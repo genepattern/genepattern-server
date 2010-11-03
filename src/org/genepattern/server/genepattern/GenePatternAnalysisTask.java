@@ -2594,9 +2594,6 @@ public class GenePatternAnalysisTask {
                     }
                 }
             }
-            if (replacement.indexOf("Program Files") != -1) {
-                replacement = replace(replacement, "Program Files", "Progra~1");
-            }
             newString = newString.replace(start - LEFT_DELIMITER.length(), end + RIGHT_DELIMITER.length(), replacement);
             start = start + replacement.length() - LEFT_DELIMITER.length();
         }
