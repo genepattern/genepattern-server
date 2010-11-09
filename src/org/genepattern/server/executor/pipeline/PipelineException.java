@@ -8,4 +8,8 @@ public class PipelineException extends Exception {
     public PipelineException(String message, Exception e) {
         super(message, e);
     }
+    
+    public PipelineException(String message, Throwable t) {
+        super(message, t);
+    }
 }

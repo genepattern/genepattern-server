@@ -124,9 +124,9 @@ public class PipelineHandler {
             updateParameterInfo(jobInfo);
             HibernateUtil.commitTransaction();
         }
-        catch (FileNotFoundException e) {
+        catch (Throwable t) {
             HibernateUtil.rollbackTransaction();
-            throw new PipelineException("Error setting inherited job parameters in pipeline "+parentJobId+" for job "+jobInfo.getJobNumber(), e);
+            throw new PipelineException("Error preparing next step in pipeline job #"+parentJobId+" for step #"+jobInfo.getJobNumber(), t);
         }
         finally {
             HibernateUtil.closeCurrentSession();
@@ -536,7 +536,7 @@ public class PipelineHandler {
         }
     }
     
-    private static void setInheritedJobParameters(ParameterInfo[] parameterInfos, JobInfo[] results) throws FileNotFoundException {
+    private static void setInheritedJobParameters(ParameterInfo[] parameterInfos, JobInfo[] results) {
         for (ParameterInfo param : parameterInfos) {
             boolean isInheritTaskName = false;
             HashMap attributes = param.getAttributes();
@@ -545,7 +545,19 @@ public class PipelineHandler {
             }
             if (isInheritTaskName) {
                 String url = getInheritedFilename(param.getAttributes(), results);
-                param.setValue(url);
+                if (url != null && url.trim().length() > 0) {
+                    param.setValue(url);
+                }
+                else {
+                    boolean isOptional = "on".equals(attributes.get("optional"));
+                    if (isOptional) {
+                        //ignore
+                    }
+                    else {
+                        //error
+                        log.error("Error setting inherited file name for non-optional input parameter in pipeline, param.name="+param.getName());
+                    }
+                }
             }
         }
     }
@@ -574,20 +586,42 @@ public class PipelineHandler {
         return server;
     }
 
-    private static String getInheritedFilename(Map attributes, JobInfo[] results) throws FileNotFoundException {
+    /**
+     * 
+     * @param attributes
+     * @param results
+     * @return an empty string if no file is found.
+     */
+    private static String getInheritedFilename(Map attributes, JobInfo[] results) {
         // these params must be removed so that the soap lib doesn't try to send the file as an attachment
         String taskStr = (String) attributes.get(PipelineModel.INHERIT_TASKNAME);
         String fileStr = (String) attributes.get(PipelineModel.INHERIT_FILENAME);
         attributes.remove("TYPE");
-        attributes.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
-
-        int task = Integer.parseInt(taskStr);
-        JobInfo job = results[task];
-        String fileName = getOutputFileName(job, fileStr);
-
-        String context = System.getProperty("GP_Path", "/gp");
-        String url = getServer() + context + "/jobResults/" + fileName;
-        return url;
+        
+        int stepNum = -1;
+        try {
+            stepNum = Integer.parseInt(taskStr);
+        }
+        catch (NumberFormatException e) {
+            log.error("Invalid taskStr="+taskStr, e);
+            return "";
+        }
+        if (stepNum > results.length) {
+            log.error("Invalid stepNum: stepNum="+stepNum+", results.length="+results.length);
+            return "";
+        }
+        JobInfo job = results[stepNum];
+        String fileName = null;
+        try {
+            fileName = getOutputFileName(job, fileStr);
+            attributes.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
+            String context = System.getProperty("GP_Path", "/gp");
+            String url = getServer() + context + "/jobResults/" + fileName;
+            return url;
+        }
+        catch (FileNotFoundException e) {
+            return "";
+        }
     }
 
     /**
