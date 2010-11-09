@@ -2956,144 +2956,139 @@ public class GenePatternAnalysisTask {
      * @return Vector of error messages (zero length if no problems found)
      * @author Jim Lerner
      */
-    protected static Vector<String> validateParameters(Properties props, String taskName, String commandLine,
-	    ParameterInfo[] actualParams, ParameterInfo[] formalParams, boolean enforceOptionalNonBlank) {
-	Vector<String> vProblems = new Vector<String>();
-	String name;
-	boolean runtimeValidation = (actualParams != formalParams);
-	int formalParamsLength = 0;
-	if (formalParams != null) {
-	    formalParamsLength = formalParams.length;
-	}
-	// validate R-safe task name
-	if (!isRSafe(taskName)) {
-	    vProblems
-		    .add("'"
-			    + taskName
-			    + "' is not a legal task name.  It must contain only letters, digits, and periods, and may not begin with a period or digit.\n It must not be a reserved keyword in R ('if', 'else', 'repeat', 'while', 'function', 'for', 'in', 'next', 'break', 'true', 'false', 'null', 'na', 'inf', 'nan').");
-	}
-	if (commandLine.trim().length() == 0) {
-	    vProblems.add("Command line not defined");
-	}
+    private static Vector<String> validateParameters(Properties props, String taskName, String commandLine, ParameterInfo[] actualParams, ParameterInfo[] formalParams, boolean enforceOptionalNonBlank) {
+        Vector<String> vProblems = new Vector<String>();
+        String name;
+        boolean runtimeValidation = (actualParams != formalParams);
+        int formalParamsLength = 0;
+        if (formalParams != null) {
+            formalParamsLength = formalParams.length;
+        }
+        // validate R-safe task name
+        if (!isRSafe(taskName)) {
+            vProblems.add("'" + taskName + "' is not a legal task name.  "+
+                    "It must contain only letters, digits, and periods, and may not begin with a period or digit.\n It must not be a reserved keyword in R ('if', 'else', 'repeat', 'while', 'function', 'for', 'in', 'next', 'break', 'true', 'false', 'null', 'na', 'inf', 'nan').");
+        }
+        if (commandLine.trim().length() == 0) {
+            vProblems.add("Command line not defined");
+        }
 
-	// check that each parameter is cited in either the command line or the
-	// output filename pattern
-	if (actualParams != null) {
-	    Vector paramNames = new Vector();
-	    next_parameter: for (int actual = 0; actual < actualParams.length; actual++) {
-		name = LEFT_DELIMITER + actualParams[actual].getName() + RIGHT_DELIMITER;
-		if (paramNames.contains(actualParams[actual].getName())) {
-		    vProblems.add(taskName + ": " + actualParams[actual].getName()
-			    + " has been declared as a parameter more than once");
-		}
-		paramNames.add(actualParams[actual].getName());
-		/*
-		 * if (!isRSafe(actualParams[actual].getName())) { vProblems.add(actualParams[actual].getName() + " is
-		 * not a legal parameter name. It must contain only letters, digits, and periods, and may not begin with
-		 * a period or digit" + " for task " + props.get(GPConstants.LSID)); }
-		 */
-		for (int j = 0; j < UNREQUIRED_PARAMETER_NAMES.length; j++) {
-		    if (name.equals(UNREQUIRED_PARAMETER_NAMES[j])) {
-			continue next_parameter;
-		    }
-		}
-		HashMap hmAttributes = null;
-		boolean foundFormal = false;
-		int formal;
-		for (formal = 0; formal < formalParamsLength; formal++) {
-		    if (formalParams[formal].getName().equals(actualParams[actual].getName())) {
-			hmAttributes = formalParams[formal].getAttributes();
-			foundFormal = true;
-			break;
-		    }
-		}
+        // check that each parameter is cited in either the command line or the
+        // output filename pattern
+        if (actualParams != null) {
+            Vector paramNames = new Vector();
+            next_parameter: for (int actual = 0; actual < actualParams.length; actual++) {
+                name = LEFT_DELIMITER + actualParams[actual].getName() + RIGHT_DELIMITER;
+                if (paramNames.contains(actualParams[actual].getName())) {
+                    vProblems.add(taskName + ": " + actualParams[actual].getName()
+                            + " has been declared as a parameter more than once");
+                }
+                paramNames.add(actualParams[actual].getName());
+                /*
+                 * if (!isRSafe(actualParams[actual].getName())) { vProblems.add(actualParams[actual].getName() + " is
+                 * not a legal parameter name. It must contain only letters, digits, and periods, and may not begin with
+                 * a period or digit" + " for task " + props.get(GPConstants.LSID)); }
+                 */
+                for (int j = 0; j < UNREQUIRED_PARAMETER_NAMES.length; j++) {
+                    if (name.equals(UNREQUIRED_PARAMETER_NAMES[j])) {
+                        continue next_parameter;
+                    }
+                }
+                HashMap hmAttributes = null;
+                boolean foundFormal = false;
+                int formal;
+                for (formal = 0; formal < formalParamsLength; formal++) {
+                    if (formalParams[formal].getName().equals(actualParams[actual].getName())) {
+                        hmAttributes = formalParams[formal].getAttributes();
+                        foundFormal = true;
+                        break;
+                    }
+                }
 
-		if (!foundFormal) {
-		    vProblems.add(taskName + ": supplied parameter " + name + " is not part of the definition.");
-		    continue;
-		}
+                if (!foundFormal) {
+                    vProblems.add(taskName + ": supplied parameter " + name + " is not part of the definition.");
+                    continue;
+                }
 
-		// for non-optional parameters, make sure they are mentioned in
-		// the command line
-		if (hmAttributes == null || hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET]) == null
-			|| ((String) hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET])).length() == 0) {
-		    if (commandLine.indexOf(name) == -1) {
-			vProblems.add(taskName + ": non-optional parameter " + name + " is not cited in the command line.");
-		    } else if (enforceOptionalNonBlank
-			    && (actualParams[actual].getValue() == null || actualParams[actual].getValue().length() == 0)
-			    && formalParams[formal].getValue().length() == 0) {
-			vProblems.add(taskName + ": non-optional parameter " + name + " is blank.");
-		    }
-		}
-		// check that parameter is not named the same as a predefined
-		// parameter
-		for (int j = 0; j < RESERVED_PARAMETER_NAMES.length; j++) {
-		    if (actualParams[actual].getName().equalsIgnoreCase(RESERVED_PARAMETER_NAMES[j])) {
-			vProblems.add(taskName + ": parameter " + name
-				+ " is a reserved name and cannot be used as a parameter name.");
-		    }
-		}
+                // for non-optional parameters, make sure they are mentioned in the command line
+                if (hmAttributes == null || hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET]) == null
+                        || ((String) hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET])).length() == 0) {
+                    if (commandLine.indexOf(name) == -1) {
+                        vProblems.add(taskName + ": non-optional parameter " + name + " is not cited in the command line.");
+                    } 
+                    else if (enforceOptionalNonBlank
+                            && (actualParams[actual].getValue() == null || actualParams[actual].getValue().length() == 0)
+                            && formalParams[formal].getValue().length() == 0) {
+                        vProblems.add(taskName + ": non-optional parameter " + name + " is blank.");
+                    }
+                }
+                // check that parameter is not named the same as a predefined parameter
+                for (int j = 0; j < RESERVED_PARAMETER_NAMES.length; j++) {
+                    if (actualParams[actual].getName().equalsIgnoreCase(RESERVED_PARAMETER_NAMES[j])) {
+                        vProblems.add(taskName + ": parameter " + name
+                                + " is a reserved name and cannot be used as a parameter name.");
+                    }
+                }
 
-		// if the parameter is part of a choice list, verify that the
-		// default is on the list
-		String dflt = (String) hmAttributes.get(PARAM_INFO_DEFAULT_VALUE[PARAM_INFO_NAME_OFFSET]);
-		String actualValue = actualParams[actual].getValue();
-		String choices = formalParams[formal].getValue();
-		String[] stChoices = formalParams[formal].getChoices(PARAM_INFO_CHOICE_DELIMITER);
-		if (dflt != null && dflt.length() > 0 && formalParams[formal].hasChoices(PARAM_INFO_CHOICE_DELIMITER)) {
-		    boolean foundDefault = false;
-		    boolean foundActual = false;
-		    for (int iChoice = 0; iChoice < stChoices.length; iChoice++) {
-			String entry = stChoices[iChoice];
-			StringTokenizer stChoiceEntry = new StringTokenizer(entry, PARAM_INFO_TYPE_SEPARATOR);
-			String sLHS = "";
-			String sRHS = "";
-			if (stChoiceEntry.hasMoreTokens()) {
-			    sLHS = stChoiceEntry.nextToken();
-			}
-			if (stChoiceEntry.hasMoreTokens()) {
-			    sRHS = stChoiceEntry.nextToken();
-			}
-			if (sLHS.equals(dflt) || sRHS.equals(dflt)) {
-			    foundDefault = true;
-			    break;
-			}
-		    }
-		    if (!foundDefault) {
-			vProblems.add("Default value '" + dflt + "' for parameter " + name
-				+ " was not found in the choice list '" + choices + "'.");
-		    }
-		}
+		// if the parameter is part of a choice list, verify that the default is on the list
+                String dflt = (String) hmAttributes.get(PARAM_INFO_DEFAULT_VALUE[PARAM_INFO_NAME_OFFSET]);
+                String actualValue = actualParams[actual].getValue();
+                String choices = formalParams[formal].getValue();
+                String[] stChoices = formalParams[formal].getChoices(PARAM_INFO_CHOICE_DELIMITER);
+                if (dflt != null && dflt.length() > 0 && formalParams[formal].hasChoices(PARAM_INFO_CHOICE_DELIMITER)) {
+                    boolean foundDefault = false;
+                    boolean foundActual = false;
+                    for (int iChoice = 0; iChoice < stChoices.length; iChoice++) {
+                        String entry = stChoices[iChoice];
+                        StringTokenizer stChoiceEntry = new StringTokenizer(entry, PARAM_INFO_TYPE_SEPARATOR);
+                        String sLHS = "";
+                        String sRHS = "";
+                        if (stChoiceEntry.hasMoreTokens()) {
+                            sLHS = stChoiceEntry.nextToken();
+                        }
+                        if (stChoiceEntry.hasMoreTokens()) {
+                            sRHS = stChoiceEntry.nextToken();
+                        }
+                        if (sLHS.equals(dflt) || sRHS.equals(dflt)) {
+                            foundDefault = true;
+                            break;
+                        }
+                    }
+                    if (!foundDefault) {
+                        vProblems.add("Default value '" + dflt + "' for parameter " + name
+                                + " was not found in the choice list '" + choices + "'.");
+                    }
+                }
 
-		// check for valid choice selection
-		if (runtimeValidation && formalParams[formal].hasChoices(PARAM_INFO_CHOICE_DELIMITER)) {
-		    boolean foundActual = false;
-		    for (int iChoice = 0; iChoice < stChoices.length; iChoice++) {
-			String entry = stChoices[iChoice];
-			StringTokenizer stChoiceEntry = new StringTokenizer(entry, PARAM_INFO_TYPE_SEPARATOR);
-			String sLHS = "";
-			String sRHS = "";
-			if (stChoiceEntry.hasMoreTokens()) {
-			    sLHS = stChoiceEntry.nextToken();
-			}
-			if (stChoiceEntry.hasMoreTokens()) {
-			    sRHS = stChoiceEntry.nextToken();
-			}
-			if (sLHS.equals(actualValue) || sRHS.equals(actualValue)) {
-			    foundActual = true;
-			    break;
-			}
-		    }
-		    if (!foundActual) {
-			vProblems.add("Value '" + actualValue + "' for parameter " + name + " was not found in the choice list '"
-				+ choices + "'.");
-		    }
-		}
-	    }
-	}
+                // check for valid choice selection
+                if (runtimeValidation && formalParams[formal].hasChoices(PARAM_INFO_CHOICE_DELIMITER)) {
+                    boolean foundActual = false;
+                    for (int iChoice = 0; iChoice < stChoices.length; iChoice++) {
+                        String entry = stChoices[iChoice];
+                        StringTokenizer stChoiceEntry = new StringTokenizer(entry, PARAM_INFO_TYPE_SEPARATOR);
+                        String sLHS = "";
+                        String sRHS = "";
+                        if (stChoiceEntry.hasMoreTokens()) {
+                            sLHS = stChoiceEntry.nextToken();
+                        }
+                        if (stChoiceEntry.hasMoreTokens()) {
+                            sRHS = stChoiceEntry.nextToken();
+                        }
+                        if (sLHS.equals(actualValue) || sRHS.equals(actualValue)) {
+                            foundActual = true;
+                            break;
+                        }
+                    }
+                    if (!foundActual) {
+                        vProblems.add("Value '" + actualValue + "' for parameter " + name + " was not found in the choice list '"
+                                + choices + "'.");
+                    }
+                }
+            }
+        }
 
-	vProblems = validateSubstitutions(props, taskName, commandLine, "command line", vProblems, formalParams);
-	return vProblems;
+        vProblems = validateSubstitutions(props, taskName, commandLine, "command line", vProblems, formalParams);
+        return vProblems;
     }
 
     /**
@@ -3115,52 +3110,49 @@ public class GenePatternAnalysisTask {
      * @return Vector of error messages (vProblems with new errors appended)
      * @author Jim Lerner
      */
-    protected static Vector<String> validateSubstitutions(Properties props, 
-            String taskName, String commandLine,
-	    String source, Vector<String> vProblems, ParameterInfo[] formalParams) {
-	// check that each substitution variable listed in the command line is
-	// actually in props
-	int start = 0;
-	int end;
-	int blank;
-	String varName;
-	while (start < commandLine.length() && (start = commandLine.indexOf(LEFT_DELIMITER, start)) != -1) {
-	    end = commandLine.indexOf(RIGHT_DELIMITER, start);
-	    if (end == -1) {
-		break;
-	    }
-	    blank = commandLine.indexOf(" ", start) + 1;
-	    if (blank != 0 && blank < end) {
-		// if there's a space in the name, then it's a redirection of
-		// stdin
-		start = blank;
-		continue;
-	    }
-	    varName = commandLine.substring(start + LEFT_DELIMITER.length(), end);
+    private static Vector<String> validateSubstitutions(Properties props, String taskName, String commandLine, String source, Vector<String> vProblems, ParameterInfo[] formalParams) {
+        // check that each substitution variable listed in the command line is actually in props
+        int start = 0;
+        int end;
+        int blank;
+        String varName;
+        while (start < commandLine.length() && (start = commandLine.indexOf(LEFT_DELIMITER, start)) != -1) {
+            end = commandLine.indexOf(RIGHT_DELIMITER, start);
+            if (end == -1) {
+                break;
+            }
+            blank = commandLine.indexOf(" ", start) + 1;
+            if (blank != 0 && blank < end) {
+                // if there's a space in the name, then it's a redirection of
+                // stdin
+                start = blank;
+                continue;
+            }
+            varName = commandLine.substring(start + LEFT_DELIMITER.length(), end);
 
-	    if (!varName.endsWith(INPUT_PATH)) {
-		if (!props.containsKey(varName)) {
-		    boolean isOptional = false;
-		    for (int i = 0; i < formalParams.length; i++) {
-			if (!formalParams[i].getName().equals(varName)) {
-			    continue;
-			}
-			HashMap hmAttributes = formalParams[i].getAttributes();
-			if (hmAttributes != null && hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET]) != null
-				&& ((String) hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET])).length() != 0) {
-			    isOptional = true;
-			}
-			break;
-		    }
-		    if (!isOptional) {
-			vProblems.add(taskName + ": no substitution available for " + LEFT_DELIMITER + varName + RIGHT_DELIMITER
-				+ " in " + source + " " + commandLine + ".");
-		    }
-		}
-	    }
-	    start = end + RIGHT_DELIMITER.length();
-	}
-	return vProblems;
+            if (!varName.endsWith(INPUT_PATH)) {
+                if (!props.containsKey(varName)) {
+                    boolean isOptional = false;
+                    for (int i = 0; i < formalParams.length; i++) {
+                        if (!formalParams[i].getName().equals(varName)) {
+                            continue;
+                        }
+                        HashMap hmAttributes = formalParams[i].getAttributes();
+                        if (hmAttributes != null && hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET]) != null
+                                && ((String) hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET])).length() != 0) {
+                            isOptional = true;
+                        }
+                        break;
+                    }
+                    if (!isOptional) {
+                        vProblems.add(taskName + ": no substitution available for " + LEFT_DELIMITER + varName + RIGHT_DELIMITER
+                                + " in " + source + " " + commandLine + ".");
+                    }
+                }
+            }
+            start = end + RIGHT_DELIMITER.length();
+        }
+        return vProblems;
     }
 
     /**
@@ -3176,17 +3168,18 @@ public class GenePatternAnalysisTask {
      * @return Vector of error messages from validation of inputs
      * @author Jim Lerner
      */
-    public static Vector<String> validateInputs(TaskInfo taskInfo, String taskName, TaskInfoAttributes tia, ParameterInfo[] params) {
-	Vector<String> vProblems = null;
-	try {
-	    Properties props = GenePatternAnalysisTask.setupProps(taskInfo, taskName, -1, 0, -1, tia, params, new HashMap<String, String>(), params, null);
-	    vProblems = GenePatternAnalysisTask.validateParameters(props, taskName, tia.get(COMMAND_LINE), params, params, false);
-	} catch (Exception e) {
-	    vProblems = new Vector<String>();
-	    vProblems.add(e.toString() + " while validating inputs for " + tia.get(GPConstants.LSID));
-	    e.printStackTrace();
-	}
-	return vProblems;
+    private static Vector<String> validateInputs(TaskInfo taskInfo, String taskName, TaskInfoAttributes tia, ParameterInfo[] params) {
+        Vector<String> vProblems = null;
+        try {
+            Properties props = GenePatternAnalysisTask.setupProps(taskInfo, taskName, -1, 0, -1, tia, params, new HashMap<String, String>(), params, null);
+            vProblems = GenePatternAnalysisTask.validateParameters(props, taskName, tia.get(COMMAND_LINE), params, params, false);
+        } 
+        catch (Exception e) {
+            vProblems = new Vector<String>();
+            vProblems.add(e.toString() + " while validating inputs for " + tia.get(GPConstants.LSID));
+            e.printStackTrace();
+        }
+        return vProblems;
     }
 
     /**
@@ -3194,50 +3187,49 @@ public class GenePatternAnalysisTask {
      * standards, the R language defines what seems to be both a strict and reasonable definition, and has the added
      * bonus of making R scripts work properly.
      * 
-     * @param varName
-     *            proposed variable name
+     * Note: referenced by pipelineDesigner.jsp
+     * 
+     * @param varName, proposed variable name
      * @return boolean if the proposed name is R-legal
      * @author Jim Lerner
      */
     public static boolean isRSafe(String varName) {
-	// anything but letters, digits, and period is an invalid R identifier
-	// that must be quoted
-	String validCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._";
-	String[] reservedNames = new String[] { "if", "else", "repeat", "while", "function", "for", "in", "next", "break",
+        // anything but letters, digits, and period is an invalid R identifier that must be quoted
+        String validCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._";
+        String[] reservedNames = new String[] { "if", "else", "repeat", "while", "function", "for", "in", "next", "break",
 		"true", "false", "null", "na", "inf", "nan" };
-	boolean isReservedName = false;
-	for (int i = 0; i < reservedNames.length; i++) {
-	    if (varName.equals(reservedNames[i])) {
-		isReservedName = true;
-	    }
-	}
-	StringTokenizer stVarName = new StringTokenizer(varName, validCharacters);
-	boolean ret = varName.length() > 0 && // the name is not empty
-		stVarName.countTokens() == 0 && // it consists of only letters,
-		// digits, and periods
-		varName.charAt(0) != '.' && // it doesn't begin with a period
-		!Character.isDigit(varName.charAt(0)) && // it doesn't begin
-		// with a digit
-		!isReservedName; // it isn't a reserved name
-	return ret;
+        boolean isReservedName = false;
+        for (int i = 0; i < reservedNames.length; i++) {
+            if (varName.equals(reservedNames[i])) {
+                isReservedName = true;
+            }
+        }
+        StringTokenizer stVarName = new StringTokenizer(varName, validCharacters);
+        boolean ret = varName.length() > 0 && // the name is not empty
+        stVarName.countTokens() == 0 && // it consists of only letters,
+        // digits, and periods
+        varName.charAt(0) != '.' && // it doesn't begin with a period
+        !Character.isDigit(varName.charAt(0)) && // it doesn't begin
+        // with a digit
+        !isReservedName; // it isn't a reserved name
+        return ret;
     }
 
     /**
      * encapsulate an invalid R identifier name in quotes if necessary
      * 
-     * @param varName
-     *            variable name
+     * @param varName, variable name
      * @return variable name, quoted if necessary
      * @author Jim Lerner
      */
     public static String rEncode(String varName) {
-	// anything but letters, digits, and period is an invalid R identifier
-	// that must be quoted
-	if (isRSafe(varName)) {
-	    return varName;
-	} else {
-	    return "\"" + replace(varName, "\"", "\\\"") + "\"";
-	}
+        // anything but letters, digits, and period is an invalid R identifier that must be quoted
+        if (isRSafe(varName)) {
+            return varName;
+        } 
+        else {
+            return "\"" + replace(varName, "\"", "\\\"") + "\"";
+        }
     }
 
     /**
