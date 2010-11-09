@@ -2590,6 +2590,10 @@ public class GenePatternAnalysisTask {
                     }
                     String optionalPrefix = (String) hmAttributes.get(PARAM_INFO_PREFIX[PARAM_INFO_NAME_OFFSET]);
                     if (replacement.length() > 0 && optionalPrefix != null && optionalPrefix.length() > 0) {
+                        if (optionalPrefix.endsWith(" ")) {
+                            //special-case: GP-2866
+                            //    if optionalPrefix ends with a space, split into two args
+                        }
                         replacement = optionalPrefix + replacement;
                     }
                 }
