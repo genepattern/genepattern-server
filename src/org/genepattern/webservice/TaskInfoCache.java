@@ -26,8 +26,7 @@ import org.hibernate.StatelessSession;
  */
 public class TaskInfoCache {
     private static Logger log = Logger.getLogger(TaskInfoCache.class);
-    private static boolean enableCache = true; //set this for false for debugging
-    
+
     public static TaskInfoCache instance() {
         return Singleton.taskInfoCache;
     }
@@ -46,11 +45,18 @@ public class TaskInfoCache {
                 tm.getUserId(), 
                 tm.getAccessId());
     }
+    
+    private boolean enableCache = false;
 
     private final ConcurrentMap<Integer, TaskMaster> taskMasterCache = new ConcurrentHashMap<Integer, TaskMaster>();
     private final ConcurrentMap<Integer, TaskInfoAttributes> taskInfoAttributesCache = new ConcurrentHashMap<Integer, TaskInfoAttributes>();
     private final ConcurrentMap<Integer, List<String>> taskDocFilenameCache = new ConcurrentHashMap<Integer, List<String>>();
     
+    private TaskInfoCache() {
+        boolean b = Boolean.valueOf(System.getProperty("taskInfoCache.enable", "false"));
+        enableCache = b;
+    }
+
     public void initializeCache() {
         if (!enableCache) {
             return;
@@ -58,15 +64,19 @@ public class TaskInfoCache {
         boolean closeDbSession = true;
         List<TaskMaster> allTaskMasters = findAll(closeDbSession);
         for(TaskMaster taskMaster : allTaskMasters) {
-            Integer taskId = taskMaster.getTaskId();
-            taskMasterCache.put(taskId, taskMaster);
-            TaskInfoAttributes taskInfoAttributes = TaskInfoAttributes.decode(taskMaster.getTaskinfoattributes());
-            taskInfoAttributesCache.put(taskId, taskInfoAttributes);
-            List<String> docFilenames = listDocFilenames(taskMaster.getLsid());
-            taskDocFilenameCache.put(taskId, docFilenames);
+            addToCache(taskMaster);
         }
     }
     
+    private void addToCache(TaskMaster taskMaster) {
+        Integer taskId = taskMaster.getTaskId();
+        taskMasterCache.put(taskId, taskMaster);
+        TaskInfoAttributes taskInfoAttributes = TaskInfoAttributes.decode(taskMaster.getTaskinfoattributes());
+        taskInfoAttributesCache.put(taskId, taskInfoAttributes);
+        List<String> docFilenames = listDocFilenames(taskMaster.getLsid());
+        taskDocFilenameCache.put(taskId, docFilenames);
+    }
+
     public void clearCache() {
         taskMasterCache.clear();
         taskInfoAttributesCache.clear();
@@ -145,35 +155,18 @@ public class TaskInfoCache {
         }
     }
 
-    private List<Integer> findAllTaskIds() {
-        String hql = "select taskId from org.genepattern.server.domain.TaskMaster";
-        Session session = HibernateUtil.getSession();
-        Query query = session.createQuery(hql);
-        List<Integer> results = query.list();
-        return results;
-    }
-
-    public TaskMaster findById(Integer taskId) {
-        String hql = "from org.genepattern.server.domain.TaskMaster where taskId = :taskId";
-        HibernateUtil.beginTransaction();
-        Session session = HibernateUtil.getSession();
-        Query query = session.createQuery(hql);
-        query.setInteger("taskId", taskId);
-        TaskMaster taskMaster = (TaskMaster) query.uniqueResult();
-        return taskMaster;
-    }
-    
     public TaskInfo getTask(Integer taskId) throws TaskIDNotFoundException {
         TaskInfo taskInfo = null;
         if (enableCache) {
             taskInfo = getTaskInfoFromCache(taskId);
         }
         if (taskInfo == null) {
-            taskInfo = getTaskInfoFromDb(taskId, enableCache);
+            TaskMaster taskMaster = getTaskMasterFromDb(taskId, enableCache);
+            taskInfo = getTaskInfoFromTaskMaster(taskMaster, enableCache);
         }
         return taskInfo;
     }
-
+    
     private TaskInfo getTaskInfoFromCache(Integer taskId) throws TaskIDNotFoundException {
         TaskMaster taskMaster = taskMasterCache.get(taskId);
         if (taskMaster == null) {
@@ -189,27 +182,51 @@ public class TaskInfoCache {
         return taskInfo;
     }
 
-    private TaskInfo getTaskInfoFromDb(final Integer taskId, final boolean addToCache) throws TaskIDNotFoundException {
+    private TaskMaster getTaskMasterFromDb(final Integer taskId, final boolean addToCache) throws TaskIDNotFoundException {
         //fetch from DB, then [optionally] add to cache
         TaskMaster taskMaster = findById(taskId);
         if (taskMaster == null) {
             throw new TaskIDNotFoundException(taskId);
         }
+        if (addToCache) {
+            addToCache(taskMaster);
+        }
+        return taskMaster;
+    }
+
+    private TaskMaster findById(Integer taskId) {
+        String hql = "from org.genepattern.server.domain.TaskMaster where taskId = :taskId";
+        HibernateUtil.beginTransaction();
+        Session session = HibernateUtil.getSession();
+        Query query = session.createQuery(hql);
+        query.setInteger("taskId", taskId);
+        TaskMaster taskMaster = (TaskMaster) query.uniqueResult();
+        return taskMaster;
+    }
+
+    private TaskInfo getTaskInfoFromTaskMaster(TaskMaster taskMaster, boolean enableCache) {
         TaskInfoAttributes taskInfoAttributes = null;
+        if (enableCache) {
+            taskInfoAttributes = taskInfoAttributesCache.get(taskMaster.getTaskId());
+        }
         if (taskInfoAttributes == null) {
             taskInfoAttributes = TaskInfoAttributes.decode(taskMaster.getTaskinfoattributes());
-        } 
-        TaskInfo taskInfo = taskInfoFromTaskMaster(taskMaster, taskInfoAttributes);
-        if (addToCache) {
-            taskMasterCache.putIfAbsent(taskId, taskMaster);
-            taskInfoAttributesCache.putIfAbsent(taskId, taskInfoAttributes);
         }
+        TaskInfo taskInfo = taskInfoFromTaskMaster(taskMaster, taskInfoAttributes);
         return taskInfo;
     }
-    
+
     public TaskInfo[] getAllTasks() {
         List<Integer> allTaskIds = findAllTaskIds();
         return getTasks(allTaskIds);
+    }
+    
+    private List<Integer> findAllTaskIds() {
+        String hql = "select taskId from org.genepattern.server.domain.TaskMaster";
+        Session session = HibernateUtil.getSession();
+        Query query = session.createQuery(hql);
+        List<Integer> results = query.list();
+        return results;
     }
     
     public TaskInfo[] getTasks(List<Integer> taskIds) {
@@ -243,9 +260,7 @@ public class TaskInfoCache {
 
     public void deleteTask(Integer taskId) {
         if (enableCache) {
-            taskMasterCache.remove(taskId);
-            taskInfoAttributesCache.remove(taskId);
-            taskDocFilenameCache.remove(taskId);
+            removeFromCache(taskId);
         }
     }
 }
