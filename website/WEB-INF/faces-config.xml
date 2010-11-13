@@ -212,6 +212,11 @@
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  <managed-bean>
+  <managed-bean-name>taskInfoBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.TaskInfoBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+ </managed-bean>
+ <managed-bean>
   <managed-bean-name>jobConfigurationBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.JobConfigurationBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>

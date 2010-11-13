@@ -101,6 +101,7 @@ public class ServerSettingsBean implements Serializable {
 	    modes.put("System Message", null);
 	    modes.put("Users and Groups", null);
 	    modes.put("Job Configuration", null);
+	    modes.put("Task Info", null);
 	}
 	currentMode = (String) modes.keySet().toArray()[0];
 	if (settings == null) {

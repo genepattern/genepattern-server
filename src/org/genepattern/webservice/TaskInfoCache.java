@@ -53,7 +53,8 @@ public class TaskInfoCache {
     private final ConcurrentMap<Integer, List<String>> taskDocFilenameCache = new ConcurrentHashMap<Integer, List<String>>();
     
     private TaskInfoCache() {
-        boolean b = Boolean.valueOf(System.getProperty("taskInfoCache.enable", "false"));
+        //TODO: this isn't working yet
+        boolean b = Boolean.valueOf(System.getProperty("taskInfoCache.enable", "true"));
         enableCache = b;
     }
 
@@ -176,7 +177,7 @@ public class TaskInfoCache {
         if (taskInfoAttributes == null) {
             log.error("taskInfoAttributes for task id "+taskId+" is not in the taskInfoAttributesCache");
             taskInfoAttributes = TaskInfoAttributes.decode(taskMaster.getTaskinfoattributes());
-            taskInfoAttributesCache.putIfAbsent(taskId, taskInfoAttributes);
+            taskInfoAttributesCache.put(taskId, taskInfoAttributes);
         }
         TaskInfo taskInfo = taskInfoFromTaskMaster(taskMaster, taskInfoAttributes);
         return taskInfo;
