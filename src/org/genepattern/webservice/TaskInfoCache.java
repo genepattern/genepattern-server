@@ -53,8 +53,7 @@ public class TaskInfoCache {
     private final ConcurrentMap<Integer, List<String>> taskDocFilenameCache = new ConcurrentHashMap<Integer, List<String>>();
     
     private TaskInfoCache() {
-        //TODO: this isn't working yet
-        boolean b = Boolean.valueOf(System.getProperty("taskInfoCache.enable", "true"));
+        boolean b = Boolean.valueOf(System.getProperty("taskInfoCache.enable", Boolean.toString(enableCache)));
         enableCache = b;
     }
 
