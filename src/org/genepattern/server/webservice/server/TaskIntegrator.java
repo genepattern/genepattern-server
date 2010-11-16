@@ -114,32 +114,28 @@ public class TaskIntegrator {
      * @exception WebServiceException, If an error occurs
      */
     public String cloneTask(String oldLSID, String cloneName) throws WebServiceException {
-        String userID = getUserName();
-        TaskInfo taskInfo = null;
+        TaskInfo oldTaskInfo = null;
         try {
-            taskInfo = new LocalAdminClient(userID).getTask(oldLSID);
-        } 
-        catch (Exception e) {
-            log.error(e);
-            throw new WebServiceException(e);
+            oldTaskInfo = TaskInfoCache.instance().getTask(oldLSID);
+            Integer oldTaskId = oldTaskInfo.getID();
+            TaskInfoCache.instance().removeFromCache(oldTaskId);
+        }
+        catch (Throwable t) {
+            log.error(t);
+            throw new WebServiceException(t);
         }
 
-        String taskType = (String)taskInfo.getAttributes().get("taskType");
+        String userID = getUserName();
+        String taskType = (String)oldTaskInfo.getAttributes().get("taskType");
         if ("pipeline".equals(taskType)){
-            isAuthorized(getUserName(), "createPipeline");
+            isAuthorized(userID, "createPipeline");
         } 
         else {
-            isAuthorized(getUserName(), "createModule");
+            isAuthorized(userID, "createModule");
         }
 
-
         try {
-            taskInfo.setName(cloneName);
-            taskInfo.setAccessId(ACCESS_PRIVATE);
-            taskInfo.setUserId(userID);
-            TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-
-            isAuthorizedCreateTask(userID, tia);
+            TaskInfoAttributes tia = oldTaskInfo.giveTaskInfoAttributes();
 
             tia.put(USERID, userID);
             tia.put(PRIVACY, PRIVATE);
@@ -158,8 +154,8 @@ public class TaskIntegrator {
                 tia.put(COMMAND_LINE, newTIA.get(COMMAND_LINE));
                 tia.put(PRIVACY, PRIVATE);
             }
-            String newLSID = modifyTask(ACCESS_PRIVATE, cloneName, taskInfo.getDescription(), taskInfo.getParameterInfoArray(), tia, null, null);
-            cloneTaskLib(taskInfo.getName(), cloneName, oldLSID, newLSID, userID);
+            String newLSID = modifyTask(ACCESS_PRIVATE, cloneName, oldTaskInfo.getDescription(), oldTaskInfo.getParameterInfoArray(), tia, null, null);
+            cloneTaskLib(oldTaskInfo.getName(), cloneName, oldLSID, newLSID, userID);
             return newLSID;
         } 
         catch (Exception e) {
