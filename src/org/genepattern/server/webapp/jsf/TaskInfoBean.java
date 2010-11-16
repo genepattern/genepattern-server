@@ -81,13 +81,13 @@ public class TaskInfoBean {
             entry.put(ti.getLsid(), ti);
         }
         
-        //sort groups by latest task name
+        //sort groups by latest task name, ignoring case
         SortedMap<String,List<TaskInfoWrapper>> sortByTaskName = new TreeMap<String,List<TaskInfoWrapper>>();
         for(Entry<String,SortedMap<LSID,TaskInfoWrapper>> groupEntry : groupByLsid.entrySet()) {
             SortedMap<LSID,TaskInfoWrapper> groupValue = groupEntry.getValue();
             TaskInfoWrapper latest = groupValue.get( groupValue.firstKey() );
             List<TaskInfoWrapper> taskInfoWrappers = new ArrayList<TaskInfoWrapper>(groupValue.values());
-            sortByTaskName.put(latest.getTaskInfo().getName(), taskInfoWrappers);
+            sortByTaskName.put(latest.getTaskInfo().getName().toLowerCase(), taskInfoWrappers);
         }
 
         //return the flattened list
