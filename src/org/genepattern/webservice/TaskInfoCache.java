@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.TaskIDNotFoundException;
+import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -154,6 +155,16 @@ public class TaskInfoCache {
             }
         }
     }
+    
+    public TaskInfo getTask(String lsid) throws TaskLSIDNotFoundException {
+        int taskId = findTaskId(lsid);
+        if (taskId >= 0) {
+            return getTask(taskId);
+        }
+        else {
+            throw new TaskLSIDNotFoundException(lsid);
+        }
+    }
 
     public TaskInfo getTask(Integer taskId) throws TaskIDNotFoundException {
         TaskInfo taskInfo = null;
@@ -227,6 +238,23 @@ public class TaskInfoCache {
         Query query = session.createQuery(hql);
         List<Integer> results = query.list();
         return results;
+    }
+    
+    private Integer findTaskId(String lsid) {
+        String hql = "select taskId from org.genepattern.server.domain.TaskMaster where lsid = :lsid";
+        Session session = HibernateUtil.getSession();
+        Query query = session.createQuery(hql);
+        query.setString("lsid", lsid);
+        List<Integer> results = query.list();
+        if (results == null || results.size() == 0) {
+            return -1;
+        }
+        else if (results.size() == 1) {
+            return results.get(0);
+        }
+        else {
+            return -1;
+        }
     }
     
     public TaskInfo[] getTasks(List<Integer> taskIds) {
