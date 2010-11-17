@@ -46,32 +46,20 @@ import org.genepattern.webservice.WebServiceException;
 public class RunTaskHelper {
     /** map between form field name and filesystem name */
     private HashMap<String, String> inputFileParameters = new HashMap<String, String>();
-
     private HashMap<String, String> requestParameters = new HashMap<String, String>();
-
     private Set<String> urlParameters = new HashSet<String>();
-
     private File tempDir;
-
     private List<ParameterInfo> missingParameters;
-
     private TaskInfo taskInfo;
-
     private String taskLsid;
-
     private String taskName;
-
     private ParameterInfo[] parameterInfoArray;
 
-
     /**
-     * Creates a new RunTaskHelper instance
+     * Creates a new RunTaskHelper instance.
      * 
-     * @param username
-     *                The user name of the user that is running the task
-     * @param request
-     *                The HTTP request. The request should have the request or attribute taskLSID defined.
-     * 
+     * @param username, The user name of the user that is running the task.
+     * @param request, The HTTP request. The request should have the request or attribute taskLSID defined.
      */
     public RunTaskHelper(String username, HttpServletRequest request) throws IOException, FileUploadException {
         ServletFileUpload fub = new ServletFileUpload(new DiskFileItemFactory());
@@ -128,8 +116,7 @@ public class RunTaskHelper {
                             }
                             try {
                                 fi.write(file);
-                                // deal with reload files that are not uploaded
-                                // and so for which
+                                // deal with reload files that are not uploaded and so for which
                                 // the write leaves an empty file
                                 if (file.length() == 0) {
                                     file = oldFile;
@@ -143,9 +130,10 @@ public class RunTaskHelper {
                     }
                 } 
                 else {
-                    int endIndex = Math.max(fieldName.length() - "_url".length(), 1);
-                    String parameterName = fieldName.substring(0, endIndex);
-
+                    String parameterName = fieldName;
+                    if (fieldName.endsWith("_url")) {
+                        parameterName = fieldName.substring(0, "_url".length());
+                    }
                     FileItem cbItem = (FileItem) nameToFileItemMap.get(parameterName + "_cb");
                     boolean urlChecked = cbItem != null ? "url".equals(cbItem.getString()) : false;
                     if (urlChecked) {
@@ -196,8 +184,7 @@ public class RunTaskHelper {
     }
 
     public ParameterInfo[] getParameterInfoArray() {
-	return parameterInfoArray;
-
+        return parameterInfoArray;
     }
 
     private void setParameterValues(HttpServletRequest request) throws IOException {
@@ -249,11 +236,11 @@ public class RunTaskHelper {
     }
 
     public HashMap<String, String> getInputFileParameters() {
-	return inputFileParameters;
+        return inputFileParameters;
     }
 
     public HashMap<String, String> getRequestParameters() {
-	return requestParameters;
+        return requestParameters;
     }
 
     /**
@@ -262,23 +249,23 @@ public class RunTaskHelper {
      * @return The temp directory.
      */
     public File getTempDirectory() {
-	return tempDir;
+        return tempDir;
     }
 
     public List<ParameterInfo> getMissingParameters() {
-	return missingParameters;
+        return missingParameters;
     }
 
     public TaskInfo getTaskInfo() {
-	return taskInfo;
+        return taskInfo;
     }
 
     public String getTaskLsid() {
-	return taskLsid;
+        return taskLsid;
     }
 
     public String getTaskName() {
-	return taskName;
+        return taskName;
     }
 
 }
