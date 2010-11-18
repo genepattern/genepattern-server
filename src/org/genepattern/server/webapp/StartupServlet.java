@@ -113,13 +113,8 @@ public class StartupServlet extends HttpServlet {
             TaskInfoCache.instance().initializeCache();
         }
         
-        //start the command executors before starting the internal job queue (AnalysisTask.startQueue) ...
-        log.info("\tstarting job queue...");
-        CommandManagerFactory.initializeCommandManager(System.getProperties());
-        CommandManager cmdManager = CommandManagerFactory.getCommandManager();
-        cmdManager.startCommandExecutors();
-        cmdManager.startAnalysisService();
-
+        CommandManagerFactory.startJobQueue();
+        
         log.info("\tstarting daemons...");
         startDaemons(System.getProperties(), application);
         Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
@@ -135,7 +130,7 @@ public class StartupServlet extends HttpServlet {
         }
         announceReady();
     }
-
+    
     /**
      * Set the GenePatternURL property dynamically using
      * the current canonical host name and servlet context path.
@@ -236,12 +231,7 @@ public class StartupServlet extends HttpServlet {
     public void destroy() {
         log.info("StartupServlet: destroy called");
 
-        //first, stop the internal job queue
-        CommandManagerFactory.getCommandManager().shutdownAnalysisService();
-        
-        //then stop the command executors, which are responsible for stopping/suspending/or allowing to continue each running job ...
-        //pipelines are shut down here
-        CommandManagerFactory.getCommandManager().stopCommandExecutors();
+        CommandManagerFactory.stopJobQueue();
 
         String dbVendor = System.getProperty("database.vendor", "HSQL");
         if (dbVendor.equals("HSQL")) {

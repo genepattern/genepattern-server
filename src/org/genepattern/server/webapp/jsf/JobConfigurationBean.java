@@ -47,40 +47,52 @@ public class JobConfigurationBean {
     
     private List<Obj> commandExecutors = null;
     private CommandExecutor cmdExecutor = null;
-
-    public void startAnalysisService() {
-        CommandManagerFactory.getCommandManager().startAnalysisService();
+    
+    public boolean isSuspended() {
+        return CommandManagerFactory.getCommandManager().isSuspended();
     }
     
-    public void shutdownAnalysisService() {
-        CommandManagerFactory.getCommandManager().shutdownAnalysisService();
-    }
-    
-    public void startCommandExecutors() {
-        CommandManagerFactory.getCommandManager().startCommandExecutors();
-    }
-    
-    public void stopCommandExecutors() {
-        CommandManagerFactory.getCommandManager().stopCommandExecutors();
+    /**
+     * Suspend the internal job queue.
+     */
+    public void suspendJobQueue() {
+        CommandManagerFactory.getCommandManager().suspendJobQueue();
     }
 
     /**
-     * Reload the configuration file for the mapper.
+     * Resume the internal job queue.
+     */
+    public void resumeJobQueue() {
+        CommandManagerFactory.getCommandManager().resumeJobQueue();
+    }
+    
+    public boolean isRunning() {
+        return CommandManagerFactory.isRunning();
+    }
+
+    /**
+     * Restart the job execution system, reparse the config file and making the same calls that are done on server startup.
+     */
+    public void startup() {
+        CommandManagerFactory.startJobQueue();
+    }
+
+    /**
+     * Shutdown the job execution system, making the same calls that are done on server shutdown.
+     */
+    public void shutdown() {
+        CommandManagerFactory.stopJobQueue();
+    }
+
+    /**
+     * Reload the configuration file, this does not initialize command executors. To do that you will need to call #shutdown and then #startup.
      */
     public void reloadJobConfiguration() throws Exception {
         CommandManagerFactory.reloadConfigFile();
     }
     
-    public void stopAndRestartAllExecutors() {
-        CommandManagerFactory.getCommandManager().shutdownAnalysisService();
-        CommandManagerFactory.getCommandManager().stopCommandExecutors();
-        
-        String parser = CommandManagerFactory.getParser();
-        String configFile = CommandManagerFactory.getConfigFile();
-        CommandManagerFactory.initializeCommandManager(parser, configFile);
-        
-        CommandManagerFactory.getCommandManager().startCommandExecutors();
-        CommandManagerFactory.getCommandManager().startAnalysisService();
+    public String getParser() {
+        return CommandManagerFactory.getParser();
     }
     
     public File getConfigurationFile() {

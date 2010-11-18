@@ -35,6 +35,7 @@ public class CommandManagerFactory {
     private static String parser = null;
     private static String configFile = null;
 
+    private static boolean running = false;
     private static CommandManager manager = null;
     
     private CommandManagerFactory() {
@@ -60,13 +61,36 @@ public class CommandManagerFactory {
         return manager;
     }
     
-    /**
-     * Create a new default CommandManager, replacing the current manager with a new instance.
-     */
-    public static synchronized void initializeCommandManager() {
-        initializeCommandManager(new Properties());
+    public static boolean isRunning() {
+        return running;
     }
-
+    
+    public static void startJobQueue() {
+        //start the command executors before starting the internal job queue ...
+        log.info("\tstarting job queue...");
+        initializeCommandManager(System.getProperties());
+        CommandManager cmdManager = getCommandManager();
+        cmdManager.startCommandExecutors();
+        cmdManager.startAnalysisService();
+        running = true;
+    }
+    
+    public static void stopJobQueue() {
+        if (manager == null) {
+            running = false;
+            return;
+        }
+        
+        //first, stop the internal job queue
+        manager.shutdownAnalysisService();
+        
+        //then stop the command executors, which are responsible for stopping/suspending/or allowing to continue each running job ...
+        //pipelines are shut down here
+        manager.stopCommandExecutors();
+        
+        running = false;
+    }
+    
     /**
      * Create a new instance of CommandManager, using the given properties.
      * This method replaces the current manager with a new instance.

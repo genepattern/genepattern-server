@@ -54,7 +54,7 @@ public class BasicCommandManager implements CommandManager {
         handleJobsOnServerStartup();
 
         if (analysisTaskScheduler == null) {
-            analysisTaskScheduler = new AnalysisJobScheduler();
+            analysisTaskScheduler = new AnalysisJobScheduler(getJobQueueSuspendedFlag());
         }
         analysisTaskScheduler.startQueue();
         log.info("...analysis service started!");
@@ -67,8 +67,14 @@ public class BasicCommandManager implements CommandManager {
         log.info("shutting down analysis service...done!");
     }
 
+    private boolean getJobQueueSuspendedFlag() {
+        Boolean suspended = Boolean.valueOf(
+                this.configProperties.getTop().getDefaultProperty("job.queue.suspend_on_start", "false") );
+        return suspended;
+    }
+    
     //TODO: use paged results to handle large number of 'Processing' jobs
-    private void handleJobsOnServerStartup() {
+    public void handleJobsOnServerStartup() {
         log.info("handling 'DISPATCHING' and 'PROCESSING' jobs on server startup ...");
         List<MyJobInfoWrapper> openJobs = getOpenJobs();
 
@@ -384,5 +390,25 @@ public class BasicCommandManager implements CommandManager {
             log.error("analysisTaskScheduler is null");
         }
         analysisTaskScheduler.wakeupJobQueue();
+    }
+    
+    public void suspendJobQueue() {
+        if (analysisTaskScheduler != null) {
+            analysisTaskScheduler.suspendJobQueue();
+        }
+    }
+    
+    public void resumeJobQueue() {
+        if (analysisTaskScheduler == null) {
+            analysisTaskScheduler = new AnalysisJobScheduler(getJobQueueSuspendedFlag());
+        }
+        analysisTaskScheduler.resumeJobQueue();
+    }
+    
+    public boolean isSuspended() {
+        if (analysisTaskScheduler != null) {
+            return analysisTaskScheduler.isSuspended();
+        }
+        return true;
     }
 }

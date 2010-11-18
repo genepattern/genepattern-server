@@ -25,35 +25,37 @@
         <td>Job Configuration</td>        
       </tr>
     </table>
+    <table width="100%">
+    </table>
     <table width="100%" border="0" cellpadding="0" cellspacing="0" >
       <thead>
       <tr class="tableheader-row2">
-        <td align="left"></td>
         <td align="left">CommandManager Actions</td>
+        <td align="left"></td>
       </tr>
       </thead> 
-      <tr class="admin-row"><td></td><td>
-        <h:commandLink immediate="false" rendered="true" action="#{jobConfigurationBean.startAnalysisService}">Start analysis service</h:commandLink>
+      <tr class="admin-row"><td>
+        <h:commandLink immediate="false" rendered="#{not jobConfigurationBean.suspended}" action="#{jobConfigurationBean.suspendJobQueue}">Suspend internal job queue</h:commandLink>
+        <h:commandLink immediate="false" rendered="#{jobConfigurationBean.suspended}" action="#{jobConfigurationBean.resumeJobQueue}">Resume internal job queue</h:commandLink>
+        </td>
+        <td>
+        <h:outputText rendered="#{not jobConfigurationBean.suspended}">Suspend the internal job queue. When the internal queue is suspended, the server will accept new jobs, but will not start them. Existing RUNNING jobs will continue.</h:outputText>        
+        <h:outputText rendered="#{jobConfigurationBean.suspended}">Resume the internal job queue. The server is accepting job submissions, but will not start them until the internal queue is resumed.</h:outputText>
         </td>
       </tr>
-      <tr class="admin-row"><td></td><td>
-        <h:commandLink immediate="false" rendered="true" action="#{jobConfigurationBean.shutdownAnalysisService}">Shutdown analysis service</h:commandLink>
+      <tr class="admin-row"><td>
+        <h:commandLink immediate="false" rendered="#{jobConfigurationBean.running}" action="#{jobConfigurationBean.shutdown}">Shut down job execution engine</h:commandLink>
+        <h:commandLink immediate="false" rendered="#{not jobConfigurationBean.running}" action="#{jobConfigurationBean.startup}">Start up job execution engine</h:commandLink>
+        </td> 
+        <td>
+        <h:outputText rendered="#{jobConfigurationBean.running}">Shut down the job execution system, making the same calls as on server shutdown.</h:outputText>
+        <h:outputText rendered="#{not jobConfigurationBean.running}">Start the job execution system, initializing using the same calls as on server startup. This reloads the configuration file.</h:outputText>
         </td>
       </tr>
-      <tr class="admin-row"><td></td><td>
-        <h:commandLink immediate="false" rendered="true" action="#{jobConfigurationBean.startCommandExecutors}">Start command executors</h:commandLink>
-        </td>
-      </tr>
-      <tr class="admin-row"><td></td><td>
-        <h:commandLink immediate="false" rendered="true" action="#{jobConfigurationBean.stopCommandExecutors}">Stop command executors</h:commandLink>     
-        </td>
-	  </tr>
-      <tr class="admin-row"><td></td><td>
+      <tr class="admin-row"><td>
         <h:commandLink immediate="false" rendered="true" action="#{jobConfigurationBean.reloadJobConfiguration}">Reload job configuration</h:commandLink>     
-      </td></tr>
-	  <tr class="admin-row"><td></td><td>
-        <h:commandLink immediate="false" rendered="true" action="#{jobConfigurationBean.stopAndRestartAllExecutors}">Reload executors and job configuration</h:commandLink>     
-      </td></tr>
+      </td><td></td>
+      </tr>
     </table>
 		
     <table width="100%" class="barhead-other">
@@ -82,6 +84,9 @@
       <tr><td>Job Configuration File Contents</td></tr>
 	</table>
 	<table width="100%" border="0" cellpadding="0" cellspacing="0" >
+      <tr class="admin-row">
+        <td>parser: #{jobConfigurationBean.parser}</td>
+      </tr>
       <tr class="admin-row">
         <td>configuration file name: #{jobConfigurationBean.configurationFilepath}</td>
       </tr>

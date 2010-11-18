@@ -38,5 +38,22 @@ public interface CommandManager extends CommandExecutorMapper {
     void stopCommandExecutors();
     Map<String,CommandExecutor> getCommandExecutorsMap();
 
+    /**
+     * Notify the internal job queue that there is a new job to be processed. 
+     * Note: If the queue is suspended, this method will have no effect.
+     */
     void wakeupJobQueue();
+
+    /**
+     * Suspends the internal job queue. This does not terminate existing jobs but will prevent the internal queue
+     * from starting new jobs. New jobs will remain PENDING until the internal job queue is resumed.
+     */
+    void suspendJobQueue();
+    
+    /**
+     * Resumes the internal job queue.
+     */
+    void resumeJobQueue();
+    
+    boolean isSuspended();
 }

@@ -12,10 +12,6 @@
 
 package org.genepattern.server.executor;
 
-import static org.genepattern.util.GPConstants.STDERR;
-import static org.genepattern.util.GPConstants.STDOUT;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -33,7 +29,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask.JOB_TYPE;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.hibernate.Query;
@@ -60,11 +55,23 @@ public class AnalysisJobScheduler implements Runnable {
     //the batch size, the max number of pending jobs to fetch from the db at a time
     private int batchSize = 20;
     private int numJobSubmissionThreads = 3;
-
+    private boolean suspended = false;
     private Thread runner = null;
     private List<Thread> jobSubmissionThreads = null;
 
-    public AnalysisJobScheduler() {
+    public AnalysisJobScheduler() { 
+    }
+    public AnalysisJobScheduler(boolean suspended) {
+        this.suspended = suspended;
+    }
+    
+    /**
+     * The status of the internal job queue, PENDING jobs are not executed when suspended is true.
+     * Use this flag to allow running jobs to continue, while preventing any new jobs from starting.
+     * This could be used as part of a controlled shutdown of the GP server.
+     */
+    public boolean isSuspended() {
+        return suspended;
     }
 
     public void startQueue() {
@@ -126,7 +133,7 @@ public class AnalysisJobScheduler implements Runnable {
                 // Load input data to input queue
                 List<Integer> waitingJobs = null;
                 synchronized (jobQueueWaitObject) {
-                    if (pendingJobQueue.isEmpty()) {
+                    if (!suspended && pendingJobQueue.isEmpty()) {
                         waitingJobs = AnalysisJobScheduler.getJobsWithStatusId(JobStatus.JOB_PENDING, batchSize);
                         if (waitingJobs != null && !waitingJobs.isEmpty()) {
                             waitingJobs = changeJobStatus(waitingJobs, JobStatus.JOB_PENDING, JobStatus.JOB_DISPATCHING);
@@ -241,6 +248,15 @@ public class AnalysisJobScheduler implements Runnable {
             jobQueueWaitObject.notify();
         }
     }
+    
+    public void suspendJobQueue() {
+        this.suspended = true;
+    }
+    
+    public void resumeJobQueue() {
+        this.suspended = false;
+        wakeupJobQueue();
+    }
 
     public static void terminateJob(Integer jobId) throws JobTerminationException {
         if (jobId == null) {
@@ -303,7 +319,6 @@ public class AnalysisJobScheduler implements Runnable {
         else {
             jobNumber = -1;
         }
-        //Future<Integer> task = jobTerminationService.submit( new Callable<Integer>() {
         FutureTask<Integer> task = new FutureTask<Integer>( new Callable<Integer>() {
             public Integer call() throws Exception {
                 if (jobInfo == null) {
