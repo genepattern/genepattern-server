@@ -432,7 +432,7 @@ public class RunTaskBean {
         }
     }
 
-    private static class Parameter {
+    public static class Parameter {
         private DefaultValueSelectItem[] choices;
         private boolean optional;
         private String displayDesc;
