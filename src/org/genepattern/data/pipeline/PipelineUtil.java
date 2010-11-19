@@ -1,16 +1,22 @@
 package org.genepattern.data.pipeline;
 
+import java.net.MalformedURLException;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.util.GPConstants;
+import org.apache.log4j.Logger;
+import org.genepattern.server.TaskLSIDNotFoundException;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoCache;
+import org.hibernate.Query;
+import org.hibernate.Session;
 
 /**
  * Utility methods for pipeline validation and execution.
@@ -19,6 +25,8 @@ import org.genepattern.webservice.TaskInfo;
  * @author pcarr
  */
 public class PipelineUtil {
+    public static Logger log = Logger.getLogger(PipelineUtil.class);
+
     /**
      * Collect the command line params from the request and see if they are all present.
      *
@@ -63,70 +71,41 @@ public class PipelineUtil {
      * @return <code>true</code> if the pipeline is missing tasks
      */
     public static boolean isMissingTasks(PipelineModel model, java.io.PrintWriter out, String userID) throws Exception {
-        boolean isMissingTasks = false;
-        List tasks = model.getTasks();
-        HashMap<String,LSID> unknownTaskNames = new HashMap<String,LSID>();
-        HashMap<String,LSID> unknownTaskVersions = new HashMap<String,LSID>();
-        for (int ii = 0; ii < tasks.size(); ii++) {
-            JobSubmission js = (JobSubmission) tasks.get(ii);
-            TaskInfo formalTask = GenePatternAnalysisTask.getTaskInfo(js.getName(), userID);
-            boolean unknownTask = !GenePatternAnalysisTask.taskExists(js.getLSID(), userID);
-            boolean unknownTaskVersion = false;
-            if (unknownTask) {
-                isMissingTasks = true;
-                // check for alternate version
-                String taskLSIDstr = js.getLSID();
-                LSID taskLSID = new LSID(taskLSIDstr);
-                String taskLSIDstrNoVer = taskLSID.toStringNoVersion();
-                unknownTaskVersion = GenePatternAnalysisTask.taskExists(taskLSIDstrNoVer, userID);
-                if (unknownTaskVersion) {
-                    unknownTaskVersions.put(js.getName(), taskLSID);
-                } else {
-                    unknownTaskNames.put(js.getName(), taskLSID);
-                }
-            }
-        }
-        if (((unknownTaskNames.size() + unknownTaskVersions.size()) > 0) && (out != null)) {
-            out
-                    .println(
-                    "<font color='red' size=\"+1\"><b>Warning:</b></font><br>The following module versions do not exist on this server. Before running this pipeline you will need to edit the pipeline to use the available module version or install the required modules.");
+        LinkedHashMap<LSID, MissingTaskRecord> missingTasks = getMissingTasks(model, userID);
+        boolean isMissingTasks = missingTasks.size() > 0;
+        if (isMissingTasks && out != null) {
+            out.println(
+            "<font color='red' size=\"+1\"><b>Warning:</b></font><br>The following module versions do not exist on this server. Before running this pipeline you will need to edit the pipeline to use the available module version or install the required modules.");
             out.println("<table width='100%'  border='1'>");
-            out
-                    .println(
-                    "<tr class=\"paleBackground\" ><td> Name </td><td> Required Version</td><td> Available Version</td><td>LSID</td></tr>");
-        }
-        if (((unknownTaskNames.size() + unknownTaskVersions.size()) > 0) && (out != null)) {
+            out.println(
+            "<tr class=\"paleBackground\" ><td> Name </td><td> Required Version</td><td> Installed Version</td><td>LSID</td></tr>");
             out.println("<form method=\"post\" action=\"pages/taskCatalog.jsf\">");
-        }
-        if (unknownTaskNames.size() > 0) {
-            for (String name : unknownTaskNames.keySet()) {
-                LSID absentlsid = (LSID) unknownTaskNames.get(name);
-                out.println("<input type=\"hidden\" name=\"lsid\" value=\"" + absentlsid + "\" /> ");
-                out.println("<tr><td>" + name + "</td><td>" + absentlsid.getVersion() + "</td><td></td><td> " +
-                        absentlsid.toStringNoVersion() + "</td></tr>");
+
+            for(LSID missingLsid : missingTasks.keySet()) {
+                String taskName = missingTasks.get(missingLsid).getName();
+                SortedSet<LSID> installedVersions = missingTasks.get(missingLsid).getInstalledVersions();
+                
+                out.println("<input type=\"hidden\" name=\"lsid\" value=\"" + missingLsid + "\" /> ");
+                out.println("<tr><td>" + taskName + "</td><td>" + missingLsid.getVersion() + "</td><td>");
+                
+                //insert installed versions
+                boolean first = true;
+                for(LSID installedVersion : installedVersions) {
+                    if (first) {
+                        first = false;
+                    }
+                    else {
+                        out.print(", ");
+                    }
+                    out.print(""+installedVersion.getVersion());
+                }
+                out.println("</td><td> " +
+                        missingLsid.toStringNoVersion() + "</td></tr>");
             }
-            
-        }
-        if (unknownTaskVersions.size() > 0) {
-            for (Iterator iter = unknownTaskVersions.keySet().iterator(); iter.hasNext();) {
-                String name = (String) iter.next();
-                LSID absentlsid = (LSID) unknownTaskVersions.get(name);
-                out.println("<input type=\"hidden\" name=\"lsid\" value=\"" + absentlsid + "\" /> ");
-                TaskInfo altVersionInfo = GenePatternAnalysisTask.getTaskInfo(absentlsid.toStringNoVersion(), userID);
-                Map altVersionTia = altVersionInfo.getTaskInfoAttributes();
-                LSID altVersionLSID = new LSID((String) (altVersionTia
-                        .get(GPConstants.LSID)));
-                out.println("<tr><td>" + name + "</td><td> " + absentlsid.getVersion() + "</td><td>" +
-                        altVersionLSID.getVersion() + "</td><td>" + absentlsid.toStringNoVersion() + "</td></tr>");
-            }
-        }
-        
-        if ((unknownTaskNames.size() + unknownTaskVersions.size()) > 0) {
+
             out.println("<tr class=\"paleBackground\" >");
-            out.println(
-                    "<td colspan='4' align='center' border = 'none'> <a href='pages/importTask.jsf'>Install from zip file </a>");
-            out.println(
-                    " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ");
+            out.println("<td colspan='4' align='center' border = 'none'> <a href='pages/importTask.jsf'>Install from zip file </a>");
+            out.println(" &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ");
             out.println("<input type=\"hidden\" name=\"checkAll\" value=\"1\"  >");
             out.println("<input type=\"submit\" value=\"Install from repository\"  ></td></form>");
             out.println("</tr>");
@@ -134,22 +113,93 @@ public class PipelineUtil {
         }
         return isMissingTasks;
     }
-
-    public static boolean isMissingTasks(PipelineModel model, String userID) {
-        List tasks = model.getTasks();
-        try {
-            for (int ii = 0; ii < tasks.size(); ii++) {
-                JobSubmission js = (JobSubmission) tasks.get(ii);
-                boolean unknownTask = !GenePatternAnalysisTask.taskExists(js
-                        .getLSID(), userID);
-                if (unknownTask) {
-                    return true;
+    
+    public static LinkedHashMap<LSID, MissingTaskRecord> getMissingTasks(PipelineModel model, String userId) {
+        List<JobSubmission> jobSubmissionTasks = model.getTasks();
+        LinkedHashMap<LSID, MissingTaskRecord> missingTasks = new LinkedHashMap<LSID, MissingTaskRecord>();
+        for(JobSubmission jobSubmission : jobSubmissionTasks) {
+            TaskInfo taskInfo = null;
+            try {
+                taskInfo = TaskInfoCache.instance().getTask(jobSubmission.getLSID());
+            }
+            catch (TaskLSIDNotFoundException e) {
+            }
+            if (taskInfo == null) {
+                try {
+                    LSID missingLsid = new LSID(jobSubmission.getLSID());
+                    if (!missingTasks.containsKey(missingLsid)) {
+                        MissingTaskRecord missingTaskRecord = new MissingTaskRecord(jobSubmission.getName(), missingLsid);
+                        missingTasks.put(missingLsid, missingTaskRecord);
+                    }
+                }
+                catch (MalformedURLException e) {
+                    log.error("Invalid lsid="+jobSubmission.getLSID(), e);
                 }
             }
-        } catch (OmnigeneException e) {
-            return true; 
-            // be defensive about running if there is an exception
         }
-        return false;
+        return missingTasks;
     }
+    
+    public static class MissingTaskRecord {
+        String name = null;
+        LSID lsid = null;
+        SortedSet<LSID> installedVersions = null;
+        
+        public MissingTaskRecord(String name, LSID lsid) {
+            this.name = name;
+            this.lsid = lsid;
+            installedVersions = getInstalledVersions(lsid);
+        }
+        
+        public String getName() {
+            return name;
+        }
+
+        public SortedSet<LSID> getInstalledVersions() {
+            return installedVersions;
+        }
+
+        private static SortedSet<LSID> getInstalledVersions(LSID lsid) {
+            SortedSet<LSID> versions = new TreeSet<LSID>();
+            
+            try {
+            String lsidNoVersion = lsid.toStringNoVersion();
+            
+            String hql = "select lsid from org.genepattern.server.domain.TaskMaster where lsid like :lsid";
+            Session session = HibernateUtil.getSession();
+            Query query = session.createQuery(hql);
+            query.setString("lsid", lsidNoVersion+"%");
+            List<String> lsidResults = query.list();
+            
+            for(String lsidResult : lsidResults) {
+                try {
+                    LSID sLSID = new LSID(lsidResult);
+                    //String version = sLSID.getVersion();
+                    versions.add(sLSID);
+                }
+                catch (MalformedURLException e) {
+                    log.error("Invalid lsid version for lsidNoVersion="+lsidNoVersion+", lsid="+lsid, e);
+                }
+            } 
+            }
+            catch (Throwable t) {
+                log.error("Error in getInstalledVersions, lsid="+lsid, t);
+            }
+            return versions;
+        }
+    }
+
+    public static boolean isMissingTasks(PipelineModel model, String userID) {
+        try {
+            int numMissingTasks = getMissingTasks(model,userID).size();
+            if (numMissingTasks > 0) {
+                return true;
+            }
+            return false;
+        }
+        catch(OmnigeneException e) {
+            return true;
+        }
+    }
+
 }

@@ -2659,32 +2659,33 @@ public class GenePatternAnalysisTask {
      * @author Jim Lerner
      */
     public static TaskInfo getTaskInfo(String taskName, String username) throws OmnigeneException {
-	TaskInfo taskInfo = null;
-	try {
-	    int taskID = -1;
+        TaskInfo taskInfo = null;
+        try {
+            int taskID = -1;
+            try {
+                if (org.genepattern.util.LSID.isLSID(taskName)) {
+                    taskName = new LSID(taskName).toString();
+                }
 
-	    try {
-		if (org.genepattern.util.LSID.isLSID(taskName)) {
-		    taskName = new LSID(taskName).toString();
-		}
-
-		// search for an existing task with the same name
-		GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(taskName, null, null, null, username, 0);
-		taskID = loader.getTaskIDByName(taskName, username);
-		if (taskID != -1) {
-		    taskInfo = (new AdminDAO()).getTask(taskID);
-		}
-	    } catch (OmnigeneException e) {
-		// this is a new task, no taskID exists
-		// do nothing
-		throw new OmnigeneException("no such task: " + taskName + " for user " + username);
-	    } catch (RemoteException re) {
-		throw new OmnigeneException("Unable to load the " + taskName + " task: " + re.getMessage());
-	    }
-	} catch (Exception e) {
-	    throw new OmnigeneException(e.getMessage() + " in getTaskInfo(" + taskName + ", " + username + ")");
-	}
-	return taskInfo;
+                // search for an existing task with the same name
+                GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(taskName, null, null, null, username, 0);
+                taskID = loader.getTaskIDByName(taskName, username);
+                if (taskID != -1) {
+                    taskInfo = (new AdminDAO()).getTask(taskID);
+                }
+            } 
+            catch (OmnigeneException e) {
+                // this is a new task, no taskID exists do nothing
+                throw new OmnigeneException("no such task: " + taskName + " for user " + username);
+            } 
+            catch (RemoteException re) {
+                throw new OmnigeneException("Unable to load the " + taskName + " task: " + re.getMessage());
+            }
+        } 
+        catch (Exception e) {
+            throw new OmnigeneException(e.getMessage() + " in getTaskInfo(" + taskName + ", " + username + ")");
+        }
+        return taskInfo;
     }
 
     /**
@@ -3392,13 +3393,14 @@ public class GenePatternAnalysisTask {
     }
 
     public static boolean taskExists(String taskName, String user) throws OmnigeneException {
-	TaskInfo existingTaskInfo = null;
-	try {
-	    existingTaskInfo = GenePatternAnalysisTask.getTaskInfo(taskName, user);
-	} catch (OmnigeneException oe) {
-	    // ignore
-	}
-	return (existingTaskInfo != null);
+        TaskInfo existingTaskInfo = null;
+        try {
+            existingTaskInfo = GenePatternAnalysisTask.getTaskInfo(taskName, user);
+        } 
+        catch (OmnigeneException oe) {
+            // ignore
+        }
+        return (existingTaskInfo != null);
     }
 
     /**
