@@ -26,6 +26,9 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.data.pipeline.PipelineModelException;
+import org.genepattern.data.pipeline.PipelineUtil;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
@@ -48,6 +51,7 @@ public class RunTaskBean {
 
     private boolean visualizer;
     private boolean pipeline;
+    private boolean pipelineWithMissingTasks = false;
     private String name;
     private String lsid;
     private String[] documentationFilenames;
@@ -191,6 +195,10 @@ public class RunTaskBean {
     public boolean isPipeline() {
         return pipeline;
     }
+    
+    public boolean isPipelineWithMissingTasks() {
+        return pipelineWithMissingTasks;
+    }
 
     public boolean isShowParameterDescriptions() {
         return showParameterDescriptions;
@@ -225,8 +233,10 @@ public class RunTaskBean {
             return;
         }
 
-        editAllowed = taskInfo.getUserId().equals(UIBeanHelper.getUserId())
-        && LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
+        editAllowed = 
+            taskInfo.getUserId().equals(UIBeanHelper.getUserId())
+            && 
+            LSIDUtil.getInstance().isAuthorityMine(taskInfo.getLsid());
 
         ParameterInfo[] taskParameters = taskInfo.getParameterInfoArray();
 
@@ -387,6 +397,7 @@ public class RunTaskBean {
         String taskType = tia.get("taskType");
         this.visualizer = "visualizer".equalsIgnoreCase(taskType);
         this.pipeline = "pipeline".equalsIgnoreCase(taskType);
+        this.pipelineWithMissingTasks = false;
         this.name = taskInfo.getName();
         this.lsid = taskInfo.getLsid();
         try {
@@ -411,6 +422,18 @@ public class RunTaskBean {
         if (docFiles != null) {
             for (int i = 0; i < docFiles.length; i++) {
                 documentationFilenames[i] = docFiles[i].getName();
+            }
+        }
+        
+        if (pipeline) {
+            String userId = UIBeanHelper.getUserId();
+            try {
+                //check for missing tasks
+                PipelineModel model = PipelineUtil.getPipelineModel(lsid);
+                this.pipelineWithMissingTasks = PipelineUtil.isMissingTasks(model, userId);
+            }
+            catch (PipelineModelException e) {
+                log.error("Error checking for missing tasks for lsid="+lsid+", userId="+userId, e);
             }
         }
     }

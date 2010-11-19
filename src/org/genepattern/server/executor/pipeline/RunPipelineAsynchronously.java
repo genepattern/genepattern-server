@@ -23,11 +23,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
+import org.genepattern.data.pipeline.MissingTasksException;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
@@ -158,28 +157,6 @@ public class RunPipelineAsynchronously {
                 log.error("Error terminating job "+jobId+"->"+currentStep.getJobNumber(), e);
             }
         } 
-    }
-
-    public static final class MissingTasksException extends Exception {
-        private int idx=0;
-        private SortedMap<Integer,String> errors = new TreeMap<Integer,String>();
-
-        public MissingTasksException() {
-        }
-
-        public void addError(JobSubmission jobSubmission) {
-            String errorMessage = "No such module " + jobSubmission.getName() + " (" + jobSubmission.getLSID() + ")";
-            errors.put(idx, errorMessage);
-            ++idx;
-        }
-        
-        public String getMessage() {
-            final StringBuffer buf = new StringBuffer();
-            for(String message : errors.values()) {
-                buf.append(message);
-            }
-            return buf.toString();
-        }
     }
 
     private static void checkForMissingTasks(String userID, PipelineModel model) throws MissingTasksException {

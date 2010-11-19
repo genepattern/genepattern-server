@@ -61,6 +61,17 @@
           <input type="hidden" id="taskName" name="taskName" value="#{runTaskBean.name}"/>
           <table border="0" cellpadding="5" cellspacing="0" class="attribute" valign="top">
             <tbody>
+              <h:outputText rendered="#{runTaskBean.pipelineWithMissingTasks}">
+              <tr class="taskperameter">
+                <td colspan="3">
+                <font color="red" size="+1"><b>Warning:</b></font>
+                <br />
+                This pipeline requires modules or module versions which are not installed on this server. 
+                <br />
+                Go to the <a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{runTaskBean.lsid}">properties</a> page to install the required modules.
+                </td>
+              </tr>
+              </h:outputText>
               <tr class="taskperameter">
                 <td>
                   <span class="description">
@@ -68,7 +79,9 @@
                   </span>
                 </td>
                 <td colspan="2" class="maintasknav2"> 
+                <h:outputText rendered="#{not runTaskBean.pipelineWithMissingTasks}">
                   <input id="cmd1" name="cmd1" value="Run" type="submit"/>
+                </h:outputText>
                   <input id="reset" name="reset" value="Reset" type="button"
                          onclick="document.location='#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{runTaskBean.encodedLsid}'"/> &#160;&#160;
                   <h:outputText rendered="#{runTaskBean.pipeline}">

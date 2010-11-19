@@ -8,12 +8,17 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.JobInfoManager;
+import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
+import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -26,7 +31,47 @@ import org.hibernate.Session;
  */
 public class PipelineUtil {
     public static Logger log = Logger.getLogger(PipelineUtil.class);
+    
+    /**
+     * Get the PipelineModel for the given lsid.
+     */
+    static public PipelineModel getPipelineModel(String lsid) 
+    throws TaskIDNotFoundException, PipelineModelException
+    {
+        TaskInfo taskInfo = TaskInfoCache.instance().getTask(lsid);
+        return getPipelineModel(taskInfo);
+    }
 
+    /**
+     * Get the PipelineModle for the given job, based on the job's task lsid.
+     */
+    static public PipelineModel getPipelineModel(JobInfo pipelineJobInfo) 
+    throws TaskIDNotFoundException, PipelineModelException
+    {
+        TaskInfo taskInfo = JobInfoManager.getTaskInfo(pipelineJobInfo.getTaskID());
+        return getPipelineModel(taskInfo);
+    }
+
+    private static PipelineModel getPipelineModel(TaskInfo taskInfo) 
+    throws TaskIDNotFoundException, PipelineModelException
+    {
+        PipelineModel model = null;
+        TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+        if (tia != null) {
+            String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
+            if (serializedModel != null && serializedModel.length() > 0) {
+                try {
+                    model = PipelineModel.toPipelineModel(serializedModel);
+                } 
+                catch (Throwable x) {
+                    throw new PipelineModelException(x);
+                }
+            }
+        }
+        model.setLsid(taskInfo.getLsid());
+        return model;
+    }
+    
     /**
      * Collect the command line params from the request and see if they are all present.
      *
