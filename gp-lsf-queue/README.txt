@@ -35,7 +35,16 @@ To integrate this library into your GenePattern Server you need to:
             # number of seconds to check for completed jobs
             lsf.check.frequency: 5
             lsf.num.job.submission.threads: 3
-            lsf.num.job.completion.threads: 3    
+            lsf.num.job.completion.threads: 3  
+
+    Here is an example config for HSQL DB
+            hibernate.connection.datasource: java:comp/env/jdbc/gpdb
+            hibernate.dialect: org.hibernate.dialect.HSQLDialect
+            # Note: when working with HSQLDB I had to comment out the hibernate.default_schema so that the 
+            # sequence works properly
+            #hibernate.default_schema: PUBLIC
+            hibernate.current_session_context_class: thread
+            hibernate.transaction.factory_class: org.hibernate.transaction.JDBCTransactionFactory
 
 1.e) Double check that your JDBC driver is on the classpath. You can put it in the Tomcat/webapps/gp/WEB-INF/lib or Tomcat/common/lib folder. 
     Drivers for oracle (ojdbc14.jar) and HSQLDB (hsqldb.jar) are already included by the GenePattern installer.
@@ -58,4 +67,4 @@ You need to configure that path to the broad core library and the GP server libr
 After you build, deploy.
     cp dist/*.jar Tomcat/webapps/gp/WEB-INF/lib 
 
-    Run one of the lsf_schema_*.sql scripts to create teh gp_lsf tables.
+    Run one of the lsf_schema_*.sql scripts to create th gp_lsf tables.

@@ -19,3 +19,8 @@ CREATE TABLE "JOB_LSF"
      PRIMARY KEY ("INTERNAL_JOB_ID") , 
      UNIQUE ("LSF_JOB_ID")
    ) ;
+   
+-- the following extra steps were required to set up the sequence for Hibernate with HSQL
+CREATE TABLE dual_SQ_LSF_JOB (zero integer);
+INSERT INTO dual_SQ_LSF_JOB values (0);
+CREATE sequence SQ_LSF_JOB start with 1;
