@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandManager;
 import org.genepattern.server.executor.CommandManagerFactory;
@@ -15,7 +14,6 @@ import org.genepattern.server.executor.CommandManagerFactory;
  * @author pcarr
  */
 public class JobConfigurationBean {
-    private static Logger log = Logger.getLogger(JobConfigurationBean.class);
 
     /**
      * Gui view of a command executor.
@@ -46,7 +44,6 @@ public class JobConfigurationBean {
     }
     
     private List<Obj> commandExecutors = null;
-    private CommandExecutor cmdExecutor = null;
     
     public boolean isSuspended() {
         return CommandManagerFactory.getCommandManager().isSuspended();
@@ -107,6 +104,14 @@ public class JobConfigurationBean {
         return "";
     }
     
+    public boolean getHasErrors() {
+        return CommandManagerFactory.getInitializationErrors().size() > 0;
+    }
+
+    public List<Throwable> getConfigurationFileErrors() {
+        return CommandManagerFactory.getInitializationErrors();
+    }
+    
     /**
      * Display the contents of the configuration file.
      * @return
@@ -119,7 +124,9 @@ public class JobConfigurationBean {
         if (!configFile.canRead()) {
             return "File is not readable";
         }
-        return ServerSettingsBean.getLog(configFile);
+        
+        String logFileContent = ServerSettingsBean.getLog(configFile);
+        return logFileContent;
     }
 
     public List<Obj> getCommandExecutors() {
@@ -134,14 +141,6 @@ public class JobConfigurationBean {
             commandExecutors.add(new Obj(cmd));
         } 
         return commandExecutors;
-    }
-    
-    public void setCmdExecutor(Obj obj) {
-        this.cmdExecutor = obj.getCommandExecutor();
-    }
-    
-    public void reloadConfigurationForItem() throws Exception {
-        log.error("Ignoring reloadConfigurationForItem: "+cmdExecutor.getClass().getCanonicalName());
     }
 
 }

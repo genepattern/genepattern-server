@@ -18,7 +18,7 @@
       xmlns:t="http://myfaces.apache.org/tomahawk" 
       xmlns:c="http://java.sun.com/jstl/core">
 
-    <h:form>
+  <h:form>
 
     <table width="100%" class="barhead-other">
       <tr>
@@ -79,24 +79,37 @@
       </tr>
     </t:dataList>
     </table>
-	
-	<table width="100%" class="barhead-other" >
-      <tr><td>Job Configuration File Contents</td></tr>
-	</table>
-	<table width="100%" border="0" cellpadding="0" cellspacing="0" >
-      <tr class="admin-row">
-        <td>parser: #{jobConfigurationBean.parser}</td>
-      </tr>
-      <tr class="admin-row">
-        <td>configuration file name: #{jobConfigurationBean.configurationFilepath}</td>
-      </tr>
-      <tr class="admin-row">
-        <td colspan="2">
-            <pre>#{jobConfigurationBean.configurationFileContent}</pre>
-        </td>
-      </tr>
-    </table>
 
-    </h:form>
+    <table width="100%" class="barhead-other">
+      <tr><td>Configuration File</td></tr>
+    </table>
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" >
+      <thead>
+        <tr class="tableheader-row2">
+          <td align="left"></td>
+          <td align="left"></td>
+        </tr>
+      </thead>
+      <tr class="admin-row">
+        <td>parser</td><td>#{jobConfigurationBean.parser}</td>
+      </tr>
+      <tr class="admin-row">
+        <td>configuration file name</td><td>#{jobConfigurationBean.configurationFilepath}</td>
+      </tr>
+      <h:outputText rendered="#{jobConfigurationBean.hasErrors}">
+      <tr>
+        <td colspan="2" class="tableheader-row2"><font color="red">Errors</font></td>
+      </tr>
+      <t:dataList var="error" value="#{jobConfigurationBean.configurationFileErrors}">
+        <tr class="admin-row">
+          <td colspan="2"><font color="red">#{error.localizedMessage}</font></td>
+        </tr>
+      </t:dataList>
+      </h:outputText>
+      
+      <tr class="tableheader-row2"><td colspan="2">Contents</td></tr>
+      <tr><td colspan="2"><pre>#{jobConfigurationBean.configurationFileContent}</pre></td></tr>
+    </table>
+  </h:form>
 
 </html>

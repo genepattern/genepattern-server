@@ -1,6 +1,8 @@
 package org.genepattern.server.executor;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
@@ -36,6 +38,7 @@ public class CommandManagerFactory {
     private static String configFile = null;
 
     private static boolean running = false;
+    private static List<Throwable> errors = new ArrayList<Throwable>();
     private static CommandManager manager = null;
     
     private CommandManagerFactory() {
@@ -59,6 +62,19 @@ public class CommandManagerFactory {
         //lazy init ...
         initializeCommandManager(null);
         return manager;
+    }
+
+    /**
+     * Get the list of errors, if any, which resulted from instantiating the CommandManager.
+     * 
+     * Note: at the moment, calling reloadConfig does not reset the list of errors. This is because
+     * there are some cases where errors in the config file can only be corrected
+     * by restarting the job execution engine.
+     * 
+     * @return
+     */
+    public static List<Throwable> getInitializationErrors() {
+        return errors;
     }
     
     public static boolean isRunning() {
@@ -101,6 +117,7 @@ public class CommandManagerFactory {
         if (manager != null) {
             log.info("replacing current command manager with a new instance");
         }
+        errors.clear();
         setProperties(properties);
         manager = createCommandManager(parser, configFile);
     }
@@ -205,6 +222,7 @@ public class CommandManagerFactory {
             return configParser.parseConfigFile(configFile);
         } 
         catch (final Exception e) {
+            errors.add(e);
             log.error("Failed to load custom command manager loader class: "+configParserClass, e);
             return createDefaultCommandManager();
         }
@@ -217,6 +235,7 @@ public class CommandManagerFactory {
             commandManager.addCommandExecutor("RuntimeExec", cmdExecutor);
         }
         catch (Exception e) {
+            errors.add(e);
             log.error(e);
         }
         return commandManager;
@@ -237,6 +256,7 @@ public class CommandManagerFactory {
             parserInstance.reloadConfigFile(manager, configFile);
         }
         catch (Exception e) {
+            errors.add(e);
             log.error("Unable to instantiate CommandManagerConfigParser for name: "+parser, e);
         }
     }
