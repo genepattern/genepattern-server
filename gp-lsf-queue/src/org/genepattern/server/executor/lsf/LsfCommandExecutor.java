@@ -18,6 +18,7 @@ import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandManagerFactory;
+import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.webservice.JobInfo;
 import org.hibernate.Query;
@@ -38,13 +39,13 @@ public class LsfCommandExecutor implements CommandExecutor {
     private static int numJobSubmissionThreads = 3;
     private static int numJobCompletionThreads = 3;
     
-    private final Properties configurationProperties = new Properties();
+    private final CommandProperties configurationProperties = new CommandProperties();
     
     public void setConfigurationFilename(final String filename) {
         log.error("method not implemented, setConfigurationFilename( "+filename+" )");
     }
 
-    public void setConfigurationProperties(final Properties properties) {
+    public void setConfigurationProperties(final CommandProperties properties) {
         this.configurationProperties.putAll(properties);
         
         //WARNING: setting a static variable because the getJobCompletionService must be static
@@ -116,10 +117,12 @@ public class LsfCommandExecutor implements CommandExecutor {
             log.info("using hibernate.connection.datasource="+dataSourceName);
             this.broadCore.setDataSourceName(dataSourceName);
             log.info("setting hibernate options...");
-            for(final Entry<?,?> entry : this.configurationProperties.entrySet()) {
+            //TODO: tidy this up ...
+            Properties configurationPropertiesProperties = this.configurationProperties.toProperties();
+            for(final Entry<?,?> entry : configurationPropertiesProperties.entrySet()) {
                 log.info(""+entry.getKey()+": "+entry.getValue());
             }
-            this.broadCore.setHibernateOptions(this.configurationProperties);
+            this.broadCore.setHibernateOptions(configurationPropertiesProperties);
 
             int lsfCheckFrequency = 60;
             final String lsfCheckFrequencyProp = this.configurationProperties.getProperty("lsf.check.frequency");
@@ -189,7 +192,7 @@ public class LsfCommandExecutor implements CommandExecutor {
 		log.debug("Running command for job "+jobInfo.getJobNumber()+". "+jobInfo.getTaskName());
         final LsfCommand cmd = new LsfCommand();
         
-        final Properties lsfProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
+        final CommandProperties lsfProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
         cmd.setLsfProperties(lsfProperties);
         cmd.runCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile, completionListenerClass);
         LsfJob lsfJob = cmd.getLsfJob();

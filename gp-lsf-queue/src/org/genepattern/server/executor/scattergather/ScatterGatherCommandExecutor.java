@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandManagerFactory;
+import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.executor.lsf.LsfCommandExecutor;
 import org.genepattern.server.executor.lsf.LsfProperties;
 import org.genepattern.server.webservice.server.DirectoryManager;
@@ -26,7 +26,7 @@ public class ScatterGatherCommandExecutor implements CommandExecutor {
         log.error("ignoring: setConfigurationFilename("+filename+"): must set configuration.properties directly in the job configuration file!");
 	}
 
-	public void setConfigurationProperties(final Properties properties) {
+	public void setConfigurationProperties(final CommandProperties properties) {
 		this.lsfCommandExecutorName = properties.getProperty("lsf.executor");
 		this.scatterGatherScriptLocation = properties.getProperty("scatter.gather.script.location");
 	}
@@ -42,7 +42,7 @@ public class ScatterGatherCommandExecutor implements CommandExecutor {
 			final File stdoutFile, final File stderrFile, final JobInfo jobInfo, final File stdinFile)
 			throws CommandExecutorException {
 
-        final Properties commandProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
+        final CommandProperties commandProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
         final String libDir = getLibDir(jobInfo);
 
         final List<String> newCommandLine = new ArrayList<String>(commandLine.length + 8);
