@@ -6,12 +6,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.executor.CommandProperties.Value;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.util.GPConstants;
@@ -29,10 +30,10 @@ import edu.mit.broad.core.lsf.LsfJob.JobCompletionListener;
 class LsfCommand {
     private static Logger log = Logger.getLogger(LsfCommand.class);
     
-    private Properties lsfProperties = null;
+    private CommandProperties lsfProperties = null;
     private LsfJob lsfJob = null;
     
-    public void setLsfProperties(final Properties p) {
+    public void setLsfProperties(final CommandProperties p) {
         this.lsfProperties = p;
     }
     
@@ -84,6 +85,11 @@ class LsfCommand {
         extraBsubArgs.add("rusage[mem="+maxMemory+"]");
         extraBsubArgs.add("-M");
         extraBsubArgs.add(maxMemory);
+        
+        Value extrasFromConfig = lsfProperties.get(LsfProperties.Key.EXTRA_BSUB_ARGS.getKey());
+        if (extrasFromConfig != null) {
+            extraBsubArgs.addAll( extrasFromConfig.getValues() );
+        }
 
         final String priority = this.lsfProperties.getProperty(LsfProperties.Key.PRIORITY.getKey());
         if (priority != null) {
