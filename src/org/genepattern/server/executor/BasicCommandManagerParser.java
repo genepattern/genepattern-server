@@ -62,7 +62,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
      * @param configFile
      * @return
      */
-    private JobConfigObj parse(File configurationFile) {
+    private JobConfigObj parse(File configurationFile) throws Exception {
         JobConfigObj configObj = new JobConfigObj();
         Reader reader = null;
         try {
@@ -87,8 +87,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
             }
         }
         catch (Throwable t) {
-            //TODO: handle exception
-            t.printStackTrace();
+            throw new Exception("Error parsing job configuration file, "+configurationFile.getPath()+".\nError message: "+t.getLocalizedMessage(), t);
         }
         finally {
             if (reader != null) {

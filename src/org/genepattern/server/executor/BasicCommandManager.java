@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-//import org.genepattern.server.AnalysisTask;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
@@ -288,8 +287,10 @@ public class BasicCommandManager implements CommandManager {
         return firstKey;
     }
     
-    public Properties getCommandProperties(JobInfo jobInfo) {
-        return this.configProperties.getCommandProperties(jobInfo);
+    public CommandProperties getCommandProperties(JobInfo jobInfo) {
+        Properties props = this.configProperties.getCommandProperties(jobInfo);
+        CommandProperties commandProps = new CommandProperties(props);
+        return commandProps;
     }
 
     public Map<String, CommandExecutor> getCommandExecutorsMap() {

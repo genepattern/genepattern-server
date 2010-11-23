@@ -1,7 +1,5 @@
 package org.genepattern.server.executor;
 
-import java.util.Properties;
-
 import org.genepattern.webservice.JobInfo;
 
 /**
@@ -29,5 +27,5 @@ public interface CommandExecutorMapper {
      * @param jobInfo
      * @return
      */
-    Properties getCommandProperties(JobInfo jobInfo);
+    CommandProperties getCommandProperties(JobInfo jobInfo);
 }

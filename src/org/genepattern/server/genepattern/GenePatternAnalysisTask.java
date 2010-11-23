@@ -140,6 +140,7 @@ import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorNotFoundException;
 import org.genepattern.server.executor.CommandManagerFactory;
+import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.executor.pipeline.PipelineException;
 import org.genepattern.server.executor.pipeline.PipelineHandler;
@@ -1104,9 +1105,10 @@ public class GenePatternAnalysisTask {
             throw new JobDispatchException(e);
         }
         // optionally, override the java flags if they have been overridden in the job configuration file
-        Properties cmdProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
-        if (cmdProperties.containsKey("java_flags")) {
-            props.setProperty("java_flags", cmdProperties.getProperty("java_flags"));
+        CommandProperties cmdProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
+        String javaFlags = cmdProperties.getProperty("java_flags");
+        if (javaFlags != null) {
+            props.setProperty("java_flags", javaFlags);
         }
 
         paramsCopy = stripOutSpecialParams(paramsCopy);
@@ -1507,7 +1509,8 @@ public class GenePatternAnalysisTask {
         cleanupInputFiles(outDir, jobInfoWrapper);
         File taskLog = writeExecutionLog(outDir, jobInfoWrapper);
         
-        Properties cmdProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
+        CommandProperties cmdProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
+
         boolean checkExitValue = false;
         boolean checkStderr = false;
         checkExitValue = Boolean.valueOf( cmdProperties.getProperty("job.error_status.exit_value", "false") );
@@ -1549,16 +1552,15 @@ public class GenePatternAnalysisTask {
             filenameFilter.addExactMatch(taskLog.getName());
         }
 
-        String globPattern = null;
-        if (cmdProperties.containsKey("job.FilenameFilter")) {
-            globPattern = cmdProperties.getProperty("job.FilenameFilter");
+        String globPattern = cmdProperties.getProperty("job.FilenameFilter");
+        if (globPattern == null) {
+            globPattern = System.getProperty(JobResultsFilenameFilter.KEY);            
         }
-        else {
-            globPattern = System.getProperty(JobResultsFilenameFilter.KEY);
-            if (globPattern == null) {
-                globPattern = System.getProperty("job.FilenameFilter");
-            }
+        if (globPattern == null) {
+            globPattern = System.getProperty("job.FilenameFilter");
         }
+        //TODO: test support for a list of values, e.g.
+        //    job.FilenameFilter: {".lsf*", ".nfs*" }
         filenameFilter.setGlob(globPattern);
 
         File[] outputFiles = outDir.listFiles(filenameFilter);
