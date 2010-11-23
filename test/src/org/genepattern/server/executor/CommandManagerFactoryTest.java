@@ -1,6 +1,7 @@
 package org.genepattern.server.executor;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -9,6 +10,7 @@ import junit.framework.TestCase;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.database.HsqlDbUtil;
+import org.genepattern.server.executor.CommandProperties.Value;
 import org.genepattern.webservice.JobInfo;
 
 /**
@@ -128,7 +130,7 @@ public class CommandManagerFactoryTest extends TestCase {
 
         CommandManagerFactory.initializeCommandManager(System.getProperties());
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        validateSampleJobConfigYaml(cmdMgr);
+        validateExampleJobConfig(cmdMgr);
     }
 
     public void testSampleYamlConfigFromProps() throws Exception {
@@ -143,16 +145,16 @@ public class CommandManagerFactoryTest extends TestCase {
 
         CommandManagerFactory.initializeCommandManager(props);
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        validateSampleJobConfigYaml(cmdMgr);
+        validateExampleJobConfig(cmdMgr);
     }
 
-    private void validateSampleJobConfigYaml(CommandManager cmdMgr) {
+    private void validateExampleJobConfig(CommandManager cmdMgr) {
         assertNotNull("Expecting non-null cmdMgr", cmdMgr);
         
         Map<String,CommandExecutor> map = cmdMgr.getCommandExecutorsMap();
         assertNotNull("Expecting non-null cmdMgr.commandExecutorsMap", map);
         int numExecutors = map.size();
-        assertEquals("Number of executors", 4, numExecutors);
+        assertEquals("Number of executors", 3, numExecutors);
 
         JobInfo jobInfo = new JobInfo();
         jobInfo.setTaskName("SNPFileSorter");
@@ -167,16 +169,16 @@ public class CommandManagerFactoryTest extends TestCase {
         catch (Exception e) {
             fail("Exception thrown in getCommandExecutor: "+e.getLocalizedMessage());
         }
-        Properties jobProperties = cmdMgr.getCommandProperties(jobInfo);
+        CommandProperties jobProperties = cmdMgr.getCommandProperties(jobInfo);
         assertNotNull("", jobProperties);
-        assertEquals("checking job properties: lsf.max.memory", "12", ""+jobProperties.get("lsf.max.memory"));
-        assertEquals("checking job properties: java_flags", "-Xmx12g", jobProperties.get("java_flags"));
-        assertEquals("checking job properties: lsf.project", "genepattern", jobProperties.get("lsf.project"));
-        assertEquals("checking job properties: lsf.queue", "broad", jobProperties.get("lsf.queue"));
-        assertEquals("checking job properties: lsf.wrapper.script", "", jobProperties.get("lsf.wrapper.script"));
-        assertEquals("checking job properties: lsf.job.report.file", ".lsf.out", jobProperties.get("lsf.job.report.file"));
-        assertEquals("checking job properties: lsf.use.pre.exec.command", "false", ""+jobProperties.get("lsf.use.pre.exec.command"));
-        assertEquals("checking job properties: lsf.extra.bsub.args", "", jobProperties.get("lsf.extra.bsub.args"));
+        assertEquals("checking job properties: lsf.max.memory", "12", ""+jobProperties.getProperty("lsf.max.memory"));
+        assertEquals("checking job properties: java_flags", "-Xmx12g", jobProperties.getProperty("java_flags"));
+        assertEquals("checking job properties: lsf.project", "genepattern", jobProperties.getProperty("lsf.project"));
+        assertEquals("checking job properties: lsf.queue", "broad", jobProperties.getProperty("lsf.queue"));
+        assertEquals("checking job properties: lsf.wrapper.script", "", jobProperties.getProperty("lsf.wrapper.script"));
+        assertEquals("checking job properties: lsf.job.report.file", ".lsf.out", jobProperties.getProperty("lsf.job.report.file"));
+        assertEquals("checking job properties: lsf.use.pre.exec.command", "false", ""+jobProperties.getProperty("lsf.use.pre.exec.command"));
+        assertEquals("checking job properties: lsf.extra.bsub.args", "", jobProperties.getProperty("lsf.extra.bsub.args"));
     }
 
     /**
@@ -342,7 +344,7 @@ public class CommandManagerFactoryTest extends TestCase {
             }
             return;
         }
-        Properties cmdProps = cmdMgr.getCommandProperties(jobInfo);
+        CommandProperties cmdProps = cmdMgr.getCommandProperties(jobInfo);
         String cmdExecId = CommandManagerFactory.getCommandExecutorId(cmdExec);
 
         assertNotNull("expecting non-null CommandExecutor", cmdExec);
@@ -362,7 +364,7 @@ public class CommandManagerFactoryTest extends TestCase {
         JobInfo jobInfo = new JobInfo();
         jobInfo.setTaskName("ComparativeMarkerSelection");
         jobInfo.setTaskLSID("urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:5");
-        Properties props = cmdMgr.getCommandProperties(jobInfo);
+        CommandProperties props = cmdMgr.getCommandProperties(jobInfo);
         assertEquals("checking 'lsf.output.filename'", ".lsf.out", props.getProperty("lsf.output.filename"));
     }
     
@@ -377,7 +379,7 @@ public class CommandManagerFactoryTest extends TestCase {
         
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
         CommandExecutor cmdExec = cmdMgr.getCommandExecutor(jobInfo);
-        Properties cmdProps = cmdMgr.getCommandProperties(jobInfo);
+        CommandProperties cmdProps = cmdMgr.getCommandProperties(jobInfo);
         String cmdExecId = CommandManagerFactory.getCommandExecutorId(cmdExec);
 
         assertEquals("changed default java_flags", "-Xmx16g", cmdProps.getProperty("java_flags"));
@@ -408,7 +410,7 @@ public class CommandManagerFactoryTest extends TestCase {
         
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
         CommandExecutor cmdExec = cmdMgr.getCommandExecutor(jobInfo);
-        Properties cmdProps = cmdMgr.getCommandProperties(jobInfo);
+        CommandProperties cmdProps = cmdMgr.getCommandProperties(jobInfo);
         
         assertEquals("Expecting LSF", "LSF", CommandManagerFactory.getCommandExecutorId(cmdExec));
         assertEquals("checking property set in executors->LSF->default.properties ", ".lsf.out", cmdProps.getProperty("lsf.output.filename"));
@@ -426,7 +428,7 @@ public class CommandManagerFactoryTest extends TestCase {
         
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
         CommandExecutor cmdExec = cmdMgr.getCommandExecutor(jobInfo);
-        Properties cmdProps = cmdMgr.getCommandProperties(jobInfo);
+        CommandProperties cmdProps = cmdMgr.getCommandProperties(jobInfo);
         assertEquals("Expecting LSF", "LSF", CommandManagerFactory.getCommandExecutorId(cmdExec));
         assertEquals("default.properties->debug.mode", "true", cmdProps.getProperty("debug.mode"));
         
@@ -455,6 +457,75 @@ public class CommandManagerFactoryTest extends TestCase {
         initializeYamlConfigFile("test_custom_pipeline_executor.yaml");
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
         assertEquals("# of command executors", 2, cmdMgr.getCommandExecutorsMap().size());
+    }
+
+    /**
+     * Allow lists of strings as legal values in the configuration file.
+     */
+    public void testExtraBsubArgs() throws CommandExecutorNotFoundException {
+        initializeYamlConfigFile("test_config_lsf_extraBsubArgs.yaml");
+        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
+        List<Throwable> errors = CommandManagerFactory.getInitializationErrors();
+        for(Throwable t : errors) {
+            fail(""+t.getLocalizedMessage());
+        }
+        assertEquals("# of command executors", 6, cmdMgr.getCommandExecutorsMap().size());
+                
+        JobInfo jobInfo = new JobInfo();
+        jobInfo.setUserId("admin");
+        
+        for(int i=1; i<=6; ++i) {
+            jobInfo.setTaskName("mod0"+i);
+            CommandProperties props = cmdMgr.getCommandProperties(jobInfo);
+            CommandExecutor cmdExec = cmdMgr.getCommandExecutor(jobInfo);
+            assertEquals("", "exec0"+i, CommandManagerFactory.getCommandExecutorId(cmdExec));
+        }
+
+        jobInfo.setTaskName("mod01");
+        CommandProperties props = cmdMgr.getCommandProperties(jobInfo);
+        
+        Value value = getValue(cmdMgr, "mod01", "lsf.extra.bsub.args");
+        assertNull("lsf.extra.bsub.args not set", value);
+
+        checkModuleProperty(cmdMgr, "mod02", (String)null);
+        checkModuleProperty(cmdMgr, "mod03", (String)null);
+        checkModuleProperty(cmdMgr, "mod04", "");
+        checkModuleProperty(cmdMgr, "mod05", new String[] { "arg1" } );
+        checkModuleProperty(cmdMgr, "mod06", new String[] { "arg1", "arg2" } );
+        
+        checkModuleProperty(cmdMgr, "mod10", (String)null);
+        checkModuleProperty(cmdMgr, "mod11", (String)null);
+        checkModuleProperty(cmdMgr, "mod12", "");
+        checkModuleProperty(cmdMgr, "mod13", "arg1");
+        checkModuleProperty(cmdMgr, "mod14", new String[] {});
+        checkModuleProperty(cmdMgr, "mod15", new String[] { null });
+        checkModuleProperty(cmdMgr, "mod16", new String[] { "" });
+        checkModuleProperty(cmdMgr, "mod17", new String[] { "arg1" });
+        checkModuleProperty(cmdMgr, "mod18", new String[] { "arg1", "arg2" });
+    }
+
+    private Value getValue(CommandManager cmdMgr, String taskName, String key) {
+        JobInfo jobInfo = new JobInfo();
+        jobInfo.setTaskName(taskName);
+        CommandProperties props = cmdMgr.getCommandProperties(jobInfo);
+        Value valueObj = props.get(key);
+        return valueObj;
+    }
+
+    private void checkModuleProperty(CommandManager cmdMgr, String taskName, String expectedValue) {
+        Value valueObj = getValue(cmdMgr, taskName, "lsf.extra.bsub.args");
+        String value = valueObj.getValue();
+        assertEquals(expectedValue, value);
+    }
+
+    private void checkModuleProperty(CommandManager cmdMgr, String taskName, String[] expectedValues) {
+        Value valueObj = getValue(cmdMgr, taskName, "lsf.extra.bsub.args");
+        assertEquals("", expectedValues.length, valueObj.getNumValues() );
+        int i=0;
+        for(String expected : expectedValues) {
+            assertEquals("values["+i+"]", expected, valueObj.getValues().get(i));
+            ++i;
+        }
     }
 
 }

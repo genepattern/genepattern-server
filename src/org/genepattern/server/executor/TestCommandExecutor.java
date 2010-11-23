@@ -2,7 +2,6 @@ package org.genepattern.server.executor;
 
 import java.io.File;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.JobStatus;
@@ -16,7 +15,7 @@ public class TestCommandExecutor implements CommandExecutor {
         log.info("setting configuration filename: "+filename);
     }
     
-    public void setConfigurationProperties(Properties properties) {
+    public void setConfigurationProperties(CommandProperties properties) {
         log.info("setting configuration properties: "+properties.toString());
     }
 

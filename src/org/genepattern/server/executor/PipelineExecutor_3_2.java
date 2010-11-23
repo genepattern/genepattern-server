@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.CancellationException;
@@ -46,7 +45,7 @@ public class PipelineExecutor_3_2 implements CommandExecutor {
         // TODO Auto-generated method stub
     }
 
-    public void setConfigurationProperties(Properties properties) {
+    public void setConfigurationProperties(CommandProperties properties) {
         // TODO Auto-generated method stub
     }
     

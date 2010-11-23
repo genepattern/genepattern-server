@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.executor.CommandProperties.Value;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -179,13 +180,13 @@ public class BasicCommandManagerParser implements CommandManagerParser {
         }
     }
 
-    private void reloadCommandManagerProperties(JobConfigObj jobConfigObj) {
+    private void reloadCommandManagerProperties(JobConfigObj jobConfigObj) throws Exception {
         CommandManagerProperties config = this.commandManager.getConfigProperties();
         config.clear();
         setCommandManagerProperties(this.commandManager, jobConfigObj);
     }
 
-    private void setCommandManagerProperties(BasicCommandManager cmdMgr, JobConfigObj jobConfigObj) {
+    private void setCommandManagerProperties(BasicCommandManager cmdMgr, JobConfigObj jobConfigObj) throws Exception {
         CommandManagerProperties config = cmdMgr.getConfigProperties();
 
         for(String execId : jobConfigObj.getExecutors().keySet()) {
@@ -194,7 +195,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
             if (execObj.defaultProperties != null) { 
                 PropObj propObj = config.getPropsForExecutor(execId);
                 for (String key : (Set<String>) (Set) execObj.defaultProperties.keySet()) {
-                    String value = execObj.defaultProperties.getProperty(key);
+                    Value value = execObj.defaultProperties.get(key);
                     propObj.addDefaultProperty(key, value);
                 }
             }
@@ -242,7 +243,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
         return cmdExecutor;
     }
 
-    private void initializeCustomProperties(CommandManagerProperties config, Object userOrGroupPropertiesObj, boolean forGroup) {
+    private void initializeCustomProperties(CommandManagerProperties config, Object userOrGroupPropertiesObj, boolean forGroup) throws Exception {
         if (userOrGroupPropertiesObj == null) {
             return;
         }
@@ -278,7 +279,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
         }
     }
     
-    private void initializePropertiesInto(PropObj propObj, String groupOrUserId, Object propertiesObj) {
+    private void initializePropertiesInto(PropObj propObj, String groupOrUserId, Object propertiesObj) throws Exception {
         Map<?,?> map = (Map<?,?>) propertiesObj;
         for(Entry<?,?> entry : map.entrySet() ) {
             String propname = "" + entry.getKey();
@@ -286,13 +287,13 @@ public class BasicCommandManagerParser implements CommandManagerParser {
                 initializeModulePropertiesInto(propObj, groupOrUserId, entry.getValue());
             }
             else {
-                String value = "" + entry.getValue();
+                Value value = Value.parse( entry.getValue() );
                 propObj.addDefaultProperty(propname, value);
             }
         }
     }
 
-    private void initializeModulePropertiesInto(PropObj propObj, String groupOrUserId, Object modulePropertiesMapObj) {
+    private void initializeModulePropertiesInto(PropObj propObj, String groupOrUserId, Object modulePropertiesMapObj) throws Exception {
         if (modulePropertiesMapObj == null) {
             log.debug("No module.properties set for: "+groupOrUserId);
             return;
@@ -306,7 +307,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
                 errorMessage += "null object";
             }
             log.error(errorMessage);
-            return;
+            throw new Exception(errorMessage);
         }
         Map<?,?> map = (Map<?,?>) modulePropertiesMapObj;
         for(Entry<?,?> entry : map.entrySet()) {
@@ -315,7 +316,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
             if (modulePropertiesObj instanceof Map<?,?>) {
                 for(Entry<?,?> propEntry : ((Map<?,?>)modulePropertiesObj).entrySet()) {
                     String propKey = ""+propEntry.getKey();
-                    String propValue = ""+propEntry.getValue();
+                    Value propValue = Value.parse(propEntry.getValue());
                     propObj.addModuleProperty(moduleId, propKey, propValue);
                 }
             }
@@ -325,7 +326,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
 
 //helper class for yaml parser
 final class JobConfigObj {
-    private Properties defaultProperties = new Properties();
+    private CommandProperties defaultProperties = new CommandProperties();
     private Map<String,ExecutorConfig> executors = new LinkedHashMap<String,ExecutorConfig>();
     private Map<String,Map<?,?>> moduleProperties = new LinkedHashMap<String,Map<?,?>>();
 
@@ -356,7 +357,7 @@ final class JobConfigObj {
         return executors;
     }
     
-    public Properties getDefaultProperties() {
+    public CommandProperties getDefaultProperties() {
         return defaultProperties;
     }
     
@@ -380,8 +381,8 @@ final class JobConfigObj {
 final class ExecutorConfig {
     String classname;
     String configurationFile;
-    Properties configurationProperties = new Properties();
-    Properties defaultProperties = new Properties();
+    CommandProperties configurationProperties = new CommandProperties();
+    CommandProperties defaultProperties = new CommandProperties();
     
     ExecutorConfig(Object yamlObj) throws Exception {
         if (yamlObj instanceof String) {
@@ -432,8 +433,8 @@ final class ExecutorConfig {
             Map<?,?> configPropsMap = (Map<?,?>) configPropsObj;
             for(Entry<?,?> entry : configPropsMap.entrySet()) {
                 String key = ""+entry.getKey();
-                String value = ""+entry.getValue();
-                this.configurationProperties.setProperty(key, value);
+                Value value = Value.parse(entry.getValue());
+                this.configurationProperties.put(key, value);
             }
         }
         
@@ -443,8 +444,8 @@ final class ExecutorConfig {
             Map<?,?> defaultPropertiesMap = (Map<?,?>) defaultPropertiesObj;
             for(Entry<?,?> entry : defaultPropertiesMap.entrySet()) {
                 String key = ""+entry.getKey();
-                String value = ""+entry.getValue();
-                this.defaultProperties.setProperty(key, value);
+                Value value = Value.parse(entry.getValue());
+                this.defaultProperties.put(key, value);
             }
         } 
     }

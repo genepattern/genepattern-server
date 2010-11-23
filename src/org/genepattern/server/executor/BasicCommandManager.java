@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
@@ -288,7 +287,7 @@ public class BasicCommandManager implements CommandManager {
     }
     
     public CommandProperties getCommandProperties(JobInfo jobInfo) {
-        Properties props = this.configProperties.getCommandProperties(jobInfo);
+        CommandProperties props = this.configProperties.getCommandProperties(jobInfo);
         CommandProperties commandProps = new CommandProperties(props);
         return commandProps;
     }

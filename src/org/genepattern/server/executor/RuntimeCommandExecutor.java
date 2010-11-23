@@ -3,7 +3,6 @@ package org.genepattern.server.executor;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -34,7 +33,7 @@ public class RuntimeCommandExecutor implements CommandExecutor {
         log.error("ignoring: setConfigurationFilename("+filename+"): must set configuration.properties directly in the job configuration file!");
     }
 
-    public void setConfigurationProperties(Properties properties) {
+    public void setConfigurationProperties(CommandProperties properties) {
         numThreadsProp = properties.getProperty("num.threads");
     }
     

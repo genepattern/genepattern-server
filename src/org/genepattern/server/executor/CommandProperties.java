@@ -1,11 +1,14 @@
 package org.genepattern.server.executor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * Job configuration properties for a specific job, default values are loaded based on parsing the job_configuration.yaml file. 
@@ -16,11 +19,45 @@ import java.util.Properties;
  * @author pcarr
  */
 public class CommandProperties {
+
     public static class Value {
+        static public Value parse(Object object) throws Exception {
+            if (object == null) {
+              return new Value( (String) null);
+            }
+            if (object instanceof String) {
+                return new Value( (String) object );
+            }
+            
+            if (object instanceof Collection<?>) {
+                List<String> s = new ArrayList<String>();
+                for(Object item : ((Collection<?>) object)) {
+                    if (item == null) {
+                        s.add((String) item);
+                    }
+                    else if ((item instanceof String)) {
+                        s.add((String) item);
+                    }
+                    else {
+                        throw new Exception("Illegal arg, item in Collection<?> is not instanceof String: '"+item.toString()+"'");
+                    }
+                }
+                return new Value( s );
+            }
+            //TODO: cast primitive types toString, but throw an exception otherwise
+            //    new Exception("Illegal arg, object is not a primitive type or a Collection<?>: '"+object.toString()+"'");
+
+            return new Value( object.toString() );
+        }
+        
         private List<String> values = new ArrayList<String>();
         
         public Value(String value) {
             values.add(value);
+        }
+        
+        public Value(Collection<String> from) {
+            values.addAll(from);
         }
         
         public String getValue() {
@@ -34,7 +71,7 @@ public class CommandProperties {
             return Collections.unmodifiableList(values);
         }
         
-        public int numValues() {
+        public int getNumValues() {
             return values.size();
         }
     }
@@ -56,8 +93,29 @@ public class CommandProperties {
     
     public CommandProperties() {
     }
-    public CommandProperties(Properties props) {
-        initFromProperties(props);
+
+    public CommandProperties(Properties from) {
+        initFromProperties(from);
+    }
+    
+    public CommandProperties(CommandProperties from) {
+        props.putAll(from.props);
+    }
+    
+    public void clear() {
+        props.clear();
+    }
+    
+    public void put(String key, String value) {
+        props.put(key, new Value(value));
+    }
+    
+    public void put(String key, Value value) {
+        props.put(key, value);
+    }
+    
+    public void putAll(CommandProperties from) {
+        props.putAll(from.props);
     }
     
     public boolean containsKey(String key) {
@@ -88,7 +146,31 @@ public class CommandProperties {
         return val.getValue();
     }
     
-    public String get(String key) {
-        return getProperty(key);
+    public Value get(String key) {
+        return props.get(key);
+    }
+    
+    public Set<String> keySet() {
+        return props.keySet();
+    }
+    
+    public Properties toProperties() {
+        return toProperties(true);
+    }
+    
+    public Properties toProperties(boolean ignoreCollections) {
+        Properties to = new Properties();
+        for(Entry<String,Value> entry : props.entrySet()) {
+            if (entry.getValue().getNumValues() == 1) {
+                to.setProperty(entry.getKey(), entry.getValue().getValue());
+            }
+            else {
+                if (!ignoreCollections) {
+                    //TODO: double-check toString representation of a Value list
+                    to.setProperty(entry.getKey(), entry.getValue().toString());
+                }
+            }
+        }
+        return to;
     }
 }

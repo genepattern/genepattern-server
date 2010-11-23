@@ -2,12 +2,12 @@ package org.genepattern.server.executor.pipeline;
 
 import java.io.File;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
+import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.webservice.JobInfo;
 
 /**
@@ -31,7 +31,7 @@ public class PipelineExecutor implements CommandExecutor {
         // TODO Auto-generated method stub
     }
 
-    public void setConfigurationProperties(Properties properties) {
+    public void setConfigurationProperties(CommandProperties properties) {
         // TODO Auto-generated method stub
     }
 

@@ -2,11 +2,11 @@ package org.genepattern.server.executor;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.Lsid;
+import org.genepattern.server.executor.CommandProperties.Value;
 import org.genepattern.webservice.JobInfo;
 
 /**
@@ -18,23 +18,23 @@ import org.genepattern.webservice.JobInfo;
 public class PropObj {
     private static Logger log = Logger.getLogger(PropObj.class);
 
-    private Properties defaultProperties = new Properties();
-    private Map<String,Properties> modulePropertiesMap = new HashMap<String,Properties>();
+    private CommandProperties defaultProperties = new CommandProperties();
+    private Map<String,CommandProperties> modulePropertiesMap = new HashMap<String,CommandProperties>();
 
     public void clearDefaultProperties() {
         defaultProperties.clear();
     }
 
-    public void addDefaultProperty(String key, String value) {
+    public void addDefaultProperty(String key, Value value) {
         defaultProperties.put(key, value);
     }
     
-    public void setDefaultProperties(Properties props) {
+    public void setDefaultProperties(CommandProperties props) {
         clearDefaultProperties();
         this.defaultProperties.putAll(props);
     }
     
-    public Properties getDefaultProperties() {
+    public CommandProperties getDefaultProperties() {
         return defaultProperties;
     }
 
@@ -42,23 +42,23 @@ public class PropObj {
         modulePropertiesMap.clear();
     }
     
-    public void addModuleProperty(String moduleId, String propKey, String propValue) {
-        Properties moduleProperties = modulePropertiesMap.get(moduleId);
+    public void addModuleProperty(String moduleId, String propKey, Value propValue) {
+        CommandProperties moduleProperties = modulePropertiesMap.get(moduleId);
         if (moduleProperties == null) {
-            moduleProperties = new Properties();
+            moduleProperties = new CommandProperties();
             modulePropertiesMap.put(moduleId, moduleProperties);
         }
         moduleProperties.put(propKey, propValue);
     }
 
-    public void setModuleProperties(Map<String,Map<?,?>> map) {
+    public void setModuleProperties(Map<String,Map<?,?>> map) throws Exception {
         clearModuleProperties();
         for(Entry<String,Map<?,?>> mapEntry : map.entrySet()) {
             String moduleId = mapEntry.getKey();
             for(Entry<?,?> entry : mapEntry.getValue().entrySet()) {
                 String propKey = ""+entry.getKey();
-                String propValue = ""+entry.getValue();
-                addModuleProperty(moduleId, propKey, propValue);                
+                Value propValue = Value.parse(entry.getValue());
+                addModuleProperty(moduleId, propKey, propValue);
             }
         }
     }
@@ -103,12 +103,12 @@ public class PropObj {
         return value;
     }
 
-    public Properties getModuleProperties(JobInfo jobInfo) {
-        Properties props = new Properties();
+    public CommandProperties getModuleProperties(JobInfo jobInfo) {
+        CommandProperties props = new CommandProperties();
         //1. override default by taskName
         String taskName = jobInfo.getTaskName();
         if (taskName != null) {
-            Properties taskNameProps = this.modulePropertiesMap.get(taskName);
+            CommandProperties taskNameProps = this.modulePropertiesMap.get(taskName);
             if (taskNameProps != null) {
                 props.putAll(taskNameProps);
             }
@@ -118,12 +118,12 @@ public class PropObj {
         Lsid lsid = null;
         if (taskLsid != null) {
             lsid = new Lsid(jobInfo.getTaskLSID());
-            Properties lsidNoVersionProps = this.modulePropertiesMap.get(lsid.getLsidNoVersion());
+            CommandProperties lsidNoVersionProps = this.modulePropertiesMap.get(lsid.getLsidNoVersion());
             if (lsidNoVersionProps != null) {
                 props.putAll(lsidNoVersionProps);
             }
             //3. override by lsid, including version
-            Properties lsidProps = this.modulePropertiesMap.get(lsid.getLsid());
+            CommandProperties lsidProps = this.modulePropertiesMap.get(lsid.getLsid());
             if (lsidProps != null) {
                 props.putAll(lsidProps);
             }

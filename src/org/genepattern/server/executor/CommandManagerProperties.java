@@ -2,7 +2,6 @@ package org.genepattern.server.executor;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.Map.Entry;
 
@@ -65,9 +64,9 @@ public class CommandManagerProperties {
         return propObj;
     }
 
-    public Properties getCommandProperties(JobInfo jobInfo) {
+    public CommandProperties getCommandProperties(JobInfo jobInfo) {
         // 1) initialize from top level default properties
-        Properties cmdProperties = new Properties();
+        CommandProperties cmdProperties = new CommandProperties();
         cmdProperties.putAll(this.rootProps.getDefaultProperties());
         
         if (jobInfo == null) {
