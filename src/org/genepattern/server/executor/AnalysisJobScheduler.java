@@ -12,6 +12,8 @@
 
 package org.genepattern.server.executor;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -468,11 +470,19 @@ public class AnalysisJobScheduler implements Runnable {
             log.error("Error submitting job #"+jobId, t);
             try {
                 String errorMessage = "GenePattern Server error preparing job "+jobId+" for execution.\n"+t.getMessage() + "\n\n";
+                errorMessage += stackTraceToString(t);
                 GenePatternAnalysisTask.handleJobCompletion(jobId, -1, errorMessage);
             }
             catch (Throwable t1) {
                 log.error("Error handling job completion for job #"+jobId, t1);
             }
+        }
+        
+        private static String stackTraceToString(Throwable t) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            t.printStackTrace(pw);
+            return sw.toString();
         }
     }
 
