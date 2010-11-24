@@ -51,18 +51,8 @@ public class PipelineExecutor implements CommandExecutor {
             final JobInfo jobInfo, 
             final File stdinFile) 
     throws CommandExecutorException {
-        
-        if (jobInfo == null) {
-            throw new CommandExecutorException("null jobInfo");
-        }
-        
-        try {
-            //no longer using commandLine for processing pipelines
-            PipelineHandler.startPipeline(jobInfo, Integer.MAX_VALUE);
-        }
-        catch (Exception e) {
-            throw new CommandExecutorException("Server error starting pipeline job #"+jobInfo.getJobNumber(), e);
-        }
+        //no longer using commandLine for processing pipelines
+        PipelineHandler.startPipeline(jobInfo, Integer.MAX_VALUE);
     }
     
     public void terminateJob(JobInfo jobInfo) throws Exception {

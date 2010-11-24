@@ -24,6 +24,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.AnalysisJobScheduler;
+import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -53,17 +54,17 @@ public class PipelineHandler {
     /**
      * Initialize the pipeline and add the first job to the queue.
      */
-    public static void startPipeline(JobInfo pipelineJobInfo, int stopAfterTask) throws Exception {
-        boolean success = false;
-        Integer firstStep = null;
+    public static void startPipeline(JobInfo pipelineJobInfo, int stopAfterTask) throws CommandExecutorException {
+        if (pipelineJobInfo == null) {
+            throw new CommandExecutorException("Error starting pipeline, pipelineJobInfo is null");
+        }
         try {
-            firstStep = runPipeline(pipelineJobInfo, stopAfterTask);
+            runPipeline(pipelineJobInfo, stopAfterTask);
             HibernateUtil.commitTransaction();
-            success = true;
         }
         catch (Throwable t) {
             HibernateUtil.rollbackTransaction();
-            throw new Exception("Server error starting pipeline, for job #"+pipelineJobInfo.getJobNumber(), t);
+            throw new CommandExecutorException("Error starting pipeline: "+t.getLocalizedMessage(), t);
         }
         finally {
             HibernateUtil.closeCurrentSession();
@@ -365,21 +366,20 @@ public class PipelineHandler {
     }
 
     /**
+     * Start the pipeline.
      * 
-     * @param pipelineJobId
-     * @param userID
-     * @param model
+     * @param pipelineJobInfo, must be a valid pipeline job
      * @param stopAfterTask
-     * @param additionalArgs
      * 
      * @return the jobNumber of the first step of the pipeline
      * 
-     * @throws MissingTasksException
+     * @throws PipelineModelException
+     * @throws MissingTasksException, if the required modules are not installed on the server
      * @throws WebServiceException
      * @throws JobSubmissionException
      */
     private static Integer runPipeline(JobInfo pipelineJobInfo, int stopAfterTask) 
-    throws PipelineModelException, MissingTasksException, WebServiceException, JobSubmissionException
+    throws PipelineModelException, MissingTasksException, JobSubmissionException
     {  
         PipelineModel pipelineModel = PipelineUtil.getPipelineModel(pipelineJobInfo);
         pipelineModel.setLsid(pipelineJobInfo.getTaskLSID());
@@ -387,7 +387,6 @@ public class PipelineHandler {
         
         //initialize the pipeline args
         Map<String,String> additionalArgs = new HashMap<String,String>();
-        ParameterInfo[] pipelineJobParameterInfos = pipelineJobInfo.getParameterInfoArray();
         for(ParameterInfo param : pipelineJobInfo.getParameterInfoArray()) {
             additionalArgs.put(param.getName(), param.getValue());
         }
@@ -455,40 +454,25 @@ public class PipelineHandler {
     }
 
     /**
-     * submit the job and wait for it to complete
+     * Add the job to the pipeline and add it to the internal job queue in a WAITING state.
      * 
-     * @throws WebServiceException
+     * @throws IllegalArgumentException, if the given JobSubmission does not have a valid taskId
+     * @throws JobSubmissionException, if not able to add the job to the internal queue
      */
     private static JobInfo addJobToPipeline(int parentJobId, String userID, JobSubmission jobSubmission, ParameterInfo[] params, int jobStatusId)
-    throws WebServiceException, JobSubmissionException 
+    throws JobSubmissionException
     {
-        log.debug("Begin executeTask");
         if (jobSubmission == null) {
-            log.error("ignoring executeTask, jobSubmission is null");
-            return null;
+            throw new IllegalArgumentException("jobSubmission is null");
         }
-
-        String lsidOrTaskName = jobSubmission.getLSID();
-        if (lsidOrTaskName == null || lsidOrTaskName.equals("")) {
-            lsidOrTaskName = jobSubmission.getName();
+        if (jobSubmission.getTaskInfo() == null) {
+            throw new IllegalArgumentException("jobSubmission.taskInfo is null");
         }
-
-        int taskId = 0;
-        if (jobSubmission.getTaskInfo() != null) {
-            taskId = jobSubmission.getTaskInfo().getID();
+        if (jobSubmission.getTaskInfo().getID() <= 0) {
+            throw new IllegalArgumentException("jobSubmission.taskInfo.ID not set");
         }
-        if (taskId <= 0) {
-            log.error("jobSubmission.taskInfo.ID not set ... calling adminService.getTask("+lsidOrTaskName+")");
-            AdminService adminService = new AdminService(userID);
-            TaskInfo task = adminService.getTask(lsidOrTaskName);
-            if (task == null) {
-                log.error("Module " + lsidOrTaskName + " not found.");
-                return new JobInfo();
-            }
-            taskId = task.getID();
-            log.debug("taskInfo: " + task.getName() + ", " + task.getLsid());
-        }
-
+        int taskId = jobSubmission.getTaskInfo().getID();
+        
         if (params != null) {
             for (int i = 0; i < params.length; i++) {
                 if (params[i].isInputFile()) {

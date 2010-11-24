@@ -49,24 +49,38 @@ public class PipelineUtil {
     throws TaskIDNotFoundException, PipelineModelException
     {
         TaskInfo taskInfo = JobInfoManager.getTaskInfo(pipelineJobInfo.getTaskID());
+        if (taskInfo == null) {
+            throw new PipelineModelException("taskInfo is null for jobInfo.taskID="+pipelineJobInfo.getTaskID());
+        }
+        if (!taskInfo.isPipeline()) {
+            throw new PipelineModelException("task (id="+taskInfo.getID()+", name="+taskInfo.getName()+") is not a pipeline.");
+        }
         return getPipelineModel(taskInfo);
     }
 
     private static PipelineModel getPipelineModel(TaskInfo taskInfo) 
     throws TaskIDNotFoundException, PipelineModelException
     {
-        PipelineModel model = null;
+        if (taskInfo == null) {
+            throw new IllegalArgumentException("taskInfo is null");
+        }
         TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-        if (tia != null) {
-            String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
-            if (serializedModel != null && serializedModel.length() > 0) {
-                try {
-                    model = PipelineModel.toPipelineModel(serializedModel);
-                } 
-                catch (Throwable x) {
-                    throw new PipelineModelException(x);
-                }
-            }
+        if (tia == null) {
+            throw new PipelineModelException("taskInfo.giveTaskInfoAttributes is null for taskInfo.ID="+taskInfo.getID()+", taskInfo.name="+taskInfo.getName());
+        }
+        String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
+        if (serializedModel == null || serializedModel.length() == 0) {
+            throw new PipelineModelException("Missing "+GPConstants.SERIALIZED_MODEL+" for taskInfo.ID="+taskInfo.getID()+", taskInfo.name="+taskInfo.getName());
+        }
+        PipelineModel model = null;
+        try {
+            model = PipelineModel.toPipelineModel(serializedModel);
+        } 
+        catch (Throwable t) {
+            throw new PipelineModelException(t);
+        }
+        if (model == null) {
+            throw new PipelineModelException("pipeline model is null for taskInfo.ID="+taskInfo.getID()+", taskInfo.name="+taskInfo.getName());
         }
         model.setLsid(taskInfo.getLsid());
         return model;
