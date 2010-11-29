@@ -107,7 +107,7 @@ public class PipelineHandler {
         
         //very likely corner-case
         terminatePipelineSteps(jobInfo.getJobNumber());
-        handlePipelineJobCompletion(jobInfo.getJobNumber(), -1);
+        handlePipelineJobCompletion(jobInfo.getJobNumber(), -1, "Job #"+jobInfo.getJobNumber()+" terminated by user.");
     }
 
     /**
@@ -229,7 +229,7 @@ public class PipelineHandler {
         else {
             //handle an error in a pipeline step
             terminatePipelineSteps(parentJobNumber);
-            handlePipelineJobCompletion(parentJobNumber, -1);
+            handlePipelineJobCompletion(parentJobNumber, -1, "Pipeline terminated because of an error in child job [id: "+childJobNumber+"]");
         }
         return false;
     }
@@ -247,6 +247,7 @@ public class PipelineHandler {
         int numStepsToGo = 0;
         //true if at least one of the steps finished with an error
         boolean errorFlag = false;
+        String errorMessage = null;
         List<Object[]> jobInfoObjs = null;
         try {
             HibernateUtil.beginTransaction();
@@ -265,6 +266,7 @@ public class PipelineHandler {
             }
             else if (JobStatus.JOB_ERROR == statusId) {
                 errorFlag = true;
+                errorMessage = "Error in child job "+jobId;
             }
             else {
                 ++numStepsToGo;
@@ -275,7 +277,7 @@ public class PipelineHandler {
             if (errorFlag) {
                 //handle an error in a pipeline step
                 terminatePipelineSteps(pipeline.getJobNumber());
-                handlePipelineJobCompletion(pipeline.getJobNumber(), -1);
+                handlePipelineJobCompletion(pipeline.getJobNumber(), -1, errorMessage);
             }
             else {
                 PipelineHandler.handlePipelineJobCompletion(pipeline.getJobNumber(), 0);
@@ -309,17 +311,29 @@ public class PipelineHandler {
         }
     }
 
+    private static void handlePipelineJobCompletion(int parentJobNumber, int exitCode) {
+        handlePipelineJobCompletion(parentJobNumber, exitCode, (String) null);
+    }
+    
     /**
      * For the given pipeline, set its status to complete (and notify any interested listeners).
      * Delegated to the GenePatternAnalysisTask.
      * 
      * @param parentJobNumber
-     * @param errorCode
-     * @param jobStatus
+     * @param exitCode, with a non-zero exitCode, an errorMessage is automatically created, if necessary.
+     * @param errorMessage, can be null
      */
-    private static void handlePipelineJobCompletion(int parentJobNumber, int errorCode) {
+    private static void handlePipelineJobCompletion(int parentJobNumber, int exitCode, String errorMessage) {
         try {
-            GenePatternAnalysisTask.handleJobCompletion(parentJobNumber, errorCode);
+            if (exitCode != 0 && errorMessage == null) {
+                errorMessage = "Pipeline terminated with non-zero exitCode: "+exitCode;
+            }
+            if (errorMessage == null) {
+                GenePatternAnalysisTask.handleJobCompletion(parentJobNumber, exitCode);
+            }
+            else {
+                GenePatternAnalysisTask.handleJobCompletion(parentJobNumber, exitCode, errorMessage);
+            }
         }
         catch (Throwable t) {
             log.error("Error recording pipeline job completion for job #"+parentJobNumber, t);
