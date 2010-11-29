@@ -86,9 +86,19 @@ class LsfCommand {
         extraBsubArgs.add("-M");
         extraBsubArgs.add(maxMemory);
         
-        Value extrasFromConfig = lsfProperties.get(LsfProperties.Key.EXTRA_BSUB_ARGS.getKey());
-        if (extrasFromConfig != null) {
-            extraBsubArgs.addAll( extrasFromConfig.getValues() );
+        Value extraBsubArgsFromConfigFile = lsfProperties.get(LsfProperties.Key.EXTRA_BSUB_ARGS.getKey());
+        if (extraBsubArgsFromConfigFile != null) {
+            if (extraBsubArgsFromConfigFile.getNumValues() > 1) {
+                //it's a list
+                extraBsubArgs.addAll( extraBsubArgsFromConfigFile.getValues() );
+            }
+            else {
+                String arg = extraBsubArgsFromConfigFile.getValue();
+                //ignore null value
+                if (arg != null) {
+                    extraBsubArgs.add(arg);
+                }
+            }
         }
 
         final String priority = this.lsfProperties.getProperty(LsfProperties.Key.PRIORITY.getKey());
@@ -102,11 +112,6 @@ class LsfCommand {
             extraBsubArgs.add("-R");
             extraBsubArgs.add("select["+host+"]");
         }
-        
-        //String extraBsubArgsProp = lsfProperties.getProperty(LsfProperties.Key.EXTRA_BSUB_ARGS.getKey());
-        //if (extraBsubArgsProp != null && !"".equals(extraBsubArgsProp.trim())) {
-        //    extraBsubArgs.add(extraBsubArgsProp);
-        //}
         
         extraBsubArgs.addAll(getPreExecCommand(jobInfo));
         this.lsfJob.setExtraBsubArgs(extraBsubArgs);
