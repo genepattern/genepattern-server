@@ -4,9 +4,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandManager;
 import org.genepattern.server.executor.CommandManagerFactory;
+import org.genepattern.server.executor.ConfigurationException;
 
 /**
  * Backing bean for configuring command executors via the web interface.
@@ -14,6 +16,7 @@ import org.genepattern.server.executor.CommandManagerFactory;
  * @author pcarr
  */
 public class JobConfigurationBean {
+    public static Logger log = Logger.getLogger(JobConfigurationBean.class);
 
     /**
      * Gui view of a command executor.
@@ -92,18 +95,6 @@ public class JobConfigurationBean {
         return CommandManagerFactory.getParser();
     }
     
-    public File getConfigurationFile() {
-        return CommandManagerFactory.getConfigurationFile();
-    }
-
-    public String getConfigurationFilepath() {
-        File configFile = getConfigurationFile();
-        if (configFile != null) {
-            return configFile.getAbsolutePath();
-        }
-        return "";
-    }
-    
     public boolean getHasErrors() {
         return CommandManagerFactory.getInitializationErrors().size() > 0;
     }
@@ -112,19 +103,29 @@ public class JobConfigurationBean {
         return CommandManagerFactory.getInitializationErrors();
     }
     
+    public String getConfigurationFilepath() {
+        File configFile = null;
+        try {
+            configFile = CommandManagerFactory.getConfigurationFile();
+            return configFile.getAbsolutePath();
+        }
+        catch (ConfigurationException e) {
+            return "";
+        }
+    }
+    
     /**
      * Display the contents of the configuration file.
      * @return
      */
     public String getConfigurationFileContent() {
-        File configFile = getConfigurationFile();
-        if (configFile == null) {
-            return "";
+        File configFile = null;
+        try {
+            configFile = CommandManagerFactory.getConfigurationFile();
+        } 
+        catch (ConfigurationException e) {
+            return e.getLocalizedMessage();
         }
-        if (!configFile.canRead()) {
-            return "File is not readable";
-        }
-        
         String logFileContent = ServerSettingsBean.getLog(configFile);
         return logFileContent;
     }
