@@ -5,7 +5,6 @@ public class LsfProperties {
         PROJECT("lsf.project"),
         QUEUE("lsf.queue"),
         MAX_MEMORY("lsf.max.memory"),
-        WRAPPER_SCRIPT("lsf.wrapper.script"), //similar to command prefix, e.g. bsub <bsub.args> <lsf.wrapper.script> <cmd>
         STDOUT_FILE("lsf.stdout.file"),
         JOB_REPORT_FILE("lsf.job.report.file"), //the -o arg to bsub
         USE_PRE_EXEC_COMMAND("lsf.use.pre.exec.command"),
