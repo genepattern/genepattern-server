@@ -51,7 +51,7 @@ public class PropObj {
         moduleProperties.put(propKey, propValue);
     }
 
-    public void setModuleProperties(Map<String,Map<?,?>> map) throws Exception {
+    public void setModuleProperties(Map<String,Map<?,?>> map) throws ConfigurationException {
         clearModuleProperties();
         for(Entry<String,Map<?,?>> mapEntry : map.entrySet()) {
             String moduleId = mapEntry.getKey();

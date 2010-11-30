@@ -57,6 +57,12 @@ public class CommandManagerFactoryTest extends TestCase {
      */
     private static void validateCommandManager(CommandManager cmdMgr) {
         assertNotNull("Expecting non-null cmdMgr", cmdMgr);
+        
+        List<Throwable> errors = CommandManagerFactory.getInitializationErrors();
+        if (errors != null && errors.size() > 0) {
+            fail(errors.get(0).getLocalizedMessage());
+        }
+        
         assertNotNull("Expecting non-null cmdMgr.commandExecutorsMap", cmdMgr.getCommandExecutorsMap());
         //prove that the map is not modifiable
         try {
@@ -116,6 +122,9 @@ public class CommandManagerFactoryTest extends TestCase {
         String filepath = "test/src/"+classname.replace('.', '/')+"/filenotfound.yaml";
         props.put("command.manager.config.file", filepath);
         CommandManagerFactory.initializeCommandManager(props);
+        assertEquals("expecting initializion error", 1, CommandManagerFactory.getInitializationErrors().size()); 
+        //now, clear the errors
+        CommandManagerFactory.getInitializationErrors().clear();
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
         validateDefaultConfig(cmdMgr);
     }
@@ -150,6 +159,7 @@ public class CommandManagerFactoryTest extends TestCase {
 
     private void validateExampleJobConfig(CommandManager cmdMgr) {
         assertNotNull("Expecting non-null cmdMgr", cmdMgr);
+        validateCommandManager(cmdMgr);
         
         Map<String,CommandExecutor> map = cmdMgr.getCommandExecutorsMap();
         assertNotNull("Expecting non-null cmdMgr.commandExecutorsMap", map);
@@ -209,10 +219,6 @@ public class CommandManagerFactoryTest extends TestCase {
         props.put("command.manager.config.file", filename);
         CommandManagerFactory.initializeCommandManager(props);
         
-        List<Throwable> errors = CommandManagerFactory.getInitializationErrors();
-        if (errors != null && errors.size() > 0) {
-            fail(errors.get(0).getLocalizedMessage());
-        }
         validateCommandManager(CommandManagerFactory.getCommandManager());
     }
 
@@ -481,6 +487,7 @@ public class CommandManagerFactoryTest extends TestCase {
         testCommandProperty(cmdProps, "arg.list.01.b", "item01", new String[] { "item01" });
         testCommandProperty(cmdProps, "arg.list.02", "item01", new String[] { "item01", "item02" });
         testCommandProperty(cmdProps, "arg.list.03", "-X", new String[] { "-X", "4", "3.14", "1.32e6", "true", "false" });
+        testCommandProperty(cmdProps, "arg.list.04", "-X", new String[] { "-X", "4", "3.14", "1.32e6", "true", "false", null, "null" });
         
         //special-case, the parser uses the toString method to convert from Number or Boolean
         testCommandProperty(cmdProps, "arg.err.int", "4", new String[] { "4" });

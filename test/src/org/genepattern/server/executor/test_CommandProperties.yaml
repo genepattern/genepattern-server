@@ -10,9 +10,10 @@ default.properties:
     arg.list.01.b: [ "item01" ]
     arg.list.02: [ item01, "item02" ]
     arg.list.03: [ "-X", "4", "3.14", "1.32e6", "true", "false" ] 
-    arg.list.04: [ "-X", "4", "3.14", "1.32e6", "true", "false" ] 
+    arg.list.04: [ -X, 4, 3.14, 1.32e6, true, false, null, "null" ] 
     
     #should wrap these in double quotes
+    arg.err.char: c
     arg.err.int: 4
     arg.err.number.a: 3.14
     arg.err.number.b: 1.32E-6

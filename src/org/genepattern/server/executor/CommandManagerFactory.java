@@ -147,7 +147,7 @@ public class CommandManagerFactory {
         configFile = properties.getProperty(PROP_COMMAND_MANAGER_CONFIG_FILE);
     }
     
-    public static File getConfigurationFile() {
+    public static File getConfigurationFile() throws ConfigurationException {
         return getConfigurationFile(configFile);
     }
     
@@ -164,7 +164,7 @@ public class CommandManagerFactory {
      * @param configuration
      * @return a valid File or null
      */
-    public static File getConfigurationFile(String configuration) {
+    public static File getConfigurationFile(String configuration) throws ConfigurationException {
         if (configuration == null || configuration.length() == 0) {
             return null;
         }
@@ -178,12 +178,11 @@ public class CommandManagerFactory {
         }
         if (!f.canRead()) {
             if (!f.exists()) {
-                log.error("Configuration file not found: "+f.getAbsolutePath());
+                throw new ConfigurationException("Configuration file does not exist: "+f.getAbsolutePath());
             }
             else {
-                log.error("Cannot read configuration file: "+f.getAbsolutePath());
+                throw new ConfigurationException("Cannot read configuration file: "+f.getAbsolutePath());
             }
-            f = null;
         }
         return f;
     }

@@ -29,7 +29,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
         this.commandManager = new BasicCommandManager();
     }
 
-    public CommandManager parseConfigFile(String pathToConfiguration) throws Exception {
+    public CommandManager parseConfigFile(String pathToConfiguration) throws ConfigurationException {
         setConfigFilename(pathToConfiguration);
         JobConfigObj jobConfigObj = this.parse(this.configFile);
         this.commandManager = this.initializeCommandManager(jobConfigObj);
@@ -38,8 +38,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
     
     public void reloadConfigFile(CommandManager cmdMgr, String pathToConfiguration) throws Exception {
         if (!(cmdMgr instanceof BasicCommandManager)) {
-            log.error("Expecting an instanceof "+this.getClass().getCanonicalName());
-            return;
+            throw new Exception("Expecting an instanceof "+this.getClass().getCanonicalName());
         }
         this.commandManager = (BasicCommandManager) cmdMgr;
         setConfigFilename(pathToConfiguration);
@@ -49,12 +48,9 @@ public class BasicCommandManagerParser implements CommandManagerParser {
         }
     }
     
-    private void setConfigFilename(String s) {
+    private void setConfigFilename(String s) throws ConfigurationException {
         this.configFilename = s;
         this.configFile = CommandManagerFactory.getConfigurationFile(configFilename);
-        if (this.configFile == null) {
-            throw new RuntimeException("Error in setConfigFilename("+s+"): Using default job configuration instead.");
-        }
     }
     
     /**
@@ -62,7 +58,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
      * @param configFile
      * @return
      */
-    private JobConfigObj parse(File configurationFile) throws Exception {
+    private JobConfigObj parse(File configurationFile) throws ConfigurationException {
         JobConfigObj configObj = new JobConfigObj();
         Reader reader = null;
         try {
@@ -87,7 +83,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
             }
         }
         catch (Throwable t) {
-            throw new Exception("Error parsing job configuration file, "+configurationFile.getPath()+".\nError message: "+t.getLocalizedMessage(), t);
+            throw new ConfigurationException("Error parsing job configuration file, "+configurationFile.getPath()+".\nError message: "+t.getLocalizedMessage(), t);
         }
         finally {
             if (reader != null) {
@@ -163,7 +159,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
      * @return
      * @throws Exception
      */
-    private BasicCommandManager initializeCommandManager(JobConfigObj jobConfigObj) throws Exception {
+    private BasicCommandManager initializeCommandManager(JobConfigObj jobConfigObj) throws ConfigurationException {
         BasicCommandManager cmdMgr = new BasicCommandManager();
         initializeCommandExecutors(cmdMgr, jobConfigObj);
         setCommandManagerProperties(cmdMgr, jobConfigObj);
@@ -171,7 +167,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
     }
     
     //initialize executors list
-    private void initializeCommandExecutors(BasicCommandManager cmdMgr, JobConfigObj jobConfigObj) throws Exception {
+    private void initializeCommandExecutors(BasicCommandManager cmdMgr, JobConfigObj jobConfigObj) throws ConfigurationException {
         for(String execId : jobConfigObj.getExecutors().keySet()) {
             ExecutorConfig execObj = jobConfigObj.getExecutors().get(execId);
             CommandExecutor cmdExecutor = initializeCommandExecutor(execObj);
@@ -185,7 +181,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
         setCommandManagerProperties(this.commandManager, jobConfigObj);
     }
 
-    private void setCommandManagerProperties(BasicCommandManager cmdMgr, JobConfigObj jobConfigObj) throws Exception {
+    private void setCommandManagerProperties(BasicCommandManager cmdMgr, JobConfigObj jobConfigObj) throws ConfigurationException {
         CommandManagerProperties config = cmdMgr.getConfigProperties();
 
         for(String execId : jobConfigObj.getExecutors().keySet()) {
@@ -242,7 +238,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
         return cmdExecutor;
     }
 
-    private void initializeCustomProperties(CommandManagerProperties config, Object userOrGroupPropertiesObj, boolean forGroup) throws Exception {
+    private void initializeCustomProperties(CommandManagerProperties config, Object userOrGroupPropertiesObj, boolean forGroup) throws ConfigurationException {
         if (userOrGroupPropertiesObj == null) {
             return;
         }
@@ -278,7 +274,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
         }
     }
     
-    private void initializePropertiesInto(PropObj propObj, String groupOrUserId, Object propertiesObj) throws Exception {
+    private void initializePropertiesInto(PropObj propObj, String groupOrUserId, Object propertiesObj) throws ConfigurationException {
         Map<?,?> map = (Map<?,?>) propertiesObj;
         for(Entry<?,?> entry : map.entrySet() ) {
             String propname = "" + entry.getKey();
@@ -292,7 +288,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
         }
     }
 
-    private void initializeModulePropertiesInto(PropObj propObj, String groupOrUserId, Object modulePropertiesMapObj) throws Exception {
+    private void initializeModulePropertiesInto(PropObj propObj, String groupOrUserId, Object modulePropertiesMapObj) throws ConfigurationException {
         if (modulePropertiesMapObj == null) {
             log.debug("No module.properties set for: "+groupOrUserId);
             return;
@@ -305,8 +301,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
             else {
                 errorMessage += "null object";
             }
-            log.error(errorMessage);
-            throw new Exception(errorMessage);
+            throw new ConfigurationException(errorMessage);
         }
         Map<?,?> map = (Map<?,?>) modulePropertiesMapObj;
         for(Entry<?,?> entry : map.entrySet()) {

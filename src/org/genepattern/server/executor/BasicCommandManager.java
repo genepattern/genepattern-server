@@ -228,9 +228,9 @@ public class BasicCommandManager implements CommandManager {
     //the cmdExecutorsMap.get( DEFAULT_PIPELINE_EXEC_ID ) ... the name for the default pipeline executor when none is specified in the config file
     private static final String DEFAULT_PIPELINE_EXEC_ID = "DefaultGenePatternPipelineExecutor";
     
-    public void addCommandExecutor(String id, CommandExecutor cmdExecutor) throws Exception {
+    public void addCommandExecutor(String id, CommandExecutor cmdExecutor) throws ConfigurationException {
         if (cmdExecutorsMap.containsKey(id)) {
-            throw new Exception("duplicate id: "+id);
+            throw new ConfigurationException("duplicate id: "+id);
         }
         cmdExecutorsMap.put(id, cmdExecutor);
     }

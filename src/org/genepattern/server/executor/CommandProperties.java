@@ -21,12 +21,18 @@ import java.util.Map.Entry;
 public class CommandProperties {
 
     public static class Value {
-        static public Value parse(Object object) throws Exception {
+        static public Value parse(Object object) throws ConfigurationException {
             if (object == null) {
               return new Value( (String) null);
             }
             if (object instanceof String) {
                 return new Value( (String) object );
+            }
+            if (object instanceof Number) {
+                return new Value(object.toString());
+            }
+            if (object instanceof Boolean) {
+                return new Value(object.toString());
             }
             
             if (object instanceof Collection<?>) {
@@ -38,16 +44,19 @@ public class CommandProperties {
                     else if ((item instanceof String)) {
                         s.add((String) item);
                     }
+                    else if ((item instanceof Number)) {
+                        s.add(item.toString());
+                    }
+                    else if ((item instanceof Boolean)) {
+                        s.add(item.toString());
+                    }
                     else {
-                        throw new Exception("Illegal arg, item in Collection<?> is not instanceof String: '"+item.toString()+"'");
+                        throw new ConfigurationException("Illegal arg, item in Collection<?> is not instanceof String: '"+item.toString()+"'");
                     }
                 }
                 return new Value( s );
             }
-            //TODO: cast primitive types toString, but throw an exception otherwise
-            //    new Exception("Illegal arg, object is not a primitive type or a Collection<?>: '"+object.toString()+"'");
-
-            return new Value( object.toString() );
+            throw new ConfigurationException("Illegal arg, object is not instanceof String or Collection<?>: '"+object.toString()+"'");
         }
         
         private List<String> values = new ArrayList<String>();
