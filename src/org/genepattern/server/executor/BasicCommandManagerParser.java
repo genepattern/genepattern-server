@@ -111,7 +111,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
         }
     }
 
-    private void parseDefaultProperties(JobConfigObj configObj, Object defaultPropertiesObj) {
+    private void parseDefaultProperties(JobConfigObj configObj, Object defaultPropertiesObj) throws Exception {
         if (defaultPropertiesObj == null) {
             log.info("No 'default.properties' in configuration");
             return;
@@ -130,7 +130,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
         Map<?,?> map = (Map<?,?>) defaultPropertiesObj;
         for(Entry<?,?> entry : map.entrySet()) {
             String key = ""+entry.getKey();
-            String value = ""+entry.getValue();
+            Value value = Value.parse(entry.getValue());
             configObj.addDefaultProperty(key, value);
         }
     }
@@ -336,7 +336,7 @@ final class JobConfigObj {
         this.executors.put(cmdExecId, cmdExecConfigObj);            
     }
     
-    public void addDefaultProperty(String key, String value) {
+    public void addDefaultProperty(String key, Value value) {
         defaultProperties.put(key, value);
     }
     

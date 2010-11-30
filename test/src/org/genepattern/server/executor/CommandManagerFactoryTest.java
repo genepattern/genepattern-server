@@ -175,7 +175,6 @@ public class CommandManagerFactoryTest extends TestCase {
         assertEquals("checking job properties: java_flags", "-Xmx12g", jobProperties.getProperty("java_flags"));
         assertEquals("checking job properties: lsf.project", "genepattern", jobProperties.getProperty("lsf.project"));
         assertEquals("checking job properties: lsf.queue", "broad", jobProperties.getProperty("lsf.queue"));
-        assertEquals("checking job properties: lsf.wrapper.script", "", jobProperties.getProperty("lsf.wrapper.script"));
         assertEquals("checking job properties: lsf.job.report.file", ".lsf.out", jobProperties.getProperty("lsf.job.report.file"));
         assertEquals("checking job properties: lsf.use.pre.exec.command", "false", ""+jobProperties.getProperty("lsf.use.pre.exec.command"));
         assertEquals("checking job properties: lsf.extra.bsub.args", "", jobProperties.getProperty("lsf.extra.bsub.args"));
@@ -200,7 +199,7 @@ public class CommandManagerFactoryTest extends TestCase {
      *
      * @param filename
      */
-    private static void initializeYamlConfigFile(String filename) {
+    private void initializeYamlConfigFile(String filename) {
         File resourceDir = getSourceDir();
         System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
         
@@ -210,6 +209,10 @@ public class CommandManagerFactoryTest extends TestCase {
         props.put("command.manager.config.file", filename);
         CommandManagerFactory.initializeCommandManager(props);
         
+        List<Throwable> errors = CommandManagerFactory.getInitializationErrors();
+        if (errors != null && errors.size() > 0) {
+            fail(errors.get(0).getLocalizedMessage());
+        }
         validateCommandManager(CommandManagerFactory.getCommandManager());
     }
 
@@ -457,6 +460,77 @@ public class CommandManagerFactoryTest extends TestCase {
         initializeYamlConfigFile("test_custom_pipeline_executor.yaml");
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
         assertEquals("# of command executors", 2, cmdMgr.getCommandExecutorsMap().size());
+    }
+    
+    public void testCommandProperties() {
+        initializeYamlConfigFile("test_CommandProperties.yaml");
+        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
+        JobInfo jobInfo = new JobInfo();
+        jobInfo.setUserId("admin");
+        
+        CommandProperties cmdProps = cmdMgr.getCommandProperties(jobInfo);
+        Value val = cmdProps.get("prop.not.set");
+        assertNull("Expecting 'null' value when property is not in the config file", val);
+
+        testCommandProperty(cmdProps, "arg.empty", (String) null, new String[] { null });
+        testCommandProperty(cmdProps, "arg.null", (String) null, new String[] { null });
+        testCommandProperty(cmdProps, "arg.list.empty", (String) null, new String[] {});
+        testCommandProperty(cmdProps, "arg.list.null", (String) null, new String[] { null });
+
+        testCommandProperty(cmdProps, "arg.list.01.a", "item01", new String[] { "item01" });
+        testCommandProperty(cmdProps, "arg.list.01.b", "item01", new String[] { "item01" });
+        testCommandProperty(cmdProps, "arg.list.02", "item01", new String[] { "item01", "item02" });
+        testCommandProperty(cmdProps, "arg.list.03", "-X", new String[] { "-X", "4", "3.14", "1.32e6", "true", "false" });
+        
+        //special-case, the parser uses the toString method to convert from Number or Boolean
+        testCommandProperty(cmdProps, "arg.err.int", "4", new String[] { "4" });
+        testCommandProperty(cmdProps, "arg.err.number.a", "3.14", new String[] { "3.14" });
+        testCommandProperty(cmdProps, "arg.err.number.b", "1.32E-6", new String[] { "1.32E-6" });
+        testCommandProperty(cmdProps, "arg.err.boolean.true", "true", new String[] { "true" });
+        testCommandProperty(cmdProps, "arg.err.boolean.false", "false", new String[] { "false" });
+
+        //test executor -> default.properties
+        jobInfo.setUserId("test");
+        cmdProps = cmdMgr.getCommandProperties(jobInfo);
+        val = cmdProps.get("arg.override.to.null");
+        assertNull("executor.default.properties: Override default property to 'null'", val.getValue());
+        testCommandProperty(cmdProps, "arg.empty", (String) null, new String[] { null });
+        testCommandProperty(cmdProps, "arg.null", (String) null, new String[] { null });
+        testCommandProperty(cmdProps, "arg.list.empty", (String) null, new String[] {});
+        testCommandProperty(cmdProps, "arg.list.null", (String) null, new String[] { null });
+
+        testCommandProperty(cmdProps, "arg.list.01.a", "overrideItem01", new String[] { "overrideItem01" });
+        testCommandProperty(cmdProps, "arg.list.01.b", "overrideItem01", new String[] { "overrideItem01" });
+        testCommandProperty(cmdProps, "arg.list.02", "overrideItem01", new String[] { "overrideItem01", "overrideItem02" });
+        testCommandProperty(cmdProps, "arg.list.03", "userOverride.x", new String[] { "userOverride.x", "uo4", "uo3.14", "uo1.32e6", "uoTrue", "uoFalse" });
+
+        //error case
+        testCommandProperty(cmdProps, "arg.err.int", "4", new String[] { "4" });
+        testCommandProperty(cmdProps, "arg.err.number.a", "3.14", new String[] { "3.14" });
+        testCommandProperty(cmdProps, "arg.err.number.b", "1.32E-6", new String[] { "1.32E-6" });
+        testCommandProperty(cmdProps, "arg.err.boolean.true", "true", new String[] { "true" });
+        testCommandProperty(cmdProps, "arg.err.boolean.false", "false", new String[] { "false" });
+        
+        //test module.properties
+        jobInfo.setUserId("admin");
+        jobInfo.setTaskName("module01");
+        cmdProps = cmdMgr.getCommandProperties(jobInfo);
+
+        val = cmdProps.get("arg.override.to.null");
+        assertNull("module.default.properties: Override default property to 'null'", val.getValue());
+        testCommandProperty(cmdProps, "arg.list.03", "moduleOverride.x", new String[] { "moduleOverride.x", "mo4", "mo3.14", "mo1.32e6", "moTrue", "moFalse" });
+    }
+    
+    private void testCommandProperty(CommandProperties cmdProps, String propName, String expectedValue, String[] expectedValues) {
+        Value val = cmdProps.get(propName);
+        assertNotNull("Unexpected null value in '"+propName+"'", val);
+        assertEquals("numValues in '"+propName+"'", expectedValues.length, val.getNumValues());
+        assertEquals("getValue in '"+propName+"'", expectedValue, val.getValue());
+        int i=0;
+        for(String expectedValI : expectedValues) {
+            assertEquals("getValues["+i+"] in '"+propName+"'", expectedValI, val.getValues().get(i));
+            ++i;
+        }
     }
 
     /**

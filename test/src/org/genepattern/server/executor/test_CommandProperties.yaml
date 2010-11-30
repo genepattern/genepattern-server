@@ -1,0 +1,64 @@
+# example CommandProperty configuration file
+default.properties:
+    executor: exec01
+    arg.override.to.null: "not null by default"
+    arg.empty:
+    arg.null: null
+    arg.list.empty: []
+    arg.list.null: [ null ]
+    arg.list.01.a: [ item01 ]
+    arg.list.01.b: [ "item01" ]
+    arg.list.02: [ item01, "item02" ]
+    arg.list.03: [ "-X", "4", "3.14", "1.32e6", "true", "false" ] 
+    arg.list.04: [ "-X", "4", "3.14", "1.32e6", "true", "false" ] 
+    
+    #should wrap these in double quotes
+    arg.err.int: 4
+    arg.err.number.a: 3.14
+    arg.err.number.b: 1.32E-6
+    arg.err.boolean.true: true
+    arg.err.boolean.false: false
+
+executors:
+    exec01:
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+        configuration.properties:
+            config.prop: 15
+        default.properties:
+            executor.prop: val
+            
+    exec02:
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+        configuration.properties:
+            config.prop: 15
+        default.properties:
+            executor.prop: val
+            # override default.properties
+            arg.override.to.null: 
+            arg.empty:
+            arg.null: null
+            arg.list.empty: []
+            arg.list.null: [ null ]
+            arg.list.01.a: [ overrideItem01 ]
+            arg.list.01.b: [ "overrideItem01" ]
+            arg.list.02: [ overrideItem01, "overrideItem02" ]
+            arg.list.03: [ "-X", "4", "3.14", "1.32e6", "true", "false" ]
+            #error cases
+            arg.err.int: 4
+            arg.err.number.a: 3.14
+            arg.err.number.b: 1.32e-6
+            arg.err.boolean.true: true
+            arg.err.boolean.false: false
+
+module.properties:
+    module01:
+        arg.override.to.null: 
+        arg.list.03: [ "moduleOverride.x", "mo4", "mo3.14", "mo1.32e6", "moTrue", "moFalse" ]
+
+user.properties:
+    test:
+        executor: exec02
+        arg.list.03: [ "userOverride.x", "uo4", "uo3.14", "uo1.32e6", "uoTrue", "uoFalse" ]
+    test01:
+        executor: exec02
+        

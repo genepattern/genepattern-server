@@ -1,11 +1,26 @@
 #
-# Configure job execution
+# example job configuration file
 #
-# Note: this is a YAML file, indentation is important, TAB characters are not permitted
+# Note: this is a YAML file, indentation is important, TAB characters are not permitted.
+#     You must use an exact number of spaces to denote each indentation level.
+#     This file uses 4 space characters for each level.
 #
-# The GP server uses the snakeyaml parser (http://code.google.com/p/snakeyaml/). 
-# For more details about the YAML format, see: http://www.yaml.org/
+#     The GP server uses the snakeyaml parser (http://code.google.com/p/snakeyaml/). 
+#     For more details about the YAML format, see: http://www.yaml.org/
 #
+# The GP server accepts a string or an array of strings as a value. 
+# You must wrap some values in double quotes, especially for items in an array. 
+# To be certain, wrap all values in double quotes.
+#
+# Of special note are the following examples:
+# When null is used as a value, without double quotes, it is interpreted as a null value rather than the String "null".
+#     arg.null: null
+#
+# Numbers and booleans must be wrapped in double quotes.
+#     arg.value: "true"
+#     arg.list: [ "4", "3.14", "1.32e6", "true", "false" ] 
+# The following example will cause a parse error:
+#     arg.list.error: [ 4, 3.14, 1.32e6, true, false ] 
 
 # apply these properties to all jobs
 default.properties: 
@@ -50,8 +65,6 @@ executors:
         #BroadCore configuration properties
         configuration.properties:
             hibernate.connection.datasource: java:comp/env/jdbc/gpdb
-            hibernate.connection.username: GENEPATTERN_DEV_01
-            hibernate.connection.password: \*\*\*\*
             hibernate.default_schema: GENEPATTERN_DEV_01
             hibernate.dialect: org.genepattern.server.database.PlatformOracle9Dialect
             hibernate.current_session_context_class: thread
@@ -77,16 +90,12 @@ executors:
             lsf.project: genepattern
             lsf.queue: broad
             lsf.max.memory: 2
-            lsf.wrapper.script: ""
             lsf.stdout.file: stdout.txt
             lsf.job.report.file: .lsf.out
             lsf.use.pre.exec.command: "false"
             lsf.extra.bsub.args: ""
             # default setting, no need to set
             #lsf.job.completion.listener: org.genepattern.server.executor.lsf.LsfJobCompletionListener
-            # special case for scatter gather jobs, not yet implemented
-            #lsf.firehose.scatter.gather: [true | false]
-            #lsf.firehose.scatter.gather.output.filename: scatter.gather.out
 
 # override default.properties and executor->default.properties based on taskname or lsid
 # Note: executor->configuration.properties are intended to be applied at startup and are not overwritten here
