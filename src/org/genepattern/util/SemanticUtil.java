@@ -16,8 +16,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -94,67 +92,29 @@ public class SemanticUtil {
     }
 
     /**
-     *
-     * Returns <code>true</code> if the given kind returned from is an
-     * acceptable input file
-     *
-     * format for the given input parameter
-     *
+     * Helper method for generating the 'send to' pop up menu for each output file.
+     * Each output file has a type. Each module accepts a set of zero or more file types.
+     * This method creates a new unmodifiable Map<String, Set<TaskInfo>> of file type to the set 
+     * of module zero or more modules which accepts that file type. 
+     * If no modules accept the file type, there will not be an entry in the map.
+     * 
+     * @param taskArray, the list of all modules from which to generate the collection, usually the list of all modules that 
+     *           the current user can run.
+     * @return map of fileType to set of modules which accept the given file type as input.
      */
-    public static boolean isCorrectKind(String[] inputTypes, String kind) {
-        if (inputTypes == null || inputTypes.length == 0) {
-            return false;
-        }
-        if (kind == null || kind.equals("")) {
-            return true;
-        }
-        return Arrays.asList(inputTypes).contains(kind);
-    }
-
-    private static  HashMap<String, Collection<TaskInfo>> mapOfAllTasks = new HashMap<String, Collection<TaskInfo>>();
-  
-    public static Map<String, Collection<TaskInfo>> getKindToModulesMap(TaskInfo[] taskArray) {
-        Map<String, Collection<TaskInfo>> map = new HashMap<String, Collection<TaskInfo>>();
-        Set<TaskInfo> userTasks = new HashSet<TaskInfo>();
-        for (TaskInfo ti: taskArray){
-            userTasks.add(ti);
-        }
-        /*
-         * first make sure we have this task already in the complete list
-         */
-        for (TaskInfo task : taskArray) {
-            if (task == null || task.getLsid() == null) {
-                // unexpected input
-            }
-            else {
-                addToInputTypeToModulesMap(mapOfAllTasks, task);
-            }
-        }
-        
-        /*
-         * Now filter the list to return just those that this user can see (that were provided in the input collection)
-         */
-        for (String type: mapOfAllTasks.keySet()){
-            Collection<TaskInfo>  allModulesForInputType = mapOfAllTasks.get(type);
-            Collection<TaskInfo> modules = new HashSet<TaskInfo>();
-            for (TaskInfo task: allModulesForInputType){
-                /* if this taskinfo is in the input array we use it */
-                try {
-                    if (task != null && userTasks != null) {
-                        if (userTasks.contains(task)) {
-                            modules.add(task);
-                        }
-                    }
-                } 
-                catch (Exception e) {
-                    log.error("error on task: " + (task != null ? task.getName() : "<null>"), e);
+    public static Map<String, Set<TaskInfo>> getKindToModulesMap(List<TaskInfo> taskArray) {
+        Map<String, Set<TaskInfo>> map = new HashMap<String, Set<TaskInfo>>();
+        for (TaskInfo taskInfo : taskArray) {
+            for(String inputFileType : taskInfo.getInputFileTypes()) {
+                Set<TaskInfo> sendTo = map.get(inputFileType);
+                if (sendTo == null) {
+                    sendTo = new HashSet<TaskInfo>();
+                    map.put(inputFileType, sendTo);
                 }
-            }
-            if (modules.size()> 0){
-                map.put(type, modules);
+                sendTo.add(taskInfo);
             }
         }
-        return map;
+        return Collections.unmodifiableMap(map);
     }
 
     public static List<String> getFileFormats(ParameterInfo p) {
@@ -190,37 +150,6 @@ public class SemanticUtil {
             }
         }
         return taskInfoInputFileFormats;
-    }
-    
-    /**
-     * @deprecated - this can be refactored so that the taskInfo cache stores the set of all file types accepted by each module, 
-     *               and additionally refactored so that output file types for each job are stored in the db.
-     * @param map
-     * @param taskInfo
-     */
-    private static void addToInputTypeToModulesMap(Map<String, Collection<TaskInfo>> map, TaskInfo taskInfo) {
-        ParameterInfo[] p = taskInfo.getParameterInfoArray();
-        if (p != null) {
-            for (int i = 0; i < p.length; i++) {
-                if (p[i].isInputFile()) {
-                    ParameterInfo info = p[i];
-                    String fileFormatsString = (String) info.getAttributes().get(GPConstants.FILE_FORMAT);
-                    if (fileFormatsString == null || fileFormatsString.equals("")) {
-                        continue;
-                    }
-                    StringTokenizer st = new StringTokenizer(fileFormatsString, GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-                    while (st.hasMoreTokens()) {
-                        String type = st.nextToken();
-                        Collection<TaskInfo> modules = map.get(type);
-                        if ((modules == null) && (type != null)) {
-                            modules = new HashSet<TaskInfo>();
-                            map.put(type, modules);
-                        }
-                        modules.add(taskInfo);
-                    }
-                }
-            }
-        }
     }
 
 }

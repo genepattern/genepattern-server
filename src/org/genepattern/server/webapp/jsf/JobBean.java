@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -450,8 +451,9 @@ public class JobBean {
         }
         String currentUserId = UIBeanHelper.getUserId();
         AdminDAO dao = new AdminDAO();
-        TaskInfo[] latestTasks = dao.getLatestTasks(currentUserId);
-        Map<String, Collection<TaskInfo>> kindToModules = SemanticUtil.getKindToModulesMap(latestTasks);        
+        TaskInfo[] latestTaskArray = dao.getLatestTasks(currentUserId);
+        List<TaskInfo> latestTaskList = Arrays.asList(latestTaskArray);
+        Map<String, Set<TaskInfo>> kindToModules = SemanticUtil.getKindToModulesMap(latestTaskList);        
         final boolean showExecutionLogs = isShowExecutionLogs();
         List<JobResultsWrapper> wrappedJobs = new ArrayList<JobResultsWrapper>(jobInfos.size());
         for(JobInfo jobInfo : jobInfos) {

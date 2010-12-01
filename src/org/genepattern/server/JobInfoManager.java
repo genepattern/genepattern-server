@@ -12,10 +12,12 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipOutputStream;
 
@@ -146,8 +148,9 @@ public class JobInfoManager {
         }
             
         AdminDAO adminDao = new AdminDAO();
-        TaskInfo[] latestTasks = adminDao.getLatestTasks(currentUser);
-        Map<String, Collection<TaskInfo>> kindToModules = SemanticUtil.getKindToModulesMap(latestTasks);
+        TaskInfo[] latestTaskArray = adminDao.getLatestTasks(currentUser);
+        List<TaskInfo> latestTaskList = Arrays.asList(latestTaskArray);
+        Map<String, Set<TaskInfo>> kindToModules = SemanticUtil.getKindToModulesMap(latestTaskList);
 
         JobInfoWrapper jobInfoWrapper = processChildren((JobInfoWrapper)null, showExecutionLogs, documentCookie, contextPath, analysisDao, adminDao, kindToModules, jobInfo, visualizerJavaFlags);
 
@@ -167,7 +170,7 @@ public class JobInfoManager {
      * @param jobInfo
      * @return a new JobInfoWrapper
      */
-    private JobInfoWrapper processChildren(JobInfoWrapper parent, boolean showExecutionLogs, String documentCookie, String contextPath, AnalysisDAO analysisDao, AdminDAO adminDao, Map<String, Collection<TaskInfo>> kindToModules, JobInfo jobInfo, String visualizerJavaFlags) {
+    private JobInfoWrapper processChildren(JobInfoWrapper parent, boolean showExecutionLogs, String documentCookie, String contextPath, AnalysisDAO analysisDao, AdminDAO adminDao, Map<String, Set<TaskInfo>> kindToModules, JobInfo jobInfo, String visualizerJavaFlags) {
         TaskInfo taskInfo = null;
         try {
             //NOTE: an exception is thrown if the module has been deleted
@@ -183,7 +186,8 @@ public class JobInfoManager {
         jobInfoWrapper.setParent(parent);
         //Note: must call setTaskInfo before setJobInfo
         jobInfoWrapper.setTaskInfo(taskInfo);        
-        jobInfoWrapper.setJobInfo(showExecutionLogs, contextPath, kindToModules, jobInfo);
+        //jobInfoWrapper.setJobInfo(showExecutionLogs, contextPath, kindToModules, jobInfo);
+        jobInfoWrapper.setJobInfo(showExecutionLogs, contextPath, jobInfo);
         
         //special case for visualizers
         if (taskInfo != null && TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {

@@ -34,7 +34,7 @@ public class JobResultsWrapper {
     private int sequence = 0;
     private long totalSize = 0l;
     private boolean showExecutionLogs = false;
-    private Map<String,Collection<TaskInfo>> kindToModules;
+    private Map<String,Set<TaskInfo>> kindToModules;
     private Set<String> selectedFiles;
     private Set<String> selectedJobs;
     private Map<String, List<KeyValuePair>> kindToInputParameters;
@@ -48,7 +48,7 @@ public class JobResultsWrapper {
     public JobResultsWrapper(
             final JobPermissionsBean jobPermissionsBean,
             final JobInfo jobInfo, 
-            final Map<String,Collection<TaskInfo>> kindToModules,
+            final Map<String,Set<TaskInfo>> kindToModules,
             final Set<String> selectedFiles, 
             final Set<String> selectedJobs, 
             final int level, 
@@ -108,15 +108,15 @@ public class JobResultsWrapper {
                         }
                         if (isChildOutput || showPipelineOutputFiles) {
                             String kind = SemanticUtil.getKind(file);
-                            Collection<TaskInfo> modules;
+                            Collection<TaskInfo> sendToModules = null;
 
                             if (param.getName().equals(GPConstants.TASKLOG)) {
-                                modules = new ArrayList<TaskInfo>();
+                                sendToModules = new ArrayList<TaskInfo>();
                             } 
                             else {
-                                modules = kindToModules.get(kind);
+                                sendToModules = kindToModules.get(kind);
                             }
-                            OutputFileInfo pInfo = new OutputFileInfo(param, file, modules, jobInfo.getJobNumber(), kind);
+                            OutputFileInfo pInfo = new OutputFileInfo(param, file, sendToModules, jobInfo.getJobNumber(), kind);
                             totalSize += pInfo.getSize();
                             pInfo.setSelected(selectedFiles.contains(pInfo.getValue()));
                             outputFiles.add(pInfo);
