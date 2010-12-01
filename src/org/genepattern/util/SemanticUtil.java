@@ -105,7 +105,7 @@ public class SemanticUtil {
     public static Map<String, Set<TaskInfo>> getKindToModulesMap(List<TaskInfo> taskArray) {
         Map<String, Set<TaskInfo>> map = new HashMap<String, Set<TaskInfo>>();
         for (TaskInfo taskInfo : taskArray) {
-            for(String inputFileType : taskInfo.getInputFileTypes()) {
+            for(String inputFileType : taskInfo._getInputFileTypes()) {
                 Set<TaskInfo> sendTo = map.get(inputFileType);
                 if (sendTo == null) {
                     sendTo = new HashSet<TaskInfo>();

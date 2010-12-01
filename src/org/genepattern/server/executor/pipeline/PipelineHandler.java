@@ -195,7 +195,7 @@ public class PipelineHandler {
         try {
             AnalysisDAO ds = new AnalysisDAO();
             childJobInfo = ds.getJobInfo(childJobNumber);
-            parentJobNumber = childJobInfo.getParentJobNumber();
+            parentJobNumber = childJobInfo._getParentJobNumber();
         }
         finally {
             HibernateUtil.closeCurrentSession();

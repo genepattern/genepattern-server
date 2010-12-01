@@ -118,8 +118,14 @@ public class JobInfo implements Serializable {
     public void setJobNumber(int jobNo) {
         this.jobNo = jobNo;
     }
-    
-    public int getParentJobNumber() {
+
+    /**
+     * Note: To preserve compatibility with earlier versions of the SOAP client,
+     *     This method deliberately named using a non JavaBean naming convention so that the axis serializer does not
+     *     include the parentJobNo in the serialized bean.
+     * @return the jobNumber of the parent job, or a number less than zero if the job has no parent.
+     */
+    public int _getParentJobNumber() {
         return this.parentJobNo;
     }
 
