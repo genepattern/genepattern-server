@@ -173,9 +173,9 @@ public class JobInfoManager {
     private JobInfoWrapper processChildren(JobInfoWrapper parent, boolean showExecutionLogs, String documentCookie, String contextPath, AnalysisDAO analysisDao, AdminDAO adminDao, Map<String, Set<TaskInfo>> kindToModules, JobInfo jobInfo, String visualizerJavaFlags) {
         TaskInfo taskInfo = null;
         try {
-            //NOTE: an exception is thrown if the module has been deleted
-            int taskId = jobInfo.getTaskID();
-            taskInfo = adminDao.getTask(taskId);
+            //an exception is thrown if the module has been deleted
+            String lsid = jobInfo.getTaskLSID();
+            taskInfo = adminDao.getTask(lsid);
         }
         catch (Exception e) {
             //TODO: provide feedback in UI that the module for this job has been deleted 

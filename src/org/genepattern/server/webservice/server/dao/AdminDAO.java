@@ -32,6 +32,7 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.TaskIDNotFoundException;
+import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.TaskMaster;
@@ -495,8 +496,24 @@ public class AdminDAO extends BaseDAO {
         return taskIds;
     }
 
+    /**
+     * Get the taskInfo for the given taskId.
+     * @param taskId
+     * @return
+     * @throws TaskIDNotFoundException
+     */
     public TaskInfo getTask(int taskId) throws TaskIDNotFoundException {
         return TaskInfoCache.instance().getTask(taskId);
+    }
+
+    /**
+     * Get the taskInfo with the given lsid.
+     * @param lsid
+     * @return
+     * @throws TaskLSIDNotFoundException
+     */
+    public TaskInfo getTask(String lsid) throws TaskLSIDNotFoundException {
+        return TaskInfoCache.instance().getTask(lsid);
     }
 
     /**
