@@ -399,21 +399,25 @@ public class AnalysisDAO extends BaseDAO {
      * 
      */
     public JobInfo[] getChildren(int jobId) throws OmnigeneException {
+        List<JobInfo> childJobInfos = new ArrayList<JobInfo>();
 
-	java.util.List results = new java.util.ArrayList();
+        String hql = " from org.genepattern.server.domain.AnalysisJob  where parent = :jobNo " +
+                     " ORDER BY jobNo ASC";
 
-	String hql = " from org.genepattern.server.domain.AnalysisJob  where parent = :jobNo ";
-	hql += " ORDER BY jobNo ASC";
-
-	Query query = getSession().createQuery(hql);
-	query.setInteger("jobNo", jobId);
-	query.setFetchSize(50);
-	List<AnalysisJob> aJobs = query.list();
-	for (AnalysisJob aJob : aJobs) {
-	    JobInfo ji = new JobInfo(aJob);
-	    results.add(ji);
-	}
-	return (JobInfo[]) results.toArray(new JobInfo[0]);
+        Query query = getSession().createQuery(hql);
+        query.setInteger("jobNo", jobId);
+        query.setFetchSize(50);
+        List<AnalysisJob> aJobs = query.list();
+        for (AnalysisJob aJob : aJobs) {
+            try {
+                JobInfo ji = new JobInfo(aJob);
+                childJobInfos.add(ji);
+            }
+            catch (Throwable t) {
+                log.error("Error creating jobInfo for analysisJob, aJob.jobNo="+aJob.getJobNo()+": "+t.getLocalizedMessage());
+            }
+        }
+        return (JobInfo[]) childJobInfos.toArray(new JobInfo[0]);
     }
 
     /**
