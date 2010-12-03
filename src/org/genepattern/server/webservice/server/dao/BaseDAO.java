@@ -130,15 +130,6 @@ public class BaseDAO {
 
     }
 
-
-
-    public JobInfo jobInfoFromAnalysisJob(org.genepattern.server.domain.AnalysisJob aJob) throws OmnigeneException {
-        return new JobInfo(aJob.getJobNo().intValue(), aJob.getTaskId(), aJob.getJobStatus().getStatusName(), aJob
-                .getSubmittedDate(), aJob.getCompletedDate(), ParameterFormatConverter.getParameterInfoArray(aJob
-                .getParameterInfo()), aJob.getUserId(), aJob.getTaskLsid(), aJob.getTaskName());
-    
-    }
-
     /**
      * execute arbitrary SQL on database, returning ResultSet
      * 
