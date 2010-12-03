@@ -31,6 +31,7 @@ import org.genepattern.webservice.TaskInfo;
  * @author Joshua Gould
  */
 public class DirectoryManager {
+    private static Logger log = Logger.getLogger(DirectoryManager.class);
 
     /**
      * location on server of taskLib directory where per-task support files are stored
@@ -148,6 +149,10 @@ public class DirectoryManager {
      * @author Jim Lerner (Moved to DirManager from GenePatternAnalysisTask by Ted Liefeld)
      */
     public static String getTaskLibDir(TaskInfo taskInfo) {
+        if (taskInfo == null) {
+            log.error("Unexpected null arg in DirectoryManager.getTaskLibDir");
+            return "";
+        }
         File f = null;
         getLibDir();
 
