@@ -482,7 +482,7 @@ public class PipelineHandler {
         if (jobSubmission.getTaskInfo() == null) {
             throw new IllegalArgumentException("jobSubmission.taskInfo is null");
         }
-        if (jobSubmission.getTaskInfo().getID() <= 0) {
+        if (jobSubmission.getTaskInfo().getID() < 0) {
             throw new IllegalArgumentException("jobSubmission.taskInfo.ID not set");
         }
         int taskId = jobSubmission.getTaskInfo().getID();
@@ -806,9 +806,9 @@ public class PipelineHandler {
                     String key = name + taskNum + "." + aParam.getName();
                     String val = (String) args.get(key);                    
                     if ((val != null)) { 
-                        //We don't want to double prefix the arguments.  If this RunPipelineSoap was
-                        //run from the GenePattern webpage, the arguments will have been prefixed as
-                        //the "run pipeline" job was run to get us here.
+                        //We don't want to double prefix the arguments.  
+                        // If this was run from the GenePattern webpage, 
+                        // the arguments will have been prefixed as the "run pipeline" job was run to get us here.
                         if (attributes.containsKey(GPConstants.PARAM_INFO_PREFIX[0])){
                             String prefix = (String) attributes.get(GPConstants.PARAM_INFO_PREFIX[0]);
                             if (val.startsWith(prefix)){
