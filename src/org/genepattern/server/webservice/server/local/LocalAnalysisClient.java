@@ -21,7 +21,6 @@ import javax.activation.FileDataSource;
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.handler.AddNewJobHandler;
-import org.genepattern.server.handler.AddNewJobHandlerNoWakeup;
 import org.genepattern.server.webservice.server.Analysis;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
@@ -138,36 +137,6 @@ public class LocalAnalysisClient {
 	    return service.submitJob(taskID, parameters, files, parentJobNumber);
 	} catch (Exception re) {
 	    throw new WebServiceException(re);
-	}
-    }
-
-    public JobInfo submitJobNoWakeup(int taskID, ParameterInfo[] parameters, int parentJobNumber)
-	    throws WebServiceException {
-
-	try {
-	    if (log.isDebugEnabled()) {
-		log.debug("submitJobNoWakeup.  parentJobNumber= " + parentJobNumber + " taskId= " + taskID);
-	    }
-
-	    Thread.yield(); 
-	    // JL: fixes BUG in which responses from AxisServlet are sometimes empty
-	    JobInfo jobInfo = null;
-
-	    // renameInputFiles(parameters, files);
-
-	    AddNewJobHandler req = new AddNewJobHandlerNoWakeup(taskID, userName, parameters, parentJobNumber);
-	    jobInfo = req.executeRequest();
-
-	    if (log.isDebugEnabled()) {
-		log.debug("Returning jobInfo  jobNumber= " + jobInfo.getJobNumber() + " taskName= "
-			+ jobInfo.getTaskName());
-	    }
-	    return jobInfo;
-	} catch (Exception e) {
-	    e.printStackTrace();
-	    throw new WebServiceException(e);
-	} finally {
-	    // HibernateUtil.closeCurrentSession();
 	}
     }
 

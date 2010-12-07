@@ -31,18 +31,17 @@ import org.genepattern.webservice.ParameterInfo;
 
 public class AddNewJobHandler extends RequestHandler {
     private static Logger log = Logger.getLogger(AddNewJobHandler.class);
-    protected int taskID = 1;
-    protected String parameter_info = "";
-    protected ParameterInfo[] parameterInfoArray = null;
-    protected String userID;
+    private int taskID = 1;
+    private String parameter_info = "";
+    private ParameterInfo[] parameterInfoArray = null;
+    private String userID;
+    //default value of -1 means the job has no parent
+    private int parentJobID = -1;
     
-    protected int parentJobID;
-    
-    protected boolean hasParent = false;
+    private boolean wakeupJobQueue = true;
     
     /** Creates new GetAvailableTasksHandler */
     public AddNewJobHandler() {
-        super();
     }
     
     /**
@@ -74,9 +73,12 @@ public class AddNewJobHandler extends RequestHandler {
         this.userID = userID;
         this.parameterInfoArray = parameterInfoArray;
         this.parentJobID = parentJobID;
-        hasParent = true;
     }
     
+    public void setWakeupJobQueueFlag(boolean b) {
+        this.wakeupJobQueue = b;
+    }
+
     /**
      * Creates job. Call this fun. if you need JobInfo object
      *
@@ -96,13 +98,7 @@ public class AddNewJobHandler extends RequestHandler {
             // Insert job record.  Transaction is committed to avoid deadlock.
             HibernateUtil.beginTransaction();
             AnalysisDAO ds = new AnalysisDAO();
-            // Invoke EJB function
-            if (hasParent) {
-                ji = ds.addNewJob(taskID, userID, parameter_info, parentJobID);
-            } 
-            else {
-                ji = ds.addNewJob(taskID, userID, parameter_info, -1);
-            }
+            ji = ds.addNewJob(taskID, userID, parameter_info, parentJobID);
 
             // Checking for null
             if (ji == null) {
@@ -113,10 +109,10 @@ public class AddNewJobHandler extends RequestHandler {
             
             HibernateUtil.commitTransaction();
             
-            if(log.isDebugEnabled()) {
-                log.debug("Waking up job queue");
+            if (wakeupJobQueue) {
+                log.debug("Waking up job queue");                
+                CommandManagerFactory.getCommandManager().wakeupJobQueue();
             }
-            CommandManagerFactory.getCommandManager().wakeupJobQueue();
             
             // Reparse parameter_info before sending to client
             ji.setParameterInfoArray(ParameterFormatConverter.getParameterInfoArray(parameter_info));
