@@ -1,10 +1,10 @@
 package org.genepattern.server.executor;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -74,7 +74,7 @@ public class RuntimeCommandExecutor implements CommandExecutor {
     }
     
     //----- keep references to all currently running jobs which were started by this executor
-    private Map<String,CallableRuntimeExecCommand> runningJobs = new HashMap<String,CallableRuntimeExecCommand>();
+    private Map<String,CallableRuntimeExecCommand> runningJobs = new ConcurrentHashMap<String,CallableRuntimeExecCommand>();
 
     public void start() {
         initNumThreads();
