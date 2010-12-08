@@ -40,10 +40,6 @@ public class AddNewJobHandler extends RequestHandler {
     
     private boolean wakeupJobQueue = true;
     
-    /** Creates new GetAvailableTasksHandler */
-    public AddNewJobHandler() {
-    }
-    
     /**
      * Constructor with taskID, ParameterInfo[]
      *
