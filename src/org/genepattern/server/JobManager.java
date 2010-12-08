@@ -83,6 +83,31 @@ public class JobManager {
         ji.setParameterInfoArray(ParameterFormatConverter.getParameterInfoArray(parameter_info));
         return ji;
     }
+    
+    static public void terminateJob(boolean isAdmin, String currentUser, int jobId) throws JobTerminationException {
+        try {
+            boolean canWriteJob = canWriteJob(isAdmin, currentUser, jobId);
+            if (!canWriteJob) {
+                throw new JobTerminationException("'"+currentUser+"' does not have permission to terminate job #"+jobId);
+            }
+        }
+        catch (WebServiceException e) {
+            log.error(e);
+            throw new JobTerminationException(e.getLocalizedMessage());
+        }
+        AnalysisJobScheduler.terminateJob(jobId);
+    }
+    
+    static private boolean canWriteJob(boolean isAdmin, String userId, int jobId) throws WebServiceException {
+        PermissionsHelper ph = null;
+        try {
+            ph = new PermissionsHelper(isAdmin, userId, jobId);
+            return ph.canWriteJob();
+        }
+        catch (Throwable t) {
+            throw new WebServiceException("server error, unable to check permissions for job #"+jobId, t);
+        }
+    }
 
     /**
      * Delete the given job by first terminating it if it is running, deleting its files, and the removing its entry from the database.

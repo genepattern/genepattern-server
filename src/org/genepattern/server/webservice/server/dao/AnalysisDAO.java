@@ -35,6 +35,7 @@ import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.domain.Lsid;
 import org.genepattern.server.domain.TaskMaster;
+import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
 import org.genepattern.util.GPConstants;
@@ -53,7 +54,37 @@ import org.hibernate.Query;
  * @version
  */
 public class AnalysisDAO extends BaseDAO {
-    static Logger log = Logger.getLogger(AnalysisDAO.class);
+    public static Logger log = Logger.getLogger(AnalysisDAO.class);
+
+    /**
+     * Create the job directory for a newly added job.
+     * 
+     * @throws IllegalArgumentException, JobDispatchException
+     */
+    private static void createJobDirectory(Integer jobId) throws JobSubmissionException {
+        if (jobId == null) {
+            throw new IllegalArgumentException("Can't create job directory for jobId=null");
+        }
+        
+        String jobDir = GenePatternAnalysisTask.getJobDir(""+jobId);
+        // make directory to hold input and output files
+        File outDir = new File(jobDir);
+        if (!outDir.exists()) {
+            if (!outDir.mkdirs()) {
+                throw new JobSubmissionException("Error creating output directory for job #" + jobId +", jobDir=" + jobDir);
+            }
+        } 
+        else {
+            // clean out existing directory
+            if (log.isDebugEnabled()) {
+                log.debug("clean out existing directory");
+            }
+            File[] old = outDir.listFiles();
+            for (int i = 0; old != null && i < old.length; i++) {
+                old[i].delete();
+            }
+        }
+    }
 
     public AnalysisDAO() {
     }
@@ -203,6 +234,10 @@ public class AnalysisDAO extends BaseDAO {
         return jobInfos;
     }
 
+//    public JobInfo addNewJob(String taskLsid, String parameter_info, int parentJobNumber) {
+//        
+//    }
+
     /**
      * 
      */
@@ -238,7 +273,7 @@ public class AnalysisDAO extends BaseDAO {
     }
 
     public Integer addNewJob(int taskID, String user_id, Set<GroupPermission> groupPermissions, String parameter_info, String taskName, Integer parentJobNumber, String task_lsid, int status) {
-        int updatedRecord = 0;
+        //int updatedRecord = 0;
         String lsid = null;
         // Check taskID is valid
         if (taskID != UNPROCESSABLE_TASKID) {
@@ -268,6 +303,9 @@ public class AnalysisDAO extends BaseDAO {
         aJob.setJobStatus(js);
 
         Integer jobId = (Integer) getSession().save(aJob);
+        
+        //TODO: createJobDirectory
+        //createJobDirectory(jobId);
 
         //optionally save group permissions with the job
         if (groupPermissions != null && groupPermissions.size() > 0) {

@@ -31,8 +31,8 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.webapp.PipelineCreationHelper;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
-import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
@@ -43,12 +43,9 @@ import org.genepattern.webservice.WebServiceException;
 
 public class ProvenanceFinder {
     private static Logger log = Logger.getLogger(ProvenanceFinder.class);
+
     private static String serverURL = null;
-
     private String userID = null;
-
-    private LocalAnalysisClient service = null;
-
     private ArrayList filesToCopy = new ArrayList();
 
     static {
@@ -72,7 +69,6 @@ public class ProvenanceFinder {
 
     public ProvenanceFinder(String user) {
 	userID = user;
-	service = new LocalAnalysisClient(userID);
     }
 
     public String createProvenancePipeline(Set<JobInfo> jobs, String pipelineName) {
@@ -140,25 +136,25 @@ public class ProvenanceFinder {
      * Given a file URL find the Job that created it or return null. Must be a job output file
      */
     public JobInfo findJobThatCreatedFile(String fileURL) {
-
-	String jobNoStr = getJobNoFromURL(fileURL);
-	if (jobNoStr == null) {
-	    try {
-		// maybe just a job # passed in
-		Integer.parseInt(fileURL);
-		jobNoStr = fileURL;
-	    } catch (NumberFormatException nfe) {
-
-	    }
-	}
-	int jobid = -1;
-	try {
-	    jobid = Integer.parseInt(jobNoStr);
-	    return service.getJob(jobid);
-
-	} catch (Exception e) {
-	    return null;
-	}
+        String jobNoStr = getJobNoFromURL(fileURL);
+        if (jobNoStr == null) {
+            try {
+                // maybe just a job # passed in
+                Integer.parseInt(fileURL);
+                jobNoStr = fileURL;
+            } 
+            catch (NumberFormatException nfe) {
+            }
+        }
+        int jobid = -1;
+        try {
+            jobid = Integer.parseInt(jobNoStr);
+            return new AnalysisDAO().getJobInfo(jobid);
+        } 
+        catch (Throwable t) {
+            log.error("Error getting JobInfo for jobid="+jobNoStr, t);
+            return null;
+        }
     }
 
     /**
@@ -452,7 +448,8 @@ public class ProvenanceFinder {
 
 		attrs.put(PipelineModel.INHERIT_TASKNAME, "" + pipeNo);
 		
-		JobInfo priorJob = service.getJob(jobNo.intValue());
+		JobInfo priorJob = new AnalysisDAO().getJobInfo(jobNo);
+
 		String name = getParamFromURL(value, "filename");
 		//
 		// XXX use file index for now, Change to file type when I

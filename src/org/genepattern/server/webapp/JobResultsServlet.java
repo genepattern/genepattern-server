@@ -48,6 +48,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.JobIDNotFoundException;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
+import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.GroupPermission.Permission;
@@ -628,8 +629,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         }
         try {
             //Note: the deleteJob method also checks permissions before proceeding
-            LocalAnalysisClient ac = new LocalAnalysisClient(currentUserId);
-            ac.deleteJob(jobNumber);
+            JobManager.deleteJob(isAdmin, currentUserId, jobNumber);
         } 
         catch (WebServiceException e) {
             log.error("Error deleting job " + jobNumber, e);

@@ -43,6 +43,7 @@ import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
+import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
@@ -177,40 +178,38 @@ public class JobBean {
     }
 
     public String getTaskCode() {
-	try {
-	    String language = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("language"));
-	    String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("taskLSID"));
+        try {
+            String language = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("language"));
+            String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("taskLSID"));
 
-	    IAdminClient adminClient = new LocalAdminClient(UIBeanHelper.getUserId());
-	    TaskInfo taskInfo = adminClient.getTask(lsid);
-	    if (taskInfo == null) {
-		return "Module not found";
-	    }
-	    ParameterInfo[] parameters = taskInfo.getParameterInfoArray();
+            IAdminClient adminClient = new LocalAdminClient(UIBeanHelper.getUserId());
+            TaskInfo taskInfo = adminClient.getTask(lsid);
+            if (taskInfo == null) {
+                return "Module not found";
+            }
+            ParameterInfo[] parameters = taskInfo.getParameterInfoArray();
+            ParameterInfo[] jobParameters = new ParameterInfo[parameters != null ? parameters.length : 0];
 
-	    ParameterInfo[] jobParameters = new ParameterInfo[parameters != null ? parameters.length : 0];
+            if (parameters != null) {
+                int i = 0;
+                for (ParameterInfo p : parameters) {
+                    String value = UIBeanHelper.getRequest().getParameter(p.getName());
+                    jobParameters[i++] = new ParameterInfo(p.getName(), value, "");
+                }
+            }
 
-	    if (parameters != null) {
-		int i = 0;
-		for (ParameterInfo p : parameters) {
-		    String value = UIBeanHelper.getRequest().getParameter(p.getName());
-
-		    jobParameters[i++] = new ParameterInfo(p.getName(), value, "");
-		}
-	    }
-
-	    JobInfo jobInfo = new JobInfo(-1, -1, null, null, null, jobParameters, UIBeanHelper.getUserId(), lsid,
-		    taskInfo.getName());
-
-	    boolean isVisualizer = TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes());
-	    AnalysisJob job = new AnalysisJob(UIBeanHelper.getServer(), jobInfo, isVisualizer);
-	    return CodeGeneratorUtil.getCode(language, job, taskInfo, adminClient);
-	} catch (WebServiceException e) {
-	    log.error("Error getting code.", e);
-	} catch (Exception e) {
-	    log.error("Error getting code.", e);
-	}
-	return "";
+            JobInfo jobInfo = new JobInfo(-1, -1, null, null, null, jobParameters, UIBeanHelper.getUserId(), lsid, taskInfo.getName());
+            boolean isVisualizer = TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes());
+            AnalysisJob job = new AnalysisJob(UIBeanHelper.getServer(), jobInfo, isVisualizer);
+            return CodeGeneratorUtil.getCode(language, job, taskInfo, adminClient);
+        } 
+        catch (WebServiceException e) {
+            log.error("Error getting code.", e);
+        } 
+        catch (Exception e) {
+            log.error("Error getting code.", e);
+        }
+        return "";
     }
 
     private Boolean _showExecutionLogs = null;
@@ -232,32 +231,31 @@ public class JobBean {
      * @return
      */
     public String loadTask() {
-	String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("module"));
-	UIBeanHelper.getRequest().setAttribute("matchJob",
-		UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
-	UIBeanHelper.getRequest().setAttribute("outputFileName",
-		UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("name")));
-	RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
-	assert runTaskBean != null;
-	runTaskBean.setTask(lsid);
-	return "run task";
+        String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("module"));
+        UIBeanHelper.getRequest().setAttribute("matchJob",
+                UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
+        UIBeanHelper.getRequest().setAttribute("outputFileName",
+                UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("name")));
+        RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
+        assert runTaskBean != null;
+        runTaskBean.setTask(lsid);
+        return "run task";
     }
 
     public String reload() {
-	LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
-	try {
-	    int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
-	    JobInfo reloadJob = ac.getJob(jobNumber);
-	    RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
-	    assert runTaskBean != null;
-	    UIBeanHelper.getRequest().setAttribute("reloadJob", String.valueOf(reloadJob.getJobNumber()));
-	    runTaskBean.setTask(reloadJob.getTaskLSID());
-	} catch (WebServiceException e) {
-	    log.error("Error reloading job.", e);
-	} catch (NumberFormatException e) {
-	    log.error("Error reloading job.", e);
-	}
-	return "run task";
+        try {
+            int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
+            AnalysisDAO ds = new AnalysisDAO();
+            JobInfo reloadJob = ds.getJobInfo(jobNumber);
+            RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
+            assert runTaskBean != null;
+            UIBeanHelper.getRequest().setAttribute("reloadJob", String.valueOf(reloadJob.getJobNumber()));
+            runTaskBean.setTask(reloadJob.getTaskLSID());
+        } 
+        catch (Throwable t) {
+            log.error("Error reloading job.", t);
+        } 
+        return "run task";
     }
 
     public void saveFile(ActionEvent event) {
@@ -340,28 +338,40 @@ public class JobBean {
     }
 
     public void terminateJob(ActionEvent event) {
-	try {
-	    int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
-	    LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
-	    ac.terminateJob(jobNumber);
-	    resetJobs();
-	} catch (WebServiceException e) {
-	    log.error("Error getting job " + UIBeanHelper.getRequest().getParameter("jobNumber"), e);
-	} catch (NumberFormatException e) {
-	    log.error(UIBeanHelper.getRequest().getParameter("jobNumber") + " is not a number.", e);
-	}
+        int jobNumber = -1;
+        try {
+            jobNumber = Integer.parseInt(UIBeanHelper.getRequest().getParameter("jobNumber"));
+        }
+        catch (NumberFormatException e) {
+            log.error(UIBeanHelper.getRequest().getParameter("jobNumber") + " is not a number.", e);
+            return;
+        }
+        try {
+            terminateJob(jobNumber);
+        }
+        catch (JobTerminationException e) {
+            log.error(e);
+            return;
+        }
+    }
+    
+    private void terminateJob(int jobNumber) throws JobTerminationException {
+        String currentUser = UIBeanHelper.getUserId();
+        boolean isAdmin = AuthorizationHelper.adminJobs(currentUser);
+        JobManager.terminateJob(isAdmin, currentUser, jobNumber);
     }
 
     public void viewCode(ActionEvent e) {
-	try {
-	    String language = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("language"));
-	    int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
-	    AnalysisJob job = new AnalysisJob(UIBeanHelper.getUserId(), new LocalAnalysisClient(UIBeanHelper
-		    .getUserId()).getJob(jobNumber));
-	    viewCode(language, job, "" + jobNumber);
-	} catch (WebServiceException x) {
-	    log.error("Error getting job " + UIBeanHelper.getRequest().getParameter("jobNumber"), x);
-	}
+        try {
+            String language = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("language"));
+            int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
+            JobInfo jobInfo = new AnalysisDAO().getJobInfo(jobNumber);
+            AnalysisJob job = new AnalysisJob(UIBeanHelper.getUserId(), jobInfo);
+            viewCode(language, job, "" + jobNumber);
+        } 
+        catch (Throwable t) {
+            log.error("Error getting job " + UIBeanHelper.getRequest().getParameter("jobNumber"), t);
+        }
     }
 
     public void viewCode(String language, AnalysisJob job, String baseName) {

@@ -32,8 +32,8 @@ import org.genepattern.data.pipeline.PipelineUtil;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
-import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -245,7 +245,16 @@ public class RunTaskBean {
         String matchOutputFileParameterName = (String) UIBeanHelper.getRequest().getAttribute("outputFileName");
 
         Map<String, String> reloadValues = new HashMap<String, String>();
+        int matchJobNumber = -1;
         if (matchJob != null) {
+            try {
+                matchJobNumber = Integer.parseInt(matchJob);
+            }
+            catch (NumberFormatException nfe) {
+                log.error(matchJob + " is not an integer.", nfe);
+            } 
+        }
+        if (matchJobNumber != -1) {
             Map<String, List<String>> kindToInputParameters = new HashMap<String, List<String>>();
             if (taskParameters != null) {
                 for (ParameterInfo p : taskParameters) {
@@ -266,12 +275,10 @@ public class RunTaskBean {
 
             try {
                 final String currentUser = UIBeanHelper.getUserId();
-                LocalAnalysisClient ac = new LocalAnalysisClient(currentUser);
-                JobInfo matchJobInfo = ac.getJob(Integer.parseInt(matchJob));
-                File outputDir = new File(GenePatternAnalysisTask.getJobDir("" + matchJobInfo.getJobNumber()));
                 final boolean isAdmin = AuthorizationHelper.adminJobs(currentUser);
-                PermissionsHelper perm = new PermissionsHelper(isAdmin, currentUser, matchJobInfo.getJobNumber());
+                PermissionsHelper perm = new PermissionsHelper(isAdmin, currentUser, matchJobNumber);
                 if (perm.canReadJob()) {
+                    JobInfo matchJobInfo = new AnalysisDAO().getJobInfo(matchJobNumber);
                     ParameterInfo[] params = matchJobInfo.getParameterInfoArray();
                     if (params != null) {
                         List<ParameterInfo> outputFileParameters = new ArrayList<ParameterInfo>();
@@ -286,6 +293,7 @@ public class RunTaskBean {
                             }
                         }
 
+                        File outputDir = new File(GenePatternAnalysisTask.getJobDir("" + matchJobNumber));
                         for (ParameterInfo outputParameter : outputFileParameters) {
                             if (outputParameter.isOutputFile()) {
 
@@ -318,10 +326,9 @@ public class RunTaskBean {
                         }
                     }
                 }
-            } catch (NumberFormatException nfe) {
-                log.error(matchJob + " is not an integer.", nfe);
-            } catch (WebServiceException e) {
-                log.error("Error getting job " + matchJob + ".", e);
+            } 
+            catch (Throwable t) {
+                log.error("Error getting job " + matchJob + ".", t);
             }
         }
 
@@ -329,12 +336,19 @@ public class RunTaskBean {
         if (reloadJobNumberString == null) {
             reloadJobNumberString = (String) UIBeanHelper.getRequest().getAttribute("reloadJob");
         }
+        int reloadJobNumber = -1;
         if (reloadJobNumberString != null) {
             try {
+                reloadJobNumber = Integer.parseInt(reloadJobNumberString);
+            }
+            catch (NumberFormatException nfe) {
+                log.error(reloadJobNumberString + " is not an integer.", nfe);
+            } 
+        }
+        if (reloadJobNumber != -1) {
+            try {
                 final String currentUser = UIBeanHelper.getUserId();
-                LocalAnalysisClient ac = new LocalAnalysisClient(currentUser);
-                int reloadJobNumber = Integer.parseInt(reloadJobNumberString);
-                JobInfo reloadJob = ac.getJob(reloadJobNumber);
+                JobInfo reloadJob = new AnalysisDAO().getJobInfo(reloadJobNumber);
 
                 //check permissions
                 final boolean isAdmin = AuthorizationHelper.adminJobs(currentUser);
@@ -371,11 +385,8 @@ public class RunTaskBean {
                     }
                 }
             } 
-            catch (NumberFormatException nfe) {
-                log.error(reloadJobNumberString + " is not an integer.", nfe);
-            } 
-            catch (WebServiceException e) {
-                log.error("Error getting job " + reloadJobNumberString, e);
+            catch (Throwable t) {
+                log.error("Error getting job " + reloadJobNumberString, t);
             }
         }
 
