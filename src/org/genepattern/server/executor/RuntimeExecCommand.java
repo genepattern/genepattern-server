@@ -186,6 +186,7 @@ public class RuntimeExecCommand {
     }
 
     public void terminateProcess(Status status) {
+        this.internalJobStatus = status;
         if (outputReader != null) {
             outputReader.interrupt();
         }
@@ -195,6 +196,5 @@ public class RuntimeExecCommand {
         if (process != null) {
             process.destroy();
         }
-        this.internalJobStatus = status;
     }
 }
