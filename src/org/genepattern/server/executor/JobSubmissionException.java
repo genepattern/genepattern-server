@@ -5,6 +5,9 @@ package org.genepattern.server.executor;
  * @author pcarr
  */
 public class JobSubmissionException extends Exception {
+    public JobSubmissionException(String message) {
+        super(message);
+    }
     public JobSubmissionException(Throwable t) {
         this("Error adding job to the queue", t);
     }
