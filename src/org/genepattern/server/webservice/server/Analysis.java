@@ -44,6 +44,7 @@ import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.FileWrapper;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -53,17 +54,10 @@ import org.genepattern.webservice.WebServiceException;
  * 
  */
 public class Analysis extends GenericWebService {
-
-    public enum JobSortOrder {
-	JOB_NUMBER, JOB_STATUS, SUBMITTED_DATE, COMPLETED_DATE, USER, MODULE_NAME
-    }
-
     private static Logger log = Logger.getLogger(Analysis.class);
 
-    /**
-     * Default constructor. Constructs a <code>Analysis</code> web service object.
-     */
-    public Analysis() {
+    public enum JobSortOrder {
+        JOB_NUMBER, JOB_STATUS, SUBMITTED_DATE, COMPLETED_DATE, USER, MODULE_NAME
     }
 
     /**
@@ -99,17 +93,16 @@ public class Analysis extends GenericWebService {
      * @throws WebServiceException
      */
     public String createProvenancePipeline(JobInfo[] jobs, String pipelineName) throws WebServiceException {
-	if (!AuthorizationHelper.createPipeline(getUsernameFromContext())) {
-	    throw new WebServiceException("You are not authorized to perform this action.");
-	}
-
-	String userID = getUsernameFromContext();
-	ProvenanceFinder pf = new ProvenanceFinder(userID);
-	TreeSet<JobInfo> jobSet = new TreeSet<JobInfo>();
-	for (int i = 0; i < jobs.length; i++) {
-	    jobSet.add(jobs[i]);
-	}
-	return pf.createProvenancePipeline(jobSet, pipelineName);
+        if (!AuthorizationHelper.createPipeline(getUsernameFromContext())) {
+            throw new WebServiceException("You are not authorized to perform this action.");
+        }
+        String userID = getUsernameFromContext();
+        ProvenanceFinder pf = new ProvenanceFinder(userID);
+        TreeSet<JobInfo> jobSet = new TreeSet<JobInfo>();
+        for (int i = 0; i < jobs.length; i++) {
+            jobSet.add(jobs[i]);
+        }
+        return pf.createProvenancePipeline(jobSet, pipelineName);
     }
 
     /**
@@ -121,15 +114,15 @@ public class Analysis extends GenericWebService {
      * @throws WebServiceException
      */
     public String createProvenancePipeline(String fileUrlOrJobNumber, String pipelineName) throws WebServiceException {
-	if (!AuthorizationHelper.createPipeline(getUsernameFromContext())) {
-	    throw new WebServiceException("You are not authorized to perform this action.");
-	}
-	String userID = getUsernameFromContext();
+        if (!AuthorizationHelper.createPipeline(getUsernameFromContext())) {
+            throw new WebServiceException("You are not authorized to perform this action.");
+        }
+        String userID = getUsernameFromContext();
 
-	ProvenanceFinder pf = new ProvenanceFinder(userID);
-	JobInfo job = pf.findJobThatCreatedFile(fileUrlOrJobNumber);
-	String lsid = pf.createProvenancePipeline(fileUrlOrJobNumber, pipelineName);
-	return lsid;
+        ProvenanceFinder pf = new ProvenanceFinder(userID);
+        JobInfo job = pf.findJobThatCreatedFile(fileUrlOrJobNumber);
+        String lsid = pf.createProvenancePipeline(fileUrlOrJobNumber, pipelineName);
+        return lsid;
     }
 
     /**
@@ -202,35 +195,32 @@ public class Analysis extends GenericWebService {
     }
 
     public JobInfo[] findJobsThatCreatedFile(String fileURLOrJobNumber) throws WebServiceException {
-	String userID = getUsernameFromContext();
-	ProvenanceFinder pf = new ProvenanceFinder(userID);
-
-	JobInfo job = pf.findJobThatCreatedFile(fileURLOrJobNumber);
-
-	Set<JobInfo> jobSet = pf.findJobsThatCreatedFile(fileURLOrJobNumber);
-	JobInfo[] jobs = new JobInfo[jobSet.size()];
-	int i = 0;
-	for (Iterator<JobInfo> iter = jobSet.iterator(); iter.hasNext(); i++) {
-	    JobInfo aJob = iter.next();
-	    jobs[i] = aJob;
-	}
-	return jobs;
+        String userID = getUsernameFromContext();
+        ProvenanceFinder pf = new ProvenanceFinder(userID);
+        JobInfo job = pf.findJobThatCreatedFile(fileURLOrJobNumber);
+        Set<JobInfo> jobSet = pf.findJobsThatCreatedFile(fileURLOrJobNumber);
+        JobInfo[] jobs = new JobInfo[jobSet.size()];
+        int i = 0;
+        for (Iterator<JobInfo> iter = jobSet.iterator(); iter.hasNext(); i++) {
+            JobInfo aJob = iter.next();
+            jobs[i] = aJob;
+        }
+        return jobs;
     }
 
     public int[] getChildren(int jobId) throws WebServiceException {
-
-	try {
-	    AnalysisDAO ds = new AnalysisDAO();
-	    JobInfo[] children = ds.getChildren(jobId);
-
-	    int[] jobs = new int[children.length];
-	    for (int i = 0; i < children.length; i++) {
-		jobs[i] = children[i].getJobNumber();
-	    }
-	    return jobs;
-	} catch (Exception e) {
-	    throw new WebServiceException(e);
-	}
+        try {
+            AnalysisDAO ds = new AnalysisDAO();
+            JobInfo[] children = ds.getChildren(jobId);
+            int[] jobs = new int[children.length];
+            for (int i = 0; i < children.length; i++) {
+                jobs[i] = children[i].getJobNumber();
+            }
+            return jobs;
+        } 
+        catch (Exception e) {
+            throw new WebServiceException(e);
+        }
     }
     
     public JobInfo[] getChildJobInfos(int parentJobId) throws WebServiceException {
@@ -274,9 +264,9 @@ public class Analysis extends GenericWebService {
      * 
      * @return the jobs
      */
-    public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean includeDeletedJobs)
-	    throws WebServiceException {
-	return getJobs(username, maxJobNumber, maxEntries, includeDeletedJobs, JobSortOrder.JOB_NUMBER, false);
+    public JobInfo[] getJobs(String username, int maxJobNumber, int maxEntries, boolean includeDeletedJobs) 
+    throws WebServiceException {
+        return getJobs(username, maxJobNumber, maxEntries, includeDeletedJobs, JobSortOrder.JOB_NUMBER, false);
     }
 
     /**
@@ -435,11 +425,11 @@ public class Analysis extends GenericWebService {
      *                    If an error occurs
      */
     public TaskInfo[] getTasks() throws WebServiceException {
-	return new AdminService() {
-	    protected String getUserName() {
-		return getUsernameFromContext();
-	    }
-	}.getLatestTasks();
+        return new AdminService() {
+            protected String getUserName() {
+                return getUsernameFromContext();
+            }
+        }.getLatestTasks();
     }
 
     /**
@@ -468,16 +458,16 @@ public class Analysis extends GenericWebService {
      * @return the job information
      */
 
-    public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters) throws WebServiceException {
-
-	try {
-	    AnalysisDAO dao = new AnalysisDAO();
-	    int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(),
-		    org.genepattern.webservice.ParameterFormatConverter.getJaxbString(parameters), -1);
-	    return dao.getJobInfo(jobNo);
-	} catch (Exception e) {
-	    throw new WebServiceException(e);
-	}
+    public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters) 
+    throws WebServiceException {
+        try {
+            AnalysisDAO dao = new AnalysisDAO();
+            int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(), ParameterFormatConverter.getJaxbString(parameters), -1);
+            return dao.getJobInfo(jobNo);
+        } 
+        catch (Exception e) {
+            throw new WebServiceException(e);
+        }
     }
 
     /**
@@ -493,16 +483,15 @@ public class Analysis extends GenericWebService {
      */
 
     public JobInfo recordClientJob(int taskID, ParameterInfo[] parameters, int parentJobNumber)
-	    throws WebServiceException {
-	try {
-	    AnalysisDAO dao = new AnalysisDAO();
-	    int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(),
-		    org.genepattern.webservice.ParameterFormatConverter.getJaxbString(parameters), parentJobNumber);
-	    return dao.getJobInfo(jobNo);
-
-	} catch (Exception e) {
-	    throw new WebServiceException(e);
-	}
+    throws WebServiceException {
+        try {
+            AnalysisDAO dao = new AnalysisDAO();
+            int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(), ParameterFormatConverter.getJaxbString(parameters), parentJobNumber);
+            return dao.getJobInfo(jobNo);
+        } 
+        catch (Exception e) {
+            throw new WebServiceException(e);
+        }
     }
 
     /**
@@ -535,32 +524,25 @@ public class Analysis extends GenericWebService {
     /**
      * Submits an analysis job to be processed.
      * 
-     * @param taskID
-     *                the ID of the task to run.
-     * @param parameters
-     *                the parameters to process
-     * @param files
-     *                a HashMap of input files sent as attachments
+     * @param taskID, the ID of the task to run.
+     * @param parameters, the parameters to process
+     * @param files, a HashMap of input files sent as attachments
      * @return the job information for this process
-     * @exception WebServiceException
-     *                    thrown if problems are encountered
+     * @exception WebServiceException, thrown if problems are encountered
      */
     public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files) throws WebServiceException {
-	log.debug("submitJob: " + taskID);
-	String username = getUsernameFromContext();
-
-	JobInfo jobInfo = null;
-
-	renameInputFiles(parameters, files);
-
-	try {
-	    AddNewJobHandler req = new AddNewJobHandler(taskID, username, parameters);
-	    jobInfo = req.executeRequest();
-	} catch (Throwable t) {
-	    logAndThrow(t);
-	}
-
-	return jobInfo;
+        log.debug("submitJob: " + taskID);
+        String username = getUsernameFromContext();
+        JobInfo jobInfo = null;
+        renameInputFiles(parameters, files);
+        try {
+            AddNewJobHandler req = new AddNewJobHandler(taskID, username, parameters);
+            jobInfo = req.executeRequest();
+        } 
+        catch (Throwable t) {
+            logAndThrow(t);
+        }
+        return jobInfo;
     }
 
     /**
@@ -579,21 +561,21 @@ public class Analysis extends GenericWebService {
      *                    if problems are encountered
      */
 
-    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files, int parentJobId)
-	    throws WebServiceException {
-	try {
-	    log.debug("submitJob parentJobId=" + parentJobId);
-	    renameInputFiles(parameters, files);
-	    log.debug("new AddNewJobHander...");
-	    AddNewJobHandler req = new AddNewJobHandler(taskID, getUsernameFromContext(), parameters, parentJobId);
-	    log.debug("executeRequest...");
+    public JobInfo submitJob(int taskID, ParameterInfo[] parameters, Map files, int parentJobId) throws WebServiceException {
+        try {
+            log.debug("submitJob parentJobId=" + parentJobId);
+            renameInputFiles(parameters, files);
+            log.debug("new AddNewJobHander...");
+            AddNewJobHandler req = new AddNewJobHandler(taskID, getUsernameFromContext(), parameters, parentJobId);
+            log.debug("executeRequest...");
 
-	    JobInfo retVal = req.executeRequest();
-	    log.debug("returning job " + retVal.getJobNumber());
-	    return retVal;
-	} catch (Exception e) {
-	    throw new WebServiceException(e);
-	}
+            JobInfo retVal = req.executeRequest();
+            log.debug("returning job " + retVal.getJobNumber());
+            return retVal;
+        } 
+        catch (Exception e) {
+            throw new WebServiceException(e);
+        }
     }
 
     /**
@@ -651,6 +633,7 @@ public class Analysis extends GenericWebService {
             throw new WebServiceException("You do not have permission to read the job: "+jobId);
         }
     }
+
     private void canWriteJob(boolean isAdmin, String userId, int jobId) throws WebServiceException {
         PermissionsHelper ph = new PermissionsHelper(isAdmin, userId, jobId);
         if (!ph.canWriteJob()) {
@@ -659,68 +642,73 @@ public class Analysis extends GenericWebService {
     }
 
     private ParameterInfo[] removeOutputFileParameters(JobInfo jobInfo, String value) {
-	ParameterInfo[] params = jobInfo.getParameterInfoArray();
-	if (params == null) {
-	    return new ParameterInfo[0];
-	}
-	List<ParameterInfo> newParams = new ArrayList<ParameterInfo>();
-	for (int i = 0; i < params.length; i++) {
-	    if (!(params[i].isOutputFile())) {
-		newParams.add(params[i]); // not an output file
-	    } else if (!(params[i].getValue().equals(value))) {
-		newParams.add(params[i]); // is a different op file
-
-	    }
-	}
-	return newParams.toArray(new ParameterInfo[newParams.size()]);
+        ParameterInfo[] params = jobInfo.getParameterInfoArray();
+        if (params == null) {
+            return new ParameterInfo[0];
+        }
+        List<ParameterInfo> newParams = new ArrayList<ParameterInfo>();
+        for (int i = 0; i < params.length; i++) {
+            if (!(params[i].isOutputFile())) {
+                newParams.add(params[i]); // not an output file
+            } 
+            else if (!(params[i].getValue().equals(value))) {
+                newParams.add(params[i]); // is a different op file
+            }
+        }
+        return newParams.toArray(new ParameterInfo[newParams.size()]);
     }
 
     // find any input files and concat axis name with original file name.
     private void renameInputFiles(ParameterInfo[] parameters, Map files) throws WebServiceException {
-	if (parameters != null)
-	    for (int x = 0; x < parameters.length; x++) {
-		if (parameters[x].isInputFile()) {
-		    String orgFilename = parameters[x].getValue();
-		    Object obj = files.get(orgFilename);
-		    DataHandler dataHandler = null;
-		    if (obj instanceof AttachmentPart) {
-			AttachmentPart ap = (AttachmentPart) obj;
-			try {
-			    dataHandler = ap.getDataHandler();
-			} catch (SOAPException se) {
-			    throw new WebServiceException("Error while processing files");
-			}
-		    } else {
-			dataHandler = (DataHandler) obj;
-		    }
+        if (parameters == null) {
+            return;
+        }
+        for (int x = 0; x < parameters.length; x++) {
+            if (parameters[x].isInputFile()) {
+                String orgFilename = parameters[x].getValue();
+                Object obj = files.get(orgFilename);
+                DataHandler dataHandler = null;
+                if (obj instanceof AttachmentPart) {
+                    AttachmentPart ap = (AttachmentPart) obj;
+                    try {
+                        dataHandler = ap.getDataHandler();
+                    } catch (SOAPException se) {
+                        throw new WebServiceException("Error while processing files");
+                    }
+                } 
+                else {
+                    dataHandler = (DataHandler) obj;
+                }
 
-		    String newFileName = new File(dataHandler.getName() + "_" + orgFilename).getName();
-		    File uploadedFile = new File(dataHandler.getName());
-		    File uploadedDir = uploadedFile.getParentFile();
-		    File newDir = new File(uploadedDir, getUsernameFromContext());
+                String newFileName = new File(dataHandler.getName() + "_" + orgFilename).getName();
+                File uploadedFile = new File(dataHandler.getName());
+                File uploadedDir = uploadedFile.getParentFile();
+                File newDir = new File(uploadedDir, getUsernameFromContext());
 
-		    if (!newDir.exists()) {
-			newDir.mkdir();
-		    }
-		    File newFile = new File(newDir, newFileName);
+                if (!newDir.exists()) {
+                    newDir.mkdir();
+                }
+                File newFile = new File(newDir, newFileName);
 
-		    if (uploadedFile.renameTo(newFile)) {
-			try { // set parameter's value with new filename
-			    parameters[x].setValue(newFile.getCanonicalPath());
-			} catch (IOException e) {
-			    parameters[x].setValue(newFile.getPath());
-			}
-		    } else {
-			uploadedFile.delete();
-			throw new WebServiceException("Unable to save file " + newFileName + ".");
-		    }
-		}
-	    }
+                if (uploadedFile.renameTo(newFile)) {
+                    try { // set parameter's value with new filename
+                        parameters[x].setValue(newFile.getCanonicalPath());
+                    } 
+                    catch (IOException e) {
+                        parameters[x].setValue(newFile.getPath());
+                    }
+                } 
+                else {
+                    uploadedFile.delete();
+                    throw new WebServiceException("Unable to save file " + newFileName + ".");
+                }
+            }
+        }
     }
 
     private static void logAndThrow(Throwable t) throws WebServiceException {
-	log.error(t.getMessage(), t);
-	throw new WebServiceException(t);
+        log.error(t.getMessage(), t);
+        throw new WebServiceException(t);
     }
 
 }
