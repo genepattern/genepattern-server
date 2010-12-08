@@ -1487,7 +1487,7 @@ public class GenePatternAnalysisTask {
         File stderrFile = new File(jobDir, stderrFilename);
         handleJobCompletion(jobId, exitCode, errorMessage, jobDir, stdoutFile, stderrFile);
     }
-
+    
     public static void handleJobCompletion(int jobId, int exitValue, String errorMessage, File jobDir, File stdoutFile, File stderrFile) {
         log.debug("job "+jobId+" completed with exitValue="+exitValue);
 
@@ -1501,13 +1501,48 @@ public class GenePatternAnalysisTask {
             return;
         }
         
-        //TODO: what if the job status is already ERROR or FINISHED?
+        //handle special-case when handleJobCompletion has already been called for this job
+        if (isFinished(jobInfo)) {
+            log.debug("job #"+jobId+" is already finished, with status="+jobInfo.getStatus());
+            return;
+        }
         
-        String outDirName = getJobDir(""+jobId);
-        File outDir = new File(outDirName);
+        //validate the jobDir
+        //Note: hard-coded rules, circa GP 3.2.4 and earlier, if we ever want to allow alternate locations for
+        //    the job dir we will have to modify this restriction
+        if (jobDir == null) {
+            log.error("Invalid arg, jobDir=null");
+            return;
+        }
+        try {
+            File expectedJobDir = new File(GenePatternAnalysisTask.getJobDir(""+jobId));
+            if (!expectedJobDir.getCanonicalPath().equals( jobDir.getCanonicalPath() )) {
+                log.error("Invalid arg, jobDir is not in the expected location\n"+
+                    "\tjobDir="+jobDir.getCanonicalPath()+"\n"+
+                    "\texpectedJobDir="+expectedJobDir.getCanonicalPath());
+                return;
+            }
+        }
+        catch (IOException e) {
+            log.error("Error validating jobDir="+jobDir.getAbsolutePath(), e);
+            return;
+        }
+        if (!jobDir.exists()) {
+            //can happen if deleting a pending job, for which the output dir has not been created
+            //create it here so we can output an error message if necessary
+            log.error("Invalid arg, jobDir does not exist, jobDir="+jobDir.getAbsolutePath());
+            if (!jobDir.mkdirs()) {
+                log.error("Error creating jobDir for jobId="+jobId+", jobDir=" + jobDir);
+                return;
+            }
+        }
+        if (!jobDir.canWrite()) {
+            log.error("Invalid arg, can't write to jobDir, jobDir="+jobDir.getAbsolutePath());
+        }
+        
         JobInfoWrapper jobInfoWrapper = getJobInfoWrapper(jobInfo.getUserId(), jobInfo.getJobNumber());
-        cleanupInputFiles(outDir, jobInfoWrapper);
-        File taskLog = writeExecutionLog(outDir, jobInfoWrapper);
+        cleanupInputFiles(jobDir, jobInfoWrapper);
+        File taskLog = writeExecutionLog(jobDir, jobInfoWrapper);
         
         CommandProperties cmdProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
 
@@ -1533,7 +1568,7 @@ public class GenePatternAnalysisTask {
             stderrFile = new File(jobDir, STDERR);
         }
         if (errorMessage != null && errorMessage.trim().length() > 0) {
-            GenePatternAnalysisTask.writeStringToFile(outDir, STDERR, errorMessage);
+            GenePatternAnalysisTask.writeStringToFile(jobDir, STDERR, errorMessage);
         }
 
         if (stderrFile.exists() && stderrFile.length() <= 0L) {
@@ -1563,15 +1598,14 @@ public class GenePatternAnalysisTask {
         //    job.FilenameFilter: {".lsf*", ".nfs*" }
         filenameFilter.setGlob(globPattern);
 
-        File[] outputFiles = outDir.listFiles(filenameFilter);
+        File[] outputFiles = jobDir.listFiles(filenameFilter);
         sortOutputFiles(outputFiles);
-
+        String jobDirPath = jobDir.getAbsolutePath();
         for (File f : outputFiles) {
-            log.debug("adding output file to output parameters " + f.getName() + " from " + outDirName);
-            //addFileToOutputParameters(jobInfo, f.getName(), f.getName(), parentJobInfo);
+            log.debug("adding output file to output parameters " + f.getName() + " from " + jobDirPath);
             addFileToOutputParameters(jobInfo, f.getName(), f.getName(), null);
         }
-        
+
         if (taskLog != null) {
             //addFileToOutputParameters(jobInfo, taskLog.getName(), taskLog.getName(), parentJobInfo);
             addFileToOutputParameters(jobInfo, taskLog.getName(), taskLog.getName(), null);
@@ -1617,6 +1651,18 @@ public class GenePatternAnalysisTask {
                 CommandManagerFactory.getCommandManager().wakeupJobQueue();
             }
         }
+    }
+
+    private static boolean isFinished(JobInfo jobInfo) {
+        return isFinished(jobInfo.getStatus());
+    }
+    
+    private static boolean isFinished(String jobStatus) {
+        if ( JobStatus.FINISHED.equals(jobStatus) ||
+                JobStatus.ERROR.equals(jobStatus) ) {
+            return true;
+        }
+        return false;        
     }
 
     /**
@@ -1758,6 +1804,10 @@ public class GenePatternAnalysisTask {
      * @param outputFiles
      */
     private static void sortOutputFiles(File[] outputFiles) {
+        if (outputFiles == null) {
+            log.error("Invalid null arg in sortOutputFiles");
+            return;
+        }
         Arrays.sort(outputFiles, fileComparator);
     }
 
