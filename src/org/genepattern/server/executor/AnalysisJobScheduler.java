@@ -30,6 +30,7 @@ import java.util.concurrent.TimeoutException;
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
+import org.genepattern.server.executor.CommandProperties.Value;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
@@ -260,6 +261,12 @@ public class AnalysisJobScheduler implements Runnable {
         wakeupJobQueue();
     }
 
+    /**
+     * Terminate the job with the given jobId.
+     * 
+     * @param jobId
+     * @throws JobTerminationException
+     */
     public static void terminateJob(Integer jobId) throws JobTerminationException {
         if (jobId == null) {
             throw new JobTerminationException("Invalid null arg");
@@ -278,42 +285,55 @@ public class AnalysisJobScheduler implements Runnable {
         AnalysisJobScheduler.terminateJob(jobInfo);
     }
     
+    /**
+     * Terminate the job for the given jobInfo arg.
+     * 
+     * @param jobInfo
+     * @throws JobTerminationException
+     */
     public static void terminateJob(JobInfo jobInfo) throws JobTerminationException {
         if (jobInfo == null) {
             log.error("invalid null arg to terminateJob");
             return;
         }
-    
+
         //note: don't terminate completed jobs
         boolean isFinished = isFinished(jobInfo); 
         if (isFinished) {
             log.debug("job "+jobInfo.getJobNumber()+"is already finished");
             return;
         }
-    
+
         //terminate pending jobs immediately
         boolean isPending = isPending(jobInfo);
         if (isPending) {
-            //TODO: may want to call handleJobCompletion to output a meaningful error message: 'Job was terminated' 
-            //TODO: may need to call handleJobCompletion in order to notify parent pipeline jobs, note: this is theoretically not necessary,
-            //    because child jobs should only be terminated via the root job 
-            log.debug("Terminating PENDING job #"+jobInfo.getJobNumber());
-            try { 
-                AnalysisDAO ds = new AnalysisDAO();
-                ds.updateJobStatus(jobInfo.getJobNumber(), JobStatus.JOB_ERROR);
-                HibernateUtil.commitTransaction();
-            }
-            catch (Throwable t) {
-                HibernateUtil.rollbackTransaction();
-            }
+            terminatePendingJob(jobInfo);
             return;
-        } 
+        }
+
         //terminate the underlying job
         terminateJobWTimeout(jobInfo);
     }
     
+    /**
+     * Helper method, special case when a pending job is terminated.
+     * No need to invoke terminate on the job's CommandExecutor.
+     * 
+     * @param jobInfo
+     * @throws JobTerminationException
+     */
+    private static void terminatePendingJob(final JobInfo jobInfo) throws JobTerminationException {
+        GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), -1, "Pending job #"+jobInfo.getJobNumber()+" terminated by user");
+    }
+    
+    /**
+     * Terminate the job, but kill the job termination process if it takes longer than the 
+     * configured timeout interval.
+     * 
+     * @param jobInfo
+     * @throws JobTerminationException
+     */
     private static void terminateJobWTimeout(final JobInfo jobInfo) throws JobTerminationException {
-        final long jobTerminateTimeout = 5*60*1000; //5 minutes
         final int jobNumber;
         if (jobInfo != null) {
             jobNumber = jobInfo.getJobNumber();
@@ -334,22 +354,6 @@ public class AnalysisJobScheduler implements Runnable {
                     log.debug("job "+jobInfo.getJobNumber()+"is already finished");
                     return -1;
                 }
-            
-                //terminate pending jobs immediately
-                boolean isPending = isPending(jobInfo);
-                if (isPending) {
-                    log.debug("Terminating PENDING job #"+jobInfo.getJobNumber());
-                    try { 
-                        AnalysisDAO ds = new AnalysisDAO();
-                        ds.updateJobStatus(jobInfo.getJobNumber(), JobStatus.JOB_ERROR);
-                        HibernateUtil.commitTransaction();
-                        return jobInfo.getJobNumber();
-                    }
-                    catch (Throwable t) {
-                        HibernateUtil.rollbackTransaction();
-                    }
-                    return -1;
-                } 
                 
                 try {
                     CommandExecutor cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
@@ -361,21 +365,12 @@ public class AnalysisJobScheduler implements Runnable {
                 }
             }
         });
+        long jobTerminationTimeout = getJobTerminationTimeout(jobInfo); 
         try {
             jobTerminationService.execute(task);
-            int job_id = task.get(jobTerminateTimeout, TimeUnit.MILLISECONDS);
+            int job_id = task.get(jobTerminationTimeout, TimeUnit.MILLISECONDS);
             if (job_id >= 0) {
                 log.debug("terminated job #"+job_id);
-                //update the job status in the db
-                try {
-                    HibernateUtil.beginTransaction();
-                    int rval = setJobStatus(job_id, JobStatus.JOB_ERROR);
-                    HibernateUtil.commitTransaction();
-                }
-                catch (Throwable t) {
-                    log.error("Error setting job status to "+JobStatus.JOB_ERROR+" for job #"+job_id);
-                    HibernateUtil.rollbackTransaction();
-                }
             }
             else {
                 log.debug("did not terminate job #"+jobNumber);
@@ -386,11 +381,36 @@ public class AnalysisJobScheduler implements Runnable {
         }
         catch (TimeoutException e) {
             task.cancel(true);
-            throw new JobTerminationException("Timeout after "+jobTerminateTimeout+" ms while terminating job #", e);
+            throw new JobTerminationException("Timeout after "+jobTerminationTimeout+" ms while terminating job #", e);
         }
         catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+    
+    /**
+     * Get the configured 'job.termination.timeout' interval, in milliseconds, based on 
+     * the settings in the job configuration file.
+     * Return the default value (30 seconds) if none is specified.
+     * 
+     * @param jobInfo
+     * @return
+     */
+    private static long getJobTerminationTimeout(JobInfo jobInfo) {
+        if (jobInfo != null) {
+            try {
+                CommandProperties cmdProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
+                Value value = cmdProperties.get("job.termination.timeout");
+                if (value != null) {
+                    return Long.parseLong( value.getValue() );
+                }
+            }
+            catch (Throwable t) {
+                log.error("Error getting jobTerminationTimeout", t);
+            }
+        }
+        //default value is 30 seconds
+        return 1000*30;
     }
 
     public static boolean isPending(JobInfo jobInfo) {

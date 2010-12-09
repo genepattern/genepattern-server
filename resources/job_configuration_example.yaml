@@ -28,6 +28,8 @@ default.properties:
     java_flags: -Xmx512m
     # the number of milliseconds to wait before canceling a job submission (default to 5 minutes)
     job.dispatch.timeout: 300000
+    # the number of milliseconds to wait before canceling a job termination request (default to 30 seconds)
+    job.termination.timeout: 30000
     # policy for flagging a job as an error, by default, a non-empty stderr stream causes a job to be flagged as an error
     # optionally, a non-zero exitValue of the job can cause a job to be flagged as an error
     job.error_status.stderr: true

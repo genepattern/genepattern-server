@@ -104,10 +104,10 @@ public class PipelineHandler {
             }
             return;
         }
-        
-        //very likely corner-case
-        terminatePipelineSteps(jobInfo.getJobNumber());
-        handlePipelineJobCompletion(jobInfo.getJobNumber(), -1, "Job #"+jobInfo.getJobNumber()+" terminated by user.");
+        else {
+            terminatePipelineSteps(jobInfo.getJobNumber());
+            handlePipelineJobCompletion(jobInfo.getJobNumber(), -1, "Job #"+jobInfo.getJobNumber()+" terminated by user.");
+        }
     }
 
     /**
@@ -485,8 +485,7 @@ public class PipelineHandler {
         if (jobSubmission.getTaskInfo().getID() < 0) {
             throw new IllegalArgumentException("jobSubmission.taskInfo.ID not set");
         }
-        int taskId = jobSubmission.getTaskInfo().getID();
-        
+
         if (params != null) {
             for (int i = 0; i < params.length; i++) {
                 if (params[i].isInputFile()) {
@@ -506,8 +505,8 @@ public class PipelineHandler {
                 }
             }
         }
-        
-        JobInfo jobInfo = JobManager.addJobToQueue(taskId, userID, params, parentJobId, jobStatusId);
+
+        JobInfo jobInfo = JobManager.addJobToQueue(jobSubmission.getTaskInfo(), userID, params, parentJobId, jobStatusId);
         return jobInfo;
     }
 
