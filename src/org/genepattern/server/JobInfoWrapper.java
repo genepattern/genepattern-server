@@ -363,8 +363,13 @@ public class JobInfoWrapper implements Serializable {
             //substitute <libdir>
             String taskLibDir=null;
             if (value.startsWith("<libdir>")) {
-                taskLibDir = DirectoryManager.getTaskLibDir(taskInfo);
-                value = taskLibDir + "/" + value.substring("<libdir>".length());
+                if (taskInfo != null) {
+                    taskLibDir = DirectoryManager.getTaskLibDir(taskInfo);
+                    value = taskLibDir + "/" + value.substring("<libdir>".length());
+                }
+                else {
+                    log.error("Can't get taskLibDir for job #"+jobNumber+", taskInfo is null");
+                }
             }
             isUrl = false;
             URL url = null;
@@ -467,8 +472,8 @@ public class JobInfoWrapper implements Serializable {
                 }
             }
             else if (isInLibdir) {
-                String taskId = taskInfo.getLsid();
-                setLink(contextPath + "/getFile.jsp?task="+taskId+"&file="+inputFile.getName());
+                String taskLsid = taskInfo.getLsid();
+                setLink(contextPath + "/getFile.jsp?task="+taskLsid+"&file="+inputFile.getName());
             }
             else {
                 log.debug("isServerFilePath");
@@ -1135,7 +1140,7 @@ public class JobInfoWrapper implements Serializable {
         PipelineModel pm = this.getPipelineModel();
         return getNumStepsInPipelineRecursive(pm);
     }
-    
+
     public int getNumVisualizers() {
         if (isVisualizer()) {
             return 1;
@@ -1146,7 +1151,7 @@ public class JobInfoWrapper implements Serializable {
         }
         return 0;        
     }
-    
+
     private int getNumVisualizersInPipelineRecursive(PipelineModel pm) {
         if (pm == null) {
             return 0;
@@ -1186,6 +1191,43 @@ public class JobInfoWrapper implements Serializable {
         }
         return total;
     }
+
+    /**
+     * For debugging, or as a future improvement,
+     * get the number of steps in the pipeline, based on the number of child jobs,
+     * rather than based on the PipelineModel.
+     */
+    private Integer[] getNumStepsInPipelineFromJob() {
+        int numStepsInPipeline = 0;
+        if (children != null) {
+            numStepsInPipeline = children.size();
+        }
+        return new Integer[numStepsInPipeline];
+    }
+
+    /**
+     * For debugging, or as a future improvement,
+     * get the number of visualizers in the pipeline,
+     * based on the number of visualizers in child jobs,
+     * rather than based on the PipelineModel.
+     * @return
+     */
+    private int getNumVisualizersFromJob() {
+        if (isVisualizer()) {
+            return 1;
+        }
+        
+        int count = 0;
+        if (isPipeline()) {
+            for(JobInfoWrapper step : getAllSteps()) {
+                if (step.isVisualizer()) {
+                    ++count;
+                }
+            }
+        }
+        return count;
+    }
+    
 
     private int currentStepInPipeline = 0;
     public int getCurrentStepInPipeline() {
