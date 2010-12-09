@@ -128,6 +128,7 @@ import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
+import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.JobInfoWrapper.InputFile;
@@ -142,6 +143,7 @@ import org.genepattern.server.executor.CommandExecutorNotFoundException;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.executor.JobDispatchException;
+import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.executor.pipeline.PipelineException;
 import org.genepattern.server.executor.pipeline.PipelineHandler;
 import org.genepattern.server.user.UsageLog;
@@ -545,7 +547,6 @@ public class GenePatternAnalysisTask {
 
         // handle special-case: job was terminated before it was started
         if (JobStatus.ERROR.equals(jobInfo.getStatus()) || JobStatus.FINISHED.equals(jobInfo.getStatus())) {
-            //TODO: should an exception be thrown ?
             log.info("job #"+jobId+" already finished, status="+jobInfo.getStatus());
             return;
         }
@@ -558,32 +559,22 @@ public class GenePatternAnalysisTask {
         else {
             isAdmin = false;
         }
-
-        String outDirName = getJobDir(""+jobId);
-        String taskName = "";
+        
+        File outDir = null;
+        try {
+            //even though the job directory gets created when the job is added to the queue,
+            //create it again, if necessary, to deal with resubmitted jobs
+            //TODO: improve this by requiring the job dir to be cleared (but not created) before running the job
+            outDir = JobManager.createJobDirectory(jobId);
+        }
+        catch (JobSubmissionException e) {
+            throw new JobDispatchException("Error getting job directory for jobId="+jobId, e);
+        }
         
         INPUT_FILE_MODE inputFileMode = getInputFileMode();
         boolean allowInputFilePaths = getAllowInputFilePaths();
 
-        // make directory to hold input and output files
-        File outDir = new File(outDirName);
-        if (!outDir.exists()) {
-            if (!outDir.mkdirs()) {
-                log.error("onJob error making directory " + outDirName);
-                throw new JobDispatchException("Error creating output directory " + outDirName);
-            }
-        } 
-        else {
-            // clean out existing directory
-            if (log.isDebugEnabled()) {
-                log.debug("clean out existing directory");
-            }
-            File[] old = outDir.listFiles();
-            for (int i = 0; old != null && i < old.length; i++) {
-                old[i].delete();
-            }
-        }
-
+        String taskName = "";
         TaskInfo taskInfo = null;
         int taskId = jobInfo.getTaskID();
         try {
@@ -808,11 +799,11 @@ public class GenePatternAnalysisTask {
                         if (inputFilename.startsWith("Axis") && (underscoreIndex = inputFilename.indexOf("_")) != -1) {
                             inputFilename = inputFilename.substring(underscoreIndex + 1);
                         }
-                        // outDirName is job directory
-                        outFile = new File(outDirName, inputFilename);
+                        // outDir is job directory
+                        outFile = new File(outDir, inputFilename);
                         int counter = 1;
                         while (outFile.exists()) { // in case two input files have the same name
-                            outFile = new File(outDirName, inputFilename + "-" + counter);
+                            outFile = new File(outDir, inputFilename + "-" + counter);
                             counter++;
                         }
 
@@ -1038,13 +1029,13 @@ public class GenePatternAnalysisTask {
                                 }
                             }
                             if (downloadUrl) {
-                                outFile = new File(outDirName, name);
+                                outFile = new File(outDir, name);
                                 if (outFile.exists()) {
                                     // ensure that 2 file downloads for a job don't have the same name
                                     if (name.length() < 3) {
                                         name = "download";
                                     }
-                                    outFile = File.createTempFile(name, null, new File(outDirName));
+                                    outFile = File.createTempFile(name, null, outDir);
                                 }
                                 os = new FileOutputStream(outFile);
                                 byte[] buf = new byte[1024];

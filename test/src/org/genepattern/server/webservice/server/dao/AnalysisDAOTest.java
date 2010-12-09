@@ -42,61 +42,12 @@ public class AnalysisDAOTest extends DAOTestCase {
     }
 
     /**
-     * 
-     * @throws Exception
-     */
-    public void testAddNewJob() throws Exception {
-        JobInfo jobInfo = null;
-        int taskId = 1;
-        String userId = "twomey";
-        String parameterInfo = dao.getJobInfo(1).getParameterInfo();
-
-        int parentId = 1;
-        try {
-            jobInfo = dao.addNewJob(taskId, userId, parameterInfo, parentId);
-            assertNotNull(jobInfo);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
-    }
-
-    /**
      * @see AnalaysisJobService#getTemporaryPipelineName(int)
      */
     public void testGetTemporaryPipelineName() throws Exception {
         int jobNo = 1;
         String pipelineName = "SNPFileCreator";
         assertEquals(pipelineName, dao.getTemporaryPipelineName(jobNo));
-    }
-
-    /**
-     * @see AnalaysisJobService#createTemporaryPipeline(String user_id, String
-     *      parameter_info, String pipelineName, String lsid)
-     */
-    public void testCreateTemporaryPipeline() throws Exception {
-        JobInfo newJob = null;
-        String userId = "twomey";
-        String parameterInfo = dao.getJobInfo(1).getParameterInfo();
-        String pipelineName = "temp";
-        String lsid = "test_" + System.currentTimeMillis();
-
-        Integer jobNo = dao.addNewJob(BaseDAO.UNPROCESSABLE_TASKID, userId, parameterInfo, pipelineName,
-                null, lsid);
-        newJob = dao.getJobInfo(jobNo);
-
-         
-        assertNotNull(newJob);
-
-        assertEquals(userId, newJob.getUserId());
-        assertEquals(parameterInfo.length(), newJob.getParameterInfo().length());
-        int l = parameterInfo.length();
-        assertEquals("0-30", parameterInfo.substring(0, 30), newJob.getParameterInfo().substring(0, 30));
-        assertEquals(parameterInfo.substring(l - 30), newJob.getParameterInfo().substring(l - 30));
-        assertEquals(pipelineName, newJob.getTaskName());
-        assertEquals(lsid, newJob.getTaskLSID());
-
     }
 
     /**

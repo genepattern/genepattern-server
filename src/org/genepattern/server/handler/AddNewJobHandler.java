@@ -13,14 +13,15 @@
 package org.genepattern.server.handler;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.TaskIDNotFoundException;
+import org.genepattern.server.JobManager;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandManagerFactory;
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.server.executor.JobSubmissionException;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.OmnigeneException;
-import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 
 /**
  * AddNewJobHandler to submit a job request and get back <CODE>JobInfo</CODE>
@@ -28,47 +29,42 @@ import org.genepattern.webservice.ParameterInfo;
  * @author rajesh kuttan
  * @version 1.0
  */
-
 public class AddNewJobHandler extends RequestHandler {
     private static Logger log = Logger.getLogger(AddNewJobHandler.class);
-    private int taskID = 1;
-    private String parameter_info = "";
+
+    private String userId;
+    private int taskId = 1;
     private ParameterInfo[] parameterInfoArray = null;
-    private String userID;
     //default value of -1 means the job has no parent
-    private int parentJobID = -1;
+    private int parentJobId = -1;
     
     private boolean wakeupJobQueue = true;
     
     /**
      * Constructor with taskID, ParameterInfo[]
      *
-     * @param taskID
-     *            taskID from <CODE>TaskInfo</CODE>
+     * @param taskId
      * @param parameterInfoArray
-     *            <CODE>ParameterInfo</CODE>
      */
-    public AddNewJobHandler(int taskID, String userID, ParameterInfo[] parameterInfoArray) {
-        this.taskID = taskID;
-        this.userID = userID;
-        this.parameterInfoArray = parameterInfoArray;
+    public AddNewJobHandler(int taskId, String userId, ParameterInfo[] parameterInfoArray) {
+        this(taskId, userId, parameterInfoArray, -1);
     }
     
     /**
-     * Constructor with taskID, ParameterInfo[] and parentJobID
+     * Constructor with taskId, ParameterInfo[] and parentJobID
      *
-     * @param taskID
+     * @param taskId
      *            taskID from <CODE>TaskInfo</CODE>
      * @param parameterInfoArray
      *            <CODE>ParameterInfo</CODE>
      * @param parentJobID
      *            the parent job number
      */
-    public AddNewJobHandler(int taskID, String userID, ParameterInfo[] parameterInfoArray, int parentJobID) {
-        this.taskID = taskID;
-        this.userID = userID;
+    public AddNewJobHandler(int taskId, String userId, ParameterInfo[] parameterInfoArray, int parentJobId) {
+        this.taskId = taskId;
+        this.userId = userId;
         this.parameterInfoArray = parameterInfoArray;
-        this.parentJobID = parentJobID;
+        this.parentJobId = parentJobId;
     }
     
     public void setWakeupJobQueueFlag(boolean b) {
@@ -76,54 +72,31 @@ public class AddNewJobHandler extends RequestHandler {
     }
 
     /**
-     * Creates job. Call this fun. if you need JobInfo object
-     *
-     * @throws TaskIDNotFoundException
-     *             TaskIDNotFoundException
-     * @throws OmnigeneException
-     * @return <CODE>JobIndo</CODE>
+     * Adds the job to GenePattern and commits the changes to the DB.
+     * Delegates to JobManager, which does not commit to the DB.
+     * @return the newly created JobInfo
+     * @throws JobSubmissionException
      */
-    public JobInfo executeRequest() throws OmnigeneException, TaskIDNotFoundException {
-        JobInfo ji = null;
+    public JobInfo executeRequest() throws JobSubmissionException {
+        TaskInfo taskInfo = null;
         try {
-            if(log.isDebugEnabled()) {
-                log.debug("executeRequest");
-            }
-            parameter_info = ParameterFormatConverter.getJaxbString(parameterInfoArray);
-            
-            // Insert job record.  Transaction is committed to avoid deadlock.
             HibernateUtil.beginTransaction();
-            AnalysisDAO ds = new AnalysisDAO();
-            ji = ds.addNewJob(taskID, userID, parameter_info, parentJobID);
-
-            // Checking for null
-            if (ji == null) {
-                HibernateUtil.rollbackTransaction();
-                throw new OmnigeneException(
-                    "AddNewJobRequest:executeRequest Operation failed, null value returned for JobInfo");
-            }
-            
+            taskInfo = new AdminDAO().getTask(taskId);
+            JobInfo jobInfo = JobManager.addJobToQueue(taskInfo, userId, parameterInfoArray, parentJobId, JobStatus.JOB_PENDING);
             HibernateUtil.commitTransaction();
-            
             if (wakeupJobQueue) {
                 log.debug("Waking up job queue");                
                 CommandManagerFactory.getCommandManager().wakeupJobQueue();
             }
-            
-            // Reparse parameter_info before sending to client
-            ji.setParameterInfoArray(ParameterFormatConverter.getParameterInfoArray(parameter_info));
-        } 
-        catch (TaskIDNotFoundException taskEx) {
-            HibernateUtil.rollbackTransaction();
-            log.error("AddNewJob(executeRequest) " + taskID, taskEx);
-            throw taskEx;
-        } 
-        catch (Exception ex) {
-            HibernateUtil.rollbackTransaction();
-            log.error("AddNewJob(executeRequest): Error ",  ex);
-            throw new OmnigeneException(ex.getMessage());
+            return jobInfo;
         }
-        
-        return ji;
+        catch (JobSubmissionException e) {
+            HibernateUtil.rollbackTransaction();
+            throw e;
+        }
+        catch (Throwable t) {
+            HibernateUtil.rollbackTransaction();
+            throw new JobSubmissionException("Unexpected exception thrown while adding job to queue: taskID="+taskId, t);
+        }
     }
 }

@@ -42,6 +42,9 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.ParameterFormatConverter;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
 import org.hibernate.LockMode;
@@ -55,36 +58,6 @@ import org.hibernate.Query;
  */
 public class AnalysisDAO extends BaseDAO {
     public static Logger log = Logger.getLogger(AnalysisDAO.class);
-
-    /**
-     * Create the job directory for a newly added job.
-     * 
-     * @throws IllegalArgumentException, JobDispatchException
-     */
-    private static void createJobDirectory(Integer jobId) throws JobSubmissionException {
-        if (jobId == null) {
-            throw new IllegalArgumentException("Can't create job directory for jobId=null");
-        }
-        
-        String jobDir = GenePatternAnalysisTask.getJobDir(""+jobId);
-        // make directory to hold input and output files
-        File outDir = new File(jobDir);
-        if (!outDir.exists()) {
-            if (!outDir.mkdirs()) {
-                throw new JobSubmissionException("Error creating output directory for job #" + jobId +", jobDir=" + jobDir);
-            }
-        } 
-        else {
-            // clean out existing directory
-            if (log.isDebugEnabled()) {
-                log.debug("clean out existing directory");
-            }
-            File[] old = outDir.listFiles();
-            for (int i = 0; old != null && i < old.length; i++) {
-                old[i].delete();
-            }
-        }
-    }
 
     public AnalysisDAO() {
     }
@@ -234,83 +207,60 @@ public class AnalysisDAO extends BaseDAO {
         return jobInfos;
     }
 
-//    public JobInfo addNewJob(String taskLsid, String parameter_info, int parentJobNumber) {
-//        
-//    }
-
     /**
-     * 
+     * Add a new job, first getting a TaskInfo object with the given taskId.
      */
-    public JobInfo addNewJob(int taskID, String user_id, String parameter_info, int parentJobNumber) {
-        Integer jobNo = addNewJob(taskID, user_id, parameter_info, null, new Integer(parentJobNumber), null);
-        return getJobInfo(jobNo);
-    }
-
-    /**
-     * Submit a new job
-     * 
-     * @param taskID
-     *                the task id or UNPROCESSABLE_TASKID if the task is a temporary pipeline
-     * @param user_id
-     *                the user id
-     * @param parameter_info
-     *                the parameter info
-     * @param taskName
-     *                the task name if the task is a temporary pipeline
-     * @param parentJobNumber
-     *                the parent job number of <tt>null</tt> if the job has no parent
-     * @throws OmnigeneException
-     * @throws RemoteException
-     * @return Job ID
-     */
-    public Integer addNewJob(int taskID, String user_id, String parameter_info, String taskName, Integer parentJobNumber, String task_lsid) {
-        return this.addNewJob(taskID, user_id, parameter_info, taskName, parentJobNumber, task_lsid, JobStatus.JOB_PENDING);
-    }
-
-    public Integer addNewJob(int taskID, String user_id, String parameter_info, String taskName, Integer parentJobNumber, String task_lsid, int status) {        
-        Set<GroupPermission> groupPermissions = new HashSet<GroupPermission>();
-        return this.addNewJob(taskID, user_id, groupPermissions, parameter_info, taskName, parentJobNumber, task_lsid, status);
-    }
-
-    public Integer addNewJob(int taskID, String user_id, Set<GroupPermission> groupPermissions, String parameter_info, String taskName, Integer parentJobNumber, String task_lsid, int status) {
-        //int updatedRecord = 0;
-        String lsid = null;
-        // Check taskID is valid
-        if (taskID != UNPROCESSABLE_TASKID) {
-            String hqlString = "select taskName, lsid from org.genepattern.server.domain.TaskMaster where taskId = :taskId";
-            Query query = getSession().createQuery(hqlString);
-            query.setInteger("taskId", taskID);
-            Object[] results = (Object[]) query.uniqueResult();
-            taskName = (String) results[0];
-            lsid = (String) results[1];
-        } 
-        else {
-            if (task_lsid != null) {
-                lsid = task_lsid;
-            }
+    private Integer addNewJob(String userId, int taskId, ParameterInfo[] parameterInfoArray, Integer parentJobNumber, Integer initialJobStatus) 
+    throws JobSubmissionException
+    {
+        TaskInfo taskInfo = null;
+        try {
+            taskInfo = new AdminDAO().getTask(taskId);
         }
+        catch (Throwable t) {
+            throw new JobSubmissionException("Error adding new job, not able to get taskInfo for taskId="+taskId, t);
+        }
+        return addNewJob(userId, taskInfo, parameterInfoArray, parentJobNumber, initialJobStatus);
+    }
 
-        AnalysisJob aJob = new AnalysisJob();
-        aJob.setTaskId(taskID);
-        aJob.setSubmittedDate(Calendar.getInstance().getTime());
-        aJob.setParameterInfo(parameter_info);
-        aJob.setUserId(user_id);
-        aJob.setTaskName(taskName);
-        aJob.setParent(parentJobNumber);
-        aJob.setTaskLsid(lsid);
-
-        JobStatus js = (new JobStatusDAO()).findById(status);
-        aJob.setJobStatus(js);
-
-        Integer jobId = (Integer) getSession().save(aJob);
+    public Integer addNewJob(String userId, TaskInfo taskInfo, ParameterInfo[] parameterInfoArray, Integer parentJobNumber, Integer initialJobStatus) 
+    throws JobSubmissionException
+    { 
+        if (taskInfo == null) {
+            throw new JobSubmissionException("Error adding job to queue, taskInfo is null");
+        }
         
-        //TODO: createJobDirectory
-        //createJobDirectory(jobId);
-
-        //optionally save group permissions with the job
-        if (groupPermissions != null && groupPermissions.size() > 0) {
-            setGroupPermissions(jobId.intValue(), groupPermissions);
+        if (taskInfo.getID() < 0) {
+            throw new JobSubmissionException("Error adding job to queue, invalid taskId, taskInfo.getID="+taskInfo.getID());
         }
+
+        Integer jobId = null;
+        try {
+            String parameter_info = ParameterFormatConverter.getJaxbString(parameterInfoArray);
+
+            AnalysisJob aJob = new AnalysisJob();
+            aJob.setTaskId(taskInfo.getID());
+            aJob.setSubmittedDate(Calendar.getInstance().getTime());
+            aJob.setParameterInfo(parameter_info);
+            aJob.setUserId(userId);
+            aJob.setTaskName(taskInfo.getName());
+            aJob.setParent(parentJobNumber);
+            aJob.setTaskLsid(taskInfo.getLsid());
+
+            if (initialJobStatus == null) {
+                initialJobStatus = JobStatus.JOB_PENDING;
+            }
+            JobStatus js = (new JobStatusDAO()).findById(initialJobStatus);
+            aJob.setJobStatus(js);
+
+            jobId = (Integer) getSession().save(aJob);
+        }
+        catch (Throwable t) {
+            throw new JobSubmissionException("Error adding job to queue, taskId="+taskInfo.getID()+
+                    ", taskName="+taskInfo.getName()+
+                    ", taskLsid="+taskInfo.getLsid(), t);
+        }
+        
         return jobId;
     }
 
@@ -985,18 +935,18 @@ public class AnalysisDAO extends BaseDAO {
     /**
      * 
      */
-    public Integer recordClientJob(int taskID, String user_id, String parameter_info, int parentJobNumber)
+    public Integer recordClientJob(int taskID, String user_id, ParameterInfo[] parameterInfoArray, int parentJobNumber)
     throws OmnigeneException {
         Integer jobNo = null;
         try {
-            Integer parent = null;
-            if (parentJobNumber != -1) {
-                parent = new Integer(parentJobNumber);
-            }
-            jobNo = addNewJob(taskID, user_id, parameter_info, null, parent, null);
-
+            jobNo = this.addNewJob(user_id, taskID, parameterInfoArray, parentJobNumber, null);
+        } 
+        catch (JobSubmissionException e) {
+            throw new OmnigeneException(e);
+        }
+        try {
             AnalysisJobDAO aHome = new AnalysisJobDAO();
-            org.genepattern.server.domain.AnalysisJob aJob = aHome.findById(jobNo);
+            AnalysisJob aJob = aHome.findById(jobNo);
 
             JobStatus newStatus = (JobStatus) getSession().get(JobStatus.class, JobStatus.JOB_FINISHED);
             aJob.setStatus(newStatus);
@@ -1009,7 +959,7 @@ public class AnalysisDAO extends BaseDAO {
             if (jobNo != null) {
                 deleteJob(jobNo);
             }
-            throw e;
+            throw e;            
         }
     }
 

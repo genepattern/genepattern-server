@@ -44,7 +44,6 @@ import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.FileWrapper;
 import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -462,7 +461,7 @@ public class Analysis extends GenericWebService {
     throws WebServiceException {
         try {
             AnalysisDAO dao = new AnalysisDAO();
-            int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(), ParameterFormatConverter.getJaxbString(parameters), -1);
+            int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(), parameters, -1);
             return dao.getJobInfo(jobNo);
         } 
         catch (Exception e) {
@@ -486,7 +485,7 @@ public class Analysis extends GenericWebService {
     throws WebServiceException {
         try {
             AnalysisDAO dao = new AnalysisDAO();
-            int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(), ParameterFormatConverter.getJaxbString(parameters), parentJobNumber);
+            int jobNo = dao.recordClientJob(taskID, getUsernameFromContext(), parameters, parentJobNumber);
             return dao.getJobInfo(jobNo);
         } 
         catch (Exception e) {
