@@ -252,22 +252,6 @@ public class LsfCommandExecutor implements CommandExecutor {
         	localLsfJobs.add(convert(lsfJob));
         }
     	LocalLsfJob.cancel(localLsfJobs);
-    	waitForTermination(gpJobId, localLsfJobs);
-	}
-
-	private static void waitForTermination(final String jobId, final Collection<LocalLsfJob> localLsfJobs) {
-		try {
-    		for (final LocalLsfJob localLsfJob : localLsfJobs) {
-    			while (localLsfJob.getStatus().isInstance(LocalLsfJob.ACTIVE)) {
-    				Thread.sleep(3000);
-    				LocalLsfJob.updateStatus(localLsfJobs);
-    			}
-			}
-    	}
-    	catch (final InterruptedException e) {
-    		log.error("Terminating job "+jobId+": InterruptedException", e);
-    		Thread.currentThread().interrupt();
-    	}
 	}
     
     //NOTE: based on assumption that the GenePattern ANALYSIS_JOB.JOB_NO is stored in the LSF_JOB.JOB_NAME column
