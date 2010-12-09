@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.JobDeletionException;
 import org.genepattern.server.executor.JobSubmissionException;
@@ -14,9 +13,8 @@ import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.OmnigeneException;
-import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
 /**
@@ -28,6 +26,38 @@ public class JobManager {
     private static Logger log = Logger.getLogger(JobManager.class);
     
     /**
+     * Create the job directory for a newly added job.
+     * This method requires a valid jobId, but does not check if the jobId is valid.
+     * 
+     * @throws IllegalArgumentException, JobDispatchException
+     */
+    public static File createJobDirectory(Integer jobId) throws JobSubmissionException {
+        if (jobId == null) {
+            throw new IllegalArgumentException("Can't create job directory for jobId=null");
+        }
+        
+        String jobDirName = GenePatternAnalysisTask.getJobDir(""+jobId);
+        // make directory to hold input and output files
+        File jobDir = new File(jobDirName);
+        if (!jobDir.exists()) {
+            if (!jobDir.mkdirs()) {
+                throw new JobSubmissionException("Error creating output directory for job #" + jobId +", jobDir=" + jobDirName);
+            }
+        } 
+        else {
+            // clean out existing directory
+            if (log.isDebugEnabled()) {
+                log.debug("clean out existing directory");
+            }
+            File[] old = jobDir.listFiles();
+            for (int i = 0; old != null && i < old.length; i++) {
+                old[i].delete();
+            }
+        }
+        return jobDir;
+    }
+
+    /**
      * Adds a new job entry to the ANALYSIS_JOB table, with initial status either PENDING or WAITING.
      * 
      * @param taskID
@@ -38,50 +68,29 @@ public class JobManager {
      * @return
      * @throws JobSubmissionException
      */
-    static public JobInfo addJobToQueue(final int taskID, final String userID, final ParameterInfo[] parameterInfoArray, final Integer parentJobID, final Integer jobStatusId) 
+    static public JobInfo addJobToQueue(final TaskInfo taskInfo, final String userId, final ParameterInfo[] parameterInfoArray, final Integer parentJobNumber, final Integer initialJobStatus) 
     throws JobSubmissionException
     {
         JobInfo jobInfo = null;
         try {
-            jobInfo = executeRequest(taskID, userID, parameterInfoArray, parentJobID, jobStatusId);
+            AnalysisDAO ds = new AnalysisDAO();
+            Integer jobNo = ds.addNewJob(userId, taskInfo, parameterInfoArray, parentJobNumber, initialJobStatus);
+            if (jobNo != null) {
+                jobInfo = ds.getJobInfo(jobNo);
+            }
+            if (jobInfo == null) {
+                throw new JobSubmissionException(
+                "addJobToQueue: Operation failed, null value returned for JobInfo");
+            } 
+            createJobDirectory(jobNo);
             return jobInfo;
+        }
+        catch (JobSubmissionException e) {
+            throw e;
         }
         catch (Throwable t) {
             throw new JobSubmissionException(t);
         }
-    }
-
-    /**
-     * Creates job. Call this fun. if you need JobInfo object
-     *
-     * @throws TaskIDNotFoundException
-     *             TaskIDNotFoundException
-     * @throws OmnigeneException
-     * @return <CODE>JobIndo</CODE>
-     */
-    static private JobInfo executeRequest(int taskID, String userID, ParameterInfo[] parameterInfoArray, Integer parentJobID, Integer jobStatusId) throws TaskIDNotFoundException {
-        JobInfo ji = null;
-        String parameter_info = ParameterFormatConverter.getJaxbString(parameterInfoArray);
-        AnalysisDAO ds = new AnalysisDAO();
-        if (parentJobID == null) {
-            parentJobID = -1;
-        }
-        if (jobStatusId == null) {
-            jobStatusId = JobStatus.JOB_PENDING;
-        }
-        
-        Integer jobNo = ds.addNewJob(taskID, userID, parameter_info, null, parentJobID, null, jobStatusId);
-        ji = ds.getJobInfo(jobNo);
-
-        // Checking for null
-        if (ji == null) {
-            throw new OmnigeneException(
-            "AddNewJobRequest:executeRequest Operation failed, null value returned for JobInfo");
-        }
-
-        // Reparse parameter_info before sending to client
-        ji.setParameterInfoArray(ParameterFormatConverter.getParameterInfoArray(parameter_info));
-        return ji;
     }
     
     static public void terminateJob(boolean isAdmin, String currentUser, int jobId) throws JobTerminationException {
