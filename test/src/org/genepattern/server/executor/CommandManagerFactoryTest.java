@@ -32,7 +32,7 @@ public class CommandManagerFactoryTest extends TestCase {
             //String args = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
             System.setProperty("HSQL.args", " -port 9001  -database.0 file:testdb/GenePatternDB -dbname.0 xdb");
             System.setProperty("hibernate.connection.url", "jdbc:hsqldb:hsql://127.0.0.1:9001/xdb");
-            System.setProperty("GenePatternVersion", "3.2.3");
+            System.setProperty("GenePatternVersion", "3.2.4");
 
             File resourceDir = new File("resources");
             String pathToResourceDir = resourceDir.getAbsolutePath();
