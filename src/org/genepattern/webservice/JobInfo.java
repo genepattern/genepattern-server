@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.domain.AnalysisJob;
-
 
 /**
  * Used to hold information about particular job
@@ -28,6 +28,8 @@ import org.genepattern.server.domain.AnalysisJob;
  */
 
 public class JobInfo implements Serializable {
+    public static Logger log = Logger.getLogger(JobInfo.class);
+
     private int jobNo = 0;
     private int parentJobNo = -1;
     private int taskID = 0;
@@ -80,12 +82,18 @@ public class JobInfo implements Serializable {
         if (aJob.getJobNo() == null) {
             throw new IllegalArgumentException("aJob.jobNo is null");
         }
+
+        String statusName = "";
         if (aJob.getJobStatus() == null) {
-            throw new IllegalArgumentException("aJob.jobStatus is null");
+            log.error("aJob.jobStatus is null");
         }
+        else {
+            statusName = aJob.getJobStatus().getStatusName();
+        }
+        
         this.jobNo = aJob.getJobNo().intValue();
         this.taskID = aJob.getTaskId();
-        this.status = aJob.getJobStatus().getStatusName();
+        this.status = statusName;
         this.submittedDate = aJob.getSubmittedDate();
         this.completedDate = aJob.getCompletedDate();
         this.parameterInfoArray = ParameterFormatConverter.getParameterInfoArray(aJob.getParameterInfo());
