@@ -480,6 +480,10 @@ public class AnalysisJobScheduler implements Runnable {
             catch (JobDispatchException e) {
                 handleJobDispatchException(jobId, e);
             }
+            catch (Throwable t) {
+                log.error("Unexpected error thrown by GenePatternAnalysisTask.onJob: "+t.getLocalizedMessage());
+                handleJobDispatchException(jobId, t);
+            }
         }
 
         //handle errors during job dispatch (moved from GPAT.onJob)
