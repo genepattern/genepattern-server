@@ -97,7 +97,7 @@ public class CommandLineParserTest extends TestCase {
                 "-e",
                 "-ayes" };
         
-        List<String> cmdLineArgs = CommandLineParser.translateCmdLine(dict, cmdLine);
+        List<String> cmdLineArgs = CommandLineParser.translateCmdLine(cmdLine, dict);
         assertNotNull(cmdLineArgs);
         assertEquals("cmdLineArgs.size", expected.length, cmdLineArgs.size());
         int i=0;
