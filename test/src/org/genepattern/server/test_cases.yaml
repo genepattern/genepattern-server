@@ -1,0 +1,153 @@
+# test cases for the CommandLineParserTest
+# a YAML file with a list of objects
+# Note: must escape backslashes ('\') in strings
+
+#<testname>:
+#    description: _optional_
+#    # a map of environment variables (including parameters entered by the user on the input form)
+#    env:
+#    # a list of args, the expected result of parsing the cmdLine with the given properties
+#    expected: []
+
+testQuotedArgs:
+    description: Handle quoted arguments within the command line (eg. echo "<p1> <p2>") as a single token
+    cmdLine: <java> -cp <libdir>echo.jar org.genepattern.testmodule.Echo "<arg1> <arg2>" "<arg3><arg4>"
+    env:
+        java: "C:\\Program Files\\GenePatternServer\\jre\\bin\\java"
+        libdir: "../taskLib/Echo.1.0000/"
+        arg1: val1
+        arg2: val2
+        arg3: val3
+        arg4: val four
+    expected: [ 
+        "C:\\Program Files\\GenePatternServer\\jre\\bin\\java", 
+        "-cp",
+        "../taskLib/Echo.1.0000/echo.jar",
+        "org.genepattern.testmodule.Echo",
+        "val1 val2",
+        "val3val four" ]
+
+testSpecialCharactersInValues:
+    description: Handle double quote characters and other special characters in a parameter value
+    cmdLine: <perl> <arg1> <arg2> <arg3>
+    env:
+        perl: /usr/bin/perl
+        arg1: "It has a double quote (\") character"
+        arg2: "Hugh O'Neill"
+        arg3: "Ignore angle brackets, e.g. '<' and '>' in parameter values"
+    expected: [
+        "/usr/bin/perl",
+        "It has a double quote (\") character",
+        "Hugh O'Neill",
+        "Ignore angle brackets, e.g. '<' and '>' in parameter values" ]
+
+testSpaceInSub:
+    description: Handle space character in substitution value, no quotes.
+    cmdLine: <java> -cp <libdir>echo.jar org.genepattern.testmodule.Echo <arg1> <arg1_basename>.out
+    env: 
+        java: "C:\\Program Files\\GenePatternServer\\jre\\bin\\java"
+        libdir: "../taskLib/Echo.1.0000/"
+        arg1: "./temp/test_run1000.tmp/my_file.txt"
+        arg1_basename: "my_file"
+    expected: [
+        "C:\\Program Files\\GenePatternServer\\jre\\bin\\java", 
+        "-cp", 
+        "../taskLib/Echo.1.0000/echo.jar",
+        "org.genepattern.testmodule.Echo",
+        "./temp/test_run1000.tmp/my_file.txt",
+        "my_file.out" ]
+
+testSpaceInQuotedSub:
+    description: Handle space character in quoted substitution value.
+    cmdLine: <java> -cp <libdir>echo.jar org.genepattern.testmodule.Echo <arg1> <arg1_basename>.out
+    env: 
+        java: "\"C:\\Program Files\\GenePatternServer\\jre\\bin\\java\""
+        libdir: "../taskLib/Echo.1.0000/"
+        # cmd parameters
+        arg1: "./temp/test_run1000.tmp/my_file.txt"
+        # computed at runtime
+        arg1_basename: "my_file"
+    expected: [
+        "\"C:\\Program Files\\GenePatternServer\\jre\\bin\\java\"", 
+        "-cp", 
+        "../taskLib/Echo.1.0000/echo.jar",
+        "org.genepattern.testmodule.Echo",
+        "./temp/test_run1000.tmp/my_file.txt",
+        "my_file.out" ]
+
+
+testDefaultJavaWinWrappedQuotes:
+    description: The executable (first arg) is a substitution variable which is set to a string with a space character.
+    cmdLine: "<java> -cp <libdir>echo.jar org.genepattern.testmodule.Echo <arg1> <arg1_basename>.out"
+    env: 
+        java: "\"C:\\Program Files\\GenePatternServer\\jre\\bin\\java\""
+        libdir: "../taskLib/Echo.1.0000/"
+        # cmd parameters
+        arg1: "./temp/test_run1000.tmp/my_file.txt"
+        # computed at runtime
+        arg1_basename: "my_file"
+    expected: [
+        "\"C:\\Program Files\\GenePatternServer\\jre\\bin\\java\"", 
+        "-cp", 
+        "../taskLib/Echo.1.0000/echo.jar",
+        "org.genepattern.testmodule.Echo",
+        "./temp/test_run1000.tmp/my_file.txt",
+        "my_file.out" ]
+
+testTwoSubstitutions:
+    cmdLine: "<java> -cp <libdir>echoJavaVersion.jar org.genepattern.testmodule.EchoJavaVersion <java>"
+    env:
+        java: C:\Program Files\GenePatternServer\jre\bin\java
+        libdir: "../taskLib/EchoJavaVersion.1.0000/"
+    expected: [ 
+        "C:\\Program Files\\GenePatternServer\\jre\\bin\\java",
+        "-cp",
+        "../taskLib/EchoJavaVersion.1.0000/echoJavaVersion.jar",
+        "org.genepattern.testmodule.EchoJavaVersion",
+        "C:\\Program Files\\GenePatternServer\\jre\\bin\\java" ]
+testTwo:
+    cmdLine: "<R2.5> <libdir>expr.R parseCmdLine -i<input.file> -o<output.file> -m<method> -q<quantile.normalization> -b<background.correct> -c<compute.present.absent.calls> -n<normalization.method> -l<libdir> -f<clm.file> -v<value.to.scale.to> -e<cdf.file> -a<annotate.probes>"
+    env:
+        "R2.5": "<java> -DR_suppress=<R.suppress.messages.file> -DR_HOME=<R2.5_HOME> -Dr_flags=<r_flags> -cp <run_r_path> RunR"
+        "java": "C:\\Program Files\\GenePatternServer\\jre\\bin\\java"
+        "R.suppress.messages.file": "C:/Program Files/GenePatternServer/resources/R_suppress.txt"
+        "R2.5_HOME": "C:/Program Files/GenePatternServer/R25"
+        "r_flags": "--no-save --quiet --slave --no-restore"
+        "run_r_path": "C:/Program Files/GenePatternServer/Tomcat/webapps/gp/WEB-INF/classes/"
+        "libdir": "../taskLib/ExpressionFileCreator.7.2190/"
+        "input.file": "./temp/test_run9842.tmp/2 cel files.zip"
+        "output.file": "<input.file_basename>"
+        "method": "RMA"
+        "quantile.normalization": "yes"
+        "background.correct": "no"
+        "compute.present.absent.calls": "yes"
+        "normalization.method": "median scaling"
+        "clm.file": ""
+        "value.to.scale.to": ""
+        "cdf.file": ""
+        "annotate.probes": "yes"
+        # added at runtime
+        "input.file_basename": "2 cel files"
+    expected: [
+        "C:\\Program Files\\GenePatternServer\\jre\\bin\\java",
+        "-DR_suppress=C:/Program Files/GenePatternServer/resources/R_suppress.txt",
+        "-DR_HOME=C:/Program Files/GenePatternServer/R25",
+        "-Dr_flags=--no-save --quiet --slave --no-restore",
+        "-cp",
+        "C:/Program Files/GenePatternServer/Tomcat/webapps/gp/WEB-INF/classes/",
+        "RunR",
+        "../taskLib/ExpressionFileCreator.7.2190/expr.R",
+        "parseCmdLine",
+        "-i./temp/test_run9842.tmp/2 cel files.zip",
+        "-o2 cel files",
+        "-mRMA",
+        "-qyes",
+        "-bno",
+        "-cyes",
+        "-nmedian scaling",
+        "-l../taskLib/ExpressionFileCreator.7.2190/",
+        "-f",
+        "-v",
+        "-e",
+        "-ayes" ]
+    

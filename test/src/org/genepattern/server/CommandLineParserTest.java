@@ -1,13 +1,21 @@
 package org.genepattern.server;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import junit.framework.TestCase;
 
 import org.genepattern.server.genepattern.CommandLineParser;
 import org.genepattern.util.GPConstants;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * Unit tests for command line parser.
@@ -15,18 +23,33 @@ import org.genepattern.util.GPConstants;
  * @author pcarr
  */
 public class CommandLineParserTest extends TestCase {
-    private static final String[][] testCases = {
+    /**
+     * Helper class which returns the parent File of this source file.
+     * @return
+     */
+    private static File getSourceDir() {
+        String cname = CommandLineParserTest.class.getCanonicalName();
+        int idx = cname.lastIndexOf('.');
+        String dname = cname.substring(0, idx);
+        dname = dname.replace('.', '/');
+        File sourceDir = new File("test/src/" + dname);
+        return sourceDir;
+    }
+
+    private static final String[][] substitutionsTestCases = {
         {"", },
         {"<java> -cp <libdir>test.jar <p1> <p2>",
             "<java>", "<libdir>", "<p1>", "<p2>" }, 
         {"\"<java>\" -cp <libdir>test.jar <p1> <p2>",
             "<java>", "<libdir>", "<p1>", "<p2>" }, 
         {"<R2.5> <p1> <p2> >> stdout.txt",
-                "<R2.5>", "<p1>", "<p2>" },
+            "<R2.5>", "<p1>", "<p2>" },
+        {"<R2.5> <p1> <p2> >><stdout.file> <<<stdin.file>",
+            "<R2.5>", "<p1>", "<p2>", "<stdout.file>", "<stdin.file>" },                
     };
     
     public void testGetSubstitutions() {
-        for(String[] testCase : testCases) {
+        for(String[] testCase : substitutionsTestCases) {
             testGetSubstitutions(testCase);
         }
     }
@@ -40,8 +63,124 @@ public class CommandLineParserTest extends TestCase {
             assertEquals("sub["+i+"]", testCase[i+1], rval.get(i));
         }
     }
+    
+    //command line tests
+    private static class CmdLineObj {
+        private String name = "";
+        private String description = "";
+        private String cmdLine = "";
+        private List<String> expected;
+        private Map<String,String> env;
+        
+        /**
+         * Initialize a test-case from the test_cases.yaml file.
+         * @param map, loaded from yaml parser.
+         */
+        public CmdLineObj(String name, Object obj) {
+            this.name = name;
+            
+            Map<?,?> map = null;
+            if (obj instanceof Map<?,?>) {
+                map = (Map<?,?>) obj;
+            }
+            else {
+                return;
+            }
+            Object descriptionObj = map.get("description");
+            if (descriptionObj != null) {
+                if (descriptionObj instanceof String) {
+                    this.description = (String) descriptionObj;
+                }
+                else {
+                    fail("Error parsing config file for test-case: "+name+". Description is not a String.");
+                }
+            }
+            else {
+                this.description = this.name;
+            }
+            Object cmdLineObj = map.get("cmdLine");
+            Object envObj = map.get("env");
+            Object expectedObj = map.get("expected");
+            
+            setCmdLine(cmdLineObj);
+            setEnv(envObj);
+            setExpected(expectedObj);
+        }
+        
+        private void setCmdLine(Object obj) {
+            cmdLine = obj.toString();
+        }
+        private void setEnv(Object obj) {
+            env = new LinkedHashMap<String,String>();
+            if (obj instanceof Map<?,?>) {
+                for(Entry<?,?> entry : ((Map<?,?>)obj).entrySet() ) {
+                    env.put( entry.getKey().toString(), entry.getValue().toString());
+                }
+            }
+        }
+        private void setExpected(Object env) {
+            expected = new ArrayList<String>();
+            if (env instanceof List) {
+                List<?> in = (List<?>) env;
+                for(Object arg : in) {
+                    expected.add(arg.toString());
+                }
+            }
+        }
+        
+        public void runTest() throws IOException {
+            List<String> cmdLineArgs = CommandLineParser.translateCmdLine(cmdLine, env);
+            assertNotNull(name+": cmdLineArgs", cmdLineArgs);
+            assertEquals(name+": cmdLineArgs.size", expected.size(), cmdLineArgs.size());
+            //assertEquals(name+": cmdLineArgs.size", expected.size(), cmdLineArgs.length);
+            int i=0;
+            for(String arg : cmdLineArgs) {
+                assertEquals(name+": cmdLineArg["+i+"]", expected.get(i), arg);
+                ++i;
+            }
+        }
+    }
+    
+    private List<CmdLineObj> loadTestCases(String filename) throws FileNotFoundException { 
+        List<CmdLineObj> testCases = new ArrayList<CmdLineObj>();
 
-    public void testGetCommandLine() { 
+        File parentDir = getSourceDir();
+        File configurationFile = new File(parentDir, filename);
+        Reader reader = null;
+        reader = new FileReader(configurationFile);
+
+        Yaml yaml = new Yaml();
+        Object obj = yaml.load(reader);
+        if (obj instanceof Map<?,?>) {
+            Map<?,?> testCasesMap = (Map<?,?>) obj;
+            for(Entry<?,?> entry : testCasesMap.entrySet()) {
+                String testName = entry.getKey().toString();
+                Object val = entry.getValue();
+                
+                CmdLineObj next = new CmdLineObj(testName, val);
+                testCases.add(next);
+            }
+        }
+        
+        return testCases;
+
+    }
+    
+    public void testGetCommandLineFromFile() throws IOException {
+        List<CmdLineObj> testCases = null;
+        try {
+            testCases = loadTestCases("test_cases.yaml");
+        }
+        catch (FileNotFoundException e) {
+            fail(e.getLocalizedMessage());
+        }
+        
+        for(CmdLineObj testCase : testCases) {
+            testCase.runTest();
+        }
+    }
+
+    public void testGetCommandLine() throws IOException { 
         //test case for expression file creator
         String cmdLine="<R2.5> <libdir>expr.R parseCmdLine "+
             "-i<input.file> -o<output.file> "+
