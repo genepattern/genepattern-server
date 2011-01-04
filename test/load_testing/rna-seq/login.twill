@@ -1,0 +1,9 @@
+#
+# Login to the GenePattern 3.2+ server
+#
+# pass the server url as an arg, e.g.
+#   -u http://genepatterntest.broadinstitute.org
+#   -u http://gpb67-896.broadinstitute.org:8080
+go /gp/login?username=twilly&password=twilly
+code 200
+url /gp/pages/index.jsf
