@@ -1,0 +1,130 @@
+<project name="gp-custom-lsf-executor" default="describe">
+    <target name="describe">
+        <echo>
+            Compile custom command executor service plugin into a jar file for deployment to a GenePattern Server.
+            Requirements:
+                1. A GenePattern Server installation, e.g.
+                   /Applications/GenePatternServer
+                2. The GenePattern Java programming library, included with the server
+                   /Applications/GenePatternServer/Tomcat/webapps/gp/downloads/GenePattern.zip
+                   [also, available for download from here: http://genepattern.broadinstitute.org/gp/downloads/GenePattern.zip]
+            Example usage,
+                1. ant jar
+        </echo>
+    </target>
+
+    <!-- path to the gp library, required for CommandExecutorService and related classes. -->
+    <!-- configured for both a dev environment (from svn co of gp server source code), or a server install -->
+    <property name="gp.classes" location="../website/WEB-INF/classes" />
+    <property name="gp.server.lib" location="../website/WEB-INF/lib" />
+    
+    <!-- this implementation requires the BroadCore libraries -->
+    <property name="broadcore" location="../../BroadCore" />
+
+    <!-- property name="client.lib.dir" location="gplib" / -->
+    <property name="build.dir" value="build"  />
+    <property name="dist.dir" value="dist" />
+    
+    <!-- svn required for including the version number in  the jar file name -->
+    <property name="svn.cmd" value="svn" />
+    <!-- must be set explicitly when launching from Eclipse on Mac OS X -->
+    <!-- property name="svn.cmd" value="/opt/subversion/bin/svn" / -->
+
+    <target name="init">
+        <mkdir dir="${build.dir}" />
+        <mkdir dir="${dist.dir}" />
+    </target>
+    
+    <path id="gp.server.classpath">
+        <!-- include GenePattern jar files -->
+        <fileset dir="${gp.server.lib}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+    <path id="gp.dev.classpath">
+        <pathelement location="${gp.classes}" />
+    </path>
+
+    <path id="compile.classpath">
+        <pathelement location="${build.dir}" />
+        <path refid="gp.server.classpath" />
+        <path refid="gp.dev.classpath" />
+        <fileset dir="lib">
+            <include name="**/*.jar"/>
+        </fileset>
+        <!-- include broad core jar files -->
+        <fileset dir="${broadcore}/lib/deploy/hibernate">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+    
+    <!-- target name="compile" depends="getClientLibrary" -->
+    <target name="compile" depends="init">
+        <available property="hasCommandExecutor" classpathref="compile.classpath" classname="org.genepattern.server.executor.CommandExecutor" />
+        <fail unless="hasCommandExecutor" message="requires org.genepattern.server.executor.CommandExecutor on classpath" />
+        <javac debug="true" srcdir="src" destdir="${build.dir}" classpathref="compile.classpath" />
+
+        <!-- copy non-java resource files to the output directory --> 
+        <copy todir="${build.dir}">
+            <fileset dir="src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    
+    <target name="getBuildVersionId" unless="build.version.id" depends="getSvnVersion">
+        <property name="build.version.id" value="${svn.info.lastRev}" />
+    </target>
+    
+    <!-- helper target to label the jar file based on svn revision -->
+    <target name="getSvnVersion" unless="svn.info.lastRev"
+        description="Sets property 'svn.info.lastRev' to the head svn Last Changed Rev">
+
+        <!-- find out revision number of HEAD, need svn.cmd on the path of the local machine -->
+        <exec executable="${svn.cmd}" outputproperty="svninfo.out"> 
+            <arg line="info -r HEAD" />
+        </exec>
+        <exec executable="grep" inputstring="${svninfo.out}" outputproperty="grep.out">
+            <arg line="'Last Changed Rev:'" />
+        </exec>
+        <exec executable="sed" inputstring="${grep.out}" outputproperty="svn.info.lastRev">
+            <arg value="s/Last\ Changed\ Rev:\ //" />
+        </exec>
+    </target>
+
+    <target name="echoSvnVersion" depends="getSvnVersion">
+        <echo>svn.info.lastRev: ${svn.info.lastRev}</echo>
+    </target>
+    
+    <target name="echoBuildVersionId" depends="getBuildVersionId">
+        <echo>build.version.id: ${build.version.id}</echo>
+    </target>
+    
+    <target name="jar" depends="compile,getBuildVersionId">
+        <property name="jar.file" location="${dist.dir}/gp-lsf-executor-${build.version.id}.jar" />
+        <jar destfile="${jar.file}" basedir="${build.dir}" />
+    </target>
+    
+    <target name="clean">
+        <delete dir="${build.dir}" />
+        <delete dir="${dist.dir}" />
+    </target>
+    
+    <target name="cleanAll" depends="clean">
+        <description>
+        Deletes everything, including the extracted client library and the downloaded client library zip file.
+        </description>
+        <delete file="gp-lsf-queue.zip" />
+        <delete dir="${client.lib.dir}" />
+    </target>
+    
+    <target name="self.dist" depends="cleanAll">
+        <description>
+        Package up this ant project for distribution to the FTP downloads page.
+        </description>
+        <zip basedir=".." destfile="gp-lsf-queue.zip" 
+            includes="gp-lsf-queue/**/*" 
+            excludes="gp-lsf-queue/bin, gp-lsf-queue/.settings, gp-lsf-queue/.settings/**/*, gp-lsf-queue/.classpath, gp-lsf-queue/.project" />
+    </target>
+    
+</project>

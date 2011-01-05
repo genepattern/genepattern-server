@@ -2,31 +2,31 @@
 <!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
 
 <hibernate-configuration> 
-  <session-factory> 
-  
-    <!--  Connection pool properties -->
-    <property name="connection.provider_class">org.hibernate.connection.C3P0ConnectionProvider</property>
-    <property name="c3p0.minPoolSize">5</property>
-    <property name="c3p0.timeout">1000</property>
-    <property name="hibernate.c3p0.max_size">120</property>
-    <!-- additional settings are in the c3p0.properties file -->
-
-    <!-- HSQL setup (the default).  These values can be overriden in genepattern.properties  -->
-    <property name="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</property>
-    <property name="hibernate.connection.shutdown">true</property>
-    <property name="hibernate.connection.url">jdbc:hsqldb:hsql://localhost/xdb</property>
-    <property name="hibernate.connection.username">sa</property>
+  <!-- session-factory --> 
+  <session-factory name="hibernateSessionFactory"> 
+    <property name="hibernate.connection.datasource">java:comp/env/jdbc/gp/hsql</property>
     <property name="hibernate.current_session_context_class">thread</property>
-    <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property>
+    <property name="hibernate.transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
 
+    <!--  hsql settings -->
+    <property name="hibernate.default_schema">PUBLIC</property>
+    <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property> 
+    
+    <!-- oracle settings -->
+    <!-- replace the hql settings with these oracle settings when connecting to an oracle db, don't forget to enter a valid schema   
+    <property name="hibernate.default_schema">GP_SCHEMA</property>
+    <property name="hibernate.dialect">org.genepattern.server.database.PlatformOracle9Dialect</property> 
+    -->    
+    
     <!--  Misc settings -->
     <property name="hibernate.jdbc.batch_size">20</property>
     <property name="hibernate.statement_cache.size">0</property>
-    <property name="hibernate.transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
+
+    <!--  for debugging -->
+    <property name="show_sql">false</property> 
 
     <!-- Mappings -->
     <mapping resource="org/genepattern/server/domain/AnalysisJob.hbm.xml"/>
-	<mapping resource="org/genepattern/server/domain/BatchJob.hbm.xml"/>
     <mapping resource="org/genepattern/server/domain/JobStatus.hbm.xml"/>
     <mapping resource="org/genepattern/server/domain/Lsid.hbm.xml"/>
     <mapping resource="org/genepattern/server/domain/Props.hbm.xml"/>

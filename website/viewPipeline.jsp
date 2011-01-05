@@ -12,7 +12,9 @@
 
 
 <%@ page import="org.genepattern.server.webapp.*,
-		 org.genepattern.data.pipeline.*,
+         org.genepattern.data.pipeline.JobSubmission,
+         org.genepattern.data.pipeline.PipelineModel,
+         org.genepattern.data.pipeline.PipelineUtil,
 		 org.genepattern.server.util.AccessManager,
 		 org.genepattern.server.genepattern.GenePatternAnalysisTask,
 		 org.genepattern.server.webservice.server.local.*,
@@ -20,10 +22,8 @@
 		 org.genepattern.webservice.ParameterInfo,
 		 org.genepattern.webservice.TaskInfoAttributes,
 		 org.genepattern.server.genepattern.LSIDManager,
-		 org.genepattern.data.pipeline.*,
  		 org.genepattern.util.StringUtils,
 		 org.genepattern.server.*,
-         org.genepattern.server.webapp.RunPipelineForJsp,
 		 org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient,
 		 org.genepattern.util.GPConstants,
 		 org.genepattern.util.LSID,
@@ -165,8 +165,7 @@ if(showEdit) {
 if (AuthorizationHelper.createPipeline(userID)){
 out.println("  <input type=\"button\" value=\"Clone...\" name=\"clone\" class=\"little\" onclick=\"cloneTask('"+displayName+"', '" + pipelineName + "', '" + userID + "')\"; />");
 }
-RunPipelineForJsp runPipelineForJsp = new RunPipelineForJsp();
-if (! runPipelineForJsp.isMissingTasks(model, userID)){
+if (! PipelineUtil.isMissingTasks(model, userID)){
 	out.println("  <input type=\"button\" value=\"Run\" name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('" + request.getContextPath() + "/pages/index.jsf?lsid="+pipelineName + "')\"; />");
 }
 //XXXXXXXXXXXXX
@@ -197,7 +196,7 @@ out.print("<br>");
 //XXXXXXXXXXX
 
 try {
-   runPipelineForJsp.isMissingTasks(model, new java.io.PrintWriter(out), userID);
+   PipelineUtil.isMissingTasks(model, new java.io.PrintWriter(out), userID);
 } catch(Exception e) {
     out.println("An error occurred while processing your request. Please try again.");
    return;
@@ -420,7 +419,7 @@ out.println("<table cellspacing='0' width='100%' class='attribute'>");
 
 
 }
-if (! runPipelineForJsp.isMissingTasks(model, userID)){
+if (! PipelineUtil.isMissingTasks(model, userID)){
 out.println("<table width='100%'><tr><td align='center'><input type=\"button\" value=\"Run\"      name=\"runpipeline\" class=\"little\" onclick=\"runpipeline('" + request.getContextPath() + "/pages/index.jsf?lsid="+pipelineName + "')\"; /></td></tr></table>");
 }
 

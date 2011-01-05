@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.AdminProxy;
 import org.genepattern.webservice.AnalysisJob;
@@ -36,7 +37,6 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskExecutor;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
-import org.jfree.util.Log;
 
 /**
  * This class is used to run modules on a GenePattern server.
@@ -44,6 +44,8 @@ import org.jfree.util.Log;
  * @author Joshua Gould
  */
 public class GPClient {
+    private static Logger log = Logger.getLogger(GPClient.class);
+
     /**
      * number of modules to cache.
      */
@@ -111,7 +113,7 @@ public class GPClient {
 
         String serverPath = serverUrl.getPath();
         if (serverPath != null && !serverPath.equals("") && !serverPath.equals("/gp") && !serverPath.equals("/gp/")) {
-            Log.error("Ignoring server path: "+serverPath);
+            log.error("Ignoring server path: "+serverPath);
         }
         
         this.server = server;
@@ -153,13 +155,13 @@ public class GPClient {
      * @see #isComplete
      */
     public JobResult createJobResult(int jobNumber) throws WebServiceException {
-	AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, username, password, false);
-	analysisProxy.setTimeout(Integer.MAX_VALUE);
-	JobInfo info = analysisProxy.checkStatus(jobNumber);
-	if (info == null) {
-	    return null;
-	}
-	return createJobResult(info);
+        AnalysisWebServiceProxy analysisProxy = new AnalysisWebServiceProxy(server, username, password, false);
+        analysisProxy.setTimeout(Integer.MAX_VALUE);
+        JobInfo info = analysisProxy.checkStatus(jobNumber);
+        if (info == null) {
+            return null;
+        }
+        return createJobResult(info);
     }
 
     /**
@@ -366,21 +368,41 @@ public class GPClient {
      * @see #createJobResult
      */
     public int runAnalysisNoWait(String moduleNameOrLsid, Parameter[] parameters) throws WebServiceException {
-	try {
-	    TaskInfo taskInfo = getTask(moduleNameOrLsid);
-	    ParameterInfo[] actualParameters = GPClient.createParameterInfoArray(taskInfo, parameters);
-	    AnalysisWebServiceProxy analysisProxy = null;
-	    try {
-		analysisProxy = new AnalysisWebServiceProxy(server, username, password);
-		analysisProxy.setTimeout(Integer.MAX_VALUE);
-	    } catch (Exception x) {
-		throw new WebServiceException(x);
-	    }
-	    AnalysisJob job = submitJob(analysisProxy, taskInfo, actualParameters);
-	    return job.getJobInfo().getJobNumber();
-	} catch (org.genepattern.webservice.WebServiceException wse) {
-	    throw new WebServiceException(wse.getMessage(), wse.getRootCause());
-	}
+	    return runAnalysisNoWait(moduleNameOrLsid, parameters, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Submits the given module with the given parameters and does not wait for the job to complete.
+     * 
+     * @param moduleNameOrLsid
+     *                The module name or LSID. When an LSID is provided that does not include a version, the latest
+     *                available version of the task identified by the LSID will be used. If a module name is supplied,
+     *                the latest version of the module with the nearest authority is selected. The nearest authority is
+     *                the first match in the sequence: local authority, Broad authority, other authority.
+     * @param parameters
+     *                The parameters to run the module with.
+     * @return The job number.
+     * @throws WebServiceException
+     *                 If an error occurs during the job submission process.
+     * @see #isComplete
+     * @see #createJobResult
+     */
+    public int runAnalysisNoWait(String moduleNameOrLsid, Parameter[] parameters, int analysisProxyTimeout) throws WebServiceException {
+    try {
+        TaskInfo taskInfo = getTask(moduleNameOrLsid);
+        ParameterInfo[] actualParameters = GPClient.createParameterInfoArray(taskInfo, parameters);
+        AnalysisWebServiceProxy analysisProxy = null;
+        try {
+        analysisProxy = new AnalysisWebServiceProxy(server, username, password);
+        analysisProxy.setTimeout(analysisProxyTimeout);
+        } catch (Exception x) {
+        throw new WebServiceException(x);
+        }
+        AnalysisJob job = submitJob(analysisProxy, taskInfo, actualParameters);
+        return job.getJobInfo().getJobNumber();
+    } catch (org.genepattern.webservice.WebServiceException wse) {
+        throw new WebServiceException(wse.getMessage(), wse.getRootCause());
+    }
 
     }
 
@@ -464,46 +486,75 @@ public class GPClient {
     }
 
     private JobResult createJobResult(JobInfo info) throws WebServiceException {
-	String status = info.getStatus();
-	if (!(status.equalsIgnoreCase("ERROR") || (status.equalsIgnoreCase("Finished")))) {
-	    return null;
-	}
-	TaskInfo taskInfo = getTask(info.getTaskLSID());
-	ArrayList<String> resultFiles = new ArrayList<String>();
-	ParameterInfo[] jobParameterInfo = info.getParameterInfoArray();
-	boolean stderr = false;
-	boolean stdout = false;
-	ArrayList<Parameter> jobParameters = new ArrayList<Parameter>();
-	for (int j = 0; j < jobParameterInfo.length; j++) {
-	    if (jobParameterInfo[j].isOutputFile()) {
-		String fileName = jobParameterInfo[j].getValue();
-		int index1 = fileName.lastIndexOf('/');
-		int index2 = fileName.lastIndexOf('\\');
-		int index = (index1 > index2 ? index1 : index2);
-		if (index != -1) {
-		    fileName = fileName.substring(index + 1, fileName.length());
-		}
-		if (fileName.equals(GPConstants.STDOUT)) {
-		    stdout = true;
-		} else if (fileName.equals(GPConstants.STDERR)) {
-		    stderr = true;
-		} else if (fileName.equals(GPConstants.TASKLOG)) {
-		    // ignore
-		} else {
-		    resultFiles.add(fileName);
-		}
-	    } else {
-		jobParameters.add(new Parameter(jobParameterInfo[j].getName(), jobParameterInfo[j].getValue()));
-	    }
-	}
-	try {
-	    return new JobResult(new URL(server), info.getJobNumber(), resultFiles.toArray(new String[0]), stdout,
-		    stderr, jobParameters.toArray(new Parameter[0]), taskInfo.getTaskInfoAttributes().get(
-			    GPConstants.LSID), username, password);
-	} catch (java.net.MalformedURLException mfe) {
-	    throw new Error(mfe);
-	}
-
+        String status = info.getStatus();
+        if (!(status.equalsIgnoreCase("ERROR") || (status.equalsIgnoreCase("Finished")))) {
+            return null;
+        }
+        TaskInfo taskInfo = getTask(info.getTaskLSID());
+        ArrayList<String> resultFiles = new ArrayList<String>();
+        ParameterInfo[] jobParameterInfo = info.getParameterInfoArray();
+        boolean stderr = false;
+        boolean stdout = false;
+        ArrayList<Parameter> jobParameters = new ArrayList<Parameter>();
+        for(ParameterInfo paramInfo : jobParameterInfo) {
+            if (paramInfo.isOutputFile()) {
+                int fileJobNumber = info.getJobNumber();
+                String fileName = paramInfo.getValue();
+                int index1 = fileName.lastIndexOf('/');
+                int index2 = fileName.lastIndexOf('\\');
+                int index = (index1 > index2 ? index1 : index2);
+                if (index != -1) {
+                    try {
+                        fileJobNumber = Integer.parseInt( fileName.substring(0, index) );
+                    }
+                    catch (NumberFormatException e) {
+                        log.error("Error getting job number from resultFile: "+fileName, e);
+                    }
+                    fileName = fileName.substring(index + 1, fileName.length());
+                }
+                if (fileJobNumber != info.getJobNumber()) {
+                    // ignore
+                }
+                else if (fileName.equals(GPConstants.STDOUT)) {
+                    stdout = true;
+                } 
+                else if (fileName.equals(GPConstants.STDERR)) {
+                    stderr = true;
+                } 
+                else if (fileName.equals(GPConstants.TASKLOG)) {
+                    // ignore
+                } 
+                else if (fileName.endsWith(GPConstants.PIPELINE_TASKLOG_ENDING)) {
+                    // ignore
+                }
+                else {
+                    resultFiles.add(fileName);
+                }
+            } 
+            else {
+                jobParameters.add(new Parameter(paramInfo.getName(), paramInfo.getValue()));
+            }
+        }
+        try {
+            final URL serverUrl = new URL(server);
+            final int jobNumber = info.getJobNumber();
+            final String[] resultFilenames = resultFiles.toArray(new String[0]);
+            final Parameter[] jobParametersArray = jobParameters.toArray(new Parameter[0]);
+            final String taskLsid = taskInfo.getTaskInfoAttributes().get(GPConstants.LSID);
+            return new JobResult(
+                    serverUrl, 
+                    jobNumber, 
+                    resultFilenames, 
+                    stdout, 
+                    stderr, 
+                    jobParametersArray, 
+                    taskLsid, 
+                    username, 
+                    password);
+        } 
+        catch (java.net.MalformedURLException mfe) {
+            throw new Error(mfe);
+        }
     }
 
     private TaskInfo getTask(String lsid) throws WebServiceException {

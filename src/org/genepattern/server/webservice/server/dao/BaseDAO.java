@@ -12,15 +12,19 @@
 
 package org.genepattern.server.webservice.server.dao;
 
-import java.io.*;
+import java.io.File;
 import java.rmi.RemoteException;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.Suite;
-import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.webservice.*;
 import org.hibernate.*;
@@ -28,12 +32,9 @@ import org.hibernate.*;
 import com.sun.rowset.CachedRowSetImpl;
 
 public class BaseDAO {
-
     private static Logger log = Logger.getLogger(TaskIntegratorDAO.class);
-    public static final int UNPROCESSABLE_TASKID = -1;
-    public int PROCESSING_STATUS = 2;
-    public static int JOB_WAITING_STATUS = 1;
 
+    public static final int UNPROCESSABLE_TASKID = -1;
 
     public BaseDAO() {
     	// Start a transaction if not begun already
@@ -92,14 +93,7 @@ public class BaseDAO {
             }
 
     }
-
   
-    protected static TaskInfo taskInfoFromTaskMaster(TaskMaster tm) {
-        return new TaskInfo(tm.getTaskId(), tm.getTaskName(), tm.getDescription(), tm.getParameterInfo(),
-                TaskInfoAttributes.decode(tm.getTaskinfoattributes()), tm.getUserId(), tm.getAccessId());
-
-    }
-
     protected SuiteInfo suiteInfoFromSuite(Suite suite) throws OmnigeneException {
 
         String lsid = suite.getLsid();
@@ -134,15 +128,6 @@ public class BaseDAO {
 
         return suiteInfo;
 
-    }
-
-
-
-    public JobInfo jobInfoFromAnalysisJob(org.genepattern.server.domain.AnalysisJob aJob) throws OmnigeneException {
-        return new JobInfo(aJob.getJobNo().intValue(), aJob.getTaskId(), aJob.getJobStatus().getStatusName(), aJob
-                .getSubmittedDate(), aJob.getCompletedDate(), ParameterFormatConverter.getParameterInfoArray(aJob
-                .getParameterInfo()), aJob.getUserId(), aJob.getTaskLsid(), aJob.getTaskName());
-    
     }
 
     /**

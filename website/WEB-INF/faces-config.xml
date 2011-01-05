@@ -131,6 +131,13 @@
   <managed-bean-class>org.genepattern.server.webapp.jsf.ModuleChooserBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
+
+ <managed-bean>
+  <managed-bean-name>userSessionBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.UserSessionBean</managed-bean-class>
+  <managed-bean-scope>session</managed-bean-scope>
+ </managed-bean>
+ 
  <managed-bean>
   <managed-bean-name>jobsBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.JobBean</managed-bean-class>
@@ -138,6 +145,10 @@
   <managed-property>
     <property-name>jobResultsFilterBean</property-name>
     <value>#{jobResultsFilterBean}</value>
+  </managed-property>
+  <managed-property>
+    <property-name>userSessionBean</property-name>
+    <value>#{userSessionBean}</value>
   </managed-property>
  </managed-bean>
  <managed-bean>
@@ -154,12 +165,6 @@
   <managed-bean-name>navBarBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.NavBarBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
- </managed-bean>
- <!--  Beans for example programs -->
- <managed-bean>
-  <managed-bean-name>navigationMenu</managed-bean-name>
-  <managed-bean-class>org.apache.myfaces.examples.misc.NavigationMenu</managed-bean-class>
-  <managed-bean-scope>application</managed-bean-scope>
  </managed-bean>
  <managed-bean>
   <managed-bean-name>taskInstallBean</managed-bean-name>
@@ -204,6 +209,16 @@
  <managed-bean>
   <managed-bean-name>usersAndGroupsBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.jsf.UsersAndGroupsBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+ </managed-bean>
+ <managed-bean>
+  <managed-bean-name>taskInfoBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.TaskInfoBean</managed-bean-class>
+  <managed-bean-scope>request</managed-bean-scope>
+ </managed-bean>
+ <managed-bean>
+  <managed-bean-name>jobConfigurationBean</managed-bean-name>
+  <managed-bean-class>org.genepattern.server.webapp.jsf.JobConfigurationBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
  </managed-bean>
  <managed-bean>

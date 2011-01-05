@@ -16,12 +16,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +28,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.io.ParseException;
 import org.genepattern.io.odf.OdfHandler;
 import org.genepattern.io.odf.OdfParser;
-import org.genepattern.webservice.AnalysisService;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
@@ -96,105 +92,29 @@ public class SemanticUtil {
     }
 
     /**
-     *
-     * Returns <code>true</code> if the given kind returned from is an
-     * acceptable input file
-     *
-     * format for the given input parameter
-     *
+     * Helper method for generating the 'send to' pop up menu for each output file.
+     * Each output file has a type. Each module accepts a set of zero or more file types.
+     * This method creates a new unmodifiable Map<String, Set<TaskInfo>> of file type to the set 
+     * of module zero or more modules which accepts that file type. 
+     * If no modules accept the file type, there will not be an entry in the map.
+     * 
+     * @param taskArray, the list of all modules from which to generate the collection, usually the list of all modules that 
+     *           the current user can run.
+     * @return map of fileType to set of modules which accept the given file type as input.
      */
-    public static boolean isCorrectKind(String[] inputTypes, String kind) {
-        if (inputTypes == null || inputTypes.length == 0) {
-            return false;
-        }
-        if (kind == null || kind.equals("")) {
-            return true;
-        }
-        return Arrays.asList(inputTypes).contains(kind);
-    }
-
-    /**
-     *
-     * Gets a map which maps the input type as a string to a list of analysis
-     * services that take that input type as an input parameter
-     *
-     */
-    public static Map<String, List<AnalysisService>> getKindToModulesMap(Collection<AnalysisService> analysisServices) {
-        Iterator<AnalysisService> temp = analysisServices.iterator();
-        String server = null;
-        if (temp.hasNext()) {
-            server = temp.next().getServer();
-        }
-        Map<String, Collection<TaskInfo>> map = new HashMap<String, Collection<TaskInfo>>();
-        for (Iterator<AnalysisService> it = analysisServices.iterator(); it.hasNext();) {
-            AnalysisService svc = it.next();
-            addToInputTypeToModulesMap(map, svc.getTaskInfo());
-        }
-        Map<String, List<AnalysisService>> kindToServices = new HashMap<String, List<AnalysisService>>();
-        for (Iterator<String> it = map.keySet().iterator(); it.hasNext();) {
-            String kind = it.next();
-            Collection<TaskInfo> tasks = map.get(kind);
-            if (tasks != null) {
-                List<AnalysisService> modules = new ArrayList<AnalysisService>();
-                for (Iterator<TaskInfo> taskIt = tasks.iterator(); taskIt.hasNext();) {
-                    modules.add(new AnalysisService(server, taskIt.next()));
+    public static Map<String, Set<TaskInfo>> getKindToModulesMap(List<TaskInfo> taskArray) {
+        Map<String, Set<TaskInfo>> map = new HashMap<String, Set<TaskInfo>>();
+        for (TaskInfo taskInfo : taskArray) {
+            for(String inputFileType : taskInfo._getInputFileTypes()) {
+                Set<TaskInfo> sendTo = map.get(inputFileType);
+                if (sendTo == null) {
+                    sendTo = new HashSet<TaskInfo>();
+                    map.put(inputFileType, sendTo);
                 }
-                kindToServices.put(kind, modules);
+                sendTo.add(taskInfo);
             }
         }
-        return kindToServices;
-    }
-
-    private static  HashMap<String, Collection<TaskInfo>> mapOfAllTasks = new HashMap<String, Collection<TaskInfo>>();
-    private static Set<String> loadedTasks = new HashSet<String>();
-  
-    public static Map<String, Collection<TaskInfo>> getKindToModulesMap(TaskInfo[] tasks) {
-        Map<String, Collection<TaskInfo>> map = new HashMap<String, Collection<TaskInfo>>();
-        HashSet<TaskInfo> userTasks = new HashSet<TaskInfo>();
-        for (TaskInfo ti: tasks){
-            userTasks.add(ti);
-        }
-        /*
-         * first make sure we have this task already in the complete list
-         */
-        for (TaskInfo task : tasks) {
-            if (task == null || task.getLsid() == null) {
-                // unexpected input
-            }
-            else if (loadedTasks.contains(task.getLsid())) {
-                // already have it loaded
-            } 
-            else {
-                addToInputTypeToModulesMap(mapOfAllTasks, task);
-                loadedTasks.add(task.getLsid());
-            }
-        }
-        
-        /*
-         * Now filter the list to return just those that this user can see (that were provided in the input
-         * collection)
-         */
-        for (String type: mapOfAllTasks.keySet()){
-            Collection<TaskInfo>  allModulesForInputType = mapOfAllTasks.get(type);
-            Collection<TaskInfo> modules = new HashSet<TaskInfo>();
-            for (TaskInfo task: allModulesForInputType){
-                /* if this taskinfo is in the input array we use it */
-                try {
-                    if (task != null && userTasks != null) {
-                        if (userTasks.contains(task)) {
-                            modules.add(task);
-                        }
-                    }
-                } 
-                catch (Exception e) {
-                    log.error("error on task: " + (task != null ? task.getName() : "<null>"), e);
-                }
-            }
-            if (modules.size()> 0){
-                map.put(type, modules);
-            }
-        }
-        return map;
+        return Collections.unmodifiableMap(map);
     }
 
     public static List<String> getFileFormats(ParameterInfo p) {
@@ -207,33 +127,29 @@ public class SemanticUtil {
         while (st.hasMoreTokens()) {
             String type = st.nextToken();
             fileFormats.add(type);
-
         }
         return fileFormats;
     }
 
-    private static void addToInputTypeToModulesMap(Map<String, Collection<TaskInfo>> map, TaskInfo taskInfo) {
-        ParameterInfo[] p = taskInfo.getParameterInfoArray();
-        if (p != null) {
-            for (int i = 0; i < p.length; i++) {
-                if (p[i].isInputFile()) {
-                    ParameterInfo info = p[i];
-                    String fileFormatsString = (String) info.getAttributes().get(GPConstants.FILE_FORMAT);
-                    if (fileFormatsString == null || fileFormatsString.equals("")) {
-                        continue;
-                    }
-                    StringTokenizer st = new StringTokenizer(fileFormatsString, GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-                    while (st.hasMoreTokens()) {
-                        String type = st.nextToken();
-                        Collection<TaskInfo> modules = map.get(type);
-                        if ((modules == null) && (type != null)) {
-                            modules = new HashSet<TaskInfo>();
-                            map.put(type, modules);
-                        }
-                        modules.add(taskInfo);
-                    }
-                }
+    /**
+     * Get the set of all file formats that the given task accepts.
+     * 
+     * @param taskInfo
+     * @return
+     */
+    public static Set<String> getInputFileFormats(TaskInfo taskInfo) {
+        Set<String> taskInfoInputFileFormats = new HashSet<String>();
+        if (taskInfo == null) {
+            log.error("illegal null arg");
+            return Collections.emptySet();
+        }
+        for(ParameterInfo param : taskInfo.getParameterInfoArray()) {
+            if (param.isInputFile()) {
+                List<String> paramInputFileFormats = getFileFormats(param);
+                taskInfoInputFileFormats.addAll( paramInputFileFormats );
             }
         }
+        return taskInfoInputFileFormats;
     }
+
 }

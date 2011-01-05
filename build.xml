@@ -13,7 +13,6 @@
     <property location="." name="dist" />
     <property name="classpath" value="${lib}/archiver.jar:${lib}/crimson.jar:${lib}/dom.jar:${lib}/ejb.jar:${lib}/genepattern.properties:${lib}/jaxb-rt-1.0-ea.jar:${lib}/jaxp-api.jar:${lib}/log4j-1.2.8.jar:${lib}/omnigene.jar:${lib}/oromatcher.jar:${lib}/runtask.jar:${lib}/sax.jar:${lib}/trove.jar:${lib}/xalan.jar:${lib}/xercesImpl.jar:${lib}/xsltc.jar:${lib}/image.jar:${lib}/colt.jar" />
 
-    
     <property name="common-manifest" value="gp-common.mf" />
     <property name="uisupport-manifest" value="ui_support.mf" />
     <property name="common-jarname" value="gp-common.jar" />
@@ -51,7 +50,7 @@
         <property name="genepattern.clients" value="${genepattern.root}/clients" />
         <property name="genepattern.common" value="${genepattern.root}" />
         <property name="genepattern.build" value="${genepattern.root}/build" />
-        <property name="defaultInstallDir" value="/xchip/gpint/gpdev02/gp-trunk" />
+        <property name="defaultInstallDir" value="/xchip/gpint/gpdev03/gp-3.2" />
         <property name="genepattern.installer" value="${genepattern.root}/installer" />
         <property name="genepattern.package" value="org/genepattern" />
 
@@ -144,7 +143,7 @@
     <target name="gp-library" depends="init" description="builds GenePattern.zip, the zip file containing the Java programming API">
         <jar basedir="${genepattern.build}" defaultexcludes="true" includes="log4j.properties, org/**/*.class, edu/**/*.class, **/*.xml" jarfile="${genepattern.build}/${gp-library-jarname}">
             <manifest>
-                <attribute name="Class-Path" value="./lib/activation.jar ./lib/axis.jar ./lib/commons-codec-1.3.jar ./lib/commons-discovery-0.2.jar ./lib/commons-httpclient-3.0.1.jar ./lib/commons-logging-1.0.4.jar ./lib/gp-modules.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/jaxrpc.jar ./lib/log4j-1.2.11.jar ./lib/mail.jar ./lib/saaj.jar ./lib/wsdl4j-1.5.1.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar " />
+                <attribute name="Class-Path" value="./lib/activation.jar ./lib/axis.jar ./lib/commons-codec-1.3.jar ./lib/commons-discovery-0.2.jar ./lib/commons-httpclient-3.0.1.jar ./lib/commons-logging.jar ./lib/gp-modules.jar ./lib/jaxb-rt-1.0-ea.jar ./lib/jaxrpc.jar ./lib/log4j-1.2.11.jar ./lib/mail.jar ./lib/saaj.jar ./lib/trove.jar ./lib/wsdl4j-1.5.1.jar ./lib/Jama-1.0.1.jar ./lib/MAGEstk-2003-10-24-v1.1-compatible.jar " />
             </manifest>
         </jar>
 
@@ -152,7 +151,7 @@
             <zipfileset dir="${genepattern.build}">
                 <include name="${gp-library-jarname}" />
             </zipfileset>
-            <zipfileset dir="website/WEB-INF/lib" prefix="lib" includes="activation.jar axis.jar commons-codec-1.3.jar commons-discovery-0.2.jar commons-httpclient-3.0.1.jar commons-logging-1.0.4.jar gp-modules.jar jaxb-rt-1.0-ea.jar jaxrpc.jar log4j-1.2.11.jar mail.jar saaj.jar wsdl4j-1.5.1.jar Jama-1.0.1.jar MAGEstk-2003-10-24-v1.1-compatible.jar " />
+            <zipfileset dir="website/WEB-INF/lib" prefix="lib" includes="activation.jar axis.jar commons-codec-1.3.jar commons-discovery-0.2.jar commons-httpclient-3.0.1.jar commons-logging.jar gp-modules.jar jaxb-rt-1.0-ea.jar jaxrpc.jar log4j-1.2.11.jar mail.jar saaj.jar trove.jar wsdl4j-1.5.1.jar Jama-1.0.1.jar MAGEstk-2003-10-24-v1.1-compatible.jar " />
             <zipfileset dir="clients/Java/doc" prefix="doc" />
         </zip>
     </target>
@@ -176,11 +175,11 @@
 
         </jar>
 
-    
+
     </target>
 
 
-    
+
     <target depends="init" name="runtask">
         <javac debug="true" classpathref="library.classpath" destdir="${genepattern.build}" srcdir="${src}" target="${java.target}" source="${java.target}" includes="org/genepattern/util/RunGenePatternTaskMain.java" />
 
@@ -229,7 +228,7 @@
             <property name="R.client.downloads" location="${R.client.downloads}" />
         </ant>
     </target>
-
+	
     <target  name="matlabclient" depends="gp-library, analysis">
         <ant antfile="build.xml" dir="${genepattern.root}/clients/MATLAB" />
     </target>
@@ -242,7 +241,7 @@
             </fileset>
         </jar>
     </target>
-    
+
     <target name="test" depends="initBuildProperties">
         <echo>
             genepattern.version: ${genepattern.version}
@@ -279,7 +278,6 @@
 
         <javac debug="true" destdir="${genepattern.build}/website/classes" srcdir="${genepattern.website}/WEB-INF/classes" classpathref="library.classpath" />
 
-
         <!-- copy the web sites jar files to build/web-site/lib -->
         <!-- ***** NOTE THAT THIS IS THE DEFINITIVE LIST ****** -->
         <copy todir="${genepattern.build}/website/lib">
@@ -288,7 +286,7 @@
                 <include name="axis.jar" />
                 <include name="axis-ant.jar" />
                 <include name="commons-discovery-0.2.jar" />
-                <include name="commons-logging-1.0.4.jar" />
+                <include name="commons-logging.jar" />
                 <include name="commons-fileupload-1.1.1.jar" />
                 <include name="commons-io-1.2.jar" />
                 <include name="hsqldb.jar" />

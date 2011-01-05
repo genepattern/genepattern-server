@@ -1,0 +1,67 @@
+# test case: yaml parser 
+default.properties: &default_properties
+    #CHANGED default executor
+    executor: RuntimeExec
+    stdout.filename: stdout.txt
+    #CHANGED default java_flags to 16g
+    java_flags: -Xmx16g
+
+executors:
+    Test: 
+        classname: org.genepattern.server.executor.TestCommandExecutor
+    RuntimeExec: 
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+        default.properties:
+            #CHANGED stdout.filename
+            stdout.filename: runtimeexec_modified.out
+
+module.properties:
+    # 1) by taskName
+    ComparativeMarkerSelection:
+        executor: RuntimeExec
+        stdout.filename: CMS.never.used.out
+        #CHANGED added custom java_flags setting here
+        java_flags: -Xmx2g
+    # 2) by taskLsid (no version)
+    urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044: 
+        # executor is inherited from taskname setting
+        # custom properties by lsid take precedence over custom properties by taskName
+        stdout.filename: CMS.out
+    # 3) by taskLsid (version), with custom properties
+    urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4: 
+        stdout.filename: CMS.v4.out
+    # 4) by taskLsid (version 5), use default properties, which override RuntimeExec.job.properties
+    urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:5: *default_properties
+    # 4) RuntimeExec job.properties take precedence over default.properties
+    moduleA: 
+        executor: RuntimeExec
+    # 5) use default executor, with custom.properties
+    moduleB:
+        stdout.filename: moduleB.out
+    # 6) handle invalid executor id
+    moduleC:
+        executor: notset
+
+# user and group specific configuration
+# example use cases:
+# 1) for all users in the 'broadusers' group, use lsf.queue=broad
+group.properties:
+    admingroup:
+        stdout.filename: stdout_admingroup.out
+    broadgroup:
+        stdout.filename: stdout_broadgroup.out
+        # ... except for ComparativeMarkerSelection ... 
+        module.properties:
+            ComparativeMarkerSelection: 
+                stdout.filename: CMS.broadgroup.out
+
+# 2) when user 'testuser' runs the 'ComparativeMarkerSelection' module, stdout.filename=CMS.testuser.out (rather than the default) 
+user.properties:
+    testuser:
+        module.properties:
+            ComparativeMarkerSelection: 
+                stdout.filename: CMS.testuser.out
+
+    # ... also, run all of adminuser's jobs with the Test executor
+    adminuser:
+        executor: Test

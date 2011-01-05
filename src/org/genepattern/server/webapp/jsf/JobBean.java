@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,22 +33,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
-import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.domain.BatchJob;
-import org.genepattern.server.domain.BatchJobDAO;
+import org.genepattern.server.JobManager;
+import org.genepattern.server.PermissionsHelper;
+import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.auth.IGroupMembershipPlugin;
+import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
@@ -60,43 +63,31 @@ import org.genepattern.webservice.WebServiceException;
 
 public class JobBean { 
     private static Logger log = Logger.getLogger(JobBean.class);
+
     private List<JobResultsWrapper> recentJobs;
     private List<JobResultsWrapper> allJobs;
-    private Map<String, Collection<TaskInfo>> kindToModules;
     private Map<String, List<KeyValuePair>> kindToInputParameters = Collections.emptyMap();
 
-    /**
-     * Indicates whether execution logs should be shown. Manipulated by checkbox on job results page, always false on
-     * recent jobs page.
-     */
-    private boolean showExecutionLogs = false;
-
-    /**
-     * File sort direction (true for ascending, false for descending)
-     */
-    private boolean fileSortAscending = false;
-
-    /**
-     * Specifies file column to sort on. Possible values are name size lastModified
-     */
-    private String fileSortColumn = "name";
-
-
-    /**
-     * Specifies job column to sort on. Possible values are jobNumber taskName dateSubmitted dateCompleted status
-     */
-    private String jobSortColumn = "jobNumber";
-
-    /**
-     * Job sort direction (true for ascending, false for descending)
-     */
-    private boolean jobSortAscending = false;
-
     /** Number of job results shown per page */
-    private int pageSize;
-
+    private Integer _pageSize;
+    private int getPageSize() {
+        if (_pageSize == null) {
+            try {
+                _pageSize = Integer.parseInt(System.getProperty("job.results.per.page", "20"));
+            } 
+            catch (NumberFormatException nfe) {
+                _pageSize = 20;
+            }
+        }
+        return _pageSize;
+    }
     /** Current page displayed */
     private int pageNumber = 1;
+    
+    private UserSessionBean userSessionBean = null;
+    public void setUserSessionBean(final UserSessionBean u) {
+        this.userSessionBean = u;
+    }
     
     private JobResultsFilterBean jobResultsFilterBean = null;
     public void setJobResultsFilterBean(JobResultsFilterBean j) {
@@ -104,22 +95,16 @@ public class JobBean {
     }
 
     public JobBean() {
-        try {
-            pageSize = Integer.parseInt(System.getProperty("job.results.per.page", "50"));
-        } 
-        catch (NumberFormatException nfe) {
-            pageSize = 50;
-        }
-	
-        String userId = UIBeanHelper.getUserId();
-        kindToModules = SemanticUtil.getKindToModulesMap(new AdminDAO().getLatestTasks(userId));
-        this.showExecutionLogs = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "showExecutionLogs", String.valueOf(showExecutionLogs)));
+    }
 
-        // Attributes to support job results page
-        this.fileSortAscending = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "fileSortAscending", String.valueOf(fileSortAscending)));
-        this.fileSortColumn = new UserDAO().getPropertyValue(userId, "fileSortColumn", fileSortColumn);
-        this.jobSortColumn = new UserDAO().getPropertyValue(userId, "jobSortColumn", jobSortColumn);
-        this.jobSortAscending = Boolean.valueOf(new UserDAO().getPropertyValue(userId, "jobSortAscending", String.valueOf(jobSortAscending)));
+    private Set<UserProp> _userProps = null;
+    private Set<UserProp> getUserProps() {
+        if (_userProps == null) {
+            String userId = UIBeanHelper.getUserId();
+            UserDAO userDao = new UserDAO();
+            _userProps = userDao.getUserProps(userId);
+        }
+        return _userProps;
     }
 
     public void createPipeline(ActionEvent e) {
@@ -170,16 +155,19 @@ public class JobBean {
      * @param event
      */
     public void delete(ActionEvent event) {
+        String jobNumberParam = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber"));
         try {
-            int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
+            int jobNumber = Integer.parseInt(jobNumberParam);
             deleteJob(jobNumber);
-            UIBeanHelper.setErrorMessage("Job "+jobNumber+" has been deleted");
-        	
+            UIBeanHelper.setErrorMessage("Deleted job #"+jobNumber);
             resetJobs();
         } 
         catch (NumberFormatException e) {
             log.error("Error deleting job.", e);
             return;
+        }
+        catch (WebServiceException e) {
+            log.error("Error deleting job #"+jobNumberParam, e);
         }
     }
 
@@ -190,44 +178,51 @@ public class JobBean {
     }
 
     public String getTaskCode() {
-	try {
-	    String language = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("language"));
-	    String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("taskLSID"));
+        try {
+            String language = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("language"));
+            String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("taskLSID"));
 
-	    IAdminClient adminClient = new LocalAdminClient(UIBeanHelper.getUserId());
-	    TaskInfo taskInfo = adminClient.getTask(lsid);
-	    if (taskInfo == null) {
-		return "Module not found";
-	    }
-	    ParameterInfo[] parameters = taskInfo.getParameterInfoArray();
+            IAdminClient adminClient = new LocalAdminClient(UIBeanHelper.getUserId());
+            TaskInfo taskInfo = adminClient.getTask(lsid);
+            if (taskInfo == null) {
+                return "Module not found";
+            }
+            ParameterInfo[] parameters = taskInfo.getParameterInfoArray();
+            ParameterInfo[] jobParameters = new ParameterInfo[parameters != null ? parameters.length : 0];
 
-	    ParameterInfo[] jobParameters = new ParameterInfo[parameters != null ? parameters.length : 0];
+            if (parameters != null) {
+                int i = 0;
+                for (ParameterInfo p : parameters) {
+                    String value = UIBeanHelper.getRequest().getParameter(p.getName());
+                    jobParameters[i++] = new ParameterInfo(p.getName(), value, "");
+                }
+            }
 
-	    if (parameters != null) {
-		int i = 0;
-		for (ParameterInfo p : parameters) {
-		    String value = UIBeanHelper.getRequest().getParameter(p.getName());
-
-		    jobParameters[i++] = new ParameterInfo(p.getName(), value, "");
-		}
-	    }
-
-	    JobInfo jobInfo = new JobInfo(-1, -1, null, null, null, jobParameters, UIBeanHelper.getUserId(), lsid,
-		    taskInfo.getName());
-
-	    boolean isVisualizer = TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes());
-	    AnalysisJob job = new AnalysisJob(UIBeanHelper.getServer(), jobInfo, isVisualizer);
-	    return CodeGeneratorUtil.getCode(language, job, taskInfo, adminClient);
-	} catch (WebServiceException e) {
-	    log.error("Error getting code.", e);
-	} catch (Exception e) {
-	    log.error("Error getting code.", e);
-	}
-	return "";
+            JobInfo jobInfo = new JobInfo(-1, -1, null, null, null, jobParameters, UIBeanHelper.getUserId(), lsid, taskInfo.getName());
+            boolean isVisualizer = TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes());
+            AnalysisJob job = new AnalysisJob(UIBeanHelper.getServer(), jobInfo, isVisualizer);
+            return CodeGeneratorUtil.getCode(language, job, taskInfo, adminClient);
+        } 
+        catch (WebServiceException e) {
+            log.error("Error getting code.", e);
+        } 
+        catch (Exception e) {
+            log.error("Error getting code.", e);
+        }
+        return "";
     }
 
+    private Boolean _showExecutionLogs = null;
+    /**
+     * Indicates whether execution logs should be shown. Manipulated by checkbox on job results page, always false on
+     * recent jobs page.
+     */
     public boolean isShowExecutionLogs() {
-	return showExecutionLogs;
+        if (_showExecutionLogs == null) {
+            Set<UserProp> userProps = getUserProps();
+            this._showExecutionLogs = Boolean.valueOf(UserDAO.getPropertyValue(userProps, "showExecutionLogs", String.valueOf("false")));
+        }
+        return _showExecutionLogs;
     }
     
     /**
@@ -236,32 +231,31 @@ public class JobBean {
      * @return
      */
     public String loadTask() {
-	String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("module"));
-	UIBeanHelper.getRequest().setAttribute("matchJob",
-		UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
-	UIBeanHelper.getRequest().setAttribute("outputFileName",
-		UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("name")));
-	RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
-	assert runTaskBean != null;
-	runTaskBean.setTask(lsid);
-	return "run task";
+        String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("module"));
+        UIBeanHelper.getRequest().setAttribute("matchJob",
+                UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
+        UIBeanHelper.getRequest().setAttribute("outputFileName",
+                UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("name")));
+        RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
+        assert runTaskBean != null;
+        runTaskBean.setTask(lsid);
+        return "run task";
     }
 
     public String reload() {
-	LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
-	try {
-	    int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
-	    JobInfo reloadJob = ac.getJob(jobNumber);
-	    RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
-	    assert runTaskBean != null;
-	    UIBeanHelper.getRequest().setAttribute("reloadJob", String.valueOf(reloadJob.getJobNumber()));
-	    runTaskBean.setTask(reloadJob.getTaskLSID());
-	} catch (WebServiceException e) {
-	    log.error("Error reloading job.", e);
-	} catch (NumberFormatException e) {
-	    log.error("Error reloading job.", e);
-	}
-	return "run task";
+        try {
+            int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
+            AnalysisDAO ds = new AnalysisDAO();
+            JobInfo reloadJob = ds.getJobInfo(jobNumber);
+            RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
+            assert runTaskBean != null;
+            UIBeanHelper.getRequest().setAttribute("reloadJob", String.valueOf(reloadJob.getJobNumber()));
+            runTaskBean.setTask(reloadJob.getTaskLSID());
+        } 
+        catch (Throwable t) {
+            log.error("Error reloading job.", t);
+        } 
+        return "run task";
     }
 
     public void saveFile(ActionEvent event) {
@@ -338,34 +332,46 @@ public class JobBean {
     }
 
     public void setShowExecutionLogs(boolean showExecutionLogs) {
-	this.showExecutionLogs = showExecutionLogs;
-	new UserDAO().setProperty(UIBeanHelper.getUserId(), "showExecutionLogs", String.valueOf(showExecutionLogs));
-	resetJobs();
+        this._showExecutionLogs = showExecutionLogs;
+        new UserDAO().setProperty(UIBeanHelper.getUserId(), "showExecutionLogs", String.valueOf(showExecutionLogs));
+        resetJobs();
     }
 
     public void terminateJob(ActionEvent event) {
-	try {
-	    int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
-	    LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
-	    ac.terminateJob(jobNumber);
-	    resetJobs();
-	} catch (WebServiceException e) {
-	    log.error("Error getting job " + UIBeanHelper.getRequest().getParameter("jobNumber"), e);
-	} catch (NumberFormatException e) {
-	    log.error(UIBeanHelper.getRequest().getParameter("jobNumber") + " is not a number.", e);
-	}
+        int jobNumber = -1;
+        try {
+            jobNumber = Integer.parseInt(UIBeanHelper.getRequest().getParameter("jobNumber"));
+        }
+        catch (NumberFormatException e) {
+            log.error(UIBeanHelper.getRequest().getParameter("jobNumber") + " is not a number.", e);
+            return;
+        }
+        try {
+            terminateJob(jobNumber);
+        }
+        catch (JobTerminationException e) {
+            log.error(e);
+            return;
+        }
+    }
+    
+    private void terminateJob(int jobNumber) throws JobTerminationException {
+        String currentUser = UIBeanHelper.getUserId();
+        boolean isAdmin = AuthorizationHelper.adminJobs(currentUser);
+        JobManager.terminateJob(isAdmin, currentUser, jobNumber);
     }
 
     public void viewCode(ActionEvent e) {
-	try {
-	    String language = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("language"));
-	    int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
-	    AnalysisJob job = new AnalysisJob(UIBeanHelper.getUserId(), new LocalAnalysisClient(UIBeanHelper
-		    .getUserId()).getJob(jobNumber));
-	    viewCode(language, job, "" + jobNumber);
-	} catch (WebServiceException x) {
-	    log.error("Error getting job " + UIBeanHelper.getRequest().getParameter("jobNumber"), x);
-	}
+        try {
+            String language = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("language"));
+            int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
+            JobInfo jobInfo = new AnalysisDAO().getJobInfo(jobNumber);
+            AnalysisJob job = new AnalysisJob(UIBeanHelper.getUserId(), jobInfo);
+            viewCode(language, job, "" + jobNumber);
+        } 
+        catch (Throwable t) {
+            log.error("Error getting job " + UIBeanHelper.getRequest().getParameter("jobNumber"), t);
+        }
     }
 
     public void viewCode(String language, AnalysisJob job, String baseName) {
@@ -435,66 +441,92 @@ public class JobBean {
     }
 
     /**
-     * Delete the selected job. Should this also delete the files?
-     * 
-     * @param event
+     * Delete the selected job, including child jobs, first terminating it if it is running.
+     * This method deletes all output files and removes the job entry from the database.
      */
-    protected void deleteJob(int jobNumber) {
-	try {
-	    LocalAnalysisClient ac = new LocalAnalysisClient(UIBeanHelper.getUserId());
-	    ac.deleteJob(jobNumber);
-	    HibernateUtil.getSession().flush();
-	} catch (WebServiceException e) {
-	    log.error("Error deleting job " + jobNumber, e);
-	}
+    private List<Integer> deleteJob(int jobNumber) throws WebServiceException {
+        boolean isAdmin = false;
+        String userId = "";
+        if (userSessionBean != null) {
+            isAdmin = userSessionBean.isAdmin();
+            userId = userSessionBean.getUserId();
+        }
+        return JobManager.deleteJob(isAdmin, userId, jobNumber);
     }
 
-    private List<JobResultsWrapper> wrapJobs(JobInfo[] jobInfoArray) {
+    private List<JobResultsWrapper> wrapJobs(List<JobInfo> jobInfos) {
+        boolean isAdmin = false;
+        if (userSessionBean != null) {
+            isAdmin = userSessionBean.isAdmin();
+        }
+        String currentUserId = UIBeanHelper.getUserId();
+        AdminDAO dao = new AdminDAO();
+        TaskInfo[] latestTaskArray = dao.getLatestTasks(currentUserId);
+        List<TaskInfo> latestTaskList = Arrays.asList(latestTaskArray);
+        Map<String, Set<TaskInfo>> kindToModules = SemanticUtil.getKindToModulesMap(latestTaskList);        
+        final boolean showExecutionLogs = isShowExecutionLogs();
+        List<JobResultsWrapper> wrappedJobs = new ArrayList<JobResultsWrapper>(jobInfos.size());
+        for(JobInfo jobInfo : jobInfos) {
+            PermissionsHelper ph = new PermissionsHelper(isAdmin, currentUserId, jobInfo.getJobNumber(), jobInfo.getUserId(), jobInfo.getJobNumber());
+            JobPermissionsBean jobPermissionsBean = new JobPermissionsBean(ph);
 
-	List<JobResultsWrapper> wrappedJobs = new ArrayList<JobResultsWrapper>(jobInfoArray.length);
-	for (int i = 0; i < jobInfoArray.length; i++) {
-	    JobResultsWrapper wrappedJob = new JobResultsWrapper(jobInfoArray[i], kindToModules, getSelectedFiles(),
-		    getSelectedJobs(), 0, 0, kindToInputParameters, showExecutionLogs);
-	    wrappedJobs.add(wrappedJob);
-	}
-	return wrappedJobs;
+            JobResultsWrapper wrappedJob = new JobResultsWrapper(
+                    jobPermissionsBean,
+                    jobInfo, 
+                    kindToModules, 
+                    getSelectedFiles(),
+                    getSelectedJobs(), 
+                    0, 
+                    0, 
+                    kindToInputParameters, 
+                    showExecutionLogs);
+            wrappedJob.setFileSortColumn(getFileSortColumn());
+            wrappedJob.setFileSortAscending(isFileSortAscending());
+            wrappedJobs.add(wrappedJob);
+        }
+        return wrappedJobs;
     }
 
     private JobSortOrder getJobSortOrder() {
-	if ("jobNumber".equals(jobSortColumn)) {
-	    return JobSortOrder.JOB_NUMBER;
-	} else if ("taskName".equals(jobSortColumn)) {
-	    return JobSortOrder.MODULE_NAME;
-	} else if ("dateSubmitted".equals(jobSortColumn)) {
-	    return JobSortOrder.SUBMITTED_DATE;
-	} else if ("dateCompleted".equals(jobSortColumn)) {
-	    return JobSortOrder.COMPLETED_DATE;
-	} else if ("status".equals(jobSortColumn)) {
-	    return JobSortOrder.JOB_STATUS;
-	}
-
-	return JobSortOrder.JOB_NUMBER;
+        final String jobSortColumn = getJobSortColumn();
+        if ("jobNumber".equals(jobSortColumn)) {
+            return JobSortOrder.JOB_NUMBER;
+        } 
+        else if ("taskName".equals(jobSortColumn)) {
+            return JobSortOrder.MODULE_NAME;
+        } 
+        else if ("dateSubmitted".equals(jobSortColumn)) {
+            return JobSortOrder.SUBMITTED_DATE;
+        } 
+        else if ("dateCompleted".equals(jobSortColumn)) {
+            return JobSortOrder.COMPLETED_DATE;
+        } 
+        else if ("status".equals(jobSortColumn)) {
+            return JobSortOrder.JOB_STATUS;
+        }
+        return JobSortOrder.JOB_NUMBER;
     }
 
     public List<JobResultsWrapper> getRecentJobs() {
-	if (recentJobs == null) {
-	    String userId = UIBeanHelper.getUserId();
-	    assert userId != null;
-	    int recentJobsToShow = Integer.parseInt(new UserDAO().getPropertyValue(userId,
-		    UserPropKey.RECENT_JOBS_TO_SHOW, "10"));
-	    LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
-	    try {
-		recentJobs = wrapJobs(analysisClient.getJobs(userId, -1, recentJobsToShow, false,
-			JobSortOrder.JOB_NUMBER, false));
-	    } catch (WebServiceException wse) {
-		log.error(wse);
-		recentJobs = new ArrayList<JobResultsWrapper>();
-	    }
-	}
-	return recentJobs;
+        if (recentJobs != null) {
+            return recentJobs;
+        }
+        String userId = UIBeanHelper.getUserId();
+        if (userId == null) {
+            recentJobs = Collections.EMPTY_LIST;
+            return recentJobs;
+        }
+        
+        int recentJobsToShow = Integer.parseInt(UserDAO.getPropertyValue(getUserProps(),UserPropKey.RECENT_JOBS_TO_SHOW, "10"));
+        AnalysisDAO ds = new AnalysisDAO();
+        
+        List<JobInfo> recentJobInfos = ds.getRecentJobsForUser(userId, recentJobsToShow, JobSortOrder.JOB_NUMBER);
+        recentJobs = wrapJobs(new ArrayList<JobInfo>(recentJobInfos));
+        return recentJobs;
     }
 
     public List<JobResultsWrapper> getPagedJobs() {
+        final int pageSize = getPageSize();
         int offset = (getPageNumber() - 1) * pageSize;	
         return this.getJobs(offset, pageSize);
     }
@@ -558,6 +590,7 @@ public class JobBean {
 
     private int pageCount = -1;
     public int getPageCount() {
+        final int pageSize = getPageSize();
         if (jobResultsFilterBean != null) {
             int jobCount = jobResultsFilterBean.getJobCount();
             return (int) Math.ceil(jobCount / (double) pageSize);
@@ -571,39 +604,48 @@ public class JobBean {
         int maxEntries = Integer.MAX_VALUE;
         return getJobs(maxJobNumber, maxEntries);
     }
-
+    
     private List<JobResultsWrapper> getJobs(int maxJobNumber, int maxEntries) { 
         if (allJobs == null) {
-            String userId = UIBeanHelper.getUserId(); 
+            //the first page is page 1
+            final int pageNum = this.getPageNumber();
+            final int pageSize = this.getPageSize();
+            final JobSortOrder jobSortOrder = this.getJobSortOrder();
+            final boolean ascending = isJobSortAscending();
+            
+            final String userId = UIBeanHelper.getUserId(); 
+            boolean isAdmin = false;
+            if (userSessionBean != null) {
+                isAdmin = userSessionBean.isAdmin();
+            }
             String selectedGroup = jobResultsFilterBean.getSelectedGroup();
-            Set<String> selectedGroups = jobResultsFilterBean.getSelectedGroups();
             boolean showEveryonesJobs = jobResultsFilterBean.isShowEveryonesJobs();
             
-            boolean filterOnBatch = false;            
-            if (selectedGroup != null && selectedGroup.startsWith(BatchJob.BATCH_KEY)){
-            	filterOnBatch = true;
-            }
-            
             try {
-                JobInfo[] jobInfos = new JobInfo[0];
-                if (filterOnBatch ){
-                	jobInfos = new BatchJobDAO().getBatchJobs(userId, selectedGroup, maxJobNumber, maxEntries, getJobSortOrder(), jobSortAscending);
-                }else{
-                	LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);                     
-	                if (selectedGroup != null) {
-	                    jobInfos = 
-	                        analysisClient.getJobsInGroup(selectedGroups, maxJobNumber, maxEntries, false, getJobSortOrder(), jobSortAscending);
-	                }
-	                else {
-	                    jobInfos = 
-	                        analysisClient.getJobs(showEveryonesJobs ? null : userId, maxJobNumber, maxEntries, false, getJobSortOrder(), jobSortAscending);
-	                }
+            AnalysisDAO ds = new AnalysisDAO();
+            List<JobInfo> jobInfos = new ArrayList<JobInfo>();
+            if (showEveryonesJobs) {
+                if (isAdmin) {
+                    jobInfos = ds.getAllPagedJobsForAdmin(pageNum, pageSize, jobSortOrder, ascending);
                 }
-                allJobs = wrapJobs( jobInfos );
-                sortFiles();
-            } 
-            catch (WebServiceException wse) {
-                log.error(wse);
+                else {
+                    IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
+                    Set<String> groupIds = new HashSet<String>(groupMembership.getGroups(userId));
+                    jobInfos = ds.getAllPagedJobsForUser(userId, groupIds, pageNum, pageSize, jobSortOrder, ascending);
+                }
+            }
+            else {
+                if (selectedGroup != null) {
+                    jobInfos = ds.getPagedJobsInGroup(selectedGroup, pageNum, pageSize, jobSortOrder, ascending);
+                }
+                else {
+                    jobInfos = ds.getPagedJobsOwnedByUser(userId, pageNum, pageSize, jobSortOrder, ascending);
+                }
+            }
+            allJobs = wrapJobs( jobInfos );
+            }
+            catch (Exception e) {
+                log.error(e);
                 allJobs = new ArrayList<JobResultsWrapper>();
             }
         }
@@ -641,20 +683,20 @@ public class JobBean {
     }
 
     /**
-     * Get the list of selected jobs (LSIDs) from the request parameters. This is converted to a set to make membership
-     * tests efficient.
+     * Get the list of selected jobs (LSIDs) from the request parameters. 
+     * This is converted to a set to make membership tests efficient.
      * 
      * @return The selected jobs.
      */
     private Set<String> getSelectedJobs() {
-	HashSet<String> selectedJobs = new HashSet<String>();
-	String[] tmp = UIBeanHelper.getRequest().getParameterValues("selectedJobs");
-	if (tmp != null) {
-	    for (String job : tmp) {
-		selectedJobs.add(job);
-	    }
-	}
-	return selectedJobs;
+        HashSet<String> selectedJobs = new HashSet<String>();
+        String[] tmp = UIBeanHelper.getRequest().getParameterValues("selectedJobs");
+        if (tmp != null) {
+            for (String job : tmp) {
+                selectedJobs.add(job);
+            }
+        }
+        return selectedJobs;
     }
 
     /**
@@ -663,16 +705,94 @@ public class JobBean {
      * @return
      */
     public String delete() {
-        String[] selectedFiles = UIBeanHelper.getRequest().getParameterValues("selectedFiles");
-        if (selectedFiles != null) {
-            for (String jobFileName : selectedFiles) {
-                deleteFile(jobFileName);
+        String[] selectedJobs = UIBeanHelper.getRequest().getParameterValues("selectedJobs");
+        List<Integer> jobsToDelete = new ArrayList<Integer>();
+        if (selectedJobs != null) {
+            for(String selectedJob : selectedJobs) {
+                try {
+                    int jobNumber = Integer.parseInt(selectedJob);
+                    jobsToDelete.add(jobNumber);
+                }
+                catch (NumberFormatException e) {
+                    log.error(e);
+                    UIBeanHelper.setErrorMessage("Error deleting job #"+selectedJob+": "+e.getLocalizedMessage());
+                }
             }
         }
-        String[] selectedJobs = UIBeanHelper.getRequest().getParameterValues("selectedJobs");
-        deleteJobs(selectedJobs);
+
+        String[] selectedFiles = UIBeanHelper.getRequest().getParameterValues("selectedFiles");
+        Map<Integer,List<JobFileEntry>> selectedFileEntries = new HashMap<Integer,List<JobFileEntry>>();
+        if (selectedFiles != null) {
+            for(String selectedFile : selectedFiles) {
+                JobFileEntry entry = JobFileEntry.parse(selectedFile);
+                if (entry != null) {
+                    List<JobFileEntry> list = selectedFileEntries.get(entry.jobNumber);
+                    if (list == null) {
+                        list = new ArrayList<JobFileEntry>();
+                        selectedFileEntries.put(entry.jobNumber, list);
+                    }
+                    list.add(entry);
+                }
+            }
+        }
+        
+        //delete the jobs
+        List<Integer> deletedJobs = deleteJobs(jobsToDelete);
+        
+        //prevent duplicate deletion of files from deleted jobs
+        for(Integer jobToDelete : deletedJobs) {
+            List<JobFileEntry> list = selectedFileEntries.remove(jobToDelete);
+            //for debugging only
+            if (list != null) {
+                for(JobFileEntry entry : list) {
+                    log.debug("Ignoring duplicate fileEntry: "+entry.jobNumber+", "+entry.fileName);
+                }
+            }
+        }
+        
+        //delete files
+        for(List<JobFileEntry> list : selectedFileEntries.values()) {
+            for(JobFileEntry entry : list) {
+                deleteFile(entry.fileName);
+            }
+        }
+
         this.resetJobs();
         return null;
+    }
+    
+    private static class JobFileEntry {
+        Integer jobNumber;
+        String fileName;
+        
+        private static JobFileEntry parse(String entry) {
+            //parse encodedJobFileName for <jobNumber> and <filename>, add support for directories
+            //from Job Summary page jobFileName="1/all_aml_test.preprocessed.gct"
+            //from Job Status page jobFileName="/gp/jobResults/1/all_aml_test.preprocessed.gct"
+            String contextPath = UIBeanHelper.getRequest().getContextPath();
+            String pathToJobResults = contextPath + "/jobResults/";
+            if (entry.startsWith(pathToJobResults)) {
+                entry = entry.substring(pathToJobResults.length());
+            }
+            int idx = entry.indexOf('/');
+            if (idx <= 0) {
+                UIBeanHelper.setErrorMessage("Error deleting file: "+entry);
+                return null;
+            }
+            int jobNumber = -1;
+            String jobId = entry.substring(0, idx);
+            try {
+                jobNumber = Integer.parseInt(jobId);
+            }
+            catch (NumberFormatException e) {
+                UIBeanHelper.setErrorMessage("Error deleting file: "+entry+", "+e.getMessage());
+                return null;
+            }
+            JobFileEntry jr = new JobFileEntry();
+            jr.jobNumber = jobNumber;
+            jr.fileName = entry;
+            return jr;
+        }
     }
     
     public String sortFilesByName() {
@@ -691,8 +811,9 @@ public class JobBean {
     }
     
     private void toggleFileSortColumn(String fileSortColumn) {
-        if (fileSortColumn.equals(this.fileSortColumn)) {
-            this.setFileSortAscending(!this.fileSortAscending);            
+        if (fileSortColumn.equals(this._fileSortColumn)) {
+            final boolean fileSortAscending = isFileSortAscending();
+            this.setFileSortAscending(!fileSortAscending);            
         }
         else {
             this.setFileSortColumn(fileSortColumn);
@@ -700,8 +821,10 @@ public class JobBean {
     }
     
     public String sortJobsById() {
-        if ("jobNumber".equals(this.jobSortColumn)) {
-            this.setJobSortAscending(!this.jobSortAscending);
+        final String jobSortColumn = this.getJobSortColumn();
+        if ("jobNumber".equals(jobSortColumn)) {
+            final boolean jobSortAscending = this.isJobSortAscending();
+            this.setJobSortAscending(!jobSortAscending);
         }
         else {
             this.setJobSortColumn("jobNumber");
@@ -710,8 +833,10 @@ public class JobBean {
     }
     
     public String sortJobsByModule() {
-        if ("taskName".equals(this.jobSortColumn)) {
-            this.setJobSortAscending(!this.jobSortAscending);
+        final String jobSortColumn = this.getJobSortColumn();
+        if ("taskName".equals(jobSortColumn)) {
+            final boolean jobSortAscending = this.isJobSortAscending();
+            this.setJobSortAscending(!jobSortAscending);
         }
         else {
             this.setJobSortColumn("taskName");
@@ -720,8 +845,10 @@ public class JobBean {
     }
     
     public String sortJobsByDateSubmitted() {
-        if ("dateSubmitted".equals(this.jobSortColumn)) {
-            this.setJobSortAscending(!this.jobSortAscending);
+        final String jobSortColumn = this.getJobSortColumn();
+        if ("dateSubmitted".equals(jobSortColumn)) {
+            final boolean jobSortAscending = this.isJobSortAscending();
+            this.setJobSortAscending(!jobSortAscending);
         }
         else {
             this.setJobSortColumn("dateSubmitted");
@@ -730,8 +857,10 @@ public class JobBean {
     }
     
     public String sortJobsByDateCompleted() {
-        if ("dateCompleted".equals(this.jobSortColumn)) {
-            this.setJobSortAscending(!this.jobSortAscending);
+        final String jobSortColumn = this.getJobSortColumn();
+        if ("dateCompleted".equals(jobSortColumn)) {
+            final boolean jobSortAscending = this.isJobSortAscending();
+            this.setJobSortAscending(!jobSortAscending);
         }
         else {
             this.setJobSortColumn("dateCompleted");
@@ -740,8 +869,10 @@ public class JobBean {
     }
 
     public String sortJobsByStatus() {
-        if ("status".equals(this.jobSortColumn)) {
-            this.setJobSortAscending(!this.jobSortAscending);
+        final String jobSortColumn = this.getJobSortColumn();
+        if ("status".equals(jobSortColumn)) {
+            final boolean jobSortAscending = this.isJobSortAscending();
+            this.setJobSortAscending(!jobSortAscending);
         }
         else {
             this.setJobSortColumn("status");
@@ -749,38 +880,59 @@ public class JobBean {
         return "success";
     }
 
+    private String _fileSortColumn = null;
+    /**
+     * Specifies file column to sort on. Possible values are name size lastModified
+     */
     public String getFileSortColumn() {
-	return fileSortColumn;
+        if (_fileSortColumn == null) {
+            this._fileSortColumn = UserDAO.getPropertyValue(getUserProps(), "fileSortColumn", "name");
+
+        }
+        return this._fileSortColumn;
     }
 
+    private String _jobSortColumn = null;
+
+    /**
+     * Specifies job column to sort on. Possible values are jobNumber taskName dateSubmitted dateCompleted status
+     */
     public String getJobSortColumn() {
-	return jobSortColumn;
+        if (_jobSortColumn == null) {
+            this._jobSortColumn = UserDAO.getPropertyValue(getUserProps(), "jobSortColumn", "jobNumber");
+        }
+        return this._jobSortColumn;
     }
 
+    private Boolean _fileSortAscending = null;
+    /**
+     * File sort direction (true for ascending, false for descending)
+     */
     public boolean isFileSortAscending() {
-	return fileSortAscending;
+        if (_fileSortAscending == null) {
+            this._fileSortAscending = Boolean.valueOf(UserDAO.getPropertyValue(getUserProps(), "fileSortAscending", "false"));
+        }
+        return _fileSortAscending;
     }
 
     public void setFileSortAscending(boolean fileSortAscending) {
-	this.fileSortAscending = fileSortAscending;
-	new UserDAO().setProperty(UIBeanHelper.getUserId(), "fileSortAscending", String.valueOf(fileSortAscending));
+        this._fileSortAscending = fileSortAscending;
+        new UserDAO().setProperty(UIBeanHelper.getUserId(), "fileSortAscending", String.valueOf(fileSortAscending));
     }
 
     public void setFileSortColumn(String fileSortField) {
-	this.fileSortColumn = fileSortField;
-	new UserDAO().setProperty(UIBeanHelper.getUserId(), "fileSortColumn", String.valueOf(fileSortField));
-
+        this._fileSortColumn = fileSortField;
+        new UserDAO().setProperty(UIBeanHelper.getUserId(), "fileSortColumn", String.valueOf(fileSortField));
     }
 
     public void setJobSortAscending(boolean jobSortAscending) {
-	this.jobSortAscending = jobSortAscending;
-	new UserDAO().setProperty(UIBeanHelper.getUserId(), "jobSortAscending", String.valueOf(jobSortAscending));
-
+        this._jobSortAscending = jobSortAscending;
+        new UserDAO().setProperty(UIBeanHelper.getUserId(), "jobSortAscending", String.valueOf(jobSortAscending));
     }
 
     public void setJobSortColumn(String jobSortField) {
-	this.jobSortColumn = jobSortField;
-	new UserDAO().setProperty(UIBeanHelper.getUserId(), "jobSortColumn", String.valueOf(jobSortColumn));
+        this._jobSortColumn = jobSortField;
+        new UserDAO().setProperty(UIBeanHelper.getUserId(), "jobSortColumn", String.valueOf(this._jobSortColumn));
     }
 
     /**
@@ -790,7 +942,7 @@ public class JobBean {
      * @return
      */
     public String sort() {
-	return null;
+        return null;
     }
 
     /**
@@ -798,80 +950,47 @@ public class JobBean {
      * 
      * @param jobNumbers
      */
-    private void deleteJobs(String[] jobNumbers) {
-	List<Integer> jobErrors = new ArrayList<Integer>();
+    private List<Integer> deleteJobs(List<Integer> jobNumbers) {
+        if (jobNumbers == null) {
+            log.error("Invalid null arg to deleteJobs");
+            return Collections.EMPTY_LIST;
+        }
 
-	if (jobNumbers != null) {
-	    for (String job : jobNumbers) {
-		int jobNumber = Integer.parseInt(job);
-		try {
-		    deleteJob(jobNumber);
-		} catch (NumberFormatException e) {
-		    log.error(e);
-		}
-	    }
-	}
-
-	// Create error messages
-	StringBuffer sb = new StringBuffer();
-	for (int i = 0, size = jobErrors.size(); i < size; i++) {
-	    if (i > 0) {
-		sb.append(", ");
-	    }
-	    sb.append(jobErrors.get(i));
-	}
-	if (jobErrors.size() > 0) {
-	    String msg = "An error occurred while deleting job(s) " + sb.toString() + ".";
-	    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg));
-	}
-
+        List<Integer> topLevelDeletedJobs = new ArrayList<Integer>();
+        List<Integer> allDeletedJobs = new ArrayList<Integer>();
+        for (Integer jobNumber : jobNumbers) {
+            try {
+                List<Integer> rval = deleteJob(jobNumber);
+                topLevelDeletedJobs.add(jobNumber);
+                allDeletedJobs.addAll(rval);
+            }
+            catch (WebServiceException e) {
+                log.error(e);
+                UIBeanHelper.setErrorMessage("Error deleting job #"+jobNumber+": "+e.getLocalizedMessage());
+            }
+        }
+        if (topLevelDeletedJobs.size() == 1) {
+            UIBeanHelper.setErrorMessage("Deleted job #"+topLevelDeletedJobs.get(0));
+        }
+        else if (topLevelDeletedJobs.size() > 1) {
+            UIBeanHelper.setErrorMessage("Deleted "+topLevelDeletedJobs.size()+ " jobs");
+        }
+        return allDeletedJobs;
     }
-
-    private void sortFiles() {
-	final String column = getFileSortColumn();
-	Comparator<OutputFileInfo> comparator = new Comparator<OutputFileInfo>() {
-
-	    public int compare(OutputFileInfo c1, OutputFileInfo c2) {
-
-		if (column == null) {
-		    return 0;
-		} else if (column.equals("name")) {
-		    return fileSortAscending ? c1.getName().compareToIgnoreCase(c2.getName()) : c2.getName()
-			    .compareToIgnoreCase(c1.getName());
-		} else if (column.equals("size")) {
-		    return fileSortAscending ? new Long(c1.getSize()).compareTo(c2.getSize()) : new Long(c2.getSize())
-			    .compareTo(c1.getSize());
-		} else if (column.equals("lastModified")) {
-		    return fileSortAscending ? c1.getLastModified().compareTo(c2.getLastModified()) : c2
-			    .getLastModified().compareTo(c1.getLastModified());
-		}
-
-		else {
-		    return 0;
-		}
-	    }
-	};
-
-	for (JobResultsWrapper jobResult : allJobs) {
-	    sortFilesRecursive(jobResult, comparator);
-	}
-
-    }
-
-    private void sortFilesRecursive(JobResultsWrapper jobResult, Comparator<OutputFileInfo> comparator) {
-	Collections.sort(jobResult.getOutputFileParameterInfos(), comparator);
-	for (JobResultsWrapper child : jobResult.getChildJobs()) {
-	    sortFilesRecursive(child, comparator);
-	}
-
-    }
-
+    
+    /**
+     * Job sort direction (true for ascending, false for descending)
+     */
+    private Boolean _jobSortAscending = null;
     public boolean isJobSortAscending() {
-	return jobSortAscending;
+        if (_jobSortAscending == null) {
+            this._jobSortAscending = Boolean.valueOf(UserDAO.getPropertyValue(getUserProps(), "jobSortAscending", "false"));
+        }
+        return this._jobSortAscending;
     }
     
     public String getJobSortFlag() {
-        if (jobSortAscending) {
+        if (isJobSortAscending()) {
             return "up";
         }
         else {
@@ -880,7 +999,7 @@ public class JobBean {
     }
     
     public String getFileSortFlag() {
-        if (fileSortAscending) {
+        if (isFileSortAscending()) {
             return "up";
         }
         else {
@@ -894,206 +1013,218 @@ public class JobBean {
     private void resetJobs() {
         recentJobs = null;
         allJobs = null;
+        if (jobResultsFilterBean != null) {
+            jobResultsFilterBean.resetJobCount();
+        }
     }
 
     public static class OutputFileInfo {
-        private static final Comparator<KeyValuePair> COMPARATOR = new KeyValueComparator();
-        boolean exists;
-        Date lastModified;
-        List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
-        ParameterInfo p;
-        boolean selected = false;
-        long size;
-        int jobNumber;
-        List<KeyValuePair> moduleInputParameters;
-        String kind;
 
-        public OutputFileInfo(ParameterInfo p, File file, Collection<TaskInfo> modules, int jobNumber, String kind) {
-            this.kind = kind;
-            this.p = p;
-            this.size = file.length();
-            this.exists = file.exists();
-            Calendar cal = Calendar.getInstance();
-            cal.setTimeInMillis(file.lastModified());
-            this.lastModified = cal.getTime();
+	private static final Comparator<KeyValuePair> COMPARATOR = new KeyValueComparator();
 
-            if (modules != null) {
-                for (TaskInfo t : modules) {
-                    KeyValuePair mi = new KeyValuePair(t.getShortName(), UIBeanHelper.encode(t.getLsid()));
-                    moduleMenuItems.add(mi);
-                }
-                Collections.sort(moduleMenuItems, COMPARATOR);
-            }
+	boolean exists;
 
-            this.jobNumber = jobNumber;
-        }
+	Date lastModified;
 
-        public String getUrl() {
-            return UIBeanHelper.getServer() + "/jobResults/" + getValue();
-        }
+	List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
 
-        public int getJobNumber() {
-            return jobNumber;
-        }
+	ParameterInfo p;
 
-        public String getDescription() {
-            return p.getDescription();
-        }
+	boolean selected = false;
 
-        public String getFormattedSize() {
-            return JobHelper.getFormattedSize(size);
-        }
+	long size;
 
-        public String getLabel() {
-            return p.getLabel();
-        }
+	int jobNumber;
 
-        public Date getLastModified() {
-            return lastModified;
-        }
+	List<KeyValuePair> moduleInputParameters;
 
-        public List<KeyValuePair> getModuleMenuItems() {
-            return moduleMenuItems;
-        }
+	String kind;
 
-        public String getName() {
-            return p.getName();
-        }
+	public OutputFileInfo(ParameterInfo p, File file, Collection<TaskInfo> modules, int jobNumber, String kind) {
+	    this.kind = kind;
+	    this.p = p;
+	    this.size = file.length();
+	    this.exists = file.exists();
+	    Calendar cal = Calendar.getInstance();
+	    cal.setTimeInMillis(file.lastModified());
+	    this.lastModified = cal.getTime();
 
-        public String getTruncatedDisplayName() {
-            String name = "";
-            if (p != null) {
-                name = p.getName();
-            }
-            if (name != null && name.length() > 70) {
-                name = name.substring(0, 35)+"..."+name.substring(name.length()-32);
-            }
-            return name;
-        }
+	    if (modules != null) {
+		for (TaskInfo t : modules) {
+		    KeyValuePair mi = new KeyValuePair(t.getShortName(), UIBeanHelper.encode(t.getLsid()));
+		    moduleMenuItems.add(mi);
+		}
+		Collections.sort(moduleMenuItems, COMPARATOR);
+	    }
 
-        public long getSize() {
-            return size;
-        }
+	    this.jobNumber = jobNumber;
+	}
 
-        public String getUIValue(ParameterInfo formalParam) {
-            return p.getUIValue(formalParam);
-        }
+	public String getUrl() {
+	    return UIBeanHelper.getServer() + "/jobResults/" + getValue();
+	}
 
-        public String getValue() {
-            return p.getValue();
-        }
+	public int getJobNumber() {
+	    return jobNumber;
+	}
 
-        /**
-         * @return a valid value to be used for the 'id' attribute of an html
-         *         div tag. The '/' character is not allowed, so replace all '/'
-         *         with '_'.
-         */
-        public String getValueId() {
-            String str = getValue().replace('/', '_');
-            return str;
-        }
+	public String getDescription() {
+	    return p.getDescription();
+	}
 
-        public boolean hasChoices(String delimiter) {
-            return p.hasChoices(delimiter);
-        }
+	public String getFormattedSize() {
+	    return JobHelper.getFormattedSize(size);
+	}
 
-        public boolean isSelected() {
-            return selected;
-        }
+	public String getLabel() {
+	    return p.getLabel();
+	}
 
-        public void setSelected(boolean bool) {
-            this.selected = bool;
-        }
+	public Date getLastModified() {
+	    return lastModified;
+	}
 
-        public String toString() {
-            return p.toString();
-        }
+	public List<KeyValuePair> getModuleMenuItems() {
+	    return moduleMenuItems;
+	}
 
-        public List<KeyValuePair> getModuleInputParameters() {
-            return moduleInputParameters;
-        }
+	public String getName() {
+	    return UIBeanHelper.encode(p.getName());
+	}
+	
+	public String getTruncatedDisplayName() {
+    	if (getName() != null && getName().length() > 70) {
+    		return UIBeanHelper.encode(getName().substring(0, 35)+"..." + getName().substring(getName().length()-32, getName().length()));
+    	} else {
+    		return UIBeanHelper.encode(getName());
+    	}
+    }
 
-        public String getKind() {
-            return kind;
-        }
+	public long getSize() {
+	    return size;
+	}
+
+	public String getUIValue(ParameterInfo formalParam) {
+	    return p.getUIValue(formalParam);
+	}
+
+	public String getValue() {
+	    return p.getValue();
+	}
+
+	/**
+	 * @return a valid value to be used for the 'id' attribute of an html div tag. The '/' character is not allowed,
+	 *         so replace all '/' with '_'.
+	 */
+	public String getValueId() {
+	    String str = getValue().replace('/', '_');
+	    return str;
+	}
+
+	public boolean hasChoices(String delimiter) {
+	    return p.hasChoices(delimiter);
+	}
+
+	public boolean isSelected() {
+	    return selected;
+	}
+
+	public void setSelected(boolean bool) {
+	    this.selected = bool;
+	}
+
+	public String toString() {
+	    return p.toString();
+	}
+
+	public List<KeyValuePair> getModuleInputParameters() {
+	    return moduleInputParameters;
+	}
+
+	public String getKind() {
+	    return kind;
+	}
     }
 
     private static class KeyValueComparator implements Comparator<KeyValuePair> {
-
-	public int compare(KeyValuePair o1, KeyValuePair o2) {
-	    return o1.getKey().compareToIgnoreCase(o2.getKey());
-	}
-
+        public int compare(KeyValuePair o1, KeyValuePair o2) {
+            return o1.getKey().compareToIgnoreCase(o2.getKey());
+        }
     }
 
     public void setSelectedModule(String selectedModule) {
-	List<JobResultsWrapper> recentJobs = getRecentJobs();
-	if (selectedModule == null || recentJobs == null || recentJobs.size() == 0) {
-	    return;
-	}
-	kindToInputParameters = new HashMap<String, List<KeyValuePair>>();
+        if (selectedModule == null || selectedModule.length() == 0) {
+            return;
+        }
+        List<JobResultsWrapper> recentJobs = getRecentJobs();
+        if (recentJobs == null || recentJobs.size() == 0) {
+            return;
+        }
+        
+        AdminDAO adminDao = new AdminDAO();
+        String currentUserId = UIBeanHelper.getUserId();
+        TaskInfo taskInfo = adminDao.getTask(selectedModule, currentUserId);
+        if (taskInfo == null) {
+            log.error("Error getting TaskInfo for selectedModule="+selectedModule);
+            return;
+        }
 
-	TaskInfo taskInfo = null;
-	try {
-	    taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(selectedModule);
-	} catch (WebServiceException e) {
-	    log.error("Could not get module", e);
-	    return;
-	}
-	ParameterInfo[] inputParameters = taskInfo != null ? taskInfo.getParameterInfoArray() : null;
-	List<KeyValuePair> unannotatedParameters = new ArrayList<KeyValuePair>();
-	if (inputParameters != null) {
-	    for (ParameterInfo inputParameter : inputParameters) {
-		if (inputParameter.isInputFile()) {
-		    List<String> fileFormats = SemanticUtil.getFileFormats(inputParameter);
-		    String displayValue = (String) inputParameter.getAttributes().get("altName");
+        
+        kindToInputParameters = new HashMap<String, List<KeyValuePair>>();
 
-		    if (displayValue == null) {
-			displayValue = inputParameter.getName();
-		    }
-		    displayValue = displayValue.replaceAll("\\.", " ");
+        ParameterInfo[] inputParameters = taskInfo != null ? taskInfo.getParameterInfoArray() : null;
+        List<KeyValuePair> unannotatedParameters = new ArrayList<KeyValuePair>();
+        if (inputParameters != null) {
+            for (ParameterInfo inputParameter : inputParameters) {
+                if (inputParameter.isInputFile()) {
+                    List<String> fileFormats = SemanticUtil.getFileFormats(inputParameter);
+                    String displayValue = (String) inputParameter.getAttributes().get("altName");
 
-		    KeyValuePair kvp = new KeyValuePair();
-		    kvp.setKey(inputParameter.getName());
-		    kvp.setValue(displayValue);
+                    if (displayValue == null) {
+                        displayValue = inputParameter.getName();
+                    }
+                    displayValue = displayValue.replaceAll("\\.", " ");
 
-		    if (fileFormats.size() == 0) {
-			unannotatedParameters.add(kvp);
-		    }
-		    for (String format : fileFormats) {
-			List<KeyValuePair> inputParameterNames = kindToInputParameters.get(format);
-			if (inputParameterNames == null) {
-			    inputParameterNames = new ArrayList<KeyValuePair>();
-			    kindToInputParameters.put(format, inputParameterNames);
-			}
-			inputParameterNames.add(kvp);
-		    }
-		}
-	    }
-	}
+                    KeyValuePair kvp = new KeyValuePair();
+                    kvp.setKey(inputParameter.getName());
+                    kvp.setValue(displayValue);
 
-	// add unannotated parameters to end of list for each kind
-	if (unannotatedParameters.size() > 0) {
-	    for (Iterator<String> it = kindToInputParameters.keySet().iterator(); it.hasNext();) {
-		List<KeyValuePair> inputParameterNames = kindToInputParameters.get(it.next());
-		inputParameterNames.addAll(unannotatedParameters);
-	    }
-	}
+                    if (fileFormats.size() == 0) {
+                        unannotatedParameters.add(kvp);
+                    }
+                    for (String format : fileFormats) {
+                        List<KeyValuePair> inputParameterNames = kindToInputParameters.get(format);
+                        if (inputParameterNames == null) {
+                            inputParameterNames = new ArrayList<KeyValuePair>();
+                            kindToInputParameters.put(format, inputParameterNames);
+                        }
+                        inputParameterNames.add(kvp);
+                    }
+                }
+            }
+        }
 
-	for (JobResultsWrapper job : recentJobs) {
-	    List<OutputFileInfo> outputFiles = job.getOutputFileParameterInfos();
-	    if (outputFiles != null) {
-		for (OutputFileInfo o : outputFiles) {
-		    List<KeyValuePair> moduleInputParameters = kindToInputParameters.get(o.getKind());
+        // add unannotated parameters to end of list for each kind
+        if (unannotatedParameters.size() > 0) {
+            for (Iterator<String> it = kindToInputParameters.keySet().iterator(); it.hasNext();) {
+                List<KeyValuePair> inputParameterNames = kindToInputParameters.get(it.next());
+                inputParameterNames.addAll(unannotatedParameters);
+            }
+        }
 
-		    if (moduleInputParameters == null) {
-			moduleInputParameters = unannotatedParameters;
-		    }
-		    o.moduleInputParameters = moduleInputParameters;
-		}
-	    }
-	}
+        for (JobResultsWrapper job : recentJobs) {
+            List<OutputFileInfo> outputFiles = job.getOutputFileParameterInfos();
+            if (outputFiles != null) {
+                for (OutputFileInfo o : outputFiles) {
+                    List<KeyValuePair> moduleInputParameters = kindToInputParameters.get(o.getKind());
 
+                    if (moduleInputParameters == null) {
+                        moduleInputParameters = unannotatedParameters;
+                    }
+                    o.moduleInputParameters = moduleInputParameters;
+                }
+            }
+        }
     }
 
 }

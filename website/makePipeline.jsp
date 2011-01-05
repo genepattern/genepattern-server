@@ -560,56 +560,7 @@ try {
 
 		// run immediately, without saving?
 		if (bRun) {
-			request.setAttribute("cmd", "run");
-			request.setAttribute("name", pipelineName + (pipelineName.endsWith(GPConstants.TASK_TYPE_PIPELINE) ? "" : ("." + GPConstants.TASK_TYPE_PIPELINE)));
-
-			request.setAttribute("saved", Boolean.FALSE);
-
-			pTia = controller.giveTaskInfoAttributes();
-                        pTaskInfo.setTaskInfoAttributes(pTia);
-                        pTaskInfo.setParameterInfoArray(controller.giveParameterInfoArray());
-			pTaskInfo.setName(pipelineName + "." + GPConstants.TASK_TYPE_PIPELINE);
-			
-			pTia.put(GPConstants.CPU_TYPE, GPConstants.ANY);
-			pTia.put(GPConstants.OS, GPConstants.ANY);
-			pTia.put(GPConstants.LANGUAGE, language);
-			pTia.put(GPConstants.SERIALIZED_MODEL, model.toXML());
-			pTia.put(GPConstants.LSID, "" /*model.getLsid()*/);
-
-			request.setAttribute("taskInfo", pTaskInfo);
-			taskName = requestParameters.getProperty("taskName");
-			request.setAttribute("taskName", taskName);
-			if (taskName != null) {
-				String singleTaskRun = taskName + "1.t0_";
-
-				for (Iterator iter = requestFiles.keySet().iterator(); iter.hasNext(); ){
-
-					String n = (String)iter.next();
-					if (n.indexOf(singleTaskRun) != -1) {
-						String n2 = taskName + "1." + n.substring(singleTaskRun.length());
-						n2 = n2.substring(taskName.length() + ".".length() + 1);
-						request.setAttribute(n2, requestParameters.getProperty(n));
-					}
-				}
-				for (java.util.Enumeration eNames = htFilenames.keys(); eNames.hasMoreElements(); ) {
-					key = (String)eNames.nextElement();
-					int n = 0;
-					if (key.startsWith(singleTaskRun)) {
-						n = singleTaskRun.length();
-					} else if (key.startsWith("t0_")) {
-						n = "t0_".length();
-					}
-					String strippedName = key.substring(n);
-					request.setAttribute(strippedName, (String)htFilenames.get(key));
-				}
-			}
-
-			request.setAttribute("smartUpload", requestParameters);
-			request.setAttribute("name", pipelineName);
-			request.getRequestDispatcher("runPipeline.jsp").forward(request, response);
-
-
-			return;
+            vProblems.add("run immediately no longer allowed!");
 		}
 	}
 

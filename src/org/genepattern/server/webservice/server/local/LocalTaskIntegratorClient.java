@@ -14,6 +14,7 @@ package org.genepattern.server.webservice.server.local;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Vector;
 
 import javax.activation.DataHandler;
@@ -21,12 +22,14 @@ import javax.activation.FileDataSource;
 import javax.servlet.jsp.JspWriter;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.TaskIntegrator;
 import org.genepattern.server.webservice.server.dao.TaskIntegratorDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 
 /**
@@ -85,28 +88,58 @@ public class LocalTaskIntegratorClient extends TaskIntegrator implements Status 
 		return files;
 	}
 
-	/**
-	 * Returns the docFiles for a given task. Gets the files from the super
-	 * class an array of DataHandlers and converts them to an array of
-	 * FileDataSources.
-	 * 
-	 * @param task
-	 * @return
-	 * @throws WebServiceException
-	 */
+    /**
+     * Returns the docFiles for a given task. Gets the files from the super
+     * class an array of DataHandlers and converts them to an array of
+     * FileDataSources.
+     * 
+     * @param task
+     * @return
+     * @throws WebServiceException
+     */
 	public File[] getDocFiles(TaskInfo task) throws WebServiceException {
-		String taskId = (String) task.getTaskInfoAttributes().get(GPConstants.LSID);
-		if (taskId == null) {
-			taskId = task.getName();
-		}
-		DataHandler[] dh = getDocFiles(taskId);
-		File[] files = new File[dh.length];
-		for (int i = 0, length = dh.length; i < length; i++) {
-			FileDataSource ds = (FileDataSource) dh[i].getDataSource();
-			files[i] = ds.getFile();
-		}
-		return files;
+	    DataHandler[] dh = getDocFiles(task.getID(), task.getLsid());
+	    File[] files = new File[dh.length];
+	    for (int i = 0, length = dh.length; i < length; i++) {
+	        FileDataSource ds = (FileDataSource) dh[i].getDataSource();
+	        files[i] = ds.getFile();
+	    }
+	    return files;
 	}
+	
+    /**
+     * Gets the files that belong to the given task or suite that are considered to be documentation files. Returned as
+     * an array of DataHandlers.
+     * 
+     * @param lsid
+     *                The LSID
+     * @return The docFiles
+     * @exception WebServiceException
+     *                    If an error occurs
+     */
+    private DataHandler[] getDocFiles(Integer taskId, String lsid) throws WebServiceException {
+        List<String> docFilenames = TaskInfoCache.instance().getDocFilenames(taskId, lsid);
+
+        File taskLibDir = null;
+        try {
+            String libDir = DirectoryManager.getLibDir(lsid);
+            taskLibDir = new File(libDir);
+        } 
+        catch (Exception e) {
+            log.error(e);
+            throw new WebServiceException(e);
+        }
+        
+        DataHandler[] dh = new DataHandler[docFilenames.size()];
+        int i=0;
+        for(String docFilename : docFilenames) {
+            File f = new File(taskLibDir, docFilename);
+            dh[i] = new DataHandler(new FileDataSource(f));
+            ++i;
+        }
+        return dh;
+    }
+
 
 	/**
 	 * Create or update a suite object.  This method does not update files.  Used

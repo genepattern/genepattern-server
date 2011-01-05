@@ -56,11 +56,9 @@ import static org.genepattern.util.GPConstants.STDERR_REDIRECT;
 import static org.genepattern.util.GPConstants.STDIN_REDIRECT;
 import static org.genepattern.util.GPConstants.STDOUT;
 import static org.genepattern.util.GPConstants.STDOUT_REDIRECT;
-import static org.genepattern.util.GPConstants.TASKLOG;
 import static org.genepattern.util.GPConstants.TASK_ID;
 import static org.genepattern.util.GPConstants.TASK_NAMESPACE;
 import static org.genepattern.util.GPConstants.TASK_TYPE_VISUALIZER;
-import static org.genepattern.util.GPConstants.TOMCAT;
 import static org.genepattern.util.GPConstants.UNREQUIRED_PARAMETER_NAMES;
 import static org.genepattern.util.GPConstants.USERID;
 import static org.genepattern.util.GPConstants.UTF8;
@@ -71,11 +69,8 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -89,6 +84,7 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
@@ -98,8 +94,6 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
@@ -111,6 +105,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -126,25 +126,34 @@ import org.apache.tools.ant.taskdefs.Execute;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.genepattern.codegenerator.AbstractPipelineCodeGenerator;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.AnalysisServiceException;
-import org.genepattern.server.EncryptionUtil;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
+import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
+import org.genepattern.server.TaskIDNotFoundException;
+import org.genepattern.server.JobInfoWrapper.InputFile;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.domain.JobStatusDAO;
+import org.genepattern.server.executor.AnalysisJobScheduler;
+import org.genepattern.server.executor.CommandExecutor;
+import org.genepattern.server.executor.CommandExecutorNotFoundException;
+import org.genepattern.server.executor.CommandManagerFactory;
+import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.executor.JobDispatchException;
+import org.genepattern.server.executor.JobSubmissionException;
+import org.genepattern.server.executor.pipeline.PipelineException;
+import org.genepattern.server.executor.pipeline.PipelineHandler;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager;
-import org.genepattern.server.webapp.RunPipelineInThread;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
-import org.genepattern.server.webservice.server.dao.BaseDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -221,101 +230,59 @@ import org.w3c.dom.NodeList;
  * 
  * @author Jim Lerner
  * @version 1.0
- * @see org.genepattern.server.AnalysisTask
  * @see org.genepattern.webservice.TaskInfoAttributes
  */
 
 public class GenePatternAnalysisTask {
-    private static Logger log = Logger.getLogger(GenePatternAnalysisTask.class);
+    public static Logger log = Logger.getLogger(GenePatternAnalysisTask.class);
     protected static final String CLASSPATH = "classpath";
     protected static final String OUTPUT_FILENAME = "output_filename";
     protected static final String ORIGINAL_PATH = "originalPath";
     public static final String TASK_NAME = "GenePatternAnalysisTask";
+    
+    //these flags are for input files which have been moved, copied, or downloaded into the working directory for the job
+    //properties get set during onJob and removed during handleJobCompletion
+    //private static final String ORIGINAL_FILENAME = "originalFilename";
+    //private static final String ORIGINAL_LAST_MODIFIED="originalLastModified";
+    //private static final String ORIGINAL_LENGTH="originalLength";
 
-    /**
-     * hashtable of running jobs. key=jobID (as String), value=Process
-     */
-    protected static Hashtable<String, Process> htRunningJobs = new Hashtable<String, Process>();
-
-    /**
-     * hashtable of running pipelines. key=jobID (as String), value=Process
-     */
-    protected static Hashtable<String, Process> htRunningPipelines = new Hashtable<String, Process>();
-
-    /**
-     * indicates whether version string has been displayed by init already
-     */
-    protected static boolean bAnnounced = false;
+    public enum JOB_TYPE {
+        JOB,
+        VISUALIZER,
+        PIPELINE
+    };
 
     private enum INPUT_FILE_MODE {
         COPY, MOVE, PATH
     };
 
-    /** set with property input.file.mode */
-    private INPUT_FILE_MODE inputFileMode = INPUT_FILE_MODE.MOVE;
-
-    /** set with property allow.input.file.paths */
-    private boolean allowInputFilePaths = true;
+    /**
+     * Use an executor to dispatch jobs so that job dispatch can be cancelled after a timeout period.
+     */
+    private ExecutorService executor = null;
 
     /**
-     * GenePatternAnalysisTask constructor. Loads properties from genepattern.properties
+     * 
+     * @param executor, an ExecutorService instance for dispatching jobs.
      */
-    public GenePatternAnalysisTask() {
-        if (System.getProperty("GenePatternVersion") == null) {
-            // System properties are already loaded by StartupServlet
-            File propFile = new File(System.getProperty("genepattern.properties"), "genepattern.properties");
-            FileInputStream fis = null;
-            try {
-                fis = new FileInputStream(propFile);
-                System.getProperties().load(fis);
-            } 
-            catch (IOException ioe) {
-                log.error(propFile.getName() + " cannot be loaded.  " + ioe.getMessage());
-            } 
-            finally {
-                try {
-                    if (fis != null) {
-                        fis.close();
-                    }
-                } 
-                catch (IOException ioe) {
-                }
-            }
-        }
+    public GenePatternAnalysisTask(ExecutorService executor) {
+        this.executor = executor;
+    }
 
-        String canonicalPathNames[] = new String[] { TOMCAT };
-        String oldName;
-        String newName;
-        for (int i = 0; i < canonicalPathNames.length; i++) {
-            oldName = System.getProperty(canonicalPathNames[i]);
-            if (oldName == null) {
-                continue;
-            }
-            try {
-                newName = new File(oldName).getCanonicalPath();
-                System.setProperty(canonicalPathNames[i], newName);
-            } 
-            catch (IOException ioe) {
-                log.error("GenePattern init: " + ioe + " while getting canonical path for " + oldName);
-            }
-        }
-
-        if (!bAnnounced) {
-            log.info("GenePattern version " + System.getProperty("GenePatternVersion") + " build " + System.getProperty("tag") + " loaded");
-            bAnnounced = true;
-        }
-
+    private static boolean getAllowInputFilePaths() {
+        boolean allowInputFilePaths = false;
         String inputFilePathProp = System.getProperty("allow.input.file.paths");
         if (inputFilePathProp != null) {
             if (inputFilePathProp.equalsIgnoreCase("true") || inputFilePathProp.equals("1")) {
                 allowInputFilePaths = true;
-                log.info("Allowing input file paths.");
+                log.debug("Allowing input file paths.");
             } 
-            else if (inputFilePathProp.equalsIgnoreCase("false") || inputFilePathProp.equals("0")) {
-                allowInputFilePaths = false;
-            }
         }
+        return allowInputFilePaths;
+    }
 
+    private static INPUT_FILE_MODE getInputFileMode() {
+        INPUT_FILE_MODE inputFileMode = INPUT_FILE_MODE.PATH;
         String inputFileModeProp = System.getProperty("input.file.mode");
         if (inputFileModeProp != null) {
             if (inputFileModeProp.equals("copy")) {
@@ -334,6 +301,7 @@ public class GenePatternAnalysisTask {
                 log.info("Unknown value for property input.file.mode. Valid options are 'copy', 'move', and 'path'.");
             }
         }
+        return inputFileMode;
     }
 
     /**
@@ -380,7 +348,7 @@ public class GenePatternAnalysisTask {
      * @throws IllegalArgumentException, If the URL refers to a file that the specified userId does not have permission to access.
      * @return The file or <tt>null</tt>
      */
-    protected File localInputUrlToFile(URL url, String userId) {
+    protected File localInputUrlToFile(URL url, boolean isAdmin, String userId) {
         String path = url.getPath();
         try {
             path = URLDecoder.decode(path, "UTF-8");
@@ -441,7 +409,7 @@ public class GenePatternAnalysisTask {
                 File in = new File(System.getProperty("java.io.tmpdir"), filename);
                 if (in.exists() && jobNumber >= 0) {
                     // check whether the current user has access to the job
-                    PermissionsHelper perm = new PermissionsHelper(userId, jobNumber);
+                    PermissionsHelper perm = new PermissionsHelper(isAdmin, userId, jobNumber);
                     boolean canRead = perm.canReadJob();
                     if (canRead) {
                         return in;
@@ -458,8 +426,8 @@ public class GenePatternAnalysisTask {
             }
             // check that user can access requested module
             TaskInfo taskInfo = null;
-            LocalAdminClient adminClient = new LocalAdminClient(userId);
             try {
+                LocalAdminClient adminClient = new LocalAdminClient(userId);
                 taskInfo = adminClient.getTask(lsid);
             }
             catch (WebServiceException e) {
@@ -472,19 +440,12 @@ public class GenePatternAnalysisTask {
                 log.error(errorMessage);
                 throw new IllegalArgumentException(errorMessage);
             }
-            //else taskInfo != null
             File file = null;
-            String taskLibDir = null;
-            try {
-                taskLibDir = DirectoryManager.getTaskLibDir(lsid, lsid, userId);
-            }
-            catch (MalformedURLException e) {
-                String errorMessage = "Unable to find file: "+filename+ " ("+url+"). Invalid LSID: "+lsid;
-                log.error(errorMessage, e);
-                throw new IllegalArgumentException(errorMessage,e);
-            }
-            finally {
-                HibernateUtil.closeCurrentSession();
+            String taskLibDir = DirectoryManager.getTaskLibDir(taskInfo);
+            if (taskLibDir == null) {
+                String errorMessage = "You are not permitted to access the requested file: "+filename+ " ("+url+")";
+                log.error(errorMessage);
+                throw new IllegalArgumentException(errorMessage);
             }
             file = new File(taskLibDir, filename);
             if (file.exists()) {
@@ -518,7 +479,7 @@ public class GenePatternAnalysisTask {
                 throw new IllegalArgumentException("You are not permitted to access the requested file: "+requestedFilename+", Error processing job number: "+job);
             }
             
-            if (canReadJob(userId, jobNumber)) {
+            if (canReadJob(isAdmin, userId, jobNumber)) {
                 File jobDir = new File(jobsDir, job);
                 File file = new File(jobDir, requestedFilename);
                 if (file.exists()) {
@@ -532,9 +493,9 @@ public class GenePatternAnalysisTask {
         return null;
     }
 
-    private boolean canReadJob(String userId, int jobNumber) {
+    private boolean canReadJob(boolean isAdmin, String userId, int jobNumber) {
         try {
-            PermissionsHelper perm = new PermissionsHelper(userId, jobNumber);
+            PermissionsHelper perm = new PermissionsHelper(isAdmin, userId, jobNumber);
             return perm.canReadJob();
         }
         catch (Throwable t) {
@@ -545,7 +506,7 @@ public class GenePatternAnalysisTask {
             HibernateUtil.closeCurrentSession();
         }
     }
-
+    
     /**
      * Called by Omnigene Analysis engine to run a single analysis job, wait for completion, then report the results to
      * the analysis_job database table. Running a job involves looking up the TaskInfo and TaskInfoAttributes for the
@@ -553,572 +514,641 @@ public class GenePatternAnalysisTask {
      * any input URLs to the local filesystem, executing the application, and then returning any of the output files
      * from the sandbox directory where it ran to the analysis_job database (and ultimately to the caller).
      * 
-     * @param o
-     *            JobInfo object
+     * TODO: improve error handling for this method, exceptions should include:
+     *     1) null arg
+     *     2) server error (hibernate, db, et cetera)
+     *     3) job already PROCESSING or TERMINATED or ERROR
+     * 
+     * @param jobId, the job_no from the ANALYSIS_JOB table
      */
-    public void onJob(Object o) {
-        if (o == null || !(o instanceof JobInfo)) {
-            log.error("Invalid arg to onJob, o="+o);
+    public void onJob(Integer jobId) throws JobDispatchException {
+        log.debug("onJob("+jobId+")");
+        if (jobId == null) {
+            throw new JobDispatchException("Invalid arg to onJob, jobId="+jobId);
+        }
+
+        JobInfo jobInfo = null;
+        int parentJobId = -1;
+        try {
+            AnalysisDAO dao = new AnalysisDAO();
+            jobInfo = dao.getJobInfo(jobId);
+            parentJobId = dao.getParentJobId(jobId);
+        }
+        catch (Throwable t) {
+            throw new JobDispatchException("Server error: Not able to load jobInfo for jobId: "+jobId, t);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+        
+        if (jobInfo == null) {
+            throw new JobDispatchException("Server error: Not able to load jobInfo for jobId: "+jobId);
+        }
+
+        // handle special-case: job was terminated before it was started
+        if (JobStatus.ERROR.equals(jobInfo.getStatus()) || JobStatus.FINISHED.equals(jobInfo.getStatus())) {
+            log.info("job #"+jobId+" already finished, status="+jobInfo.getStatus());
             return;
         }
         
-        JobInfo jobInfo = (JobInfo) o;
-        if (log.isDebugEnabled()) {
-            log.debug("Start onJob id=" + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName());
+        // is the job owner an admin?
+        final boolean isAdmin;
+        if (jobInfo.getUserId() != null) {
+            isAdmin = AuthorizationHelper.adminJobs(jobInfo.getUserId());
         }
-
-        // pipelines run from the webapp show up as BaseDAO.UNPROCESSABLE_TASKID
-        // and are being run by other means so bail out now
-        if (jobInfo.getTaskID() == BaseDAO.UNPROCESSABLE_TASKID) {
-            log.error("pipelines run from the webapp should no longer show with taskID="+BaseDAO.UNPROCESSABLE_TASKID);
-            return;
+        else {
+            isAdmin = false;
         }
-
-        JobInfo parentJobInfo = null;
-        String outDirName = getJobDir(Integer.toString(jobInfo.getJobNumber()));
-        String taskName = "";
+        
+        File outDir = null;
         try {
-            // make directory to hold input and output files
-            File outDir = new File(outDirName);
-            if (!outDir.exists()) {
-                if (!outDir.mkdirs()) {
-                    log.error("onJob error making directory " + outDirName);
-                    throw new AnalysisServiceException("Error creating output directory " + outDirName);
-                }
-            } 
-            else {
-                // clean out existing directory
-                if (log.isDebugEnabled()) {
-                    log.debug("clean out existing directory");
-                }
-                File[] old = outDir.listFiles();
-                for (int i = 0; old != null && i < old.length; i++) {
-                    old[i].delete();
-                }
-            }
+            //even though the job directory gets created when the job is added to the queue,
+            //create it again, if necessary, to deal with resubmitted jobs
+            //TODO: improve this by requiring the job dir to be cleared (but not created) before running the job
+            outDir = JobManager.createJobDirectory(jobId);
+        }
+        catch (JobSubmissionException e) {
+            throw new JobDispatchException("Error getting job directory for jobId="+jobId, e);
+        }
+        
+        INPUT_FILE_MODE inputFileMode = getInputFileMode();
+        boolean allowInputFilePaths = getAllowInputFilePaths();
 
-            TaskInfo taskInfo = getTaskInfo(jobInfo);
-            taskName = taskInfo.getName();
-            if (log.isDebugEnabled()) {
-                log.debug("taskName=" + taskName);
-            }
+        String taskName = "";
+        TaskInfo taskInfo = null;
+        int taskId = jobInfo.getTaskID();
+        try {
+            taskInfo = JobInfoManager.getTaskInfo(taskId);
+        }
+        catch (TaskIDNotFoundException e) {
+            throw e;
+        }
+        taskName = taskInfo.getName();
+        if (log.isDebugEnabled()) {
+            log.debug("taskName=" + taskName);
+        }
+        JOB_TYPE jobType = JOB_TYPE.JOB;
+        if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
+            jobType = JOB_TYPE.VISUALIZER;
+        }
+        else if (taskInfo.isPipeline()) {
+            jobType = JOB_TYPE.PIPELINE;
+        }
 
-            int formalParamsLength = 0;
-            ParameterInfo[] formalParams = taskInfo.getParameterInfoArray();
-            if (formalParams != null) {
-                formalParamsLength = formalParams.length;
-            }
+        int formalParamsLength = 0;
+        ParameterInfo[] formalParams = taskInfo.getParameterInfoArray();
+        if (formalParams != null) {
+            formalParamsLength = formalParams.length;
+        }
 
-            TaskInfoAttributes taskInfoAttributes = taskInfo.giveTaskInfoAttributes();
-            if (taskInfoAttributes == null || taskInfoAttributes.size() == 0) {
-                throw new Exception(taskName + ": missing all TaskInfoAttributes!");
-            }
+        TaskInfoAttributes taskInfoAttributes = taskInfo.giveTaskInfoAttributes();
+        if (taskInfoAttributes == null || taskInfoAttributes.size() == 0) {
+            throw new JobDispatchException(taskName + ": missing all TaskInfoAttributes!");
+        }
 
-            // check OS and CPU restrictions of TaskInfoAttributes against this server
-            // eg. "x86", "ppc", "alpha", "sparc"
-            validateCPU(taskInfoAttributes.get(CPU_TYPE));
-            String expected = taskInfoAttributes.get(OS);
-            // eg. "Windows", "linux", "Mac OS X", "OSF1", "Solaris"
-            validateOS(expected, "run " + taskName);
+        // check OS and CPU restrictions of TaskInfoAttributes against this server
+        // eg. "x86", "ppc", "alpha", "sparc"
+        validateCPU(taskInfoAttributes.get(CPU_TYPE));
+        String expected = taskInfoAttributes.get(OS);
+        // eg. "Windows", "linux", "Mac OS X", "OSF1", "Solaris"
+        validateOS(expected, "run " + taskName);
+        try {
             validatePatches(taskInfo, null);
+        }
+        catch (MalformedURLException e) {
+            throw new JobDispatchException(e);
+        }
+        Map<String, String> environmentVariables = new HashMap<String, String>();
 
-
-            Map<String, String> environmentVariables = new HashMap<String, String>();
-
-            JobInfo parentJI = getParentJobInfo(jobInfo.getJobNumber());
-            int parent = -1;
-            if (parentJI != null) {
-                parent = parentJI.getJobNumber();
+        // handle special-case: this job is part of a pipeline, update input file parameters which use the output of previous steps
+        if (parentJobId >= 0) {
+            try {
+                PipelineHandler.prepareNextStep(parentJobId, jobInfo);
             }
-            ParameterInfo[] params = jobInfo.getParameterInfoArray();
-            Properties props = setupProps(taskInfo, taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(),
-                    taskInfoAttributes, params, environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
-            Vector<String> vProblems = new Vector<String>();
-            long inputLastModified[] = new long[0];
-            long inputLength[] = new long[0];
-            if (params != null) {
-                inputLastModified = new long[params.length];
-                inputLength = new long[params.length];
-                for (int i = 0; i < params.length; i++) {
-                    HashMap<String, String> attrsActual = params[i].getAttributes();
-                    if (attrsActual == null) {
-                        attrsActual = new HashMap<String, String>();
-                    }
-                    String fileType = attrsActual.get(ParameterInfo.TYPE);
-                    String mode = attrsActual.get(ParameterInfo.MODE);
-                    String originalPath = params[i].getValue();
-                    // allow parameter value substitutions within file input parameters
-                    originalPath = substitute(originalPath, props, params);
-                    boolean isOptional = "on".equals(attrsActual.get("optional"));
-                    if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
-                        if (originalPath == null) {
-                            if (isOptional) {
-                                continue;
-                            }
-                            throw new IOException("Non-optional parameter " + params[i].getName() + " has not been assigned a filename.");
+            catch (PipelineException e) {
+                throw new JobDispatchException(e);
+            }
+        }
+
+        //ParameterInfo[] paramsActual = jobInfo.getParameterInfoArray();
+        ParameterInfo[] paramsCopy = copyParameterInfoArray(jobInfo);
+        Properties props = null;
+        try {
+            props = setupProps(taskInfo, taskName, parentJobId, jobId, jobInfo.getTaskID(), 
+                    taskInfoAttributes, paramsCopy, environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
+        }
+        catch (MalformedURLException e) {
+            throw new JobDispatchException(e);
+        }
+        Vector<String> vProblems = new Vector<String>();
+        if (paramsCopy != null) {
+            for (int i = 0; i < paramsCopy.length; i++) {
+                //HashMap attrsActual = paramsActual[i].getAttributes();
+                HashMap attrsCopy = paramsCopy[i].getAttributes();
+                if (attrsCopy == null) {
+                    attrsCopy = new HashMap();
+                }
+                //if (attrsActual == null) {
+                //    attrsActual = new HashMap();
+                //}
+                String fileType = (String) attrsCopy.get(ParameterInfo.TYPE);
+                String mode = (String) attrsCopy.get(ParameterInfo.MODE);
+                String originalPath = paramsCopy[i].getValue();
+                // allow parameter value substitutions within file input parameters
+                originalPath = substitute(originalPath, props, paramsCopy);
+                boolean isOptional = "on".equals(attrsCopy.get("optional"));
+                if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
+                    if (originalPath == null) {
+                        if (isOptional) {
+                            continue;
                         }
-                        if (mode.equals("CACHED_IN")) {
-                            //param is existing job output file
-                            StringTokenizer strtok = new StringTokenizer(originalPath, "/");
-                            String job = null;
-                            int jobNumber = -1;
-                            if (strtok.hasMoreTokens()) {
-                                job = strtok.nextToken();
-                            }
-                            String requestedFilename = null;
-                            if (strtok.hasMoreTokens()) {
-                                requestedFilename = strtok.nextToken();
-                            }
-                            if (job == null || requestedFilename == null) {
-                                vProblems.add("You are not permitted to access the requested file: Unknown filename or job number.");
-                                continue;
-                            }
-                            try {
-                                jobNumber = Integer.parseInt(job);
-                            }
-                            catch (NumberFormatException e) {
-                                vProblems.add("You are not permitted to access the requested file: Invalid job number, job='"+job+"'");
-                                continue;
-                            }
-                            if (canReadJob(jobInfo.getUserId(), jobNumber)) {
-                                originalPath = System.getProperty("jobs") + "/" + originalPath;
-                            }
-                            else {
-                                vProblems.add("You are not permitted to access the requested file: "+requestedFilename);
-                                continue;                        
-                            }
-                        } 
-                        else if (mode.equals(ParameterInfo.INPUT_MODE)) {
-                            log.debug("IN " + params[i].getName() + "=" + originalPath);
-                            //web form upload: <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>
-                            //SOAP client upload: <soap.attachment.dir>/<user_id>/<filename>
-                            //inherited input file from parent pipeline job: <jobResults>/<different_job_id>/<filename>
-                            Boolean isWebUpload = null;
-                            Boolean isSoapUpload = null;
-                            Boolean isInherited = null;
-                            File inputFile = new File(originalPath);
-                            File inputFileParent = inputFile.getParentFile();
-                            String inputFileGrandParent = null;
-                            if (inputFileParent != null) {
-                                File ifpp = inputFileParent.getParentFile();
-                                if (ifpp != null) {
+                        throw new JobDispatchException("Non-optional parameter " + paramsCopy[i].getName() + " has not been assigned a filename.");
+                    }
+                    if (mode.equals("CACHED_IN")) {
+                        //param is existing job output file
+                        StringTokenizer strtok = new StringTokenizer(originalPath, "/");
+                        String job = null;
+                        int jobNumber = -1;
+                        if (strtok.hasMoreTokens()) {
+                            job = strtok.nextToken();
+                        }
+                        String requestedFilename = null;
+                        if (strtok.hasMoreTokens()) {
+                            requestedFilename = strtok.nextToken();
+                        }
+                        if (job == null || requestedFilename == null) {
+                            vProblems.add("You are not permitted to access the requested file: Unknown filename or job number.");
+                            continue;
+                        }
+                        try {
+                            jobNumber = Integer.parseInt(job);
+                        }
+                        catch (NumberFormatException e) {
+                            vProblems.add("You are not permitted to access the requested file: Invalid job number, job='"+job+"'");
+                            continue;
+                        }
+                        if (canReadJob(isAdmin, jobInfo.getUserId(), jobNumber)) {
+                            originalPath = System.getProperty("jobs") + "/" + originalPath;
+                        }
+                        else {
+                            vProblems.add("You are not permitted to access the requested file: "+requestedFilename);
+                            continue;                        
+                        }
+                    } 
+                    else if (mode.equals(ParameterInfo.INPUT_MODE)) {
+                        log.debug("IN " + paramsCopy[i].getName() + "=" + originalPath);
+                        //web form upload: <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>
+                        //SOAP client upload: <soap.attachment.dir>/<user_id>/<filename>
+                        //inherited input file from parent pipeline job: <jobResults>/<different_job_id>/<filename>
+                        Boolean isWebUpload = null;
+                        Boolean isSoapUpload = null;
+                        Boolean isInherited = null;
+                        File inputFile = new File(originalPath);
+                        File inputFileParent = inputFile.getParentFile();
+                        String inputFileGrandParent = null;
+                        if (inputFileParent != null) {
+                            File ifpp = inputFileParent.getParentFile();
+                            if (ifpp != null) {
+                                try {
                                     inputFileGrandParent = ifpp.getCanonicalPath();
                                 }
+                                catch (IOException e) {
+                                    throw new JobDispatchException(e);
+                                }
                             }
-                            String webUploadDirectory = null;
-                            String tmpDir = System.getProperty("java.io.tmpdir");
-                            if (tmpDir != null) {
+                        }
+                        String webUploadDirectory = null;
+                        String tmpDir = System.getProperty("java.io.tmpdir");
+                        if (tmpDir != null) {
+                            try {
+                                webUploadDirectory = new File(tmpDir).getCanonicalPath();
+                            }
+                            catch (Throwable t) {
+                                log.error(t);
+                            }
+                        }
+                        isWebUpload = inputFileGrandParent != null && inputFileGrandParent.equals(webUploadDirectory);	                    
+                        if (!isWebUpload) {
+                            String soapAttachmentDir = System.getProperty("soap.attachment.dir");
+                            if (soapAttachmentDir != null) {
+                                soapAttachmentDir = soapAttachmentDir + File.separator + jobInfo.getUserId();
                                 try {
-                                    webUploadDirectory = new File(tmpDir).getCanonicalPath();
+                                    soapAttachmentDir = new File(soapAttachmentDir).getCanonicalPath();
                                 }
                                 catch (Throwable t) {
                                     log.error(t);
                                 }
                             }
-                            isWebUpload = inputFileGrandParent != null && inputFileGrandParent.equals(webUploadDirectory);	                    
-                            if (!isWebUpload) {
-                                String soapAttachmentDir = System.getProperty("soap.attachment.dir");
-                                if (soapAttachmentDir != null) {
-                                    soapAttachmentDir = soapAttachmentDir + File.separator + jobInfo.getUserId();
-                                    try {
-                                        soapAttachmentDir = new File(soapAttachmentDir).getCanonicalPath();
-                                    }
-                                    catch (Throwable t) {
-                                        log.error(t);
-                                    }
+                            File parentFile = inputFile.getParentFile();
+                            String inputFileDirectory = null;
+                            if (parentFile != null) {
+                                try {
+                                    inputFileDirectory = parentFile.getCanonicalPath();
                                 }
-                                File parentFile = inputFile.getParentFile();
-                                String inputFileDirectory = parentFile == null ? null : parentFile.getCanonicalPath();
-                                isSoapUpload = inputFileDirectory != null && inputFileDirectory.equals(soapAttachmentDir);
+                                catch (IOException e) {
+                                    throw new JobDispatchException(e);
+                                }
                             }
-                            
-                            if (!isWebUpload && !isSoapUpload) {
-                                if (inputFileGrandParent != null) {
-                                    String jobs = System.getProperty("jobs");
-                                    File jobsDir = new File(jobs);
+                            isSoapUpload = inputFileDirectory != null && inputFileDirectory.equals(soapAttachmentDir);
+                        }
+
+                        if (!isWebUpload && !isSoapUpload) {
+                            if (inputFileGrandParent != null) {
+                                String jobs = System.getProperty("jobs");
+                                File jobsDir = new File(jobs);
+                                try {
                                     isInherited = inputFileGrandParent.equals(jobsDir.getCanonicalPath());
                                 }
-                            }
-
-                            if (isWebUpload) {
-                                if (!canReadJob(jobInfo.getUserId(), jobInfo.getJobNumber())) {
-                                    vProblems.add("You are not permitted to access the requested file: "+inputFile.getName());
-                                    continue;
+                                catch (IOException e) {
+                                    throw new JobDispatchException(e);
                                 }
-                            } 
-                            else if (!isSoapUpload && !isInherited) {
-                                vProblems.add("Input file " + new File(originalPath).getName() + " must be in SOAP attachment directory or web upload directory or a parent job directory");
+                            }
+                        }
+
+                        if (isWebUpload) {
+                            if (!canReadJob(isAdmin, jobInfo.getUserId(), jobId)) {
+                                vProblems.add("You are not permitted to access the requested file: "+inputFile.getName());
                                 continue;
                             }
                         } 
-                        else {
-                            vProblems.add("Unknown mode for parameter " + params[i].getName() + ".");
+                        else if (!isSoapUpload && !isInherited) {
+                            vProblems.add("Input file " + new File(originalPath).getName() + " must be in SOAP attachment directory or web upload directory or a parent job directory");
                             continue;
                         }
-                        File inFile = new File(originalPath);
-                        if (!inFile.exists()) {
-                            vProblems.add("Input file " + inFile + " does not exist.");
-                            continue;
-                        }
-
-                        if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                            attrsActual.remove(ParameterInfo.TYPE);
-                            attrsActual.remove(ParameterInfo.INPUT_MODE);
-                        } 
-                        else {
-                            File outFile = null;
-                            String inputFilename = new File(originalPath).getName();
-                            // strip off the AxisNNNNNaxis_ prefix
-                            int underscoreIndex = -1;
-                            if (inputFilename.startsWith("Axis") && (underscoreIndex = inputFilename.indexOf("_")) != -1) {
-                                inputFilename = inputFilename.substring(underscoreIndex + 1);
-                            }
-                            // outDirName is job directory
-                            outFile = new File(outDirName, inputFilename);
-                            int counter = 1;
-                            while (outFile.exists()) { // in case two input files have the same name
-                                outFile = new File(outDirName, inputFilename + "-" + counter);
-                                counter++;
-                            }
-
-                            if (inputFileMode == INPUT_FILE_MODE.COPY) {
-                                if (!copyFile(inFile, outFile)) {
-                                    vProblems.add("Unable to copy " + inFile + " to " + outFile);
-                                    continue;
-                                }
-                                outFile.deleteOnExit(); // mark for delete, just in case
-                            } 
-                            else if (inputFileMode == INPUT_FILE_MODE.MOVE) {
-                                if (!rename(inFile, outFile, true)) {
-                                    vProblems.add("Unable to move " + inFile + " to " + outFile);
-                                    continue;
-                                }
-                            }
-                            params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
-                            params[i].setValue(outFile.getCanonicalPath());
-                            inputLastModified[i] = outFile.lastModified();
-                            inputLength[i] = outFile.length();
-                        }
-                    } 
-                    else if (i >= formalParamsLength) {
-                        log.debug("params[" + i + "]=" + params[i].getName() + " has no formal parameter defined");
                     } 
                     else {
-                        // check formal parameters for a file input type that
-                        // was in fact sent as a string (ie. cached, http, or file path on server)
-                        // find the formal parameter corresponding to this actual parameter
-                        ParameterInfo[] formals = taskInfo.getParameterInfoArray();
-                        HashMap<String, String> attrFormals = null;
-                        fileType = null;
-                        mode = null;
-                        for (int formal = 0; formals != null && formal < formals.length; formal++) {
-                            if (formals[formal].getName().equals(params[i].getName())) {
-                                attrFormals = formals[formal].getAttributes();
-                                fileType = attrFormals.get(ParameterInfo.TYPE);
-                                mode = attrFormals.get(ParameterInfo.MODE);
-                                break;
-                            }
+                        vProblems.add("Unknown mode for parameter " + paramsCopy[i].getName() + ".");
+                        continue;
+                    }
+                    File inFile = new File(originalPath);
+                    if (!inFile.exists()) {
+                        vProblems.add("Input file " + inFile + " does not exist.");
+                        continue;
+                    }
+
+                    if (inputFileMode == INPUT_FILE_MODE.PATH) {
+                        //TODO: don't do this for uploaded files
+                        attrsCopy.remove(ParameterInfo.TYPE);
+                        attrsCopy.remove(ParameterInfo.INPUT_MODE);
+                    } 
+                    else {
+                        File outFile = null;
+                        String inputFilename = new File(originalPath).getName();
+                        // strip off the AxisNNNNNaxis_ prefix
+                        int underscoreIndex = -1;
+                        if (inputFilename.startsWith("Axis") && (underscoreIndex = inputFilename.indexOf("_")) != -1) {
+                            inputFilename = inputFilename.substring(underscoreIndex + 1);
                         }
-                        boolean isURL = false;
-                        if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE) && originalPath != null) {
-                            // handle http files by downloading them and substituting the downloaded filename for the URL in the command line.
-                            if (inputFileMode == INPUT_FILE_MODE.PATH && new File(originalPath).exists()) {
+                        // outDir is job directory
+                        outFile = new File(outDir, inputFilename);
+                        int counter = 1;
+                        while (outFile.exists()) { // in case two input files have the same name
+                            outFile = new File(outDir, inputFilename + "-" + counter);
+                            counter++;
+                        }
+
+                        if (inputFileMode == INPUT_FILE_MODE.COPY) {
+                            if (!copyFile(inFile, outFile)) {
+                                vProblems.add("Unable to copy " + inFile + " to " + outFile);
+                                continue;
+                            }
+                            //TODO: mark for delete on handleJobCompletion
+                            outFile.deleteOnExit(); // mark for delete, just in case
+                        } 
+                        else if (inputFileMode == INPUT_FILE_MODE.MOVE) {
+                            if (!rename(inFile, outFile, true)) {
+                                vProblems.add("Unable to move " + inFile + " to " + outFile);
+                                continue;
+                            }
+                            //TODO: mark for move back on handleJobCompletion
+                        }
+
+                        attrsCopy.put(ORIGINAL_PATH, originalPath);
+                        try {
+                            paramsCopy[i].setValue(outFile.getCanonicalPath());
+                        }
+                        catch (IOException e) {
+                            throw new JobDispatchException(e);
+                        }
+                        //attrsActual.put(ORIGINAL_PATH, originalPath);
+                        //attrsActual.put(ORIGINAL_FILENAME, outFile.getName());
+                        //attrsActual.put(ORIGINAL_LAST_MODIFIED, ""+outFile.lastModified());
+                        //attrsActual.put(ORIGINAL_LENGTH, ""+outFile.length());
+                    }
+                } 
+                else if (i >= formalParamsLength) {
+                    log.debug("params[" + i + "]=" + paramsCopy[i].getName() + " has no formal parameter defined");
+                } 
+                else {
+                    // check formal parameters for a file input type that
+                    // was in fact sent as a string (ie. cached, http, or file path on server)
+                    // find the formal parameter corresponding to this actual parameter
+                    ParameterInfo[] formals = taskInfo.getParameterInfoArray();
+                    HashMap<String, String> attrFormals = null;
+                    fileType = null;
+                    mode = null;
+                    for (int formal = 0; formals != null && formal < formals.length; formal++) {
+                        if (formals[formal].getName().equals(paramsCopy[i].getName())) {
+                            attrFormals = formals[formal].getAttributes();
+                            fileType = attrFormals.get(ParameterInfo.TYPE);
+                            mode = attrFormals.get(ParameterInfo.MODE);
+                            break;
+                        }
+                    }
+                    boolean isURL = false;
+                    if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null && !mode.equals(ParameterInfo.OUTPUT_MODE) && originalPath != null) {
+                        // handle http files by downloading them and substituting the downloaded filename for the URL in the command line.
+                        if (inputFileMode == INPUT_FILE_MODE.PATH && new File(originalPath).exists()) {
+                            boolean isInTaskLib = false;
+                            if (!allowInputFilePaths) {
+                                //special-case: check if this is a file in the taskLib
+                                isInTaskLib = isInTaskLib(taskInfo, originalPath);
+                            }
+                            if (!allowInputFilePaths && !isInTaskLib) {
+                                vProblems.add("You are not permitted to access the requested file: "+originalPath);
+                                continue;
+                            }
+                            //TODO: don't remove
+                            attrsCopy.remove(ParameterInfo.TYPE);
+                            attrsCopy.remove(ParameterInfo.INPUT_MODE);
+                        } 
+                        else {
+                            try {
+                                if (originalPath != null) {
+                                    new URL(originalPath);
+                                    isURL = true;
+                                }
+                            } 
+                            catch (MalformedURLException mfe) {
+                                // path on server
                                 if (!allowInputFilePaths) {
                                     vProblems.add("You are not permitted to access the requested file: "+originalPath);
                                     continue;
                                 }
-                                attrsActual.remove(ParameterInfo.TYPE);
-                                attrsActual.remove(ParameterInfo.INPUT_MODE);
-                            } 
-                            else {
-                                try {
-                                    if (originalPath != null) {
-                                        new URL(originalPath);
-                                        isURL = true;
-                                    }
-                                } 
-                                catch (MalformedURLException mfe) {
-                                    // path on server
-                                    if (!allowInputFilePaths) {
-                                        vProblems.add("You are not permitted to access the requested file: "+originalPath);
-                                        continue;
-                                    }
-                                }
                             }
                         }
-                        if (isURL && !TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes()) && !taskInfo.isPipeline()) { 
-                            //don't translate input urls for visualizers and pipelines
-                            URI uri = new URI(originalPath);
-                            final String userInfo = uri.getUserInfo();
-                            if (userInfo != null) {
-                                final String[] usernamePassword = userInfo.split(":");
-                                if (usernamePassword.length == 2) {
-                                    Authenticator.setDefault(new Authenticator() {
-                                        @Override
-                                        protected PasswordAuthentication getPasswordAuthentication() {
-                                            return new PasswordAuthentication(usernamePassword[0], usernamePassword[1].toCharArray());
-                                        }
-                                    });
-                                }
+                    }
+                    if (isURL && jobType != JOB_TYPE.VISUALIZER && jobType != JOB_TYPE.PIPELINE) {
+                        //TODO: may need to revisit this as input urls are not working for pipelines after the rewrite 
+                        //don't translate input urls for visualizers and pipelines
+                        URI uri = null;
+                        try {
+                            uri = new URI(originalPath);
+                        }
+                        catch (URISyntaxException e) {
+                            throw new JobDispatchException(e);
+                        }
+
+                        final String userInfo = uri.getUserInfo();
+                        if (userInfo != null) {
+                            final String[] usernamePassword = userInfo.split(":");
+                            if (usernamePassword.length == 2) {
+                                Authenticator.setDefault(new Authenticator() {
+                                    @Override
+                                    protected PasswordAuthentication getPasswordAuthentication() {
+                                        return new PasswordAuthentication(usernamePassword[0], usernamePassword[1].toCharArray());
+                                    }
+                                });
                             }
-                            InputStream is = null;
-                            FileOutputStream os = null;
-                            File outFile = null;
-                            try {
-                                String name = null;
-                                boolean downloadUrl = true;
-                                if ("file".equalsIgnoreCase(uri.getScheme()) && allowInputFilePaths) {
-                                    File f = new File(uri);
-                                    if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                                        params[i].setValue(f.getAbsolutePath());
-                                        attrsActual.remove(ParameterInfo.TYPE);
-                                        attrsActual.remove(ParameterInfo.INPUT_MODE);
-                                        downloadUrl = false;
-                                    } 
-                                    else {
-                                        is = new FileInputStream(f);
-                                        name = f.getName();
-                                    }
-                                } 
-                                else if ("file".equalsIgnoreCase(uri.getScheme()) && !allowInputFilePaths) {
-                                    boolean isAllowed = false;
-                                    File inputFile = new File(uri);
-                                    String inputFileDirectory = inputFile.getParentFile().getCanonicalPath();
-                                    String inputFileGrandParent = inputFile.getParentFile().getParentFile().getCanonicalPath();
-
-                                    //special case: uploaded file from web client
-                                    //                <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>
-                                    String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
-                                    boolean isWebUpload = inputFileGrandParent.equals(webUploadDirectory);
-                                    isAllowed = isWebUpload;
-
-                                    //special case: uploaded file from SOAP client
-                                    //                <soap.attachment.dir>/<user_id>/<filename>
-                                    if (!isAllowed) {
-                                        String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir") + File.separator + jobInfo.getUserId()).getCanonicalPath();
-                                        boolean isSoapUpload = inputFileDirectory.equals(soapAttachmentDir);
-                                        isAllowed = isSoapUpload;
-                                    }
-
-                                    //special case: output from a previous job
-                                    if (!isAllowed) {
-                                        String jobsDirectory = new File(System.getProperty("jobs")).getCanonicalPath();
-                                        boolean isJobOutput = jobsDirectory.equals(inputFileGrandParent);
-                                        if (isJobOutput) {
-                                            String jobId = inputFile.getParentFile().getName();
-                                            try {
-                                                int jobNumber = Integer.parseInt(jobId);
-                                                //only allow access if the owner of this job has at least read access to the job which output this input file
-                                                boolean canRead = canReadJob(jobInfo.getUserId(), jobNumber);
-                                                isAllowed = isJobOutput && canRead;
-                                            }
-                                            catch (NumberFormatException e) {
-                                                log.error("Invalid job number in file path: jobId="+jobId+", file="+inputFile.getAbsolutePath());
-                                            }
-                                        } 
-                                    }
-                                    if (!isAllowed) {
-                                        vProblems.add("File input URLs are not allowed on this GenePattern server: " + inputFile.getAbsolutePath());
-                                        continue;                                    
-                                    }
-
-                                    File f = new File(uri);
-                                    if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                                        params[i].setValue(f.getAbsolutePath());
-                                        attrsActual.remove(ParameterInfo.TYPE);
-                                        attrsActual.remove(ParameterInfo.INPUT_MODE);
-                                        downloadUrl = false;
-                                    } 
-                                    else {
-                                        is = new FileInputStream(f);
-                                        name = f.getName();
-                                    }
+                        }
+                        InputStream is = null;
+                        FileOutputStream os = null;
+                        File outFile = null;
+                        try {
+                            String name = null;
+                            boolean downloadUrl = true;
+                            if ("file".equalsIgnoreCase(uri.getScheme()) && allowInputFilePaths) {
+                                File f = new File(uri);
+                                if (inputFileMode == INPUT_FILE_MODE.PATH) {
+                                    paramsCopy[i].setValue(f.getAbsolutePath());
+                                    //TODO: don't remove
+                                    attrsCopy.remove(ParameterInfo.TYPE);
+                                    attrsCopy.remove(ParameterInfo.INPUT_MODE);
+                                    downloadUrl = false;
                                 } 
                                 else {
-                                    URL url = uri.toURL();
-                                    if (isLocalHost(url)) {
-                                        try {
-                                            File file = localInputUrlToFile(url, jobInfo.getUserId());
-                                            if (file != null) {
-                                                if (inputFileMode == INPUT_FILE_MODE.PATH) {
-                                                    params[i].setValue(file.getAbsolutePath());
-                                                    attrsActual.remove(ParameterInfo.TYPE);
-                                                    attrsActual.remove(ParameterInfo.INPUT_MODE);
-                                                    downloadUrl = false;
-                                                } 
-                                                else {
-                                                    name = file.getName();
-                                                    //special case for axis: e.g. Axis23118.att_all_aml_test.gct
-                                                    if (name.startsWith("Axis")) {
-                                                        int endIdx = name.indexOf(".att_") + ".att_".length();
-                                                        name = name.substring(endIdx);
-                                                    }
-                                                    is = new BufferedInputStream(new FileInputStream(file));
-                                                }
-                                            }
-                                        } 
-                                        catch (IllegalArgumentException e) {
-                                            // user tried to access file that he is not allowed to
-                                            vProblems.add(e.getMessage());
-                                            downloadUrl = false;
-                                        }
-                                    }
-                                    if (is == null && downloadUrl) {
-                                        try {
-                                            URLConnection conn = url.openConnection();
-                                            name = getDownloadFileName(conn, url);
-                                            is = conn.getInputStream();
-                                        } 
-                                        catch (IOException e) {
-                                            vProblems.add("Unable to connect to " + url + ".");
-                                            downloadUrl = false;
-                                        }
-                                    }
-                                }
-                                if (downloadUrl) {
-                                    outFile = new File(outDirName, name);
-                                    if (outFile.exists()) {
-                                        // ensure that 2 file downloads for a job don't have the same name
-                                        if (name.length() < 3) {
-                                            name = "download";
-                                        }
-                                        outFile = File.createTempFile(name, null, new File(outDirName));
-                                    }
-                                    os = new FileOutputStream(outFile);
-                                    byte[] buf = new byte[100000];
-                                    int bytesRead;
-                                    while ((bytesRead = is.read(buf, 0, buf.length)) != -1) {
-                                        os.write(buf, 0, bytesRead);
-                                    }
-                                    params[i].getAttributes().put(ORIGINAL_PATH, originalPath);
-                                    params[i].setValue(outFile.getAbsolutePath());
-                                    inputLastModified[i] = outFile.lastModified();
-                                    inputLength[i] = outFile.length();
+                                    is = new FileInputStream(f);
+                                    name = f.getName();
                                 }
                             } 
-                            catch (IOException ioe) {
-                                vProblems.add("An error occurred while downloading " + uri);
+                            else if ("file".equalsIgnoreCase(uri.getScheme()) && !allowInputFilePaths) {
+                                boolean isAllowed = false;
+                                File inputFile = new File(uri);
+                                String inputFileDirectory = inputFile.getParentFile().getCanonicalPath();
+                                String inputFileGrandParent = inputFile.getParentFile().getParentFile().getCanonicalPath();
+
+                                //special case: uploaded file from web client
+                                //                <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>
+                                String webUploadDirectory = new File(System.getProperty("java.io.tmpdir")).getCanonicalPath();
+                                boolean isWebUpload = inputFileGrandParent.equals(webUploadDirectory);
+                                isAllowed = isWebUpload;
+
+                                //special case: uploaded file from SOAP client
+                                //                <soap.attachment.dir>/<user_id>/<filename>
+                                if (!isAllowed) {
+                                    String soapAttachmentDir = new File(System.getProperty("soap.attachment.dir") + File.separator + jobInfo.getUserId()).getCanonicalPath();
+                                    boolean isSoapUpload = inputFileDirectory.equals(soapAttachmentDir);
+                                    isAllowed = isSoapUpload;
+                                }
+
+                                //special case: output from a previous job
+                                if (!isAllowed) {
+                                    String jobsDirectory = new File(System.getProperty("jobs")).getCanonicalPath();
+                                    boolean isJobOutput = jobsDirectory.equals(inputFileGrandParent);
+                                    if (isJobOutput) {
+                                        try {
+                                            String parentFileName = inputFile.getParentFile().getName();
+                                            int jobNumber = Integer.parseInt(parentFileName);
+                                            //only allow access if the owner of this job has at least read access to the job which output this input file
+                                            boolean canRead = canReadJob(isAdmin, jobInfo.getUserId(), jobNumber);
+                                            isAllowed = isJobOutput && canRead;
+                                        }
+                                        catch (NumberFormatException e) {
+                                            log.error("Invalid job number in file path: jobId="+jobId+", file="+inputFile.getAbsolutePath());
+                                        }
+                                    } 
+                                }
+                                if (!isAllowed) {
+                                    vProblems.add("File input URLs are not allowed on this GenePattern server: " + inputFile.getAbsolutePath());
+                                    continue;                                    
+                                }
+
+                                File f = new File(uri);
+                                if (inputFileMode == INPUT_FILE_MODE.PATH) {
+                                    paramsCopy[i].setValue(f.getAbsolutePath());
+                                    //TODO: don't remove
+                                    attrsCopy.remove(ParameterInfo.TYPE);
+                                    attrsCopy.remove(ParameterInfo.INPUT_MODE);
+                                    downloadUrl = false;
+                                } 
+                                else {
+                                    is = new FileInputStream(f);
+                                    name = f.getName();
+                                }
+                            } 
+                            else {
+                                URL url = uri.toURL();
+                                if (isLocalHost(url)) {
+                                    try {
+                                        File file = localInputUrlToFile(url, isAdmin, jobInfo.getUserId());
+                                        if (file != null) {
+                                            if (inputFileMode == INPUT_FILE_MODE.PATH) {
+                                                paramsCopy[i].setValue(file.getAbsolutePath());
+                                                //TODO: don't remove
+                                                attrsCopy.remove(ParameterInfo.TYPE);
+                                                attrsCopy.remove(ParameterInfo.INPUT_MODE);
+                                                downloadUrl = false;
+                                            } 
+                                            else {
+                                                name = file.getName();
+                                                //special case for axis: e.g. Axis23118.att_all_aml_test.gct
+                                                if (name.startsWith("Axis")) {
+                                                    int endIdx = name.indexOf(".att_") + ".att_".length();
+                                                    name = name.substring(endIdx);
+                                                }
+                                                is = new BufferedInputStream(new FileInputStream(file));
+                                            }
+                                        }
+                                    } 
+                                    catch (IllegalArgumentException e) {
+                                        // user tried to access file that he is not allowed to
+                                        vProblems.add(e.getMessage());
+                                        downloadUrl = false;
+                                    }
+                                }
+                                if (is == null && downloadUrl) {
+                                    try {
+                                        URLConnection conn = url.openConnection();
+                                        name = getDownloadFileName(conn, url);
+                                        is = conn.getInputStream();
+                                    } 
+                                    catch (IOException e) {
+                                        vProblems.add("Unable to connect to " + url + ".");
+                                        downloadUrl = false;
+                                    }
+                                }
                             }
-                            finally {
-                                if (userInfo != null) {
-                                    Authenticator.setDefault(null);
-                                }
-                                if (is != null) {
-                                    try {
-                                        is.close();
-                                    } 
-                                    catch (IOException x) {
+                            if (downloadUrl) {
+                                outFile = new File(outDir, name);
+                                if (outFile.exists()) {
+                                    // ensure that 2 file downloads for a job don't have the same name
+                                    if (name.length() < 3) {
+                                        name = "download";
                                     }
+                                    outFile = File.createTempFile(name, null, outDir);
                                 }
-                                if (os != null) {
-                                    try {
-                                        os.close();
-                                    } 
-                                    catch (IOException x) {
-                                    }
+                                os = new FileOutputStream(outFile);
+                                byte[] buf = new byte[1024];
+                                int bytesRead;
+                                while ((bytesRead = is.read(buf, 0, buf.length)) != -1) {
+                                    os.write(buf, 0, bytesRead);
                                 }
-                                // don't set this until after the close...
-                                if (outFile != null) {
-                                    inputLastModified[i] = outFile.lastModified();
+                                //TODO: mark file for delete from job results directory on handle job completion
+                                attrsCopy.put(ORIGINAL_PATH, originalPath);
+                                paramsCopy[i].setValue(outFile.getAbsolutePath());
+
+                                //attrsActual.put(ORIGINAL_PATH, originalPath);
+                                //attrsActual.put(ORIGINAL_FILENAME, outFile.getName());
+                                //attrsActual.put(ORIGINAL_LAST_MODIFIED, ""+outFile.lastModified());
+                                //attrsActual.put(this.ORIGINAL_LENGTH, ""+outFile.length());
+                            }
+                        } 
+                        catch (IOException ioe) {
+                            vProblems.add("An error occurred while downloading " + uri);
+                        }
+                        finally {
+                            if (userInfo != null) {
+                                Authenticator.setDefault(null);
+                            }
+                            if (is != null) {
+                                try {
+                                    is.close();
+                                } 
+                                catch (IOException x) {
                                 }
+                            }
+                            if (os != null) {
+                                try {
+                                    os.close();
+                                } 
+                                catch (IOException x) {
+                                }
+                            }
+                            // don't set this until after the close...
+                            if (outFile != null) {
+                                //attrsActual.put(ORIGINAL_LAST_MODIFIED, ""+outFile.lastModified());
                             }
                         }
                     }
-                } // end for each parameter
-            } // end if parameters not null
+                }
+            } // end for each parameter
+        } // end if parameters not null
 
-            // build the command line, replacing <variableName> with the same
-            // name from the properties
-            // (ParameterInfo[], System properties, environment variables, and built-ins merged)
-            // build props again, now that downloaded files are set
-            props = setupProps(taskInfo, taskName, parent, jobInfo.getJobNumber(), jobInfo.getTaskID(), taskInfoAttributes, params,
+        // build the command line, replacing <variableName> with the same
+        // name from the properties
+        // (ParameterInfo[], System properties, environment variables, and built-ins merged)
+        // build props again, now that downloaded files are set
+        try {
+            props = setupProps(taskInfo, taskName, parentJobId, jobId, jobInfo.getTaskID(), taskInfoAttributes, paramsCopy,
                     environmentVariables, taskInfo.getParameterInfoArray(), jobInfo.getUserId());
+        }
+        catch (MalformedURLException e) {
+            throw new JobDispatchException(e);
+        }
+        // optionally, override the java flags if they have been overridden in the job configuration file
+        CommandProperties cmdProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
+        String javaFlags = cmdProperties.getProperty("java_flags");
+        if (javaFlags != null) {
+            props.setProperty("java_flags", javaFlags);
+        }
 
-            params = stripOutSpecialParams(params);
-            // check that all parameters are used in the command line
-            // and that all non-optional parameters that are cited actually exist
-            ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
-            Vector<String> parameterProblems = validateParameters(props, taskName, taskInfoAttributes.get(COMMAND_LINE), params,
-                    formalParameters, true);
+        paramsCopy = stripOutSpecialParams(paramsCopy);
+        // check that all parameters are used in the command line
+        // and that all non-optional parameters that are cited actually exist
+        ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
+        Vector<String> parameterProblems = validateParameters(props, taskName, taskInfoAttributes.get(COMMAND_LINE), paramsCopy,
+                formalParameters, true);
 
-            vProblems.addAll(parameterProblems);
-            String c = substitute(substitute(taskInfoAttributes.get(COMMAND_LINE), props, formalParameters), props, formalParameters);
-            if (c == null || c.trim().length() == 0) {
-                vProblems.add("Command line not defined");
-            }
+        vProblems.addAll(parameterProblems);
+        String c = substitute(substitute(taskInfoAttributes.get(COMMAND_LINE), props, formalParameters), props, formalParameters);
+        if (c == null || c.trim().length() == 0) {
+            vProblems.add("Command line not defined");
+        }
 
-            if (!TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
-                //TODO: special case for visualizer
+        if (jobType != JOB_TYPE.VISUALIZER) {
+            //TODO: special case for visualizer
+            try {
                 setCommandPrefix(taskInfoAttributes);
             }
-
-            // create an array of Strings for Runtime.exec to fix bug 55
-            // (filenames in spaces cause invalid command line)
-            String cmdLine = taskInfoAttributes.get(COMMAND_LINE);
-            StringTokenizer stCommandLine;
-            String[] commandTokens = null;
-            String firstToken;
-            String token;
-
-            // TODO: handle quoted arguments within the command line (eg. echo "<p1> <p2>" as a single token)
-
-            // check that the user didn't quote the program name
-            if (!cmdLine.startsWith("\"")) {
-                // since we could have a definition like "<perl>=perl -Ifoo",
-                // we need to double-tokenize the first token to extract just "perl"
-                stCommandLine = new StringTokenizer(cmdLine);
-                firstToken = stCommandLine.nextToken();
-                // now the command line contains the real first word (perl)
-                // followed by the rest, ready for space-tokenizing
-                cmdLine = substitute(firstToken, props, formalParameters) + cmdLine.substring(firstToken.length());
-                stCommandLine = new StringTokenizer(cmdLine);
-                commandTokens = new String[stCommandLine.countTokens()];
-                for (int i = 0; stCommandLine.hasMoreTokens(); i++) {
-                    token = stCommandLine.nextToken();
-                    commandTokens[i] = substitute(token, props, formalParameters);
-                    if (commandTokens[i] == null) {
-                        String[] copy = new String[commandTokens.length - 1];
-                        System.arraycopy(commandTokens, 0, copy, 0, i);
-                        if ((i + 1) < commandTokens.length) {
-                            System.arraycopy(commandTokens, i + 1, copy, i, commandTokens.length - i - 1);
-                        }
-                        commandTokens = copy;
-                        i--;
-                    }
-                }
-            } 
-            else {
-                // the user quoted the command, so it has to be handled specially
-                int endQuote = cmdLine.indexOf("\"", 1);
-                // find the matching closing quote
-                if (endQuote == -1) {
-                    vProblems.add("Missing closing quote on command line: " + cmdLine);
-                } 
-                else {
-                    firstToken = cmdLine.substring(1, endQuote);
-                    stCommandLine = new StringTokenizer(cmdLine.substring(endQuote + 1));
-                    commandTokens = new String[stCommandLine.countTokens() + 1];
-                    commandTokens[0] = substitute(firstToken, props, formalParameters);
-                    for (int i = 1; stCommandLine.hasMoreTokens(); i++) {
-                        token = stCommandLine.nextToken();
-                        commandTokens[i] = substitute(token, props, formalParameters);
-                        // empty token?
-                        if (commandTokens[i] == null) {
-                            String[] copy = new String[commandTokens.length - 1];
-                            System.arraycopy(commandTokens, 0, copy, 0, i);
-                            if ((i + 1) < commandTokens.length) {
-                                System.arraycopy(commandTokens, i + 1, copy, i, commandTokens.length - i - 1);
-                            }
-                            commandTokens = copy;
-                            i--;
-                        }
-                    }
-                }
+            catch (MalformedURLException e) {
+                throw new JobDispatchException(e);
             }
+        }
 
-            // do the substitutions one more time to allow, for example, p2=<p1>.res
-            for (int i = 1; i < commandTokens.length; i++) {
-                commandTokens[i] = substitute(commandTokens[i], props, formalParameters);
+        // create an array of Strings for Runtime.exec to fix bug 55
+        // (filenames in spaces cause invalid command line)
+        String cmdLine = taskInfoAttributes.get(COMMAND_LINE);
+        StringTokenizer stCommandLine;
+        String[] commandTokens = null;
+        String firstToken;
+        String token;
+
+        // TODO: handle quoted arguments within the command line (eg. echo "<p1> <p2>" as a single token)
+
+        // check that the user didn't quote the program name
+        if (!cmdLine.startsWith("\"")) {
+            // since we could have a definition like "<perl>=perl -Ifoo",
+            // we need to double-tokenize the first token to extract just "perl"
+            stCommandLine = new StringTokenizer(cmdLine);
+            firstToken = stCommandLine.nextToken();
+            // now the command line contains the real first word (perl)
+            // followed by the rest, ready for space-tokenizing
+            cmdLine = substitute(firstToken, props, formalParameters) + cmdLine.substring(firstToken.length());
+            stCommandLine = new StringTokenizer(cmdLine);
+            commandTokens = new String[stCommandLine.countTokens()];
+            for (int i = 0; stCommandLine.hasMoreTokens(); i++) {
+                token = stCommandLine.nextToken();
+                commandTokens[i] = substitute(token, props, formalParameters);
                 if (commandTokens[i] == null) {
                     String[] copy = new String[commandTokens.length - 1];
                     System.arraycopy(commandTokens, 0, copy, 0, i);
@@ -1129,454 +1159,621 @@ public class GenePatternAnalysisTask {
                     i--;
                 }
             }
-            String stdoutFilename = STDOUT;
-            String stderrFilename = STDERR;
-            String stdinFilename = null;
-            int exitCode = 0;
-            StringBuffer commandLine = new StringBuffer();
-            List<String> commandLineList = new ArrayList<String>(commandTokens.length);
-            boolean addLast = true;
-            for (int j = 0; j < commandTokens.length - 1; j++) {
-                if (commandTokens[j].equals(STDOUT_REDIRECT)) {
-                    stdoutFilename = commandTokens[++j];
-                    if ("".equals(stdoutFilename)) {
-                        vProblems.add("Missing name for standard output redirect");
-                    }
-                    addLast = false;
-                }
-                else if (commandTokens[j].equals(STDERR_REDIRECT)) {
-                    stderrFilename = commandTokens[++j];
-                    if ("".equals(stderrFilename)) {
-                        vProblems.add("Missing name for standard error redirect");
-                    }
-                    addLast = false;
-                }
-                else if (commandTokens[j].equals(STDIN_REDIRECT)) {
-                    stdinFilename = commandTokens[++j];
-                    if ("".equals(stdinFilename)) {
-                        vProblems.add("Missing name for standard input redirect");
-                    }
-                    addLast = false;
-                }
-                else {
-                    addLast = true;
-                    commandLine.append(commandTokens[j]);
-                    commandLine.append(" ");
-                    commandLineList.add(commandTokens[j]);
-                }
-            }
-            if (addLast) {
-                commandLineList.add(commandTokens[commandTokens.length - 1]);
-                commandLine.append(commandTokens[commandTokens.length - 1]);
-            }
-            commandTokens = commandLineList.toArray(new String[0]);
-            String lastToken = commandTokens[commandTokens.length - 1];
-            if (lastToken.equals(STDOUT_REDIRECT)) {
-                vProblems.add("Missing name for standard output redirect");
-            } 
-            else if (lastToken.equals(STDERR_REDIRECT)) {
-                vProblems.add("Missing name for standard error redirect");
-            } 
-            else if (lastToken.equals(STDIN_REDIRECT)) {
-                vProblems.add("Missing name for standard input redirect");
-            }
-            StringBuffer stderrBuffer = new StringBuffer();
-            if (vProblems.size() > 0) {
-                for (Enumeration<String> eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
-                    stderrBuffer.append(eProblems.nextElement() + "\n");
-                }
+        } 
+        else {
+            // the user quoted the command, so it has to be handled specially
+            int endQuote = cmdLine.indexOf("\"", 1);
+            // find the matching closing quote
+            if (endQuote == -1) {
+                vProblems.add("Missing closing quote on command line: " + cmdLine);
             } 
             else {
-                // run the task and wait for completion.
-                log.info("running " + taskName + " (job " + jobInfo.getJobNumber() + ") command: " + commandLine.toString());
-                File stdoutFile;
-                File stderrFile;
-                boolean renameStdout = stdoutFilename == null;
-                if (renameStdout) {
-                    stdoutFile = File.createTempFile("stdout", null);
-                    stdoutFilename = STDOUT;
-                } 
-                else {
-                    stdoutFile = new File(outDir, stdoutFilename);
-                }
-                boolean renameStderr = stderrFilename == null;
-                if (renameStderr) {
-                    stderrFile = File.createTempFile("stderr", null);
-                    stderrFilename = STDERR;
-                } 
-                else {
-                    stderrFile = new File(outDir, stderrFilename);
-                }
-                try {
-                    if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
-                    }
-                    else if (taskInfo.isPipeline()) {
-                        RunPipelineInThread rp = new RunPipelineInThread();
-                        //1) set server
-                        String gpUrl = System.getProperty("GenePatternURL");
-                        URL serverFromFile = null;
-                        try {
-                            serverFromFile = new URL(gpUrl);
-                        } 
-                        catch (MalformedURLException e) {
-                            throw new Exception("Invalid GenePatternURL: " + gpUrl, e);
+                firstToken = cmdLine.substring(1, endQuote);
+                stCommandLine = new StringTokenizer(cmdLine.substring(endQuote + 1));
+                commandTokens = new String[stCommandLine.countTokens() + 1];
+                commandTokens[0] = substitute(firstToken, props, formalParameters);
+                for (int i = 1; stCommandLine.hasMoreTokens(); i++) {
+                    token = stCommandLine.nextToken();
+                    commandTokens[i] = substitute(token, props, formalParameters);
+                    // empty token?
+                    if (commandTokens[i] == null) {
+                        String[] copy = new String[commandTokens.length - 1];
+                        System.arraycopy(commandTokens, 0, copy, 0, i);
+                        if ((i + 1) < commandTokens.length) {
+                            System.arraycopy(commandTokens, i + 1, copy, i, commandTokens.length - i - 1);
                         }
-                        String host = serverFromFile.getHost();
-                        String port = "";
-                        int portNum = serverFromFile.getPort();
-                        if (portNum >= 0) {
-                            port = ":" + portNum;
-                        }
-                        String server = serverFromFile.getProtocol() + "://" + host + port;
-                        rp.setServer(server);
-
-                        // 2) set user id
-                        rp.setUserId(jobInfo.getUserId());
-
-                        // 3) set job id
-                        rp.setJobId(jobInfo.getJobNumber());
-
-                        // 4) set the lsid of the pipeline
-                        rp.setPipelineTaskLsid(jobInfo.getTaskLSID());
-
-                        // 4) set pipeline model
-                        PipelineModel model = null;
-                        if (taskInfo != null) {
-                            TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-                            if (tia != null) {
-                                String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
-                                if (serializedModel != null && serializedModel.length() > 0) {
-                                    try {
-                                        model = PipelineModel.toPipelineModel(serializedModel);
-                                    } 
-                                    catch (Throwable x) {
-                                        log.error(x);
-                                    }
-                                }
-                            }
-                        }
-                        rp.setPipelineModel(model);
-
-                        // 5) set additional arguments
-                        Properties additionalArguments = new Properties();
-                        commandTokens = translateCommandline(commandTokens);
-                        //HACK: remove all args up to org.genepattern.server.webapp.RunPipelineSoap
-                        List<String> modifiedCommandTokens = new ArrayList<String>();
-                        int startIdx = 0;
-                        for(int i=0; i<commandTokens.length; ++i) {
-                            if ("org.genepattern.server.webapp.RunPipelineSoap".equals(commandTokens[i])) {
-                                startIdx = i+1;
-                                break;
-                            }
-                        }
-                        for(int i=startIdx; i<commandTokens.length; ++i) {
-                            modifiedCommandTokens.add(commandTokens[i]);
-                        }
-                        String[] args = new String[modifiedCommandTokens.size()];
-                        args = modifiedCommandTokens.toArray(args);
-                        if (args.length > 2) {
-                            for (int i = 2; i < args.length; i++) {
-                                // assume args are in the form name=value
-                                String arg = args[i];
-                                StringTokenizer strtok = new StringTokenizer(arg, "=");
-                                String key = strtok.nextToken();
-                                StringBuffer valbuff = new StringBuffer("");
-                                int count = 0;
-                                while (strtok.hasMoreTokens()) {
-                                    valbuff.append(strtok.nextToken());
-                                    if ((strtok.hasMoreTokens()))
-                                        valbuff.append("=");
-                                    count++;
-                                }
-                                additionalArguments.put(key, valbuff.toString());
-                            }
-                        }
-                        rp.setAdditionalArgs(additionalArguments);
-                        try {
-                            rp.runPipeline();
-                        }
-                        catch (WebServiceException e) {
-                            stderrBuffer.append(e.getLocalizedMessage());
-                            exitCode = -1;
-                        }
-                    } 
-                    else { 
-                        commandTokens = translateCommandline(commandTokens);
-                        exitCode = runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFilename, stderrBuffer);
-                    }
-                } 
-                catch (Throwable t) {
-                    log.error(taskName + " Error running job #" + jobInfo.getJobNumber() + ": "+t.getLocalizedMessage(), t);
-                    stderrBuffer.append(t.getLocalizedMessage() + "\n\n");
-                }
-                finally {
-                    if (renameStdout) {
-                        stdoutFile.renameTo(new File(outDir, STDOUT));
-                    }
-                    if (renameStderr) {
-                        stderrFile.renameTo(new File(outDir, STDERR));
+                        commandTokens = copy;
+                        i--;
                     }
                 }
             }
-            
+        }
+
+        // do the substitutions one more time to allow, for example, p2=<p1>.res
+        for (int i = 1; i < commandTokens.length; i++) {
+            commandTokens[i] = substitute(commandTokens[i], props, formalParameters);
+            if (commandTokens[i] == null) {
+                String[] copy = new String[commandTokens.length - 1];
+                System.arraycopy(commandTokens, 0, copy, 0, i);
+                if ((i + 1) < commandTokens.length) {
+                    System.arraycopy(commandTokens, i + 1, copy, i, commandTokens.length - i - 1);
+                }
+                commandTokens = copy;
+                i--;
+            }
+        }
+        String stdoutFilename = STDOUT;
+        String stderrFilename = STDERR;
+        String stdinFilename = null;
+        int exitCode = 0;
+        int jobStatus = JobStatus.JOB_PROCESSING;
+        StringBuffer commandLine = new StringBuffer();
+        List<String> commandLineList = new ArrayList<String>(commandTokens.length);
+        boolean addLast = true;
+        for (int j = 0; j < commandTokens.length - 1; j++) {
+            if (commandTokens[j].equals(STDOUT_REDIRECT)) {
+                stdoutFilename = commandTokens[++j];
+                if ("".equals(stdoutFilename)) {
+                    vProblems.add("Missing name for standard output redirect");
+                }
+                addLast = false;
+            }
+            else if (commandTokens[j].equals(STDERR_REDIRECT)) {
+                stderrFilename = commandTokens[++j];
+                if ("".equals(stderrFilename)) {
+                    vProblems.add("Missing name for standard error redirect");
+                }
+                addLast = false;
+            }
+            else if (commandTokens[j].equals(STDIN_REDIRECT)) {
+                stdinFilename = commandTokens[++j];
+                if ("".equals(stdinFilename)) {
+                    vProblems.add("Missing name for standard input redirect");
+                }
+                addLast = false;
+            }
+            else {
+                addLast = true;
+                commandLine.append(commandTokens[j]);
+                commandLine.append(" ");
+                commandLineList.add(commandTokens[j]);
+            }
+        }
+
+        if (addLast) {
+            commandLineList.add(commandTokens[commandTokens.length - 1]);
+            commandLine.append(commandTokens[commandTokens.length - 1]);
+        }
+        commandTokens = commandLineList.toArray(new String[0]);
+        String lastToken = commandTokens[commandTokens.length - 1];
+        if (lastToken.equals(STDOUT_REDIRECT)) {
+            vProblems.add("Missing name for standard output redirect");
+        } 
+        else if (lastToken.equals(STDERR_REDIRECT)) {
+            vProblems.add("Missing name for standard error redirect");
+        } 
+        else if (lastToken.equals(STDIN_REDIRECT)) {
+            vProblems.add("Missing name for standard input redirect");
+        } 
+        //check for stdin before starting the process...
+        File stdinFile = null;
+        if (stdinFilename != null) {
+            stdinFile = new File(stdinFilename);
+            if (!stdinFile.isAbsolute()) {
+                //if not absolute use a path relative to the output directory
+                stdinFile = new File(outDir, stdinFilename);
+            }
+            stdinFilename=stdinFile.getAbsolutePath();
+            if (!stdinFile.canRead()) {
+                //... so that errors can be thrown before starting the process
+                vProblems.add("Can't read file for standard input redirect: "+stdinFilename);
+                stdinFile = null;
+            }
+        }
+        
+        //close hibernate session before running the job, but don't save the parameter info
+        HibernateUtil.closeCurrentSession();
+
+        //check for errors
+        StringBuffer stderrBuffer = new StringBuffer();
+        if (vProblems.size() > 0) {
+            for (Enumeration<String> eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
+                stderrBuffer.append(eProblems.nextElement() + "\n");
+            }
             if (stderrBuffer.length() > 0) {
-                exitCode = -1;
-                writeStringToFile(outDirName, STDERR, stderrBuffer.toString());
-                addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
+                jobStatus = JobStatus.JOB_ERROR;
+                if (exitCode == 0) {
+                    exitCode = -1;
+                }
+                writeStringToFile(outDir, STDERR, stderrBuffer.toString());
+                try {
+                    GenePatternAnalysisTask.handleJobCompletion(jobId, -1);
+                }
+                catch (Exception e) {
+                    throw new JobDispatchException("Error recording job submission error: "+stderrBuffer.toString(), e);
+                }
             }
-
-            handleJobCompletion(jobInfo.getJobNumber(), stdoutFilename, stderrFilename, exitCode);
+            return;
         } 
-        catch (Throwable e) {
-            if (e.getCause() != null) {
-                e = e.getCause();
-            }
-            log.error(taskName + " error: " + e.getLocalizedMessage(), e);
-            try {
-                File outFile = writeStringToFile(outDirName, STDERR, e.getMessage() + "\n\n");
-                addFileToOutputParameters(jobInfo, STDERR, STDERR, parentJobInfo);
-                recordJobCompletion(jobInfo, parentJobInfo, JobStatus.JOB_ERROR);
+
+        // run the task and wait for completion.
+        log.info("running " + taskName + " (job " + jobId + ") command: " + commandLine.toString());
+
+        File stdoutFile;
+        File stderrFile;
+        boolean renameStdout = stdoutFilename == null;
+        boolean renameStderr = stderrFilename == null;
+        try {
+            if (renameStdout) {
+                stdoutFile = File.createTempFile("stdout", null);
+                stdoutFilename = STDOUT;
             } 
-            catch (Exception e2) {
-                log.error(taskName + " error: unable to update job error status" + e2);
+            else {
+                stdoutFile = new File(outDir, stdoutFilename);
             }
-        } 
-    }
-    
-    private void handleJobCompletion(int jobId, String stdoutFilename, String stderrFilename, int exitCode) throws Exception {
-        log.debug("job "+jobId+" completed with exitCode="+exitCode);
-        int jobStatus = JobStatus.JOB_FINISHED;
+            if (renameStderr) {
+                stderrFile = File.createTempFile("stderr", null);
+                stderrFilename = STDERR;
+            }
+            else {
+                stderrFile = new File(outDir, stderrFilename);
+            }
+        }
+        catch (IOException e) {
+            throw new JobDispatchException(e);
+        }
 
-        JobInfo jobInfo = getDS().getJobInfo(jobId);
-        //TODO: handle special-case
-        if (jobInfo == null) {
-            log.debug("job was deleted while it was running, e.g. a running pipeline was deleted");
+
+        //special-case for visualizer
+        if (jobType == JOB_TYPE.VISUALIZER) {
+            try {
+                GenePatternAnalysisTask.handleJobCompletion(jobId, 0);
+            }
+            catch (Exception e) {
+                throw new JobDispatchException("Error handling visualizer", e);
+            }
             return;
         }
 
-        TaskInfo taskInfo = getTaskInfo(jobInfo);
-        JobInfo parentJobInfo = getParentJobInfo(jobId);
-        int parentJobId = -1;
-        if (parentJobInfo != null) {
-            parentJobId = parentJobInfo.getJobNumber();
+        commandTokens = translateCommandline(commandTokens);
+        CommandExecutor cmdExec = null;
+        try {
+            cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
         }
-        String outDirName = getJobDir(Integer.toString(jobId));
-        File outDir = new File(outDirName);
+        catch (CommandExecutorNotFoundException e) {
+            throw new JobDispatchException(e);
+        }
+        
+        String jobDispatchTimeoutStr = cmdProperties.getProperty("job.dispatch.timeout", "300000");
+        long jobDispatchTimeout = 300000;
+        try {
+            jobDispatchTimeout = Long.parseLong(jobDispatchTimeoutStr);
+        }
+        catch (Exception e) {
+            log.error("Error parsing 'job.dispatch.timeout="+jobDispatchTimeoutStr, e);
+        }
+        runCommand(taskInfo.isPipeline(), cmdExec, jobDispatchTimeout, commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
+    }
 
-        //write execution log
-        File taskLog = null;
-        File pipelineTaskLog = null;
-        if (!TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
+    private void runCommand(final boolean isPipeline, final CommandExecutor cmdExec, final long jobDispatchTimeout, final String[] commandTokens, final Map<String, String> environmentVariables, final File outDir, final File stdoutFile, final File stderrFile, final JobInfo jobInfo, final File stdinFile) 
+    throws JobDispatchException
+    {
+        Future<Integer> task = executor.submit(new Callable<Integer>() {
+            public Integer call() throws Exception {
+                cmdExec.runCommand(commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
+                return JobStatus.JOB_PROCESSING;
+            }
+        });
+        try {
+            int job_status = task.get(jobDispatchTimeout, TimeUnit.MILLISECONDS);
+            try {
+                HibernateUtil.beginTransaction();
+                AnalysisJobScheduler.changeJobStatus(jobInfo.getJobNumber(), JobStatus.JOB_DISPATCHING, job_status);
+                if (isPipeline) {
+                    PipelineHandler.startNextJob(jobInfo.getJobNumber());
+                }
+                HibernateUtil.commitTransaction();
+                if (isPipeline) {
+                    CommandManagerFactory.getCommandManager().wakeupJobQueue();
+                }
+            }
+            catch (Throwable t) {
+                HibernateUtil.rollbackTransaction();
+                throw new JobDispatchException("Error changing job status for job #"+jobInfo.getJobNumber(), t);
+            }
+        }
+        catch (ExecutionException e) {
+            throw new JobDispatchException(e);
+        }
+        catch (TimeoutException e) {
+            task.cancel(true);
+            throw new JobDispatchException("Timeout after "+jobDispatchTimeout+" ms while dispatching job #"+jobInfo.getJobNumber()+" to queue.", e);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * 
+     * @param taskInfo
+     * @param serverFilePath
+     * @return true iff the originalPath is to a file in the taskLib directory for the given taskInfo.
+     */
+    private static boolean isInTaskLib(TaskInfo taskInfo, String originalPath) {
+        if (taskInfo == null) {
+            log.error("Null taskInfo arg");
+            return false;
+        }
+        String taskLibDir = DirectoryManager.getTaskLibDir(taskInfo);
+        if (taskLibDir == null) {
+            log.error("Unable to get taskLibDir for taskInfo: "+taskInfo.getName());
+            return false;
+        }
+        File serverFile = new File(originalPath);
+        String filename = serverFile.getName();
+        File file = new File(taskLibDir, filename);
+        return file != null && file.canRead();
+    }
+
+    /**
+     * Make a deep copy of the ParameterInfo[] for the given job info. 
+     * So that onJob can work on a local copy of the array without inadvertently
+     * saving changes back to the DB.
+     * 
+     * @param jobInfo
+     */
+    private static final ParameterInfo[] copyParameterInfoArray(JobInfo jobInfo) {
+        final ParameterInfo[] paramsOrig = jobInfo.getParameterInfoArray();
+        ParameterInfo[] params = null;
+        if (paramsOrig != null) {
+            params = new ParameterInfo[paramsOrig.length];
+            int i=0;
+            for(ParameterInfo paramOrig : paramsOrig) {
+                params[i++]=copyParameterInfo(paramOrig);
+            }
+        }
+        return params;
+    }
+
+    private static final ParameterInfo copyParameterInfo(ParameterInfo orig) {
+        ParameterInfo copy = new ParameterInfo(orig.getName(), orig.getValue(), orig.getDescription());
+        HashMap origAttributes = orig.getAttributes();
+        HashMap copyAttributes = new HashMap();
+        //this works as a deep copy because we know that the attributes are a Map<String,String>
+        copyAttributes.putAll(orig.getAttributes());
+        copy.setAttributes(copyAttributes);
+        return copy;
+    }
+
+    private static JobInfoWrapper getJobInfoWrapper(String userId, int jobNumber) {
+        try {
             JobInfoManager m = new JobInfoManager();
             String contextPath = System.getProperty("GP_Path", "/gp");
             if (!contextPath.startsWith("/")) {
                 contextPath = "/" + contextPath;
             }
             String cookie = "";
-            JobInfoWrapper jobInfoWrapper = m.getJobInfo(cookie, contextPath, jobInfo.getUserId(), jobInfo.getJobNumber());
-            if (jobInfoWrapper == null) {
+            return m.getJobInfo(cookie, contextPath, userId, jobNumber);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+    }
+    
+    public static void handleJobCompletion(int jobId, int exitCode) {
+        handleJobCompletion(jobId, exitCode, null);
+    }
+
+    public static void handleJobCompletion(int jobId, int exitCode, String errorMessage) {
+        File jobDir = new File(GenePatternAnalysisTask.getJobDir(""+jobId));
+        File stdoutFile = new File(jobDir, STDOUT);
+        File stderrFile = new File(jobDir, STDERR);
+        handleJobCompletion(jobId, exitCode, errorMessage, jobDir, stdoutFile, stderrFile);
+    }
+
+    public static void handleJobCompletion(int jobId, int exitCode, String errorMessage, String stdoutFilename, String stderrFilename) {
+        File jobDir = new File(GenePatternAnalysisTask.getJobDir(""+jobId));
+        File stdoutFile = new File(jobDir, stdoutFilename);
+        File stderrFile = new File(jobDir, stderrFilename);
+        handleJobCompletion(jobId, exitCode, errorMessage, jobDir, stdoutFile, stderrFile);
+    }
+    
+    public static void handleJobCompletion(int jobId, int exitValue, String errorMessage, File jobDir, File stdoutFile, File stderrFile) {
+        log.debug("job "+jobId+" completed with exitValue="+exitValue);
+
+        AnalysisDAO dao = new AnalysisDAO();
+        JobInfo jobInfo = dao.getJobInfo(jobId);
+        JobInfo parentJobInfo = dao.getParent(jobId);
+
+        //handle special-case when the job is deleted before we get to handle the job results, e.g. a running pipeline was deleted
+        if (jobInfo == null) {
+            log.error("job #"+jobId+"was deleted before handleJobCompletion");
+            return;
+        }
+        
+        //handle special-case when handleJobCompletion has already been called for this job
+        if (isFinished(jobInfo)) {
+            log.debug("job #"+jobId+" is already finished, with status="+jobInfo.getStatus());
+            return;
+        }
+        
+        //validate the jobDir
+        //Note: hard-coded rules, circa GP 3.2.4 and earlier, if we ever want to allow alternate locations for
+        //    the job dir we will have to modify this restriction
+        if (jobDir == null) {
+            log.error("Invalid arg, jobDir=null");
+            return;
+        }
+        try {
+            File expectedJobDir = new File(GenePatternAnalysisTask.getJobDir(""+jobId));
+            if (!expectedJobDir.getCanonicalPath().equals( jobDir.getCanonicalPath() )) {
+                log.error("Invalid arg, jobDir is not in the expected location\n"+
+                    "\tjobDir="+jobDir.getCanonicalPath()+"\n"+
+                    "\texpectedJobDir="+expectedJobDir.getCanonicalPath());
+                return;
             }
-            else if (jobInfoWrapper.isPipeline()) {
-                //output pipeline _execution_log only for the root pipeline, exclude nested pipelines
-                if (parentJobId < 0) {
-                    pipelineTaskLog = JobInfoManager.writePipelineExecutionLog(outDirName, jobInfoWrapper);
-                }
+        }
+        catch (IOException e) {
+            log.error("Error validating jobDir="+jobDir.getAbsolutePath(), e);
+            return;
+        }
+        if (!jobDir.exists()) {
+            //can happen if deleting a pending job, for which the output dir has not been created
+            //create it here so we can output an error message if necessary
+            log.error("Invalid arg, jobDir does not exist, jobDir="+jobDir.getAbsolutePath());
+            if (!jobDir.mkdirs()) {
+                log.error("Error creating jobDir for jobId="+jobId+", jobDir=" + jobDir);
+                return;
             }
-            else {
-                taskLog = JobInfoManager.writeExecutionLog(outDirName, jobInfoWrapper);
+        }
+        if (!jobDir.canWrite()) {
+            log.error("Invalid arg, can't write to jobDir, jobDir="+jobDir.getAbsolutePath());
+        }
+        
+        JobInfoWrapper jobInfoWrapper = getJobInfoWrapper(jobInfo.getUserId(), jobInfo.getJobNumber());
+        cleanupInputFiles(jobDir, jobInfoWrapper);
+        File taskLog = writeExecutionLog(jobDir, jobInfoWrapper);
+        
+        CommandProperties cmdProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
+
+        boolean checkExitValue = false;
+        boolean checkStderr = false;
+        checkExitValue = Boolean.valueOf( cmdProperties.getProperty("job.error_status.exit_value", "false") );
+        checkStderr = Boolean.valueOf( cmdProperties.getProperty("job.error_status.stderr", "true") );
+
+        log.debug("for job#"+jobId+" checkExitValue="+checkExitValue+", checkStderr="+checkStderr);
+
+        //handle stdout stream
+        if (stdoutFile == null) {
+            stdoutFile = new File(jobDir, STDOUT);
+        }
+        if (stdoutFile.exists() && stdoutFile.length() <= 0L) {
+            boolean deleted = stdoutFile.delete();
+            if (!deleted) {
+                log.error("Error deleting empty stdout stream for job #"+jobId+", stdoutFile="+stdoutFile.getAbsolutePath());
+            }
+        }
+        //handle stderr stream
+        if (stderrFile == null) {
+            stderrFile = new File(jobDir, STDERR);
+        }
+        if (errorMessage != null && errorMessage.trim().length() > 0) {
+            GenePatternAnalysisTask.writeStringToFile(jobDir, STDERR, errorMessage);
+        }
+
+        if (stderrFile.exists() && stderrFile.length() <= 0L) {
+            boolean deleted = stderrFile.delete();
+            if (!deleted) {
+                log.error("Error deleting empty stderr stream for job #"+jobId+", stderrFile="+stderrFile.getAbsolutePath());
+            }
+        }
+        
+        //process results files
+        // any files that are left in outDir are output files
+        JobResultsFilenameFilter filenameFilter = new JobResultsFilenameFilter();
+        filenameFilter.addExactMatch(stderrFile.getName());
+        filenameFilter.addExactMatch(stdoutFile.getName());
+        if (taskLog != null) {
+            filenameFilter.addExactMatch(taskLog.getName());
+        }
+
+        String globPattern = cmdProperties.getProperty("job.FilenameFilter");
+        if (globPattern == null) {
+            globPattern = System.getProperty(JobResultsFilenameFilter.KEY);            
+        }
+        if (globPattern == null) {
+            globPattern = System.getProperty("job.FilenameFilter");
+        }
+        //TODO: test support for a list of values, e.g.
+        //    job.FilenameFilter: {".lsf*", ".nfs*" }
+        filenameFilter.setGlob(globPattern);
+
+        File[] outputFiles = jobDir.listFiles(filenameFilter);
+        sortOutputFiles(outputFiles);
+        String jobDirPath = jobDir.getAbsolutePath();
+        for (File f : outputFiles) {
+            log.debug("adding output file to output parameters " + f.getName() + " from " + jobDirPath);
+            addFileToOutputParameters(jobInfo, f.getName(), f.getName(), null);
+        }
+
+        if (taskLog != null) {
+            //addFileToOutputParameters(jobInfo, taskLog.getName(), taskLog.getName(), parentJobInfo);
+            addFileToOutputParameters(jobInfo, taskLog.getName(), taskLog.getName(), null);
+        }
+        
+        int jobStatus = JobStatus.JOB_FINISHED;
+        if (checkExitValue) {
+            if (exitValue != 0) {
+                jobStatus = JobStatus.JOB_ERROR;
+            }
+        }
+        
+        if (checkStderr) {
+            if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0L) {
+                jobStatus = JobStatus.JOB_ERROR;
+                //addFileToOutputParameters(jobInfo, stderrFile.getName(), stderrFile.getName(), parentJobInfo);
+                addFileToOutputParameters(jobInfo, stderrFile.getName(), stderrFile.getName(), null);
             }
         }
 
-        // move input files back into Axis attachments directory
-        ParameterInfo[] params = jobInfo.getParameterInfoArray();
-        if (params != null) {
-            for (int i = 0; i < params.length; i++) {
-                HashMap attrsActual = params[i].getAttributes();
-                String fileType = (attrsActual != null ? (String) attrsActual.get(ParameterInfo.TYPE) : null);
-                String mode = (attrsActual != null ? (String) attrsActual.get(ParameterInfo.MODE) : null);
-                if (fileType != null && fileType.equals(ParameterInfo.FILE_TYPE) && mode != null
-                        && !mode.equals(ParameterInfo.OUTPUT_MODE)) {
-                    if (params[i].getValue() == null) {
-                        throw new IOException(params[i].getName() + " has no filename association");
-                    }
-                    File inFile = new File(params[i].getValue());
-                    String originalPath = (String) params[i].getAttributes().remove(ORIGINAL_PATH);
-                    log.debug(params[i].getName() + ", original path='" + originalPath + "', inFile " + params[i].getValue()
-                            + ", exists " + inFile.exists());
-                    if (originalPath == null || originalPath.length() == 0) {
-                        continue;
-                    }
-                    File originalFile = new File(originalPath);
-
-                    // un-borrow the input file, moving it from the job's directory back to where it came from
-                    if (inFile.exists() && 
-                        !originalFile.exists() && 
-                        (inputFileMode == INPUT_FILE_MODE.COPY ? !inFile.delete() : !rename(inFile, originalFile, true)))
-                    {
-                        log.warn("Failed to rename " + inFile + " to " + originalFile + ".");
-                    } 
-                    else {
-                        //TODO: these warnings are no longer logged
-                        //if (inputLastModified[i] != originalFile.lastModified() || inputLength[i] != originalFile.length()) {
-                        //    if (inputLastModified[i] != originalFile.lastModified()) {
-                        //        log.warn("File " + originalFile + ", job number " + jobInfo.getJobNumber() + 
-                        //                " last modfied date was changed. Original date: " + new Date(inputLastModified[i]) + 
-                        //                 ", current date: " + new Date(originalFile.lastModified()));
-                        //    }
-                        //    if (inputLength[i] != originalFile.length()) {
-                        //        log.warn("File " + originalFile + ", job number " + jobInfo.getJobNumber() + 
-                        //                 " size was changed. Original size: " + inputLength[i] + ", current size: " + originalFile.length());
-                        //    }
-                        //}
-                        params[i].setValue(originalPath);
-                    }
-                } 
-                else {
-                    // TODO: what if the input file is also supposed to be one of the outputs?
-                    String originalPath = (String) params[i].getAttributes().remove(ORIGINAL_PATH);
-                    boolean isURL = false;
-                    if (originalPath != null) {
-                        try {
-                            new URL(originalPath);
-                            isURL = true;
-                        } 
-                        catch (MalformedURLException e) {
-                        }
-                    }
-                    if (originalPath != null && isURL) {
-                        File outFile = new File(params[i].getValue());
-                        //TODO: these warnings are no longer logged
-                        //    if (inputLastModified[i] != outFile.lastModified() || inputLength[i] != outFile.length()) {
-                        //        String errorMessage = outFile.toString() + 
-                        //            " may have been overwritten during execution of module " + taskName + ", job number " + 
-                        //            jobInfo.getJobNumber() + "\n";
-                        //        if (inputLastModified[i] != outFile.lastModified()) {
-                        //            errorMessage = errorMessage + "original date: " + new Date(inputLastModified[i]) + ", current date: " + new Date(outFile.lastModified()) + "\n";
-                        //        }
-                        //        if (inputLength[i] != outFile.length()) {
-                        //            errorMessage = errorMessage + "original size: " + inputLength[i] + ", current size: " + outFile.length() + "\n";
-                        //        }
-                        //        log.warn(errorMessage);
-                        //    }
-                        outFile.delete();
-                        params[i].setValue(originalPath);
-                        continue;
-                    }
-                }
-            } // end for each parameter
-        } // end if parameters not null
-
-        // reload jobInfo to pick up any output parameters were added by the job explicitly (eg. pipelines)
+        if (stdoutFile != null && stdoutFile.exists() && stdoutFile.length() > 0L) {
+            //addFileToOutputParameters(jobInfo, stdoutFile.getName(), stdoutFile.getName(), parentJobInfo);
+            addFileToOutputParameters(jobInfo, stdoutFile.getName(), stdoutFile.getName(), null);
+        }
         try {
-            jobInfo = getDS().getJobInfo(jobInfo.getJobNumber());
+            HibernateUtil.beginTransaction();
+            recordJobCompletion(jobInfo, parentJobInfo, jobStatus);
+            HibernateUtil.commitTransaction();
+        }
+        catch (Throwable t) {
+            log.error("Error recording job completion for job #"+jobInfo.getJobNumber(), t);
+            HibernateUtil.rollbackTransaction();
         }
         finally {
             HibernateUtil.closeCurrentSession();
         }
         
-        //TODO: handle special-case
-        if (jobInfo == null) {
-            log.debug("job was deleted while it was running, e.g. a running pipeline was deleted");
-            return;
-        }
-
-        // touch the taskLog file to make sure it is the oldest/last file
-        if (pipelineTaskLog != null) {
-            pipelineTaskLog.setLastModified(System.currentTimeMillis() + 500);
-        }
-        if (taskLog != null) {
-            taskLog.setLastModified(System.currentTimeMillis() + 500);
-        }
-
-        // any files that are left in outDir are output files
-        JobResultsFilenameFilter filenameFilter = new JobResultsFilenameFilter();
-        filenameFilter.addExactMatch(STDERR);
-        filenameFilter.addExactMatch(STDOUT);
-        filenameFilter.addExactMatch(TASKLOG);
-        if (pipelineTaskLog != null) {
-            filenameFilter.addExactMatch(pipelineTaskLog.getName());
-        }
-        filenameFilter.addExactMatch(stdoutFilename);
-        filenameFilter.addExactMatch(stderrFilename);
-        filenameFilter.setGlob(System.getProperty(JobResultsFilenameFilter.KEY));
-
-        File outputDir = new File(outDirName);
-        List<File> outputFiles = findAllFiles(outputDir, filenameFilter);
-        //sort output files by last modified date
-        Collections.sort(outputFiles, fileComparator);
-        parentJobInfo = getParentJobInfo(jobInfo.getJobNumber());
-
-        String rootPath = outputDir.getAbsolutePath();
-        for (File f : outputFiles) {
-            log.debug("adding output file to output parameters " + f.getName() + " from " + outDirName);
-            //get the file path relative to the outputDir
-            String fPath = f.getAbsolutePath();
-            if (fPath.startsWith(rootPath)) {
-                fPath = fPath.substring(rootPath.length() + 1); //skip the file separator character
+        //if the job is in a pipeline, notify the pipeline handler
+        if (parentJobInfo != null) {
+            boolean wakeupJobQueue = PipelineHandler.handleJobCompletion(jobInfo.getJobNumber());
+            if (wakeupJobQueue) {
+                //if the pipeline has more steps, wake up the job queue
+                CommandManagerFactory.getCommandManager().wakeupJobQueue();
             }
-            addFileToOutputParameters(jobInfo, fPath, fPath, parentJobInfo);
         }
-
-        if (stdoutFilename == null) {
-            stdoutFilename = STDOUT;
-        }
-        if (stderrFilename == null) {
-            stderrFilename = STDERR;
-        }
-        if (new File(outDir, stdoutFilename).exists()) {
-            addFileToOutputParameters(jobInfo, stdoutFilename, stdoutFilename, parentJobInfo);
-        }
-        File stderrFile = new File(outDir, stderrFilename);
-        if (stderrFile.exists()) {
-            addFileToOutputParameters(jobInfo, stderrFilename, stderrFilename, parentJobInfo);
-        }
-        if (pipelineTaskLog != null) {
-            addFileToOutputParameters(jobInfo, pipelineTaskLog.getName(), pipelineTaskLog.getName(), parentJobInfo);
-        }
-        if (taskLog != null) {
-            addFileToOutputParameters(jobInfo, TASKLOG, TASKLOG, parentJobInfo);
-        }
-        
-        if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0 && taskInfo.isPipeline()) {
-            //GP-2856, filter out bogus error messages                      
-            suppressLinesFromStdErrFile(stderrFile, "[Deprecated] Xalan: org.apache.xml.xml_soap.MapItemBeanInfo");
-        }
-        if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0) {
-            jobStatus = JobStatus.JOB_ERROR;
-        }
-        else {
-            jobStatus = JobStatus.JOB_FINISHED;
-        }
-
-        recordJobCompletion(jobInfo, parentJobInfo, jobStatus);
     }
 
-    private List<File> findAllFiles(File root, FilenameFilter filenameFilter) {
-        List<File> all = new ArrayList<File>();
-        addAllFiles(all, root, filenameFilter);
-        return all;
+    private static boolean isFinished(JobInfo jobInfo) {
+        return isFinished(jobInfo.getStatus());
     }
     
-    private void addAllFiles(List<File> all, File root, FilenameFilter filenameFilter) {
-        if (root == null) {
-            return;
+    private static boolean isFinished(String jobStatus) {
+        if ( JobStatus.FINISHED.equals(jobStatus) ||
+                JobStatus.ERROR.equals(jobStatus) ) {
+            return true;
         }
-        if (!root.canRead()) {
-            log.error("Can't read file: "+root.getPath());
-            return;
-        }
-        if (root.isFile()) {
-            all.add(root);
-        }
-        else if (root.isDirectory()) {
-            File[] files = root.listFiles(filenameFilter);
-            for(File f : files) {
-                addAllFiles(all,f,filenameFilter);
+        return false;        
+    }
+
+    /**
+     * Delete the files from the job results directory which were added before job execution.
+     * For example, external urls are downloaded into the job results directory and must be cleaned up before processing the job results.
+     * 
+     * @param jobDir, the job results directory, e.g. GenePatternServer/Tomcat/webapps/gp/jobResults/<job_no>
+     * @param jobInfoWrapper
+     */
+    private static void cleanupInputFiles(File jobDir, JobInfoWrapper jobInfoWrapper) {
+        for (InputFile inputFile : jobInfoWrapper.getInputFiles()) {
+            if (inputFile.isUrl()) {
+                if (inputFile.isExternalLink()) {
+                    log.debug("isExternalLink");
+                    String link = inputFile.getLink();
+                    try {
+                        URL url = new URL(link);
+                        String path = url.getPath();
+                        if (path != null) {
+                            String filename = path;
+                            int idx = path.lastIndexOf('/');
+                            if (idx > 0) {
+                                ++idx;
+                                filename = path.substring(idx);
+                            }
+                            File inputFileToDelete = new File(jobDir, filename);
+                            if (inputFileToDelete.canWrite()) {
+                                boolean deleted = inputFileToDelete.delete();
+                                log.debug("deleting input file from job results directory, '"+inputFileToDelete.getAbsolutePath()+"', deleted="+deleted);
+                            }
+                        }
+                    }
+                    catch (MalformedURLException e1) {
+                        log.error("not a url: "+link, e1);
+                    }
+                }
+                else if (inputFile.isInternalLink()) {
+                    String value = inputFile.getValue();
+                    String link = inputFile.getLink();
+                    log.debug("isInternalLink value="+value+", link="+link);
+                }
+            }
+            else if (inputFile.isServerFilePath()) {
+                String value = inputFile.getValue();
+                String link = inputFile.getLink();
+                log.debug("isServerFilePath value="+value+", link="+link);
             }
         }
-        else {
-            log.error("File is neither file nor directory: "+root.getPath());
+    }
+
+    /**
+     * Write the execution log to the job result directory.
+     * 
+     * @param jobDir
+     * @param jobInfoWrapper
+     * 
+     * @return the execution log or null if none was written.
+     */
+    private static File writeExecutionLog(File jobDir, JobInfoWrapper jobInfoWrapper) {
+        //write execution log
+        File taskLog = null;
+        File pipelineTaskLog = null;
+        
+        if (jobInfoWrapper == null) {
+            return null;
         }
+        
+        if (jobInfoWrapper.isVisualizer()) {
+            //no execution log for visualizers
+            return null;
+        } 
+        else if (jobInfoWrapper.isPipeline()) {
+            //output pipeline _execution_log only for the root pipeline, exclude nested pipelines
+            if (jobInfoWrapper.isRoot()) {
+                pipelineTaskLog = JobInfoManager.writePipelineExecutionLog(jobDir, jobInfoWrapper);
+            }
+            if (pipelineTaskLog != null) {
+                pipelineTaskLog.setLastModified(System.currentTimeMillis() + 500);
+            }
+            return pipelineTaskLog;
+        }
+        else {
+            taskLog = JobInfoManager.writeExecutionLog(jobDir, jobInfoWrapper);
+            // touch the taskLog file to make sure it is the oldest/last file
+            if (taskLog != null) {
+                taskLog.setLastModified(System.currentTimeMillis() + 500);
+            }
+            return taskLog;
+        }
+    }
+
+    /**
+     * Get the relative path from the given jobResultDir to the given outputFile.
+     * This helper method is here to resolve stdout and stderr files passed as fully qualified
+     * path names to handleJobCompletion.
+     * 
+     * Expecting a file relative to the job results directory for the given job,
+     *     e.g. /GenePatternServer/Tomcat/webapps/gp/jobResults/<jobid>/stdout.txt
+     * If the given outputFile is absolute, return its path relative to the jobResultsDir.
+     * 
+     * @param jobResultDir, e.g. /GenePatternServer/Tomcat/webapps/gp/jobResults/<jobid>
+     * @param outputFile, e.g. stdout.txt or /GenePatternServer/Tomcat/webapps/gp/jobResults/<jobid>/stdout.txt
+     * 
+     * @return a relative File or null if the outputFile is not an ancestor of the jobResultDir.
+     */
+    public static File getRelativePath(File jobDir, File outputFile) {
+        File p=outputFile.getParentFile();
+        if(p==null) {
+            return outputFile;
+        }
+
+        String rval = outputFile.getName();
+        while(p!=null) {
+            if (jobDir.equals(p)) {
+                return new File(rval);
+            }
+            rval = p.getName() + File.separator + rval;
+            p = p.getParentFile();
+        }
+        return null;
     }
     
     private static final Comparator<File> fileComparator = new Comparator<File>() {
@@ -1597,7 +1794,11 @@ public class GenePatternAnalysisTask {
      * Sorted output files by lastModified() date.
      * @param outputFiles
      */
-    private void sortOutputFiles(File[] outputFiles) {
+    private static void sortOutputFiles(File[] outputFiles) {
+        if (outputFiles == null) {
+            log.error("Invalid null arg in sortOutputFiles");
+            return;
+        }
         Arrays.sort(outputFiles, fileComparator);
     }
 
@@ -1609,51 +1810,59 @@ public class GenePatternAnalysisTask {
      * @param jobStatus
      * @param jobStartTime
      */
-    private void recordJobCompletion(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus) {
+//    private static void recordJobCompletion(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus) {
+//        if (jobInfo == null) {
+//            log.error("jobInfo == null, not recording job completion");
+//        }
+//        if (log.isDebugEnabled()) {
+//            log.debug("Recording job completion for job: " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
+//        }
+//        long jobStartTime = jobInfo.getDateSubmitted().getTime();
+//        try {
+//            HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
+//            HibernateUtil.beginTransaction();
+//            long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
+//            Date now = new Date(Calendar.getInstance().getTimeInMillis());
+//            updateJobInfo(jobInfo, parentJobInfo, jobStatus, now);
+//            HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
+//
+//            HibernateUtil.beginTransaction(); // TODO: JTL 8/21/07 oracle
+//            UsageLog.logJobCompletion(jobInfo, parentJobInfo, now, elapsedTime);
+//            if (log.isDebugEnabled()) {
+//                log.debug("Recording job completion complete " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
+//            }
+//            HibernateUtil.commitTransaction();
+//        } 
+//        catch (RuntimeException e) {
+//            log.error("Rolling back transaction", e);
+//            HibernateUtil.rollbackTransaction();
+//        }
+//    }
+    
+    private static void recordJobCompletion(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus) {
         if (jobInfo == null) {
             log.error("jobInfo == null, not recording job completion");
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("Recording job completion for job: " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
+            return;
         }
         long jobStartTime = jobInfo.getDateSubmitted().getTime();
         try {
-            HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
-            HibernateUtil.beginTransaction();
             long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
             Date now = new Date(Calendar.getInstance().getTimeInMillis());
             updateJobInfo(jobInfo, parentJobInfo, jobStatus, now);
-            HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
-
-            HibernateUtil.beginTransaction(); // TODO: JTL 8/21/07 oracle
             UsageLog.logJobCompletion(jobInfo, parentJobInfo, now, elapsedTime);
-            if (log.isDebugEnabled()) {
-                log.debug("Recording job completion complete " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
-            }
-            HibernateUtil.commitTransaction();
         } 
         catch (RuntimeException e) {
-            log.error("Rolling back transaction", e);
-            HibernateUtil.rollbackTransaction();
+            log.error(e);
         }
     }
     
-    /**
-     * Update AnalysisJob
-     * 
-     * @param jobInfo
-     * @param parentJobInfo
-     * @param jobStatus
-     */
-    private void updateJobInfo(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus, Date completionDate) {
-        log.debug("Updating jobInfo");
+    private static void updateJobInfo(final JobInfo jobInfo, final JobInfo parentJobInfo, final int jobStatus, final Date completionDate) {
         if (jobInfo == null) {
             log.error("jobInfo == null");
             return;
         }
 
         AnalysisJobDAO home = new AnalysisJobDAO();
-
         AnalysisJob aJob = home.findById(jobInfo.getJobNumber());
         aJob.setJobNo(jobInfo.getJobNumber());
 
@@ -1661,26 +1870,13 @@ public class GenePatternAnalysisTask {
         if (jobStatus == JobStatus.JOB_ERROR || jobStatus == JobStatus.JOB_FINISHED || jobStatus == JobStatus.JOB_PROCESSING) {
             paramString = ParameterFormatConverter.stripPasswords(paramString);
         }
+        aJob.setParameterInfo(paramString);
 
         JobStatus newJobStatus = (new JobStatusDAO()).findById(jobStatus);
-        aJob.setParameterInfo(paramString);
         aJob.setJobStatus(newJobStatus);
         aJob.setCompletedDate(completionDate);
-
-        // TODO: JTL 8/21/07 oracle begin
-        HibernateUtil.commitTransaction();
-        HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
-        // TODO: JTL 8/21/07 oracle end
-        if (parentJobInfo != null) {
-            AnalysisJob parentJob = home.findById(parentJobInfo.getJobNumber());
-            parentJob.setCompletedDate(completionDate);
-        }
-        // TODO: JTL 8/21/07 oracle begin
-        HibernateUtil.commitTransaction();
-        HibernateUtil.isInTransaction();
-        HibernateUtil.beginTransaction();
-        // TODO: JTL 8/21/07 oracle end
+        
+        HibernateUtil.getSession().update(aJob);
     }
 
     /**
@@ -1690,67 +1886,31 @@ public class GenePatternAnalysisTask {
      * @param taskInfoAttributes
      * @param props
      */
-    protected void setCommandPrefix(TaskInfoAttributes taskInfoAttributes) throws MalformedURLException {
-	String lsidStr = taskInfoAttributes.get(LSID);
-	PropertiesManager pm = PropertiesManager.getInstance();
-	Properties tpm = pm.getTaskPrefixMapping();
-	Properties prefixes = pm.getCommandPrefixes();
+    private void setCommandPrefix(TaskInfoAttributes taskInfoAttributes) throws MalformedURLException {
+        String lsidStr = taskInfoAttributes.get(LSID);
+        PropertiesManager pm = PropertiesManager.getInstance();
+        Properties tpm = pm.getTaskPrefixMapping();
+        Properties prefixes = pm.getCommandPrefixes();
 
-	String commandPrefixName = tpm.getProperty(lsidStr);
-	String commandPrefix = null;
+        String commandPrefixName = tpm.getProperty(lsidStr);
+        String commandPrefix = null;
 
-	if (commandPrefixName == null) {
-	    LSID lsid = new LSID(lsidStr);
-	    lsidStr = lsid.toStringNoVersion();
-	    commandPrefixName = tpm.getProperty(lsidStr);
-
-	}
-	if (commandPrefixName != null) {
-	    commandPrefix = prefixes.getProperty(commandPrefixName);
-	}
-
-	if (commandPrefix == null) {
-	    // check for default prefix
-	    commandPrefix = prefixes.getProperty("default", null);
-	}
-
-	if (commandPrefix != null && commandPrefix.length() > 0) {
-	    taskInfoAttributes.put(COMMAND_LINE, commandPrefix + " " + taskInfoAttributes.get(COMMAND_LINE));
-	}
-    }
-
-    private TaskInfo getTaskInfo(JobInfo jobInfo) throws Exception {
-        if (log.isDebugEnabled()) {
-            log.debug("getTaskInfo for job: " + jobInfo.getJobNumber());
+        if (commandPrefixName == null) {
+            LSID lsid = new LSID(lsidStr);
+            lsidStr = lsid.toStringNoVersion();
+            commandPrefixName = tpm.getProperty(lsidStr);
         }
-        try {
-            HibernateUtil.beginTransaction();
-            AdminDAO ds = new AdminDAO();
-            TaskInfo taskInfo = ds.getTask(jobInfo.getTaskID());
-            if (taskInfo == null) {
-                throw new Exception("No such taskID (" + jobInfo.getTaskID() + " for job " + jobInfo.getJobNumber());
-            }
-            HibernateUtil.commitTransaction();
-            return taskInfo;
-        } 
-        catch (RuntimeException e) {
-            log.error("Error getting taskInfo for job: " + jobInfo.getJobNumber());
-            HibernateUtil.rollbackTransaction();
-            throw e;
+        if (commandPrefixName != null) {
+            commandPrefix = prefixes.getProperty(commandPrefixName);
         }
-        finally {
-            HibernateUtil.closeCurrentSession();
+
+        if (commandPrefix == null) {
+            // check for default prefix
+            commandPrefix = prefixes.getProperty("default", null);
         }
-    }
 
-
-    private JobInfo getParentJobInfo(int jobNumber) {
-        try {
-            JobInfo parentJI = getDS().getParent(jobNumber);
-            return parentJI;
-        } 
-        finally {
-            HibernateUtil.closeCurrentSession();
+        if (commandPrefix != null && commandPrefix.length() > 0) {
+            taskInfoAttributes.put(COMMAND_LINE, commandPrefix + " " + taskInfoAttributes.get(COMMAND_LINE));
         }
     }
 
@@ -1852,96 +2012,95 @@ public class GenePatternAnalysisTask {
 	return value;
     }
 
-    protected static boolean validateCPU(String expected) throws Exception {
-	String actual = System.getProperty("os.arch");
-	// eg. "x86", "i386", "ppc", "alpha", "sparc"
-	if (expected.equals("")) {
-	    return true;
-	}
-	if (expected.equals(ANY)) {
-	    return true;
-	}
-	if (expected.equalsIgnoreCase(actual)) {
-	    return true;
-	}
-	String intelEnding = "86"; // x86, i386, i586, etc.
-	if (expected.endsWith(intelEnding) && actual.endsWith(intelEnding)) {
-	    return true;
-	}
-	if (System.getProperty(COMMAND_PREFIX, null) != null) {
-	    return true; // don't validate for LSF
-	}
-	throw new Exception("Cannot run on this platform.  Task requires a " + expected + " CPU, but this is a " + actual);
+    private static boolean validateCPU(String expected) throws JobDispatchException {
+        String actual = System.getProperty("os.arch");
+        // eg. "x86", "i386", "ppc", "alpha", "sparc"
+        if (expected.equals("")) {
+            return true;
+        }
+        if (expected.equals(ANY)) {
+            return true;
+        }
+        if (expected.equalsIgnoreCase(actual)) {
+            return true;
+        }
+        String intelEnding = "86"; // x86, i386, i586, etc.
+        if (expected.endsWith(intelEnding) && actual.endsWith(intelEnding)) {
+            return true;
+        }
+        if (System.getProperty(COMMAND_PREFIX, null) != null) {
+            return true; // don't validate for LSF
+        }
+        throw new JobDispatchException("Cannot run on this platform.  Task requires a " + expected + " CPU, but this is a " + actual);
     }
 
-    protected static boolean validateOS(String expected, String action) throws Exception {
-	String actual = System.getProperty("os.name");
-	// eg. "Windows XP", "Linux", "Mac OS X", "OSF1"
-	if (expected.equals("")) {
-	    return true;
-	}
-	if (expected.equals(ANY)) {
-	    return true;
-	}
-	if (expected.equalsIgnoreCase(actual)) {
-	    return true;
-	}
-	String MicrosoftBeginning = "Windows"; // Windows XP, Windows ME,
-	// Windows XP, Windows 2000, etc.
-	if (expected.startsWith(MicrosoftBeginning) && actual.startsWith(MicrosoftBeginning)) {
-	    return true;
-	}
-	if (System.getProperty(COMMAND_PREFIX, null) != null) {
-	    return true; // don't validate for LSF
-	}
-	throw new Exception("Cannot " + action + " on this platform. Task requires a " + expected
-		+ " operating system, but this server is running " + actual);
+    private static boolean validateOS(String expected, String action) throws JobDispatchException {
+        String actual = System.getProperty("os.name");
+        // eg. "Windows XP", "Linux", "Mac OS X", "OSF1"
+        if (expected.equals("")) {
+            return true;
+        }
+        if (expected.equals(ANY)) {
+            return true;
+        }
+        if (expected.equalsIgnoreCase(actual)) {
+            return true;
+        }
+        String MicrosoftBeginning = "Windows"; // Windows XP, Windows ME,
+        // Windows XP, Windows 2000, etc.
+        if (expected.startsWith(MicrosoftBeginning) && actual.startsWith(MicrosoftBeginning)) {
+            return true;
+        }
+        if (System.getProperty(COMMAND_PREFIX, null) != null) {
+            return true; // don't validate for LSF
+        }
+        throw new JobDispatchException("Cannot " + action + " on this platform. Task requires a " + expected
+                + " operating system, but this server is running " + actual);
     }
 
     // check that each patch listed in the TaskInfoAttributes for this task is
     // installed.
     // if not, download and install it.
     // For any problems, throw an exception
-    protected static boolean validatePatches(TaskInfo taskInfo, Status taskIntegrator) throws Exception {
-	TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
-	String requiredPatchLSID = tia.get(REQUIRED_PATCH_LSIDS);
-	// no patches required?
-	if (requiredPatchLSID == null || requiredPatchLSID.length() == 0) {
-	    return true;
-	}
+    private static boolean validatePatches(TaskInfo taskInfo, Status taskIntegrator) throws MalformedURLException, JobDispatchException {
+        TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+        String requiredPatchLSID = tia.get(REQUIRED_PATCH_LSIDS);
+        // no patches required?
+        if (requiredPatchLSID == null || requiredPatchLSID.length() == 0) {
+            return true;
+        }
 
-	// some patches required, check which are already installed
-	String[] requiredPatchLSIDs = requiredPatchLSID.split(",");
-	String requiredPatchURL = tia.get(REQUIRED_PATCH_URLS);
-	String[] patchURLs = (requiredPatchURL != null && requiredPatchURL.length() > 0 ? requiredPatchURL.split(",")
-		: new String[requiredPatchLSIDs.length]);
-	if (patchURLs != null && patchURLs.length != requiredPatchLSIDs.length) {
-	    throw new Exception(taskInfo.getName() + " has " + requiredPatchLSIDs.length + " patch LSIDs but " + patchURLs.length
-		    + " URLs");
-	}
-	eachRequiredPatch: for (int requiredPatchNum = 0; requiredPatchNum < requiredPatchLSIDs.length; requiredPatchNum++) {
-	    String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
-	    String[] installedPatchLSIDs = new String[0];
-	    if (installedPatches != null) {
-		installedPatchLSIDs = installedPatches.split(",");
-	    }
-	    requiredPatchLSID = requiredPatchLSIDs[requiredPatchNum];
-	    LSID requiredLSID = new LSID(requiredPatchLSID);
-	    log.debug("Checking whether " + requiredPatchLSID + " is already installed...");
-	    for (int p = 0; p < installedPatchLSIDs.length; p++) {
-		LSID installedLSID = new LSID(installedPatchLSIDs[p]);
-		if (installedLSID.isEquivalent(requiredLSID)) {
-		    // there are installed patches, and there is an LSID match
-		    // to this one
-		    log.info(requiredLSID.toString() + " is already installed");
-		    continue eachRequiredPatch;
-		}
-	    }
+        // some patches required, check which are already installed
+        String[] requiredPatchLSIDs = requiredPatchLSID.split(",");
+        String requiredPatchURL = tia.get(REQUIRED_PATCH_URLS);
+        String[] patchURLs = (requiredPatchURL != null && requiredPatchURL.length() > 0 ? requiredPatchURL.split(",")
+                : new String[requiredPatchLSIDs.length]);
+        if (patchURLs != null && patchURLs.length != requiredPatchLSIDs.length) {
+            throw new JobDispatchException(taskInfo.getName() + " has " + requiredPatchLSIDs.length + " patch LSIDs but " + patchURLs.length + " URLs");
+        }
+        eachRequiredPatch: for (int requiredPatchNum = 0; requiredPatchNum < requiredPatchLSIDs.length; requiredPatchNum++) {
+            String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
+            String[] installedPatchLSIDs = new String[0];
+            if (installedPatches != null) {
+                installedPatchLSIDs = installedPatches.split(",");
+            }
+            requiredPatchLSID = requiredPatchLSIDs[requiredPatchNum];
+            LSID requiredLSID = new LSID(requiredPatchLSID);
+            log.debug("Checking whether " + requiredPatchLSID + " is already installed...");
+            for (int p = 0; p < installedPatchLSIDs.length; p++) {
+                LSID installedLSID = new LSID(installedPatchLSIDs[p]);
+                if (installedLSID.isEquivalent(requiredLSID)) {
+                    // there are installed patches, and there is an LSID match to this one
+                    log.info(requiredLSID.toString() + " is already installed");
+                    continue eachRequiredPatch;
+                }
+            }
 
-	    // download and install this patch
-	    installPatch(requiredPatchLSIDs[requiredPatchNum], patchURLs[requiredPatchNum], taskIntegrator);
-	} // end of loop for each patch LSID for the task
-	return true;
+            // download and install this patch
+            installPatch(requiredPatchLSIDs[requiredPatchNum], patchURLs[requiredPatchNum], taskIntegrator);
+        } 
+        // end of loop for each patch LSID for the task
+        return true;
     }
 
     public static void installPatch(String requiredPatchLSID, String requiredPatchURL) throws Exception {
@@ -1968,288 +2127,324 @@ public class GenePatternAnalysisTask {
     // containing a command line,
     // running that command line after substitutions, and recording the result
     // in the genepattern.properties patch registry
-    public static void installPatch(String requiredPatchLSID, String requiredPatchURL, Status taskIntegrator) throws Exception {
-	LSID patchLSID = new LSID(requiredPatchLSID);
-	boolean wasNullURL = (requiredPatchURL == null || requiredPatchURL.length() == 0);
-	if (wasNullURL) {
-	    requiredPatchURL = System.getProperty(DEFAULT_PATCH_URL);
-	}
-	HashMap hmProps = new HashMap();
-	if (wasNullURL) {
-	    taskIntegrator.statusMessage("Fetching patch information from " + requiredPatchURL);
-	    URL url = new URL(requiredPatchURL);
-	    URLConnection connection = url.openConnection();
-	    connection.setUseCaches(false);
-	    if (connection instanceof HttpURLConnection) {
-		connection.setDoOutput(true);
-		PrintWriter pw = new PrintWriter(connection.getOutputStream());
-		String[] patchQualifiers = System.getProperty("patchQualifiers", "").split(",");
-		pw.print("patch");
-		pw.print("=");
-		pw.print(URLEncoder.encode(requiredPatchLSID, UTF8));
-		for (int p = 0; p < patchQualifiers.length; p++) {
-		    pw.print("&");
-		    pw.print(URLEncoder.encode(patchQualifiers[p], UTF8));
-		    pw.print("=");
-		    pw.print(URLEncoder.encode(System.getProperty(patchQualifiers[p], ""), UTF8));
-		}
-		pw.close();
-	    }
-	    Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(connection.getInputStream());
-	    Element root = doc.getDocumentElement();
-	    processNode(root, hmProps);
-	    String result = (String) hmProps.get("result");
-	    if (!result.equals("Success")) {
-		throw new Exception("Error requesting patch: " + result + " in request for " + requiredPatchURL);
-	    }
-	    requiredPatchURL = (String) hmProps.get("site_module.url");
-	}
-	if (taskIntegrator != null) {
-	    taskIntegrator.statusMessage("Downloading required patch from " + requiredPatchURL + "...");
-	}
-	String zipFilename = downloadPatch(requiredPatchURL, taskIntegrator, (String) hmProps.get("site_module.zipfilesize"));
-	String patchName = patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "."
-		+ patchLSID.getVersion();
-	File patchDirectory = new File(System.getProperty("patches"), patchName);
-	// if (taskIntegrator != null) taskIntegrator.statusMessage("Download
-	// complete. Installing patch from " + zipFilename + " to " +
-	// patchDirectory.getAbsolutePath() + ".");
-	if (taskIntegrator != null) {
-	    taskIntegrator.statusMessage("Installing patch from " + patchDirectory.getPath() + ".");
-	}
-	explodePatch(zipFilename, patchDirectory, taskIntegrator);
-	new File(zipFilename).delete();
+    private static void installPatch(String requiredPatchLSID, String requiredPatchURL, Status taskIntegrator) throws JobDispatchException {
+        LSID patchLSID = null;
+        try {
+            patchLSID = new LSID(requiredPatchLSID);
+        }
+        catch (MalformedURLException e) {
+            throw new JobDispatchException("Error installing patch, requiredPatchLSID="+requiredPatchLSID, e);
+        }
+        
+        boolean wasNullURL = (requiredPatchURL == null || requiredPatchURL.length() == 0);
+        if (wasNullURL) {
+            requiredPatchURL = System.getProperty(DEFAULT_PATCH_URL);
+        }
+        HashMap hmProps = new HashMap();
+        try {
+            if (wasNullURL) {
+                taskIntegrator.statusMessage("Fetching patch information from " + requiredPatchURL);
+                URL url = new URL(requiredPatchURL);
+                URLConnection connection = url.openConnection();
+                connection.setUseCaches(false);
+                if (connection instanceof HttpURLConnection) {
+                    connection.setDoOutput(true);
+                    PrintWriter pw = new PrintWriter(connection.getOutputStream());
+                    String[] patchQualifiers = System.getProperty("patchQualifiers", "").split(",");
+                    pw.print("patch");
+                    pw.print("=");
+                    pw.print(URLEncoder.encode(requiredPatchLSID, UTF8));
+                    for (int p = 0; p < patchQualifiers.length; p++) {
+                        pw.print("&");
+                        pw.print(URLEncoder.encode(patchQualifiers[p], UTF8));
+                        pw.print("=");
+                        pw.print(URLEncoder.encode(System.getProperty(patchQualifiers[p], ""), UTF8));
+                    }
+                    pw.close();
+                }
+                Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(connection.getInputStream());
+                Element root = doc.getDocumentElement();
+                processNode(root, hmProps);
+                String result = (String) hmProps.get("result");
+                if (!result.equals("Success")) {
+                    throw new JobDispatchException("Error requesting patch: " + result + " in request for " + requiredPatchURL);
+                }
+                requiredPatchURL = (String) hmProps.get("site_module.url");
+            }
+        }
+        catch (Exception e) {
+            throw new JobDispatchException(e);
+        }
+        if (taskIntegrator != null) {
+            taskIntegrator.statusMessage("Downloading required patch from " + requiredPatchURL + "...");
+        }
+        String zipFilename = null;
+        try {
+            zipFilename = downloadPatch(requiredPatchURL, taskIntegrator, (String) hmProps.get("site_module.zipfilesize"));
+        }
+        catch (IOException e) {
+            throw new JobDispatchException(e);
+        }
+        String patchName = patchLSID.getAuthority() + "." + patchLSID.getNamespace() + "." + patchLSID.getIdentifier() + "." + patchLSID.getVersion();
+        File patchDirectory = new File(System.getProperty("patches"), patchName);
+        if (taskIntegrator != null) {
+            taskIntegrator.statusMessage("Installing patch from " + patchDirectory.getPath() + ".");
+        }
+        try {
+            explodePatch(zipFilename, patchDirectory, taskIntegrator);
+        }
+        catch (IOException e) {
+            throw new JobDispatchException(e);
+        }
+        new File(zipFilename).delete();
 
-	// entire zip file has been exploded, now load the manifest, get the
-	// command line, and execute it
-	Properties props = loadManifest(patchDirectory);
-	String nomDePatch = props.getProperty("name");
-	String commandLine = getPatchCommandLine(props);
-	// if (taskIntegrator != null) taskIntegrator.statusMessage("Running " +
-	// commandLine + " in " + patchDirectory.getAbsolutePath());
-	if (taskIntegrator != null) {
-	    taskIntegrator.statusMessage("Running " + nomDePatch + " Installer.");
-	}
-	String exitValue = "" + executePatch(commandLine, patchDirectory, taskIntegrator);
-	if (taskIntegrator != null) {
-	    taskIntegrator.statusMessage("Patch installed, exit code " + exitValue);
-	}
-	String goodExitValue = props.getProperty(PATCH_SUCCESS_EXIT_VALUE, "0");
-	String failureExitValue = props.getProperty(PATCH_ERROR_EXIT_VALUE, "");
-	if (exitValue.equals(goodExitValue) || !exitValue.equals(failureExitValue)) {
-	    recordPatch(requiredPatchLSID);
-	    if (taskIntegrator != null) {
-		taskIntegrator.statusMessage("Patch LSID recorded");
-	    }
+        // entire zip file has been exploded, now load the manifest, get the command line, and execute it
+        Properties props = null;
+        try {
+            props = loadManifest(patchDirectory);
+        }
+        catch (IOException e) {
+            throw new JobDispatchException(e);
+        }
+        String nomDePatch = props.getProperty("name");
+        String commandLine = getPatchCommandLine(props);
+        if (taskIntegrator != null) {
+            taskIntegrator.statusMessage("Running " + nomDePatch + " Installer.");
+        }
+        String exitValue = null;
+        try {
+            exitValue = "" + executePatch(commandLine, patchDirectory, taskIntegrator);
+        }
+        catch (IOException e) {
+            throw new JobDispatchException(e);
+        }
+        catch (InterruptedException e2) {
+            Thread.currentThread().interrupt();
+            throw new JobDispatchException(e2);
+        }
+        if (taskIntegrator != null) {
+            taskIntegrator.statusMessage("Patch installed, exit code " + exitValue);
+        }
+        String goodExitValue = props.getProperty(PATCH_SUCCESS_EXIT_VALUE, "0");
+        String failureExitValue = props.getProperty(PATCH_ERROR_EXIT_VALUE, "");
+        if (exitValue.equals(goodExitValue) || !exitValue.equals(failureExitValue)) {
+            try {
+                recordPatch(requiredPatchLSID);
+            }
+            catch (IOException e) {
+                throw new JobDispatchException(e);
+            }
+            if (taskIntegrator != null) {
+                taskIntegrator.statusMessage("Patch LSID recorded");
+            }
 
-	    // keep the manifest file around for future reference
-	    if (!new File(patchDirectory, MANIFEST_FILENAME).exists()) {
-		explodePatch(zipFilename, patchDirectory, null, MANIFEST_FILENAME);
-		if (props.getProperty(REQUIRED_PATCH_URLS, null) == null) {
-		    try {
-			File f = new File(patchDirectory, MANIFEST_FILENAME);
-			Properties mprops = new Properties();
-			mprops.load(new FileInputStream(f));
-			mprops.setProperty(REQUIRED_PATCH_URLS, requiredPatchURL);
-			mprops.store(new FileOutputStream(f), "added required patch");
-		    } catch (IOException ioe) {
-			ioe.printStackTrace();
-		    }
-
-		    // Properties properties = readPropertiesFile(f);
-		    // properties = addProperty(properties, REQUIRED_PATCH_URLS,
-		    // requiredPatchURL);
-		    // writePropertiesFile(f, properties);
-		}
-	    }
-	} else {
-	    if (taskIntegrator != null) {
-		taskIntegrator.statusMessage("Deleting patch directory after installation failure");
-	    }
-	    // delete patch directory
-	    File[] old = patchDirectory.listFiles();
-	    for (int i = 0; old != null && i < old.length; i++) {
-		old[i].delete();
-	    }
-	    patchDirectory.delete();
-	    throw new Exception("Could not install required patch: " + props.get("name") + "  " + props.get("LSID"));
-	}
+            // keep the manifest file around for future reference
+            if (!new File(patchDirectory, MANIFEST_FILENAME).exists()) {
+                try {
+                    explodePatch(zipFilename, patchDirectory, null, MANIFEST_FILENAME);
+                }
+                catch (IOException e) {
+                    throw new JobDispatchException(e);
+                }
+                if (props.getProperty(REQUIRED_PATCH_URLS, null) == null) {
+                    try {
+                        File f = new File(patchDirectory, MANIFEST_FILENAME);
+                        Properties mprops = new Properties();
+                        mprops.load(new FileInputStream(f));
+                        mprops.setProperty(REQUIRED_PATCH_URLS, requiredPatchURL);
+                        mprops.store(new FileOutputStream(f), "added required patch");
+                    } 
+                    catch (IOException ioe) {
+                        ioe.printStackTrace();
+                    }
+                }
+            }
+        } 
+        else {
+            if (taskIntegrator != null) {
+                taskIntegrator.statusMessage("Deleting patch directory after installation failure");
+            }
+            // delete patch directory
+            File[] old = patchDirectory.listFiles();
+            for (int i = 0; old != null && i < old.length; i++) {
+                old[i].delete();
+            }
+            patchDirectory.delete();
+            throw new JobDispatchException("Could not install required patch: " + props.get("name") + "  " + props.get("LSID"));
+        }
     }
 
     // download the patch zip file from a URL
-    protected static String downloadPatch(String url, Status taskIntegrator, String contentLength) throws IOException {
-	try {
-	    long len = -1;
-	    try {
-		len = Long.parseLong(contentLength);
-	    } catch (NullPointerException npe) {
-		// ignore
-	    } catch (NumberFormatException nfe) {
-		// ignore
-	    }
-	    return downloadTask(url, taskIntegrator, len, false);
-	    // return downloadTask(url, null, len); // null task integrator to
-	    // suppress output
-	} catch (IOException ioe) {
-	    if (ioe.getCause() != null) {
-		ioe = (IOException) ioe.getCause();
-	    }
-	    throw new IOException(ioe.toString() + " while downloading " + url);
-	}
+    private static String downloadPatch(String url, Status taskIntegrator, String contentLength) throws IOException {
+        try {
+            long len = -1;
+            try {
+                len = Long.parseLong(contentLength);
+            } 
+            catch (NullPointerException npe) {
+                // ignore
+            } 
+            catch (NumberFormatException nfe) {
+                // ignore
+            }
+            return downloadTask(url, taskIntegrator, len, false);
+        } 
+        catch (IOException ioe) {
+            if (ioe.getCause() != null) {
+                ioe = (IOException) ioe.getCause();
+            }
+            throw new IOException(ioe.toString() + " while downloading " + url);
+        }
     }
 
     // unzip the patch files into their own directory
-    protected static void explodePatch(String zipFilename, File patchDirectory, Status taskIntegrator) throws IOException {
-	explodePatch(zipFilename, patchDirectory, taskIntegrator, null);
+    private static void explodePatch(String zipFilename, File patchDirectory, Status taskIntegrator) throws IOException {
+        explodePatch(zipFilename, patchDirectory, taskIntegrator, null);
     }
 
     // unzip the patch files into their own directory
-    protected static void explodePatch(String zipFilename, File patchDirectory, Status taskIntegrator, String zipEntryName)
-	    throws IOException {
-	ZipFile zipFile = new ZipFile(zipFilename);
-	InputStream is = null;
-	patchDirectory.mkdirs();
-	if (zipEntryName == null) {
-	    // clean out existing directory
-	    File[] old = patchDirectory.listFiles();
-	    for (int i = 0; old != null && i < old.length; i++) {
-		old[i].delete();
-	    }
-	}
-	for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
-	    ZipEntry zipEntry = (ZipEntry) eEntries.nextElement();
-	    if (zipEntryName != null && !zipEntryName.equals(zipEntry.getName())) {
-		continue;
-	    }
-	    File outFile = new File(patchDirectory, zipEntry.getName());
-	    if (zipEntry.isDirectory()) {
-		if (taskIntegrator != null) {
-		    taskIntegrator.statusMessage("Creating subdirectory " + outFile.getAbsolutePath());
-		}
-		outFile.mkdirs();
-		continue;
-	    }
-	    is = zipFile.getInputStream(zipEntry);
-	    OutputStream os = new FileOutputStream(outFile);
-	    long fileLength = zipEntry.getSize();
-	    // if (taskIntegrator != null)
-	    // taskIntegrator.statusMessage("Extracting " + zipEntry.getName() +
-	    // ", " + fileLength + " bytes");
-	    long numRead = 0;
-	    byte[] buf = new byte[100000];
-	    int i;
-	    while ((i = is.read(buf, 0, buf.length)) > 0) {
-		os.write(buf, 0, i);
-		numRead += i;
-	    }
-	    os.close();
-	    os = null;
-	    if (numRead != fileLength) {
-		throw new IOException("only read " + numRead + " of " + fileLength + " bytes in " + zipFile.getName() + "'s "
-			+ zipEntry.getName());
-	    }
-	    is.close();
-	} // end of loop for each file in zip file
-	zipFile.close();
+    private static void explodePatch(String zipFilename, File patchDirectory, Status taskIntegrator, String zipEntryName)
+    throws IOException 
+    {
+        ZipFile zipFile = new ZipFile(zipFilename);
+        InputStream is = null;
+        patchDirectory.mkdirs();
+        if (zipEntryName == null) {
+            // clean out existing directory
+            File[] old = patchDirectory.listFiles();
+            for (int i = 0; old != null && i < old.length; i++) {
+                old[i].delete();
+            }
+        }
+        for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
+            ZipEntry zipEntry = (ZipEntry) eEntries.nextElement();
+            if (zipEntryName != null && !zipEntryName.equals(zipEntry.getName())) {
+                continue;
+            }
+            File outFile = new File(patchDirectory, zipEntry.getName());
+            if (zipEntry.isDirectory()) {
+                if (taskIntegrator != null) {
+                    taskIntegrator.statusMessage("Creating subdirectory " + outFile.getAbsolutePath());
+                }
+                outFile.mkdirs();
+                continue;
+            }
+            is = zipFile.getInputStream(zipEntry);
+            OutputStream os = new FileOutputStream(outFile);
+            long fileLength = zipEntry.getSize();
+            long numRead = 0;
+            byte[] buf = new byte[100000];
+            int i;
+            while ((i = is.read(buf, 0, buf.length)) > 0) {
+                os.write(buf, 0, i);
+                numRead += i;
+            }
+            os.close();
+            os = null;
+            if (numRead != fileLength) {
+                throw new IOException("only read " + numRead + " of " + fileLength + " bytes in " + zipFile.getName() + "'s " + zipEntry.getName());
+            }
+            is.close();
+        } // end of loop for each file in zip file
+        zipFile.close();
     }
 
-    // retrieve the command line from the patch manifest file and perform
-    // <substitutions>
-    protected static String getPatchCommandLine(Properties props) throws Exception {
-	String commandLine = props.getProperty(COMMAND_LINE);
-	Properties systemProps = new Properties(System.getProperties());
-	if (commandLine == null || commandLine.length() == 0) {
-	    throw new Exception("No command line defined in " + MANIFEST_FILENAME);
-	}
-
-	// command line substitutions for <ant>, etc.
-	commandLine = substitute(commandLine, systemProps, null);
-	commandLine = substitute(commandLine, systemProps, null);
-	return commandLine;
+    // retrieve the command line from the patch manifest file and perform <substitutions>
+    private static String getPatchCommandLine(Properties props) throws JobDispatchException {
+        String commandLine = props.getProperty(COMMAND_LINE);
+        Properties systemProps = new Properties(System.getProperties());
+        if (commandLine == null || commandLine.length() == 0) {
+            throw new JobDispatchException("No command line defined in " + MANIFEST_FILENAME);
+        }
+        
+        // command line substitutions for <ant>, etc.
+        commandLine = substitute(commandLine, systemProps, null);
+        commandLine = substitute(commandLine, systemProps, null);
+        return commandLine;
     }
 
     // load the patch manifest file into a Properties object
-    protected static Properties loadManifest(File patchDirectory) throws IOException {
-	File manifestFile = new File(patchDirectory, MANIFEST_FILENAME);
-	if (!manifestFile.exists()) {
-	    throw new IOException(MANIFEST_FILENAME + " missing from patch " + patchDirectory.getName());
-	}
-	Properties props = new Properties();
-	FileInputStream manifest = new FileInputStream(manifestFile);
-	props.load(manifest);
-	manifest.close();
-	return props;
+    private static Properties loadManifest(File patchDirectory) throws IOException {
+        File manifestFile = new File(patchDirectory, MANIFEST_FILENAME);
+        if (!manifestFile.exists()) {
+            throw new IOException(MANIFEST_FILENAME + " missing from patch " + patchDirectory.getName());
+        }
+        Properties props = new Properties();
+        FileInputStream manifest = new FileInputStream(manifestFile);
+        props.load(manifest);
+        manifest.close();
+        return props;
     }
 
-    // run the patch command line in the patch directory, returning the exit
-    // code from the executable
-    protected static int executePatch(String commandLine, File patchDirectory, Status taskIntegrator) throws Exception {
-	// spawn the command
-	Process process = Runtime.getRuntime().exec(commandLine, null, patchDirectory);
+    /**
+     * Run the patch command line in the patch directory, returning the exit code from the executable.
+     */
+    private static int executePatch(String commandLine, File patchDirectory, Status taskIntegrator) throws IOException, InterruptedException {
+        // spawn the command
+        Process process = Runtime.getRuntime().exec(commandLine, null, patchDirectory);
 
-	// BUG: there is race condition during a tiny time window between
-	// the exec and the close
-	// (the lines above and below this comment) during which it is
-	// possible for an application
-	// to imagine that there might be useful input coming from stdin.
-	// This seemed to be
-	// the case for Perl 5.0.1 on Wilkins, and might be a problem in
-	// other applications as well.
-	process.getOutputStream().close(); // there is no stdin to feed to
-	// the program. So if it asks,
-	// let it see EOF!
+        // BUG: there is race condition during a tiny time window between
+        // the exec and the close
+        // (the lines above and below this comment) during which it is
+        // possible for an application
+        // to imagine that there might be useful input coming from stdin.
+        // This seemed to be
+        // the case for Perl 5.0.1 on Wilkins, and might be a problem in
+        // other applications as well.
+        process.getOutputStream().close(); // there is no stdin to feed to
+        // the program. So if it asks,
+        // let it see EOF!
 
-	// create threads to read from the command's stdout and stderr
-	// streams
+        // create threads to read from the command's stdout and stderr
+        // streams
 
-	Thread outputReader = (taskIntegrator != null) ? antStreamCopier(process.getInputStream(), taskIntegrator)
-		: streamCopier(process.getInputStream(), System.out);
-	Thread errorReader = (taskIntegrator != null) ? antStreamCopier(process.getErrorStream(), taskIntegrator) : streamCopier(
-		process.getInputStream(), System.err);
+        Thread outputReader = (taskIntegrator != null) ? antStreamCopier(process.getInputStream(), taskIntegrator)
+                : streamCopier(process.getInputStream(), System.out);
+        Thread errorReader = (taskIntegrator != null) ? antStreamCopier(process.getErrorStream(), taskIntegrator) : streamCopier(
+                process.getInputStream(), System.err);
 
-	// drain the output and error streams
-	outputReader.start();
-	errorReader.start();
+        // drain the output and error streams
+        outputReader.start();
+        errorReader.start();
 
-	// wait for all output
-	outputReader.join();
-	errorReader.join();
+        // wait for all output
+        outputReader.join();
+        errorReader.join();
 
-	// the process will be dead by now
-	process.waitFor();
-	int exitValue = process.exitValue();
-	return exitValue;
+        // the process will be dead by now
+        process.waitFor();
+        int exitValue = process.exitValue();
+        return exitValue;
     }
 
     // record the patch LSID in the genepattern.properties file
-    public static synchronized void recordPatch(String patchLSID) throws IOException {
-	// add this LSID to the installed patches repository
-	String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
-	if (installedPatches == null || installedPatches.length() == 0) {
-	    installedPatches = "";
-	} else {
-	    installedPatches = installedPatches + ",";
-	}
-	installedPatches = installedPatches + patchLSID;
-	// String properties = readGenePatternProperties();
-	// properties = addProperty(properties, INSTALLED_PATCH_LSIDS,
-	// installedPatches);
-	// writeGenePatternProperties(properties);
-	System.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
-	Properties props = new Properties();
-	props.load(new FileInputStream(new File(System.getProperty("resources"), "genepattern.properties")));
+    private static synchronized void recordPatch(String patchLSID) throws IOException {
+        // add this LSID to the installed patches repository
+        String installedPatches = System.getProperty(INSTALLED_PATCH_LSIDS);
+        if (installedPatches == null || installedPatches.length() == 0) {
+            installedPatches = "";
+        } 
+        else {
+            installedPatches = installedPatches + ",";
+        }
+        installedPatches = installedPatches + patchLSID;
+        // String properties = readGenePatternProperties();
+        // properties = addProperty(properties, INSTALLED_PATCH_LSIDS,
+        // installedPatches);
+        // writeGenePatternProperties(properties);
+        System.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
+        Properties props = new Properties();
+        props.load(new FileInputStream(new File(System.getProperty("resources"), "genepattern.properties")));
 
-	// make sure any changes are properly set in the System props
-	props.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
-	props.store(new FileOutputStream(new File(System.getProperty("resources"), "genepattern.properties")),
-		"added installed patch LSID");
+        // make sure any changes are properly set in the System props
+        props.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
+        props.store(new FileOutputStream(new File(System.getProperty("resources"), "genepattern.properties")), "added installed patch LSID");
 
-	for (Iterator iter = props.keySet().iterator(); iter.hasNext();) {
-	    String k = (String) iter.next();
-	    String v = (String) props.get(k);
-	    System.setProperty(k, v);
-	}
-
+        for (Iterator iter = props.keySet().iterator(); iter.hasNext();) {
+            String k = (String) iter.next();
+            String v = (String) props.get(k);
+            System.setProperty(k, v);
+        }
     }
 
     /**
@@ -2377,83 +2572,82 @@ public class GenePatternAnalysisTask {
      * @return String command line with all substitutions made
      * @author Jim Lerner
      */
-
     public static String substitute(String commandLine, Properties props, ParameterInfo[] params) {
-	if (commandLine == null) {
-	    return null;
-	}
-	int start = 0, end = 0, blank;
-	String varName = null;
-	String replacement = null;
-	boolean isOptional = true;
-	// create a hashtable of parameters keyed on name for attribute lookup
-	Hashtable<String, ParameterInfo> htParams = new Hashtable<String, ParameterInfo>();
-	for (int i = 0; params != null && i < params.length; i++) {
-	    htParams.put(params[i].getName(), params[i]);
-	}
-	ParameterInfo p = null;
-	StringBuffer newString = new StringBuffer(commandLine);
-	while (start < newString.length() && (start = newString.toString().indexOf(LEFT_DELIMITER, start)) != -1) {
-	    start += LEFT_DELIMITER.length();
-	    int index = start - LEFT_DELIMITER.length() - 1;
-	    if ((index > 0 && index <= newString.length() && newString.substring(index).startsWith(STDIN_REDIRECT))
-		    || commandLine.equals(STDIN_REDIRECT)) {
-		continue;
-	    }
-	    end = newString.toString().indexOf(RIGHT_DELIMITER, start);
-	    if (end == -1) {
-		log.error("Missing " + RIGHT_DELIMITER + " delimiter in " + commandLine);
-		break; // no right delimiter means no substitution
-	    }
-	    blank = newString.toString().indexOf(" ", start);
-	    if (blank != -1 && blank < end) {
-		// if there's a space in the name, then it's a redirection of
-		// stdin
-		start = blank + 1;
-		continue;
-	    }
-	    varName = newString.substring(start, end);
-	    replacement = props.getProperty(varName);
-	    if (replacement == null) {
-		// don't sweat inability to substitute for optional parameters.
-		// They've already been validated by this point.
-		log.info("no substitution available for parameter " + varName);
-		// System.out.println(props);
-		// replacement = LEFT_DELIMITER + varName + RIGHT_DELIMITER;
-		replacement = "";
-	    }
-	    if (varName.equals("resources")) {
-		// special treatment: make this an absolute path so that
-		// pipeline jobs running in their own directories see the right
-		// path
-		replacement = new File(replacement).getAbsolutePath();
-	    }
-	    if (replacement.length() == 0) {
-		log.debug("GPAT.substitute: replaced " + varName + " with empty string");
-	    }
-	    p = htParams.get(varName);
-	    if (p != null) {
-		HashMap hmAttributes = p.getAttributes();
-		if (hmAttributes != null) {
-		    if (hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET]) == null) {
-			isOptional = false;
-		    }
-		    String optionalPrefix = (String) hmAttributes.get(PARAM_INFO_PREFIX[PARAM_INFO_NAME_OFFSET]);
-		    if (replacement.length() > 0 && optionalPrefix != null && optionalPrefix.length() > 0) {
-			replacement = optionalPrefix + replacement;
-		    }
-		}
-	    }
-	    if (replacement.indexOf("Program Files") != -1) {
-		replacement = replace(replacement, "Program Files", "Progra~1");
-	    }
-	    newString = newString.replace(start - LEFT_DELIMITER.length(), end + RIGHT_DELIMITER.length(), replacement);
-	    start = start + replacement.length() - LEFT_DELIMITER.length();
-	}
-	if (newString.length() == 0 && isOptional) {
-	    return null;
-	}
-	return newString.toString();
+        if (commandLine == null) {
+            return null;
+        }
+        int start = 0, end = 0, blank;
+        String varName = null;
+        String replacement = null;
+        boolean isOptional = true;
+        // create a hashtable of parameters keyed on name for attribute lookup
+        Hashtable<String, ParameterInfo> htParams = new Hashtable<String, ParameterInfo>();
+        for (int i = 0; params != null && i < params.length; i++) {
+            htParams.put(params[i].getName(), params[i]);
+        }
+        ParameterInfo p = null;
+        StringBuffer newString = new StringBuffer(commandLine);
+        while (start < newString.length() && (start = newString.toString().indexOf(LEFT_DELIMITER, start)) != -1) {
+            start += LEFT_DELIMITER.length();
+            int index = start - LEFT_DELIMITER.length() - 1;
+            if ((index > 0 && index <= newString.length() && newString.substring(index).startsWith(STDIN_REDIRECT))
+                    || commandLine.equals(STDIN_REDIRECT)) {
+                continue;
+            }
+            end = newString.toString().indexOf(RIGHT_DELIMITER, start);
+            if (end == -1) {
+                log.error("Missing " + RIGHT_DELIMITER + " delimiter in " + commandLine);
+                break; // no right delimiter means no substitution
+            }
+            blank = newString.toString().indexOf(" ", start);
+            if (blank != -1 && blank < end) {
+                // if there's a space in the name, then it's a redirection of stdin
+                start = blank + 1;
+                continue;
+            }
+            varName = newString.substring(start, end);
+            replacement = props.getProperty(varName);
+            if (replacement == null) {
+                // don't sweat inability to substitute for optional parameters.
+                // They've already been validated by this point.
+                log.info("no substitution available for parameter " + varName);
+                // System.out.println(props);
+                // replacement = LEFT_DELIMITER + varName + RIGHT_DELIMITER;
+                replacement = "";
+            }
+            if (varName.equals("resources")) {
+                // special treatment: make this an absolute path so that
+                // pipeline jobs running in their own directories see the right
+                // path
+                replacement = new File(replacement).getAbsolutePath();
+            }
+            if (replacement.length() == 0) {
+                log.debug("GPAT.substitute: replaced " + varName + " with empty string");
+            }
+            p = htParams.get(varName);
+            if (p != null) {
+                HashMap hmAttributes = p.getAttributes();
+                if (hmAttributes != null) {
+                    if (hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET]) == null) {
+                        isOptional = false;
+                    }
+                    String optionalPrefix = (String) hmAttributes.get(PARAM_INFO_PREFIX[PARAM_INFO_NAME_OFFSET]);
+                    if (replacement.length() > 0 && optionalPrefix != null && optionalPrefix.length() > 0) {
+                        if (optionalPrefix.endsWith(" ")) {
+                            //special-case: GP-2866
+                            //    if optionalPrefix ends with a space, split into two args
+                        }
+                        replacement = optionalPrefix + replacement;
+                    }
+                }
+            }
+            newString = newString.replace(start - LEFT_DELIMITER.length(), end + RIGHT_DELIMITER.length(), replacement);
+            start = start + replacement.length() - LEFT_DELIMITER.length();
+        }
+        if (newString.length() == 0 && isOptional) {
+            return null;
+        }
+        return newString.toString();
     }
 
     /**
@@ -2488,66 +2682,14 @@ public class GenePatternAnalysisTask {
         }
     }
 
-    /**
-     * Provides a TreeMap, sorted by case-insensitive task name, of all of the tasks registered in the task_master table
-     * that are handled by the GenePatternAnalysisTask class.
-     * 
-     * @return TreeMap whose key is task name, and whose value is a TaskInfo object (with nested TaskInfoAttributes and
-     *         ParameterInfo[]).
-     * @author Jim Lerner
-     */
-    public static Collection getTasks() throws OmnigeneException, RemoteException {
-	return getTasks(null);
-    }
-
     public static AnalysisDAO getDS() {
         return new AnalysisDAO();
     }
 
-    /**
-     * getTasks for a specific userID returns a TreeMap of all of the GenePatternAnalysisTask-supported tasks that are
-     * visible to a particular userID. Tasks are presented in case-insensitive alphabetical order.
-     * 
-     * @param userID
-     *            userID controlling which private tasks will be returned. All public tasks are also returned, and are
-     *            interleaved alphabetically with the private tasks.
-     * @return TreeMap whose key is task name, and whose value is a TaskInfo object (with nested TaskInfoAttributes and
-     *         ParameterInfo[]).
-     * @author Jim Lerner
-     */
-
-    public static List getTasksSorted(String userID) throws OmnigeneException, RemoteException {
-	List vTasks = getTasks(userID); // get vector of TaskInfos
-	if (vTasks != null) {
-	    Collections.sort(vTasks, new Comparator() {
-		// case-insensitive compare on task name, then LSID
-		public int compare(Object o1, Object o2) {
-		    TaskInfo t1 = (TaskInfo) o1;
-		    TaskInfo t2 = (TaskInfo) o2;
-		    int c = t1.getName().compareToIgnoreCase(t2.getName());
-		    if (c == 0) {
-			String lsid1 = t1.giveTaskInfoAttributes().get(LSID);
-			String lsid2 = t2.giveTaskInfoAttributes().get(LSID);
-			if (lsid1 == null) {
-			    return 1;
-			}
-			if (lsid2 == null) {
-			    return -1;
-			}
-			return -lsid1.compareToIgnoreCase(lsid2);
-		    }
-		    return c;
-		}
-	    });
-	}
-	return vTasks;
-    }
-
     public static List getTasks(String userID) throws OmnigeneException, RemoteException {
-	AdminDAO adminDAO = new AdminDAO();
-	TaskInfo[] taskArray = (userID == null ? adminDAO.getAllTasks() : adminDAO.getAllTasksForUser(userID));
-	return Arrays.asList(taskArray);
-
+        AdminDAO adminDAO = new AdminDAO();
+        TaskInfo[] taskArray = (userID == null ? adminDAO.getAllTasks() : adminDAO.getAllTasksForUser(userID));
+        return Arrays.asList(taskArray);
     }
 
     /**
@@ -2560,32 +2702,33 @@ public class GenePatternAnalysisTask {
      * @author Jim Lerner
      */
     public static TaskInfo getTaskInfo(String taskName, String username) throws OmnigeneException {
-	TaskInfo taskInfo = null;
-	try {
-	    int taskID = -1;
+        TaskInfo taskInfo = null;
+        try {
+            int taskID = -1;
+            try {
+                if (org.genepattern.util.LSID.isLSID(taskName)) {
+                    taskName = new LSID(taskName).toString();
+                }
 
-	    try {
-		if (org.genepattern.util.LSID.isLSID(taskName)) {
-		    taskName = new LSID(taskName).toString();
-		}
-
-		// search for an existing task with the same name
-		GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(taskName, null, null, null, username, 0);
-		taskID = loader.getTaskIDByName(taskName, username);
-		if (taskID != -1) {
-		    taskInfo = (new AdminDAO()).getTask(taskID);
-		}
-	    } catch (OmnigeneException e) {
-		// this is a new task, no taskID exists
-		// do nothing
-		throw new OmnigeneException("no such task: " + taskName + " for user " + username);
-	    } catch (RemoteException re) {
-		throw new OmnigeneException("Unable to load the " + taskName + " task: " + re.getMessage());
-	    }
-	} catch (Exception e) {
-	    throw new OmnigeneException(e.getMessage() + " in getTaskInfo(" + taskName + ", " + username + ")");
-	}
-	return taskInfo;
+                // search for an existing task with the same name
+                GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(taskName, null, null, null, username, 0);
+                taskID = loader.getTaskIDByName(taskName, username);
+                if (taskID != -1) {
+                    taskInfo = (new AdminDAO()).getTask(taskID);
+                }
+            } 
+            catch (OmnigeneException e) {
+                // this is a new task, no taskID exists do nothing
+                throw new OmnigeneException("no such task: " + taskName + " for user " + username);
+            } 
+            catch (RemoteException re) {
+                throw new OmnigeneException("Unable to load the " + taskName + " task: " + re.getMessage());
+            }
+        } 
+        catch (Exception e) {
+            throw new OmnigeneException(e.getMessage() + " in getTaskInfo(" + taskName + ", " + username + ")");
+        }
+        return taskInfo;
     }
 
     /**
@@ -2631,15 +2774,17 @@ public class GenePatternAnalysisTask {
      * @return Properties Properties object with all substitution name/value pairs defined
      * @author Jim Lerner
      */
-    public Properties setupProps(TaskInfo taskInfo, String taskName, int parentJobNumber, int jobNumber, int taskID,
+    private static Properties setupProps(TaskInfo taskInfo, String taskName, int parentJobNumber, int jobNumber, int taskID,
 	    TaskInfoAttributes taskInfoAttributes, ParameterInfo[] actuals, Map<String, String> env,
 	    ParameterInfo[] formalParameters, String userID) 
-    throws Exception {
+    throws MalformedURLException 
+    {
         Properties props = new Properties();
         int formalParamsLength = 0;
         if (formalParameters != null) {
             formalParamsLength = formalParameters.length;
         }
+        INPUT_FILE_MODE inputFileMode = getInputFileMode();
         try {
             // copy environment variables into props
             String key = null;
@@ -2669,16 +2814,9 @@ public class GenePatternAnalysisTask {
             // as a convenience to the user, create a <libdir> property which is where DLLs, JARs, EXEs, etc. are dumped to when adding tasks
             String taskLibDir = "taskLibDir";
             if (taskID != -1) {
-                try {
-                    //getTaskLibDir starts a DB transaction ...
-                    taskLibDir = DirectoryManager.getTaskLibDir(taskName, sLSID, userID);
-                    File f = new File(taskLibDir);
-                    taskLibDir = f.getPath() + System.getProperty("file.separator");
-                }
-                finally {
-                    // ... which must be closed
-                    HibernateUtil.closeCurrentSession();
-                }
+                taskLibDir = DirectoryManager.getTaskLibDir(taskInfo);
+                File f = new File(taskLibDir);
+                taskLibDir = f.getPath() + System.getProperty("file.separator");
             }
             props.put(LIBDIR, taskLibDir);
 
@@ -2784,7 +2922,7 @@ public class GenePatternAnalysisTask {
      * @param commandLine
      * @return the new command line
      */
-    protected static String[] translateCommandline(String[] commandLine) {
+    public static String[] translateCommandline(String[] commandLine) {
         if (commandLine == null || commandLine.length == 0) {
             return commandLine;
         }
@@ -2818,106 +2956,6 @@ public class GenePatternAnalysisTask {
     }
 
     /**
-     * Spawns a separate process to execute the requested analysis task. It copies the stdout and stderr output streams
-     * to StringBuffers so that they can be returned to the invoker. The stdin input stream is closed immediately after
-     * execution in order to ensure that the running task has no misconceptions about being able to read anything from
-     * it. runCommand maintains entries in the htRunningJobs Hashtable whose keys are jobIDs and whose values are
-     * running Process objects. This allows Processes to be stopped by jobID.
-     * <p/>
-     * <p/>
-     * Please read about the BUG in the runCommand comments related to a race condition in the closure of the stdin
-     * stream after forking the process.
-     * 
-     * @param commandLine
-     *            String representation of the command line to run with all substitutions for parameters made.
-     * @param env
-     *            Hashtable of environment name/value pairs. Used to provide the environment to the exec method,
-     *            including the modified PATH value.
-     * @param runDir
-     *            The directory in which to start the process running (it will be a temporary directory with only input
-     *            files in it).
-     * @param stdoutFile
-     *            file to capture stdout output from the running process
-     * @param stderrFile
-     *            file to capture stderr output from the running process
-     * @param jobInfo
-     *            JobInfo object for this instance
-     * @param stdin
-     *            file path that is set to standard input of the running process or <tt>null</tt>
-     * @param stderrBuffer
-     *            buffer to append GenePattern errors to
-     * @author Jim Lerner
-     */
-    protected int runCommand(String commandLine[], Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, String stdin, StringBuffer stderrBuffer) {
-        ProcessBuilder pb = null;
-        Process process = null;
-        String jobID = null;
-        try {
-            pb = new ProcessBuilder(commandLine);
-            Map<String, String> env = pb.environment();
-            env.putAll(environmentVariables);
-            pb.directory(runDir);
-
-            // spawn the command
-            process = pb.start();
-            // BUG: there is race condition during a tiny time window between the exec and the close
-            // (the lines above and below this comment) during which it is possible for an application
-            // to imagine that there might be useful input coming from stdin.
-            // This seemed to be the case for Perl 5.0.1, and might be a problem in other applications as well.
-            OutputStream standardInStream = process.getOutputStream();
-            if (stdin == null) {
-                standardInStream.close();
-            } 
-            else {
-                byte[] b = new byte[2048];
-                int bytesRead;
-                FileInputStream fis = null;
-                try {
-                    fis = new FileInputStream(new File(runDir, stdin));
-                    while ((bytesRead = fis.read(b)) >= 0) {
-                        standardInStream.write(b, 0, bytesRead);
-                    }
-                } 
-                finally {
-                    if (fis != null) {
-                        fis.close();
-                    }
-                    standardInStream.close();
-                }
-            }
-            jobID = "" + jobInfo.getJobNumber();
-            htRunningJobs.put(jobID, process);
-
-            // create threads to read from the command's stdout and stderr streams
-            Thread outputReader = streamToFile(process.getInputStream(), stdoutFile);
-            Thread errorReader = streamToFile(process.getErrorStream(), stderrFile);
-
-            // drain the output and error streams
-            outputReader.start();
-            errorReader.start();
-
-            // wait for all output before attempting to send it back to the client
-            outputReader.join();
-            errorReader.join();
-
-            // the process will be dead by now
-            process.waitFor();
-            int exitValue = process.exitValue();
-            return exitValue;
-        } 
-        catch (Throwable t) {
-            log.error("Error in runCommand, reporting to stderr.", t);
-            stderrBuffer.append(t.getLocalizedMessage());
-            return -1;
-        } 
-        finally {
-            if (jobID != null) {
-                htRunningJobs.remove(jobID);
-            }
-        }
-    }
-
-    /**
      * takes a filename, "short name" of a file, and JobInfo object and adds the descriptor of the file to the JobInfo
      * as an output file.
      * 
@@ -2931,7 +2969,7 @@ public class GenePatternAnalysisTask {
      *            the parent job of the given jobInfo or <tt>null</tt> if no parent exists
      * @author Jim Lerner
      */
-    protected void addFileToOutputParameters(JobInfo jobInfo, String fileName, String label, JobInfo parentJobInfo) {
+    private static void addFileToOutputParameters(JobInfo jobInfo, String fileName, String label, JobInfo parentJobInfo) {
         if (jobInfo == null) {
             log.error("null jobInfo arg!");
             return;
@@ -2943,26 +2981,6 @@ public class GenePatternAnalysisTask {
         if (parentJobInfo != null) {
             parentJobInfo.addParameterInfo(paramOut);
         }
-    }
-
-    /**
-     * takes a jobID and a Hashtable in which the jobID is putatively listed, and attempts to terminate the job. Note
-     * that Process.destroy() is not always successful. If a process cannot be killed without a "kill -9", it seems not
-     * to die from a Process.destroy() either.
-     * 
-     * @param jobID
-     *            JobInfo jobID number
-     * @param htWhere
-     *            Hashtable in which the job was listed when it was invoked
-     * @return true if the job was found, false if not listed (already deleted)
-     * @author Jim Lerner
-     */
-    protected static boolean terminateJob(String jobID, Hashtable htWhere) {
-	Process p = (Process) htWhere.get(jobID);
-	if (p != null) {
-	    p.destroy();
-	}
-	return (p != null);
     }
 
     /**
@@ -2986,144 +3004,139 @@ public class GenePatternAnalysisTask {
      * @return Vector of error messages (zero length if no problems found)
      * @author Jim Lerner
      */
-    protected Vector<String> validateParameters(Properties props, String taskName, String commandLine,
-	    ParameterInfo[] actualParams, ParameterInfo[] formalParams, boolean enforceOptionalNonBlank) {
-	Vector<String> vProblems = new Vector<String>();
-	String name;
-	boolean runtimeValidation = (actualParams != formalParams);
-	int formalParamsLength = 0;
-	if (formalParams != null) {
-	    formalParamsLength = formalParams.length;
-	}
-	// validate R-safe task name
-	if (!isRSafe(taskName)) {
-	    vProblems
-		    .add("'"
-			    + taskName
-			    + "' is not a legal task name.  It must contain only letters, digits, and periods, and may not begin with a period or digit.\n It must not be a reserved keyword in R ('if', 'else', 'repeat', 'while', 'function', 'for', 'in', 'next', 'break', 'true', 'false', 'null', 'na', 'inf', 'nan').");
-	}
-	if (commandLine.trim().length() == 0) {
-	    vProblems.add("Command line not defined");
-	}
+    private static Vector<String> validateParameters(Properties props, String taskName, String commandLine, ParameterInfo[] actualParams, ParameterInfo[] formalParams, boolean enforceOptionalNonBlank) {
+        Vector<String> vProblems = new Vector<String>();
+        String name;
+        boolean runtimeValidation = (actualParams != formalParams);
+        int formalParamsLength = 0;
+        if (formalParams != null) {
+            formalParamsLength = formalParams.length;
+        }
+        // validate R-safe task name
+        if (!isRSafe(taskName)) {
+            vProblems.add("'" + taskName + "' is not a legal task name.  "+
+                    "It must contain only letters, digits, and periods, and may not begin with a period or digit.\n It must not be a reserved keyword in R ('if', 'else', 'repeat', 'while', 'function', 'for', 'in', 'next', 'break', 'true', 'false', 'null', 'na', 'inf', 'nan').");
+        }
+        if (commandLine.trim().length() == 0) {
+            vProblems.add("Command line not defined");
+        }
 
-	// check that each parameter is cited in either the command line or the
-	// output filename pattern
-	if (actualParams != null) {
-	    Vector paramNames = new Vector();
-	    next_parameter: for (int actual = 0; actual < actualParams.length; actual++) {
-		name = LEFT_DELIMITER + actualParams[actual].getName() + RIGHT_DELIMITER;
-		if (paramNames.contains(actualParams[actual].getName())) {
-		    vProblems.add(taskName + ": " + actualParams[actual].getName()
-			    + " has been declared as a parameter more than once");
-		}
-		paramNames.add(actualParams[actual].getName());
-		/*
-		 * if (!isRSafe(actualParams[actual].getName())) { vProblems.add(actualParams[actual].getName() + " is
-		 * not a legal parameter name. It must contain only letters, digits, and periods, and may not begin with
-		 * a period or digit" + " for task " + props.get(GPConstants.LSID)); }
-		 */
-		for (int j = 0; j < UNREQUIRED_PARAMETER_NAMES.length; j++) {
-		    if (name.equals(UNREQUIRED_PARAMETER_NAMES[j])) {
-			continue next_parameter;
-		    }
-		}
-		HashMap hmAttributes = null;
-		boolean foundFormal = false;
-		int formal;
-		for (formal = 0; formal < formalParamsLength; formal++) {
-		    if (formalParams[formal].getName().equals(actualParams[actual].getName())) {
-			hmAttributes = formalParams[formal].getAttributes();
-			foundFormal = true;
-			break;
-		    }
-		}
+        // check that each parameter is cited in either the command line or the
+        // output filename pattern
+        if (actualParams != null) {
+            Vector paramNames = new Vector();
+            next_parameter: for (int actual = 0; actual < actualParams.length; actual++) {
+                name = LEFT_DELIMITER + actualParams[actual].getName() + RIGHT_DELIMITER;
+                if (paramNames.contains(actualParams[actual].getName())) {
+                    vProblems.add(taskName + ": " + actualParams[actual].getName()
+                            + " has been declared as a parameter more than once");
+                }
+                paramNames.add(actualParams[actual].getName());
+                /*
+                 * if (!isRSafe(actualParams[actual].getName())) { vProblems.add(actualParams[actual].getName() + " is
+                 * not a legal parameter name. It must contain only letters, digits, and periods, and may not begin with
+                 * a period or digit" + " for task " + props.get(GPConstants.LSID)); }
+                 */
+                for (int j = 0; j < UNREQUIRED_PARAMETER_NAMES.length; j++) {
+                    if (name.equals(UNREQUIRED_PARAMETER_NAMES[j])) {
+                        continue next_parameter;
+                    }
+                }
+                HashMap hmAttributes = null;
+                boolean foundFormal = false;
+                int formal;
+                for (formal = 0; formal < formalParamsLength; formal++) {
+                    if (formalParams[formal].getName().equals(actualParams[actual].getName())) {
+                        hmAttributes = formalParams[formal].getAttributes();
+                        foundFormal = true;
+                        break;
+                    }
+                }
 
-		if (!foundFormal) {
-		    vProblems.add(taskName + ": supplied parameter " + name + " is not part of the definition.");
-		    continue;
-		}
+                if (!foundFormal) {
+                    vProblems.add(taskName + ": supplied parameter " + name + " is not part of the definition.");
+                    continue;
+                }
 
-		// for non-optional parameters, make sure they are mentioned in
-		// the command line
-		if (hmAttributes == null || hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET]) == null
-			|| ((String) hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET])).length() == 0) {
-		    if (commandLine.indexOf(name) == -1) {
-			vProblems.add(taskName + ": non-optional parameter " + name + " is not cited in the command line.");
-		    } else if (enforceOptionalNonBlank
-			    && (actualParams[actual].getValue() == null || actualParams[actual].getValue().length() == 0)
-			    && formalParams[formal].getValue().length() == 0) {
-			vProblems.add(taskName + ": non-optional parameter " + name + " is blank.");
-		    }
-		}
-		// check that parameter is not named the same as a predefined
-		// parameter
-		for (int j = 0; j < RESERVED_PARAMETER_NAMES.length; j++) {
-		    if (actualParams[actual].getName().equalsIgnoreCase(RESERVED_PARAMETER_NAMES[j])) {
-			vProblems.add(taskName + ": parameter " + name
-				+ " is a reserved name and cannot be used as a parameter name.");
-		    }
-		}
+                // for non-optional parameters, make sure they are mentioned in the command line
+                if (hmAttributes == null || hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET]) == null
+                        || ((String) hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET])).length() == 0) {
+                    if (commandLine.indexOf(name) == -1) {
+                        vProblems.add(taskName + ": non-optional parameter " + name + " is not cited in the command line.");
+                    } 
+                    else if (enforceOptionalNonBlank
+                            && (actualParams[actual].getValue() == null || actualParams[actual].getValue().length() == 0)
+                            && formalParams[formal].getValue().length() == 0) {
+                        vProblems.add(taskName + ": non-optional parameter " + name + " is blank.");
+                    }
+                }
+                // check that parameter is not named the same as a predefined parameter
+                for (int j = 0; j < RESERVED_PARAMETER_NAMES.length; j++) {
+                    if (actualParams[actual].getName().equalsIgnoreCase(RESERVED_PARAMETER_NAMES[j])) {
+                        vProblems.add(taskName + ": parameter " + name
+                                + " is a reserved name and cannot be used as a parameter name.");
+                    }
+                }
 
-		// if the parameter is part of a choice list, verify that the
-		// default is on the list
-		String dflt = (String) hmAttributes.get(PARAM_INFO_DEFAULT_VALUE[PARAM_INFO_NAME_OFFSET]);
-		String actualValue = actualParams[actual].getValue();
-		String choices = formalParams[formal].getValue();
-		String[] stChoices = formalParams[formal].getChoices(PARAM_INFO_CHOICE_DELIMITER);
-		if (dflt != null && dflt.length() > 0 && formalParams[formal].hasChoices(PARAM_INFO_CHOICE_DELIMITER)) {
-		    boolean foundDefault = false;
-		    boolean foundActual = false;
-		    for (int iChoice = 0; iChoice < stChoices.length; iChoice++) {
-			String entry = stChoices[iChoice];
-			StringTokenizer stChoiceEntry = new StringTokenizer(entry, PARAM_INFO_TYPE_SEPARATOR);
-			String sLHS = "";
-			String sRHS = "";
-			if (stChoiceEntry.hasMoreTokens()) {
-			    sLHS = stChoiceEntry.nextToken();
-			}
-			if (stChoiceEntry.hasMoreTokens()) {
-			    sRHS = stChoiceEntry.nextToken();
-			}
-			if (sLHS.equals(dflt) || sRHS.equals(dflt)) {
-			    foundDefault = true;
-			    break;
-			}
-		    }
-		    if (!foundDefault) {
-			vProblems.add("Default value '" + dflt + "' for parameter " + name
-				+ " was not found in the choice list '" + choices + "'.");
-		    }
-		}
+		// if the parameter is part of a choice list, verify that the default is on the list
+                String dflt = (String) hmAttributes.get(PARAM_INFO_DEFAULT_VALUE[PARAM_INFO_NAME_OFFSET]);
+                String actualValue = actualParams[actual].getValue();
+                String choices = formalParams[formal].getValue();
+                String[] stChoices = formalParams[formal].getChoices(PARAM_INFO_CHOICE_DELIMITER);
+                if (dflt != null && dflt.length() > 0 && formalParams[formal].hasChoices(PARAM_INFO_CHOICE_DELIMITER)) {
+                    boolean foundDefault = false;
+                    boolean foundActual = false;
+                    for (int iChoice = 0; iChoice < stChoices.length; iChoice++) {
+                        String entry = stChoices[iChoice];
+                        StringTokenizer stChoiceEntry = new StringTokenizer(entry, PARAM_INFO_TYPE_SEPARATOR);
+                        String sLHS = "";
+                        String sRHS = "";
+                        if (stChoiceEntry.hasMoreTokens()) {
+                            sLHS = stChoiceEntry.nextToken();
+                        }
+                        if (stChoiceEntry.hasMoreTokens()) {
+                            sRHS = stChoiceEntry.nextToken();
+                        }
+                        if (sLHS.equals(dflt) || sRHS.equals(dflt)) {
+                            foundDefault = true;
+                            break;
+                        }
+                    }
+                    if (!foundDefault) {
+                        vProblems.add("Default value '" + dflt + "' for parameter " + name
+                                + " was not found in the choice list '" + choices + "'.");
+                    }
+                }
 
-		// check for valid choice selection
-		if (runtimeValidation && formalParams[formal].hasChoices(PARAM_INFO_CHOICE_DELIMITER)) {
-		    boolean foundActual = false;
-		    for (int iChoice = 0; iChoice < stChoices.length; iChoice++) {
-			String entry = stChoices[iChoice];
-			StringTokenizer stChoiceEntry = new StringTokenizer(entry, PARAM_INFO_TYPE_SEPARATOR);
-			String sLHS = "";
-			String sRHS = "";
-			if (stChoiceEntry.hasMoreTokens()) {
-			    sLHS = stChoiceEntry.nextToken();
-			}
-			if (stChoiceEntry.hasMoreTokens()) {
-			    sRHS = stChoiceEntry.nextToken();
-			}
-			if (sLHS.equals(actualValue) || sRHS.equals(actualValue)) {
-			    foundActual = true;
-			    break;
-			}
-		    }
-		    if (!foundActual) {
-			vProblems.add("Value '" + actualValue + "' for parameter " + name + " was not found in the choice list '"
-				+ choices + "'.");
-		    }
-		}
-	    }
-	}
+                // check for valid choice selection
+                if (runtimeValidation && formalParams[formal].hasChoices(PARAM_INFO_CHOICE_DELIMITER)) {
+                    boolean foundActual = false;
+                    for (int iChoice = 0; iChoice < stChoices.length; iChoice++) {
+                        String entry = stChoices[iChoice];
+                        StringTokenizer stChoiceEntry = new StringTokenizer(entry, PARAM_INFO_TYPE_SEPARATOR);
+                        String sLHS = "";
+                        String sRHS = "";
+                        if (stChoiceEntry.hasMoreTokens()) {
+                            sLHS = stChoiceEntry.nextToken();
+                        }
+                        if (stChoiceEntry.hasMoreTokens()) {
+                            sRHS = stChoiceEntry.nextToken();
+                        }
+                        if (sLHS.equals(actualValue) || sRHS.equals(actualValue)) {
+                            foundActual = true;
+                            break;
+                        }
+                    }
+                    if (!foundActual) {
+                        vProblems.add("Value '" + actualValue + "' for parameter " + name + " was not found in the choice list '"
+                                + choices + "'.");
+                    }
+                }
+            }
+        }
 
-	vProblems = validateSubstitutions(props, taskName, commandLine, "command line", vProblems, formalParams);
-	return vProblems;
+        vProblems = validateSubstitutions(props, taskName, commandLine, "command line", vProblems, formalParams);
+        return vProblems;
     }
 
     /**
@@ -3145,52 +3158,49 @@ public class GenePatternAnalysisTask {
      * @return Vector of error messages (vProblems with new errors appended)
      * @author Jim Lerner
      */
-    protected Vector<String> validateSubstitutions(Properties props, 
-            String taskName, String commandLine,
-	    String source, Vector<String> vProblems, ParameterInfo[] formalParams) {
-	// check that each substitution variable listed in the command line is
-	// actually in props
-	int start = 0;
-	int end;
-	int blank;
-	String varName;
-	while (start < commandLine.length() && (start = commandLine.indexOf(LEFT_DELIMITER, start)) != -1) {
-	    end = commandLine.indexOf(RIGHT_DELIMITER, start);
-	    if (end == -1) {
-		break;
-	    }
-	    blank = commandLine.indexOf(" ", start) + 1;
-	    if (blank != 0 && blank < end) {
-		// if there's a space in the name, then it's a redirection of
-		// stdin
-		start = blank;
-		continue;
-	    }
-	    varName = commandLine.substring(start + LEFT_DELIMITER.length(), end);
+    private static Vector<String> validateSubstitutions(Properties props, String taskName, String commandLine, String source, Vector<String> vProblems, ParameterInfo[] formalParams) {
+        // check that each substitution variable listed in the command line is actually in props
+        int start = 0;
+        int end;
+        int blank;
+        String varName;
+        while (start < commandLine.length() && (start = commandLine.indexOf(LEFT_DELIMITER, start)) != -1) {
+            end = commandLine.indexOf(RIGHT_DELIMITER, start);
+            if (end == -1) {
+                break;
+            }
+            blank = commandLine.indexOf(" ", start) + 1;
+            if (blank != 0 && blank < end) {
+                // if there's a space in the name, then it's a redirection of
+                // stdin
+                start = blank;
+                continue;
+            }
+            varName = commandLine.substring(start + LEFT_DELIMITER.length(), end);
 
-	    if (!varName.endsWith(INPUT_PATH)) {
-		if (!props.containsKey(varName)) {
-		    boolean isOptional = false;
-		    for (int i = 0; i < formalParams.length; i++) {
-			if (!formalParams[i].getName().equals(varName)) {
-			    continue;
-			}
-			HashMap hmAttributes = formalParams[i].getAttributes();
-			if (hmAttributes != null && hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET]) != null
-				&& ((String) hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET])).length() != 0) {
-			    isOptional = true;
-			}
-			break;
-		    }
-		    if (!isOptional) {
-			vProblems.add(taskName + ": no substitution available for " + LEFT_DELIMITER + varName + RIGHT_DELIMITER
-				+ " in " + source + " " + commandLine + ".");
-		    }
-		}
-	    }
-	    start = end + RIGHT_DELIMITER.length();
-	}
-	return vProblems;
+            if (!varName.endsWith(INPUT_PATH)) {
+                if (!props.containsKey(varName)) {
+                    boolean isOptional = false;
+                    for (int i = 0; i < formalParams.length; i++) {
+                        if (!formalParams[i].getName().equals(varName)) {
+                            continue;
+                        }
+                        HashMap hmAttributes = formalParams[i].getAttributes();
+                        if (hmAttributes != null && hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET]) != null
+                                && ((String) hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET])).length() != 0) {
+                            isOptional = true;
+                        }
+                        break;
+                    }
+                    if (!isOptional) {
+                        vProblems.add(taskName + ": no substitution available for " + LEFT_DELIMITER + varName + RIGHT_DELIMITER
+                                + " in " + source + " " + commandLine + ".");
+                    }
+                }
+            }
+            start = end + RIGHT_DELIMITER.length();
+        }
+        return vProblems;
     }
 
     /**
@@ -3206,18 +3216,18 @@ public class GenePatternAnalysisTask {
      * @return Vector of error messages from validation of inputs
      * @author Jim Lerner
      */
-    public static Vector<String> validateInputs(TaskInfo taskInfo, String taskName, TaskInfoAttributes tia, ParameterInfo[] params) {
-	GenePatternAnalysisTask gp = new GenePatternAnalysisTask();
-	Vector<String> vProblems = null;
-	try {
-	    Properties props = gp.setupProps(taskInfo, taskName, -1, 0, -1, tia, params, new HashMap<String, String>(), params, null);
-	    vProblems = gp.validateParameters(props, taskName, tia.get(COMMAND_LINE), params, params, false);
-	} catch (Exception e) {
-	    vProblems = new Vector<String>();
-	    vProblems.add(e.toString() + " while validating inputs for " + tia.get(GPConstants.LSID));
-	    e.printStackTrace();
-	}
-	return vProblems;
+    private static Vector<String> validateInputs(TaskInfo taskInfo, String taskName, TaskInfoAttributes tia, ParameterInfo[] params) {
+        Vector<String> vProblems = null;
+        try {
+            Properties props = GenePatternAnalysisTask.setupProps(taskInfo, taskName, -1, 0, -1, tia, params, new HashMap<String, String>(), params, null);
+            vProblems = GenePatternAnalysisTask.validateParameters(props, taskName, tia.get(COMMAND_LINE), params, params, false);
+        } 
+        catch (Exception e) {
+            vProblems = new Vector<String>();
+            vProblems.add(e.toString() + " while validating inputs for " + tia.get(GPConstants.LSID));
+            e.printStackTrace();
+        }
+        return vProblems;
     }
 
     /**
@@ -3225,50 +3235,49 @@ public class GenePatternAnalysisTask {
      * standards, the R language defines what seems to be both a strict and reasonable definition, and has the added
      * bonus of making R scripts work properly.
      * 
-     * @param varName
-     *            proposed variable name
+     * Note: referenced by pipelineDesigner.jsp
+     * 
+     * @param varName, proposed variable name
      * @return boolean if the proposed name is R-legal
      * @author Jim Lerner
      */
     public static boolean isRSafe(String varName) {
-	// anything but letters, digits, and period is an invalid R identifier
-	// that must be quoted
-	String validCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._";
-	String[] reservedNames = new String[] { "if", "else", "repeat", "while", "function", "for", "in", "next", "break",
+        // anything but letters, digits, and period is an invalid R identifier that must be quoted
+        String validCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._";
+        String[] reservedNames = new String[] { "if", "else", "repeat", "while", "function", "for", "in", "next", "break",
 		"true", "false", "null", "na", "inf", "nan" };
-	boolean isReservedName = false;
-	for (int i = 0; i < reservedNames.length; i++) {
-	    if (varName.equals(reservedNames[i])) {
-		isReservedName = true;
-	    }
-	}
-	StringTokenizer stVarName = new StringTokenizer(varName, validCharacters);
-	boolean ret = varName.length() > 0 && // the name is not empty
-		stVarName.countTokens() == 0 && // it consists of only letters,
-		// digits, and periods
-		varName.charAt(0) != '.' && // it doesn't begin with a period
-		!Character.isDigit(varName.charAt(0)) && // it doesn't begin
-		// with a digit
-		!isReservedName; // it isn't a reserved name
-	return ret;
+        boolean isReservedName = false;
+        for (int i = 0; i < reservedNames.length; i++) {
+            if (varName.equals(reservedNames[i])) {
+                isReservedName = true;
+            }
+        }
+        StringTokenizer stVarName = new StringTokenizer(varName, validCharacters);
+        boolean ret = varName.length() > 0 && // the name is not empty
+        stVarName.countTokens() == 0 && // it consists of only letters,
+        // digits, and periods
+        varName.charAt(0) != '.' && // it doesn't begin with a period
+        !Character.isDigit(varName.charAt(0)) && // it doesn't begin
+        // with a digit
+        !isReservedName; // it isn't a reserved name
+        return ret;
     }
 
     /**
      * encapsulate an invalid R identifier name in quotes if necessary
      * 
-     * @param varName
-     *            variable name
+     * @param varName, variable name
      * @return variable name, quoted if necessary
      * @author Jim Lerner
      */
     public static String rEncode(String varName) {
-	// anything but letters, digits, and period is an invalid R identifier
-	// that must be quoted
-	if (isRSafe(varName)) {
-	    return varName;
-	} else {
-	    return "\"" + replace(varName, "\"", "\\\"") + "\"";
-	}
+        // anything but letters, digits, and period is an invalid R identifier that must be quoted
+        if (isRSafe(varName)) {
+            return varName;
+        } 
+        else {
+            return "\"" + replace(varName, "\"", "\\\"") + "\"";
+        }
     }
 
     /**
@@ -3277,87 +3286,78 @@ public class GenePatternAnalysisTask {
      * updated task database entry (via a DBLoader invocation). If there are validation errors, the task is not created
      * and the error message(s) are returned to the caller. Otherwise (all okay), null is returned.
      * 
-     * @param name
-     *            task name
-     * @param description
-     *            description of task
-     * @param params
-     *            ParameterInfo[] of formal parameters for the task
-     * @param taskInfoAttributes
-     *            GenePattern TaskInfoAttributes describing metadata for the task
+     * @param name, task name
+     * @param description, description of task
+     * @param params, ParameterInfo[] of formal parameters for the task
+     * @param taskInfoAttributes, GenePattern TaskInfoAttributes describing metadata for the task
+     * 
      * @return Vector of String error messages if there was an error validating the command line and input parameters,
      *         otherwise null to indicate success
-     * @throws OmnigeneException
-     *             if DBLoader is unhappy when connecting to Omnigene
-     * @throws RemoteException
-     *             if DBLoader is unhappy when connecting to Omnigene
+     * @throws OmnigeneException, if DBLoader is unhappy when connecting to Omnigene
+     * @throws RemoteException, if DBLoader is unhappy when connecting to Omnigene
+     * 
      * @author Jim Lerner
      */
-    public static Vector installTask(String name, String description, ParameterInfo[] params,
-	    TaskInfoAttributes taskInfoAttributes, String username, int access_id, Status taskIntegrator)
-	    throws OmnigeneException, RemoteException {
-	String originalUsername = username;
-	TaskInfo taskInfo = new TaskInfo();
-	taskInfo.setName(name);
-	taskInfo.setDescription(description);
-	taskInfo.setUserId(username);
-	taskInfo.setTaskInfoAttributes(taskInfoAttributes);
-	taskInfo.setParameterInfoArray(params);
-	Vector vProblems = GenePatternAnalysisTask.validateInputs(taskInfo, name, taskInfoAttributes, params);
+    public static Vector installTask(String name, String description, ParameterInfo[] params, TaskInfoAttributes taskInfoAttributes, String username, int access_id, Status taskIntegrator)
+    throws OmnigeneException, RemoteException 
+    {
+        String originalUsername = username;
+        TaskInfo taskInfo = new TaskInfo();
+        taskInfo.setName(name);
+        taskInfo.setDescription(description);
+        taskInfo.setUserId(username);
+        taskInfo.setTaskInfoAttributes(taskInfoAttributes);
+        taskInfo.setParameterInfoArray(params);
+        Vector vProblems = GenePatternAnalysisTask.validateInputs(taskInfo, name, taskInfoAttributes, params);
 
-	try {
-	    String expected = taskInfoAttributes.get(OS);
-	    if (validateOS(expected, "install " + name)) {
-		validatePatches(taskInfo, taskIntegrator);
-	    }
-	} catch (Throwable e) {
-	    if (e.getCause() != null) {
-		e = e.getCause();
-	    }
-	    System.err.println(e.toString() + " while installing " + name);
-	    vProblems.add(e.getMessage());
-	}
-	if (vProblems.size() > 0) {
-	    return vProblems;
-	}
+        try {
+            String expected = taskInfoAttributes.get(OS);
+            if (validateOS(expected, "install " + name)) {
+                validatePatches(taskInfo, taskIntegrator);
+            }
+        } 
+        catch (Throwable e) {
+            if (e.getCause() != null) {
+                e = e.getCause();
+            }
+            System.err.println(e.toString() + " while installing " + name);
+            vProblems.add(e.getMessage());
+        }
+        if (vProblems.size() > 0) {
+            return vProblems;
+        }
 
-	// System.out.println("GPAT.installTask: installing " + name + " with
-	// LSID " + taskInfoAttributes.get(LSID));
+        // privacy is stored both in the task_master table as a field, and in the taskInfoAttributes
+        taskInfoAttributes.put(PRIVACY, access_id == ACCESS_PRIVATE ? PRIVATE : PUBLIC);
+        if (access_id == ACCESS_PRIVATE) {
+            taskInfoAttributes.put(USERID, username);
+        }
+        String lsid = taskInfoAttributes.get(LSID);
+        if (lsid == null || lsid.equals("")) {
+            // System.out.println("installTask: creating new LSID");
+            lsid = LSIDManager.getInstance().createNewID(TASK_NAMESPACE).toString();
+            taskInfoAttributes.put(LSID, lsid);
+        }
 
-	// privacy is stored both in the task_master table as a field, and in
-	// the taskInfoAttributes
-	taskInfoAttributes.put(PRIVACY, access_id == ACCESS_PRIVATE ? PRIVATE : PUBLIC);
-	if (access_id == ACCESS_PRIVATE) {
-	    taskInfoAttributes.put(USERID, username);
-	}
-	String lsid = taskInfoAttributes.get(LSID);
-	if (lsid == null || lsid.equals("")) {
-	    // System.out.println("installTask: creating new LSID");
-	    lsid = LSIDManager.getInstance().createNewID(TASK_NAMESPACE).toString();
-	    taskInfoAttributes.put(LSID, lsid);
-	}
-
-	// TODO: if the task is a pipeline, generate the serialized model right
-	// now too
-	GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(name, description, params, taskInfoAttributes.encode(),
-		username, access_id);
-	int formerID = loader.getTaskIDByName(lsid, originalUsername);
-	boolean isNew = (formerID == -1);
-	if (!isNew) {
-	    try {
-		// delete the search engine indexes for this task so that it
-		// will be reindexed
-		log.debug("installTask: deleting index for previous task ID " + formerID);
-		// Indexer.deleteTask(formerID);
-		log.debug("installTask: deleted index");
-	    } catch (Exception ioe) {
-		log.info(ioe + " while deleting search index for task " + name + " during update");
-		System.err.println(ioe + " while deleting search index for task " + name + " during update");
-	    }
-	}
-	loader.run(isNew ? GenePatternTaskDBLoader.CREATE : GenePatternTaskDBLoader.UPDATE);
-	// IndexerDaemon.notifyTaskUpdate(loader.getTaskIDByName(LSID != null ? lsid : name, username));
-	return null;
+        // TODO: if the task is a pipeline, generate the serialized model right now too
+        GenePatternTaskDBLoader loader = new GenePatternTaskDBLoader(name, description, params, taskInfoAttributes.encode(), username, access_id);
+        int formerID = loader.getTaskIDByName(lsid, originalUsername);
+        boolean isNew = (formerID == -1);
+        if (!isNew) {
+            try {
+                // delete the search engine indexes for this task so that it will be reindexed
+                log.debug("installTask: deleting index for previous task ID " + formerID);
+                // Indexer.deleteTask(formerID);
+                log.debug("installTask: deleted index");
+            } 
+            catch (Exception ioe) {
+                log.info(ioe + " while deleting search index for task " + name + " during update");
+                System.err.println(ioe + " while deleting search index for task " + name + " during update");
+            }
+        }
+        loader.run(isNew ? GenePatternTaskDBLoader.CREATE : GenePatternTaskDBLoader.UPDATE);
+        // IndexerDaemon.notifyTaskUpdate(loader.getTaskIDByName(LSID != null ? lsid : name, username));
+        return null;
     }
 
     public static LSID getNextTaskLsid(String requestedLSID) throws java.rmi.RemoteException {
@@ -3387,22 +3387,17 @@ public class GenePatternAnalysisTask {
      * use installTask but first manage the LSID. if it has one, keep it unchanged. If not, create a new one to be used
      * when creating a new task or installing from a zip file
      */
-    public static String installNewTask(String name, String description, ParameterInfo[] params,
-	    TaskInfoAttributes taskInfoAttributes, String username, int access_id, Status taskIntegrator)
-	    throws OmnigeneException, RemoteException, TaskInstallationException {
-	LSID taskLSID = null;
-	String requestedLSID = taskInfoAttributes.get(LSID);
-
-	taskLSID = getNextTaskLsid(requestedLSID);
-
-	taskInfoAttributes.put(GPConstants.LSID, taskLSID.toString());
-	// System.out.println("GPAT.installNewTask: new LSID=" +
-	// taskLSID.toString());
-	Vector probs = installTask(name, description, params, taskInfoAttributes, username, access_id, taskIntegrator);
-	if ((probs != null) && (probs.size() > 0)) {
-	    throw new TaskInstallationException(probs);
-	}
-	return taskLSID.toString();
+    public static String installNewTask(String name, String description, ParameterInfo[] params, TaskInfoAttributes taskInfoAttributes, String username, int access_id, Status taskIntegrator)
+    throws OmnigeneException, RemoteException, TaskInstallationException {
+        LSID taskLSID = null;
+        String requestedLSID = taskInfoAttributes.get(LSID);
+        taskLSID = getNextTaskLsid(requestedLSID);
+        taskInfoAttributes.put(GPConstants.LSID, taskLSID.toString());
+        Vector probs = installTask(name, description, params, taskInfoAttributes, username, access_id, taskIntegrator);
+        if ((probs != null) && (probs.size() > 0)) {
+            throw new TaskInstallationException(probs);
+        }
+        return taskLSID.toString();
     }
 
     /**
@@ -3441,13 +3436,14 @@ public class GenePatternAnalysisTask {
     }
 
     public static boolean taskExists(String taskName, String user) throws OmnigeneException {
-	TaskInfo existingTaskInfo = null;
-	try {
-	    existingTaskInfo = GenePatternAnalysisTask.getTaskInfo(taskName, user);
-	} catch (OmnigeneException oe) {
-	    // ignore
-	}
-	return (existingTaskInfo != null);
+        TaskInfo existingTaskInfo = null;
+        try {
+            existingTaskInfo = GenePatternAnalysisTask.getTaskInfo(taskName, user);
+        } 
+        catch (OmnigeneException oe) {
+            // ignore
+        }
+        return (existingTaskInfo != null);
     }
 
     /**
@@ -3590,297 +3586,289 @@ public class GenePatternAnalysisTask {
      * @author Jim Lerner
      * @see #installTask
      */
-    public static String installNewTask(String zipFilename, String username, int access_id, boolean recursive,
-	    Status taskIntegrator) throws TaskInstallationException {
-	Vector vProblems = new Vector();
-	int i;
-	ZipFile zipFile = null;
-	InputStream is = null;
-	File outFile = null;
-	FileOutputStream os = null;
-	String taskName = zipFilename;
-	String lsid = null;
-	try {
-	    String name;
-	    try {
-		zipFile = new ZipFile(zipFilename);
-	    } catch (IOException ioe) {
-		throw new Exception("Couldn't open " + zipFilename + ": " + ioe.getMessage());
-	    }
-	    ZipEntry manifestEntry = zipFile.getEntry(MANIFEST_FILENAME);
-	    ZipEntry zipEntry = null;
-	    long fileLength = 0;
-	    int numRead = 0;
-	    if (manifestEntry == null) {
-		// is it a zip of zips?
-		for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
-		    zipEntry = (ZipEntry) eEntries.nextElement();
-		    if (zipEntry.getName().endsWith(".zip")) {
-			continue;
-		    }
-		    throw new Exception(MANIFEST_FILENAME + " file not found in " + zipFilename);
-		}
-		// if we get here, the zip file contains only other zip files
-		// recursively install them
-		String firstLSID = null;
-		for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
-		    zipEntry = (ZipEntry) eEntries.nextElement();
-		    is = zipFile.getInputStream(zipEntry);
-		    outFile = new File(System.getProperty("java.io.tmpdir"), zipEntry.getName());
-		    outFile.deleteOnExit();
-		    os = new FileOutputStream(outFile);
-		    fileLength = zipEntry.getSize();
-		    numRead = 0;
-		    byte[] buf = new byte[100000];
-		    while ((i = is.read(buf, 0, buf.length)) > 0) {
-			os.write(buf, 0, i);
-			numRead += i;
-		    }
-		    os.close();
-		    os = null;
-		    outFile.setLastModified(zipEntry.getTime());
-		    if (numRead != fileLength) {
-			vProblems.add("only read " + numRead + " of " + fileLength + " bytes in " + zipFilename + "'s "
-				+ zipEntry.getName());
-		    }
-		    is.close();
-		    log.info("installing " + outFile.getAbsolutePath());
-		    lsid = installNewTask(outFile.getAbsolutePath(), username, access_id, taskIntegrator);
-		    log.info("installed " + lsid);
-		    if (firstLSID == null) {
-			firstLSID = lsid;
-		    }
-		    outFile.delete();
-		    if (!recursive) {
-			break; // only install the top level (first entry)
-		    }
-		}
-		return firstLSID;
-	    }
+    public static String installNewTask(String zipFilename, String username, int access_id, boolean recursive, Status taskIntegrator) 
+    throws TaskInstallationException 
+    {
+        Vector vProblems = new Vector();
+        int i;
+        ZipFile zipFile = null;
+        InputStream is = null;
+        File outFile = null;
+        FileOutputStream os = null;
+        String taskName = zipFilename;
+        String lsid = null;
+        try {
+            String name;
+            try {
+                zipFile = new ZipFile(zipFilename);
+            } 
+            catch (IOException ioe) {
+                throw new Exception("Couldn't open " + zipFilename + ": " + ioe.getMessage());
+            }
+            ZipEntry manifestEntry = zipFile.getEntry(MANIFEST_FILENAME);
+            ZipEntry zipEntry = null;
+            long fileLength = 0;
+            int numRead = 0;
+            if (manifestEntry == null) {
+                // is it a zip of zips?
+                for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
+                    zipEntry = (ZipEntry) eEntries.nextElement();
+                    if (zipEntry.getName().endsWith(".zip")) {
+                        continue;
+                    }
+                    throw new Exception(MANIFEST_FILENAME + " file not found in " + zipFilename);
+                }
+                // if we get here, the zip file contains only other zip files recursively install them
+                String firstLSID = null;
+                for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
+                    zipEntry = (ZipEntry) eEntries.nextElement();
+                    is = zipFile.getInputStream(zipEntry);
+                    outFile = new File(System.getProperty("java.io.tmpdir"), zipEntry.getName());
+                    outFile.deleteOnExit();
+                    os = new FileOutputStream(outFile);
+                    fileLength = zipEntry.getSize();
+                    numRead = 0;
+                    byte[] buf = new byte[100000];
+                    while ((i = is.read(buf, 0, buf.length)) > 0) {
+                        os.write(buf, 0, i);
+                        numRead += i;
+                    }
+                    os.close();
+                    os = null;
+                    outFile.setLastModified(zipEntry.getTime());
+                    if (numRead != fileLength) {
+                        vProblems.add("only read " + numRead + " of " + fileLength + " bytes in " + zipFilename + "'s " + zipEntry.getName());
+                    }
+                    is.close();
+                    log.info("installing " + outFile.getAbsolutePath());
+                    lsid = installNewTask(outFile.getAbsolutePath(), username, access_id, taskIntegrator);
+                    log.info("installed " + lsid);
+                    if (firstLSID == null) {
+                        firstLSID = lsid;
+                    }
+                    outFile.delete();
+                    if (!recursive) {
+                        break; // only install the top level (first entry)
+                    }
+                }
+                return firstLSID;
+            }
 
-	    // TODO: see TaskUtil.getTaskInfoFromManifest, may be able to get rid of duplicate code
-	    Properties props = new Properties();
-	    props.load(zipFile.getInputStream(manifestEntry));
+            // TODO: see TaskUtil.getTaskInfoFromManifest, may be able to get rid of duplicate code
+            Properties props = new Properties();
+            props.load(zipFile.getInputStream(manifestEntry));
 
-	    taskName = (String) props.remove(NAME);
-	    lsid = (String) props.get(LSID);
-	    LSID l = new LSID(lsid); // ; throw MalformedURLException if this
-	    // is
-	    // a bad LSID
-	    if (taskName == null || taskName.length() == 0) {
-		vProblems.add("Missing task name in manifest in " + new File(zipFilename).getName());
-		throw new TaskInstallationException(vProblems); // abandon ship!
-	    }
-	    String taskDescription = (String) props.remove(DESCRIPTION);
+            taskName = (String) props.remove(NAME);
+            lsid = (String) props.get(LSID);
+            LSID l = new LSID(lsid); 
+            if (taskName == null || taskName.length() == 0) {
+                // ; throw MalformedURLException if this is a bad LSID
+                vProblems.add("Missing task name in manifest in " + new File(zipFilename).getName());
+                throw new TaskInstallationException(vProblems); // abandon ship!
+            }
 
-	    // ParameterInfo entries consist of name/value/description triplets,
-	    // of which the value and description are optional
-	    // It is assumed that the names are p[1-n]_name, p[1-n]_value, and
-	    // p[1-n]_description
-	    // and that the numbering runs consecutively. When there is no
-	    // p[m]_name value, then there are m-1 ParameterInfos
-	    String value;
-	    String description;
-	    Vector vParams = new Vector();
-	    ParameterInfo pi = null;
-	    boolean found = true;
-	    for (i = 1; found; i++) { // loop until we don't find p_i_name
-		name = (String) props.remove("p" + i + "_name");
-		if (name == null) {
-		    found = false;
-		    continue;
-		}
-		if (name == null || name.length() == 0) {
-		    throw new Exception("missing parameter name for " + "p" + i + "_name");
-		}
-		value = (String) props.remove("p" + i + "_value");
-		if (value == null) {
-		    value = "";
-		}
-		description = (String) props.remove("p" + i + "_description");
-		if (description == null) {
-		    description = "";
-		}
-		pi = new ParameterInfo(name, value, description);
-		HashMap attributes = new HashMap();
-		for (int attribute = 0; attribute < PARAM_INFO_ATTRIBUTES.length; attribute++) {
-		    name = (String) PARAM_INFO_ATTRIBUTES[attribute][0];
-		    value = (String) props.remove("p" + i + "_" + name);
-		    if (value != null) {
-			attributes.put(name, value);
-		    }
-		    if (name.equals(PARAM_INFO_TYPE[0]) && value != null && value.equals(PARAM_INFO_TYPE_INPUT_FILE)) {
-			attributes.put(ParameterInfo.MODE, ParameterInfo.INPUT_MODE);
-			attributes.put(ParameterInfo.TYPE, ParameterInfo.FILE_TYPE);
-		    }
-		}
-		for (Enumeration p = props.propertyNames(); p.hasMoreElements();) {
-		    name = (String) p.nextElement();
-		    if (!name.startsWith("p" + i + "_")) {
-			continue;
-		    }
-		    value = (String) props.remove(name);
-		    // _cat.debug("installTask: " + taskName + ": parameter " +
-		    // name + "=" + value);
-		    name = name.substring(name.indexOf("_") + 1);
-		    attributes.put(name, value);
-		}
-		if (attributes.size() > 0) {
-		    pi.setAttributes(attributes);
-		}
-		vParams.add(pi);
-	    }
-	    ParameterInfo[] params = new ParameterInfo[vParams.size()];
-	    vParams.copyInto(params);
+            String taskDescription = (String) props.remove(DESCRIPTION);
+            // ParameterInfo entries consist of name/value/description triplets,
+            // of which the value and description are optional
+            // It is assumed that the names are p[1-n]_name, p[1-n]_value, and p[1-n]_description
+            // and that the numbering runs consecutively. 
+            // When there is no p[m]_name value, then there are m-1 ParameterInfos
+            String value;
+            String description;
+            Vector vParams = new Vector();
+            ParameterInfo pi = null;
+            boolean found = true;
+            for (i = 1; found; i++) { // loop until we don't find p_i_name
+                name = (String) props.remove("p" + i + "_name");
+                if (name == null) {
+                    found = false;
+                    continue;
+                }
+                if (name == null || name.length() == 0) {
+                    throw new Exception("missing parameter name for " + "p" + i + "_name");
+                }
+                value = (String) props.remove("p" + i + "_value");
+                if (value == null) {
+                    value = "";
+                }
+                description = (String) props.remove("p" + i + "_description");
+                if (description == null) {
+                    description = "";
+                }
+                pi = new ParameterInfo(name, value, description);
+                HashMap attributes = new HashMap();
+                for (int attribute = 0; attribute < PARAM_INFO_ATTRIBUTES.length; attribute++) {
+                    name = (String) PARAM_INFO_ATTRIBUTES[attribute][0];
+                    value = (String) props.remove("p" + i + "_" + name);
+                    if (value != null) {
+                        attributes.put(name, value);
+                    }
+                    if (name.equals(PARAM_INFO_TYPE[0]) && value != null && value.equals(PARAM_INFO_TYPE_INPUT_FILE)) {
+                        attributes.put(ParameterInfo.MODE, ParameterInfo.INPUT_MODE);
+                        attributes.put(ParameterInfo.TYPE, ParameterInfo.FILE_TYPE);
+                    }
+                }
+                for (Enumeration p = props.propertyNames(); p.hasMoreElements();) {
+                    name = (String) p.nextElement();
+                    if (!name.startsWith("p" + i + "_")) {
+                        continue;
+                    }
+                    value = (String) props.remove(name);
+                    // _cat.debug("installTask: " + taskName + ": parameter " + name + "=" + value);
+                    name = name.substring(name.indexOf("_") + 1);
+                    attributes.put(name, value);
+                }
+                if (attributes.size() > 0) {
+                    pi.setAttributes(attributes);
+                }
+                vParams.add(pi);
+            }
+            ParameterInfo[] params = new ParameterInfo[vParams.size()];
+            vParams.copyInto(params);
 
-	    // if it's a pipeline, generate the commandLine (bug 2105)
-	    String taskType = props.getProperty(GPConstants.TASK_TYPE);
-	    if (taskType.toLowerCase().endsWith("pipeline")) {
-		// it is a pipeline
-		// replace command line with generated command line for pipelines
-		String serializedModel = props.getProperty("serializedModel");
-		PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
-		String commandLine = AbstractPipelineCodeGenerator.generateCommandLine(model);
-		props.setProperty(GPConstants.COMMAND_LINE, commandLine);
-	    }
+            // if it's a pipeline, generate the commandLine (bug 2105)
+            String taskType = props.getProperty(GPConstants.TASK_TYPE);
+            //TODO: no longer need special-case pipeline command line
+            if (taskType.toLowerCase().endsWith("pipeline")) {
+                // replace command line with generated command line for pipelines
+                String serializedModel = props.getProperty("serializedModel");
+                PipelineModel model = PipelineModel.toPipelineModel(serializedModel);
+                String commandLine = AbstractPipelineCodeGenerator.generateCommandLine(model);
+                props.setProperty(GPConstants.COMMAND_LINE, commandLine);
+            }
 
-	    // all remaining properties are assumed to be TaskInfoAttributes
-	    TaskInfoAttributes tia = new TaskInfoAttributes();
-	    for (Enumeration eProps = props.propertyNames(); eProps.hasMoreElements();) {
-		name = (String) eProps.nextElement();
-		value = props.getProperty(name);
-		tia.put(name, value);
-	    }
+            // all remaining properties are assumed to be TaskInfoAttributes
+            TaskInfoAttributes tia = new TaskInfoAttributes();
+            for (Enumeration eProps = props.propertyNames(); eProps.hasMoreElements();) {
+                name = (String) eProps.nextElement();
+                value = props.getProperty(name);
+                tia.put(name, value);
+            }
 
-	    // System.out.println("installTask (zip): username=" + username + ",
-	    // access_id=" + access_id + ", tia.owner=" + tia.get(USERID) + ",
-	    // tia.privacy=" + tia.get(PRIVACY));
-	    if (vProblems.size() == 0) {
-		log.info("installing " + taskName + " into database");
-		vProblems = GenePatternAnalysisTask.installTask(taskName, taskDescription, params, tia, username, access_id,
-			taskIntegrator);
-		if (vProblems == null) {
-		    vProblems = new Vector();
-		}
-		if (vProblems.size() == 0) {
-		    // get the newly assigned LSID
-		    lsid = (String) tia.get(GPConstants.LSID);
+            // System.out.println("installTask (zip): username=" + username + ",
+            // access_id=" + access_id + ", tia.owner=" + tia.get(USERID) + ",
+            // tia.privacy=" + tia.get(PRIVACY));
+            if (vProblems.size() == 0) {
+                log.info("installing " + taskName + " into database");
+                vProblems = GenePatternAnalysisTask.installTask(taskName, taskDescription, params, tia, username, access_id, taskIntegrator);
+                if (vProblems == null) {
+                    vProblems = new Vector();
+                }
+                if (vProblems.size() == 0) {
+                    // get the newly assigned LSID
+                    lsid = (String) tia.get(GPConstants.LSID);
 
-		    // extract files from zip file
-		    String taskDir = DirectoryManager.getTaskLibDir(null, (String) tia.get(GPConstants.LSID), username);
-		    File dir = new File(taskDir);
+                    // extract files from zip file
+                    String taskDir = DirectoryManager.getTaskLibDir(null, (String) tia.get(GPConstants.LSID), username);
+                    File dir = new File(taskDir);
 
-		    // if there are any existing files from a previous
-		    // installation
-		    // of this task,
-		    // clean them out so there is no interference
-		    File[] fileList = dir.listFiles();
-		    for (i = 0; i < fileList.length; i++) {
-			fileList[i].delete();
-		    }
+                    // if there are any existing files from a previous installation of this task,
+                    // clean them out so there is no interference
+                    File[] fileList = dir.listFiles();
+                    for (i = 0; i < fileList.length; i++) {
+                        fileList[i].delete();
+                    }
 
-		    // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-		    String folder = null;
-		    for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
-			zipEntry = (ZipEntry) eEntries.nextElement();
-			if (zipEntry.getName().equals(MANIFEST_FILENAME)) {
-			    continue;
-			}
-			is = zipFile.getInputStream(zipEntry);
-			name = zipEntry.getName();
-			if (zipEntry.isDirectory() || name.indexOf("/") != -1 || name.indexOf("\\") != -1) {
-			    // TODO: mkdirs()
-			    log.warn("installTask: skipping hierarchically-entered name: " + name);
-			    continue;
-			}
+                    // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                    String folder = null;
+                    for (Enumeration eEntries = zipFile.entries(); eEntries.hasMoreElements();) {
+                        zipEntry = (ZipEntry) eEntries.nextElement();
+                        if (zipEntry.getName().equals(MANIFEST_FILENAME)) {
+                            continue;
+                        }
+                        is = zipFile.getInputStream(zipEntry);
+                        name = zipEntry.getName();
+                        if (zipEntry.isDirectory() || name.indexOf("/") != -1 || name.indexOf("\\") != -1) {
+                            // TODO: mkdirs()
+                            log.warn("installTask: skipping hierarchically-entered name: " + name);
+                            continue;
+                        }
 
-			// copy attachments to the taskLib BEFORE installing the
-			// task, so that there is no time window when
-			// the task is installed in Omnigene's database but the
-			// files aren't decoded and so the task can't yet
-			// be properly invoked
+                        // copy attachments to the taskLib BEFORE installing the task, 
+                        // so that there is no time window when the task is installed in Omnigene's database 
+                        // but the files aren't decoded and so the task can't yet be properly invoked
 
-			// TODO: allow names to have paths, so long as they are
-			// below the current point and not above or a peer
-			// strip absolute or ../relative path names from zip
-			// entry
-			// name so that they dump into the tasklib directory
-			// only
-			i = name.lastIndexOf("/");
-			if (i != -1) {
-			    name = name.substring(i + 1);
-			}
-			i = name.lastIndexOf("\\");
-			if (i != -1) {
-			    name = name.substring(i + 1);
-			}
-			//try {
-			// TODO: support directory structure within zip file
-			outFile = new File(taskDir, name);
-			if (outFile.exists()) {
-			    File oldVersion = new File(taskDir, name + ".old");
-			    log.warn("replacing " + name + " (" + outFile.length() + " bytes) in " + taskDir
-					+ ".  Renaming old one to " + oldVersion.getName());
-				oldVersion.delete(); 
-				// delete the previous .old file
-				boolean renamed = rename(outFile, oldVersion, true);
-				if (!renamed) {
-				    log.error("failed to rename " + outFile.getAbsolutePath() + " to " + oldVersion.getAbsolutePath());
-				}
-			}
-			is.close();
-			if (os != null) {
-			    os.close();
-			    os = null;
-			}
-		    }
-		    //
-		    // unzip using ants classes to allow file permissions to be
-		    // retained
-		    boolean useAntUnzip = true;
-		    if (!System.getProperty("os.name").toLowerCase().startsWith("windows")) {
-			useAntUnzip = false;
-			Execute execute = new Execute();
-			execute.setCommandline(new String[] { "unzip", zipFilename, "-d", taskDir });
-			try {
-			    int result = execute.execute();
-			    if (result != 0) {
-				useAntUnzip = true;
-			    }
-			} catch (IOException ioe) {
-			    log.error(ioe);
-			    useAntUnzip = true;
-			}
-		    }
-		    if (useAntUnzip) {
-			Expander expander = new Expander();
-			expander.setSrc(new File(zipFilename));
-			expander.setDest(new File(taskDir));
-			expander.execute();
-		    }
+                        // TODO: allow names to have paths, 
+                        // so long as they are below the current point and not above or a peer
+                        // strip absolute or ../relative path names from zip entry name so that they dump into the tasklib directory only
+                        i = name.lastIndexOf("/");
+                        if (i != -1) {
+                            name = name.substring(i + 1);
+                        }
+                        i = name.lastIndexOf("\\");
+                        if (i != -1) {
+                            name = name.substring(i + 1);
+                        }
+                        //try {
+                        // TODO: support directory structure within zip file
+                        outFile = new File(taskDir, name);
+                        if (outFile.exists()) {
+                            File oldVersion = new File(taskDir, name + ".old");
+                            log.warn("replacing " + name + " (" + outFile.length() + " bytes) in " + taskDir
+                                    + ".  Renaming old one to " + oldVersion.getName());
+                            oldVersion.delete(); 
+                            // delete the previous .old file
+                            boolean renamed = rename(outFile, oldVersion, true);
+                            if (!renamed) {
+                                log.error("failed to rename " + outFile.getAbsolutePath() + " to " + oldVersion.getAbsolutePath());
+                            }
+                        }
+                        is.close();
+                        if (os != null) {
+                            os.close();
+                            os = null;
+                        }
+                    }
 
-		    // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-		}
-	    }
-	} catch (Exception e) {
-	    log.error(e);
-	    e.printStackTrace();
-	    vProblems.add(e.getMessage() + " while installing task");
-	} finally {
-	    try {
-		if (zipFile != null) {
-		    zipFile.close();
-		}
-	    } catch (IOException ioe) {
-	    }
-	}
-	if ((vProblems != null) && (vProblems.size() > 0)) {
-	    for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
-		log.error(eProblems.nextElement());
-	    }
-	    throw new TaskInstallationException(vProblems);
-	}
-	return lsid;
+                    // unzip using ants classes to allow file permissions to be retained
+                    boolean useAntUnzip = true;
+                    if (!System.getProperty("os.name").toLowerCase().startsWith("windows")) {
+                        useAntUnzip = false;
+                        Execute execute = new Execute();
+                        execute.setCommandline(new String[] { "unzip", zipFilename, "-d", taskDir });
+                        try {
+                            int result = execute.execute();
+                            if (result != 0) {
+                                useAntUnzip = true;
+                            }
+                        } 
+                        catch (IOException ioe) {
+                            log.error(ioe);
+                            useAntUnzip = true;
+                        }
+                    }
+                    if (useAntUnzip) {
+                        Expander expander = new Expander();
+                        expander.setSrc(new File(zipFilename));
+                        expander.setDest(new File(taskDir));
+                        expander.execute();
+                    }
+
+                    // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                }
+            }
+        } 
+        catch (Exception e) {
+            log.error(e);
+            e.printStackTrace();
+            vProblems.add(e.getMessage() + " while installing task");
+        } 
+        finally {
+            try {
+                if (zipFile != null) {
+                    zipFile.close();
+                }
+            } 
+            catch (IOException ioe) {
+            }
+        }
+        if ((vProblems != null) && (vProblems.size() > 0)) {
+            for (Enumeration eProblems = vProblems.elements(); eProblems.hasMoreElements();) {
+                log.error(eProblems.nextElement());
+            }
+            throw new TaskInstallationException(vProblems);
+        }
+        return lsid;
     }
 
     public static String installNewTask(String zipFilename, String username, int access_id, Status taskIntegrator)
@@ -4111,343 +4099,7 @@ public class GenePatternAnalysisTask {
 	return vTaskInfos;
     }
 
-    // pipeline support:
-
-    /**
-     * accepts a jobID and Process object, logging them in the htRunningPipelines Hashtable. When the pipeline
-     * terminates, they will be removed from the Hashtable by terminateJob.
-     * 
-     * @param jobID
-     *            job ID number
-     * @param p
-     *            Process object for running R pipeline
-     * @author Jim Lerner
-     * @see #terminateJob(String,Hashtable)
-     * @see #terminatePipeline(String)
-     */
-    public static void storeProcessInHash(String jobID, Process p) {
-	htRunningPipelines.put(jobID, p);
-    }
-
-    /**
-     * Creates an Omnigene database entry in the analysis_job table. Unlike other entries, this one is not dispatchable
-     * to any known analysis task because it has a bogus taskID. Since it is a pipeline, it is actually being invoked by
-     * a separate process (not GenePatternAnalysisTask), but is using the rest of the infrastructure to get input files,
-     * store output files, and retrieve status and result files.
-     * 
-     * @param userID
-     *            user who owns this pipeline data instance
-     * @param parameter_info
-     *            ParameterInfo array containing pipeline data file output entries
-     * @throws OmnigeneException
-     *             if thrown by Omnigene
-     * @throws RemoteException
-     *             if thrown by Omnigene
-     * @author Jim Lerner
-     * @see #startPipeline(String,Process)
-     * @see #terminatePipeline(String)
-     */
-    public static JobInfo createPipelineJob(String userID, String parameter_info, String pipelineName, String lsid) {
-	return createPipelineJob(userID, parameter_info, pipelineName, lsid, JobStatus.JOB_PENDING);
-    }
-
-    public static JobInfo createPipelineJob(String userID, String parameter_info, String pipelineName, String lsid, int status) {
-	JobInfo job;
-	try {
-	    HibernateUtil.beginTransaction();
-	    if (log.isDebugEnabled()) {
-		log.debug("Creating pipeline job");
-	    }
-	    Integer jobNo = getDS().addNewJob(BaseDAO.UNPROCESSABLE_TASKID, userID, parameter_info, pipelineName, null, lsid,
-		    status);
-	    job = getDS().getJobInfo(jobNo);
-
-	    if (log.isDebugEnabled()) {
-		log.debug("New pipeline jobNo= " + jobNo);
-	    }
-	    HibernateUtil.commitTransaction();
-	} catch (RuntimeException e) {
-	    log.error("Error creating pipeline.", e);
-	    HibernateUtil.rollbackTransaction();
-	    throw e;
-	}
-
-	return job;
-    }
-
-    public static JobInfo createVisualizerJob(String userID, String parameter_info, String visualizerName, String lsid)
-	    throws OmnigeneException, RemoteException {
-	try {
-	    int taskId = new org.genepattern.server.webservice.server.local.LocalAdminClient(userID).getTask(lsid).getID();
-	    Integer jobNo = getDS().recordClientJob(taskId, userID, parameter_info, -1);
-	    return getDS().getJobInfo(jobNo);
-
-	} catch (org.genepattern.webservice.WebServiceException wse) {
-	    throw new OmnigeneException("Unable to record job");
-	}
-    }
-
-    /**
-     * Changes the JobStatus of a pipeline job, and appends zero or more output parameters (output filenames) to the
-     * JobInfo ParameterInfo array for eventual return to the invoker. The jobStatus constants are those defined in
-     * edu.mit.wi.omnigene.framework.analysis.JobStatus
-     * 
-     * This method gets called from many threads which might or might not be wrapped in transactions. This needs to be
-     * committed immediately since other threads or processes might be waiting on the update.
-     * 
-     * @param jobNumber
-     *            jobID of the pipeline whose status is to be updated
-     * @param jobStatus
-     *            new status (eg. JobStatus.PROCESSING, JobStatus.DONE, etc.)
-     * @param additionalParams
-     *            array of ParameterInfo objects which represent additional output parameters from the pipeline job
-     * @throws OmnigeneException
-     *             if thrown by Omnigene
-     * @throws RemoteException
-     *             if thrown by Omnigene
-     * @author Jim Lerner
-     * @see org.genepattern.webservice.JobStatus
-     */
-    public static void updatePipelineStatus(int jobNumber, int jobStatus, ParameterInfo[] additionalParams)
-	    throws OmnigeneException, RemoteException {
-	if (log.isDebugEnabled()) {
-	    log.debug("Updating pipeline status.  job# = " + jobNumber);
-	}
-	try {
-	    HibernateUtil.beginTransaction();
-	    JobInfo jobInfo = getDS().getJobInfo(jobNumber);
-	    if (additionalParams != null) {
-		for (int i = 0; i < additionalParams.length; i++) {
-		    jobInfo.addParameterInfo(additionalParams[i]);
-		}
-	    }
-	    if (jobStatus < JobStatus.JOB_PENDING) {
-		jobStatus = ((Integer) JobStatus.STATUS_MAP.get(jobInfo.getStatus())).intValue();
-	    }
-	    getDS().updateJob(jobNumber, jobInfo.getParameterInfo(), jobStatus);
-	    HibernateUtil.commitTransaction();
-	} catch (OmnigeneException ex) {
-	    log.error("Error updating pipeline status.  jobNumber=" + jobNumber);
-	    HibernateUtil.rollbackTransaction();
-	}
-    }
-
-    /**
-     * Changes the JobStatus of a pipeline job, and appends zero or one output parameters (output filenames) to the
-     * jobs's JobInfo ParameterInfo array for eventual return to the invoker. This routine is actually invoked from
-     * updatePipelineStatus.jsp. The jobStatus constants are those defined in
-     * edu.mit.wi.omnigene.framework.analysis.JobStatus
-     * 
-     * @param jobNumber
-     *            jobID of the pipeline whose status is to be updated
-     * @param jobStatus
-     *            new status (eg. JobStatus.PROCESSING, JobStatus.DONE, etc.)
-     * @param name
-     *            optional [short] name of filename parameter, ie. without directory information
-     * @param additionalFilename
-     *            optional filename of output file for this job
-     * @throws OmnigeneException
-     *             if thrown by Omnigene
-     * @throws RemoteException
-     *             if thrown by Omnigene
-     * @author Jim Lerner
-     * @see org.genepattern.webservice.JobStatus
-     */
-    public static void updatePipelineStatus(int jobNumber, int jobStatus, String name, String additionalFilename)
-	    throws OmnigeneException, RemoteException {
-
-	if (name != null && additionalFilename != null) {
-	    ParameterInfo additionalParam = new ParameterInfo();
-	    additionalParam.setAsOutputFile();
-	    additionalParam.setName(name);
-	    additionalParam.setValue(additionalFilename);
-	    updatePipelineStatus(jobNumber, jobStatus, new ParameterInfo[] { additionalParam });
-	} else {
-	    updatePipelineStatus(jobNumber, jobStatus, null);
-	}
-    }
-
-    /**
-     * accepts a jobID and attempts to terminate the running pipeline process. Pipelines are notable only in that they
-     * are sometimes run not as Omnigene tasks, but as R code that runs through each task serially. The running R
-     * process itself is the "pipeline", although it isn't strictly speaking a task. When the pipeline is run as a task,
-     * it is not treated as a pipeline in this code. The pipeline behavior only occurs when run via runPipeline.jsp,
-     * allowing intermediate results of the task to appear, which would not happen if it were run as a task (all or none
-     * for output).
-     * 
-     * @param jobID
-     *            JobInfo jobNumber
-     * @return Process of the pipeline if running, else null
-     * @author Jim Lerner
-     */
-    public static Process terminatePipeline(String jobID) {
-	Process p = (Process) htRunningPipelines.remove(jobID);
-	if (p != null) {
-	    p.destroy();
-	} else {
-	    p = (Process) htRunningJobs.get(jobID);
-	    if (p != null) {
-		p.destroy();
-	    }
-	}
-	return p;
-    }
-
-    public static void terminateAll(String message) {
-	log.debug(message);
-	String jobID;
-	Enumeration eJobs;
-	int numTerminated = 0;
-	for (eJobs = htRunningPipelines.keys(); eJobs.hasMoreElements();) {
-	    jobID = (String) eJobs.nextElement();
-	    log.info("Terminating job " + jobID);
-	    Process p = terminatePipeline(jobID);
-	    if (p != null) {
-		try {
-		    updatePipelineStatus(Integer.parseInt(jobID), JobStatus.JOB_ERROR, null);
-		} catch (Exception e) { /* ignore */
-		}
-	    }
-	    numTerminated++;
-	}
-	for (eJobs = htRunningJobs.keys(); eJobs.hasMoreElements();) {
-	    jobID = (String) eJobs.nextElement();
-	    log.info("Terminating job " + jobID);
-	    terminateJob(jobID, htRunningJobs);
-	    numTerminated++;
-	}
-	if (numTerminated > 0) {
-	    // let the processes terminate, clean up, and record their outputs
-	    // in the database
-	    Thread.yield();
-	}
-    }
-
     // utility methods:
-
-    /**
-     * Creates a new Thread which blocks on reads to an InputStream, appends their output to the given file. The thread
-     * terminates upon EOF from the InputStream.
-     * 
-     * @param is
-     *            InputStream to read from
-     * @param file
-     *            file to write to
-     * @author Jim Lerner
-     */
-    protected Thread streamToFile(final InputStream is, final File file) {
-	// create thread to read from a process' output or error stream
-	return new Thread() {
-	    public void run() {
-		byte[] b = new byte[2048];
-		int bytesRead;
-		BufferedOutputStream fis = null;
-		boolean wroteBytes = false;
-		try {
-		    fis = new BufferedOutputStream(new FileOutputStream(file));
-		    while ((bytesRead = is.read(b)) >= 0) {
-			wroteBytes = true;
-			fis.write(b, 0, bytesRead);
-		    }
-		} catch (IOException e) {
-		    e.printStackTrace();
-		    log.error(e);
-		} finally {
-		    if (fis != null) {
-			try {
-			    fis.flush();
-			    fis.close();
-			} catch (IOException e) {
-			    e.printStackTrace();
-			}
-		    }
-		    if (!wroteBytes) {
-			file.delete();
-		    }
-		}
-	    }
-	};
-    }
-    
-    /**
-     * Remove lines from the errFile which match exactMatch. This has the effect of deleting the errFile if
-     * the errFile contains nothing but matching lines.
-     * 
-     * This is a workaround (HACK) for GP-2856, the following line
-     *     [Deprecated] Xalan: org.apache.xml.xml_soap.MapItemBeanInfo 
-     * is on the stderr stream of the pipeline process, causing GP to flag the pipeline as an ERROR.
-     * 
-     * @param errFile
-     * @param exactMatch
-     */
-    protected void suppressLinesFromStdErrFile(File errFile, String exactMatch) {
-        if (errFile == null || !errFile.exists()) {
-            log.error("File does not exist: " + (errFile == null ? "null" : errFile.getAbsolutePath()));
-            return;
-        }
-        if (!errFile.canRead()) {
-            log.error("Can't read file: "+errFile.getPath());
-            return;
-        }
-        
-        File origFile = new File(errFile.getParent(), errFile.getName() + ".orig");        
-        boolean success = errFile.renameTo(origFile);
-        if (!success) {
-            log.error("Not able to rename '"+errFile.getAbsolutePath()+"' to '"+origFile.getAbsolutePath()+"'");
-            return;
-        }
-        
-        //output filtered contents back to errFile
-        FileWriter fw = null;
-        try {
-            fw = new FileWriter(errFile);
-        }
-        catch (IOException e) {
-            log.error("Not able to write to file: "+errFile.getAbsolutePath(), e);
-            return;
-        }
-        PrintWriter pw = new PrintWriter(fw);
-        
-        FileReader fr = null;
-        try {
-            fr = new FileReader(origFile);
-        }
-        catch (FileNotFoundException e) {
-            log.error("FileNotFound: "+origFile.getPath(), e);
-            return;
-        }
-        
-        boolean wroteLine = false;
-        try {
-            BufferedReader br = new BufferedReader(fr);
-            String line = null;
-            while ((line = br.readLine()) != null) {
-                if (!line.trim().equals(exactMatch)) {
-                    pw.println(line);
-                    pw.flush();
-                    wroteLine = true;
-                }
-            }
-            pw.close();
-            br.close();
-        }
-        catch (IOException e) {
-            log.error("IOException while reading line", e);
-        }
-        
-        if (!wroteLine) {
-            //shouldn't have to do this
-            success = errFile.delete();
-            if (!success) {
-                log.error("Unable to delete file "+errFile.getAbsolutePath());
-            }
-        }
-        
-        success = origFile.delete();
-        if (!success) {
-            log.error("Unable to delete file "+origFile.getAbsolutePath());
-        }
-    }
     
     /**
      * Copy of streamToFile which filters out suppresses output of anything on the input stream which matches
@@ -4532,27 +4184,26 @@ public class GenePatternAnalysisTask {
      * @return File that was written
      * @author Jim Lerner
      */
-    protected File writeStringToFile(String dirName, String filename, String outputString) {
-	File outFile = null;
-	try {
-	    outFile = new File(dirName, filename);
-	    FileWriter fw = new FileWriter(outFile, true);
-	    fw.write(outputString != null ? outputString : "");
-	    fw.close();
-	} catch (NullPointerException npe) {
-	    log.error(getClass().getName() + ": writeStringToFile(" + dirName + ", " + filename + ", " + outputString + "): "
-		    + npe.getMessage());
-	    npe.printStackTrace();
-	} catch (IOException ioe) {
-	    log.error(getClass().getName() + ": writeStringToFile(" + dirName + ", " + filename + ", " + outputString + "): "
-		    + ioe.getMessage());
-	    ioe.printStackTrace();
-	} finally {
-	    if (true) {
-		return outFile;
-	    }
-	}
-	return outFile;
+    public static File writeStringToFile(File parentDir, String filename, String outputString) {
+        File outFile = null;
+        try {
+            outFile = new File(parentDir, filename);
+            FileWriter fw = new FileWriter(outFile, true);
+            fw.write(outputString != null ? outputString : "");
+            fw.close();
+        } 
+        catch (NullPointerException npe) {
+            log.error("writeStringToFile(" + parentDir + ", " + filename + ", " + outputString + "): " + npe.getMessage(), npe);
+        } 
+        catch (IOException ioe) {
+            log.error("writeStringToFile(" + parentDir + ", " + filename + ", " + outputString + "): " + ioe.getMessage(), ioe);
+        } 
+        finally {
+            if (true) {
+                return outFile;
+            }
+        }
+        return outFile;
     }
 
     /**
@@ -4685,59 +4336,67 @@ public class GenePatternAnalysisTask {
     }
 
     public static void announceReady() {
-	GenePatternAnalysisTask gpat = new GenePatternAnalysisTask();
-	log.info("GenePattern server version " + System.getProperty("GenePatternVersion") + " is ready.");
+        log.info("GenePattern server version " + System.getProperty("GenePatternVersion") + " is ready.");
     }
 
     /**
-     * return boolean indicating whether a filename represents a code file
+     * return boolean indicating whether a filename represents a code file.
      */
     public static boolean isCodeFile(String filename) {
-	return hasEnding(filename, "code");
+        return hasEnding(filename, codeEndings);
     }
 
     /**
-     * return boolean indicating whether a filename represents a documentation file
+     * return boolean indicating whether a filename represents a documentation file.
      */
     public static boolean isDocFile(String filename) {
-	return hasEnding(filename, "doc");
+        return hasEnding(filename, docEndings);
     }
 
     /**
-     * return boolean indicating whether a filename represents a binary file
+     * return boolean indicating whether a filename represents a binary file.
      */
     public static boolean isBinaryFile(String filename) {
-	return hasEnding(filename, "binary");
+        return hasEnding(filename, binaryEndings);
+    }
+
+    //initialize hasEnding support     
+    private static List<String> codeEndings;
+    private static List<String> docEndings;
+    private static List<String> binaryEndings;
+    static {
+        codeEndings = csvToList(System.getProperty("files.code", "").toLowerCase());
+        docEndings = csvToList(System.getProperty("files.doc", "").toLowerCase());
+        binaryEndings = csvToList(System.getProperty("files.binary", "").toLowerCase());
     }
 
     /**
      * return boolean indicating whether a filename represents a file type (as found in
      * System.getProperties(files.{code,doc,binary}))
      */
-    protected static boolean hasEnding(String filename, String fileType) {
-	String endings = System.getProperty("files." + fileType, "");
-	Vector vEndings = csvToVector(endings.toLowerCase());
-	boolean ret = false;
-	filename = new File(filename).getName().toLowerCase();
-	int lastDot = filename.lastIndexOf(".");
-	if (lastDot == -1) {
-	    ret = vEndings.contains("");
-	} else {
-	    ret = vEndings.contains(filename.substring(lastDot + 1));
-	}
-	return ret;
+    private static boolean hasEnding(String filename, List<String> fileEndings) {
+        boolean ret = false;
+        filename = new File(filename).getName().toLowerCase();
+        int lastDot = filename.lastIndexOf(".");
+        if (lastDot == -1) {
+            ret = fileEndings.contains("");
+        }
+        else {
+            ret = fileEndings.contains(filename.substring(lastDot + 1));
+        }
+        return ret;
     }
 
     /**
-     * convert a CSV list into a Vector
+     * convert a CSV list into a List<String>.
      */
-    protected static Vector csvToVector(String csv) {
-	StringTokenizer stEntries = new StringTokenizer(csv, ",; ");
-	Vector vEntries = new Vector();
-	while (stEntries.hasMoreTokens()) {
-	    vEntries.add(stEntries.nextToken());
-	}
-	return vEntries;
+    private static List<String> csvToList(String csv) {
+        StringTokenizer stEntries = new StringTokenizer(csv, ",; ");
+        List<String> vEntries = new ArrayList<String>();
+        while (stEntries.hasMoreTokens()) {
+            vEntries.add(stEntries.nextToken());
+        }
+        return vEntries;
     }
 
     // implements FilenameFilter, but static

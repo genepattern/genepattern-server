@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#
+# mock LSF support, for debugging on a platform which does not have lsf installed
+#
+
+echo "bsub $@" > bsub_cmd.txt;
+
+gp_job_id=$2;
+mock_lsf_id="10$gp_job_id";
+
+echo "gp_job_id: $gp_job_id" >> bsub_cmd.txt;
+echo "mock_lsf_id: $mock_lsf_id" >> bsub_cmd.txt;
+
+echo "Job <$mock_lsf_id> is submitted to queue <genepattern>."
+
+

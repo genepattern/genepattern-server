@@ -31,9 +31,9 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
@@ -54,7 +54,6 @@ import org.genepattern.server.TaskUtil;
 import org.genepattern.server.TaskUtil.ZipFileType;
 import org.genepattern.server.domain.Suite;
 import org.genepattern.server.domain.SuiteDAO;
-import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.domain.TaskMasterDAO;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.LSIDManager;
@@ -76,6 +75,7 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.SuiteInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceErrorMessageException;
 import org.genepattern.webservice.WebServiceException;
 
@@ -86,7 +86,6 @@ import org.genepattern.webservice.WebServiceException;
  */
 
 public class TaskIntegrator {
-
     private static Logger log = Logger.getLogger(TaskIntegrator.class);
 
     private IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
@@ -97,82 +96,72 @@ public class TaskIntegrator {
      * @return
      */
     protected String getUserName() {
-	MessageContext context = MessageContext.getCurrentContext();
-	String username = context.getUsername();
-	if (username == null) {
-	    username = "";
-	}
-	return username;
+        MessageContext context = MessageContext.getCurrentContext();
+        String username = context.getUsername();
+        if (username == null) {
+            username = "";
+        }
+        return username;
     }
 
     /**
-     * Clones the given task.
+     * Clones the given task. Cloning is a form of task creation and requires the "createModule" permission.
      * 
-     * Cloning is a form of task creation and requires teh "createModule" permission
+     * @param lsid, The lsid of the task to clone
+     * @param cloneName, The name of the cloned task
      * 
-     * @param lsid
-     *                The lsid of the task to clone
-     * @param cloneName
-     *                The name of the cloned task
      * @return The LSID of the cloned task
-     * @exception WebServiceException
-     *                    If an error occurs
+     * @exception WebServiceException, If an error occurs
      */
     public String cloneTask(String oldLSID, String cloneName) throws WebServiceException {
-    	String userID = getUserName();
+        TaskInfo oldTaskInfo = null;
+        try {
+            oldTaskInfo = TaskInfoCache.instance().getTask(oldLSID);
+            Integer oldTaskId = oldTaskInfo.getID();
+            TaskInfoCache.instance().removeFromCache(oldTaskId);
+        }
+        catch (Throwable t) {
+            log.error(t);
+            throw new WebServiceException(t);
+        }
 
-    	TaskInfo taskInfo = null;
-	    try {
-	    	taskInfo = new LocalAdminClient(userID).getTask(oldLSID);
-	    } catch (Exception e) {
-	    	log.error(e);
-	    	throw new WebServiceException(e);
-	    }
-    	
-	    String taskType = (String)taskInfo.getAttributes().get("taskType");
-	     if ("pipeline".equals(taskType)){
-	    	isAuthorized(getUserName(), "createPipeline");
-	    } else {
-	    	isAuthorized(getUserName(), "createModule");
-	    }
-	    	
-	    	
-	try {
-	    
-	    taskInfo.setName(cloneName);
-	    taskInfo.setAccessId(ACCESS_PRIVATE);
-	    taskInfo.setUserId(userID);
-	    TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+        String userID = getUserName();
+        String taskType = (String)oldTaskInfo.getAttributes().get("taskType");
+        if ("pipeline".equals(taskType)){
+            isAuthorized(userID, "createPipeline");
+        } 
+        else {
+            isAuthorized(userID, "createModule");
+        }
 
-	    isAuthorizedCreateTask(userID, tia);
+        try {
+            TaskInfoAttributes tia = oldTaskInfo.giveTaskInfoAttributes();
 
-	    tia.put(USERID, userID);
-	    tia.put(PRIVACY, PRIVATE);
-	    oldLSID = (String) tia.remove(LSID);
-	    if (tia.get(TASK_TYPE).equals(TASK_TYPE_PIPELINE)) {
-		PipelineModel model = PipelineModel.toPipelineModel((String) tia.get(SERIALIZED_MODEL));
+            tia.put(USERID, userID);
+            tia.put(PRIVACY, PRIVATE);
+            oldLSID = (String) tia.remove(LSID);
+            if (tia.get(TASK_TYPE).equals(TASK_TYPE_PIPELINE)) {
+                PipelineModel model = PipelineModel.toPipelineModel((String) tia.get(SERIALIZED_MODEL));
 
-		// update the pipeline model with the new name
-		model.setName(cloneName);
-		model.setUserid(userID);
+                // update the pipeline model with the new name
+                model.setName(cloneName);
+                model.setUserid(userID);
 
-		// update the task with the new model and command line
-		TaskInfoAttributes newTIA = AbstractPipelineCodeGenerator.getTaskInfoAttributes(model);
-			model.setPrivacy(PRIVATE);
-			tia.put(SERIALIZED_MODEL, model.toXML());
-			tia.put(COMMAND_LINE, newTIA.get(COMMAND_LINE));
-			tia.put(PRIVACY, PRIVATE);
-		    
-	    }
-	    String newLSID = modifyTask(ACCESS_PRIVATE, cloneName, taskInfo.getDescription(), taskInfo
-		    .getParameterInfoArray(), tia, null, null);
-	    cloneTaskLib(taskInfo.getName(), cloneName, oldLSID, newLSID, userID);
-	    return newLSID;
-	} catch (Exception e) {
-	    log.error("cloning", e);
-	    
-	    throw new WebServiceException(e);
-	}
+                // update the task with the new model and command line
+                TaskInfoAttributes newTIA = AbstractPipelineCodeGenerator.getTaskInfoAttributes(model);
+                model.setPrivacy(PRIVATE);
+                tia.put(SERIALIZED_MODEL, model.toXML());
+                tia.put(COMMAND_LINE, newTIA.get(COMMAND_LINE));
+                tia.put(PRIVACY, PRIVATE);
+            }
+            String newLSID = modifyTask(ACCESS_PRIVATE, cloneName, oldTaskInfo.getDescription(), oldTaskInfo.getParameterInfoArray(), tia, null, null);
+            cloneTaskLib(oldTaskInfo.getName(), cloneName, oldLSID, newLSID, userID);
+            return newLSID;
+        } 
+        catch (Exception e) {
+            log.error("cloning", e);
+            throw new WebServiceException(e);
+        }
     }
 
     /**
@@ -226,14 +215,14 @@ public class TaskIntegrator {
      *                    If an error occurs
      */
     public void delete(String lsid) throws WebServiceException {
-	if (LSIDUtil.isSuiteLSID(lsid)) {
-	    isSuiteOwnerOrAuthorized(getUserName(), lsid, "adminSuites");
-	    TaskIntegratorDAO dao = new TaskIntegratorDAO();
-	    dao.deleteSuite(lsid);
-
-	} else {
-	    deleteTask(lsid);
-	}
+        if (LSIDUtil.isSuiteLSID(lsid)) {
+            isSuiteOwnerOrAuthorized(getUserName(), lsid, "adminSuites");
+            TaskIntegratorDAO dao = new TaskIntegratorDAO();
+            dao.deleteSuite(lsid);
+        } 
+        else {
+            deleteTask(lsid);
+        }
     }
 
     /**
@@ -247,29 +236,29 @@ public class TaskIntegrator {
     public void deleteTask(String lsid) throws WebServiceException {
     	String username = getUserName();
     	 
-	isTaskOwnerOrAuthorized(username, lsid, "adminModules");
-	if (lsid == null || lsid.equals("")) {
-	    throw new WebServiceException("Invalid LSID");
-	}
-	try {
-	    TaskInfo taskInfo = new LocalAdminClient(username).getTask(lsid);
-	    
-	    if (taskInfo == null) {
-	    	throw new WebServiceException("no such module " + lsid);
-	    }
-	    String moduleDirectory = DirectoryManager.getTaskLibDir(taskInfo);
-	    
-	    GenePatternAnalysisTask.deleteTask(lsid);
-	    Delete del = new Delete();
-	    del.setDir(new File(moduleDirectory));
-	    del.setIncludeEmptyDirs(true);
-	    del.setProject(new Project());
-	    del.execute();
-	} catch (Throwable e) {
-		e.printStackTrace();
-	    log.error(e);
-	    throw new WebServiceException("while deleting module " + lsid, e);
-	}
+    	isTaskOwnerOrAuthorized(username, lsid, "adminModules");
+    	if (lsid == null || lsid.equals("")) {
+    	    throw new WebServiceException("Invalid LSID");
+    	}
+    	try {
+    	    TaskInfo taskInfo = new LocalAdminClient(username).getTask(lsid);
+    	    if (taskInfo == null) {
+    	        throw new WebServiceException("no such module " + lsid);
+    	    }
+    	    String moduleDirectory = DirectoryManager.getTaskLibDir(taskInfo);
+
+    	    GenePatternAnalysisTask.deleteTask(lsid);
+    	    Delete del = new Delete();
+    	    del.setDir(new File(moduleDirectory));
+    	    del.setIncludeEmptyDirs(true);
+    	    del.setProject(new Project());
+    	    del.execute();
+    	} 
+    	catch (Throwable e) {
+    	    e.printStackTrace();
+    	    log.error(e);
+    	    throw new WebServiceException("while deleting module " + lsid, e);
+    	}
     }
 
     public DataHandler exportSuiteToZip(String lsid) throws WebServiceException {
@@ -326,28 +315,27 @@ public class TaskIntegrator {
      * @throws WebServiceException
      */
     public String[] getDocFileNames(String lsid) throws WebServiceException {
-	if (lsid == null || lsid.equals("")) {
-	    throw new WebServiceException("Invalid LSID");
-	}
-
-	try {
-
-	    String taskLibDir = DirectoryManager.getLibDir(lsid);
-	    String[] docFiles = new File(taskLibDir).list(new FilenameFilter() {
-		public boolean accept(File dir, String name) {
-		    return GenePatternAnalysisTask.isDocFile(name) && !name.equals("version.txt");
-		}
-	    });
-	    if (docFiles == null) {
-		docFiles = new String[0];
-	    }
-	    return docFiles;
-	} catch (Exception e) {
-	    log.error(e);
-	    throw new WebServiceException("while getting doc filenames", e);
-	}
+        if (lsid == null || lsid.equals("")) {
+            throw new WebServiceException("Invalid LSID");
+        }
+        try {
+            String taskLibDir = DirectoryManager.getLibDir(lsid);
+            String[] docFiles = new File(taskLibDir).list(new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    return GenePatternAnalysisTask.isDocFile(name) && !name.equals("version.txt");
+                }
+            });
+            if (docFiles == null) {
+                docFiles = new String[0];
+            }
+            return docFiles;
+        } 
+        catch (Exception e) {
+            log.error(e);
+            throw new WebServiceException("while getting doc filenames", e);
+        }
     }
-
+    
     /**
      * Gets the files that belong to the given task or suite that are considered to be documentation files. Returned as
      * an array of DataHandlers.
@@ -358,40 +346,27 @@ public class TaskIntegrator {
      * @exception WebServiceException
      *                    If an error occurs
      */
-    public DataHandler[] getDocFiles(String lsid) throws WebServiceException {
-	String taskLibDir = null;
+    private DataHandler[] getDocFiles(Integer taskId, String lsid) throws WebServiceException {
+        List<String> docFilenames = TaskInfoCache.instance().getDocFilenames(taskId, lsid);
 
-	try {
-	    taskLibDir = DirectoryManager.getLibDir(lsid);
-	} catch (Exception e) {
-	    log.error(e);
-	    throw new WebServiceException(e);
-	}
-	File[] docFiles = new File(taskLibDir).listFiles(new FilenameFilter() {
-	    public boolean accept(File dir, String name) {
-		return GenePatternAnalysisTask.isDocFile(name) && !name.equals("version.txt");
-	    }
-	});
-	boolean hasDoc = docFiles != null && docFiles.length > 0;
-	if (hasDoc) {
-	    // put version.txt last, all others alphabetically
-	    Arrays.sort(docFiles, new Comparator() {
-		public int compare(Object o1, Object o2) {
-		    if (((File) o1).getName().equals("version.txt")) {
-			return 1;
-		    }
-		    return ((File) o1).getName().compareToIgnoreCase(((File) o2).getName());
-		}
-	    });
-	}
-	if (docFiles == null) {
-	    return new DataHandler[0];
-	}
-	DataHandler[] dh = new DataHandler[docFiles.length];
-	for (int i = 0, length = docFiles.length; i < length; i++) {
-	    dh[i] = new DataHandler(new FileDataSource(docFiles[i]));
-	}
-	return dh;
+        File taskLibDir = null;
+        try {
+            String libDir = DirectoryManager.getLibDir(lsid);
+            taskLibDir = new File(libDir);
+        } 
+        catch (Exception e) {
+            log.error(e);
+            throw new WebServiceException(e);
+        }
+        
+        DataHandler[] dh = new DataHandler[docFilenames.size()];
+        int i=0;
+        for(String docFilename : docFilenames) {
+            File f = new File(taskLibDir, docFilename);
+            dh[i] = new DataHandler(new FileDataSource(f));
+            ++i;
+        }
+        return dh;
     }
 
     /**
@@ -543,30 +518,27 @@ public class TaskIntegrator {
     /**
      * Installs the zip file overwriting anything already there.
      * 
-     * @param handler
-     *                The zip file
-     * @param privacy
-     *                One of GPConstants.ACCESS_PUBLIC or GPConstants.ACCESS_PRIVATE
+     * @param handler, The zip file
+     * @param privacy, One of GPConstants.ACCESS_PUBLIC or GPConstants.ACCESS_PRIVATE
      * @return The LSID of the task
-     * @throws WebServiceException
-     *                 If an error occurs
+     * @throws WebServiceException, If an error occurs
      */
     public String importZip(DataHandler handler, int privacy) throws WebServiceException {
-	return importZip(handler, privacy, true, null);
+        return importZip(handler, privacy, true, null);
     }
 
     private String importZip(DataHandler handler, int privacy, boolean recursive, Status status)
-	    throws WebServiceException {
-
-	File axisFile = Util.getAxisFile(handler);
-	File zipFile = new File(handler.getName() + ".zip");
-	axisFile.renameTo(zipFile);
-	try {
-	    return importZipFromURL(zipFile.getCanonicalPath(), privacy, recursive, status);
-	} catch (IOException e) {
-	    throw new WebServiceException();
-	}
-
+    throws WebServiceException 
+    {
+        File axisFile = Util.getAxisFile(handler);
+        File zipFile = new File(handler.getName() + ".zip");
+        axisFile.renameTo(zipFile);
+        try {
+            return importZipFromURL(zipFile.getCanonicalPath(), privacy, recursive, status);
+        } 
+        catch (IOException e) {
+            throw new WebServiceException();
+        }
     }
 
     /**
@@ -585,51 +557,54 @@ public class TaskIntegrator {
     }
 
     public String importZipFromURL(String url, int privacy, boolean recursive, Status taskIntegrator)
-	    throws WebServiceException {
-	File zipFile = null;
-	if (recursive) {
-	    // recursive install only allowed if createModule permission granted
-	    recursive = AuthorizationHelper.createModule(getUserName());
-	}
-	try {
-	    String username = getUserName();
-	    zipFile = Util.downloadUrl(url);
+	throws WebServiceException {
+        File zipFile = null;
+        if (recursive) {
+            // recursive install only allowed if createModule permission granted
+            recursive = AuthorizationHelper.createModule(getUserName());
+        }
+        try {
+            String username = getUserName();
+            zipFile = Util.downloadUrl(url);
 
-	    ZipFileType type = TaskUtil.getZipFileType(zipFile);
-	    if (zipFile.equals(ZipFileType.INVALID_ZIP)) {
-		throw new WebServiceException("Couldn't find task or suite manifest in zip file ");
-	    }
+            ZipFileType type = TaskUtil.getZipFileType(zipFile);
+            if (zipFile.equals(ZipFileType.INVALID_ZIP)) {
+                throw new WebServiceException("Couldn't find task or suite manifest in zip file ");
+            }
 
-	    if (type.equals(ZipFileType.MODULE_ZIP)) {
-		isAuthorized(getUserName(), "createModule");
-		return GenePatternAnalysisTask.installNewTask(zipFile.getCanonicalPath(), username, privacy, recursive,
-			taskIntegrator);
-	    } else if (type.equals(ZipFileType.PIPELINE_ZIP)) {
-		isAuthorized(getUserName(), "createPipeline");
-		return GenePatternAnalysisTask.installNewTask(zipFile.getCanonicalPath(), username, privacy, recursive,
-			taskIntegrator);
-	    } else if (type.equals(ZipFileType.PIPELINE_ZIP_OF_ZIPS)) {
-		isAuthorized(getUserName(), "createPipeline");
-		return GenePatternAnalysisTask.installNewTask(zipFile.getCanonicalPath(), username, privacy, recursive,
-			taskIntegrator);
-	    } else if (type.equals(ZipFileType.SUITE_ZIP)) {
-		isAuthorized(getUserName(), "createSuite");
-		return installSuite(zipFile, privacy);
-	    } else if (type.equals(ZipFileType.SUITE_ZIP_OF_ZIPS)) {
-		isAuthorized(getUserName(), "createSuite");
-		return installSuiteFromZipOfZips(zipFile, recursive, privacy);
-	    }
-	} catch (TaskInstallationException tie) {
-	    throw new WebServiceErrorMessageException(tie.getErrors());
-	} catch (IOException ioe) {
-	    throw new WebServiceException("while importing zip from " + url, ioe);
-	} finally {
-	    if (zipFile != null) {
-		zipFile.delete();
-	    }
-	}
-	return url;
-
+            if (type.equals(ZipFileType.MODULE_ZIP)) {
+                isAuthorized(getUserName(), "createModule");
+                return GenePatternAnalysisTask.installNewTask(zipFile.getCanonicalPath(), username, privacy, recursive, taskIntegrator);
+            } 
+            else if (type.equals(ZipFileType.PIPELINE_ZIP)) {
+                isAuthorized(getUserName(), "createPipeline");
+                return GenePatternAnalysisTask.installNewTask(zipFile.getCanonicalPath(), username, privacy, recursive, taskIntegrator);
+            } 
+            else if (type.equals(ZipFileType.PIPELINE_ZIP_OF_ZIPS)) {
+                isAuthorized(getUserName(), "createPipeline");
+                return GenePatternAnalysisTask.installNewTask(zipFile.getCanonicalPath(), username, privacy, recursive, taskIntegrator);
+            } 
+            else if (type.equals(ZipFileType.SUITE_ZIP)) {
+                isAuthorized(getUserName(), "createSuite");
+                return installSuite(zipFile, privacy);
+            } 
+            else if (type.equals(ZipFileType.SUITE_ZIP_OF_ZIPS)) {
+                isAuthorized(getUserName(), "createSuite");
+                return installSuiteFromZipOfZips(zipFile, recursive, privacy);
+            }
+        } 
+        catch (TaskInstallationException tie) {
+            throw new WebServiceErrorMessageException(tie.getErrors());
+        } 
+        catch (IOException ioe) {
+            throw new WebServiceException("while importing zip from " + url, ioe);
+        } 
+        finally {
+            if (zipFile != null) {
+                zipFile.delete();
+            }
+        }
+        return url;
     }
 
     /**
@@ -1083,161 +1058,148 @@ public class TaskIntegrator {
     /**
      * Modifies the task with the given name. If the task does not exist, it will be created.
      * 
-     * @param accessId
-     *                One of GPConstants.ACCESS_PUBLIC or GPConstants.ACCESS_PRIVATE
-     * @param taskName
-     *                The name of the task
-     * @param description
-     *                The description
-     * @param parameterInfoArray
-     *                The input parameters
-     * @param taskAttributes
-     *                Attributes that go in the task manifest file
-     * @param dataHandlers
-     *                Holds the uploaded files
-     * @param fileNames
-     *                The file names for the <tt>dataHandlers</tt> array. If the array has more elements than the
+     * @param accessId, One of GPConstants.ACCESS_PUBLIC or GPConstants.ACCESS_PRIVATE
+     * @param taskName, The name of the task
+     * @param description, The description
+     * @param parameterInfoArray, The input parameters
+     * @param taskAttributes, Attributes that go in the task manifest file
+     * @param dataHandlers, Holds the uploaded files
+     * @param fileNames, The file names for the <tt>dataHandlers</tt> array. If the array has more elements than the
      *                <tt>dataHandlers</tt> array, then the additional elements are assumed to be uploaded files for
      *                an existing task with the LSID contained in <tt>taskAttributes</tt> or the the element is of the
      *                form 'job #, filename', then the element is assumed to be an output from a job.
      * 
      * @return The LSID of the task
-     * @exception WebServiceException
-     *                    If an error occurs
+     * @exception WebServiceException, If an error occurs
      */
-    public String modifyTask(int accessId, String taskName, String description, ParameterInfo[] parameterInfoArray,
-	    Map taskAttributes, DataHandler[] dataHandlers, String[] fileNames) throws WebServiceException {
-	
-    	
-    	String taskType = (String)taskAttributes.get("taskType");
-	     if ("pipeline".equals(taskType)){
-	    	isAuthorized(getUserName(), "createPipeline");
-	    } else {
-	    	isAuthorized(getUserName(), "createModule");
+    public String modifyTask(int accessId, String taskName, String description, ParameterInfo[] parameterInfoArray, Map taskAttributes, DataHandler[] dataHandlers, String[] fileNames) 
+    throws WebServiceException 
+    {
+        String taskType = (String)taskAttributes.get("taskType");
+        if ("pipeline".equals(taskType)){
+            isAuthorized(getUserName(), "createPipeline");
 	    }
-	
-	String lsid = null;
-	String username = getUserName();
-	String oldLSID = null;
-	try {
+        else {
+            isAuthorized(getUserName(), "createModule");
+        }
 
-	    if (taskAttributes == null) {
-		taskAttributes = new HashMap();
-	    }
-	    if (parameterInfoArray == null) {
-		parameterInfoArray = new ParameterInfo[0];
-	    }
-	    lsid = (String) taskAttributes.get(LSID);
-	    oldLSID = lsid;
-	    // if an LSID is set, make sure that it is for the current
-	    // authority, not the task's source, since it is now modified
-	    if (lsid != null && lsid.length() > 0) {
-		try {
-		    LSID l = new LSID(lsid);
-		    String authority = LSIDManager.getInstance().getAuthority();
-		    if (!l.getAuthority().equals(authority)) {
-			System.out.println("TaskIntegrator.modifyTask: resetting authority from " + l.getAuthority()
-				+ " to " + authority);
-			lsid = "";
-			taskAttributes.put(LSID, lsid);
-			// change owner to current user
-			String owner = (String) taskAttributes.get(USERID);
-			if (owner == null) {
-			    owner = "";
-			}
-			if (owner.length() > 0) {
-			    owner = " (" + owner + ")";
-			}
-			owner = username + owner;
-			taskAttributes.put(USERID, owner);
-		    }
-		} catch (MalformedURLException mue) {
-		}
-	    }
+        String lsid = null;
+        String username = getUserName();
+        String oldLSID = null;
+        try {
+            if (taskAttributes == null) {
+                taskAttributes = new HashMap();
+            }
+            if (parameterInfoArray == null) {
+                parameterInfoArray = new ParameterInfo[0];
+            }
+            lsid = (String) taskAttributes.get(LSID);
+            oldLSID = lsid;
+            // if an LSID is set, make sure that it is for the current authority, not the task's source, since it is now modified
+            if (lsid != null && lsid.length() > 0) {
+                try {
+                    LSID l = new LSID(lsid);
+                    String authority = LSIDManager.getInstance().getAuthority();
+                    if (!l.getAuthority().equals(authority)) {
+                        System.out.println("TaskIntegrator.modifyTask: resetting authority from " + l.getAuthority() + " to " + authority);
+                        lsid = "";
+                        taskAttributes.put(LSID, lsid);
+                        // change owner to current user
+                        String owner = (String) taskAttributes.get(USERID);
+                        if (owner == null) {
+                            owner = "";
+                        }
+                        if (owner.length() > 0) {
+                            owner = " (" + owner + ")";
+                        }
+                        owner = username + owner;
+                        taskAttributes.put(USERID, owner);
+                    }
+                } 
+                catch (MalformedURLException mue) {
+                }
+            }
 
-	    TaskInfoAttributes tia = new TaskInfoAttributes(taskAttributes);
-	    isAuthorizedCreateTask(getUserName(), tia);
-	    taskAttributes.put(PRIVACY, accessId);
-	    lsid = GenePatternAnalysisTask.installNewTask(taskName, description, parameterInfoArray,
-		    new TaskInfoAttributes(taskAttributes), username, accessId, new Status() {
-
-			public void beginProgress(String string) {
-			}
-
-			public void continueProgress(int percent) {
-			}
-
-			public void endProgress() {
-			}
-
-			public void statusMessage(String message) {
-			}
-
+            TaskInfoAttributes tia = new TaskInfoAttributes(taskAttributes);
+            isAuthorizedCreateTask(getUserName(), tia);
+            taskAttributes.put(PRIVACY, accessId);
+            lsid = GenePatternAnalysisTask.installNewTask(taskName, description, parameterInfoArray, new TaskInfoAttributes(taskAttributes), username, accessId, 
+                    new Status() {
+                public void beginProgress(String string) {
+                }
+                public void continueProgress(int percent) {
+                }
+                public void endProgress() {
+                }
+                public void statusMessage(String message) {
+                }
 		    });
-	    taskAttributes.put(LSID, lsid); // update so that upon
-	    // return, the LSID is
-	    // the new one
-	    String attachmentDir = DirectoryManager.getTaskLibDir(taskName, lsid, username);
-	    File dir = new File(attachmentDir);
-	    for (int i = 0, length = dataHandlers != null ? dataHandlers.length : 0; i < length; i++) {
-		DataHandler dataHandler = dataHandlers[i];
-		File f = Util.getAxisFile(dataHandler);
-		if (f.isDirectory()) {
-		    continue;
-		}
-		File newFile = new File(dir, fileNames[i]);
-		if (!f.getParentFile().getParent().equals(dir.getParent())) {
-		    f.renameTo(newFile);
-		} else {
-		    // copy file, leaving original intact
-		    Util.copyFile(f, newFile);
-		}
-	    }
-	    if (fileNames != null) {
-		String oldAttachmentDir = null;
-		if (oldLSID != null) {
-		    oldAttachmentDir = DirectoryManager.getTaskLibDir(null, oldLSID, username);
-		}
-		int start = dataHandlers != null && dataHandlers.length > 0 ? dataHandlers.length - 1 : 0;
-		for (int i = start; i < fileNames.length; i++) {
-		    String text = fileNames[i];
-		    if (text.startsWith("job #")) { // job output file
-			String jobNumber = text.substring(text.indexOf("#") + 1, text.indexOf(",")).trim();
-			String fileName = text.substring(text.indexOf(",") + 1, text.length()).trim();
-			String jobDir = GenePatternAnalysisTask.getJobDir(jobNumber);
-			Util.copyFile(new File(jobDir, fileName), new File(dir, fileName));
-		    } else if (oldAttachmentDir != null) { // file from
-			// previous version
-			// of task
-			Util.copyFile(new File(oldAttachmentDir, text), new File(dir, text));
-		    }
-		}
-	    }
-	    if (System.getProperty("save.task.plugin") != null) {
-		final String lsid1 = lsid;
-		new Thread() {
-		    public void run() {
-			try {
-			    DataHandler handler = exportToZip(lsid1);
-			    File tempFile = File.createTempFile("task", "zip");
-			    FileOutputStream fis = new FileOutputStream(tempFile);
-			    handler.writeTo(fis);
-			    SaveTaskPlugin saveTaskPlugin = (SaveTaskPlugin) Class.forName(
-				    System.getProperty("save.task.plugin")).newInstance();
-			    saveTaskPlugin.taskSaved(tempFile);
-			    fis.close();
-			    tempFile.delete();
-			} catch (Exception x) {
-			}
-		    }
-		}.start();
-	    }
-	} catch (TaskInstallationException tie) {
-	    throw new WebServiceErrorMessageException(tie.getErrors());
-	} catch (Exception e) {
-	    throw new WebServiceException(e);
-	}
-	return lsid;
+            taskAttributes.put(LSID, lsid); 
+            // update so that upon return, the LSID is the new one
+            String attachmentDir = DirectoryManager.getTaskLibDir(taskName, lsid, username);
+            File dir = new File(attachmentDir);
+            for (int i = 0, length = dataHandlers != null ? dataHandlers.length : 0; i < length; i++) {
+                DataHandler dataHandler = dataHandlers[i];
+                File f = Util.getAxisFile(dataHandler);
+                if (f.isDirectory()) {
+                    continue;
+                }
+                File newFile = new File(dir, fileNames[i]);
+                if (!f.getParentFile().getParent().equals(dir.getParent())) {
+                    f.renameTo(newFile);
+                }
+                else {
+                    // copy file, leaving original intact
+                    Util.copyFile(f, newFile);
+                }
+            }
+            if (fileNames != null) {
+                String oldAttachmentDir = null;
+                if (oldLSID != null) {
+                    oldAttachmentDir = DirectoryManager.getTaskLibDir(null, oldLSID, username);
+                }
+                int start = dataHandlers != null && dataHandlers.length > 0 ? dataHandlers.length - 1 : 0;
+                for (int i = start; i < fileNames.length; i++) {
+                    String text = fileNames[i];
+                    if (text.startsWith("job #")) { // job output file
+                        String jobNumber = text.substring(text.indexOf("#") + 1, text.indexOf(",")).trim();
+                        String fileName = text.substring(text.indexOf(",") + 1, text.length()).trim();
+                        String jobDir = GenePatternAnalysisTask.getJobDir(jobNumber);
+                        Util.copyFile(new File(jobDir, fileName), new File(dir, fileName));
+                    } 
+                    else if (oldAttachmentDir != null) { 
+                        // file from previous version of task
+                        Util.copyFile(new File(oldAttachmentDir, text), new File(dir, text));
+                    }
+                }
+            }
+            if (System.getProperty("save.task.plugin") != null) {
+                final String lsid1 = lsid;
+                new Thread() {
+                    public void run() {
+                        try {
+                            DataHandler handler = exportToZip(lsid1);
+                            File tempFile = File.createTempFile("task", "zip");
+                            FileOutputStream fis = new FileOutputStream(tempFile);
+                            handler.writeTo(fis);
+                            SaveTaskPlugin saveTaskPlugin = (SaveTaskPlugin) Class.forName(System.getProperty("save.task.plugin")).newInstance();
+                            saveTaskPlugin.taskSaved(tempFile);
+                            fis.close();
+                            tempFile.delete();
+                        } 
+                        catch (Exception x) {
+                        }
+                    }
+                }.start();
+            }
+        } 
+        catch (TaskInstallationException tie) {
+            throw new WebServiceErrorMessageException(tie.getErrors());
+        } 
+        catch (Exception e) {
+            throw new WebServiceException(e);
+        }
+        return lsid;
     }
 
     protected String importZipFromURL(String url, int privacy, Status taskIntegrator) throws WebServiceException {
@@ -1299,17 +1261,14 @@ public class TaskIntegrator {
     }
 
     private boolean isTaskOwner(String user, String lsid) {
-	TaskMaster tm = (new TaskMasterDAO()).findByIdLsid(lsid, user);
-	if (tm == null)
-	    return false; // can't own what you can't see
-	return user.equals(tm.getUserId());
+        TaskMasterDAO dao = new TaskMasterDAO();
+        return dao.isTaskOwner(user, lsid);
     }
 
     private void isTaskOwnerOrAuthorized(String user, String lsid, String permission) throws WebServiceException {
-
-	if (!isTaskOwner(user, lsid)) {
-	    isAuthorized(user, permission);
-	}
+        if (!isTaskOwner(user, lsid)) {
+            isAuthorized(user, permission);
+        }
     }
 
     public static String filenameFromURL(String url) {

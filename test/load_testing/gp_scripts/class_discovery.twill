@@ -13,6 +13,8 @@ fv taskForm input.filename_cb url
 fv taskForm input.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
 submit
 code 200
+url /gp/pages/jobResult.jsf
+find 'all_aml_test.preprocessed.gct'
 
 #Step 2 (a): HierarchicalClustering
 go /gp/pages/index.jsf?lsid=HierarchicalClustering
@@ -20,6 +22,11 @@ url /gp/pages/index.jsf
 fv taskForm input.filename_cb_url url
 fv taskForm input.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/HSC_FDR002.gct
 submit
+code 200
+url /gp/pages/jobResult.jsf
+find 'HSC_FDR002.atr'
+find 'HSC_FDR002.cdt'
+find 'HSC_FDR002.gtr'
 
 #Step 2 (b) KMeansClustering
 go /gp/pages/index.jsf?lsid=KMeansClustering
@@ -29,6 +36,10 @@ fv taskForm input.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/data
 fv taskForm number.of.clusters 2
 submit
 code 200
+url /gp/pages/jobResult.jsf
+find 'all_aml_test_KMcluster_output.gct'
+find 'all_aml_test_KMcluster_output-1.gct'
+find 'all_aml_test_KMcluster_output-2.gct'
 
 #Step 2 (c) SOMClustering
 go /gp/pages/index.jsf?lsid=SOMClustering
@@ -36,12 +47,17 @@ url /gp/pages/index.jsf
 fv taskForm dataset.filename_cb url
 fv taskForm dataset.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct
 submit
+code 200
+find all_aml_test.preprocessed0.odf
+find all_aml_test.preprocessed1.odf
 
 #Step 2 (d) NMFConsensus
 go /gp/pages/index.jsf?lsid=NMFConsensus
 url /gp/pages/index.jsf
 fv taskForm dataset.filename_cb url
 fv taskForm dataset.filename_url ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/HSC_FDR002.gct
+submit
+code 200
 
 #Step 2 (e) ConsensusClustering
 go /gp/pages/index.jsf?lsid=ConsensusClustering

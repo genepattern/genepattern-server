@@ -3,6 +3,8 @@ package org.genepattern.server.webapp.jsf;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -12,13 +14,12 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webapp.jsf.JobBean.OutputFileInfo;
-import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.WebServiceException;
 
 /**
  * Represents a job result. Wraps JobInfo and adds methods for getting the output files and the expansion state of
@@ -27,82 +28,173 @@ import org.genepattern.webservice.WebServiceException;
 public class JobResultsWrapper {
     private static Logger log = Logger.getLogger(JobResultsWrapper.class);
 
-    private List<JobResultsWrapper> childJobs;
     private JobInfo jobInfo;
     private int level = 0;
-    private List<OutputFileInfo> outputFiles;
     private boolean selected = false;
     private int sequence = 0;
     private long totalSize = 0l;
-    /**
-     * Is current user allowed to delete this job?
-     */
-    private boolean deleteAllowed = false;
+    private boolean showExecutionLogs = false;
+    private Map<String,Set<TaskInfo>> kindToModules;
+    private Set<String> selectedFiles;
+    private Set<String> selectedJobs;
+    private Map<String, List<KeyValuePair>> kindToInputParameters;
+    private boolean showPipelineOutputFiles = false;
 
+    private JobPermissionsBean _jobPermissionsBean = null;
+
+    private boolean fileSortAscending = false;
+    private String fileSortColumn = "";
+    
     public JobResultsWrapper(
-            JobInfo jobInfo, 
-            Map<String,Collection<TaskInfo>> kindToModules,
-            Set<String> selectedFiles, 
-            Set<String> selectedJobs, 
-            int level, 
-            int sequence,
-            Map<String, List<KeyValuePair>> kindToInputParameters, boolean showExecutionLogs) 
+            final JobPermissionsBean jobPermissionsBean,
+            final JobInfo jobInfo, 
+            final Map<String,Set<TaskInfo>> kindToModules,
+            final Set<String> selectedFiles, 
+            final Set<String> selectedJobs, 
+            final int level, 
+            final int sequence,
+            final Map<String, List<KeyValuePair>> kindToInputParameters, 
+            final boolean showExecutionLogs) 
     {
+        this._jobPermissionsBean = jobPermissionsBean;
         this.jobInfo = jobInfo;
+        this.kindToModules = kindToModules;
+        this.selectedFiles = selectedFiles;
+        this.selectedJobs = selectedJobs;
+        this.kindToInputParameters = kindToInputParameters;
         this.selected = selectedJobs.contains(String.valueOf(jobInfo.getJobNumber()));
         this.level = level;
         this.sequence = sequence;
+        this.showExecutionLogs = showExecutionLogs;
+    }
+    
+    public void setFileSortAscending(final boolean b) {
+        this.fileSortAscending = b;
+    }
 
-        this.initGroupPermissions();
-
+    public void setFileSortColumn(final String s) {
+        this.fileSortColumn = s;
+    }
+    
+    private List<OutputFileInfo> _outputFiles = null;
+    private List<OutputFileInfo> getOutputFiles() {
+        if (_outputFiles == null) {
+            _outputFiles = initOutputFiles();
+        }
+        return _outputFiles;
+    }
+    private List<OutputFileInfo> initOutputFiles() {
         // Build the list of output files from the parameter info array.
-        outputFiles = new ArrayList<OutputFileInfo>();
+        List<OutputFileInfo> outputFiles = new ArrayList<OutputFileInfo>();
         ParameterInfo[] parameterInfoArray = jobInfo.getParameterInfoArray();
         if (parameterInfoArray != null) {
             File outputDir = new File(GenePatternAnalysisTask.getJobDir("" + jobInfo.getJobNumber()));
-            for (int i = 0; i < parameterInfoArray.length; i++) {
-                if (parameterInfoArray[i].isOutputFile()) {
-                    boolean isTaskLog = (parameterInfoArray[i].getName().equals(GPConstants.TASKLOG) || parameterInfoArray[i].getName().endsWith(GPConstants.PIPELINE_TASKLOG_ENDING));
+            for(ParameterInfo param : parameterInfoArray) {
+                if (param.isOutputFile()) {
+                    boolean isTaskLog = (param.getName().equals(GPConstants.TASKLOG) || param.getName().endsWith(GPConstants.PIPELINE_TASKLOG_ENDING));
+                    // is this file an output result of this job, false if it's a result of a child job of this pipeline
+                    boolean isChildOutput = true;
 
                     if (showExecutionLogs || !isTaskLog) {
-                        File file = new File(outputDir, parameterInfoArray[i].getName());
-                        String kind = SemanticUtil.getKind(file);
-                        Collection<TaskInfo> modules;
-
-                        if (parameterInfoArray[i].getName().equals(GPConstants.TASKLOG)) {
-                            modules = new ArrayList<TaskInfo>();
-                        } 
-                        else {
-                            modules = kindToModules.get(kind);
+                        File file = new File(outputDir.getParent(), param.getValue());
+                        if (!file.exists()) {
+                            file = new File(outputDir, param.getName());
                         }
-                        OutputFileInfo pInfo = new OutputFileInfo(parameterInfoArray[i], file, modules, jobInfo.getJobNumber(), kind);
-                        totalSize += pInfo.getSize();
-                        pInfo.setSelected(selectedFiles.contains(pInfo.getValue()));
-                        outputFiles.add(pInfo);
+                        if (!showPipelineOutputFiles) {
+                            File relativePath = GenePatternAnalysisTask.getRelativePath(outputDir, file);
+                            if (relativePath == null) {
+                                isChildOutput = false;
+                            }
+                        }
+                        if (isChildOutput || showPipelineOutputFiles) {
+                            String kind = SemanticUtil.getKind(file);
+                            Collection<TaskInfo> sendToModules = null;
+
+                            if (param.getName().equals(GPConstants.TASKLOG)) {
+                                sendToModules = new ArrayList<TaskInfo>();
+                            } 
+                            else {
+                                sendToModules = kindToModules.get(kind);
+                            }
+                            OutputFileInfo pInfo = new OutputFileInfo(param, file, sendToModules, jobInfo.getJobNumber(), kind);
+                            totalSize += pInfo.getSize();
+                            pInfo.setSelected(selectedFiles.contains(pInfo.getValue()));
+                            outputFiles.add(pInfo);
+                        }
                     }
                 }
             }
         }
 
-        // Child jobs
-        childJobs = new ArrayList<JobResultsWrapper>();
-        String userId = UIBeanHelper.getUserId();
-        LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
-        try {
-            JobInfo[] children = analysisClient.getChildren(jobInfo.getJobNumber());
-            int seq = 1;
-            int childLevel = getLevel() + 1;
-            for (JobInfo child : children) {
-                JobResultsWrapper childJob = new JobResultsWrapper(child, kindToModules, selectedFiles, selectedJobs, childLevel, seq, kindToInputParameters, showExecutionLogs);
-                childJob.deleteAllowed = this.deleteAllowed;
-                childJobs.add(childJob);
-                totalSize += childJob.getTotalSize();
-                seq++;
-            }
-        } 
-        catch (WebServiceException e) {
-            log.error("Error getting child jobs", e);
+        //sort the list
+        Comparator<OutputFileInfo> comparator = getOutputFileComparator(fileSortColumn, fileSortAscending);
+        if (comparator != null) {
+            Collections.sort(outputFiles, comparator);
         }
+        return outputFiles;
+    }
+    
+    private static Comparator<OutputFileInfo> getOutputFileComparator(final String fileSortColumn, final boolean fileSortAscending) {
+        if (fileSortColumn == null) {
+            return null;
+        } 
+        else if (fileSortColumn.equals("name")) {
+            return new FileNameComparator(fileSortAscending);
+        } 
+        else if (fileSortColumn.equals("size")) {
+            return new FileSizeComparator(fileSortAscending);
+        } 
+        else if (fileSortColumn.equals("lastModified")) {
+            return new FileLastModifiedComparator(fileSortAscending);
+        }
+        return null;
+     }
+
+    private static class FileNameComparator implements Comparator<OutputFileInfo> {
+        private boolean fileSortAscending;
+        public FileNameComparator(final boolean fileSortAscending) {
+            this.fileSortAscending = fileSortAscending;
+        }
+        public int compare(OutputFileInfo c1, OutputFileInfo c2) {
+            return fileSortAscending ? c1.getName().compareToIgnoreCase(c2.getName()) : c2.getName().compareToIgnoreCase(c1.getName());
+        }
+    }
+    private static class FileSizeComparator implements Comparator<OutputFileInfo> {
+        private boolean fileSortAscending;
+        public FileSizeComparator(final boolean fileSortAscending) {
+            this.fileSortAscending = fileSortAscending;
+        }
+        public int compare(OutputFileInfo c1, OutputFileInfo c2) {
+            return fileSortAscending ? new Long(c1.getSize()).compareTo(c2.getSize()) : new Long(c2.getSize()).compareTo(c1.getSize());
+        }
+    }
+    private static class FileLastModifiedComparator implements Comparator<OutputFileInfo> {
+        private boolean fileSortAscending;
+        public FileLastModifiedComparator(final boolean fileSortAscending) {
+            this.fileSortAscending = fileSortAscending;
+        }
+        public int compare(OutputFileInfo c1, OutputFileInfo c2) {
+            return fileSortAscending ? c1.getLastModified().compareTo(c2.getLastModified()) : c2.getLastModified().compareTo(c1.getLastModified());
+        }
+    }
+
+    private List<JobResultsWrapper> _childJobs = null;
+    private List<JobResultsWrapper> _descendantJobs = null;
+
+    private List<JobResultsWrapper> initChildJobs() { 
+        List<JobResultsWrapper> childJobs = new ArrayList<JobResultsWrapper>();
+        AnalysisDAO ds = new AnalysisDAO();
+        //TODO: eliminate recursive calls 
+        JobInfo[] children = ds.getChildren(jobInfo.getJobNumber());
+        int seq = 1;
+        int childLevel = getLevel() + 1;
+        for (JobInfo child : children) {
+            JobResultsWrapper childJob = new JobResultsWrapper(_jobPermissionsBean, child, kindToModules, selectedFiles, selectedJobs, childLevel, seq, kindToInputParameters, showExecutionLogs);
+            childJobs.add(childJob);
+            totalSize += childJob.getTotalSize();
+            seq++;
+        }
+        return childJobs;
     }
 
     public String getFormattedSize() {
@@ -117,17 +209,32 @@ public class JobResultsWrapper {
      * @return The list all descendant jobs, basically a flattened tree.
      */
     public List<JobResultsWrapper> getDescendantJobs() {
+        if (_descendantJobs == null) {
+            _descendantJobs = initDescendantJobs();
+        }
+        return _descendantJobs;
+    }
+    
+    private List<JobResultsWrapper> initDescendantJobs() {
         List<JobResultsWrapper> descendantJobs = new ArrayList<JobResultsWrapper>();
-        descendantJobs.addAll(childJobs);
+        List<JobResultsWrapper> childJobs = getChildJobs();
         for (JobResultsWrapper childJob : childJobs) {
-            descendantJobs.addAll(childJob.getDescendantJobs());
+            addDescendantJobs(descendantJobs, childJob);
         }
         return descendantJobs;
     }
+    
+    private void addDescendantJobs(List<JobResultsWrapper> jobList, JobResultsWrapper node) {
+        jobList.add(node);
+        for(JobResultsWrapper child : node.getChildJobs()) {
+            addDescendantJobs(jobList, child);
+        }
+    }
 
     public List<OutputFileInfo> getAllFileInfos() {
+        List<JobResultsWrapper> childJobs = getChildJobs();
         List<OutputFileInfo> allFiles = new ArrayList<OutputFileInfo>();
-        allFiles.addAll(outputFiles);
+        allFiles.addAll(getOutputFiles());
         for (JobResultsWrapper child : childJobs) {
             allFiles.addAll(child.getAllFileInfos());
         }
@@ -135,7 +242,10 @@ public class JobResultsWrapper {
     }
 
     public List<JobResultsWrapper> getChildJobs() {
-        return childJobs;
+        if (_childJobs == null) {
+            _childJobs = initChildJobs();
+        }
+        return _childJobs;
     }
 
     public Date getDateCompleted() {
@@ -155,7 +265,7 @@ public class JobResultsWrapper {
     }
 
     public List<OutputFileInfo> getOutputFileParameterInfos() {
-        return outputFiles;
+        return getOutputFiles();
     }
 
     public int getSequence() {
@@ -189,33 +299,25 @@ public class JobResultsWrapper {
     public String getUserId() {
         return jobInfo.getUserId();
     }
-
-    private JobPermissionsBean jobPermissionsBean;
-
-    private void initGroupPermissions() { 
-        jobPermissionsBean = new JobPermissionsBean();
-        jobPermissionsBean.setJobId(jobInfo.getJobNumber());
-        this.deleteAllowed = jobPermissionsBean.isDeleteAllowed();
-    }
     
     public String getPermissionsLabel() {
-        return jobPermissionsBean.getPermissionsLabel();
+        return _jobPermissionsBean.getPermissionsLabel();
     }
 
     public List<String> getGroupPermissionsWrite() {
-        return jobPermissionsBean.getGroupsWithFullAcess();
+        return _jobPermissionsBean.getGroupsWithFullAcess();
     }
 
     public List<String> getGroupPermissionsReadOnly() {
-        return jobPermissionsBean.getGroupsWithReadOnlyAccess();
+        return _jobPermissionsBean.getGroupsWithReadOnlyAccess();
     }
 
     public int getNumGroupPermissionsWrite() {
-        return jobPermissionsBean.getNumGroupsWithFullAccess();
+        return _jobPermissionsBean.getNumGroupsWithFullAccess();
     }
     
     public int getNumGroupPermissionsReadOnly() {
-        return jobPermissionsBean.getNumGroupsWithReadOnlyAccess();
+        return _jobPermissionsBean.getNumGroupsWithReadOnlyAccess();
     }
 
     /**
@@ -258,25 +360,48 @@ public class JobResultsWrapper {
         this.sequence = sequence;
     }
 
+    /**
+     * Is current user allowed to delete this job?
+     */
     public boolean isDeleteAllowed() {
-        return deleteAllowed;
+        return _jobPermissionsBean.isDeleteAllowed();
     }
 
     public String getPermissionInfo() {
-    	String info = "Public: " + jobPermissionsBean.getPublicAccessPermission() + "<br/>";
-    	for (GroupPermission perm : jobPermissionsBean.getGroupAccessPermissions()) {
+    	String info = "Public: " + _jobPermissionsBean.getPublicAccessPermission() + "<br/>";
+    	for (GroupPermission perm : _jobPermissionsBean.getGroupAccessPermissions()) {
     		info += perm.getGroupId() + ": " + perm.getPermission() + "<br/>";
     	}
     	return info;
     }
 
+    private Boolean _hasOutputFiles = null;
+    private boolean hasOutputFiles() {
+        if (_hasOutputFiles != null) {
+            return _hasOutputFiles;
+        }
+        List o = this.getOutputFiles();
+        if (o.size() > 0) {
+            _hasOutputFiles = true;
+            return _hasOutputFiles;
+        }
+        for(JobResultsWrapper wrapper : getChildJobs()) {
+            if (wrapper.hasOutputFiles()) {
+                _hasOutputFiles = true;
+                return _hasOutputFiles;
+            }
+        }
+        _hasOutputFiles = false;
+        return _hasOutputFiles;
+    }
+    
     /**
      * Flag indicating whether or not to enable the 'download' popup menu for this job.
      * @return
      */
     public boolean isDownloadAllowed() {
         //HACK: quick and dirty way to disable the download menu for a visualizer.
-        List<OutputFileInfo> outputFiles = this.getAllFileInfos();
-        return outputFiles != null && outputFiles.size() > 0;
+        boolean hasOutputFiles = hasOutputFiles();
+        return hasOutputFiles;
     }
 }

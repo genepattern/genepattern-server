@@ -325,7 +325,7 @@
 		        <td class="right header"><img src="/gp/images/arrow2.gif" />
 			        <h:commandLink action="#{jobsBean.sortFilesBySize}" title="Sort output files by size">File Size
 			          	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'size' and jobsBean.fileSortAscending}">&#9650;</h:outputText>
-			          	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'size' and not jobsBean.fileSortAscending}">&#9650;</h:outputText>
+			          	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn == 'size' and not jobsBean.fileSortAscending}">&#9660;</h:outputText>
 			          	<h:outputText escape="false" rendered="#{jobsBean.fileSortColumn != 'size'}">&#160;</h:outputText>
 			        </h:commandLink>
           		</td>

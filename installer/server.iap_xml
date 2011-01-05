@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This script was automatically generated using Macrovision InstallAnywhere 2008 VP1 Enterprise, Build 3532
      STATUS: Fully Functional LICENSED Edition
-     DATE:   Thu May 07 19:21:47 EDT 2009 -->
-<InstallAnywhere_Deployment_Project increments="12184">
+     DATE:   Fri Nov 05 14:18:37 EDT 2010 -->
+<InstallAnywhere_Deployment_Project increments="12161">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
 		<versionID major="9" minor="5" revision="0"/>
 		<editionID>57,46,53,32,69,110,116,101,114,112,114,105,115,101,32,66,117,105,108,100,32,51,53,51,50</editionID>
 		<scriptID>12,42,11,69,50,57,49,57,68,68,87,52,78,55,86,82,81,86,81,55,68,78,89,85,76,87</scriptID>
-		<buildID>3,13,71,76,105,110,117,120,44,32,50,46,54,46,56,45,50,52,46,50,52,45,115,109,112,44,32,97,109,100,54,52,59,32,74,97,118,97,32,49,46,53,46,48,95,48,57,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,65,78,83,73,95,88,51,46,52,45,49,57,54,56</buildID>
+		<buildID>3,13,71,76,105,110,117,120,44,32,50,46,54,46,49,56,45,49,54,52,46,49,53,46,49,46,101,108,53,44,32,97,109,100,54,52,59,32,74,97,118,97,32,49,46,53,46,48,95,50,48,44,32,83,117,110,32,77,105,99,114,111,115,121,115,116,101,109,115,32,73,110,99,46,44,32,104,116,116,112,58,47,47,106,97,118,97,46,115,117,110,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,65,78,83,73,95,88,51,46,52,45,49,57,54,56</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,32,19,104,-16,-48,80,112,118,100,85,99,113,97,113,65,81,84,74,67,70,68,72,74,64,69,66,69,64,95,71,5,2,11,3,97,109,1,1,0,0</authorizationID>
+		<authorizationID>1,0,0,32,19,72,-16,32,80,112,118,100,85,99,113,97,113,65,81,84,74,67,70,68,72,74,64,69,66,69,64,95,71,5,2,2,10,98,109,12,1,0,0</authorizationID>
 	</essentialScriptInfo>
-	<installationObjects uniqueObjects="692">
+	<installationObjects uniqueObjects="689">
 		<object class="com.zerog.ia.installer.Installer" objectID="72a1c4b4b1bf">
 			<property name="wizardME">
 				<object class="com.zerog.ia.installer.actions.MakeExecutable" objectID="cbe07101a254">
@@ -2017,106 +2017,106 @@ If you do not have write permission to this directory, the GenePattern server  w
 							<property name="propertyList">
 								<object class="java.util.Vector">
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="b8c207eebce4">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="38082e3fbc6f">
 											<property name="propertyValue">
 												<string><![CDATA[$USER_INSTALL_DIR$$/$perl$/$bin$/$perl]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[PERL]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="342d67abb9b0">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="38082e40bc6f">
 											<property name="propertyValue">
 												<string><![CDATA[]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[R]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="f650d416b998">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="38082e3fbc70">
 											<property name="propertyValue">
 												<string><![CDATA[/d]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[CHDIR_FLAG]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="b8c207efbce4">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="38082e40bc70">
 											<property name="propertyValue">
 												<string><![CDATA[$USER_INSTALL_DIR$$/$jre]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[JAVA]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="32d2827a976d">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="38082e42bc70">
 											<property name="propertyValue">
 												<string><![CDATA[$USER_INSTALL_DIR$$/$R25]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[R25]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="0ebff1fea1d4">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="38082e40bc71">
 											<property name="propertyValue">
 												<string><![CDATA[Windows]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[PLATFORM]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="233bd963a751">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="38082e41bc71">
 											<property name="propertyValue">
 												<string><![CDATA[.exe]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[LAX_ENDING]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="8f528eefbc99">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="38082e40bc72">
 											<property name="propertyValue">
 												<string><![CDATA[$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$Web_Installers$/$InstData$/$Windows$/$VM$/$install.exe]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[GP_CLIENT_INSTALL]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
@@ -2219,132 +2219,132 @@ If you do not have write permission to this directory, the GenePattern server  w
 							<property name="propertyList">
 								<object class="java.util.Vector">
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="0f9a8706a6af">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="380ae133bc72">
 											<property name="propertyValue">
 												<string><![CDATA[/usr]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[JAVA]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="342d9fd0b9b4">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="380ae134bc72">
 											<property name="propertyValue">
 												<string><![CDATA[]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[R]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="9a0855479d2c">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="380ae133bc73">
 											<property name="propertyValue">
 												<string><![CDATA[/Library/Frameworks/R.framework/Versions]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[USER_MAGIC_FOLDER_2]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="f650a72db995">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="380ae134bc73">
 											<property name="propertyValue">
 												<string><![CDATA[  ]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[CHDIR_FLAG]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="0f9ab579a6af">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="380ae133bc74">
 											<property name="propertyValue">
 												<string><![CDATA[/usr/bin/perl]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[PERL]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="e5006c25bc12">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="380ae134bc74">
 											<property name="propertyValue">
 												<string><![CDATA[/Library/Frameworks/R.framework/Versions/2.5]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[R25]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="0f9c9b11a6b1">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="380ae133bc75">
 											<property name="propertyValue">
 												<string><![CDATA[MacOS]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[PLATFORM]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="1fa9efd7a5a1">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="380ae134bc75">
 											<property name="propertyValue">
 												<string><![CDATA[/Applications]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[USER_MAGIC_FOLDER_1]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="233c2c36a752">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="380ae135bc75">
 											<property name="propertyValue">
 												<string><![CDATA[.command]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[LAX_ENDING]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="8f54739dbc9c">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="380ae134bc76">
 											<property name="propertyValue">
 												<string><![CDATA[$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$Web_Installers$/$InstData$/$MacOSX$/install.zip]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[GP_CLIENT_INSTALL]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
@@ -5296,6 +5296,51 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 						</object>
 					</method>
 					<method name="addElement">
+						<object class="com.zerog.ia.installer.actions.ASCIIFileManipulator" objectID="0f32ac95bc93">
+							<property name="additionalText">
+								<string><![CDATA[]]></string>
+							</property>
+							<property name="fileTargetType">
+								<int>1</int>
+							</property>
+							<property name="newFilePath">
+								<string><![CDATA[]]></string>
+							</property>
+							<property name="systemFilePath">
+								<string><![CDATA[$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$META-INF$/$context.xml]]></string>
+							</property>
+							<property name="lineEndingsType">
+								<int>3</int>
+							</property>
+							<property name="textOptionsType">
+								<int>2</int>
+							</property>
+							<property name="searchAndReplaceVector">
+								<object class="java.util.Vector">
+									<method name="addElement">
+										<object class="com.zerog.ia.installer.util.SearchAndReplacePropertyData" objectID="13a9d214bc49">
+											<property name="propertyValue">
+												<string><![CDATA[$HSQL_port$]]></string>
+											</property>
+											<property name="propertyName">
+												<string><![CDATA[9001]]></string>
+											</property>
+											<property name="bidiOption">
+												<int>-1</int>
+											</property>
+										</object>
+									</method>
+								</object>
+							</property>
+							<property name="substituteIAVariables">
+								<boolean>false</boolean>
+							</property>
+							<property name="backup">
+								<boolean>false</boolean>
+							</property>
+						</object>
+					</method>
+					<method name="addElement">
 						<object class="com.zerog.ia.installer.actions.Comment" objectID="478ffb01b9a2">
 							<property name="commentStr">
 								<string><![CDATA[Replace backslash with forward slash in properties files so that when they are read in, the single backslash won't be treated as an escape character.]]></string>
@@ -8036,7 +8081,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 						<object refID="7dacc0c4afa5"/>
 					</property>
 					<property name="win32MagicFolder">
-						<object refID="7dacc0c4afa5"/>
+						<object class="com.zerog.ia.installer.util.magicfolders.SystemDriveRootMF" factoryID="157" objectID="30c0f777b468"/>
 					</property>
 					<property name="solarisMagicFolderPath">
 						<string><![CDATA[GenePatternServer]]></string>
@@ -8150,7 +8195,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 												<string><![CDATA[MacOSX]]></string>
 											</property>
 											<property name="buildNoVM">
-												<boolean>false</boolean>
+												<boolean>true</boolean>
 											</property>
 											<property name="buildWithVM">
 												<boolean>false</boolean>
@@ -8169,7 +8214,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 												<boolean>false</boolean>
 											</property>
 											<property name="buildWithVM">
-												<boolean>false</boolean>
+												<boolean>true</boolean>
 											</property>
 											<property name="bundledVM">
 												<string><![CDATA[SunJRE150_11iWin32.vm]]></string>
@@ -8242,7 +8287,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 												<string><![CDATA[Solaris]]></string>
 											</property>
 											<property name="buildNoVM">
-												<boolean>false</boolean>
+												<boolean>true</boolean>
 											</property>
 											<property name="buildWithVM">
 												<boolean>false</boolean>
@@ -8296,7 +8341,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 												<string><![CDATA[Java]]></string>
 											</property>
 											<property name="buildNoVM">
-												<boolean>false</boolean>
+												<boolean>true</boolean>
 											</property>
 											<property name="buildWithVM">
 												<boolean>false</boolean>
@@ -8321,7 +8366,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 								<boolean>false</boolean>
 							</property>
 							<property name="buildOutputLocation">
-								<string><![CDATA[/xchip/genepattern/tools/hudson/jobs/GenePattern_Trunk/workspace/gp-trunk/installer/server_Build_Output]]></string>
+								<string><![CDATA[/xchip/gpdev/users/genepatt/projects/gp-3.2/installer/server_Build_Output]]></string>
 							</property>
 							<property name="defaultWindowsUIMode">
 								<string><![CDATA[GUI]]></string>
@@ -8441,7 +8486,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[May 7, 2009 7:21:46 PM EDT]]></string>
+						<string><![CDATA[November 5, 2010 2:18:37 PM EDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.cdrom]]></string>
@@ -8623,7 +8668,7 @@ http://localhost:$GENEPATTERN_PORT$/gp/installFrame.jsp]]></string>
 			<property name="installerInfoData">
 				<object class="com.zerog.ia.installer.util.InstallerInfoData" objectID="72a1c4c9b1c0">
 					<property name="installerTitle">
-						<string><![CDATA[ GenePattern]]></string>
+						<string><![CDATA[GenePattern]]></string>
 					</property>
 					<property name="installerName">
 						<string><![CDATA[GPserver]]></string>
@@ -8758,28 +8803,28 @@ Mac users: To uninstall R, use the utility provided by R.]]></string>
 							<property name="propertyList">
 								<object class="java.util.Vector">
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="00b1ee038957">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="0e600759bc59">
 											<property name="propertyValue">
 												<string><![CDATA[$USER_INSTALL_DIR$$/$Tomcat$/$webapps$/$gp$/$Web_Installers]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[DIR_TO_DELETE]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
 									<method name="addElement">
-										<object class="com.zerog.ia.installer.util.VariablePropertyData" objectID="bdd39e31a95e">
+										<object class="com.zerog.ia.installer.util.EditMultipleVariablePropertyData" objectID="0e60075abc59">
 											<property name="propertyValue">
 												<string><![CDATA[NO]]></string>
 											</property>
 											<property name="propertyName">
 												<string><![CDATA[RESTART_NEEDED]]></string>
 											</property>
-											<property name="bidiOption">
-												<int>-1</int>
+											<property name="passByValue">
+												<boolean>false</boolean>
 											</property>
 										</object>
 									</method>
@@ -9642,141 +9687,7 @@ and any path to a file to read from that file]]></string>
 											<property name="patternMatcher">
 												<object class="com.zerog.ia.installer.SimplePatternMatcher" objectID="bc4892728f07">
 													<property name="includePatterns">
-														<object class="java.util.Vector">
-															<method name="addElement">
-																<object class="com.zerog.ia.installer.PatternAtom" objectID="02ba60acb40c">
-																	<property name="searchDescription">
-																		<string><![CDATA[Ends With]]></string>
-																	</property>
-																	<property name="includeExcludeState">
-																		<string><![CDATA[Includes]]></string>
-																	</property>
-																	<property name="matchString">
-																		<string><![CDATA[.sql]]></string>
-																	</property>
-																	<property name="ignoresCase">
-																		<string><![CDATA[Yes]]></string>
-																	</property>
-																	<property name="typeOption">
-																		<string><![CDATA[Files and Folders]]></string>
-																	</property>
-																</object>
-															</method>
-															<method name="addElement">
-																<object class="com.zerog.ia.installer.PatternAtom" objectID="c04f759c904a">
-																	<property name="searchDescription">
-																		<string><![CDATA[Begins With]]></string>
-																	</property>
-																	<property name="includeExcludeState">
-																		<string><![CDATA[Includes]]></string>
-																	</property>
-																	<property name="matchString">
-																		<string><![CDATA[genepattern.properties]]></string>
-																	</property>
-																	<property name="ignoresCase">
-																		<string><![CDATA[Yes]]></string>
-																	</property>
-																	<property name="typeOption">
-																		<string><![CDATA[Files and Folders]]></string>
-																	</property>
-																</object>
-															</method>
-															<method name="addElement">
-																<object class="com.zerog.ia.installer.PatternAtom" objectID="c04f9234904a">
-																	<property name="searchDescription">
-																		<string><![CDATA[Begins With]]></string>
-																	</property>
-																	<property name="includeExcludeState">
-																		<string><![CDATA[Includes]]></string>
-																	</property>
-																	<property name="matchString">
-																		<string><![CDATA[omnigene.properties]]></string>
-																	</property>
-																	<property name="ignoresCase">
-																		<string><![CDATA[Yes]]></string>
-																	</property>
-																	<property name="typeOption">
-																		<string><![CDATA[Files and Folders]]></string>
-																	</property>
-																</object>
-															</method>
-															<method name="addElement">
-																<object class="com.zerog.ia.installer.PatternAtom" objectID="2c894176925b">
-																	<property name="searchDescription">
-																		<string><![CDATA[Begins With]]></string>
-																	</property>
-																	<property name="includeExcludeState">
-																		<string><![CDATA[Includes]]></string>
-																	</property>
-																	<property name="matchString">
-																		<string><![CDATA[build.properties]]></string>
-																	</property>
-																	<property name="ignoresCase">
-																		<string><![CDATA[Yes]]></string>
-																	</property>
-																	<property name="typeOption">
-																		<string><![CDATA[Files and Folders]]></string>
-																	</property>
-																</object>
-															</method>
-															<method name="addElement">
-																<object class="com.zerog.ia.installer.PatternAtom" objectID="05a7a5f191ce">
-																	<property name="searchDescription">
-																		<string><![CDATA[Begins With]]></string>
-																	</property>
-																	<property name="includeExcludeState">
-																		<string><![CDATA[Includes]]></string>
-																	</property>
-																	<property name="matchString">
-																		<string><![CDATA[messages.properties]]></string>
-																	</property>
-																	<property name="ignoresCase">
-																		<string><![CDATA[Yes]]></string>
-																	</property>
-																	<property name="typeOption">
-																		<string><![CDATA[Files and Folders]]></string>
-																	</property>
-																</object>
-															</method>
-															<method name="addElement">
-																<object class="com.zerog.ia.installer.PatternAtom" objectID="12a9d8538c01">
-																	<property name="searchDescription">
-																		<string><![CDATA[Ends With]]></string>
-																	</property>
-																	<property name="includeExcludeState">
-																		<string><![CDATA[Includes]]></string>
-																	</property>
-																	<property name="matchString">
-																		<string><![CDATA[.xml]]></string>
-																	</property>
-																	<property name="ignoresCase">
-																		<string><![CDATA[Yes]]></string>
-																	</property>
-																	<property name="typeOption">
-																		<string><![CDATA[Files and Folders]]></string>
-																	</property>
-																</object>
-															</method>
-															<method name="addElement">
-																<object class="com.zerog.ia.installer.PatternAtom" objectID="a3864884b40a">
-																	<property name="searchDescription">
-																		<string><![CDATA[Begins With]]></string>
-																	</property>
-																	<property name="includeExcludeState">
-																		<string><![CDATA[Includes]]></string>
-																	</property>
-																	<property name="matchString">
-																		<string><![CDATA[R_suppress.txt]]></string>
-																	</property>
-																	<property name="ignoresCase">
-																		<string><![CDATA[Yes]]></string>
-																	</property>
-																	<property name="typeOption">
-																		<string><![CDATA[Files and Folders]]></string>
-																	</property>
-																</object>
-															</method>
-														</object>
+														<object class="java.util.Vector"/>
 													</property>
 													<property name="excludePatterns">
 														<object class="java.util.Vector">
@@ -9891,6 +9802,25 @@ and any path to a file to read from that file]]></string>
 																	</property>
 																	<property name="typeOption">
 																		<string><![CDATA[Folders]]></string>
+																	</property>
+																</object>
+															</method>
+															<method name="addElement">
+																<object class="com.zerog.ia.installer.PatternAtom" objectID="0e3c927ebc3d">
+																	<property name="searchDescription">
+																		<string><![CDATA[Begins With]]></string>
+																	</property>
+																	<property name="includeExcludeState">
+																		<string><![CDATA[Excludes]]></string>
+																	</property>
+																	<property name="matchString">
+																		<string><![CDATA[omnigene]]></string>
+																	</property>
+																	<property name="ignoresCase">
+																		<string><![CDATA[Yes]]></string>
+																	</property>
+																	<property name="typeOption">
+																		<string><![CDATA[Files and Folders]]></string>
 																	</property>
 																</object>
 															</method>

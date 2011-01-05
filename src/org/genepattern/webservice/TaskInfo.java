@@ -20,13 +20,16 @@ package org.genepattern.webservice;
  */
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.genepattern.util.GPConstants;
 
 public class TaskInfo implements Serializable {
-
     // The maximum size of the "short name"
     private static int shortNameLimit = 33;
 
@@ -111,15 +114,13 @@ public class TaskInfo implements Serializable {
 	for the TaskInfoAttributes classes.  Ted 11/22/06
 **/
     public HashMap getAttributes() {
-	  if (attributes == null) attributes = (HashMap)taskInfoAttributes;        
-
+        if (attributes == null) attributes = (HashMap)taskInfoAttributes;
         return  attributes;
     }
 
     public void setAttributes(HashMap taskInfoAttributes) {
-	  setTaskInfoAttributes(taskInfoAttributes);
+        setTaskInfoAttributes(taskInfoAttributes);
         this.attributes = taskInfoAttributes;
-        
     }
 
 
@@ -206,7 +207,7 @@ public class TaskInfo implements Serializable {
     }
 
     /**
-     * Checks to see if the TaslInfo contains a input file parameter field
+     * Checks to see if the TaskInfo contains a input file parameter field
      * 
      * @return true if it contains a
      *         <code>ParamterInfo<code> object with TYPE as FILE and MODE as INPUT
@@ -221,6 +222,46 @@ public class TaskInfo implements Serializable {
             }
         }
         return false;
+    }
+
+    private transient Set<String> _inputFileTypes = null;
+    /**
+     * Get the list of input file types that this module accepts, by getting the input file types for each of its 
+     * input file parameters.
+     * 
+     * Note: To preserve compatibility with earlier versions of the SOAP client,
+     *     This method deliberately named using a non JavaBean naming convention so that the axis serializer does not
+     *     include the inputFileTypes parameter in the serialized bean.
+     * 
+     * @return an unmodifiable set
+     */
+    public Set<String> _getInputFileTypes() {
+        if (_inputFileTypes == null) {
+            _inputFileTypes = initInputFileTypes();
+        }
+        return Collections.unmodifiableSet(_inputFileTypes);
+    }
+    
+    private Set<String> initInputFileTypes() {
+        Set<String> inputFileTypes = new HashSet<String>();
+        ParameterInfo[] p = getParameterInfoArray();
+        if (p != null) {
+            for (int i = 0; i < p.length; i++) {
+                if (p[i].isInputFile()) {
+                    ParameterInfo info = p[i];
+                    String fileFormatsString = (String) info.getAttributes().get(GPConstants.FILE_FORMAT);
+                    if (fileFormatsString == null || fileFormatsString.equals("")) {
+                        continue;
+                    }
+                    StringTokenizer st = new StringTokenizer(fileFormatsString, GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+                    while (st.hasMoreTokens()) {
+                        String type = st.nextToken();
+                        inputFileTypes.add(type);
+                    }
+                }
+            }
+        }
+        return inputFileTypes;
     }
 
     private boolean eq(Object o1, Object o2) {

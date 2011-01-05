@@ -1,0 +1,24 @@
+# test case: yaml parser 
+default.properties: &default_properties {
+executor: Test,
+stdout.filename: stdout.txt,
+java_flags: -Xmx4g }
+
+executors: { 
+Test: org.genepattern.server.executor.TestCommandExecutor, 
+RuntimeExec: { 
+classname: org.genepattern.server.executor.RuntimeCommandExecutor, 
+default.properties: 
+{ stdout.filename: runtimeexec.out } 
+}
+}
+
+module.properties: {
+ComparativeMarkerSelection: { executor: RuntimeExec, stdout.filename: CMS.never.used.out },
+"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044": { stdout.filename: CMS.out },
+"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:4":  { stdout.filename: CMS.v4.out },
+"urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:5": *default_properties,
+moduleA: { executor: RuntimeExec },
+moduleB: { stdout.filename: moduleB.out },
+moduleC: { executor: notset }
+}

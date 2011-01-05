@@ -1,6 +1,7 @@
 <%@ page
 import="org.genepattern.server.webservice.server.DirectoryManager,
         org.genepattern.server.PermissionsHelper,
+        org.genepattern.server.webapp.jsf.AuthorizationHelper,
         org.genepattern.util.GPConstants, 
         java.io.BufferedInputStream, 
         java.io.File,
@@ -34,6 +35,11 @@ import="org.genepattern.server.webservice.server.DirectoryManager,
 
     File in = null;
 	String userID = (String) session.getAttribute(GPConstants.USERID);
+    boolean isAdmin = false;
+    if (userID != null) {
+        isAdmin = AuthorizationHelper.adminJobs(userID);
+    }
+
 
 	if (userID == null) { // no anonymous files
 	    ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN);
@@ -62,7 +68,7 @@ import="org.genepattern.server.webservice.server.DirectoryManager,
             if (in.exists()) {
                 if (!filename.startsWith(prefix)) {
 			        boolean canRead = false;
-			        PermissionsHelper perm = new PermissionsHelper(userID, jobNumber);
+			        PermissionsHelper perm = new PermissionsHelper(isAdmin, userID, jobNumber);
 			        canRead = perm.canReadJob();
 			        if (!canRead) {
 			            System.out.println("SECURITY ALERT: " + userID +" tried to access someone else's file: " + filename);

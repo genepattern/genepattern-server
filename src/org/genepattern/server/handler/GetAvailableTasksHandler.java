@@ -10,21 +10,16 @@
   use, misuse, or functionality.
 */
 
-
 package org.genepattern.server.handler;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Vector;
 
 import org.genepattern.server.NoTaskFoundException;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.OmnigeneException;
 import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.TaskInfo;
-
-//import edu.mit.wi.omnigene.omnidas.*;
 
 /**
  * Class used to get available tasks
@@ -32,10 +27,8 @@ import org.genepattern.webservice.TaskInfo;
  * @author rajesh kuttan
  * @version 1.0
  */
-
 public class GetAvailableTasksHandler extends RequestHandler {
-
-	private String userId = null;
+    private String userId = null;
 
 	/** Creates new GetAvailableTasksHandler */
 	public GetAvailableTasksHandler() {
@@ -53,19 +46,14 @@ public class GetAvailableTasksHandler extends RequestHandler {
 	 * @throws OmnigeneException
 	 * @return Vector of <CODE>TaskInfo</CODE>
 	 */
-	public List executeRequest() throws OmnigeneException,
-			NoTaskFoundException {
+	public List executeRequest() throws OmnigeneException, NoTaskFoundException {
         List tasksVector = null;
 		try {
-
 			//Get EJB reference
-			AdminDAO ds = new AdminDAO();
-            
+			AdminDAO ds = new AdminDAO();            
 			//Invoke EJB function
             TaskInfo[] taskArray = (userId == null ? ds.getAllTasks() : ds.getAllTasksForUser(userId));
-
             tasksVector = Arrays.asList(taskArray);
-
                 
 			if (tasksVector != null) {
 				TaskInfo taskInfo = null;
@@ -73,34 +61,23 @@ public class GetAvailableTasksHandler extends RequestHandler {
 					taskInfo = (TaskInfo) tasksVector.get(i);
 					taskInfo.setParameterInfoArray(ParameterFormatConverter.getParameterInfoArray(taskInfo.getParameterInfo()));
 				}
-			} else {
+			} 
+			else {
 				throw new OmnigeneException(
 						"GetAvailableTasksRequest:executeRequest  null value returned for TaskInfo");
 			}
-
-		} catch (NoTaskFoundException ex) {
+		} 
+		catch (NoTaskFoundException ex) {
 			System.out
 					.println("GetAvailableTasksRequest(executeRequest) NoTaskFoundException...");
 			throw ex;
-		} catch (Exception ex) {
-			System.out
-					.println("GetAvailableTasksRequest(executeRequest): Error "
-							+ ex.getMessage());
+		} 
+		catch (Exception ex) {
+			System.out.println("GetAvailableTasksRequest(executeRequest): Error " + ex.getMessage());
 			ex.printStackTrace();
 			throw new OmnigeneException(ex.getMessage());
 		}
 		return tasksVector;
 	}
-
-	public static void main(String args[]) {
-		GetAvailableTasksHandler arequest = new GetAvailableTasksHandler("");
-		try {
-			List taskVector = arequest.executeRequest();
-			System.out.println("Size " + taskVector.size());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 }
 

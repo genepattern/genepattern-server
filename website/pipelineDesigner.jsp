@@ -95,7 +95,6 @@ function readLayer(lay) {
 }
 
 function setTask(taskNum, taskLSID) {
-
 	writeToLayer(taskNum, changeTaskHTML(taskLSID, taskNum, true));
 	showLayer(taskNum);
 }
@@ -570,9 +569,12 @@ function changeTaskType(selectorTaskType, taskNum) {
 		if (versionlessLSIDs[taskLSIDnoVersion] != null) {
 			// already has it, get the latest name though
 			var heldLSID = new LSID(versionedLSIDs[taskLSIDnoVersion]);
-			
-			if (heldLSID.version <= taskLSID.version){
+
+			if (Number(heldLSID.version) <= Number(taskLSID.version)){
 				// this one is newer, update descrip and name
+        
+                //for debugging:
+                //alert('heldLSID.version='+heldLSID.version+' <= taskLSID.version='+taskLSID.version);
 			} else {
 				continue; // already has latest we've seen yet
 			}
@@ -747,8 +749,12 @@ function chgLSIDVer(oldTaskNum, selector) {
 	deleteTask(newTaskNum);
 }
 
+function numberSorter(a, b) {
+    return a - b;
+}
+
 function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
-	var origTaskLSID = taskLSID;
+    var origTaskLSID = taskLSID;
 	var taskFields = "";
 
 	var task = TaskInfos[taskLSID];
@@ -783,8 +789,8 @@ function changeTaskHTML(taskLSID, taskNum, bUpdateInheritance) {
 		}
 	}
 
-	sameTasks.sort();
-	sameTasks.reverse();
+    sameTasks.sort(numberSorter);
+    sameTasks.reverse(numberSorter);
 
 	taskFields = taskFields + '<td align="right">version ';
 
@@ -1104,7 +1110,7 @@ function setCheckbox(field, value) {
 }
 
 function setTaskName(taskNum, taskName, taskLSID) {
-	var task = null;
+    var task = null;
 	if (taskLSID != null) task = TaskInfos[taskLSID];
 	var found = (task != null);
 	if (task == null) {

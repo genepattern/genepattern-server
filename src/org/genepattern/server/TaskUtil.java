@@ -339,18 +339,17 @@ public class TaskUtil {
      * @exception IOException
      *                if an error occurs during reading
      */
-    private static TaskInfo getTaskInfoFromManifest(File manifestFile) throws IOException {
-
+    public static TaskInfo getTaskInfoFromManifest(File manifestFile) throws IOException {
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(manifestFile);
             return getTaskInfoFromManifest(fis);
-        } finally {
+        } 
+        finally {
             if (fis != null) {
                 fis.close();
             }
         }
-
     }
 
     /**

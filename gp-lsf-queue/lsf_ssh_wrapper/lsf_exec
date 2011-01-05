@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+lsf_cmd=$1;
+shift;
+exec -- ssh gpint01 "use LSF-7.0; $lsf_cmd $@"

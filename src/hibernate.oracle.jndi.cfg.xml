@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration> 
+  <!-- session-factory --> 
+  <session-factory name="hibernateSessionFactory"> 
+    <property name="hibernate.connection.datasource">java:comp/env/jdbc/gp/oracle</property>
+    <property name="hibernate.current_session_context_class">thread</property>
+    <property name="hibernate.transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
+
+	<!-- oracle settings -->
+    <property name="hibernate.connection.username">GENEPATTERN_DEV_01</property>
+    <property name="hibernate.connection.password">*****</property>
+    <property name="hibernate.default_schema">GENEPATTERN_DEV_01</property>
+    <property name="hibernate.dialect">org.genepattern.server.database.PlatformOracle9Dialect</property> 
+    
+    <!--  Misc settings -->
+    <property name="hibernate.jdbc.batch_size">20</property>
+    <property name="hibernate.statement_cache.size">0</property>
+    
+    <!--  for debugging -->
+    <property name="show_sql">false</property>
+
+    <!-- Mappings -->
+    <mapping resource="org/genepattern/server/domain/AnalysisJob.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/JobStatus.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/Lsid.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/Props.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/Sequence.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/Suite.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/TaskAccess.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/TaskMaster.hbm.xml"/>
+    <mapping resource="org/genepattern/server/message/SystemMessage.hbm.xml"/>
+    <mapping resource="org/genepattern/server/user/JobCompletionEvent.hbm.xml"/>
+    <mapping resource="org/genepattern/server/user/User.hbm.xml"/>
+    <mapping resource="org/genepattern/server/user/UserProp.hbm.xml"/>
+    <mapping resource="org/genepattern/server/auth/JobGroup.hbm.xml"/>
+  </session-factory>
+</hibernate-configuration>

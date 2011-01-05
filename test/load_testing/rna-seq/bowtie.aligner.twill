@@ -1,0 +1,224 @@
+# Test cases for Bowtie.aligner
+#
+# Note 1: when using a custom index, you must explicitly deselect the first item from the 
+# prebuilt.bowtie.index choice list. This prevents the error message:
+#    Either a pre-built bowtie index or custom bowtie index must be specified but not both
+# This is a result of the way twill handles forms with 'select' menus, 
+# and is not a problem when using a web browser.
+#
+
+# must login to the server, E.g.
+#     go /gp/login?username=theusername&password=thepassword
+runfile login.twill
+
+# for genepatterntest
+setlocal rnaseqdata /xchip/sqa/TestFiles/RNA-seq
+# for my local server
+#setlocal rnaseqdata /Broad/Data/RNA-seq
+
+# Step 1, Bowtie.aligner, custom-bowtie index, unpaired read, default settings
+#### exp_1.fa ####
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+# deselect the first item, hard coded to 'a_thaliana', from the prebuilt.bowtie.index
+# see Note 1 above
+fv taskForm prebuilt.bowtie.index -a_thaliana
+fv taskForm custom.bowtie.index_cb url
+fv taskForm custom.bowtie.index_url "${rnaseqdata}/Testing_HT/TopHat_20101215/chr4BowtieIndex.zip"
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url "${rnaseqdata}/Testing_HT/TopHat_20101215/exp_1.fa"
+fv taskForm reads.file.format FASTA
+fv taskForm output.file Testing_HT_<mate.1.or.unpaired.read_basename>_<reads.file.format>_unpaired.sam
+submit
+
+#### exp_2.fa ####
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index -a_thaliana
+fv taskForm custom.bowtie.index_cb url
+fv taskForm custom.bowtie.index_url ${rnaseqdata}/Testing_HT/TopHat_20101215/chr4BowtieIndex.zip
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/Testing_HT/TopHat_20101215/exp_2.fa
+fv taskForm reads.file.format FASTA
+fv taskForm output.file Testing_HT_<mate.1.or.unpaired.read_basename>_<reads.file.format>_unpaired.sam
+submit
+
+# Step 2: Bowtie.aligner, custom bowtie index, paired read, default settings
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index -a_thaliana
+fv taskForm custom.bowtie.index_cb url
+fv taskForm custom.bowtie.index_url ${rnaseqdata}/Testing_HT/TopHat_20101215/chr4BowtieIndex.zip
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/Testing_HT/TopHat_20101215/exp_1.fa
+fv taskForm mate.2_cb url
+fv taskForm mate.2_url ${rnaseqdata}/Testing_HT/TopHat_20101215/exp_2.fa
+fv taskForm reads.file.format FASTA
+fv taskForm output.file Testing_HT_exp_1_<reads.file.format>_paired.sam
+submit
+
+# Step 3: Bowtie.aligner, prebuilt index, unpaired read
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index mm9
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/TopHat/reads/paired/pair1/SRR039999_1.fastq
+fv taskForm reads.file.format FASTQ
+submit
+
+# Step 4: Bowtie.aligner, prebuilt index, paired read
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index mm9
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/TopHat/reads/paired/pair1/SRR039999_1.fastq
+fv taskForm mate.2_cb url
+fv taskForm mate.2_url ${rnaseqdata}/TopHat/reads/paired/pair2/SRR039999_2.fastq
+fv taskForm reads.file.format FASTQ
+submit
+
+# Step 5: E. coli test cases
+#### unpaired fasta ####
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index e_coli
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/e_coli/e_coli_1000.fa
+fv taskForm reads.file.format FASTA
+fv taskForm output.file <mate.1.or.unpaired.read_basename>_<reads.file.format>_unpaired.sam
+submit
+
+#### unpaired fastq ####
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index e_coli
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/e_coli/e_coli_1000.fq
+fv taskForm reads.file.format FASTQ
+fv taskForm output.file <mate.1.or.unpaired.read_basename>_<reads.file.format>_unpaired.sam
+submit
+
+#### paired fasta ####
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index e_coli
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/e_coli/e_coli_1000_1.fa
+fv taskForm mate.2_cb url
+fv taskForm mate.2_url ${rnaseqdata}/e_coli/e_coli_1000_2.fa
+fv taskForm reads.file.format FASTA
+fv taskForm output.file <mate.1.or.unpaired.read_basename>_<reads.file.format>_paired.sam
+submit
+
+#### paired fastq ####
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index e_coli
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/e_coli/e_coli_1000_1.fq
+fv taskForm mate.2_cb url
+fv taskForm mate.2_url ${rnaseqdata}/e_coli/e_coli_1000_2.fq
+fv taskForm reads.file.format FASTQ
+fv taskForm output.file <mate.1.or.unpaired.read_basename>_<reads.file.format>_paired.sam
+submit
+
+#### snp example, fastq ####
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index e_coli
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/e_coli/e_coli_10000snp.fq
+fv taskForm reads.file.format FASTQ
+fv taskForm output.file <mate.1.or.unpaired.read_basename>_<reads.file.format>.sam
+
+#### snp example, fasta ####
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index e_coli
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/e_coli/e_coli_10000snp.fa
+fv taskForm reads.file.format FASTA
+fv taskForm output.file <mate.1.or.unpaired.read_basename>_<reads.file.format>.sam
+
+# Step 6: verify each prebuilt index file
+#    Note: I am not using valid read files, but this test does 
+#    verify that the index files get installed properly
+
+#### A. Thaliana ####
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index a_thaliana
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/e_coli/e_coli_1000.fa
+fv taskForm reads.file.format FASTA
+fv taskForm output.file prebuilt.index_<reads.file.format>_<prebuilt.bowtie.index>.sam
+submit
+
+#### B. Taurus ####
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index b_taurus
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/e_coli/e_coli_1000.fa
+fv taskForm reads.file.format FASTA
+fv taskForm output.file prebuilt.index_<reads.file.format>_<prebuilt.bowtie.index>.sam
+submit
+
+#### E. Coli ####
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index e_coli
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/e_coli/e_coli_1000.fa
+fv taskForm reads.file.format FASTA
+fv taskForm output.file <mate.1.or.unpaired.read_basename>_<reads.file.format>_unpaired_<prebuilt.bowtie.index>.sam
+submit
+
+#### C. Elegans, WormBase WS200 ####
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index c_elegans_ws200
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/e_coli/e_coli_1000.fa
+fv taskForm reads.file.format FASTA
+fv taskForm output.file prebuilt.index_<reads.file.format>_<prebuilt.bowtie.index>.sam
+submit
+
+#### H. sapiens, UCSC hg19 ####
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index hg19
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/e_coli/e_coli_1000.fa
+fv taskForm reads.file.format FASTA
+fv taskForm output.file prebuilt.index_<reads.file.format>_<prebuilt.bowtie.index>.sam
+submit
+ 
+#### H. sapiens, UCSC hg18 ####
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index hg18
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/e_coli/e_coli_1000.fa
+fv taskForm reads.file.format FASTA
+fv taskForm output.file prebuilt.index_<reads.file.format>_<prebuilt.bowtie.index>.sam
+submit
+
+#### M. musculus, UCSC mm9 ####
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index mm9
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/e_coli/e_coli_1000.fa
+fv taskForm reads.file.format FASTA
+fv taskForm output.file prebuilt.index_<reads.file.format>_<prebuilt.bowtie.index>.sam
+submit
+
+#### M. musculus, UCSC mm8 ####
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index mm8
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/e_coli/e_coli_1000.fa
+fv taskForm reads.file.format FASTA
+fv taskForm output.file prebuilt.index_<reads.file.format>_<prebuilt.bowtie.index>.sam
+submit
+
+#### M. musculus, NCBI 37 ####
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index m_musculus_ncbi37
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/e_coli/e_coli_1000.fa
+fv taskForm reads.file.format FASTA
+fv taskForm output.file prebuilt.index_<reads.file.format>_<prebuilt.bowtie.index>.sam
+submit
+
+#### S. cerevis ####
+go /gp/pages/index.jsf?lsid=Bowtie.aligner
+fv taskForm prebuilt.bowtie.index s_cerevisiae
+fv taskForm mate.1.or.unpaired.read_cb url
+fv taskForm mate.1.or.unpaired.read_url ${rnaseqdata}/e_coli/e_coli_1000.fa
+fv taskForm reads.file.format FASTA
+fv taskForm output.file prebuilt.index_<reads.file.format>_<prebuilt.bowtie.index>.sam
+submit

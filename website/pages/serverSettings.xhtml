@@ -75,6 +75,9 @@
       <t:div rendered="#{serverSettingsBean.currentMode == 'Gene Pattern Log'}">
         <ui:include src="serverSettingsGPLog.xhtml"/>       
       </t:div>
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Job Configuration'}">
+        <ui:include src="serverSettingsJobConfiguration.xhtml"/>       
+      </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'Web Server Log'}">
         <ui:include src="serverSettingsWSLog.xhtml"/>       
       </t:div>
@@ -104,6 +107,9 @@
       </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'Users and Groups'}">
         <ui:include src="serverSettingsUsersAndGroups.xhtml"/>       
+      </t:div>
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Task Info'}">
+        <ui:include src="serverSettingsTaskInfo.xhtml"/>
       </t:div>
 
     </ui:define>

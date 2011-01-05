@@ -35,100 +35,232 @@ import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.domain.JobStatusDAO;
 import org.genepattern.server.domain.Lsid;
 import org.genepattern.server.domain.TaskMaster;
+import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.OmnigeneException;
+import org.genepattern.webservice.ParameterFormatConverter;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.TaskInfoCache;
 import org.hibernate.LockMode;
 import org.hibernate.Query;
 
 /**
- * AnalysisHypersonicDAO.java
+ * AnalysisDAO.java
  * 
  * @author rajesh kuttan, Hui Gong
  * @version
  */
 public class AnalysisDAO extends BaseDAO {
+    public static Logger log = Logger.getLogger(AnalysisDAO.class);
 
-    static Logger log = Logger.getLogger(AnalysisDAO.class);
-
-    /** Creates new AnalysisHypersonicAccess */
     public AnalysisDAO() {
     }
 
     /**
+     * Get the list of recent jobs for the current user. Jobs are sorted in descending order.
      * 
+     * @param userId - jobs owned by this user
+     * @param numJobsToShow - the total number of jobs to show
+     * @param jobSortOrder - the sort order
+     * @return
      */
-    public JobInfo addNewJob(int taskID, String user_id, String parameter_info, int parentJobNumber) {
-        Integer jobNo = addNewJob(taskID, user_id, parameter_info, null, new Integer(parentJobNumber), null);
-        return getJobInfo(jobNo);
+    public List<JobInfo> getRecentJobsForUser(String userId, int numJobsToShow, JobSortOrder jobSortOrder) {
+        final int pageNum = 1;
+        final boolean ascending = false;
+        return getPagedJobsOwnedByUser(userId, pageNum, numJobsToShow, jobSortOrder, ascending);
     }
 
     /**
-     * Submit a new job
+     * For an admin user, get the list of all jobs, paged and sorted.
      * 
-     * @param taskID
-     *                the task id or UNPROCESSABLE_TASKID if the task is a temporary pipeline
-     * @param user_id
-     *                the user id
-     * @param parameter_info
-     *                the parameter info
-     * @param taskName
-     *                the task name if the task is a temporary pipeline
-     * @param parentJobNumber
-     *                the parent job number of <tt>null</tt> if the job has no parent
-     * @throws OmnigeneException
-     * @throws RemoteException
-     * @return Job ID
+     * @param pageNum, the current page, numbering starts at 1.
+     * @param pageSize, the number of jobs on a page.
+     * @param jobSortOrder
+     * @param ascending
+     * @return
      */
-    public Integer addNewJob(int taskID, String user_id, String parameter_info, String taskName, Integer parentJobNumber, String task_lsid) {
-        return this.addNewJob(taskID, user_id, parameter_info, taskName, parentJobNumber, task_lsid, JobStatus.JOB_PENDING);
+    public List<JobInfo> getAllPagedJobsForAdmin(final int pageNum, final int pageSize, final JobSortOrder jobSortOrder, final boolean ascending) {
+        Query query = getPagedAnalysisJobsQuery("getAllPagedJobs", pageNum, pageSize, jobSortOrder, ascending);
+        List<AnalysisJob> results = query.list();
+        List<JobInfo> jobInfos = convertResults(results);
+        return jobInfos;
+    }
+    
+    /**
+     * For the current (non-admin) user, get the list of all jobs which are readable by this user, paged and sorted.
+     * 
+     * @param userId, the current user id
+     * @param groupIds, the list of groups to which the current user belongs
+     * @param pageNum
+     * @param pageSize
+     * @param jobSortOrder
+     * @param ascending
+     * @return
+     */
+    public List<JobInfo> getAllPagedJobsForUser(final String userId, final Set<String> groupIds, final int pageNum, final int pageSize, final JobSortOrder jobSortOrder, final boolean ascending) {
+        Query query = getPagedAnalysisJobsQuery("getPagedJobsForUser", pageNum, pageSize, jobSortOrder, ascending);
+        query.setString("userId", userId);
+        query.setParameterList("groupIds", groupIds);
+        List<AnalysisJob> results = query.list();
+        List<JobInfo> jobInfos = convertResults(results);
+        return jobInfos;
+    }
+    
+    /**
+     * Get the list of jobs owned by the current user, paged and sorted.
+     * 
+     * @param userId
+     * @param pageNum
+     * @param pageSize
+     * @param jobSortOrder
+     * @param ascending
+     * @return
+     */
+    public List<JobInfo> getPagedJobsOwnedByUser(final String userId, final int pageNum, final int pageSize, final JobSortOrder jobSortOrder, final boolean ascending) {
+        Query query = getPagedAnalysisJobsQuery("getPagedJobsOwnedByUser", pageNum, pageSize, jobSortOrder, ascending);
+        query.setString("userId", userId);
+        List<AnalysisJob> results = query.list();
+        List<JobInfo> jobInfos = convertResults(results);
+        return jobInfos;
+    }
+    
+    /**
+     * Get the list of jobs which are in the given group, paged and sorted.
+     * 
+     * @param groupId
+     * @param pageNum
+     * @param pageSize
+     * @param jobSortOrder
+     * @param ascending
+     * @return
+     */
+    public List<JobInfo> getPagedJobsInGroup(final String groupId, final int pageNum, final int pageSize, final JobSortOrder jobSortOrder, final boolean ascending) {
+        Query query = getPagedAnalysisJobsQuery("getPagedJobsForGroup", pageNum, pageSize, jobSortOrder, ascending);
+        query.setString("groupId", groupId);
+        List<AnalysisJob> results = query.list();
+        List<JobInfo> jobInfos = convertResults(results);
+        return jobInfos;
+    }
+    
+    /**
+     * 
+     * @param queryName
+     * @param pageNum, the current page number (starting with page 1)
+     * @param pageSize, the number of root jobs to display per page
+     * @param jobSortOrder
+     * @param ascending
+     * @return
+     */
+    private Query getPagedAnalysisJobsQuery(
+            final String queryName, final int pageNum, final int pageSize, final JobSortOrder jobSortOrder, final boolean ascending) 
+    {
+        int firstResult = (pageNum-1) * pageSize;
+        int maxResults = pageSize;
+        
+        Query namedQuery = getSession().getNamedQuery(queryName);
+        StringBuffer hql = new StringBuffer(namedQuery.getQueryString());
+        appendSortOrder(hql, jobSortOrder, ascending);
+        
+        Query query = getSession().createQuery(hql.toString());
+        query.setBoolean("deleted", false);
+        query.setFirstResult(firstResult);
+        query.setMaxResults(maxResults);
+        return query;
     }
 
-    public Integer addNewJob(int taskID, String user_id, String parameter_info, String taskName, Integer parentJobNumber, String task_lsid, int status) {        
-        Set<GroupPermission> groupPermissions = new HashSet<GroupPermission>();
-        return this.addNewJob(taskID, user_id, groupPermissions, parameter_info, taskName, parentJobNumber, task_lsid, status);
+    private void appendSortOrder(StringBuffer hql, JobSortOrder jobSortOrder, boolean ascending) {
+        switch (jobSortOrder) {
+        case JOB_NUMBER:
+            hql.append(" ORDER BY a.jobNo");
+            break;
+        case JOB_STATUS:
+            hql.append(" ORDER BY a.jobStatus");
+            break;
+        case SUBMITTED_DATE:
+            hql.append(" ORDER BY a.submittedDate");
+            break;
+        case COMPLETED_DATE:
+            hql.append(" ORDER BY a.completedDate");
+            break;
+        case USER:
+            hql.append(" ORDER BY a.userId");
+            break;
+        case MODULE_NAME:
+            hql.append(" ORDER BY a.taskName");
+            break;
+        }
+        hql.append(ascending ? " ASC" : " DESC");
     }
 
-    public Integer addNewJob(int taskID, String user_id, Set<GroupPermission> groupPermissions, String parameter_info, String taskName, Integer parentJobNumber, String task_lsid, int status) {
-        int updatedRecord = 0;
-        String lsid = null;
-        // Check taskID is valid
-        if (taskID != UNPROCESSABLE_TASKID) {
-            String hqlString = "select taskName, lsid from org.genepattern.server.domain.TaskMaster where taskId = :taskId";
-            Query query = getSession().createQuery(hqlString);
-            query.setInteger("taskId", taskID);
-            Object[] results = (Object[]) query.uniqueResult();
-            taskName = (String) results[0];
-            lsid = (String) results[1];
-        } 
-        else {
-            if (task_lsid != null) {
-                lsid = task_lsid;
+    private List<JobInfo> convertResults(List<AnalysisJob> analysisJobs) {
+        List<JobInfo> jobInfos = new ArrayList<JobInfo>(analysisJobs.size());
+        for(AnalysisJob analysisJob : analysisJobs) {
+            JobInfo jobInfo = new JobInfo(analysisJob);
+            jobInfos.add(jobInfo);
+        }
+        return jobInfos;
+    }
+
+    /**
+     * Add a new job, first getting a TaskInfo object with the given taskId.
+     */
+    private Integer addNewJob(String userId, int taskId, ParameterInfo[] parameterInfoArray, Integer parentJobNumber, Integer initialJobStatus) 
+    throws JobSubmissionException
+    {
+        TaskInfo taskInfo = null;
+        try {
+            taskInfo = new AdminDAO().getTask(taskId);
+        }
+        catch (Throwable t) {
+            throw new JobSubmissionException("Error adding new job, not able to get taskInfo for taskId="+taskId, t);
+        }
+        return addNewJob(userId, taskInfo, parameterInfoArray, parentJobNumber, initialJobStatus);
+    }
+
+    public Integer addNewJob(String userId, TaskInfo taskInfo, ParameterInfo[] parameterInfoArray, Integer parentJobNumber, Integer initialJobStatus) 
+    throws JobSubmissionException
+    { 
+        if (taskInfo == null) {
+            throw new JobSubmissionException("Error adding job to queue, taskInfo is null");
+        }
+        
+        if (taskInfo.getID() < 0) {
+            throw new JobSubmissionException("Error adding job to queue, invalid taskId, taskInfo.getID="+taskInfo.getID());
+        }
+
+        Integer jobId = null;
+        try {
+            String parameter_info = ParameterFormatConverter.getJaxbString(parameterInfoArray);
+
+            AnalysisJob aJob = new AnalysisJob();
+            aJob.setTaskId(taskInfo.getID());
+            aJob.setSubmittedDate(Calendar.getInstance().getTime());
+            aJob.setParameterInfo(parameter_info);
+            aJob.setUserId(userId);
+            aJob.setTaskName(taskInfo.getName());
+            aJob.setParent(parentJobNumber);
+            aJob.setTaskLsid(taskInfo.getLsid());
+
+            if (initialJobStatus == null) {
+                initialJobStatus = JobStatus.JOB_PENDING;
             }
+            JobStatus js = (new JobStatusDAO()).findById(initialJobStatus);
+            aJob.setJobStatus(js);
+
+            jobId = (Integer) getSession().save(aJob);
         }
-
-        AnalysisJob aJob = new AnalysisJob();
-        aJob.setTaskId(taskID);
-        aJob.setSubmittedDate(Calendar.getInstance().getTime());
-        aJob.setParameterInfo(parameter_info);
-        aJob.setUserId(user_id);
-        aJob.setTaskName(taskName);
-        aJob.setParent(parentJobNumber);
-        aJob.setTaskLsid(lsid);
-
-        JobStatus js = (new JobStatusDAO()).findById(status);
-        aJob.setJobStatus(js);
-
-        Integer jobId = (Integer) getSession().save(aJob);
-
-        //optionally save group permissions with the job
-        if (groupPermissions != null && groupPermissions.size() > 0) {
-            setGroupPermissions(jobId.intValue(), groupPermissions);
+        catch (Throwable t) {
+            throw new JobSubmissionException("Error adding job to queue, taskId="+taskInfo.getID()+
+                    ", taskName="+taskInfo.getName()+
+                    ", taskLsid="+taskInfo.getLsid(), t);
         }
+        
         return jobId;
     }
 
@@ -191,36 +323,36 @@ public class AnalysisDAO extends BaseDAO {
      * @throws OmnigeneException
      * @return task ID
      */
-    public int addNewTask(String taskName, String user_id, int access_id, String description, String parameter_info,
-	    String taskInfoAttributes) throws OmnigeneException {
+    public int addNewTask(String taskName, String user_id, int access_id, String description, String parameter_info, String taskInfoAttributes) 
+    throws OmnigeneException {
+        try {
+            TaskInfoAttributes tia = TaskInfoAttributes.decode(taskInfoAttributes);
+            String sLSID = null;
+            if (tia != null) {
+                sLSID = tia.get(GPConstants.LSID);
+            }
 
-	try {
-	    TaskInfoAttributes tia = TaskInfoAttributes.decode(taskInfoAttributes);
-	    String sLSID = null;
-	    if (tia != null) {
-		sLSID = tia.get(GPConstants.LSID);
-	    }
+            TaskMaster tm = new TaskMaster();
+            tm.setTaskName(taskName);
+            tm.setDescription(description);
+            tm.setParameterInfo(parameter_info);
+            tm.setTaskinfoattributes(taskInfoAttributes);
+            tm.setUserId(user_id);
+            tm.setAccessId(access_id);
+            tm.setLsid(sLSID.toString());
+            int taskID = (Integer) getSession().save(tm);
 
-	    TaskMaster tm = new TaskMaster();
-	    tm.setTaskName(taskName);
-	    tm.setDescription(description);
-	    tm.setParameterInfo(parameter_info);
-	    tm.setTaskinfoattributes(taskInfoAttributes);
-	    tm.setUserId(user_id);
-	    tm.setAccessId(access_id);
-	    tm.setLsid(sLSID.toString());
-	    int taskID = (Integer) getSession().save(tm);
-
-	    if (sLSID != null && !sLSID.equals("")) {
-		Lsid lsid = new Lsid(sLSID);
-		getSession().save(lsid);
-	    }
-
-	    return taskID;
-	} catch (Exception e) {
-	    log.error(e);
-	    throw new OmnigeneException(e);
-	}
+            if (sLSID != null && !sLSID.equals("")) {
+                Lsid lsid = new Lsid(sLSID);
+                getSession().save(lsid);
+            }
+            TaskInfoCache.instance().removeFromCache(taskID);
+            return taskID;
+        } 
+        catch (Exception e) {
+            log.error(e);
+            throw new OmnigeneException(e);
+        }
     }
 
     /**
@@ -255,21 +387,25 @@ public class AnalysisDAO extends BaseDAO {
      * 
      */
     public JobInfo[] getChildren(int jobId) throws OmnigeneException {
+        List<JobInfo> childJobInfos = new ArrayList<JobInfo>();
 
-	java.util.List results = new java.util.ArrayList();
+        String hql = " from org.genepattern.server.domain.AnalysisJob  where parent = :jobNo " +
+                     " ORDER BY jobNo ASC";
 
-	String hql = " from org.genepattern.server.domain.AnalysisJob  where parent = :jobNo ";
-	hql += " ORDER BY jobNo ASC";
-
-	Query query = getSession().createQuery(hql);
-	query.setInteger("jobNo", jobId);
-	query.setFetchSize(50);
-	List<AnalysisJob> aJobs = query.list();
-	for (AnalysisJob aJob : aJobs) {
-	    JobInfo ji = new JobInfo(aJob);
-	    results.add(ji);
-	}
-	return (JobInfo[]) results.toArray(new JobInfo[0]);
+        Query query = getSession().createQuery(hql);
+        query.setInteger("jobNo", jobId);
+        query.setFetchSize(50);
+        List<AnalysisJob> aJobs = query.list();
+        for (AnalysisJob aJob : aJobs) {
+            try {
+                JobInfo ji = new JobInfo(aJob);
+                childJobInfos.add(ji);
+            }
+            catch (Throwable t) {
+                log.error("Error creating jobInfo for analysisJob, aJob.jobNo="+aJob.getJobNo()+": "+t.getLocalizedMessage());
+            }
+        }
+        return (JobInfo[]) childJobInfos.toArray(new JobInfo[0]);
     }
 
     /**
@@ -285,7 +421,7 @@ public class AnalysisDAO extends BaseDAO {
         query.setInteger("jobNo", jobNo);
         List<Integer> rval = query.list();
         if (rval.size() != 1) {
-            log.error("getRootJobNumber: couldn't query AnalysisJob.parent from database");
+            log.error("getRootJobNumber("+jobNo+"): couldn't query AnalysisJob.parent from database");
             return -1;
         }
         Integer parentJobNo = rval.get(0);
@@ -302,6 +438,7 @@ public class AnalysisDAO extends BaseDAO {
         List<String> rval = query.list();
         if (rval.size() != 1) {
             log.error("getJobOwner: couldn't get jobOwner for job_id: "+jobNo);
+            log.debug("", new Exception());
             return "";
         }
         return rval.get(0);
@@ -443,7 +580,7 @@ public class AnalysisDAO extends BaseDAO {
      * @param rval
      * @return
      */
-    private int getCount(Object rval) {
+    public static int getCount(Object rval) {
         if (rval instanceof Long) {
             return ((Long)rval).intValue();
         }
@@ -490,7 +627,7 @@ public class AnalysisDAO extends BaseDAO {
         return getPagedJobs(getAllJobs, filterByGroup, includeGroups, null, groups, firstResult, maxResults, includeDeletedJobs, sortOrder, ascending);
     }
 
-    public JobInfo[] getPagedJobs(String ownedByUsername, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending)
+    private JobInfo[] getPagedJobs(String ownedByUsername, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending)
     throws OmnigeneException 
     {
         return getPagedJobs(ownedByUsername, null, firstResult, maxResults, includeDeletedJobs, sortOrder, ascending);
@@ -518,7 +655,7 @@ public class AnalysisDAO extends BaseDAO {
      * @return
      * @throws OmnigeneException
      */
-    public JobInfo[] getPagedJobs(String username, Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending)
+    private JobInfo[] getPagedJobs(String username, Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending)
     throws OmnigeneException 
     {
         //three exclusive states: [owned_by_user | all_jobs | viewable_by_user]
@@ -532,12 +669,12 @@ public class AnalysisDAO extends BaseDAO {
         return getPagedJobs(getAllJobs, includeGroups, username, groups, firstResult, maxResults, includeDeletedJobs, sortOrder, ascending);
     }
     
-    public JobInfo[] getPagedJobs(boolean getAllJobs, boolean includeGroups, String username, Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending) {
+    private JobInfo[] getPagedJobs(boolean getAllJobs, boolean includeGroups, String username, Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending) {
         boolean filterByGroup = false;
         return getPagedJobs(getAllJobs, filterByGroup, includeGroups, username, groups, firstResult, maxResults, includeDeletedJobs, sortOrder, ascending);
     }
 
-    public JobInfo[] getPagedJobs(boolean getAllJobs, boolean filterByGroup, boolean includeGroups, String username, Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending) {
+    private JobInfo[] getPagedJobs(boolean getAllJobs, boolean filterByGroup, boolean includeGroups, String username, Set<String> groups, int firstResult, int maxResults, boolean includeDeletedJobs, JobSortOrder sortOrder, boolean ascending) {
 
         StringBuffer hql = new StringBuffer(
                 getAnalysisJobQuery(filterByGroup, groups, includeGroups, getAllJobs, includeDeletedJobs)
@@ -758,6 +895,18 @@ public class AnalysisDAO extends BaseDAO {
 	}
     }
 
+    public Integer getParentJobId(int jobId) {
+        String hql = " select parent from org.genepattern.server.domain.AnalysisJob where jobNo = :jobNo";
+        Query query = getSession().createQuery(hql);
+        query.setInteger("jobNo", jobId);
+        Integer parentJobId = (Integer) query.uniqueResult();
+        if (parentJobId != null) {
+            return parentJobId;
+        }
+        log.error("Unable to get parent job id for job: "+jobId);
+        return -1;
+    }
+
     public JobInfo getParent(int jobId) throws OmnigeneException {
 
 	String hql = " select parent from org.genepattern.server.domain.AnalysisJob as parent, "
@@ -786,52 +935,32 @@ public class AnalysisDAO extends BaseDAO {
     /**
      * 
      */
-    public Integer recordClientJob(int taskID, String user_id, String parameter_info, int parentJobNumber)
-	    throws OmnigeneException {
-	Integer jobNo = null;
-	try {
+    public Integer recordClientJob(int taskID, String user_id, ParameterInfo[] parameterInfoArray, int parentJobNumber)
+    throws OmnigeneException {
+        Integer jobNo = null;
+        try {
+            jobNo = this.addNewJob(user_id, taskID, parameterInfoArray, parentJobNumber, null);
+        } 
+        catch (JobSubmissionException e) {
+            throw new OmnigeneException(e);
+        }
+        try {
+            AnalysisJobDAO aHome = new AnalysisJobDAO();
+            AnalysisJob aJob = aHome.findById(jobNo);
 
-	    Integer parent = null;
-	    if (parentJobNumber != -1) {
-		parent = new Integer(parentJobNumber);
-	    }
-	    jobNo = addNewJob(taskID, user_id, parameter_info, null, parent, null);
+            JobStatus newStatus = (JobStatus) getSession().get(JobStatus.class, JobStatus.JOB_FINISHED);
+            aJob.setStatus(newStatus);
+            aJob.setDeleted(true);
 
-	    AnalysisJobDAO aHome = new AnalysisJobDAO();
-	    org.genepattern.server.domain.AnalysisJob aJob = aHome.findById(jobNo);
-
-	    JobStatus newStatus = (JobStatus) getSession().get(JobStatus.class, JobStatus.JOB_FINISHED);
-	    aJob.setStatus(newStatus);
-	    aJob.setDeleted(true);
-
-	    return jobNo;
-	} catch (OmnigeneException e) {
-	    if (jobNo != null) {
-		deleteJob(jobNo);
-	    }
-	    throw e;
-	}
-    }
-
-    /**
-     * reset any previous running (but incomplete) jobs to waiting status, clear their output files
-     * 
-     * @return true if there were running jobs
-     * @author Jim Lerner
-     * 
-     */
-    public boolean resetPreviouslyRunningJobs() {
-
-	String hql = "update org.genepattern.server.domain.AnalysisJob set "
-		+ " jobStatus.statusId = :waitStatus where jobStatus.statusId = :processingStatus ";
-	Query query = getSession().createQuery(hql);
-	query.setInteger("waitStatus", JOB_WAITING_STATUS);
-	query.setInteger("processingStatus", PROCESSING_STATUS);
-
-	getSession().flush();
-	getSession().clear();
-	boolean exist = (query.executeUpdate() > 0);
-	return exist;
+            return jobNo;
+        } 
+        catch (OmnigeneException e) {
+            log.error("Error in recordClientJob(taskID="+taskID+", user_id="+user_id+", parentJobNumber="+parentJobNumber+")", e);
+            if (jobNo != null) {
+                deleteJob(jobNo);
+            }
+            throw e;            
+        }
     }
 
     /**
@@ -889,160 +1018,163 @@ public class AnalysisDAO extends BaseDAO {
 	return 1;
 
     }
+    
+    public int updateParameterInfo(Integer jobNo, String parameterInfo) {
+        String hqlUpdate = "update org.genepattern.server.domain.AnalysisJob job set job.parameterInfo = :parameterInfo where jobNo = :jobNo";
+        Query query = HibernateUtil.getSession().createQuery( hqlUpdate );
+        query.setString("parameterInfo", parameterInfo);
+        query.setInteger("jobNo", jobNo);
+        return query.executeUpdate();
+    }
 
     /**
      * Updates task parameters
      * 
-     * @param taskID
-     *                task ID
-     * @param parameter_info
-     *                parameters as a xml string
+     * @param taskID, task ID
+     * @param parameter_info, parameters as a xml string
      * @throws OmnigeneException
      * @throws RemoteException
      * @return No. of updated records
      */
     public int updateTask(int taskId, String parameter_info, String taskInfoAttributes, String user_id, int access_id)
-	    throws OmnigeneException {
+    throws OmnigeneException {
+        try {
+            TaskMaster task = (TaskMaster) getSession().get(TaskMaster.class, taskId);
+            String oldLSID = task.getLsid();
+            task.setParameterInfo(parameter_info);
+            task.setTaskinfoattributes(taskInfoAttributes);
+            task.setUserId(user_id);
+            task.setAccessId(access_id);
 
-	try {
-	    TaskMaster task = (TaskMaster) getSession().get(TaskMaster.class, taskId);
+            TaskInfoAttributes tia = TaskInfoAttributes.decode(taskInfoAttributes);
+            String sLSID = null;
+            LSID lsid = null;
+            if (tia != null) {
+                sLSID = tia.get(GPConstants.LSID);
+            }
+            if (sLSID != null && !sLSID.equals("")) {
+                lsid = new LSID(sLSID);
+                task.setLsid(sLSID);
+            } 
+            else {
+                task.setLsid(null);
+            }
 
-	    String oldLSID = task.getLsid();
+            getSession().update(task);
 
-	    task.setParameterInfo(parameter_info);
-	    task.setTaskinfoattributes(taskInfoAttributes);
-	    task.setUserId(user_id);
-	    task.setAccessId(access_id);
+            if (oldLSID != null) {
+                // delete the old LSID record
+                String deleteHql = "delete from org.genepattern.server.domain.Lsid where lsid = :lsid";
+                Query deleteQuery = getSession().createQuery(deleteHql);
+                deleteQuery.setString("lsid", oldLSID);
+                deleteQuery.executeUpdate();
+            }
 
-	    TaskInfoAttributes tia = TaskInfoAttributes.decode(taskInfoAttributes);
-	    String sLSID = null;
-	    LSID lsid = null;
-	    if (tia != null) {
-		sLSID = tia.get(GPConstants.LSID);
-	    }
-	    if (sLSID != null && !sLSID.equals("")) {
-		lsid = new LSID(sLSID);
-		task.setLsid(sLSID);
-	    } else {
-		task.setLsid(null);
-	    }
+            if (sLSID != null) {
+                Lsid lsidHibernate = new Lsid(lsid.toString());
+                getSession().save(lsidHibernate);
+            }
+            
+            TaskInfoCache.instance().removeFromCache(taskId);
 
-	    getSession().update(task);
-
-	    if (oldLSID != null) {
-		// delete the old LSID record
-		String deleteHql = "delete from org.genepattern.server.domain.Lsid where lsid = :lsid";
-		Query deleteQuery = getSession().createQuery(deleteHql);
-		deleteQuery.setString("lsid", oldLSID);
-		deleteQuery.executeUpdate();
-
-	    }
-
-	    if (sLSID != null) {
-		Lsid lsidHibernate = new Lsid(lsid.toString());
-		getSession().save(lsidHibernate);
-
-	    }
-
-	    return 1;
-	} catch (Exception e) {
-	    log.error(e);
-	    throw new OmnigeneException(e);
-	}
+            return 1;
+        } 
+        catch (Exception e) {
+            log.error(e);
+            throw new OmnigeneException(e);
+        }
     }
 
     /**
      * Updates task description and parameters
      * 
-     * @param taskID
-     *                task ID
-     * @param description
-     *                task description
-     * @param parameter_info
-     *                parameters as a xml string
+     * @param taskID, task ID
+     * @param description, task description
+     * @param parameter_info, parameters as a xml string
      * @return No. of updated records
      * @throws OmnigeneException
      * @throws RemoteException
      */
-    public int updateTask(int taskId, String taskDescription, String parameter_info, String taskInfoAttributes,
-	    String user_id, int access_id) throws OmnigeneException {
+    public int updateTask(int taskId, String taskDescription, String parameter_info, String taskInfoAttributes, String user_id, int access_id) 
+    throws OmnigeneException {
+        try {
+            TaskMaster task = (TaskMaster) getSession().get(TaskMaster.class, taskId);
+            String oldLSID = task.getLsid();
+            task.setParameterInfo(parameter_info);
+            task.setDescription(taskDescription);
+            task.setTaskinfoattributes(taskInfoAttributes);
+            task.setUserId(user_id);
+            task.setAccessId(access_id);
 
-	try {
+            TaskInfoAttributes tia = TaskInfoAttributes.decode(taskInfoAttributes);
+            String sLSID = null;
+            LSID lsid = null;
+            if (tia != null) {
+                sLSID = tia.get(GPConstants.LSID);
+            }
+            if (sLSID != null && !sLSID.equals("")) {
+                lsid = new LSID(sLSID);
+                task.setLsid(sLSID);
+            } 
+            else {
+                task.setLsid(null);
+            }
 
-	    TaskMaster task = (TaskMaster) getSession().get(TaskMaster.class, taskId);
+            getSession().update(task); // Not neccessary ?
 
-	    String oldLSID = task.getLsid();
+            if (oldLSID != null) {
+                // delete the old LSID record
+                String deleteHql = "delete from org.genepattern.server.domain.Lsid where lsid = :lsid";
+                Query deleteQuery = getSession().createQuery(deleteHql);
+                deleteQuery.setString("lsid", oldLSID);
+                deleteQuery.executeUpdate();
+            }
 
-	    task.setParameterInfo(parameter_info);
-	    task.setDescription(taskDescription);
-	    task.setTaskinfoattributes(taskInfoAttributes);
-	    task.setUserId(user_id);
-	    task.setAccessId(access_id);
+            if (sLSID != null) {
+                Lsid lsidHibernate = new Lsid();
+                lsidHibernate.setLsid(lsid.toString());
+                lsidHibernate.setLsidNoVersion(lsid.toStringNoVersion());
+                lsidHibernate.setVersion(lsid.getVersion());
+                getSession().save(lsidHibernate);
+            }
+            getSession().flush();
+            getSession().clear();
+            
+            TaskInfoCache.instance().removeFromCache(taskId);
 
-	    TaskInfoAttributes tia = TaskInfoAttributes.decode(taskInfoAttributes);
-	    String sLSID = null;
-	    LSID lsid = null;
-	    if (tia != null) {
-		sLSID = tia.get(GPConstants.LSID);
-	    }
-	    if (sLSID != null && !sLSID.equals("")) {
-		lsid = new LSID(sLSID);
-		task.setLsid(sLSID);
-	    } else {
-		task.setLsid(null);
-	    }
-
-	    getSession().update(task); // Not neccessary ?
-
-	    if (oldLSID != null) {
-		// delete the old LSID record
-		String deleteHql = "delete from org.genepattern.server.domain.Lsid where lsid = :lsid";
-		Query deleteQuery = getSession().createQuery(deleteHql);
-		deleteQuery.setString("lsid", oldLSID);
-		deleteQuery.executeUpdate();
-
-	    }
-
-	    if (sLSID != null) {
-		Lsid lsidHibernate = new Lsid();
-		lsidHibernate.setLsid(lsid.toString());
-		lsidHibernate.setLsidNoVersion(lsid.toStringNoVersion());
-		lsidHibernate.setVersion(lsid.getVersion());
-		getSession().save(lsidHibernate);
-
-	    }
-	    getSession().flush();
-	    getSession().clear();
-
-	    return 1;
-	} catch (Exception e) {
-	    log.error(e);
-	    throw new OmnigeneException(e);
-	}
+            return 1;
+        } 
+        catch (Exception e) {
+            log.error(e);
+            throw new OmnigeneException(e);
+        }
     }
 
     private int getLsidCount(LSID lsid) {
-	int count = 0;
-
-	final String sql = "select count(*) from lsids where lsid = :newLSID";
-	Query query = getSession().createSQLQuery(sql);
-	query.setString("newLSID", lsid.toString());
-	query.setReadOnly(true);
-	Object result = query.uniqueResult();
-	if (result instanceof Integer) {
-	    count = (Integer) result;
-	} else if (result instanceof BigInteger) {
-	    count = ((BigInteger) result).intValue();
-	} else if (result instanceof BigDecimal) {
-	    try {
-		count = ((BigDecimal) result).intValueExact();
-	    } catch (ArithmeticException e) {
-		log.error("Invalid conversion from BigDecimal to int", e);
-	    }
-	} else {
-	    log.error("Unknown type returned from query: " + result.getClass().getName());
-	}
-	return count;
+        int count = 0;
+        final String sql = "select count(*) from lsids where lsid = :newLSID";
+        Query query = getSession().createSQLQuery(sql);
+        query.setString("newLSID", lsid.toString());
+        query.setReadOnly(true);
+        Object result = query.uniqueResult();
+        if (result instanceof Integer) {
+            count = (Integer) result;
+        } 
+        else if (result instanceof BigInteger) {
+            count = ((BigInteger) result).intValue();
+        }
+        else if (result instanceof BigDecimal) {
+            try {
+                count = ((BigDecimal) result).intValueExact();
+            } 
+            catch (ArithmeticException e) {
+                log.error("Invalid conversion from BigDecimal to int", e);
+            }
+        } 
+        else {
+            log.error("Unknown type returned from query: " + result.getClass().getName());
+        }
+        return count;
     }
 
 }

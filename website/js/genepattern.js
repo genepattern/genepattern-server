@@ -18,7 +18,7 @@ function toggleCheckBoxes(maincheckbox, parentId) {
 function stopJob(button, jobId) {
     var really = confirm('Really stop this Job?');
     if (!really) return;
-    window.open("runPipeline.jsp?cmd=stop&jobID="+jobId, "_blank", "height=100, width=100, directories=no, menubar=no, statusbar=no, resizable=no");
+    window.alert('Job not stopped, stopJob should not be called from this page!');
 }
 
 //POST /jobResults/<job>/requestEmailNotification

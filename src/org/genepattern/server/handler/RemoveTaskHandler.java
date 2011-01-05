@@ -13,12 +13,10 @@
 
 package org.genepattern.server.handler;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
-import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.OmnigeneException;
-
-//import edu.mit.wi.omnigene.omnidas.*;
 
 /**
  * Class used to Remove existing task
@@ -26,10 +24,10 @@ import org.genepattern.webservice.OmnigeneException;
  * @author rajesh kuttan
  * @version 1.0
  */
-
 public class RemoveTaskHandler extends RequestHandler {
+    private static Logger log = Logger.getLogger(RemoveTaskHandler.class);
 
-	private int taskID = 0;
+    private int taskID = 0;
 
 	public RemoveTaskHandler() {
 	}
@@ -43,36 +41,28 @@ public class RemoveTaskHandler extends RequestHandler {
 		this.taskID = taskID;
 	}
 
-	/**
-	 * Removes task based on taskID and returns no. of deleted records
-	 * 
-	 * @throws TaskIDNotFoundException
-	 * @throws OmnigeneException
-	 *             OmnigeneException
-	 * @return No.of records deleted
-	 */
-	public int executeRequest() throws OmnigeneException,
-			TaskIDNotFoundException {
-		int recordDeleted = 0;
-		try {
-
-			//Get EJB reference
-            AdminDAO ds = new AdminDAO();
-			//Invoke EJB function
-			recordDeleted = ds.deleteTask(taskID);
-		} catch (TaskIDNotFoundException taskEx) {
-			System.out
-					.println("RemoveTaskRequest(executeRequest): TaskIDNotFoundException "
-							+ taskID);
-			throw taskEx;
-		} catch (Exception ex) {
-			System.out.println("RemoveTaskRequest(execute): Error "
-					+ ex.getMessage());
-			ex.printStackTrace();
-			throw new OmnigeneException(ex.getMessage());
-		}
-
-		return recordDeleted;
+    /**
+     * Removes task based on taskID and returns no. of deleted records
+     * 
+     * @throws TaskIDNotFoundException
+     * @throws OmnigeneException
+     * @return No.of records deleted
+     */
+	public int executeRequest() throws OmnigeneException, TaskIDNotFoundException {
+	    int recordDeleted = 0;
+	    try {
+	        AdminDAO ds = new AdminDAO();
+	        recordDeleted = ds.deleteTask(taskID);
+	    } 
+	    catch (TaskIDNotFoundException taskEx) {
+	        log.error("RemoveTaskRequest(executeRequest): TaskIDNotFoundException " + taskID);
+	        throw taskEx;
+	    } 
+	    catch (Exception ex) {
+	        log.error("RemoveTaskRequest(execute): Error " + ex.getMessage(), ex);
+	        throw new OmnigeneException(ex.getMessage());
+	    }
+	    return recordDeleted;
 	}
 
 }

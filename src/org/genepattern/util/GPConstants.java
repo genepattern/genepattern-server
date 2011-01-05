@@ -46,8 +46,6 @@ public class GPConstants {
     /** task ID (task_master ID) of running job */
     public static final String TASK_ID = "task_id";
 
-    public static final String TOMCAT = "tomcat";
-
     public static final String ANT = "ant";
 
     public static final String COMMAND_PREFIX = "commandPrefix"; // eg. LSF
@@ -215,7 +213,6 @@ public class GPConstants {
 
     public static final String PARAM_INFO_TYPE_INPUT_FILE = "java.io.File";
 
-    public static final String PARAM_INFO_TYPE_DIR = "DIRECTORY";
     public static final int PARAM_INFO_TYPE_NAME_OFFSET = 0; // offset into
 
     public static final String JAVA_FLAGS = "java_flags";
@@ -229,7 +226,7 @@ public class GPConstants {
 
     public static final String[][] PARAM_INFO_TYPES = { { "text", PARAM_INFO_TYPE_TEXT },
 	    { "integer", PARAM_INFO_TYPE_INTEGER }, { "floating point", PARAM_INFO_TYPE_FLOAT },
-	    { "input file", PARAM_INFO_TYPE_INPUT_FILE }, { "directory", PARAM_INFO_TYPE_DIR}, { "password", PARAM_INFO_TYPE_PASSWORD } };
+	    { "input file", PARAM_INFO_TYPE_INPUT_FILE }, { "password", PARAM_INFO_TYPE_PASSWORD } };
 
     // well-known ParameterInfo attributes
     public static final int PARAM_INFO_NAME_OFFSET = 0; // offset into one of

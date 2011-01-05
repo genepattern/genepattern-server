@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.genepattern.server.auth.AuthenticationException;
 
 /**
- * Servlet for logging an HTTP client into a GenePattern server; 
+ * Servlet for logging an HTTP client into a GenePattern server.
  * This is the recommended way to authenticate an HTTP client session from an application or script.
  * 
  * <pre>
@@ -21,21 +21,21 @@ import org.genepattern.server.auth.AuthenticationException;
  * 2. GET  http://127.0.0.1:8080/gp/login?username=user&password=pw
  * 3. POST http://127.0.0.1:8080/gp/login?username=user&password=pw&redirect=true
  * 4. GET  http://127.0.0.1:8080/gp/login?username=user&password=pw&redirect=false
- * 5. POST http://127.0.0.1:8080/gp/login?username=user&password=pw&redirect=true&origin=/gp/jobResults
- * 6. GET  http://127.0.0.1:8080/gp/login?username=user&password=pw&redirect=true&origin=/gp/jobResults
+ * 5. POST http://127.0.0.1:8080/gp/login?username=user&password=pw&redirectTo=/gp/jobResults
+ * 6. GET  http://127.0.0.1:8080/gp/login?username=user&password=pw&redirectTo=/gp/jobResults
  * 
  * Request parameters
  *     username, required, The genepattern username.
- *     password, optional only of the server does not require passwords for authentication, The unencrypted password.
+ *     password, optional only if the server does not require passwords for authentication, The unencrypted password.
  *     redirect, optional, true | false, If true the server will include a redirect in the server response code.
- *     origin, optional, Sets the location when sending a redirect, otherwise the redirect is to home page.
+ *     redirectTo, optional, Sets the location when sending a redirect, otherwise the redirect is to the home page.
  *     
  * Response codes
  * 1. 200 OK  
  *    Indicates successful login.
  *    
  * 2. 3xx
- *    Indicates successful login when redirect=true.
+ *    Indicates successful login when redirect=true or redirectTo is set.
  *    
  * 3. 403
  *    Indicates login error either from invalid username, password, or some other server side error.
@@ -75,6 +75,11 @@ public class LoginServlet extends HttpServlet implements Servlet {
         String redirectParam = request.getParameter("redirect");
         if (redirectParam != null) {
             redirect = Boolean.valueOf(redirectParam);
+        }
+        String redirectTo = request.getParameter("redirectTo");
+        if (redirectTo != null) {
+            redirect = true;
+            request.getSession().setAttribute("origin", redirectTo);
         }
         try {
             LoginManager.instance().login(request, resp, redirect);

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.webservice.server.DirectoryManager;
 
 /**
  * Utility class for GenePattern input files.
@@ -64,5 +65,4 @@ public class FileUtil {
         File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
         return fileEquals(inputFileGrandParent, soapAttachmentDir);
     }
-
 }

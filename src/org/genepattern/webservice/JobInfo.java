@@ -13,10 +13,12 @@
 package org.genepattern.webservice;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.domain.AnalysisJob;
-
 
 /**
  * Used to hold information about particular job
@@ -26,7 +28,10 @@ import org.genepattern.server.domain.AnalysisJob;
  */
 
 public class JobInfo implements Serializable {
+    public static Logger log = Logger.getLogger(JobInfo.class);
+
     private int jobNo = 0;
+    private int parentJobNo = -1;
     private int taskID = 0;
     private String status = "";
     private ParameterInfo[] parameterInfoArray = null;
@@ -51,7 +56,6 @@ public class JobInfo implements Serializable {
      * @param userId
      * @param lsid
      */
-
     public JobInfo(int jobNo, int taskID, String status, Date submittedDate, Date completedDate,
             ParameterInfo[] parameters, String userId, String lsid, String taskName) {
         this.jobNo = jobNo;
@@ -67,29 +71,51 @@ public class JobInfo implements Serializable {
 
     
     /**
-     * Construct a JobInfo object from an AnalysisJob
+     * Construct a JobInfo object from an AnalysisJob.
      * @param aJob
+     * @throws IllegalArgumentException if the AnalysisJob is missing a required parameter.
      */
     public JobInfo(AnalysisJob aJob) {
-        this(aJob.getJobNo().intValue(), aJob.getTaskId(), aJob.getJobStatus().getStatusName(),
-                aJob.getSubmittedDate(), aJob.getCompletedDate(), ParameterFormatConverter.getParameterInfoArray(aJob.getParameterInfo()),
-                aJob.getUserId(), aJob.getTaskLsid(), aJob.getTaskName());
+        if (aJob == null) {
+            throw new IllegalArgumentException("Invalid null arg in constructor, JobInfo(AnalysisJob)");
+        }
+        if (aJob.getJobNo() == null) {
+            throw new IllegalArgumentException("aJob.jobNo is null");
+        }
+
+        String statusName = "";
+        if (aJob.getJobStatus() == null) {
+            log.error("aJob.jobStatus is null");
+        }
+        else {
+            statusName = aJob.getJobStatus().getStatusName();
+        }
         
+        this.jobNo = aJob.getJobNo().intValue();
+        this.taskID = aJob.getTaskId();
+        this.status = statusName;
+        this.submittedDate = aJob.getSubmittedDate();
+        this.completedDate = aJob.getCompletedDate();
+        this.parameterInfoArray = ParameterFormatConverter.getParameterInfoArray(aJob.getParameterInfo());
+        this.userId = aJob.getUserId();
+        this.lsid = aJob.getTaskLsid();
+        this.taskName = aJob.getTaskName();
+
+        this.parentJobNo = aJob.getParent();
         this.deleted = aJob.getDeleted();
     }
 
     /**
      * Removes all parameters with the given name.
      * 
-     * @param parameterInfoName
-     *            the parameter name.
+     * @param parameterInfoName, the parameter name.
      * @return true if the parameter was found; false otherwise.
      */
     public boolean removeParameterInfo(String parameterInfoName) {
         if (parameterInfoArray == null) {
             return false;
         }
-        java.util.List newParameterInfoList = new java.util.ArrayList();
+        List<ParameterInfo> newParameterInfoList = new ArrayList<ParameterInfo>();
         int sizeBeforePossibleRemoval = parameterInfoArray.length;
 
         for (int i = 0, length = parameterInfoArray.length; i < length; i++) {
@@ -115,6 +141,16 @@ public class JobInfo implements Serializable {
      */
     public void setJobNumber(int jobNo) {
         this.jobNo = jobNo;
+    }
+
+    /**
+     * Note: To preserve compatibility with earlier versions of the SOAP client,
+     *     This method deliberately named using a non JavaBean naming convention so that the axis serializer does not
+     *     include the parentJobNo in the serialized bean.
+     * @return the jobNumber of the parent job, or a number less than zero if the job has no parent.
+     */
+    public int _getParentJobNumber() {
+        return this.parentJobNo;
     }
 
     /**

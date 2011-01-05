@@ -4,14 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.genepattern.server.EncryptionUtil;
+import org.genepattern.server.executor.JobSubmissionException;
+import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
-import org.genepattern.server.webservice.server.local.LocalAdminClient;
-import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.WebServiceException;
 
 /**
  * Helper class for submitting a job from the jsp page.
@@ -33,22 +33,25 @@ public class RunJobFromJsp {
         this.task = t;
     }
     
-    public String submitJob() throws WebServiceException {
+    public String submitJob() throws JobSubmissionException {
         if (isWingsJob()) {
             return submitWingsJob();
         }
         else {
             return submitDefaultJob();
         }
-      }
+    }
 
-    private String submitDefaultJob() 
-        throws WebServiceException
-    {
+    private JobInfo submitJob(int taskID, ParameterInfo[] parameters) throws JobSubmissionException {
+        AddNewJobHandler req = new AddNewJobHandler(taskID, userId, parameters);
+        JobInfo jobInfo = req.executeRequest();
+        return jobInfo;
+    }
+
+    private String submitDefaultJob() throws JobSubmissionException {
         ParameterInfo[] paramInfos = task == null ? null : task.getParameterInfoArray();
         paramInfos = paramInfos == null ? paramInfos = new ParameterInfo[0] : paramInfos;
-        LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);        
-        JobInfo job = analysisClient.submitJob(task.getID(), paramInfos);
+        JobInfo job = submitJob(task.getID(), paramInfos);
         String jobId = "" + job.getJobNumber();
         return jobId;
     }
@@ -60,14 +63,11 @@ public class RunJobFromJsp {
             task.getName().toLowerCase().startsWith("abstract");
     }
 
-    private String submitWingsJob() throws WebServiceException {
-        LocalAdminClient adminClient = new LocalAdminClient(userId);
-        LocalAnalysisClient analysisClient = new LocalAnalysisClient(userId);
-
-        // step 1: get the task id for the wings module
+    private String submitWingsJob() throws JobSubmissionException {
+        // step 1: get the task id for the wings module, by taskName
         final String wingsTaskName = "wings";
         final String pipelineLSID = task.getLsid();
-        TaskInfo wingsTaskInfo = adminClient.getTask(wingsTaskName);
+        TaskInfo wingsTaskInfo = new AdminDAO().getTask(wingsTaskName, userId);
 
         // step 2: build input parameters for the wings module
         String passwordKey = null;
@@ -96,7 +96,7 @@ public class RunJobFromJsp {
             paramInfos == null ? paramInfos = new ParameterInfo[0]
                 : paramInfos;
 
-        JobInfo job = analysisClient.submitJob(task.getID(), paramInfos);
+        JobInfo job = submitJob(task.getID(), paramInfos);
         String jobId = "" + job.getJobNumber();
         return jobId;
     }

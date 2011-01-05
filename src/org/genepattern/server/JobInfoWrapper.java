@@ -9,13 +9,14 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
@@ -23,10 +24,15 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.process.JobPurgerUtil;
+import org.genepattern.server.util.AuthorizationManagerFactory;
+import org.genepattern.server.util.IAuthorizationManager;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.server.webapp.jsf.JobPermissionsBean;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.JobInfo;
@@ -171,24 +177,19 @@ public class JobInfoWrapper implements Serializable {
             return link;
         }
         
-        protected void setModuleMenuItemsForFile(Map<String, Collection<TaskInfo>>  kindToModules, File file) {
-            List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
-            String kind = SemanticUtil.getKind(file);
-            Collection<TaskInfo> taskInfos = kindToModules.get(kind);
-            if (taskInfos != null) {
-                for (TaskInfo taskInfo : taskInfos) {
-                    KeyValuePair mi = new KeyValuePair(taskInfo.getShortName(), UIBeanHelper.encode(taskInfo.getLsid()));
-                    moduleMenuItems.add(mi);
-                }
-                Collections.sort(moduleMenuItems, KEY_VALUE_COMPARATOR);
+        public void addModuleMenuItem(TaskInfo sendTo) {
+            if (moduleMenuItems == null) {
+                moduleMenuItems = new ArrayList<KeyValuePair>();
             }
-            else {
-                log.debug("JobInfoWrapper.setModuleMenuItemsForFile: kindToModules.get('"+kind+"') returned null");
-            }
-            this.moduleMenuItems = moduleMenuItems;
+            KeyValuePair mi = new KeyValuePair(sendTo.getShortName(), UIBeanHelper.encode(sendTo.getLsid()));
+            moduleMenuItems.add(mi);
         }
         
         public List<KeyValuePair> getModuleMenuItems() {
+            //TODO: optimize, shouldn't sort this every time
+            if (moduleMenuItems != null) {
+                Collections.sort(moduleMenuItems, KEY_VALUE_COMPARATOR);
+            }
             return moduleMenuItems;
         }
     }
@@ -216,12 +217,35 @@ public class JobInfoWrapper implements Serializable {
         }
 
         private boolean isTaskLog = false;
+        private boolean isChildJobResult = false;
+        
+        /**
+         * 
+         * @return true iff this output file is an output of the given job.
+         */
+        public boolean isChildJobResult() {
+            return isChildJobResult;
+        }
 
-        OutputFile(Map<String, Collection<TaskInfo>>  kindToModules, File outputDir, String contextPath, JobInfo jobInfo, ParameterInfo parameterInfo) {
+        OutputFile(File outputDir, String contextPath, JobInfo jobInfo, ParameterInfo parameterInfo) {
             super(parameterInfo);
-            this.outputFile = new File(outputDir, parameterInfo.getName());
+
+            boolean exists = false;
+            if (outputDir != null) {
+                this.outputFile = new File(outputDir.getParent(), parameterInfo.getValue());
+                exists = outputFile.exists();
+                if (exists) {
+                    File relativePath = GenePatternAnalysisTask.getRelativePath(outputDir, outputFile);
+                    if (relativePath != null) {
+                        this.isChildJobResult = true;
+                    }
+                }
+            }
+            if (!exists) {
+                this.outputFile = new File(outputDir, parameterInfo.getName());
+                exists = outputFile.exists();
+            }
             //Set the size and lastModified properties for each output file
-            boolean exists = outputFile.exists();
             if (exists) {
                 setSize(outputFile.length());
                 Calendar cal = Calendar.getInstance();
@@ -235,16 +259,10 @@ public class JobInfoWrapper implements Serializable {
             //map from ParameterInfo.name to URL for downloading the output file from the server
             String link = contextPath + "/jobResults/" + jobInfo.getJobNumber() + "/" + parameterInfo.getName();
             setLink(link);
-            //setDisplayValue(outputFile.getName());
-            setDisplayValue(parameterInfo.getName());
+            setDisplayValue(outputFile.getName());
             
             //check execution log
             this.isTaskLog = isTaskLog(parameterInfo);
-            
-            //set up module popup menu for the output file
-            if (!this.isTaskLog && exists) {
-                setModuleMenuItemsForFile(kindToModules, outputFile);
-            }
         }
         
         public boolean isTaskLog() {
@@ -253,6 +271,27 @@ public class JobInfoWrapper implements Serializable {
     }
     
     public static class InputFile extends ParameterInfoWrapper {
+        private Boolean isUrl = null;
+        private Boolean isInternalLink = null;
+        private Boolean isExternalLink = null;
+        private Boolean isServerFilePath = null;
+        
+        public Boolean isUrl() {
+            return isUrl;
+        }
+        
+        public Boolean isInternalLink() {
+            return isInternalLink;
+        }
+        
+        public Boolean isExternalLink() {
+            return isExternalLink;
+        }
+        
+        public Boolean isServerFilePath() {
+            return isServerFilePath;
+        }
+
         /**
          *
 <pre>
@@ -273,9 +312,9 @@ public class JobInfoWrapper implements Serializable {
 </pre>
          * @param parameterInfo
          */
-        InputFile(JobInfo jobInfo, String contextPath, String paramValue, ParameterInfo parameterInfo) {
+        InputFile(TaskInfo taskInfo, JobInfo jobInfo, String contextPath, String paramValue, ParameterInfo parameterInfo) {
             super(parameterInfo);
-            initLinkValue(jobInfo.getJobNumber(), contextPath, paramValue);
+            initLinkValue(taskInfo, jobInfo.getJobNumber(), contextPath, paramValue);
         }
 
         /**
@@ -284,8 +323,8 @@ public class JobInfoWrapper implements Serializable {
          * @param contextPath
          * @param value
          */
-        private void initLinkValue( int jobNumber, String contextPath, String value ) {  
-            //A. External link, e.g. ftp://ftp.broad.mit.edu/pub/genepattern/datasets/all_aml/all_aml_test.gct
+        private void initLinkValue( TaskInfo taskInfo, int jobNumber, String contextPath, String value ) {  
+            //A. External link, e.g. ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
 
             //B. Internal links
             //   1. to file uploaded from web client in previous job, then reloaded for new job
@@ -295,21 +334,24 @@ public class JobInfoWrapper implements Serializable {
             //   3. to output from previous job
             //      http://127.0.0.1:8080/gp/jobResults/3182/all_aml_test.preprocessed.gct
             //   4. to file uploaded when creating a pipeline, e.g.
-            //      <GenePatternURL>getFile.jsp?task=urn%3Alsid%3A8080.pcarr.gm971-3d7.broad.mit.edu%3Agenepatternmodules%3A127%3A9&file=all_aml_test.gct
-            //      http://127.0.0.1:8080/gp/getFile.jsp?task=urn%3Alsid%3A8080.pcarr.gm971-3d7.broad.mit.edu%3Agenepatternmodules%3A127%3A9&file=all_aml_test.gct
+            //      <GenePatternURL>getFile.jsp?task=urn%3Alsid%3A8080.pcarr.gm971-3d7.broadinstitute.org%3Agenepatternmodules%3A127%3A9&file=all_aml_test.gct
+            //      http://127.0.0.1:8080/gp/getFile.jsp?task=urn%3Alsid%3A8080.pcarr.gm971-3d7.broadinstitute.org%3Agenepatternmodules%3A127%3A9&file=all_aml_test.gct
+            //   5. to file uploaded when creating a module, e.g.
+            //      <libdir>stdin.txt
             
             //C. Server file path
             //   1. uploaded from web client,
             //      /xchip/genepattern/node256/gp-trunk/Tomcat/temp/test_run30301.tmp/all_aml_test.gct
             //   2. upload from SOAP client,
             //      /xchip/genepattern/node256/gp-trunk/temp/attachments/test/Axis30302.att_all_aml_test.gct
-            //   3. other server file path, 
+            //   3. file in <libdir>,
+            //      /xchip/genepattern/node256/gp-trunk/taskLib/testCat.1.3361/stdin.txt
+            //   4. other server file path, 
             //      a) allow.input.file.paths=true
             //      b) allow.input.file.paths=false, handle error 
             //      c) allow.input.file.paths=true, but path is to a restricted area
             
             String origValue = value;
-
             String genePatternUrl = UIBeanHelper.getServer();
             //substitute <GenePatternURL>
             if (value.startsWith("<GenePatternURL>")) {
@@ -318,7 +360,18 @@ public class JobInfoWrapper implements Serializable {
             if (value.startsWith("file:")) {
                 value = value.substring(5);
             }
-            boolean isUrl = false;
+            //substitute <libdir>
+            String taskLibDir=null;
+            if (value.startsWith("<libdir>")) {
+                if (taskInfo != null) {
+                    taskLibDir = DirectoryManager.getTaskLibDir(taskInfo);
+                    value = taskLibDir + "/" + value.substring("<libdir>".length());
+                }
+                else {
+                    log.error("Can't get taskLibDir for job #"+jobNumber+", taskInfo is null");
+                }
+            }
+            isUrl = false;
             URL url = null;
             try {
                 url = new URL(value);
@@ -328,9 +381,9 @@ public class JobInfoWrapper implements Serializable {
                 isUrl = false;
             }
             
-            boolean isInternalLink = value.startsWith(genePatternUrl);
-            boolean isExternalLink = isUrl && !isInternalLink;
-            boolean isServerFilePath = !isInternalLink && !isExternalLink;
+            isInternalLink = value.startsWith(genePatternUrl);
+            isExternalLink = isUrl && !isInternalLink;
+            isServerFilePath = !isInternalLink && !isExternalLink;
             
             //case A
             if (isExternalLink) {
@@ -387,10 +440,9 @@ public class JobInfoWrapper implements Serializable {
             File inputFileParent = inputFile.getParentFile();
             boolean isWebUpload = FileUtil.isWebUpload(inputFile);
             boolean isSoapUpload = false;
+            boolean isInLibdir = taskLibDir != null;
             if (!isWebUpload) {
                 isSoapUpload = FileUtil.isSoapUpload(inputFile);
-                //File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
-                //isSoapUpload = inputFileGrandParent != null && inputFileGrandParent.equals(soapAttachmentDir);
             }
             
             if (isWebUpload) {
@@ -419,16 +471,20 @@ public class JobInfoWrapper implements Serializable {
                     displayValue = displayValue.substring(displayValue.indexOf('_') + 1);
                 }
             }
+            else if (isInLibdir) {
+                String taskLsid = taskInfo.getLsid();
+                setLink(contextPath + "/getFile.jsp?task="+taskLsid+"&file="+inputFile.getName());
+            }
             else {
                 log.debug("isServerFilePath");
                 displayValue = origValue;
-                //File file = new File(origValue);
                 if (inputFile.canRead()) {
+                    //TODO: set a link for downloading (via the web client) a server file path
                     try {
                         URI inputFileURI = inputFile.toURI();
                         URL inputFileURL = inputFileURI.toURL();
-                        String inputFilePath = inputFileURL.getPath();
-                        setLink(contextPath + "/serverFilePath/" + inputFilePath);
+                        //String inputFilePath = inputFileURL.getPath();
+                        //setLink(contextPath + "/serverFilePath/" + inputFilePath);
                     }
                     catch (MalformedURLException e) {
                         log.error(e);
@@ -442,9 +498,9 @@ public class JobInfoWrapper implements Serializable {
     private JobInfo jobInfo = null;
     private TaskInfo taskInfo = null;
     private PipelineModel pipelineModel = null;
-    private Map<String, Collection<TaskInfo>> kindToModules;
     private Long size = null;
     private boolean includeInputFilesInSize = false;
+
     /**
      * Get the total size of all of the output files for this job, including all descendent jobs.
      * Note: the size of input files is ignored.
@@ -495,11 +551,12 @@ public class JobInfoWrapper implements Serializable {
         this.taskInfo = taskInfo;
     }
     
-    public void setJobInfo(boolean showExecutionLogs, String servletContextPath, Map<String, Collection<TaskInfo>> kindToModules, JobInfo jobInfo) {
+    //public void setJobInfo(boolean showExecutionLogs, String servletContextPath, Map<String, Collection<TaskInfo>> kindToModules, JobInfo jobInfo) {
+    public void setJobInfo(boolean showExecutionLogs, String servletContextPath, JobInfo jobInfo) {
         this.servletContextPath = servletContextPath;
         this.showExecutionLogs = showExecutionLogs;
         this.jobInfo = jobInfo;
-        this.kindToModules = kindToModules;
+        //this.kindToModules = kindToModules;
         String jobDir = GenePatternAnalysisTask.getJobDir(""+jobInfo.getJobNumber());
         this.outputDir = new File(jobDir);
         processParameterInfoArray();
@@ -661,11 +718,13 @@ public class JobInfoWrapper implements Serializable {
     private void processParameterInfoArray() {
         for(ParameterInfo param : jobInfo.getParameterInfoArray()) {
             if (param.isOutputFile()) {
-                OutputFile outputFile = new OutputFile(kindToModules, outputDir, servletContextPath, jobInfo, param);
-                outputFilesAndTaskLogs.add(outputFile);
-                if (!outputFile.isTaskLog()) {
-                    //don't add execution logs
-                    outputFiles.add(outputFile);
+                //OutputFile outputFile = new OutputFile(kindToModules, outputDir, servletContextPath, jobInfo, param);
+                OutputFile outputFile = new OutputFile(outputDir, servletContextPath, jobInfo, param);
+                if (outputFile.isChildJobResult) {
+                    outputFilesAndTaskLogs.add(outputFile);
+                    if (!outputFile.isTaskLog()) {
+                        outputFiles.add(outputFile);
+                    }
                 }
             }
             else {
@@ -675,7 +734,7 @@ public class JobInfoWrapper implements Serializable {
                 String value = param.getValue();
                 if (value != null && !"".equals(value)) {
                     if (isInputFile(param)) {
-                        InputFile inputFile = new InputFile(jobInfo, servletContextPath, value, param);
+                       InputFile inputFile = new InputFile(taskInfo, jobInfo, servletContextPath, value, param);
                         inputFiles.add(inputFile);
                         inputParam = inputFile;
                     } 
@@ -700,12 +759,28 @@ public class JobInfoWrapper implements Serializable {
             }
         }
         
+        postProcessOutputFiles();
+        
         //for debugging only, 
         //change this flag to include the raw xml from the analysis_job table in the input parameters
         //which are displayed on the job status page
         boolean debug = false;
-        debug = false;
+        //debug = true;
         if (debug) {
+            //list each item in the parameter info array (including nested parameter attributes)
+            int i=0;
+            for(ParameterInfo p : jobInfo.getParameterInfoArray()) {
+                inputParameters.add(new ParameterInfoWrapper(new ParameterInfo("p["+i+"]: "+p.getName(), p.getValue(), "")));
+                ++i;
+                int j=0;
+                for(Object attrName : p.getAttributes().keySet()) {
+                    Object attrVal = p.getAttributes().get(attrName);
+                    inputParameters.add(new ParameterInfoWrapper(new ParameterInfo("     attr["+j+"]: "+attrName, ""+attrVal, "")));
+                    ++j;
+                }
+            }
+            
+            //also show the parameter_info CLOB
             String name = "analysis_job.parameter_info";
             String value = jobInfo.getParameterInfo();
             String description = "The raw entry in the PARAMETER_INFO column of the ANALYSIS_JOB table";
@@ -713,6 +788,45 @@ public class JobInfoWrapper implements Serializable {
             ParameterInfoWrapper paramInfoWrapper = new ParameterInfoWrapper(param);
             inputParameters.add(paramInfoWrapper);
         }
+    }
+    
+    /**
+     * After the first pass through the list of parameters, postProcess all of the output files to set up the pop-up menu.
+     */
+    private void postProcessOutputFiles() {
+        Map<String,Set<TaskInfo>> taskInfoMap = getFileTypeToTaskInfoMap();        
+        for(OutputFile outputFile : getOutputFiles()) {
+            if (outputFile.isTaskLog()) {
+                //ignore task log files
+            }
+            else {
+                //add an item to the popup menu
+                String type = SemanticUtil.getKind(outputFile.getOutputFile());
+                Set<TaskInfo> sendToTasks = taskInfoMap.get(type);
+                if (sendToTasks != null) {
+                    for(TaskInfo taskInfo : sendToTasks) {
+                        outputFile.addModuleMenuItem(taskInfo);
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * @return a Map which maps each file type to a set of TaskInfo which accept the file type.
+     */
+    private Map<String,Set<TaskInfo>> getFileTypeToTaskInfoMap() {
+        String currentUserId = UIBeanHelper.getUserId();
+        IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
+        boolean isAdmin = (authManager.checkPermission("adminServer", currentUserId) || authManager.checkPermission("adminModules", currentUserId));
+        List<TaskInfo> allTaskInfos = getAllTaskInfosForUser(isAdmin, currentUserId);
+        return SemanticUtil.getKindToModulesMap(allTaskInfos);
+    }
+    
+    private List<TaskInfo> getAllTaskInfosForUser(boolean isAdmin, String currentUserId) {
+        AdminDAO adminDao = new AdminDAO();
+        TaskInfo[] latestTaskArray = adminDao.getLatestTasks(currentUserId);
+        return Arrays.asList(latestTaskArray);
     }
 
     private boolean isInputFile(ParameterInfo param) {
@@ -1026,7 +1140,7 @@ public class JobInfoWrapper implements Serializable {
         PipelineModel pm = this.getPipelineModel();
         return getNumStepsInPipelineRecursive(pm);
     }
-    
+
     public int getNumVisualizers() {
         if (isVisualizer()) {
             return 1;
@@ -1037,7 +1151,7 @@ public class JobInfoWrapper implements Serializable {
         }
         return 0;        
     }
-    
+
     private int getNumVisualizersInPipelineRecursive(PipelineModel pm) {
         if (pm == null) {
             return 0;
@@ -1078,6 +1192,43 @@ public class JobInfoWrapper implements Serializable {
         return total;
     }
 
+    /**
+     * For debugging, or as a future improvement,
+     * get the number of steps in the pipeline, based on the number of child jobs,
+     * rather than based on the PipelineModel.
+     */
+    private Integer[] getNumStepsInPipelineFromJob() {
+        int numStepsInPipeline = 0;
+        if (children != null) {
+            numStepsInPipeline = children.size();
+        }
+        return new Integer[numStepsInPipeline];
+    }
+
+    /**
+     * For debugging, or as a future improvement,
+     * get the number of visualizers in the pipeline,
+     * based on the number of visualizers in child jobs,
+     * rather than based on the PipelineModel.
+     * @return
+     */
+    private int getNumVisualizersFromJob() {
+        if (isVisualizer()) {
+            return 1;
+        }
+        
+        int count = 0;
+        if (isPipeline()) {
+            for(JobInfoWrapper step : getAllSteps()) {
+                if (step.isVisualizer()) {
+                    ++count;
+                }
+            }
+        }
+        return count;
+    }
+    
+
     private int currentStepInPipeline = 0;
     public int getCurrentStepInPipeline() {
         return currentStepInPipeline;
@@ -1092,14 +1243,19 @@ public class JobInfoWrapper implements Serializable {
     }
     
     private void initGroupPermissions() { 
-        jobPermissionsBean = new JobPermissionsBean();
-        if (jobInfo != null) {
-            jobPermissionsBean.setJobId(jobInfo.getJobNumber());
-            //this.deleteAllowed = jobPermissionsBean.isDeleteAllowed();
-        }
-        else {
+        if (jobInfo == null) {
             log.error("jobInfo is null");
+            return;
         }
+
+        String currentUserId = UIBeanHelper.getUserId();
+        final boolean isAdmin = AuthorizationHelper.adminJobs(currentUserId);
+        JobInfoWrapper root = this.getRoot();
+        String rootJobOwner = root.getUserId();
+        int rootJobNumber = root.getJobNumber();
+
+        PermissionsHelper ph = new  PermissionsHelper(isAdmin, currentUserId, jobInfo.getJobNumber(), rootJobOwner, rootJobNumber);
+        jobPermissionsBean = new JobPermissionsBean(ph);
     }
     
     //for debugging

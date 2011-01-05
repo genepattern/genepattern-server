@@ -3,7 +3,8 @@
  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
 
  <display-name>GenePattern</display-name>
-<error-page>
+ 
+ <error-page>
     <error-code>500</error-code>
     <location>/internalError.jsp</location>
 </error-page>
@@ -306,14 +307,6 @@
   <servlet-name>StartupServlet</servlet-name>
   <servlet-class>org.genepattern.server.webapp.StartupServlet</servlet-class>
   <init-param>
-   <param-name>java.io.tmpdir</param-name>
-   <param-value>./temp</param-value>
-  </init-param>
-  <init-param>
-   <param-name>omnigene.conf</param-name>
-   <param-value>../resources</param-value>
-  </init-param>
-  <init-param>
    <param-name>genepattern.properties</param-name>
    <param-value>../resources</param-value>
   </init-param>
@@ -398,19 +391,17 @@
   <servlet-name>ModuleDocServlet</servlet-name>
   <url-pattern>/module/doc/*</url-pattern>
  </servlet-mapping>
- 
-  
+
  <servlet>
-	<display-name>Multiple File Upload Receiver Servlet</display-name>
-	<servlet-name>MultiFileUploadReceiver</servlet-name>
-	<servlet-class>org.genepattern.server.webapp.MultiFileUploadReceiver</servlet-class>	
+  <display-name>JobConfigurationServlet</display-name>
+  <servlet-name>JobConfigurationServlet</servlet-name>
+  <servlet-class>org.genepattern.server.webapp.JobConfigurationServlet</servlet-class>
  </servlet>
  <servlet-mapping>
-  <servlet-name>MultiFileUploadReceiver</servlet-name>
-  <url-pattern>/MultiFileUploadReceiver</url-pattern>
+  <servlet-name>JobConfigurationServlet</servlet-name>
+  <url-pattern>/rest/JobConfiguration</url-pattern>
  </servlet-mapping>
- 
- 
+
  <welcome-file-list>
   <welcome-file>/index.jsp</welcome-file>
  </welcome-file-list>

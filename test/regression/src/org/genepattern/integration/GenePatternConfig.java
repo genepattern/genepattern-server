@@ -14,7 +14,7 @@ package org.genepattern.integration;
 public class GenePatternConfig {
 	
 	/** default url for GenePattern */
-	public static final String DEFAULT_GP_URL = "http://localhost:8080";
+	public static final String DEFAULT_GP_URL = "http://localhost:8020";
 	
 	/** default username for GenePattern */
 	public static final String DEFAULT_USERNAME = "test";

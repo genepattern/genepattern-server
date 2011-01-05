@@ -91,15 +91,17 @@ public class ServerSettingsBean implements Serializable {
 	            "tomcatCommonLib", 
 	            "webappDir",
 	            "log4j.appender.R.File", 
-	            //"pipeline.cp", 
-	            //"pipeline.main", 
-	            //"pipeline.vmargs", 
+	            "pipeline.cp", 
+	            "pipeline.main", 
+	            "pipeline.vmargs", 
 	            "installedPatchLSIDs", 
 	            "num.threads" });
 	    modes.put("Custom", null);
 	    modes.put("Shut Down Server", null);
 	    modes.put("System Message", null);
 	    modes.put("Users and Groups", null);
+	    modes.put("Job Configuration", null);
+	    modes.put("Task Info", null);
 	}
 	currentMode = (String) modes.keySet().toArray()[0];
 	if (settings == null) {
@@ -284,7 +286,7 @@ public class ServerSettingsBean implements Serializable {
      * @return
      * @throws IOException
      */
-    public String getLog(File logFile) {
+    static public String getLog(File logFile) {
 	StringBuffer buf = new StringBuffer();
 	BufferedReader br = null;
 

@@ -12,10 +12,13 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.log4j.Logger;
@@ -44,6 +47,85 @@ import org.genepattern.webservice.TaskInfoAttributes;
 public class JobInfoManager {
     private static Logger log = Logger.getLogger(JobInfoManager.class);
     
+    //cache pipeline status so we don't need to make so many DB queries
+    private static Map<Integer,Boolean> isPipelineCache = new ConcurrentHashMap<Integer,Boolean>();
+    
+    public static boolean isPipeline(JobInfo jobInfo) {
+        boolean closeDbSession = true;
+        return isPipeline(jobInfo, closeDbSession);
+    }
+    
+    public static boolean isPipeline(JobInfo jobInfo, boolean closeDbSession) {
+        if (jobInfo == null) {
+            return false;
+        }
+        
+        //check the cache
+        int taskId = jobInfo.getTaskID();
+        if (taskId >= 0) {
+            Boolean status = isPipelineCache.get(taskId);
+            if (status != null) {
+                return status;
+            }
+        }
+        
+        boolean isPipeline = false;
+        try {
+            TaskInfo taskInfo = getTaskInfo(jobInfo, closeDbSession);
+            isPipeline = taskInfo.isPipeline();
+            isPipelineCache.put(taskInfo.getID(), isPipeline);
+        }
+        catch (Throwable t) {
+            log.error(t);
+        }
+        return isPipeline;
+    }
+    
+    public static boolean isVisualizer(JobInfo jobInfo) {
+        boolean isVisualizer = false;
+        if (jobInfo == null) {
+            return false;
+        }
+        try {
+            TaskInfo taskInfo = getTaskInfo(jobInfo);
+            isVisualizer = TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes());
+        }
+        catch (Exception e) {
+            log.error(e);
+        }
+        return isVisualizer;
+    }
+
+    public static TaskInfo getTaskInfo(JobInfo jobInfo) throws TaskIDNotFoundException  {
+        boolean closeDbSession = true;
+        return getTaskInfo(jobInfo, closeDbSession);
+    }
+    
+    public static TaskInfo getTaskInfo(JobInfo jobInfo, boolean closeDbSession) throws TaskIDNotFoundException  {
+        return getTaskInfo(jobInfo.getTaskID(), closeDbSession);
+    }
+    
+    public static TaskInfo getTaskInfo(int taskId) throws TaskIDNotFoundException  {
+        boolean closeDbSession = true;
+        return getTaskInfo(taskId, closeDbSession);
+    }
+
+    public static TaskInfo getTaskInfo(int taskId, boolean closeDbSession) throws TaskIDNotFoundException {
+        TaskInfo taskInfo = null;
+        try { 
+            //calls HibernateUtil.beginTransaction...
+            AdminDAO ds = new AdminDAO();
+            taskInfo = ds.getTask(taskId);
+            return taskInfo;
+        } 
+        finally {
+            //...must close the session here, or in an enclosing method
+            if (closeDbSession) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+    
     /**
      * Get the current job status information by doing a db query.
      * 
@@ -55,32 +137,26 @@ public class JobInfoManager {
      * @return null if the job is deleted.
      */
     public JobInfoWrapper getJobInfo(String documentCookie, String contextPath, String currentUser, int jobNo) {
-        try {
-            HibernateUtil.beginTransaction();
-            UserDAO userDao = new UserDAO();
-            boolean showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUser);
-            String visualizerJavaFlags = getVisualizerJavaFlags(userDao, currentUser);
+        UserDAO userDao = new UserDAO();
+        boolean showExecutionLogs = userDao.getPropertyShowExecutionLogs(currentUser);
+        String visualizerJavaFlags = getVisualizerJavaFlags(userDao, currentUser);
 
-
-            AnalysisDAO analysisDao = new AnalysisDAO();
-            JobInfo jobInfo = analysisDao.getJobInfo(jobNo);
-            if (jobInfo == null) {
-                return null;
-            }
+        AnalysisDAO analysisDao = new AnalysisDAO();
+        JobInfo jobInfo = analysisDao.getJobInfo(jobNo);
+        if (jobInfo == null) {
+            return null;
+        }
             
-            AdminDAO adminDao = new AdminDAO();
-            TaskInfo[] latestTasks = adminDao.getLatestTasks(currentUser);
-            Map<String, Collection<TaskInfo>> kindToModules = SemanticUtil.getKindToModulesMap(latestTasks);
+        AdminDAO adminDao = new AdminDAO();
+        TaskInfo[] latestTaskArray = adminDao.getLatestTasks(currentUser);
+        List<TaskInfo> latestTaskList = Arrays.asList(latestTaskArray);
+        Map<String, Set<TaskInfo>> kindToModules = SemanticUtil.getKindToModulesMap(latestTaskList);
 
-            JobInfoWrapper jobInfoWrapper = processChildren((JobInfoWrapper)null, showExecutionLogs, documentCookie, contextPath, analysisDao, adminDao, kindToModules, jobInfo, visualizerJavaFlags);
+        JobInfoWrapper jobInfoWrapper = processChildren((JobInfoWrapper)null, showExecutionLogs, documentCookie, contextPath, analysisDao, adminDao, kindToModules, jobInfo, visualizerJavaFlags);
 
-            //this call initializes the helper methods
-            jobInfoWrapper.getPathFromRoot(); 
-            return jobInfoWrapper;
-        }
-        finally {
-            HibernateUtil.closeCurrentSession();
-        }
+        //this call initializes the helper methods
+        jobInfoWrapper.getPathFromRoot(); 
+        return jobInfoWrapper;
     }
     
     /**
@@ -94,12 +170,12 @@ public class JobInfoManager {
      * @param jobInfo
      * @return a new JobInfoWrapper
      */
-    private JobInfoWrapper processChildren(JobInfoWrapper parent, boolean showExecutionLogs, String documentCookie, String contextPath, AnalysisDAO analysisDao, AdminDAO adminDao, Map<String, Collection<TaskInfo>> kindToModules, JobInfo jobInfo, String visualizerJavaFlags) {
+    private JobInfoWrapper processChildren(JobInfoWrapper parent, boolean showExecutionLogs, String documentCookie, String contextPath, AnalysisDAO analysisDao, AdminDAO adminDao, Map<String, Set<TaskInfo>> kindToModules, JobInfo jobInfo, String visualizerJavaFlags) {
         TaskInfo taskInfo = null;
         try {
-            //NOTE: an exception is thrown if the module has been deleted
-            int taskId = jobInfo.getTaskID();
-            taskInfo = adminDao.getTask(taskId);
+            //an exception is thrown if the module has been deleted
+            String lsid = jobInfo.getTaskLSID();
+            taskInfo = adminDao.getTask(lsid);
         }
         catch (Exception e) {
             //TODO: provide feedback in UI that the module for this job has been deleted 
@@ -110,7 +186,8 @@ public class JobInfoManager {
         jobInfoWrapper.setParent(parent);
         //Note: must call setTaskInfo before setJobInfo
         jobInfoWrapper.setTaskInfo(taskInfo);        
-        jobInfoWrapper.setJobInfo(showExecutionLogs, contextPath, kindToModules, jobInfo);
+        //jobInfoWrapper.setJobInfo(showExecutionLogs, contextPath, kindToModules, jobInfo);
+        jobInfoWrapper.setJobInfo(showExecutionLogs, contextPath, jobInfo);
         
         //special case for visualizers
         if (taskInfo != null && TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
@@ -283,8 +360,7 @@ public class JobInfoManager {
         }
     }
     
-    public static File writeExecutionLog(String outDirName, JobInfoWrapper jobInfoWrapper) {
-        File outDir = new File(outDirName);
+    public static File writeExecutionLog(File outDir, JobInfoWrapper jobInfoWrapper) {
         File gpExecutionLog = new File(outDir, TASKLOG);
         BufferedWriter writer = null;
         try {
@@ -381,16 +457,14 @@ public class JobInfoManager {
         writer.write("\n");
     }
     
-    public static File writePipelineExecutionLog(String jobDirName, JobInfoWrapper jobInfo) {
-        File jobDir = new File(jobDirName);
+    public static File writePipelineExecutionLog(File jobDir, JobInfoWrapper jobInfo) {
         File logFile = new File(jobDir, jobInfo.getTaskName() + "_execution_log.html");
         WritePipelineExecutionLog w = new WritePipelineExecutionLog(logFile, jobInfo);
         w.writeLogFile();
         return logFile;        
     }
     
-    public static File writeOutputFilesToZipFile(String jobDirName, JobInfoWrapper jobInfo) {
-        File jobDir = new File(jobDirName);
+    public static File writeOutputFilesToZipFile(File jobDir, JobInfoWrapper jobInfo) {
         File zipFile = new File(jobDir, jobInfo.getJobNumber() + ".zip");
         JobInfoZipFileWriter w = new JobInfoZipFileWriter(zipFile, jobInfo);
         w.writeZipFile();

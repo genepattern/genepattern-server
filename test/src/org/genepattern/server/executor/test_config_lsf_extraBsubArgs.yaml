@@ -1,0 +1,92 @@
+# example of config file for production gp server
+default.properties:
+    executor: exec01
+
+executors:
+    exec01:
+        classname: org.genepattern.server.executor.lsf.LsfCommandExecutor
+        configuration.properties:
+            lsf.check.frequency: 15
+        default.properties:
+            lsf.project: genepattern
+
+    exec02:
+        classname: org.genepattern.server.executor.lsf.LsfCommandExecutor
+        configuration.properties:
+            lsf.check.frequency: 5
+        default.properties:
+            lsf.project: genepattern
+            lsf.extra.bsub.args: 
+
+    exec03:
+        classname: org.genepattern.server.executor.lsf.LsfCommandExecutor
+        configuration.properties:
+            lsf.check.frequency: 5
+        default.properties:
+            lsf.project: genepattern
+            lsf.extra.bsub.args: null
+    
+    exec04:
+        classname: org.genepattern.server.executor.lsf.LsfCommandExecutor
+        configuration.properties:
+            lsf.check.frequency: 5
+        default.properties:
+            lsf.project: genepattern
+            lsf.extra.bsub.args: ""
+
+    exec05:
+        classname: org.genepattern.server.executor.lsf.LsfCommandExecutor
+        configuration.properties:
+            lsf.check.frequency: 5
+        default.properties:
+            lsf.project: genepattern
+            lsf.extra.bsub.args: [ arg1 ]
+
+    exec06:
+        classname: org.genepattern.server.executor.lsf.LsfCommandExecutor
+        configuration.properties:
+            lsf.check.frequency: 5
+        default.properties:
+            lsf.project: genepattern
+            lsf.extra.bsub.args: [ arg1, arg2 ]
+
+module.properties:
+    mod01:
+        executor: exec01
+    mod02:
+        executor: exec02
+    mod03:
+        executor: exec03
+    mod04:
+        executor: exec04
+    mod05:
+        executor: exec05
+    mod06:
+        executor: exec06
+    mod10:
+        executor: exec01
+        lsf.extra.bsub.args: 
+    mod11:
+        executor: exec01
+        lsf.extra.bsub.args: null
+    mod12:
+        executor: exec01
+        lsf.extra.bsub.args: ""
+    mod13:
+        executor: exec01
+        lsf.extra.bsub.args: arg1
+    mod14:
+        executor: exec01
+        lsf.extra.bsub.args: [ ]
+    mod15:
+        executor: exec01
+        lsf.extra.bsub.args: [ null ]
+    mod16:
+        executor: exec01
+        lsf.extra.bsub.args: [ "" ]
+    mod17:
+        executor: exec01
+        lsf.extra.bsub.args: [ arg1 ]
+    mod18:
+        executor: exec01
+        lsf.extra.bsub.args: [ arg1, arg2 ]

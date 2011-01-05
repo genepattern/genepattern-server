@@ -2,6 +2,8 @@ package org.genepattern.server.util;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -25,7 +27,7 @@ public class JobResultsFilenameFilter implements FilenameFilter {
     public static final String KEY = "jobs.FilenameFilter";
     
     private Set<String> exactMatches = new TreeSet<String>();
-    private GlobFilenameFilter glob = null;
+    private List<GlobFilenameFilter> globs = new ArrayList<GlobFilenameFilter>();
     
     public void addExactMatch(String filename) {
         exactMatches.add(filename);
@@ -34,22 +36,42 @@ public class JobResultsFilenameFilter implements FilenameFilter {
     public void clearExactMatches() {
         exactMatches.clear();
     }
+    
+    /**
+     * @param patterns, a comma-separated list of glob patterns, to apply in order. 
+     *     A Null or empty input means don't use a glob pattern.
+     *     E.g. setGlob(".nfs*,.lsf*");
+     */
+    public void setGlob(String patterns) {
+        globs.clear();
+        if (patterns == null || patterns.trim().length() == 0) {
+            return;
+        }
+        String[] globs = patterns.split(",");
+        for(String glob : globs) {
+            addGlob(glob);
+        }
+    }
 
     /**
      * Null or empty input means don't use glob pattern.
      * @param pattern
      */
-    public void setGlob(String pattern) {
+    public void _setGlob(String pattern) {
         //null or empty string means ignore glob pattern
         if (pattern == null || pattern.trim().length() == 0) {
-            glob = null;
+            globs = null;
             return;
         }
         //init if necessary
-        if (glob == null) {
-            glob =  new GlobFilenameFilter();            
-        }
+        globs.clear();
+        addGlob(pattern);
+    }
+    
+    public void addGlob(String pattern) {
+        GlobFilenameFilter glob =  new GlobFilenameFilter();            
         glob.setFilterExpression(pattern);
+        globs.add(glob);
     }
 
     //implement FilenameFilter using GlobFilenameFilter
@@ -57,7 +79,7 @@ public class JobResultsFilenameFilter implements FilenameFilter {
         if (exactMatches.contains(name)) {
             return false;
         }
-        if (glob != null) {
+        for(GlobFilenameFilter glob : globs) {
             //DO NOT accept the file if the pattern matches the glob
             if (glob.accept(dir, name)) {
                 return false;

@@ -18,16 +18,11 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.net.UnknownHostException;
 import java.security.Security;
-import java.text.SimpleDateFormat;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Vector;
 
@@ -38,29 +33,29 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.AnalysisManager;
-import org.genepattern.server.AnalysisTask;
+import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.database.HsqlDbUtil;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.executor.CommandManager;
+import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.process.JobPurger;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.webapp.jsf.AboutBean;
+import org.genepattern.webservice.TaskInfoCache;
 
 /*
  * GenePattern startup servlet
  * 
- * This servlet performs periodic maintenance, based on definitions in the <omnigene.conf>/genepattern.properties file
+ * This servlet performs periodic maintenance, based on definitions in the <genepattern.properties>/genepattern.properties file
  * @author Jim Lerner
  */
 public class StartupServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(StartupServlet.class);
 
-    private SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static Vector<Thread> vThreads = new Vector<Thread>();
 
     public StartupServlet() {
-        log.info("Creating StartupServlet");
+        announceStartup();
     }
     
     public String getServletInfo() {
@@ -69,8 +64,8 @@ public class StartupServlet extends HttpServlet {
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        log.info("StartupServlet: user.dir=" + System.getProperty("user.dir"));
 
+        log.info("\tinitializing properties...");
         ServletContext application = config.getServletContext();
         String genepatternProperties = config.getInitParameter("genepattern.properties");
         application.setAttribute("genepattern.properties", genepatternProperties);
@@ -85,6 +80,7 @@ public class StartupServlet extends HttpServlet {
         String dbVendor = System.getProperty("database.vendor", "HSQL");
         if (dbVendor.equals("HSQL")) {
             try {
+                log.info("\tstarting HSQL database...");
                 HsqlDbUtil.startDatabase();
             }
             catch (Throwable t) {
@@ -92,28 +88,49 @@ public class StartupServlet extends HttpServlet {
                 return;
             }
         }
-
-        launchTasks();
-
-        // This starts an analysis task thread through a chain of side effects.
-        // Do not remove!
-        AnalysisManager.getInstance();
-        AnalysisTask.startQueue();
-
+        
+        log.info("\tchecking database connection...");
+        try {
+            HibernateUtil.beginTransaction();
+        }
+        catch (Throwable t) {
+            log.debug("Error connecting to the database", t);
+            Throwable cause = t.getCause();
+            if (cause == null) {
+                cause = t;
+            }
+            log.error("Error connecting to the database: "+cause);
+            log.error("Error starting GenePatternServer, abandoning servlet init, throwing servlet exception.");
+            throw new ServletException(t);
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+        
+        boolean initializeTaskInfoCache = false;
+        if (initializeTaskInfoCache) {
+            log.info("\tinitializing TaskInfoCache...");
+            TaskInfoCache.instance().initializeCache();
+        }
+        
+        CommandManagerFactory.startJobQueue();
+        
+        log.info("\tstarting daemons...");
         startDaemons(System.getProperties(), application);
         Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         HttpsURLConnection.setDefaultHostnameVerifier(new SessionHostnameVerifier());
 
         //clear system alert messages
+        log.info("\tinitializing system messages...");
         try {
             SystemAlertFactory.getSystemAlert().deleteOnRestart();
         }
         catch (Exception e) {
             log.error("Error clearing system messages on restart: "+e.getLocalizedMessage(), e);
         }
-        announceReady(System.getProperties());
+        announceReady();
     }
-
+    
     /**
      * Set the GenePatternURL property dynamically using
      * the current canonical host name and servlet context path.
@@ -176,12 +193,18 @@ public class StartupServlet extends HttpServlet {
     protected static void addDaemonThread(Thread t) {
         vThreads.add(t);
     }
-
-    protected void announceReady(Properties props) {
+    
+    private void announceStartup() {
+        final String NL = System.getProperty("line.separator");
+        final String STARS = "****************************************************************************";
+        StringBuffer startupMessage = new StringBuffer();
+        startupMessage.append(NL + STARS + NL);
+        startupMessage.append("Starting GenePatternServer ... ");
+        log.info(startupMessage);
+    }
+ 
+    protected void announceReady() {
         AboutBean about = new AboutBean();
-        about.getFull();
-        about.getBuildTag();
-        about.getDate();
         String message = "GenePattern server version " + about.getFull() + 
             " build " + about.getBuildTag() + 
             " built " + about.getDate() + " is ready.";
@@ -190,11 +213,16 @@ public class StartupServlet extends HttpServlet {
             .substring(0, message.length());
         StringBuffer startupMessage = new StringBuffer();
         final String NL = System.getProperty("line.separator");
-        startupMessage.append(NL + "Listening on " + System.getProperty("GenePatternURL") + NL);
         startupMessage.append(""+NL);
         startupMessage.append(stars + NL);
         startupMessage.append(message + NL);
-        startupMessage.append("\tJava Version: "+System.getProperty("java.version") + NL);
+        startupMessage.append("\tGenePatternURL: " + System.getProperty("GenePatternURL") + NL );
+        startupMessage.append("\tJava Version: "+System.getProperty("java.version") + NL );
+        startupMessage.append("\tuser.dir: "+System.getProperty("user.dir") + NL);
+        startupMessage.append("\ttasklib: "+System.getProperty("tasklib") + NL);
+        startupMessage.append("\tjobs: "+System.getProperty("jobs") + NL);
+        startupMessage.append("\tjava.io.tmpdir: "+System.getProperty("java.io.tmpdir") + NL);
+        startupMessage.append("\tsoap.attachment.dir: "+System.getProperty("soap.attachment.dir") + NL);
         startupMessage.append(stars);
         
         log.info(startupMessage);
@@ -202,6 +230,8 @@ public class StartupServlet extends HttpServlet {
 
     public void destroy() {
         log.info("StartupServlet: destroy called");
+
+        CommandManagerFactory.stopJobQueue();
 
         String dbVendor = System.getProperty("database.vendor", "HSQL");
         if (dbVendor.equals("HSQL")) {
@@ -224,92 +254,10 @@ public class StartupServlet extends HttpServlet {
             }
         }
         vThreads.removeAllElements();
-        GenePatternAnalysisTask.terminateAll("--> Shutting down server");
-        log.info("StartupServlet: destroy done");
+
+        log.info("StartupServlet: destroy, calling dumpThreads...");
         dumpThreads();
-    }
-
-    /**
-     * Read a CSV list of tasks from the launchTask property. 
-     * For each entry, lookup properties and launch the task in a separate thread in this JVM.
-     */
-    protected void launchTasks() {
-        Properties props = System.getProperties();
-        StringTokenizer stTasks = new StringTokenizer(props.getProperty("launchTasks", ""), ",");
-
-        String taskName = null;
-        String className = null;
-        String classPath = null;
-
-        Thread threads[] = new Thread[Thread.activeCount()];
-        Thread.enumerate(threads);
-        nextTask: while (stTasks.hasMoreTokens()) {
-            try {
-                taskName = stTasks.nextToken();
-                String expectedThreadName = props.getProperty(taskName + ".taskName", taskName);
-                for (int t = 0; t < threads.length; t++) {
-                    if (threads[t] == null) {
-                        continue;
-                    }
-                    String threadName = threads[t].getName();
-                    if (threadName == null) {
-                        continue;
-                    }
-                    if (threadName.startsWith(expectedThreadName)) {
-                        log.info(expectedThreadName + " is already running");
-                        continue nextTask;
-                    }
-                }
-                className = props.getProperty(taskName + ".class");
-                classPath = props.getProperty(taskName + ".classPath", "");
-                StringTokenizer classPathElements = new StringTokenizer(classPath, ";");
-                URL[] classPathURLs = new URL[classPathElements.countTokens()];
-                int i = 0;
-                while (classPathElements.hasMoreTokens()) {
-                    classPathURLs[i++] = new File(classPathElements.nextToken()).toURL();
-                }
-                String args = props.getProperty(taskName + ".args", "");
-                StringTokenizer stArgs = new StringTokenizer(args, " ");
-                String[] argsArray = new String[stArgs.countTokens()];
-                i = 0;
-                while (stArgs.hasMoreTokens()) {
-                    argsArray[i++] = stArgs.nextToken();
-                }
-                String userDir = props.getProperty(taskName + ".dir", System.getProperty("user.dir"));
-                System.setProperty("user.dir", userDir);
-
-                URLClassLoader classLoader = new URLClassLoader(classPathURLs, null);
-                Class theClass = Class.forName(className);
-                if (theClass == null) {
-                    throw new ClassNotFoundException("unable to find class " + className + " using classpath " + classPathElements);
-                }
-                Method main = theClass.getMethod("main", new Class[] { String[].class });
-                LaunchThread thread = new LaunchThread(taskName, main, argsArray, this);
-                log.info("starting " + taskName + " with " + args);
-                // start the new thread and let it run until it is idle (ie. inited)
-                thread.setPriority(Thread.currentThread().getPriority() + 1);
-                thread.setDaemon(true);
-                thread.start();
-                // just in case, give other threads a chance
-                Thread.yield();
-                log.info(taskName + " thread running");
-            } 
-            catch (SecurityException se) {
-                log.error("unable to launch " + taskName, se);
-            } 
-            catch (MalformedURLException mue) {
-                log.error("Bad URL: ", mue);
-            } 
-            catch (ClassNotFoundException cnfe) {
-                log.error("Can't find class " + className, cnfe);
-            } 
-            catch (NoSuchMethodException nsme) {
-                log.error("Can't find main in " + className, nsme);
-            } 
-            catch (Exception e) {
-                log.error("Exception while launching " + taskName, e);
-            }
-        } // end for each task
+        log.info("StartupServlet: destroy done");
     }
 
     /**
@@ -342,12 +290,12 @@ public class StartupServlet extends HttpServlet {
             Properties props = new Properties();
             fis = new FileInputStream(propFile);
             props.load(fis);
-            log.info("loaded GP properties from " + propFile.getCanonicalPath());
+            log.info("\tloaded GP properties from " + propFile.getCanonicalPath());
 
             if (customPropFile.exists()) {
                 customFis = new FileInputStream(customPropFile);
                 props.load(customFis);
-                log.info("loaded Custom GP properties from " + customPropFile.getCanonicalPath());
+                log.info("\tloaded Custom GP properties from " + customPropFile.getCanonicalPath());
             }
 
             // copy all of the new properties to System properties
@@ -424,12 +372,30 @@ public class StartupServlet extends HttpServlet {
         Thread t = null;
         for (int i = 0; i < numThreads; i++) {
             t = threads[i];
-            if (t == null)
+            if (t == null) {
                 continue;
-            if (!t.isAlive())
+            } 
+            if (!t.isAlive()) {
                 continue;
+            }
             log.info(t.getName() + " is running at " + t.getPriority() + " priority.  " + (t.isDaemon() ? "Is" : "Is not")
                     + " daemon.  " + (t.isInterrupted() ? "Is" : "Is not") + " interrupted.  ");
+
+            //for debugging            
+            //if (t.getName().startsWith("Thread-")) {
+            //    log.info("what is this thread?");
+            //    t.dumpStack();
+            //    
+            //    for(StackTraceElement e : t.getStackTrace()) {
+            //        String m = ""+e.getClassName()+"."+e.getMethodName();
+            //        String f = ""+e.getFileName()+":"+ e.getLineNumber();
+            //        log.info(""+m+", "+f);
+            //    }
+            //
+            //    log.info("calling Thread.stop()...");
+            //    t.stop();
+            //}
+            
         }
         if (numThreads == MAX_THREADS) {
             log.info("Possibly more than " + MAX_THREADS + " are running.");

@@ -19,6 +19,7 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Vector;
 
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -58,7 +59,7 @@ public class InstallTasks extends CommandLineAction implements FilenameFilter {
 		// only modules not from broad at install time
 		File zippy = new File(dir, name);
 		try {
-			Properties props = gp.getPropsFromZipFile(zippy.getCanonicalPath());
+			Properties props = GenePatternAnalysisTask.getPropsFromZipFile(zippy.getCanonicalPath());
 
 			String lsidStr = props.getProperty(GPConstants.LSID);
 			if (lsidStr == null)
@@ -97,7 +98,7 @@ public class InstallTasks extends CommandLineAction implements FilenameFilter {
 			for (int i = 0; i < moduleList.length; i++) {
 				module = moduleList[i];
 				System.out.println("Installing " + module.getName());
-				String lsid = gp.installNewTask(module.getCanonicalPath(),
+				String lsid = GenePatternAnalysisTask.installNewTask(module.getCanonicalPath(),
 						"GenePattern", GPConstants.ACCESS_PUBLIC, null);
 			}
 

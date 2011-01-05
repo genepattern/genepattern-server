@@ -24,16 +24,9 @@ import org.genepattern.webservice.OmnigeneException;
 
 public class TaskIDNotFoundException extends OmnigeneException {
 
-	/** Creates new TaskIDNotFoundException */
-	public TaskIDNotFoundException() {
+	public TaskIDNotFoundException(int taskId) {
+	    super("Not a valid taskId: "+taskId);
 	}
 
-	public TaskIDNotFoundException(String strMessage) {
-		super(strMessage);
-	}
-
-	public TaskIDNotFoundException(int errno) {
-		super(errno);
-	}
 }
 

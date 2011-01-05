@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+remote_host="gpint01";
+exec -- ssh "$remote_host" "use LSF; bkill $@"

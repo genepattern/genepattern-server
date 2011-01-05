@@ -1,0 +1,14 @@
+#!/bin/bash
+
+#
+# mock LSF support, for debugging on a platform which does not have lsf installed
+#
+echo "JOBID   USER    STAT  QUEUE      FROM_HOST   EXEC_HOST   JOB_NAME   SUBMIT_TIME"
+echo "1094789   genepat DONE  genepatter node256     node1448    94789      Mar 23 13:32"
+#echo "1094273   genepat DONE  genepatter node256     node1448    94273      Mar 23 13:32"
+#echo "1094274   genepat RUN   genepatter node256     node1448    94274      Mar 23 13:32"
+#echo "1094275   genepat RUN   genepatter node256     node1448    94275      Mar 23 13:32"
+#echo "58174     genepat RUN   genepatter node256     node1448    58174      Mar 23 13:32"
+#echo "94268     genepat RUN   genepatter node256     node1448    94268      Mar 23 13:32"
+
+

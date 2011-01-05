@@ -1,0 +1,28 @@
+# test case config file which overrides a default property by setting it to an empty string
+default.properties:
+    executor: LSF
+    debug.mode: true
+
+executors:
+    LSF:
+        classname: org.genepattern.server.executor.lsf.LsfCommandExecutor
+        configuration.properties:
+            lsf.check.frequency: 15
+        default.properties:
+            lsf.wrapper.script: lsf_wrapper.sh
+            lsf.output.filename: ".lsf.out"
+            lsf.use.pre.exec.command: "false"
+            lsf.extra.bsub.args: "null"
+
+    RuntimeExec: 
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+        default.properties:
+            # test #1: set debug.mode to null when using the executor
+            debug.mode: ""
+
+user.properties:
+    adminuser:
+        executor: RuntimeExec
+
+    testuser:
+        debug.mode: ""

@@ -18,27 +18,20 @@
       xmlns:a4j="https://ajax4jsf.dev.java.net/ajax"
       xmlns:c="http://java.sun.com/jsp/jstl/core">
 <ui:composition>
- 	<h:outputText rendered="${runTaskBean.allowBatchProcess and !runTaskBean.visualizer}">   
-		<script type="text/javascript"
-		src="#{facesContext.externalContext.requestContextPath}/jqueryFileTree/jquery-1.2.3.min.js" /> 
-		<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/multiFileUpload.js"></script>
-		<script> jQuery.noConflict(); </script> 
-	</h:outputText>
-	
-        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <table width="100%
+                " border="0" cellspacing="0" cellpadding="0">
           <tr>
           	<td>
           	</td>
             <td valign="top" class="maintasknav" id="maintasknav">
-              <span id="toggleDescForm">
+              <form id="toggleDescForm">
               <h:outputText rendered="#{runTaskBean.showParameterDescriptions}">
-                <input name="toggleDesc" id="toggleDesc" onclick="toggleDescriptions();" type="checkbox" checked="checked" />
-                <label for="toggleDesc">Show parameter descriptions</label>
+                <input name="toggleDesc" id="toggleDesc" onclick="toggleDescriptions();" type="checkbox" checked="checked">Show parameter descriptions</input>
               </h:outputText>
               <h:outputText rendered="#{! runTaskBean.showParameterDescriptions}">
                 <h:selectBooleanCheckbox id="toggleDesc" onclick="toggleDescriptions();">Show parameter descriptions</h:selectBooleanCheckbox>
               </h:outputText>
-              </span>
+              </form>
             </td>
           </tr>
           <tr>
@@ -68,6 +61,17 @@
           <input type="hidden" id="taskName" name="taskName" value="#{runTaskBean.name}"/>
           <table border="0" cellpadding="5" cellspacing="0" class="attribute" valign="top">
             <tbody>
+              <h:outputText rendered="#{runTaskBean.pipelineWithMissingTasks}">
+              <tr class="taskperameter">
+                <td colspan="3">
+                <font color="red" size="+1"><b>Warning:</b></font>
+                <br />
+                This pipeline requires modules or module versions which are not installed on this server. 
+                <br />
+                Go to the <a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{runTaskBean.lsid}">properties</a> page to install the required modules.
+                </td>
+              </tr>
+              </h:outputText>
               <tr class="taskperameter">
                 <td>
                   <span class="description">
@@ -75,7 +79,9 @@
                   </span>
                 </td>
                 <td colspan="2" class="maintasknav2"> 
+                <h:outputText rendered="#{not runTaskBean.pipelineWithMissingTasks}">
                   <input id="cmd1" name="cmd1" value="Run" type="submit"/>
+                </h:outputText>
                   <input id="reset" name="reset" value="Reset" type="button"
                          onclick="document.location='#{facesContext.externalContext.requestContextPath}/pages/index.jsf?lsid=#{runTaskBean.encodedLsid}'"/> &#160;&#160;
                   <h:outputText rendered="#{runTaskBean.pipeline}">
@@ -104,29 +110,7 @@
                   >#{p.displayName} <h:outputText rendered="#{!p.optional}" value="*"/></td>
                   <td valign="top" id="#{p.name}_td">
                   
-				  <h:outputText rendered="${p.inputType=='directory' and runTaskBean.allowBatchProcess}">					
-					<!--Directory -->
-						<div id="#{p.name}_div" style='display:none'>
-							<input name="#{p.name}" id="#{p.name}" size="30" type="#{p.inputType}" value="#{p.defaultValue}"/>
-						</div>						
-						<div id="#{p.name}_div_multifile_launcher"> 
-							<button type="button" id="#{p.name}_button" class="jumploaderdirectorylauncher">Launch File Browser</button>
-						</div>													
-						<h:outputText rendered = "#{runTaskBean.allowInputFilePaths}">
-							<span class="description" style="display:inline">
-								<input type="radio" id="#{p.name}_cb_path" name="#{p.name}_cb_path" class="cb_path"/>
-								<label for="#{p.name}_cb_path"><h:outputText value="Specify Directory Path" />
-								</label>
-							</span>
-							<span class="description" style="display:inline">
-								<input type="radio" id="#{p.name}_cb_upload" name="#{p.name}_cb_upload" class="cb_upload" checked="yes" />
-								<label for="#{p.name}_cb_upload">Upload Multiple Files</label>
-							</span>	
-						</h:outputText>												
-					</h:outputText>					
-				    <h:outputText rendered="${p.inputType=='directory' and !runTaskBean.allowBatchProcess}">
-						  <input name="#{p.name}" id="#{p.name}" size="30" type="#{p.inputType}" value="#{p.defaultValue}"/>                    
-					</h:outputText>
+                    <!-- File input -->
                     <h:outputText rendered="#{p.inputType=='file'}">
                       <h:outputText rendered="#{empty p.defaultValue}">
                         <div id="#{p.name}_div_file">
@@ -140,14 +124,10 @@
                         </h:outputText>
                         </div>
                         <span class="description" style="display:inline">
-                            <input type="radio" id="#{p.name}_cb_url" name="#{p.name}_cb" value="url" onclick="showUrlInput('#{p.name}');" />
-                            <label for="#{p.name}_cb_url"><h:outputText value="#{runTaskBean.allowInputFilePaths ? 'Specify File Path or URL' : 'Specify URL'}" />
-                            </label>
-                        </span>
-                        <span class="description" style="display:inline">
-                            <input type="radio" id="#{p.name}_cb_file" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');" checked="yes" />
-                            <label for="#{p.name}_cb_file">Upload File</label>
-                        </span>
+                            <input type="radio" id="#{p.name}_cb_url" name="#{p.name}_cb" value="url" 
+                                onclick="showUrlInput('#{p.name}');"><h:outputText rendered="#{runTaskBean.allowInputFilePaths}">Specify File Path or URL</h:outputText><h:outputText rendered="#{!runTaskBean.allowInputFilePaths}">Specify URL</h:outputText></input></span>
+                        <span class="description" style="display:inline"><input type="radio" id="#{p.name}_cb_file" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');" checked="yes">Upload
+                                    File</input></span>
                       </h:outputText>
                       
                       <h:outputText rendered="#{!empty p.defaultValue}">

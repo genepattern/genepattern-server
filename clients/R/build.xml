@@ -17,6 +17,9 @@
     <property name="R.client.mac.bin.tgz" location="${R.client.downloads}/GenePattern_1.0.2.tgz" />
     <property name="R.client.win.bin.zip" location="${R.client.downloads}/GenePattern_1.0.2.zip" />
 
+    <!-- R executable -->
+    <property name="R.exec" value="R" />
+
     <!-- temporary installation of GP client package from source -->
     <property name="R.lib.dir" location="./r_lib" />
 
@@ -38,7 +41,7 @@
         <description>Installs the R binary package; Depends on 'R' being installed and on the path.</description>
         <mkdir dir="${R.lib.dir}" />
         <!-- R CMD INSTALL -l ./r_lib downloads/GenePattern_1.0.2.tar.gz -->
-        <exec command="R CMD INSTALL -l ${R.lib.dir} ${R.client.src.tar.gz}" failonerror="true" />
+        <exec command="${R.exec} CMD INSTALL -l ${R.lib.dir} ${R.client.src.tar.gz}" failonerror="true" />
     </target>
     
     <target name="R.src.package" depends="install.R.binary.package">

@@ -10,7 +10,6 @@ import java.util.TreeSet;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.auth.GroupPermission.Permission;
-import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 
 /**
@@ -24,13 +23,19 @@ import org.genepattern.server.webservice.server.dao.AnalysisDAO;
  *
  */
 public class PermissionsHelper {
+    //the user viewing or editing the job
     private String currentUser = null;
-    private boolean isAdmin = false;
+    //is the current user the owner of the job
     private boolean isOwner = false;
+    //can the current user read (view) the job
     private boolean canRead = false;
+    //can the current user edit (write) the job
     private boolean canWrite = false;
+    //can the current user edit the job permissions
     private boolean canSetPermissions = false;
+    //is the job public
     private boolean isPublic = false;
+    //is the job shared
     private boolean isShared = false;
     
     private Permission publicAccessPermission = GroupPermission.Permission.NONE;
@@ -40,18 +45,26 @@ public class PermissionsHelper {
     
     private int rootJobNo;
     private String rootJobOwner;
-    
-    public PermissionsHelper(String userId, int jobNo) {
-        this.currentUser = userId;
-        this.isAdmin = AuthorizationHelper.adminJobs(currentUser);
 
+    public PermissionsHelper(final boolean _isAdmin, final String _userId, final int _jobNo) {
         AnalysisDAO ds = new AnalysisDAO();
-        this.rootJobNo = ds.getRootJobNumber(jobNo);
-        this.rootJobOwner = ds.getJobOwner(rootJobNo);
+        final int _rootJobNo = ds.getRootJobNumber(_jobNo);
+        final String _rootJobOwner = ds.getJobOwner(_rootJobNo);
+        init(_isAdmin, _userId, _jobNo, _rootJobOwner, _rootJobNo, ds);
+    }
+    
+    public PermissionsHelper(final boolean _isAdmin, final String _userId, final int _jobNo, final String _rootJobOwner, final int _rootJobNo) {
+        init(_isAdmin, _userId, _jobNo, _rootJobOwner, _rootJobNo, (AnalysisDAO)null);
+    }
+    
+    private void init(final boolean _isAdmin, final String _userId, final int _jobNo, final String _rootJobOwner, final int _rootJobNo, AnalysisDAO ds) {
+        this.currentUser = _userId;
+        this.rootJobOwner = _rootJobOwner;
+        this.rootJobNo = _rootJobNo;
         this.isOwner = this.currentUser != null && this.currentUser.equals(this.rootJobOwner);
         this.canSetPermissions = this.isOwner;
         
-        if (isAdmin || isOwner) {
+        if (_isAdmin || isOwner) {
             canRead = true;
             canWrite = true;
         }
@@ -59,6 +72,9 @@ public class PermissionsHelper {
     }
     
     private void init(AnalysisDAO ds)  {
+        if (ds == null) {
+            ds = new AnalysisDAO();
+        }
         Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(rootJobNo);
 
         IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
@@ -84,14 +100,12 @@ public class PermissionsHelper {
             }
         }
         
-        initJobResultPermissions(ds);
+        initJobResultPermissions(groupMembership, groupPermissions);
         initNonPublicPermissions();
     }
     
-    private void initJobResultPermissions(AnalysisDAO ds) {
-        Set<String> groups = UserAccountManager.instance().getGroupMembership().getGroups(currentUser);
-
-        Set<GroupPermission>  groupPermissions = ds.getGroupPermissions(rootJobNo);
+    private void initJobResultPermissions(IGroupMembershipPlugin groupMembership, Set<GroupPermission> groupPermissions) {
+        Set<String> groups = groupMembership.getGroups(currentUser);
         SortedSet<GroupPermission> sortedNoGroups = new TreeSet<GroupPermission>(groupPermissions);
         jobResultPermissionsNoGroups = new ArrayList<GroupPermission>(sortedNoGroups);
 

@@ -16,8 +16,7 @@ package org.genepattern.server.domain;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.genepattern.server.database.BaseDAO;
 import org.genepattern.server.database.HibernateUtil;
 import org.hibernate.Query;
@@ -29,8 +28,7 @@ import org.hibernate.Query;
  * @author Hibernate Tools
  */
 public class TaskMasterDAO extends BaseDAO {
-
-    private static final Log log = LogFactory.getLog(TaskMasterDAO.class);
+    private static Logger log = Logger.getLogger(TaskMasterDAO.class);
 
     public TaskMaster findById(Integer id) {
         log.debug("getting TaskMaster instance with id: " + id);
@@ -40,6 +38,27 @@ public class TaskMasterDAO extends BaseDAO {
             log.error("get failed", re);
             throw re;
         }
+    }
+    
+    public TaskMaster findByLsid(String lsid) {
+        String hql = "from org.genepattern.server.domain.TaskMaster where lsid = :lsid";
+        Query query = HibernateUtil.getSession().createQuery(hql);
+        query.setString("lsid", lsid);
+        List<TaskMaster> rval = query.list();
+        if (rval == null) {
+            log.error("Unexpected null returned from hibernate query");
+            return null;
+        }
+        if (rval.size()==0) {
+            log.warn("No match to lsid: "+lsid);
+            return null;
+        }
+        if (rval.size()==1) {
+            return rval.get(0);
+        }
+        
+        log.error("Found "+rval.size()+" entries in the TASK_MASTER table with this lsid: "+lsid);
+        return rval.get(0);
     }
 
     public TaskMaster findByIdLsid(String lsid, String user) {
@@ -56,6 +75,15 @@ public class TaskMasterDAO extends BaseDAO {
         }
         
         return (TaskMaster) null;
+    }
+    
+    public boolean isTaskOwner(String user, String lsid) {
+        String hql = "select userId, lsid from org.genepattern.server.domain.TaskMaster where lsid = :lsid and userId = :userId";
+        Query query = HibernateUtil.getSession().createQuery(hql);
+        query.setString("lsid", lsid);
+        query.setString("userId", user);
+        List<Object[]> results = query.list();
+        return results != null && results.size() > 0;
     }
 
     public List<TaskMaster> findAll() {

@@ -1,5 +1,0 @@
-runfile login.twill
-runfile snp.twill
-runfile logout.twill
-
-
