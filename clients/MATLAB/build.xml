@@ -17,10 +17,11 @@
 				<include name="commons-discovery-0.2.jar" />
 				<include name="commons-httpclient-3.0.1.jar" />
 				<include name="commons-codec-1.3.jar" />
-				<include name="commons-logging-1.0.4.jar" />
+				<include name="commons-logging.jar" />
 				<include name="gp-modules.jar" />
 				<include name="jakarta-oro-2.0.8.jar" />
-				<include name="jaxb-rt-1.0-ea.jar" />
+				<include name="jaxb-api.jar" />
+				<include name="jaxb-impl.jar" />
 				<include name="jaxrpc.jar" />
 				<include name="log4j-1.2.11.jar" />
 				<include name="mail.jar" />
