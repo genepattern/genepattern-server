@@ -1,0 +1,9 @@
+# required to login to the server
+setglobal username test_user
+setglobal password test_password
+
+# set server data path 
+# for genepatterntest
+setglobal rnaseqdata /xchip/sqa/TestFiles/RNA-seq
+# for my local server
+#setglobal rnaseqdata /Broad/Data/RNA-seq

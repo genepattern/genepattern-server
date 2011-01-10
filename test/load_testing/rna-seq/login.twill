@@ -4,6 +4,11 @@
 # pass the server url as an arg, e.g.
 #   -u http://genepatterntest.broadinstitute.org
 #   -u http://gpb67-896.broadinstitute.org:8080
-go /gp/login?username=twilly&password=twilly
+#
+# set the username and password before running this script
+#setglobal username test_user
+#setglobal password test_password
+
+go /gp/login?username=${username}&password=${password}
 code 200
 url /gp/pages/index.jsf

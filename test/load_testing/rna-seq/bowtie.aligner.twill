@@ -12,7 +12,7 @@
 runfile login.twill
 
 # for genepatterntest
-setlocal rnaseqdata /xchip/sqa/TestFiles/RNA-seq
+setglobal rnaseqdata /xchip/sqa/TestFiles/RNA-seq
 # for my local server
 #setlocal rnaseqdata /Broad/Data/RNA-seq
 
