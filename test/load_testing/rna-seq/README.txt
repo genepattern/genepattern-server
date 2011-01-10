@@ -10,8 +10,8 @@ To install twill on Mac OS X,
 
 To run the tests you must first create your own test.properties.twill file, based on a copy of the test.properties-sample.twill file.
 
-Example test using twill-sh (single run):
-
+Example test using twill-sh (single run, local server):
+    twill-sh -u http://127.0.0.1:8080 run_bowtie.aligner.twill
 Example test using twill-fork (simulate 4 concurrent users):
     twill-fork -n 4 -p 4 -u http://genepatterntest.broadinstitute.org run_bowtie.aligner.indexes.twill
 
