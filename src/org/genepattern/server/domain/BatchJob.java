@@ -14,7 +14,7 @@ public class BatchJob {
     private String userId;
     
     //No arg constructor for Hibernate.
-    private BatchJob(){
+    public BatchJob(){
     	
     }
     public BatchJob(String userId){
