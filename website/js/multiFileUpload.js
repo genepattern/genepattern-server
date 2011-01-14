@@ -1,38 +1,64 @@
-//To dos.
-//  Remove Batch processs... links from everything else, once they've submitted at least one file through the batch process procedure
-//  **After a successful add file, change submit to submitBatchJob.jsp
-//  **If the user switches back to single upload, or deletes all files from URL upload, change back to submitJob.jsp
-//  Add a submit after upload complete link to the MultiFileUpload.xhtml form
+var originalSubmit;
+var batchSubmit = "/gp/batchSubmit.jsp";
+var submitOnComplete = 0;
 
-function MultiFileUpload(){
-	
-	this.curMultiFileInput=null;
-	this.originalSubmit = jQuery("#taskForm").attr('action');
-	this.initialize();
-	this.batchSubmit="/gp/batchSubmit.jsp";	
-}
+function addBatchSubmitLinksToPage(){	
+	originalSubmit = jQuery("#taskForm").attr('action');
 
-MultiFileUpload.prototype.initialize = function (){	
-
-	//Attach to all  input file dialog boxes, an anchor that allows "batch process..."
-	jQuery("input[type='file']").after("<a name='batchprocess' href='multiFileUpload.jsf' rel='lyteframe' rev='width:625px; height:450px; scrolling:auto;' >Batch process...</a>");
-	//Our anchor uses the special rel='lyteframe' tag to specify that it's a popup window.  But
-	//to convert the tag to actual javascript, we need to call the lytebox initialization function
-	initLytebox();
+	jQuery("input[type='file']").after("" +
+			"<a class='batchprocess' href='#' >Batch process...</a>");
+	jQuery("a.batchprocess").click(function(){
+		var inputId = jQuery(this).prev().attr('id');
+		jQuery(jq(inputId+"_td")).hide();
+		jQuery(jq(inputId+"_td")).after(
+				"<td class='jumploaderWindow' id='jlID" + inputId+"'>" +
+					"<applet name='jl"+ inputId + "'"+
+					"code='jmaster.jumploader.app.JumpLoaderApplet.class'"+
+					"archive='/gp/downloads/jl_core_z.jar'"+
+					"width='600' height='400' mayscript='true' >"+
+						"<param name='uc_uploadUrl' value='/gp/MultiFileUploadReceiver'/>"+	
+						"<param name='uc_directoriesEnabled' value='true'/>"+	
+						"<param name='uc_partitionLength' value='5000000'/>" +
+						"<param name='ac_fireUploaderFileStatusChanged' value='true'/>"+
+						"<param name='ac_fireUploaderStatusChanged' value='true'/>"+
+						"<param name='ac_fireUploaderFileRemoved' value='true'/>"+
+						"<param name='ac_fireAppletInitialized' value='true'/>"+
+					"</applet>"+
+					"<br/> "+
+					"<a id='revert"+inputId+"' href='#'> Load single file</a>"+
+				"</td>" 				
+		);
+		jQuery(jq("revert"+inputId)).click( function () {				
+			jQuery(this).hide();
+			jQuery(jq("jlID"+inputId)).hide();
+			jQuery(jq(inputId+"_td")).show();				
+		});
+		jQuery("applet").each(function() {
+			this.localToRemoteMap = new Object();
+		});
+	});
 	
-	//Track the old this pointer, so we can use it within our jQuery environment
-	var me = this;
+	//Retrive the formValidator onsubmit function, but only call if our first verification succeeds
+	var formSubmitFunction = document.getElementById("taskForm").onsubmit;
+	document.getElementById("taskForm").onsubmit = null;	
 	
-	
-	//When the user clicks on batch process we will
-	//  1. take note of which to wihch input field the popup window should assign the uploaded files(by setting curMultiFileInput)
-	//  2. Switch to the Specify Path or URL mode of the input box
-	jQuery("[name='batchprocess']").click(function (event){
-		me.curMultiFileInput = jQuery(this).prev().attr('id');
+	jQuery("#taskForm").submit(function(){		
 		
-	});	
-	
-	jQuery("#taskForm").submit(function(){
+		var uploadingComplete = true;		
+		jQuery("applet").each( function() {
+			if (typeof(this.getUploader)!= undefined){				
+				var uploader = this.getUploader();
+				if (uploader.canStartUpload()){
+					uploader.startUpload();
+					submitOnComplete = submitOnComplete + 1;
+					uploadingComplete = false;
+				}
+			}
+		});		
+		
+		if (!uploadingComplete){
+			return false;
+		}
 		//See if any of the _url file input text fields have multiple files
 		//If so, change to batch submit		
 		jQuery("input[type='file']").each(function() {
@@ -43,24 +69,70 @@ MultiFileUpload.prototype.initialize = function (){
 				var urlInputBoxContents = jQuery(jq(fileId+"_url")).val();				
 				if (urlInputBoxContents){
 					if (urlInputBoxContents.indexOf(';') >= 0){
-						jQuery("#taskForm").attr('action', me.batchSubmit);		
+						jQuery("#taskForm").attr('action', batchSubmit);		
 					}
 				}
 			}			
 		});
+		
+		//Now call the original form submit (validation) function
+		return formSubmitFunction();		
 	});
 };
 
-MultiFileUpload.prototype.assignFiles= function(filename){
-	//Click the URL link, so the input changes to a text box.  We can't add multiple files
-	//to a file-input control for security reasons
-	jQuery(jq(this.curMultiFileInput+"_cb_url")).click();	
-	var urlName = this.curMultiFileInput+"_url";
-	jQuery(jq(urlName)).val( jQuery(jq(urlName)).val() + filename + ';');	
-};
+function uploaderFileStatusChanged( uploader, file) {
+	if (file.getStatus()==2){		
+		jQuery("applet").each(function() {
+			if (typeof(this.getUploader) != undefined){
+				if (this.getUploader().equals(uploader)){
+					var inputName =  jQuery(this).attr("name").substring(2);
+					jQuery(jq(inputName+"_cb_url")).click();	
+					var urlName = inputName+"_url";
+					jQuery(jq(urlName)).val( jQuery(jq(urlName)).val() + file.getResponseContent() + ';');
+					
+					this.localToRemoteMap[file.getPath()] = file.getResponseContent();
+				}
+			}
+		});
+	}
+}	
+
+function uploaderFileRemoved( uploader, file ) {	
+	jQuery("applet").each(function() {
+		if (typeof(this.getUploader) != undefined){
+			if (this.getUploader().equals(uploader)){
+				var inputName =  jQuery(this).attr("name").substring(2);
+				jQuery(jq(inputName+"_cb_url")).click();	
+				var urlName = inputName+"_url";
+		
+				var currentFileList = jQuery(jq(urlName)).val();		
+				var fileToRemove = this.localToRemoteMap[file.getPath()];
+				var shortenedFileList = currentFileList.replace(fileToRemove+";","");
+				
+				jQuery(jq(urlName)).val( shortenedFileList);
+			}
+		}
+	});
+}
+
+
+function uploaderStatusChanged( uploader ) {
+	if (uploader.getStatus()==0){
+		if (submitOnComplete > 0){
+			submitOnComplete = submitOnComplete - 1;
+			if (submitOnComplete == 0){
+				jQuery("#taskForm").submit();
+			}
+		}		
+	}
+}
+
+function appletInitialized( applet){
+	applet.getMainView().getUploadView().showOpenDialog();				
+}
 
 jQuery(document).ready(function(){
-	theMultiFileUpload = new MultiFileUpload();
+	addBatchSubmitLinksToPage();
 	if(jQuery.browser.mozilla) jQuery("form").attr("autocomplete", "off"); 
 });
 

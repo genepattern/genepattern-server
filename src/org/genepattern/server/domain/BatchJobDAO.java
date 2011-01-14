@@ -1,6 +1,8 @@
 package org.genepattern.server.domain;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -18,7 +20,7 @@ public class BatchJobDAO extends BaseDAO {
 	public BatchJob findById(Integer id) {
 		log.debug("getting BatchJob instance with id: " + id);
 		try {
-			return (BatchJob) HibernateUtil.getSession().get(
+			return (BatchJob) HibernateUtil.getSession().load(
 					"org.genepattern.server.domain.BatchJob", id);
 		} catch (RuntimeException re) {
 			log.error("get failed", re);
@@ -26,6 +28,30 @@ public class BatchJobDAO extends BaseDAO {
 		}
 	}	
 	
+	public List<BatchJob> getOlderThanDate(Date date) {	
+		Query query = HibernateUtil.getSession().getNamedQuery("getOlderThanDate");
+	    Calendar cal = Calendar.getInstance();
+	     cal.setTime(date);
+	    query.setCalendar("olderThanDate", cal);		
+		return query.list();		        
+	}
+	
+	public void markDeletedIfLastJobDeleted(int lastJobDeleted){
+		 Query query =  HibernateUtil.getSession().getNamedQuery("getBatchOwnerOfJob");
+		 query.setInteger("jobId", lastJobDeleted);
+		 List batchIds = query.list();
+		 if (batchIds.size()>0){
+			 int batchId = (Integer) batchIds.get(0);
+			 Query countMemberJobs = HibernateUtil.getSession().getNamedQuery("countJobsInBatch");
+			 countMemberJobs.setInteger("jobId", lastJobDeleted);
+			 countMemberJobs.setInteger("batchId", batchId);
+			 int remainingJobCount = (Integer) countMemberJobs.list().get(0);			 
+			 if (remainingJobCount ==0){
+			     BatchJob batchJob = (BatchJob) HibernateUtil.getSession().get(BatchJob.class, batchId);
+			     batchJob.setDeleted(true);
+			 }
+		 }		    
+	}
 	public List<BatchJob> findByUserId(String userId){
 		 Query query =  HibernateUtil.getSession().getNamedQuery("getBatchJobsForUser");
 	     query.setString("userId", userId);	     
@@ -78,9 +104,15 @@ public class BatchJobDAO extends BaseDAO {
 	}
 	
 	public Integer getNumBatchJobs(String batchFilter){		
-		 Query query =  HibernateUtil.getSession().getNamedQuery("getNumJobsInBatch");
-	     query.setInteger("batchId", Integer.parseInt(undecorate(batchFilter)));
-	     return (Integer) query.list().get(0);
+		try {
+			BatchJob batchJob = (BatchJob) HibernateUtil.getSession().load(
+					"org.genepattern.server.domain.BatchJob", Integer.parseInt(undecorate(batchFilter)));
+			return batchJob.getBatchJobs().size();
+			
+		} catch (RuntimeException re) {
+			//the batch is gone.  Perhaps deleted or purged
+			return 0;
+		}	
 	}
 	
 	public String undecorate(String batchFilter){
@@ -90,5 +122,7 @@ public class BatchJobDAO extends BaseDAO {
 			return batchFilter;
 		}
 	}
+
+	
 
 }

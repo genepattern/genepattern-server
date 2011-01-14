@@ -21,6 +21,8 @@ import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.domain.BatchJob;
+import org.genepattern.server.domain.BatchJobDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 
 /**
@@ -52,8 +54,10 @@ public class Purger extends TimerTask {
                     // delete the job from the database and recursively delete the job directory
                     ds.deleteJob(jobId);
                 }
-                HibernateUtil.commitTransaction();                
-
+                HibernateUtil.commitTransaction();
+                
+                purgeBatchJobs(purgeDate);               
+                
                 long dateCutoff = purgeDate.getTime().getTime();
                 // remove input files uploaded using web form
                 purge(new File(System.getProperty("java.io.tmpdir")), dateCutoff);
@@ -99,9 +103,21 @@ public class Purger extends TimerTask {
             }
         }
     }
+    
+    private void purgeBatchJobs(GregorianCalendar purgeDate){
+    	  HibernateUtil.beginTransaction();
+          BatchJobDAO batchJobDAO = new BatchJobDAO();
+          List<BatchJob> possiblyEmpty = batchJobDAO.getOlderThanDate(purgeDate.getTime());
+          for (BatchJob batchJob: possiblyEmpty){
+          	if (batchJob.getBatchJobs().size() == 0){
+          		HibernateUtil.getSession().delete(batchJob);
+          	}
+          }
+          HibernateUtil.commitTransaction();
+    }
 
     public static void main(String args[]) {
-        Purger purger = new Purger(7);
+        Purger purger = new Purger(0);
         purger.run();
     }
 }

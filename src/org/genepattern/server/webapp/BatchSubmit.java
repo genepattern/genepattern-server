@@ -225,12 +225,7 @@ public class BatchSubmit  {
 		//Though the batch files will have been uploaded already through our upload applet and MultiFileUploadReceiver,
 		//the form may still contain single attached files.  Save them now.
 		
-		//Create a temporary directory for the uploaded files.
-		String prefix = userName + "_run";
-		//use createTempFile to guarantee a unique name, but then change it to a directory
-		File tempDir = File.createTempFile(prefix, null);
-		tempDir.delete();
-		tempDir.mkdir();
+		
 		
 		RequestContext reqContext = new ServletRequestContext(request);
 		if (FileUploadBase.isMultipartContent(reqContext)){
@@ -242,7 +237,7 @@ public class BatchSubmit  {
 			while (it.hasNext()){
 				FileItem submission = it.next();
 				if (!submission.isFormField()){
-					loadAttachedFile(tempDir, submission);
+					loadAttachedFile(userName + "_run", submission);
 				} else{
 					readFormParameter(submission);
 				}
@@ -256,7 +251,7 @@ public class BatchSubmit  {
 		String formValue = submission.getString();
 
 		MultiFileParameter multiFile = new MultiFileParameter(formValue);
-		if (multiFile.getNumFiles() > 1){
+		if (multiFile.getNumFiles() > 1 || formValue.endsWith(";")){
 			multiFileValues.put(submission.getFieldName(), multiFile);
 		}else{
 			formValues.put(submission.getFieldName(), formValue);
@@ -264,11 +259,16 @@ public class BatchSubmit  {
 		log.debug("Storing "+submission.getFieldName()+" : "+submission.getString());
 	}
 
-	private void loadAttachedFile(File tempDir, FileItem submission)
+	private void loadAttachedFile(String prefix, FileItem submission)
 			throws IOException {
 		//We expect to find an attached file.  But perhaps, this field was never filled in
 		//if the user specified a URL instead.
 		if (submission.getSize()> 0) {
+			//use createTempFile to guarantee a unique name, but then change it to a directory
+			File tempDir = File.createTempFile(prefix, null);
+			tempDir.delete();
+			tempDir.mkdir();
+			
 			File file = new File(tempDir, submission.getName());
 			try {
 				submission.write(file);

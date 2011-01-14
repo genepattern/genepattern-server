@@ -1,5 +1,7 @@
 package org.genepattern.server.domain;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -7,6 +9,7 @@ public class BatchJob {
 	public static final String BATCH_KEY = "Batch2478925018:";
 	private Integer jobNo;    
     private Set<AnalysisJob> batchJobs = new HashSet<AnalysisJob>();
+    private Date submittedDate;
     private boolean deleted;
     private String userId;
     
@@ -17,6 +20,7 @@ public class BatchJob {
     public BatchJob(String userId){
     	this.userId = userId;
     	deleted = false;
+    	setSubmittedDate(Calendar.getInstance().getTime());
     }
     
 	private void setJobNo(Integer jobNo) {
@@ -47,6 +51,12 @@ public class BatchJob {
 
 	public String getUserId() {
 		return userId;
+	}
+	public void setSubmittedDate(Date submittedDate) {
+		this.submittedDate = submittedDate;
+	}
+	public Date getSubmittedDate() {
+		return submittedDate;
 	}
 
 }

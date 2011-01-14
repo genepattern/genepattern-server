@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.domain.BatchJobDAO;
 import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.JobDeletionException;
 import org.genepattern.server.executor.JobSubmissionException;
@@ -119,7 +120,7 @@ public class JobManager {
     }
 
     /**
-     * Delete the given job by first terminating it if it is running, deleting its files, and the removing its entry from the database.
+     * Delete the given job by first terminating it if it is running, deleting its files, and then removing its entry from the database.
      * If necessary, validate that the current user has permission to delete the job.
      * 
      * @param isAdmin
@@ -180,6 +181,7 @@ public class JobManager {
         finally {
             HibernateUtil.closeCurrentSession();
         }
+
         return deletedJobIds;
     }
 
@@ -196,6 +198,9 @@ public class JobManager {
         }
         dao.deleteJob(jobNumber);
         deletedJobIds.add(jobNumber);
+        
+        BatchJobDAO batchJob = new BatchJobDAO();
+        batchJob.markDeletedIfLastJobDeleted(jobNumber);
     }
 
     private static void deleteJobDir(int jobNumber) throws JobDeletionException {
