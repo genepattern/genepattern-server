@@ -33,9 +33,8 @@ function addBatchSubmitLinksToPage(){
 			jQuery(jq("jlID"+inputId)).hide();
 			jQuery(jq(inputId+"_td")).show();				
 		});
-		jQuery("applet").each(function() {
-			this.localToRemoteMap = new Object();
-		});
+		localToRemoteMap = new Object();
+		
 	});
 	
 	//Retrive the formValidator onsubmit function, but only call if our first verification succeeds
@@ -81,20 +80,21 @@ function addBatchSubmitLinksToPage(){
 };
 
 function uploaderFileStatusChanged( uploader, file) {
+
 	if (file.getStatus()==2){		
 		jQuery("applet").each(function() {
 			if (typeof(this.getUploader) != undefined){
-				if (this.getUploader().equals(uploader)){
-					var inputName =  jQuery(this).attr("name").substring(2);
+				if (this.getUploader().equals(uploader)){					
+					var inputName =  jQuery(this).attr("name").substring(2);					
 					jQuery(jq(inputName+"_cb_url")).click();	
-					var urlName = inputName+"_url";
+					var urlName = inputName+"_url";					
 					jQuery(jq(urlName)).val( jQuery(jq(urlName)).val() + file.getResponseContent() + ';');
-					
-					this.localToRemoteMap[file.getPath()] = file.getResponseContent();
+					localToRemoteMap[file.getPath()] = file.getResponseContent();
 				}
 			}
 		});
 	}
+	
 }	
 
 function uploaderFileRemoved( uploader, file ) {	
@@ -106,7 +106,7 @@ function uploaderFileRemoved( uploader, file ) {
 				var urlName = inputName+"_url";
 		
 				var currentFileList = jQuery(jq(urlName)).val();		
-				var fileToRemove = this.localToRemoteMap[file.getPath()];
+				var fileToRemove = localToRemoteMap[file.getPath()];
 				var shortenedFileList = currentFileList.replace(fileToRemove+";","");
 				
 				jQuery(jq(urlName)).val( shortenedFileList);
