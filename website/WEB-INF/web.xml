@@ -391,6 +391,18 @@
   <servlet-name>ModuleDocServlet</servlet-name>
   <url-pattern>/module/doc/*</url-pattern>
  </servlet-mapping>
+ 
+ 
+ <servlet>
+    <display-name>Multiple File Upload Receiver Servlet</display-name>
+    <servlet-name>MultiFileUploadReceiver</servlet-name>
+    <servlet-class>org.genepattern.server.webapp.MultiFileUploadReceiver</servlet-class>    
+ </servlet>
+ <servlet-mapping>
+  <servlet-name>MultiFileUploadReceiver</servlet-name>
+  <url-pattern>/MultiFileUploadReceiver</url-pattern>
+ </servlet-mapping>
+ 
 
  <servlet>
   <display-name>JobConfigurationServlet</display-name>

@@ -43,6 +43,8 @@ import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
+import org.genepattern.server.domain.BatchJob;
+import org.genepattern.server.domain.BatchJobDAO;
 import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
@@ -621,28 +623,42 @@ public class JobBean {
             String selectedGroup = jobResultsFilterBean.getSelectedGroup();
             boolean showEveryonesJobs = jobResultsFilterBean.isShowEveryonesJobs();
             
+            boolean filterOnBatch = false;            
+            if (selectedGroup != null && selectedGroup.startsWith(BatchJob.BATCH_KEY)){
+                filterOnBatch = true;
+            }
+
             try {
-            AnalysisDAO ds = new AnalysisDAO();
-            List<JobInfo> jobInfos = new ArrayList<JobInfo>();
-            if (showEveryonesJobs) {
-                if (isAdmin) {
-                    jobInfos = ds.getAllPagedJobsForAdmin(pageNum, pageSize, jobSortOrder, ascending);
+                AnalysisDAO ds = new AnalysisDAO();
+                List<JobInfo> jobInfos = new ArrayList<JobInfo>();
+                if (filterOnBatch) {
+                    JobInfo[] jobInfoArray = new BatchJobDAO().getBatchJobs(userId, selectedGroup, maxJobNumber, maxEntries, getJobSortOrder(), ascending);
+                    //add all
+                    for(JobInfo ji : jobInfoArray) {
+                        jobInfos.add(ji);
+                    }
                 }
                 else {
-                    IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
-                    Set<String> groupIds = new HashSet<String>(groupMembership.getGroups(userId));
-                    jobInfos = ds.getAllPagedJobsForUser(userId, groupIds, pageNum, pageSize, jobSortOrder, ascending);
+                    if (showEveryonesJobs) {
+                        if (isAdmin) {
+                            jobInfos = ds.getAllPagedJobsForAdmin(pageNum, pageSize, jobSortOrder, ascending);
+                        }
+                        else {
+                            IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
+                            Set<String> groupIds = new HashSet<String>(groupMembership.getGroups(userId));
+                            jobInfos = ds.getAllPagedJobsForUser(userId, groupIds, pageNum, pageSize, jobSortOrder, ascending);
+                        }
+                    }
+                    else {
+                        if (selectedGroup != null) {
+                            jobInfos = ds.getPagedJobsInGroup(selectedGroup, pageNum, pageSize, jobSortOrder, ascending);
+                        }
+                        else {
+                            jobInfos = ds.getPagedJobsOwnedByUser(userId, pageNum, pageSize, jobSortOrder, ascending);
+                        }
+                    }
                 }
-            }
-            else {
-                if (selectedGroup != null) {
-                    jobInfos = ds.getPagedJobsInGroup(selectedGroup, pageNum, pageSize, jobSortOrder, ascending);
-                }
-                else {
-                    jobInfos = ds.getPagedJobsOwnedByUser(userId, pageNum, pageSize, jobSortOrder, ascending);
-                }
-            }
-            allJobs = wrapJobs( jobInfos );
+                allJobs = wrapJobs( jobInfos );
             }
             catch (Exception e) {
                 log.error(e);

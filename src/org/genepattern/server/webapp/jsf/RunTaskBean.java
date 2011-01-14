@@ -59,6 +59,7 @@ public class RunTaskBean {
     private String version;
     private List<String> versions;
     private boolean allowInputFilePaths = false;
+    private boolean allowBatchProcess = false;
 
     /**
      * True if current user is allowed to edit the current module.
@@ -102,6 +103,7 @@ public class RunTaskBean {
             lsidParam = taskToRun;
         }
         allowInputFilePaths = "true".equalsIgnoreCase(System.getProperty("allow.input.file.paths"));
+        allowBatchProcess = "true".equalsIgnoreCase(System.getProperty("allow.batch.process"));
     }
 
     public void changeVersion(ActionEvent event) {
@@ -178,6 +180,10 @@ public class RunTaskBean {
 
     public boolean isAllowInputFilePaths() {
         return allowInputFilePaths;
+    }
+    
+    public boolean isAllowBatchProcess() {
+        return allowBatchProcess;
     }
 
     public boolean isEditAllowed() {

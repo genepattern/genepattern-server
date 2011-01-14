@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="org.genepattern.server.domain"> 
+  <class name="BatchJob" table="BATCH_JOB" optimistic-lock="none"> 
+    <id name="jobNo" type="integer" unsaved-value="null">
+      <column name="JOB_NO" not-null="true" unique="true" precision="10" scale="0"/>
+      <generator class="native"/>
+    </id>
+	<property name="deleted" column="DELETED"/>
+	<property name="userId" column="USER_ID"/>
+	
+	
+    <set name="batchJobs" table="BATCH_ANALYSIS">
+	    <key column="BATCH_JOB" />
+		<many-to-many column="ANALYSIS_JOB" unique="true" class="AnalysisJob"/>
+	</set>
+  </class>  
+  
+   <query name="getBatchJobsForUser">
+	  from org.genepattern.server.domain.BatchJob as batchJob where
+			(batchJob.userId = :userId) and
+			batchJob.deleted = false
+		order by batchJob.jobNo desc	
+  </query>
+  
+   <sql-query name="getJobsInBatch">
+		<return alias="AnalysisJob" class="org.genepattern.server.domain.AnalysisJob"/>
+		SELECT * from ANALYSIS_JOB join batch_analysis ON
+			ANALYSIS_JOB.JOB_NO = BATCH_ANALYSIS.ANALYSIS_JOB where
+			BATCH_ANALYSIS.BATCH_JOB = :batchId						 
+   </sql-query>
+   
+   <sql-query name="getNumJobsInBatch">
+	SELECT count (BATCH_JOB) from BATCH_ANALYSIS where BATCH_JOB = :batchId	
+   </sql-query>
+   
+   
+</hibernate-mapping>

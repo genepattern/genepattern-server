@@ -27,6 +27,7 @@
 
     <!-- Mappings -->
     <mapping resource="org/genepattern/server/domain/AnalysisJob.hbm.xml"/>
+	<mapping resource="org/genepattern/server/domain/BatchJob.hbm.xml"/>
     <mapping resource="org/genepattern/server/domain/JobStatus.hbm.xml"/>
     <mapping resource="org/genepattern/server/domain/Lsid.hbm.xml"/>
     <mapping resource="org/genepattern/server/domain/Props.hbm.xml"/>

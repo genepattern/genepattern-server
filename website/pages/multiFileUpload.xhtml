@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Upload multiple files for batch processing</title>
+    <link href="#{facesContext.externalContext.requestContextPath}/css/style.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/multiFileUploaderWindow.js"></script>
+  </head>
+  <body  style="background-image:none">
+
+  <applet name="jumpLoaderApplet"
+                code="jmaster.jumploader.app.JumpLoaderApplet.class"
+                archive="#{facesContext.externalContext.requestContextPath}/downloads/jl_core_z.jar"
+                width="600"
+                height="400"
+                mayscript="true" >
+                        <param name="uc_uploadUrl" value="#{facesContext.externalContext.requestContextPath}/MultiFileUploadReceiver"/> 
+                        <param name="uc_directoriesEnabled" value="true"/>      
+                        <param name="ac_fireUploaderFileStatusChanged" value="true"/>
+                        <param name="ac_fireUploaderStatusChanged" value="true"/>
+  </applet>
+  <form>
+  <input type="checkbox" name="submitWhenComplete" id="submitWhenComplete" />
+  <label for="submitWhenComplete">Run task when the upload completes.  This will only succeed if all required fields have been set on the previous screen. </label>
+  </form>
+  
+  </body>
+</html>

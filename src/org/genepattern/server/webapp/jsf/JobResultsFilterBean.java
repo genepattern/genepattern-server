@@ -11,6 +11,8 @@ import javax.faces.model.SelectItem;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
+import org.genepattern.server.domain.BatchJob;
+import org.genepattern.server.domain.BatchJobDAO;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 
@@ -95,13 +97,17 @@ public class JobResultsFilterBean implements Serializable {
         String userId = UIBeanHelper.getUserId();
         IGroupMembershipPlugin groupMembership = UserAccountManager.instance().getGroupMembership();
         Set<String> groups = new HashSet<String>(groupMembership.getGroups(userId));
-        
+        List<BatchJob> batches = new BatchJobDAO().findByUserId(userId);
+        	
         if (groups.contains(GroupPermission.PUBLIC)) {
             rval.add(new SelectItem(GroupPermission.PUBLIC, "Public job results"));
             groups.remove(GroupPermission.PUBLIC);
         }
         for(String group : groups) {
             rval.add(new SelectItem(group, "In group: " + group));
+        }
+        for (BatchJob batchJob: batches){
+        	rval.add(new SelectItem(BatchJob.BATCH_KEY+batchJob.getJobNo(), "Batch: "+batchJob.getJobNo()));
         }
         return rval;
     }
@@ -112,10 +118,15 @@ public class JobResultsFilterBean implements Serializable {
 
     public int getJobCount() {
         if (jobCount < 0) {
-            if (selectedGroup != null) {                
-                //get the count of jobs in the selected group
-                this.jobCount = new AnalysisDAO().getNumJobsInGroups(selectedGroups);
-                return this.jobCount;
+            if (selectedGroup != null) {
+            	if (selectedGroup.startsWith(BatchJob.BATCH_KEY)){
+            		jobCount = new BatchJobDAO().getNumBatchJobs(selectedGroup);
+            		return jobCount;
+            	}else{
+            		//	get the count of jobs in the selected group
+            		this.jobCount = new AnalysisDAO().getNumJobsInGroups(selectedGroups);
+            		return this.jobCount;
+            	}
             }
             else if (!showEveryonesJobs) {
                 this.jobCount = new AnalysisDAO().getNumJobsByUser(userId);
@@ -140,10 +151,14 @@ public class JobResultsFilterBean implements Serializable {
         return showEveryonesJobs;
     }
     
-    public String getSelectedGroup() {
-        return selectedGroup;
+    public void setSelectedGroup(String selectedGroup) {
+	    this.selectedGroup = selectedGroup;
     }
-    
+
+    public String getSelectedGroup() {
+	    return selectedGroup;
+    }
+	
     public Set<String> getSelectedGroups() {
         return selectedGroups;
     }
