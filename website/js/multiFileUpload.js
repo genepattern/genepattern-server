@@ -34,7 +34,7 @@ function addBatchSubmitLinksToPage(){
 	jQuery("div .directory_param").each( function(){
 		var id = jQuery(this).attr('id');
 		jQuery(this).replaceWith(			
-			"<td class='jumploaderWindow' id='"+ id +"'>" +
+			"<td class='jumploaderWindow' id='"+ id +"' name='"+id+"'>" +
 			"<applet name='di" + id + "'"+
 			appletParams +
 			"</applet>"+ 
@@ -57,19 +57,19 @@ function addBatchSubmitLinksToPage(){
 		}else{
 			if (navigator.javaEnabled()){
 				jQuery(jq(inputId+"_td")).after(
-						"<td class='jumploaderWindow' id='jlID" + inputId+"'>" +
+						"<td class='jumploaderWindow' id='jlID" + inputId+"' name='jlID" + inputId+"'>" +
 							"<applet name='jl"+ inputId + "'"+
 								appletParams+
 							"</applet>"+ 
 							"<br/>"+
-							"<a id='revert"+inputId+"' href='#'> Load single file</a>"+						
+							"<a id='revert"+inputId+"' name='revert"+inputId+"' href='#'> Load single file</a>"+						
 						"</td>"								
 				);
 			}else{			
 					jQuery(jq("jlID"+inputId)).replaceWith(
-							"<td id=noJavaErr>"+
+							"<td id='noJavaErr' name='noJavaErr'>"+
 								"<p style=color:red>Java is not detected on your machine.  You need Java to upload multiple files at once.</p>"+
-								"<a id='revert"+inputId+"' href='#'> Load single file</a>"+
+								"<a id='revert"+inputId+"' name='revert"+inputId+"' href='#'> Load single file</a>"+
 							"</td>"									
 					);
 			}
@@ -111,8 +111,13 @@ function validateSubmit(){
 	
 	var valid = true;
 	jQuery("applet").each( function() {
+		var uploader = null;
 		try {
 			var uploader = this.getUploader();
+		}catch (e){		
+			//applet has since been hidden or removed				
+		}
+		if (uploader != null){
 		 	fileCount = uploader.getFileCount();
 			if (fileCount > 1){
 				if (firstCheck){
@@ -139,8 +144,6 @@ function validateSubmit(){
 					}						
 				}
 			}
-		}catch (e){		
-		
 		}
 	});		
 	if (!valid){
@@ -150,8 +153,13 @@ function validateSubmit(){
 	var uploadingComplete = true;		
 	submitOnComplete = 0;
 	jQuery("applet").each( function() {
+		var uploader = null;
 		try{
 			var uploader = this.getUploader();
+		}catch(e){
+			
+		}
+		if (uploader != null){
 			if (uploader.isUploading()){
 				uploadingComplete = false;
 				submitOnComplete = submitOnComplete + 1;					
@@ -160,8 +168,6 @@ function validateSubmit(){
 				submitOnComplete = submitOnComplete + 1;					
 				uploadingComplete = false;	
 			}
-		}catch(e){
-			
 		}
 	});		
 	
@@ -189,7 +195,7 @@ function validateSubmit(){
 
 function getRootName (fullName){	
 	if (fullName.indexOf(".") > 0){
-		 return fullName.substr(0, fullName.indexOf("."));
+		 return fullName.substring(0, fullName.indexOf("."));
 	}else{
 		return fullName;
 	}
@@ -208,11 +214,15 @@ function uploaderFileStatusChanged( uploader, file) {
 	if (file.getStatus()==2){		
 		//File upload complete
 		jQuery("applet").each(function() {
+			var thisUploader= null;
 			try{
-				if (this.getUploader().equals(uploader)){
+				thisUploader = this.getUploader();
+			}catch(e){
+			}
+			if (thisUploader != null){
+				if (thisUploader.equals(uploader)){
 					var inputType = jQuery(this).attr("name").substring(0,2);
-					if (inputType == "jl"){
-				
+					if (inputType == "jl"){				
 						var inputName =  jQuery(this).attr("name").substring(2);					
 						jQuery(jq(inputName+"_cb_url")).click();	
 						var urlName = inputName+"_url";		
@@ -226,7 +236,6 @@ function uploaderFileStatusChanged( uploader, file) {
 						jQuery(jq(paramName)).val (response[0]);
 					}
 				}
-			}catch(e){
 			}
 		});
 	}
@@ -235,8 +244,13 @@ function uploaderFileStatusChanged( uploader, file) {
 
 function uploaderFileRemoved( uploader, file ) {	
 	jQuery("applet").each(function() {
+		var thisUploader= null;
 		try{
-			if (this.getUploader().equals(uploader)){
+			thisUploader = this.getUploader();
+		}catch(e){
+		}
+		if (thisUploader != null){
+			if (thisUploader.equals(uploader)){
 				var inputType = jQuery(this).attr("name").substring(0,2);
 				if (inputType == "jl"){
 					var inputName =  jQuery(this).attr("name").substring(2);
@@ -250,7 +264,6 @@ function uploaderFileRemoved( uploader, file ) {
 					jQuery(jq(urlName)).val( shortenedFileList);
 				}
 			}
-		}catch(e){
 		}
 	});
 }
