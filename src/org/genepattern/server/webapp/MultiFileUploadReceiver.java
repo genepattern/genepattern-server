@@ -29,29 +29,21 @@ public class MultiFileUploadReceiver extends HttpServlet {
 
 	private static Logger log =  Logger.getLogger(MultiFileUploadReceiver.class);
 	
-	private int partitionCount;
-	private int partitionNumber;
-	private long fileLength;
-	private String partitionedFileName;
-	private String userName;
-	private PrintWriter responseWriter;
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		
-		userName =  (String) request.getSession().getAttribute(GPConstants.USERID);
-		
-		responseWriter = response.getWriter();
+		PrintWriter responseWriter = response.getWriter();
 		
 		RequestContext reqContext = new ServletRequestContext(request);
 		if (FileUploadBase.isMultipartContent(reqContext)){
 			FileItemFactory factory = new DiskFileItemFactory();
 			ServletFileUpload upload = new ServletFileUpload(factory);			
 			try{
-				List<FileItem> postParametrs = upload.parseRequest(reqContext);
-				readPartitionInfo(postParametrs);
+				List<FileItem> postParameters = upload.parseRequest(reqContext);
+				int partitionCount = Integer.parseInt(getParameter(postParameters, "partitionCount"));
 				if (partitionCount == 1){
-					loadFile (postParametrs);
+					loadFile (request, postParameters, responseWriter);
 				}else{
-					loadPartition(request, postParametrs);
+					loadPartition(request, postParameters, responseWriter);
 				}		
 			}
 			catch (Exception e) {
@@ -63,37 +55,31 @@ public class MultiFileUploadReceiver extends HttpServlet {
 			response.sendRedirect(request.getContextPath() + "/pages/internalError.jsf");
 		}
 	}
-	private void loadPartition(HttpServletRequest request, List<FileItem> postParameters) throws Exception {
-		String directory = "";
-		if (partitionNumber == 0){
-			//Create a temporary directory for the uploaded files.
-			String prefix = userName + "_run";
-			//use createTempFile to guarantee a unique name, but then change it to a directory
-			File tempDir = File.createTempFile(prefix, null);
-			tempDir.delete();
-			tempDir.mkdir();
-			request.getSession().setAttribute("StagingDir", tempDir.getCanonicalPath());
-			directory = tempDir.getCanonicalPath();
-		}else{
-			directory = (String) request.getSession().getAttribute("StagingDir");
-		}
+	
+	private void loadPartition(HttpServletRequest request, List<FileItem> postParameters, PrintWriter responseWriter) throws Exception {
+		
+		int partitionNumber = Integer.parseInt(getParameter(postParameters, "partitionIndex"));
+	
+		String paritionDir = getWriteDirectory(request, postParameters);
 		
 		Iterator<FileItem> it = postParameters.iterator();
 		while (it.hasNext()){
 			FileItem postParameter = it.next();
 			if (!postParameter.isFormField()){
-				File file = new File(directory, postParameter.getName()+"."+partitionNumber);
+				File file = new File(paritionDir, postParameter.getName()+"."+partitionNumber);
 				postParameter.write(file);
 				break;											
 			}
 		}	
 		
+		int partitionCount = Integer.parseInt(getParameter(postParameters, "partitionCount"));		
 		if  (partitionNumber == (partitionCount -1)){
-			File wholeFile = new File(directory, partitionedFileName);
+			String partitionedFileName = getParameter(postParameters, "fileName");
+			File wholeFile = new File(paritionDir, partitionedFileName);
 			OutputStream out = new FileOutputStream(wholeFile);
 			byte[] buffer = new byte[65536];
 			for (int i=0; i <partitionCount; i++){
-				File portion = new File(directory, partitionedFileName + "."+ i);
+				File portion = new File(paritionDir, partitionedFileName + "."+ i);
 				FileInputStream in = new FileInputStream(portion);
 				int len;
 				while ( (len=in.read(buffer)) > 0){
@@ -103,49 +89,62 @@ public class MultiFileUploadReceiver extends HttpServlet {
 				portion.delete();
 			}
 			out.close();	
+			long fileLength = Long.parseLong(getParameter(postParameters, "fileLength"));
 			if (wholeFile.length() == fileLength){
-				responseWriter.println(wholeFile.getCanonicalPath());
+				responseWriter.println(paritionDir + ";" + wholeFile.getCanonicalPath());	
 			}else{
 				responseWriter.println("Error: Upload validation error");
 			}
-		}
-				
+		}				
 	}
-	private void loadFile(List<FileItem> postParameters) throws Exception {
-		
-		//Create a temporary directory for the uploaded files.
-		String prefix = userName + "_run";
-		//use createTempFile to guarantee a unique name, but then change it to a directory
-		File tempDir = File.createTempFile(prefix, null);
-		tempDir.delete();
-		tempDir.mkdir();
-		
+	
+	
+	private void loadFile(HttpServletRequest request, List<FileItem> postParameters, PrintWriter responseWriter) throws Exception {
+	
+		String writeDirectory = getWriteDirectory(request, postParameters);
 		Iterator<FileItem> it = postParameters.iterator();
 		while (it.hasNext()){
 			FileItem postParameter = it.next();
 			if (!postParameter.isFormField()){
-				File file = new File(tempDir, postParameter.getName());
+				File file = new File(writeDirectory, postParameter.getName());
 				postParameter.write(file);
-				responseWriter.println(file.getCanonicalPath());							
+				responseWriter.println(writeDirectory + ";" +file.getCanonicalPath());	
 			}
 		}		
 	}
-	private void readPartitionInfo(List<FileItem> uploadedFiles) {
-		Iterator<FileItem> it = uploadedFiles.iterator();
+	
+	private String getParameter (List<FileItem> parameters, String param){
+		Iterator<FileItem> it = parameters.iterator();
 		while (it.hasNext()){
 			FileItem postParameter = it.next();
 			if (postParameter.isFormField()){
-				if ("partitionCount".compareTo(postParameter.getFieldName())==0){
-					partitionCount = Integer.parseInt(postParameter.getString());
-				}else if ("partitionIndex".compareTo(postParameter.getFieldName())==0){
-					partitionNumber = Integer.parseInt(postParameter.getString());
-				}else if ("fileName".compareTo(postParameter.getFieldName())==0){
-					partitionedFileName = postParameter.getString();
-				}else if ("fileLength".compareTo(postParameter.getFieldName())==0){
-					fileLength = Long.parseLong(postParameter.getString());
+				if (param.compareTo(postParameter.getFieldName())==0){
+					return postParameter.getString();
 				}
 			}
-		}		
+		}
+		return null;
 	}
+	
+	private String getWriteDirectory(HttpServletRequest request,List<FileItem> postParameters) throws IOException{
+		String paramId = getParameter(postParameters, "paramId");
+		String writeDirectory = (String) request.getSession().getAttribute(paramId);
+		File directory = null;
+		if (writeDirectory != null){
+			directory = new File(writeDirectory);			
 
+		}
+		if (writeDirectory == null || !directory.isDirectory()){
+			String userName =  (String) request.getSession().getAttribute(GPConstants.USERID);					
+			//Create a temporary directory for the uploaded files.
+			String prefix = userName + "_run";
+			//use createTempFile to guarantee a unique name, but then change it to a directory
+			directory = File.createTempFile(prefix, null);
+			directory.delete();
+			directory.mkdir();
+			writeDirectory = directory.getCanonicalPath();
+			request.getSession().setAttribute(paramId, writeDirectory);			
+		}				
+		return writeDirectory;		
+	}
 }
