@@ -170,13 +170,16 @@ function validateForm() {
             if (type == "text" || type == "textarea") {
             	value = e.value;
             } else if(type=='file') {
-            	urlInput = $(elementId + "_url");
-            	if(Element.visible($(elementId + "_div_url"))) {
+	        	urlInput = $(elementId + "_url");
+				if ($(elementId + "_div_multifile") !== null){
+					if (Element.visible($(elementId + "_div_multifile"))) {					
+						value = $(elementId + "_multifile").value;
+					}
+				} else if(Element.visible($(elementId + "_div_url"))) {
             		value = urlInput.value;
             	} else {
             		value = e.value;
             	}
-
             } else {
             	validate = false;
             }
