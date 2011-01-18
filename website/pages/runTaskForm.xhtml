@@ -18,7 +18,7 @@
       xmlns:a4j="https://ajax4jsf.dev.java.net/ajax"
       xmlns:c="http://java.sun.com/jsp/jstl/core">
 <ui:composition>
- 	<h:outputText id="headText" rendered="#{runTaskBean.allowBatchProcess and !runTaskBean.visualizer}">
+ 	<h:outputText rendered="#{runTaskBean.allowBatchProcess and !runTaskBean.visualizer}">
 		<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/jqueryFileTree/jquery-1.2.3.min.js" /> 
 		<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/multiFileUpload.js"></script>
 		<script> jQuery.noConflict(); </script> 
@@ -115,7 +115,29 @@
                   >#{p.displayName} <h:outputText rendered="#{!p.optional}" value="*"/></td>
                   <td valign="top" id="#{p.name}_td">
                   
-                    <!-- File input -->
+				  <h:outputText rendered="${p.inputType=='directory' and runTaskBean.allowBatchProcess}">					
+					<!--Directory -->
+						<div id="#{p.name}_div" style='display:none'>
+							<input name="#{p.name}" id="#{p.name}" size="30" type="#{p.inputType}" value="#{p.defaultValue}"/>
+						</div>						
+						<div id="#{p.name}_div_multifile_launcher"> 
+							<button type="button" id="#{p.name}_button" class="jumploaderdirectorylauncher">Launch File Browser</button>
+						</div>													
+						<h:outputText rendered = "#{runTaskBean.allowInputFilePaths}">
+							<span class="description" style="display:inline">
+								<input type="radio" id="#{p.name}_cb_path" name="#{p.name}_cb_path" class="cb_path"/>
+								<label for="#{p.name}_cb_path"><h:outputText value="Specify Directory Path" />
+								</label>
+							</span>
+							<span class="description" style="display:inline">
+								<input type="radio" id="#{p.name}_cb_upload" name="#{p.name}_cb_upload" class="cb_upload" checked="yes" />
+								<label for="#{p.name}_cb_upload">Upload Multiple Files</label>
+							</span>	
+						</h:outputText>												
+					</h:outputText>					
+				    <h:outputText rendered="${p.inputType=='directory' and !runTaskBean.allowBatchProcess}">
+						  <input name="#{p.name}" id="#{p.name}" size="30" type="#{p.inputType}" value="#{p.defaultValue}"/>                    
+					</h:outputText>
                     <h:outputText rendered="#{p.inputType=='file'}">
                       <h:outputText rendered="#{empty p.defaultValue}">
                         <div id="#{p.name}_div_file">
