@@ -37,36 +37,22 @@ function jq(myid) {
 }
 
 
-function createJumploader(id){
+function createJumploader(id, appletName) {
 	jQuery(jq(id + "_div_multifile_launcher")).after(
 		"<div id='" + id + "_div_multifile'  >" +
 		"<input id='" + id + "_multifile' style='display:none;' type='text' name='" + id + "_multifile'/>" +
 		"<td class='jumploaderWindow' id='jlID" + id + "' name='jlID" + id + "'>" +
-			"<applet name='jl" + id + "'" +
+			"<applet name='" + appletName + "'" +
 				appletParams +
 				"</applet>" + 
 				"<br/>" +
 		"</td>" +
 		"</div>"
 	);
-
 }
+
 function addBatchSubmitLinksToPage() {	
 	originalSubmit = jQuery("#taskForm").attr('action');
-
-	//Create uploader for directory type
-	jQuery("div .directory_param").each(function () {
-		var id = jQuery(this).attr('id');
-		jQuery(this).replaceWith(			
-			"<td class='jumploaderWindow' id='" + id + "' name='" + id + "'>" +
-			"<applet name='di" + id + "'" +
-			appletParams  +
-			"</applet>" + 
-		"</td>"
-		);		
-
-		
-	});
 	
 	//For each input file type, find the following radio buttons and append a third
 	jQuery("input[type='file']").each(function () {
@@ -79,7 +65,7 @@ function addBatchSubmitLinksToPage() {
 	
 		jQuery(this).parent().after(
 				"<div id='" + id + "_div_multifile_launcher' style='display: none;'>" +
-						"<button type='button' id='" + id + "_button' class='batchprocess'>Launch File Browser</button>" +
+						"<button type='button' id='" + id + "_button' class='jumploaderfilelauncher'>Launch File Browser</button>" +
 						"<p> Easily upload multiple files.  The module will be run once for each file.</p>" +
 				"</div>" +
 				"<div id='" + id + "_div_multifile_javaoff' style='display: none;'>" + 
@@ -117,13 +103,40 @@ function addBatchSubmitLinksToPage() {
 		}
 	});
 	
-	jQuery(".batchprocess").click(function () {
+	jQuery(".jumploaderfilelauncher").click(function () {
 		var inputId = jQuery(this).attr('id');
 		inputId = inputId.substring(0, inputId.length - String("_button").length);
 		jQuery(jq(inputId + "_div_multifile_launcher")).hide();		
-		createJumploader(inputId);
+		createJumploader(inputId, "jl" + inputId);
 		
 	});
+	
+	jQuery(".jumploaderdirectorylauncher").click(function () {
+		var inputId = jQuery(this).attr('id');
+		inputId = inputId.substring(0, inputId.length - String("_button").length);
+		jQuery(jq(inputId + "_div_multifile_launcher")).hide();		
+		createJumploader(inputId, "di" + inputId);		
+	});
+	
+	jQuery(".cb_path").click(function () {
+		var inputId = jQuery(this).attr('id');
+		inputId = inputId.substring(0, inputId.length - String("_cb_path").length);
+		jQuery(jq(inputId + "_div_multifile_launcher")).hide();
+		jQuery(jq(inputId + "_div_multifile")).hide();	
+		jQuery(jq(inputId + "_div")).show();	
+		jQuery(jq(inputId + "_cb_upload")).removeAttr('checked');	
+		
+	});
+
+	jQuery(".cb_upload").click(function () {
+		var inputId = jQuery(this).attr('id');
+		inputId = inputId.substring(0, inputId.length - String("_cb_upload").length);
+		jQuery(jq(inputId + "_div_multifile_launcher")).show();	
+		jQuery(jq(inputId + "_div")).hide();			
+		jQuery(jq(inputId + "_cb_path")).removeAttr('checked');	
+
+	});
+	
 	
 	//Retrive the formValidator onsubmit function, but only call if our first verification succeeds
 	var formSubmitFunction = document.getElementById("taskForm").onsubmit;
@@ -140,7 +153,7 @@ function addBatchSubmitLinksToPage() {
 	});
 }
 
-function getNumFiles(paramRootName){
+function getNumFiles(paramRootName) {
 	var submitTextField;
 	submitTextField = paramRootName + "_multifile";			
 	return jQuery(jq(submitTextField)).val().split(";").length - 1;
@@ -160,7 +173,9 @@ function validateSubmit() {
 	    fullName,
 	    i,
 	    exists,
-	    paramID;
+	    paramID,
+	    uploaderStarted,
+	    inputType;
 	jQuery("applet").each(function () {
 		uploader = null;
 		try {
@@ -216,13 +231,13 @@ function validateSubmit() {
 				valid = false;
 			}
 		}
-	} );
+	});
 	if (!valid) {
 		return false;
 	}
 
 	//Next see if any uploader is ready to start.  If so, start just one.
-	var uploaderStarted = false;
+	uploaderStarted = false;
 	jQuery("applet").each(function () {
 		uploader = null;
 		try {
@@ -230,10 +245,11 @@ function validateSubmit() {
 		} catch (e) {			
 		}
 		if (uploader !== null) {
-			 if (!uploaderStarted && uploader.canStartUpload()) {
+			if (!uploaderStarted && uploader.canStartUpload()) {
 				uploader.startUpload();
 				uploaderStarted = true;
-				submitOnComplete = true;				
+				submitOnComplete = true;			
+				valid = false;
 			}
 		}
 	});
@@ -256,7 +272,7 @@ function validateSubmit() {
 				//number of files in the uploader.
 				fileCount = uploader.getFileCount();
 				paramID = jQuery(this).attr("name").substring(2);
-				if (getNumFiles(paramID)!= fileCount) {
+				if (getNumFiles(paramID) !== fileCount) {
 					submitOnComplete = true;
 					valid = false;
 					return;
@@ -266,11 +282,7 @@ function validateSubmit() {
 	});
 	if (!valid) {
 		return false;
-	}
-	
-	
-	
-	
+	}	
 	
 	//Assume a regular submit unless we find a multifle checkbox checked
 	jQuery("#taskForm").attr('action', originalSubmit);
@@ -304,8 +316,7 @@ function uploaderFileStatusChanged(uploader, file) {
 		inputType,
 		inputName,
 		submitTextField,
-		response,
-		paramName;
+		response;
 	if (file.getStatus() === 2) {		
 		//File upload complete
 		jQuery("applet").each(function () {
@@ -325,17 +336,14 @@ function uploaderFileStatusChanged(uploader, file) {
 						localToRemoteMap[file.getPath()] = response[1];
 					} else if (inputType === "di") {
 						inputName =  jQuery(this).attr("name").substring(2);
-						paramName = inputName.substring(0, inputName.length - 14);
 						response = String(file.getResponseContent()).split(";");						
-						jQuery(jq(paramName)).val(response[0]);
+						jQuery(jq(inputName)).val(response[0]);
 					}
 				}
 			}
 		});
-	} else if (file.getStatus() == 3){
+	} else if (file.getStatus() === 3) {
 		//failed
-		//uploader.retryFileUpload(file);
-		//alert (file.getError().getMessage());
 	}
 	
 }	
