@@ -50,6 +50,18 @@ public class ModuleChooserBean implements java.io.Serializable {
     public boolean isNoModulesInstalled() {
         return new ModuleHelper(true).getTasks().getModuleCount() == 0;
     }
+    
+    public List<ModuleCategoryGroup> getAllTasks() {
+        List<ModuleCategoryGroup> returnList = new ArrayList();
+        ModuleHelper helper = new ModuleHelper();
+        List<ModuleCategory> tmp = new ArrayList<ModuleCategory>();
+        ModuleCategory cat = helper.getTasks();
+        cat.setExpanded(!moduleChooserState.isClosed(cat.getIdentifier()));
+        tmp.add(cat);
+        returnList.add(new ModuleCategoryGroup("all", tmp));
+        return returnList;
+        
+    }
 
     public List<ModuleCategoryGroup> getTasks() {
         if (categoryGroups == null) {
@@ -57,7 +69,7 @@ public class ModuleChooserBean implements java.io.Serializable {
             ModuleHelper helper = new ModuleHelper();
             for (SelectItem item : modes) {
                 String mode = item.getLabel();
-                /* Create the "recent" psuedo category */
+                /* Create the "recent" pseudo category */
                 List<ModuleCategory> tmp = new ArrayList<ModuleCategory>();
                 ModuleCategory recent = helper.getRecentlyUsed();
                 recent.setIdPrefix(mode);

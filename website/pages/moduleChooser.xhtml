@@ -21,6 +21,24 @@
       <tr>
         <td width="100%" >
           <div class="sidebarhead">Modules &amp; Pipelines<br/>
+          	<c:if test="Boolean.valueOf(System.getProperty('module.chooser.show.all.search', 'true')">
+          	<div class="viewchoice" id="comboBoxPanel">
+          		<input type="text" id="moduleComboBox" style="width:215px;" onKeyUp="JavaScript:filterType(event);" onKeyDown="JavaScript:handleSelect(event)" onBlur="JavaScript:hideComboBox();" onFocus="JavaScript:showComboBox();" />
+          		<div id="comboBoxChoices" style="display:none;position:relative;">
+          			<t:dataList var="moduleCategoryGroup" value="#{moduleChooserBean.allTasks}" >
+          				<t:dataList var="category" value="#{moduleCategoryGroup.categories}">
+          					<t:dataList var="module" value="#{category.modules}" >
+          						<div style="" id="#{module.shortName}">
+          							<h:commandLink value="#{module.shortName}" actionListener="#{moduleChooserBean.moduleClicked}" style="white-space: nowrap;">
+                  						<f:param name="task" value="#{module.selectedLsid}"/>
+                					</h:commandLink>
+								</div>
+          					</t:dataList>
+          				</t:dataList>
+          			</t:dataList>
+          		</div>
+          	</div>
+          	</c:if>
             <div class="viewchoice" id="viewchoiceRadioPanel">
               <t:selectOneRadio
                     value="#{moduleChooserBean.selectedMode}"

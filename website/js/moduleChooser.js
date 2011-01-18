@@ -122,3 +122,76 @@ function updatePanelState(id, state) {
 function receiveModuleResponse( req ) {
   	// server response is empty
 }
+
+// Code for the combo box
+var comboBoxSelect = 0;
+
+function hideComboBox() {
+	var choicesBox = document.getElementById("comboBoxChoices");
+	setTimeout("document.getElementById('comboBoxChoices').style.display = 'none';", 100);
+	
+	// Clear selection
+	choicesBox.childNodes[comboBoxSelect].style.backgroundColor = "#DFDFB9";
+	comboBoxSelect = 0;
+}
+
+function showComboBox() {
+	var choicesBox = document.getElementById("comboBoxChoices");
+	choicesBox.style.display = "block";
+	
+	// Clear selection
+	choicesBox.childNodes[comboBoxSelect].style.backgroundColor = "#DFDFB9";
+	comboBoxSelect = 0;
+}
+
+function handleSelect(e) {
+	var choicesBox = document.getElementById("comboBoxChoices");
+	// keyCodes for important keys - UP: 38 - DOWN: 40 - ENTER: 13
+	
+	// Handle the enter key
+	if (e.keyCode == 13) {
+		choicesBox.childNodes[comboBoxSelect].childNodes[0].onclick();
+	}
+	
+	// Handle down
+	if (e.keyCode == 40) {
+		for (var i = comboBoxSelect + 1; i < choicesBox.childNodes.length; i++) {
+			if (choicesBox.childNodes[i].tagName == "DIV" && choicesBox.childNodes[i].style.display == "block") {
+				if (comboBoxSelect != 0) {
+					choicesBox.childNodes[comboBoxSelect].style.backgroundColor = "#DFDFB9";
+				}
+				comboBoxSelect = i;
+				choicesBox.childNodes[i].style.backgroundColor = "#FFFFFF";
+				return true;
+			}
+		}
+	}
+	
+	// Handle up
+	if (e.keyCode == 38) {
+		for (var i = comboBoxSelect - 1; i > 0; i--) {
+			if (choicesBox.childNodes[i].tagName == "DIV" && choicesBox.childNodes[i].style.display == "block") {
+				if (comboBoxSelect != 0) {
+					choicesBox.childNodes[comboBoxSelect].style.backgroundColor = "#DFDFB9";
+				}
+				comboBoxSelect = i;
+				choicesBox.childNodes[i].style.backgroundColor = "#FFFFFF";
+				return true;
+			}
+		}
+	}
+}
+
+function filterType(e) {
+	var filterFor = document.getElementById("moduleComboBox").value.toLowerCase();
+	var choicesBox = document.getElementById("comboBoxChoices");
+	
+	for (var i = 0; i < choicesBox.childNodes.length; i++) {
+		if (choicesBox.childNodes[i].tagName == "DIV" && choicesBox.childNodes[i].id.toLowerCase().indexOf(filterFor) != -1) {
+			choicesBox.childNodes[i].style.display = "block";
+		}
+		else if (choicesBox.childNodes[i].tagName == "DIV") {
+			choicesBox.childNodes[i].style.display = "none";
+		}
+	}
+}
