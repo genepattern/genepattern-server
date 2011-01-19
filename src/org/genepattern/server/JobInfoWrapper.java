@@ -259,7 +259,7 @@ public class JobInfoWrapper implements Serializable {
             //map from ParameterInfo.name to URL for downloading the output file from the server
             String link = contextPath + "/jobResults/" + jobInfo.getJobNumber() + "/" + parameterInfo.getName();
             setLink(link);
-            setDisplayValue(outputFile.getName());
+            setDisplayValue(parameterInfo.getName());
             
             //check execution log
             this.isTaskLog = isTaskLog(parameterInfo);

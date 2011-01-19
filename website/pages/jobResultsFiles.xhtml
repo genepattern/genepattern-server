@@ -47,9 +47,9 @@
 		
 		        
 		        <td class="file">
-		        	<h:outputLink value="#{facesContext.externalContext.requestContextPath}/jobResults/#{jobWrapper.jobNumber}/#{fileInfo.name}" style="color:#0066FF;">
-		            	<h:outputText><img src="/gp/images/outputFile.gif" /> #{fileInfo.truncatedDisplayName}</h:outputText>
-		          	</h:outputLink>
+                    <h:outputLink value="#{fileInfo.url}" style="color:#0066FF;">
+                        <h:outputText><img src="/gp/images/outputFile.gif" />#{fileInfo.truncatedDisplayName}</h:outputText>
+                    </h:outputLink>
 		
 		          	<!-- Image for popup menu -->
 		          	<img src="/gp/images/smallOptions.gif"

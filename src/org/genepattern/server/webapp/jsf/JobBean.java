@@ -1105,16 +1105,20 @@ public class JobBean {
 	}
 
 	public String getName() {
-	    return UIBeanHelper.encode(p.getName());
+	    return p.getName();
 	}
 	
-	public String getTruncatedDisplayName() {
-    	if (getName() != null && getName().length() > 70) {
-    		return UIBeanHelper.encode(getName().substring(0, 35)+"..." + getName().substring(getName().length()-32, getName().length()));
-    	} else {
-    		return UIBeanHelper.encode(getName());
-    	}
+    public String getTruncatedDisplayName() {
+        String name = "";
+        if (p != null) {
+            name = p.getName();
+        }
+        if (name != null && name.length() > 70) {
+            name = name.substring(0, 35)+"..."+name.substring(name.length()-32);
+        }
+        return name;
     }
+
 
 	public long getSize() {
 	    return size;

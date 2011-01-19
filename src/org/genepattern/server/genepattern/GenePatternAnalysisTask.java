@@ -71,6 +71,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -94,6 +95,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
@@ -1589,16 +1591,25 @@ public class GenePatternAnalysisTask {
         //    job.FilenameFilter: {".lsf*", ".nfs*" }
         filenameFilter.setGlob(globPattern);
 
-        File[] outputFiles = jobDir.listFiles(filenameFilter);
-        sortOutputFiles(outputFiles);
+        List<File> outputFiles = findAllFiles(jobDir, filenameFilter);
+
+        //sort output files by lastModified() date.
+        if (outputFiles != null) {
+            Collections.sort(outputFiles, fileComparator);
+        }
+
         String jobDirPath = jobDir.getAbsolutePath();
         for (File f : outputFiles) {
             log.debug("adding output file to output parameters " + f.getName() + " from " + jobDirPath);
-            addFileToOutputParameters(jobInfo, f.getName(), f.getName(), null);
+            //get the file path relative to the outputDir
+            String fPath = f.getAbsolutePath();
+            if (fPath.startsWith(jobDirPath)) {
+                fPath = fPath.substring(jobDirPath.length() + 1); //skip the file separator character
+            }
+            addFileToOutputParameters(jobInfo, fPath, fPath, null);
         }
 
         if (taskLog != null) {
-            //addFileToOutputParameters(jobInfo, taskLog.getName(), taskLog.getName(), parentJobInfo);
             addFileToOutputParameters(jobInfo, taskLog.getName(), taskLog.getName(), null);
         }
         
@@ -1612,13 +1623,11 @@ public class GenePatternAnalysisTask {
         if (checkStderr) {
             if (stderrFile != null && stderrFile.exists() && stderrFile.length() > 0L) {
                 jobStatus = JobStatus.JOB_ERROR;
-                //addFileToOutputParameters(jobInfo, stderrFile.getName(), stderrFile.getName(), parentJobInfo);
                 addFileToOutputParameters(jobInfo, stderrFile.getName(), stderrFile.getName(), null);
             }
         }
 
         if (stdoutFile != null && stdoutFile.exists() && stdoutFile.length() > 0L) {
-            //addFileToOutputParameters(jobInfo, stdoutFile.getName(), stdoutFile.getName(), parentJobInfo);
             addFileToOutputParameters(jobInfo, stdoutFile.getName(), stdoutFile.getName(), null);
         }
         try {
@@ -1775,6 +1784,34 @@ public class GenePatternAnalysisTask {
         }
         return null;
     }
+
+    private static List<File> findAllFiles(File root, FilenameFilter filenameFilter) {
+        List<File> all = new ArrayList<File>();
+        addAllFiles(all, root, filenameFilter);
+        return all;
+    }
+
+    private static void addAllFiles(List<File> all, File root, FilenameFilter filenameFilter) {
+        if (root == null) {
+            return;
+        }
+        if (!root.canRead()) {
+            log.error("Can't read file: "+root.getPath());
+            return;
+        }
+        if (root.isFile()) {
+            all.add(root);
+        }
+        else if (root.isDirectory()) {
+            File[] files = root.listFiles(filenameFilter);
+            for(File f : files) {
+                addAllFiles(all,f,filenameFilter);
+            }
+        }
+        else {
+            log.error("File is neither file nor directory: "+root.getPath());
+        }
+    }
     
     private static final Comparator<File> fileComparator = new Comparator<File>() {
         public int compare(File o1, File o2) {
@@ -1789,55 +1826,6 @@ public class GenePatternAnalysisTask {
             return 1;
         }
     };
-
-    /**
-     * Sorted output files by lastModified() date.
-     * @param outputFiles
-     */
-    private static void sortOutputFiles(File[] outputFiles) {
-        if (outputFiles == null) {
-            log.error("Invalid null arg in sortOutputFiles");
-            return;
-        }
-        Arrays.sort(outputFiles, fileComparator);
-    }
-
-    /**
-     * Record job completion status in the database.
-     * 
-     * @param jobInfo
-     * @param parentJobInfo
-     * @param jobStatus
-     * @param jobStartTime
-     */
-//    private static void recordJobCompletion(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus) {
-//        if (jobInfo == null) {
-//            log.error("jobInfo == null, not recording job completion");
-//        }
-//        if (log.isDebugEnabled()) {
-//            log.debug("Recording job completion for job: " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
-//        }
-//        long jobStartTime = jobInfo.getDateSubmitted().getTime();
-//        try {
-//            HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
-//            HibernateUtil.beginTransaction();
-//            long elapsedTime = (System.currentTimeMillis() - jobStartTime) / 1000;
-//            Date now = new Date(Calendar.getInstance().getTimeInMillis());
-//            updateJobInfo(jobInfo, parentJobInfo, jobStatus, now);
-//            HibernateUtil.commitTransaction(); // TODO: JTL 8/21/07 oracle
-//
-//            HibernateUtil.beginTransaction(); // TODO: JTL 8/21/07 oracle
-//            UsageLog.logJobCompletion(jobInfo, parentJobInfo, now, elapsedTime);
-//            if (log.isDebugEnabled()) {
-//                log.debug("Recording job completion complete " + jobInfo.getJobNumber() + " (" + jobInfo.getTaskName() + ")");
-//            }
-//            HibernateUtil.commitTransaction();
-//        } 
-//        catch (RuntimeException e) {
-//            log.error("Rolling back transaction", e);
-//            HibernateUtil.rollbackTransaction();
-//        }
-//    }
     
     private static void recordJobCompletion(JobInfo jobInfo, JobInfo parentJobInfo, int jobStatus) {
         if (jobInfo == null) {
