@@ -12,21 +12,24 @@
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:t="http://myfaces.apache.org/tomahawk"
-      xmlns:c="http://java.sun.com/jstl/core">
-  <ui:composition template="/templates/common.xhtml">
-    <ui:define name="headText">
-      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js"/>
-      <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/moduleChooser.js"/>
-      <script type="text/javascript"
-		src="#{facesContext.externalContext.requestContextPath}/lytebox/lytebox.js" />
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:t="http://myfaces.apache.org/tomahawk"
+	xmlns:c="http://java.sun.com/jstl/core"
+	xmlns:rich="http://richfaces.org/rich">
+<ui:composition template="/templates/common.xhtml">
+	<ui:define name="headText">
+		<script type="text/javascript"
+			src="#{facesContext.externalContext.requestContextPath}/js/prototype.js" />
+		<script type="text/javascript"
+			src="#{facesContext.externalContext.requestContextPath}/js/moduleChooser.js" />
+		<script type="text/javascript"
+			src="#{facesContext.externalContext.requestContextPath}/lytebox/lytebox.js" />
 		<link
-		href="#{facesContext.externalContext.requestContextPath}/lytebox/lytebox.css"
-		rel="stylesheet" type="text/css" />
-      <script type="text/javascript" language="javascript">
+			href="#{facesContext.externalContext.requestContextPath}/lytebox/lytebox.css"
+			rel="stylesheet" type="text/css" />
+		<script type="text/javascript" language="javascript">
       
         <h:outputText>
 	var requiredIds = new Array();
@@ -232,85 +235,146 @@ function showFileInput(id) {
 /* ]]> */
 
 </script>
-    </ui:define>
-    <ui:define name="pageTitle">
+	</ui:define>
+	<ui:define name="pageTitle">
 	  GenePattern
 	  <h:outputText rendered="#{!empty runTaskBean.lsid}"> - #{runTaskBean.name}</h:outputText>
-    </ui:define>
+	</ui:define>
 
-    <ui:define name="leftPanel">
-      <td width="242" valign="top" class="tasks" id="tasks">
-        <ui:include src="moduleChooser.xhtml"/>
-      </td>
-    </ui:define>
+	<ui:define name="leftPanel">
+		<td width="242" valign="top" class="tasks" id="tasks"><ui:include
+			src="moduleChooser.xhtml" /></td>
+	</ui:define>
 
-    <ui:define name="rightPanel">
+	<ui:define name="rightPanel">
 
-      <td width="203" valign="top" class="recentjobs" id="recentjobs">
-        <ui:include src="recentJobs.xhtml"/>
-      </td>
-    </ui:define>
+		<td width="203" valign="top" class="recentjobs" id="recentjobs">
 
-    <ui:define name="body">
-      <!-- Error messages -->
-      <div id="errorMessageDiv" style="display:none;">
-        <div id="errorMessage"/>
-      </div>
-      <t:div rendered="#{!empty runTaskBean.lsid}">
-          <ui:include src="runTaskForm.xhtml"/>
-      </t:div>
+		<style>
+.rich-tabpanel-content {
+	border-width: 1px 1px 1px 1px;
+	border-color: #dfdfb9;
+	background-color: #ebebce;
+}
+
+.rich-panel-header {
+	background-image: none;
+	background-color: transparent;
+}
+
+.rich-tab-inactive {
+	background-color: #dfdfb9;
+	cursor: pointer;
+	font-weight: bold;
+	font-size: 11px;
+	line-height: 15px;
+	color: #666633;
+	text-decoration: none;
+	background-image: none;
+	border-color: #dfdfb9;
+}
+
+.rich-tab-active {
+	background-color: #ebebce;
+	font-weight: bold;
+	font-size: 11px;
+	line-height: 15px;
+	color: #666633;
+	text-decoration: none;
+	background-image: none;
+	border-color: #dfdfb9;
+}
+</style>
+		<h:outputText rendered="#{not genomeSpaceBean.loggedIn}">
+			<rich:tabPanel>
+				<rich:tab label="Recent Jobs">
+					<ui:include src="recentJobs.xhtml" />
+				</rich:tab>
+				<rich:tab label="Uploads">
+					<ui:include src="uploads/uploadedFiles.xhtml" />
+				</rich:tab>
+			</rich:tabPanel>
+		</h:outputText> <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
+
+			<rich:tabPanel switchType="ajax">
+				<rich:tab label="Recent Jobs">
+					<ui:include src="recentJobs.xhtml" />
+				</rich:tab>
+
+				<rich:tab label="Uploads">
+					<ui:include src="uploads/uploadedFiles.xhtml" />
+				</rich:tab>
+				<rich:tab>
+				</rich:tab>
 
 
-      <t:div rendered="#{empty runTaskBean.lsid}">
-        <f:subview rendered="#{empty runTaskBean.splashPage}">
-          <ui:include src="splashpage.xhtml"/>
-        </f:subview>
-        <f:subview rendered="#{runTaskBean.splashPage == 'resources'}">
-          <ui:include src="splashpageResources.xhtml"/>
-        </f:subview>
-        <f:subview rendered="#{runTaskBean.splashPage == 'downloads'}">
-          <ui:include src="splashpageDownloads.xhtml"/>
-        </f:subview>
-        <f:subview rendered="#{runTaskBean.splashPage == 'help'}">
-          <ui:include src="splashpageHelp.xhtml"/>
-        </f:subview>
-      </t:div>
-    </ui:define>
+			</rich:tabPanel>
+		</h:outputText></td>
+	</ui:define>
 
-    <!-- Popup menu  -->
-    <ui:define name="popupMenus">
-      <h:form>
-        <div id="versionPopupMenu" style="visibility:hidden;" class="popupMenu">
-          <table>
-            <tbody>
-                <t:dataList value="#{runTaskBean.versions}" var="version">
-                  <tr>
-                    <td>
-                      <h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/index.jsf"> #{version}
-					  <f:param value="#{runTaskBean.lsidNoVersion}:#{version}" name="lsid"/>
-                      </h:outputLink>
-                    </td>
-                  </tr>
-                </t:dataList>
-            </tbody>
-          </table>
-        </div>
-      </h:form>
-       <h:form>
-        <f:param/>
-        <t:dataList var="jobInfo" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
-          <ui:include src="jobsMenu.xhtml">
-            <ui:param name="job" value="#{jobInfo}"/>
-          </ui:include>
-          <t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}" rowIndexVar="paramIndex">
-            <ui:include src="jobFileMenu.xhtml">
-              <ui:param name="job" value="#{jobInfo}"/>
-              <ui:param name="fileInfo" value="#{fileInfo}"/>
-            </ui:include>
-          </t:dataList>
-        </t:dataList>
-      </h:form>
-    </ui:define>
+	<ui:define name="body">
+		<!-- Error messages -->
+		<div id="errorMessageDiv" style="display: none;">
+		<div id="errorMessage" />
+		</div>
+		<t:div rendered="#{!empty runTaskBean.lsid}">
+			<ui:include src="runTaskForm.xhtml" />
+		</t:div>
 
-  </ui:composition>
+
+		<t:div rendered="#{empty runTaskBean.lsid}">
+			<f:subview rendered="#{empty runTaskBean.splashPage}">
+				<ui:include src="splashpage.xhtml" />
+			</f:subview>
+			<f:subview rendered="#{runTaskBean.splashPage == 'resources'}">
+				<ui:include src="splashpageResources.xhtml" />
+			</f:subview>
+			<f:subview rendered="#{runTaskBean.splashPage == 'downloads'}">
+				<ui:include src="splashpageDownloads.xhtml" />
+			</f:subview>
+			<f:subview rendered="#{runTaskBean.splashPage == 'help'}">
+				<ui:include src="splashpageHelp.xhtml" />
+			</f:subview>
+		</t:div>
+	</ui:define>
+
+	<!-- Popup menu  -->
+	<ui:define name="popupMenus">
+		<h:form>
+			<div id="versionPopupMenu" style="visibility: hidden;"
+				class="popupMenu">
+			<table>
+				<tbody>
+					<t:dataList value="#{runTaskBean.versions}" var="version">
+						<tr>
+							<td><h:outputLink
+								value="#{facesContext.externalContext.requestContextPath}/pages/index.jsf"> #{version}
+					  <f:param value="#{runTaskBean.lsidNoVersion}:#{version}"
+									name="lsid" />
+							</h:outputLink></td>
+						</tr>
+					</t:dataList>
+				</tbody>
+			</table>
+			</div>
+		</h:form>
+		<h:form>
+			<f:param />
+			<t:dataList var="jobInfo" value="#{jobsBean.recentJobs}"
+				rowIndexVar="jobIndex">
+				<ui:include src="jobsMenu.xhtml">
+					<ui:param name="job" value="#{jobInfo}" />
+				</ui:include>
+				<t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}"
+					rowIndexVar="paramIndex">
+					<ui:include src="jobFileMenu.xhtml">
+						<ui:param name="job" value="#{jobInfo}" />
+						<ui:param name="fileInfo" value="#{fileInfo}" />
+					</ui:include>
+				</t:dataList>
+			</t:dataList>
+		</h:form>
+	</ui:define>
+
+</ui:composition>
 </html>
