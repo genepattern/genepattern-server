@@ -66,6 +66,8 @@ public class JobResultsWrapper {
         this.level = level;
         this.sequence = sequence;
         this.showExecutionLogs = showExecutionLogs;
+        
+        _outputFiles = initOutputFiles();
     }
     
     public void setFileSortAscending(final boolean b) {
@@ -78,9 +80,6 @@ public class JobResultsWrapper {
     
     private List<OutputFileInfo> _outputFiles = null;
     private List<OutputFileInfo> getOutputFiles() {
-        if (_outputFiles == null) {
-            _outputFiles = initOutputFiles();
-        }
         return _outputFiles;
     }
     private List<OutputFileInfo> initOutputFiles() {
