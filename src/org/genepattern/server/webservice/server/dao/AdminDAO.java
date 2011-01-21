@@ -18,6 +18,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -47,7 +48,6 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 import org.hibernate.Query;
-import org.hibernate.SQLQuery;
 
 /**
  * @author Joshua Gould
@@ -295,20 +295,6 @@ public class AdminDAO extends BaseDAO {
         List<Integer> taskIds = query.list();
         return TaskInfoCache.instance().getTasks(taskIds);
     }
-    
-//    /**
-//     * Get the list of lsids for tasks owned by the user.
-//     * @param username
-//     * @return
-//     */
-//    private List<String> getAllLsidsForUser(String username) {
-//        String hql = "select lsid from org.genepattern.server.domain.TaskMaster where userId = :userId or accessId = :accessId order by TASK_NAME asc";
-//        Query query = getSession().createQuery(hql);
-//        query.setString("userId", username);
-//        query.setInteger("accessId", PUBLIC_ACCESS_ID);
-//        List<String> results = query.list();
-//        return results;
-//    }
 
     /**
      * @param username
@@ -450,52 +436,21 @@ public class AdminDAO extends BaseDAO {
     }
 
     public TaskInfo[] getLatestTasks(String username) {
-        List<Integer> taskIds = getLatestTaskIdsForUser(username);
-        if (taskIds == null || taskIds.size() == 0) {
+        TaskInfo[] tasks = getAllTasksForUser(username);
+        if (tasks == null) {
             return new TaskInfo[0];
         }
-        TaskInfo[] taskInfos = new TaskInfo[taskIds.size()];
-        int i=0;
-        for(Integer taskId : taskIds) {
-            try {
-                TaskInfo taskInfo = TaskInfoCache.instance().getTask(taskId);
-                taskInfos[i++]=taskInfo;
-            }
-            catch (TaskIDNotFoundException e) {
-                ++i;
-                log.error("Unexpected error getting TaskInfo from cache", e);
-            }
+        try {
+            Map lsidToTask = getLatestTasks(tasks);
+            TaskInfo[] tasksArray = (TaskInfo[]) lsidToTask.values().toArray(new TaskInfo[0]);
+            Arrays.sort(tasksArray, new TaskNameComparator());
+            return tasksArray;
+        } 
+        catch (MalformedURLException mfe) {
+            log.error(mfe);
+            throw new OmnigeneException("Error fetching task:  Malformed URL: " + mfe.getMessage());
         }
-        return taskInfos;
     }
-
-    /**
-     * Query the DB for the list of latest task_ids for the given user.
-     * @param username
-     * @return
-     */
-    private List<Integer> getLatestTaskIdsForUser(String username) {
-        final String sqlStr = 
-            "select max(t.task_id) task_id, max(t.lsid) lsid "+
-            " from lsids l inner join task_master t on l.lsid = t.lsid "+
-            " where "+
-            " t.user_id = :userId or t.access_id = 1 "+
-            " group by lsid_no_version "+
-            " order by task_id";
-        SQLQuery sqlQuery = getSession().createSQLQuery(sqlStr);
-        sqlQuery.setString("userId", username);
-        List<Object[]> results = sqlQuery.list();
-        List<Integer> taskIds = new ArrayList<Integer>();
-        for(Object[] row : results) {
-            String taskIdStr = ""+row[0];
-            Integer taskId = new Integer(taskIdStr);
-            //Integer taskId = (Integer) row[0];
-            String lsid = (String) row[1];
-            taskIds.add( taskId );
-        }
-        return taskIds;
-    }
-
     /**
      * Get the taskInfo for the given taskId.
      * @param taskId
