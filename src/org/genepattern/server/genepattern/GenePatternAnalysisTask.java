@@ -454,45 +454,83 @@ public class GenePatternAnalysisTask {
                 return file;
             }
         }
-
-        File jobsDir = new File(System.getProperty("jobs"));
-        String jobDirName = jobsDir.getName();
-        int jobDirIndex = -1;
-        if ((jobDirIndex = path.lastIndexOf(jobDirName)) != -1) {
-            path = path.substring(jobDirIndex + jobDirName.length());
-            StringTokenizer strtok = new StringTokenizer(path, "/");
-            String job = null;
-
-            if (strtok.hasMoreTokens()) {
-                job = strtok.nextToken();
-            }
-            String requestedFilename = null;
-            if (strtok.hasMoreTokens()) {
-                requestedFilename = strtok.nextToken();
-            }
-            if (job == null || requestedFilename == null) {
-                return null;
-            }
-            int jobNumber = -1;
-            try {
-                jobNumber = Integer.parseInt(job);
-            }
-            catch (NumberFormatException nfe) {
-                throw new IllegalArgumentException("You are not permitted to access the requested file: "+requestedFilename+", Error processing job number: "+job);
-            }
-            
-            if (canReadJob(isAdmin, userId, jobNumber)) {
-                File jobDir = new File(jobsDir, job);
-                File file = new File(jobDir, requestedFilename);
-                if (file.exists()) {
-                    return file;
-                }                
-            }
-            else {
-                throw new IllegalArgumentException("You are not permitted to access the requested file: "+job+"/"+requestedFilename);                
+        
+        LocalUrlParser parser = new LocalUrlParser(url);
+        try {
+            parser.parse();
+        }
+        catch (Throwable t) {
+            throw new IllegalArgumentException(t);
+        }
+        if (canReadJob(isAdmin, userId, parser.getJobNumber())) {
+            File jobsDir = new File(System.getProperty("jobs"));
+            File jobDir = new File(jobsDir, ""+parser.getJobNumber());
+            File localFile = new File(jobDir, parser.getRelativeFilePath());
+            if (localFile.exists()) {
+                return localFile;
             }
         }
         return null;
+    }
+    
+    /**
+     * Helper class for localInputUrlToFile, split the given, presumably local, url, 
+     * into a jobNumber and a relativeFilePath, relative to the jobs directory.
+     * 
+     * Example inputs, 
+     *     http://127.0.0.1:8080/gp/jobResults/42/e_coli_1000_2.fa
+     *     http://127.0.0.1:8080/gp/jobResults/48/e_coli/e_coli_1000_2.fa
+     * Expected outputs,
+     *     e_coli_2.fa
+     *     48/e_coli/e_coli_1000_2.fa
+     *     
+     * @param urlPath
+     * @return
+     */
+    private static class LocalUrlParser {
+        //the url, presumably to a file in the job results directory for the server
+        URL url;
+        int jobNumber;
+        String relativeFilePath;
+        
+        public LocalUrlParser(URL url) {
+            this.url = url;
+        }
+        
+        /**
+         * 
+         * @throws Exception if url path doesn't contain jobResults, or if url path doesn't contain a valid (integer) job number.
+         */
+        public void parse() throws Exception {
+            String urlPath = url.getPath();
+            int idx = urlPath.indexOf("jobResults/");
+            if (idx < 0) {
+                throw new Exception("Expecting 'jobResults/' on path: "+url.getPath());
+            }
+            
+            urlPath = urlPath.substring( idx + "jobResults/".length());
+            idx = urlPath.indexOf("/");
+            if (idx < 0) {
+                throw new Exception("Expecting 'jobResults/<job>/' on path: "+url.getPath());
+            }
+            String jobId = urlPath.substring(0, idx);
+            try {
+                jobNumber = Integer.parseInt(jobId);
+            }
+            catch (NumberFormatException nfe) {
+                throw new Exception("Expecting <job> to be an integer in 'jobResults/<job>/<filepath>': "+url.getPath());
+            }
+            //drop the leading '/'
+            relativeFilePath = urlPath.substring(idx+1);
+        }
+        
+        public int getJobNumber() {
+            return jobNumber;
+        }
+        
+        public String getRelativeFilePath() {
+            return relativeFilePath;
+        }
     }
 
     private boolean canReadJob(boolean isAdmin, String userId, int jobNumber) {
