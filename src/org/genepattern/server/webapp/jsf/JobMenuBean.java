@@ -30,10 +30,10 @@ import org.genepattern.server.webapp.jsf.jobinfo.JobStatusBean;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.webservice.WebServiceException;
 
-public class JobMenuBean { 
+public class JobMenuBean {
     private static Logger log = Logger.getLogger(JobMenuBean.class);
 
-    public JobMenuBean() {  
+    public JobMenuBean() {
     }
 
     public void createPipeline(ActionEvent e) {
@@ -45,7 +45,7 @@ public class JobMenuBean {
                 return;
             }
             // TODO prompt user for name
-            String pipelineName = "job" + jobNumber; 
+            String pipelineName = "job" + jobNumber;
             String lsid = new LocalAnalysisClient(UIBeanHelper.getUserId()).createProvenancePipeline(jobNumber, pipelineName);
             if (lsid == null) {
                 UIBeanHelper.setErrorMessage("Unable to create pipeline.");
@@ -53,10 +53,10 @@ public class JobMenuBean {
             }
             UIBeanHelper.getResponse().sendRedirect(
                     UIBeanHelper.getRequest().getContextPath() + "/pipelineDesigner.jsp?name=" + UIBeanHelper.encode(lsid));
-        } 
+        }
         catch (WebServiceException wse) {
             log.error("Error creating pipeline.", wse);
-        } 
+        }
         catch (IOException e1) {
             log.error("Error creating pipeline.", e1);
         }
@@ -64,18 +64,18 @@ public class JobMenuBean {
 
     public void saveFile(ActionEvent event) {
         HttpServletRequest request = UIBeanHelper.getRequest();
-        
+
         String jobFileName = request.getParameter("jobFileName");
-        
+
         jobFileName = UIBeanHelper.decode(jobFileName);
         if (jobFileName == null || "".equals(jobFileName.trim())) {
             log.error("Error saving file, missing required parameter, 'jobFileName'.");
             return;
         }
-	    
-        //parse jobFileName for <jobNumber> and <filename>, add support for directories
-        //from Job Summary page jobFileName="1/all_aml_test.preprocessed.gct"
-        //from Job Status page jobFileName="/gp/jobResults/1/all_aml_test.preprocessed.gct"
+
+        // parse jobFileName for <jobNumber> and <filename>, add support for directories
+        // from Job Summary page jobFileName="1/all_aml_test.preprocessed.gct"
+        // from Job Status page jobFileName="/gp/jobResults/1/all_aml_test.preprocessed.gct"
         String contextPath = request.getContextPath();
         String pathToJobResults = contextPath + "/jobResults/";
         if (jobFileName.startsWith(pathToJobResults)) {
@@ -84,11 +84,11 @@ public class JobMenuBean {
 
         int idx = jobFileName.indexOf('/');
         if (idx <= 0) {
-            log.error("Error saving file, invalid parameter, jobFileName="+jobFileName);
+            log.error("Error saving file, invalid parameter, jobFileName=" + jobFileName);
             return;
         }
         String jobNumber = jobFileName.substring(0, idx);
-        String filename = jobFileName.substring(idx+1);
+        String filename = jobFileName.substring(idx + 1);
         File in = new File(GenePatternAnalysisTask.getJobDir(jobNumber), filename);
         if (!in.exists()) {
             UIBeanHelper.setInfoMessage("File " + filename + " does not exist.");
@@ -113,56 +113,54 @@ public class JobMenuBean {
             os.flush();
             os.close();
             UIBeanHelper.getFacesContext().responseComplete();
-        } 
+        }
         catch (IOException e) {
             log.error("Error saving file.", e);
-        } 
+        }
         finally {
             if (is != null) {
                 try {
                     is.close();
-                } 
+                }
                 catch (IOException e) {
                 }
             }
         }
     }
 
-  
     public void deleteFile(ActionEvent event) {
-    	String value = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobFile"));
-    	deleteFile(value);
-    
-    	/**
-    	 * Force the JobStatusBean to be refreshed. While it is used as a JSF bean it's lifecycle is not managed
-    	 * via JSF so we need to manually update it after the transaction to ensure the right files are displayed
-    	 * after the delete - JTL 4/30/09
-    	 */
-    	HibernateUtil.commitTransaction();
-    	HibernateUtil.beginTransaction();
-    	JobStatusBean jsb = (JobStatusBean)UIBeanHelper.getManagedBean("#{jobStatusBean}");
-    	
-    	if (jsb != null) jsb.init();
-    
+        String value = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobFile"));
+        deleteFile(value);
+
+        /**
+         * Force the JobStatusBean to be refreshed. While it is used as a JSF
+         * bean it's lifecycle is not managed via JSF so we need to manually
+         * update it after the transaction to ensure the right files are
+         * displayed after the delete - JTL 4/30/09
+         */
+        HibernateUtil.commitTransaction();
+        HibernateUtil.beginTransaction();
+        JobStatusBean jsb = (JobStatusBean) UIBeanHelper.getManagedBean("#{jobStatusBean}");
+
+        if (jsb != null) {
+            jsb.init();
+        }
     }
-    
+
     public String deleteFileAction() {
-    	deleteFile((ActionEvent)null);
-    	
-    	
-    	return "deleteSuccess";
+        deleteFile((ActionEvent) null);
+        return "deleteSuccess";
     }
-    
+
     protected void deleteFile(String jobFileName) {
-     
-    	String contextPath = UIBeanHelper.getRequest().getContextPath();
+        String contextPath = UIBeanHelper.getRequest().getContextPath();
         String pathToJobResults = contextPath + "/jobResults/";
         if (jobFileName.startsWith(pathToJobResults)) {
             jobFileName = jobFileName.substring(pathToJobResults.length());
         }
         int idx = jobFileName.indexOf('/');
         if (idx <= 0) {
-            UIBeanHelper.setErrorMessage("Error deleting file: "+jobFileName);
+            UIBeanHelper.setErrorMessage("Error deleting file: " + jobFileName);
             return;
         }
         int jobNumber = -1;
@@ -171,41 +169,34 @@ public class JobMenuBean {
             jobNumber = Integer.parseInt(jobId);
         }
         catch (NumberFormatException e) {
-            UIBeanHelper.setErrorMessage("Error deleting file: "+jobFileName+", "+e.getMessage());
+            UIBeanHelper.setErrorMessage("Error deleting file: " + jobFileName + ", " + e.getMessage());
             return;
         }
         try {
-            // String filename = encodedJobFileName.substring(index + 1);
             String currentUserId = UIBeanHelper.getUserId();
             LocalAnalysisClient analysisClient = new LocalAnalysisClient(currentUserId);
             analysisClient.deleteJobResultFile(jobNumber, jobFileName);
-        } 
+        }
         catch (WebServiceException e) {
-            UIBeanHelper.setErrorMessage("Error deleting file: "+jobFileName+", "+e.getMessage());
+            UIBeanHelper.setErrorMessage("Error deleting file: " + jobFileName + ", " + e.getMessage());
             return;
         }
     }
 
     /**
-	 * Loads a module from an output file.
-	 * 
-	 * @return
-	 */
-	public String loadTask() {
-		String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest()
-				.getParameter("module"));
-		UIBeanHelper.getRequest().setAttribute(
-				"matchJob",
-				UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter(
-						"jobMenuNumber")));
-		UIBeanHelper.getRequest().setAttribute(
-				"outputFileName",
-				UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter(
-						"name")));
-		RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper
-				.getManagedBean("#{runTaskBean}");
-		assert runTaskBean != null;
-		runTaskBean.setTask(lsid);
-		return "run task";
-	}
+     * Loads a module from an output file.
+     * 
+     * @return
+     */
+    public String loadTask() {
+        String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("module"));
+        UIBeanHelper.getRequest().setAttribute("matchJob",
+                UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobMenuNumber")));
+        UIBeanHelper.getRequest().setAttribute("outputFileName",
+                UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("name")));
+        RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
+        assert runTaskBean != null;
+        runTaskBean.setTask(lsid);
+        return "run task";
+    }
 }
