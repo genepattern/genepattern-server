@@ -464,13 +464,6 @@ public class JobInfoManager {
         return logFile;        
     }
     
-    public static File writeOutputFilesToZipFile(File jobDir, JobInfoWrapper jobInfo) {
-        File zipFile = new File(jobDir, jobInfo.getJobNumber() + ".zip");
-        JobInfoZipFileWriter w = new JobInfoZipFileWriter(zipFile, jobInfo);
-        w.writeZipFile();
-        return zipFile;        
-    }
-    
     public static void writeOutputFilesToZipStream(OutputStream os, JobInfoWrapper jobInfo) throws IOException {
         ZipOutputStream zipStream = new ZipOutputStream(os);
         JobInfoZipFileWriter w = new JobInfoZipFileWriter(jobInfo);
