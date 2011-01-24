@@ -37,6 +37,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.JobTerminationException;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.GenericWebService;
@@ -166,14 +167,22 @@ public class Analysis extends GenericWebService {
 
         int fileCreationJobNumber = jobInfo.getJobNumber();
 
-        String fileName = value;
-        int index = StringUtils.lastIndexOfFileSeparator(fileName);
-        if (index != -1) {
-            fileCreationJobNumber = Integer.parseInt(fileName.substring(0, index));
-            fileName = fileName.substring(index + 1, fileName.length());
+        String relativeFilepath = value;
+        
+        //value may be of the form <jobNumber>/<relativeFilePath>,
+        //where relativeFilePath is relative to the job results directory for the job.
+        int index = StringUtils.indexOfFileSeparator(value);
+        if (index >= 0) {
+            try {
+                fileCreationJobNumber = Integer.parseInt(value.substring(0, index));
+                relativeFilepath = value.substring(index+1);
+            }
+            catch (NumberFormatException e) {
+                log.debug("Did not find jobNumber in relativeFilePath, '"+value+"', assuming it is a path to an output file in a sub directory");
+            }
         }
-        String jobDir = org.genepattern.server.genepattern.GenePatternAnalysisTask.getJobDir(String.valueOf(fileCreationJobNumber));
-        File file = new File(jobDir, fileName);
+        String jobDir = GenePatternAnalysisTask.getJobDir(""+fileCreationJobNumber);
+        File file = new File(jobDir, relativeFilepath);
         if (file.exists()) {
             file.delete();
         }
@@ -182,13 +191,16 @@ public class Analysis extends GenericWebService {
 
         if (fileCreationJobNumber != jobId) { // jobId is a parent job
             JobInfo childJob = ds.getJobInfo(fileCreationJobNumber);
-            childJob.setParameterInfoArray(removeOutputFileParameters(childJob, value));
+            ParameterInfo[] updatedParameterInfoArray = removeOutputFileParameters(childJob, value);
+            childJob.setParameterInfoArray(updatedParameterInfoArray);
             ds.updateJob(childJob.getJobNumber(), childJob.getParameterInfo(), ((Integer) JobStatus.STATUS_MAP.get(childJob.getStatus())).intValue());
         } 
         else {
             JobInfo parent = ds.getParent(jobId);
-            if (parent != null) { // jobId is a child job
-                parent.setParameterInfoArray(removeOutputFileParameters(parent, value));
+            if (parent != null) { 
+                // jobId is a child job
+                ParameterInfo[] updatedParameterInfoArray = removeOutputFileParameters(parent, value);
+                parent.setParameterInfoArray(updatedParameterInfoArray);
             }
         }
     }

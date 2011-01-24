@@ -30,6 +30,22 @@ public class StringUtils {
     /** Prevent instantation */
     private StringUtils() {
     }
+    
+    /**
+     * Get the first index of the file separator from the given String.
+     * Based on {@link #lastIndexOfFileSeparator(String)}.
+     * @param value
+     * @return the first index of the file separator.
+     * @author pcarr
+     */
+    public static int indexOfFileSeparator(String value) {
+        int  index = value.indexOf(File.separatorChar);
+        if (index == -1) {
+            char sep = File.separatorChar == '/' ? '\\' : '/';
+            index = value.indexOf(sep);
+        }
+        return index;
+    }
 
     /**
      * Returns the last index of the file separator character.
