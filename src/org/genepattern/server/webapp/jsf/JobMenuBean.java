@@ -152,7 +152,7 @@ public class JobMenuBean {
         return "deleteSuccess";
     }
 
-    protected void deleteFile(String jobFileName) {
+    private void deleteFile(String jobFileName) {
         String contextPath = UIBeanHelper.getRequest().getContextPath();
         String pathToJobResults = contextPath + "/jobResults/";
         if (jobFileName.startsWith(pathToJobResults)) {
@@ -177,8 +177,8 @@ public class JobMenuBean {
             LocalAnalysisClient analysisClient = new LocalAnalysisClient(currentUserId);
             analysisClient.deleteJobResultFile(jobNumber, jobFileName);
         }
-        catch (WebServiceException e) {
-            UIBeanHelper.setErrorMessage("Error deleting file: " + jobFileName + ", " + e.getMessage());
+        catch (Throwable t) {
+            UIBeanHelper.setErrorMessage("Error deleting file '" + jobFileName + "' from job '"+jobId+"': " + t.getMessage());
             return;
         }
     }
