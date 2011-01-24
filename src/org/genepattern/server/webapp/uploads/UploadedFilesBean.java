@@ -246,15 +246,21 @@ public class UploadedFilesBean {
 
             String tmpDir = System.getProperty("java.io.tmpdir");
             File tmp = new File(tmpDir);
-
+            Map<String,Boolean> usedFileNames = new HashMap<String, Boolean>();
+            
             for (File f : tmp.listFiles(nameFilt)) {
                 for (String aFile : f.list()) {
+                    if (usedFileNames.get(aFile) != null) {
+                        break;
+                    }
+                    
                     UploadFileInfo ufi = new UploadFileInfo(aFile);
                     ufi.setUrl(getFileURL(f.getName(), aFile));
                     ufi.setPath(f.getName());
                     ufi.setGenePatternUrl(getGenePatternFileURL(f.getName(),
                             aFile));
-
+                    
+                    usedFileNames.put(aFile, true);
                     userDir.getUploadFiles().add(ufi);
 
                     Collection<TaskInfo> modules;
