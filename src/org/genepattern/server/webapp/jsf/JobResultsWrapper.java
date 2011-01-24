@@ -95,30 +95,39 @@ public class JobResultsWrapper {
                     boolean isChildOutput = true;
 
                     if (showExecutionLogs || !isTaskLog) {
+                        boolean isDeleted = false;
                         File file = new File(outputDir.getParent(), param.getValue());
                         if (!file.exists()) {
                             file = new File(outputDir, param.getName());
                         }
-                        if (!showPipelineOutputFiles) {
-                            File relativePath = GenePatternAnalysisTask.getRelativePath(outputDir, file);
-                            if (relativePath == null) {
-                                isChildOutput = false;
-                            }
+                        
+                        if (!file.exists()) {
+                            //skip
+                            isDeleted = true;
                         }
-                        if (isChildOutput || showPipelineOutputFiles) {
-                            String kind = SemanticUtil.getKind(file);
-                            Collection<TaskInfo> sendToModules = null;
-
-                            if (param.getName().equals(GPConstants.TASKLOG)) {
-                                sendToModules = new ArrayList<TaskInfo>();
-                            } 
-                            else {
-                                sendToModules = kindToModules.get(kind);
+                        
+                        if (!isDeleted) {
+                            if (!showPipelineOutputFiles) {
+                                File relativePath = GenePatternAnalysisTask.getRelativePath(outputDir, file);
+                                if (relativePath == null) {
+                                    isChildOutput = false;
+                                }
                             }
-                            OutputFileInfo pInfo = new OutputFileInfo(param, file, sendToModules, jobInfo.getJobNumber(), kind);
-                            totalSize += pInfo.getSize();
-                            pInfo.setSelected(selectedFiles.contains(pInfo.getValue()));
-                            outputFiles.add(pInfo);
+                            if (isChildOutput || showPipelineOutputFiles) {
+                                String kind = SemanticUtil.getKind(file);
+                                Collection<TaskInfo> sendToModules = null;
+
+                                if (param.getName().equals(GPConstants.TASKLOG)) {
+                                    sendToModules = new ArrayList<TaskInfo>();
+                                } 
+                                else {
+                                    sendToModules = kindToModules.get(kind);
+                                }
+                                OutputFileInfo pInfo = new OutputFileInfo(param, file, sendToModules, jobInfo.getJobNumber(), kind);
+                                totalSize += pInfo.getSize();
+                                pInfo.setSelected(selectedFiles.contains(pInfo.getValue()));
+                                outputFiles.add(pInfo);
+                            }
                         }
                     }
                 }
