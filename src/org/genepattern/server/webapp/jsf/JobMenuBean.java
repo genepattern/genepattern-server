@@ -176,6 +176,7 @@ public class JobMenuBean {
             String currentUserId = UIBeanHelper.getUserId();
             LocalAnalysisClient analysisClient = new LocalAnalysisClient(currentUserId);
             analysisClient.deleteJobResultFile(jobNumber, jobFileName);
+            UIBeanHelper.setInfoMessage("Deleted file '" + jobFileName + "' from job '"+jobId+"'");
         }
         catch (Throwable t) {
             UIBeanHelper.setErrorMessage("Error deleting file '" + jobFileName + "' from job '"+jobId+"': " + t.getMessage());
