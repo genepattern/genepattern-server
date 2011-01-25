@@ -466,11 +466,9 @@ public class JobBean {
     }
 
     protected void deleteFile(String jobFileName) {
-        // parse encodedJobFileName for <jobNumber> and <filename>, add support
-        // for directories
-        // from Job Summary page jobFileName="1/all_aml_test.preprocessed.gct"
-        // from Job Status page
-        // jobFileName="/gp/jobResults/1/all_aml_test.preprocessed.gct"
+        //parse encodedJobFileName for <jobNumber> and <filename>, add support for directories
+        //from Job Summary page jobFileName="1/all_aml_test.preprocessed.gct"
+        //from Job Status page jobFileName="/gp/jobResults/1/all_aml_test.preprocessed.gct"
         String contextPath = UIBeanHelper.getRequest().getContextPath();
         String pathToJobResults = contextPath + "/jobResults/";
         if (jobFileName.startsWith(pathToJobResults)) {
@@ -487,20 +485,18 @@ public class JobBean {
             jobNumber = Integer.parseInt(jobId);
         }
         catch (NumberFormatException e) {
-            UIBeanHelper.setErrorMessage("Error deleting file: " + jobFileName
-                    + ", " + e.getMessage());
+            UIBeanHelper.setErrorMessage("Error deleting file: " + jobFileName + ", " + e.getMessage());
             return;
         }
         try {
             // String filename = encodedJobFileName.substring(index + 1);
             String currentUserId = UIBeanHelper.getUserId();
-            LocalAnalysisClient analysisClient = new LocalAnalysisClient(
-                    currentUserId);
+            LocalAnalysisClient analysisClient = new LocalAnalysisClient(currentUserId);
             analysisClient.deleteJobResultFile(jobNumber, jobFileName);
+            UIBeanHelper.setErrorMessage("Deleted file '" + jobFileName + "' from job #"+jobNumber);
         }
         catch (WebServiceException e) {
-            UIBeanHelper.setErrorMessage("Error deleting file: " + jobFileName
-                    + ", " + e.getMessage());
+            UIBeanHelper.setErrorMessage("Error deleting file '" + jobFileName + "' from job #"+jobNumber+": "+ e.getMessage());
             return;
         }
     }
