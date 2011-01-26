@@ -1,15 +1,18 @@
 package org.genepattern.server.webapp.uploads;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.genepattern.server.webapp.jsf.KeyValuePair;
-import org.genepattern.server.webapp.jsf.UIBeanHelper;
-import org.genepattern.util.SemanticUtil;
-import org.genepattern.webservice.TaskInfo;
 
 public class UploadFileInfo {
+    
+    static SimpleDateFormat formatter = new SimpleDateFormat();
+    static {
+        formatter.applyPattern("MMM dd hh:mm:ss aaa");
+    }
 
     String filename;
     String path;
@@ -18,6 +21,10 @@ public class UploadFileInfo {
     List<KeyValuePair> moduleInputParameters;
     List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
     long modified;
+    
+    public String getFormattedModified() {
+        return formatter.format(new Date(modified));
+    }
 
     public long getModified() {
         return modified;

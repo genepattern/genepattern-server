@@ -38,7 +38,9 @@
            onclick="pm_showMenu('menuDiv_#{uploadDir.name}_#{aFile.filename}', Position.cumulativeOffset(this), 50, 50);" 
            onmouseover="MM_swapImage('Image_#{uploadDir.name}_#{aFile.filename}','','/gp/images/smallOptions2.gif',2)" 
            onmouseout="MM_swapImgRestore();"/>
-	<br />
+      <br />
+      <span>#{aFile.formattedModified}</span>
+	  <br />
     </t:dataList>
   </ui:composition>
 </html>
