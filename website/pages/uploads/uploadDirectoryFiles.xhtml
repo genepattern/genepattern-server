@@ -22,10 +22,6 @@
   <ui:composition>
     <!--  Loop through output files -->
     <t:dataList var="aFile" value="#{uploadDir.uploadFiles}" rowIndexVar="fileIndex">
-    		<ui:include src="uploadFileMenu.xhtml">
-              <ui:param name="uploadDir" value="#{uploadDir}"/>
-              <ui:param name="aFile" value="#{aFile}"/>
-            </ui:include>
     
     
       <h:outputLink value="#{aFile.url}">#{aFile.filename}</h:outputLink>

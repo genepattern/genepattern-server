@@ -286,7 +286,7 @@ function showFileInput(id) {
 }
 </style>
 		<h:outputText rendered="#{not genomeSpaceBean.loggedIn}">
-			<rich:tabPanel>
+			<rich:tabPanel switchType="ajax">
 				<rich:tab label="Recent Jobs">
 					<ui:include src="recentJobs.xhtml" />
 				</rich:tab>
@@ -371,6 +371,14 @@ function showFileInput(id) {
 						<ui:param name="job" value="#{jobInfo}" />
 						<ui:param name="fileInfo" value="#{fileInfo}" />
 					</ui:include>
+				</t:dataList>
+			</t:dataList>
+			<t:dataList var="uploadDir" value="#{uploadedFilesBean.availableDirectories}" rowIndexVar="dirIndex">
+				<t:dataList var="aFile" value="#{uploadDir.uploadFiles}" rowIndexVar="fileIndex">
+					<ui:include src="uploads/uploadFileMenu.xhtml">
+	              		<ui:param name="uploadDir" value="#{uploadDir}"/>
+	              		<ui:param name="aFile" value="#{aFile}"/>
+	            	</ui:include>
 				</t:dataList>
 			</t:dataList>
 		</h:form>
