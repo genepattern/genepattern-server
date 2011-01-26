@@ -246,42 +246,55 @@ public class UploadedFilesBean {
 
             String tmpDir = System.getProperty("java.io.tmpdir");
             File tmp = new File(tmpDir);
-            Map<String,Boolean> usedFileNames = new HashMap<String, Boolean>();
+            int maxFiles = Integer.valueOf(System.getProperty("upload.maxfiles", "50"));
+            List<UploadFileInfo> fileList = new ArrayList<UploadFileInfo>();
             
             for (File f : tmp.listFiles(nameFilt)) {
-                for (String aFile : f.list()) {
-                    if (usedFileNames.get(aFile) != null) {
-                        break;
-                    }
-                    
-                    UploadFileInfo ufi = new UploadFileInfo(aFile);
-                    ufi.setUrl(getFileURL(f.getName(), aFile));
+                for (File aFile : f.listFiles()) {
+                    UploadFileInfo ufi = new UploadFileInfo(aFile.getName());
+                    ufi.setUrl(getFileURL(f.getName(), aFile.getName()));
                     ufi.setPath(f.getName());
-                    ufi.setGenePatternUrl(getGenePatternFileURL(f.getName(),
-                            aFile));
+                    ufi.setGenePatternUrl(getGenePatternFileURL(f.getName(), aFile.getName()));
+                    ufi.setModified(aFile.lastModified());
                     
-                    usedFileNames.put(aFile, true);
-                    userDir.getUploadFiles().add(ufi);
-
-                    Collection<TaskInfo> modules;
-                    List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
-
-                    modules = kindToModules.get(ufi.getKind());
-
-                    if (modules != null) {
-                        for (TaskInfo t : modules) {
-                            KeyValuePair mi = new KeyValuePair(
-                                    t.getShortName(), UIBeanHelper.encode(t
-                                            .getLsid()));
-                            moduleMenuItems.add(mi);
-                        }
-                        Collections.sort(moduleMenuItems, COMPARATOR);
-                    }
-
-                    ufi.setModuleMenuItems(moduleMenuItems);
+                    fileList.add(ufi);
                 }
             }
+            
+            // Sort all files by last modified date
+            Collections.sort(fileList, new FileModifiedComparator());
+            
+            int count = 0;
+            Map<String,Boolean> usedFileNames = new HashMap<String, Boolean>();
+            
+            for (UploadFileInfo aFile : fileList) {
+                if (count > maxFiles) {
+                    break;
+                }
+                if (usedFileNames.get(aFile.getFilename()) != null) {
+                    continue;
+                }
+                
+                userDir.getUploadFiles().add(aFile);
+                Collection<TaskInfo> modules;
+                List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
+                modules = kindToModules.get(aFile.getKind());
 
+                if (modules != null) {
+                    for (TaskInfo t : modules) {
+                        KeyValuePair mi = new KeyValuePair(
+                                t.getShortName(), UIBeanHelper.encode(t
+                                        .getLsid()));
+                        moduleMenuItems.add(mi);
+                    }
+                    Collections.sort(moduleMenuItems, COMPARATOR);
+                }
+
+                aFile.setModuleMenuItems(moduleMenuItems);
+                
+                usedFileNames.put(aFile.getFilename(), true);
+                count++;
+            }
         }
 
         return availableDirectories;
@@ -375,6 +388,21 @@ public class UploadedFilesBean {
             return o1.getKey().compareToIgnoreCase(o2.getKey());
         }
 
+    }
+    
+    private class FileModifiedComparator implements Comparator<UploadFileInfo> {
+
+        public int compare(UploadFileInfo arg0, UploadFileInfo arg1) {
+            if (arg0.getModified() < arg1.getModified()) {
+                return -1;
+            }
+            else if (arg0.getModified() < arg1.getModified()) {
+                return 1;
+            }
+            else {
+                return 0;
+            }
+        }
     }
 
 }

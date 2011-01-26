@@ -17,6 +17,15 @@ public class UploadFileInfo {
     String genePatternUrl;
     List<KeyValuePair> moduleInputParameters;
     List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
+    long modified;
+
+    public long getModified() {
+        return modified;
+    }
+
+    public void setModified(long modified) {
+        this.modified = modified;
+    }
 
     public UploadFileInfo(String aFileName) {
         this.filename = aFileName;
