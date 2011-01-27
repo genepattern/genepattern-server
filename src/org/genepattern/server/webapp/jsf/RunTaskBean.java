@@ -107,11 +107,11 @@ public class RunTaskBean {
             invalidLsid = true;
             lsidParam = taskToRun;
         }
-        allowInputFilePaths = "true".equalsIgnoreCase(System.getProperty("allow.input.file.paths"));
         
-        Context context = Context.getContextForUser(userId);
-        CommandProperties props = ServerConfiguration.Factory.instance().getGPProperties(context);
-        allowBatchProcess ="true".equalsIgnoreCase(props.getProperty("allow.batch.process"));
+        Context userContext = Context.getContextForUser(userId);
+        CommandProperties props = ServerConfiguration.Factory.instance().getGPProperties(userContext);
+        allowInputFilePaths = props.getBooleanProperty("allow.input.file.paths");
+        allowBatchProcess = props.getBooleanProperty("allow.batch.process");
     }
 
     public void changeVersion(ActionEvent event) {

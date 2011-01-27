@@ -9,8 +9,10 @@
 default.properties:
     executor: RuntimeExec
     java_flags: -Xmx512m
-    # Switch to enable batch execution of jobs from the run module web page
+    # flag to enable batch execution of jobs from the run module web page
     allow.batch.process: true
+    # flag to allow users to input arbitrary network file paths as value to input file input parameters
+    allow.input.file.paths: false
 
 executors:
     # default executor for all jobs, it is included in GenePattern
