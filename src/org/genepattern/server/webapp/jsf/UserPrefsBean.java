@@ -24,7 +24,7 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
-import org.genepattern.server.util.PropertiesManager;
+import org.genepattern.server.util.PropertiesManager_3_2;
 
 public class UserPrefsBean {
     private static Logger log = Logger.getLogger(UserPrefsBean.class);
@@ -41,7 +41,7 @@ public class UserPrefsBean {
 
         String historySize = null;
         try {
-            historySize = (String) PropertiesManager.getDefaultProperties().get("historySize");
+            historySize = (String) PropertiesManager_3_2.getDefaultProperties().get("historySize");
         } 
         catch (IOException e) {
             log.error("Unable to retrive historySize property", e);
