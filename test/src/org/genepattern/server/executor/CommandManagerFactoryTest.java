@@ -9,8 +9,11 @@ import junit.framework.TestCase;
 
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.executor.CommandProperties.Value;
+import org.genepattern.server.user.User;
 import org.genepattern.webservice.JobInfo;
 
 /**
@@ -32,7 +35,7 @@ public class CommandManagerFactoryTest extends TestCase {
             //String args = System.getProperty("HSQL.args", " -port 9001  -database.0 file:../resources/GenePatternDB -dbname.0 xdb");
             System.setProperty("HSQL.args", " -port 9001  -database.0 file:testdb/GenePatternDB -dbname.0 xdb");
             System.setProperty("hibernate.connection.url", "jdbc:hsqldb:hsql://127.0.0.1:9001/xdb");
-            System.setProperty("GenePatternVersion", "3.2.4");
+            System.setProperty("GenePatternVersion", "3.3.1");
 
             File resourceDir = new File("resources");
             String pathToResourceDir = resourceDir.getAbsolutePath();
@@ -526,6 +529,51 @@ public class CommandManagerFactoryTest extends TestCase {
         val = cmdProps.get("arg.override.to.null");
         assertNull("module.default.properties: Override default property to 'null'", val.getValue());
         testCommandProperty(cmdProps, "arg.list.03", "moduleOverride.x", new String[] { "moduleOverride.x", "mo4", "mo3.14", "mo1.32e6", "moTrue", "moFalse" });
+    }
+    
+    public void testUserProperties() {
+        initializeYamlConfigFile("test_user_properties.yaml");
+        UserAccountManager.instance().refreshUsersAndGroups();
+        IGroupMembershipPlugin groups = UserAccountManager.instance().getGroupMembership();
+        assertTrue("userA is in admingroup", groups.isMember("userA", "admingroup"));
+        assertTrue("userA is in broadgroup", groups.isMember("userA", "broadgroup"));
+        assertTrue("userC is in broadgroup", groups.isMember("userC", "broadgroup"));
+        assertFalse("userC is not in admingroup", groups.isMember("userC", "admingroup"));
+        assertTrue("adminuser is in admingroup", groups.isMember("adminuser", "admingroup"));
+
+        System.setProperty("system.prop", "SYSTEM");
+        System.setProperty("system.prop.override", "SYSTEM_VALUE");
+        System.setProperty("system.prop.override.to.null", "NOT_NULL");
+
+        //tests for 'test' user, use 'default.properties', no overrides
+        CommandProperties props = getPropsForUser("test");
+        assertNull("unset property", props.getProperty("NOT_SET"));
+        assertEquals("property which is only set in System.properties", "SYSTEM", props.getProperty("system.prop"));        
+        assertEquals("override a system property", "SERVER_DEFAULT", props.getProperty("system.prop.override"));
+        assertNull(props.getProperty("override a system property with a null value"));
+        assertEquals("default property", "DEFAULT_VAL", props.getProperty("default.prop"));
+        assertNull("default null value", props.getProperty("default.prop.null"));
+
+        //tests for 'userA', with group overrides, userA is in two groups
+        props = getPropsForUser("userA");
+        assertEquals("override default prop in group.properties", "admingroup_val", props.getProperty("default.prop"));
+        
+        //tests for 'userC', with group overrides, userC is in one group
+        props = getPropsForUser("userC");
+        assertEquals("user override", "userC_val", props.getProperty("default.prop") );
+        assertEquals("group override", "-Xmx256m -Dgroup=broadgroup", props.getProperty("java_flags"));
+        
+        //tests for 'userD' with user overrides, userD is not in any group
+        props = getPropsForUser("userD");
+        assertEquals("user override", "userD_val", props.getProperty("default.prop"));
+    }
+    
+    private static CommandProperties getPropsForUser(String userId) {
+        Context context = new Context();
+        User user = new User();
+        user.setUserId(userId);
+        context.setUser(user);
+        return ServerConfiguration.Factory.instance().getGPProperties(context);
     }
     
     private void testCommandProperty(CommandProperties cmdProps, String propName, String expectedValue, String[] expectedValues) {

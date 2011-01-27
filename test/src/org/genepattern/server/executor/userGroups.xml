@@ -3,12 +3,15 @@
 <userGroups>
 
 <group name="admingroup">
-    <user name="adminuser"/>
-    <user name="userA"/>
+    <user name="adminuser" />
+    <user name="userA" />
+    <user name="userB" />
 </group>
 
 <group name="broadgroup">
     <user name="userA" />
+    <user name="userB" />
+    <user name="userC" />
 </group>
 
 </userGroups>

@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.CommandManagerProperties;
 import org.genepattern.server.executor.CommandProperties.Value;
 import org.yaml.snakeyaml.Yaml;
 

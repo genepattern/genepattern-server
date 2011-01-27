@@ -1,0 +1,28 @@
+# test case for getting properties when there is a user but not job
+default.properties:
+    system.prop.override: SERVER_DEFAULT
+    system.prop.override.to.null: 
+    default.prop: DEFAULT_VAL
+    default.prop.null: 
+    java_flags: -Xmx256m
+    
+executors:
+    RuntimeExec: org.genepattern.server.executor.RuntimeCommandExecutor
+
+group.properties:
+    broadgroup:
+        default.prop: broadgroup_val
+        java_flags: -Xmx256m -Dgroup=broadgroup
+    admingroup:
+        default.prop: admingroup_val
+        java_flags: -Xmx256m -Dgroup=admingroup 
+
+user.properties:
+    userC:
+        default.prop: userC_val
+    userD:
+        default.prop: userD_val
+        java_flags: -Xmx256m -Duser=userD
+        user.c: USER
+
+    

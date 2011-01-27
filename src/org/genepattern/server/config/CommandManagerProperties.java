@@ -1,4 +1,4 @@
-package org.genepattern.server.executor;
+package org.genepattern.server.config;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -7,6 +7,10 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.executor.PropObj;
+import org.genepattern.server.user.User;
 import org.genepattern.webservice.JobInfo;
 
 /**
@@ -64,61 +68,104 @@ public class CommandManagerProperties {
         return propObj;
     }
 
-    public CommandProperties getCommandProperties(JobInfo jobInfo) {
-        // 1) initialize from top level default properties
+    public CommandProperties getCommandProperties(Context context) {
+        if (context.getJobInfo() != null) {
+            return getCommandProperties(context.getInitFromSystemProperties(), context.getJobInfo().getUserId(), context.getJobInfo());
+        }
+        else {
+            return getCommandProperties(context.getInitFromSystemProperties(), context.getUser());
+        }
+        
+    }
+    private CommandProperties getCommandProperties(boolean initFromSystemProps, User user) {
+        String userId = null;
+        if (user != null) {
+            userId = user.getUserId();
+        }
+        return getCommandProperties(initFromSystemProps, userId, (JobInfo)null);
+    }
+    private CommandProperties getCommandProperties(boolean initFromSystemProps, JobInfo jobInfo) {
+        String userId = null;
+        if (jobInfo != null) {
+            userId = jobInfo.getUserId();
+        }
+        return getCommandProperties(initFromSystemProps, userId, jobInfo);
+    }
+    private CommandProperties getCommandProperties(boolean initFromSystemProps, String userId, JobInfo jobInfo) {
         CommandProperties cmdProperties = new CommandProperties();
+        // 0) initialize from system properties
+        //    for compatibility with GP 3.2.4 and earlier
+        //    to get props from genepattern.properties
+        //boolean initFromSystemProps = true;
+        if (initFromSystemProps) {
+            cmdProperties = new CommandProperties(System.getProperties());
+        }
+        
+        // 1) initialize from top level default properties
         cmdProperties.putAll(this.rootProps.getDefaultProperties());
         
-        if (jobInfo == null) {
-            log.error("Unexpected null arg");
-            return cmdProperties;
+        if (jobInfo != null) {
+            userId = jobInfo.getUserId();
         }
         
         // 2) add/replace with executor default properties
-        String cmdExecId = getCommandExecutorId(jobInfo);
-        
-        PropObj executorDefaultProps = executorPropertiesMap.get(cmdExecId);
-        if (executorDefaultProps != null) {
-            cmdProperties.putAll( executorDefaultProps.getDefaultProperties() );
+        if (jobInfo != null) {
+            String cmdExecId = getCommandExecutorId(jobInfo);
+            PropObj executorDefaultProps = executorPropertiesMap.get(cmdExecId);
+            if (executorDefaultProps != null) {
+                cmdProperties.putAll( executorDefaultProps.getDefaultProperties() );
+            }
         }
         
         // 3) add/replace with top level module properties ...
-        cmdProperties.putAll(this.rootProps.getModuleProperties(jobInfo));
-        
-        // 4) add/replace with group properties
-        String userId = jobInfo.getUserId();
-        Set<String> groupIds = null;
-        if (groupPropertiesMap != null && groupPropertiesMap.size() > 0) {
-            groupIds = UserAccountManager.instance().getGroupMembership().getGroups(userId);
+        if (jobInfo != null) {
+            cmdProperties.putAll(this.rootProps.getModuleProperties(jobInfo));
         }
-        if (groupIds != null) {
-            if (groupIds.size() == 1) {
-                //get first element from the set
-                String groupId = groupIds.iterator().next();
-                PropObj groupPropObj = groupPropertiesMap.get(groupId);
-                if (groupPropObj != null) {
-                    cmdProperties.putAll( groupPropObj.getDefaultProperties() );
-                    cmdProperties.putAll( groupPropObj.getModuleProperties(jobInfo) );
-                }
+
+        // 4) add/replace with group properties
+        if (userId != null) {
+            Set<String> groupIds = null;
+            if (groupPropertiesMap != null && groupPropertiesMap.size() > 0) {
+                groupIds = UserAccountManager.instance().getGroupMembership().getGroups(userId);
             }
-            else {
-                //special-case for a user who is in more than one group
-                //must iterate through the groups in the same order as they appear in the config file
-                for(Entry<String, PropObj> entry : groupPropertiesMap.entrySet()) {
-                    if (groupIds.contains(entry.getKey())) {
-                        PropObj groupPropObj = entry.getValue();
-                        cmdProperties.putAll( groupPropObj.getDefaultProperties() );
-                        cmdProperties.putAll( groupPropObj.getModuleProperties(jobInfo) );
+            if (groupIds != null) {
+                if (groupIds.size() == 1) {
+                    // get first element from the set
+                    String groupId = groupIds.iterator().next();
+                    PropObj groupPropObj = groupPropertiesMap.get(groupId);
+                    if (groupPropObj != null) {
+                        cmdProperties.putAll(groupPropObj.getDefaultProperties());
+                        if (jobInfo != null) {
+                            cmdProperties.putAll(groupPropObj.getModuleProperties(jobInfo));
+                        }
+                    }
+                }
+                else {
+                    // special-case for a user who is in more than one group
+                    // must iterate through the groups in the same order as they
+                    // appear in the config file
+                    for (Entry<String, PropObj> entry : groupPropertiesMap.entrySet()) {
+                        if (groupIds.contains(entry.getKey())) {
+                            PropObj groupPropObj = entry.getValue();
+                            cmdProperties.putAll(groupPropObj.getDefaultProperties());
+                            if (jobInfo != null) {
+                                cmdProperties.putAll(groupPropObj.getModuleProperties(jobInfo));
+                            }
+                        }
                     }
                 }
             }
         }
         
         // 5) add/replace with user properties
-        PropObj userPropObj = this.userPropertiesMap.get(userId);
-        if (userPropObj != null) {
-            cmdProperties.putAll( userPropObj.getDefaultProperties() );
-            cmdProperties.putAll( userPropObj.getModuleProperties(jobInfo) );
+        if (userId != null) {
+            PropObj userPropObj = this.userPropertiesMap.get(userId);
+            if (userPropObj != null) {
+                cmdProperties.putAll( userPropObj.getDefaultProperties() );
+                if (jobInfo != null) {
+                    cmdProperties.putAll( userPropObj.getModuleProperties(jobInfo) );
+                }
+            }
         }
         return cmdProperties;
     }
