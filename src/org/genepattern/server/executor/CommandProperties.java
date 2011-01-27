@@ -10,6 +10,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.apache.log4j.Logger;
+
 /**
  * Job configuration properties for a specific job, default values are loaded based on parsing the job_configuration.yaml file. 
  * The initial version of the API used a java.util.Properties object.
@@ -19,6 +21,7 @@ import java.util.Map.Entry;
  * @author pcarr
  */
 public class CommandProperties {
+    public static Logger log = Logger.getLogger(CommandProperties.class);
 
     public static class Value {
         static public Value parse(Object object) throws ConfigurationException {
@@ -133,6 +136,44 @@ public class CommandProperties {
     
     public int size() {
         return props.size();
+    }
+
+    /**
+     * Utility method for parsing properties as a boolean.
+     * The current implementation uses Boolean.parseBoolean, 
+     * which returns true iff the property is set and equalsIgnoreCase 'true'.
+     * 
+     * @param key
+     * @return
+     */
+    public boolean getBooleanProperty(String key) {
+        String val = getProperty(key);
+        return Boolean.parseBoolean(val);
+    }
+    
+    /**
+     * Utility method for parsing a property as an Integer.
+     * 
+     * When a non integer value is set in the config file, the default value is returned.
+     * Errors are logged, but exceptions are not thrown.
+     * 
+     * @param key
+     * @param defaultValue
+     * 
+     * @return the int value for the property, or the default value, can return null.
+     */
+    public Integer getIntegerProperty(String key, Integer defaultValue) {
+        String val = getProperty(key);
+        if (val == null) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(val);
+        }
+        catch (NumberFormatException e) {
+            log.error("Error parsing integer value for property, "+key+"="+val);
+            return defaultValue;
+        }
     }
 
     /**

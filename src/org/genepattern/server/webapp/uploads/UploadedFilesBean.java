@@ -12,14 +12,9 @@
 
 package org.genepattern.server.webapp.uploads;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,20 +27,15 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.faces.event.ActionEvent;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.UserAccountManager;
-import org.genepattern.server.auth.AuthenticationException;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.webapp.LoginManager;
-import org.genepattern.server.webapp.jsf.JobBean;
-import org.genepattern.server.webapp.jsf.JobResultsWrapper;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
-import org.genepattern.server.webapp.jsf.JobBean.OutputFileInfo;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.SemanticUtil;
@@ -68,7 +58,6 @@ public class UploadedFilesBean {
         String userId = UIBeanHelper.getUserId();
         TaskInfo[] ti = new AdminDAO().getLatestTasks(userId);
         kindToModules = SemanticUtil.getKindToModulesMap(Arrays.asList(ti));
-
     }
 
     public void setMessageToUser(String messageToUser) {
@@ -216,6 +205,7 @@ public class UploadedFilesBean {
 
     public List<UploadDirectory> availableDirectories;
     private static final Comparator<KeyValuePair> COMPARATOR = new KeyValueComparator();
+    private static final int DEFAULT_upload_maxfiles = 50;
 
     /**
      * get the list of directories in GenomeSpace this user can look at
@@ -246,7 +236,6 @@ public class UploadedFilesBean {
 
             String tmpDir = System.getProperty("java.io.tmpdir");
             File tmp = new File(tmpDir);
-            int maxFiles = Integer.valueOf(System.getProperty("upload.maxfiles", "50"));
             List<UploadFileInfo> fileList = new ArrayList<UploadFileInfo>();
             
             for (File f : tmp.listFiles(nameFilt)) {
@@ -267,8 +256,12 @@ public class UploadedFilesBean {
             int count = 0;
             Map<String,Boolean> usedFileNames = new HashMap<String, Boolean>();
             
+            Context userContext = Context.getContextForUser(userId);
+            CommandProperties props = ServerConfiguration.Factory.instance().getGPProperties(userContext);
+            int maxFiles = props.getIntegerProperty("upload.maxfiles", DEFAULT_upload_maxfiles);
+
             for (UploadFileInfo aFile : fileList) {
-                if (count > maxFiles) {
+                if (count >= maxFiles) {
                     break;
                 }
                 if (usedFileNames.get(aFile.getFilename()) != null) {
@@ -279,19 +272,14 @@ public class UploadedFilesBean {
                 Collection<TaskInfo> modules;
                 List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
                 modules = kindToModules.get(aFile.getKind());
-
                 if (modules != null) {
                     for (TaskInfo t : modules) {
-                        KeyValuePair mi = new KeyValuePair(
-                                t.getShortName(), UIBeanHelper.encode(t
-                                        .getLsid()));
+                        KeyValuePair mi = new KeyValuePair(t.getShortName(), UIBeanHelper.encode(t.getLsid()));
                         moduleMenuItems.add(mi);
                     }
                     Collections.sort(moduleMenuItems, COMPARATOR);
                 }
-
-                aFile.setModuleMenuItems(moduleMenuItems);
-                
+                aFile.setModuleMenuItems(moduleMenuItems);                
                 usedFileNames.put(aFile.getFilename(), true);
                 count++;
             }
