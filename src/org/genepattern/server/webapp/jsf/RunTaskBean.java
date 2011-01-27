@@ -30,6 +30,9 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.data.pipeline.PipelineModelException;
 import org.genepattern.data.pipeline.PipelineUtil;
 import org.genepattern.server.PermissionsHelper;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.uploads.UploadedFilesBean;
@@ -97,14 +100,18 @@ public class RunTaskBean {
             taskToRun = chooser.getSelectedModule();
         }
         setTask(taskToRun);
-        this.showParameterDescriptions = Boolean.parseBoolean(new UserDAO().getPropertyValue(UIBeanHelper.getUserId(), "show.parameter.descriptions", "true"));
+        String userId = UIBeanHelper.getUserId();
+        this.showParameterDescriptions = Boolean.parseBoolean(new UserDAO().getPropertyValue(userId, "show.parameter.descriptions", "true"));
 
         if (taskToRun != null && !taskToRun.equals("") && (lsid == null || lsid.equals(""))) {
             invalidLsid = true;
             lsidParam = taskToRun;
         }
         allowInputFilePaths = "true".equalsIgnoreCase(System.getProperty("allow.input.file.paths"));
-        allowBatchProcess = "true".equalsIgnoreCase(System.getProperty("allow.batch.process"));
+        
+        Context context = Context.getContextForUser(userId);
+        CommandProperties props = ServerConfiguration.Factory.instance().getGPProperties(context);
+        allowBatchProcess ="true".equalsIgnoreCase(props.getProperty("allow.batch.process"));
     }
 
     public void changeVersion(ActionEvent event) {
