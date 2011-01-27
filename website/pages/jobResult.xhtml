@@ -497,7 +497,17 @@
 	    	<tr><td></td></tr>
 	    </table>
 	    <br/><br/>
-</h:outputText>	     
+</h:outputText>
+		<h:form>
+			<t:dataList var="uploadDir" value="#{uploadedFilesBean.availableDirectories}" rowIndexVar="dirIndex">
+				<t:dataList var="aFile" value="#{uploadDir.uploadFiles}" rowIndexVar="fileIndex">
+					<ui:include src="uploads/uploadFileMenu.xhtml">
+	              		<ui:param name="uploadDir" value="#{uploadDir}"/>
+	              		<ui:param name="aFile" value="#{aFile}"/>
+	            	</ui:include>
+				</t:dataList>
+			</t:dataList> 
+		</h:form>
 	</ui:define>
 	
 </ui:composition>
