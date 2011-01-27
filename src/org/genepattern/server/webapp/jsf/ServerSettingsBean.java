@@ -35,7 +35,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.util.PropertiesManager;
+import org.genepattern.server.util.PropertiesManager_3_2;
 import org.genepattern.server.webapp.StartupServlet;
 
 public class ServerSettingsBean implements Serializable {
@@ -106,14 +106,14 @@ public class ServerSettingsBean implements Serializable {
 	currentMode = (String) modes.keySet().toArray()[0];
 	if (settings == null) {
 	    try {
-		settings = PropertiesManager.getGenePatternProperties();
+		settings = PropertiesManager_3_2.getGenePatternProperties();
 	    } catch (IOException ioe) {
 		log.error(ioe);
 	    }
 	}
 	if (customSettings == null) {
 	    try {
-		Properties tmp = PropertiesManager.getCustomProperties();
+		Properties tmp = PropertiesManager_3_2.getCustomProperties();
 		customSettings = new ArrayList<KeyValuePair>();
 		for (Map.Entry entry : tmp.entrySet()) {
 		    customSettings.add(new KeyValuePair((String) entry.getKey(), (String) entry.getValue()));
@@ -125,7 +125,7 @@ public class ServerSettingsBean implements Serializable {
 	}
 	if (defaultSettings == null) {
 	    try {
-		defaultSettings = PropertiesManager.getDefaultProperties();
+		defaultSettings = PropertiesManager_3_2.getDefaultProperties();
 	    } catch (IOException ioe) {
 		log.error(ioe);
 	    }
@@ -715,7 +715,7 @@ public class ServerSettingsBean implements Serializable {
     public void saveNewCustomSetting(ActionEvent event) {
 	if (newCSKey != "" && newCSValue != "") {
 	    customSettings.add(new KeyValuePair(newCSKey, newCSValue));
-	    PropertiesManager.storeChangesToCustomProperties(customSettings);
+	    PropertiesManager_3_2.storeChangesToCustomProperties(customSettings);
 	}
     }
 
@@ -755,8 +755,8 @@ public class ServerSettingsBean implements Serializable {
      */
     public void saveSettings(ActionEvent event) {
 	UIBeanHelper.setInfoMessage("Property successfully updated");
-	PropertiesManager.storeChanges(settings);
-	PropertiesManager.storeChangesToCustomProperties(customSettings);
+	PropertiesManager_3_2.storeChanges(settings);
+	PropertiesManager_3_2.storeChangesToCustomProperties(customSettings);
     }
 
     /**
@@ -785,7 +785,7 @@ public class ServerSettingsBean implements Serializable {
 		}
 	    }
 	    if (keysToRemove.size() > 0) {
-		PropertiesManager.removeProperties(keysToRemove);
+		PropertiesManager_3_2.removeProperties(keysToRemove);
 	    }
 	    this.saveSettings(event);
 	}
