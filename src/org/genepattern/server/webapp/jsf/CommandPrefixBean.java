@@ -29,7 +29,7 @@ import javax.faces.FacesException;
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 
-import org.genepattern.server.util.PropertiesManager;
+import org.genepattern.server.util.PropertiesManager_3_2;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.LSID;
@@ -45,14 +45,14 @@ public class CommandPrefixBean {
     private List newMappingLSID;
     private String newMappingPrefix;
 
-    PropertiesManager pm = null;
+    PropertiesManager_3_2 pm = null;
 
     public CommandPrefixBean() {
         if (!AuthorizationHelper.adminServer()) {
             throw new FacesException("You don' have the required permissions to administer the server.");
         }
         admin = new LocalAdminClient(UIBeanHelper.getUserId());
-        pm = PropertiesManager.getInstance();
+        pm = PropertiesManager_3_2.getInstance();
         defaultCommandPrefix = pm.getCommandPrefixes().getProperty("default", "");
         setDefault();
     }
