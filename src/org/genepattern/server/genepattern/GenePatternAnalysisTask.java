@@ -151,7 +151,7 @@ import org.genepattern.server.executor.pipeline.PipelineException;
 import org.genepattern.server.executor.pipeline.PipelineHandler;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
-import org.genepattern.server.util.PropertiesManager;
+import org.genepattern.server.util.PropertiesManager_3_2;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.Status;
@@ -1919,7 +1919,7 @@ public class GenePatternAnalysisTask {
      */
     private void setCommandPrefix(TaskInfoAttributes taskInfoAttributes) throws MalformedURLException {
         String lsidStr = taskInfoAttributes.get(LSID);
-        PropertiesManager pm = PropertiesManager.getInstance();
+        PropertiesManager_3_2 pm = PropertiesManager_3_2.getInstance();
         Properties tpm = pm.getTaskPrefixMapping();
         Properties prefixes = pm.getCommandPrefixes();
 
@@ -2852,7 +2852,7 @@ public class GenePatternAnalysisTask {
             props.put(LIBDIR, taskLibDir);
 
             // set the java flags if they have been overridden in the java_flags.properties file
-            PropertiesManager pm = PropertiesManager.getInstance();
+            PropertiesManager_3_2 pm = PropertiesManager_3_2.getInstance();
             Properties javaFlagProps = pm.getJavaFlags();
             String javaFlags = javaFlagProps.getProperty(sLSID);
             if (javaFlags == null) {

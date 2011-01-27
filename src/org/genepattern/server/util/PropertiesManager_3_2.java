@@ -29,14 +29,14 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
 
-public class PropertiesManager {
-    private static PropertiesManager inst;
+public class PropertiesManager_3_2 {
+    private static PropertiesManager_3_2 inst;
 
-    private static Logger log = Logger.getLogger(PropertiesManager.class);
+    private static Logger log = Logger.getLogger(PropertiesManager_3_2.class);
 
     private Map<String, Properties> propertiesMap;
 
-    private PropertiesManager() {
+    private PropertiesManager_3_2() {
         propertiesMap = new HashMap<String, Properties>();
     }
 
@@ -228,10 +228,10 @@ public class PropertiesManager {
 
     }
 
-    public static PropertiesManager getInstance() {
-        synchronized (PropertiesManager.class) {
+    public static PropertiesManager_3_2 getInstance() {
+        synchronized (PropertiesManager_3_2.class) {
             if (inst == null) {
-                inst = new PropertiesManager();
+                inst = new PropertiesManager_3_2();
                 inst.reloadCommandPrefixesFromDisk();
                 inst.reloadJavaFlagsFromDisk();
             }
