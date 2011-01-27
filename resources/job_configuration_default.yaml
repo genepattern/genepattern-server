@@ -10,15 +10,13 @@ default.properties:
     executor: RuntimeExec
     java_flags: -Xmx512m
     # Switch to enable batch execution of jobs from the run module web page
-    allow.batch.process=true
+    allow.batch.process: true
+
 executors:
     # default executor for all jobs, it is included in GenePattern
     RuntimeExec:
-    classname: org.genepattern.server.executor.RuntimeCommandExecutor
-    configuration.properties:
+        classname: org.genepattern.server.executor.RuntimeCommandExecutor
+        configuration.properties:
             # the total number of jobs to run concurrently
             num.threads: 20
-
-    # test executor
-    Test: org.genepattern.server.executor.TestCommandExecutor
     
