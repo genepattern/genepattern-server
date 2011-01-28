@@ -427,6 +427,11 @@
 	   <a4j:form>
 	   <a4j:outputPanel id="fileMenuPanel#{jobStatusBean.jobInfo.jobNumber}" ajaxRendered="true">
 	    <div id="fileMenus#{jobStatusBean.jobInfo.jobNumber}">
+	    <t:dataList var="outputFile" value="#{jobStatusBean.jobInfo.inputFiles}">
+	 			<ui:include src="jobStatus_fileMenu.xhtml">
+	 				 <ui:param name="jobOnMenu" value="#{jobStatusBean.jobInfo}"/>
+	 			</ui:include>
+      	</t:dataList>
         <t:dataList var="outputFile" value="#{jobStatusBean.jobInfo.outputFiles}">
 	 			<ui:include src="jobStatus_fileMenu.xhtml">
 	 				 <ui:param name="jobOnMenu" value="#{jobStatusBean.jobInfo}"/>
@@ -498,16 +503,6 @@
 	    </table>
 	    <br/><br/>
 </h:outputText>
-		<h:form>
-			<t:dataList var="uploadDir" value="#{uploadedFilesBean.availableDirectories}" rowIndexVar="dirIndex">
-				<t:dataList var="aFile" value="#{uploadDir.uploadFiles}" rowIndexVar="fileIndex">
-					<ui:include src="uploads/uploadFileMenu.xhtml">
-	              		<ui:param name="uploadDir" value="#{uploadDir}"/>
-	              		<ui:param name="aFile" value="#{aFile}"/>
-	            	</ui:include>
-				</t:dataList>
-			</t:dataList> 
-		</h:form>
 	</ui:define>
 	
 </ui:composition>

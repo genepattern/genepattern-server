@@ -291,6 +291,11 @@ public class JobInfoWrapper implements Serializable {
         public Boolean isServerFilePath() {
             return isServerFilePath;
         }
+        
+        public File getInputFile() {
+            // TODO: Get a File reference to the input file itself
+            return null;
+        }
 
         /**
          *
@@ -810,6 +815,37 @@ public class JobInfoWrapper implements Serializable {
                 }
             }
         }
+    }
+    
+    private void postProcessInputFiles() {
+        Map<String,Set<TaskInfo>> taskInfoMap = getFileTypeToTaskInfoMap();        
+        for(InputFile inputFile : getInputFiles()) {
+            if (inputFile.isInternalLink()) {
+                //add an item to the popup menu
+                File file = inputFile.getInputFile();
+                String type = null;
+                if (file != null) {
+                    type = SemanticUtil.getKind(file);
+                }
+                else {
+                    type = extractFileExtension(inputFile.getDisplayValue());
+                }
+                Set<TaskInfo> sendToTasks = taskInfoMap.get(type);
+                if (sendToTasks != null) {
+                    for(TaskInfo taskInfo : sendToTasks) {
+                        inputFile.addModuleMenuItem(taskInfo);
+                    }
+                }
+            }
+        }
+    }
+    
+    private String extractFileExtension(String name) {
+        String[] parts = name.split(".");
+        if (parts.length <= 1) {
+            return "";
+        }
+        return parts[parts.length-1];
     }
     
     /**
