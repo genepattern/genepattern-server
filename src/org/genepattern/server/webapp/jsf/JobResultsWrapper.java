@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.JobInfoWrapper;
+import org.genepattern.server.JobInfoWrapper.InputFile;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webapp.jsf.JobBean.OutputFileInfo;
@@ -45,6 +47,20 @@ public class JobResultsWrapper {
     private boolean fileSortAscending = false;
     private String fileSortColumn = "";
     
+    private JobInfoWrapper jobInfoWrapper;
+    
+    public JobInfoWrapper getJobInfoWrapper() {
+        return jobInfoWrapper;
+    }
+
+    public void setJobInfoWrapper(JobInfoWrapper jobInfoWrapper) {
+        this.jobInfoWrapper = jobInfoWrapper;
+    }
+    
+    public List<InputFile> getInputFiles() {
+        return jobInfoWrapper.getInputFiles();
+    }
+
     public JobResultsWrapper(
             final JobPermissionsBean jobPermissionsBean,
             final JobInfo jobInfo, 

@@ -39,9 +39,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
+import org.genepattern.server.JobInfoManager;
+import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.JobInfoWrapper.InputFile;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
@@ -733,6 +736,10 @@ public class JobBean {
                     }
                 }
                 allJobs = wrapJobs(jobInfos);
+                
+                for (JobResultsWrapper i : allJobs) {
+                    i.setJobInfoWrapper(getJobInfoWrapper(i.getJobNumber()));
+                }
             }
             catch (Exception e) {
                 log.error(e);
@@ -740,6 +747,15 @@ public class JobBean {
             }
         }
         return allJobs;
+    }
+    
+    public JobInfoWrapper getJobInfoWrapper(int jobNumber) {
+        String userId = UIBeanHelper.getUserId();
+        HttpServletRequest request = UIBeanHelper.getRequest();
+        String contextPath = request.getContextPath();
+        String cookie = request.getHeader("Cookie");   
+        JobInfoManager jobInfoManager = new JobInfoManager();
+        return jobInfoManager.getJobInfo(cookie, contextPath, userId, jobNumber);
     }
 
     private List<ParameterInfo> getOutputParameters(JobInfo job) {
