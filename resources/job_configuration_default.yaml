@@ -14,7 +14,7 @@ default.properties:
     # flag to allow users to input arbitrary network file paths as value to input file input parameters
     allow.input.file.paths: false
     # the max number of files to display in uploaded files tab
-    upload.maxfiles=50
+    upload.maxfiles: 50
 
 executors:
     # default executor for all jobs, it is included in GenePattern
