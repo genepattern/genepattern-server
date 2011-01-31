@@ -40,7 +40,13 @@
                         <h:outputText><img src="/gp/images/inputFile.gif" />#{fileInfo.truncatedDisplayValue}</h:outputText>
                     </h:outputLink>
 		
-		          	<!-- Image for popup menu -->	        	
+		          	<!-- Image for popup menu -->
+		          	<img src="/gp/images/smallOptions.gif"
+		               name="Image_#{fileInfo.valueId}" id="Image_#{fileInfo.valueId}"
+		               border="0" align="top"
+		               onclick="pm_showMenu('menuDiv_#{jobWrapper.userId}_#{fileInfo.displayValue}', Position.cumulativeOffset(this), 50, 50);"
+		               onmouseover="MM_swapImage('Image_#{fileInfo.valueId}','','/gp/images/smallOptions2.gif',2)"
+		               onmouseout="MM_swapImgRestore();"/>		        	
 		        </td>
 		        
 		        <td class="right"></td>

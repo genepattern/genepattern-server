@@ -430,11 +430,13 @@
 	    <t:dataList var="outputFile" value="#{jobStatusBean.jobInfo.inputFiles}">
 	 			<ui:include src="jobStatus_fileMenu.xhtml">
 	 				 <ui:param name="jobOnMenu" value="#{jobStatusBean.jobInfo}"/>
+	 				 <ui:param name="isInputFile" value="true"/>
 	 			</ui:include>
       	</t:dataList>
         <t:dataList var="outputFile" value="#{jobStatusBean.jobInfo.outputFiles}">
 	 			<ui:include src="jobStatus_fileMenu.xhtml">
 	 				 <ui:param name="jobOnMenu" value="#{jobStatusBean.jobInfo}"/>
+	 				 <ui:param name="isInputFile" value="false"/>
 	 			</ui:include>
       	</t:dataList>
 	  	</div>

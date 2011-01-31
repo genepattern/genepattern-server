@@ -273,14 +273,18 @@ public class RunTaskBean {
         if ((ufb != null) && ("uploadedfiles".equalsIgnoreCase(matchOutputFileSource))) {
             prevUploadedFileUrl = ufb.getGenePatternFileURL(matchOutputFileDirName, matchOutputFileParameterName);
         }
+        else if (matchOutputFileSource.equalsIgnoreCase("inputfiles")) {
+            prevUploadedFileUrl = UIBeanHelper.getServer() + matchOutputFileParameterName;
+        }
 
         Map<String, String> reloadValues = new HashMap<String, String>();
 
-        if (matchOutputFileSource.equalsIgnoreCase("uploadedfiles")){
+        if (matchOutputFileSource.equalsIgnoreCase("uploadedfiles") || matchOutputFileSource.equalsIgnoreCase("inputfiles")){
             Map<String, List<String>> kindToInputParameters = new HashMap<String, List<String>>();
             if (taskParameters != null) {
                 int idx = matchOutputFileParameterName.lastIndexOf(".");
                 String gsType = matchOutputFileParameterName.substring(idx+1);
+                gsType = gsType.trim();
                 System.out.println("uploaded File is a " + gsType);
 
                 for (ParameterInfo p : taskParameters) {
