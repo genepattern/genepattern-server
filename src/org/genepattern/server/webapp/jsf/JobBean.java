@@ -543,6 +543,7 @@ public class JobBean {
                     jobPermissionsBean, jobInfo, kindToModules,
                     getSelectedFiles(), getSelectedJobs(), 0, 0,
                     kindToInputParameters, showExecutionLogs);
+            wrappedJob.setJobInfoWrapper(getJobInfoWrapper(wrappedJob.getJobNumber()));
             wrappedJob.setFileSortColumn(getFileSortColumn());
             wrappedJob.setFileSortAscending(isFileSortAscending());
             wrappedJobs.add(wrappedJob);
@@ -572,6 +573,11 @@ public class JobBean {
 
     public List<JobResultsWrapper> getRecentJobs() {
         if (recentJobs != null) {
+            for (JobResultsWrapper i : recentJobs) {
+                if (i.getJobInfoWrapper() == null) {
+                    i.setJobInfoWrapper(getJobInfoWrapper(i.getJobNumber()));
+                }
+            }
             return recentJobs;
         }
         String userId = UIBeanHelper.getUserId();

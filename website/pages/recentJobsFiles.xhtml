@@ -20,6 +20,20 @@
       
   <!-- File section for recentJobs page-->
   <ui:composition>
+  	<!--  Loop through input files -->
+    <t:dataList var="p" value="#{recentJob.inputFiles}" rowIndexVar="paramIndex">
+      <h:outputLink value="#{p.link}">#{p.truncatedDisplayValue}</h:outputLink>
+      
+      <!-- Image for popup menu -->
+      <img src="/gp/images/smallOptions.gif" 
+           name="Image_#{p.valueId}" 
+           id="Image_#{p.valueId}" 
+           border="0" align="top" 
+           onclick="pm_showMenu('menuDiv_#{p.valueId}', Position.cumulativeOffset(this), 50, 50);" 
+           onmouseover="MM_swapImage('Image_#{p.valueId}','','/gp/images/smallOptions2.gif',2)" 
+           onmouseout="MM_swapImgRestore();"/>
+	<br />
+    </t:dataList>
     <!--  Loop through output files -->
     <t:dataList var="p" value="#{recentJob.outputFileParameterInfos}" rowIndexVar="paramIndex">
       <h:outputLink value="#{p.url}">#{p.truncatedDisplayName}</h:outputLink>
