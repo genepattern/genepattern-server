@@ -567,12 +567,29 @@ public class CommandManagerFactoryTest extends TestCase {
         props = getPropsForUser("userD");
         assertEquals("user override", "userD_val", props.getProperty("default.prop"));
     }
+
+    /**
+     * Test getProperty.
+     */
+    public void testServerProperties() {
+        File resourceDir = getSourceDir();
+        System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
+        System.setProperty("require.password", "false");
+
+        Context context = new Context();
+        context.setInitFromSystemProperties(true);
+        
+        assertEquals("3.3.1", ServerConfiguration.Factory.instance().getGPProperty(context, "GenePatternVersion"));
+        assertEquals("8080.gp-trunk-dev.120.0.0.1", ServerConfiguration.Factory.instance().getGPProperty(context, "lsid.authority"));
+        assertEquals("true", ServerConfiguration.Factory.instance().getGPProperty(context, "require.password"));
+
+        assertEquals("set_in_custom.properties", ServerConfiguration.Factory.instance().getGPProperty(context, "prop.test.01"));
+        assertEquals("added_in_custom.properties", ServerConfiguration.Factory.instance().getGPProperty(context, "prop.test.02"));
+    }
     
     private static CommandProperties getPropsForUser(String userId) {
         Context context = new Context();
-        User user = new User();
-        user.setUserId(userId);
-        context.setUser(user);
+        context.setUserId(userId);
         return ServerConfiguration.Factory.instance().getGPProperties(context);
     }
     

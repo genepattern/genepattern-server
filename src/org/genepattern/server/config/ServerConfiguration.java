@@ -5,7 +5,6 @@ import org.genepattern.server.executor.BasicCommandManager;
 import org.genepattern.server.executor.CommandManager;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.CommandProperties;
-import org.genepattern.server.user.User;
 import org.genepattern.webservice.JobInfo;
 
 /**
@@ -14,18 +13,32 @@ import org.genepattern.webservice.JobInfo;
  * @author pcarr
  */
 public interface ServerConfiguration {
-
     public static class Context {
         //hard-coded default value is true for compatibility with GP 3.2.4 and earlier
         private boolean initFromSystemProperties = true;
-        private User user = null;
+        private String userId = null;
         private JobInfo jobInfo = null;
         
+        public static Context getServerContext() {
+            Context context = new Context();
+            return context;
+            
+        }
         public static Context getContextForUser(String userId) {
             Context context = new Context();
-            User user = new User();
-            user.setUserId(userId);
-            context.setUser(user);
+            if (userId != null) {
+                context.setUserId(userId);
+            }
+            return context;
+        }
+        public static Context getContextForJob(JobInfo jobInfo) {
+            Context context = new Context();
+            if (jobInfo != null) {
+                context.setJobInfo(jobInfo);
+                if (jobInfo.getUserId() != null) {
+                    context.setUserId(jobInfo.getUserId());
+                }
+            }
             return context;
         }
         
@@ -36,11 +49,11 @@ public interface ServerConfiguration {
             return initFromSystemProperties;
         }
         
-        public void setUser(User user) {
-            this.user = user;
+        public void setUserId(String userId) {
+            this.userId = userId;
         }
-        public User getUser() {
-            return user;
+        public String getUserId() {
+            return userId;
         }
         
         public void setJobInfo(JobInfo jobInfo) {
@@ -49,9 +62,9 @@ public interface ServerConfiguration {
         public JobInfo getJobInfo() {
             return jobInfo;
         }
-        
     }
 
+    public String getGPProperty(Context context, String key);
     public CommandProperties getGPProperties(Context context);
 
     public static class Factory {
@@ -63,6 +76,25 @@ public interface ServerConfiguration {
     static class Impl implements ServerConfiguration {
         private static Logger log = Logger.getLogger(Impl.class);
         static ServerConfiguration serverConfiguration = new Impl();
+        
+        public String getGPProperty(Context context, String key) {
+            CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
+            //HACK: until I change the API for the CommandManager interface to take a Context arg
+            if (cmdMgr instanceof BasicCommandManager) {
+                BasicCommandManager defaultCmdMgr = (BasicCommandManager) cmdMgr;
+                return defaultCmdMgr.getConfigProperties().getProperty(context, key);
+            }
+            //this should not be called unless the default (BasicCommandManager) implementation is replaced
+            CommandProperties props = null;
+            log.error("getCommandProperties(jobInfo) is deprecated; GP 3.3.2 uses getConfigProperties.getProperty(Context, key)");
+            if (context.jobInfo != null) {
+                props = CommandManagerFactory.getCommandManager().getCommandProperties(context.jobInfo);
+            }
+            else {
+                props = CommandManagerFactory.getCommandManager().getCommandProperties(null);
+            }
+            return props.getProperty(key);
+        }
         
         public CommandProperties getGPProperties(Context context) {
             CommandManager cmdMgr = CommandManagerFactory.getCommandManager();

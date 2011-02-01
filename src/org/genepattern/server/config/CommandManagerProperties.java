@@ -67,21 +67,111 @@ public class CommandManagerProperties {
         }
         return propObj;
     }
+    
+    public String getProperty(Context context, String key) {
+        String rval = null;
+        // 0) initialize from system properties
+        //    for compatibility with GP 3.2.4 and earlier
+        //    to get props from genepattern.properties
+        //boolean initFromSystemProps = true;
+        if (context.getInitFromSystemProperties()) {
+            //rval = System.getProperty(key);
+            rval = ServerProperties.instance().getProperty(key);
+        }
+        
+        // 1) initialize from top level default properties
+        if (this.rootProps.getDefaultProperties().containsKey(key)) {
+            rval = this.rootProps.getDefaultProperty(key);
+        }
+        
+        // 2) replace with executor default properties
+        if (context.getJobInfo() != null) {
+            String cmdExecId = getCommandExecutorId(context.getJobInfo());
+            PropObj executorDefaultProps = executorPropertiesMap.get(cmdExecId);
+            if (executorDefaultProps != null) {
+                if (executorDefaultProps.getDefaultProperties().containsKey(key)) {
+                    rval = executorDefaultProps.getDefaultProperty(key);
+                }
+            }
+        }
+        
+        // 3) replace with top level module properties ...
+        if (context.getJobInfo() != null) {
+            if (this.rootProps.getModuleProperties(context.getJobInfo()).containsKey(key)) {
+                rval = this.rootProps.getModuleProperties(context.getJobInfo()).getProperty(key);
+            }
+        }
+
+        // 4) replace with group properties
+        if (context.getUserId() != null) {
+            Set<String> groupIds = null;
+            if (groupPropertiesMap != null && groupPropertiesMap.size() > 0) {
+                groupIds = UserAccountManager.instance().getGroupMembership().getGroups(context.getUserId());
+            }
+            if (groupIds != null) {
+                if (groupIds.size() == 1) {
+                    // get first element from the set
+                    String groupId = groupIds.iterator().next();
+                    PropObj groupPropObj = groupPropertiesMap.get(groupId);
+                    if (groupPropObj != null) {
+                        if (groupPropObj.getDefaultProperties().containsKey(key)) {
+                            rval = groupPropObj.getDefaultProperty(key);
+                        }
+                        if (context.getJobInfo() != null) {
+                            if (groupPropObj.getModuleProperties(context.getJobInfo()).containsKey(key)) {
+                                rval = groupPropObj.getModuleProperties(context.getJobInfo()).getProperty(key);
+                            }
+                        }
+                    }
+                }
+                else {
+                    // special-case for a user who is in more than one group
+                    // must iterate through the groups in the same order as they
+                    // appear in the config file
+                    for (Entry<String, PropObj> entry : groupPropertiesMap.entrySet()) {
+                        if (groupIds.contains(entry.getKey())) {
+                            PropObj groupPropObj = entry.getValue();
+                            if (groupPropObj.getDefaultProperties().containsKey(key)) {
+                                rval = groupPropObj.getDefaultProperties().getProperty(key);
+                            }
+                            if (context.getJobInfo() != null) {
+                                if(groupPropObj.getModuleProperties(context.getJobInfo()).containsKey(key)) {
+                                    rval = groupPropObj.getModuleProperties(context.getJobInfo()).getProperty(key);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 5) add/replace with user properties
+        if (context.getUserId() != null) {
+            PropObj userPropObj = this.userPropertiesMap.get(context.getUserId());
+            if (userPropObj != null) {
+                if (userPropObj.getDefaultProperties().containsKey(key)) {
+                    rval = userPropObj.getDefaultProperty(key);
+                }
+                if (context.getJobInfo() != null) {
+                    if (userPropObj.getModuleProperties(context.getJobInfo()).containsKey(key)) {
+                        rval = userPropObj.getModuleProperties(context.getJobInfo()).getProperty(key);
+                    }
+                }
+            }
+        }
+        return rval;
+    }
 
     public CommandProperties getCommandProperties(Context context) {
         if (context.getJobInfo() != null) {
             return getCommandProperties(context.getInitFromSystemProperties(), context.getJobInfo().getUserId(), context.getJobInfo());
         }
         else {
-            return getCommandProperties(context.getInitFromSystemProperties(), context.getUser());
+            return getCommandProperties(context.getInitFromSystemProperties(), context.getUserId());
         }
         
     }
-    private CommandProperties getCommandProperties(boolean initFromSystemProps, User user) {
-        String userId = null;
-        if (user != null) {
-            userId = user.getUserId();
-        }
+    private CommandProperties getCommandProperties(boolean initFromSystemProps, String userId) {
         return getCommandProperties(initFromSystemProps, userId, (JobInfo)null);
     }
     private CommandProperties getCommandProperties(boolean initFromSystemProps, JobInfo jobInfo) {
