@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.dao.BaseDAO;
 import org.hsqldb.Server;
@@ -140,7 +141,7 @@ public class HsqlDbUtil {
         String dbSchemaVersion = "";
 
         BaseDAO dao = new BaseDAO();
-        String requiredSchemaVersion = System.getProperty("GenePatternVersion");
+        String requiredSchemaVersion = ServerProperties.instance().getProperty("GenePatternVersion");
         // check schemaVersion
         try {
             ResultSet resultSet = dao.executeSQL("select value from props where key='schemaVersion'", false);
@@ -207,7 +208,7 @@ public class HsqlDbUtil {
                 return version1.compareToIgnoreCase(version2);
             }
         });
-        String expectedSchemaVersion = System.getProperty("GenePatternVersion");
+        String expectedSchemaVersion = ServerProperties.instance().getProperty("GenePatternVersion");
         String dbSchemaVersion = (String) System.getProperty("dbSchemaVersion");
         for (int f = 0; f < schemaFiles.length; f++) {
             File schemaFile = schemaFiles[f];

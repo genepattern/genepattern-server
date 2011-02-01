@@ -135,6 +135,7 @@ import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.JobInfoWrapper.InputFile;
+import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
@@ -4367,7 +4368,7 @@ public class GenePatternAnalysisTask {
     }
 
     public static void announceReady() {
-        log.info("GenePattern server version " + System.getProperty("GenePatternVersion") + " is ready.");
+        log.info("GenePattern server version " + ServerProperties.instance().getProperty("GenePatternVersion") + " is ready.");
     }
 
     /**

@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.LSID;
@@ -54,9 +55,10 @@ public class InstallTasksCollectionUtils {
 		String paramPrefix = notFirstParam? "&" :"?";
 
 		if (initialInstall) {
-			repositoryURL = repositoryURL + paramPrefix + "initialInstall=1&GenePatternVersion=" + System.getProperty("GenePatternVersion");;
-		} else {
-			repositoryURL = repositoryURL + paramPrefix + "GenePatternVersion=" + System.getProperty("GenePatternVersion");
+		    repositoryURL = repositoryURL + paramPrefix + "initialInstall=1&GenePatternVersion=" + ServerProperties.instance().getProperty("GenePatternVersion");
+		} 
+		else {
+		    repositoryURL = repositoryURL + paramPrefix + "GenePatternVersion=" + ServerProperties.instance().getProperty("GenePatternVersion");
 		}
 
 		Vector modules = new Vector();

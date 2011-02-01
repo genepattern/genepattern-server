@@ -13,13 +13,10 @@
 package org.genepattern.server.webservice.server;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Vector;
 
 import javax.activation.DataHandler;
@@ -27,6 +24,9 @@ import javax.activation.FileDataSource;
 
 import org.apache.axis.MessageContext;
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
@@ -48,13 +48,20 @@ import org.genepattern.webservice.WebServiceException;
 public class AdminService implements IAdminService {
     private static Logger log = Logger.getLogger(AdminService.class);
 
-    static Map<String, String> serviceInfoMap;
+    private static Map<String, String> serviceInfoMap;
+    static {
+        serviceInfoMap = new HashMap<String, String>();
+        Context serverContext = ServerConfiguration.Context.getServerContext();
+        CommandProperties gpProps = ServerConfiguration.Factory.instance().getGPProperties(serverContext);
+        serviceInfoMap.put("genepattern.version", gpProps.getProperty("GenePatternVersion"));
+        serviceInfoMap.put("lsid.authority", gpProps.getProperty("lsid.authority"));
+        serviceInfoMap.put("require.password", gpProps.getProperty("require.password"));
+    }
 
-    AdminDAO adminDAO;
 
-    IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
-
-    protected String localUserName = "";
+    private AdminDAO adminDAO;
+    private IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
+    private String localUserName = "";
 
     public AdminService() {
         adminDAO = new AdminDAO();
@@ -326,30 +333,5 @@ public class AdminService implements IAdminService {
         }
     }
 
-    static {
-        serviceInfoMap = new HashMap<String, String>();
-        String gpPropsFilename = System.getProperty("genepattern.properties");
-        File gpProps = new File(gpPropsFilename, "genepattern.properties");
-        if (gpProps.exists()) {
-            FileInputStream fis = null;
-            Properties props = new Properties();
-            try {
-                fis = new FileInputStream(gpProps);
-                props.load(fis);
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-            } finally {
-                try {
-                    if (fis != null) {
-                        fis.close();
-                    }
-                } catch (IOException ioe) {
-                }
-            }
-            serviceInfoMap.put("genepattern.version", props.getProperty("GenePatternVersion"));
-            serviceInfoMap.put("lsid.authority", props.getProperty("lsid.authority"));
-            serviceInfoMap.put("require.password", props.getProperty("require.password"));
-        }
-    }
 
 }
