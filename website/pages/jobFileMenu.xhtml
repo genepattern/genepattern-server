@@ -39,6 +39,28 @@
               </h:commandLink>
             </td>
           </tr>
+          
+          
+             <!--  GENOMESPACE ADDITION  -->
+          <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
+       
+             <tr>
+            	<td>
+            	  <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
+            	</td>
+          	</tr>
+          	 <tr>
+           	 <td><img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle" />
+              &#160;<h:commandLink value="Save to GenomeSpace" action="#{genomeSpaceBean.sendToGenomeSpace}" immediate="true">
+                <f:param value="#{fileInfo.value}" name="jobFileName"/>
+              </h:commandLink>
+          	  </td>
+          	</tr>
+          	   </h:outputText>
+          	 <!--  END GENOMESPACE ADDITION  -->
+        
+          
+          
           <tr>
             <td>
               <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>

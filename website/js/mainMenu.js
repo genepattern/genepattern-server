@@ -66,6 +66,33 @@ function mmLoadMenus() {
   mm_menu_documentation.menuLiteBgColor='#CCCC66';
   mm_menu_documentation.menuBorderBgColor='#CCCC66';
 
+  
+
+  
+  // GENOMESPACE MENU
+  window.mm_menu_genomespace = new Menu("root",158,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
+  mm_menu_genomespace.addMenuItem("Login","location=contextRoot + '/pages/genomespace/gssignin.jsf'");
+  mm_menu_genomespace.addMenuItem("Register","location=contextRoot + '/pages/genomespace/gsUserRegistration.jsf'");
+  mm_menu_genomespace.addMenuItem("About","window.open('http://www.genomespace.org/', '_blank')");
+  mm_menu_genomespace.hideOnMouseOut=true;
+  mm_menu_genomespace.bgColor='#CCCC66';
+  mm_menu_genomespace.menuBorder=0;
+  mm_menu_genomespace.menuLiteBgColor='#CCCC66';
+  mm_menu_genomespace.menuBorderBgColor='#CCCC66';
+  
+//GENOMESPACE MENU
+  window.mm_menu_genomespaceloggedin = new Menu("root",158,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
+  mm_menu_genomespaceloggedin.addMenuItem("Logout","location=contextRoot + '/pages/genomespace/gssignin.jsf'");
+  mm_menu_genomespaceloggedin.addMenuItem("About","window.open('http://www.genomespace.org/', '_blank')");
+  mm_menu_genomespaceloggedin.hideOnMouseOut=true;
+  mm_menu_genomespaceloggedin.bgColor='#CCCC66';
+  mm_menu_genomespaceloggedin.menuBorder=0;
+  mm_menu_genomespaceloggedin.menuLiteBgColor='#CCCC66';
+  mm_menu_genomespaceloggedin.menuBorderBgColor='#CCCC66';
+  
+  
+  
+  
   window.mm_menu_resources = new Menu("root",89,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_resources.addMenuItem("Mailing&nbsp;List","window.open('http://www.broadinstitute.org/cancer/software/genepattern/gp_mail.html', '_blank')");
   mm_menu_resources.addMenuItem("Report&nbsp;Bugs","location=contextRoot + '/pages/contactUs.jsf'");
