@@ -35,6 +35,7 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.webapp.genomespace.GenomeSpaceBean;
 import org.genepattern.server.webapp.uploads.UploadedFilesBean;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -236,12 +237,17 @@ public class RunTaskBean {
     public void setTask(String taskNameOrLsid) {
         JobBean jobBean = (JobBean) UIBeanHelper.getManagedBean("#{jobsBean}");
         UploadedFilesBean ufb = (UploadedFilesBean) UIBeanHelper.getManagedBean("#{uploadedFilesBean}");
+        GenomeSpaceBean gsb = (GenomeSpaceBean)UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
         if (jobBean != null) {
             jobBean.setSelectedModule(taskNameOrLsid);
         }
         if (ufb != null) {
             ufb.setSelectedModule(taskNameOrLsid);
         }
+        if (gsb != null){
+            gsb.setSelectedModule(taskNameOrLsid);
+        } 
+        
         TaskInfo taskInfo = null;
         try {
             taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(taskNameOrLsid);
@@ -269,6 +275,11 @@ public class RunTaskBean {
             matchOutputFileSource = "GenePattern";
         String matchOutputFileDirName = (String) UIBeanHelper.getRequest().getAttribute("outputFileDirName");
 
+        String gsUrl = null;
+        if ((gsb != null) && ("GENOMESPACE".equalsIgnoreCase(matchOutputFileSource))){
+            gsUrl = gsb.getFileURL(matchOutputFileDirName, matchOutputFileParameterName);
+        } 
+        
         String prevUploadedFileUrl = null;
         if ((ufb != null) && ("uploadedfiles".equalsIgnoreCase(matchOutputFileSource))) {
             prevUploadedFileUrl = ufb.getGenePatternFileURL(matchOutputFileDirName, matchOutputFileParameterName);
@@ -279,6 +290,36 @@ public class RunTaskBean {
 
         Map<String, String> reloadValues = new HashMap<String, String>();
 
+        if (matchOutputFileSource.equalsIgnoreCase("genomespace")){
+            Map<String, List<String>> kindToInputParameters = new HashMap<String, List<String>>();
+               if (taskParameters != null) {
+                   int idx = matchOutputFileParameterName.lastIndexOf(".");
+                   String gsType = matchOutputFileParameterName.substring(idx+1);
+                   System.out.println("GS File is a " + gsType);
+               
+                   for (ParameterInfo p : taskParameters) {
+                       if (p.isInputFile()) {
+                           List<String> fileFormats = SemanticUtil.getFileFormats(p);
+                      
+                           for (String format: fileFormats){
+                               System.out.println("format " + format);
+                               if (format.equalsIgnoreCase(gsType)){
+                                   reloadValues.put(p.getName(), gsUrl);
+                                   break;
+                               }
+                           }
+                       
+                           
+                       
+                           
+                       }
+                   }
+               } 
+              
+              
+        }
+        
+        
         if (matchOutputFileSource.equalsIgnoreCase("uploadedfiles") || matchOutputFileSource.equalsIgnoreCase("inputfiles")){
             Map<String, List<String>> kindToInputParameters = new HashMap<String, List<String>>();
             if (taskParameters != null) {

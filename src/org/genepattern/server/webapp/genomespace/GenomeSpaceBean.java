@@ -19,12 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletRequest;
@@ -82,12 +77,15 @@ public class GenomeSpaceBean {
     
     private boolean genomeSpaceEnabled = true;
 
-    private Map<String, Collection<TaskInfo>> kindToModules;
+    private Map<String, Set<TaskInfo>> kindToModules;
     
     
     public GenomeSpaceBean() {
         String userId = UIBeanHelper.getUserId();
- //XXX       kindToModules = SemanticUtil.getKindToModulesMap(new AdminDAO().getLatestTasks(userId));
+        
+        TaskInfo[] moduleArray = new AdminDAO().getLatestTasks(userId);
+        List<TaskInfo> allModules = Arrays.asList(moduleArray);
+        kindToModules = SemanticUtil.getKindToModulesMap(allModules);
     
         Context userContext = Context.getContextForUser(userId);
         CommandProperties props = ServerConfiguration.Factory.instance().getGPProperties(userContext);
@@ -306,14 +304,17 @@ public class GenomeSpaceBean {
     public String getFileURL(String dirname, String filename){
         if (filename == null) return null;
         GenomeSpaceFileInfo theFile = getFile(dirname, filename);
-        HttpSession httpSession = UIBeanHelper.getSession();
-     
-        GsSession sess = (GsSession)httpSession.getAttribute(GS_SESSION_KEY);
-    
-        URL s3Url = sess.getDataManagerClient().getDownloadUrl(theFile.gsFile);
-        return s3Url.toString();
+        return getFileURL(theFile.gsFile);
     }
     
+    public String getFileURL(GSFileMetadata gsFile){
+        if (gsFile == null) return null;
+        HttpSession httpSession = UIBeanHelper.getSession();
+        GsSession sess = (GsSession)httpSession.getAttribute(GS_SESSION_KEY);
+    
+        URL s3Url = sess.getDataManagerClient().getDownloadUrl(gsFile);
+        return s3Url.toString();
+    }
     
     /**
      * redirects to a time limited, one time use link to the file on S3
@@ -420,7 +421,7 @@ public class GenomeSpaceBean {
         
         
          
-         GenomeSpaceDirectory userDir = new GenomeSpaceDirectory(rootDir, dmClient);
+         GenomeSpaceDirectory userDir = new GenomeSpaceDirectory(rootDir, dmClient, kindToModules, this);
          
          availableDirectories.add(userDir);
 //            
