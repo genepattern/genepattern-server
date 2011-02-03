@@ -58,6 +58,9 @@ public class JobResultsWrapper {
     }
     
     public List<InputFile> getInputFiles() {
+        if (jobInfoWrapper == null) {
+            return Collections.emptyList();
+        }
         return jobInfoWrapper.getInputFiles();
     }
 
