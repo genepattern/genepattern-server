@@ -307,19 +307,11 @@ public class GenomeSpaceBean {
         if (filename == null) return null;
         GenomeSpaceFileInfo theFile = getFile(dirname, filename);
         HttpSession httpSession = UIBeanHelper.getSession();
-      try {
-            GsSession sess = (GsSession)httpSession.getAttribute(GS_SESSION_KEY);
-        
-            // URL s3Url = sess.getFileUrl(theFile);
-            //return s3Url.toString();
-           
-     System.out.println("GS GET FILE URL NOT IMPLEMENTED ==================");
-            if (!false) throw new InternalServerException("placeholder");
-            return "http://www.yahoo.com";
-        } catch (InternalServerException e){
-            e.printStackTrace();
-        }
-        return null;
+     
+        GsSession sess = (GsSession)httpSession.getAttribute(GS_SESSION_KEY);
+    
+        URL s3Url = sess.getDataManagerClient().getDownloadUrl(theFile.gsFile);
+        return s3Url.toString();
     }
     
     
