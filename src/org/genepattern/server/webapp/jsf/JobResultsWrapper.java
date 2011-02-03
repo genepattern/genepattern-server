@@ -59,6 +59,7 @@ public class JobResultsWrapper {
     
     public List<InputFile> getInputFiles() {
         if (jobInfoWrapper == null) {
+            log.debug("jobInfoWrapper is null in JobResultsWrapper; it should be populated!");
             return Collections.emptyList();
         }
         return jobInfoWrapper.getInputFiles();
