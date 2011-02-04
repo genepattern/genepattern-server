@@ -128,7 +128,7 @@ var comboBoxSelect = 0;
 
 function hideComboBox() {
 	var choicesBox = document.getElementById("comboBoxChoices");
-	setTimeout("document.getElementById('comboBoxChoices').style.display = 'none';", 100);
+	setTimeout("document.getElementById('comboBoxChoices').style.display = 'none';", 500);
 	
 	// Clear selection
 	choicesBox.childNodes[comboBoxSelect].style.backgroundColor = "#DFDFB9";
