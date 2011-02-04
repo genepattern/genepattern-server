@@ -1,5 +1,6 @@
 package org.genepattern.server.webapp.jsf;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -9,8 +10,12 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.GroupPermission;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerProperties;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.util.AuthorizationManagerFactory;
@@ -25,6 +30,8 @@ import org.genepattern.server.util.IAuthorizationManager;
  * @author pcarr
  */
 public class UsersAndGroupsBean {
+    private static Logger log = Logger.getLogger(UsersAndGroupsBean.class);
+
     private SortedSet<UserEntry> userEntries;
     private SortedSet<GroupEntry> groupEntries;
     
@@ -134,6 +141,18 @@ public class UsersAndGroupsBean {
         
         public boolean isAdmin() {
             return isAdmin;
+        }
+        
+        public String getUserUploadDir() {
+            Context context = ServerConfiguration.Context.getContextForUser(user.getUserId());
+            try {
+                File f = ServerConfiguration.instance().getUserUploadDir(context);
+                return f.getAbsolutePath();
+            }
+            catch (Throwable t) {
+                log.error(t);
+                return t.getLocalizedMessage();
+            }
         }
     }
 

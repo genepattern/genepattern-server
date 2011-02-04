@@ -1,5 +1,7 @@
 package org.genepattern.server.config;
 
+import java.io.File;
+
 import org.apache.log4j.Logger;
 import org.genepattern.server.executor.BasicCommandManager;
 import org.genepattern.server.executor.CommandManager;
@@ -145,4 +147,35 @@ public class ServerConfiguration {
         }
         return props.getProperty(key);
     }
+    
+    //helper methods for locating server files and folders
+    public File getRootJobDir(Context context) {
+        String jobsDir = getGPProperty(context, "jobs");
+        File rootJobDir = new File(jobsDir);
+        return rootJobDir;
+    }
+    
+    public File getUserUploadDir(Context context) throws IllegalArgumentException {
+        if (context == null) {
+            throw new IllegalArgumentException("context is null");
+        }
+        if (context.getUserId() == null) {
+            throw new IllegalArgumentException("context.userId is null");
+        }
+        String userUploadDir = getGPProperty(context, "user.upload.root.dir");
+        if (userUploadDir == null) {
+            throw new IllegalArgumentException("The 'user.upload.root.dir' property is not set for this user: "+context.getUserId());
+        }
+        
+        File root = new File(userUploadDir);
+        File userDir = new File(root,context.getUserId());
+        if (userDir.exists()) {
+            return userDir;
+        }
+        boolean success = userDir.mkdir();
+        if (!success) {
+            throw new IllegalArgumentException("Unable to create upload directory for user "+context.getUserId()+", userDir="+userDir.getAbsolutePath());
+        }
+        return userDir;
+    } 
 }

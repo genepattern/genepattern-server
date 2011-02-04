@@ -13,7 +13,7 @@ import org.genepattern.server.executor.PropObj;
 import org.genepattern.webservice.JobInfo;
 
 /**
- * Helper class for managing configuration properties for the BasicCommandManager.
+ * Helper class for managing properties loaded from the configuration yaml file.
  * 
  * @author pcarr
  */

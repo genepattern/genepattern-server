@@ -15,7 +15,8 @@ default.properties:
     allow.input.file.paths: false
     # the max number of files to display in uploaded files tab
     upload.maxfiles: 50
-
+    # path to the root user upload dir
+    user.upload.root.dir: "../users"
 executors:
     # default executor for all jobs, it is included in GenePattern
     RuntimeExec:
