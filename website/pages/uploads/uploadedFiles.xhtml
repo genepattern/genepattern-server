@@ -59,6 +59,89 @@ function toggleJobVisibility(jobNo) {
 		}
 	}
 }
+
+function uploaderStatusChanged(uploader) {
+	if (uploader.getStatus() == uploader.STATUS_READY) {
+		location.reload(true);
+	}
+}
+
+function appletInitialized(applet) {
+	var attrSet,
+	    attr;
+	applet.getMainView().getUploadView().showOpenDialog();	
+	attrSet = applet.getUploader().getAttributeSet();
+	attr = attrSet.createStringAttribute("paramId", Math.random());
+	attr.setSendToServer(true);
+}
+
+function openApplet() {
+	var appDiv = document.getElementById("appletDiv");
+	var applet = document.createElement("applet");
+	applet.setAttribute("id", "uploadTabJumpLoader");
+	applet.setAttribute("name", "uploadTabJumpLoader");
+	applet.setAttribute("code", "jmaster.jumploader.app.JumpLoaderApplet.class");
+	applet.setAttribute("archive", "/gp/downloads/jl_core_z.jar");
+	applet.setAttribute("width", "180");
+	applet.setAttribute("height", "300");
+	applet.setAttribute("mayscript", "true");
+	
+	var uploadUrlParam = document.createElement("param");
+	uploadUrlParam.setAttribute("name", "uc_uploadUrl");
+	uploadUrlParam.setAttribute("value", "/gp/MultiFileUploadReceiver");
+	applet.appendChild(uploadUrlParam);
+	
+	var dirParam = document.createElement("param");
+	dirParam.setAttribute("name", "uc_directoriesEnabled");
+	dirParam.setAttribute("value", "true");
+	applet.appendChild(dirParam);
+	
+	var partitionParam = document.createElement("param");
+	partitionParam.setAttribute("name", "uc_partitionLength");
+	partitionParam.setAttribute("value", "5000000");
+	applet.appendChild(partitionParam);
+	
+	var fileStatusParam = document.createElement("param");
+	fileStatusParam.setAttribute("name", "ac_fireUploaderFileStatusChanged");
+	fileStatusParam.setAttribute("value", "true");
+	applet.appendChild(fileStatusParam);
+	
+	var statusParam = document.createElement("param");
+	statusParam.setAttribute("name", "ac_fireUploaderStatusChanged");
+	statusParam.setAttribute("value", "true");
+	applet.appendChild(statusParam);
+	
+	var removedParam = document.createElement("param");
+	removedParam.setAttribute("name", "ac_fireUploaderFileRemoved");
+	removedParam.setAttribute("value", "true");
+	applet.appendChild(removedParam);
+	
+	var initParam = document.createElement("param");
+	initParam.setAttribute("name", "ac_fireAppletInitialized");
+	initParam.setAttribute("value", "true");
+	applet.appendChild(initParam);
+	
+	var summaryBarParam = document.createElement("param");
+	summaryBarParam.setAttribute("name", "vc_uploadViewFilesSummaryBarVisible");
+	summaryBarParam.setAttribute("value", "false");
+	applet.appendChild(summaryBarParam);
+	
+	var startTextParam = document.createElement("param");
+	startTextParam.setAttribute("name", "vc_uploadViewStartUploadButtonText");
+	startTextParam.setAttribute("value", "Start Upload");
+	applet.appendChild(startTextParam);
+	
+	var startImgParam = document.createElement("param");
+	startImgParam.setAttribute("name", "vc_uploadViewStartUploadButtonImageUrl");
+	startImgParam.setAttribute("value", "/gp/images/media_play_green.png");
+	applet.appendChild(startImgParam);
+	
+	var buttonBiv = document.getElementById("buttonDiv");
+	buttonBiv.innerHTML = "";
+	
+	appDiv.appendChild(applet);
+	appletInitialized(applet);
+}
 /* ]]> */
 </script>
 </ui:define>   
@@ -132,10 +215,10 @@ function toggleJobVisibility(jobNo) {
   <p>
     <br/>
   </p>
-  <p>
-    <br/>
-  </p>
-  <p>&nbsp;</p>
+  <div id="appletDiv"></div>
+  <div id="buttonDiv">
+  	<button type="button" onclick="JavaScript:openApplet();">Upload Files</button>
+  </div>
   <p>
     <br/>
   </p>
