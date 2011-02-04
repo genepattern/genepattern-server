@@ -610,7 +610,7 @@ public class RunTaskBean {
             if (pi.isDirectory()) {
                 inputType = "directory";
             }
-            if (pi.isPassword()) {
+            else if (pi.isPassword()) {
                 inputType = "password";
             }
             else if (pi.isInputFile()) {
