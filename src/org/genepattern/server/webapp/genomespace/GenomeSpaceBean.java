@@ -68,7 +68,7 @@ public class GenomeSpaceBean {
     private boolean invalidPassword = false;
     private boolean invalidRegistration = false;
     
-    private boolean genomeSpaceEnabled = true;
+    private boolean genomeSpaceEnabled = false;
 
     private Map<String, Set<TaskInfo>> kindToModules;
     
@@ -81,9 +81,8 @@ public class GenomeSpaceBean {
         kindToModules = SemanticUtil.getKindToModulesMap(allModules);
     
         Context userContext = Context.getContextForUser(userId);
-        
         String prop = ServerConfiguration.instance().getGPProperty(userContext, "genomeSpaceEnabled");
-        boolean genomeSpaceEnabled = Boolean.parseBoolean(prop);
+        genomeSpaceEnabled = Boolean.parseBoolean(prop);
         log.info("\n\n======= genomeSpaceEnabled=" + genomeSpaceEnabled + " for userId="+userId+"\n\n");
     }
 
