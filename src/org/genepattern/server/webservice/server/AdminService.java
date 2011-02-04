@@ -52,10 +52,13 @@ public class AdminService implements IAdminService {
     static {
         serviceInfoMap = new HashMap<String, String>();
         Context serverContext = ServerConfiguration.Context.getServerContext();
-        CommandProperties gpProps = ServerConfiguration.Factory.instance().getGPProperties(serverContext);
-        serviceInfoMap.put("genepattern.version", gpProps.getProperty("GenePatternVersion"));
-        serviceInfoMap.put("lsid.authority", gpProps.getProperty("lsid.authority"));
-        serviceInfoMap.put("require.password", gpProps.getProperty("require.password"));
+        
+        serviceInfoMap.put("genepattern.version", 
+                ServerConfiguration.instance().getGPProperty(serverContext, "GenePatternVersion"));
+        serviceInfoMap.put("lsid.authority", 
+                ServerConfiguration.instance().getGPProperty(serverContext, "lsid.authority"));
+        serviceInfoMap.put("require.password", 
+                ServerConfiguration.instance().getGPProperty(serverContext, "require.password"));
     }
 
 

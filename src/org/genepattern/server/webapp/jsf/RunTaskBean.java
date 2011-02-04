@@ -110,9 +110,8 @@ public class RunTaskBean {
         }
         
         Context userContext = Context.getContextForUser(userId);
-        CommandProperties props = ServerConfiguration.Factory.instance().getGPProperties(userContext);
-        allowInputFilePaths = props.getBooleanProperty("allow.input.file.paths");
-        allowBatchProcess = props.getBooleanProperty("allow.batch.process");
+        allowInputFilePaths = ServerConfiguration.instance().getGPBooleanProperty(userContext, "allow.input.file.paths");
+        allowBatchProcess = ServerConfiguration.instance().getGPBooleanProperty(userContext, "allow.batch.process");
     }
 
     public void changeVersion(ActionEvent event) {

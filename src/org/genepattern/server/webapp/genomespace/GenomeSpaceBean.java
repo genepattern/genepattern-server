@@ -12,47 +12,40 @@
 
 package org.genepattern.server.webapp.genomespace;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.faces.event.ActionEvent;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.UserAccountManager;
-import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.webapp.LoginManager;
-import org.genepattern.server.webapp.jsf.JobBean;
-import org.genepattern.server.webapp.jsf.JobResultsWrapper;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
-import org.genepattern.server.webapp.jsf.JobBean.OutputFileInfo;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
-
-import org.genomespace.client.exceptions.AuthorizationException;
-import org.genomespace.datamanager.core.*;
 import org.genomespace.client.DataManagerClient;
-import org.genomespace.client.User;
 import org.genomespace.client.GsSession;
-import org.genomespace.client.exceptions.InternalServerException;
 import org.genomespace.client.User;
+import org.genomespace.client.exceptions.AuthorizationException;
+import org.genomespace.client.exceptions.InternalServerException;
+import org.genomespace.datamanager.core.GSDirectoryListing;
+import org.genomespace.datamanager.core.GSFileMetadata;
 
 /**
  * Backing bean for login to GenomeSpace.
@@ -88,11 +81,10 @@ public class GenomeSpaceBean {
         kindToModules = SemanticUtil.getKindToModulesMap(allModules);
     
         Context userContext = Context.getContextForUser(userId);
-        CommandProperties props = ServerConfiguration.Factory.instance().getGPProperties(userContext);
-        boolean genomeSpaceEnabled = props.getBooleanProperty("genomeSpaceEnabled");
-
-        if (!genomeSpaceEnabled) genomeSpaceEnabled = props.getBooleanProperty("gsEnabled");  
-        System.out.println("\n\n======= GenomeSpace enabled = " + genomeSpaceEnabled + "\n\n");
+        
+        String prop = ServerConfiguration.instance().getGPProperty(userContext, "genomeSpaceEnabled");
+        boolean genomeSpaceEnabled = Boolean.parseBoolean(prop);
+        log.info("\n\n======= genomeSpaceEnabled=" + genomeSpaceEnabled + " for userId="+userId+"\n\n");
     }
 
     public boolean isGenomeSpaceEnabled(){

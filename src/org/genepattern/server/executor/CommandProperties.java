@@ -139,44 +139,6 @@ public class CommandProperties {
     }
 
     /**
-     * Utility method for parsing properties as a boolean.
-     * The current implementation uses Boolean.parseBoolean, 
-     * which returns true iff the property is set and equalsIgnoreCase 'true'.
-     * 
-     * @param key
-     * @return
-     */
-    public boolean getBooleanProperty(String key) {
-        String val = getProperty(key);
-        return Boolean.parseBoolean(val);
-    }
-    
-    /**
-     * Utility method for parsing a property as an Integer.
-     * 
-     * When a non integer value is set in the config file, the default value is returned.
-     * Errors are logged, but exceptions are not thrown.
-     * 
-     * @param key
-     * @param defaultValue
-     * 
-     * @return the int value for the property, or the default value, can return null.
-     */
-    public Integer getIntegerProperty(String key, Integer defaultValue) {
-        String val = getProperty(key);
-        if (val == null) {
-            return defaultValue;
-        }
-        try {
-            return Integer.parseInt(val);
-        }
-        catch (NumberFormatException e) {
-            log.error("Error parsing integer value for property, "+key+"="+val);
-            return defaultValue;
-        }
-    }
-
-    /**
      * @param key
      * @return the value as a string, or null if the property is not found.
      */

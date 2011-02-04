@@ -10,10 +10,10 @@ import junit.framework.TestCase;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HsqlDbUtil;
 import org.genepattern.server.executor.CommandProperties.Value;
-import org.genepattern.server.user.User;
 import org.genepattern.webservice.JobInfo;
 
 /**
@@ -546,26 +546,29 @@ public class CommandManagerFactoryTest extends TestCase {
         System.setProperty("system.prop.override.to.null", "NOT_NULL");
 
         //tests for 'test' user, use 'default.properties', no overrides
-        CommandProperties props = getPropsForUser("test");
-        assertNull("unset property", props.getProperty("NOT_SET"));
-        assertEquals("property which is only set in System.properties", "SYSTEM", props.getProperty("system.prop"));        
-        assertEquals("override a system property", "SERVER_DEFAULT", props.getProperty("system.prop.override"));
-        assertNull(props.getProperty("override a system property with a null value"));
-        assertEquals("default property", "DEFAULT_VAL", props.getProperty("default.prop"));
-        assertNull("default null value", props.getProperty("default.prop.null"));
+        Context userContext = Context.getContextForUser("test");
+        assertNull("unset property",  ServerConfiguration.instance().getGPProperty(userContext, "NOT_SET"));
+        assertEquals("property which is only set in System.properties", 
+                "SYSTEM", ServerConfiguration.instance().getGPProperty(userContext, "system.prop"));
+        assertEquals("override a system property", 
+                "SERVER_DEFAULT", 
+                ServerConfiguration.instance().getGPProperty(userContext, "system.prop.override"));
+        assertNull(ServerConfiguration.instance().getGPProperty(userContext, "override a system property with a null value"));
+        assertEquals("default property", "DEFAULT_VAL", ServerConfiguration.instance().getGPProperty(userContext, "default.prop"));
+        assertNull("default null value", ServerConfiguration.instance().getGPProperty(userContext, "default.prop.null"));
 
         //tests for 'userA', with group overrides, userA is in two groups
-        props = getPropsForUser("userA");
-        assertEquals("override default prop in group.properties", "admingroup_val", props.getProperty("default.prop"));
+        userContext = Context.getContextForUser("userA");
+        assertEquals("override default prop in group.properties", "admingroup_val", ServerConfiguration.instance().getGPProperty(userContext, "default.prop"));
         
         //tests for 'userC', with group overrides, userC is in one group
-        props = getPropsForUser("userC");
-        assertEquals("user override", "userC_val", props.getProperty("default.prop") );
-        assertEquals("group override", "-Xmx256m -Dgroup=broadgroup", props.getProperty("java_flags"));
+        userContext = Context.getContextForUser("userC");
+        assertEquals("user override", "userC_val", ServerConfiguration.instance().getGPProperty(userContext, "default.prop") );
+        assertEquals("group override", "-Xmx256m -Dgroup=broadgroup", ServerConfiguration.instance().getGPProperty(userContext, "java_flags"));
         
         //tests for 'userD' with user overrides, userD is not in any group
-        props = getPropsForUser("userD");
-        assertEquals("user override", "userD_val", props.getProperty("default.prop"));
+        userContext = Context.getContextForUser("userD");
+        assertEquals("user override", "userD_val", ServerConfiguration.instance().getGPProperty(userContext, "default.prop"));
     }
 
     /**
@@ -575,22 +578,31 @@ public class CommandManagerFactoryTest extends TestCase {
         File resourceDir = getSourceDir();
         System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
         System.setProperty("require.password", "false");
+        System.setProperty("prop.test.case", "test.case.SYSTEM");
+        ServerProperties.instance().reloadProperties();
+
+        initializeYamlConfigFile("test_user_properties.yaml");
+        UserAccountManager.instance().refreshUsersAndGroups();
 
         Context context = new Context();
-        context.setInitFromSystemProperties(true);
         
-        assertEquals("3.3.1", ServerConfiguration.Factory.instance().getGPProperty(context, "GenePatternVersion"));
-        assertEquals("8080.gp-trunk-dev.120.0.0.1", ServerConfiguration.Factory.instance().getGPProperty(context, "lsid.authority"));
-        assertEquals("true", ServerConfiguration.Factory.instance().getGPProperty(context, "require.password"));
+        assertEquals("3.3.1", ServerConfiguration.instance().getGPProperty(context, "GenePatternVersion"));
+        assertEquals("8080.gp-trunk-dev.120.0.0.1", ServerConfiguration.instance().getGPProperty(context, "lsid.authority"));
+        assertEquals("true", ServerConfiguration.instance().getGPProperty(context, "require.password"));
 
-        assertEquals("set_in_custom.properties", ServerConfiguration.Factory.instance().getGPProperty(context, "prop.test.01"));
-        assertEquals("added_in_custom.properties", ServerConfiguration.Factory.instance().getGPProperty(context, "prop.test.02"));
-    }
-    
-    private static CommandProperties getPropsForUser(String userId) {
-        Context context = new Context();
-        context.setUserId(userId);
-        return ServerConfiguration.Factory.instance().getGPProperties(context);
+        assertEquals("set_in_custom.properties", ServerConfiguration.instance().getGPProperty(context, "prop.test.01"));
+        assertEquals("added_in_custom.properties", ServerConfiguration.instance().getGPProperty(context, "prop.test.02"));
+        
+        String userId = "admin";
+        Context userContext = Context.getContextForUser(userId);
+        boolean allowBatchProcess = ServerConfiguration.instance().getGPBooleanProperty(userContext, "allow.batch.process");
+        assertEquals("testing getBooleanProperty in genepattern.properties and job_configuration.yaml", true, allowBatchProcess);
+        
+        assertEquals("test-case, a property whic is set in genepattern.properties, but modified in job_configuration.yaml", 
+                "test.case.YAML_DEFAULT", ServerConfiguration.instance().getGPProperty(userContext, "prop.test.case"));
+        
+        //test-case, a property only in genepattern.properties
+        assertEquals("test-case, property set in genepattern.properties", "SET_IN_GP_PROPERTIES", ServerConfiguration.instance().getGPProperty(userContext, "only.in.gp.properties"));
     }
     
     private void testCommandProperty(CommandProperties cmdProps, String propName, String expectedValue, String[] expectedValues) {

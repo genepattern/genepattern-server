@@ -10,7 +10,6 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.executor.PropObj;
-import org.genepattern.server.user.User;
 import org.genepattern.webservice.JobInfo;
 
 /**
@@ -70,21 +69,16 @@ public class CommandManagerProperties {
     
     public String getProperty(Context context, String key) {
         String rval = null;
-        // 0) initialize from system properties
-        //    for compatibility with GP 3.2.4 and earlier
-        //    to get props from genepattern.properties
-        //boolean initFromSystemProps = true;
-        if (context.getInitFromSystemProperties()) {
-            //rval = System.getProperty(key);
-            rval = ServerProperties.instance().getProperty(key);
-        }
+        // 0) initialize from system properties and legacy properties files
+        //    only if specified by the context
+        rval = ServerProperties.instance().getProperty(context, key);
         
-        // 1) initialize from top level default properties
+        // 1) replace with default properties set in the job_configuration yaml file ...
         if (this.rootProps.getDefaultProperties().containsKey(key)) {
             rval = this.rootProps.getDefaultProperty(key);
         }
         
-        // 2) replace with executor default properties
+        // 2) replace with executor default properties ...
         if (context.getJobInfo() != null) {
             String cmdExecId = getCommandExecutorId(context.getJobInfo());
             PropObj executorDefaultProps = executorPropertiesMap.get(cmdExecId);
@@ -102,7 +96,7 @@ public class CommandManagerProperties {
             }
         }
 
-        // 4) replace with group properties
+        // 4) replace with group properties ...
         if (context.getUserId() != null) {
             Set<String> groupIds = null;
             if (groupPropertiesMap != null && groupPropertiesMap.size() > 0) {
@@ -145,7 +139,7 @@ public class CommandManagerProperties {
             }
         }
         
-        // 5) add/replace with user properties
+        // 5) replace with user properties ...
         if (context.getUserId() != null) {
             PropObj userPropObj = this.userPropertiesMap.get(context.getUserId());
             if (userPropObj != null) {
@@ -162,41 +156,16 @@ public class CommandManagerProperties {
         return rval;
     }
 
-    public CommandProperties getCommandProperties(Context context) {
-        if (context.getJobInfo() != null) {
-            return getCommandProperties(context.getInitFromSystemProperties(), context.getJobInfo().getUserId(), context.getJobInfo());
-        }
-        else {
-            return getCommandProperties(context.getInitFromSystemProperties(), context.getUserId());
-        }
-        
-    }
-    private CommandProperties getCommandProperties(boolean initFromSystemProps, String userId) {
-        return getCommandProperties(initFromSystemProps, userId, (JobInfo)null);
-    }
-    private CommandProperties getCommandProperties(boolean initFromSystemProps, JobInfo jobInfo) {
-        String userId = null;
-        if (jobInfo != null) {
-            userId = jobInfo.getUserId();
-        }
-        return getCommandProperties(initFromSystemProps, userId, jobInfo);
-    }
-    private CommandProperties getCommandProperties(boolean initFromSystemProps, String userId, JobInfo jobInfo) {
+    public CommandProperties getCommandProperties(JobInfo jobInfo) {
         CommandProperties cmdProperties = new CommandProperties();
-        // 0) initialize from system properties
-        //    for compatibility with GP 3.2.4 and earlier
-        //    to get props from genepattern.properties
-        //boolean initFromSystemProps = true;
-        if (initFromSystemProps) {
-            cmdProperties = new CommandProperties(System.getProperties());
+        
+        if (jobInfo == null) {
+            log.error("Unexpected null arg");
+            return cmdProperties;
         }
         
         // 1) initialize from top level default properties
         cmdProperties.putAll(this.rootProps.getDefaultProperties());
-        
-        if (jobInfo != null) {
-            userId = jobInfo.getUserId();
-        }
         
         // 2) add/replace with executor default properties
         if (jobInfo != null) {
@@ -213,6 +182,7 @@ public class CommandManagerProperties {
         }
 
         // 4) add/replace with group properties
+        String userId = jobInfo.getUserId();
         if (userId != null) {
             Set<String> groupIds = null;
             if (groupPropertiesMap != null && groupPropertiesMap.size() > 0) {

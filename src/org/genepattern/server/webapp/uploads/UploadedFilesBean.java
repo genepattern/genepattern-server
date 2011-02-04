@@ -257,8 +257,7 @@ public class UploadedFilesBean {
             Map<String,Boolean> usedFileNames = new HashMap<String, Boolean>();
             
             Context userContext = Context.getContextForUser(userId);
-            CommandProperties props = ServerConfiguration.Factory.instance().getGPProperties(userContext);
-            int maxFiles = props.getIntegerProperty("upload.maxfiles", DEFAULT_upload_maxfiles);
+            int maxFiles = ServerConfiguration.instance().getGPIntegerProperty(userContext, "upload.maxfiles", DEFAULT_upload_maxfiles);
 
             for (UploadFileInfo aFile : fileList) {
                 if (count >= maxFiles) {

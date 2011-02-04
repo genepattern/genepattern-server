@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Properties;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration.Context;
 
 /**
  * Utility class for managing the loading of properties from the genepattern.properties file, custom.properties file, et cetera.
@@ -24,6 +26,8 @@ import org.apache.log4j.Logger;
  */
 public class ServerProperties {
     private static Logger log = Logger.getLogger(ServerProperties.class);
+    private boolean useSystemProperties = true;
+    private boolean usePropertiesFiles = true;
     
     private static class Record {
         private Properties props;
@@ -56,45 +60,77 @@ public class ServerProperties {
     }
     
     private LinkedHashMap<String,Record> propertiesList = new LinkedHashMap<String,Record>();
+    private Properties flattened = new Properties();
     
     private ServerProperties() {
         reloadProperties();
     }
     
     public synchronized void reloadProperties() {
-        Record sysProps = new Record();
-        sysProps.props = new Properties(System.getProperties());
-        propertiesList.put("system", sysProps);
-        
-        String dir = sysProps.props.getProperty("genepattern.properties");
-        File genepatternPropsFile = new File(dir, "genepattern.properties");
-        Record genepatternProps = Record.loadPropertiesFromFile(genepatternPropsFile); 
-        if (genepatternProps != null) {
-            propertiesList.put("genepattern.properties", genepatternProps);
-        }
+        String r = System.getProperty("genepattern.properties");
+        File resourceDir = new File(r);
+        reloadProperties(resourceDir);
+    }
 
-        File customPropsFile = new File(dir, "custom.properties");
-        if (customPropsFile.canRead()) {
-            Record customProps = Record.loadPropertiesFromFile(customPropsFile);
-            if (customProps != null) {
-                propertiesList.put("custom.properties", customProps);
-            }
-        }
+    public synchronized void reloadProperties(File resourceDir) {
+        flattened.clear();
+        propertiesList.clear();
+
+        File genepatternPropsFile = new File(resourceDir, "genepattern.properties");
+        appendPropertiesFromFile(genepatternPropsFile);
+
+        File customPropsFile = new File(resourceDir, "custom.properties");
+        appendPropertiesFromFile(customPropsFile);
         
-        File buildPropsFile = new File(dir, "build.properties");
-        if (buildPropsFile.canRead()) {
-            Record buildProps = Record.loadPropertiesFromFile(buildPropsFile);
-            if (buildProps != null) {
-                propertiesList.put("build.properties", buildProps);
+        File buildPropsFile = new File(resourceDir, "build.properties");
+        appendPropertiesFromFile(buildPropsFile);
+    }
+    
+    private void appendProperties(String recordName, Properties props) {
+        Record propsRecord = new Record();
+        propsRecord.props = new Properties();
+        for(Entry<Object,Object> entry : props.entrySet()) {
+            propsRecord.props.setProperty(entry.getKey().toString(), entry.getValue().toString());
+        }
+        propsRecord.dateLoaded = new Date();
+        propertiesList.put(recordName, propsRecord);
+    }
+
+    private void appendPropertiesFromFile(File propsFile) {
+        if (propsFile.canRead()) {
+            Record propsRecord = Record.loadPropertiesFromFile(propsFile);
+            if (propsRecord != null) {
+                propertiesList.put(propsFile.getName(), propsRecord);
+                flattened.putAll(propsRecord.props);
             }
         }
     }
     
+    public String getProperty(Context context, String key) {
+        String rval = null;
+        if (context.getCheckSystemProperties()) {
+            rval = System.getProperty(key);            
+        }
+        if (context.getCheckPropertiesFiles()) {
+            for(Record record : propertiesList.values()) {
+                if (record.props.containsKey(key)) {
+                    rval = record.props.getProperty(key);
+                }
+            }
+        }
+        return rval;
+    }
+
     public String getProperty(String key) {
         String rval = null;
-        for(Record record : propertiesList.values()) {
-            if (record.props.containsKey(key)) {
-                rval = record.props.getProperty(key);
+        if (this.useSystemProperties) {
+            rval = System.getProperty(key);
+        }
+        if (this.usePropertiesFiles) {
+            for(Record record : propertiesList.values()) {
+                if (record.props.containsKey(key)) {
+                    rval = record.props.getProperty(key);
+                }
             }
         }
         return rval;

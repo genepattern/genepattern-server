@@ -10,7 +10,6 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.config.CommandManagerProperties;
-import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
@@ -289,13 +288,7 @@ public class BasicCommandManager implements CommandManager {
     }
     
     public CommandProperties getCommandProperties(JobInfo jobInfo) {
-        Context context = new Context();
-        //for compatibility with GP 3.2.3 and later, don't load sys properties into the props for a job
-        context.setInitFromSystemProperties(false);
-        context.setJobInfo(jobInfo);
-        
-        //CommandProperties props = this.configProperties.getCommandProperties(jobInfo);
-        CommandProperties props = this.configProperties.getCommandProperties(context);
+        CommandProperties props = this.configProperties.getCommandProperties(jobInfo);
         CommandProperties commandProps = new CommandProperties(props);
         return commandProps;
     }

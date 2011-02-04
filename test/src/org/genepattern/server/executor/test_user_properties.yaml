@@ -5,6 +5,9 @@ default.properties:
     default.prop: DEFAULT_VAL
     default.prop.null: 
     java_flags: -Xmx256m
+    # override system property with default property
+    allow.batch.process: true
+    prop.test.case: test.case.YAML_DEFAULT
     
 executors:
     RuntimeExec: org.genepattern.server.executor.RuntimeCommandExecutor
@@ -13,6 +16,7 @@ group.properties:
     broadgroup:
         default.prop: broadgroup_val
         java_flags: -Xmx256m -Dgroup=broadgroup
+        prop.test.case: test.case.YAML_GROUP
     admingroup:
         default.prop: admingroup_val
         java_flags: -Xmx256m -Dgroup=admingroup 
@@ -20,6 +24,7 @@ group.properties:
 user.properties:
     userC:
         default.prop: userC_val
+        prop.test.case: test.case.YAML_USER
     userD:
         default.prop: userD_val
         java_flags: -Xmx256m -Duser=userD
