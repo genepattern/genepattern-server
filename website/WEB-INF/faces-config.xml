@@ -307,6 +307,11 @@
    <redirect />
   </navigation-case>
   <navigation-case>
+   <from-outcome>genomeSpaceLoginFailed</from-outcome>
+   <to-view-id>/pages/genomespace/gssignin.xhtml</to-view-id>
+   <redirect />
+  </navigation-case>
+  <navigation-case>
    <from-outcome>home</from-outcome>
    <to-view-id>/pages/index.xhtml</to-view-id>
    <redirect/>

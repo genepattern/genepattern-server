@@ -169,23 +169,31 @@ public class GenomeSpaceBean {
             HttpSession httpSession = UIBeanHelper.getSession();
             httpSession.setAttribute(GS_USER_KEY,gsUser);
             httpSession.setAttribute(GS_SESSION_KEY,gsSession);
-            
+            unknownUser = false;
             this.setMessageToUser("Signed in to GenomeSpace as " + gsUser.getUsername()  );
             
+            return "home";
             
         }  catch (AuthorizationException e) {
             e.printStackTrace();
              log.error(e);
-       //     throw new RuntimeException(e); // @TODO -- wrap in gp system exception.
+             //     throw new RuntimeException(e); // @TODO -- wrap in gp system exception.
         
              // TODO figure out what went wrong and send error message to the user
+             unknownUser = true;
+             this.setMessageToUser("Authentication error, please check your username and password." );
+             return "genomeSpaceLoginFailed";
+             
              
         } catch (Exception e) {
             e.printStackTrace();
             log.error(e);
+            unknownUser = true;
+            this.setMessageToUser("An error occurred logging in to GenomeSpace.  Please contact the GenePattern administrator." );
             
+            return "genomeSpaceLoginFailed";
         }
-        return "home";
+       
     }
     
     /**

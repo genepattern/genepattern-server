@@ -39,7 +39,7 @@
 	  <!--  login page if not logged in -->
 		<h:outputText rendered="#{not genomeSpaceBean.loggedIn}">
 		
-	
+		
 		<h:form onsubmit="return validateForm(this);"  id="loginForm">
 			<table width="330">
 				<tr>
@@ -53,17 +53,8 @@
 			<h:outputText
 				value="Username and password do not match."
 				style="color: red; font-weight: bold;"
-				rendered="#{genomeSpaceBean.unknownUser and genomeSpaceBean.createAccountAllowed}" />
-		
-			<h:outputText
-				value="Username and password do not match."
-				style="color: red; font-weight: bold;"
-				rendered="#{genomeSpaceBean.unknownUser and !genomeSpaceBean.createAccountAllowed}" />
-			
-
-			<h:outputText value="Username and password do not match."
-				rendered="#{genomeSpaceBean.invalidPassword}"
-				style="color: red; font-weight: bold;" />
+				rendered="#{genomeSpaceBean.unknownUser or genomeSpaceBean.invalidPassword}" />
+						
 
 			<h:panelGrid columns="2">
 				<h:outputLabel value="Username:" for="username"></h:outputLabel>
