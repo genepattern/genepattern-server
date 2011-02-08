@@ -70,26 +70,28 @@ public class UploadedFilesBean {
      * @param ae
      */
     public void deleteFile(ActionEvent ae) {
-        String filenameParam = UIBeanHelper.getRequest().getParameter(
-                "filename");
+        String filenameParam = UIBeanHelper.getRequest().getParameter("filename");
         String dirnameParam = UIBeanHelper.getRequest().getParameter("path");
 
-        System.out.println("Delete from uploads " + dirnameParam + "/"
-                + filenameParam);
-        this.availableDirectories = null; // force a refresh
+        log.debug("Delete from uploads '" + dirnameParam + "/" + filenameParam +"'");
 
         String tmpDir = System.getProperty("java.io.tmpdir");
-
         File tmp = new File(tmpDir);
         File subDir = new File(tmp, dirnameParam);
         File theFile = new File(subDir, filenameParam);
-        if (theFile.exists()) {
-            theFile.delete();
+        
+        boolean success = false;
+        if (theFile.canRead()) {
+            success = theFile.delete();
         }
-
-        this.setMessageToUser("Deleted from upload directories " + dirnameParam
-                + "/" + filenameParam);
-
+        if (success) {
+            // force a refresh
+            this.availableDirectories = null;
+            this.setMessageToUser("Deleted from upload directories: '" + dirnameParam + "/" + filenameParam + "'");
+        }
+        else {
+            this.setMessageToUser("Error deleting from upload directories: '" + dirnameParam + "/" + filenameParam + "'");            
+        }
     }
 
     /**
@@ -174,21 +176,30 @@ public class UploadedFilesBean {
      * @return
      */
     public int getCurrentUserFileCount() {
-        int count = 0;
-        HttpSession httpSession = UIBeanHelper.getSession();
-
-        final String userId = UIBeanHelper.getUserId();
+        List<File> tmpFiles = listFilesInTmpDir();
+        return tmpFiles.size();
+    }
+    
+    /**
+     * Helper method which lists all of the files in the user uploads directory,
+     * it handles the corner-case where the tmpdir is not available.
+     * 
+     * @return
+     */
+    private List<File> listFilesInTmpDir() {
+        List<File> rval = new ArrayList<File>();
         String tmpDir = System.getProperty("java.io.tmpdir");
-
         File tmp = new File(tmpDir);
-
-        for (File f : tmp.listFiles(nameFilt)) {
-            for (String aFile : f.list()) {
-                count++;
+        File[] fileList = tmp.listFiles();
+        if (fileList == null) {
+            log.error("Error listing files in java.io.tmpdir="+tmpDir);
+        }
+        if(fileList != null) {
+            for(File f : fileList) {
+                rval.add(f);
             }
         }
-
-        return count;
+        return rval;
     }
 
     static final FilenameFilter nameFilt = new FilenameFilter() {
@@ -233,20 +244,23 @@ public class UploadedFilesBean {
              */
             UploadDirectory userDir = new UploadDirectory(userId);
             availableDirectories.add(userDir);
-
-            String tmpDir = System.getProperty("java.io.tmpdir");
-            File tmp = new File(tmpDir);
+  
             List<UploadFileInfo> fileList = new ArrayList<UploadFileInfo>();
-            
-            for (File f : tmp.listFiles(nameFilt)) {
-                for (File aFile : f.listFiles()) {
-                    UploadFileInfo ufi = new UploadFileInfo(aFile.getName());
-                    ufi.setUrl(getFileURL(f.getName(), aFile.getName()));
-                    ufi.setPath(f.getName());
-                    ufi.setGenePatternUrl(getGenePatternFileURL(f.getName(), aFile.getName()));
-                    ufi.setModified(aFile.lastModified());
-                    
-                    fileList.add(ufi);
+            List<File> originalList = listFilesInTmpDir();
+            for (File f : originalList) {
+                File[] fList = f.listFiles();
+                if (fList == null) {
+                    log.error("Error listing files in subdir="+f.getAbsolutePath());
+                }
+                if (fList != null) {
+                    for (File aFile : f.listFiles()) {
+                        UploadFileInfo ufi = new UploadFileInfo(aFile.getName());
+                        ufi.setUrl(getFileURL(f.getName(), aFile.getName()));
+                        ufi.setPath(f.getName());
+                        ufi.setGenePatternUrl(getGenePatternFileURL(f.getName(), aFile.getName()));
+                        ufi.setModified(aFile.lastModified());
+                        fileList.add(ufi);
+                    }
                 }
             }
             
