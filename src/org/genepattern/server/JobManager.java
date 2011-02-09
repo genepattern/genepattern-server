@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.BatchJobDAO;
 import org.genepattern.server.executor.AnalysisJobScheduler;
@@ -32,17 +33,31 @@ public class JobManager {
      * 
      * @throws IllegalArgumentException, JobDispatchException
      */
-    public static File createJobDirectory(Integer jobId) throws JobSubmissionException {
-        if (jobId == null) {
-            throw new IllegalArgumentException("Can't create job directory for jobId=null");
+    public static File createJobDirectory(JobInfo jobInfo) throws JobSubmissionException {
+        if (jobInfo == null) {
+            throw new IllegalArgumentException("Can't create job directory for jobInfo=null");
+        }
+        if (jobInfo.getJobNumber() < 0) {
+            throw new IllegalArgumentException("Can't create job directory for jobInfo.jobNumber="+jobInfo.getJobNumber());
         }
         
-        String jobDirName = GenePatternAnalysisTask.getJobDir(""+jobId);
+        File jobDir = null;
+        try {
+            ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo);
+            File rootJobDir = ServerConfiguration.instance().getRootJobDir(jobContext);
+            jobDir = new File(rootJobDir, ""+jobInfo.getJobNumber());
+        }
+        catch (ServerConfiguration.Exception e) {
+            throw new JobSubmissionException(e.getLocalizedMessage());
+        }
+
+        //TODO: record the working dir with the jobInfo and save to DB
+        //jobInfo.setWorkingDir(jobDir.getPath());
         // make directory to hold input and output files
-        File jobDir = new File(jobDirName);
         if (!jobDir.exists()) {
-            if (!jobDir.mkdirs()) {
-                throw new JobSubmissionException("Error creating output directory for job #" + jobId +", jobDir=" + jobDirName);
+            boolean success = jobDir.mkdirs();
+            if (!success) {
+                throw new JobSubmissionException("Error creating working directory for job #" + jobInfo.getJobNumber() +", jobDir=" + jobDir.getPath());
             }
         } 
         else {
@@ -83,7 +98,7 @@ public class JobManager {
                 throw new JobSubmissionException(
                 "addJobToQueue: Operation failed, null value returned for JobInfo");
             } 
-            createJobDirectory(jobNo);
+            createJobDirectory(jobInfo);
             return jobInfo;
         }
         catch (JobSubmissionException e) {

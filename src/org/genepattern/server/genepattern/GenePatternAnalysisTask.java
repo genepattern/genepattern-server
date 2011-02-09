@@ -633,7 +633,7 @@ public class GenePatternAnalysisTask {
             //even though the job directory gets created when the job is added to the queue,
             //create it again, if necessary, to deal with resubmitted jobs
             //TODO: improve this by requiring the job dir to be cleared (but not created) before running the job
-            outDir = JobManager.createJobDirectory(jobId);
+            outDir = JobManager.createJobDirectory(jobInfo);
         }
         catch (JobSubmissionException e) {
             throw new JobDispatchException("Error getting job directory for jobId="+jobId, e);
