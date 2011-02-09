@@ -16,6 +16,15 @@ import org.genepattern.webservice.JobInfo;
  */
 public class ServerConfiguration {
     private static Logger log = Logger.getLogger(ServerConfiguration.class);
+    
+    public static class Exception extends java.lang.Exception {
+        public Exception() {
+            super();
+        }
+        public Exception(String message) {
+            super(message);
+        }
+    }
 
     public static class Context {
         //hard-coded default value is true for compatibility with GP 3.2.4 and earlier
@@ -40,8 +49,6 @@ public class ServerConfiguration {
 
         public static Context getContextForJob(JobInfo jobInfo) {
             Context context = new Context();
-            context.setCheckPropertiesFiles(false);
-            context.setCheckSystemProperties(false);
             if (jobInfo != null) {
                 context.setJobInfo(jobInfo);
                 if (jobInfo.getUserId() != null) {
@@ -149,8 +156,11 @@ public class ServerConfiguration {
     }
     
     //helper methods for locating server files and folders
-    public File getRootJobDir(Context context) {
+    public File getRootJobDir(Context context) throws Exception {
         String jobsDir = getGPProperty(context, "jobs");
+        if (jobsDir == null) {
+            throw new Exception("Missing required propery, 'jobs'");
+        }
         File rootJobDir = new File(jobsDir);
         return rootJobDir;
     }

@@ -33,9 +33,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.database.HsqlDbUtil;
-import org.genepattern.server.executor.CommandManager;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.process.JobPurger;
@@ -209,6 +209,16 @@ public class StartupServlet extends HttpServlet {
             " build " + about.getBuildTag() + 
             " built " + about.getDate() + " is ready.";
 
+        String defaultRootJobDir = "";
+        try {
+            ServerConfiguration.Context serverContext = ServerConfiguration.Context.getServerContext();
+            File rootJobDir = ServerConfiguration.instance().getRootJobDir(serverContext);
+            defaultRootJobDir = rootJobDir.getAbsolutePath();
+        }
+        catch (Throwable t) {
+            defaultRootJobDir = "Server configuration error: "+t.getLocalizedMessage();
+        }
+
         String stars = "******************************************************************************************************************************************"
             .substring(0, message.length());
         StringBuffer startupMessage = new StringBuffer();
@@ -220,7 +230,7 @@ public class StartupServlet extends HttpServlet {
         startupMessage.append("\tJava Version: "+System.getProperty("java.version") + NL );
         startupMessage.append("\tuser.dir: "+System.getProperty("user.dir") + NL);
         startupMessage.append("\ttasklib: "+System.getProperty("tasklib") + NL);
-        startupMessage.append("\tjobs: "+System.getProperty("jobs") + NL);
+        startupMessage.append("\tjobs: "+defaultRootJobDir + NL);
         startupMessage.append("\tjava.io.tmpdir: "+System.getProperty("java.io.tmpdir") + NL);
         startupMessage.append("\tsoap.attachment.dir: "+System.getProperty("soap.attachment.dir") + NL);
         startupMessage.append(stars);

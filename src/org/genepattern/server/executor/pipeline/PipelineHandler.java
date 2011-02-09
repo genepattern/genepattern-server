@@ -20,6 +20,8 @@ import org.genepattern.data.pipeline.MissingTasksException;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.data.pipeline.PipelineModelException;
 import org.genepattern.server.JobManager;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
@@ -617,6 +619,10 @@ public class PipelineHandler {
             String url = getServer() + context + "/jobResults/" + fileName;
             return url;
         }
+        catch (ServerConfiguration.Exception e) {
+            log.error(e.getLocalizedMessage());
+            return "";
+        }
         catch (FileNotFoundException e) {
             return "";
         }
@@ -625,12 +631,14 @@ public class PipelineHandler {
     /**
      * return the file name for the previously run job by index or name
      */
-    private static String getOutputFileName(JobInfo job, String fileStr) throws FileNotFoundException {
+    private static String getOutputFileName(JobInfo job, String fileStr) throws ServerConfiguration.Exception, FileNotFoundException {
         String fileName = null;
         String fn = null;
         int j;
         ParameterInfo[] jobParams = job.getParameterInfoArray();
-        String jobDir = System.getProperty("jobs");
+        Context context = ServerConfiguration.Context.getContextForJob(job);
+        File rootJobDir = ServerConfiguration.instance().getRootJobDir(context);
+        String jobDir = rootJobDir.getAbsolutePath();
         // try semantic match on output files first
         // For now, just match on filename extension
         semantic_search_loop: for (j = 0; j < jobParams.length; j++) {

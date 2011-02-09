@@ -33,6 +33,7 @@ import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.AnalysisJobScheduler;
@@ -372,12 +373,21 @@ public class Analysis extends GenericWebService {
         String userId = getUsernameFromContext();
         boolean isAdmin = AuthorizationHelper.adminJobs(userId);
         canReadJob(isAdmin, userId, jobId);
+        
+        ServerConfiguration.Context context = ServerConfiguration.Context.getContextForUser(userId);
+        File rootJobDir = null;
+        try {
+            rootJobDir = ServerConfiguration.instance().getRootJobDir(context);
+        }
+        catch (Throwable t) {
+            throw new WebServiceException(t.getLocalizedMessage());
+        }
+        
         FileWrapper[] result = new FileWrapper[filenames.length];
         for (int i = 0; i < filenames.length; i++) {
-            String path = System.getProperty("jobs") + File.separator + jobId + File.separator + filenames[i];
-            File file = new File(path);
+            File file = new File(rootJobDir, jobId + File.separator + filenames[i]);
             if (file.exists()) {
-                result[i] = new FileWrapper(file.getName(), new DataHandler(new FileDataSource(path)), file.length(), file.lastModified());
+                result[i] = new FileWrapper(file.getName(), new DataHandler(new FileDataSource(file.getPath())), file.length(), file.lastModified());
             } 
             else {
                 result[i] = null;
@@ -399,6 +409,16 @@ public class Analysis extends GenericWebService {
         String userId = getUsernameFromContext();
         boolean isAdmin = AuthorizationHelper.adminJobs(userId);
         this.canReadJob(isAdmin, userId, jobId);
+        
+        ServerConfiguration.Context context = ServerConfiguration.Context.getContextForUser(userId);
+        File rootJobDir = null;
+        try {
+            rootJobDir = ServerConfiguration.instance().getRootJobDir(context);
+        }
+        catch (Throwable t) {
+            throw new WebServiceException(t.getLocalizedMessage());
+        }
+
 
         ArrayList<String> filenames = new ArrayList<String>();
         JobInfo jobInfo = getJob(jobId);
@@ -407,10 +427,9 @@ public class Analysis extends GenericWebService {
             if (parameters != null) {
                 for (ParameterInfo p : parameters) {
                     if (p.isOutputFile()) {
-                        String path = System.getProperty("jobs") + File.separator + p.getValue();
-                        File f = new File(path);
+                        File f = new File(rootJobDir, File.separator + p.getValue());
                         if (f.exists()) {
-                            filenames.add(path);
+                            filenames.add(f.getPath());
                         }
                     }
                 }

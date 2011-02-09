@@ -135,6 +135,7 @@ import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.JobInfoWrapper.InputFile;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
@@ -352,13 +353,18 @@ public class GenePatternAnalysisTask {
      * @throws IllegalArgumentException, If the URL refers to a file that the specified userId does not have permission to access.
      * @return The file or <tt>null</tt>
      */
-    protected File localInputUrlToFile(URL url, boolean isAdmin, String userId) {
+    private File localInputUrlToFile(URL url, boolean isAdmin, JobInfo jobInfo) {
         String path = url.getPath();
         try {
             path = URLDecoder.decode(path, "UTF-8");
         } 
         catch (UnsupportedEncodingException e) {
             log.error("Error", e);
+        }
+
+        String userId = null;
+        if (jobInfo != null) {
+            userId = jobInfo.getUserId();
         }
 
         if (path.endsWith("getFile.jsp")) {
@@ -469,10 +475,17 @@ public class GenePatternAnalysisTask {
             throw new IllegalArgumentException(t);
         }
         if (canReadJob(isAdmin, userId, parser.getJobNumber())) {
-            File jobsDir = new File(System.getProperty("jobs"));
-            File jobDir = new File(jobsDir, ""+parser.getJobNumber());
-            File localFile = new File(jobDir, parser.getRelativeFilePath());
-            if (localFile.exists()) {
+            File localFile = null;
+            try {
+                ServerConfiguration.Context context = ServerConfiguration.Context.getContextForJob(jobInfo);
+                File rootJobDir = ServerConfiguration.instance().getRootJobDir(context);
+                File jobDir = new File(rootJobDir, ""+parser.getJobNumber());
+                localFile = new File(jobDir, parser.getRelativeFilePath());
+            }
+            catch (ServerConfiguration.Exception e) {
+                log.error(e);
+            }
+            if (localFile != null && localFile.exists()) {
                 return localFile;
             }
         }
@@ -606,6 +619,15 @@ public class GenePatternAnalysisTask {
             isAdmin = false;
         }
         
+        
+        ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo);
+        File rootJobDir = null;
+        try {
+            rootJobDir = ServerConfiguration.instance().getRootJobDir(jobContext);
+        }
+        catch (ServerConfiguration.Exception e) {
+            throw new JobDispatchException("Error getting root job directory for jobId="+jobId, e);
+        }
         File outDir = null;
         try {
             //even though the job directory gets created when the job is added to the queue,
@@ -734,7 +756,7 @@ public class GenePatternAnalysisTask {
                             continue;
                         }
                         if (canReadJob(isAdmin, jobInfo.getUserId(), jobNumber)) {
-                            originalPath = System.getProperty("jobs") + "/" + originalPath;
+                            originalPath = rootJobDir.getPath() + "/" + originalPath;
                         }
                         else {
                             vProblems.add("You are not permitted to access the requested file: "+requestedFilename);
@@ -800,10 +822,8 @@ public class GenePatternAnalysisTask {
 
                         if (!isWebUpload && !isSoapUpload) {
                             if (inputFileGrandParent != null) {
-                                String jobs = System.getProperty("jobs");
-                                File jobsDir = new File(jobs);
                                 try {
-                                    isInherited = inputFileGrandParent.equals(jobsDir.getCanonicalPath());
+                                    isInherited = inputFileGrandParent.equals(rootJobDir.getCanonicalPath());
                                 }
                                 catch (IOException e) {
                                     throw new JobDispatchException(e);
@@ -999,7 +1019,7 @@ public class GenePatternAnalysisTask {
 
                                 //special case: output from a previous job
                                 if (!isAllowed) {
-                                    String jobsDirectory = new File(System.getProperty("jobs")).getCanonicalPath();
+                                    String jobsDirectory = rootJobDir.getCanonicalPath();
                                     boolean isJobOutput = jobsDirectory.equals(inputFileGrandParent);
                                     if (isJobOutput) {
                                         try {
@@ -1036,7 +1056,7 @@ public class GenePatternAnalysisTask {
                                 URL url = uri.toURL();
                                 if (isLocalHost(url)) {
                                     try {
-                                        File file = localInputUrlToFile(url, isAdmin, jobInfo.getUserId());
+                                        File file = localInputUrlToFile(url, isAdmin, jobInfo);
                                         if (file != null) {
                                             if (inputFileMode == INPUT_FILE_MODE.PATH) {
                                                 paramsCopy[i].setValue(file.getAbsolutePath());
@@ -3483,18 +3503,26 @@ public class GenePatternAnalysisTask {
      * depends on having the System property java.io.tmpdir set the same for both the Tomcat and JBoss instantiations.
      * </b>
      * 
-     * @param jobNumber
-     *            the job number whose storage directory is being sought
+     * @param jobNumber, the job number whose storage directory is being sought
      * @return String directory name on server of this job's files
      * @author Jim Lerner
      */
     public static String getJobDir(String jobNumber) {
-	String tmpDir = System.getProperty("jobs");
-	if (!tmpDir.endsWith(File.separator)) {
-	    tmpDir = tmpDir + "/";
-	}
-	tmpDir = tmpDir + jobNumber;
-	return tmpDir;
+        ServerConfiguration.Context context = ServerConfiguration.Context.getServerContext();
+        try {
+            File rootJobDir = ServerConfiguration.instance().getRootJobDir(context);
+            String tmpDir = rootJobDir.getPath();
+            if (!tmpDir.endsWith(File.separator)) {
+                tmpDir = tmpDir + "/";
+            }
+            tmpDir = tmpDir + jobNumber;
+            return tmpDir;
+        }
+        catch (ServerConfiguration.Exception e) {
+            log.error(e);
+        }
+        
+        return "../jobs/"+jobNumber;
     }
 
     // zip file support:

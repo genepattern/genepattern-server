@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.faces.FactoryFinder;
@@ -52,6 +51,7 @@ import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.auth.GroupPermission.Permission;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.User;
@@ -95,46 +95,9 @@ import org.json.JSONObject;
  */
 public class JobResultsServlet extends HttpServlet implements Servlet {
     private static Logger log = Logger.getLogger(JobResultsServlet.class);
-
-    private String jobsDirectory;
     
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-
-        String dir = config.getInitParameter("genepattern.properties");
-        File propFile = new File(dir, "genepattern.properties");
-        File customPropFile = new File(dir, "custom.properties");
-        Properties props = new Properties();
-
-        if (propFile.exists()) {
-            loadProperties(props, propFile);
-        }
-
-        if (customPropFile.exists()) {
-            loadProperties(props, customPropFile);
-        }
-        jobsDirectory = props.getProperty("jobs");
-    }
-
-    private void loadProperties(Properties props, File propFile) {
-        FileInputStream fis = null;
-        try {
-            fis = new FileInputStream(propFile);
-            props.load(fis);
-
-        } 
-        catch (IOException e) {
-            log.error(e);
-        } 
-        finally {
-            if (fis != null) {
-                try {
-                    fis.close();
-                } 
-                catch (IOException e) {
-                }
-            }
-        }
     }
 
     /**
@@ -217,7 +180,17 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             return;
         }
 
-        File fileObj = new File(jobsDirectory + File.separator + jobNumber + File.separator + file);
+        ServerConfiguration.Context context = ServerConfiguration.Context.getContextForUser(useridFromSession);
+        File rootJobDir = null;
+        try {
+            rootJobDir = ServerConfiguration.instance().getRootJobDir(context);
+        }
+        catch (ServerConfiguration.Exception e) {
+            log.error(e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
+            return;
+        }
+        File fileObj = new File(rootJobDir, jobNumber + File.separator + file);
         serveFile(fileObj, response);
     }
     
