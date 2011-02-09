@@ -33,7 +33,6 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -190,7 +189,7 @@ public class UploadedFilesBean {
         List<File> rval = new ArrayList<File>();
         String tmpDir = System.getProperty("java.io.tmpdir");
         File tmp = new File(tmpDir);
-        File[] fileList = tmp.listFiles();
+        File[] fileList = tmp.listFiles(nameFilt);
         if (fileList == null) {
             log.error("Error listing files in java.io.tmpdir="+tmpDir);
         }
@@ -202,14 +201,9 @@ public class UploadedFilesBean {
         return rval;
     }
 
-    static final FilenameFilter nameFilt = new FilenameFilter() {
-
+    private static final FilenameFilter nameFilt = new FilenameFilter() {
         public boolean accept(File dir, String name) {
-            HttpSession httpSession = UIBeanHelper.getSession();
-
             final String userId = UIBeanHelper.getUserId();
-
-            // TODO Auto-generated method stub
             return name.startsWith(userId + "_");
         }
     };
