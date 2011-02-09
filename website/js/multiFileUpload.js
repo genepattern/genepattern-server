@@ -14,7 +14,7 @@ var mismatchErrorBody =  "<ul style='font-weight:bold; color:red;'>" +
 
 var appletParams = 		"code='jmaster.jumploader.app.JumpLoaderApplet.class'" +
 "archive='/gp/downloads/jl_core_z.jar'" +
-"width='600' height='400' mayscript='true' >" +
+"width='600' height='250' mayscript='true' >" +
 "<param name='uc_uploadUrl' value='/gp/MultiFileUploadReceiver'/>" +	
 "<param name='uc_directoriesEnabled' value='true'/>" +	
 "<param name='uc_partitionLength' value='5000000'/>"  +
@@ -60,13 +60,13 @@ function addBatchSubmitLinksToPage() {
 		jQuery(this).parent().parent().find("span:last").after(
 			"<span class='description' style='display: inline;'>" +
 				"<input id='" + id + "_cb_multifilelaunch' type='radio'  value='multifile' name= '" + id + "_cb_multifilelaunch'/>" +
-				"<label for='" + id + "_cb_multifilelaunch'>Upload Multiple Files</label>"
+				"<label for='" + id + "_cb_multifilelaunch'>Advanced Upload</label>"
 		);
 	
 		jQuery(this).parent().after(
 				"<div id='" + id + "_div_multifile_launcher' style='display: none;'>" +
 						"<button type='button' id='" + id + "_button' class='jumploaderfilelauncher'>Launch File Browser</button>" +
-						"<p> Easily upload multiple files.  The module will be run once for each file.</p>" +
+						"<div>Select files to upload, for a batch file upload or files over 2GB.  The module will be run once for each file.</div>" +
 				"</div>" +
 				"<div id='" + id + "_div_multifile_javaoff' style='display: none;'>" + 
 					"<p style=color:red> You do not appear to have Java enabled.  Java is required to use the multiple file uploader. </p>" +				

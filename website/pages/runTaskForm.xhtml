@@ -136,7 +136,7 @@
 							</span>
 							<span class="description" style="display:inline">
 								<input type="radio" id="#{p.name}_cb_upload" name="#{p.name}_cb_upload" class="cb_upload" checked="yes" />
-								<label for="#{p.name}_cb_upload">Upload Multiple Files</label>
+								<label for="#{p.name}_cb_upload">Advanced Upload</label>
 							</span>	
 						</h:outputText>												
 					</h:outputText>					
@@ -147,13 +147,15 @@
                       <h:outputText rendered="#{empty p.defaultValue}">
                         <div id="#{p.name}_div_file">
                           <input name="#{p.name}" id="#{p.name}" size="30" type="file"/>
+                          <div>Select a single file under 2GB to upload.  To execute a batch upload or upload files over 2GB use the advanced upload tool.</div>
                         </div>
                         <div id="#{p.name}_div_url" style="display:none">
                           <input id="#{p.name}_url" name="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}"/>
                           <h:outputText rendered="#{runTaskBean.allowInputFilePaths}">
 							<a rel="lyteframe" title="Browse for #{p.name}" rev="width: 400px; height: 300px; scrolling: auto" 
-                            href="#{facesContext.externalContext.requestContextPath}/jqueryFileTree/index.jsf?p=#{p.name}">Browse Server File System...</a>
+                            	href="#{facesContext.externalContext.requestContextPath}/jqueryFileTree/index.jsf?p=#{p.name}">Browse Server File System...</a>
                         </h:outputText>
+                        <div>Enter a URL or path name to the file you wish to input.</div> 
                         </div>
                         <span class="description" style="display:inline">
                             <input type="radio" id="#{p.name}_cb_url" name="#{p.name}_cb" value="url" onclick="showUrlInput('#{p.name}');" />
@@ -162,7 +164,7 @@
                         </span>
                         <span class="description" style="display:inline">
                             <input type="radio" id="#{p.name}_cb_file" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');" checked="yes" />
-                            <label for="#{p.name}_cb_file">Upload File</label>
+                            <label for="#{p.name}_cb_file">Basic Upload</label>
                         </span>
                       </h:outputText>
                       
@@ -182,7 +184,7 @@
                                 checked="yes"><h:outputText rendered="#{runTaskBean.allowInputFilePaths}">Specify File Path or URL</h:outputText><h:outputText rendered="#{!runTaskBean.allowInputFilePaths}">Specify URL</h:outputText></input>
                         </span>
                         <span class="description" style="display:inline">
-                            <input type="radio" id="#{p.name}_cb_file" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');">Upload File</input>
+                            <input type="radio" id="#{p.name}_cb_file" name="#{p.name}_cb" value="file" onclick="showFileInput('#{p.name}');">Basic Upload</input>
                         </span>
                       </h:outputText>
                     </h:outputText>
@@ -219,6 +221,7 @@
                   </h:outputText>
                 </tr>
               </t:dataList>
+              
               <h:outputText rendered="#{!empty runTaskBean.parameters}">
                 <tr>
                   <td valign="top">&#160;</td>
