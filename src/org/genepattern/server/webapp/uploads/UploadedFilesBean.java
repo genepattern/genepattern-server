@@ -125,7 +125,7 @@ public class UploadedFilesBean {
         HttpSession httpSession = UIBeanHelper.getSession();
         // http://127.0.0.1:8080/gp/getFile.jsp?job=0&file=ted_run9065171030618019207.tmp%2Fsmall_mmrc.res
 
-        return UIBeanHelper.getServer() + "/gp/getFile.jsp?task=&file=" + dirname + "/" + filename;
+        return UIBeanHelper.getServer() + "/getFile.jsp?task=&file=" + dirname + "/" + filename;
 
     }
 
@@ -136,7 +136,7 @@ public class UploadedFilesBean {
         HttpSession httpSession = UIBeanHelper.getSession();
         // http://127.0.0.1:8080/gp/getFile.jsp?job=0&file=ted_run9065171030618019207.tmp%2Fsmall_mmrc.res
 
-        return UIBeanHelper.getServer() + "/gp/getFile.jsp?task=&file=" + dirname + "/" + filename;
+        return UIBeanHelper.getServer() + "/getFile.jsp?task=&file=" + dirname + "/" + filename;
 
     }
 
