@@ -248,12 +248,16 @@ public class UploadedFilesBean {
              * once we have subfolders and shared folders in GS
              */
             int dirCount = 0;
-            UploadDirectory[] dirs =  { new UploadDirectory("Job Files"), new UploadDirectory("Uploaded Files") };
-            for (UploadDirectory userDir : dirs) {
+            List<DirectoryFileListPair> dirs =  new ArrayList<DirectoryFileListPair>();
+            dirs.add(new DirectoryFileListPair(new UploadDirectory("Job Files"), getJobFiles()));
+            dirs.add(new DirectoryFileListPair(new UploadDirectory("Uploaded Files"), getUserUploadFiles()));
+            
+            for (DirectoryFileListPair pair : dirs) {
+                UploadDirectory userDir = pair.dir;
                 availableDirectories.add(userDir);
       
                 List<UploadFileInfo> fileList = new ArrayList<UploadFileInfo>();
-                List<File> originalList = dirCount == 0 ? getJobFiles() : getUserUploadFiles();
+                List<File> originalList = pair.fileList;
                 for (File f : originalList) {
                     File[] fList = f.listFiles();
                     if (fList == null) {
@@ -412,6 +416,16 @@ public class UploadedFilesBean {
             else {
                 return 0;
             }
+        }
+    }
+    
+    private class DirectoryFileListPair {
+        public UploadDirectory dir;
+        public List<File> fileList;
+        
+        public DirectoryFileListPair(UploadDirectory dir, List<File> fileList) {
+            this.dir =dir;
+            this.fileList = fileList;
         }
     }
 
