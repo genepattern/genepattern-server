@@ -127,7 +127,8 @@ public class MultiFileUploadReceiver extends HttpServlet {
 	}
 	
 	private String getWriteDirectory(HttpServletRequest request,List<FileItem> postParameters) throws IOException{
-		String paramId = getParameter(postParameters, "paramId");
+	    String paramId = getParameter(postParameters, "paramId");
+	    String directUpload = getParameter(postParameters, "directUpload");
 		String writeDirectory = (String) request.getSession().getAttribute(paramId);
 		File directory = null;
 		if (writeDirectory != null){
@@ -138,13 +139,21 @@ public class MultiFileUploadReceiver extends HttpServlet {
 			String userName =  (String) request.getSession().getAttribute(GPConstants.USERID);					
 			//Create a temporary directory for the uploaded files.
 			String prefix = userName + "_run";
+			File dir = null;
+			if (directUpload != null) {
+			    dir = new File(System.getProperty("java.io.tmpdir") + "/" + System.getProperty("user.uploads.dir", "uploads"));
+			    // lazily create uploads directory if need be
+			    if (!dir.exists()) {
+			        dir.mkdir();
+			    }
+	        }
 			//use createTempFile to guarantee a unique name, but then change it to a directory
-			directory = File.createTempFile(prefix, null);
+			directory = File.createTempFile(prefix, null, dir);
 			directory.delete();
 			directory.mkdir();
 			writeDirectory = directory.getCanonicalPath();
 			request.getSession().setAttribute(paramId, writeDirectory);			
-		}				
+		}
 		return writeDirectory;		
 	}
 }

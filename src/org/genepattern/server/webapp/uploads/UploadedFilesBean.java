@@ -125,8 +125,7 @@ public class UploadedFilesBean {
         HttpSession httpSession = UIBeanHelper.getSession();
         // http://127.0.0.1:8080/gp/getFile.jsp?job=0&file=ted_run9065171030618019207.tmp%2Fsmall_mmrc.res
 
-        return UIBeanHelper.getServer() + "/gp/getFile.jsp?task=&file=" + dirname
-                + "/" + filename;
+        return UIBeanHelper.getServer() + "/gp/getFile.jsp?task=&file=" + dirname + "/" + filename;
 
     }
 
@@ -137,8 +136,7 @@ public class UploadedFilesBean {
         HttpSession httpSession = UIBeanHelper.getSession();
         // http://127.0.0.1:8080/gp/getFile.jsp?job=0&file=ted_run9065171030618019207.tmp%2Fsmall_mmrc.res
 
-        return UIBeanHelper.getServer() + "/gp/getFile.jsp?task=&file=" + dirname
-                + "/" + filename;
+        return UIBeanHelper.getServer() + "/gp/getFile.jsp?task=&file=" + dirname + "/" + filename;
 
     }
 
@@ -148,11 +146,9 @@ public class UploadedFilesBean {
      * @param ae
      */
     public void saveFileLocally(ActionEvent ae) {
-        String filenameParam = UIBeanHelper.getRequest().getParameter(
-                "filename");
+        String filenameParam = UIBeanHelper.getRequest().getParameter("filename");
         String dirnameParam = UIBeanHelper.getRequest().getParameter("path");
-        System.out.println("Save file locally " + dirnameParam + "/"
-                + filenameParam);
+        System.out.println("Save file locally " + dirnameParam + "/" + filenameParam);
 
         try {
             String url = getFileURL(dirnameParam, filenameParam);
@@ -164,8 +160,7 @@ public class UploadedFilesBean {
             ioe.printStackTrace();
         }
 
-        this.setMessageToUser("Saved from uploads " + dirnameParam + "/"
-                + filenameParam);
+        this.setMessageToUser("Saved from uploads " + dirnameParam + "/" + filenameParam);
     }
 
     /**
@@ -175,17 +170,18 @@ public class UploadedFilesBean {
      * @return
      */
     public int getCurrentUserFileCount() {
-        List<File> tmpFiles = listFilesInTmpDir();
-        return tmpFiles.size();
+        List<File> jobFiles = getJobFiles();
+        List<File> uploadFiles = getUserUploadFiles();
+        return jobFiles.size() + uploadFiles.size();
     }
     
     /**
-     * Helper method which lists all of the files in the user uploads directory,
+     * Helper method which lists all of the files in the temp dir for jobs,
      * it handles the corner-case where the tmpdir is not available.
      * 
      * @return
      */
-    private List<File> listFilesInTmpDir() {
+    public List<File> getJobFiles() {
         List<File> rval = new ArrayList<File>();
         String tmpDir = System.getProperty("java.io.tmpdir");
         File tmp = new File(tmpDir);
@@ -193,12 +189,28 @@ public class UploadedFilesBean {
         if (fileList == null) {
             log.error("Error listing files in java.io.tmpdir="+tmpDir);
         }
-        if(fileList != null) {
+        if (fileList != null) {
             for(File f : fileList) {
                 rval.add(f);
             }
         }
         return rval;
+    }
+    
+    public List<File> getUserUploadFiles() {
+        List<File> toReturn = new ArrayList<File>();
+        String uploadDir = System.getProperty("user.uploads.dir", System.getProperty("java.io.tmpdir") + "/uploads");
+        File tmp = new File(uploadDir);
+        File[] fileList = tmp.listFiles();
+        if (fileList == null) {
+            log.error("Error listing files in uploads dir: "+uploadDir);
+        }
+        if (fileList != null) {
+            for(File f : fileList) {
+                toReturn.add(f);
+            }
+        }
+        return toReturn;
     }
 
     private static final FilenameFilter nameFilt = new FilenameFilter() {
@@ -226,8 +238,7 @@ public class UploadedFilesBean {
             }
         }
 
-        if ((availableDirectories == null)
-                || (fileCount != getCurrentUserFileCount())) {
+        if ((availableDirectories == null) || (fileCount != getCurrentUserFileCount())) {
 
             availableDirectories = new ArrayList<UploadDirectory>();
             final String userId = UIBeanHelper.getUserId();
@@ -236,59 +247,63 @@ public class UploadedFilesBean {
              * The directory layer is unnecessary for now but will be needed
              * once we have subfolders and shared folders in GS
              */
-            UploadDirectory userDir = new UploadDirectory(userId);
-            availableDirectories.add(userDir);
-  
-            List<UploadFileInfo> fileList = new ArrayList<UploadFileInfo>();
-            List<File> originalList = listFilesInTmpDir();
-            for (File f : originalList) {
-                File[] fList = f.listFiles();
-                if (fList == null) {
-                    log.error("Error listing files in subdir="+f.getAbsolutePath());
-                }
-                if (fList != null) {
-                    for (File aFile : f.listFiles()) {
-                        UploadFileInfo ufi = new UploadFileInfo(aFile.getName());
-                        ufi.setUrl(getFileURL(f.getName(), aFile.getName()));
-                        ufi.setPath(f.getName());
-                        ufi.setGenePatternUrl(getGenePatternFileURL(f.getName(), aFile.getName()));
-                        ufi.setModified(aFile.lastModified());
-                        fileList.add(ufi);
+            int dirCount = 0;
+            UploadDirectory[] dirs =  { new UploadDirectory("Job Files"), new UploadDirectory("Uploaded Files") };
+            for (UploadDirectory userDir : dirs) {
+                availableDirectories.add(userDir);
+      
+                List<UploadFileInfo> fileList = new ArrayList<UploadFileInfo>();
+                List<File> originalList = dirCount == 0 ? getJobFiles() : getUserUploadFiles();
+                for (File f : originalList) {
+                    File[] fList = f.listFiles();
+                    if (fList == null) {
+                        log.error("Error listing files in subdir="+f.getAbsolutePath());
                     }
-                }
-            }
-            
-            // Sort all files by last modified date
-            Collections.sort(fileList, new FileModifiedComparator());
-            
-            int count = 0;
-            Map<String,Boolean> usedFileNames = new HashMap<String, Boolean>();
-            
-            Context userContext = Context.getContextForUser(userId);
-            int maxFiles = ServerConfiguration.instance().getGPIntegerProperty(userContext, "upload.maxfiles", DEFAULT_upload_maxfiles);
-
-            for (UploadFileInfo aFile : fileList) {
-                if (count >= maxFiles) {
-                    break;
-                }
-                if (usedFileNames.get(aFile.getFilename()) != null) {
-                    continue;
+                    if (fList != null) {
+                        for (File aFile : f.listFiles()) {
+                            UploadFileInfo ufi = new UploadFileInfo(aFile.getName());
+                            ufi.setUrl(getFileURL(f.getName(), aFile.getName()));
+                            ufi.setPath(f.getName());
+                            ufi.setGenePatternUrl(getGenePatternFileURL(f.getName(), aFile.getName()));
+                            ufi.setModified(aFile.lastModified());
+                            fileList.add(ufi);
+                        }
+                    }
                 }
                 
-                userDir.getUploadFiles().add(aFile);
-                Collection<TaskInfo> modules;
-                List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
-                modules = kindToModules.get(aFile.getKind());
-                if (modules != null) {
-                    for (TaskInfo t : modules) {
-                        KeyValuePair mi = new KeyValuePair(t.getShortName(), UIBeanHelper.encode(t.getLsid()));
-                        moduleMenuItems.add(mi);
+                // Sort all files by last modified date
+                Collections.sort(fileList, new FileModifiedComparator());
+                
+                int count = 0;
+                Map<String,Boolean> usedFileNames = new HashMap<String, Boolean>();
+                
+                Context userContext = Context.getContextForUser(userId);
+                int maxFiles = ServerConfiguration.instance().getGPIntegerProperty(userContext, "upload.maxfiles", DEFAULT_upload_maxfiles);
+    
+                for (UploadFileInfo aFile : fileList) {
+                    if (count >= maxFiles) {
+                        break;
                     }
-                    Collections.sort(moduleMenuItems, COMPARATOR);
+                    if (usedFileNames.get(aFile.getFilename()) != null) {
+                        continue;
+                    }
+                    
+                    userDir.getUploadFiles().add(aFile);
+                    Collection<TaskInfo> modules;
+                    List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
+                    modules = kindToModules.get(aFile.getKind());
+                    if (modules != null) {
+                        for (TaskInfo t : modules) {
+                            KeyValuePair mi = new KeyValuePair(t.getShortName(), UIBeanHelper.encode(t.getLsid()));
+                            moduleMenuItems.add(mi);
+                        }
+                        Collections.sort(moduleMenuItems, COMPARATOR);
+                    }
+                    aFile.setModuleMenuItems(moduleMenuItems);                
+                    usedFileNames.put(aFile.getFilename(), true);
+                    count++;
                 }
-                aFile.setModuleMenuItems(moduleMenuItems);                
-                usedFileNames.put(aFile.getFilename(), true);
-                count++;
+                dirCount++;
             }
         }
 

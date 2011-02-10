@@ -72,6 +72,7 @@ function appletInitialized(applet) {
 	applet.getMainView().getUploadView().showOpenDialog();	
 	attrSet = applet.getUploader().getAttributeSet();
 	attr = attrSet.createStringAttribute("paramId", Math.random());
+	attr = attrSet.createStringAttribute("directUpload", true);
 	attr.setSendToServer(true);
 }
 
