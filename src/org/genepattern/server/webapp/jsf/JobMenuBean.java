@@ -61,11 +61,27 @@ public class JobMenuBean {
             log.error("Error creating pipeline.", e1);
         }
     }
+    
+    private String prepJobFIleName(String name) {
+        return name.substring(3);
+    }
 
     public void saveFile(ActionEvent event) {
         HttpServletRequest request = UIBeanHelper.getRequest();
 
         String jobFileName = request.getParameter("jobFileName");
+        
+        if (jobFileName.contains("/gp/getFile.jsp")) {
+            HttpServletResponse response = UIBeanHelper.getResponse();
+            try {
+                response.sendRedirect(UIBeanHelper.getServer() + prepJobFIleName(jobFileName));
+            }
+            catch (IOException e) {
+                log.error("Problem redirecting to saved file");
+                e.printStackTrace();
+            }
+            return;
+        }
 
         jobFileName = UIBeanHelper.decode(jobFileName);
         if (jobFileName == null || "".equals(jobFileName.trim())) {
