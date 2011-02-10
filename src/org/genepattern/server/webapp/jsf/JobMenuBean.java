@@ -62,7 +62,7 @@ public class JobMenuBean {
         }
     }
     
-    private String prepJobFIleName(String name) {
+    private String prepJobFileName(String name) {
         return name.substring(3);
     }
 
@@ -74,7 +74,7 @@ public class JobMenuBean {
         if (jobFileName.contains("/gp/getFile.jsp")) {
             HttpServletResponse response = UIBeanHelper.getResponse();
             try {
-                response.sendRedirect(UIBeanHelper.getServer() + prepJobFIleName(jobFileName));
+                response.sendRedirect(UIBeanHelper.getServer() + prepJobFileName(jobFileName));
             }
             catch (IOException e) {
                 log.error("Problem redirecting to saved file");
