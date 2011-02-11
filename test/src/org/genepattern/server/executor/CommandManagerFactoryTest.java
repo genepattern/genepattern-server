@@ -63,7 +63,12 @@ public class CommandManagerFactoryTest extends TestCase {
         
         List<Throwable> errors = CommandManagerFactory.getInitializationErrors();
         if (errors != null && errors.size() > 0) {
-            fail(errors.get(0).getLocalizedMessage());
+            String errorMessage = "CommandManagerFactory initialization error, num="+errors.size();
+            Throwable first = errors.get(0);
+            if (first != null) {
+                errorMessage += " error[0]="+first.getMessage();
+            }
+            fail(errorMessage);
         }
         
         assertNotNull("Expecting non-null cmdMgr.commandExecutorsMap", cmdMgr.getCommandExecutorsMap());
@@ -215,6 +220,7 @@ public class CommandManagerFactoryTest extends TestCase {
     private void initializeYamlConfigFile(String filename) {
         File resourceDir = getSourceDir();
         System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
+        System.setProperty(ServerConfiguration.PROP_CONFIG_FILE, filename);
         
         Properties props = new Properties();
         String parserClass=BasicCommandManagerParser.class.getCanonicalName();
@@ -544,6 +550,8 @@ public class CommandManagerFactoryTest extends TestCase {
         System.setProperty("system.prop", "SYSTEM");
         System.setProperty("system.prop.override", "SYSTEM_VALUE");
         System.setProperty("system.prop.override.to.null", "NOT_NULL");
+        
+        ServerProperties.instance().reloadProperties();
 
         //tests for 'test' user, use 'default.properties', no overrides
         Context userContext = Context.getContextForUser("test");

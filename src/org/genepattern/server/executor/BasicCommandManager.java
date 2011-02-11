@@ -10,6 +10,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.config.CommandManagerProperties;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
@@ -67,8 +68,8 @@ public class BasicCommandManager implements CommandManager {
     }
 
     private boolean getJobQueueSuspendedFlag() {
-        Boolean suspended = Boolean.valueOf(
-                this.configProperties.getTop().getDefaultProperty("job.queue.suspend_on_start", "false") );
+        ServerConfiguration.Context serverContext = ServerConfiguration.Context.getServerContext();
+        boolean suspended = ServerConfiguration.instance().getGPBooleanProperty(serverContext, "job.queue.suspend_on_start");
         return suspended;
     }
     
@@ -217,9 +218,9 @@ public class BasicCommandManager implements CommandManager {
     }
 
     private CommandManagerProperties configProperties = new CommandManagerProperties();
-    public CommandManagerProperties getConfigProperties() {
-        return configProperties;
-    }
+//    public CommandManagerProperties getConfigProperties() {
+//        return configProperties;
+//    }
     public void setConfigProperties(CommandManagerProperties configProperties) {
         this.configProperties = configProperties;
     }
@@ -262,6 +263,9 @@ public class BasicCommandManager implements CommandManager {
         //}
 
         //initialize to default executor
+        //TODO: consider alternate implementation, 
+        //    ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo);
+        //    String cmdExecId = ServerConfiguration.instance().getGPProperty(jobContext, "executor");        
         String cmdExecId = this.configProperties.getCommandExecutorId(jobInfo);
         if (cmdExecId == null) {
             log.info("no commandExecutorId found for job, use the first one from the list.");

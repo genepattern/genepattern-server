@@ -1,4 +1,4 @@
-package org.genepattern.server.executor;
+package org.genepattern.server.config;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,7 +6,8 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.Lsid;
-import org.genepattern.server.executor.CommandProperties.Value;
+import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.executor.ConfigurationException;
 import org.genepattern.webservice.JobInfo;
 
 /**
@@ -25,7 +26,7 @@ public class PropObj {
         defaultProperties.clear();
     }
 
-    public void addDefaultProperty(String key, Value value) {
+    public void addDefaultProperty(String key, CommandProperties.Value value) {
         defaultProperties.put(key, value);
     }
     
@@ -42,7 +43,7 @@ public class PropObj {
         modulePropertiesMap.clear();
     }
     
-    public void addModuleProperty(String moduleId, String propKey, Value propValue) {
+    public void addModuleProperty(String moduleId, String propKey, CommandProperties.Value propValue) {
         CommandProperties moduleProperties = modulePropertiesMap.get(moduleId);
         if (moduleProperties == null) {
             moduleProperties = new CommandProperties();
@@ -57,7 +58,7 @@ public class PropObj {
             String moduleId = mapEntry.getKey();
             for(Entry<?,?> entry : mapEntry.getValue().entrySet()) {
                 String propKey = ""+entry.getKey();
-                Value propValue = Value.parse(entry.getValue());
+                CommandProperties.Value propValue = CommandProperties.Value.parse(entry.getValue());
                 addModuleProperty(moduleId, propKey, propValue);
             }
         }

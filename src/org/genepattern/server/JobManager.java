@@ -27,6 +27,10 @@ import org.genepattern.webservice.WebServiceException;
 public class JobManager {
     private static Logger log = Logger.getLogger(JobManager.class);
     
+    //public static File getJobDirectory(JobInfo jobInfo) {
+    //    
+    //}
+
     /**
      * Create the job directory for a newly added job.
      * This method requires a valid jobId, but does not check if the jobId is valid.

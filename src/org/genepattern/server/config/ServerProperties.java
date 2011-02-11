@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Properties;
-import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
@@ -84,16 +83,6 @@ public class ServerProperties {
         
         File buildPropsFile = new File(resourceDir, "build.properties");
         appendPropertiesFromFile(buildPropsFile);
-    }
-    
-    private void appendProperties(String recordName, Properties props) {
-        Record propsRecord = new Record();
-        propsRecord.props = new Properties();
-        for(Entry<Object,Object> entry : props.entrySet()) {
-            propsRecord.props.setProperty(entry.getKey().toString(), entry.getValue().toString());
-        }
-        propsRecord.dateLoaded = new Date();
-        propertiesList.put(recordName, propsRecord);
     }
 
     private void appendPropertiesFromFile(File propsFile) {

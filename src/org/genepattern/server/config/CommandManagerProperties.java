@@ -7,9 +7,7 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
-import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.executor.CommandProperties;
-import org.genepattern.server.executor.PropObj;
 import org.genepattern.webservice.JobInfo;
 
 /**
@@ -67,7 +65,7 @@ public class CommandManagerProperties {
         return propObj;
     }
     
-    public String getProperty(Context context, String key) {
+    public String getProperty(ServerConfiguration.Context context, String key) {
         String rval = null;
         // 0) initialize from system properties and legacy properties files
         //    only if specified by the context

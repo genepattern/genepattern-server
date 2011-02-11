@@ -3,10 +3,7 @@ package org.genepattern.server.config;
 import java.io.File;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.executor.BasicCommandManager;
-import org.genepattern.server.executor.CommandManager;
-import org.genepattern.server.executor.CommandManagerFactory;
-import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.executor.ConfigurationException;
 import org.genepattern.webservice.JobInfo;
 
 /**
@@ -16,6 +13,8 @@ import org.genepattern.webservice.JobInfo;
  */
 public class ServerConfiguration {
     private static Logger log = Logger.getLogger(ServerConfiguration.class);
+    public static final String PROP_CONFIG_FILE = "command.manager.config.file";
+    //TODO: change to public static final String PROP_CONFIG_FILE = "config.file";
     
     public static class Exception extends java.lang.Exception {
         public Exception() {
@@ -23,6 +22,9 @@ public class ServerConfiguration {
         }
         public Exception(String message) {
             super(message);
+        }
+        public Exception(String message, Throwable t) {
+            super(message, t);
         }
     }
 
@@ -95,6 +97,35 @@ public class ServerConfiguration {
     }
     
     private ServerConfiguration() {
+        try {
+            reloadConfiguration();
+        }
+        catch (Throwable t) {
+            log.error("Error creating ServerConfiguration instance: "+t.getLocalizedMessage());
+        }
+    }
+    
+    public synchronized void reloadConfiguration() throws ConfigurationException {
+        String configFilePath = ServerProperties.instance().getProperty(PROP_CONFIG_FILE);
+        if (configFilePath == null) {
+            //TODO: change default config file name to "config.yml";
+            configFilePath = "job_configuration.yaml";
+            log.info(""+PROP_CONFIG_FILE+" not set, using default config file: "+configFilePath);
+        }
+        reloadConfiguration(configFilePath);
+    }
+    
+    public synchronized void reloadConfiguration(String configFilePath) throws ConfigurationException {
+        ConfigFileParser parser = new ConfigFileParser();
+        parser.parseConfigFile(configFilePath);
+        this.props = parser.getConfig();
+        this.jobConfig = parser.getJobConfig();
+    }
+    
+    private CommandManagerProperties props = new CommandManagerProperties();    
+    private JobConfigObj jobConfig = new  JobConfigObj();
+    public JobConfigObj getJobConfiguration() {
+        return jobConfig;
     }
 
     /**
@@ -135,27 +166,20 @@ public class ServerConfiguration {
         }
     }
 
-
     public String getGPProperty(Context context, String key) {
-        CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        //HACK: until I change the API for the CommandManager interface to take a Context arg
-        if (cmdMgr instanceof BasicCommandManager) {
-            BasicCommandManager defaultCmdMgr = (BasicCommandManager) cmdMgr;
-            return defaultCmdMgr.getConfigProperties().getProperty(context, key);
+        if (props == null) {
+            log.error("Invalid server configuration in getGPProperty("+key+")");
+            return null;
         }
-        //this should not be called unless the default (BasicCommandManager) implementation is replaced
-        CommandProperties props = null;
-        log.error("getCommandProperties(jobInfo) is deprecated; GP 3.3.2 uses getConfigProperties.getProperty(Context, key)");
-        if (context.jobInfo != null) {
-            props = CommandManagerFactory.getCommandManager().getCommandProperties(context.jobInfo);
-        }
-        else {
-            props = CommandManagerFactory.getCommandManager().getCommandProperties(null);
-        }
-        return props.getProperty(key);
+        return props.getProperty(context, key);
     }
     
     //helper methods for locating server files and folders
+    /**
+     * Get the jobs directory. Each job runs in a new working directory. 
+     * By default, the working directory is created in the root job dir for the server.
+     * Edit the 'jobs' property to customize this location.
+     */
     public File getRootJobDir(Context context) throws Exception {
         String jobsDir = getGPProperty(context, "jobs");
         if (jobsDir == null) {
@@ -165,6 +189,14 @@ public class ServerConfiguration {
         return rootJobDir;
     }
     
+    /**
+     * Get the default data directory for the given user.
+     * Requires a valid userId.
+     * 
+     * @param context
+     * @return
+     * @throws IllegalArgumentException
+     */
     public File getUserUploadDir(Context context) throws IllegalArgumentException {
         if (context == null) {
             throw new IllegalArgumentException("context is null");
