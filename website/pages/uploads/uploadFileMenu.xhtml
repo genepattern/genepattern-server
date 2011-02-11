@@ -19,6 +19,16 @@
         <tbody>
           <tr>
             <td>
+            <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file from the upload directory?');" 
+              		actionListener="#{uploadedFilesBean.deleteFile}" immediate="true" rendered="#{aFile.directUpload}" >
+                <f:param value="#{aFile.filename}" name="filename"/>
+                <f:param value="#{aFile.path}" name="path"/>
+                <f:param value="#{uploadDir.name}" name="dirname"/>           
+              </h:commandLink>
+            </td>
+          </tr>
+          <tr>
+            <td>
               <h:commandLink value="Save" actionListener="#{uploadedFilesBean.saveFileLocally}" immediate="true">
                 <f:param value="#{aFile.filename}" name="filename"/>
                    <f:param value="#{aFile.path}" name="path"/>

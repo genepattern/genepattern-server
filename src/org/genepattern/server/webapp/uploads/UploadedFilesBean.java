@@ -75,7 +75,7 @@ public class UploadedFilesBean {
         log.debug("Delete from uploads '" + dirnameParam + "/" + filenameParam +"'");
         
         Context context = Context.getContextForUser(UIBeanHelper.getUserId());
-        String tmpDir = ServerConfiguration.instance().getGPProperty(context, "java.io.tmpdir");
+        String tmpDir = ServerConfiguration.instance().getGPProperty(context, "user.upload.root.dir");
         File tmp = new File(tmpDir);
         File subDir = new File(tmp, dirnameParam);
         File theFile = new File(subDir, filenameParam);
@@ -253,7 +253,7 @@ public class UploadedFilesBean {
             int dirCount = 0;
             List<DirectoryFileListPair> dirs =  new ArrayList<DirectoryFileListPair>();
             dirs.add(new DirectoryFileListPair(new UploadDirectory("Job Files"), getJobFiles()));
-            dirs.add(new DirectoryFileListPair(new UploadDirectory("Uploaded Files"), getUserUploadFiles()));
+            dirs.add(new DirectoryFileListPair(new UploadDirectory("Uploaded Files"), getUserUploadFiles(), true));
             
             for (DirectoryFileListPair pair : dirs) {
                 UploadDirectory userDir = pair.dir;
@@ -273,6 +273,9 @@ public class UploadedFilesBean {
                             ufi.setPath(f.getName());
                             ufi.setGenePatternUrl(getGenePatternFileURL(f.getName(), aFile.getName()));
                             ufi.setModified(aFile.lastModified());
+                            if (pair.directUploadList) {
+                                ufi.setDirectUpload(true);
+                            }
                             fileList.add(ufi);
                         }
                     }
@@ -425,10 +428,16 @@ public class UploadedFilesBean {
     private class DirectoryFileListPair {
         public UploadDirectory dir;
         public List<File> fileList;
+        public boolean directUploadList = false;
         
         public DirectoryFileListPair(UploadDirectory dir, List<File> fileList) {
             this.dir =dir;
             this.fileList = fileList;
+        }
+        
+        public DirectoryFileListPair(UploadDirectory dir, List<File> fileList, boolean direct) {
+            this(dir, fileList);
+            this.directUploadList = direct;
         }
     }
 

@@ -21,7 +21,16 @@ public class UploadFileInfo {
     List<KeyValuePair> moduleInputParameters;
     List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
     long modified;
+    boolean directUpload = false;
     
+    public boolean getDirectUpload() {
+        return directUpload;
+    }
+
+    public void setDirectUpload(boolean directUpload) {
+        this.directUpload = directUpload;
+    }
+
     public String getFormattedModified() {
         return formatter.format(new Date(modified));
     }
