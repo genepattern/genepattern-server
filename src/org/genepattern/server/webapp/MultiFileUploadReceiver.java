@@ -22,6 +22,9 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.GPConstants;
 
 public class MultiFileUploadReceiver extends HttpServlet {
@@ -141,7 +144,8 @@ public class MultiFileUploadReceiver extends HttpServlet {
 			String prefix = userName + "_run";
 			File dir = null;
 			if (directUpload != null) {
-			    dir = new File(System.getProperty("java.io.tmpdir") + "/" + System.getProperty("user.uploads.dir", "uploads"));
+			    Context context = Context.getContextForUser(UIBeanHelper.getUserId());
+			    dir = new File(ServerConfiguration.instance().getGPProperty(context, "user.upload.root.dir"));
 			    // lazily create uploads directory if need be
 			    if (!dir.exists()) {
 			        dir.mkdir();

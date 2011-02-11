@@ -5,6 +5,9 @@ import="org.genepattern.server.webservice.server.DirectoryManager,
         org.genepattern.util.GPConstants, 
         java.io.BufferedInputStream, 
         java.io.File,
+        org.genepattern.server.config.ServerConfiguration,
+		org.genepattern.server.config.ServerConfiguration.Context,
+		org.genepattern.server.webapp.jsf.UIBeanHelper,
         java.io.FileInputStream,
         java.io.InputStream,
         java.io.OutputStream" %><%
@@ -53,6 +56,13 @@ import="org.genepattern.server.webservice.server.DirectoryManager,
             String prefix = userID + "_";
             // look in temp for pipelines run without saving
             in = new File(System.getProperty("java.io.tmpdir"), filename);
+            
+         	// look for file among the user uploaded files
+         	if (!in.exists()) {
+         		Context context = Context.getContextForUser(UIBeanHelper.getUserId());
+         		File dir = new File(ServerConfiguration.instance().getGPProperty(context, "user.upload.root.dir"));
+                in = new File(dir, filename);
+         	}
             
             //special case for Axis
             if (!in.exists()) {

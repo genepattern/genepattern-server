@@ -73,8 +73,9 @@ public class UploadedFilesBean {
         String dirnameParam = UIBeanHelper.getRequest().getParameter("path");
 
         log.debug("Delete from uploads '" + dirnameParam + "/" + filenameParam +"'");
-
-        String tmpDir = System.getProperty("java.io.tmpdir");
+        
+        Context context = Context.getContextForUser(UIBeanHelper.getUserId());
+        String tmpDir = ServerConfiguration.instance().getGPProperty(context, "java.io.tmpdir");
         File tmp = new File(tmpDir);
         File subDir = new File(tmp, dirnameParam);
         File theFile = new File(subDir, filenameParam);
@@ -183,7 +184,8 @@ public class UploadedFilesBean {
      */
     public List<File> getJobFiles() {
         List<File> rval = new ArrayList<File>();
-        String tmpDir = System.getProperty("java.io.tmpdir");
+        Context context = Context.getContextForUser(UIBeanHelper.getUserId());
+        String tmpDir = ServerConfiguration.instance().getGPProperty(context, "java.io.tmpdir");
         File tmp = new File(tmpDir);
         File[] fileList = tmp.listFiles(nameFilt);
         if (fileList == null) {
@@ -199,7 +201,8 @@ public class UploadedFilesBean {
     
     public List<File> getUserUploadFiles() {
         List<File> toReturn = new ArrayList<File>();
-        String uploadDir = System.getProperty("user.uploads.dir", System.getProperty("java.io.tmpdir") + "/uploads");
+        Context context = Context.getContextForUser(UIBeanHelper.getUserId());
+        String uploadDir = ServerConfiguration.instance().getGPProperty(context, "user.upload.root.dir");
         File tmp = new File(uploadDir);
         File[] fileList = tmp.listFiles();
         if (fileList == null) {
