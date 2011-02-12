@@ -1,8 +1,8 @@
 package org.genepattern.server.executor;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ConfigFileParser;
 import org.genepattern.server.config.JobConfigObj;
+import org.genepattern.server.config.ServerConfiguration;
 
 /**
  * Create a new instance of a CommandManager based on the ServerConfiguration.
@@ -16,17 +16,13 @@ public class BasicCommandManagerParser implements CommandManagerParser {
     
     public BasicCommandManagerParser() {
     }
-    
-    public CommandManager parseConfigFile(String pathToConfiguration) throws ConfigurationException {
-        this.cmdMgr = new BasicCommandManager();
-        
-        ConfigFileParser parser = new ConfigFileParser();
-        parser.parseConfigFile(pathToConfiguration);
-        JobConfigObj jobConfigObj = parser.getJobConfig();
-        cmdMgr.setConfigProperties( parser.getConfig() );
-        
-        //TODO: use ServerConfiguration rather than parsing the file again
-        //JobConfigObj jobConfigObj = ServerConfiguration.instance().getJobConfiguration();
+
+    /**
+     * @deprecated, ServerConfiguration parses the config file for jobs
+     */
+    public CommandManager parseConfigFile(final String pathToConfiguration) throws ConfigurationException {
+        this.cmdMgr = new BasicCommandManager(); 
+        JobConfigObj jobConfigObj = ServerConfiguration.instance().getJobConfiguration();
         initializeCommandExecutors(cmdMgr, jobConfigObj);
         return cmdMgr;
     }
@@ -36,19 +32,11 @@ public class BasicCommandManagerParser implements CommandManagerParser {
      * Delete this method after the {@link CommandManager#getCommandProperties(org.genepattern.webservice.JobInfo)} is modified.
      */
     public void reloadConfigFile(CommandManager commandManager, String pathToConfiguration) throws ConfigurationException {
-        if (!(commandManager instanceof BasicCommandManager)) {
-            throw new ConfigurationException("Expecting an instanceof "+this.getClass().getCanonicalName());
-        }
-        cmdMgr = (BasicCommandManager) commandManager;
-        cmdMgr.getConfigProperties().clear();
-        
-        ConfigFileParser parser = new ConfigFileParser();
-        parser.parseConfigFile(pathToConfiguration);
-        cmdMgr.setConfigProperties( parser.getConfig() );
+        ServerConfiguration.instance().reloadConfiguration(pathToConfiguration);
     }
     
     //initialize executors list
-    private void initializeCommandExecutors(BasicCommandManager cmdMgr, org.genepattern.server.config.JobConfigObj jobConfigObj) throws ConfigurationException {
+    private void initializeCommandExecutors(BasicCommandManager cmdMgr, org.genepattern.server.config.JobConfigObj jobConfigObj)  throws ConfigurationException {
         for(String execId : jobConfigObj.getExecutors().keySet()) {
             org.genepattern.server.config.ExecutorConfig execObj = jobConfigObj.getExecutors().get(execId);
             CommandExecutor cmdExecutor = initializeCommandExecutor(execObj);

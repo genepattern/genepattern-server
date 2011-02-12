@@ -216,14 +216,6 @@ public class BasicCommandManager implements CommandManager {
         boolean isPipeline;
         boolean isInPipeline;
     }
-
-    private CommandManagerProperties configProperties = new CommandManagerProperties();
-    public CommandManagerProperties getConfigProperties() {
-        return configProperties;
-    }
-    public void setConfigProperties(CommandManagerProperties configProperties) {
-        this.configProperties = configProperties;
-    }
     
     //map cmdExecId - commandExecutor
     private LinkedHashMap<String,CommandExecutor> cmdExecutorsMap = new LinkedHashMap<String,CommandExecutor>();
@@ -263,10 +255,8 @@ public class BasicCommandManager implements CommandManager {
         //}
 
         //initialize to default executor
-        //TODO: consider alternate implementation, 
-        //    ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo);
-        //    String cmdExecId = ServerConfiguration.instance().getGPProperty(jobContext, "executor");        
-        String cmdExecId = this.configProperties.getCommandExecutorId(jobInfo);
+        CommandManagerProperties configProps = ServerConfiguration.instance().getCommandManagerProperties();
+        String cmdExecId = configProps.getCommandExecutorId(jobInfo);
         if (cmdExecId == null) {
             log.info("no commandExecutorId found for job, use the first one from the list.");
             cmdExecId = getFirstCmdExecId();
@@ -292,7 +282,8 @@ public class BasicCommandManager implements CommandManager {
     }
     
     public CommandProperties getCommandProperties(JobInfo jobInfo) {
-        CommandProperties props = this.configProperties.getCommandProperties(jobInfo);
+        CommandManagerProperties configProps = ServerConfiguration.instance().getCommandManagerProperties();
+        CommandProperties props = configProps.getCommandProperties(jobInfo);
         CommandProperties commandProps = new CommandProperties(props);
         return commandProps;
     }
@@ -364,7 +355,8 @@ public class BasicCommandManager implements CommandManager {
     
     private synchronized void initPipelineExecutor() {
         log.debug("initializing pipeline executor");
-        String defaultPipelineExecId = this.configProperties.getTop().getDefaultProperty("pipeline.executor");
+        CommandManagerProperties configProps = ServerConfiguration.instance().getCommandManagerProperties();
+        String defaultPipelineExecId = configProps.getTop().getDefaultProperty("pipeline.executor");
         if (defaultPipelineExecId == null) {
             defaultPipelineExecId = DEFAULT_PIPELINE_EXEC_ID;
         }

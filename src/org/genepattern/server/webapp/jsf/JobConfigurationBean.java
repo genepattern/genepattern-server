@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandManager;
 import org.genepattern.server.executor.CommandManagerFactory;
-import org.genepattern.server.executor.ConfigurationException;
 
 /**
  * Backing bean for configuring command executors via the web interface.
@@ -88,28 +88,33 @@ public class JobConfigurationBean {
      * Reload the configuration file, this does not initialize command executors. To do that you will need to call #shutdown and then #startup.
      */
     public void reloadJobConfiguration() throws Exception {
-        CommandManagerFactory.reloadConfigFile();
+        ServerConfiguration.instance().reloadConfiguration();
     }
     
     public String getParser() {
-        return CommandManagerFactory.getParser();
+        return "";
     }
     
     public boolean getHasErrors() {
-        return CommandManagerFactory.getInitializationErrors().size() > 0;
+        return ServerConfiguration.instance().getInitializationErrors().size() > 0;
     }
 
     public List<Throwable> getConfigurationFileErrors() {
-        return CommandManagerFactory.getInitializationErrors();
+        return ServerConfiguration.instance().getInitializationErrors();
     }
     
     public String getConfigurationFilepath() {
         File configFile = null;
         try {
-            configFile = CommandManagerFactory.getConfigurationFile();
-            return configFile.getAbsolutePath();
+            configFile = ServerConfiguration.instance().getConfigFile();
+            if (configFile != null) {
+                return configFile.getAbsolutePath();
+            }
+            else {
+                return "";
+            }
         }
-        catch (ConfigurationException e) {
+        catch (Throwable t) {
             return "";
         }
     }
@@ -121,10 +126,13 @@ public class JobConfigurationBean {
     public String getConfigurationFileContent() {
         File configFile = null;
         try {
-            configFile = CommandManagerFactory.getConfigurationFile();
+            configFile = ServerConfiguration.instance().getConfigFile();
         } 
-        catch (ConfigurationException e) {
+        catch (Throwable e) {
             return e.getLocalizedMessage();
+        }
+        if (configFile == null) {
+            return "configFile is null";
         }
         String logFileContent = ServerSettingsBean.getLog(configFile);
         return logFileContent;

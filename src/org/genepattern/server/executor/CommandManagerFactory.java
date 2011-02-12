@@ -1,13 +1,12 @@
 package org.genepattern.server.executor;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration;
 
 /**
  * Initialize and hold a single instance of a CommandManager for the GenePattern Server.
@@ -28,28 +27,11 @@ import org.apache.log4j.Logger;
 public class CommandManagerFactory {
     private static Logger log = Logger.getLogger(CommandManagerFactory.class);
 
-    private final static String PROP_COMMAND_MANAGER_PARSER="command.manager.parser";
-    private final static String PROP_COMMAND_MANAGER_CONFIG_FILE="command.manager.config.file";
-
-    //aka the location of the genepattern.properties file
-    private static File resourceDirectory = null;
-    
-    private static String parser = null;
-    private static String configFile = null;
-
     private static boolean running = false;
     private static List<Throwable> errors = new ArrayList<Throwable>();
-    private static CommandManager manager = null;
+    private static BasicCommandManager manager = null;
     
     private CommandManagerFactory() {
-    }
-    
-    public static String getParser() {
-        return parser;
-    }
-    
-    public static String getConfigFile() {
-        return configFile;
     }
 
     /**
@@ -60,21 +42,8 @@ public class CommandManagerFactory {
             return manager;
         }
         //lazy init ...
-        initializeCommandManager(null);
+        initializeCommandManager();
         return manager;
-    }
-
-    /**
-     * Get the list of errors, if any, which resulted from instantiating the CommandManager.
-     * 
-     * Note: at the moment, calling reloadConfig does not reset the list of errors. This is because
-     * there are some cases where errors in the config file can only be corrected
-     * by restarting the job execution engine.
-     * 
-     * @return
-     */
-    public static List<Throwable> getInitializationErrors() {
-        return errors;
     }
     
     public static boolean isRunning() {
@@ -84,7 +53,7 @@ public class CommandManagerFactory {
     public static void startJobQueue() {
         //start the command executors before starting the internal job queue ...
         log.info("\tstarting job queue...");
-        initializeCommandManager(System.getProperties());
+        initializeCommandManager();
         CommandManager cmdManager = getCommandManager();
         cmdManager.startCommandExecutors();
         cmdManager.startAnalysisService();
@@ -108,126 +77,36 @@ public class CommandManagerFactory {
     }
     
     /**
-     * Create a new instance of CommandManager, using the given properties.
+     * Create a new instance of CommandManager.
      * This method replaces the current manager with a new instance.
      * 
      * @param properties
      */
-    public static synchronized void initializeCommandManager(Properties properties) {
+    public static synchronized void initializeCommandManager() {
         if (manager != null) {
             log.info("replacing current command manager with a new instance");
         }
-        errors.clear();
-        setProperties(properties);
-        manager = createCommandManager(parser, configFile);
-    }
-
-    /**
-     * Create a new instance of the CommandManager, using the given parser and configuration file.
-     * @param parserClass
-     * @param configFilePath
-     */
-    public static synchronized void initializeCommandManager(final String parserClass, final String configFilePath) {
-        parser = parserClass;
-        configFile = configFilePath;
-        manager = createCommandManager(parser, configFile);
-    }
-
-    /**
-     * Reset to defaults, then check for custom settings in the properties object.
-     * If the properties is null check System properties.
-     */
-    private static void setProperties(Properties properties) {
-        parser = null;
-        configFile = null;
-        if (properties == null) {
-            properties = System.getProperties();
-        }
-        parser = properties.getProperty(PROP_COMMAND_MANAGER_PARSER);
-        configFile = properties.getProperty(PROP_COMMAND_MANAGER_CONFIG_FILE);
+        manager = createCommandManager();
     }
     
-    public static File getConfigurationFile() throws ConfigurationException {
-        return getConfigurationFile(configFile);
-    }
-    
-    /**
-     * Get a File object for the named configuration file as specified in the 'genepattern.properties' file. E.g.
-     * <code>
-     *     command.manager.config.file=job_configuration.yaml
-     *     or
-     *     command.manager.config.file=/fully/qualified/path/to/job_configuration.yaml
-     * </code>
-     * If a relative path is given, load the file relative to the resources directory as specified by the 
-     * system property, 'genepattern.properties'. The location of the resources directory can be overwritten by calling setResourceDirectory().
-     * If there is no resource directory, load the file relative to the current working directory.
-     * @param configuration
-     * @return a valid File or null
-     */
-    public static File getConfigurationFile(String configuration) throws ConfigurationException {
-        if (configuration == null || configuration.length() == 0) {
-            return null;
-        }
-        File f = new File(configuration);
-        if (!f.isAbsolute()) {
-            //load the configuration file from the resources directory
-            File parent = getResourceDirectory();
-            if (parent != null) {
-                f = new File(parent, configuration);
-            }
-        }
-        if (!f.canRead()) {
-            if (!f.exists()) {
-                throw new ConfigurationException("Configuration file does not exist: "+f.getAbsolutePath());
-            }
-            else {
-                throw new ConfigurationException("Cannot read configuration file: "+f.getAbsolutePath());
-            }
-        }
-        return f;
-    }
-    
-    public static void setResourceDirectory(File dir) {
-        resourceDirectory = dir;
-    }
-
-    /**
-     * Get the resource directory, the parent directory of the genepattern.properties file.
-     * @return a File or null if there is a configuration error 
-     */
-    public static File getResourceDirectory() {
-        if (resourceDirectory != null) {
-            return resourceDirectory;
-        }
-        File rval = null;
-        String pathToResourceDir = System.getProperty("genepattern.properties");
-        if (pathToResourceDir != null) {
-            rval = new File(pathToResourceDir);
-        }
-        else {
-            log.error("Missing required system property, 'genepattern.properties'");
-        }
-        return rval;
-    }
-
-    private static synchronized CommandManager createCommandManager(String configParserClass, String configFile) {
-        CommandManagerParser configParser = null;
-        if (configParserClass == null) {
+    private static synchronized BasicCommandManager createCommandManager() {
+        if (ServerConfiguration.instance().getInitializationErrors().size() > 0) {
+            log.error("server configuration errors, creating default command manager");
             return createDefaultCommandManager();
         }
+        BasicCommandManagerParser parser = new BasicCommandManagerParser();
         try {
-            log.info("loading CommandManagerLoader from class "+configParserClass);
-            configParser = (CommandManagerParser) Class.forName(configParserClass).newInstance();
-            return configParser.parseConfigFile(configFile);
-        } 
+            BasicCommandManager cmdMgr = (BasicCommandManager) parser.parseConfigFile(null);
+            return cmdMgr;
+        }
         catch (final Exception e) {
-            errors.add(e);
-            log.error("Failed to load custom command manager loader class: "+configParserClass, e);
-            return createDefaultCommandManager();
+          errors.add(e);
+          log.error("Failed to load custom command manager loader class: "+BasicCommandManagerParser.class.getCanonicalName(), e);
+          return createDefaultCommandManager();
         }
     }
     
-    private static synchronized CommandManager createDefaultCommandManager() {
+    private static synchronized BasicCommandManager createDefaultCommandManager() {
         BasicCommandManager commandManager = new BasicCommandManager();
         CommandExecutor cmdExecutor = new RuntimeCommandExecutor();
         try {
@@ -240,26 +119,6 @@ public class CommandManagerFactory {
         return commandManager;
     }
     
-    public static synchronized void reloadConfigFile() {
-        reloadConfigFile(configFile);
-    }
-    
-    public static synchronized void reloadConfigFile(String filepath) {
-        configFile = filepath;
-        if (parser == null || configFile == null || manager == null) {
-            log.error("reloadConfigFile("+filepath+") ignored!");
-            return;
-        }
-        try {
-            CommandManagerParser parserInstance = (CommandManagerParser) Class.forName(parser).newInstance();
-            parserInstance.reloadConfigFile(manager, configFile);
-        }
-        catch (Exception e) {
-            errors.add(e);
-            log.error("Unable to instantiate CommandManagerConfigParser for name: "+parser, e);
-        }
-    }
-    
     /**
      * Helper method, get the id (key into the commandExecutorsMap) for the given CommandExecutor.
      * @param cmdExecutor
@@ -270,14 +129,18 @@ public class CommandManagerFactory {
             log.error("null arg");
             return null;
         }
-        CommandManager mgr = getCommandManager();
-        Map<String,CommandExecutor> map = mgr.getCommandExecutorsMap();
+        if (manager == null) {
+            log.error("manager not initialized");
+            return null;
+        }
+        
+        Map<String,CommandExecutor> map = manager.getCommandExecutorsMap();
         if (!map.containsValue(cmdExecutor)) {
             log.error("commandExecutorsMap does not contain value for "+cmdExecutor.getClass().getCanonicalName());
             return null;
         }
         
-        for(Entry<String,CommandExecutor> entry : mgr.getCommandExecutorsMap().entrySet()) {
+        for(Entry<String,CommandExecutor> entry : manager.getCommandExecutorsMap().entrySet()) {
             if(cmdExecutor == entry.getValue()) {
                 return entry.getKey();
             }

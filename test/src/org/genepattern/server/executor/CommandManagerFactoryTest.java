@@ -3,7 +3,6 @@ package org.genepattern.server.executor;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import junit.framework.TestCase;
 
@@ -61,7 +60,8 @@ public class CommandManagerFactoryTest extends TestCase {
     private static void validateCommandManager(CommandManager cmdMgr) {
         assertNotNull("Expecting non-null cmdMgr", cmdMgr);
         
-        List<Throwable> errors = CommandManagerFactory.getInitializationErrors();
+        List<Throwable> errors = ServerConfiguration.instance().getInitializationErrors();
+        
         if (errors != null && errors.size() > 0) {
             String errorMessage = "CommandManagerFactory initialization error, num="+errors.size();
             Throwable first = errors.get(0);
@@ -102,7 +102,7 @@ public class CommandManagerFactoryTest extends TestCase {
      * Test that the default command manager factory is loaded when initialized with null input.
      */
     public void testNullProperties() {
-        CommandManagerFactory.initializeCommandManager(null);
+        CommandManagerFactory.initializeCommandManager();
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
         validateDefaultConfig(cmdMgr);
     }
@@ -111,56 +111,61 @@ public class CommandManagerFactoryTest extends TestCase {
      * Test that the default command manager factory is loaded when initialized with empty properties.
      */
     public void testEmptyProperties() {
-        Properties props = new Properties();
-        CommandManagerFactory.initializeCommandManager(props);
+        //Properties props = new Properties();
+        CommandManagerFactory.initializeCommandManager();
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
         validateDefaultConfig(cmdMgr);
     }
     
     /**
-     * Test when the default command manager factory is loaded with the given config file is set, but it is not a path to a readable file.
+     * Test when the server configuration file is set, but it is not a path to a readable file.
      * Either because the config file does not exist, or because the file is not readable.
      */
-    public void testMissingConfigFile() {
-        Properties props = new Properties();
-        props.put("command.manager.parser", BasicCommandManagerParser.class.getCanonicalName());
+    public void testMissingConfigFile() { 
         //load the config file from the same directory as this class file
         //Note: make sure your test build copies the test files into the classpath
         String classname = this.getClass().getCanonicalName();
         String filepath = "test/src/"+classname.replace('.', '/')+"/filenotfound.yaml";
-        props.put("command.manager.config.file", filepath);
-        CommandManagerFactory.initializeCommandManager(props);
-        assertEquals("expecting initializion error", 1, CommandManagerFactory.getInitializationErrors().size()); 
+        File resourceDir = getSourceDir();
+        System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
+        System.setProperty(ServerConfiguration.PROP_CONFIG_FILE, filepath);
+        
+        ServerConfiguration.instance().reloadConfiguration();
+        CommandManagerFactory.initializeCommandManager();
+        assertEquals("expecting initializion error", 1, ServerConfiguration.instance().getInitializationErrors().size()); 
         //now, clear the errors
-        CommandManagerFactory.getInitializationErrors().clear();
+        ServerConfiguration.instance().getInitializationErrors().clear();
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
         validateDefaultConfig(cmdMgr);
     }
     
-    public void testSampleYamlConfigFromSystemProps() {
+    /**
+     * load the example file with a relative path.
+     */
+    public void testJobConfigurationExample() {
         File resourceDir = new File("resources");
         String pathToResourceDir = resourceDir.getAbsolutePath();
-        String parserClass=BasicCommandManagerParser.class.getCanonicalName();
         System.setProperty("genepattern.properties", pathToResourceDir);
-        System.setProperty("command.manager.parser", parserClass);
-        System.setProperty("command.manager.config.file", "job_configuration_example.yaml");
-
-        CommandManagerFactory.initializeCommandManager(System.getProperties());
+        ServerConfiguration.instance().reloadConfiguration("job_configuration_example.yaml");
+        CommandManagerFactory.initializeCommandManager();
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
         validateExampleJobConfig(cmdMgr);
     }
 
-    public void testSampleYamlConfigFromProps() throws Exception {
+    /**
+     * load the example file with an absolute path.
+     * @throws Exception
+     */
+    public void testJobConfigurationExampleAbsPath() throws Exception { 
+        System.getProperties().remove("genepattern.properties");
+        String val = System.getProperty("genepattern.properties");
+        assertNull("'genepattern.properties' should not be set", val);
+       
         File resourceDir = new File("resources");
-        String pathToResourceDir = resourceDir.getAbsolutePath();
-        System.setProperty("genepattern.properties", pathToResourceDir);
+        String absPath = resourceDir.getAbsolutePath() + "/" + "job_configuration_example.yaml";
+        ServerConfiguration.instance().reloadConfiguration(absPath);
 
-        Properties props = new Properties();
-        String parserClass=BasicCommandManagerParser.class.getCanonicalName();
-        props.put("command.manager.parser", parserClass);
-        props.put("command.manager.config.file", "job_configuration_example.yaml");
-
-        CommandManagerFactory.initializeCommandManager(props);
+        CommandManagerFactory.initializeCommandManager();
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
         validateExampleJobConfig(cmdMgr);
     }
@@ -221,12 +226,8 @@ public class CommandManagerFactoryTest extends TestCase {
         File resourceDir = getSourceDir();
         System.setProperty("genepattern.properties", resourceDir.getAbsolutePath());
         System.setProperty(ServerConfiguration.PROP_CONFIG_FILE, filename);
-        
-        Properties props = new Properties();
-        String parserClass=BasicCommandManagerParser.class.getCanonicalName();
-        props.put("command.manager.parser", parserClass);
-        props.put("command.manager.config.file", filename);
-        CommandManagerFactory.initializeCommandManager(props);
+        ServerConfiguration.instance().reloadConfiguration(filename);
+        CommandManagerFactory.initializeCommandManager();
         
         validateCommandManager(CommandManagerFactory.getCommandManager());
     }
@@ -388,7 +389,7 @@ public class CommandManagerFactoryTest extends TestCase {
     
     public void testReloadConfiguration() throws CommandExecutorNotFoundException {
         initializeYamlConfigFile("test_config.yaml");
-        CommandManagerFactory.reloadConfigFile("test_config_reload.yaml");
+        ServerConfiguration.instance().reloadConfiguration("test_config_reload.yaml");
         
         JobInfo jobInfo = new JobInfo();
         jobInfo.setUserId("testuser");
@@ -631,7 +632,7 @@ public class CommandManagerFactoryTest extends TestCase {
     public void testExtraBsubArgs() throws CommandExecutorNotFoundException {
         initializeYamlConfigFile("test_config_lsf_extraBsubArgs.yaml");
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
-        List<Throwable> errors = CommandManagerFactory.getInitializationErrors();
+        List<Throwable> errors = ServerConfiguration.instance().getInitializationErrors();
         for(Throwable t : errors) {
             fail(""+t.getLocalizedMessage());
         }

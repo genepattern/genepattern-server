@@ -21,14 +21,23 @@ import org.yaml.snakeyaml.Yaml;
 public class ConfigFileParser {
     private static Logger log = Logger.getLogger(ConfigFileParser.class);
     
-    //input
-    private String configFilename = null;
+    //----input
+    //the absolute or relative path to the config file, if relative it is relative to the resources dir
+    private String configFilepath = null;
     private File configFile = null;
-    //output
+    //----output
     private CommandManagerProperties config = new CommandManagerProperties();
     private JobConfigObj jobConfigObj = null;
 
     public ConfigFileParser() {
+    }
+    
+    public String getConfigFilepath() {
+        return configFilepath;
+    }
+    
+    public File getConfigFile() {
+        return configFile;
     }
     
     public CommandManagerProperties getConfig() {
@@ -52,8 +61,8 @@ public class ConfigFileParser {
     }
     
     private void setConfigFilename(String s) throws ConfigurationException {
-        this.configFilename = s;
-        this.configFile = ServerConfigurationFactory.getConfigurationFile(configFilename);
+        this.configFilepath = s;
+        this.configFile = ServerConfigurationFactory.getConfigurationFile(configFilepath);
     }
     
     /**
@@ -155,7 +164,6 @@ public class ConfigFileParser {
     }
 
     private void reloadCommandManagerProperties(JobConfigObj jobConfigObj) throws ConfigurationException {
-        //CommandManagerProperties config = this.commandManager.getConfigProperties();
         if (config == null) {
             config = new CommandManagerProperties();
         }

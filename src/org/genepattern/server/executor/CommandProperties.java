@@ -113,11 +113,7 @@ public class CommandProperties {
     public CommandProperties(CommandProperties from) {
         props.putAll(from.props);
     }
-    
-//    public CommandProperties(org.genepattern.server.config.CommandProperties from) {
-//        initFromProperties(from.toProperties());
-//    }
-    
+
     public void clear() {
         props.clear();
     }

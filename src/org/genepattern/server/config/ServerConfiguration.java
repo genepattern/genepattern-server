@@ -1,9 +1,10 @@
 package org.genepattern.server.config;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.executor.ConfigurationException;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
 
@@ -110,28 +111,69 @@ public class ServerConfiguration {
             reloadConfiguration();
         }
         catch (Throwable t) {
+            errors.add(t);
             log.error("Error creating ServerConfiguration instance: "+t.getLocalizedMessage());
         }
     }
+
+    private String configFilepath = null;
+    private File configFile = null;
+
+    //cache any errors thrown while loading/reloading the configuration file
+    private List<Throwable> errors = new ArrayList<Throwable>();
     
-    public synchronized void reloadConfiguration() throws ConfigurationException {
-        String configFilePath = ServerProperties.instance().getProperty(PROP_CONFIG_FILE);
-        if (configFilePath == null) {
+    public synchronized void reloadConfiguration() {
+        this.configFilepath = ServerProperties.instance().getProperty(PROP_CONFIG_FILE);
+        if (configFilepath == null) {
             //TODO: change default config file name to "config.yml";
-            configFilePath = "job_configuration.yaml";
-            log.info(""+PROP_CONFIG_FILE+" not set, using default config file: "+configFilePath);
+            configFilepath = "job_configuration.yaml";
+            log.info(""+PROP_CONFIG_FILE+" not set, using default config file: "+configFilepath);
         }
-        reloadConfiguration(configFilePath);
+        reloadConfiguration(configFilepath);
     }
     
-    public synchronized void reloadConfiguration(String configFilePath) throws ConfigurationException {
-        ConfigFileParser parser = new ConfigFileParser();
-        parser.parseConfigFile(configFilePath);
-        this.props = parser.getConfig();
-        this.jobConfig = parser.getJobConfig();
+    public synchronized void reloadConfiguration(String configFilepath) {
+        try {
+            this.configFilepath = configFilepath;
+            errors.clear();
+            ConfigFileParser parser = new ConfigFileParser();
+            parser.parseConfigFile(configFilepath);
+            this.configFile = parser.getConfigFile();
+            this.cmdMgrProps = parser.getConfig();
+            this.jobConfig = parser.getJobConfig();
+        }
+        catch (Throwable t) {
+            errors.add(t);
+            log.error(t);
+        }
     }
     
-    private CommandManagerProperties props = new CommandManagerProperties();    
+    public String getConfigFilepath() {
+        return configFilepath;
+    }
+    
+    public File getConfigFile() {
+        return configFile;
+    }
+
+    /**
+     * Get the list of errors, if any, which resulted from instantiating the CommandManager.
+     * 
+     * Note: at the moment, calling reloadConfig does not reset the list of errors. This is because
+     * there are some cases where errors in the config file can only be corrected
+     * by restarting the job execution engine.
+     * 
+     * @return
+     */
+    public List<Throwable> getInitializationErrors() {
+        return errors;
+    }
+
+    //legacy (circa GP 3.2.3 ;) code ... in transition from old job configuration file to server configuration file 
+    private CommandManagerProperties cmdMgrProps = new CommandManagerProperties();
+    public CommandManagerProperties getCommandManagerProperties() {
+        return cmdMgrProps;
+    }
     private JobConfigObj jobConfig = new  JobConfigObj();
     public JobConfigObj getJobConfiguration() {
         return jobConfig;
@@ -176,11 +218,11 @@ public class ServerConfiguration {
     }
 
     public String getGPProperty(Context context, String key) {
-        if (props == null) {
+        if (cmdMgrProps == null) {
             log.error("Invalid server configuration in getGPProperty("+key+")");
             return null;
         }
-        return props.getProperty(context, key);
+        return cmdMgrProps.getProperty(context, key);
     }
     
     //helper methods for locating server files and folders
