@@ -5,6 +5,7 @@ import java.io.File;
 import org.apache.log4j.Logger;
 import org.genepattern.server.executor.ConfigurationException;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.TaskInfo;
 
 /**
  * Server configuration.
@@ -34,6 +35,7 @@ public class ServerConfiguration {
         //hard-coded default value is true for compatibility with GP 3.2.4 and earlier
         private boolean checkPropertiesFiles = true;
         private String userId = null;
+        private TaskInfo taskInfo = null;
         private JobInfo jobInfo = null;
         
         public static Context getServerContext() {
@@ -82,6 +84,13 @@ public class ServerConfiguration {
         public String getUserId() {
             return userId;
         }
+        
+        public void setTaskInfo(TaskInfo taskInfo) {
+            this.taskInfo = taskInfo;
+        }
+        public TaskInfo getTaskInfo() {
+            return this.taskInfo;
+        } 
         
         public void setJobInfo(JobInfo jobInfo) {
             this.jobInfo = jobInfo;

@@ -137,6 +137,7 @@ import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.JobInfoWrapper.InputFile;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerProperties;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
@@ -3243,6 +3244,15 @@ public class GenePatternAnalysisTask {
                             isOptional = true;
                         }
                         break;
+                    }
+                    if (!isOptional) {
+                        //check system properties
+                        Context serverContext = ServerConfiguration.Context.getServerContext();
+                        String prop = ServerConfiguration.instance().getGPProperty(serverContext, varName);
+                        if (prop != null) {
+                            //server properties are optional
+                            isOptional = true;
+                        }
                     }
                     if (!isOptional) {
                         vProblems.add(taskName + ": no substitution available for " + LEFT_DELIMITER + varName + RIGHT_DELIMITER

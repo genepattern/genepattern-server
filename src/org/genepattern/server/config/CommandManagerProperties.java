@@ -151,6 +151,10 @@ public class CommandManagerProperties {
                 }
             }
         }
+        
+        // 6) TODO: from taskInfo, replace with module command line parameters with default values ...
+        
+        // 7) TODO: from jobInfo, replace with job command line parameters supplied by the user
         return rval;
     }
 
