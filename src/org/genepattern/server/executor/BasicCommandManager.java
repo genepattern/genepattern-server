@@ -218,9 +218,9 @@ public class BasicCommandManager implements CommandManager {
     }
 
     private CommandManagerProperties configProperties = new CommandManagerProperties();
-//    public CommandManagerProperties getConfigProperties() {
-//        return configProperties;
-//    }
+    public CommandManagerProperties getConfigProperties() {
+        return configProperties;
+    }
     public void setConfigProperties(CommandManagerProperties configProperties) {
         this.configProperties = configProperties;
     }

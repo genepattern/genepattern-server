@@ -1,79 +1,50 @@
 package org.genepattern.server.executor;
 
-import java.io.File;
-
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ConfigFileParser;
 import org.genepattern.server.config.JobConfigObj;
 
 /**
- * Parse job configuration properties from a file in YAML format.
+ * Create a new instance of a CommandManager based on the ServerConfiguration.
  * 
  * @author pcarr
  */
 public class BasicCommandManagerParser implements CommandManagerParser {
     private static Logger log = Logger.getLogger(BasicCommandManagerParser.class);
     
-    private String configFilename = null;
-    private File configFile = null;
     private BasicCommandManager cmdMgr = null;
     
     public BasicCommandManagerParser() {
     }
     
     public CommandManager parseConfigFile(String pathToConfiguration) throws ConfigurationException {
-        BasicCommandManager cmdMgr = new BasicCommandManager();
-        reloadConfigFile(cmdMgr, pathToConfiguration);
-        return cmdMgr;
-    }
-    
-    public void reloadConfigFile(CommandManager commandManager, String pathToConfiguration) throws ConfigurationException {
-        if (!(commandManager instanceof BasicCommandManager)) {
-            throw new ConfigurationException("Expecting an instanceof "+this.getClass().getCanonicalName());
-        }
-        this.cmdMgr = (BasicCommandManager) commandManager;
-        setConfigFilename(pathToConfiguration);
-        
+        this.cmdMgr = new BasicCommandManager();
         
         ConfigFileParser parser = new ConfigFileParser();
         parser.parseConfigFile(pathToConfiguration);
         JobConfigObj jobConfigObj = parser.getJobConfig();
         cmdMgr.setConfigProperties( parser.getConfig() );
+        
+        //TODO: use ServerConfiguration rather than parsing the file again
         //JobConfigObj jobConfigObj = ServerConfiguration.instance().getJobConfiguration();
         initializeCommandExecutors(cmdMgr, jobConfigObj);
-//
-//        
-//        synchronized(cmdMgr) {
-//            ServerConfiguration.instance().reloadConfiguration(pathToConfiguration);
-//            cmdMgr.setConfigProperties(parser.getConfig);
-//            
-//            JobConfigObj jobConfigObj = this.parse(this.configFile);
-//            reloadCommandManagerProperties(jobConfigObj);
-//        }
+        return cmdMgr;
     }
-
-//    public CommandManager parseConfigFile(String pathToConfiguration) throws ConfigurationException {
-//        setConfigFilename(pathToConfiguration);
-//        JobConfigObj jobConfigObj = this.parse(this.configFile);
-//        this.commandManager = this.initializeCommandManager(jobConfigObj);
-//        return this.commandManager;
-//    }
-//    
-//    public void reloadConfigFile(CommandManager cmdMgr, String pathToConfiguration) throws Exception {
-//        if (!(cmdMgr instanceof BasicCommandManager)) {
-//            throw new Exception("Expecting an instanceof "+this.getClass().getCanonicalName());
-//        }
-//        this.commandManager = (BasicCommandManager) cmdMgr;
-//        setConfigFilename(pathToConfiguration);
-//        synchronized(commandManager) {
-//            JobConfigObj jobConfigObj = this.parse(this.configFile);
-//            reloadCommandManagerProperties(jobConfigObj);
-//        }
-//    }
     
-    private void setConfigFilename(String s) throws ConfigurationException {
-        this.configFilename = s;
-        this.configFile = CommandManagerFactory.getConfigurationFile(configFilename);
+    /**
+     * @deprecated, reload from the ServerConfiguration instead.
+     * Delete this method after the {@link CommandManager#getCommandProperties(org.genepattern.webservice.JobInfo)} is modified.
+     */
+    public void reloadConfigFile(CommandManager commandManager, String pathToConfiguration) throws ConfigurationException {
+        if (!(commandManager instanceof BasicCommandManager)) {
+            throw new ConfigurationException("Expecting an instanceof "+this.getClass().getCanonicalName());
+        }
+        cmdMgr = (BasicCommandManager) commandManager;
+        cmdMgr.getConfigProperties().clear();
+        
+        ConfigFileParser parser = new ConfigFileParser();
+        parser.parseConfigFile(pathToConfiguration);
+        cmdMgr.setConfigProperties( parser.getConfig() );
     }
     
     //initialize executors list
@@ -84,36 +55,6 @@ public class BasicCommandManagerParser implements CommandManagerParser {
             cmdMgr.addCommandExecutor(execId, cmdExecutor);
         }
     }
-
-//    private void reloadCommandManagerProperties(JobConfigObj jobConfigObj) throws Exception {
-//        CommandManagerProperties config = this.commandManager.getConfigProperties();
-//        config.clear();
-//        setCommandManagerProperties(this.commandManager, jobConfigObj);
-//    }
-
-//    private void setCommandManagerProperties(BasicCommandManager cmdMgr, JobConfigObj jobConfigObj) throws ConfigurationException {
-//        CommandManagerProperties config = cmdMgr.getConfigProperties();
-//
-//        for(String execId : jobConfigObj.getExecutors().keySet()) {
-//            ExecutorConfig execObj = jobConfigObj.getExecutors().get(execId);
-//            //load executor->default.properties
-//            if (execObj.defaultProperties != null) { 
-//                PropObj propObj = config.getPropsForExecutor(execId);
-//                for (String key : (Set<String>) (Set) execObj.defaultProperties.keySet()) {
-//                    Value value = execObj.defaultProperties.get(key);
-//                    propObj.addDefaultProperty(key, value);
-//                }
-//            }
-//        }
-//        //store top level default.properties
-//        config.getTop().setDefaultProperties(jobConfigObj.getDefaultProperties());
-//        //store top level module.properties
-//        config.getTop().setModuleProperties(jobConfigObj.getModuleProperties());
-//        //store custom group.properties
-//        initializeCustomProperties(config, jobConfigObj.getGroupPropertiesObj(), true);
-//        //store custom user.properties
-//        initializeCustomProperties(config, jobConfigObj.getUserPropertiesObj(), false);
-//    }
 
     /**
      * Initialize an instance of a CommandExecutor from the settings stored in the given CmdExecConfigObj.
