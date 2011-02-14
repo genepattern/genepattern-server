@@ -72,7 +72,7 @@ public class BasicCommandManagerParser implements CommandManagerParser {
             cmdExecutor.setConfigurationFilename(execObj.getConfigurationFile());
         }
         if (execObj.getConfigurationProperties() != null) {
-            log.error("Ignoring configuration properties for execObj: "+execObj.getClassname());
+            cmdExecutor.setConfigurationProperties(execObj.getConfigurationProperties());
         }
         return cmdExecutor;
     }
