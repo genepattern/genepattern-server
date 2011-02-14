@@ -1,5 +1,6 @@
 package org.genepattern.server.message;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -8,7 +9,7 @@ import java.util.Date;
  * Maps to the SYSTEM_MESSAGE table in the GP database.
  * @author pcarr
  */
-public class SystemMessage {
+public class SystemMessage implements Serializable {
     private Long id = new Long(0); // INTEGER identity primary key,
     private String message = ""; // LONGVARCHAR not null,
     private Date startTime = null; // TIMESTAMP default now not null,
