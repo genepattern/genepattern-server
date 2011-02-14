@@ -242,11 +242,12 @@ public class ServerConfiguration {
     
     /**
      * Get the default data directory for the given user.
-     * Requires a valid userId.
+     * Requires a valid userId. This method will attempt to create a directory in the 'user.upload.root.dir' if
+     * it has not already been created.
      * 
      * @param context
      * @return
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException if a directory is not found for the userId.
      */
     public File getUserUploadDir(Context context) throws IllegalArgumentException {
         if (context == null) {
@@ -265,7 +266,7 @@ public class ServerConfiguration {
         if (userDir.exists()) {
             return userDir;
         }
-        boolean success = userDir.mkdir();
+        boolean success = userDir.mkdirs();
         if (!success) {
             throw new IllegalArgumentException("Unable to create upload directory for user "+context.getUserId()+", userDir="+userDir.getAbsolutePath());
         }

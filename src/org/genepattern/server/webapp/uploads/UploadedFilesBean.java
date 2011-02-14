@@ -201,17 +201,22 @@ public class UploadedFilesBean {
     
     public List<File> getUserUploadFiles() {
         List<File> toReturn = new ArrayList<File>();
-        Context context = Context.getContextForUser(UIBeanHelper.getUserId());
-        String uploadDir = ServerConfiguration.instance().getGPProperty(context, "user.upload.root.dir");
-        File tmp = new File(uploadDir);
-        File[] fileList = tmp.listFiles();
-        if (fileList == null) {
-            log.error("Error listing files in uploads dir: "+uploadDir);
-        }
-        if (fileList != null) {
-            for(File f : fileList) {
-                toReturn.add(f);
+        final String userId = UIBeanHelper.getUserId();
+        File[] fileList = null;
+        try {
+            Context context = Context.getContextForUser(userId);
+            File userUploadDir = ServerConfiguration.instance().getUserUploadDir(context);
+            if (userUploadDir != null && userUploadDir.canRead()) {
+                fileList = userUploadDir.listFiles();
             }
+            if (fileList != null) {
+                for(File f : fileList) {
+                    toReturn.add(f);
+                }
+            }
+        }
+        catch (Throwable t) {
+            log.error("Error listing uploaded files for user: "+userId, t);
         }
         return toReturn;
     }
