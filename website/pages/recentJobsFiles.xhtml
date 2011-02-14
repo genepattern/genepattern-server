@@ -20,6 +20,10 @@
       
   <!-- File section for recentJobs page-->
   <ui:composition>
+  	<t:dataList var="p" value="#{recentJob.directoryInputs}" rowIndexVar="paramIndex">
+      #{p.displayName}: (Directory File Input)  
+	<br />
+    </t:dataList>
   	<!--  Loop through input files -->
     <t:dataList var="p" value="#{recentJob.inputFiles}" rowIndexVar="paramIndex">
       <h:outputLink value="#{p.link}">#{p.truncatedDisplayValue}</h:outputLink>
