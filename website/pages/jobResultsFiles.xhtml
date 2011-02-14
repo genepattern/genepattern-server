@@ -22,7 +22,38 @@
        Inputs:   jobWrapper
    -->
 	<ui:composition>
-		<t:dataList var="fileInfo" value="#{jobWrapper.inputFiles}" rowIndexVar="index2">
+		<t:dataList var="fileInfo" value="#{jobWrapper.directoryInputs}" rowIndexVar="index2">
+			<script type="text/javascript" language="javascript">
+	        	var rowId = 'file_row_' + '#{jobWrapper.jobNumber}_#{index2}';
+	        	addFileRow('#{jobWrapper.jobNumber}', rowId);
+	      	</script>
+	      	<tr class="white" id="file_row_#{jobWrapper.jobNumber}_#{index2}">
+		        <td class="center"></td>
+		        
+		        <td class="right"></td>
+		        
+		        <td class="center"></td>
+		
+		        
+		        <td class="file"><img src="/gp/images/inputFile.gif" /><strong>#{fileInfo.displayName}</strong>: (Directory File Input)       	
+		        </td>
+		        
+		        <td class="right"></td>
+		          
+		        <td></td>
+		        
+		        <td></td>
+		        
+		        <td></td>
+		        
+		        <td></td>
+		        
+		        <td></td>
+		
+		    </tr>
+		</t:dataList>
+		
+		<t:dataList var="fileInfo" value="#{jobWrapper.inputFiles}" rowIndexVar="index3">
 			<script type="text/javascript" language="javascript">
 	        	var rowId = 'file_row_' + '#{jobWrapper.jobNumber}_#{index2}';
 	        	addFileRow('#{jobWrapper.jobNumber}', rowId);
@@ -64,7 +95,7 @@
 		    </tr>
 		</t:dataList>
 		
-    	<t:dataList var="fileInfo" value="#{jobWrapper.outputFileParameterInfos}" rowIndexVar="index3">
+    	<t:dataList var="fileInfo" value="#{jobWrapper.outputFileParameterInfos}" rowIndexVar="index4">
     	  <script type="text/javascript" language="javascript">
 	        var rowId = 'file_row_' + '#{jobWrapper.jobNumber}_#{index3}';
 	        addFileRow('#{jobWrapper.jobNumber}', rowId);

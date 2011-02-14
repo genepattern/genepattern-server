@@ -13,6 +13,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.JobInfoWrapper.InputFile;
+import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webapp.jsf.JobBean.OutputFileInfo;
@@ -63,6 +64,14 @@ public class JobResultsWrapper {
             return Collections.emptyList();
         }
         return jobInfoWrapper.getInputFiles();
+    }
+    
+    public List<ParameterInfoWrapper> getDirectoryInputs() {
+        if (jobInfoWrapper == null) {
+            log.debug("jobInfoWrapper is null in JobResultsWrapper; it should be populated!");
+            return Collections.emptyList();
+        }
+        return jobInfoWrapper.getDirectoryInputs();
     }
 
     public JobResultsWrapper(
