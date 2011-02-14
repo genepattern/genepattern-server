@@ -292,6 +292,22 @@ public class JobInfoWrapper implements Serializable {
             return isServerFilePath;
         }
         
+        /**
+         * Needed for JSF calls
+         * @return
+         */
+        public Boolean getInternalLink() {
+            return isInternalLink;
+        }
+        
+        /**
+         * Needed for JSF calls
+         * @return
+         */
+        public Boolean getExternalLink() {
+            return isExternalLink;
+        }
+        
         public File getInputFile() {
             // TODO: Get a File reference to the input file itself
             return null;
