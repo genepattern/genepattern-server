@@ -556,6 +556,15 @@ public class JobInfoWrapper implements Serializable {
     private List<ParameterInfoWrapper> inputParameters = new ArrayList<ParameterInfoWrapper>();
     private List<InputFile> inputFiles = new ArrayList<InputFile>();
     private List<OutputFile> outputFiles = new ArrayList<OutputFile>();
+    private List<ParameterInfoWrapper> directoryInputs = new ArrayList<ParameterInfoWrapper>();
+    public List<ParameterInfoWrapper> getDirectoryInputs() {
+        return directoryInputs;
+    }
+
+    public void setDirectoryInputs(List<ParameterInfoWrapper> directoryInputs) {
+        this.directoryInputs = directoryInputs;
+    }
+
     private List<OutputFile> outputFilesAndTaskLogs = new ArrayList<OutputFile>();
     
     private JobInfoWrapper parent = null;
@@ -738,6 +747,11 @@ public class JobInfoWrapper implements Serializable {
      */
     private void processParameterInfoArray() {
         for(ParameterInfo param : jobInfo.getParameterInfoArray()) {
+            if (param.isDirectory()) {
+                ParameterInfoWrapper directory = new ParameterInfoWrapper(param);
+                directoryInputs.add(directory);
+            }
+            
             if (param.isOutputFile()) {
                 //OutputFile outputFile = new OutputFile(kindToModules, outputDir, servletContextPath, jobInfo, param);
                 OutputFile outputFile = new OutputFile(outputDir, servletContextPath, jobInfo, param);

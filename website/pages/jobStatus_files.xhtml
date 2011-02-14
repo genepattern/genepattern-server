@@ -24,6 +24,23 @@
    -->
 	<ui:composition>
     	<div class="files" id="outputFilesDiv#{jobInfo.jobNumber}">
+    		<t:dataList var="directory" value="#{jobInfo.directoryInputs}">
+				    <p class="narrow">
+			    		<t:dataList var="bunk" value="#{jobInfo.numAncestors}" rowIndexVar="ancestorIndex">
+							<h:outputText rendered="#{ancestorIndex gt 0 and ancestorIndex lt 10}">
+								<img src="/gp/images/blank.gif"/>
+							</h:outputText>
+						</t:dataList>
+			    		<img src="/gp/images/inputFile.gif" title="input file"/> 
+			    		<strong>#{directory.name}</strong>: 
+			    		   <h:outputText  rendered="#{!empty directory.link}" escape="false">
+			    		    <a style="color:#0066FF;" href="#{directory.link}">(Directory File Input)</a>
+			    		   </h:outputText>
+			    		   <h:outputText  rendered="#{empty directory.link}" escape="false">
+			    		   (Directory File Input)
+			    		   </h:outputText>
+		    		</p>
+			</t:dataList>
     		<t:dataList var="inputFile" value="#{jobInfo.inputFiles}">
 				    <p class="narrow">
 			    		<t:dataList var="bunk" value="#{jobInfo.numAncestors}" rowIndexVar="ancestorIndex">
