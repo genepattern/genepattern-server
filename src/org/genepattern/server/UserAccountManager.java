@@ -13,6 +13,7 @@ import org.genepattern.server.auth.IAuthenticationPlugin;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.auth.NoAuthentication;
 import org.genepattern.server.auth.XmlGroupMembership;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 
@@ -92,6 +93,16 @@ public class UserAccountManager {
         if (user != null) {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
                     "User already registered: "+user.getUserId());
+        }
+        //3) can create user dir for user
+        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(username);
+        try {
+            File uploadDir = ServerConfiguration.instance().getUserUploadDir(userContext);
+            log.info("creating user upload dir: "+uploadDir.getPath());
+        }
+        catch (Throwable t) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME, 
+                    "Error creating directory for username="+username+", error: " + t.getLocalizedMessage() );
         }
     }
 
