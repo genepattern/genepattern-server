@@ -43,7 +43,7 @@
           </tr>
           <tr>
             <td>
-              <h:commandLink value="Save" actionListener="#{jobsMenuBean.saveFile}" immediate="true" rendered="#{not isInputFile or not outputFile.externalLink and not outputFile.internalLink}">
+              <h:commandLink value="Save" actionListener="#{jobsMenuBean.saveFile}" immediate="true" rendered="#{not isInputFile or not outputFile.externalLink and not outputFile.internalLink and not outputFile.serverFilePath}">
                 <f:param name="jobFileName" value="#{outputFile.link}" />
                 <f:param value="#{jobStatusBean.jobInfo.jobNumber}" name="jobNumber"/>
                
