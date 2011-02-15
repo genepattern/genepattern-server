@@ -7,8 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.executor.CommandProperties;
@@ -118,19 +116,11 @@ class LsfCommand {
 
         String commandLineStr = wrapCommandLineArgsInSingleQuotes(commandLine);
 
-        //String wrapperScript = lsfProperties.getProperty(LsfProperties.Key.WRAPPER_SCRIPT.getKey());
-        //if (wrapperScript != null) {
-        //    if (wrapperScript.contains(" ")) {
-        //        wrapperScript = "\""+wrapperScript+"\"";
-        //    }
-        //    commandLineStr = wrapperScript + " " + commandLineStr;
-        //}
         if (jobReportFilename != null && jobReportFilename.length() > 0) {
             commandLineStr += " >> " + wrapInSingleQuotes(stdoutFilename);
         }
         log.debug("lsf job commandLine: "+commandLineStr);
         this.lsfJob.setCommand(commandLineStr);
-        
         this.lsfJob.setCompletionListenerName(completionListenerClass.getName());
     }
     
@@ -140,7 +130,6 @@ class LsfCommand {
         //note: use the name of the job (the bsub -J arg) to map the GP JOB ID to the JOB_LSF table
         //    the internalJobId is (by default) configured as a primary key with a sequence
         this.lsfJob.setName(""+jobId);
-        
     }
     
     public LsfJob getLsfJob() {
@@ -155,7 +144,6 @@ class LsfCommand {
      * @return
      */
     private String wrapCommandLineArgsInSingleQuotes(String[] commandLine) {
-    	commandLine = hackFixForGP2866(commandLine);
         String rval = "";
         boolean first = true;
         for(String arg : commandLine) {
@@ -178,61 +166,6 @@ class LsfCommand {
         }
         arg = "'"+arg+"'";
         return arg;
-    }
-    
-    /**
-     * finds members of the commandLine array that were created using the prefix when specified option
-     * and splits them into 2 parts if appropriate. e.g. "--intervals path_to_file" would come in
-     * as a single element but really should be 2, "--intervals" and "path_to_file". This method
-     * will convert anything matching the regular expression (-[^ ]+) (.+) into 2 elements.
-     * 
-     * See jira GP-2866.
-     * 
-     * @param commandLine
-     * @return
-     */
-    //TODO remove this when GP-2866 is fixed
-    private String[] hackFixForGP2866(final String[] commandLine) {
-    	final List<String> fixedCommandLine = new ArrayList<String>();
-    	final Pattern pattern = Pattern.compile("(-[^ ]+) (.+)");
-    	for (final String arg : commandLine) {
-    		final Matcher matcher = pattern.matcher(arg);
-			if (matcher.matches()) {
-				fixedCommandLine.add(matcher.group(1));
-				fixedCommandLine.add(matcher.group(2));
-			} else {
-				fixedCommandLine.add(arg);
-			}
-		}
-    	
-    	return fixedCommandLine.toArray(new String[fixedCommandLine.size()]);
-    }
-
-    /**
-     * helper method which converts a list of String args into a single command line string for LSF submission.
-     * Because current version of BroadCore can only pass a single string arg as the bsub command (rather than a list of string)
-     * we need to wrap each arg in the original list in quotes, escaping special characters if necessary.
-     * @param commandLine
-     * @return
-     */
-    private String wrapCommandLineInDoubleQuotes(final String[] commandLine) {
-        final char[] special_chars = {'!', '$', '\"', '`'};
-        String rval = "";
-        boolean first = true;
-        for(String arg : commandLine) {
-            for(final char c : special_chars) {
-                arg = arg.replace(""+c, "\\"+c);
-            }
-            arg = "\""+arg+"\"";
-            if (first) {
-                first = false;
-            }
-            else {
-                rval += " ";
-            }
-            rval += arg;
-        }
-        return rval;
     }
     
     /**

@@ -113,6 +113,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -1403,6 +1405,7 @@ public class GenePatternAnalysisTask {
         }
 
         commandTokens = translateCommandline(commandTokens);
+        String[] cmdLineArgs = hackFixForGP2866(commandTokens);
         CommandExecutor cmdExec = null;
         try {
             cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
@@ -1419,7 +1422,7 @@ public class GenePatternAnalysisTask {
         catch (Exception e) {
             log.error("Error parsing 'job.dispatch.timeout="+jobDispatchTimeoutStr, e);
         }
-        runCommand(taskInfo.isPipeline(), cmdExec, jobDispatchTimeout, commandTokens, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
+        runCommand(taskInfo.isPipeline(), cmdExec, jobDispatchTimeout, cmdLineArgs, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
     }
 
     private void runCommand(final boolean isPipeline, final CommandExecutor cmdExec, final long jobDispatchTimeout, final String[] commandTokens, final Map<String, String> environmentVariables, final File outDir, final File stdoutFile, final File stderrFile, final JobInfo jobInfo, final File stdinFile) 
@@ -3000,6 +3003,33 @@ public class GenePatternAnalysisTask {
             }
         }
         return (String[]) v.toArray(new String[0]);
+    }
+    
+    /**
+     * finds members of the commandLine array that were created using the prefix when specified option
+     * and splits them into 2 parts if appropriate. e.g. "--intervals path_to_file" would come in
+     * as a single element but really should be 2, "--intervals" and "path_to_file". This method
+     * will convert anything matching the regular expression (-[^ ]+) (.+) into 2 elements.
+     * 
+     * See jira GP-2866.
+     * 
+     * @param commandLine
+     * @return
+     */
+    private String[] hackFixForGP2866(final String[] commandLine) {
+        final List<String> fixedCommandLine = new ArrayList<String>();
+        final Pattern pattern = Pattern.compile("(-[^ ]+) (.+)");
+        for (final String arg : commandLine) {
+            final Matcher matcher = pattern.matcher(arg);
+            if (matcher.matches()) {
+                fixedCommandLine.add(matcher.group(1));
+                fixedCommandLine.add(matcher.group(2));
+            } else {
+                fixedCommandLine.add(arg);
+            }
+        }
+        
+        return fixedCommandLine.toArray(new String[fixedCommandLine.size()]);
     }
 
     /**
