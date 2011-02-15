@@ -9,13 +9,15 @@
 default.properties:
     executor: RuntimeExec
     java_flags: -Xmx512m
-    # flag to enable batch execution of jobs from the run module web page
-    allow.batch.process: true
     # flag to allow users to input arbitrary network file paths as value to input file input parameters
     allow.input.file.paths: false
+    # flag to enable batch execution of jobs from the run module web page
+    allow.batch.process: true
+    # flag to allow users to submit jobs, set this to false to prevent new jobs
+    allow.new.job: true
+
     # the max number of files to display in uploaded files tab
     upload.maxfiles: 50
-
     #    
     # location of data files
     # relative file paths are accessed relative to the 'gp.home' directory

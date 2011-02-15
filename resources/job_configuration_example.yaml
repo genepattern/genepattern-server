@@ -38,6 +38,9 @@ default.properties:
     job.FilenameFilter: [ ".nfs*", ".lsf*" ]
     # initial status of the internal job queue, if true, it means jobs won't execute until the internal queue is resumed
     job.queue.suspend_on_start: false
+    # flag to allow users to submit jobs
+    allow.new.job: true
+    
 
 
 # a list of command executors

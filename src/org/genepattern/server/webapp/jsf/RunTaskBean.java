@@ -32,7 +32,6 @@ import org.genepattern.data.pipeline.PipelineUtil;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.genomespace.GenomeSpaceBean;
@@ -63,6 +62,8 @@ public class RunTaskBean {
     private Parameter[] parameters;
     private String version;
     private List<String> versions;
+    
+    private boolean allowNewJob = true;
     private boolean allowInputFilePaths = false;
     private boolean allowBatchProcess = false;
 
@@ -110,6 +111,7 @@ public class RunTaskBean {
         }
         
         Context userContext = Context.getContextForUser(userId);
+        allowNewJob = ServerConfiguration.instance().getGPBooleanProperty(userContext, "allow.new.job");
         allowInputFilePaths = ServerConfiguration.instance().getGPBooleanProperty(userContext, "allow.input.file.paths");
         allowBatchProcess = ServerConfiguration.instance().getGPBooleanProperty(userContext, "allow.batch.process");
     }
@@ -186,6 +188,10 @@ public class RunTaskBean {
 
     public List<String> getVersions() {
         return versions;
+    }
+
+    public boolean isAllowNewJob() {
+        return allowNewJob;
     }
 
     public boolean isAllowInputFilePaths() {

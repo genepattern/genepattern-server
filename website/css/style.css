@@ -766,13 +766,19 @@ h6 {
 	font-size: 10px;
 	font-weight: normal;
 	line-height: 13px;
-
 }
 input.error, select.error {
 	border: 1px solid red; 
 	background-color: #FFFCE2;  
 	background-position: right; 
 	background-repeat: no-repeat;
+}
+.server_error_message {
+    background-color: #FFFFFF;
+    border: solid #CCCCFF 2px;
+    padding: 10px;
+    color: #990000;
+    font-weight: normal;
 }
 
 .validation-error {

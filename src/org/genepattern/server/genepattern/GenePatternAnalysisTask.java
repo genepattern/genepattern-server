@@ -613,17 +613,15 @@ public class GenePatternAnalysisTask {
             return;
         }
         
-        // is the job owner an admin?
-        final boolean isAdmin;
-        if (jobInfo.getUserId() != null) {
-            isAdmin = AuthorizationHelper.adminJobs(jobInfo.getUserId());
-        }
-        else {
-            isAdmin = false;
-        }
-        
-        
         ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo);
+        //is disk space available
+        boolean allowNewJob = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "allow.new.job", true);
+        if (!allowNewJob) {
+            String errorMessage = 
+                "Job did not run because there is not enough disk space available.\n";
+            throw new JobDispatchException(errorMessage);
+        }
+
         File rootJobDir = null;
         try {
             rootJobDir = ServerConfiguration.instance().getRootJobDir(jobContext);
@@ -641,7 +639,16 @@ public class GenePatternAnalysisTask {
         catch (JobSubmissionException e) {
             throw new JobDispatchException("Error getting job directory for jobId="+jobId, e);
         }
-        
+
+        // is the job owner an admin?
+        final boolean isAdmin;
+        if (jobInfo.getUserId() != null) {
+            isAdmin = AuthorizationHelper.adminJobs(jobInfo.getUserId());
+        }
+        else {
+            isAdmin = false;
+        }
+       
         INPUT_FILE_MODE inputFileMode = getInputFileMode();
         boolean allowInputFilePaths = getAllowInputFilePaths();
 
