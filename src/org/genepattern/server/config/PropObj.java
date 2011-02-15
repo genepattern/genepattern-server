@@ -80,6 +80,10 @@ public class PropObj {
     public String getDefaultProperty(String key) {
         return getDefaultProperty(key, null);
     }
+    
+    public CommandProperties.Value getDefaultValue(String key) {
+        return defaultProperties.get(key);
+    }
 
     public String getDefaultProperty(String key, String defaultValue) {
         return defaultProperties.getProperty(key, defaultValue);

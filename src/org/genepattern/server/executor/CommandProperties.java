@@ -162,6 +162,13 @@ public class CommandProperties {
         return props.get(key);
     }
     
+    public Value get(String key, Value defaultValue) {
+        if (props.containsKey(key)) {
+            return props.get(key);
+        }
+        return defaultValue;
+    }
+    
     public Set<String> keySet() {
         return props.keySet();
     }

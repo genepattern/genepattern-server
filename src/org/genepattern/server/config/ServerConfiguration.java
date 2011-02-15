@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.TaskInfo;
 
@@ -192,6 +193,14 @@ public class ServerConfiguration {
         return Boolean.parseBoolean(prop);
     }
     
+    public boolean getGPBooleanProperty(Context context, String key, boolean defaultValue) {
+        String prop = getGPProperty(context, key);
+        if (prop == null) {
+            return defaultValue;
+        }
+        return Boolean.parseBoolean(prop);
+    }
+    
     /**
      * Utility method for parsing a property as an Integer.
      * 
@@ -217,12 +226,26 @@ public class ServerConfiguration {
         }
     }
 
+    /**
+     * @deprecated, use getValue instead, which supports lists.
+     * @param context
+     * @param key
+     * @return
+     */
     public String getGPProperty(Context context, String key) {
         if (cmdMgrProps == null) {
             log.error("Invalid server configuration in getGPProperty("+key+")");
             return null;
         }
         return cmdMgrProps.getProperty(context, key);
+    }
+    
+    public CommandProperties.Value getValue(Context context, String key) {
+        if (cmdMgrProps == null) {
+            log.error("Invalid server configuration in getGPProperty("+key+")");
+            return null;
+        }
+        return cmdMgrProps.getValue(context, key);
     }
     
     //helper methods for locating server files and folders
