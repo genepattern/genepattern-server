@@ -15,8 +15,16 @@ default.properties:
     allow.input.file.paths: false
     # the max number of files to display in uploaded files tab
     upload.maxfiles: 50
+
+    #    
+    # location of data files
+    # relative file paths are accessed relative to the 'gp.home' directory
+    # by default, gp.home is access relative to the working directory of the Tomcat server
+    gp.home: "../"
     # path to the root user upload dir
-    user.upload.root.dir: "../users"
+    user.upload.root.dir: users
+    user.upload.dir: uploads
+
 executors:
     # default executor for all jobs, it is included in GenePattern
     RuntimeExec:
@@ -24,4 +32,3 @@ executors:
         configuration.properties:
             # the total number of jobs to run concurrently
             num.threads: 20
-    

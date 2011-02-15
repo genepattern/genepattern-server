@@ -1565,6 +1565,8 @@ public class GenePatternAnalysisTask {
             return;
         }
         
+        ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo);
+        
         //validate the jobDir
         //Note: hard-coded rules, circa GP 3.2.4 and earlier, if we ever want to allow alternate locations for
         //    the job dir we will have to modify this restriction
@@ -1602,12 +1604,8 @@ public class GenePatternAnalysisTask {
         cleanupInputFiles(jobDir, jobInfoWrapper);
         File taskLog = writeExecutionLog(jobDir, jobInfoWrapper);
         
-        CommandProperties cmdProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
-
-        boolean checkExitValue = false;
-        boolean checkStderr = false;
-        checkExitValue = Boolean.valueOf( cmdProperties.getProperty("job.error_status.exit_value", "false") );
-        checkStderr = Boolean.valueOf( cmdProperties.getProperty("job.error_status.stderr", "true") );
+        boolean checkExitValue = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "job.error_status.exit_value", false);
+        boolean checkStderr = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "job.error_status.stderr", true);
 
         log.debug("for job#"+jobId+" checkExitValue="+checkExitValue+", checkStderr="+checkStderr);
 
@@ -1644,17 +1642,13 @@ public class GenePatternAnalysisTask {
         if (taskLog != null) {
             filenameFilter.addExactMatch(taskLog.getName());
         }
-
-        String globPattern = cmdProperties.getProperty("job.FilenameFilter");
-        if (globPattern == null) {
-            globPattern = System.getProperty(JobResultsFilenameFilter.KEY);            
+        
+        CommandProperties.Value globPatterns = ServerConfiguration.instance().getValue(jobContext, "job.FilenameFilter");
+        if (globPatterns != null) {
+            for(String globPattern : globPatterns.getValues()) {
+                filenameFilter.addGlob(globPattern);
+            }
         }
-        if (globPattern == null) {
-            globPattern = System.getProperty("job.FilenameFilter");
-        }
-        //TODO: test support for a list of values, e.g.
-        //    job.FilenameFilter: {".lsf*", ".nfs*" }
-        filenameFilter.setGlob(globPattern);
 
         List<File> outputFiles = findAllFiles(jobDir, filenameFilter);
 

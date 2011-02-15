@@ -35,9 +35,10 @@ default.properties:
     job.error_status.stderr: true
     job.error_status.exit_value: false
     # filter job results based on the given comma separated list of glob patterns
-    #job.FilenameFilter: .nfs*,.lsf
+    job.FilenameFilter: [ ".nfs*", ".lsf*" ]
     # initial status of the internal job queue, if true, it means jobs won't execute until the internal queue is resumed
     job.queue.suspend_on_start: false
+
 
 # a list of command executors
 # The executor id, 'org.genepattern.server.executor.PipelineExecutor', is reserved for the default executor which runs all GP pipelines.
