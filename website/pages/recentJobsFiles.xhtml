@@ -26,7 +26,7 @@
     </t:dataList>
   	<!--  Loop through input files -->
     <t:dataList var="p" value="#{recentJob.inputFiles}" rowIndexVar="paramIndex">
-      <h:outputLink value="#{p.link}">#{p.truncatedDisplayValue}</h:outputLink>
+      <h:outputLink value="#{p.link}"><strong>#{p.displayName}</strong>: #{p.truncatedDisplayValue}</h:outputLink>
       
       <!-- Image for popup menu -->
       <img src="/gp/images/smallOptions.gif" 
