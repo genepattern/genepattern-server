@@ -147,9 +147,10 @@ function showComboBox() {
 function handleSelect(e) {
 	var choicesBox = document.getElementById("comboBoxChoices");
 	// keyCodes for important keys - UP: 38 - DOWN: 40 - ENTER: 13
-	
 	// Handle the enter key
 	if (e.keyCode == 13) {
+		if (e.preventDefault) e.preventDefault();
+	    if (e.stopPropagation) e.stopPropagation();
 		choicesBox.childNodes[comboBoxSelect].childNodes[0].onclick();
 	}
 	
