@@ -165,7 +165,7 @@
 							<a rel="lyteframe" title="Browse for #{p.name}" rev="width: 400px; height: 300px; scrolling: auto" 
                             	href="#{facesContext.externalContext.requestContextPath}/jqueryFileTree/index.jsf?p=#{p.name}">Browse Server File System...</a>
                         </h:outputText>
-                        <div>Enter a URL or path name to the file you wish to input.</div> 
+                        <div>Enter a URL <h:outputText rendered="#{runTaskBean.allowInputFilePaths}"> or path name </h:outputText> to the file you wish to input.</div> 
                         </div>
                         <span class="description" style="display:inline">
                             <input type="radio" id="#{p.name}_cb_url" name="#{p.name}_cb" value="url" onclick="showUrlInput('#{p.name}');" />
