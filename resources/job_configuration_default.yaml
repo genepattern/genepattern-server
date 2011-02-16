@@ -27,6 +27,8 @@ default.properties:
     user.upload.root.dir: users
     user.upload.dir: uploads
 
+    # Turn off input file displays
+    display.input.results: false
 executors:
     # default executor for all jobs, it is included in GenePattern
     RuntimeExec:

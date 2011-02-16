@@ -15,6 +15,8 @@ import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.JobInfoWrapper.InputFile;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.auth.GroupPermission;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webapp.jsf.JobBean.OutputFileInfo;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -59,19 +61,19 @@ public class JobResultsWrapper {
     }
     
     public List<InputFile> getInputFiles() {
-        if (jobInfoWrapper == null) {
+        if (getJobInfoWrapper() == null) {
             log.debug("jobInfoWrapper is null in JobResultsWrapper; it should be populated!");
             return Collections.emptyList();
         }
-        return jobInfoWrapper.getInputFiles();
+        return getJobInfoWrapper().getInputFiles();
     }
     
     public List<ParameterInfoWrapper> getDirectoryInputs() {
-        if (jobInfoWrapper == null) {
+        if (getJobInfoWrapper() == null) {
             log.debug("jobInfoWrapper is null in JobResultsWrapper; it should be populated!");
             return Collections.emptyList();
         }
-        return jobInfoWrapper.getDirectoryInputs();
+        return getJobInfoWrapper().getDirectoryInputs();
     }
 
     public JobResultsWrapper(

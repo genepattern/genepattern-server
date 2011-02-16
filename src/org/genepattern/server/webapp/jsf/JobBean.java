@@ -46,6 +46,8 @@ import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.JobInfoWrapper.InputFile;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
 import org.genepattern.server.executor.JobTerminationException;
@@ -756,6 +758,11 @@ public class JobBean {
     }
     
     public JobInfoWrapper getJobInfoWrapper(int jobNumber) {
+        Context context = Context.getContextForUser(UIBeanHelper.getUserId());
+        if (!ServerConfiguration.instance().getGPBooleanProperty(context, "display.input.results", false)) {
+            return null;
+        }
+        
         String userId = UIBeanHelper.getUserId();
         HttpServletRequest request = UIBeanHelper.getRequest();
         String contextPath = request.getContextPath();
