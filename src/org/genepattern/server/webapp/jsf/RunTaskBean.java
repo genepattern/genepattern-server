@@ -111,7 +111,7 @@ public class RunTaskBean {
         }
         
         Context userContext = Context.getContextForUser(userId);
-        allowNewJob = ServerConfiguration.instance().getGPBooleanProperty(userContext, "allow.new.job");
+        allowNewJob = ServerConfiguration.instance().getGPBooleanProperty(userContext, "allow.new.job", true);
         allowInputFilePaths = ServerConfiguration.instance().getGPBooleanProperty(userContext, "allow.input.file.paths");
         allowBatchProcess = ServerConfiguration.instance().getGPBooleanProperty(userContext, "allow.batch.process");
     }
