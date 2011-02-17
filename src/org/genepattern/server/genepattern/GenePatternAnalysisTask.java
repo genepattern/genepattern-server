@@ -171,6 +171,7 @@ import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -3489,22 +3490,10 @@ public class GenePatternAnalysisTask {
         int formerID = loader.getTaskIDByName(lsid, originalUsername);
         boolean isNew = (formerID == -1);
         if (!isNew) {
-            try {
-                // delete the search engine indexes for this task so that it will be reindexed
-                log.debug("installTask: deleting index for previous task ID " + formerID);
-                // Indexer.deleteTask(formerID);
-                log.debug("installTask: deleted index");
-            } 
-            catch (Exception ioe) {
-                log.info(ioe + " while deleting search index for task " + name + " during update");
-                System.err.println(ioe + " while deleting search index for task " + name + " during update");
-            }
+            //remove the previous entry from the cache
+            TaskInfoCache.instance().removeFromCache(formerID);
         }
-        loader.run(isNew ? GenePatternTaskDBLoader.CREATE : GenePatternTaskDBLoader.UPDATE);
-        // IndexerDaemon.notifyTaskUpdate(loader.getTaskIDByName(LSID != null ? lsid : name, username));
-        
-        //TODO: refresh the cache
-        
+        loader.run(isNew ? GenePatternTaskDBLoader.CREATE : GenePatternTaskDBLoader.UPDATE);        
         return null;
     }
 
