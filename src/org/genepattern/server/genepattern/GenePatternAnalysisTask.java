@@ -2107,31 +2107,68 @@ public class GenePatternAnalysisTask {
     }
 
     private static boolean validateOS(String expected, String action) throws JobDispatchException {
-        String actual = System.getProperty("os.name");
+        if (expected == null || expected.trim().length() == 0) {
+            return true;
+        }
+        //split on ';'
+        String[] entries = expected.split(";");
+        if (entries.length == 1) {
+            return validateOSEntry(entries[0], action);
+        }
+        
+        //only need one valid entry
+        boolean valid = false;
+        for(String entry : entries) {
+            try {
+                boolean v = validateOSEntry(entry.trim(), action);
+                if (v) {
+                    valid = true;
+                }
+            }
+            catch (JobDispatchException e) {
+                //ignore
+            }
+        }
+        if (!valid) {
+            String actual = System.getProperty("os.name");
+            throw new JobDispatchException("Cannot " + action + " on this platform. Task requires on of " + expected
+                    + " operating systems, but this server is running " + actual);
+        }
+        return true;
+    }
+    
+    private static boolean validateOSEntry(final String _expected, final String _action) throws JobDispatchException {
+        final String _actual = System.getProperty("os.name");
         // eg. "Windows XP", "Linux", "Mac OS X", "OSF1"
+        final String expected = _expected.toLowerCase();
+        final String actual = _actual.toLowerCase();
+        
         if (expected.equals("")) {
             return true;
         }
-        if (expected.equals(ANY)) {
+        if (expected.equalsIgnoreCase(ANY)) {
             return true;
         }
         if (expected.equalsIgnoreCase(actual)) {
             return true;
         }
-        String MicrosoftBeginning = "Windows"; // Windows XP, Windows ME,
-        // Windows XP, Windows 2000, etc.
+        // Windows XP, Windows ME, Windows 2000, etc.
+        String MicrosoftBeginning = "windows"; 
         if (expected.startsWith(MicrosoftBeginning) && actual.startsWith(MicrosoftBeginning)) {
+            return true;
+        }
+        // 'Mac OS X' or 'MacOSX'
+        if (expected.startsWith("mac") && actual.startsWith("mac")) {
             return true;
         }
         if (System.getProperty(COMMAND_PREFIX, null) != null) {
             return true; // don't validate for LSF
         }
-        throw new JobDispatchException("Cannot " + action + " on this platform. Task requires a " + expected
+        throw new JobDispatchException("Cannot " + _action + " on this platform. Task requires a " + _expected
                 + " operating system, but this server is running " + actual);
     }
 
-    // check that each patch listed in the TaskInfoAttributes for this task is
-    // installed.
+    // check that each patch listed in the TaskInfoAttributes for this task is installed.
     // if not, download and install it.
     // For any problems, throw an exception
     private static boolean validatePatches(TaskInfo taskInfo, Status taskIntegrator) throws MalformedURLException, JobDispatchException {
@@ -3465,6 +3502,9 @@ public class GenePatternAnalysisTask {
         }
         loader.run(isNew ? GenePatternTaskDBLoader.CREATE : GenePatternTaskDBLoader.UPDATE);
         // IndexerDaemon.notifyTaskUpdate(loader.getTaskIDByName(LSID != null ? lsid : name, username));
+        
+        //TODO: refresh the cache
+        
         return null;
     }
 
