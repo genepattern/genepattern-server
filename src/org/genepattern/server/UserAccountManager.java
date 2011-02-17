@@ -97,12 +97,12 @@ public class UserAccountManager {
         //3) can create user dir for user
         ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(username);
         try {
-            File uploadDir = ServerConfiguration.instance().getUserUploadDir(userContext);
-            log.info("creating user upload dir: "+uploadDir.getPath());
+            File userDir = ServerConfiguration.instance().getUserDir(userContext);
+            log.info("creating user dir: "+userDir.getPath());
         }
         catch (Throwable t) {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME, 
-                    "Error creating directory for username="+username+", error: " + t.getLocalizedMessage() );
+                    "Error creating 'gp.user.dir' for username="+username+", error: " + t.getLocalizedMessage() );
         }
     }
 

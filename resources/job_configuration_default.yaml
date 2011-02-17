@@ -18,14 +18,16 @@ default.properties:
 
     # the max number of files to display in uploaded files tab
     upload.maxfiles: 50
-    #    
-    # location of data files
-    # relative file paths are accessed relative to the 'gp.home' directory
-    # by default, gp.home is access relative to the working directory of the Tomcat server
-    gp.home: "../"
-    # path to the root user upload dir
-    user.upload.root.dir: users
-    user.upload.dir: uploads
+    
+    # location for user data
+    user.root.dir: "../users"
+    # by default user data is stored in <user.root.dir>/<user.id>
+    # this can be overridden with the 'gp.user.dir' property, Note: 'user.dir' is a java system property
+    
+    # location for user files uploaded directly to the server from the upload tab
+    # by default, <user.root.dir>/<user.id>/user.uploads/
+    # can be overridden with the 'user.upload.dir' property.
+    # if there are server config errors, files are uploaded directly to java.io.tmpdir
 
     # Turn off input file displays
     display.input.results: false

@@ -430,9 +430,24 @@ public class GenePatternAnalysisTask {
                     throw new IllegalArgumentException("You are not permitted to access the requested file: "+in.getName());
                 }
                 else if (in.exists()) {
-             	 	InputFilePermissionsHelper perm = new InputFilePermissionsHelper(userId, filename);
-             	 	if (perm.isCanRead()) return in;
+                    InputFilePermissionsHelper perm = new InputFilePermissionsHelper(userId, filename);
+                    if (perm.isCanRead()) return in;
                 }                      
+
+                //special case: look for file among the user uploaded files
+                try {
+                    Context context = Context.getContextForUser(userId);
+                    File userUploadDir = ServerConfiguration.instance().getUserUploadDir(context);
+                    in = new File(userUploadDir, filename);
+                    boolean foundUserUpload = in.canRead();
+                    if (foundUserUpload) {
+                        return in;
+                    }
+                }
+                catch (Throwable t) {
+                    log.error("Unexpected error getting useruploadDir", t);
+                }
+
                 //special case: Axis
                 in = new File(System.getProperty("soap.attachment.dir"), filename);
                 if (in.exists()) {

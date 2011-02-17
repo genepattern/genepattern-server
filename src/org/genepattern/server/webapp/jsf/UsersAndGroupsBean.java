@@ -143,16 +143,17 @@ public class UsersAndGroupsBean {
             return isAdmin;
         }
         
-        public String getUserUploadDir() {
+        public String getUserDir() {
             Context context = ServerConfiguration.Context.getContextForUser(user.getUserId());
             try {
-                File f = ServerConfiguration.instance().getUserUploadDir(context);
-                return f.getAbsolutePath();
+                File userDir = ServerConfiguration.instance().getUserDir(context);
+                return userDir.getPath();
             }
             catch (Throwable t) {
                 log.error(t);
                 return t.getLocalizedMessage();
             }
+            
         }
     }
 

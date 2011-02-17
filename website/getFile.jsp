@@ -57,11 +57,16 @@ import="org.genepattern.server.webservice.server.DirectoryManager,
             // look in temp for pipelines run without saving
             in = new File(System.getProperty("java.io.tmpdir"), filename);
             
-         	// look for file among the user uploaded files
-         	if (!in.exists()) {
-         		Context context = Context.getContextForUser(UIBeanHelper.getUserId());
-         		File dir = new File(ServerConfiguration.instance().getGPProperty(context, "user.upload.root.dir"));
-                in = new File(dir, filename);
+            // look for file among the user uploaded files
+            if (!in.exists()) {
+                try {
+                    Context context = Context.getContextForUser(userID);
+                    File userUploadDir = ServerConfiguration.instance().getUserUploadDir(context);
+                    in = new File(userUploadDir, filename);
+                }
+                catch (Throwable t) {
+                    //TODO: log exception
+                }
          	}
             
             //special case for Axis
@@ -89,11 +94,11 @@ import="org.genepattern.server.webservice.server.DirectoryManager,
  	        }
         }
     } 
-    catch (Exception e) {
+    catch (Throwable e) {
         try {
             in = new File(DirectoryManager.getTaskLibDir(taskName, null, userID), filename);
         } 
-        catch (Exception e2) {
+        catch (Throwable e2) {
             ((HttpServletResponse) response).sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }

@@ -139,8 +139,8 @@ public class MultiFileUploadReceiver extends HttpServlet {
             String prefix = userName + "_run";
             File dir = null;
             if (directUpload != null) {
-                Context context = Context.getContextForUser(UIBeanHelper.getUserId());
-                dir = new File(ServerConfiguration.instance().getGPProperty(context, "user.upload.root.dir"));
+                Context context = Context.getContextForUser(userName);
+                dir = ServerConfiguration.instance().getUserUploadDir(context);
                 // lazily create uploads directory if need be
                 if (!dir.exists()) {
                     dir.mkdir();

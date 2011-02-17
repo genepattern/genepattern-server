@@ -75,22 +75,39 @@ public class UploadedFilesBean {
         log.debug("Delete from uploads '" + dirnameParam + "/" + filenameParam +"'");
         
         Context context = Context.getContextForUser(UIBeanHelper.getUserId());
-        String tmpDir = ServerConfiguration.instance().getGPProperty(context, "user.upload.root.dir");
-        File tmp = new File(tmpDir);
-        File subDir = new File(tmp, dirnameParam);
+        File userUploadDir = ServerConfiguration.instance().getUserUploadDir(context);
+        File subDir = new File(userUploadDir, dirnameParam);
         File theFile = new File(subDir, filenameParam);
-        
         boolean success = false;
         if (theFile.canRead()) {
             success = theFile.delete();
         }
         if (success) {
+            log.debug("Deleted from upload directories: '" + dirnameParam + "/" + filenameParam + "'");
             // force a refresh
             this.availableDirectories = null;
-            this.setMessageToUser("Deleted from upload directories: '" + dirnameParam + "/" + filenameParam + "'");
+            this.setMessageToUser("Deleted from upload directories: '" + filenameParam + "'");
+            
+            // delete empty tmp parent folders
+            try {
+                if (subDir.canWrite() && subDir.isDirectory()) {
+                    boolean subDirDeleted = false;
+                    String[] contents = subDir.list();
+                    if (contents != null && contents.length == 0) {
+                        subDirDeleted = subDir.delete();
+                    }
+                    if (subDirDeleted) {
+                        log.debug("deleted empty tmp directory from upload directories: " + subDir.getPath());
+                    }
+                }
+            }
+            catch (Throwable t) {
+                log.error("Unexpected exception deleting empty tmp directory from upload directories", t);
+            }
         }
         else {
-            this.setMessageToUser("Error deleting from upload directories: '" + dirnameParam + "/" + filenameParam + "'");            
+            log.error("Error deleting from upload directories: '" + dirnameParam + "/" + filenameParam + "'");
+            this.setMessageToUser("Error deleting from upload directories: '" + filenameParam + "'");            
         }
     }
 
@@ -207,7 +224,7 @@ public class UploadedFilesBean {
             Context context = Context.getContextForUser(userId);
             File userUploadDir = ServerConfiguration.instance().getUserUploadDir(context);
             if (userUploadDir != null && userUploadDir.canRead()) {
-                fileList = userUploadDir.listFiles();
+                fileList = userUploadDir.listFiles(nameFilt);
             }
             if (fileList != null) {
                 for(File f : fileList) {

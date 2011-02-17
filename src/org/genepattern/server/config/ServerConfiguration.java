@@ -158,11 +158,7 @@ public class ServerConfiguration {
     }
 
     /**
-     * Get the list of errors, if any, which resulted from instantiating the CommandManager.
-     * 
-     * Note: at the moment, calling reloadConfig does not reset the list of errors. This is because
-     * there are some cases where errors in the config file can only be corrected
-     * by restarting the job execution engine.
+     * Get the list of errors, if any, which resulted from parsing the configuration file.
      * 
      * @return
      */
@@ -240,6 +236,18 @@ public class ServerConfiguration {
         return cmdMgrProps.getProperty(context, key);
     }
     
+    public String getGPProperty(Context context, String key, String defaultValue) {
+        if (cmdMgrProps == null) {
+            log.error("Invalid server configuration in getGPProperty("+key+")");
+            return defaultValue;
+        }
+        String value = cmdMgrProps.getProperty(context, key);
+        if (value == null) {
+            return defaultValue;
+        }
+        return value;
+    }
+    
     public CommandProperties.Value getValue(Context context, String key) {
         if (cmdMgrProps == null) {
             log.error("Invalid server configuration in getGPProperty("+key+")");
@@ -262,37 +270,89 @@ public class ServerConfiguration {
         File rootJobDir = new File(jobsDir);
         return rootJobDir;
     }
+
+    /**
+     * Get the 'home directory' for a gp user account. This is the location for user data.
+     * Home directories are created in the  in the "../users" directory.
+     * The default location can be changed with the 'user.root.dir' configuration property. 
+     * The 'gp.user.dir' property can be set on a per user basis to change from the standard location.
+     * 
+     * @param context
+     * @return
+     */
+    public File getUserDir(Context context) {
+        String userDirPath = getGPProperty(context, "gp.user.dir");
+        if (userDirPath == null) {
+            String userRootDirPath = getGPProperty(context, "user.root.dir", "../users");
+            File p_for_parent = new File(userRootDirPath);
+            File f_for_file = new File(p_for_parent,context.getUserId());
+            userDirPath = f_for_file.getPath();
+        }
+        
+        File userDir = new File(userDirPath);
+        if (userDir.exists()) {
+            return userDir;
+        }
+        boolean success = userDir.mkdirs();
+        if (!success) {
+            throw new IllegalArgumentException("Unable to create home directory for user "+context.getUserId()+", userDir="+userDir.getAbsolutePath());
+        }
+        return userDir;
+    }
     
     /**
-     * Get the default data directory for the given user.
-     * Requires a valid userId. This method will attempt to create a directory in the 'user.upload.root.dir' if
-     * it has not already been created.
+     * Get the upload directory for the given user, the location for files uploaded directly from the Uploads tab.
+     * By default, user uploads are stored in ../users/<user.id>/user.uploads/
+     * 
+     * The default location can be overridden with the 'user.upload.dir' property.
+     * If there is no 'user.upload.dir' or 'gp.user.dir' set, then 'java.io.tempdir' is returned.
      * 
      * @param context
      * @return
      * @throws IllegalArgumentException if a directory is not found for the userId.
      */
     public File getUserUploadDir(Context context) throws IllegalArgumentException {
+        boolean configError = false;
         if (context == null) {
-            throw new IllegalArgumentException("context is null");
+            configError = true;
+            //throw new IllegalArgumentException("context is null");
+            log.error("context is null");
         }
         if (context.getUserId() == null) {
-            throw new IllegalArgumentException("context.userId is null");
-        }
-        String userUploadDir = getGPProperty(context, "user.upload.root.dir");
-        if (userUploadDir == null) {
-            throw new IllegalArgumentException("The 'user.upload.root.dir' property is not set for this user: "+context.getUserId());
+            configError = true;
+            //throw new IllegalArgumentException("context.userId is null");
+            log.error("context.userId is null");
         }
         
-        File root = new File(userUploadDir);
-        File userDir = new File(root,context.getUserId());
-        if (userDir.exists()) {
-            return userDir;
+        if (configError) {
+            return getWebUploadDir();
         }
-        boolean success = userDir.mkdirs();
-        if (!success) {
-            throw new IllegalArgumentException("Unable to create upload directory for user "+context.getUserId()+", userDir="+userDir.getAbsolutePath());
+
+        String userUploadPath = getGPProperty(context, "user.upload.dir");
+        if (userUploadPath == null) {
+            File userDir = getUserDir(context);
+            if (userDir != null) {
+                File f = new File(userDir, "user.uploads");
+                userUploadPath = f.getPath();
+            }
         }
-        return userDir;
+            
+        File userUploadDir = new File(userUploadPath);
+        if (userUploadDir.exists()) {
+            return userUploadDir;
+        }
+        boolean success = userUploadDir.mkdirs();
+        if (success) {
+            return userUploadDir;
+        } 
+        
+        //otherwise, use the web upload dir
+        log.error("Unable to create user.uploads directory for '"+context.getUserId()+"', userUploadDir="+userUploadDir.getAbsolutePath());
+        return getWebUploadDir();
     } 
+    
+    private File getWebUploadDir() {
+        String str = System.getProperty("java.io.tmpdir");
+        return new File(str);
+    }
 }
