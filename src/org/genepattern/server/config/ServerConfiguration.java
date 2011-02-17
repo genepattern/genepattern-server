@@ -258,20 +258,6 @@ public class ServerConfiguration {
     
     //helper methods for locating server files and folders
     /**
-     * Get the jobs directory. Each job runs in a new working directory. 
-     * By default, the working directory is created in the root job dir for the server.
-     * Edit the 'jobs' property to customize this location.
-     */
-    public File getRootJobDir(Context context) throws Exception {
-        String jobsDir = getGPProperty(context, "jobs");
-        if (jobsDir == null) {
-            throw new Exception("Missing required propery, 'jobs'");
-        }
-        File rootJobDir = new File(jobsDir);
-        return rootJobDir;
-    }
-
-    /**
      * Get the 'home directory' for a gp user account. This is the location for user data.
      * Home directories are created in the  in the "../users" directory.
      * The default location can be changed with the 'user.root.dir' configuration property. 
@@ -281,6 +267,12 @@ public class ServerConfiguration {
      * @return
      */
     public File getUserDir(Context context) {
+        if (context == null) {
+            throw new IllegalArgumentException("context is null");
+        }
+        if (context.getUserId() == null) {
+            throw new IllegalArgumentException("context.userId is null");
+        }
         String userDirPath = getGPProperty(context, "gp.user.dir");
         if (userDirPath == null) {
             String userRootDirPath = getGPProperty(context, "user.root.dir", "../users");
@@ -300,6 +292,85 @@ public class ServerConfiguration {
         return userDir;
     }
     
+    /**
+     * Get the jobs directory for the given user. Each job runs in a new working directory. 
+     * 
+     * circa, GP 3.2.4 and earlier, the working directory is created in the root job dir for the server,
+     *     which defaults to './webapps/gp/jobResults'.
+     * Edit the 'jobs' property to customize this location. The server configuration system enables setting
+     * this property on a per user, group, executor or module basis.
+     * 
+     * coming soon, job directories, by default, will be created in ../users/<user.id>/jobs/
+     * To test this feature, remove the 'jobs' property from genepattern.properties and the configuration file.
+     * 
+     * @return the parent directory in which to create the new working directory for a job.
+     */
+    public File getRootJobDir(Context context) throws Exception {
+        //default behavior, circa GP 3.2.4 and earlier, hard code path based on 'jobs' property
+        String jobsDirPath = getGPProperty(context, "jobs");
+        if (jobsDirPath != null) {
+            return new File(jobsDirPath);
+        }
+
+        //prototype behavior, circa GP 3.3.1 and later, default location in ../users/<user.id>/jobs/
+        boolean invalidContext = false;
+        if (context == null) {
+            invalidContext = true;
+            log.error("context == null");
+        }
+        else if (context.getUserId() == null) {
+            log.error("context.userId == null");
+            invalidContext = true;
+        }
+        if (invalidContext) {
+            log.error("Missing required configuration property, 'jobs', using default location");
+            jobsDirPath = "./webapps/gp/jobResults";
+            return new File(jobsDirPath);
+        }
+        
+        File userDir = getUserDir(context);
+        if (userDir != null) {
+            File root = new File(userDir, "jobs");
+            jobsDirPath = root.getPath();
+        }
+
+        if (jobsDirPath == null) {
+            throw new Exception("Missing required propery, 'jobs'");
+        }
+        File rootJobDir = new File(jobsDirPath);
+        return rootJobDir;
+    }
+
+//    /**
+//     * Note: untested prototype code, for use in next rev of GP.
+//     * 
+//     * Get the working directory for a given job, create the job directory if necessary.
+//     * @param context, requires a jobInfo with a valid and unique jobId.
+//     * @return
+//     */
+//    private File getJobDir(Context context) throws Exception {
+//        if (context == null) {
+//            throw new Exception("context is null");
+//        }
+//        if (context.getJobInfo() == null) {
+//            throw new Exception("context.jobInfo is null");
+//        }
+//        if (context.getJobInfo().getJobNumber() < 0) {
+//            throw new Exception("invalid jobNumber, jobNumber="+context.getJobInfo().getJobNumber());
+//        }
+//
+//        File parent = getRootJobDir(context);
+//        File workingDir = new File(parent, ""+context.getJobInfo().getJobNumber());
+//        if (workingDir.exists()) {
+//            return workingDir;
+//        }
+//        boolean success = workingDir.mkdirs();
+//        if (success) {
+//            return workingDir;
+//        }
+//        throw new Exception("Error getting working directory for job="+context.getJobInfo().getJobNumber());
+//    }
+
     /**
      * Get the upload directory for the given user, the location for files uploaded directly from the Uploads tab.
      * By default, user uploads are stored in ../users/<user.id>/user.uploads/
