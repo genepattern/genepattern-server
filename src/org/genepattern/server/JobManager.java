@@ -12,7 +12,6 @@ import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.JobDeletionException;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.executor.JobTerminationException;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
@@ -221,41 +220,4 @@ public class JobManager {
         BatchJobDAO batchJob = new BatchJobDAO();
         batchJob.markDeletedIfLastJobDeleted(jobNumber);
     }
-
-    private static void deleteJobDir(int jobNumber) throws JobDeletionException {
-        File jobDir = new File(GenePatternAnalysisTask.getJobDir(""+jobNumber));
-        if (!jobDir.canWrite()) {
-            throw new JobDeletionException("Error deleting job #"+jobNumber+": gp account does not have write permission on jobDir: "+jobDir.getPath());
-        }
-        boolean success = deleteDir(jobDir);
-        if (!success) {
-            throw new JobDeletionException("Error deleting job #"+jobNumber+": did not delete all files from jobDir: "+jobDir.getPath());
-        }
-    }
-    private static boolean deleteDir(File dir) {
-        boolean success = true;
-        File[] files = dir.listFiles();
-        for(File file : files) {
-            if (file.isDirectory()) {
-                boolean deleted = deleteDir(file);
-                if (!deleted) {
-                    success = false;
-                }
-            }
-            else {
-                boolean deleted = file.delete();
-                if (!deleted) {
-                    success = false;
-                }
-            }
-        }
-        if (success) {
-            boolean deleted = dir.delete();
-            if (!deleted) {
-                success = false; 
-            }
-        }
-        return success;
-    }
-
 }
