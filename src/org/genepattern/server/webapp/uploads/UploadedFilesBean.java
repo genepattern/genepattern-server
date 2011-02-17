@@ -53,6 +53,9 @@ public class UploadedFilesBean {
 
     private Map<String, Set<TaskInfo>> kindToModules;
 
+    public final String RECENT_JOBS = "recentJobs";
+    public final String UPLOADS = "uploads";
+
     public UploadedFilesBean() {
         String userId = UIBeanHelper.getUserId();
         TaskInfo[] ti = new AdminDAO().getLatestTasks(userId);
@@ -461,6 +464,20 @@ public class UploadedFilesBean {
             this(dir, fileList);
             this.directUploadList = direct;
         }
+    }
+    
+    public String getSelectedTab() {
+        String attr = (String) UIBeanHelper.getSession().getAttribute("selectedTab");
+        if (attr == null) {
+            return RECENT_JOBS;
+        }
+        else {
+            return attr;
+        }
+    }
+    
+    public void setSelectedTab(String selected) {
+        UIBeanHelper.getSession().setAttribute("selectedTab", selected);
     }
 
 }

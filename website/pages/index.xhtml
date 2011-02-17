@@ -285,29 +285,17 @@ function showFileInput(id) {
 	border-color: #dfdfb9;
 }
 </style>
-		<h:outputText rendered="#{not genomeSpaceBean.loggedIn}">
-			<rich:tabPanel switchType="ajax">
-				<rich:tab label="Recent Jobs">
+		<h:outputText>
+			<rich:tabPanel switchType="ajax" selectedTab="#{uploadedFilesBean.selectedTab}">
+				<rich:tab label="Recent Jobs" id="recentJobs" immediate="true">
 					<ui:include src="recentJobs.xhtml" />
 				</rich:tab>
-				<rich:tab label="Uploads">
+				<rich:tab label="Uploads" id="uploads" immediate="true">
 					<ui:include src="uploads/uploadedFiles.xhtml" />
 				</rich:tab>
-			</rich:tabPanel>
-		</h:outputText> <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
-
-			<rich:tabPanel switchType="ajax">
-				<rich:tab label="Recent Jobs">
-					<ui:include src="recentJobs.xhtml" />
-				</rich:tab>
-
-				<rich:tab label="Uploads">
-					<ui:include src="uploads/uploadedFiles.xhtml" />
-				</rich:tab>
-				<rich:tab label="GenomeSpace">
+				<rich:tab label="GenomeSpace" rendered="#{genomeSpaceBean.loggedIn}" id="genomeSpace">
 					<ui:include src="genomespace/genomespaceFiles.xhtml" />
 				</rich:tab>
-
 			</rich:tabPanel>
 		</h:outputText></td>
 	</ui:define>
