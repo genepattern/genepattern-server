@@ -2784,8 +2784,8 @@ public class GenePatternAnalysisTask {
             if (libdir != null) {
                 libdir.delete();
             }
-            // delete all searchable indexes for this task
-            // Indexer.deleteTask(formerID);
+            // remove the entry from the cache
+            TaskInfoCache.instance().removeFromCache(formerID);
         } 
         catch (Exception ioe) {
             System.err.println(ioe + " while deleting taskLib and search index for task " + ti.getName());
@@ -2810,6 +2810,8 @@ public class GenePatternAnalysisTask {
      *            name of the task to locate
      * @return TaskInfo complete description of the task (including nested TaskInfoAttributes and ParameterInfo[]).
      * @author Jim Lerner
+     * 
+     * @deprecated, not sure this plays well with TaskInfoCache
      */
     public static TaskInfo getTaskInfo(String taskName, String username) throws OmnigeneException {
         TaskInfo taskInfo = null;
@@ -3493,7 +3495,7 @@ public class GenePatternAnalysisTask {
             //remove the previous entry from the cache
             TaskInfoCache.instance().removeFromCache(formerID);
         }
-        loader.run(isNew ? GenePatternTaskDBLoader.CREATE : GenePatternTaskDBLoader.UPDATE);        
+        loader.run(isNew ? GenePatternTaskDBLoader.CREATE : GenePatternTaskDBLoader.UPDATE);
         return null;
     }
 
@@ -3796,6 +3798,7 @@ public class GenePatternAnalysisTask {
                         break; // only install the top level (first entry)
                     }
                 }
+                TaskInfoCache.instance().removeFromCache(firstLSID);
                 return firstLSID;
             }
 
@@ -4013,6 +4016,7 @@ public class GenePatternAnalysisTask {
             }
             throw new TaskInstallationException(vProblems);
         }
+        TaskInfoCache.instance().removeFromCache(lsid);
         return lsid;
     }
 

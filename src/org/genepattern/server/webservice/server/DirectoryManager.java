@@ -39,11 +39,12 @@ public class DirectoryManager {
     private static String taskLibDir = null;
 
     /** mapping of LSIDs to taskLibDir directories */
-    protected static Hashtable htTaskLibDir = new Hashtable();
-
-    protected static Hashtable htSuiteLibDir = new Hashtable();
-
-    private static Logger _cat = Logger.getLogger("org.genepattern.server.webservice.server.DirectoryManager");
+    private static Hashtable htTaskLibDir = new Hashtable();
+    private static Hashtable htSuiteLibDir = new Hashtable();
+    
+    public static void removeTaskLibDirFromCache(String lsid) {
+        htTaskLibDir.remove(lsid);
+    }
 
     /**
      * Locates the directory where the a particular task's files are stored. It is one level below taskLib. 
@@ -278,6 +279,7 @@ public class DirectoryManager {
         f.mkdirs();
         ret = f.getAbsolutePath();
         if (lsid != null) {
+            //TODO: shouldn't this be htSuiteLibDir?
             htTaskLibDir.put(lsid, ret);
         }
         return ret;

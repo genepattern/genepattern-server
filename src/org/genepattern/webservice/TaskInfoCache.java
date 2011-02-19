@@ -83,8 +83,18 @@ public class TaskInfoCache {
         taskInfoAttributesCache.clear();
         taskDocFilenameCache.clear();
     }
-    
+
+    public void removeFromCache(String lsid) {
+        int taskId = findTaskId(lsid);
+        DirectoryManager.removeTaskLibDirFromCache(lsid);
+        removeFromCache(taskId);
+    }
+
     public void removeFromCache(Integer taskId) {
+        TaskMaster tm = taskMasterCache.get(taskId);
+        if (tm != null && tm.getLsid() != null) {
+            DirectoryManager.removeTaskLibDirFromCache(tm.getLsid());
+        }
         taskMasterCache.remove(taskId);
         taskInfoAttributesCache.remove(taskId);
         taskDocFilenameCache.remove(taskId);
@@ -278,6 +288,8 @@ public class TaskInfoCache {
             docFilenames = taskDocFilenameCache.get(taskId);
         }
         if (docFilenames == null) {
+            //String libDir = DirectoryManager.getLibDir(lsid);
+            DirectoryManager.removeTaskLibDirFromCache(lsid);
             docFilenames = this.listDocFilenames(lsid);
             if (enableCache) {
                 taskDocFilenameCache.putIfAbsent(taskId, docFilenames);
