@@ -50,6 +50,10 @@ public class UploadFileInfo {
     public String getFilename() {
         return filename;
     }
+    
+    public String getEncodedFilename() {
+        return filename.replaceAll(" ", "%20");
+    }
 
     public void setUrl(String u) {
         url = u;

@@ -247,6 +247,10 @@ public class UploadedFilesBean {
             return name.startsWith(userId + "_");
         }
     };
+    
+    public String encodeFilename(String filename) {
+        return filename.replaceAll(" ", "%20");
+    }
 
     public List<UploadDirectory> availableDirectories;
     private static final Comparator<KeyValuePair> COMPARATOR = new KeyValueComparator();
@@ -294,9 +298,9 @@ public class UploadedFilesBean {
                     if (fList != null) {
                         for (File aFile : f.listFiles()) {
                             UploadFileInfo ufi = new UploadFileInfo(aFile.getName());
-                            ufi.setUrl(getFileURL(f.getName(), aFile.getName()));
-                            ufi.setPath(f.getName());
-                            ufi.setGenePatternUrl(getGenePatternFileURL(f.getName(), aFile.getName()));
+                            ufi.setUrl(getFileURL(f.getName(), encodeFilename(aFile.getName())));
+                            ufi.setPath(encodeFilename(f.getName()));
+                            ufi.setGenePatternUrl(getGenePatternFileURL(f.getName(), encodeFilename(aFile.getName())));
                             ufi.setModified(aFile.lastModified());
                             if (pair.directUploadList) {
                                 ufi.setDirectUpload(true);

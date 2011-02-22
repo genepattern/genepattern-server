@@ -28,11 +28,11 @@
       
       <!-- Image for popup menu -->
       <img src="/gp/images/smallOptions.gif" 
-           name="Image_#{uploadDir.name}_#{aFile.filename}" 
-           id="Image_#{uploadDir.name}_#{aFile.filename}" 
+           name="Image_#{uploadDir.name}_#{aFile.encodedFilename}" 
+           id="Image_#{uploadDir.name}_#{aFile.encodedFilename}" 
            border="0" align="top" 
-           onclick="pm_showMenu('menuDiv_#{uploadDir.name}_#{aFile.filename}', Position.cumulativeOffset(this), 50, 50);" 
-           onmouseover="MM_swapImage('Image_#{uploadDir.name}_#{aFile.filename}','','/gp/images/smallOptions2.gif',2)" 
+           onclick="pm_showMenu('menuDiv_#{uploadDir.name}_#{aFile.encodedFilename}', Position.cumulativeOffset(this), 50, 50);" 
+           onmouseover="MM_swapImage('Image_#{uploadDir.name}_#{aFile.encodedFilename}','','/gp/images/smallOptions2.gif',2)" 
            onmouseout="MM_swapImgRestore();"/>
       <br />
       <span>#{aFile.formattedModified}</span>
