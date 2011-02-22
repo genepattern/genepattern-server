@@ -21,7 +21,7 @@
   <!-- File section for recentJobs page-->
   <ui:composition>
     <!--  Loop through output files -->
-    <t:dataList var="aFile" value="#{uploadDir.uploadFiles}" rowIndexVar="fileIndex">
+    <t:dataList var="aFile" value="#{uploadDir.sortedUploadFiles}" rowIndexVar="fileIndex">
     
     
       <h:outputLink value="#{aFile.url}">#{aFile.filename}</h:outputLink>

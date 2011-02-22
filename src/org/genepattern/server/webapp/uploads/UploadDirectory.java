@@ -44,6 +44,12 @@ public class UploadDirectory {
         this.uploadFiles = uploadFiles;
 
     }
+    
+    public List<UploadFileInfo> getSortedUploadFiles() {
+        List<UploadFileInfo> files = this.getUploadFiles();
+        Collections.sort(files, new UploadFileComparator());
+        return files;
+    }
 
     public boolean isExpanded() {
         return expanded;
@@ -62,10 +68,24 @@ public class UploadDirectory {
     }
 
     private static class KeyValueComparator implements Comparator<KeyValuePair> {
-
         public int compare(KeyValuePair o1, KeyValuePair o2) {
             return o1.getKey().compareToIgnoreCase(o2.getKey());
         }
 
+    }
+    
+    public class UploadFileComparator implements Comparator<UploadFileInfo> {
+        public int compare(UploadFileInfo o1, UploadFileInfo o2) {
+            long value = o1.getModified() - o2.getModified();
+            if (value < 0) {
+                return 1;
+            }
+            else if (value == 0) {
+                return 0;
+            }
+            else {
+                return -1;
+            }
+        }
     }
 }
