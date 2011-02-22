@@ -61,7 +61,15 @@ function toggleJobVisibility(jobNo) {
 }
 
 function uploaderStatusChanged(uploader) {
-	if (uploader.getStatus() == uploader.STATUS_READY) {
+	var STATUS_READY = 0;
+	var STATUS_UPLOADING = 1;
+	var STATUS_FINISHED = 2;
+	var STATUS_FAILED = 3;
+	var STATUS_PREPROCESSING = 4;
+	var STATUS_DOWNLOADING = 5;
+	var STATUS_EDITING = 6;
+	
+	if (uploader.getStatus() == uploader.STATUS_READY && uploader.getFilesByStatus(STATUS_FINISHED).length > 0) {
 		location.reload(true);
 	}
 }
