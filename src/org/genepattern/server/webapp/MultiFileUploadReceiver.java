@@ -60,7 +60,7 @@ public class MultiFileUploadReceiver extends HttpServlet {
 
     private void loadPartition(HttpServletRequest request, List<FileItem> postParameters, PrintWriter responseWriter) throws Exception {
         int partitionNumber = Integer.parseInt(getParameter(postParameters, "partitionIndex"));
-        String paritionDir = getWriteDirectory(request, postParameters);
+        String paritionDir = getWriteDirectory(request, postParameters, true);
         Iterator<FileItem> it = postParameters.iterator();
         while (it.hasNext()) {
             FileItem postParameter = it.next();
@@ -74,7 +74,9 @@ public class MultiFileUploadReceiver extends HttpServlet {
         int partitionCount = Integer.parseInt(getParameter(postParameters, "partitionCount"));
         if (partitionNumber == (partitionCount - 1)) {
             String partitionedFileName = getParameter(postParameters, "fileName");
-            File wholeFile = new File(paritionDir, partitionedFileName);
+            
+            String wholeDir = getWholeDirectory(request, postParameters);
+            File wholeFile = new File(wholeDir, partitionedFileName);
             OutputStream out = new FileOutputStream(wholeFile);
             byte[] buffer = new byte[65536];
             for (int i = 0; i < partitionCount; i++) {
@@ -123,8 +125,16 @@ public class MultiFileUploadReceiver extends HttpServlet {
         }
         return null;
     }
-
+    
+    private String getWholeDirectory(HttpServletRequest request, List<FileItem> postParameters) {
+        return (String) request.getSession().getAttribute("wholeDirectory");
+    }
+    
     private String getWriteDirectory(HttpServletRequest request, List<FileItem> postParameters) throws IOException {
+        return getWriteDirectory(request, postParameters, false);
+    }
+
+    private String getWriteDirectory(HttpServletRequest request, List<FileItem> postParameters, boolean filePart) throws IOException {
         String paramId = getParameter(postParameters, "paramId");
         String directUpload = getParameter(postParameters, "directUpload");
         String writeDirectory = (String) request.getSession().getAttribute(paramId);
@@ -141,9 +151,24 @@ public class MultiFileUploadReceiver extends HttpServlet {
             if (directUpload != null) {
                 Context context = Context.getContextForUser(userName);
                 dir = ServerConfiguration.instance().getUserUploadDir(context);
+                
                 // lazily create uploads directory if need be
                 if (!dir.exists()) {
                     dir.mkdir();
+                }
+                
+                // If this is a part of a larger file
+                if (filePart) {
+                    File partDir = new File(dir.getAbsoluteFile() + "/parts");
+                    if (!partDir.exists()) {
+                        partDir.mkdir();
+                    }
+                    directory = File.createTempFile(prefix, null, dir);
+                    directory.delete();
+                    directory.mkdir();
+                    writeDirectory = directory.getCanonicalPath();
+                    dir = partDir;
+                    request.getSession().setAttribute("wholeDirectory", writeDirectory);
                 }
             }
             // use createTempFile to guarantee a unique name, but then change it to a directory
