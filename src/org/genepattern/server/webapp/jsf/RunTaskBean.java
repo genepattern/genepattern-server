@@ -647,6 +647,10 @@ public class RunTaskBean {
         public String getDefaultValue() {
             return defaultValue;
         }
+        
+        public String getEncodedValue() {
+            return defaultValue.replaceAll(" ", "%20");
+        }
 
         public String getDisplayDescription() {
             return displayDesc;
