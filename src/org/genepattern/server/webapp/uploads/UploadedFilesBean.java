@@ -297,6 +297,10 @@ public class UploadedFilesBean {
                     }
                     if (fList != null) {
                         for (File aFile : f.listFiles()) {
+                            if (f.getName().equalsIgnoreCase("parts")) {
+                                // Ignore the partially-uploaded file directory
+                                continue;
+                            }
                             UploadFileInfo ufi = new UploadFileInfo(aFile.getName());
                             ufi.setUrl(getFileURL(f.getName(), encodeFilename(aFile.getName())));
                             ufi.setPath(encodeFilename(f.getName()));
