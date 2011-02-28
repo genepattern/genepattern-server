@@ -225,9 +225,9 @@ function openApplet() {
     <br/>
   </p>
   <div id="appletDiv"></div>
-  <div id="buttonDiv">
+  <t:div id="buttonDiv" rendered="#{uploadedFilesBean.batchUploadEnabled}">
   	<button type="button" onclick="JavaScript:openApplet();">Upload Files</button>
-  </div>
+  </t:div>
   <p>
     <br/>
   </p>

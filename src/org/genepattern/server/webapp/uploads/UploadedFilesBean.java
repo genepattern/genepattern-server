@@ -251,6 +251,12 @@ public class UploadedFilesBean {
     public String encodeFilename(String filename) {
         return filename.replaceAll(" ", "%20");
     }
+    
+    public boolean getBatchUploadEnabled() {
+        String userId = UIBeanHelper.getUserId();
+        Context userContext = Context.getContextForUser(userId);
+        return ServerConfiguration.instance().getGPBooleanProperty(userContext, "allow.batch.process", false);
+    }
 
     public List<UploadDirectory> availableDirectories;
     private static final Comparator<KeyValuePair> COMPARATOR = new KeyValueComparator();
@@ -271,9 +277,11 @@ public class UploadedFilesBean {
         }
 
         if ((availableDirectories == null) || (fileCount != getCurrentUserFileCount())) {
-
+            
             availableDirectories = new ArrayList<UploadDirectory>();
-            final String userId = UIBeanHelper.getUserId();
+            String userId = UIBeanHelper.getUserId();
+            Context userContext = Context.getContextForUser(userId);
+            boolean batchEnabled = ServerConfiguration.instance().getGPBooleanProperty(userContext, "allow.batch.process", false);
 
             /**
              * The directory layer is unnecessary for now but will be needed
@@ -281,8 +289,10 @@ public class UploadedFilesBean {
              */
             int dirCount = 0;
             List<DirectoryFileListPair> dirs =  new ArrayList<DirectoryFileListPair>();
-            dirs.add(new DirectoryFileListPair(new UploadDirectory("Job Files"), getJobFiles()));
-            dirs.add(new DirectoryFileListPair(new UploadDirectory("Uploaded Files"), getUserUploadFiles(), true));
+            dirs.add(new DirectoryFileListPair(new UploadDirectory("Job Input Files"), getJobFiles()));
+            if (batchEnabled) {
+                dirs.add(new DirectoryFileListPair(new UploadDirectory("Uploaded Files"), getUserUploadFiles(), true));
+            }
             
             for (DirectoryFileListPair pair : dirs) {
                 UploadDirectory userDir = pair.dir;
@@ -320,7 +330,6 @@ public class UploadedFilesBean {
                 int count = 0;
                 Map<String,Boolean> usedFileNames = new HashMap<String, Boolean>();
                 
-                Context userContext = Context.getContextForUser(userId);
                 int maxFiles = ServerConfiguration.instance().getGPIntegerProperty(userContext, "upload.maxfiles", DEFAULT_upload_maxfiles);
     
                 for (UploadFileInfo aFile : fileList) {
