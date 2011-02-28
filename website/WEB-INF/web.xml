@@ -361,16 +361,6 @@
  </servlet-mapping>
 
  <servlet>
-  <display-name>FileServlet</display-name>
-  <servlet-name>FileServlet</servlet-name>
-  <servlet-class>org.genepattern.server.webapp.FileServlet</servlet-class>
- </servlet>
- <servlet-mapping>
-  <servlet-name>FileServlet</servlet-name>
-  <url-pattern>/serverFilePath/*</url-pattern>
- </servlet-mapping>
-
- <servlet>
   <display-name>Login Servlet</display-name>
   <servlet-name>LoginServlet</servlet-name>
   <servlet-class>org.genepattern.server.webapp.LoginServlet</servlet-class>

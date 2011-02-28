@@ -34,7 +34,7 @@
 	<script type="text/javascript">
 /* <![CDATA[ */
 $(document).ready( function() {
-	$('#fileTree').fileTree({ root: '#{genepatternProperties.properties["server.browse.file.system.root"]}', script: 'jqueryFileTree.jsp' }, function(selectedFile) { 
+	$('#fileTree').fileTree({ root: '#{serverFileBrowserBean.serverBrowseFileSystemRoot}', script: 'jqueryFileTree.jsp' }, function(selectedFile) { 
 		openFile(selectedFile);
 	});
 				

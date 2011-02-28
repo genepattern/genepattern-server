@@ -426,4 +426,8 @@ public class ServerConfiguration {
         String str = System.getProperty("java.io.tmpdir");
         return new File(str);
     }
+    
+    public boolean getAllowInputFilePaths(Context context) {
+        return getGPBooleanProperty(context, "allow.input.file.paths", false);
+    }
 }

@@ -278,18 +278,6 @@ public class GenePatternAnalysisTask {
         this.executor = executor;
     }
 
-    private static boolean getAllowInputFilePaths() {
-        boolean allowInputFilePaths = false;
-        String inputFilePathProp = System.getProperty("allow.input.file.paths");
-        if (inputFilePathProp != null) {
-            if (inputFilePathProp.equalsIgnoreCase("true") || inputFilePathProp.equals("1")) {
-                allowInputFilePaths = true;
-                log.debug("Allowing input file paths.");
-            } 
-        }
-        return allowInputFilePaths;
-    }
-
     private static INPUT_FILE_MODE getInputFileMode() {
         INPUT_FILE_MODE inputFileMode = INPUT_FILE_MODE.PATH;
         String inputFileModeProp = System.getProperty("input.file.mode");
@@ -666,7 +654,7 @@ public class GenePatternAnalysisTask {
         }
        
         INPUT_FILE_MODE inputFileMode = getInputFileMode();
-        boolean allowInputFilePaths = getAllowInputFilePaths();
+        boolean allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(jobContext);
 
         String taskName = "";
         TaskInfo taskInfo = null;

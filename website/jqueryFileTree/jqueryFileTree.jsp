@@ -1,12 +1,16 @@
-<%@ page
-	import="java.io.File,java.io.FilenameFilter,java.util.Arrays,org.apache.commons.lang.StringEscapeUtils"%>
-<%@ page import="org.genepattern.server.webapp.jsf.AuthorizationHelper"%>
+<%@page import="java.io.File,
+        java.io.FilenameFilter,
+        java.util.Arrays,
+        org.apache.commons.lang.StringEscapeUtils,
+        org.genepattern.server.config.ServerConfiguration,
+        org.genepattern.server.webapp.jsf.AuthorizationHelper" %>
 
 <%
     String userId = (String) request.getAttribute("userID");
-    if (!"true".equals(System.getProperty("allow.input.file.paths"))
-		    || !AuthorizationHelper.adminServer(userId)) {
-		return;
+    ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
+    boolean  allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(userContext);
+    if (!allowInputFilePaths) {
+        return;
     }
 %>
 <%

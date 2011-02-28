@@ -21,10 +21,6 @@ public class AuthorizationBean {
 	return AuthorizationHelper.adminSuites();
     }
 
-    public boolean isBrowseServerFileSystemAllowed() {
-	return "true".equals(System.getProperty("allow.input.file.paths")) && AuthorizationHelper.adminServer();
-    }
-
     public boolean isAdminServerAllowed() {
 	return AuthorizationHelper.adminServer();
     }
