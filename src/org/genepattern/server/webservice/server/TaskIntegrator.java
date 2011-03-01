@@ -1199,6 +1199,7 @@ public class TaskIntegrator {
         catch (Exception e) {
             throw new WebServiceException(e);
         }
+        TaskInfoCache.instance().removeFromCache(lsid);
         return lsid;
     }
 

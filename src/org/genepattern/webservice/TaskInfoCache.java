@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,6 +13,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.log4j.Logger;
 import org.genepattern.server.TaskIDNotFoundException;
 import org.genepattern.server.TaskLSIDNotFoundException;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.TaskMaster;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -54,14 +56,16 @@ public class TaskInfoCache {
     private final ConcurrentMap<Integer, List<String>> taskDocFilenameCache = new ConcurrentHashMap<Integer, List<String>>();
     
     private TaskInfoCache() {
-        boolean b = Boolean.valueOf(System.getProperty("taskInfoCache.enable", Boolean.toString(enableCache)));
-        enableCache = b;
+        ServerConfiguration.Context serverContext = ServerConfiguration.Context.getServerContext();
+        enableCache = ServerConfiguration.instance().getGPBooleanProperty(serverContext, "taskInfoCache.enable", false);
+        boolean initializeCache = 
+            enableCache && ServerConfiguration.instance().getGPBooleanProperty(serverContext, "taskInfoCache.initialize", true);
+        if (initializeCache) {
+            initializeCache();
+        }
     }
 
-    public void initializeCache() {
-        if (!enableCache) {
-            return;
-        }
+    private void initializeCache() {
         boolean closeDbSession = true;
         List<TaskMaster> allTaskMasters = findAll(closeDbSession);
         for(TaskMaster taskMaster : allTaskMasters) {
@@ -74,8 +78,6 @@ public class TaskInfoCache {
         taskMasterCache.put(taskId, taskMaster);
         TaskInfoAttributes taskInfoAttributes = TaskInfoAttributes.decode(taskMaster.getTaskinfoattributes());
         taskInfoAttributesCache.put(taskId, taskInfoAttributes);
-        List<String> docFilenames = listDocFilenames(taskMaster.getLsid());
-        taskDocFilenameCache.put(taskId, docFilenames);
     }
 
     public void clearCache() {
@@ -115,6 +117,11 @@ public class TaskInfoCache {
         }
     }
     private static Comparator docFilenameComparator = new DocFilenameComparator();
+    /**
+     * 
+     * @param lsid
+     * @return null if the taskLibDir does not exist or can't be read.
+     */
     private List<String> listDocFilenames(String lsid) {
         List<String> docFilenames = new ArrayList<String>();
         File taskLibDir = null;
@@ -126,6 +133,12 @@ public class TaskInfoCache {
             log.error(e);
             return docFilenames;
         }
+        
+        if (!taskLibDir.canRead()) {
+            //this happens when loading a task which has not yet been extracted to the file system
+            return null;
+        }
+        
         File[] docFiles = taskLibDir.listFiles(isDocFilenameFilter);
         boolean hasDoc = docFiles != null && docFiles.length > 0;
         if (hasDoc) {
@@ -282,19 +295,44 @@ public class TaskInfoCache {
         return taskInfoArray;        
     }
     
+    /**
+     * Get the documentation files for the given task.
+     * The list of doc file names is cached, for modules with at least one doc file.
+     * 
+     * Note: this could be improved, by caching empty lists of doc file names, but it is rather tricky to do so
+     *     because of the way module creation, editing, and cloning is implemented.
+     * 
+     * @param taskId
+     * @param lsid
+     * @return
+     */
     public List<String> getDocFilenames(Integer taskId, String lsid) {
         List<String> docFilenames = null;
         if (enableCache) {
             docFilenames = taskDocFilenameCache.get(taskId);
         }
-        if (docFilenames == null) {
-            //String libDir = DirectoryManager.getLibDir(lsid);
-            DirectoryManager.removeTaskLibDirFromCache(lsid);
-            docFilenames = this.listDocFilenames(lsid);
-            if (enableCache) {
-                taskDocFilenameCache.putIfAbsent(taskId, docFilenames);
+        if (docFilenames != null) { 
+            // for debugging
+            if (log.isTraceEnabled()) {
+                if (docFilenames.size() == 0) {
+                    log.trace("no doc found for task, taskId="+taskId+", lsid="+lsid);
+                }
             }
+            return Collections.unmodifiableList(docFilenames);
         }
+        
+        docFilenames = this.listDocFilenames(lsid);
+        
+        //don't cache empty lists, see javadoc for details
+        if (enableCache && docFilenames != null && docFilenames.size() > 0) {
+            taskDocFilenameCache.put(taskId, docFilenames);
+        }
+        
+        if (docFilenames == null) {
+            log.error("unexpected null value in getDocFilenames for taskId="+taskId+", lsid="+lsid);
+            docFilenames = Collections.emptyList();
+        }
+        
         return docFilenames;
     }
 

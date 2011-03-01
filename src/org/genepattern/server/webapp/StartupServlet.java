@@ -107,10 +107,13 @@ public class StartupServlet extends HttpServlet {
             HibernateUtil.closeCurrentSession();
         }
         
-        boolean initializeTaskInfoCache = false;
-        if (initializeTaskInfoCache) {
+        //intialize the taskInfoCache
+        try {
             log.info("\tinitializing TaskInfoCache...");
-            TaskInfoCache.instance().initializeCache();
+            TaskInfoCache.instance();
+        }
+        catch (Throwable t) {
+            log.error("error initializing taskInfo cache", t);
         }
         
         CommandManagerFactory.startJobQueue();
