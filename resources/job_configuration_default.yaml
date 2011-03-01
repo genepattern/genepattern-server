@@ -10,9 +10,9 @@ default.properties:
     executor: RuntimeExec
     java_flags: -Xmx512m
     # flag to allow users to input arbitrary network file paths as value to input file input parameters
-    allow.input.file.paths: false
+    #allow.input.file.paths: false
     # flag to enable batch execution of jobs from the run module web page
-    allow.batch.process: true
+    allow.batch.process: false
     # flag to allow users to submit jobs, set this to false to prevent new jobs
     allow.new.job: true
 
