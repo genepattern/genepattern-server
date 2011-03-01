@@ -69,7 +69,8 @@ function uploaderStatusChanged(uploader) {
 	var STATUS_DOWNLOADING = 5;
 	var STATUS_EDITING = 6;
 	
-	if (uploader.getStatus() == uploader.STATUS_READY && uploader.getFilesByStatus(STATUS_FINISHED).length > 0) {
+	var theApplet = document.getElementById("uploadTabJumpLoader");
+	if (uploader.getStatus() == uploader.STATUS_READY && uploader.getFilesByStatus(STATUS_FINISHED).length > 0 && uploader.toString() == theApplet.getUploader().toString()) {
 		location.reload(true);
 	}
 }
