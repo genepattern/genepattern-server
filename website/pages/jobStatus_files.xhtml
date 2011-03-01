@@ -56,13 +56,6 @@
 			    		   <h:outputText  rendered="#{empty inputFile.link}" escape="false">
 			    		   #{inputFile.truncatedDisplayValue}
 			    		   </h:outputText>
-			    		   <img src="/gp/images/smallOptions.gif" 
-			           			name="Image_#{inputFile.valueId}" 
-			           			id="Image_#{inputFile.valueId}" 
-			           			border="0" align="top" 
-			           			onclick="pm_showMenu('menuDiv_#{inputFile.valueId}', Position.cumulativeOffset(this), 50, 50);" 
-			           			onmouseover="MM_swapImage('Image_#{inputFile.valueId}','','/gp/images/smallOptions2.gif',2)" 
-			           			onmouseout="MM_swapImgRestore();"/>
 		    		</p>
 			</t:dataList>
     		<t:dataList var="p" value="#{jobInfo.outputFiles}">
