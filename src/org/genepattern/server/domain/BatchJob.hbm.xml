@@ -7,43 +7,34 @@
       <column name="JOB_NO" not-null="true" unique="true" precision="10" scale="0"/>
       <generator class="native"/>
     </id>
-	<property name="deleted" column="DELETED"/>
-	<property name="userId" column="USER_ID"/>
-	<property name="submittedDate" type="timestamp" column="DATE_SUBMITTED"/>
-	
-	
+    <property name="deleted" type="boolean" column="DELETED"/>
+    <property name="userId" column="USER_ID"/>
+    <property name="submittedDate" type="timestamp" column="DATE_SUBMITTED"/>	
+
     <set name="batchJobs" table="BATCH_ANALYSIS" lazy="extra">
-	    <key column="BATCH_JOB" />
-		<many-to-many column="ANALYSIS_JOB" unique="true" class="AnalysisJob"/>
-	</set>
+        <key column="BATCH_JOB" />
+        <many-to-many column="ANALYSIS_JOB" unique="true" class="AnalysisJob"/>
+    </set>
   </class>  
-  
-   <query name="getBatchJobsForUser">
-	  from  BatchJob as batchJob where
-			(batchJob.userId = :userId) and
-			batchJob.deleted = false
-		order by batchJob.jobNo desc	
+
+  <query name="getBatchJobsForUser">
+    from  BatchJob as batchJob where
+      (batchJob.userId = :userId) and
+      batchJob.deleted = false
+    order by batchJob.jobNo desc	
   </query>
   
   <query name="getOlderThanDate">
-		from BatchJob as batchJob where
-			batchJob.submittedDate &lt; :olderThanDate
+    from BatchJob as batchJob where
+      batchJob.submittedDate &lt; :olderThanDate
   </query>
   
-   <sql-query name="getJobsInBatch">
-		<return alias="AnalysisJob" class="org.genepattern.server.domain.AnalysisJob"/>
-		SELECT * from ANALYSIS_JOB join batch_analysis ON
-			ANALYSIS_JOB.JOB_NO = BATCH_ANALYSIS.ANALYSIS_JOB where
-			BATCH_ANALYSIS.BATCH_JOB = :batchId and analysis_job.deleted = false						 
-   </sql-query>
-   
-   <!-- 
-   <sql-query name="countJobsInBatch">
-		SELECT count(1) from ANALYSIS_JOB join batch_analysis ON
-			ANALYSIS_JOB.JOB_NO = BATCH_ANALYSIS.ANALYSIS_JOB where
-			BATCH_ANALYSIS.BATCH_JOB = :batchId and analysis_job.deleted = false						 
-   </sql-query>
-   -->
+  <sql-query name="getJobsInBatch">
+    <return alias="AnalysisJob" class="org.genepattern.server.domain.AnalysisJob"/>
+    SELECT * from ANALYSIS_JOB join batch_analysis ON
+      ANALYSIS_JOB.JOB_NO = BATCH_ANALYSIS.ANALYSIS_JOB where
+        BATCH_ANALYSIS.BATCH_JOB = :batchId and analysis_job.deleted = :deleted						 
+  </sql-query>
    
    <sql-query name="countJobsInBatch">
    select count(1) from (
@@ -54,13 +45,6 @@
               ( select analysis_job from batch_analysis where batch_job = :batchId )
    )
    </sql-query>
-   <!-- 
-   select job_no, deleted from analysis_job a where 
-    a.job_no <> 29
-    and
-    a.job_no in
-        ( select analysis_job from batch_analysis where batch_job = 6 )
-    -->
    
    <sql-query name="getBatchOwnerOfJob">
 		select batch_job from batch_analysis where batch_analysis.analysis_job = :jobId

@@ -34,17 +34,27 @@ public class BatchJobDAO extends BaseDAO {
         query.setCalendar("olderThanDate", cal);
         return query.list();
     }
+    
+    /**
+     * some JDBC drivers return Integer others return BigDecimal.
+     */
+    private int getIntFromResultObj(Object batchIdObj) throws IllegalArgumentException {
+        if (batchIdObj instanceof Number) {
+            return ((Number) batchIdObj).intValue();
+        }
+        throw new IllegalArgumentException("batchIdObj is not a Number, batchIdObj="+batchIdObj);
+    }
 
     public void markDeletedIfLastJobDeleted(int lastJobDeleted) {
         Query query = HibernateUtil.getSession().getNamedQuery("getBatchOwnerOfJob");
         query.setInteger("jobId", lastJobDeleted);
         List batchIds = query.list();
         if (batchIds.size() > 0) {
-            int batchId = (Integer) batchIds.get(0);
+            int batchId = getIntFromResultObj(batchIds.get(0));
             Query countMemberJobs = HibernateUtil.getSession().getNamedQuery("countJobsInBatch");
             countMemberJobs.setInteger("jobId", lastJobDeleted);
             countMemberJobs.setInteger("batchId", batchId);
-            int remainingJobCount = (Integer) countMemberJobs.list().get(0);
+            int remainingJobCount = getIntFromResultObj (countMemberJobs.list().get(0));
             if (remainingJobCount == 0) {
                 BatchJob batchJob = (BatchJob) HibernateUtil.getSession().get(BatchJob.class, batchId);
                 batchJob.setDeleted(true);
@@ -85,6 +95,7 @@ public class BatchJobDAO extends BaseDAO {
         orderedQuery.append(jobSortAscending ? " ASC" : " DESC");
         SQLQuery query = HibernateUtil.getSession().createSQLQuery(orderedQuery.toString());
         query.setInteger("batchId", Integer.parseInt(undecorate(batchFilter)));
+        query.setBoolean("deleted", false);
         query.addEntity(AnalysisJob.class);
         query.setMaxResults(numJobs);
         query.setFirstResult(firstJob);
