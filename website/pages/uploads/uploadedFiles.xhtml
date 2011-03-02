@@ -75,7 +75,7 @@ function uploaderStatusChanged(uploader) {
 	}
 }
 
-function appletInitialized(applet) {
+function appInit(applet) {
 	var attrSet,
 	    attr;
 	applet.getMainView().getUploadView().showOpenDialog();	
@@ -150,7 +150,7 @@ function openApplet() {
 	buttonBiv.innerHTML = "";
 	
 	appDiv.appendChild(applet);
-	appletInitialized(applet);
+	appInit(applet);
 }
 /* ]]> */
 </script>
