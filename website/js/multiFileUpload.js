@@ -17,7 +17,7 @@ var appletParams = 		"code='jmaster.jumploader.app.JumpLoaderApplet.class'" +
 "width='600' height='250' mayscript='true' >" +
 "<param name='uc_uploadUrl' value='/gp/MultiFileUploadReceiver'/>" +	
 "<param name='uc_directoriesEnabled' value='true'/>" +	
-"<param name='uc_partitionLength' value='5000000'/>"  +
+"<param name='uc_partitionLength' value='-1'/>"  +
 "<param name='ac_fireUploaderFileStatusChanged' value='true'/>" +
 "<param name='ac_fireUploaderStatusChanged' value='true'/>" +
 "<param name='ac_fireUploaderFileRemoved' value='true'/>" +
