@@ -496,5 +496,10 @@ public class UploadedFilesBean {
     public void setSelectedTab(String selected) {
         UIBeanHelper.getSession().setAttribute("selectedTab", selected);
     }
+    
+    public int getPartitionLength() {
+        Context context = Context.getContextForUser(UIBeanHelper.getUserId());
+        return ServerConfiguration.instance().getGPIntegerProperty(context, "upload.partition.size", 5000000);
+    }
 
 }

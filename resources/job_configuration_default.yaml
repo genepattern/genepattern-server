@@ -18,6 +18,7 @@ default.properties:
 
     # the max number of files to display in uploaded files tab
     upload.maxfiles: 50
+    upload.partition.size: 5000000
     
     # location for user data
     user.root.dir: "../users"
