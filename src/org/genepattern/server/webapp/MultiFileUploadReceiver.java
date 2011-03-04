@@ -98,7 +98,7 @@ public class MultiFileUploadReceiver extends HttpServlet {
                 responseWriter.println("Error: Upload validation error");
             }
         }
-    }	
+    }
 
     private void loadFile(HttpServletRequest request, List<FileItem> postParameters, PrintWriter responseWriter) throws Exception {
         String writeDirectory = getWriteDirectory(request, postParameters);
@@ -145,32 +145,41 @@ public class MultiFileUploadReceiver extends HttpServlet {
         }
         if (writeDirectory == null || !directory.isDirectory()) {
             String userName = (String) request.getSession().getAttribute(GPConstants.USERID);
+            Context context = Context.getContextForUser(userName);
             // Create a temporary directory for the uploaded files.
             String prefix = userName + "_run";
             File dir = null;
             if (directUpload != null) {
-                Context context = Context.getContextForUser(userName);
                 dir = ServerConfiguration.instance().getUserUploadDir(context);
-                
-                // lazily create uploads directory if need be
-                if (!dir.exists()) {
-                    dir.mkdir();
+            }
+            else {
+                try {
+                    dir = ServerConfiguration.instance().getRootJobDir(context);
                 }
-                
-                // If this is a part of a larger file
-                if (filePart) {
-                    File partDir = new File(dir.getAbsoluteFile() + "/parts");
-                    if (!partDir.exists()) {
-                        partDir.mkdir();
-                    }
-                    directory = File.createTempFile(prefix, null, dir);
-                    directory.delete();
-                    directory.mkdir();
-                    writeDirectory = directory.getCanonicalPath();
-                    dir = partDir;
-                    request.getSession().setAttribute("wholeDirectory", writeDirectory);
+                catch (ServerConfiguration.Exception e) {
+                    log.error("Error getting the root job directory for upload");
                 }
             }
+            
+            // lazily create directory if need be
+            if (!dir.exists()) {
+                dir.mkdir();
+            }
+            
+            // If this is a part of a larger file
+            if (filePart) {
+                File partDir = new File(dir.getAbsoluteFile() + "/parts");
+                if (!partDir.exists()) {
+                    partDir.mkdir();
+                }
+                directory = File.createTempFile(prefix, null, dir);
+                directory.delete();
+                directory.mkdir();
+                writeDirectory = directory.getCanonicalPath();
+                dir = partDir;
+                request.getSession().setAttribute("wholeDirectory", writeDirectory);
+            }
+            
             // use createTempFile to guarantee a unique name, but then change it to a directory
             directory = File.createTempFile(prefix, null, dir);
             directory.delete();
