@@ -197,10 +197,10 @@ public class CommandManagerFactoryTest extends TestCase {
         assertEquals("checking job properties: lsf.max.memory", "12", ""+jobProperties.getProperty("lsf.max.memory"));
         assertEquals("checking job properties: java_flags", "-Xmx12g", jobProperties.getProperty("java_flags"));
         assertEquals("checking job properties: lsf.project", "genepattern", jobProperties.getProperty("lsf.project"));
-        assertEquals("checking job properties: lsf.queue", "broad", jobProperties.getProperty("lsf.queue"));
+        assertEquals("checking job properties: lsf.queue", "week", jobProperties.getProperty("lsf.queue"));
         assertEquals("checking job properties: lsf.job.report.file", ".lsf.out", jobProperties.getProperty("lsf.job.report.file"));
         assertEquals("checking job properties: lsf.use.pre.exec.command", "false", ""+jobProperties.getProperty("lsf.use.pre.exec.command"));
-        assertEquals("checking job properties: lsf.extra.bsub.args", "", jobProperties.getProperty("lsf.extra.bsub.args"));
+        assertNull("checking job properties: lsf.extra.bsub.args", jobProperties.getProperty("lsf.extra.bsub.args"));
     }
 
     /**
