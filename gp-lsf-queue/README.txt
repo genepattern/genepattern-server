@@ -12,16 +12,15 @@ To integrate this library into your GenePattern Server you need to:
 1.a) Review the settings in the resources/genepattern.propertes file
     hibernate.configuration.file=hibernate.cfg.xml
     database.vendor=ORACLE
-    command.manager.parser=org.genepattern.server.executor.BasicCommandManagerParser
-    command.manager.config.file=job_configuration.yaml
-    
+    config.file=config_default.yaml
+
 1.b) Review the settings in Tomcat/webapps/gp/META-INF/context.xml
 
 1.c) Review the settings in Tomcat/webapps/gp/WEB-INF/classes/hibernate.cfg.xml
     You need to reference the JNDI datasource defined in the context.xml file.
     You also need to enter the correct db username, password, and default schema.
 
-1.d) Edit the resources/job_configuration.yaml file 
+1.d) Edit the resources/config_default.yaml file 
     ...
     LSF:
         classname: org.genepattern.server.executor.lsf.LsfCommandExecutor
