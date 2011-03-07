@@ -13,9 +13,9 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 
 /**
- * Job configuration properties for a specific job, default values are loaded based on parsing the job_configuration.yaml file. 
+ * Properties for a specific job, default values are loaded based on parsing the config.yaml file. 
  * The initial version of the API used a java.util.Properties object.
- * This type was created so that the config file can assign a String or a List<String>
+ * This type was created so that the config file can assign a String *or* a List<String>
  * to a given property value.
  * 
  * @author pcarr

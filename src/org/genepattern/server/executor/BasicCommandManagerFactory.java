@@ -9,30 +9,18 @@ import org.genepattern.server.config.ServerConfiguration;
  * 
  * @author pcarr
  */
-public class BasicCommandManagerParser implements CommandManagerParser {
-    private static Logger log = Logger.getLogger(BasicCommandManagerParser.class);
+public class BasicCommandManagerFactory {
+    private static Logger log = Logger.getLogger(BasicCommandManagerFactory.class);
     
     private BasicCommandManager cmdMgr = null;
-    
-    public BasicCommandManagerParser() {
+    public BasicCommandManagerFactory() {
     }
-
-    /**
-     * @deprecated, ServerConfiguration parses the config file for jobs
-     */
-    public CommandManager parseConfigFile(final String pathToConfiguration) throws ConfigurationException {
+    
+    public BasicCommandManager createCommandManager() throws ConfigurationException {
         this.cmdMgr = new BasicCommandManager(); 
         JobConfigObj jobConfigObj = ServerConfiguration.instance().getJobConfiguration();
         initializeCommandExecutors(cmdMgr, jobConfigObj);
         return cmdMgr;
-    }
-    
-    /**
-     * @deprecated, reload from the ServerConfiguration instead.
-     * Delete this method after the {@link CommandManager#getCommandProperties(org.genepattern.webservice.JobInfo)} is modified.
-     */
-    public void reloadConfigFile(CommandManager commandManager, String pathToConfiguration) throws ConfigurationException {
-        ServerConfiguration.instance().reloadConfiguration(pathToConfiguration);
     }
     
     //initialize executors list

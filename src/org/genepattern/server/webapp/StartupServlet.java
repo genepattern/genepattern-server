@@ -107,7 +107,16 @@ public class StartupServlet extends HttpServlet {
             HibernateUtil.closeCurrentSession();
         }
         
-        //intialize the taskInfoCache
+        //load the configuration file
+        try {
+            log.info("\tinitializing ServerConfiguration...");
+            String configFilepath = ServerConfiguration.instance().getConfigFilepath();
+        }
+        catch (Throwable t) {
+            log.error("error initializing ServerConfiguration", t);
+        }
+        
+        //initialize the taskInfoCache
         try {
             log.info("\tinitializing TaskInfoCache...");
             TaskInfoCache.instance();
@@ -236,6 +245,7 @@ public class StartupServlet extends HttpServlet {
         startupMessage.append("\tjobs: "+defaultRootJobDir + NL);
         startupMessage.append("\tjava.io.tmpdir: "+System.getProperty("java.io.tmpdir") + NL);
         startupMessage.append("\tsoap.attachment.dir: "+System.getProperty("soap.attachment.dir") + NL);
+        startupMessage.append("\tconfig.file: "+ServerConfiguration.instance().getConfigFilepath() + NL);
         startupMessage.append(stars);
         
         log.info(startupMessage);

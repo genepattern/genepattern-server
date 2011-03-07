@@ -16,8 +16,9 @@ import org.genepattern.webservice.TaskInfo;
  */
 public class ServerConfiguration {
     private static Logger log = Logger.getLogger(ServerConfiguration.class);
-    public static final String PROP_CONFIG_FILE = "command.manager.config.file";
-    //TODO: change to public static final String PROP_CONFIG_FILE = "config.file";
+    public static final String PROP_CONFIG_FILE = "config.file";
+    //for compatibility with GP 3.2.3 and GP 3.2.4
+    public static final String PROP_LEGACY_CONFIG_FILE = "command.manager.config.file";
     
     public static class Exception extends java.lang.Exception {
         public Exception() {
@@ -126,8 +127,11 @@ public class ServerConfiguration {
     public synchronized void reloadConfiguration() {
         this.configFilepath = ServerProperties.instance().getProperty(PROP_CONFIG_FILE);
         if (configFilepath == null) {
-            //TODO: change default config file name to "config.yml";
-            configFilepath = "job_configuration.yaml";
+            this.configFilepath = ServerProperties.instance().getProperty(PROP_LEGACY_CONFIG_FILE);
+            log.info(""+PROP_CONFIG_FILE+" not set, checking "+PROP_LEGACY_CONFIG_FILE);
+        }
+        if (configFilepath == null) {
+            configFilepath = "config_default.yaml";
             log.info(""+PROP_CONFIG_FILE+" not set, using default config file: "+configFilepath);
         }
         reloadConfiguration(configFilepath);
@@ -135,6 +139,7 @@ public class ServerConfiguration {
     
     public synchronized void reloadConfiguration(String configFilepath) {
         try {
+            log.info("loading configuration from '"+configFilepath+"' ...");
             this.configFilepath = configFilepath;
             errors.clear();
             ConfigFileParser parser = new ConfigFileParser();

@@ -94,14 +94,15 @@ public class CommandManagerFactory {
             log.error("server configuration errors, creating default command manager");
             return createDefaultCommandManager();
         }
-        BasicCommandManagerParser parser = new BasicCommandManagerParser();
+        
+        BasicCommandManagerFactory parser = new BasicCommandManagerFactory();
         try {
-            BasicCommandManager cmdMgr = (BasicCommandManager) parser.parseConfigFile(null);
+            BasicCommandManager cmdMgr =  parser.createCommandManager();
             return cmdMgr;
         }
         catch (final Exception e) {
           errors.add(e);
-          log.error("Failed to load custom command manager loader class: "+BasicCommandManagerParser.class.getCanonicalName(), e);
+          log.error("Failed to load custom command manager loader class: "+BasicCommandManagerFactory.class.getCanonicalName(), e);
           return createDefaultCommandManager();
         }
     }

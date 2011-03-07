@@ -146,7 +146,7 @@ public class CommandManagerFactoryTest extends TestCase {
         File resourceDir = new File("resources");
         String pathToResourceDir = resourceDir.getAbsolutePath();
         System.setProperty("genepattern.properties", pathToResourceDir);
-        ServerConfiguration.instance().reloadConfiguration("job_configuration_example.yaml");
+        ServerConfiguration.instance().reloadConfiguration("config_example.yaml");
         CommandManagerFactory.initializeCommandManager();
         CommandManager cmdMgr = CommandManagerFactory.getCommandManager();
         validateExampleJobConfig(cmdMgr);
@@ -162,7 +162,7 @@ public class CommandManagerFactoryTest extends TestCase {
         assertNull("'genepattern.properties' should not be set", val);
        
         File resourceDir = new File("resources");
-        String absPath = resourceDir.getAbsolutePath() + "/" + "job_configuration_example.yaml";
+        String absPath = resourceDir.getAbsolutePath() + "/" + "config_example.yaml";
         ServerConfiguration.instance().reloadConfiguration(absPath);
 
         CommandManagerFactory.initializeCommandManager();
@@ -605,9 +605,9 @@ public class CommandManagerFactoryTest extends TestCase {
         String userId = "admin";
         Context userContext = Context.getContextForUser(userId);
         boolean allowBatchProcess = ServerConfiguration.instance().getGPBooleanProperty(userContext, "allow.batch.process");
-        assertEquals("testing getBooleanProperty in genepattern.properties and job_configuration.yaml", true, allowBatchProcess);
+        assertEquals("testing getBooleanProperty in genepattern.properties and config.yaml", true, allowBatchProcess);
         
-        assertEquals("test-case, a property whic is set in genepattern.properties, but modified in job_configuration.yaml", 
+        assertEquals("test-case, a property whic is set in genepattern.properties, but modified in config.yaml", 
                 "test.case.YAML_DEFAULT", ServerConfiguration.instance().getGPProperty(userContext, "prop.test.case"));
         
         //test-case, a property only in genepattern.properties

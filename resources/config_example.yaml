@@ -1,5 +1,5 @@
 #
-# example job configuration file
+# example GenePattern configuration file
 #
 # Note: this is a YAML file, indentation is important, TAB characters are not permitted.
 #     You must use an exact number of spaces to denote each indentation level.
@@ -40,7 +40,6 @@ default.properties:
     job.queue.suspend_on_start: false
     # flag to allow users to submit jobs
     allow.new.job: true
-    
 
 
 # a list of command executors
