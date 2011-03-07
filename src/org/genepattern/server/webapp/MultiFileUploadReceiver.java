@@ -153,12 +153,7 @@ public class MultiFileUploadReceiver extends HttpServlet {
                 dir = ServerConfiguration.instance().getUserUploadDir(context);
             }
             else {
-                try {
-                    dir = ServerConfiguration.instance().getRootJobDir(context);
-                }
-                catch (ServerConfiguration.Exception e) {
-                    log.error("Error getting the root job directory for upload");
-                }
+                dir = new File(ServerConfiguration.instance().getGPProperty(context, "java.io.tmpdir"));
             }
             
             // lazily create directory if need be
