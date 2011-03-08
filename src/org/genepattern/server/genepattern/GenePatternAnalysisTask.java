@@ -1176,8 +1176,7 @@ public class GenePatternAnalysisTask {
             throw new JobDispatchException(e);
         }
         // optionally, override the java flags if they have been overridden in the job configuration file
-        CommandProperties cmdProperties = CommandManagerFactory.getCommandManager().getCommandProperties(jobInfo);
-        String javaFlags = cmdProperties.getProperty("java_flags");
+        String javaFlags = ServerConfiguration.instance().getGPProperty(jobContext, "java_flags");
         if (javaFlags != null) {
             props.setProperty("java_flags", javaFlags);
         }
@@ -1424,15 +1423,8 @@ public class GenePatternAnalysisTask {
         catch (CommandExecutorNotFoundException e) {
             throw new JobDispatchException(e);
         }
-        
-        String jobDispatchTimeoutStr = cmdProperties.getProperty("job.dispatch.timeout", "300000");
-        long jobDispatchTimeout = 300000;
-        try {
-            jobDispatchTimeout = Long.parseLong(jobDispatchTimeoutStr);
-        }
-        catch (Exception e) {
-            log.error("Error parsing 'job.dispatch.timeout="+jobDispatchTimeoutStr, e);
-        }
+
+        long jobDispatchTimeout = ServerConfiguration.instance().getGPIntegerProperty(jobContext, "job.dispatch.timeout", 300000);
         runCommand(taskInfo.isPipeline(), cmdExec, jobDispatchTimeout, cmdLineArgs, environmentVariables, outDir, stdoutFile, stderrFile, jobInfo, stdinFile);
     }
 
