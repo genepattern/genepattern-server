@@ -15,8 +15,6 @@ import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.JobInfoWrapper.InputFile;
 import org.genepattern.server.JobInfoWrapper.ParameterInfoWrapper;
 import org.genepattern.server.auth.GroupPermission;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webapp.jsf.JobBean.OutputFileInfo;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
