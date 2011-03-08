@@ -2714,9 +2714,8 @@ public class GenePatternAnalysisTask {
                 replacement = "";
             }
             if (varName.equals("resources")) {
-                // special treatment: make this an absolute path so that
-                // pipeline jobs running in their own directories see the right
-                // path
+                //TODO: log.error("hard-coded path to user.dir");
+                // special treatment: make this an absolute path so that pipeline jobs running in their own directories see the right path
                 replacement = new File(replacement).getAbsolutePath();
             }
             if (replacement.length() == 0) {
@@ -3059,7 +3058,11 @@ public class GenePatternAnalysisTask {
      * finds members of the commandLine array that were created using the prefix when specified option
      * and splits them into 2 parts if appropriate. e.g. "--intervals path_to_file" would come in
      * as a single element but really should be 2, "--intervals" and "path_to_file". This method
-     * will convert anything matching the regular expression (-[^ ]+) (.+) into 2 elements.
+     * will convert anything matching the regular expression (-[^= ]+) (.+) into 2 elements.
+     * 
+     * Note: (from pjc), I added the '=' to the regexp so that the hack does not over aggresively split the r_flags for R modules.
+     *     -Dr_flags='--no-save --quiet --slave --no-restore'
+     *     Should not be split into two args.
      * 
      * See jira GP-2866.
      * 
@@ -3068,18 +3071,30 @@ public class GenePatternAnalysisTask {
      */
     private String[] hackFixForGP2866(final String[] commandLine) {
         final List<String> fixedCommandLine = new ArrayList<String>();
-        final Pattern pattern = Pattern.compile("(-[^ ]+) (.+)");
-        for (final String arg : commandLine) {
-            final Matcher matcher = pattern.matcher(arg);
-            if (matcher.matches()) {
-                fixedCommandLine.add(matcher.group(1));
-                fixedCommandLine.add(matcher.group(2));
-            } else {
-                fixedCommandLine.add(arg);
+        //final Pattern pattern = Pattern.compile("(-[^ =]+) (.+)");
+        for(final String arg : commandLine) {
+            String[] args = splitOptionalParam(arg);
+            for(final String item : args) {
+                fixedCommandLine.add(item);
             }
-        }
-        
+        } 
         return fixedCommandLine.toArray(new String[fixedCommandLine.size()]);
+    }
+    
+    private static final Pattern pattern = Pattern.compile("(-[^ =]+) (.+)");
+    private static String[] splitOptionalParam(String arg) {
+        final Matcher matcher = pattern.matcher(arg);
+        if (matcher.matches()) {
+            String[] rval = new String[2];
+            rval[0] = matcher.group(1);
+            rval[1] = matcher.group(2);
+            return rval;
+        } 
+        else {
+            String[] rval = new String[1];
+            rval[0] = arg;
+            return rval;
+        }
     }
 
     /**
