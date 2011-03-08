@@ -28,7 +28,6 @@ import java.util.Set;
 
 import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
@@ -142,10 +141,6 @@ public class UploadedFilesBean {
     public String getFileURL(String dirname, String filename) {
         if (filename == null)
             return null;
-
-        HttpSession httpSession = UIBeanHelper.getSession();
-        // http://127.0.0.1:8080/gp/getFile.jsp?job=0&file=ted_run9065171030618019207.tmp%2Fsmall_mmrc.res
-
         return UIBeanHelper.getServer() + "/getFile.jsp?task=&file=" + dirname + "/" + filename;
 
     }
@@ -153,10 +148,6 @@ public class UploadedFilesBean {
     public String getGenePatternFileURL(String dirname, String filename) {
         if (filename == null)
             return null;
-
-        HttpSession httpSession = UIBeanHelper.getSession();
-        // http://127.0.0.1:8080/gp/getFile.jsp?job=0&file=ted_run9065171030618019207.tmp%2Fsmall_mmrc.res
-
         return UIBeanHelper.getServer() + "/getFile.jsp?task=&file=" + dirname + "/" + filename;
 
     }
