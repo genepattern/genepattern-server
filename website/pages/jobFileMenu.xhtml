@@ -88,9 +88,9 @@
             <tr>
               <td>
                 <h:commandLink value="#{moduleMenuItem.key}" action="#{jobsBean.loadTask}" immediate="true">
-                  <f:param value="#{moduleMenuItem.value}" name="module"/>
-                  <f:param value="#{fileInfo.jobNumber}" name="jobNumber"/>
-                  <f:param value="#{fileInfo.name}" name="name"/>
+                  <f:param name="module" value="#{moduleMenuItem.value}" />
+                  <f:param name="jobNumber" value="#{fileInfo.jobNumber}" />
+                  <f:param name="name" value="#{fileInfo.name}" />
                 </h:commandLink>
               </td>
             </tr>

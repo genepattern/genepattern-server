@@ -348,19 +348,17 @@ function showFileInput(id) {
 		</h:form>
 		<h:form>
 			<f:param />
-			<t:dataList var="jobInfo" value="#{jobsBean.recentJobs}"
-				rowIndexVar="jobIndex">
+			<t:dataList var="jobInfo" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
 				<ui:include src="jobsMenu.xhtml">
 					<ui:param name="job" value="#{jobInfo}" />
 				</ui:include>
 				<t:dataList var="outputFile" value="#{jobInfo.inputFiles}">
 					<ui:include src="jobStatus_fileMenu.xhtml">
-	 				 	<ui:param name="jobOnMenu" value="#{jobInfo}"/>
-	 				 	<ui:param name="isInputFile" value="true"/>
+	 				 	<ui:param name="jobOnMenu" value="#{jobInfo}" />
+	 				 	<ui:param name="isInputFile" value="true" />
 	 				</ui:include>
 				</t:dataList>
-				<t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}"
-					rowIndexVar="paramIndex">
+				<t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}" rowIndexVar="paramIndex">
 					<ui:include src="jobFileMenu.xhtml">
 						<ui:param name="job" value="#{jobInfo}" />
 						<ui:param name="fileInfo" value="#{fileInfo}" />

@@ -44,7 +44,6 @@ import org.genepattern.server.JobInfoWrapper;
 import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.UserAccountManager;
-import org.genepattern.server.JobInfoWrapper.InputFile;
 import org.genepattern.server.auth.IGroupMembershipPlugin;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
@@ -265,22 +264,27 @@ public class JobBean {
      * @return
      */
     public String loadTask() {
-        String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest()
-                .getParameter("module"));
-        UIBeanHelper.getRequest().setAttribute("matchJob",
-                UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter(
-                        "jobNumber")));
-        UIBeanHelper.getRequest().setAttribute("outputFileName",
-                UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter(
-                        "name")));
-        UIBeanHelper.getRequest().setAttribute("outputFileDirName",
-                UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter(
-                        "dirname")));
-        UIBeanHelper.getRequest().setAttribute("outputFileSource",
-                UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter(
-                        "source")));
-        RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper
-                .getManagedBean("#{runTaskBean}");           
+        HttpServletRequest request = UIBeanHelper.getRequest();
+        String lsid = request.getParameter("module");
+        lsid = UIBeanHelper.decode(lsid);
+        
+        String jobNumber = request.getParameter("jobNumber");
+        jobNumber = UIBeanHelper.decode(jobNumber);
+        request.setAttribute("matchJob", jobNumber);
+        
+        String name = request.getParameter("name");
+        name = UIBeanHelper.decode(name);
+        request.setAttribute("outputFileName", name);
+        
+        String dirname = request.getParameter("dirname");
+        dirname = UIBeanHelper.decode(dirname);
+        request.setAttribute("outputFileDirName", dirname);
+        
+        String source = request.getParameter("source");
+        source = UIBeanHelper.decode(source);
+        request.setAttribute("outputFileSource", source);
+
+        RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");           
         assert runTaskBean != null;
         runTaskBean.setTask(lsid);
         return "run task";
