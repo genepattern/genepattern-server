@@ -63,7 +63,7 @@ public class JobStatusBean {
         jobNumberParameter = UIBeanHelper.getRequest().getParameter("jobNumber");
         jobNumberParameter = UIBeanHelper.decode(jobNumberParameter);
         if (jobNumberParameter == null) {
-            log.error("init(): Missing jobNumber.");
+            log.warn("init(): Missing jobNumber.");
             return;
         }
         try {
