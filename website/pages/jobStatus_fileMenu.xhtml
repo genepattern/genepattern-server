@@ -88,9 +88,8 @@
               <h:commandLink value="#{moduleMenuItem.key}" action="#{jobsBean.loadTask}" immediate="true">
                   <f:param name="module" value="#{moduleMenuItem.value}" />
                   <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
-                  <f:param value="#{jobOnMenu.jobNumber}" name="jobMenuNumber"/>
-                  <f:param  name="name" value="#{outputFile.link}"/>
-                  <f:param value="InputFiles" name="source" rendered="#{isInputFile}"/>
+                  <f:param name="jobMenuNumber" value="#{jobOnMenu.jobNumber}" />
+                  <f:param name="name" value="#{outputFile.name}" />
               </h:commandLink>
               </td>
             </tr>            
