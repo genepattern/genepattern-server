@@ -83,6 +83,7 @@
             <t:dataList var="outputFile" value="#{childJobInfo.outputFiles}">
                 <ui:include src="jobStatus_fileMenu.xhtml">
                     <ui:param name="jobOnMenu" value="#{childJobInfo}"/>
+                    <ui:param name="isInputFile" value="false" />
                 </ui:include>
             </t:dataList>
         </div>
