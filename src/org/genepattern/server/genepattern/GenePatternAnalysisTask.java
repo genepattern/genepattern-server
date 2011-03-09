@@ -1204,11 +1204,10 @@ public class GenePatternAnalysisTask {
             }
         }
 
-        // create an array of Strings for Runtime.exec to fix bug 55
-        // (filenames in spaces cause invalid command line)
+        // create an array of Strings for Runtime.exec to fix bug 55 (filenames in spaces cause invalid command line)
         String cmdLine = taskInfoAttributes.get(COMMAND_LINE);
         StringTokenizer stCommandLine;
-        String[] commandTokens = null;
+        List<String> firstPass = new ArrayList<String>();
         String firstToken;
         String token;
 
@@ -1220,22 +1219,14 @@ public class GenePatternAnalysisTask {
             // we need to double-tokenize the first token to extract just "perl"
             stCommandLine = new StringTokenizer(cmdLine);
             firstToken = stCommandLine.nextToken();
-            // now the command line contains the real first word (perl)
-            // followed by the rest, ready for space-tokenizing
+            // now the command line contains the real first word (perl) followed by the rest, ready for space-tokenizing
             cmdLine = substitute(firstToken, props, formalParameters) + cmdLine.substring(firstToken.length());
             stCommandLine = new StringTokenizer(cmdLine);
-            commandTokens = new String[stCommandLine.countTokens()];
             for (int i = 0; stCommandLine.hasMoreTokens(); i++) {
                 token = stCommandLine.nextToken();
-                commandTokens[i] = substitute(token, props, formalParameters);
-                if (commandTokens[i] == null) {
-                    String[] copy = new String[commandTokens.length - 1];
-                    System.arraycopy(commandTokens, 0, copy, 0, i);
-                    if ((i + 1) < commandTokens.length) {
-                        System.arraycopy(commandTokens, i + 1, copy, i, commandTokens.length - i - 1);
-                    }
-                    commandTokens = copy;
-                    i--;
+                List<String> subbed = substituteSplit(token, props, formalParameters, true);
+                if (subbed != null) {
+                    firstPass.addAll(subbed);
                 }
             }
         } 
@@ -1249,63 +1240,51 @@ public class GenePatternAnalysisTask {
             else {
                 firstToken = cmdLine.substring(1, endQuote);
                 stCommandLine = new StringTokenizer(cmdLine.substring(endQuote + 1));
-                commandTokens = new String[stCommandLine.countTokens() + 1];
-                commandTokens[0] = substitute(firstToken, props, formalParameters);
+                String firstSub = substitute(firstToken, props, formalParameters);
+                firstPass.add(firstSub);
                 for (int i = 1; stCommandLine.hasMoreTokens(); i++) {
                     token = stCommandLine.nextToken();
-                    commandTokens[i] = substitute(token, props, formalParameters);
-                    // empty token?
-                    if (commandTokens[i] == null) {
-                        String[] copy = new String[commandTokens.length - 1];
-                        System.arraycopy(commandTokens, 0, copy, 0, i);
-                        if ((i + 1) < commandTokens.length) {
-                            System.arraycopy(commandTokens, i + 1, copy, i, commandTokens.length - i - 1);
-                        }
-                        commandTokens = copy;
-                        i--;
+                    List<String> subbed = substituteSplit(token, props, formalParameters, true);
+                    if (subbed != null) {
+                        firstPass.addAll(subbed);
                     }
                 }
             }
         }
 
         // do the substitutions one more time to allow, for example, p2=<p1>.res
-        for (int i = 1; i < commandTokens.length; i++) {
-            commandTokens[i] = substitute(commandTokens[i], props, formalParameters);
-            if (commandTokens[i] == null) {
-                String[] copy = new String[commandTokens.length - 1];
-                System.arraycopy(commandTokens, 0, copy, 0, i);
-                if ((i + 1) < commandTokens.length) {
-                    System.arraycopy(commandTokens, i + 1, copy, i, commandTokens.length - i - 1);
-                }
-                commandTokens = copy;
-                i--;
+        List<String> secondPass = new ArrayList<String>();
+        for(String commandToken : firstPass) {
+            List<String> subbed = substituteSplit(commandToken, props, formalParameters, true);
+            if (subbed != null) {
+                secondPass.addAll(subbed);
             }
-        }
+        } 
+        
         String stdoutFilename = STDOUT;
         String stderrFilename = STDERR;
         String stdinFilename = null;
         int exitCode = 0;
         int jobStatus = JobStatus.JOB_PROCESSING;
-        StringBuffer commandLine = new StringBuffer();
-        List<String> commandLineList = new ArrayList<String>(commandTokens.length);
+        List<String> commandLineList = new ArrayList<String>(secondPass.size());
         boolean addLast = true;
-        for (int j = 0; j < commandTokens.length - 1; j++) {
-            if (commandTokens[j].equals(STDOUT_REDIRECT)) {
-                stdoutFilename = commandTokens[++j];
+        for (int j = 0; j < secondPass.size() - 1; j++) {
+            if (secondPass.get(j).equals(STDOUT_REDIRECT)) {
+                stdoutFilename = secondPass.get(++j);
                 if ("".equals(stdoutFilename)) {
                     vProblems.add("Missing name for standard output redirect");
                 }
                 addLast = false;
             }
-            else if (commandTokens[j].equals(STDERR_REDIRECT)) {
-                stderrFilename = commandTokens[++j];
+            else if (secondPass.get(j).equals(STDERR_REDIRECT)) {
+                stderrFilename = secondPass.get(++j);
                 if ("".equals(stderrFilename)) {
                     vProblems.add("Missing name for standard error redirect");
                 }
                 addLast = false;
             }
-            else if (commandTokens[j].equals(STDIN_REDIRECT)) {
-                stdinFilename = commandTokens[++j];
+            else if (secondPass.get(j).equals(STDIN_REDIRECT)) {
+                stdinFilename = secondPass.get(++j);
                 if ("".equals(stdinFilename)) {
                     vProblems.add("Missing name for standard input redirect");
                 }
@@ -1313,17 +1292,14 @@ public class GenePatternAnalysisTask {
             }
             else {
                 addLast = true;
-                commandLine.append(commandTokens[j]);
-                commandLine.append(" ");
-                commandLineList.add(commandTokens[j]);
+                commandLineList.add(secondPass.get(j));
             }
         }
 
         if (addLast) {
-            commandLineList.add(commandTokens[commandTokens.length - 1]);
-            commandLine.append(commandTokens[commandTokens.length - 1]);
+            commandLineList.add(secondPass.get(secondPass.size() - 1));
         }
-        commandTokens = commandLineList.toArray(new String[0]);
+        String[] commandTokens = commandLineList.toArray(new String[0]);
         String lastToken = commandTokens[commandTokens.length - 1];
         if (lastToken.equals(STDOUT_REDIRECT)) {
             vProblems.add("Missing name for standard output redirect");
@@ -1376,7 +1352,6 @@ public class GenePatternAnalysisTask {
         } 
 
         // run the task and wait for completion.
-        log.info("running " + taskName + " (job " + jobId + ") command: " + commandLine.toString());
 
         File stdoutFile;
         File stderrFile;
@@ -1415,7 +1390,16 @@ public class GenePatternAnalysisTask {
         }
 
         commandTokens = translateCommandline(commandTokens);
-        String[] cmdLineArgs = hackFixForGP2866(commandTokens);
+        //String[] cmdLineArgs = hackFixForGP2866(commandTokens);
+        String[] cmdLineArgs = commandTokens;
+        if (log.isInfoEnabled()) {
+            StringBuffer commandLine = new StringBuffer();
+            for(String arg : cmdLineArgs) {
+                commandLine.append(arg+" ");
+            }
+            log.info("running " + taskName + " (job " + jobId + ") command: " + commandLine.toString());
+        }
+
         CommandExecutor cmdExec = null;
         try {
             cmdExec = CommandManagerFactory.getCommandManager().getCommandExecutor(jobInfo);
@@ -2646,6 +2630,27 @@ public class GenePatternAnalysisTask {
 	    }
 	});
     }
+    
+    public static String substitute(String commandLine, Properties props, ParameterInfo[] params) {
+        //legacy, by default, don't split optional args
+        boolean split = false;
+        List<String> subbed = substituteSplit(commandLine, props, params, split );
+        if (subbed == null) {
+            return null;
+        }
+        StringBuffer rval = new StringBuffer();
+        boolean first = true;
+        for(String sub : subbed) {
+            if (first) {
+                first = false;
+            }
+            else {
+                rval.append(" ");
+            }
+            rval.append(sub);
+        }
+        return rval.toString();
+    }
 
     /**
      * Performs substitutions of parameters within the commandLine string where there is a &lt;variable&gt; whose
@@ -2662,10 +2667,11 @@ public class GenePatternAnalysisTask {
      * @return String command line with all substitutions made
      * @author Jim Lerner
      */
-    public static String substitute(String commandLine, Properties props, ParameterInfo[] params) {
+    private static List<String> substituteSplit(String commandLine, Properties props, ParameterInfo[] params, boolean split) {
         if (commandLine == null) {
             return null;
         }
+        List<String> rval = new ArrayList<String>();
         int start = 0, end = 0, blank;
         String varName = null;
         String replacement = null;
@@ -2722,9 +2728,18 @@ public class GenePatternAnalysisTask {
                     }
                     String optionalPrefix = (String) hmAttributes.get(PARAM_INFO_PREFIX[PARAM_INFO_NAME_OFFSET]);
                     if (replacement.length() > 0 && optionalPrefix != null && optionalPrefix.length() > 0) {
-                        if (optionalPrefix.endsWith(" ")) {
-                            //special-case: GP-2866
-                            //    if optionalPrefix ends with a space, split into two args
+                        if (split) {
+                            if (optionalPrefix.endsWith(" ")) {
+                                //special-case: GP-2866
+                                //    if optionalPrefix ends with a space, split into two args
+                                rval.add(optionalPrefix.substring(0, optionalPrefix.length()-1));                                
+                                rval.add(replacement);
+                            }
+                            else {
+                                rval.add(optionalPrefix + replacement);
+                            } 
+                            //HACK: assumes split parameters are passed one at a time
+                            return rval;
                         }
                         replacement = optionalPrefix + replacement;
                     }
@@ -2736,7 +2751,9 @@ public class GenePatternAnalysisTask {
         if (newString.length() == 0 && isOptional) {
             return null;
         }
-        return newString.toString();
+        rval.add(newString.toString());
+        return rval;
+        //return newString.toString();
     }
 
     /**
