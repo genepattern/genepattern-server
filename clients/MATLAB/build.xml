@@ -23,7 +23,7 @@
 				<include name="jaxb-api.jar" />
 				<include name="jaxb-impl.jar" />
 				<include name="jaxrpc.jar" />
-				<include name="log4j-1.2.11.jar" />
+				<include name="log4j-1.2.16.jar" />
 				<include name="mail.jar" />
 				<include name="saaj.jar" />
 				<include name="trove.jar" />
