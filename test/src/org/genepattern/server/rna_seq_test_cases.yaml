@@ -1,0 +1,68 @@
+# test cases for the CommandLineParserTest
+# a YAML file with a list of objects
+# Note: must escape backslashes ('\') in strings
+
+#<testname>:
+#    description: _optional_
+#    # a map of environment variables (including parameters entered by the user on the input form)
+#    env:
+#    # a list of args, the expected result of parsing the cmdLine with the given properties
+#    expected: []
+
+#example modules
+Scripture:
+    cmdLine: "<perl> <libdir>Scripture_wrapper.pl -gplibdir <libdir> -java <java> -javaflags '<java_flags>' -alignment <alignment.file> -out <output.filename> -sizeFile <chromosome.size.file> -chr <chromosome> -chrSequence <chromosome.sequence.file>"
+    env:
+        java: "C:\\Program Files\\GenePatternServer\\jre\\bin\\java"
+    expected: [
+        "<perl>",
+        "<libdir>Scripture_wrapper.pl",
+        "-gplibdir",
+        "<libdir>", 
+        "-java",
+        "C:\\Program Files\\GenePatternServer\\jre\\bin\\java",
+        "-javaflags",
+        "'<java_flags>'",
+        "-alignment",
+        "<alignment.file>",
+        "-out",
+        "<output.filename>",
+        "-sizeFile",
+        "<chromosome.size.file>",
+        "-chr",
+        "<chromosome>",
+        "-chrSequence",
+        "<chromosome.sequence.file>" ]
+    
+ABySS:
+    cmdLine: "<perl> <libdir>abyss_wrapper.pl -gplibdir <libdir> -name <output.prefix> -in <input.file> -lib <lib.file> -se <se.file> -k <kmer.size> -n <minimum.pairs> -c <kmer.coverage.threshold> -b <bubble.threshold> -s <min.seed.contig.length> -j <num.threads> -cs <convert.contigs>"
+    env:
+        java: "C:\\Program Files\\GenePatternServer\\jre\\bin\\java"
+    expected: [
+        "<perl>",
+        "<libdir>abyss_wrapper.pl", 
+        "-gplibdir",
+        "<libdir>",
+        "-name", 
+        "<output.prefix>",
+        "-in",
+        "<input.file>",
+        "-lib",
+        "<lib.file>",
+        "-se",
+        "<se.file>",
+        "-k",
+        "<kmer.size>",
+        "-n",
+        "<minimum.pairs>",
+        "-c",
+        "<kmer.coverage.threshold>",
+        "-b",
+        "<bubble.threshold>", 
+        "-s",
+        "<min.seed.contig.length>",
+        "-j", 
+        "<num.threads>",
+        "-cs",
+        "<convert.contigs>" ]
+    

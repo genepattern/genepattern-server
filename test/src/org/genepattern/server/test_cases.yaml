@@ -9,8 +9,55 @@
 #    # a list of args, the expected result of parsing the cmdLine with the given properties
 #    expected: []
 
+testModuleSubstitution:
+    description: test modules with substitution parameters
+    cmdLine: <perl> <libdir>myModule.pl -i <input.file> -o <input.file_basename>.out
+    env:
+        perl: /usr/bin/perl
+        libdir: ../taskLib/MyModule.1.0000/
+        input.file: my_test_data.xls
+        input.file_basename: my_test_data
+    expected: [
+        "/usr/bin/perl", "../taskLib/MyModule.1.0000/myModule.pl", "-i", "my_test_data.xls", "-o", "my_test_data.out"
+        ]
+
+testSingleQuote:
+    description: a single quote character in the cmdLine is passed literally
+    cmdLine: <perl> <libdir>Scripture_wrapper.pl -gplibdir <libdir> -java <java> -javaflags '<java_flags>'
+    env:
+        perl: /usr/bin/perl
+        libdir: ../taskLib/Scripture.1.0000/
+        java: /usr/bin/java
+        java_flags: -Xmx512m -Xdebug
+    expected: [
+        "/usr/bin/perl",
+        "../taskLib/Scripture.1.0000/Scripture_wrapper.pl",
+        "-gplibdir",
+        "../taskLib/Scripture.1.0000/",
+        "-java",
+        "/usr/bin/java",
+        "-javaflags",
+        "'-Xmx512m -Xdebug'"
+        ]
+testDoubeQuoteCmdLine:
+    description: when a command line token is wrapped in double quotes, drop the double quotes from the arglist
+    cmdLine: <java> <java_flags> -cp <libdir>test.jar Main "<arg1> <arg2>"
+    env:
+        java: /usr/bin/java
+        java_flags: -Xmx512m
+        libdir: ../taskLib/Test.1.0000/
+        arg1: "Hello,"
+        arg2: "World!"
+    expected: [
+        "/usr/bin/java",
+        "-Xmx512m", 
+        "-cp",
+        "../taskLib/Test.1.0000/test.jar",
+        "Main",
+        "Hello, World!" ]
+
 testQuotedArgs:
-    description: Handle quoted arguments within the command line (eg. echo "<p1> <p2>") as a single token
+    description: Handle quoted arguments within the command line (eg. echo "<p1> <p2>") as a single token.
     cmdLine: <java> -cp <libdir>echo.jar org.genepattern.testmodule.Echo "<arg1> <arg2>" "<arg3><arg4>"
     env:
         java: "C:\\Program Files\\GenePatternServer\\jre\\bin\\java"
@@ -75,6 +122,24 @@ testSpaceInQuotedSub:
         "./temp/test_run1000.tmp/my_file.txt",
         "my_file.out" ]
 
+testAntWin:
+    description: Make sure the default ant command has the correct command line, when installing a patch on windows.
+        In the genepattern.properties file ant is defined as a property, e.g.
+        ant=<java> ...
+    cmdLine: "<ant>"
+    env:
+        ant: "<java> -cp <tomcatCommonLib>/tools.jar -jar <tomcatCommonLib>/ant-launcher.jar -Dant.home=<tomcatCommonLib> -lib <tomcatCommonLib>"
+        java: "C:\\Program Files\\GenePatternServer\\jre\\bin\\java"
+        tomcatCommonLib: "C:\\Program Files\\GenePatternServer\\Tomcat\\common\\lib"
+    expected: [ 
+        "C:\\Program Files\\GenePatternServer\\jre\\bin\\java",
+        "-cp",
+        "C:\\Program Files\\GenePatternServer\\Tomcat\\common\\lib/tools.jar",
+        "-jar",
+        "C:\\Program Files\\GenePatternServer\\Tomcat\\common\\lib/ant-launcher.jar",
+        "-Dant.home=C:\\Program Files\\GenePatternServer\\Tomcat\\common\\lib",
+        "-lib",
+        "C:\\Program Files\\GenePatternServer\\Tomcat\\common\\lib" ] 
 
 testDefaultJavaWinWrappedQuotes:
     description: The executable (first arg) is a substitution variable which is set to a string with a space character.
@@ -150,4 +215,4 @@ testTwo:
         "-v",
         "-e",
         "-ayes" ]
-    
+
