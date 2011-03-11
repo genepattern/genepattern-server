@@ -824,6 +824,14 @@ public class JobInfoWrapper implements Serializable {
                 }
             }
             
+            //list each output file
+            i=0;
+            for(OutputFile o : this.getOutputFiles()) {
+                ++i;
+                ParameterInfo oPi = new ParameterInfo("o["+i+"]: "+o.getName(), o.getValue(), "");
+                inputParameters.add(new ParameterInfoWrapper(oPi));
+            }
+
             //also show the parameter_info CLOB
             String name = "analysis_job.parameter_info";
             String value = jobInfo.getParameterInfo();
