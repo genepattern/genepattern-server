@@ -1,18 +1,12 @@
 package org.genepattern.server.genepattern;
 
-import static org.genepattern.util.GPConstants.PARAM_INFO_NAME_OFFSET;
-import static org.genepattern.util.GPConstants.PARAM_INFO_OPTIONAL;
-import static org.genepattern.util.GPConstants.PARAM_INFO_PREFIX;
-
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -28,99 +22,33 @@ import org.genepattern.webservice.ParameterInfo;
 public class CommandLineParser {
     public static Logger log = Logger.getLogger(CommandLineParser.class);
     
-    /**
-     * Create the command line to run.
-     * 
-     * @param cmdLine, the raw command line from the module's manifest.
-     * @param props, a lookup table for mapping variable names to substitution values.
-     * @param formalParameters, the list of ParameterInfo for the module.
-     * 
-     * @return the list of command line arguments, including the executable as the first item.
-     * 
-     * @throws Exception
-     */
-    public static String[] createCmdArray(String cmdLine, Properties props, ParameterInfo[] formalParameters) 
-    throws Exception
-    {
-        StringTokenizer stCommandLine;
-        String[] commandTokens = null;
-        String firstToken;
-        String token;
-
-        // TODO: handle quoted arguments within the command line (eg. echo "<p1> <p2>" as a single token)
-
-        // check that the user didn't quote the program name
-        if (!cmdLine.startsWith("\"")) {
-            // since we could have a definition like "<perl>=perl -Ifoo",
-            // we need to double-tokenize the first token to extract just "perl"
-            stCommandLine = new StringTokenizer(cmdLine);
-            firstToken = stCommandLine.nextToken();
-            // now the command line contains the real first word (perl)
-            // followed by the rest, ready for space-tokenizing
-            cmdLine = substitute(firstToken, props, formalParameters) + cmdLine.substring(firstToken.length());
-            stCommandLine = new StringTokenizer(cmdLine);
-            commandTokens = new String[stCommandLine.countTokens()];
-            for (int i = 0; stCommandLine.hasMoreTokens(); i++) {
-                token = stCommandLine.nextToken();
-                commandTokens[i] = substitute(token, props, formalParameters);
-                if (commandTokens[i] == null) {
-                    String[] copy = new String[commandTokens.length - 1];
-                    System.arraycopy(commandTokens, 0, copy, 0, i);
-                    if ((i + 1) < commandTokens.length) {
-                        System.arraycopy(commandTokens, i + 1, copy, i, commandTokens.length - i - 1);
-                    }
-                    commandTokens = copy;
-                    i--;
-                }
-            }
-        } 
-        else {
-            // the user quoted the command, so it has to be handled specially
-            int endQuote = cmdLine.indexOf("\"", 1);
-            // find the matching closing quote
-            if (endQuote == -1) {
-                //vProblems.add("Missing closing quote on command line: " + cmdLine);
-                throw new Exception("Missing closing quote on command line: " + cmdLine);
-            } 
-            else {
-                firstToken = cmdLine.substring(1, endQuote);
-                stCommandLine = new StringTokenizer(cmdLine.substring(endQuote + 1));
-                commandTokens = new String[stCommandLine.countTokens() + 1];
-                commandTokens[0] = substitute(firstToken, props, formalParameters);
-                for (int i = 1; stCommandLine.hasMoreTokens(); i++) {
-                    token = stCommandLine.nextToken();
-                    commandTokens[i] = substitute(token, props, formalParameters);
-                    // empty token?
-                    if (commandTokens[i] == null) {
-                        String[] copy = new String[commandTokens.length - 1];
-                        System.arraycopy(commandTokens, 0, copy, 0, i);
-                        if ((i + 1) < commandTokens.length) {
-                            System.arraycopy(commandTokens, i + 1, copy, i, commandTokens.length - i - 1);
-                        }
-                        commandTokens = copy;
-                        i--;
-                    }
-                }
-            }
+    public static class Exception extends java.lang.Exception {
+        public Exception(String message) {
+            super(message);
         }
-
-        // do the substitutions one more time to allow, for example, p2=<p1>.res
-        for (int i = 1; i < commandTokens.length; i++) {
-            commandTokens[i] = substitute(commandTokens[i], props, formalParameters);
-            if (commandTokens[i] == null) {
-                String[] copy = new String[commandTokens.length - 1];
-                System.arraycopy(commandTokens, 0, copy, 0, i);
-                if ((i + 1) < commandTokens.length) {
-                    System.arraycopy(commandTokens, i + 1, copy, i, commandTokens.length - i - 1);
-                }
-                commandTokens = copy;
-                i--;
-            }
+        public Exception(String message, Throwable t) {
+            super(message, t);
         }
-        
-        return commandTokens;
     }
-
+    
+    private static Map<String,ParameterInfo> createParameterInfoMap(ParameterInfo[] params) {
+        Map<String,ParameterInfo> map = new HashMap<String,ParameterInfo>();
+        for(ParameterInfo param : params) {
+            map.put(param.getName(), param);
+        }
+        return map;
+    }
+    
+    public static List<String> createCmdLine(String cmdLine, Properties props, ParameterInfo[] formalParameters) { 
+        Map<String,String> env = new HashMap<String,String>();
+        for(Object keyObj : props.keySet()) {
+            String key = keyObj.toString();
+            env.put( key.toString(), props.getProperty(key));
+        }
+        Map<String,ParameterInfo> parameterInfoMap = createParameterInfoMap(formalParameters);
+        return resolveValue(cmdLine, env, parameterInfoMap, 0);
+    }
+    
     /**
      * Extract a list of substitution parameters from the given String.
      * A substitution parameter is of the form, &lt;name&gt;
@@ -139,6 +67,10 @@ public class CommandLineParser {
         }
         catch (PatternSyntaxException e) {
             log.error("Error creating pattern for: "+patternRegex, e);
+            return paramNames;
+        }
+        catch (Throwable t) {
+            log.error("Error creating pattern for: '"+patternRegex+": "+t.getLocalizedMessage() );
             return paramNames;
         }
         Matcher matcher = pattern.matcher(str);
@@ -218,7 +150,7 @@ public class CommandLineParser {
         return st.getTokens();
     }
 
-    private static List<String> resolveValue(final String value, final Map<String,String> dict, final int depth) {
+    private static List<String> resolveValue(final String value, final Map<String,String> props, final Map<String,ParameterInfo> parameterInfoMap, final int depth) {
         if (value == null) {
             //TODO: decide to throw exception or return null or return list containing one null item
             throw new IllegalArgumentException("value is null");
@@ -235,108 +167,273 @@ public class CommandLineParser {
         //otherwise, tokenize and return
         List<String> tokens = getTokens(value);
         for(String token : tokens) {
-            String substitution = substituteValue(token, dict);
-            rval.addAll( resolveValue( substitution, dict, 1+depth ) );
+            List<String> substitution = substituteValue(token, props, parameterInfoMap);
+            
+            if (substitution == null || substitution.size() == 0) {
+                //remove empty substitutions
+            }
+            else if (substitution.size() == 1) {
+                String singleValue = substitution.get(0);
+                if (singleValue == null) {
+                    //ignore
+                }
+                else if (token.equals(singleValue)) {
+                    rval.add( token );
+                }
+                else {
+                    List<String> resolvedList = resolveValue( singleValue, props, parameterInfoMap, 1+depth );
+                    rval.addAll( resolvedList );
+                }
+            }
+            else {
+                for(String sub : substitution) {
+                    List<String> resolvedSub = resolveValue(sub, props, parameterInfoMap, 1+depth);
+                    rval.addAll( resolvedSub );
+                }
+            }
         }
         return rval;
     }
-
-    private static String substituteValue(final String arg, final Map<String,String> dict) {
+    
+    private static List<String> substituteValue(final String arg, final Map<String,String> dict, final Map<String,ParameterInfo> parameterInfoMap) {
+        List<String> rval = new ArrayList<String>();
         List<String> subs = getSubstitutionParameters(arg);
         if (subs == null || subs.size() == 0) {
-            return arg;
+            rval.add(arg);
+            return rval;
         }
         String substitutedValue = arg;
+        boolean isOptional = true;
         for(String sub : subs) {
             String paramName = sub.substring(1, sub.length()-1);
-            String value = dict.get(paramName);
-            if (value == null) {
+            String value = null;
+            if (dict.containsKey(paramName)) {
+                value = dict.get(paramName);
+            }
+ 
+            //default to empty string, to handle optional parameters which have not been set
+            //String replacement = props.getProperty(varName, "");
+            if (paramName.equals("resources") && value != null) {
+                //TODO: this should really be in the setupProps
+                //special-case for <resources>, 
+                // make this an absolute path so that pipeline jobs running in their own directories see the right path
+                value = new File(value).getAbsolutePath();
+            }
+
+            ParameterInfo paramInfo = parameterInfoMap.get(paramName);
+            if (paramInfo != null) {
+                isOptional = paramInfo.isOptional();
+                String optionalPrefix = paramInfo._getOptionalPrefix();
+                if (value.length() > 0 && optionalPrefix != null && optionalPrefix.length() > 0) {
+                    if (optionalPrefix.endsWith(" ")) {
+                        //special-case: GP-2866
+                        //    if optionalPrefix ends with a space, split into two args 
+                        rval.add(optionalPrefix.substring(0, optionalPrefix.length()-1));                        
+                    }
+                    else {
+                        //otherwise, append the prefix to the value
+                        value = optionalPrefix + value;
+                    }
+                }
+            }
+            
+            if (value == null && isOptional == false) {
                 //TODO: throw exception
                 log.error("missing substitution value for '"+sub+"' in expression: "+arg);
                 value = sub;
             }
+            else if (value == null &&  isOptional == true) {
+                value = "";
+            }
             substitutedValue = substitutedValue.replace(sub, value);
         }
-        return substitutedValue;
+        if (substitutedValue.length() == 0 && isOptional) {
+            //return an empty list
+        }
+        else {
+            rval.add(substitutedValue);
+        }
+        return rval;
     }
 
-    private static Map<String,ParameterInfo> getParameterInfoMap(final ParameterInfo[] parameterInfoArray) {
-        List<ParameterInfo> list = new ArrayList<ParameterInfo>();
-        for(ParameterInfo param : parameterInfoArray) {
-            list.add(param);
-        }
-        return getParameterInfoMap(list);
-    }
-
-    private static Map<String,ParameterInfo> getParameterInfoMap(final List<ParameterInfo> parameterInfoList) {
-        Map<String,ParameterInfo> map = new LinkedHashMap<String,ParameterInfo>();
-        for(ParameterInfo param : parameterInfoList) {
-            map.put(param.getName(), param);
-        }
-        return map;
+    public static List<String> translateCmdLine(final String cmdLine, final Map<String,String> props) {
+        final Map<String,ParameterInfo> emptyParameterInfoMap = Collections.emptyMap();
+        return resolveValue(cmdLine, props, emptyParameterInfoMap, 0);
     }
     
-    public static List<String> translateCmdLine(final String cmdLine, final Map<String,String> in) throws IOException {
-        return resolveValue(cmdLine, in, 0);
-    }
     
-    /**
-     * Replace all substitution variables, of the form &lt;variable&gt;, with values from the given properties instance.
-     * Prepend the prefix for any substituted parameters which have a prefix.
-     * 
-     * @param commandLine from the manifest for the module
-     * @param props, Properties object containing name/value pairs for parameter substitution in the command line
-     * @param params, ParameterInfo[] describing whether each parameter has a prefix defined.
-     * 
-     * @return String command line with all substitutions made
-     * 
-     * @author Jim Lerner, Peter Carr
-     */
-    public static String substitute(final String commandLine, final Properties props, final ParameterInfo[] params) {
-        if (commandLine == null) {
-            return null;
-        }
-        String substituted = commandLine;
-        
-        Map<String, ParameterInfo> parameterInfoMap = getParameterInfoMap(params);
-        List<String> substitutionParameters = getSubstitutionParameters(commandLine);
-        
-        for(String substitutionParameter : substitutionParameters) {
-            String varName = substitutionParameter.substring(1, substitutionParameter.length() - 1);
-            //default to empty string, to handle optional parameters which have not been set
-            String replacement = props.getProperty(varName, "");
-            if (varName.equals("resources")) {
-                //TODO: this should really be in the setupProps
-                //special-case for <resources>, 
-                // make this an absolute path so that pipeline jobs running in their own directories see the right path
-                replacement = new File(replacement).getAbsolutePath();
-            }
-            ParameterInfo paramInfo = parameterInfoMap.get(varName);
-            boolean isOptional = true;
-            HashMap hmAttributes = null;
-            if (paramInfo != null) {
-                hmAttributes = paramInfo.getAttributes();
-            }
-            if (hmAttributes != null) {
-                if (hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET]) == null) {
-                    isOptional = false;
-                }
-                String optionalPrefix = (String) hmAttributes.get(PARAM_INFO_PREFIX[PARAM_INFO_NAME_OFFSET]);
-                if (replacement.length() > 0 && optionalPrefix != null && optionalPrefix.length() > 0) {
-                    if (optionalPrefix.endsWith(" ")) {
-                        //special-case: GP-2866
-                        //    if optionalPrefix ends with a space, split into two args
-                    }
-                    replacement = optionalPrefix + replacement;
-                }
-            }
-            substituted = substituted.replace(substitutionParameter, replacement);
-            if (substituted.length() == 0 && isOptional) {
-                return null;
-            }
-        }
-        return substituted;
-    }
+    ///legacy code, originally implemented in GenePatternAnalysisTask
+//    private static Map<String,ParameterInfo> getParameterInfoMap(final ParameterInfo[] parameterInfoArray) {
+//        List<ParameterInfo> list = new ArrayList<ParameterInfo>();
+//        for(ParameterInfo param : parameterInfoArray) {
+//            list.add(param);
+//        }
+//        return getParameterInfoMap(list);
+//    }
+//
+//    private static Map<String,ParameterInfo> getParameterInfoMap(final List<ParameterInfo> parameterInfoList) {
+//        Map<String,ParameterInfo> map = new LinkedHashMap<String,ParameterInfo>();
+//        for(ParameterInfo param : parameterInfoList) {
+//            map.put(param.getName(), param);
+//        }
+//        return map;
+//    }
+//    
+//  /**
+//  * Create the command line to run.
+//  * 
+//  * @param cmdLine, the raw command line from the module's manifest.
+//  * @param props, a lookup table for mapping variable names to substitution values.
+//  * @param formalParameters, the list of ParameterInfo for the module.
+//  * 
+//  * @return the list of command line arguments, including the executable as the first item.
+//  * 
+//  * @throws Exception
+//  */
+// private static String[] createCmdArray(String cmdLine, Properties props, ParameterInfo[] formalParameters) 
+// throws CommandLineParser.Exception
+// {
+//     List<String> commandTokens = new ArrayList<String>();
+//
+//     // TODO: handle quoted arguments within the command line (eg. echo "<p1> <p2>" as a single token)
+//
+//     // check that the user didn't quote the program name
+//     if (!cmdLine.startsWith("\"")) {
+//         // since we could have a definition like "<perl>=perl -Ifoo",
+//         // we need to double-tokenize the first token to extract just "perl"
+//         StringTokenizer stCommandLine = new StringTokenizer(cmdLine);
+//         String firstToken = stCommandLine.nextToken();
+//         // now the command line contains the real first word (perl)
+//         // followed by the rest, ready for space-tokenizing
+//         cmdLine = substitute(firstToken, props, formalParameters) + cmdLine.substring(firstToken.length());
+//         stCommandLine = new StringTokenizer(cmdLine);
+//         while(stCommandLine.hasMoreTokens()) {
+//             String token = stCommandLine.nextToken();
+//             String substitutedToken = substitute(token, props, formalParameters);
+//             if (substitutedToken != null) {
+//                 commandTokens.add(substitutedToken);
+//             }
+//         }
+//     } 
+//     else {
+//         // the user quoted the command, so it has to be handled specially
+//         int endQuote = cmdLine.indexOf("\"", 1);
+//         // find the matching closing quote
+//         if (endQuote == -1) {
+//             //vProblems.add("Missing closing quote on command line: " + cmdLine);
+//             throw new CommandLineParser.Exception("Missing closing quote on command line: " + cmdLine);
+//         } 
+//         String firstToken = cmdLine.substring(1, endQuote);
+//         commandTokens.add(substitute(firstToken, props, formalParameters));
+//         StringTokenizer stCommandLine = new StringTokenizer(cmdLine.substring(endQuote + 1));
+//         while(stCommandLine.hasMoreTokens()) {
+//             String token = stCommandLine.nextToken();
+//             String substitutedToken = substitute(token, props, formalParameters);
+//             if (substitutedToken != null) {
+//                 commandTokens.add(substitutedToken);
+//             }
+//         }
+//     }
+//
+//     // do the substitutions one more time to allow, for example, p2=<p1>.res
+//     List<String> secondPass = new ArrayList<String>();
+//     for(String token : commandTokens) {
+//         String substitutedToken = substitute(token, props, formalParameters);
+//         if (substitutedToken != null) {
+//             secondPass.add(substitutedToken);
+//         }
+//     }
+//     String[] commandArray = new String[secondPass.size()];
+//     commandArray = secondPass.toArray(commandArray);
+//     return commandArray;
+// }
 
+//    /**
+//     * Replace all substitution variables, of the form &lt;variable&gt;, with values from the given properties instance.
+//     * Prepend the prefix for any substituted parameters which have a prefix.
+//     * 
+//     * @param commandLine from the manifest for the module
+//     * @param props, Properties object containing name/value pairs for parameter substitution in the command line
+//     * @param params, ParameterInfo[] describing whether each parameter has a prefix defined.
+//     * 
+//     * @return String command line with all substitutions made
+//     * 
+//     * @author Jim Lerner, Peter Carr
+//     */
+//    private static String substitute(final String commandLine, final Properties props, final ParameterInfo[] params) {
+//        if (commandLine == null) {
+//            return null;
+//        }
+//        List<String> substituted = substitute(commandLine, props, params, false);
+//        if (substituted == null || substituted.size() == 0) {
+//            return null;
+//        }
+//        else if (substituted.size()==1) {
+//            return substituted.get(0);
+//        }
+//        //unexpected, rval contains more than one item
+//        log.error("Unexpected rval in substitute, expecting a single item list, but the list contained "+substituted.size()+" items.");
+//        String rval = "";
+//        boolean first = true;
+//        for(String s : substituted) {
+//            if (first) {
+//                first = false;
+//            }
+//            else {
+//                s = " "+s;
+//            }
+//            rval += s;
+//        }
+//        return rval;
+//    }
+    
+//    private static List<String> substitute(final String commandLine, final Properties props, final ParameterInfo[] params, final boolean split) {
+//        if (commandLine == null) {
+//            return null;
+//        }
+//        String substituted = commandLine;
+//        
+//        Map<String, ParameterInfo> parameterInfoMap = getParameterInfoMap(params);
+//        List<String> substitutionParameters = getSubstitutionParameters(commandLine);
+//        
+//        for(String substitutionParameter : substitutionParameters) {
+//            String varName = substitutionParameter.substring(1, substitutionParameter.length() - 1);
+//            //default to empty string, to handle optional parameters which have not been set
+//            String replacement = props.getProperty(varName, "");
+//            if (varName.equals("resources")) {
+//                //TODO: this should really be in the setupProps
+//                //special-case for <resources>, 
+//                // make this an absolute path so that pipeline jobs running in their own directories see the right path
+//                replacement = new File(replacement).getAbsolutePath();
+//            }
+//            ParameterInfo paramInfo = parameterInfoMap.get(varName);
+//            boolean isOptional = true;
+//            HashMap hmAttributes = null;
+//            if (paramInfo != null) {
+//                hmAttributes = paramInfo.getAttributes();
+//            }
+//            if (hmAttributes != null) {
+//                if (hmAttributes.get(PARAM_INFO_OPTIONAL[PARAM_INFO_NAME_OFFSET]) == null) {
+//                    isOptional = false;
+//                }
+//                String optionalPrefix = (String) hmAttributes.get(PARAM_INFO_PREFIX[PARAM_INFO_NAME_OFFSET]);
+//                if (replacement.length() > 0 && optionalPrefix != null && optionalPrefix.length() > 0) {
+//                    if (optionalPrefix.endsWith(" ")) {
+//                        //special-case: GP-2866
+//                        //    if optionalPrefix ends with a space, split into two args
+//                    }
+//                    replacement = optionalPrefix + replacement;
+//                }
+//            }
+//            substituted = substituted.replace(substitutionParameter, replacement);
+//            if (substituted.length() == 0 && isOptional) {
+//                return null;
+//            }
+//        }
+//        //return substituted;
+//        List<String> rval = new ArrayList<String>();
+//        rval.add(substituted);
+//        return rval;
+//    }
 
 }

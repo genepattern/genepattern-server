@@ -19,6 +19,9 @@ package org.genepattern.webservice;
  * @version $Revision 1.3$
  */
 
+import static org.genepattern.util.GPConstants.PARAM_INFO_NAME_OFFSET;
+import static org.genepattern.util.GPConstants.PARAM_INFO_PREFIX;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -272,6 +275,18 @@ public class ParameterInfo implements Serializable {
         String optional = (String) getAttributes().get(GPConstants.PARAM_INFO_OPTIONAL[0]);
         return (optional != null && optional.length() > 0);
 
+    }
+    
+    public String _getOptionalPrefix() {
+        String optionalPrefix = "";
+        String key = PARAM_INFO_PREFIX[PARAM_INFO_NAME_OFFSET];
+        if (attributes != null && attributes.containsKey(key)) {
+            Object value = attributes.get(key);
+            if (value != null) {
+                optionalPrefix = (String) value;
+            }
+        }
+        return optionalPrefix;
     }
 
     /**

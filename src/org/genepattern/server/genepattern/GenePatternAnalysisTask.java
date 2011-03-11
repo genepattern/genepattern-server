@@ -261,7 +261,7 @@ public class GenePatternAnalysisTask {
         PIPELINE
     };
 
-    private enum INPUT_FILE_MODE {
+    public enum INPUT_FILE_MODE {
         COPY, MOVE, PATH
     };
 
@@ -278,7 +278,7 @@ public class GenePatternAnalysisTask {
         this.executor = executor;
     }
 
-    private static INPUT_FILE_MODE getInputFileMode() {
+    public static INPUT_FILE_MODE getInputFileMode() {
         INPUT_FILE_MODE inputFileMode = INPUT_FILE_MODE.PATH;
         String inputFileModeProp = System.getProperty("input.file.mode");
         if (inputFileModeProp != null) {
@@ -1203,88 +1203,45 @@ public class GenePatternAnalysisTask {
                 throw new JobDispatchException(e);
             }
         }
-
-        // create an array of Strings for Runtime.exec to fix bug 55 (filenames in spaces cause invalid command line)
-        String cmdLine = taskInfoAttributes.get(COMMAND_LINE);
-        StringTokenizer stCommandLine;
-        List<String> firstPass = new ArrayList<String>();
-        String firstToken;
-        String token;
-
-        // TODO: handle quoted arguments within the command line (eg. echo "<p1> <p2>" as a single token)
-
-        // check that the user didn't quote the program name
-        if (!cmdLine.startsWith("\"")) {
-            // since we could have a definition like "<perl>=perl -Ifoo",
-            // we need to double-tokenize the first token to extract just "perl"
-            stCommandLine = new StringTokenizer(cmdLine);
-            firstToken = stCommandLine.nextToken();
-            // now the command line contains the real first word (perl) followed by the rest, ready for space-tokenizing
-            cmdLine = substitute(firstToken, props, formalParameters) + cmdLine.substring(firstToken.length());
-            stCommandLine = new StringTokenizer(cmdLine);
-            for (int i = 0; stCommandLine.hasMoreTokens(); i++) {
-                token = stCommandLine.nextToken();
-                List<String> subbed = substituteSplit(token, props, formalParameters, true);
-                if (subbed != null) {
-                    firstPass.addAll(subbed);
-                }
-            }
-        } 
-        else {
-            // the user quoted the command, so it has to be handled specially
-            int endQuote = cmdLine.indexOf("\"", 1);
-            // find the matching closing quote
-            if (endQuote == -1) {
-                vProblems.add("Missing closing quote on command line: " + cmdLine);
-            } 
-            else {
-                firstToken = cmdLine.substring(1, endQuote);
-                stCommandLine = new StringTokenizer(cmdLine.substring(endQuote + 1));
-                String firstSub = substitute(firstToken, props, formalParameters);
-                firstPass.add(firstSub);
-                for (int i = 1; stCommandLine.hasMoreTokens(); i++) {
-                    token = stCommandLine.nextToken();
-                    List<String> subbed = substituteSplit(token, props, formalParameters, true);
-                    if (subbed != null) {
-                        firstPass.addAll(subbed);
-                    }
-                }
+        
+        String[] commandTokens = null;
+        try {
+            String cmdLine = taskInfoAttributes.get(COMMAND_LINE);
+            //commandTokens = CommandLineParser.createCmdArray(cmdLine, props, formalParameters);
+            List<String> cmdLineArgs = CommandLineParser.createCmdLine(cmdLine, props, formalParameters);
+            commandTokens = new String[cmdLineArgs.size()];
+            int i=0;
+            for(String arg : cmdLineArgs) {
+                commandTokens[i++] = arg;
             }
         }
-
-        // do the substitutions one more time to allow, for example, p2=<p1>.res
-        List<String> secondPass = new ArrayList<String>();
-        for(String commandToken : firstPass) {
-            List<String> subbed = substituteSplit(commandToken, props, formalParameters, true);
-            if (subbed != null) {
-                secondPass.addAll(subbed);
-            }
+        catch (Exception e) {
+            vProblems.add(e.getLocalizedMessage());
         } 
         
         String stdoutFilename = STDOUT;
         String stderrFilename = STDERR;
         String stdinFilename = null;
         int exitCode = 0;
-        int jobStatus = JobStatus.JOB_PROCESSING;
-        List<String> commandLineList = new ArrayList<String>(secondPass.size());
+        List<String> commandLineList = new ArrayList<String>(commandTokens.length);
         boolean addLast = true;
-        for (int j = 0; j < secondPass.size() - 1; j++) {
-            if (secondPass.get(j).equals(STDOUT_REDIRECT)) {
-                stdoutFilename = secondPass.get(++j);
+        for (int j = 0; j < commandTokens.length - 1; j++) {
+            if (commandTokens[j].equals(STDOUT_REDIRECT)) {
+                stdoutFilename = commandTokens[++j];
                 if ("".equals(stdoutFilename)) {
                     vProblems.add("Missing name for standard output redirect");
                 }
                 addLast = false;
             }
-            else if (secondPass.get(j).equals(STDERR_REDIRECT)) {
-                stderrFilename = secondPass.get(++j);
+            else if (commandTokens[j].equals(STDERR_REDIRECT)) {
+                stderrFilename = commandTokens[++j];
                 if ("".equals(stderrFilename)) {
                     vProblems.add("Missing name for standard error redirect");
                 }
                 addLast = false;
             }
-            else if (secondPass.get(j).equals(STDIN_REDIRECT)) {
-                stdinFilename = secondPass.get(++j);
+            else if (commandTokens[j].equals(STDIN_REDIRECT)) {
+                stdinFilename = commandTokens[++j];
                 if ("".equals(stdinFilename)) {
                     vProblems.add("Missing name for standard input redirect");
                 }
@@ -1292,14 +1249,14 @@ public class GenePatternAnalysisTask {
             }
             else {
                 addLast = true;
-                commandLineList.add(secondPass.get(j));
+                commandLineList.add(commandTokens[j]);
             }
         }
 
         if (addLast) {
-            commandLineList.add(secondPass.get(secondPass.size() - 1));
+            commandLineList.add(commandTokens[commandTokens.length - 1]);
         }
-        String[] commandTokens = commandLineList.toArray(new String[0]);
+        commandTokens = commandLineList.toArray(new String[0]);
         String lastToken = commandTokens[commandTokens.length - 1];
         if (lastToken.equals(STDOUT_REDIRECT)) {
             vProblems.add("Missing name for standard output redirect");
@@ -1325,6 +1282,7 @@ public class GenePatternAnalysisTask {
                 stdinFile = null;
             }
         }
+
         
         //close hibernate session before running the job, but don't save the parameter info
         HibernateUtil.closeCurrentSession();
@@ -1336,7 +1294,7 @@ public class GenePatternAnalysisTask {
                 stderrBuffer.append(eProblems.nextElement() + "\n");
             }
             if (stderrBuffer.length() > 0) {
-                jobStatus = JobStatus.JOB_ERROR;
+                //jobStatus = JobStatus.JOB_ERROR;
                 if (exitCode == 0) {
                     exitCode = -1;
                 }
@@ -1389,7 +1347,7 @@ public class GenePatternAnalysisTask {
             return;
         }
 
-        commandTokens = translateCommandline(commandTokens);
+        //commandTokens = translateCommandline(commandTokens);
         //String[] cmdLineArgs = hackFixForGP2866(commandTokens);
         String[] cmdLineArgs = commandTokens;
         if (log.isInfoEnabled()) {
@@ -3039,7 +2997,7 @@ public class GenePatternAnalysisTask {
         int i = 0;
         while (i < end) {
             // read until find another "
-            if (commandLine[i].charAt(0) == '"' && commandLine[i].charAt(commandLine[i].length() - 1) != '"') {
+            if (commandLine[i] != null && commandLine[i].length()>0 && commandLine[i].charAt(0) == '"' && commandLine[i].charAt(commandLine[i].length() - 1) != '"') {
                 StringBuffer buf = new StringBuffer();
                 buf.append(commandLine[i].substring(0, commandLine[i].length()));
                 i++;

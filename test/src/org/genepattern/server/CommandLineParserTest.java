@@ -20,6 +20,14 @@ import org.yaml.snakeyaml.Yaml;
 /**
  * Unit tests for command line parser.
  * 
+ * Notes:
+ *     @cmdLine, command line from module manifest
+ *     @serverProperties, properties loaded from genepattern.properties, custom.properties, and system.properties
+ *     @userValues, values set by user via Run Module page or SOAP request
+ *     List<String> parseCmdLine(String cmdLine, Map<String,?> serverProperties, Map<String,?> userValues);
+ *     May need to get the ParameterInfo[] or TaskInfo to resolve substitutions which refer back to the module.
+ *     E.g. <output.filename>=<input.file_basename>.out
+ * 
  * @author pcarr
  */
 public class CommandLineParserTest extends TestCase {
@@ -128,7 +136,7 @@ public class CommandLineParserTest extends TestCase {
             }
         }
         
-        public void runTest() throws IOException {
+        public void runTest() {
             List<String> cmdLineArgs = CommandLineParser.translateCmdLine(cmdLine, env);
             assertNotNull(name+": cmdLineArgs", cmdLineArgs);
             assertEquals(name+": cmdLineArgs.size", expected.size(), cmdLineArgs.size());
@@ -166,10 +174,10 @@ public class CommandLineParserTest extends TestCase {
 
     }
     
-    public void testGetCommandLineFromFile() throws IOException {
+    private void testGetCommandLineFromFile(String filename) {
         List<CmdLineObj> testCases = null;
         try {
-            testCases = loadTestCases("test_cases.yaml");
+            testCases = loadTestCases(filename);
         }
         catch (FileNotFoundException e) {
             fail(e.getLocalizedMessage());
@@ -178,6 +186,17 @@ public class CommandLineParserTest extends TestCase {
         for(CmdLineObj testCase : testCases) {
             testCase.runTest();
         }
+        
+    }
+
+    public void testGetCommandLineFromFile() {
+        String filename = "test_cases.yaml";
+        testGetCommandLineFromFile(filename);
+    }
+    
+    public void testRnaSeqCmdLines() {
+        String filename = "rna_seq_test_cases.yaml";
+        testGetCommandLineFromFile(filename);
     }
 
     public void testGetCommandLine() throws IOException { 
