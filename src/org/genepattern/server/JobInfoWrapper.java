@@ -755,7 +755,7 @@ public class JobInfoWrapper implements Serializable {
      */
     private void processParameterInfoArray() {
         for(ParameterInfo param : jobInfo.getParameterInfoArray()) {
-            if (param.isDirectory()) {
+            if (param._isDirectory()) {
                 ParameterInfoWrapper directory = new ParameterInfoWrapper(param);
                 directoryInputs.add(directory);
             }

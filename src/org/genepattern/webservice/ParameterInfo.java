@@ -168,7 +168,7 @@ public class ParameterInfo implements Serializable {
         return false;
     }
     
-	public boolean isDirectory() {
+	public boolean _isDirectory() {
 		if (attributes != null && (attributes.containsKey(TYPE) || attributes.containsKey(TYPE.toLowerCase()))) {
             String type = (String) this.attributes.get(TYPE);
             if (type == null)
