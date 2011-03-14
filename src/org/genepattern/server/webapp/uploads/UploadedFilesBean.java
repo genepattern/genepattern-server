@@ -94,12 +94,19 @@ public class UploadedFilesBean {
             try {
                 if (subDir.canWrite() && subDir.isDirectory()) {
                     boolean subDirDeleted = false;
-                    String[] contents = subDir.list();
-                    if (contents != null && contents.length == 0) {
-                        subDirDeleted = subDir.delete();
+                    //special-case: don't delete dedicated FTP upload dir
+                    boolean ignore = false;
+                    if (subDir.getName().endsWith("_ftp")) {
+                        ignore = true;
                     }
-                    if (subDirDeleted) {
-                        log.debug("deleted empty tmp directory from upload directories: " + subDir.getPath());
+                    if (!ignore) {
+                        String[] contents = subDir.list();
+                        if (contents != null && contents.length == 0) {
+                            subDirDeleted = subDir.delete();
+                        }
+                        if (subDirDeleted) {
+                            log.debug("deleted empty tmp directory from upload directories: " + subDir.getPath());
+                        }
                     }
                 }
             }
@@ -281,13 +288,18 @@ public class UploadedFilesBean {
             int dirCount = 0;
             List<DirectoryFileListPair> dirs =  new ArrayList<DirectoryFileListPair>();
             dirs.add(new DirectoryFileListPair(new UploadDirectory("Job Input Files"), getJobFiles()));
-            if (batchEnabled) {
-                dirs.add(new DirectoryFileListPair(new UploadDirectory("Uploaded Files"), getUserUploadFiles(), true));
+            
+            //include listing of uploaded files even if allow.batch.process is disabled,
+            //    so that FTP transfers will show up on the Uploaded Files tab
+            List<File> userUploadFiles = getUserUploadFiles();
+            if (userUploadFiles != null && userUploadFiles.size() > 0) {
+                UploadDirectory userUploadDir = new UploadDirectory("Uploaded Files");
+                DirectoryFileListPair userUploadRecords = new DirectoryFileListPair(userUploadDir, userUploadFiles, true);
+                dirs.add(userUploadRecords);
             }
             
             for (DirectoryFileListPair pair : dirs) {
                 UploadDirectory userDir = pair.dir;
-                availableDirectories.add(userDir);
       
                 List<UploadFileInfo> fileList = new ArrayList<UploadFileInfo>();
                 List<File> originalList = pair.fileList;
@@ -313,8 +325,8 @@ public class UploadedFilesBean {
                             fileList.add(ufi);
                         }
                     }
-                }
-                
+                } 
+
                 // Sort all files by last modified date
                 Collections.sort(fileList, new FileModifiedComparator());
                 
@@ -347,6 +359,12 @@ public class UploadedFilesBean {
                     count++;
                 }
                 dirCount++;
+                
+                //don't include empty 'folders' in the list
+                int num = userDir.getUploadFiles().size();
+                if (num > 0) {
+                    availableDirectories.add(userDir);
+                }
             }
         }
 
