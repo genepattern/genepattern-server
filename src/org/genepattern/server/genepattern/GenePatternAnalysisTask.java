@@ -1164,8 +1164,7 @@ public class GenePatternAnalysisTask {
             } // end for each parameter
         } // end if parameters not null
 
-        // build the command line, replacing <variableName> with the same
-        // name from the properties
+        // build the command line, replacing <variableName> with the same name from the properties
         // (ParameterInfo[], System properties, environment variables, and built-ins merged)
         // build props again, now that downloaded files are set
         try {
@@ -1185,14 +1184,8 @@ public class GenePatternAnalysisTask {
         // check that all parameters are used in the command line
         // and that all non-optional parameters that are cited actually exist
         ParameterInfo[] formalParameters = taskInfo.getParameterInfoArray();
-        Vector<String> parameterProblems = validateParameters(props, taskName, taskInfoAttributes.get(COMMAND_LINE), paramsCopy,
-                formalParameters, true);
-
+        Vector<String> parameterProblems = validateParameters(props, taskName, taskInfoAttributes.get(COMMAND_LINE), paramsCopy, formalParameters, true);
         vProblems.addAll(parameterProblems);
-        String c = substitute(substitute(taskInfoAttributes.get(COMMAND_LINE), props, formalParameters), props, formalParameters);
-        if (c == null || c.trim().length() == 0) {
-            vProblems.add("Command line not defined");
-        }
 
         if (jobType != JOB_TYPE.VISUALIZER) {
             //TODO: special case for visualizer
@@ -1204,15 +1197,22 @@ public class GenePatternAnalysisTask {
             }
         }
         
-        String[] commandTokens = null;
+        String[] commandTokens = new String[0];
         try {
             String cmdLine = taskInfoAttributes.get(COMMAND_LINE);
-            //commandTokens = CommandLineParser.createCmdArray(cmdLine, props, formalParameters);
-            List<String> cmdLineArgs = CommandLineParser.createCmdLine(cmdLine, props, formalParameters);
-            commandTokens = new String[cmdLineArgs.size()];
-            int i=0;
-            for(String arg : cmdLineArgs) {
-                commandTokens[i++] = arg;
+            if (cmdLine == null || cmdLine.trim().length() == 0) {
+                vProblems.add("Command line not defined");
+            }
+            else {
+                List<String> cmdLineArgs = CommandLineParser.createCmdLine(cmdLine, props, formalParameters);
+                if (cmdLineArgs == null || cmdLineArgs.size() == 0) {
+                    vProblems.add("Command line not defined");
+                }
+                commandTokens = new String[cmdLineArgs.size()];
+                int i=0;
+                for(String arg : cmdLineArgs) {
+                    commandTokens[i++] = arg;
+                }
             }
         }
         catch (Exception e) {
@@ -1282,7 +1282,6 @@ public class GenePatternAnalysisTask {
                 stdinFile = null;
             }
         }
-
         
         //close hibernate session before running the job, but don't save the parameter info
         HibernateUtil.closeCurrentSession();
@@ -1294,7 +1293,6 @@ public class GenePatternAnalysisTask {
                 stderrBuffer.append(eProblems.nextElement() + "\n");
             }
             if (stderrBuffer.length() > 0) {
-                //jobStatus = JobStatus.JOB_ERROR;
                 if (exitCode == 0) {
                     exitCode = -1;
                 }
@@ -1308,8 +1306,6 @@ public class GenePatternAnalysisTask {
             }
             return;
         } 
-
-        // run the task and wait for completion.
 
         File stdoutFile;
         File stderrFile;
@@ -1347,8 +1343,6 @@ public class GenePatternAnalysisTask {
             return;
         }
 
-        //commandTokens = translateCommandline(commandTokens);
-        //String[] cmdLineArgs = hackFixForGP2866(commandTokens);
         String[] cmdLineArgs = commandTokens;
         if (log.isInfoEnabled()) {
             StringBuffer commandLine = new StringBuffer();
@@ -2155,10 +2149,12 @@ public class GenePatternAnalysisTask {
 	installPatch(requiredPatchLSID, requiredPatchURL, null);
     }
 
-    // install a specific patch, downloading a zip file with a manifest
-    // containing a command line,
-    // running that command line after substitutions, and recording the result
-    // in the genepattern.properties patch registry
+    
+    /**
+     * Install a specific patch, downloading a zip file with a manifest containing a command line, 
+     * running that command line after substitutions, and recording the result 
+     * in the genepattern.properties patch registry
+     */
     private static void installPatch(String requiredPatchLSID, String requiredPatchURL, Status taskIntegrator) throws JobDispatchException {
         LSID patchLSID = null;
         try {
@@ -2239,13 +2235,28 @@ public class GenePatternAnalysisTask {
             throw new JobDispatchException(e);
         }
         String nomDePatch = props.getProperty("name");
-        String commandLine = getPatchCommandLine(props);
         if (taskIntegrator != null) {
             taskIntegrator.statusMessage("Running " + nomDePatch + " Installer.");
         }
-        String exitValue = null;
+        String exitValue = null; 
+        
+        String cmdLine = props.getProperty(COMMAND_LINE);
+        if (cmdLine == null || cmdLine.length() == 0) {
+            throw new JobDispatchException("No command line defined in " + MANIFEST_FILENAME);
+        }
+        Properties systemProps = new Properties();
+        //copy into from System.getProperties, TODO: should use new configuration system
+        for(Object keyObj : System.getProperties().keySet()) {
+            String key = keyObj.toString();
+            String val = System.getProperty(key);
+            systemProps.setProperty(key, val);
+        }
+        ParameterInfo[] formalParameters = new ParameterInfo[0];
+        List<String> cmdLineArgs = CommandLineParser.createCmdLine(cmdLine, systemProps, formalParameters);        
         try {
-            exitValue = "" + executePatch(commandLine, patchDirectory, taskIntegrator);
+            String[] cmdLineArray = new String[0];
+            cmdLineArray = cmdLineArgs.toArray(cmdLineArray);
+            exitValue = "" + executePatch(cmdLineArray, patchDirectory, taskIntegrator);
         }
         catch (IOException e) {
             throw new JobDispatchException(e);
@@ -2381,20 +2392,6 @@ public class GenePatternAnalysisTask {
         zipFile.close();
     }
 
-    // retrieve the command line from the patch manifest file and perform <substitutions>
-    private static String getPatchCommandLine(Properties props) throws JobDispatchException {
-        String commandLine = props.getProperty(COMMAND_LINE);
-        Properties systemProps = new Properties(System.getProperties());
-        if (commandLine == null || commandLine.length() == 0) {
-            throw new JobDispatchException("No command line defined in " + MANIFEST_FILENAME);
-        }
-        
-        // command line substitutions for <ant>, etc.
-        commandLine = substitute(commandLine, systemProps, null);
-        commandLine = substitute(commandLine, systemProps, null);
-        return commandLine;
-    }
-
     // load the patch manifest file into a Properties object
     private static Properties loadManifest(File patchDirectory) throws IOException {
         File manifestFile = new File(patchDirectory, MANIFEST_FILENAME);
@@ -2411,25 +2408,19 @@ public class GenePatternAnalysisTask {
     /**
      * Run the patch command line in the patch directory, returning the exit code from the executable.
      */
-    private static int executePatch(String commandLine, File patchDirectory, Status taskIntegrator) throws IOException, InterruptedException {
+    private static int executePatch(String[] commandLineArray, File patchDirectory, Status taskIntegrator) throws IOException, InterruptedException {
         // spawn the command
-        Process process = Runtime.getRuntime().exec(commandLine, null, patchDirectory);
+        Process process = Runtime.getRuntime().exec(commandLineArray, null, patchDirectory);
 
-        // BUG: there is race condition during a tiny time window between
-        // the exec and the close
-        // (the lines above and below this comment) during which it is
-        // possible for an application
+        // BUG: there is race condition during a tiny time window between the exec and the close
+        // (the lines above and below this comment) during which it is possible for an application
         // to imagine that there might be useful input coming from stdin.
-        // This seemed to be
-        // the case for Perl 5.0.1 on Wilkins, and might be a problem in
+        // This seemed to be the case for Perl 5.0.1 on Wilkins, and might be a problem in
         // other applications as well.
-        process.getOutputStream().close(); // there is no stdin to feed to
-        // the program. So if it asks,
-        // let it see EOF!
+        process.getOutputStream().close(); 
+        // there is no stdin to feed to the program. So if it asks, let it see EOF!
 
-        // create threads to read from the command's stdout and stderr
-        // streams
-
+        // create threads to read from the command's stdout and stderr streams
         Thread outputReader = (taskIntegrator != null) ? antStreamCopier(process.getInputStream(), taskIntegrator)
                 : streamCopier(process.getInputStream(), System.out);
         Thread errorReader = (taskIntegrator != null) ? antStreamCopier(process.getErrorStream(), taskIntegrator) : streamCopier(
@@ -2460,10 +2451,6 @@ public class GenePatternAnalysisTask {
             installedPatches = installedPatches + ",";
         }
         installedPatches = installedPatches + patchLSID;
-        // String properties = readGenePatternProperties();
-        // properties = addProperty(properties, INSTALLED_PATCH_LSIDS,
-        // installedPatches);
-        // writeGenePatternProperties(properties);
         System.setProperty(INSTALLED_PATCH_LSIDS, installedPatches);
         Properties props = new Properties();
         props.load(new FileInputStream(new File(System.getProperty("resources"), "genepattern.properties")));
