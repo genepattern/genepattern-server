@@ -55,6 +55,44 @@ testDoubeQuoteCmdLine:
         "../taskLib/Test.1.0000/test.jar",
         "Main",
         "Hello, World!" ]
+        
+testQuotedExec:
+    description: handle double quote wrapped substitutions
+    cmdLine: <a1> "<b1>"
+    env:
+        a1: "\"<a2>\" \"<a3>\""
+        a2: /path/with space/a2
+        a3: -a3
+        b1: <b2> <b3>
+        b2: B2
+        b3: B3
+    expected: [
+        "/path/with space/a2",
+        "-a3",
+        "B2",
+        "B3"
+    ]
+      
+testQuotedAnt:
+    description: when a single substitution param is wrapped in quotes, don't tokenize on spaces within the wrapped quotes
+    cmdLine: <ant> -q -buildfile patchBuild.xml R25
+    env:
+        ant: "\"<java>\" -cp \"<tomcatCommonLib>/tools.jar\" -jar \"<tomcatCommonLib>/ant-launcher.jar\" -Dant.home=\"<tomcatCommonLib>\" -lib \"<tomcatCommonLib>\""
+        java: /Broad/dev/working/gp-trunk-dev/jre/java link/java
+        tomcatCommonLib: /Broad/dev/tomcat common lib
+    expected: [
+       "/Broad/dev/working/gp-trunk-dev/jre/java link/java",
+       "-cp",
+       "/Broad/dev/tomcat common lib/tools.jar",
+       "-jar", 
+       "/Broad/dev/tomcat common lib/ant-launcher.jar",
+       "-Dant.home=\"/Broad/dev/tomcat common lib\"",
+       "-lib",
+       "/Broad/dev/tomcat common lib",
+       "-q",
+       "-buildfile",
+       "patchBuild.xml",
+       "R25" ]
 
 testQuotedArgs:
     description: Handle quoted arguments within the command line (eg. echo "<p1> <p2>") as a single token.

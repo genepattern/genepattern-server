@@ -33,8 +33,10 @@ public class CommandLineParser {
     
     private static Map<String,ParameterInfo> createParameterInfoMap(ParameterInfo[] params) {
         Map<String,ParameterInfo> map = new HashMap<String,ParameterInfo>();
-        for(ParameterInfo param : params) {
-            map.put(param.getName(), param);
+        if (params != null) {
+            for(ParameterInfo param : params) {
+                map.put(param.getName(), param);
+            }
         }
         return map;
     }
@@ -120,8 +122,9 @@ public class CommandLineParser {
                     status = ST.in_ws;
                     tokens.add(cur);
                     cur = "";
+                    break;
                 case in_word:
-                    //TODO: what happens with a '"' in a word?
+                    //with a '"' in a word, include in the word, scan until the next WS char
                     cur += c;
                     break;
                 }
