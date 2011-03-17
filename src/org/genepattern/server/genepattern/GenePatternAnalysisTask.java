@@ -1215,9 +1215,9 @@ public class GenePatternAnalysisTask {
                 }
             }
         }
-        catch (Exception e) {
-            vProblems.add(e.getLocalizedMessage());
-        } 
+        catch (Throwable t) {
+            vProblems.add(t.getLocalizedMessage());
+        }
         
         String stdoutFilename = STDOUT;
         String stderrFilename = STDERR;
@@ -1253,7 +1253,7 @@ public class GenePatternAnalysisTask {
             }
         }
 
-        if (addLast) {
+        if (addLast && commandTokens != null && commandTokens.length > 0) {
             commandLineList.add(commandTokens[commandTokens.length - 1]);
         }
         commandTokens = commandLineList.toArray(new String[0]);

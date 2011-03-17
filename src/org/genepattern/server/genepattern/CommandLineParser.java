@@ -31,16 +31,6 @@ public class CommandLineParser {
         }
     }
     
-    private static Map<String,ParameterInfo> createParameterInfoMap(ParameterInfo[] params) {
-        Map<String,ParameterInfo> map = new HashMap<String,ParameterInfo>();
-        if (params != null) {
-            for(ParameterInfo param : params) {
-                map.put(param.getName(), param);
-            }
-        }
-        return map;
-    }
-    
     public static List<String> createCmdLine(String cmdLine, Properties props, ParameterInfo[] formalParameters) { 
         Map<String,String> env = new HashMap<String,String>();
         for(Object keyObj : props.keySet()) {
@@ -49,6 +39,16 @@ public class CommandLineParser {
         }
         Map<String,ParameterInfo> parameterInfoMap = createParameterInfoMap(formalParameters);
         return resolveValue(cmdLine, env, parameterInfoMap, 0);
+    }
+    
+    private static Map<String,ParameterInfo> createParameterInfoMap(ParameterInfo[] params) {
+        Map<String,ParameterInfo> map = new HashMap<String,ParameterInfo>();
+        if (params != null) {
+            for(ParameterInfo param : params) {
+                map.put(param.getName(), param);
+            }
+        }
+        return map;
     }
     
     /**
@@ -227,11 +227,10 @@ public class CommandLineParser {
             if (paramInfo != null) {
                 isOptional = paramInfo.isOptional();
                 String optionalPrefix = paramInfo._getOptionalPrefix();
-                if (value.length() > 0 && optionalPrefix != null && optionalPrefix.length() > 0) {
+                if (value != null && value.length() > 0 && optionalPrefix != null && optionalPrefix.length() > 0) {
                     if (optionalPrefix.endsWith(" ")) {
-                        //special-case: GP-2866
-                        //    if optionalPrefix ends with a space, split into two args 
-                        rval.add(optionalPrefix.substring(0, optionalPrefix.length()-1));                        
+                        //special-case: GP-2866, if optionalPrefix ends with a space, split into two args 
+                        rval.add(optionalPrefix.substring(0, optionalPrefix.length()-1));
                     }
                     else {
                         //otherwise, append the prefix to the value
@@ -262,6 +261,10 @@ public class CommandLineParser {
     public static List<String> translateCmdLine(final String cmdLine, final Map<String,String> props) {
         final Map<String,ParameterInfo> emptyParameterInfoMap = Collections.emptyMap();
         return resolveValue(cmdLine, props, emptyParameterInfoMap, 0);
+    }
+    
+    public static List<String> translateCmdLine(final String cmdLine, final Map<String,String> props, final Map<String,ParameterInfo> parameterInfoMap) {
+        return resolveValue(cmdLine, props, parameterInfoMap, 0);
     }
     
     

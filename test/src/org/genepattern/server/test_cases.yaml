@@ -254,3 +254,18 @@ testRflags:
         "-e",
         "-ayes" ]
 
+testOptionalInputParams:
+    description: Make sure to handle unset optional parameters
+    cmdLine: <java> -cp <libdir>test.jar org.genepattern.test.TestModule -a<arg1> -b<arg2>
+    env:
+        java: "/usr/bin/java"
+        libdir: "../taskLib/TestModule.0.1234/"
+        arg1: val1
+    expected: [
+        "/usr/bin/java",
+        "-cp",
+        "../taskLib/TestModule.0.1234/test.jar",
+        "org.genepattern.test.TestModule",
+        "-aval1",
+        "-b" ]
+
