@@ -13,12 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.genepattern.data.pipeline.PipelineUtil;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.MissingTasksException;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.data.pipeline.PipelineModelException;
-import org.genepattern.data.pipeline.PipelineUtil;
 import org.genepattern.server.JobManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
@@ -48,9 +48,10 @@ import org.hibernate.Query;
  *     a) server error in startPipeline
  *     b) server error in prepareNextStep
  * 
+ * @deprecated - delete this class after the 3.3.1 release as it has been modified to correct a bug in the Word Add-In.
  * @author pcarr
  */
-public class PipelineHandler {
+public class PipelineHandler_3_2 {
     private static Logger log = Logger.getLogger(PipelineHandler.class);
     
     /**
@@ -111,7 +112,7 @@ public class PipelineHandler {
             handlePipelineJobCompletion(jobInfo.getJobNumber(), -1, "Job #"+jobInfo.getJobNumber()+" terminated by user.");
         }
     }
-    
+
     /**
      * Call this before running the next step in the given pipeline. Must be called after all dependent steps are completed.
      * Note: circa GP 3.2.3 and earlier this code was part of a loop which ran all steps in the same thread.
@@ -121,10 +122,10 @@ public class PipelineHandler {
      */
     public static void prepareNextStep(int parentJobId, JobInfo jobInfo) throws PipelineException { 
         try {
-            AnalysisDAO dao = new AnalysisDAO();
-            boolean updated = setInheritedParams(dao, parentJobId, jobInfo);
-            //TODO: double-check that we don't need to updateParameterInfo unless there were inherited parameters used
-            //    as input to this step in the pipeline
+            AnalysisDAO ds = new AnalysisDAO();
+            JobInfo[] results = ds.getChildren(parentJobId);
+            ParameterInfo[] parameterInfo = jobInfo.getParameterInfoArray();
+            setInheritedJobParameters(parameterInfo, results);
             updateParameterInfo(jobInfo);
             HibernateUtil.commitTransaction();
         }
@@ -149,6 +150,7 @@ public class PipelineHandler {
     }
     
     //DAO helpers
+    
     /**
      * Get all of the immediate child jobs for the given pipeline.
      * 
@@ -205,8 +207,10 @@ public class PipelineHandler {
         if (parentJobNumber < 0) {
             log.error("Invalid parentJobNumber: "+parentJobNumber);
             return false;
-        }
-
+        } 
+        //add any output files from the completed job to the parent
+        collectChildJobResults(parentJobNumber, childJobInfo);
+        
         //check the status of the job
         if (JobStatus.FINISHED.equals(childJobInfo.getStatus())) { 
             //get the next step in the pipeline, by jobId
@@ -279,7 +283,7 @@ public class PipelineHandler {
                 handlePipelineJobCompletion(pipeline.getJobNumber(), -1, errorMessage);
             }
             else {
-                PipelineHandler.handlePipelineJobCompletion(pipeline.getJobNumber(), 0);
+                PipelineHandler_3_2.handlePipelineJobCompletion(pipeline.getJobNumber(), 0);
             }
         }
     }
@@ -426,6 +430,45 @@ public class PipelineHandler {
         }
         return firstStep;
     }
+    
+    private static List<ParameterInfo> getChildJobOutputs(JobInfo child) {
+        List<ParameterInfo> outs = new ArrayList<ParameterInfo>();
+        ParameterInfo[] childParams = child.getParameterInfoArray();
+        for (ParameterInfo childParam : childParams) {
+            if (childParam.isOutputFile()) {
+                File f = new File(childParam.getValue());
+                if (!f.getName().equals(GPConstants.TASKLOG)) {
+                    outs.add(childParam);
+                }
+            }
+        }
+        return outs;
+    }
+    
+    /**
+     * Add output files from the given completed child job to the parent job.
+     */
+    private static void collectChildJobResults(int parentJobNumber, JobInfo childJobInfo) {
+        List<ParameterInfo> childJobOutputs = getChildJobOutputs(childJobInfo);
+        if (childJobOutputs.size() > 0) {
+            try {
+                HibernateUtil.beginTransaction();
+                AnalysisDAO ds = new AnalysisDAO();
+                JobInfo parentJobInfo = ds.getJobInfo(parentJobNumber);
+                for(ParameterInfo childJobOutput : childJobOutputs) {
+                    parentJobInfo.addParameterInfo(childJobOutput);
+                }
+                
+                String paramString = parentJobInfo.getParameterInfo();
+                ds.updateParameterInfo(parentJobInfo.getJobNumber(), paramString);
+                HibernateUtil.commitTransaction();
+            }
+            catch (Throwable t) {
+                log.error("error updating parameter_info for parent job #"+parentJobNumber, t);
+                HibernateUtil.rollbackTransaction();
+            }
+        }
+    }
 
     /**
      * Add the job to the pipeline and add it to the internal job queue in a WAITING state.
@@ -494,48 +537,7 @@ public class PipelineHandler {
         }
     }
     
-    /**
-     * Before starting the next step in the pipeline, link output files from previous steps to input parameters for this step.
-     * 
-     * @param parentJobId
-     * @param currentStep
-     * 
-     * @return true iff an input param was modified
-     */
-    private static boolean setInheritedParams(AnalysisDAO dao, int parentJobId, JobInfo currentStep) { 
-        List<ParameterInfo> inheritedInputParams = getInheritedInputParams(currentStep);
-        if (inheritedInputParams.size() == 0) {
-            return false;
-        }
-
-        boolean modified = false;
-        JobInfo[] childJobs = dao.getChildren(parentJobId);
-
-        for(ParameterInfo inputParam : inheritedInputParams) {
-            String url = getInheritedFilename(dao, childJobs, inputParam);
-            if (url != null && url.trim().length() > 0) {
-                modified = true;
-                inputParam.setValue(url);
-            }
-            else {
-                if (inputParam.isOptional()) {
-                    //ignore
-                }
-                else {
-                    log.error("Error setting inherited file name for non-optional input parameter in pipeline, param.name="+inputParam.getName());
-                }
-            }
-        }            
-        return modified;
-    }
-    
-    /**
-     * For the given job, get the list of ParameterInfo which are input parameters which 
-     * inherit a result file from a job in the parent pipeline.
-     */
-    private static List<ParameterInfo> getInheritedInputParams(JobInfo currentStep) {
-        List<ParameterInfo> inputParams = new ArrayList<ParameterInfo>();
-        ParameterInfo[] parameterInfos = currentStep.getParameterInfoArray();
+    private static void setInheritedJobParameters(ParameterInfo[] parameterInfos, JobInfo[] results) {
         for (ParameterInfo param : parameterInfos) {
             boolean isInheritTaskName = false;
             HashMap attributes = param.getAttributes();
@@ -543,237 +545,24 @@ public class PipelineHandler {
                 isInheritTaskName = attributes.get(PipelineModel.INHERIT_TASKNAME) != null;
             }
             if (isInheritTaskName) {
-                inputParams.add(param);
-            }
-        }
-        return inputParams;
-    }
-
-    /**
-     * if an inherited filename is set, update the inputParam attributes (must save back to the DB in calling method)
-     * and return the url to the inherited result file.
-     * 
-     * @param childJobs
-     * @param inputParam
-     * @return
-     */
-    private static String getInheritedFilename(AnalysisDAO dao, JobInfo[] childJobs, ParameterInfo inputParam) {
-        // these params must be removed so that the soap lib doesn't try to send the file as an attachment
-        HashMap attributes = inputParam.getAttributes();
-        final String taskStr = (String) attributes.get(PipelineModel.INHERIT_TASKNAME);
-        final String fileStr = (String) attributes.get(PipelineModel.INHERIT_FILENAME);
-        attributes.remove("TYPE");
-
-        //taskStr holds the current step number in the pipeline
-        int stepNum = -1;
-        try {
-            stepNum = Integer.parseInt(taskStr);
-        }
-        catch (NumberFormatException e) {
-            log.error("Invalid taskStr="+taskStr, e);
-            return "";
-        }
-        if (stepNum < 0 || stepNum >= childJobs.length) {
-            log.error("Invalid stepNum: stepNum="+stepNum+", childJobs.length="+childJobs.length);
-            return "";
-        }        
-        JobInfo fromJob = childJobs[stepNum];
-        String fileName = null;
-        try {
-            fileName = getOutputFileName(dao, fromJob, fileStr);
-            attributes.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
-            String context = System.getProperty("GP_Path", "/gp");
-            String url = getServer() + context + "/jobResults/" + fileName;
-            return url;
-        }
-        catch (ServerConfiguration.Exception e) {
-            log.error(e.getLocalizedMessage());
-            return "";            
-        }
-        catch (FileNotFoundException e) {
-            return "";
-        }
-    }
-    
-    private static String getOutputFileName(AnalysisDAO dao, JobInfo fromJob, String fileStr)
-    throws ServerConfiguration.Exception, FileNotFoundException 
-    {
-        //get the ordered list of output files for the job
-        List<ParameterInfo> allResultFiles = getOutputFilesRecursive(dao, fromJob);
-        
-        //fileStr holds the reference to the output file, either an ordinal or a type
-        int outputNum = -1;
-        String outputType = null;
-        try {
-            //1...5, for 1st output, 2nd output, et cetera
-            outputNum = Integer.parseInt(fileStr);
-        }
-        catch (NumberFormatException e) {
-            //not a number, must be a type
-            outputType = fileStr;
-        }
-        String fileName = null;
-        if (outputNum > -1) {
-            fileName = getNthOutputFilename(outputNum, allResultFiles);
-        }
-        else {
-            fileName = getOutputFilenameByType(fromJob, outputType, allResultFiles);
-        }
-        if (fileName != null) {
-            int lastIdx = fileName.lastIndexOf(File.separator);
-            lastIdx = fileName.lastIndexOf(File.separator, lastIdx - 1); // get the job # too
-
-            if (lastIdx != -1) {
-                fileName = fileName.substring(lastIdx + 1);
-            }
-        }
-        if (fileName == null) {
-            throw new FileNotFoundException("Unable to find output file from job " + fromJob.getJobNumber() + " that matches " + fileStr + ".");
-        }
-        return fileName;
-    }
-    
-    /**
-     * Get the nth result file for the job, index starts at 1.
-     * 
-     * @param fileIdx
-     * @param jobResultFiles, the ordered list of output files, including nested results for pipelines.
-     * @return
-     */
-    private static String getNthOutputFilename(int fileIdx, List<ParameterInfo> jobResultFiles) {
-        fileIdx = fileIdx - 1;
-        if (fileIdx < 0 || fileIdx >= jobResultFiles.size()) {
-            //TODO: log error
-            return "";
-        }
-        ParameterInfo inheritedFile = jobResultFiles.get(fileIdx);
-        String filename = inheritedFile.getValue();
-        return filename;
-    }
-    
-    /**
-     * Get the result file from the job, based on the given file type.
-     * 
-     * @param fromJob
-     * @param fileStr
-     * @param jobResultFiles
-     * @return
-     * @throws ServerConfiguration.Exception
-     * @throws FileNotFoundException
-     */
-    private static String getOutputFilenameByType(final JobInfo fromJob, final String fileStr, List<ParameterInfo> jobResultFiles) 
-    throws ServerConfiguration.Exception, FileNotFoundException
-    {
-        String fileName = null;
-        
-        Context context = ServerConfiguration.Context.getContextForJob(fromJob);
-        File rootJobDir = ServerConfiguration.instance().getRootJobDir(context);
-        String jobDir = rootJobDir.getAbsolutePath();
-
-        for (ParameterInfo outputFile : jobResultFiles ) {
-            // get the filename
-            String fn = outputFile.getValue();
-            File aFile = new File(fn);
-            if (!aFile.exists()) {
-                aFile = new File("../", fn);
-            }
-            if (!aFile.exists()) {
-                aFile = new File("../" + jobDir + "/", fn);
-            }
-            if (!aFile.exists()) {
-                aFile = new File(jobDir + "/", fn);
-            }
-
-            if (isFileType(aFile, fileStr)) {
-                fileName = fn;
-                break;
-            }
-        }
-        
-        if (fileName != null) {
-            return fileName;
-        }
-        
-        if (fileStr.equals(GPConstants.STDOUT) || fileStr.equals(GPConstants.STDERR)) {
-            fileName = fileStr;
-        }
-        
-        return fileName; 
-    }
-    
-    /**
-     * Recursively get an ordered list of all of the output files for the given job, 
-     * filtering out execution log files.
-     * 
-     * @param jobInfo
-     * @return
-     */
-    private static List<ParameterInfo> getOutputFilesRecursive(AnalysisDAO dao, JobInfo jobInfo) {
-        List<ParameterInfo> outs = new ArrayList<ParameterInfo>();
-        List<ParameterInfo> immediateResults = getOutputParameterInfos(jobInfo);
-        outs.addAll(immediateResults);
-        List<JobInfo> allChildJobs = getChildJobInfosRecursive(dao, jobInfo);
-        for(JobInfo child : allChildJobs) {
-            List<ParameterInfo> childResults = getOutputParameterInfos(child);
-            outs.addAll(childResults);
-        }
-        return outs;
-    }
-    
-    /**
-     * Get the list of all child job infos of the given job, not including the given job.
-     * @param jobInfo
-     * @return
-     */
-    private static List<JobInfo> getChildJobInfosRecursive(AnalysisDAO dao, JobInfo parent) {
-        List<JobInfo> allChildren = new ArrayList<JobInfo>();
-        if (parent == null) {
-            log.error("Unexpected null arg");
-            return allChildren;
-        }
-        appendChildJobInfos(dao, allChildren, parent);
-        return allChildren;
-    }
-
-    private static void appendChildJobInfos(AnalysisDAO dao, List<JobInfo> jobInfoList, JobInfo jobInfo) {
-        JobInfo[] childJobs = dao.getChildren(jobInfo.getJobNumber());
-        for(JobInfo childJob : childJobs) {
-            jobInfoList.add(childJob);
-            appendChildJobInfos(dao, jobInfoList, childJob);
-        }
-    }
-    
-    private static List<ParameterInfo> getOutputParameterInfos(JobInfo jobInfo) {
-        List<ParameterInfo> outs = new ArrayList<ParameterInfo>();
-        ParameterInfo[] childParams = jobInfo.getParameterInfoArray();
-        for (ParameterInfo childParam : childParams) {
-            if (childParam.isOutputFile()) {
-                //don't add taskLogs to the results
-                boolean isTaskLog = PipelineHandler.isTaskLog(childParam);
-                if (!isTaskLog) {
-                    outs.add(childParam);
+                String url = getInheritedFilename(param.getAttributes(), results);
+                if (url != null && url.trim().length() > 0) {
+                    param.setValue(url);
+                }
+                else {
+                    boolean isOptional = "on".equals(attributes.get("optional"));
+                    if (isOptional) {
+                        //ignore
+                    }
+                    else {
+                        //error
+                        log.error("Error setting inherited file name for non-optional input parameter in pipeline, param.name="+param.getName());
+                    }
                 }
             }
         }
-        return outs;
     }
     
-    private static boolean isTaskLog(ParameterInfo param) {
-        if (param == null) {
-            return false;
-        }
-        if (!param.isOutputFile()) {
-            return false;
-        }
-        String name = param.getName();
-        boolean isTaskLog = 
-            name != null &&
-            ( name.equals(GPConstants.TASKLOG) || 
-                    name.endsWith(GPConstants.PIPELINE_TASKLOG_ENDING)
-            );
-        return isTaskLog;
-    }
-
     private static String server = null;
     private static String getServer() {
         if (server != null) {
@@ -796,6 +585,122 @@ public class PipelineHandler {
         }
         server = serverFromFile.getProtocol() + "://" + host + port;
         return server;
+    }
+
+    /**
+     * 
+     * @param attributes
+     * @param results
+     * @return an empty string if no file is found.
+     */
+    private static String getInheritedFilename(Map attributes, JobInfo[] results) {
+        // these params must be removed so that the soap lib doesn't try to send the file as an attachment
+        String taskStr = (String) attributes.get(PipelineModel.INHERIT_TASKNAME);
+        String fileStr = (String) attributes.get(PipelineModel.INHERIT_FILENAME);
+        attributes.remove("TYPE");
+        
+        int stepNum = -1;
+        try {
+            stepNum = Integer.parseInt(taskStr);
+        }
+        catch (NumberFormatException e) {
+            log.error("Invalid taskStr="+taskStr, e);
+            return "";
+        }
+        if (stepNum > results.length) {
+            log.error("Invalid stepNum: stepNum="+stepNum+", results.length="+results.length);
+            return "";
+        }
+        JobInfo job = results[stepNum];
+        String fileName = null;
+        try {
+            fileName = getOutputFileName(job, fileStr);
+            attributes.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
+            String context = System.getProperty("GP_Path", "/gp");
+            String url = getServer() + context + "/jobResults/" + fileName;
+            return url;
+        }
+        catch (ServerConfiguration.Exception e) {
+            log.error(e.getLocalizedMessage());
+            return "";
+        }
+        catch (FileNotFoundException e) {
+            return "";
+        }
+    }
+
+    /**
+     * return the file name for the previously run job by index or name
+     */
+    private static String getOutputFileName(JobInfo job, String fileStr) throws ServerConfiguration.Exception, FileNotFoundException {
+        String fileName = null;
+        String fn = null;
+        int j;
+        ParameterInfo[] jobParams = job.getParameterInfoArray();
+        Context context = ServerConfiguration.Context.getContextForJob(job);
+        File rootJobDir = ServerConfiguration.instance().getRootJobDir(context);
+        String jobDir = rootJobDir.getAbsolutePath();
+        // try semantic match on output files first
+        // For now, just match on filename extension
+        semantic_search_loop: for (j = 0; j < jobParams.length; j++) {
+            if (jobParams[j].isOutputFile()) {
+                fn = jobParams[j].getValue(); // get the filename
+                File aFile = new File(fn);
+                if (!aFile.exists()) {
+                    aFile = new File("../", fn);
+                }
+                if (!aFile.exists()) {
+                    aFile = new File("../" + jobDir + "/", fn);
+                }
+                if (!aFile.exists()) {
+                    aFile = new File(jobDir + "/", fn);
+                }
+
+                if (isFileType(aFile, fileStr)) {
+                    fileName = fn;
+                    break semantic_search_loop;
+                }
+            }
+        }
+
+        if (fileName == null) {
+            // no match on extension, try assuming that it is an integer number
+            // (1..5)
+            try {
+                int fileIdx = Integer.parseInt(fileStr);
+                // success, find the nth output file
+                int jobFileIdx = 1;
+                for (j = 0; j < jobParams.length; j++) {
+                    if (jobParams[j].isOutputFile()) {
+                        if (jobFileIdx == fileIdx) {
+                            fileName = jobParams[j].getValue();
+                            break;
+                        }
+                        jobFileIdx++;
+                    }
+                }
+            } 
+            catch (NumberFormatException nfe) {
+                // not an extension, not a number, look for stdout or stderr
+                // fileStr is stderr or stdout instead of an index
+                if (fileStr.equals(GPConstants.STDOUT) || fileStr.equals(GPConstants.STDERR)) {
+                    fileName = fileStr;
+                }
+            }
+        }
+
+        if (fileName != null) {
+            int lastIdx = fileName.lastIndexOf(File.separator);
+            lastIdx = fileName.lastIndexOf(File.separator, lastIdx - 1); // get the job # too
+
+            if (lastIdx != -1) {
+                fileName = fileName.substring(lastIdx + 1);
+            }
+        }
+        if (fileName == null) {
+            throw new FileNotFoundException("Unable to find output file from job " + job.getJobNumber() + " that matches " + fileStr + ".");
+        }
+        return fileName;
     }
 
     private static boolean isFileType(File file, String fileFormat) {
@@ -870,6 +775,25 @@ public class PipelineHandler {
                 param.setValue(value);
             }
         }        
+    }
+    
+    private static ParameterInfo[] removeEmptyOptionalParams(ParameterInfo[] parameterInfo) {
+        ArrayList<ParameterInfo> params = new ArrayList<ParameterInfo>();
+        for (int i = 0; i < parameterInfo.length; i++) {
+            ParameterInfo aParam = parameterInfo[i];
+            if (aParam.getAttributes() != null) {
+                String value = aParam.getValue();
+                if (value != null) {
+                    if ((value.trim().length() == 0) && aParam.isOptional()) {
+                        log.debug("Removing Param " + aParam.getName() + " has null value. Opt= " + aParam.isOptional());
+                    } 
+                    else {
+                        params.add(aParam);
+                    }
+                }
+            }
+        }
+        return params.toArray(new ParameterInfo[params.size()]);
     }
     
     /**
