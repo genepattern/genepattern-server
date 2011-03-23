@@ -4,10 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-import org.broadinstitute.io.IOUtil;
-import org.broadinstitute.io.matrix.ParseException;
-import org.broadinstitute.matrix.Dataset;
 import org.genepattern.client.GPClient;
+import org.genepattern.io.IOUtil;
+import org.genepattern.io.ParseException;
+import org.genepattern.io.odf.OdfObject;
+import org.genepattern.matrix.Dataset;
 import org.genepattern.webservice.JobResult;
 import org.genepattern.webservice.Parameter;
 import org.genepattern.webservice.WebServiceException;
@@ -72,8 +73,9 @@ public class TestRunModule extends TestCase {
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	private void validateResultFile(File[] files, String expectedFilename, int expectedNumRows, int expectedNumColumns) throws IOException,
-			ParseException {
+	private void validateResultFile(File[] files, String expectedFilename, int expectedNumRows, int expectedNumColumns) 
+	throws IOException, ParseException 
+	{
 		if (!expectedFilename.equals(files[0].getName())) {
 			fail("found unexpected output file: " + files[0].getName());
 		}
@@ -102,23 +104,30 @@ public class TestRunModule extends TestCase {
 		return files;
 	}
 
-	/**
-	 * Runs the module on GenePattern and returns the jobResult.
-	 * @param params Parameters for the run.
-	 * @param lsid LSID of the module to run on GenePattern.
-	 * @return jobResult for the module
-	 * @throws WebServiceException
-	 */
-	private JobResult runModuleHelper(Parameter[] params, String lsid)
-			throws WebServiceException {
-		GenePatternConfig config = new GenePatternConfig();
-		GPClient client = new GPClient(config.getGenePatternUrl(), config.getUsername(), config.getPassword());
-		assertNotNull(client);
-		JobResult jobResult = client.runAnalysis(lsid, params);
-		assertNotNull(jobResult);
-		assertTrue(!jobResult.hasStandardError());
-		return jobResult;
-	}	
+    /**
+     * Runs the module on GenePattern and returns the jobResult.
+     * @param params Parameters for the run.
+     * @param lsid LSID of the module to run on GenePattern.
+     * @return jobResult for the module
+     * @throws WebServiceException
+     */
+    private JobResult runModuleHelper(Parameter[] params, String lsid) 
+    throws WebServiceException {
+        GenePatternConfig config = new GenePatternConfig();
+        GPClient client = new GPClient(config.getGenePatternUrl(), config.getUsername(), config.getPassword());
+        assertNotNull(client);
+        JobResult jobResult = client.runAnalysis(lsid, params);
+        assertNotNull(jobResult);
+        String jobNum = "UNKNOWN";
+        try {
+            jobNum = ""+jobResult.getJobNumber();
+        }
+        catch (Throwable t) {
+            //ignore
+        }
+        assertFalse("job #"+jobNum+" has stderr", jobResult.hasStandardError());
+        return jobResult;
+    }
 	
 	/**
 	 * Submits a PreprocessDataset job to GenePattern.  Input file is an url to a public
@@ -167,6 +176,53 @@ public class TestRunModule extends TestCase {
 		files = runModule(params, PREPROCESS_LSID, 1);
 //		@TODO validate this 
 	}
+
+    public void testComparativeMarkerSelectionExternalUrl() {
+        final String lsid = "urn:lsid:broad.mit.edu:cancer.software.genepattern.module.analysis:00044:7";
+        Parameter[] params = new Parameter[2];
+        params[0] = new Parameter("input.file", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct");
+        params[1] = new Parameter("cls.file", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.cls");
+        
+        JobResult jobResult = null;
+        try {
+            jobResult = runModuleHelper(params, lsid);
+        }
+        catch (WebServiceException e) {
+            fail("WebServiceException thrown running module, lsid="+lsid+". Exception was: "+e.getLocalizedMessage());
+        }
+        File[] files = new File[0];
+        try {
+            files = jobResult.downloadFiles(".");
+        }
+        catch (IOException e) {
+            fail("IOException thrown by jobResult.downloadFiles. Exception was: "+e.getLocalizedMessage());
+        }
+	    assertNotNull(files);
+	    assertEquals("check # of result files", 1, files.length);
+	}
+    
+    public void testHierarchicalClusteringExternalUrl() {
+        final String lsid="HierarchicalClustering";
+        Parameter[] params = new Parameter[1];
+        params[0] = new Parameter("input.filename", "ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/all_aml_test.preprocessed.gct");
+        
+        JobResult jobResult = null;
+        try {
+            jobResult = runModuleHelper(params, lsid);
+        }
+        catch (WebServiceException e) {
+            fail("WebServiceException thrown running module, lsid="+lsid+". Exception was: "+e.getLocalizedMessage());            
+        }
+        File[] files = new File[0];
+        try {
+            files = jobResult.downloadFiles(".");
+        }
+        catch (IOException e) {
+            fail("IOException thrown by jobResult.downloadFiles. Exception was: "+e.getLocalizedMessage());
+        }
+        assertNotNull(files);
+        assertEquals("check # of result files", 2, files.length);
+    }
 	
 	/**
 	 * Submits a ConvertLineEndings job to Genepattern.  Input file is an uploaded file.
@@ -241,8 +297,20 @@ public class TestRunModule extends TestCase {
 		File odfResult = jobResult.downloadFile(SVM_ODF_RESULT, ".");
 		assertNotNull(odfResult);
 		// TODO get revised gp-modules.jar from Josh and read in file using OdfObject
-//		OdfObject odf = new OdfObject(odfResult.getAbsolutePath());
-
+		OdfObject odf = new OdfObject(odfResult.getAbsolutePath());
+	}
+	
+	public void testFlamePreprocess() throws WebServiceException {
+	    String lsid = "FLAMEPreprocess";
+	    String dataset = "ftp://ftp.broadinstitute.org/pub/genepattern/example_files/FLAME/SMALL_phospho.lymphgated.fcs.zip";
+	    Parameter[] params = new Parameter[3];
+	    params[0] = new Parameter("dataset", dataset);
+	    params[1] = new Parameter("channels", "3,4,5,7");
+	    params[2] = new Parameter("channel.names", "SLP76,ZAP70,CD4,CD45RA");
+	    
+	    JobResult jobResult = runModuleHelper(params, lsid);
+	    assertNotNull(jobResult);
+	    
 	}
 
 	public static Test suite() {

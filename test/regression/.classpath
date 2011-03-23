@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/gp-modules.jar"/>
+	<classpathentry kind="lib" path="lib2/activation.jar"/>
+	<classpathentry kind="lib" path="lib2/axis.jar"/>
+	<classpathentry kind="lib" path="lib2/commons-codec-1.3.jar"/>
+	<classpathentry kind="lib" path="lib2/commons-discovery-0.2.jar"/>
+	<classpathentry kind="lib" path="lib2/commons-fileupload-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib2/commons-httpclient-3.0.1.jar"/>
+	<classpathentry kind="lib" path="lib2/commons-io-1.2.jar"/>
+	<classpathentry kind="lib" path="lib2/commons-logging-1.0.4.jar"/>
+	<classpathentry kind="lib" path="lib2/gp-full.jar"/>
+	<classpathentry kind="lib" path="lib2/gp-modules.jar"/>
+	<classpathentry kind="lib" path="lib2/Jama-1.0.1.jar"/>
+	<classpathentry kind="lib" path="lib2/jasperreports-2.0.1.jar"/>
+	<classpathentry kind="lib" path="lib2/jaxb-rt-1.0-ea.jar"/>
+	<classpathentry kind="lib" path="lib2/jaxb-xjc-1.0-ea.jar"/>
+	<classpathentry kind="lib" path="lib2/jaxrpc.jar"/>
+	<classpathentry kind="lib" path="lib2/jdom.jar"/>
+	<classpathentry kind="lib" path="lib2/junit-4.1.jar" sourcepath="/Users/pcarr/.m2/repository/junit/junit/4.1/junit-4.1-sources.jar"/>
+	<classpathentry kind="lib" path="lib2/log4j-1.2.16.jar"/>
+	<classpathentry kind="lib" path="lib2/MAGEstk-2003-10-24-v1.1-compatible.jar"/>
+	<classpathentry kind="lib" path="lib2/mail.jar"/>
+	<classpathentry kind="lib" path="lib2/saaj.jar"/>
+	<classpathentry kind="lib" path="lib2/wsdl4j-1.5.1.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
