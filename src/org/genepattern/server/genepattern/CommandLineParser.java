@@ -62,7 +62,7 @@ public class CommandLineParser {
         List<String> paramNames = new ArrayList<String>();
         //<("[^"]*"|'[^']*'|[^'">])*>
         //String patternRegex = "<[^>]*>";
-        String patternRegex = "<[\\w|\\.&^\\s]*>";
+        String patternRegex = "<[-|\\w|\\.&^\\s]*>";
         Pattern pattern = null;
         try {
             pattern = Pattern.compile(patternRegex);

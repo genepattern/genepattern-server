@@ -269,3 +269,28 @@ testOptionalInputParams:
         "-aval1",
         "-b" ]
 
+testR272:
+    description: "Test case for <R-2.7.2> and <R-2.7.2_HOME> substitutions"
+    cmdLine: <R-2.7.2> <libdir>testCmd.r --A=<a> --B=<b>
+    env: 
+        "R-2.7.2": "<java> -DR_suppress=<R.suppress.messages.file> -DR_HOME=<R-2.7.2_HOME> -Dr_flags=<r_flags> -cp <run_r_path> RunR"
+        "R-2.7.2_HOME": /broad/software/free/Linux/redhat_5_x86_64/pkgs/r_2.7.2
+        java: "/usr/bin/java"
+        R.suppress.messages.file: "../resources/R.suppress.messages.txt"
+        r_flags: --no-save --quiet --slave --no-restore
+        run_r_path: "./webapps/gp/WEB-INF/classes" 
+        libdir: "../taskLib/testR272.0.1234/"
+        a: /path/to/a.txt
+        b: /path/to/b.txt
+    expected: [
+        /usr/bin/java,
+        -DR_suppress=../resources/R.suppress.messages.txt,
+        -DR_HOME=/broad/software/free/Linux/redhat_5_x86_64/pkgs/r_2.7.2,
+        -Dr_flags=--no-save --quiet --slave --no-restore,
+        -cp,
+        ./webapps/gp/WEB-INF/classes,
+        RunR,
+        ../taskLib/testR272.0.1234/testCmd.r,
+        --A=/path/to/a.txt,
+        --B=/path/to/b.txt
+    ]
