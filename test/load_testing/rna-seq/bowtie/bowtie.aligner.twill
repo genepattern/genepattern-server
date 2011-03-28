@@ -7,15 +7,6 @@
 # and is not a problem when using a web browser.
 #
 
-# must login to the server, E.g.
-#     go /gp/login?username=theusername&password=thepassword
-runfile login.twill
-
-# for genepatterntest
-setglobal rnaseqdata /xchip/sqa/TestFiles/RNA-seq
-# for my local server
-#setlocal rnaseqdata /Broad/Data/RNA-seq
-
 # Step 1, Bowtie.aligner, custom-bowtie index, unpaired read, default settings
 #### exp_1.fa ####
 go /gp/pages/index.jsf?lsid=Bowtie.aligner

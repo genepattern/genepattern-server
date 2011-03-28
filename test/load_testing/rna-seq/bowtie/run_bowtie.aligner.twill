@@ -2,5 +2,5 @@
 runfile test.properties.twill
 
 # must login to the server, E.g.
-runfile login.twill
+runfile ../login.twill
 runfile bowtie.aligner.twill
