@@ -9,7 +9,7 @@
 
 # Step 1, BWA.aln, custom-bowtie index, unpaired read, default settings
 #### exp_1.fa ####
-go /gp/pages/index.jsf?lsid=BWA.aligner
+go /gp/pages/index.jsf?lsid=BWA.aln
 # deselect the first item, hard coded to 'a_thaliana', from the prebuilt.bowtie.index
 # see Note 1 above
 fv taskForm custom.BWA.index_cb url
@@ -21,7 +21,7 @@ submit
 
 # Step 2, BWA.aln, custom-bowtie index, paired read, default settings
 #### exp_2.fa ####
-go /gp/pages/index.jsf?lsid=Bowtie.aligner
+go /gp/pages/index.jsf?lsid=BWA.aln
 fv taskForm custom.BWA.index_cb url
 fv taskForm custom.BWA.index_url "${rnaseqdata}/Testing_HT/TopHat_20101215/chr4BowtieIndex.zip"
 fv taskForm reads.pair.1_cb url
