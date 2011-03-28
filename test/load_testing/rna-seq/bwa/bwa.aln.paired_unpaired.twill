@@ -2,7 +2,7 @@
 #
 # Note 1: when using a custom index, you must explicitly deselect the first item from the
 # prebuilt.bowtie.index choice list. This prevents the error message:
-#    Either a pre-built bowtie index or custom bowtie index must be specified but not both
+# Either a pre-built bwa index or custom bowtie index must be specified but not both
 # This is a result of the way twill handles forms with 'select' menus,
 # and is not a problem when using a web browser.
 #
@@ -10,7 +10,7 @@
 # Step 1, BWA.aln, custom-bowtie index, unpaired read, default settings
 #### exp_1.fa ####
 go /gp/pages/index.jsf?lsid=BWA.aln
-# deselect the first item, hard coded to 'a_thaliana', from the prebuilt.bowtie.index
+# deselect the first item, hard coded to 'a_thaliana', from the prebuilt.bwa.index
 # see Note 1 above
 fv taskForm custom.BWA.index_cb url
 fv taskForm custom.BWA.index_url "${rnaseqdata}/Testing_HT/TopHat_20101215/chr4BowtieIndex.zip"
