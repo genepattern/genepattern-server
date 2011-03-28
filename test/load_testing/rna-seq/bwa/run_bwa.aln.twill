@@ -1,0 +1,6 @@
+# set global variables
+runfile test.properties.twill
+
+# must login to the server, E.g.
+runfile ../login.twill
+runfile bwa.aln.paired_unpaired.twill
