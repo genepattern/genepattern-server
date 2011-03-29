@@ -8,25 +8,21 @@
 #
 
 # Step 1, BWA.aln, custom-bowtie index, unpaired read, default settings
-#### exp_1.fa ####
+#### e_coli_1000_1.fa ####
 go /gp/pages/index.jsf?lsid=BWA.aln
-# deselect the first item, hard coded to 'a_thaliana', from the prebuilt.bwa.index
-# see Note 1 above
-fv taskForm custom.BWA.index_cb url
-fv taskForm custom.BWA.index_url "${rnaseqdata}/Testing_HT/TopHat_20101215/chr4BowtieIndex.zip"
+fv taskForm prebuilt.BWA.index ecoli_NC_008253_ncbi536_alg-is
 fv taskForm reads.pair.1_cb url
-fv taskForm reads.pair.1_url "${rnaseqdata}/Testing_HT/TopHat_20101215/exp_1.fa"
-fv taskForm output.prefix Testing_HT_<reads.pair.1_basename>_unpaired.sam
+fv taskForm reads.pair.1_url "${rnaseqdata}/e_coli/e_coli_1000_1.fa"
+fv taskForm output.prefix e_coli_<reads.pair.1_basename>_unpaired.sam
 submit
 
 # Step 2, BWA.aln, custom-bowtie index, paired read, default settings
-#### exp_2.fa ####
+#### e_coli_1000_1.fa and e_coli_1000_1.fa####
 go /gp/pages/index.jsf?lsid=BWA.aln
-fv taskForm custom.BWA.index_cb url
-fv taskForm custom.BWA.index_url "${rnaseqdata}/Testing_HT/TopHat_20101215/chr4BowtieIndex.zip"
+fv taskForm prebuilt.BWA.index ecoli_NC_008253_ncbi536_alg-is
 fv taskForm reads.pair.1_cb url
-fv taskForm reads.pair.1_url "${rnaseqdata}/Testing_HT/TopHat_20101215/exp_1.fa"
+fv taskForm reads.pair.1_url "${rnaseqdata}/e_coli/e_coli_1000_1.fa"
 fv taskForm reads.pair.2_cb url
-fv taskForm reads.pair.2_url "${rnaseqdata}/Testing_HT/TopHat_20101215/exp_2.fa"
-fv taskForm output.prefix Testing_HT_<reads.pair.1_basename>_paired.sam
+fv taskForm reads.pair.2_url "${rnaseqdata}/e_coli/e_coli_1000_2.fa"
+fv taskForm output.prefix e_coli_<reads.pair.1_basename>_paired.sam
 submit
