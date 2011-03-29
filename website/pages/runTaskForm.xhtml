@@ -133,7 +133,7 @@
 				  <h:outputText rendered="${p.inputType=='directory' and runTaskBean.allowBatchProcess}">					
 					<!--Directory -->
 						<div id="#{p.name}_div" style='display:none'>
-							<input name="#{p.name}" id="#{p.name}" size="30" type="#{p.inputType}" value="#{p.encodedValue}"/>
+							<input name="#{p.name}" id="#{p.name}" size="30" type="#{p.inputType}" value="#{p.defaultValue}"/>
 						</div>						
 						<div id="#{p.name}_div_multifile_launcher"> 
 							<button type="button" id="#{p.name}_button" class="jumploaderdirectorylauncher">Launch File Browser</button>
@@ -151,7 +151,7 @@
 						</h:outputText>												
 					</h:outputText>					
 				    <h:outputText rendered="${p.inputType=='directory' and !runTaskBean.allowBatchProcess}">
-						  <input name="#{p.name}" id="#{p.name}" size="30" type="#{p.inputType}" value="#{p.encodedValue}"/>                    
+						  <input name="#{p.name}" id="#{p.name}" size="30" type="#{p.inputType}" value="#{p.defaultValue}"/>                    
 					</h:outputText>
                     <h:outputText rendered="#{p.inputType=='file'}">
                       <h:outputText rendered="#{empty p.defaultValue}">
@@ -160,7 +160,7 @@
                           <div>Select a single file under 2GB to upload.  <h:outputText rendered="#{runTaskBean.allowBatchProcess}"> To execute a batch upload or upload files over 2GB use the advanced upload tool.</h:outputText></div>
                         </div>
                         <div id="#{p.name}_div_url" style="display:none">
-                          <input id="#{p.name}_url" name="#{p.name}_url" size="30" type="text" value="#{p.encodedValue}"/>
+                          <input id="#{p.name}_url" name="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}"/>
                           <h:outputText rendered="#{runTaskBean.allowInputFilePaths}">
 							<a rel="lyteframe" title="Browse for #{p.name}" rev="width: 400px; height: 300px; scrolling: auto" 
                             	href="#{facesContext.externalContext.requestContextPath}/jqueryFileTree/index.jsf?p=#{p.name}">Browse Server File System...</a>
@@ -183,7 +183,7 @@
                           <input name="#{p.name}" id="#{p.name}" size="30" type="file"/>
                         </div>
                         <div id="#{p.name}_div_url">
-                          <input id="#{p.name}_url" name="#{p.name}_url" size="30" type="text" value="#{p.encodedValue}"/>
+                          <input id="#{p.name}_url" name="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}"/>
                           <h:outputText rendered="#{runTaskBean.allowInputFilePaths}">
                                 <a rel="lyteframe" title="Browse for #{p.name}" rev="width: 400px; height: 300px; scrolling: auto" 
                                     href="#{facesContext.externalContext.requestContextPath}/jqueryFileTree/index.jsf?p=#{p.name}">Browse Server File System...</a>
@@ -213,7 +213,7 @@
                     </h:outputText>
                     <!--  Text or password input -->
                     <h:outputText rendered="#{p.inputType=='text' || p.inputType=='password'}">
-                      <input name="#{p.name}" id="#{p.name}" size="30" type="#{p.inputType}" value="#{p.encodedValue}"/>
+                      <input name="#{p.name}" id="#{p.name}" size="30" type="#{p.inputType}" value="#{p.defaultValue}"/>
                     </h:outputText>
                   </td>
                 </tr>
