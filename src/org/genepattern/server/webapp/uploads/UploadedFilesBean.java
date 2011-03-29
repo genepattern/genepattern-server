@@ -64,6 +64,12 @@ public class UploadedFilesBean {
     public void setMessageToUser(String messageToUser) {
         UIBeanHelper.setInfoMessage(messageToUser);
     }
+    
+    public boolean getUploadEnabled() {
+        String userId = UIBeanHelper.getUserId();
+        Context userContext = Context.getContextForUser(userId);
+        return ServerConfiguration.instance().getGPBooleanProperty(userContext, "upload.jumploader", false);
+    }
 
     /**
      * Delete a file from the user's home dire on GenomeSpace
