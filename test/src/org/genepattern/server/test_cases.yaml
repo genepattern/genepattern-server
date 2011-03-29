@@ -18,7 +18,7 @@ testModuleSubstitution:
         input.file: my_test_data.xls
         input.file_basename: my_test_data
     expected: [
-        "/usr/bin/perl", "../taskLib/MyModule.1.0000/myModule.pl", "-i", "my_test_data.xls", "-o", "my_test_data.out"
+        '/usr/bin/perl', '../taskLib/MyModule.1.0000/myModule.pl', '-i', 'my_test_data.xls', '-o', 'my_test_data.out'
         ]
 
 testSingleQuote:
