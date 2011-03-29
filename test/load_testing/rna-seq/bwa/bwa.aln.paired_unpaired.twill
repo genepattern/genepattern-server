@@ -15,6 +15,7 @@ fv taskForm reads.pair.1_cb url
 fv taskForm reads.pair.1_url "${rnaseqdata}/e_coli/e_coli_1000_1.fa"
 fv taskForm output.prefix e_coli_<reads.pair.1_basename>_unpaired.sam
 submit
+show
 
 # Step 2, BWA.aln, custom-bowtie index, paired read, default settings
 #### e_coli_1000_1.fa and e_coli_1000_1.fa####
@@ -26,3 +27,4 @@ fv taskForm reads.pair.2_cb url
 fv taskForm reads.pair.2_url "${rnaseqdata}/e_coli/e_coli_1000_2.fa"
 fv taskForm output.prefix e_coli_<reads.pair.1_basename>_paired.sam
 submit
+show
