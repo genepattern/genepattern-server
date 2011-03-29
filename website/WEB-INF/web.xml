@@ -246,6 +246,14 @@
  <display-name>RichFaces Filter</display-name>
  <filter-name>richfaces</filter-name>
  <filter-class>org.ajax4jsf.Filter</filter-class>
+ <init-param>
+  <param-name>createTempFiles</param-name>
+  <param-value>false</param-value>
+ </init-param>
+ <init-param>
+  <param-name>maxRequestSize</param-name>
+  <param-value>1000000000</param-value>
+ </init-param>
 </filter>
 <filter-mapping>
  <filter-name>richfaces</filter-name>
@@ -391,6 +399,16 @@
  <servlet-mapping>
   <servlet-name>MultiFileUploadReceiver</servlet-name>
   <url-pattern>/MultiFileUploadReceiver</url-pattern>
+ </servlet-mapping>
+ 
+ <servlet>
+    <display-name>Upload Receiver Servlet</display-name>
+    <servlet-name>UploadReceiver</servlet-name>
+    <servlet-class>org.genepattern.server.webapp.UploadReceiver</servlet-class>    
+ </servlet>
+ <servlet-mapping>
+  <servlet-name>UploadReceiver</servlet-name>
+  <url-pattern>/UploadReceiver</url-pattern>
  </servlet-mapping>
  
 
