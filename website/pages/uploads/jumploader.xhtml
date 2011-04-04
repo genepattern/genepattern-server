@@ -23,14 +23,16 @@
 		<title>GenePattern | Upload</title>
 	</head>
 	<body>
+		<h2 style="font-family: Verdana, Arial, Helvetica, sans-serif;color: #336;font-weight: bold;font-size: 18px;line-height: 20px;">Upload to GenePattern</h2>
 		<applet id="jumpLoaderApplet" name="jumpLoaderApplet"
 				code="jmaster.jumploader.app.JumpLoaderApplet.class"
 				archive="/gp/downloads/jl_core_z.jar"
 				width="600"
-				height="400" 
+				height="300" 
 				mayscript="true">
 			<param name="uc_uploadUrl" value="/gp/UploadReceiver"/>
 			<param name="uc_partitionLength" value="10000000"/>
 		</applet>
+		<div><strong>Note:</strong> This window must remain open for the upload to complete.</div>
 	</body>
 </html>
