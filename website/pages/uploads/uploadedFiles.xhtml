@@ -230,7 +230,7 @@ function openApplet() {
   	<button type="button" onclick="JavaScript:openApplet();">Upload Files</button>
   </t:div>
   <t:div id="uploadDiv" rendered="#{uploadedFilesBean.uploadEnabled}">
-  	<button type="button" onclick="JavaScript:window.open('/gp/pages/uploads/jumploader.xhtml','uploadWindow','width=620,height=420,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');">Test Upload Files</button>
+  	<button type="button" onclick="JavaScript:window.open('/gp/pages/uploads/jumploader.xhtml','uploadWindow_'+Math.random(),'width=620,height=420,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');">Upload Files</button>
   </t:div>
   <p>
     <br/>
