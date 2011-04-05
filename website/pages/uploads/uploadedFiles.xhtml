@@ -225,12 +225,22 @@ function openApplet() {
   <p>
     <br/>
   </p>
-  <div id="appletDiv"></div>
-  <t:div id="buttonDiv" rendered="#{uploadedFilesBean.batchUploadEnabled}">
-  	<button type="button" onclick="JavaScript:openApplet();">Upload Files</button>
-  </t:div>
+  <script language="JavaScript">
+  	var uploadWindow = null;
+  
+  	function openWindow() {
+  		if (uploadWindow == null || uploadWindow.closed) {
+  			//alert(uploadWindow + " " + uploadWindow.closed);
+  			uploadWindow = window.open('/gp/pages/uploads/jumploader.xhtml','uploadWindow_'+Math.random(),'width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
+  			windowOpen = true;
+  		}
+  		else {
+  			uploadWindow.focus();
+  		}
+  	}
+  </script>
   <t:div id="uploadDiv" rendered="#{uploadedFilesBean.uploadEnabled}">
-  	<button type="button" onclick="JavaScript:window.open('/gp/pages/uploads/jumploader.xhtml','uploadWindow_'+Math.random(),'width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');">Upload Files</button>
+  	<button type="button" onclick="JavaScript:openWindow();">Upload Files</button>
   </t:div>
   <p>
     <br/>
