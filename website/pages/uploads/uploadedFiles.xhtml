@@ -229,10 +229,11 @@ function openApplet() {
   	var uploadWindow = null;
   
   	function openWindow() {
-  		if (uploadWindow == null || uploadWindow.closed) {
-  			//alert(uploadWindow + " " + uploadWindow.closed);
-  			uploadWindow = window.open('/gp/pages/uploads/jumploader.xhtml','uploadWindow_'+Math.random(),'width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
-  			windowOpen = true;
+  		if (uploadWindow == null) {
+  			uploadWindow = window.open('/gp/pages/uploads/jumploader.jsf','uploadWindow','width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
+  		}
+  		else if (uploadWindow.closed) {
+  			uploadWindow = window.open('/gp/pages/uploads/jumploader.jsf','uploadWindow','width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
   		}
   		else {
   			uploadWindow.focus();
