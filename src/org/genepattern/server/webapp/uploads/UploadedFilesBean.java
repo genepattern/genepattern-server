@@ -452,7 +452,7 @@ public class UploadedFilesBean {
                     if (moduleInputParameters == null) {
                         moduleInputParameters = unannotatedParameters;
                     }
-                    o.moduleInputParameters = moduleInputParameters;
+                    o.setModuleInputParameters(moduleInputParameters);
                 }
             }
         }
