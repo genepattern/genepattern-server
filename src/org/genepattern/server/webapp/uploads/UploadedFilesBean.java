@@ -41,12 +41,6 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
 
-/**
- * Backing bean for login to GenomeSpace.
- * 
- * @author liefeld
- * 
- */
 public class UploadedFilesBean {
     private static Logger log = Logger.getLogger(UploadedFilesBean.class);
 
@@ -72,7 +66,7 @@ public class UploadedFilesBean {
     }
 
     /**
-     * Delete a file from the user's home dire on GenomeSpace
+     * Delete a file from the user's home dir
      * 
      * @param ae
      */
@@ -146,11 +140,6 @@ public class UploadedFilesBean {
         return null;
     }
 
-    /**
-     * gets a one time use link to the file on S3
-     * 
-     * @param ae
-     */
     public String getFileURL(String dirname, String filename) {
         if (filename == null)
             return null;
@@ -165,11 +154,6 @@ public class UploadedFilesBean {
 
     }
 
-    /**
-     * redirects to a time limited, one time use link to the file on S3
-     * 
-     * @param ae
-     */
     public void saveFileLocally(ActionEvent ae) {
         String filenameParam = UIBeanHelper.getRequest().getParameter("filename");
         String dirnameParam = UIBeanHelper.getRequest().getParameter("path");
@@ -266,11 +250,6 @@ public class UploadedFilesBean {
     private static final Comparator<KeyValuePair> COMPARATOR = new KeyValueComparator();
     private static final int DEFAULT_upload_maxfiles = 50;
 
-    /**
-     * get the list of directories in GenomeSpace this user can look at
-     * 
-     * @return
-     */
     public List<UploadDirectory> getAvailableDirectories() {
 
         int fileCount = 0;
@@ -436,8 +415,7 @@ public class UploadedFilesBean {
         if (unannotatedParameters.size() > 0) {
             for (Iterator<String> it = kindToInputParameters.keySet()
                     .iterator(); it.hasNext();) {
-                List<KeyValuePair> inputParameterNames = kindToInputParameters
-                        .get(it.next());
+                List<KeyValuePair> inputParameterNames = kindToInputParameters.get(it.next());
                 inputParameterNames.addAll(unannotatedParameters);
             }
         }
