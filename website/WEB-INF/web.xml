@@ -353,6 +353,16 @@
   <servlet-name>AjaxServlet</servlet-name>
   <url-pattern>*.ajax</url-pattern>
  </servlet-mapping>
+ 
+ <servlet>
+  <display-name>DataServlet</display-name>
+  <servlet-name>DataServlet</servlet-name>
+  <servlet-class>org.genepattern.server.webapp.DataServlet</servlet-class>
+ </servlet>
+ <servlet-mapping>
+  <servlet-name>DataServlet</servlet-name>
+  <url-pattern>/data/*</url-pattern>
+ </servlet-mapping>
 
  <servlet>
   <display-name>JobResultsServlet</display-name>
