@@ -367,23 +367,19 @@ public class UploadedFilesBean {
 
         TaskInfo taskInfo = null;
         try {
-            taskInfo = new LocalAdminClient(UIBeanHelper.getUserId())
-                    .getTask(selectedModule);
+            taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(selectedModule);
         }
         catch (WebServiceException e) {
             log.error("Could not get module", e);
             return;
         }
-        ParameterInfo[] inputParameters = taskInfo != null ? taskInfo
-                .getParameterInfoArray() : null;
+        ParameterInfo[] inputParameters = taskInfo != null ? taskInfo.getParameterInfoArray() : null;
         List<KeyValuePair> unannotatedParameters = new ArrayList<KeyValuePair>();
         if (inputParameters != null) {
             for (ParameterInfo inputParameter : inputParameters) {
                 if (inputParameter.isInputFile()) {
-                    List<String> fileFormats = SemanticUtil
-                            .getFileFormats(inputParameter);
-                    String displayValue = (String) inputParameter
-                            .getAttributes().get("altName");
+                    List<String> fileFormats = SemanticUtil.getFileFormats(inputParameter);
+                    String displayValue = (String) inputParameter.getAttributes().get("altName");
 
                     if (displayValue == null) {
                         displayValue = inputParameter.getName();
@@ -398,8 +394,7 @@ public class UploadedFilesBean {
                         unannotatedParameters.add(kvp);
                     }
                     for (String format : fileFormats) {
-                        List<KeyValuePair> inputParameterNames = kindToInputParameters
-                                .get(format);
+                        List<KeyValuePair> inputParameterNames = kindToInputParameters.get(format);
                         if (inputParameterNames == null) {
                             inputParameterNames = new ArrayList<KeyValuePair>();
                             kindToInputParameters.put(format,
@@ -413,8 +408,7 @@ public class UploadedFilesBean {
 
         // add unannotated parameters to end of list for each kind
         if (unannotatedParameters.size() > 0) {
-            for (Iterator<String> it = kindToInputParameters.keySet()
-                    .iterator(); it.hasNext();) {
+            for (Iterator<String> it = kindToInputParameters.keySet().iterator(); it.hasNext();) {
                 List<KeyValuePair> inputParameterNames = kindToInputParameters.get(it.next());
                 inputParameterNames.addAll(unannotatedParameters);
             }
@@ -425,8 +419,7 @@ public class UploadedFilesBean {
 
             if (outputFiles != null) {
                 for (UploadFileInfo o : outputFiles) {
-                    List<KeyValuePair> moduleInputParameters = kindToInputParameters
-                            .get(o.getKind());
+                    List<KeyValuePair> moduleInputParameters = kindToInputParameters.get(o.getKind());
                     if (moduleInputParameters == null) {
                         moduleInputParameters = unannotatedParameters;
                     }
