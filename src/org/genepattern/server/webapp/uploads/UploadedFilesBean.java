@@ -130,11 +130,7 @@ public class UploadedFilesBean {
     public UploadFileInfo getFile(String dirname, String file) {
         for (UploadDirectory dir : availableDirectories) {
             if ((dir.getName().equals(dirname)) || (dirname == null)) {
-                for (UploadFileInfo aFile : dir.getUploadFiles()) {
-                    if (aFile.getFilename().equals(file))
-                        return aFile;
-                }
-
+                return dir.getUploadFiles().get(file);
             }
         }
         return null;
@@ -316,7 +312,7 @@ public class UploadedFilesBean {
                 Collections.sort(fileList, new FileModifiedComparator());
                 
                 int count = 0;
-                Map<String,Boolean> usedFileNames = new HashMap<String, Boolean>();
+                Map<String,Integer> usedFileNames = new HashMap<String, Integer>();
                 
                 int maxFiles = ServerConfiguration.instance().getGPIntegerProperty(userContext, "upload.maxfiles", DEFAULT_upload_maxfiles);
     
@@ -325,10 +321,25 @@ public class UploadedFilesBean {
                         break;
                     }
                     if (usedFileNames.get(aFile.getFilename()) != null) {
+                        UploadFileInfo info = userDir.getUploadFiles().get(aFile.getFilename());
+                        
+                        // Make sure the UploadFileInfo has the latest timestamp
+                        if (info.getModified() < aFile.getModified()) {
+                            userDir.getUploadFiles().put(aFile.getFilename(), aFile);
+                            usedFileNames.put(aFile.getFilename(), usedFileNames.get(aFile.getFilename()) + 1);
+                            aFile.setCopies(usedFileNames.get(aFile.getFilename()));
+                            info.setCopies(usedFileNames.get(aFile.getFilename()));
+                        }
+                        else {
+                            // Update Count
+                            info.incrementCopies();
+                            usedFileNames.put(aFile.getFilename(), usedFileNames.get(aFile.getFilename()) + 1);
+                            info.setCopies(usedFileNames.get(aFile.getFilename()));
+                        }
                         continue;
                     }
                     
-                    userDir.getUploadFiles().add(aFile);
+                    userDir.getUploadFiles().put(aFile.getFilename(), aFile);
                     Collection<TaskInfo> modules;
                     List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
                     modules = kindToModules.get(aFile.getKind());
@@ -339,8 +350,8 @@ public class UploadedFilesBean {
                         }
                         Collections.sort(moduleMenuItems, COMPARATOR);
                     }
-                    aFile.setModuleMenuItems(moduleMenuItems);                
-                    usedFileNames.put(aFile.getFilename(), true);
+                    aFile.setModuleMenuItems(moduleMenuItems);
+                    usedFileNames.put(aFile.getFilename(), 1);
                     count++;
                 }
                 dirCount++;
@@ -415,7 +426,7 @@ public class UploadedFilesBean {
         }
 
         for (UploadDirectory aDir : dirs) {
-            List<UploadFileInfo> outputFiles = aDir.getUploadFiles();
+            List<UploadFileInfo> outputFiles = aDir.getSortedUploadFiles();
 
             if (outputFiles != null) {
                 for (UploadFileInfo o : outputFiles) {

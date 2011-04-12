@@ -3,11 +3,13 @@ package org.genepattern.server.webapp.uploads;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class UploadDirectory {
     public String name;
-    public List<UploadFileInfo> uploadFiles;
+    public Map<String, UploadFileInfo> uploadFiles;
     public boolean expanded = true;
     public int level = 0;
 
@@ -23,19 +25,22 @@ public class UploadDirectory {
         this.name = name;
     }
 
-    public List<UploadFileInfo> getUploadFiles() {
+    public Map<String, UploadFileInfo> getUploadFiles() {
         if (uploadFiles == null)
-            uploadFiles = new ArrayList<UploadFileInfo>();
+            uploadFiles = new HashMap<String, UploadFileInfo>();
         return uploadFiles;
     }
 
-    public void setUploadFiles(List<UploadFileInfo> uploadFiles) {
+    public void setUploadFiles(Map<String, UploadFileInfo> uploadFiles) {
         this.uploadFiles = uploadFiles;
 
     }
     
     public List<UploadFileInfo> getSortedUploadFiles() {
-        List<UploadFileInfo> files = this.getUploadFiles();
+        List<UploadFileInfo> files = new ArrayList<UploadFileInfo>();
+        for (UploadFileInfo i : this.getUploadFiles().values()) {
+            files.add(i);
+        }
         Collections.sort(files, new UploadFileComparator());
         return files;
     }

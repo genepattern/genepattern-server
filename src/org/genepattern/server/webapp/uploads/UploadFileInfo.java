@@ -22,7 +22,20 @@ public class UploadFileInfo {
     List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
     long modified;
     boolean directUpload = false;
+    int copies = 1;
     
+    public int getCopies() {
+        return copies;
+    }
+
+    public void setCopies(int copies) {
+        this.copies = copies;
+    }
+    
+    public void incrementCopies() {
+        this.copies += 1;
+    }
+
     public boolean getDirectUpload() {
         return directUpload;
     }
