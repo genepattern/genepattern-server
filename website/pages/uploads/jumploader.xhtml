@@ -30,7 +30,7 @@
 				width="600"
 				height="300" 
 				mayscript="true">
-			<param name="uc_uploadUrl" value="/gp/UploadReceiver"/>
+			<param name="uc_uploadUrl" value="/gp/UploadReceiver?paramId=#{uploadedFilesBean.paramId}"/>
 			<param name="uc_partitionLength" value="10000000"/>
 		</applet>
 		<div><strong>Note:</strong> This window must remain open for the upload to complete.  New files will not show up in the main window until the page has been refreshed.</div>
