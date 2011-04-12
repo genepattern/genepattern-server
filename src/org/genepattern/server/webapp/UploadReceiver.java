@@ -22,6 +22,7 @@ import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.util.GPConstants;
+import org.jfree.util.Log;
 
 public class UploadReceiver extends HttpServlet {
     private static final long serialVersionUID = -6720003935924717973L;
@@ -96,7 +97,7 @@ public class UploadReceiver extends HttpServlet {
     }
 
     private String getWriteDirectory(HttpServletRequest request, List<FileItem> postParameters) throws IOException {
-        String paramId = "writeDirectory";
+        String paramId = request.getParameter("paramId") != null ? request.getParameter("paramId") : "writeDirectory";
         String writeDirectory = (String) request.getSession().getAttribute(paramId);
         File directory = null;
         if (writeDirectory != null) {
