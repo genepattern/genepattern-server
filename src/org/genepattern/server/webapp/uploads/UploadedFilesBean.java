@@ -498,5 +498,9 @@ public class UploadedFilesBean {
         Context context = Context.getContextForUser(UIBeanHelper.getUserId());
         return ServerConfiguration.instance().getGPIntegerProperty(context, "upload.partition.size", 5000000);
     }
+    
+    public String getParamId() {
+        return String.valueOf(Math.random());
+    }
 
 }
