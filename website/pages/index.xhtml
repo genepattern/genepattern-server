@@ -360,7 +360,7 @@ function showFileInput(id) {
 				</t:dataList>
 			</t:dataList>
 			<t:dataList var="uploadDir" value="#{uploadedFilesBean.availableDirectories}" rowIndexVar="dirIndex">
-				<t:dataList var="aFile" value="#{uploadDir.uploadFiles}" rowIndexVar="fileIndex">
+				<t:dataList var="aFile" value="#{uploadDir.sortedUploadFiles}" rowIndexVar="fileIndex">
 					<ui:include src="uploads/uploadFileMenu.xhtml">
 	              		<ui:param name="uploadDir" value="#{uploadDir}"/>
 	              		<ui:param name="aFile" value="#{aFile}"/>
