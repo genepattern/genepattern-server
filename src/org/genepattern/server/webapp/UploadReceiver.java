@@ -36,11 +36,13 @@ public class UploadReceiver extends HttpServlet {
             try {
                 List<FileItem> postParameters = upload.parseRequest(reqContext);
                 int partitionCount = Integer.parseInt(getParameter(postParameters, "partitionCount"));
+                int partitionIndex = Integer.parseInt(getParameter(postParameters, "partitionIndex"));
+                boolean lastPartition = (partitionIndex + 1) == partitionCount;
                 if (partitionCount == 1) {
                     loadFile(request, postParameters, responseWriter);
                 }
                 else {
-                    loadPartition(request, postParameters, responseWriter);
+                    loadPartition(request, postParameters, responseWriter, lastPartition);
                 }
             }
             catch (Exception e) {
@@ -54,18 +56,21 @@ public class UploadReceiver extends HttpServlet {
         }
     }
 
-    private void loadPartition(HttpServletRequest request, List<FileItem> postParameters, PrintWriter responseWriter) throws Exception {
+    private void loadPartition(HttpServletRequest request, List<FileItem> postParameters, PrintWriter responseWriter, boolean last) throws Exception {
         String writeDirectory = getWriteDirectory(request, postParameters);
         Iterator<FileItem> it = postParameters.iterator();
         while (it.hasNext()) {
             FileItem postParameter = it.next();
             if (!postParameter.isFormField()) {
-                File file = new File(writeDirectory, postParameter.getName());
+                File file = new File(writeDirectory, postParameter.getName() + ".part");
                 RandomAccessFile raf = new RandomAccessFile(file, "rw");
                 raf.seek(file.length());
                 raf.write(postParameter.get());
                 raf.close();
                 responseWriter.println(writeDirectory + ";" + file.getCanonicalPath());
+                if (last) {
+                    file.renameTo(new File(writeDirectory, postParameter.getName()));
+                }
             }
         }
     }
