@@ -23,8 +23,9 @@
     <!--  Loop through output files -->
     <t:dataList var="aFile" value="#{uploadDir.sortedUploadFiles}" rowIndexVar="fileIndex">
     
-    
-      <h:outputLink value="#{aFile.url}">#{aFile.filename}</h:outputLink> <h:outputText rendered="#{aFile.copies > 1}"> (#{aFile.copies})</h:outputText>
+   	  <h:outputText rendered="#{aFile.partial}">(Partial) </h:outputText>
+      <h:outputLink value=" #{aFile.url}">#{aFile.filename}</h:outputLink>
+      <h:outputText rendered="#{aFile.copies > 1}"> (#{aFile.copies})</h:outputText>
       
       <!-- Image for popup menu -->
       <img src="/gp/images/smallOptions.gif" 

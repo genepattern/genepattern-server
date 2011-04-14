@@ -24,6 +24,15 @@ public class UploadFileInfo {
     boolean directUpload = false;
     int copies = 1;
     
+    public boolean getPartial() {
+        if (filename.endsWith(".part")) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    
     public int getCopies() {
         return copies;
     }
