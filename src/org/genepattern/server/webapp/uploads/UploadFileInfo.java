@@ -14,15 +14,15 @@ public class UploadFileInfo {
         formatter.applyPattern("MMM dd hh:mm:ss aaa");
     }
 
-    String filename;
-    String path;
-    String url;
-    String genePatternUrl;
-    List<KeyValuePair> moduleInputParameters;
-    List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
-    long modified;
+    private String filename;
+    private String path;
+    private String url;
+    private String genePatternUrl;
+    private List<KeyValuePair> moduleInputParameters;
+    private List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
+    private long modified;
     boolean directUpload = false;
-    int copies = 1;
+    private int copies = 1;
     
     public boolean getPartial() {
         if (filename.endsWith(".part")) {

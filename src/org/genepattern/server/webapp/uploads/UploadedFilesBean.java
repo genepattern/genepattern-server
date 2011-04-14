@@ -291,10 +291,6 @@ public class UploadedFilesBean {
                     }
                     if (fList != null) {
                         for (File aFile : f.listFiles()) {
-                            if (f.getName().equalsIgnoreCase("parts")) {
-                                // Ignore the partially-uploaded file directory
-                                continue;
-                            }
                             UploadFileInfo ufi = new UploadFileInfo(aFile.getName());
                             ufi.setUrl(getFileURL(f.getName(), encodeFilename(aFile.getName())));
                             ufi.setPath(encodeFilename(f.getName()));
@@ -325,6 +321,7 @@ public class UploadedFilesBean {
                         
                         // Make sure the UploadFileInfo has the latest timestamp
                         if (info.getModified() < aFile.getModified()) {
+                            aFile.setModuleMenuItems(info.getModuleMenuItems());
                             userDir.getUploadFiles().put(aFile.getFilename(), aFile);
                             usedFileNames.put(aFile.getFilename(), usedFileNames.get(aFile.getFilename()) + 1);
                             aFile.setCopies(usedFileNames.get(aFile.getFilename()));
