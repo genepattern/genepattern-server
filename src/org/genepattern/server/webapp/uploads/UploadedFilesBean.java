@@ -48,6 +48,7 @@ public class UploadedFilesBean {
 
     public final String RECENT_JOBS = "recentJobs";
     public final String UPLOADS = "uploads";
+    public final String SELECTED_TAB = "selectedTab";
 
     public UploadedFilesBean() {
         String userId = UIBeanHelper.getUserId();
@@ -260,7 +261,6 @@ public class UploadedFilesBean {
             availableDirectories = new ArrayList<UploadDirectory>();
             String userId = UIBeanHelper.getUserId();
             Context userContext = Context.getContextForUser(userId);
-            boolean batchEnabled = ServerConfiguration.instance().getGPBooleanProperty(userContext, "allow.batch.process", false);
 
             /**
              * The directory layer is unnecessary for now but will be needed
@@ -365,7 +365,6 @@ public class UploadedFilesBean {
     }
 
     public void setSelectedModule(String selectedModule) {
-
         List<UploadDirectory> dirs = getAvailableDirectories();
 
         if (selectedModule == null || dirs == null || dirs.size() == 0) {
@@ -478,7 +477,7 @@ public class UploadedFilesBean {
     }
     
     public String getSelectedTab() {
-        String attr = (String) UIBeanHelper.getSession().getAttribute("selectedTab");
+        String attr = (String) UIBeanHelper.getSession().getAttribute(SELECTED_TAB);
         if (attr == null) {
             return RECENT_JOBS;
         }
@@ -488,7 +487,7 @@ public class UploadedFilesBean {
     }
     
     public void setSelectedTab(String selected) {
-        UIBeanHelper.getSession().setAttribute("selectedTab", selected);
+        UIBeanHelper.getSession().setAttribute(SELECTED_TAB, selected);
     }
     
     public int getPartitionLength() {
