@@ -20,9 +20,14 @@ import java.util.TimerTask;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
+import org.genepattern.server.user.User;
+import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 
 /**
@@ -61,6 +66,8 @@ public class Purger extends TimerTask {
                 long dateCutoff = purgeDate.getTime().getTime();
                 // remove input files uploaded using web form
                 purge(new File(System.getProperty("java.io.tmpdir")), dateCutoff);
+                // Other code purging uploads directory is also called; this is called in addition
+                purgeDirectUploads(dateCutoff);
 
                 File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
                 File[] userDirs = soapAttachmentDir.listFiles();
@@ -101,6 +108,52 @@ public class Purger extends TimerTask {
                     }
                 }
             }
+        }
+    }
+    
+    /**
+     * Purge the direct upload directories of all users
+     * @param dateCutoff
+     */
+    private void purgeDirectUploads(long dateCutoff) {
+        List<User> users = (new UserDAO()).getAllUsers();
+        for (User i : users) {
+            Context context = Context.getContextForUser(i.getUserId());
+            File userUploadDir = ServerConfiguration.instance().getUserUploadDir(context);
+            boolean purgeAll = ServerConfiguration.instance().getGPBooleanProperty(context, "upload.purge.all", false);
+            purgeUserUploads(userUploadDir, dateCutoff, purgeAll);
+        }
+    }
+    
+    /**
+     * Purge the direct upload directory of a given user
+     * @param dir
+     * @param dateCutoff
+     * @param purgeAll
+     */
+    private void purgeUserUploads(File dir, long dateCutoff, boolean purgeAll) {
+        for (File i : dir.listFiles()) {
+            if (!i.isDirectory() && i.lastModified() < dateCutoff && (purgeAll || isPartialFile(i))) {
+                // Delete the file
+                i.delete();
+            }
+            else if (i.isDirectory()) {
+                // Recurse into that directory
+                purgeUserUploads(i, dateCutoff, purgeAll);
+            }
+            else if (i.isDirectory() && i.lastModified() < dateCutoff && !i.getName().endsWith("_ftp") && i.listFiles().length == 0) {
+                // Delete the directory
+                i.delete();
+            }  
+        }
+    }
+    
+    private boolean isPartialFile(File file) {
+        if (file.getName().endsWith(".part")) {
+            return true;
+        }
+        else {
+            return false;
         }
     }
     

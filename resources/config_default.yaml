@@ -20,6 +20,7 @@ default.properties:
     upload.maxfiles: 50
     upload.partition.size: 5000000
     upload.jumploader: true
+    upload.purge.all: false
     
     # location for user data
     user.root.dir: "../users"
