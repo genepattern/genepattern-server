@@ -23,7 +23,7 @@
     <!--  Loop through output files -->
     <t:dataList var="aFile" value="#{uploadDir.sortedUploadFiles}" rowIndexVar="fileIndex">
     
-   	  <h:outputText rendered="#{aFile.partial}">(Partial) </h:outputText>
+   	  <h:outputText rendered="#{aFile.partial}">(Uploading) </h:outputText>
       <h:outputLink value="#{aFile.url}">#{aFile.filename}</h:outputLink>
       <h:outputText rendered="#{aFile.copies > 1}"> (#{aFile.copies})</h:outputText>
       
