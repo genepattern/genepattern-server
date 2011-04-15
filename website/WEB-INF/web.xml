@@ -85,6 +85,14 @@
    <param-value>../resources</param-value>
   </init-param>
  </filter>
+ 
+ <filter>
+  <filter-name>IgvFilter</filter-name>
+  <filter-class>org.genepattern.server.webapp.IgvFilter</filter-class>
+  <!-- initialize the filter with a list of User-Agent prefixes, see IgvFilter documentation. -->
+  <init-param><param-name>IGV</param-name><param-value></param-value></init-param>
+  <!-- init-param><param-name>Java</param-name><param-value></param-value></init-param -->
+ </filter>
 
  <filter>
   <filter-name>AuthorizationFilter</filter-name>
@@ -162,8 +170,10 @@
   </init-param>
  </filter>
 
-
- 
+ <filter-mapping>
+  <filter-name>IgvFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+ </filter-mapping>
  <filter-mapping>
   <filter-name>RedirectToFQHostFilter</filter-name>
   <url-pattern>/*</url-pattern>
