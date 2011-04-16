@@ -16,7 +16,6 @@ package org.genepattern.server.webapp;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -100,6 +99,20 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         super.init(config);
     }
 
+    public void doHead(HttpServletRequest req, HttpServletResponse resp) 
+    throws IOException, ServletException 
+    {
+        boolean serveContent = false;
+        processRequest(req, resp, serveContent);
+    }
+    
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
+    throws IOException, ServletException
+    {
+        boolean serveContent = true;
+        processRequest(request, response, serveContent);
+    }
+
     /**
      * Handle requests on job results.
      * <pre>
@@ -111,12 +124,13 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
        GET /jobResults/<job>.zip
      * </pre>
      */
-    public void doGet(HttpServletRequest request, HttpServletResponse response) 
+    public void processRequest(HttpServletRequest request, HttpServletResponse response, boolean serveContent) 
     throws IOException, ServletException
     { 
         if (!checkServletPath(request, response)) {
             return;
-        }  
+        }
+        
         //parse the job number and file
         StringBuffer resultsPath = initParsePathInfo(request);
         String jobNumber = parseJobNumber(resultsPath);
@@ -191,7 +205,8 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             return;
         }
         File fileObj = new File(rootJobDir, jobNumber + File.separator + file);
-        serveFile(fileObj, response);
+        //serveFile(request, response, serveContent, fileObj);
+        JobResultsDownloader.serveFile(this.getServletContext(), request, response, serveContent, fileObj);
     }
     
     /**
@@ -300,7 +315,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             }
         } 
     }
-
+    
     private String getUserIdFromSession(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session != null) {
@@ -378,46 +393,6 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             return resultsPath.toString();
         }
         return null;
-    }
-
-    private void serveFile(File fileObj, HttpServletResponse httpServletResponse) 
-    throws IOException
-    {
-        String lcFileName = fileObj.getName().toLowerCase();
-
-        httpServletResponse.setHeader("Content-disposition", "inline; filename=\"" + fileObj.getName() + "\"");
-        httpServletResponse.setHeader("Cache-Control", "no-store");
-        httpServletResponse.setHeader("Pragma", "no-cache");
-        httpServletResponse.setDateHeader("Expires", 0);
-        httpServletResponse.setDateHeader("Last-Modified", fileObj.lastModified());
-        httpServletResponse.setHeader("Content-Length", "" + fileObj.length());
-
-        if (lcFileName.endsWith(".html") || lcFileName.endsWith(".htm")){
-            httpServletResponse.setHeader("Content-Type", "text/html"); 
-        }
-    
-        BufferedInputStream is = null;
-        try {
-            OutputStream os = httpServletResponse.getOutputStream();
-            is = new BufferedInputStream(new FileInputStream(fileObj));
-            byte[] b = new byte[10000];
-            int bytesRead;
-            while ((bytesRead = is.read(b)) != -1) {
-                os.write(b, 0, bytesRead);
-            }
-        }
-        catch (FileNotFoundException e) {
-            httpServletResponse.sendError(HttpServletResponse.SC_NOT_FOUND);
-        } 
-        finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } 
-                catch (IOException x) {
-                }
-            }
-        }
     }
     
     private void setShowExecutionLogs(String userId, boolean showExecutionLogs) {
