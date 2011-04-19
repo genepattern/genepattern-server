@@ -75,18 +75,35 @@ public class JobResultsDownloader {
                 contentLength = range.end - range.start + 1;
             }
             
-            String filename = fileObj.getName().toLowerCase();
+            String filename = fileObj.getName();
+            //handle special case for Axis (copied from getFile.jsp)
+            if (filename.startsWith("Axis")) {
+                int idx = filename.indexOf(".att_");
+                if (idx >= 0) {
+                    idx += ".att_".length();
+                    filename = filename.substring(idx);
+                }
+            }
+            
             response.setHeader("Content-disposition", "inline; filename=\"" + filename + "\"");
             //TODO: need support for ETags, Expires, 
             response.setHeader("Cache-Control", "no-store");
             response.setHeader("Pragma", "no-cache");
             //response.setDateHeader("Expires", 0);
             response.setDateHeader("Last-Modified", fileObj.lastModified());
-            response.setHeader("Content-Length", "" + contentLength);
-            
-            String contentType = context.getMimeType(fileObj.getName());
+            String contentType = context.getMimeType(filename);
             if (contentType != null) {
                 response.setHeader("Content-Type", contentType);
+            }
+
+            //HACK: rich faces servlet alters the content (consequently the size) of html files
+            //    This is a consequence of using the same server for downloading data files and rendering the job status page
+            //    Data files should not be altered by Rich Faces, however, the job status page uses ajax managed by Rich Faces 
+            if (contentType != null && contentType.endsWith("html")) {
+                //don't set content length for html files
+            }
+            else {
+                response.setHeader("Content-Length", "" + contentLength);
             }
 
             if (range != null) {
@@ -106,6 +123,8 @@ public class JobResultsDownloader {
                     end = range.end;
                 }
                 copyRange(is, os, start, end);
+                os.flush();
+                os.close();
             }
         }
         finally {
