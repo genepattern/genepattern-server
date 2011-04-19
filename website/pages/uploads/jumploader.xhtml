@@ -24,6 +24,7 @@
 	</head>
 	<body>
 		<h2 style="font-family: Verdana, Arial, Helvetica, sans-serif;color: #336;font-weight: bold;font-size: 18px;line-height: 20px;">Upload to GenePattern</h2>
+		<div><strong>Note:</strong> This window must remain open for the upload to complete.  New files will not show up in the main window until the page has been refreshed.</div>
 		<applet id="jumpLoaderApplet" name="jumpLoaderApplet"
 				code="jmaster.jumploader.app.JumpLoaderApplet.class"
 				archive="/gp/downloads/jl_core_z.jar"
@@ -33,6 +34,5 @@
 			<param name="uc_uploadUrl" value="/gp/UploadReceiver?paramId=#{uploadedFilesBean.paramId}"/>
 			<param name="uc_partitionLength" value="10000000"/>
 		</applet>
-		<div><strong>Note:</strong> This window must remain open for the upload to complete.  New files will not show up in the main window until the page has been refreshed.</div>
 	</body>
 </html>
