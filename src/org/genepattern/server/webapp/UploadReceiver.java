@@ -22,7 +22,6 @@ import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.util.GPConstants;
-import org.jfree.util.Log;
 
 public class UploadReceiver extends HttpServlet {
     private static final long serialVersionUID = -6720003935924717973L;
