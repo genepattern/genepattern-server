@@ -429,14 +429,14 @@ public class UploadedFilesBean {
                 for (UploadFileInfo o : outputFiles) {
                     List<KeyValuePair> moduleInputParameters = kindToInputParameters.get(o.getKind());
                     if (moduleInputParameters == null) {
-                        Log.info("moduleInputParameters null and then set to unannotatedParameters: " + o.getFilename());
+                        System.out.println("moduleInputParameters null and then set to unannotatedParameters: " + o.getFilename());
                         moduleInputParameters = unannotatedParameters;
                     }
                     o.setModuleInputParameters(moduleInputParameters);
                 }
             }
             else {
-                Log.info("list of upload files in dir is null: " + aDir.getName());
+                System.out.println("list of upload files in dir is null: " + aDir.getName());
             }
         }
 
