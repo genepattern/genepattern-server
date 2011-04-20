@@ -429,8 +429,11 @@ public class UploadedFilesBean {
                 for (UploadFileInfo o : outputFiles) {
                     List<KeyValuePair> moduleInputParameters = kindToInputParameters.get(o.getKind());
                     if (moduleInputParameters == null) {
-                        System.out.println("moduleInputParameters null and then set to unannotatedParameters: " + o.getFilename());
+                        System.out.println("moduleInputParameters null and then set to unannotatedParameters: " + o.getFilename() + " Kind: " + o.getKind());
                         moduleInputParameters = unannotatedParameters;
+                    }
+                    else {
+                        System.out.println("moduleInputParameters not null: " + moduleInputParameters.size());
                     }
                     o.setModuleInputParameters(moduleInputParameters);
                 }
