@@ -74,7 +74,7 @@ public interface IAdminService {
      * then it is unambiguous which task to retrieve. If <code>lsidOrTaskName</code> is a valid LSID with no version,
      * the latest version for the suite is retrieved. If <code>lsidOrTaskName</code> is a suite name, the latest
      * version of the task with the nearest authority is selected. The nearest authority is the first match in the
-     * sequence: local authority,�Broad authority, other authority.
+     * sequence: local authority, Broad authority, other authority.
      * 
      * @param username
      *            The username
