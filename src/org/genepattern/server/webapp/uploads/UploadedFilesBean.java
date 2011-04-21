@@ -40,7 +40,6 @@ import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
-import org.jfree.util.Log;
 
 public class UploadedFilesBean {
     private static Logger log = Logger.getLogger(UploadedFilesBean.class);
@@ -155,7 +154,7 @@ public class UploadedFilesBean {
     public void saveFileLocally(ActionEvent ae) {
         String filenameParam = UIBeanHelper.getRequest().getParameter("filename");
         String dirnameParam = UIBeanHelper.getRequest().getParameter("path");
-        System.out.println("Save file locally " + dirnameParam + "/" + filenameParam);
+        log.debug("Save file locally " + dirnameParam + "/" + filenameParam);
 
         try {
             String url = getFileURL(dirnameParam, filenameParam);
@@ -429,17 +428,17 @@ public class UploadedFilesBean {
                 for (UploadFileInfo o : outputFiles) {
                     List<KeyValuePair> moduleInputParameters = kindToInputParameters.get(o.getKind());
                     if (moduleInputParameters == null) {
-                        System.out.println("moduleInputParameters null and then set to unannotatedParameters: " + o.getFilename() + " Kind: " + o.getKind());
+                        log.debug("moduleInputParameters null and then set to unannotatedParameters: " + o.getFilename() + " Kind: " + o.getKind());
                         moduleInputParameters = unannotatedParameters;
                     }
                     else {
-                        System.out.println("moduleInputParameters not null: " + moduleInputParameters.size());
+                        log.debug("moduleInputParameters not null: " + moduleInputParameters.size());
                     }
                     o.setModuleInputParameters(moduleInputParameters);
                 }
             }
             else {
-                System.out.println("list of upload files in dir is null: " + aDir.getName());
+                log.debug("list of upload files in dir is null: " + aDir.getName());
             }
         }
 
