@@ -256,6 +256,11 @@
  <display-name>RichFaces Filter</display-name>
  <filter-name>richfaces</filter-name>
  <filter-class>org.ajax4jsf.Filter</filter-class>
+ <!-- Don't modify html content in non-ajax responses -->
+ <init-param>
+  <param-name>forcenotrf</param-name>
+  <param-value>false</param-value>
+ </init-param>
  <init-param>
   <param-name>createTempFiles</param-name>
   <param-value>false</param-value>
