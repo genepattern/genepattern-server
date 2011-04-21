@@ -1,18 +1,10 @@
 package org.genepattern.server.webapp;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringTokenizer;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -63,7 +55,6 @@ public class DataServlet extends HttpServlet implements Servlet {
             //Not authorized, the basicAuth method sends the response back to the client
             return;
         }
-
         processRequest(req, resp, true);
     }
 
@@ -87,115 +78,59 @@ public class DataServlet extends HttpServlet implements Servlet {
             ((HttpServletResponse) response).sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
+        
         String serverFilepath = path;
-        
-        //TODO, implement authorization
-
-        // Accept ranges header
-        response.setHeader("Accept-Ranges", "bytes");
-        
         File fileObj = new File(serverFilepath);
-        serveFile(request, response, serveContent, fileObj);
-    }
-    
-    private void serveFile(HttpServletRequest request, HttpServletResponse response, boolean serveContent, File fileObj) 
-    throws IOException
-    {
+
         //make sure the file exists and can be read
         if (!fileObj.canRead()) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found: "+fileObj.getPath());
             return;
         }
         
-        long fileLength = fileObj.length();
-        List<Range> ranges = parseRange(request, response, fileLength);
-        if (ranges == null) {
-            return;
-        }
-        Range range = null;
-        if (ranges.size() == 0) {
-            //stream the entire file
-        }
-        else if (ranges.size() == 1) {
-            //single range specified in set
-            range = ranges.get(0);
-            
-            //special case when requested range.end is > actual file size
-            range.end = Math.min(range.end, fileObj.length()-1);
-        }
-        else {
-            //TODO: implement multipart/byteranges
-            //server error, byte-range-set not yet implemented
-            log.error("multipart/byteranges not yet implemented");
-            response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE, "multipart/byteranges not yet implemented");
-            return;
-        }
+        //must sure the current user has permission to read the file
+        String userId = LoginManager.instance().getUserIdFromSession(request);
+        boolean canRead = canRead(userId, fileObj);
+
+        // Accept ranges header
+        response.setHeader("Accept-Ranges", "bytes");
         
-        streamByteRange(request, response, serveContent, fileObj, range);
+        serveFile(request, response, serveContent, fileObj);
     }
 
-    private void streamByteRange(HttpServletRequest request, HttpServletResponse response, boolean serveContent, File fileObj, Range range) 
+    private void serveFile(HttpServletRequest request, HttpServletResponse response, boolean serveContent, File fileObj) 
     throws IOException
     {
-        
-        BufferedInputStream is = null;
-        try {
-            FileInputStream fis = new FileInputStream(fileObj);
-            is = new BufferedInputStream(fis);
-            
-            long contentLength = fileObj.length();
-            if (range != null) {
-                contentLength = range.end - range.start + 1;
-            }
-
-            String filename = fileObj.getName().toLowerCase();
-            response.setHeader("Content-disposition", "inline; filename=\"" + filename + "\"");
-            //TODO: need support for ETags, Expires, 
-            response.setHeader("Cache-Control", "no-store");
-            response.setHeader("Pragma", "no-cache");
-            //response.setDateHeader("Expires", 0);
-            response.setDateHeader("Last-Modified", fileObj.lastModified());
-            response.setHeader("Content-Length", "" + contentLength);
-            if (filename.endsWith(".html") || filename.endsWith(".htm")){
-                response.setHeader("Content-Type", "text/html"); 
-            }
-            if (range != null) {
-                response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
-                response.addHeader("Content-Range", "bytes "
-                        + range.start
-                        + "-" + range.end + "/"
-                        + range.length); 
-            }
-            
-            if (serveContent) {
-                ServletOutputStream os = response.getOutputStream();
-                long start = 0;
-                long end = fileObj.length() - 1L;
-                if (range != null) {
-                    start = range.start;
-                    end = range.end;
-                }
-                copyRange(is, os, start, end);
-            }
-        }
-        finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } 
-                catch (IOException x) {
-                }
-            }
-        }
+        FileDownloader.serveFile(this.getServletContext(), request, response, serveContent, fileObj);    
     }
 
+    /**
+     * Check permissions for the given file. This is implemented based on the rules for file access circa GP 3.3.2.
+     * Note: These rules will change as we make improvements to how server file paths are managed.
+     * 
+     * @param userid, the current user.
+     * @param fileObj, a file on the server's file system.
+     * @return true iff the current user has permission to read the file.
+     */
+    private boolean canRead(String userid, File fileObj) {
+        //is the current user an admin?
+        //is it in the user's web uploads path?
+        //is it in the user's soap uploads path?
+        //is it a job result file for a job which the user can read?
+        return true;
+    }
+    
+    
     /**
      * Authenticate the username:password pair from the request header.
      * 
      * @param request
      * @return the username or null if the client is not (yet) authorized.
      */
-    private String basicAuth(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    private String basicAuth(HttpServletRequest request, HttpServletResponse response) throws IOException { 
+        //for debugging
+        String userAgent = request.getHeader("User-Agent");
+
         //bypass basicauth if the current session already has an authorized user
         String userId = LoginManager.instance().getUserIdFromSession(request);
         if (userId != null) {
@@ -203,6 +138,7 @@ public class DataServlet extends HttpServlet implements Servlet {
         }
         
         boolean allow = false;
+
         // Get Authorization header
         String auth = request.getHeader("Authorization");
         String[] up = getUsernamePassword(auth);
@@ -272,168 +208,6 @@ public class DataServlet extends HttpServlet implements Servlet {
         up[0] = username;
         up[1] = passwordStr;
         return up;
-    }
-    
-    
-    //------ based on the Tomcat 5.5.33 source code, DefaultServlet.java ----
-    /* Licensed to the Apache Software Foundation (ASF) under one or more 
-     * contributor license agreements under the Apache License, Version 2.0
-     * 
-     *     http://www.apache.org/licenses/LICENSE-2.0)
-     *  
-     *  Notice: this code has been altered from the original source.
-     */
-    /**
-     * Parse the range header, based on code in Tomcat 5.5.33 DefaultServlet.
-     *
-     * @param request The servlet request we are processing
-     * @param response The servlet response we are creating
-     * @return List<Range>, an empty list means use the FULL range, a null means an error occurred and a ERROR response was sent
-     */
-    protected List<Range> parseRange(HttpServletRequest request, HttpServletResponse response, long fileLength)
-    throws IOException 
-    {
-        // Retrieving the range header (if any is specified)
-        String rangeHeader = request.getHeader("Range");
-        if (rangeHeader == null) {
-            return Collections.emptyList();
-        }
-
-        if (!rangeHeader.startsWith("bytes")) {
-            response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
-            return null;
-        }
-
-        rangeHeader = rangeHeader.substring(6);
-
-        // list of all the ranges which are successfully parsed.
-        List<Range> result = new ArrayList<Range>();
-        StringTokenizer commaTokenizer = new StringTokenizer(rangeHeader, ",");
-
-        // Parsing the range list
-        while (commaTokenizer.hasMoreTokens()) {
-            String rangeDefinition = commaTokenizer.nextToken().trim();
-
-            Range currentRange = new Range();
-            currentRange.length = fileLength;
-
-            int dashPos = rangeDefinition.indexOf('-');
-
-            if (dashPos == -1) {
-                response.addHeader("Content-Range", "bytes */" + fileLength);
-                response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
-                return null;
-            }
-
-            if (dashPos == 0) {
-                try {
-                    long offset = Long.parseLong(rangeDefinition);
-                    currentRange.start = fileLength + offset;
-                    currentRange.start = Math.max(0, currentRange.start);
-                    currentRange.end = fileLength - 1;
-                } 
-                catch (NumberFormatException e) {
-                    response.addHeader("Content-Range", "bytes */" + fileLength);
-                    response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
-                    return null;
-                }
-            } 
-            else {
-                try {
-                    currentRange.start = Long.parseLong(rangeDefinition.substring(0, dashPos));
-                    if (dashPos < rangeDefinition.length() - 1) {
-                        currentRange.end = Long.parseLong(rangeDefinition.substring(dashPos + 1, rangeDefinition.length()));
-                    }
-                    else {
-                        currentRange.end = fileLength - 1;
-                    }
-                } 
-                catch (NumberFormatException e) {
-                    response.addHeader("Content-Range", "bytes */" + fileLength);
-                    response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
-                    return null;
-                }
-            }
-
-            if (!currentRange.validate()) {
-                response.addHeader("Content-Range", "bytes */" + fileLength);
-                response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
-                return null;
-            }
-
-            result.add(currentRange);
-        }
-
-        return result;
-    }
-    
-    /**
-     * Copy the contents of the specified input stream to the specified
-     * output stream, and ensure that both streams are closed before returning
-     * (even in the face of an exception).
-     *
-     * @param istream The input stream to read from
-     * @param ostream The output stream to write to
-     * @param start Start of the range which will be copied
-     * @param end End of the range which will be copied
-     * @return Exception which occurred during processing
-     */
-    protected IOException copyRange(InputStream istream, ServletOutputStream ostream, long start, long end) {
-        try {
-            istream.skip(start);
-        } 
-        catch (IOException e) {
-            return e;
-        }
-
-        IOException exception = null;
-        long bytesToRead = end - start + 1;
-        final int BUFSIZE = 2048;
-        final byte buffer[] = new byte[BUFSIZE];
-        int len = buffer.length;
-        while ( (bytesToRead > 0) && (len >= buffer.length)) {
-            try {
-                len = istream.read(buffer);
-                if (bytesToRead >= len) {
-                    ostream.write(buffer, 0, len);
-                    bytesToRead -= len;
-                } 
-                else {
-                    ostream.write(buffer, 0, (int) bytesToRead);
-                    bytesToRead = 0;
-                }
-            } 
-            catch (IOException e) {
-                exception = e;
-                len = -1;
-            }
-            if (len < buffer.length) {
-                break;
-            }
-        }
-        return exception;
-    }
-
-    // ------------------------------------------------------ Range Inner Class
-
-
-    protected class Range {
-        public long start;
-        public long end;
-        public long length;
-
-        public boolean validate() {
-            if (end >= length) {
-                end = length - 1;
-            }
-            return ( (start >= 0) && (end >= 0) && (start <= end) && (length > 0) );
-        }
-
-        public void recycle() {
-            start = 0;
-            end = 0;
-            length = 0;
-        }
     }
 
 }

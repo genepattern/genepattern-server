@@ -205,8 +205,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
             return;
         }
         File fileObj = new File(rootJobDir, jobNumber + File.separator + file);
-        //serveFile(request, response, serveContent, fileObj);
-        JobResultsDownloader.serveFile(this.getServletContext(), request, response, serveContent, fileObj);
+        FileDownloader.serveFile(this.getServletContext(), request, response, serveContent, fileObj);
     }
     
     /**

@@ -20,7 +20,13 @@ import org.apache.log4j.Logger;
 /**
  * Helper class for downloading job results files.
  * 
+ * @deprecated - Use FileDownloader instead.
+ * 
  * @author pcarr
+ * 
+ * References:
+ *     The FileServlet developed by Balusc implements ETag and gzip.
+ *     http://balusc.blogspot.com/2009/02/fileservlet-supporting-resume-and.html
  */
 public class JobResultsDownloader {
     private static Logger log = Logger.getLogger(JobResultsDownloader.class);
@@ -64,7 +70,6 @@ public class JobResultsDownloader {
     private static void streamByteRange(ServletContext context, HttpServletRequest request, HttpServletResponse response, boolean serveContent, File fileObj, Range range) 
     throws IOException
     {
-        
         BufferedInputStream is = null;
         try {
             FileInputStream fis = new FileInputStream(fileObj);
@@ -84,7 +89,8 @@ public class JobResultsDownloader {
                     filename = filename.substring(idx);
                 }
             }
-            
+
+            response.reset();
             response.setHeader("Content-disposition", "inline; filename=\"" + filename + "\"");
             //TODO: need support for ETags, Expires, 
             response.setHeader("Cache-Control", "no-store");

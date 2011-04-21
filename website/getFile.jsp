@@ -1,6 +1,7 @@
 <%@ page
 import="org.genepattern.server.webservice.server.DirectoryManager,
         org.genepattern.server.PermissionsHelper,
+        org.genepattern.server.webapp.FileDownloader,
         org.genepattern.server.webapp.jsf.AuthorizationHelper,
         org.genepattern.util.GPConstants, 
         java.io.BufferedInputStream, 
@@ -107,38 +108,10 @@ import="org.genepattern.server.webservice.server.DirectoryManager,
         ((HttpServletResponse) response).sendError(HttpServletResponse.SC_NOT_FOUND);
         return;
     }
-    String name = in.getName();
-    //handle special case for Axis
-    if (name.startsWith("Axis")) {
-        int idx = name.indexOf(".att_");
-        if (idx >= 0) {
-            idx += ".att_".length();
-            name = name.substring(idx);
-        }
-    }
-    response.setHeader("Content-disposition", "inline; filename=\"" + name + "\"");
-    response.setHeader("Content-Type", "application/octet-stream");
-    response.setHeader("Cache-Control", "no-store"); // HTTP 1.1 cache control
-    response.setHeader("Pragma", "no-cache");         // HTTP 1.0 cache control
-    response.setDateHeader("Expires", 0);
-    response.setDateHeader("Last-Modified", in.lastModified());
-    response.setHeader("Content-Length", "" + in.length());
 
-    OutputStream os = response.getOutputStream();
-    InputStream is = null;
-    try {
-        is = new BufferedInputStream(new FileInputStream(in));
-        byte[] b = new byte[10000];
-        int bytesRead = -1;
-        while ((bytesRead = is.read(b)) != -1) {
-            os.write(b, 0, bytesRead);
-        }
-    } 
-    finally {
-        if (is != null) {
-            is.close();
-        }
-    }
+    //use same downloader as JobResultsServlet
+    boolean serveContent = true;
+    FileDownloader.serveFile(this.getServletContext(), request, response, serveContent, in);
     out.clear();
     out = pageContext.pushBody();
 %>
