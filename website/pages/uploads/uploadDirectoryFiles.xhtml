@@ -35,7 +35,7 @@
            onmouseover="MM_swapImage('Image_#{uploadDir.name}_#{aFile.encodedFilename}','','/gp/images/smallOptions2.gif',2)" 
            onmouseout="MM_swapImgRestore();"/>
       <br />
-      <span>#{aFile.formattedModified}</span> <h:outputText rendered="#{aFile.copies > 1}"> (#{aFile.copies Copies})</h:outputText>
+      <span>#{aFile.formattedModified}</span> <h:outputText rendered="#{aFile.copies > 1}"> (#{aFile.copies} Copies)</h:outputText>
 	  <br />
     </t:dataList>
   </ui:composition>
