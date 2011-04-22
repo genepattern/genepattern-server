@@ -286,7 +286,7 @@ function showFileInput(id) {
 }
 </style>
 		<h:outputText>
-			<rich:tabPanel switchType="client" selectedTab="#{uploadedFilesBean.selectedTab}">
+			<rich:tabPanel switchType="ajax" selectedTab="#{uploadedFilesBean.selectedTab}">
 				<rich:tab label="Recent Jobs" id="recentJobs" immediate="true">
 					<ui:include src="recentJobs.xhtml" />
 				</rich:tab>
