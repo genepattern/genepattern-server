@@ -3,12 +3,16 @@ package org.genepattern.server.webapp.uploads;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.genepattern.server.webapp.jsf.KeyValuePair;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
 
 public class UploadFileInfo {
     
+    static final String FILEMAP = "UPLOAD_FILE_INFO_MAP";
     static SimpleDateFormat formatter = new SimpleDateFormat();
     static {
         formatter.applyPattern("MMM dd hh:mm:ss aaa");
@@ -18,7 +22,6 @@ public class UploadFileInfo {
     private String path;
     private String url;
     private String genePatternUrl;
-    private List<KeyValuePair> moduleInputParameters;
     private List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
     private long modified;
     boolean directUpload = false;
@@ -107,12 +110,27 @@ public class UploadFileInfo {
     }
 
     public List<KeyValuePair> getModuleInputParameters() {
-        return moduleInputParameters;
+        Map<String, List<KeyValuePair>> fileMap = (Map<String, List<KeyValuePair>>) UIBeanHelper.getSession().getAttribute(FILEMAP);
+        
+        // Lazily create if the map is null
+        if (fileMap == null) {
+            fileMap = new HashMap<String, List<KeyValuePair>>();
+            UIBeanHelper.getSession().setAttribute(FILEMAP, fileMap);
+        }
+        
+        return fileMap.get(this.getPath() + "/" + this.getFilename());
     }
 
-    public void setModuleInputParameters(
-            List<KeyValuePair> moduleInputParameters) {
-        this.moduleInputParameters = moduleInputParameters;
+    public void setModuleInputParameters(List<KeyValuePair> moduleInputParameters) {
+        Map<String, List<KeyValuePair>> fileMap = (Map<String, List<KeyValuePair>>) UIBeanHelper.getSession().getAttribute(FILEMAP);
+        
+        // Lazily create if the map is null
+        if (fileMap == null) {
+            fileMap = new HashMap<String, List<KeyValuePair>>();
+            UIBeanHelper.getSession().setAttribute(FILEMAP, fileMap);
+        }
+        
+        fileMap.put(this.getPath() + "/" + this.getFilename(), moduleInputParameters);
     }
 
     public List<KeyValuePair> getModuleMenuItems() {
