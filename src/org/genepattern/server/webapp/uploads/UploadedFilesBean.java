@@ -26,12 +26,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.webapp.FileDownloader;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -151,22 +156,26 @@ public class UploadedFilesBean {
 
     }
 
-    public void saveFileLocally(ActionEvent ae) {
-        String filenameParam = UIBeanHelper.getRequest().getParameter("filename");
-        String dirnameParam = UIBeanHelper.getRequest().getParameter("path");
-        log.debug("Save file locally " + dirnameParam + "/" + filenameParam);
-
+    public void saveFileLocally(ActionEvent ae) { 
+        String path = UIBeanHelper.getRequest().getParameter("path");
+        File fileObj = new File(path);
+        
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = facesContext.getExternalContext();
+        ServletContext servletContext = (ServletContext) externalContext.getContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        HttpServletRequest request = (HttpServletRequest) externalContext.getRequest();
+        
+        boolean serveContent = true;
+        
         try {
-            String url = getFileURL(dirnameParam, filenameParam);
-            HttpServletResponse response = UIBeanHelper.getResponse();
-            response.sendRedirect(url.toString());
-
+            FileDownloader.serveFile(servletContext, request, response, serveContent, FileDownloader.ContentDisposition.ATTACHMENT, fileObj);
         }
-        catch (IOException ioe) {
-            ioe.printStackTrace();
+        catch (IOException e) {
+            log.error("Error downloading file to client, file="+fileObj.getPath(), e);
+            UIBeanHelper.setErrorMessage("Error downloading "+fileObj.getName()+": "+e.getLocalizedMessage());
         }
-
-        this.setMessageToUser("Saved from uploads " + dirnameParam + "/" + filenameParam);
+        facesContext.responseComplete();
     }
 
     /**
@@ -291,7 +300,7 @@ public class UploadedFilesBean {
                     }
                     if (fList != null) {
                         for (File aFile : f.listFiles()) {
-                            UploadFileInfo ufi = new UploadFileInfo(aFile.getName());
+                            UploadFileInfo ufi = new UploadFileInfo(aFile);
                             ufi.setUrl(getFileURL(f.getName(), encodeFilename(aFile.getName())));
                             ufi.setPath(encodeFilename(f.getName()));
                             ufi.setGenePatternUrl(getGenePatternFileURL(f.getName(), encodeFilename(aFile.getName())));

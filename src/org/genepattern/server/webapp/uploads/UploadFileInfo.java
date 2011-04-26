@@ -1,5 +1,6 @@
 package org.genepattern.server.webapp.uploads;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -18,6 +19,7 @@ public class UploadFileInfo {
         formatter.applyPattern("MMM dd hh:mm:ss aaa");
     }
 
+    private File file;
     private String filename;
     private String path;
     private String url;
@@ -68,8 +70,15 @@ public class UploadFileInfo {
         this.modified = modified;
     }
 
-    public UploadFileInfo(String aFileName) {
-        this.filename = aFileName;
+    public UploadFileInfo(File file) {
+        this.file = file;
+        if (file != null) {
+            this.filename = file.getName();
+        }
+    }
+    
+    public File getFile() {
+        return file;
     }
 
     public String getFilename() {
