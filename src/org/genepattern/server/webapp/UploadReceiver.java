@@ -55,7 +55,7 @@ public class UploadReceiver extends HttpServlet {
         }
     }
 
-    private void loadPartition(HttpServletRequest request, List<FileItem> postParameters, PrintWriter responseWriter, boolean last) throws Exception {
+    protected void loadPartition(HttpServletRequest request, List<FileItem> postParameters, PrintWriter responseWriter, boolean last) throws Exception {
         String writeDirectory = getWriteDirectory(request, postParameters);
         Iterator<FileItem> it = postParameters.iterator();
         while (it.hasNext()) {
@@ -74,7 +74,7 @@ public class UploadReceiver extends HttpServlet {
         }
     }
 
-    private void loadFile(HttpServletRequest request, List<FileItem> postParameters, PrintWriter responseWriter) throws Exception {
+    protected void loadFile(HttpServletRequest request, List<FileItem> postParameters, PrintWriter responseWriter) throws Exception {
         String writeDirectory = getWriteDirectory(request, postParameters);
         Iterator<FileItem> it = postParameters.iterator();
         while (it.hasNext()) {
@@ -87,7 +87,7 @@ public class UploadReceiver extends HttpServlet {
         }
     }
 
-    private String getParameter(List<FileItem> parameters, String param) {
+    protected String getParameter(List<FileItem> parameters, String param) {
         Iterator<FileItem> it = parameters.iterator();
         while (it.hasNext()) {
             FileItem postParameter = it.next();
@@ -100,7 +100,7 @@ public class UploadReceiver extends HttpServlet {
         return null;
     }
 
-    private String getWriteDirectory(HttpServletRequest request, List<FileItem> postParameters) throws IOException {
+    protected String getWriteDirectory(HttpServletRequest request, List<FileItem> postParameters) throws IOException {
         String paramId = request.getParameter("paramId") != null ? request.getParameter("paramId") : "writeDirectory";
         String writeDirectory = (String) request.getSession().getAttribute(paramId);
         File directory = null;
