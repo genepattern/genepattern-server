@@ -34,6 +34,9 @@ default.properties:
 
     # Turn off input file displays
     display.input.results: false
+
+    # for the file downloader, set the max file size (in bytes) to display inline in the web browser
+    max.inline.size: 10000000
 executors:
     # default executor for all jobs, it is included in GenePattern
     RuntimeExec:

@@ -15,15 +15,15 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
+
+
 /**
  * File Download utility based on BalusC FileServlet, which is very similar to Tomcat DefaultServlet.
- * 
+ * This code is a modification of the code posted by BalusC with customizations for GenePattern.
  * See: http://balusc.blogspot.com/2009/02/fileservlet-supporting-resume-and.html
  * See also: Tomcat source code, DefaultServlet.java, (I based my edits on v. 5.5.33).
- * 
- * This code is a slight modification of the code posted by BalusC, with the only change being
- * to make the file downloader a utility method which can be called by different servlets.
- * I needed this because we have different rules for mapping URLs to locations on the server's file system.
  * 
  * @author pcarr
  * 
@@ -34,17 +34,48 @@ public class FileDownloader {
     private static final int DEFAULT_BUFFER_SIZE = 10240; // ..bytes = 10KB.
     private static final long DEFAULT_EXPIRE_TIME = 604800000L; // ..ms = 1 week.
     private static final String MULTIPART_BOUNDARY = "MULTIPART_BYTERANGES";
+    
+    public enum ContentDisposition {
+        INLINE,
+        ATTACHMENT,
+    }
+    
+    private static int getMaxInlineSize() {
+        String userId = UIBeanHelper.getUserId();
+        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
+        int i = ServerConfiguration.instance().getGPIntegerProperty(userContext, "max.inline.size", 10000000);
+        return i;
+    }
+    
+    /*
+     * The headers were set in the JobResultsServlet in GP 3.3.1 and earlier.
+     
+        httpServletResponse.setHeader("Content-disposition", "inline; filename=\"" + fileObj.getName() + "\"");
+        httpServletResponse.setHeader("Cache-Control", "no-store");
+        httpServletResponse.setHeader("Pragma", "no-cache");
+        httpServletResponse.setDateHeader("Expires", 0);
+        httpServletResponse.setDateHeader("Last-Modified", fileObj.lastModified());
+        httpServletResponse.setHeader("Content-Length", "" + fileObj.length());
 
+        if (lcFileName.endsWith(".html") || lcFileName.endsWith(".htm")){
+            httpServletResponse.setHeader("Content-Type", "text/html"); 
+        }
+
+     */
     public static void serveFile(ServletContext context, HttpServletRequest request, HttpServletResponse response, boolean content, File file) throws IOException {
+        serveFile(context, request, response, content, ContentDisposition.INLINE, file);
+    }
+
+    public static void serveFile(ServletContext context, HttpServletRequest request, HttpServletResponse response, boolean content, ContentDisposition contentDisposition, File file) 
+    throws IOException
+    {
         // Check if file actually exists in filesystem.
         if (file == null || !file.exists()) {
-            // Do your thing if the file appears to be non-existing.
-            // Throw an exception, or send 404, or show default/warning page, or just ignore it.
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
 
-        // Prepare some variables. The ETag is an unique identifier of the file.
+        // Prepare some variables. 
         String fileName = file.getName();
  
         //TODO: GP specific hack
@@ -57,10 +88,10 @@ public class FileDownloader {
             }
         }
         
+        // The ETag is an unique identifier of the file.
         long length = file.length();
         long lastModified = file.lastModified();
         String eTag = fileName + "_" + length + "_" + lastModified;
-
 
         // Validate request headers for caching ---------------------------------------------------
 
@@ -163,40 +194,62 @@ public class FileDownloader {
 
         // Get content type by file name and set default GZIP support and content disposition.
         String contentType = context.getMimeType(fileName);
-        boolean acceptsGzip = false;
-        String disposition = "inline";
-
         // If content type is unknown, then set the default value.
         // For all content types, see: http://www.w3schools.com/media/media_mimeref.asp
         // To add new content types, add new mime-mapping entry in web.xml.
-        if (contentType == null) {
-            contentType = "application/octet-stream";
-        }
+        // TODO: commented out to be compatible with GP 3.3.1 and earlier
+        //    The correct thing to do is to include mime-types for all of the known data types such as gct, res, odf, et cetera
+        //    Setting to 'application/octet-stream' for the unknowns, such as gct, is causing some web clients to download the gct
+        //    file rather than display inline.
+        //if (contentType == null) {
+        //    contentType = "application/octet-stream";
+        //}
 
         // If content type is text, then determine whether GZIP content encoding is supported by
-        // the browser and expand content type with the one and right character encoding.
-        if (contentType.startsWith("text")) {
+        // the client and expand content type with the one and right character encoding.
+        boolean acceptsGzip = false;
+        if (contentType != null && contentType.startsWith("text")) {
             String acceptEncoding = request.getHeader("Accept-Encoding");
             acceptsGzip = acceptEncoding != null && accepts(acceptEncoding, "gzip");
-            contentType += ";charset=UTF-8";
+            contentType += ";charset=UTF-8"; 
+        }
+        
+        // determine content disposition
+        // use a rule, unless explicitly specified by the contentDisposition arg, 
+        String disposition = "inline";
+        if (contentDisposition != null) {
+            disposition = contentDisposition.toString().toLowerCase();
         } 
-
-        // Else, expect for images, determine content disposition. If content type is supported by
-        // the browser, then set to inline, else attachment which will pop a 'save as' dialogue.
-        else if (!contentType.startsWith("image")) {
-            String accept = request.getHeader("Accept");
-            disposition = accept != null && accepts(accept, contentType) ? "inline" : "attachment";
+        if (!"attachment".equals(disposition)) {
+            // Except for images, determine content disposition. 
+            //If content type is supported by the browser, then set to inline, else attachment which will pop a 'save as' dialogue.
+            if (contentType != null && !contentType.startsWith("image")) {
+                String accept = request.getHeader("Accept");
+                disposition = accept != null && accepts(accept, contentType) ? "inline" : "attachment";
+            }
+        }
+        
+        //special-case for large input files
+        int maxInlineSize = getMaxInlineSize();
+        if (file.length() > maxInlineSize) {
+            disposition = "attachment";
+        }
+        
+        if (contentType == null && "attachment".equals(disposition)) {
+            contentType = "application/octet-stream";
         }
 
         // Initialize response.
         response.reset();
         response.setBufferSize(DEFAULT_BUFFER_SIZE);
-        response.setHeader("Content-Disposition", disposition + ";filename=\"" + fileName + "\"");
-        response.setHeader("Accept-Ranges", "bytes");
-        response.setHeader("ETag", eTag);
         response.setDateHeader("Last-Modified", lastModified);
+        response.setHeader("ETag", eTag);
+        response.setHeader("Accept-Ranges", "bytes");
         response.setDateHeader("Expires", System.currentTimeMillis() + DEFAULT_EXPIRE_TIME);
-
+        response.setHeader("Content-Disposition", disposition + "; filename=\"" + fileName + "\"");
+        if (contentType != null) {
+            response.setContentType(contentType);
+        }
 
         // Send requested file (part(s)) to client ------------------------------------------------
 
@@ -210,32 +263,39 @@ public class FileDownloader {
             output = response.getOutputStream();
 
             if (ranges.isEmpty() || ranges.get(0) == full) {
-
                 // Return full file.
                 Range r = full;
-                response.setContentType(contentType);
+                if (contentType != null) {
+                    response.setContentType(contentType);
+                }
                 response.setHeader("Content-Range", "bytes " + r.start + "-" + r.end + "/" + r.total);
+                
+                if (acceptsGzip) {
+                    // The browser accepts GZIP, so GZIP the content.
+                    response.setHeader("Content-Encoding", "gzip");
+                }
+                else {
+                    // Content length is not directly predictable in case of GZIP.
+                    // So only add it if there is no means of GZIP, else browser will hang.
+                    response.setHeader("Content-Length", String.valueOf(r.length));
+                }
 
                 if (content) {
                     if (acceptsGzip) {
                         // The browser accepts GZIP, so GZIP the content.
-                        response.setHeader("Content-Encoding", "gzip");
                         output = new GZIPOutputStream(output, DEFAULT_BUFFER_SIZE);
-                    } else {
-                        // Content length is not directly predictable in case of GZIP.
-                        // So only add it if there is no means of GZIP, else browser will hang.
-                        response.setHeader("Content-Length", String.valueOf(r.length));
-                    }
-
+                    } 
                     // Copy full range.
                     copy(input, output, r.start, r.length);
+                    response.setStatus(HttpServletResponse.SC_OK); // 200.
                 }
-
-            } else if (ranges.size() == 1) {
-
+            } 
+            else if (ranges.size() == 1) {
                 // Return single part of file.
                 Range r = ranges.get(0);
-                response.setContentType(contentType);
+                if (contentType != null) {
+                    response.setContentType(contentType);
+                }
                 response.setHeader("Content-Range", "bytes " + r.start + "-" + r.end + "/" + r.total);
                 response.setHeader("Content-Length", String.valueOf(r.length));
                 response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT); // 206.
@@ -244,9 +304,8 @@ public class FileDownloader {
                     // Copy single part range.
                     copy(input, output, r.start, r.length);
                 }
-
-            } else {
-
+            } 
+            else {
                 // Return multiple parts of file.
                 response.setContentType("multipart/byteranges; boundary=" + MULTIPART_BOUNDARY);
                 response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT); // 206.
@@ -260,7 +319,9 @@ public class FileDownloader {
                         // Add multipart boundary and header fields for every range.
                         sos.println();
                         sos.println("--" + MULTIPART_BOUNDARY);
-                        sos.println("Content-Type: " + contentType);
+                        if (contentType != null) {
+                            sos.println("Content-Type: " + contentType);
+                        }
                         sos.println("Content-Range: bytes " + r.start + "-" + r.end + "/" + r.total);
 
                         // Copy single part range of multi part range.
@@ -272,7 +333,8 @@ public class FileDownloader {
                     sos.println("--" + MULTIPART_BOUNDARY + "--");
                 }
             }
-        } finally {
+        } 
+        finally {
             // Gently close streams.
             close(output);
             close(input);
@@ -341,7 +403,8 @@ public class FileDownloader {
             while ((read = input.read(buffer)) > 0) {
                 output.write(buffer, 0, read);
             }
-        } else {
+        }
+        else {
             // Write partial range.
             input.seek(start);
             long toRead = length;
@@ -349,7 +412,8 @@ public class FileDownloader {
             while ((read = input.read(buffer)) > 0) {
                 if ((toRead -= read) > 0) {
                     output.write(buffer, 0, read);
-                } else {
+                } 
+                else {
                     output.write(buffer, 0, (int) toRead + read);
                     break;
                 }
