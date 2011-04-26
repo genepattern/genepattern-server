@@ -72,8 +72,7 @@ public class JobBean {
 
     private List<JobResultsWrapper> recentJobs;
     private List<JobResultsWrapper> allJobs;
-    private Map<String, List<KeyValuePair>> kindToInputParameters = Collections
-            .emptyMap();
+    private Map<String, List<KeyValuePair>> kindToInputParameters = Collections.emptyMap();
 
     /** Number of job results shown per page */
     private Integer _pageSize;
@@ -81,8 +80,7 @@ public class JobBean {
     private int getPageSize() {
         if (_pageSize == null) {
             try {
-                _pageSize = Integer.parseInt(System.getProperty(
-                        "job.results.per.page", "20"));
+                _pageSize = Integer.parseInt(System.getProperty("job.results.per.page", "20"));
             }
             catch (NumberFormatException nfe) {
                 _pageSize = 20;
@@ -125,10 +123,8 @@ public class JobBean {
             HttpServletRequest request = UIBeanHelper.getRequest();
             String jobNumber = null;
             try {
-                jobNumber = UIBeanHelper.decode(request
-                        .getParameter("jobNumber"));
-                String jobNumberOverride = request
-                        .getParameter("jobNumberOverride");
+                jobNumber = UIBeanHelper.decode(request.getParameter("jobNumber"));
+                String jobNumberOverride = request.getParameter("jobNumberOverride");
                 if (jobNumberOverride != null) {
                     jobNumber = jobNumberOverride;
                 }
@@ -143,8 +139,7 @@ public class JobBean {
 
             // TODO prompt user for name
             String pipelineName = "job" + jobNumber;
-            String lsid = new LocalAnalysisClient(UIBeanHelper.getUserId())
-                    .createProvenancePipeline(jobNumber, pipelineName);
+            String lsid = new LocalAnalysisClient(UIBeanHelper.getUserId()).createProvenancePipeline(jobNumber, pipelineName);
             if (lsid == null) {
                 UIBeanHelper.setErrorMessage("Unable to create pipeline.");
                 return;
@@ -173,8 +168,7 @@ public class JobBean {
      * @param event
      */
     public void delete(ActionEvent event) {
-        String jobNumberParam = UIBeanHelper.decode(UIBeanHelper.getRequest()
-                .getParameter("jobNumber"));
+        String jobNumberParam = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber"));
         try {
             int jobNumber = Integer.parseInt(jobNumberParam);
             deleteJob(jobNumber);
@@ -191,48 +185,36 @@ public class JobBean {
     }
 
     public void deleteFile(ActionEvent event) {
-        String value = UIBeanHelper.decode(UIBeanHelper.getRequest()
-                .getParameter("jobFile"));
+        String value = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobFile"));
         deleteFile(value);
         resetJobs();
     }
 
     public String getTaskCode() {
         try {
-            String language = UIBeanHelper.decode(UIBeanHelper.getRequest()
-                    .getParameter("language"));
-            String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest()
-                    .getParameter("taskLSID"));
+            String language = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("language"));
+            String lsid = UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("taskLSID"));
 
-            IAdminClient adminClient = new LocalAdminClient(
-                    UIBeanHelper.getUserId());
+            IAdminClient adminClient = new LocalAdminClient(UIBeanHelper.getUserId());
             TaskInfo taskInfo = adminClient.getTask(lsid);
             if (taskInfo == null) {
                 return "Module not found";
             }
             ParameterInfo[] parameters = taskInfo.getParameterInfoArray();
-            ParameterInfo[] jobParameters = new ParameterInfo[parameters != null ? parameters.length
-                    : 0];
+            ParameterInfo[] jobParameters = new ParameterInfo[parameters != null ? parameters.length : 0];
 
             if (parameters != null) {
                 int i = 0;
                 for (ParameterInfo p : parameters) {
-                    String value = UIBeanHelper.getRequest().getParameter(
-                            p.getName());
-                    jobParameters[i++] = new ParameterInfo(p.getName(), value,
-                            "");
+                    String value = UIBeanHelper.getRequest().getParameter(p.getName());
+                    jobParameters[i++] = new ParameterInfo(p.getName(), value, "");
                 }
             }
 
-            JobInfo jobInfo = new JobInfo(-1, -1, null, null, null,
-                    jobParameters, UIBeanHelper.getUserId(), lsid,
-                    taskInfo.getName());
-            boolean isVisualizer = TaskInfo.isVisualizer(taskInfo
-                    .getTaskInfoAttributes());
-            AnalysisJob job = new AnalysisJob(UIBeanHelper.getServer(),
-                    jobInfo, isVisualizer);
-            return CodeGeneratorUtil.getCode(language, job, taskInfo,
-                    adminClient);
+            JobInfo jobInfo = new JobInfo(-1, -1, null, null, null, jobParameters, UIBeanHelper.getUserId(), lsid, taskInfo.getName());
+            boolean isVisualizer = TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes());
+            AnalysisJob job = new AnalysisJob(UIBeanHelper.getServer(), jobInfo, isVisualizer);
+            return CodeGeneratorUtil.getCode(language, job, taskInfo, adminClient);
         }
         catch (WebServiceException e) {
             log.error("Error getting code.", e);
@@ -252,8 +234,7 @@ public class JobBean {
     public boolean isShowExecutionLogs() {
         if (_showExecutionLogs == null) {
             Set<UserProp> userProps = getUserProps();
-            this._showExecutionLogs = Boolean.valueOf(UserDAO.getPropertyValue(
-                    userProps, "showExecutionLogs", String.valueOf("false")));
+            this._showExecutionLogs = Boolean.valueOf(UserDAO.getPropertyValue(userProps, "showExecutionLogs", String.valueOf("false")));
         }
         return _showExecutionLogs;
     }
@@ -292,15 +273,12 @@ public class JobBean {
 
     public String reload() {
         try {
-            int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper
-                    .getRequest().getParameter("jobNumber")));
+            int jobNumber = Integer.parseInt(UIBeanHelper.decode(UIBeanHelper.getRequest().getParameter("jobNumber")));
             AnalysisDAO ds = new AnalysisDAO();
             JobInfo reloadJob = ds.getJobInfo(jobNumber);
-            RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper
-                    .getManagedBean("#{runTaskBean}");
+            RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
             assert runTaskBean != null;
-            UIBeanHelper.getRequest().setAttribute("reloadJob",
-                    String.valueOf(reloadJob.getJobNumber()));
+            UIBeanHelper.getRequest().setAttribute("reloadJob", String.valueOf(reloadJob.getJobNumber()));
             runTaskBean.setTask(reloadJob.getTaskLSID());
         }
         catch (Throwable t) {
@@ -317,9 +295,8 @@ public class JobBean {
         String jobNumber3 = request.getParameter("jobNumberOverride");
         String jobNumber4 = request.getParameter("jnOverride");
 
-        System.out.println("SAVE on job #" + jobNumber2 + "  " + jobNumber3
-                + "  " + jobNumber4);
-        System.out.println("SAVE on file #" + jobFileName);
+        log.debug("SAVE on job #" + jobNumber2 + "  " + jobNumber3 + "  " + jobNumber4);
+        log.debug("SAVE on file #" + jobFileName);
 
         jobFileName = UIBeanHelper.decode(jobFileName);
         if (jobFileName == null || "".equals(jobFileName.trim())) {
@@ -327,11 +304,9 @@ public class JobBean {
             return;
         }
 
-        // parse jobFileName for <jobNumber> and <filename>, add support for
-        // directories
-        // from Job Summary page jobFileName="1/all_aml_test.preprocessed.gct"
-        // from Job Status page
-        // jobFileName="/gp/jobResults/1/all_aml_test.preprocessed.gct"
+        // parse jobFileName for <jobNumber> and <filename>, 
+        // add support for directories from Job Summary page jobFileName="1/all_aml_test.preprocessed.gct"
+        // from Job Status page jobFileName="/gp/jobResults/1/all_aml_test.preprocessed.gct"
         String contextPath = request.getContextPath();
         String pathToJobResults = contextPath + "/jobResults/";
         if (jobFileName.startsWith(pathToJobResults)) {
@@ -340,24 +315,20 @@ public class JobBean {
 
         int idx = jobFileName.indexOf('/');
         if (idx <= 0) {
-            log.error("Error saving file, invalid parameter, jobFileName="
-                    + jobFileName);
+            log.error("Error saving file, invalid parameter, jobFileName=" + jobFileName);
             return;
         }
         String jobNumber = jobFileName.substring(0, idx);
         String filename = jobFileName.substring(idx + 1);
-        File in = new File(GenePatternAnalysisTask.getJobDir(jobNumber),
-                filename);
+        File in = new File(GenePatternAnalysisTask.getJobDir(jobNumber), filename);
         if (!in.exists()) {
-            UIBeanHelper
-                    .setInfoMessage("File " + filename + " does not exist.");
+            UIBeanHelper.setInfoMessage("File " + filename + " does not exist.");
             return;
         }
         InputStream is = null;
         try {
             HttpServletResponse response = UIBeanHelper.getResponse();
-            response.setHeader("Content-Disposition", "attachment; filename="
-                    + in.getName() + ";");
+            response.setHeader("Content-Disposition", "attachment; filename=" + in.getName() + ";");
             response.setHeader("Content-Type", "application/octet-stream");
             response.setHeader("Cache-Control", "no-store"); // HTTP 1.1
             response.setHeader("Pragma", "no-cache"); // HTTP 1.0 cache
