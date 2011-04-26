@@ -258,7 +258,8 @@ public class GenePatternAnalysisTask {
     public enum JOB_TYPE {
         JOB,
         VISUALIZER,
-        PIPELINE
+        PIPELINE,
+        IGV
     };
 
     public enum INPUT_FILE_MODE {
@@ -676,6 +677,11 @@ public class GenePatternAnalysisTask {
         else if (taskInfo.isPipeline()) {
             jobType = JOB_TYPE.PIPELINE;
         }
+        else {
+            if ("IGV".equals(taskInfo.getName())) {
+                jobType = JOB_TYPE.IGV;
+            }
+        }
 
         int formalParamsLength = 0;
         ParameterInfo[] formalParams = taskInfo.getParameterInfoArray();
@@ -968,9 +974,10 @@ public class GenePatternAnalysisTask {
                             }
                         }
                     }
-                    if (isURL && jobType != JOB_TYPE.VISUALIZER && jobType != JOB_TYPE.PIPELINE) {
-                        //TODO: may need to revisit this as input urls are not working for pipelines after the rewrite 
+                    //if (isURL && jobType != JOB_TYPE.VISUALIZER && jobType != JOB_TYPE.PIPELINE && jobType != JOB_TYPE.IGV) {
+                    if (isURL && jobType == JOB_TYPE.JOB) {
                         //don't translate input urls for visualizers and pipelines
+                        //    including special-case for IGV
                         URI uri = null;
                         try {
                             uri = new URI(originalPath);
