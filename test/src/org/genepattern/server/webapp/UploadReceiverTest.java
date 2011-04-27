@@ -104,6 +104,8 @@ public class UploadReceiverTest extends TestCase {
         File file2 = new File(System.getProperty("java.io.tmpdir"), "test2.txt");
         assertTrue(file1.exists());
         assertTrue(file2.exists());
+        file1.delete();
+        file2.delete();
     }
     
     @Test
@@ -118,6 +120,8 @@ public class UploadReceiverTest extends TestCase {
         File file2 = new File(System.getProperty("java.io.tmpdir"), "test2.txt");
         assertTrue(file1.exists());
         assertTrue(file2.exists());
+        file1.delete();
+        file2.delete();
     }
     
     @Test
