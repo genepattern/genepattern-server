@@ -1,7 +1,6 @@
 package org.genepattern.server.webapp;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +9,7 @@ import javax.servlet.http.HttpSession;
 import org.apache.commons.fileupload.FileItem;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
 
@@ -17,15 +17,20 @@ import junit.framework.TestCase;
 
 public class UploadReceiverTest extends TestCase {
     
+    final static String TMPDIR = System.getProperty("java.io.tmpdir");
     UploadReceiver theTest = new UploadReceiver();
     Mockery context = new Mockery();
     
-    public UploadReceiverTest() {
-        
-    }
-    
     public static void main(String[] args) {
         JUnitCore.main("org.genepattern.server.webapp.UploadReceiverTest");
+    }
+    
+    @AfterClass
+    public void removeFiles() {
+        File file1 = new File(TMPDIR, "test.txt");
+        File file2 = new File(TMPDIR, "test2.txt");
+        file1.delete();
+        file2.delete();
     }
     
     private List<FileItem> buildTestParameterList() throws Exception {
@@ -38,7 +43,7 @@ public class UploadReceiverTest extends TestCase {
             allowing(item1).getFieldName(); will(returnValue("testField1"));
             allowing(item1).getString(); will(returnValue("testFalse1"));
             allowing(item1).getName(); will(returnValue("test.txt"));
-            allowing(item1).write(new File(System.getProperty("java.io.tmpdir"), "test.txt"));
+            allowing(item1).write(new File(TMPDIR, "test.txt"));
             allowing(item1).get(); will(returnValue(new byte[1]));
         }});
         list.add(item1);
@@ -59,7 +64,7 @@ public class UploadReceiverTest extends TestCase {
             allowing(item3).getFieldName(); will(returnValue("testField3"));
             allowing(item3).getString(); will(returnValue("testFalse3"));
             allowing(item3).getName(); will(returnValue("test2.txt"));
-            allowing(item3).write(new File(System.getProperty("java.io.tmpdir"), "test2.txt"));
+            allowing(item3).write(new File(TMPDIR, "test2.txt"));
             allowing(item3).get(); will(returnValue(new byte[1]));
         }});
         list.add(item3);
@@ -85,7 +90,7 @@ public class UploadReceiverTest extends TestCase {
         
         // Expectations
         context.checking(new Expectations() {{
-            allowing(session).getAttribute("1234"); will(returnValue(System.getProperty("java.io.tmpdir")));
+            allowing(session).getAttribute("1234"); will(returnValue(TMPDIR));
             allowing(session).getAttribute("userid"); will(returnValue("admin"));
         }});
         
@@ -100,12 +105,10 @@ public class UploadReceiverTest extends TestCase {
         
         theTest.loadFile(request, postParameters, responseWriter);
         
-        File file1 = new File(System.getProperty("java.io.tmpdir"), "test.txt");
-        File file2 = new File(System.getProperty("java.io.tmpdir"), "test2.txt");
+        File file1 = new File(TMPDIR, "test.txt");
+        File file2 = new File(TMPDIR, "test2.txt");
         assertTrue(file1.exists());
         assertTrue(file2.exists());
-        file1.delete();
-        file2.delete();
     }
     
     @Test
@@ -116,12 +119,10 @@ public class UploadReceiverTest extends TestCase {
         
         theTest.loadPartition(request, postParameters, responseWriter, true);
         
-        File file1 = new File(System.getProperty("java.io.tmpdir"), "test.txt");
-        File file2 = new File(System.getProperty("java.io.tmpdir"), "test2.txt");
+        File file1 = new File(TMPDIR, "test.txt");
+        File file2 = new File(TMPDIR, "test2.txt");
         assertTrue(file1.exists());
         assertTrue(file2.exists());
-        file1.delete();
-        file2.delete();
     }
     
     @Test
@@ -141,6 +142,6 @@ public class UploadReceiverTest extends TestCase {
         HttpServletRequest request = buildTestRequest();
         
         String dir = theTest.getWriteDirectory(request, params);
-        assertEquals(dir, System.getProperty("java.io.tmpdir"));
+        assertEquals(dir, TMPDIR);
     }
 }
