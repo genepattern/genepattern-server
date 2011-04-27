@@ -39,6 +39,7 @@ public class UploadReceiverTest extends TestCase {
             allowing(item1).getString(); will(returnValue("testFalse1"));
             allowing(item1).getName(); will(returnValue("test.txt"));
             allowing(item1).write(new File(System.getProperty("java.io.tmpdir"), "test.txt"));
+            allowing(item1).get(); will(returnValue(new byte[1]));
         }});
         list.add(item1);
         
@@ -59,6 +60,7 @@ public class UploadReceiverTest extends TestCase {
             allowing(item3).getString(); will(returnValue("testFalse3"));
             allowing(item3).getName(); will(returnValue("test2.txt"));
             allowing(item3).write(new File(System.getProperty("java.io.tmpdir"), "test2.txt"));
+            allowing(item3).get(); will(returnValue(new byte[1]));
         }});
         list.add(item3);
         
@@ -74,9 +76,6 @@ public class UploadReceiverTest extends TestCase {
             allowing(request).getSession(); will(returnValue(session));
             allowing(request).getParameter("paramId"); will(returnValue("1234"));
         }});
-        
-        //request.getSession().setAttribute("paramId", "1234");
-        //request.getSession().setAttribute("1234", "/writeDirectory");
 
         return request;
     }
@@ -101,14 +100,24 @@ public class UploadReceiverTest extends TestCase {
         
         theTest.loadFile(request, postParameters, responseWriter);
         
-        // Get the file to test
-        File file = new File(System.getProperty("java.io.tmpdir") + "");
-        assertEquals(file.getName(), file.getName()); // TODO: Replace with legit test
+        File file1 = new File(System.getProperty("java.io.tmpdir"), "test.txt");
+        File file2 = new File(System.getProperty("java.io.tmpdir"), "test2.txt");
+        assertTrue(file1.exists());
+        assertTrue(file2.exists());
     }
     
     @Test
-    public void testReceiveLargeFile() {
-        // TODO: Implement
+    public void testReceiveLargeFile() throws Exception {
+        HttpServletRequest request = buildTestRequest();
+        List<FileItem> postParameters = buildTestParameterList();
+        PrintWriter responseWriter = new PrintWriter(System.out);
+        
+        theTest.loadPartition(request, postParameters, responseWriter, true);
+        
+        File file1 = new File(System.getProperty("java.io.tmpdir"), "test.txt");
+        File file2 = new File(System.getProperty("java.io.tmpdir"), "test2.txt");
+        assertTrue(file1.exists());
+        assertTrue(file2.exists());
     }
     
     @Test
