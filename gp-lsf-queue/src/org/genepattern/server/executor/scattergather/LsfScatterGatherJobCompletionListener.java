@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,6 +17,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.genepattern.server.executor.lsf.LsfCommandExecutor;
 import org.genepattern.server.executor.lsf.LsfJobCompletionListener;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 
 import edu.mit.broad.core.lsf.LsfJob;
 import edu.mit.broad.core.lsf.LsfJob.JobCompletionListener;
@@ -68,8 +71,10 @@ public class LsfScatterGatherJobCompletionListener implements JobCompletionListe
 	    	}
         }
         catch (final Throwable e) {
-            //TODO: call handleJobCompletion with ERROR status
-            log.error("TODO: call handleJobCompletion with ERROR status", e);
+        	final StringWriter stackTrace = new StringWriter();
+			e.printStackTrace(new PrintWriter(stackTrace));
+        	final int gpJobId = LsfJobCompletionListener.getGpJobId(job);
+			GenePatternAnalysisTask.handleJobCompletion(gpJobId, -1, "Error processing job " + gpJobId + "\n" + stackTrace.toString());
             return;
         }
     }
