@@ -1194,16 +1194,6 @@ public class GenePatternAnalysisTask {
         Vector<String> parameterProblems = validateParameters(props, taskName, taskInfoAttributes.get(COMMAND_LINE), paramsCopy, formalParameters, true);
         vProblems.addAll(parameterProblems);
 
-        if (jobType != JOB_TYPE.VISUALIZER) {
-            //TODO: special case for visualizer
-            try {
-                setCommandPrefix(taskInfoAttributes);
-            }
-            catch (MalformedURLException e) {
-                throw new JobDispatchException(e);
-            }
-        }
-        
         String[] commandTokens = new String[0];
         try {
             String cmdLine = taskInfoAttributes.get(COMMAND_LINE);
@@ -1211,6 +1201,16 @@ public class GenePatternAnalysisTask {
                 vProblems.add("Command line not defined");
             }
             else {
+                String commandPrefix = null;
+                try {
+                    commandPrefix = getCommandPrefix(jobType, taskInfo.getLsid());
+                }
+                catch (MalformedURLException e) {
+                    throw new JobDispatchException(e);
+                }
+                if (commandPrefix != null) {
+                    cmdLine = commandPrefix + " " + cmdLine;
+                }
                 List<String> cmdLineArgs = CommandLineParser.createCmdLine(cmdLine, props, formalParameters);
                 if (cmdLineArgs == null || cmdLineArgs.size() == 0) {
                     vProblems.add("Command line not defined");
@@ -1876,14 +1876,16 @@ public class GenePatternAnalysisTask {
     }
 
     /**
-     * Get the appropriate command prefix to use for this module. The hierarchy goes like this; 1. task version specific
-     * entry in task prefix mapping 2. task versionless entry in task prefix mapping 3. default command prefix
+     * Get the appropriate command prefix to use for this module. The hierarchy goes like this; 
+     * 1. task version specific entry in task prefix mapping 
+     * 2. task versionless entry in task prefix mapping 
+     * 3. default command prefix only applies to non-visualizers
      * 
      * @param taskInfoAttributes
-     * @param props
+     * @return null if no command prefix is specified.
+     * @throws MalformedURLException
      */
-    private void setCommandPrefix(TaskInfoAttributes taskInfoAttributes) throws MalformedURLException {
-        String lsidStr = taskInfoAttributes.get(LSID);
+    private String getCommandPrefix(JOB_TYPE jobType, String lsidStr) throws MalformedURLException {
         PropertiesManager_3_2 pm = PropertiesManager_3_2.getInstance();
         Properties tpm = pm.getTaskPrefixMapping();
         Properties prefixes = pm.getCommandPrefixes();
@@ -1900,14 +1902,12 @@ public class GenePatternAnalysisTask {
             commandPrefix = prefixes.getProperty(commandPrefixName);
         }
 
-        if (commandPrefix == null) {
-            // check for default prefix
+        if (commandPrefix == null && !(jobType == JOB_TYPE.VISUALIZER)) {
+            // check for default prefix, unless it's a visualizer
             commandPrefix = prefixes.getProperty("default", null);
         }
 
-        if (commandPrefix != null && commandPrefix.length() > 0) {
-            taskInfoAttributes.put(COMMAND_LINE, commandPrefix + " " + taskInfoAttributes.get(COMMAND_LINE));
-        }
+        return commandPrefix;
     }
 
     /**
