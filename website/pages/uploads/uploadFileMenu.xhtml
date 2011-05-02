@@ -30,22 +30,16 @@
           <tr>
             <td>
               <h:commandLink value="Save" actionListener="#{uploadedFilesBean.saveFileLocally}" immediate="true">
-                <f:param value="#{aFile.encodedFilename}" name="filename"/>
-                   <f:param value="#{aFile.path}" name="path"/>
-               <f:param value="#{uploadDir.name}" name="dirname"/>
+                <f:param name="path" value="#{aFile.file.path}" />
               </h:commandLink>
             </td>
           </tr>
-        
-        
+
           <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
-       
-             <tr>
-            	<td>
-            	  <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
-            	</td>
-          	</tr>
-          	 <tr>
+          <tr>
+            <td><img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/></td>
+          </tr>
+          <tr>
            	 <td><img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle" />
               &#160;<h:commandLink value="Save to GenomeSpace" action="#{genomeSpaceBean.sendInputFileToGenomeSpace}" immediate="true">
                 <f:param value="#{aFile.encodedFilename}" name="filename"/>
@@ -54,11 +48,8 @@
           	  </td>
           	</tr>
             </h:outputText>
-          	
-        
-        
+
           	<h:outputText rendered="#{not empty aFile.moduleInputParameters}">
-  		
           <tr>
             <td>
               <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
