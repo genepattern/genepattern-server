@@ -65,9 +65,16 @@
 							<img src="/gp/images/blank.gif"/>
 						</h:outputText>
 					</t:dataList>
+                    <h:outputText rendered="#{p.jnlp}">
+                    <a stype="color:#0066FF;" href="#{p.link}"
+                    ><img align="ABSMIDDLE" src="/gp/images/webstart_small2.jpg" title="launch igv"/></a> 
+                    Launch IGV - <em>You will be prompted by IGV for your GenePattern username and password in order to load the files.</em>
+                    </h:outputText>
+                    <h:outputText rendered="#{not p.jnlp}">
 					<a style="color:#0066FF;" href="#{p.link}"
 					><img src="/gp/images/outputFile.gif"  title="output file"/> #{p.truncatedDisplayValue}</a> (#{p.formattedSize})
-				    <h:outputText rendered="#{p.name != 'gp_execution_log.txt'}">
+                    </h:outputText>
+				    <h:outputText rendered="#{p.name != 'gp_execution_log.txt' and not p.jnlp}">
 				    <img src="/gp/images/smallOptions.gif" 
 			           name="Image_#{p.valueId}" 
 			           id="Image_#{p.valueId}" 
@@ -76,7 +83,7 @@
 			           onmouseover="MM_swapImage('Image_#{p.valueId}','','/gp/images/smallOptions2.gif',2)" 
 			           onmouseout="MM_swapImgRestore();"/>
 			       	</h:outputText>
-			       	<h:outputText rendered="#{not empty p.lastModified}">
+			       	<h:outputText rendered="#{not empty p.lastModified and not p.jnlp}">
 			       		<font size="-2">(Last modified: #{p.lastModified})</font>
 			       	</h:outputText>
 		    		</p>

@@ -218,7 +218,8 @@ public class JobInfoWrapper implements Serializable {
 
         private boolean isTaskLog = false;
         private boolean isChildJobResult = false;
-        
+        private boolean isJnlp = false;
+
         /**
          * 
          * @return true iff this output file is an output of the given job.
@@ -263,11 +264,17 @@ public class JobInfoWrapper implements Serializable {
             
             //check execution log
             this.isTaskLog = isTaskLog(parameterInfo);
+            
+            this.isJnlp = this.outputFile != null && this.outputFile.getName().toLowerCase().endsWith(".jnlp");
         }
         
         public boolean isTaskLog() {
             return isTaskLog;
         } 
+        
+        public boolean isJnlp() {
+            return isJnlp;
+        }
     }
     
     public static class InputFile extends ParameterInfoWrapper {
