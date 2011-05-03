@@ -135,7 +135,7 @@ function toggleJobVisibility(jobNo) {
   <script language="JavaScript">
   	var uploadWindow = null;
   
-  	function openWindow() {
+  	function openUploadWindow() {
   		if (uploadWindow == null) {
   			uploadWindow = window.open('/gp/pages/uploads/jumploader.jsf','uploadWindow','width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
   		}
@@ -148,7 +148,7 @@ function toggleJobVisibility(jobNo) {
   	}
   </script>
   <t:div id="uploadDiv" rendered="#{uploadedFilesBean.uploadEnabled}">
-  	<button type="button" onclick="JavaScript:openWindow();">Upload Files</button>
+  	<button type="button" onclick="JavaScript:openUploadWindow();">Upload Files</button>
   </t:div>
   <p>
     <br/>
