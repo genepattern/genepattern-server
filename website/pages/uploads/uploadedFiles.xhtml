@@ -137,7 +137,7 @@ function toggleJobVisibility(jobNo) {
   
   	function openUploadWindow() {
   		if (uploadWindow == null) {
-  			uploadWindow = window.open('','uploadWindow','width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
+  			uploadWindow = window.open('','#{uploadedFilesBean.uploadWindowName}','width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
   			var currentLoc = uploadWindow.location + "";
   			if (currentLoc.indexOf("/gp/pages/uploads/jumploader.jsf") == -1) {
   				uploadWindow.location = "/gp/pages/uploads/jumploader.jsf";
@@ -145,7 +145,7 @@ function toggleJobVisibility(jobNo) {
   			uploadWindow.focus();
   		}
   		else if (uploadWindow.closed) {
-  			uploadWindow = window.open('','uploadWindow','width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
+  			uploadWindow = window.open('','#{uploadedFilesBean.uploadWindowName}','width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
   			var currentLoc = uploadWindow.location + "";
   			if (currentLoc.indexOf("/gp/pages/uploads/jumploader.jsf") == -1) {
   				uploadWindow.location = "/gp/pages/uploads/jumploader.jsf";

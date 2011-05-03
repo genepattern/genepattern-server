@@ -65,6 +65,11 @@ public class UploadedFilesBean {
         UIBeanHelper.setInfoMessage(messageToUser);
     }
     
+    public String getUploadWindowName() {
+        // The replaceAll is necessary because IE is picky about what characters can be in window names
+        return "uploadWindow" + UIBeanHelper.getRequest().getServerName().replaceAll("[^A-Za-z0-9 ]", "") +  UIBeanHelper.getUserId();
+    }
+    
     public boolean getUploadEnabled() {
         String userId = UIBeanHelper.getUserId();
         Context userContext = Context.getContextForUser(userId);
