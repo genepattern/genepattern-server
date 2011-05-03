@@ -137,15 +137,26 @@ function toggleJobVisibility(jobNo) {
   
   	function openUploadWindow() {
   		if (uploadWindow == null) {
-  			uploadWindow = window.open('/gp/pages/uploads/jumploader.jsf','uploadWindow','width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
+  			uploadWindow = window.open('','uploadWindow','width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
+  			var currentLoc = uploadWindow.location + "";
+  			if (currentLoc.indexOf("/gp/pages/uploads/jumploader.jsf") == -1) {
+  				uploadWindow.location = "/gp/pages/uploads/jumploader.jsf";
+  	  		}
+  			uploadWindow.focus();
   		}
   		else if (uploadWindow.closed) {
-  			uploadWindow = window.open('/gp/pages/uploads/jumploader.jsf','uploadWindow','width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
+  			uploadWindow = window.open('','uploadWindow','width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
+  			var currentLoc = uploadWindow.location + "";
+  			if (currentLoc.indexOf("/gp/pages/uploads/jumploader.jsf") == -1) {
+  				uploadWindow.location = "/gp/pages/uploads/jumploader.jsf";
+  	  		}
+  			uploadWindow.focus();
   		}
   		else {
   			uploadWindow.focus();
   		}
   	}
+
   </script>
   <t:div id="uploadDiv" rendered="#{uploadedFilesBean.uploadEnabled}">
   	<button type="button" onclick="JavaScript:openUploadWindow();">Upload Files</button>
