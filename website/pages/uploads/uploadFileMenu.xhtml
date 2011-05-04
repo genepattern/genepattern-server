@@ -29,7 +29,7 @@
           </tr>
           <tr>
             <td>
-              <h:commandLink value="Save" actionListener="#{uploadedFilesBean.saveFileLocally}" immediate="true">
+              <h:commandLink value="Save" actionListener="#{uploadedFilesBean.saveFileLocally}" immediate="true" rendered="#{not aFile.partial}">
                 <f:param name="path" value="#{aFile.file.path}" />
               </h:commandLink>
             </td>
