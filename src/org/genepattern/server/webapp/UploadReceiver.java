@@ -27,6 +27,12 @@ public class UploadReceiver extends HttpServlet {
     private static final long serialVersionUID = -6720003935924717973L;
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        if (LoginManager.instance().getUserIdFromSession(request) == null) {
+            // Return error to the applet; this happens if a user logged out during an upload
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "No user ID attached to session");
+            return;
+        }
+        
         PrintWriter responseWriter = response.getWriter();
         RequestContext reqContext = new ServletRequestContext(request);
         if (FileUploadBase.isMultipartContent(reqContext)) {
