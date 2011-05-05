@@ -114,7 +114,9 @@ public class LSIDUtil {
      * @param lsid
      */
     public boolean isAuthorityMine(LSID lsid) {
-        return getAuthorityType(lsid).equals(AUTHORITY_MINE);
+        String authType = getAuthorityType(lsid);
+        return AUTHORITY_MINE.equals(authType);
+        //return getAuthorityType(lsid).equals(AUTHORITY_MINE);
     }
 
     public boolean isAuthorityMine(String lsid) {
