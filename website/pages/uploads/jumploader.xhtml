@@ -41,7 +41,8 @@
 				height="300" 
 				mayscript="true">
 			<param name="uc_uploadUrl" value="/gp/UploadReceiver?paramId=#{uploadedFilesBean.paramId}"/>
-			<param name="uc_partitionLength" value="10000000"/>
+			<param name="uc_partitionLength" value="#{uploadedFilesBean.partitionLength}"/>
+			<param name="uc_maxFileLength" value="#{uploadedFilesBean.maxUploadSize}"/> 
 		</applet>
 	</body>
 </html>

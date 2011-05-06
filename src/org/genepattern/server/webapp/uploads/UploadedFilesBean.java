@@ -513,7 +513,12 @@ public class UploadedFilesBean {
     
     public int getPartitionLength() {
         Context context = Context.getContextForUser(UIBeanHelper.getUserId());
-        return ServerConfiguration.instance().getGPIntegerProperty(context, "upload.partition.size", 5000000);
+        return ServerConfiguration.instance().getGPIntegerProperty(context, "upload.partition.size", 10000000);
+    }
+    
+    public long getMaxUploadSize() {
+        Context context = Context.getContextForUser(UIBeanHelper.getUserId());
+        return Long.parseLong(ServerConfiguration.instance().getGPProperty(context, "upload.max.size", "20000000000"));
     }
     
     public String getParamId() {

@@ -18,7 +18,8 @@ default.properties:
 
     # the max number of files to display in uploaded files tab
     upload.maxfiles: 50
-    upload.partition.size: 5000000
+    upload.partition.size: 10000000
+    upload.max.size: 20000000000
     upload.jumploader: true
     upload.purge.all: false
     
