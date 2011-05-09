@@ -33,9 +33,11 @@ import org.genepattern.server.executor.CommandProperties;
  *     404-Not Found, if the file is not on the server. 
  * 
  * Notes:
+ *     http://stackoverflow.com/questions/132052/servlet-for-serving-static-content
  *     http://stackoverflow.com/questions/1478401/wrap-the-default-servlet-but-override-the-default-webapp-path
  *     http://tomcat.apache.org/tomcat-6.0-doc/funcspecs/fs-default.html
  *     http://balusc.blogspot.com/2009/02/fileservlet-supporting-resume-and.html
+ *     http://www.kuligowski.pl/java/rest-style-urls-and-url-mapping-for-static-content-apache-tomcat,5
  *     
  * For debugging, use this from the command line:
  *     curl --basic -u "test:test" -H Range:bytes=0-10 --dump-header - http://127.0.0.1:8080/gp/data//Users/pcarr/tmp/test.txt

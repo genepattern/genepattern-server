@@ -1,10 +1,12 @@
 package org.genepattern.server.webapp;
 
+import java.io.BufferedInputStream;
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,6 +17,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 
@@ -29,6 +32,8 @@ import org.genepattern.server.webapp.jsf.UIBeanHelper;
  * 
  */
 public class FileDownloader {
+    private static Logger log = Logger.getLogger(FileDownloader.class);
+
     // Constants ----------------------------------------------------------------------------------
 
     private static final int DEFAULT_BUFFER_SIZE = 10240; // ..bytes = 10KB.
@@ -254,12 +259,12 @@ public class FileDownloader {
         // Send requested file (part(s)) to client ------------------------------------------------
 
         // Prepare streams.
-        RandomAccessFile input = null;
+        BufferedInputStream is = null;
         OutputStream output = null;
 
         try {
             // Open streams.
-            input = new RandomAccessFile(file, "r");
+            is = new BufferedInputStream(new FileInputStream(file));
             output = response.getOutputStream();
 
             if (ranges.isEmpty() || ranges.get(0) == full) {
@@ -286,7 +291,8 @@ public class FileDownloader {
                         output = new GZIPOutputStream(output, DEFAULT_BUFFER_SIZE);
                     } 
                     // Copy full range.
-                    copy(input, output, r.start, r.length);
+                    //copyRange(is, output, r.start, r.length);
+                    copyRange(is, output, r.start, r.end);
                     response.setStatus(HttpServletResponse.SC_OK); // 200.
                 }
             } 
@@ -302,7 +308,8 @@ public class FileDownloader {
 
                 if (content) {
                     // Copy single part range.
-                    copy(input, output, r.start, r.length);
+                    //copyRange(is, output, r.start, r.length);
+                    copyRange(is, output, r.start, r.end);
                 }
             } 
             else {
@@ -325,7 +332,8 @@ public class FileDownloader {
                         sos.println("Content-Range: bytes " + r.start + "-" + r.end + "/" + r.total);
 
                         // Copy single part range of multi part range.
-                        copy(input, output, r.start, r.length);
+                        //copyRange(is, output, r.start, r.length);
+                        copyRange(is, output, r.start, r.end);
                     }
 
                     // End with multipart boundary.
@@ -337,7 +345,7 @@ public class FileDownloader {
         finally {
             // Gently close streams.
             close(output);
-            close(input);
+            close(is);
         }
     }
 
@@ -384,41 +392,63 @@ public class FileDownloader {
         return (substring.length() > 0) ? Long.parseLong(substring) : -1;
     }
 
-    /**
-     * Copy the given byte range of the given input to the given output.
-     * @param input The input to copy the given range to the given output for.
-     * @param output The output to copy the given range from the given input for.
-     * @param start Start of the byte range.
-     * @param length Length of the byte range.
-     * @throws IOException If something fails at I/O level.
-     */
-    private static void copy(RandomAccessFile input, OutputStream output, long start, long length)
-        throws IOException
-    {
-        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
-        int read;
-
-        if (input.length() == length) {
-            // Write full range.
-            while ((read = input.read(buffer)) > 0) {
-                output.write(buffer, 0, read);
+    protected static void skipper(InputStream istream, long start) throws IOException {
+        long remainder = start;
+        while(remainder > 0) {
+            long numSkipped = istream.skip(remainder);
+            if (numSkipped < 0) {
+                numSkipped = 0;
             }
+            remainder = remainder - numSkipped;
         }
-        else {
-            // Write partial range.
-            input.seek(start);
-            long toRead = length;
+    }
 
-            while ((read = input.read(buffer)) > 0) {
-                if ((toRead -= read) > 0) {
-                    output.write(buffer, 0, read);
+    /**
+     * Copy the contents of the specified input stream to the specified
+     * output stream, and ensure that both streams are closed before returning
+     * (even in the face of an exception).
+     *
+     * @param istream The input stream to read from
+     * @param ostream The output stream to write to
+     * @param start Start of the range which will be copied
+     * @param end End of the range which will be copied
+     * @return Exception which occurred during processing
+     */
+    protected static IOException copyRange(InputStream istream, OutputStream ostream, long start, long end) {
+        try {
+            skipper(istream, start);
+        } 
+        catch (IOException e) {
+            log.error("Error skipping bytes from inputstream: "+e.getLocalizedMessage(), e);
+            return e;
+        }
+
+        IOException exception = null;
+        long bytesToRead = end - start + 1;
+        final int BUFSIZE = 2048;
+        final byte buffer[] = new byte[BUFSIZE];
+        int len = buffer.length;
+        while ( (bytesToRead > 0) && (len >= buffer.length)) {
+            try {
+                len = istream.read(buffer);
+                if (bytesToRead >= len) {
+                    ostream.write(buffer, 0, len);
+                    bytesToRead -= len;
                 } 
                 else {
-                    output.write(buffer, 0, (int) toRead + read);
-                    break;
+                    ostream.write(buffer, 0, (int) bytesToRead);
+                    bytesToRead = 0;
                 }
+            } 
+            catch (IOException e) {
+                exception = e;
+                len = -1;
+            }
+            if (len < buffer.length) {
+                break;
             }
         }
+        return exception;
     }
 
     /**
