@@ -671,6 +671,8 @@ public class GenePatternAnalysisTask {
             log.debug("taskName=" + taskName);
         }
         JOB_TYPE jobType = JOB_TYPE.JOB;
+        JobInfoWrapper jobInfoWrapper = null;
+        Map<String,URL> inputLinkMap = new HashMap<String,URL>();
         if (TaskInfo.isVisualizer(taskInfo.getTaskInfoAttributes())) {
             jobType = JOB_TYPE.VISUALIZER;
         }
@@ -679,7 +681,16 @@ public class GenePatternAnalysisTask {
         }
         else {
             if ("IGV".equals(taskInfo.getName())) {
+                //special-case code, added in GP 3.3.2 for IGV support
+                //TODO: make this the general case for 'pass-by-reference' input files
                 jobType = JOB_TYPE.IGV;
+                jobInfoWrapper = getJobInfoWrapper(jobInfo.getUserId(), jobInfo.getJobNumber());
+                List<InputFile> inputFiles = jobInfoWrapper.getInputFiles();
+                for(InputFile inputFile : inputFiles) {
+                    final String name = inputFile.getName();
+                    final URL url = inputFile.getUrl();
+                    inputLinkMap.put(name, url);
+                }
             }
         }
 
@@ -783,6 +794,17 @@ public class GenePatternAnalysisTask {
                             continue;                        
                         }
                     } 
+                    //special-case for IGV
+                    else if (mode.equals(ParameterInfo.INPUT_MODE) && jobType == JOB_TYPE.IGV) {
+                        //TODO: implement more general 'pass-by-reference'
+                        String name = paramsCopy[i].getName();
+                        String value = paramsCopy[i].getValue();
+                        URL link = inputLinkMap.get(name);
+                        if (link != null) {
+                            value = link.toString();
+                            paramsCopy[i].setValue(value);
+                        }
+                    }
                     else if (mode.equals(ParameterInfo.INPUT_MODE)) {
                         log.debug("IN " + paramsCopy[i].getName() + "=" + originalPath);
                         //web form upload: <java.io.tmpdir>/<user_id>_run[0-9]+.tmp/<filename>

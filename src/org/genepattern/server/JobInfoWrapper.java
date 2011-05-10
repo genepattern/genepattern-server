@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DateFormat;
@@ -175,6 +174,43 @@ public class JobInfoWrapper implements Serializable {
          */
         public String getLink() {
             return link;
+        }
+
+        /**
+         * @return the full url for a web client to access this file; 
+         *     Should be null unless this is an input or output file.
+         */
+        public URL getUrl() {
+            if (link == null || link.length() == 0) {
+                return null;
+            }
+            URL url;
+            try {
+                url = new URL(link);
+                return url;
+            }
+            catch (MalformedURLException e) {
+                //expected for relative links, e.g. /gp/jobResults/1/out.txt
+            }
+            
+            //assume a relative link, and append the server path
+            // e.g. replace /gp/jobResults/1/out.txt with http://127.0.0.1:8080/gp/jobResults/out.txt
+            //Note: be careful with assumptions about the servlet context path
+            //TODO: remove hard-coded context path, '/gp'
+            if (link.startsWith("/gp")) {
+                String sub_link = link.substring("/gp".length());
+                String genePatternUrl = UIBeanHelper.getServer();
+                try {
+                    url = new URL(genePatternUrl + sub_link);
+                    return url;
+                }
+                catch (MalformedURLException e) {
+                }
+            }
+            else {
+                log.error("Unexpected value for link in getUrl, link="+link);
+            }
+            return null;
         }
         
         public void addModuleMenuItem(TaskInfo sendTo) {
@@ -515,16 +551,22 @@ public class JobInfoWrapper implements Serializable {
                 log.debug("isServerFilePath");
                 displayValue = origValue;
                 if (inputFile.canRead()) {
+                    //TODO: calculate proper permissions for links to files on the server file path
+                    
                     //TODO: set a link for downloading (via the web client) a server file path
-                    try {
-                        URI inputFileURI = inputFile.toURI();
-                        URL inputFileURL = inputFileURI.toURL();
+                    //try {
+                        //URI inputFileURI = inputFile.toURI();
+                        //URL inputFileURL = inputFileURI.toURL();
                         //String inputFilePath = inputFileURL.getPath();
                         //setLink(contextPath + "/serverFilePath/" + inputFilePath);
-                    }
-                    catch (MalformedURLException e) {
-                        log.error(e);
-                    }
+                       
+                        // set a link for downloading a file on the server file path
+                        final String link = contextPath + "/data/" + inputFile.getPath();
+                        setLink(link);
+                    //}
+                    //catch (MalformedURLException e) {
+                    //    log.error(e);
+                    //}
                 }
             }
             this.setDisplayValue(displayValue);
