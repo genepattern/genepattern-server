@@ -24,7 +24,8 @@
     <t:dataList var="aFile" value="#{uploadDir.sortedUploadFiles}" rowIndexVar="fileIndex">
     
    	  <h:outputText rendered="#{aFile.partial}">(Uploading) </h:outputText>
-      <h:outputLink value="#{aFile.url}">#{aFile.filename}</h:outputLink>
+      <h:outputLink rendered="#{not aFile.partial}" value="#{aFile.url}">#{aFile.filename}</h:outputLink>
+      <h:outputText rendered="#{aFile.partial}">#{aFile.filename}</h:outputText>
       
       <!-- Image for popup menu -->
       <img src="/gp/images/smallOptions.gif" 
