@@ -67,7 +67,7 @@ public class UploadedFilesBean {
     
     public String getUploadWindowName() {
         // The replaceAll is necessary because IE is picky about what characters can be in window names
-        return "uploadWindow" + UIBeanHelper.getRequest().getServerName().replaceAll("[^A-Za-z0-9 ]", "") +  UIBeanHelper.getUserId();
+        return "uploadWindow" + (UIBeanHelper.getRequest().getServerName() +  UIBeanHelper.getUserId()).replaceAll("[^A-Za-z0-9 ]", "");
     }
     
     public boolean getUploadEnabled() {
