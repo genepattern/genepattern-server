@@ -262,6 +262,14 @@ public class UploadedFilesBean {
     private static final int DEFAULT_upload_maxfiles = 50;
 
     public List<UploadDirectory> getAvailableDirectories() {
+        String userId = UIBeanHelper.getUserId();
+        Context userContext = Context.getContextForUser(userId);
+        boolean display = ServerConfiguration.instance().getGPBooleanProperty(userContext, "upload.display.dirs", true);
+        
+        // Return an empty list if displaying upload dirs is turned off
+        if (!display) {
+            return new ArrayList<UploadDirectory>();
+        }
 
         int fileCount = 0;
         if (availableDirectories != null) {
@@ -271,10 +279,7 @@ public class UploadedFilesBean {
         }
 
         if ((availableDirectories == null) || (fileCount != getCurrentUserFileCount())) {
-            
             availableDirectories = new ArrayList<UploadDirectory>();
-            String userId = UIBeanHelper.getUserId();
-            Context userContext = Context.getContextForUser(userId);
 
             /**
              * The directory layer is unnecessary for now but will be needed

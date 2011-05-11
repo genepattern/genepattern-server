@@ -22,6 +22,7 @@ default.properties:
     upload.max.size: 20000000000
     upload.jumploader: true
     upload.purge.all: false
+    upload.display.dirs: true
     
     # location for user data
     user.root.dir: "../users"
