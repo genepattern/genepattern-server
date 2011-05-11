@@ -28,7 +28,72 @@ public class UploadReceiver extends HttpServlet {
     private static Logger log = Logger.getLogger(UploadReceiver.class);
     private static final long serialVersionUID = -6720003935924717973L;
     
+    public void returnErrorResponse(PrintWriter responseWriter, String error) {
+        responseWriter.println("Error: " + error);
+    }
+    
+    public void returnUploadResponse(PrintWriter responseWriter, String message) {
+        responseWriter.println("Error: " + message);
+    }
+    
+    protected File getWriteDirectory(HttpServletRequest request) throws IOException {
+        String userName = (String) request.getSession().getAttribute(GPConstants.USERID);
+        Context context = Context.getContextForUser(userName);
+        File dir = ServerConfiguration.instance().getUserUploadDir(context);
+        
+        // lazily create directory if need be
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
+        
+        return dir;
+    }
+    
+    protected File getWriteFile(HttpServletRequest request, FileItem file) throws IOException {
+        return getWriteFile(getWriteDirectory(request), file);
+    }
+    
+    protected File getWriteFile(File dir, FileItem file) throws IOException {
+        File writeFile = new File(dir, file.getName());
+        
+        // Check if file exists
+        if (writeFile.exists()) {
+            throw new IOException("File already exists");
+        }
+        
+        return writeFile;        
+    }
+    
+    protected String getParameter(List<FileItem> parameters, String param) {
+        Iterator<FileItem> it = parameters.iterator();
+        while (it.hasNext()) {
+            FileItem postParameter = it.next();
+            if (postParameter.isFormField()) {
+                if (param.compareTo(postParameter.getFieldName()) == 0) {
+                    return postParameter.getString();
+                }
+            }
+        }
+        return null;
+    }
+    
+    
+    
+    
+    
+    
+    
+    // dummy getWriteDirectory method for compiling while this servlet is in transition
+    // will be removed once loadFile() and loadPartition() are refactored
+    String getWriteDirectory(HttpServletRequest request, List<FileItem> parameters) {
+        return null;
+    }
+    
+    
+    
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        
+        // Handle the case of there not being a current session ID
         if (LoginManager.instance().getUserIdFromSession(request) == null) {
             // Return error to the applet; this happens if a user logged out during an upload
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "No user ID attached to session");
@@ -79,7 +144,7 @@ public class UploadReceiver extends HttpServlet {
                     file.renameTo(new File(writeDirectory, postParameter.getName()));
                     
                     //for debugging
-                    logFileSave(file);
+                    handleFileCompleted(file);
                 }
             }
         }
@@ -93,16 +158,17 @@ public class UploadReceiver extends HttpServlet {
             if (!postParameter.isFormField()) {
                 File file = new File(writeDirectory, postParameter.getName());
                 postParameter.write(file);
+                //for debugging
+                handleFileCompleted(file);
                 responseWriter.println(writeDirectory + ";" + file.getCanonicalPath());
                 
-                //for debugging
-                logFileSave(file);
+                
             }
         }
         
     }
 
-    private void logFileSave(File file) {
+    private void handleFileCompleted(File file) {
         if (log.isDebugEnabled()) {
             try {
                 String filename = file.getName();
@@ -119,46 +185,7 @@ public class UploadReceiver extends HttpServlet {
         }        
     }
 
-    protected String getParameter(List<FileItem> parameters, String param) {
-        Iterator<FileItem> it = parameters.iterator();
-        while (it.hasNext()) {
-            FileItem postParameter = it.next();
-            if (postParameter.isFormField()) {
-                if (param.compareTo(postParameter.getFieldName()) == 0) {
-                    return postParameter.getString();
-                }
-            }
-        }
-        return null;
-    }
+    
 
-    protected String getWriteDirectory(HttpServletRequest request, List<FileItem> postParameters) throws IOException {
-        String paramId = request.getParameter("paramId") != null ? request.getParameter("paramId") : "writeDirectory";
-        String writeDirectory = (String) request.getSession().getAttribute(paramId);
-        File directory = null;
-        if (writeDirectory != null) {
-            directory = new File(writeDirectory);
-
-        }
-        if (writeDirectory == null || !directory.isDirectory()) {
-            String userName = (String) request.getSession().getAttribute(GPConstants.USERID);
-            Context context = Context.getContextForUser(userName);
-            // Create a temporary directory for the uploaded files.
-            String prefix = userName + "_run";
-            File dir = ServerConfiguration.instance().getUserUploadDir(context);
-            
-            // lazily create directory if need be
-            if (!dir.exists()) {
-                dir.mkdir();
-            }
-            
-            // use createTempFile to guarantee a unique name, but then change it to a directory
-            directory = File.createTempFile(prefix, null, dir);
-            directory.delete();
-            directory.mkdir();
-            writeDirectory = directory.getCanonicalPath();
-            request.getSession().setAttribute(paramId, writeDirectory);
-        }
-        return writeDirectory;
-    }
+    
 }
