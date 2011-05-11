@@ -19,11 +19,13 @@ import org.apache.commons.fileupload.RequestContext;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
+import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.util.GPConstants;
 
 public class UploadReceiver extends HttpServlet {
+    private static Logger log = Logger.getLogger(UploadReceiver.class);
     private static final long serialVersionUID = -6720003935924717973L;
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -75,11 +77,14 @@ public class UploadReceiver extends HttpServlet {
                 responseWriter.println(writeDirectory + ";" + file.getCanonicalPath());
                 if (last) {
                     file.renameTo(new File(writeDirectory, postParameter.getName()));
+                    
+                    //for debugging
+                    logFileSave(file);
                 }
             }
         }
     }
-
+    
     protected void loadFile(HttpServletRequest request, List<FileItem> postParameters, PrintWriter responseWriter) throws Exception {
         String writeDirectory = getWriteDirectory(request, postParameters);
         Iterator<FileItem> it = postParameters.iterator();
@@ -89,8 +94,29 @@ public class UploadReceiver extends HttpServlet {
                 File file = new File(writeDirectory, postParameter.getName());
                 postParameter.write(file);
                 responseWriter.println(writeDirectory + ";" + file.getCanonicalPath());
+                
+                //for debugging
+                logFileSave(file);
             }
         }
+        
+    }
+
+    private void logFileSave(File file) {
+        if (log.isDebugEnabled()) {
+            try {
+                String filename = file.getName();
+                File parentFile = file.getParentFile();
+                if (parentFile != null) {
+                    filename = parentFile.getName() + "/" + filename;
+                }
+                String url = "/gp/getFile.jsp?task=&file="+filename;
+                log.debug("Uploaded file: "+url);
+            }
+            catch (Throwable t) {
+                log.error("Error writing log!", t);
+            }
+        }        
     }
 
     protected String getParameter(List<FileItem> parameters, String param) {
