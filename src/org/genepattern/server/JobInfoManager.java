@@ -12,12 +12,9 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.ZipOutputStream;
 
@@ -33,7 +30,6 @@ import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
-import org.genepattern.util.SemanticUtil;
 import org.genepattern.visualizer.RunVisualizerConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
@@ -149,11 +145,17 @@ public class JobInfoManager {
         }
             
         AdminDAO adminDao = new AdminDAO();
-        TaskInfo[] latestTaskArray = adminDao.getLatestTasks(currentUser);
-        List<TaskInfo> latestTaskList = Arrays.asList(latestTaskArray);
-        Map<String, Set<TaskInfo>> kindToModules = SemanticUtil.getKindToModulesMap(latestTaskList);
 
-        JobInfoWrapper jobInfoWrapper = processChildren((JobInfoWrapper)null, showExecutionLogs, documentCookie, contextPath, analysisDao, adminDao, kindToModules, jobInfo, visualizerJavaFlags);
+        JobInfoWrapper jobInfoWrapper = processChildren(
+                (JobInfoWrapper)null, 
+                showExecutionLogs,
+                documentCookie, 
+                contextPath, 
+                analysisDao, 
+                adminDao, 
+                //kindToModules, 
+                jobInfo, 
+                visualizerJavaFlags);
 
         //this call initializes the helper methods
         jobInfoWrapper.getPathFromRoot(); 
@@ -171,7 +173,15 @@ public class JobInfoManager {
      * @param jobInfo
      * @return a new JobInfoWrapper
      */
-    private JobInfoWrapper processChildren(JobInfoWrapper parent, boolean showExecutionLogs, String documentCookie, String contextPath, AnalysisDAO analysisDao, AdminDAO adminDao, Map<String, Set<TaskInfo>> kindToModules, JobInfo jobInfo, String visualizerJavaFlags) {
+    private JobInfoWrapper processChildren(
+            JobInfoWrapper parent, 
+            boolean showExecutionLogs, 
+            String documentCookie, 
+            String contextPath, 
+            AnalysisDAO analysisDao, 
+            AdminDAO adminDao, 
+            JobInfo jobInfo, 
+            String visualizerJavaFlags) {
         TaskInfo taskInfo = null;
         try {
             //an exception is thrown if the module has been deleted
@@ -187,7 +197,6 @@ public class JobInfoManager {
         jobInfoWrapper.setParent(parent);
         //Note: must call setTaskInfo before setJobInfo
         jobInfoWrapper.setTaskInfo(taskInfo);        
-        //jobInfoWrapper.setJobInfo(showExecutionLogs, contextPath, kindToModules, jobInfo);
         jobInfoWrapper.setJobInfo(showExecutionLogs, contextPath, jobInfo);
         
         //special case for visualizers
@@ -198,7 +207,15 @@ public class JobInfoManager {
 
         JobInfo[] children = analysisDao.getChildren(jobInfo.getJobNumber());
         for(JobInfo child : children) {
-            JobInfoWrapper nextChild = processChildren(jobInfoWrapper, showExecutionLogs, documentCookie, contextPath, analysisDao, adminDao, kindToModules, child, visualizerJavaFlags);
+            JobInfoWrapper nextChild = processChildren(
+                    jobInfoWrapper, 
+                    showExecutionLogs, 
+                    documentCookie, 
+                    contextPath, 
+                    analysisDao, 
+                    adminDao, 
+                    child, 
+                    visualizerJavaFlags);
             jobInfoWrapper.addChildJobInfo(nextChild);
         }
         
