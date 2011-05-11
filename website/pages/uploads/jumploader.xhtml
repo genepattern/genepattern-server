@@ -22,18 +22,29 @@
 	<head>
 		<title>GenePattern | Upload</title>
 		<script language="JavaScript">
-		  window.onbeforeunload = confirmExit;
-		  function confirmExit() {
-			  var jumploader = document.getElementById("jumpLoaderApplet");
-			  var uploading = jumploader.getUploader().getStatus() == 1;
-			  if (!uploading) { return; }
-		  	  return "You have attempted to leave this page.  This will interrupt any uploads that are ongoing. Are you sure you want to leave?";
-		  }
+			function uploaderFileStatusChanged(uploader, file) {
+				if (file.getStatus() == file.STATUS_FAILED) {
+					var alertPanel = document.getElementById("alertPanel");
+					alertPanel.innerHTML = file.getError().getMessage();
+					alertPanel.style.background = "#EE9999";
+					alertPanel.style.padding = "10px";
+				}
+			}
+		
+		    window.onbeforeunload = confirmExit;
+		    function confirmExit() {
+			    var jumploader = document.getElementById("jumpLoaderApplet");
+			    var uploading = jumploader.getUploader().getStatus() == 1;
+			    if (!uploading) { return; }
+		  	    return "You have attempted to leave this page.  This will interrupt any uploads that are ongoing. Are you sure you want to leave?";
+		    }
 		</script>
 	</head>
 	<body>
 		<h2 style="font-family: Verdana, Arial, Helvetica, sans-serif;color: #336;font-weight: bold;font-size: 18px;line-height: 20px;">Upload to GenePattern</h2>
-		<div style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 11px;line-height: 14px;"><strong>Note:</strong> This window must remain open for the upload to complete.  New files will not show up in the main window until the page has been <a style="text-decoration:none;font-weight: bolder;color: #009;" href="JavaScript:window.opener.location.reload(true);">refreshed</a>.</div>
+		<div id="alertPanel">
+			<div style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 11px;line-height: 14px;"><strong>Note:</strong> This window must remain open for the upload to complete.  New files will not show up in the main window until the page has been <a style="text-decoration:none;font-weight: bolder;color: #009;" href="JavaScript:window.opener.location.reload(true);">refreshed</a>.</div>
+		</div>
 		<applet id="jumpLoaderApplet" name="jumpLoaderApplet"
 				code="jmaster.jumploader.app.JumpLoaderApplet.class"
 				archive="/gp/downloads/jl_core_z.jar"
@@ -42,7 +53,8 @@
 				mayscript="true">
 			<param name="uc_uploadUrl" value="/gp/UploadReceiver?paramId=#{uploadedFilesBean.paramId}"/>
 			<param name="uc_partitionLength" value="#{uploadedFilesBean.partitionLength}"/>
-			<param name="uc_maxFileLength" value="#{uploadedFilesBean.maxUploadSize}"/> 
+			<param name="uc_maxFileLength" value="#{uploadedFilesBean.maxUploadSize}"/>
+			<param name="ac_fireUploaderFileStatusChanged" value="true"/>
 		</applet>
 	</body>
 </html>
