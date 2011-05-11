@@ -20,6 +20,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.process.JobPurgerUtil;
@@ -38,7 +39,6 @@ import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
-import org.jfree.util.Log;
 
 /**
  * Wrapper class to access JobInfo from JSF formatted pages.
@@ -66,8 +66,14 @@ public class JobInfoWrapper implements Serializable {
 
         private List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
         
+        protected boolean displayFileInfo = true;
+        
         public ParameterInfoWrapper(ParameterInfo parameterInfo) {
             this.parameterInfo = parameterInfo;
+            
+            String currentUserId = UIBeanHelper.getUserId();
+            ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(currentUserId);
+            displayFileInfo = ServerConfiguration.instance().getGPBooleanProperty(userContext, "display.file.info");
         }
         
         /**
@@ -268,6 +274,8 @@ public class JobInfoWrapper implements Serializable {
             super(parameterInfo);
 
             boolean exists = false;
+
+            
             if (outputDir != null) {
                 this.outputFile = new File(outputDir.getParent(), parameterInfo.getValue());
                 exists = outputFile.exists();
@@ -282,15 +290,17 @@ public class JobInfoWrapper implements Serializable {
                 this.outputFile = new File(outputDir, parameterInfo.getName());
                 exists = outputFile.exists();
             }
+
             //Set the size and lastModified properties for each output file
-            if (exists) {
+            //for debugging, disable file system queries
+            if (displayFileInfo && exists) {
                 setSize(outputFile.length());
                 Calendar cal = Calendar.getInstance();
                 cal.setTimeInMillis(outputFile.lastModified());
                 setLastModified(cal.getTime());
             }
             else {
-                Log.error("Outputfile not found on server: "+outputFile.getAbsolutePath());
+                log.error("Outputfile not found on server: "+outputFile.getAbsolutePath());
             }
 
             //map from ParameterInfo.name to URL for downloading the output file from the server
@@ -499,7 +509,7 @@ public class JobInfoWrapper implements Serializable {
             
             //case C: server file path
             File inputFile = new File(value);
-            if (inputFile.exists()) {
+            if (displayFileInfo && inputFile.exists()) {
                 //directory = inputFile.getParentFile().getName();
                 setSize(inputFile.length());
                 Calendar cal = Calendar.getInstance();

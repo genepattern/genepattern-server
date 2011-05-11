@@ -22,7 +22,11 @@ default.properties:
     upload.max.size: 20000000000
     upload.jumploader: true
     upload.purge.all: false
+    # flag to disable listing uploaded input files in the menu
     upload.display.dirs: true
+    
+    # flag to disable listing file size and modification date in the gui, 
+    display.file.info: true
     
     # location for user data
     user.root.dir: "../users"

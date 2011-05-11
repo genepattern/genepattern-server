@@ -1161,15 +1161,20 @@ public class JobBean {
 
         String kind;
 
-        public OutputFileInfo(ParameterInfo p, File file,
-                Collection<TaskInfo> modules, int jobNumber, String kind) {
+        public OutputFileInfo(ParameterInfo p, File file, Collection<TaskInfo> modules, int jobNumber, String kind) {
             this.kind = kind;
             this.p = p;
-            this.size = file.length();
-            this.exists = file.exists();
-            Calendar cal = Calendar.getInstance();
-            cal.setTimeInMillis(file.lastModified());
-            this.lastModified = cal.getTime();
+            
+            String currentUserId = UIBeanHelper.getUserId();
+            ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(currentUserId);
+            boolean displayFileInfo = ServerConfiguration.instance().getGPBooleanProperty(userContext, "display.file.info");
+            if (displayFileInfo) {
+                this.size = file.length();
+                this.exists = file.exists();
+                Calendar cal = Calendar.getInstance();
+                cal.setTimeInMillis(file.lastModified());
+                this.lastModified = cal.getTime();
+            }
 
             if (modules != null) {
                 for (TaskInfo t : modules) {
