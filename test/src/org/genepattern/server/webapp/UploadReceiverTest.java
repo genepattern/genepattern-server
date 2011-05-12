@@ -103,21 +103,7 @@ public class UploadReceiverTest extends TestCase {
         List<FileItem> postParameters = buildTestParameterList();
         PrintWriter responseWriter = new PrintWriter(System.out);
         
-        theTest.loadFile(request, postParameters, responseWriter);
-        
-        File file1 = new File(TMPDIR, "test.txt");
-        File file2 = new File(TMPDIR, "test2.txt");
-        assertTrue(file1.exists());
-        assertTrue(file2.exists());
-    }
-    
-    @Test
-    public void testReceiveLargeFile() throws Exception {
-        HttpServletRequest request = buildTestRequest();
-        List<FileItem> postParameters = buildTestParameterList();
-        PrintWriter responseWriter = new PrintWriter(System.out);
-        
-        theTest.loadPartition(request, postParameters, responseWriter, true);
+        theTest.writeFile(request, postParameters, true, true, "admin");
         
         File file1 = new File(TMPDIR, "test.txt");
         File file2 = new File(TMPDIR, "test2.txt");
@@ -141,7 +127,7 @@ public class UploadReceiverTest extends TestCase {
         List<FileItem> params = buildTestParameterList();
         HttpServletRequest request = buildTestRequest();
         
-        String dir = theTest.getWriteDirectory(request, params);
-        assertEquals(dir, TMPDIR);
+        File dir = theTest.getUploadDirectory(request);
+        assertEquals(dir.getCanonicalPath(), TMPDIR);
     }
 }
