@@ -108,6 +108,9 @@
       <t:div rendered="#{serverSettingsBean.currentMode == 'Users and Groups'}">
         <ui:include src="serverSettingsUsersAndGroups.xhtml"/>       
       </t:div>
+      <t:div rendered="#{serverSettingsBean.currentMode == 'Uploaded Files'}">
+        <ui:include src="serverSettingsUploadedFiles.xhtml"/>
+      </t:div>
       <t:div rendered="#{serverSettingsBean.currentMode == 'Task Info'}">
         <ui:include src="serverSettingsTaskInfo.xhtml"/>
       </t:div>

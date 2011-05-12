@@ -14,7 +14,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.GroupPermission;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;

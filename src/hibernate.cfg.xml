@@ -35,6 +35,7 @@
     <mapping resource="org/genepattern/server/domain/Suite.hbm.xml"/>
     <mapping resource="org/genepattern/server/domain/TaskAccess.hbm.xml"/>
     <mapping resource="org/genepattern/server/domain/TaskMaster.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/UploadFile.hbm.xml"/>
     <mapping resource="org/genepattern/server/message/SystemMessage.hbm.xml"/>
     <mapping resource="org/genepattern/server/user/JobCompletionEvent.hbm.xml"/>
     <mapping resource="org/genepattern/server/user/User.hbm.xml"/>
