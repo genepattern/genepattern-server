@@ -175,6 +175,7 @@ public class UploadReceiver extends HttpServlet {
                 if (partial && first) {
                     File partialFile = getUploadFile(request, fileItem.getName() + ".part");
                     if (partialFile.exists() && first) {
+                        log.info("Removed abandoned partial file upload for " + fileItem.getName());
                         partialFile.delete();
                     }
                     file = getUploadFile(request, fileItem.getName() + ".part");
