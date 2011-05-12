@@ -50,5 +50,15 @@ public abstract class BaseDAO {
 	        throw re;
 	    }
 	}
+	
+	public void saveOrUpdate(Object obj) {
+	    try {
+	        HibernateUtil.getSession().saveOrUpdate(obj);
+	    }
+	    catch (RuntimeException re) {
+	        log.error("saveOrUpdate failed", re);
+	        throw re;
+	    }
+	}
 
 }
