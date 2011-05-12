@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadBase;
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.RequestContext;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -34,123 +35,15 @@ public class UploadReceiver extends HttpServlet {
     private static Logger log = Logger.getLogger(UploadReceiver.class);
     private static final long serialVersionUID = -6720003935924717973L;
     
-    
-    protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
-        
-        // Handle the case of there not being a current session ID
-        final String userId = LoginManager.instance().getUserIdFromSession(request);
-        if (userId == null) {
-            // Return error to the applet; this happens if a user logged out during an upload
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "No user ID attached to session");
-            return;
-        }
-        
-        PrintWriter responseWriter = response.getWriter();
-        RequestContext reqContext = new ServletRequestContext(request);
-        if (FileUploadBase.isMultipartContent(reqContext)) {
-            FileItemFactory factory = new DiskFileItemFactory();
-            ServletFileUpload upload = new ServletFileUpload(factory);
-            try {
-                List<FileItem> postParameters = upload.parseRequest(reqContext);
-                final int partitionCount = Integer.parseInt(getParameter(postParameters, "partitionCount"));
-                final int partitionIndex = Integer.parseInt(getParameter(postParameters, "partitionIndex"));
-                final boolean firstPartition = partitionIndex == 0;
-                final boolean lastPartition = (partitionIndex + 1) == partitionCount;
-                if (partitionCount == 1) {
-                    loadFile(request, postParameters, responseWriter, userId);
-                }
-                else {
-                    loadPartition(request, postParameters, responseWriter, firstPartition, lastPartition, userId);
-                }
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-            responseWriter.close();
-        }
-        else {
-            // This servlet wasn't called by a multi-file uploader. Return an error page.
-            response.sendRedirect(request.getContextPath() + "/pages/internalError.jsf");
-        }
-    }
-
-    public void returnErrorResponse(PrintWriter responseWriter, String error) {
-        responseWriter.println("Error: " + error);
+    public void returnErrorResponse(PrintWriter responseWriter, FileUploadException error) {
+        responseWriter.println("Error: " + error.getMessage());
     }
     
     public void returnUploadResponse(PrintWriter responseWriter, String message) {
-        responseWriter.println("Error: " + message);
+        responseWriter.println(message);
     }
     
-    /**
-     * Get the parent directory on the server file system to which to upload the file
-     * @param request
-     * @return
-     * @throws IOException
-     */
-    protected File getUploadDirectory(HttpServletRequest request) throws IOException {
-        final String userId = LoginManager.instance().getUserIdFromSession(request);
-        final Context context = Context.getContextForUser(userId);
-        final File dir = ServerConfiguration.instance().getUserUploadDir(context);
-        
-        // lazily create directory if need be
-        if (!dir.exists()) {
-            boolean success = dir.mkdir();
-            if (!success) {
-                //TODO: 500 response
-                log.error("Failed to mkdir for dir="+dir.getAbsolutePath());
-            }
-        }
-        
-        return dir;
-    }
-
-    /**
-     * Get the path on the server file system to which to upload the file.
-     * 
-     * @param request
-     * @param fileItem
-     * @param first, true if this is the first (or only) part of the file
-     * @param part, true if the upload is partitioned
-     * @return
-     * @throws IOException
-     */
-    protected File getUploadFile(final HttpServletRequest request, final FileItem fileItem, boolean first, boolean part) throws IOException {
-        File parentDir = getUploadDirectory(request);
-        File file = getUploadFile(parentDir, fileItem, first, part);
-        return file;
-    }
-    
-    protected File getUploadFile(final File uploadDir, final FileItem file, final boolean isFirst, final boolean isPart) throws IOException {
-        File writeFile = new File(uploadDir, file.getName());
-
-        if (isFirst) {
-            // Check if file exists,
-            // only if this is the first or only part of the file 
-            if (writeFile.exists()) {
-                log.debug("File already exists: "+writeFile.getAbsolutePath());
-                throw new IOException("File already exists");
-            }
-        }
-        
-        if (isPart) {
-            //rule for locating partial uploads
-            //TODO, consider storing upload status in the DB rather than by naming convention
-            writeFile = new File(writeFile.getParent(), writeFile.getName() + ".part");
-        }
-        
-        //special-case
-        if (isFirst && isPart && writeFile.exists()) {
-            //I interpret this to mean that a user is attempting to redo a failed upload
-            //TODO: prove that this is correct
-            log.debug("Partial file already exists: "+writeFile.getAbsolutePath());
-            //TODO: this is most certainly not the correct behavior, but it is better than ignoring
-            throw new IOException("Partial file already exists");
-        }
-        return writeFile; 
-    }
-
-    protected String getParameter(final List<FileItem> parameters, final String param) {
+    protected String getParameter(List<FileItem> parameters, String param) {
         Iterator<FileItem> it = parameters.iterator();
         while (it.hasNext()) {
             FileItem postParameter = it.next();
@@ -163,44 +56,56 @@ public class UploadReceiver extends HttpServlet {
         return null;
     }
     
-    protected void loadFile(final HttpServletRequest request, final List<FileItem> postParameters, final PrintWriter responseWriter, final String userId) throws Exception {
-        final boolean isFirst = true;
-        final boolean isPart = false;
-
-        for(FileItem fileItem : postParameters) {
-            if (!fileItem.isFormField()) {
-                File uploadedFile = getUploadFile(request, fileItem, isFirst, isPart);
-                fileItem.write(uploadedFile);
-                handleFileUploadCompleted(userId, uploadedFile);
-                //TODO: double check that this is the correct response, I had to make a guess when we switched from getWriteDirectory to getWriteFile
-                responseWriter.println(uploadedFile.getParent() + ";" + uploadedFile.getCanonicalPath());
+    /**
+     * Get the parent directory on the server file system to which to upload the file
+     * @param request
+     * @return
+     * @throws FileUploadException
+     */
+    protected File getUploadDirectory(HttpServletRequest request) throws FileUploadException {
+        final String userId = LoginManager.instance().getUserIdFromSession(request);
+        final Context context = Context.getContextForUser(userId);
+        final File dir = ServerConfiguration.instance().getUserUploadDir(context);
+        
+        // lazily create directory if need be
+        if (!dir.exists()) {
+            boolean success = dir.mkdir();
+            if (!success) {
+                log.error("Failed to mkdir for dir="+dir.getAbsolutePath());
+                throw new FileUploadException("Could not get the appropriate directory for file upload");
             }
         }
+        
+        return dir;
     }
     
-    protected void loadPartition(final HttpServletRequest request, final List<FileItem> postParameters, final PrintWriter responseWriter, final boolean isFirst, final boolean isLast, final String userId) throws Exception { 
-        final boolean isPart = true;
-        for(FileItem fileItem : postParameters) {
-            if (!fileItem.isFormField()) {
-                File partialFile = getUploadFile(request, fileItem, isFirst, isPart); 
-                appendToFile(fileItem, partialFile);
-                
-                if (isLast) {
-                    File uploadedFile = getUploadFile(request, fileItem, false, false);
-                    boolean success = partialFile.renameTo(uploadedFile);
-                    if (!success) {
-                        //TODO: 500 response
-                    }
-                    else {
-                        handleFileUploadCompleted(userId, uploadedFile);
-                    }
-                }
-                //TODO: double check that this is the correct response, I had to make a guess when we switched from getWriteDirectory to getWriteFile
-                responseWriter.println(partialFile.getParent() + ";" + partialFile.getCanonicalPath());
-            }
-        }
+    /**
+     * Get the path on the server file system to which to upload the file.
+     * 
+     * @param request
+     * @param name
+     * @return
+     * @throws FileUploadException
+     */
+    protected File getUploadFile(HttpServletRequest request, String name) throws FileUploadException {
+        File parentDir = getUploadDirectory(request);
+        File file = getUploadFile(parentDir, name);
+        return file;
     }
-
+    
+    protected File getUploadFile(File uploadDir, String name) throws FileUploadException {
+        return new File(uploadDir, name);
+    }
+    
+    // Older implementation of appendPartition
+    private void appendPartitionOld(FileItem from, File to) throws IOException {
+        RandomAccessFile raf = new RandomAccessFile(to, "rw");
+        raf.seek(to.length());
+        byte[] bytes = from.get();
+        raf.write(bytes);
+        raf.close();
+    }
+    
     /**
      * Append the contents of the fileItem to the given file.
      * 
@@ -208,14 +113,13 @@ public class UploadReceiver extends HttpServlet {
      * @param to, the partial file to which to append the bytes
      * @throws IOException
      */
-    private void appendToFile(FileItem from, File to) throws IOException {
+    private void appendPartition(FileItem from, File to) throws IOException {
         InputStream is = null;
         OutputStream os = null;
         
-        final boolean append = true;
         try {
             is = from.getInputStream();
-            os = new BufferedOutputStream(new FileOutputStream(to, append));
+            os = new BufferedOutputStream(new FileOutputStream(to, true));
             final int BUFSIZE = 2048;
             final byte buf[] = new byte[BUFSIZE];
             int n;
@@ -224,57 +128,125 @@ public class UploadReceiver extends HttpServlet {
             }
         }
         finally {
-            try {
-                is.close();
-            }
-            catch (IOException e) {
-                
-            }
-            try {
-                os.close();
-            }
-            catch (IOException e) {
-                
-            }
+            is.close();
+            os.close();
         }
     }
     
-    // not sure if this was the most effective way to stream the data
-    private void appendToFileOrig(FileItem from, File to) throws IOException {
-        RandomAccessFile raf = new RandomAccessFile(to, "rw");
-        raf.seek(to.length());
-        byte[] bytes = from.get();
-        raf.write(bytes);
-        raf.close();
-    }
-
-    //TODO: implement exception handling, 500 response code if unable to connect to the DB, et cetera
-    private void handleFileUploadCompleted(final String userId, final File file) throws Exception {
+    private void doFileCompletion(String userId, File file) throws FileUploadException {
         if (log.isDebugEnabled()) {
-            try {
-                log.debug("Uploaded file to: "+file.getAbsolutePath());
-            }
-            catch (Throwable t) {
-                log.error("Error writing log!", t);
-            }
+            log.debug("Uploaded file to: "+file.getAbsolutePath());
         } 
-        
-        //record the uploaded file into the DB
-        final UploadFile uploadFile = new UploadFile();
-        uploadFile.initFromFile(file);
-        uploadFile.setUserId(userId);
 
         try {
+            //record the uploaded file into the DB
+            final UploadFile uploadFile = new UploadFile();
+            uploadFile.initFromFile(file);
+            uploadFile.setUserId(userId);
+            
             //constructor begins a Hibernate Transaction
             UploadFileDAO dao = new UploadFileDAO();
             dao.save(uploadFile);
             HibernateUtil.commitTransaction();
         }
+        catch (IOException e) {
+            throw new FileUploadException("Problem uploading file");
+        }
         catch (Exception e) {
             log.error(e);
             HibernateUtil.rollbackTransaction();
-            throw e;
+            throw new FileUploadException("Problem uploading file to database");
         }
     }
     
+    protected String writeFile(HttpServletRequest request, List<FileItem> postParameters, boolean first, boolean last, String userId) throws FileUploadException { 
+        final boolean partial = !(first && last);
+        String responeText = "";
+        for(FileItem fileItem : postParameters) {
+            if (!fileItem.isFormField()) {
+                File file = getUploadFile(request, fileItem.getName()); 
+                
+                // Check if the file exists and throw an error if it does
+                if (file.exists()) {
+                    throw new FileUploadException("File already exists");
+                }
+                
+                // If partial file, set file to be .part, removing old file parts first
+                if (partial && first) {
+                    File partialFile = getUploadFile(request, fileItem.getName() + ".part");
+                    if (partialFile.exists() && first) {
+                        partialFile.delete();
+                    }
+                    file = getUploadFile(request, fileItem.getName() + ".part");
+                }
+                
+                try {
+                    appendPartition(fileItem, file);
+                }
+                catch (IOException e) {
+                    throw new FileUploadException("Problems appending partition onto uploaded file");
+                }
+                
+                // Do final tasks for the last partition
+                if (last) {
+                    // If last partition, rename .part file to actual file
+                    if (partial) {
+                        boolean success = file.renameTo(getUploadFile(request, fileItem.getName()));
+                        if (!success) {
+                            throw new FileUploadException("Unable to finalize uploaded file");
+                        }
+                    }
+                    
+                    doFileCompletion(userId, file);
+                }
+                try {
+                    responeText += file.getParent() + ";" + file.getCanonicalPath();
+                }
+                catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+        return responeText;
+    }
+    
+    protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
+        PrintWriter responseWriter = response.getWriter();
+        String responseText = null;
+        
+        try {
+            // Handle the case of there not being a current session ID
+            final String userId = LoginManager.instance().getUserIdFromSession(request);
+            if (userId == null) {
+                // Return error to the applet; this happens if a user logged out during an upload
+                throw new FileUploadException("No user ID attached to session");
+            }
+            
+            RequestContext reqContext = new ServletRequestContext(request);
+            if (FileUploadBase.isMultipartContent(reqContext)) {
+                FileItemFactory factory = new DiskFileItemFactory();
+                ServletFileUpload upload = new ServletFileUpload(factory);
+                List<FileItem> postParameters = upload.parseRequest(reqContext);
+                final int partitionCount = Integer.parseInt(getParameter(postParameters, "partitionCount"));
+                final int partitionIndex = Integer.parseInt(getParameter(postParameters, "partitionIndex"));
+                final boolean firstPartition = partitionIndex == 0;
+                final boolean lastPartition = (partitionIndex + 1) == partitionCount;
+                responseText = writeFile(request, postParameters, firstPartition, lastPartition, userId);
+                
+            }
+            else {
+                // This servlet wasn't called by a multi-file uploader. Return an error page.
+                response.sendRedirect(request.getContextPath() + "/pages/internalError.jsf");
+            } 
+            
+            returnUploadResponse(responseWriter, responseText);
+        }
+        catch (FileUploadException e) {
+            returnErrorResponse(responseWriter, e);
+        } 
+        finally {
+            responseWriter.close();
+        } 
+    }
 }
