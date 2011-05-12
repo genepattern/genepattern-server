@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
+import org.genepattern.util.SemanticUtil;
+
 
 /**
  * Hibernate mapping class to the UPLOAD_FILE table.
@@ -33,8 +35,9 @@ public class UploadFile {
         
         this.lastModified = new Date(file.lastModified());
         this.fileLength = file.length();
-        
-        //TODO: implement kind
+
+        this.extension = SemanticUtil.getExtension(file);
+        this.kind = SemanticUtil.getKind(file);
     }
 
     public String getPath() {

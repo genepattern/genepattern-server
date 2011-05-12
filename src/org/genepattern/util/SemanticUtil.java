@@ -37,37 +37,91 @@ public class SemanticUtil {
     private SemanticUtil() {
     }
 
-    public static String getKind(File file) {
-        String name = file.getName();
-        int dotIndex = name.lastIndexOf(".");
+    public static String getExtension(File file) {
+        String name = null;
+        if (file != null) {
+            name = file.getName();
+        }
+        if (name == null) {
+            return null;
+        }
+        if (file.isDirectory()) {
+            return null;
+        }
+        
         String extension = null;
-        if (dotIndex > 0) {
-            extension = name.substring(dotIndex + 1, name.length());
-        } else {
+        int idx = name.lastIndexOf(".");
+        if (idx > 0 && idx < (name.length() - 1)) {
+            extension = name.substring(idx + 1);
+        }
+        return extension;
+    }
+
+    public static String getKind(File file) {
+        String extension = getExtension(file);
+        if (extension == null) {
             return null;
         }
         if (extension.equalsIgnoreCase("odf")) {
-            OdfParser parser = new OdfParser();
-            MyOdfHandler handler = new MyOdfHandler();
-            FileInputStream fis = null;
-            parser.setHandler(handler);
+            return getOdfKind(file);
+        }
+        return extension.toLowerCase();
+    }
+
+    private static String getOdfKind(File file) {
+        OdfParser parser = new OdfParser();
+        MyOdfHandler handler = new MyOdfHandler();
+        FileInputStream fis = null;
+        parser.setHandler(handler);
+        try {
+            fis = new FileInputStream(file);
+            parser.parse(fis);
+        }
+        catch (Exception e) {
+        }
+        finally {
             try {
-                fis = new FileInputStream(file);
-                parser.parse(fis);
-            } catch (Exception e) {
-            } finally {
-                try {
-                    if (fis != null) {
-                        fis.close();
-                    }
-                } catch (IOException x) {
+                if (fis != null) {
+                    fis.close();
                 }
             }
-            return handler.model;
-        } else {
-            return extension.toLowerCase();
+            catch (IOException x) {
+            }
         }
+        return handler.model;
     }
+    
+//    public static String getKindOld(File file) {
+//        String name = file.getName();
+//        int dotIndex = name.lastIndexOf(".");
+//        String extension = null;
+//        if (dotIndex > 0) {
+//            extension = name.substring(dotIndex + 1, name.length());
+//        } else {
+//            return null;
+//        }
+//        if (extension.equalsIgnoreCase("odf")) {
+//            OdfParser parser = new OdfParser();
+//            MyOdfHandler handler = new MyOdfHandler();
+//            FileInputStream fis = null;
+//            parser.setHandler(handler);
+//            try {
+//                fis = new FileInputStream(file);
+//                parser.parse(fis);
+//            } catch (Exception e) {
+//            } finally {
+//                try {
+//                    if (fis != null) {
+//                        fis.close();
+//                    }
+//                } catch (IOException x) {
+//                }
+//            }
+//            return handler.model;
+//        } else {
+//            return extension.toLowerCase();
+//        }
+//    }
 
     private static class MyOdfHandler implements OdfHandler {
         public String model;
