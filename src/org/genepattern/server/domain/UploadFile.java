@@ -95,5 +95,23 @@ public class UploadFile {
     public void setLastModified(Date lastModified) {
         this.lastModified = lastModified;
     }
+    
+    //extra methods, not mapped to DB
+    
+    /**
+     * Get a link to the file, e.g. /gp/data/<path_to_file>.
+     * @return
+     */
+    public String getLink() {
+        //hard-coded to the dataservlet
+        //example 1, fully qualified server file path
+        //    http://127.0.0.1:8080/gp/data//Shared/file.txt
+        //example 2, relative server file path, relative to the working dir of the server
+        //    http://127.0.0.1:8080/gp/data/../users/test/user.uploads/file.txt
+        
+        //TODO: hard-coded context path should be configurable
+        String link = "/gp/data/" +  path;
+        return link;
+    }
 
 }

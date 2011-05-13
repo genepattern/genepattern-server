@@ -38,7 +38,7 @@
       <tr class="admin-row">
         <td><h:outputText value="#{file.fileLength}" converter="fl" /></td>
         <td><h:outputText value="#{file.lastModified}" converter="gp" /></td>
-        <td>#{file.name}</td>
+        <td><h:outputLink value="#{file.link}">#{file.name}</h:outputLink></td>
         <td>#{file.kind}</td>
         <td>#{file.path}</td>
       </tr>
