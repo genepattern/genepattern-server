@@ -36,8 +36,8 @@
       </thead>
     <t:dataList var="file" value="#{uploadFilesBean.files}">
       <tr class="admin-row">
-        <td>#{file.fileLength}</td>
-        <td>#{file.lastModified}</td>
+        <td><h:outputText value="#{file.fileLength}" converter="fl" /></td>
+        <td><h:outputText value="#{file.lastModified}" converter="gp" /></td>
         <td>#{file.name}</td>
         <td>#{file.kind}</td>
         <td>#{file.path}</td>
