@@ -6,6 +6,10 @@
   <converter-id>gp</converter-id>
   <converter-class>org.genepattern.server.webapp.DateTimeConverter</converter-class>
 </converter>
+<converter>
+  <converter-id>fl</converter-id>
+  <converter-class>org.genepattern.server.webapp.jsf.FileLengthConverter</converter-class>
+</converter>
 
  <managed-bean>
   <managed-bean-name>authorizationBean</managed-bean-name>
