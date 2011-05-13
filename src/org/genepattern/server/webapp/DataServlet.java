@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 
 /**
  * Access to GP data files which are on the server file path. 
@@ -106,18 +107,26 @@ public class DataServlet extends HttpServlet implements Servlet {
         //1) require an authenticated GP user account
         String gpUserId = BasicAuthUtil.getAuthenticatedUserId(request, response);
         if (gpUserId == null) {
+            log.debug("Not authenticated, request authentication");
             BasicAuthUtil.requestAuthentication(response);
             return;
         }
 
         //2) require a valid server file
-        File fileObj = getRequestedFile(request);        
+        File fileObj = getRequestedFile(request); 
         if (fileObj == null || fileObj.isDirectory()) {
+            log.debug("Directory listings are forbidden: "+fileObj);
             //not implementing directory browser 
             ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid request: "+fileObj);
             return;
         }
+        if (!fileObj.exists()) {
+            log.debug("File does not exist: "+fileObj.getPath());
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found: "+fileObj.getPath());
+            return;
+        }
         if (!fileObj.canRead()) {
+            log.debug("Server can't read file: "+fileObj.getPath());
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found: "+fileObj.getPath());
             return;
         }
@@ -125,6 +134,7 @@ public class DataServlet extends HttpServlet implements Servlet {
         //3) require the GP user account is authorized to read the file
         boolean gpUserCanRead = gpUserCanRead(gpUserId, fileObj);
         if (!gpUserCanRead) {
+            log.debug("Gp user does not have permission to read file, gpUserId="+gpUserId+", fileObj="+fileObj.getPath());
             BasicAuthUtil.requestAuthentication(response);
             return;
         }
@@ -133,115 +143,6 @@ public class DataServlet extends HttpServlet implements Servlet {
         response.setHeader("Accept-Ranges", "bytes");
         serveFile(request, response, httpMethod, fileObj);
     }
-
-//    /**
-//     * Check the servlet request for an authenticated user.
-//     * First check for a gp userid from the session, then
-//     * do basic HTTP Authentication.
-//     * 
-//     * @param req
-//     * @param resp
-//     * @return a valid userid, or null if not authenticated.
-//     * @throws IOException
-//     */
-//    private String getAuthenticatedUserId(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-//        String userIdFromSession = LoginManager.instance().getUserIdFromSession(req);
-//
-//        // Get Authorization header
-//        String userIdFromAuthorizationHeader = null;
-//        byte[] password = null;
-//        String auth = req.getHeader("Authorization");
-//        if (auth != null) {
-//            String[] up = getUsernamePassword(auth);
-//            userIdFromAuthorizationHeader = up[0];
-//            String passwordStr = up[1];
-//            password = passwordStr != null ? passwordStr.getBytes() : null;
-//        }
-//
-//        //if the session is already authenticated
-//        if (userIdFromSession != null) {
-//            if (userIdFromAuthorizationHeader == null || userIdFromSession.equals(userIdFromAuthorizationHeader)) {
-//                return userIdFromSession;
-//            }
-//            //special-case when the userId from the session doesn't match the one in the authorization header
-//            //LoginManager.instance().logout(req, resp, false);
-//            userIdFromSession = null;
-//        }
-//
-//        //if we are here, check the authorization header ...
-//        try {
-//            boolean authenticated = UserAccountManager.instance().authenticateUser(userIdFromAuthorizationHeader, password);
-//            if (authenticated) {
-//                //LoginManager.instance().addUserIdToSession(req, userIdFromAuthorizationHeader);
-//                return userIdFromAuthorizationHeader;
-//            }
-//        }
-//        catch (AuthenticationException e) {
-//        }
-//
-//        //if we are here, it means we are not authenticated, return null
-//        return null;
-//    }
-    
-//    /**
-//     * Parse out the username:password pair from the authorization header.
-//     * 
-//     * @param auth
-//     * @return <pre>new String[] {<username>, <password>};</pre>
-//     */
-//    private String[] getUsernamePassword(String auth) {
-//        String[] up = new String[2];
-//        up[0] = null;
-//        up[1] = null;
-//        if (auth == null) {
-//            return up;
-//        }
-//
-//        if (!auth.toUpperCase().startsWith("BASIC "))  {
-//            return up;
-//        }
-//
-//        // Get encoded user and password, comes after "BASIC "
-//        String userpassEncoded = auth.substring(6);
-//
-//        // Decode it, using any base 64 decoder
-//        sun.misc.BASE64Decoder dec = new sun.misc.BASE64Decoder();
-//        String userpassDecoded = null;
-//        try {
-//            userpassDecoded = new String(dec.decodeBuffer(userpassEncoded));
-//        }
-//        catch (IOException e) {
-//            log.error("Error decoding username and password from HTTP request header", e);
-//            return up;
-//        }
-//        String username = "";
-//        String passwordStr = null;
-//        int idx = userpassDecoded.indexOf(":");
-//        if (idx >= 0) {
-//            username = userpassDecoded.substring(0, idx);
-//            passwordStr = userpassDecoded.substring(idx+1);
-//        }
-//        up[0] = username;
-//        up[1] = passwordStr;
-//        return up;
-//    }
-
-//    /**
-//     * Call this method when the current request is not authenticated. 
-//     * Fail with a 401 status code (UNAUTHORIZED) 
-//     * and respond with the WWW-Authenticate header for this servlet.
-//     * 
-//     * Note that this is the normal situation the first time you request a protected resource.
-//     * The client web browser will prompt for userID and password and cache them
-//     * so that it doesn't have to prompt you again.
-//     * @param response
-//     * @throws IOException
-//     */
-//    private void requestAuthentication(HttpServletResponse response) throws IOException {
-//        final String realm = "GenePattern";
-//        response.setHeader("WWW-Authenticate", "BASIC realm=\""+realm+"\"");
-//        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-//    }
 
     /**
      * Map the requested resource to a server file path.
@@ -266,6 +167,7 @@ public class DataServlet extends HttpServlet implements Servlet {
         if (httpMethod == HTTPMethod.HEAD) {
             serveContent = false;
         }
+        log.debug(""+httpMethod+" "+request.getRequestURI());
         FileDownloader.serveFile(this.getServletContext(), request, response, serveContent, fileObj);    
     }
 
@@ -278,12 +180,44 @@ public class DataServlet extends HttpServlet implements Servlet {
      * @return true iff the current user has permission to read the file.
      */
     private boolean gpUserCanRead(String userid, File fileObj) {
-        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userid);
-        boolean allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(userContext);
-        if (!allowInputFilePaths) {
-            return false;
+        //admin users can read all files
+        //TODO: come up with an improved policy for ACL for admin users
+        boolean isAdmin = false;
+        isAdmin = AuthorizationHelper.adminJobs(userid);
+        if (isAdmin) {
+            return true;
+        }
+
+        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userid); 
+        boolean isInUploadDir = isInUserUploadDir(userContext, fileObj);
+        if (isInUploadDir) {
+            return true;
         }
         
+        boolean canReadServerFile = canReadServerFile(userContext, fileObj);
+        if (canReadServerFile) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param userContext
+     * @param fileObj
+     * @return true if the given file is in the user upload directory
+     */
+    private boolean isInUserUploadDir(ServerConfiguration.Context userContext, File fileObj) {
+        File userUploadDir = ServerConfiguration.instance().getUserUploadDir(userContext);
+        return isDescendant(userUploadDir, fileObj);
+    }
+    
+    /**
+     * 
+     * @param userContext
+     * @param fileObj
+     * @return true of the given user has permission to read the file on the server file path.
+     */
+    private boolean canReadServerFile(ServerConfiguration.Context userContext, File fileObj) {
         CommandProperties.Value value = ServerConfiguration.instance().getValue(userContext, "server.browse.file.system.root");
         if (value == null) {
             //Note: by default, all files on the server's file system are readable
@@ -296,20 +230,11 @@ public class DataServlet extends HttpServlet implements Servlet {
         for(String filepath : filepaths) {
             File rootFile = new File(filepath);
             //if the fileObj is a descendant of the root file, return true
-            try {
-                if (isDescendant(rootFile, fileObj)) {
-                    return true;
-                }
-            }
-            catch (IOException e) {
-                log.error("Error in isDescendant(rootFile="+ rootFile.getAbsolutePath()
-                        +", fileObj="+fileObj.getAbsolutePath()
-                        +"): "+e.getLocalizedMessage(), e);
-            }
+            if (isDescendant(rootFile, fileObj));
         }
-        return false;
+        return false; 
     }
-
+    
     /**
      * Is the given child file a descendant of the parent file,
      * based on comparing canonical path names.
@@ -322,19 +247,26 @@ public class DataServlet extends HttpServlet implements Servlet {
      * Notes:
      *     http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5002170
      */
-    public static boolean isDescendant(File parent, File child) throws IOException {
+    public static boolean isDescendant(File parent, File child) {
         if (child.equals(parent)) {
             return true;
         } 
-        
-        //assume canonical paths are sufficient
-        String canonicalParent = parent.getAbsoluteFile().getCanonicalPath();
-        String canonicalChild = child.getAbsoluteFile().getCanonicalPath();
-        if (canonicalChild.startsWith(canonicalParent)) {
-            return true;
-        }
 
-        //Note: doesn't follow sym links
+        try {
+            //assume canonical paths are sufficient
+            String canonicalParent = parent.getAbsoluteFile().getCanonicalPath();
+            String canonicalChild = child.getAbsoluteFile().getCanonicalPath();
+            if (canonicalChild.startsWith(canonicalParent)) {
+                return true;
+            }
+
+            //Note: doesn't follow sym links
+        }
+        catch (IOException e) {
+            log.error("Error in isDescendant(parent="+ parent.getAbsolutePath()
+                    +", child="+child.getAbsolutePath()
+                    +"): "+e.getLocalizedMessage(), e);
+        }
         return false;
     }
 
