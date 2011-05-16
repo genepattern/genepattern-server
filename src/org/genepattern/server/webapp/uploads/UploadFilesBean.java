@@ -75,7 +75,8 @@ public class UploadFilesBean {
 */
     private String currentUser;
     private List<FileInfoWrapper> files;
-    private TaskInfo currentTaskInfo;
+    private String currentTaskLsid = null;
+    private TaskInfo currentTaskInfo = null;
     private Map<String,SortedSet<TaskInfo>> kindToTaskInfo;
     private static final Comparator<TaskInfo> taskInfoComparator =  new Comparator<TaskInfo>() {
         public int compare(TaskInfo o1, TaskInfo o2) {
@@ -108,7 +109,11 @@ public class UploadFilesBean {
         }
         return currentUser;
     }
-
+    
+    public void setCurrentTaskLsid(String lsid) {
+        this.currentTaskLsid = lsid;
+    }
+    
     public List<FileInfoWrapper> getFiles() {
         if (files == null) {
             initFiles(); 
@@ -119,7 +124,6 @@ public class UploadFilesBean {
     private void initFiles() {
         currentUser = UIBeanHelper.getUserId();
         List<UploadFile> uploadedFiles = new UploadFileDAO().findByUserId(currentUser);
-        //files = Collections.unmodifiableList(uploadedFiles);
         files = new ArrayList<FileInfoWrapper>();
         for(UploadFile file : uploadedFiles) {
             files.add(new FileInfoWrapper(file));
@@ -130,7 +134,11 @@ public class UploadFilesBean {
     private void initModuleMenuItems() {
         kindToTaskInfo = new HashMap<String, SortedSet<TaskInfo>>();
         
-        TaskInfo[] taskInfos = new AdminDAO().getLatestTasks(currentUser);
+        AdminDAO adminDao = new AdminDAO();
+        if (currentTaskLsid != null) {
+            currentTaskInfo = adminDao.getTask(currentTaskLsid, currentUser);
+        }
+        TaskInfo[] taskInfos = adminDao.getLatestTasks(currentUser);
         for(TaskInfo taskInfo : taskInfos) {
             for(String kind : taskInfo._getInputFileTypes()) {
                 SortedSet<TaskInfo> taskInfosForMap = kindToTaskInfo.get(kind);
