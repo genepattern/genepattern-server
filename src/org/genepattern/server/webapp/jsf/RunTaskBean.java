@@ -238,6 +238,11 @@ public class RunTaskBean {
         showParameterDescriptions = b;
         new UserDAO().setProperty(UIBeanHelper.getUserId(), "show.parameter.descriptions", String.valueOf(b));
     }
+    
+    public String attachServerPath(String path) {
+        String server = UIBeanHelper.getServer();
+        return server.substring(0, server.length() -3) + path;
+    }
 
     public void setTask(String taskNameOrLsid) {
         JobBean jobBean = (JobBean) UIBeanHelper.getManagedBean("#{jobsBean}");
@@ -279,6 +284,7 @@ public class RunTaskBean {
         if (matchOutputFileSource == null)
             matchOutputFileSource = "GenePattern";
         String matchOutputFileDirName = (String) UIBeanHelper.getRequest().getAttribute("outputFileDirName");
+        String downloadPath = (String) UIBeanHelper.getRequest().getAttribute("downloadPath");
 
         String gsUrl = null;
         if ((gsb != null) && ("GENOMESPACE".equalsIgnoreCase(matchOutputFileSource))){
@@ -287,7 +293,7 @@ public class RunTaskBean {
         
         String prevUploadedFileUrl = null;
         if ((ufb != null) && ("uploadedfiles".equalsIgnoreCase(matchOutputFileSource))) {
-            prevUploadedFileUrl = ufb.getGenePatternFileURL(matchOutputFileDirName, matchOutputFileParameterName);
+            prevUploadedFileUrl = attachServerPath(downloadPath);
         }
         else if (matchOutputFileSource.equalsIgnoreCase("inputfiles")) {
             prevUploadedFileUrl = UIBeanHelper.getServer() + matchOutputFileParameterName;

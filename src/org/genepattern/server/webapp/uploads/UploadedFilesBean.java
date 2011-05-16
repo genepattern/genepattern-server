@@ -39,6 +39,7 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.webapp.FileDownloader;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.server.webapp.uploads.UploadFilesBean.FileInfoWrapper;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.SemanticUtil;
@@ -138,14 +139,14 @@ public class UploadedFilesBean {
      * @param file
      * @return
      */
-    public UploadFileInfo getFile(String dirname, String file) {
-        for (UploadDirectory dir : availableDirectories) {
-            if ((dir.getName().equals(dirname)) || (dirname == null)) {
-                return dir.getUploadFiles().get(file);
-            }
-        }
-        return null;
-    }
+//    public UploadFileInfo getFile(String dirname, String file) {
+//        for (UploadDirectory dir : availableDirectories) {
+//            if ((dir.getName().equals(dirname)) || (dirname == null)) {
+//                return dir.getUploadFiles().get(file);
+//            }
+//        }
+//        return null;
+//    }
 
     public String getFileURL(String dirname, String filename) {
         if (filename == null)
@@ -267,120 +268,120 @@ public class UploadedFilesBean {
         boolean display = ServerConfiguration.instance().getGPBooleanProperty(userContext, "upload.display.dirs", true);
         
         // Return an empty list if displaying upload dirs is turned off
-        if (!display) {
+//        if (!display) {
             return new ArrayList<UploadDirectory>();
-        }
+//        }
 
-        int fileCount = 0;
-        if (availableDirectories != null) {
-            for (UploadDirectory ud : availableDirectories) {
-                fileCount += ud.getUploadFiles().size();
-            }
-        }
-
-        if ((availableDirectories == null) || (fileCount != getCurrentUserFileCount())) {
-            availableDirectories = new ArrayList<UploadDirectory>();
-
-            /**
-             * The directory layer is unnecessary for now but will be needed
-             * once we have subfolders and shared folders in GS
-             */
-            int dirCount = 0;
-            List<DirectoryFileListPair> dirs =  new ArrayList<DirectoryFileListPair>();
-            dirs.add(new DirectoryFileListPair(new UploadDirectory("Job Input Files"), getJobFiles()));
-            
-            //include listing of uploaded files even if allow.batch.process is disabled,
-            //    so that FTP transfers will show up on the Uploaded Files tab
-            List<File> userUploadFiles = getUserUploadFiles();
-            if (userUploadFiles != null && userUploadFiles.size() > 0) {
-                UploadDirectory userUploadDir = new UploadDirectory("Uploaded Files");
-                DirectoryFileListPair userUploadRecords = new DirectoryFileListPair(userUploadDir, userUploadFiles, true);
-                dirs.add(userUploadRecords);
-            }
-            
-            for (DirectoryFileListPair pair : dirs) {
-                UploadDirectory userDir = pair.dir;
-      
-                List<UploadFileInfo> fileList = new ArrayList<UploadFileInfo>();
-                List<File> originalList = pair.fileList;
-                for (File f : originalList) {
-                    File[] fList = f.listFiles();
-                    if (fList == null) {
-                        log.error("Error listing files in subdir="+f.getAbsolutePath());
-                    }
-                    if (fList != null) {
-                        for (File aFile : f.listFiles()) {
-                            UploadFileInfo ufi = new UploadFileInfo(aFile);
-                            ufi.setUrl(getFileURL(f.getName(), encodeFilename(aFile.getName())));
-                            ufi.setPath(encodeFilename(f.getName()));
-                            ufi.setGenePatternUrl(getGenePatternFileURL(f.getName(), encodeFilename(aFile.getName())));
-                            ufi.setModified(aFile.lastModified());
-                            if (pair.directUploadList) {
-                                ufi.setDirectUpload(true);
-                            }
-                            fileList.add(ufi);
-                        }
-                    }
-                } 
-
-                // Sort all files by last modified date
-                Collections.sort(fileList, new FileModifiedComparator());
-                
-                int count = 0;
-                Map<String,Integer> usedFileNames = new HashMap<String, Integer>();
-                
-                int maxFiles = ServerConfiguration.instance().getGPIntegerProperty(userContext, "upload.maxfiles", DEFAULT_upload_maxfiles);
-    
-                for (UploadFileInfo aFile : fileList) {
-                    if (count >= maxFiles) {
-                        break;
-                    }
-                    if (usedFileNames.get(aFile.getFilename()) != null) {
-                        UploadFileInfo info = userDir.getUploadFiles().get(aFile.getFilename());
-                        
-                        // Make sure the UploadFileInfo has the latest timestamp
-                        if (info.getModified() < aFile.getModified()) {
-                            aFile.setModuleMenuItems(info.getModuleMenuItems());
-                            userDir.getUploadFiles().put(aFile.getFilename(), aFile);
-                            usedFileNames.put(aFile.getFilename(), usedFileNames.get(aFile.getFilename()) + 1);
-                            aFile.setCopies(usedFileNames.get(aFile.getFilename()));
-                            info.setCopies(usedFileNames.get(aFile.getFilename()));
-                        }
-                        else {
-                            // Update Count
-                            info.incrementCopies();
-                            usedFileNames.put(aFile.getFilename(), usedFileNames.get(aFile.getFilename()) + 1);
-                            info.setCopies(usedFileNames.get(aFile.getFilename()));
-                        }
-                        continue;
-                    }
-                    
-                    userDir.getUploadFiles().put(aFile.getFilename(), aFile);
-                    Collection<TaskInfo> modules;
-                    List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
-                    modules = kindToModules.get(aFile.getKind());
-                    if (modules != null) {
-                        for (TaskInfo t : modules) {
-                            KeyValuePair mi = new KeyValuePair(t.getShortName(), UIBeanHelper.encode(t.getLsid()));
-                            moduleMenuItems.add(mi);
-                        }
-                        Collections.sort(moduleMenuItems, COMPARATOR);
-                    }
-                    aFile.setModuleMenuItems(moduleMenuItems);
-                    usedFileNames.put(aFile.getFilename(), 1);
-                    count++;
-                }
-                dirCount++;
-                
-                //don't include empty 'folders' in the list
-                int num = userDir.getUploadFiles().size();
-                if (num > 0) {
-                    availableDirectories.add(userDir);
-                }
-            }
-        }
-
-        return availableDirectories;
+//        int fileCount = 0;
+//        if (availableDirectories != null) {
+//            for (UploadDirectory ud : availableDirectories) {
+//                fileCount += ud.getUploadFiles().size();
+//            }
+//        }
+//
+//        if ((availableDirectories == null) || (fileCount != getCurrentUserFileCount())) {
+//            availableDirectories = new ArrayList<UploadDirectory>();
+//
+//            /**
+//             * The directory layer is unnecessary for now but will be needed
+//             * once we have subfolders and shared folders in GS
+//             */
+//            int dirCount = 0;
+//            List<DirectoryFileListPair> dirs =  new ArrayList<DirectoryFileListPair>();
+//            dirs.add(new DirectoryFileListPair(new UploadDirectory("Job Input Files"), getJobFiles()));
+//            
+//            //include listing of uploaded files even if allow.batch.process is disabled,
+//            //    so that FTP transfers will show up on the Uploaded Files tab
+//            List<File> userUploadFiles = getUserUploadFiles();
+//            if (userUploadFiles != null && userUploadFiles.size() > 0) {
+//                UploadDirectory userUploadDir = new UploadDirectory("Uploaded Files");
+//                DirectoryFileListPair userUploadRecords = new DirectoryFileListPair(userUploadDir, userUploadFiles, true);
+//                dirs.add(userUploadRecords);
+//            }
+//            
+//            for (DirectoryFileListPair pair : dirs) {
+//                UploadDirectory userDir = pair.dir;
+//      
+//                List<UploadFileInfo> fileList = new ArrayList<UploadFileInfo>();
+//                List<File> originalList = pair.fileList;
+//                for (File f : originalList) {
+//                    File[] fList = f.listFiles();
+//                    if (fList == null) {
+//                        log.error("Error listing files in subdir="+f.getAbsolutePath());
+//                    }
+//                    if (fList != null) {
+//                        for (File aFile : f.listFiles()) {
+//                            UploadFileInfo ufi = new UploadFileInfo(aFile);
+//                            ufi.setUrl(getFileURL(f.getName(), encodeFilename(aFile.getName())));
+//                            ufi.setPath(encodeFilename(f.getName()));
+//                            ufi.setGenePatternUrl(getGenePatternFileURL(f.getName(), encodeFilename(aFile.getName())));
+//                            ufi.setModified(aFile.lastModified());
+//                            if (pair.directUploadList) {
+//                                ufi.setDirectUpload(true);
+//                            }
+//                            fileList.add(ufi);
+//                        }
+//                    }
+//                } 
+//
+//                // Sort all files by last modified date
+//                Collections.sort(fileList, new FileModifiedComparator());
+//                
+//                int count = 0;
+//                Map<String,Integer> usedFileNames = new HashMap<String, Integer>();
+//                
+//                int maxFiles = ServerConfiguration.instance().getGPIntegerProperty(userContext, "upload.maxfiles", DEFAULT_upload_maxfiles);
+//    
+//                for (UploadFileInfo aFile : fileList) {
+//                    if (count >= maxFiles) {
+//                        break;
+//                    }
+//                    if (usedFileNames.get(aFile.getFilename()) != null) {
+//                        UploadFileInfo info = userDir.getUploadFiles().get(aFile.getFilename());
+//                        
+//                        // Make sure the UploadFileInfo has the latest timestamp
+//                        if (info.getModified() < aFile.getModified()) {
+//                            aFile.setModuleMenuItems(info.getModuleMenuItems());
+//                            userDir.getUploadFiles().put(aFile.getFilename(), aFile);
+//                            usedFileNames.put(aFile.getFilename(), usedFileNames.get(aFile.getFilename()) + 1);
+//                            aFile.setCopies(usedFileNames.get(aFile.getFilename()));
+//                            info.setCopies(usedFileNames.get(aFile.getFilename()));
+//                        }
+//                        else {
+//                            // Update Count
+//                            info.incrementCopies();
+//                            usedFileNames.put(aFile.getFilename(), usedFileNames.get(aFile.getFilename()) + 1);
+//                            info.setCopies(usedFileNames.get(aFile.getFilename()));
+//                        }
+//                        continue;
+//                    }
+//                    
+//                    userDir.getUploadFiles().put(aFile.getFilename(), aFile);
+//                    Collection<TaskInfo> modules;
+//                    List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
+//                    modules = kindToModules.get(aFile.getKind());
+//                    if (modules != null) {
+//                        for (TaskInfo t : modules) {
+//                            KeyValuePair mi = new KeyValuePair(t.getShortName(), UIBeanHelper.encode(t.getLsid()));
+//                            moduleMenuItems.add(mi);
+//                        }
+//                        Collections.sort(moduleMenuItems, COMPARATOR);
+//                    }
+//                    aFile.setModuleMenuItems(moduleMenuItems);
+//                    usedFileNames.put(aFile.getFilename(), 1);
+//                    count++;
+//                }
+//                dirCount++;
+//                
+//                //don't include empty 'folders' in the list
+//                int num = userDir.getUploadFiles().size();
+//                if (num > 0) {
+//                    availableDirectories.add(userDir);
+//                }
+//            }
+//        }
+//
+//        return availableDirectories;
     }
 
     public void setSelectedModule(String selectedModule) {
@@ -441,10 +442,10 @@ public class UploadedFilesBean {
         }
 
         for (UploadDirectory aDir : dirs) {
-            List<UploadFileInfo> outputFiles = aDir.getSortedUploadFiles();
+            List<FileInfoWrapper> outputFiles = aDir.getSortedUploadFiles();
 
             if (outputFiles != null) {
-                for (UploadFileInfo o : outputFiles) {
+                for (FileInfoWrapper o : outputFiles) {
                     List<KeyValuePair> moduleInputParameters = kindToInputParameters.get(o.getKind());
                     if (moduleInputParameters == null) {
                         log.debug("moduleInputParameters null and then set to unannotatedParameters: " + o.getFilename() + " Kind: " + o.getKind());
@@ -453,7 +454,8 @@ public class UploadedFilesBean {
                     else {
                         log.debug("moduleInputParameters not null: " + moduleInputParameters.size());
                     }
-                    o.setModuleInputParameters(moduleInputParameters);
+                    //FIXME: Reimplement
+                    //o.setModuleInputParameters(moduleInputParameters);
                 }
             }
             else {

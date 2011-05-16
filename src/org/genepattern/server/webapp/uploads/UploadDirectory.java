@@ -7,9 +7,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.genepattern.server.webapp.uploads.UploadFilesBean.FileInfoWrapper;
+
 public class UploadDirectory {
     public String name;
-    public Map<String, UploadFileInfo> uploadFiles;
+    public List<FileInfoWrapper> uploadFiles;
     public boolean expanded = true;
     public int level = 0;
 
@@ -25,24 +27,20 @@ public class UploadDirectory {
         this.name = name;
     }
 
-    public Map<String, UploadFileInfo> getUploadFiles() {
+    public List<FileInfoWrapper> getUploadFiles() {
         if (uploadFiles == null)
-            uploadFiles = new HashMap<String, UploadFileInfo>();
+            uploadFiles = new ArrayList<FileInfoWrapper>();
         return uploadFiles;
     }
 
-    public void setUploadFiles(Map<String, UploadFileInfo> uploadFiles) {
+    public void setUploadFiles(List<FileInfoWrapper> uploadFiles) {
         this.uploadFiles = uploadFiles;
 
     }
     
-    public List<UploadFileInfo> getSortedUploadFiles() {
-        List<UploadFileInfo> files = new ArrayList<UploadFileInfo>();
-        for (UploadFileInfo i : this.getUploadFiles().values()) {
-            files.add(i);
-        }
-        Collections.sort(files, new UploadFileComparator());
-        return files;
+    public List<FileInfoWrapper> getSortedUploadFiles() {
+        Collections.sort(uploadFiles, new UploadFileComparator());
+        return uploadFiles;
     }
 
     public boolean isExpanded() {
@@ -61,8 +59,8 @@ public class UploadDirectory {
         this.level = level;
     }
     
-    public class UploadFileComparator implements Comparator<UploadFileInfo> {
-        public int compare(UploadFileInfo o1, UploadFileInfo o2) {
+    public class UploadFileComparator implements Comparator<FileInfoWrapper> {
+        public int compare(FileInfoWrapper o1, FileInfoWrapper o2) {
             long value = o1.getModified() - o2.getModified();
             if (value < 0) {
                 return 1;

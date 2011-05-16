@@ -261,6 +261,10 @@ public class JobBean {
         dirname = UIBeanHelper.decode(dirname);
         request.setAttribute("outputFileDirName", dirname);
         
+        String path = request.getParameter("path");
+        dirname = UIBeanHelper.decode(path);
+        request.setAttribute("downloadPath", path);
+        
         String source = request.getParameter("source");
         source = UIBeanHelper.decode(source);
         request.setAttribute("outputFileSource", source);

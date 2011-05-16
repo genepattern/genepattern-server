@@ -14,13 +14,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
   <ui:composition>
   	
-    <div id="menuDiv_#{uploadDir.name}_#{aFile.encodedFilename}"  style="visibility:hidden;" class="popupMenu">
+    <div id="menuDiv_#{uploadDir.name}_#{aFile.filename}"  style="visibility:hidden;" class="popupMenu">
       <table>
         <tbody>
           <tr>
             <td>
             <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file from the upload directory?');" 
-              		actionListener="#{uploadedFilesBean.deleteFile}" immediate="true" rendered="#{aFile.directUpload}" >
+              		actionListener="#{uploadedFilesBean.deleteFile}" immediate="true">
                 <f:param value="#{aFile.filename}" name="filename"/>
                 <f:param value="#{aFile.path}" name="path"/>
                 <f:param value="#{uploadDir.name}" name="dirname"/>           
@@ -29,7 +29,7 @@
           </tr>
           <tr>
             <td>
-              <h:commandLink value="Save" actionListener="#{uploadedFilesBean.saveFileLocally}" immediate="true" rendered="#{not aFile.partial}">
+              <h:commandLink value="Save" actionListener="#{uploadedFilesBean.saveFile}" immediate="true" rendered="#{not aFile.partial}">
                 <f:param name="path" value="#{aFile.file.path}" />
               </h:commandLink>
             </td>
@@ -42,14 +42,14 @@
           <tr>
            	 <td><img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle" />
               &#160;<h:commandLink value="Save to GenomeSpace" action="#{genomeSpaceBean.sendInputFileToGenomeSpace}" immediate="true">
-                <f:param value="#{aFile.encodedFilename}" name="filename"/>
+                <f:param value="#{aFile.filename}" name="filename"/>
                 <f:param value="#{aFile.path}" name="dirname"/>
               </h:commandLink>
           	  </td>
           	</tr>
             </h:outputText>
 
-          	<h:outputText rendered="#{not empty aFile.moduleInputParameters}">
+          	<h:outputText rendered="#{not empty aFile.sendToParameters}">
           <tr>
             <td>
               <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
@@ -57,7 +57,7 @@
           </tr>
           </h:outputText>
           
-           <t:dataList value="#{aFile.moduleInputParameters}" var="p">
+           <t:dataList value="#{aFile.sendToParameters}" var="p">
             <tr>
               <td>
                <h:outputLink value="#" onclick="setInputField('#{p.key}', '#{aFile.genePatternUrl}');">
@@ -67,22 +67,21 @@
             </tr>
           </t:dataList>
   			
-  		<h:outputText rendered="#{not empty aFile.moduleMenuItems}">
+  		<h:outputText rendered="#{not empty aFile.sendToModules}">
   		<tr>
             <td>
               <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
             </td>
           </tr>
         </h:outputText>	
-          <t:dataList value="#{aFile.moduleMenuItems}" var="moduleMenuItem">
+          <t:dataList value="#{aFile.sendToModules}" var="moduleMenuItem">
             <tr>
               <td>
-                <h:commandLink value="#{moduleMenuItem.key}" action="#{jobsBean.loadTask}" immediate="true">
-                  <f:param value="#{moduleMenuItem.value}" name="module"/>
+                <h:commandLink value="#{moduleMenuItem.name}" action="#{jobsBean.loadTask}" immediate="true">
+                  <f:param value="#{moduleMenuItem.lsid}" name="module"/>
                   <f:param value="UploadedFiles" name="source"/>
-                  <f:param value="${aFile.encodedFilename}" name="name"/>
-                  <f:param value="#{aFile.path}" name="path"/>
-                  <f:param value="#{aFile.path}" name="dirname"/>
+                  <f:param value="${aFile.filename}" name="name"/>
+                  <f:param value="#{aFile.url}" name="path"/>
                 </h:commandLink>
               </td>
             </tr>

@@ -74,7 +74,7 @@ function toggleJobVisibility(jobNo) {
   
 
       <!-- Loop through jobs -->
-      <t:dataList var="uploadDir" value="#{uploadedFilesBean.availableDirectories}" rowIndexVar="dirIndex">
+      <t:dataList var="uploadDir" value="#{uploadFilesBean.availableDirectories}" rowIndexVar="dirIndex">
           <tr>
           <td width="0">
             <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="0" height="1"/>
