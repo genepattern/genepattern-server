@@ -230,7 +230,9 @@ public class DataServlet extends HttpServlet implements Servlet {
         for(String filepath : filepaths) {
             File rootFile = new File(filepath);
             //if the fileObj is a descendant of the root file, return true
-            if (isDescendant(rootFile, fileObj));
+            if (isDescendant(rootFile, fileObj)) {
+                return true;
+            }
         }
         return false; 
     }
