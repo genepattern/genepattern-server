@@ -36,12 +36,18 @@
       </thead>
     <t:dataList var="file" value="#{uploadFilesBean.files}">
       <tr class="admin-row">
-        <td><h:outputText value="#{file.fileLength}" converter="fl" /></td>
-        <td><h:outputText value="#{file.lastModified}" converter="gp" /></td>
-        <td><h:outputLink value="#{file.link}">#{file.name}</h:outputLink></td>
-        <td>#{file.kind}</td>
-        <td>#{file.path}</td>
+        <td><h:outputText value="#{file.file.fileLength}" converter="fl" /></td>
+        <td><h:outputText value="#{file.file.lastModified}" converter="gp" /></td>
+        <td><h:outputLink value="#{file.file.link}">#{file.file.name}</h:outputLink></td>
+        <td>#{file.file.kind}</td>
+        <td>#{file.file.path}</td>
       </tr>
+      <t:dataList var="sendToTaskInfo" value="#{file.sendToModules}">
+      <tr>
+        <td></td>
+        <td colspan="4">#{sendToTaskInfo.name} (#{sendToTaskInfo.lsid})</td>
+      </tr>
+      </t:dataList>
     </t:dataList>
     </table>
     

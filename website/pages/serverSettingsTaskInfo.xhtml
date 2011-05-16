@@ -36,7 +36,9 @@
       <tr class="tableheader-row2">
         <td align="left">id</td>
         <td align="left">name</td>
-        <td align="left">lsid</td>
+        <td align="left">lsid (basename)</td>
+        <td align="left">version</td>
+        <td align="left"> public? </td>
         <td align="left">owner</td>
       </tr>
       </thead>
@@ -44,7 +46,9 @@
       <tr class="admin-row">
         <td>#{taskInfoWrapper.taskId}</td>
         <td>#{taskInfoWrapper.taskInfo.name}</td>
-        <td>#{taskInfoWrapper.taskInfo.lsid}</td>
+        <td>#{taskInfoWrapper.lsidNoVersion}</td>
+        <td>#{taskInfoWrapper.version}</td>
+        <td style="text-align: center; padding-left: 10px; color: green;"><h:outputText rendered="#{taskInfoWrapper.public}">&#x2713;</h:outputText></td>
         <td>#{taskInfoWrapper.taskInfo.userId}</td>
       </tr>
     </t:dataList>

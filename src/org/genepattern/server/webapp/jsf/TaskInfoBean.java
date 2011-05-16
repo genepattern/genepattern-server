@@ -56,6 +56,18 @@ public class TaskInfoBean {
             //TODO: log error
             return "";
         }
+        
+        public String getVersion() {
+            if (lsid != null) {
+                return lsid.getVersion();
+            }
+            //TODO: log error
+            return "";
+        }
+        
+        public boolean isPublic() {
+            return taskInfo != null && taskInfo.getAccessId() == 1;
+        }
     }
 
     public void clearCache() {

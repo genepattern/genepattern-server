@@ -20,9 +20,11 @@ package org.genepattern.webservice;
  */
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -225,6 +227,7 @@ public class TaskInfo implements Serializable {
     }
 
     private transient Set<String> _inputFileTypes = null;
+    private transient Map<String, List<ParameterInfo>> _kindToParameterInfoMap = null;
     /**
      * Get the list of input file types that this module accepts, by getting the input file types for each of its 
      * input file parameters.
@@ -242,24 +245,44 @@ public class TaskInfo implements Serializable {
         return Collections.unmodifiableSet(_inputFileTypes);
     }
     
+    public List<ParameterInfo> _getSendToParameterInfos(String inputFileType) {
+        //initialize
+        _getInputFileTypes();
+        List<ParameterInfo> rval = _kindToParameterInfoMap.get(inputFileType);
+        if (rval == null) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableList(rval);
+    }
+    
     private Set<String> initInputFileTypes() {
-        Set<String> inputFileTypes = new HashSet<String>();
-        ParameterInfo[] p = getParameterInfoArray();
-        if (p != null) {
-            for (int i = 0; i < p.length; i++) {
-                if (p[i].isInputFile()) {
-                    ParameterInfo info = p[i];
-                    String fileFormatsString = (String) info.getAttributes().get(GPConstants.FILE_FORMAT);
-                    if (fileFormatsString == null || fileFormatsString.equals("")) {
-                        continue;
-                    }
-                    StringTokenizer st = new StringTokenizer(fileFormatsString, GPConstants.PARAM_INFO_CHOICE_DELIMITER);
-                    while (st.hasMoreTokens()) {
-                        String type = st.nextToken();
-                        inputFileTypes.add(type);
-                    }
+        Set<String> inputFileTypes = new HashSet<String>(); 
+        _kindToParameterInfoMap = new HashMap<String,List<ParameterInfo>>();
+
+        ParameterInfo[] paramInfos = getParameterInfoArray();
+        if (paramInfos == null) {
+            return Collections.emptySet();
+        }
+        for(ParameterInfo paramInfo : paramInfos) {
+            if (paramInfo.isInputFile()) {
+                //ParameterInfo info = p[i];
+                String fileFormatsString = (String) paramInfo.getAttributes().get(GPConstants.FILE_FORMAT);
+                if (fileFormatsString == null || fileFormatsString.equals("")) {
+                    continue;
                 }
-            }
+                StringTokenizer st = new StringTokenizer(fileFormatsString, GPConstants.PARAM_INFO_CHOICE_DELIMITER);
+                while (st.hasMoreTokens()) {
+                    String type = st.nextToken();
+                    inputFileTypes.add(type);
+                    
+                    List<ParameterInfo> pinfosForMap = _kindToParameterInfoMap.get(type);
+                    if (pinfosForMap == null) {
+                        pinfosForMap = new ArrayList<ParameterInfo>();
+                        _kindToParameterInfoMap.put(type, pinfosForMap);
+                    }
+                    pinfosForMap.add(paramInfo);
+                }
+            } 
         }
         return inputFileTypes;
     }
