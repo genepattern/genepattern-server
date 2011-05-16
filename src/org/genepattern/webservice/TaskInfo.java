@@ -245,6 +245,13 @@ public class TaskInfo implements Serializable {
         return Collections.unmodifiableSet(_inputFileTypes);
     }
     
+    /**
+     * Get the list of parameters for a given file type.
+     * Use this to generate a popup menu from a given file to a given input parameter in this taskInfo.
+     * 
+     * @param inputFileType
+     * @return
+     */
     public List<ParameterInfo> _getSendToParameterInfos(String inputFileType) {
         //initialize
         _getInputFileTypes();
