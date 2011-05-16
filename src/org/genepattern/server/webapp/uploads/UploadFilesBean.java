@@ -3,11 +3,12 @@ package org.genepattern.server.webapp.uploads;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.domain.UploadFile;
@@ -75,7 +76,31 @@ public class UploadFilesBean {
     private String currentUser;
     private List<FileInfoWrapper> files;
     private TaskInfo currentTaskInfo;
-    private Map<String,Set<TaskInfo>> kindToTaskInfo;
+    private Map<String,SortedSet<TaskInfo>> kindToTaskInfo;
+    private static final Comparator<TaskInfo> taskInfoComparator =  new Comparator<TaskInfo>() {
+        public int compare(TaskInfo o1, TaskInfo o2) {
+            //1) null arg test
+            if (o1 == null) {
+                if (o2 == null) {
+                    return 0;
+                }
+                return -1;
+            } 
+            if (o2 == null) {
+                return 1;
+            }
+
+            //2) null name test
+            if (o1.getName() == null) {
+                if (o2.getName() == null) {
+                    return 0;
+                }
+                return -1;
+            }
+            
+            return o1.getName().compareTo( o2.getName() );
+        } 
+    };
 
     public String getCurrentUser() {
         if (currentUser == null) {
@@ -103,14 +128,14 @@ public class UploadFilesBean {
     }
 
     private void initModuleMenuItems() {
-        kindToTaskInfo = new HashMap<String, Set<TaskInfo>>();
+        kindToTaskInfo = new HashMap<String, SortedSet<TaskInfo>>();
         
         TaskInfo[] taskInfos = new AdminDAO().getLatestTasks(currentUser);
         for(TaskInfo taskInfo : taskInfos) {
             for(String kind : taskInfo._getInputFileTypes()) {
-                Set<TaskInfo> taskInfosForMap = kindToTaskInfo.get(kind);
+                SortedSet<TaskInfo> taskInfosForMap = kindToTaskInfo.get(kind);
                 if (taskInfosForMap == null) {
-                    taskInfosForMap = new HashSet<TaskInfo>();
+                    taskInfosForMap = new TreeSet<TaskInfo>(taskInfoComparator);
                     kindToTaskInfo.put(kind, taskInfosForMap);
                 }
                 taskInfosForMap.add(taskInfo);
