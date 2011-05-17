@@ -19,6 +19,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.domain.UploadFile;
 import org.genepattern.server.domain.UploadFileDAO;
 import org.genepattern.server.webapp.FileDownloader;
@@ -40,6 +42,10 @@ public class UploadFilesBean {
     static {
         formatter.applyPattern("MMM dd hh:mm:ss aaa");
     }
+    
+    public final String RECENT_JOBS = "recentJobs";
+    public final String UPLOADS = "uploads";
+    public final String SELECTED_TAB = "selectedTab";
 
     public class FileInfoWrapper {
         private UploadFile file;
@@ -253,6 +259,41 @@ public class UploadFilesBean {
                 taskInfosForMap.add(taskInfo);
             }
         }
+    }
+    
+    public String getSelectedTab() {
+        String attr = (String) UIBeanHelper.getSession().getAttribute(SELECTED_TAB);
+        if (attr == null) {
+            return RECENT_JOBS;
+        }
+        else {
+            return attr;
+        }
+    }
+    
+    public void setSelectedTab(String selected) {
+        UIBeanHelper.getSession().setAttribute(SELECTED_TAB, selected);
+    }
+    
+    public int getPartitionLength() {
+        Context context = Context.getContextForUser(UIBeanHelper.getUserId());
+        return ServerConfiguration.instance().getGPIntegerProperty(context, "upload.partition.size", 10000000);
+    }
+    
+    public long getMaxUploadSize() {
+        Context context = Context.getContextForUser(UIBeanHelper.getUserId());
+        return Long.parseLong(ServerConfiguration.instance().getGPProperty(context, "upload.max.size", "20000000000"));
+    }
+    
+    public String getUploadWindowName() {
+        // The replaceAll is necessary because IE is picky about what characters can be in window names
+        return "uploadWindow" + (UIBeanHelper.getRequest().getServerName() +  UIBeanHelper.getUserId()).replaceAll("[^A-Za-z0-9 ]", "");
+    }
+    
+    public boolean getUploadEnabled() {
+        String userId = UIBeanHelper.getUserId();
+        Context userContext = Context.getContextForUser(userId);
+        return ServerConfiguration.instance().getGPBooleanProperty(userContext, "upload.jumploader", false);
     }
 }
 

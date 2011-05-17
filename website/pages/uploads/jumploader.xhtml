@@ -51,9 +51,9 @@
 				width="600"
 				height="300" 
 				mayscript="true">
-			<param name="uc_uploadUrl" value="/gp/UploadReceiver?paramId=#{uploadedFilesBean.paramId}"/>
-			<param name="uc_partitionLength" value="#{uploadedFilesBean.partitionLength}"/>
-			<param name="uc_maxFileLength" value="#{uploadedFilesBean.maxUploadSize}"/>
+			<param name="uc_uploadUrl" value="/gp/UploadReceiver"/>
+			<param name="uc_partitionLength" value="#{uploadFilesBean.partitionLength}"/>
+			<param name="uc_maxFileLength" value="#{uploadFilesBean.maxUploadSize}"/>
 			<param name="ac_fireUploaderFileStatusChanged" value="true"/>
 		</applet>
 	</body>
