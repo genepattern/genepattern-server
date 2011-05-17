@@ -3,9 +3,7 @@ package org.genepattern.server.webapp.uploads;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.genepattern.server.webapp.uploads.UploadFilesBean.FileInfoWrapper;
 
