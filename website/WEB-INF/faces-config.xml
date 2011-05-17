@@ -225,10 +225,6 @@
   <managed-bean-name>uploadFilesBean</managed-bean-name>
   <managed-bean-class>org.genepattern.server.webapp.uploads.UploadFilesBean</managed-bean-class>
   <managed-bean-scope>request</managed-bean-scope>
-  <managed-property>
-    <property-name>currentTaskLsid</property-name>
-    <value>#{runTaskBean.lsid}</value>
-  </managed-property>
  </managed-bean>
  <managed-bean>
   <managed-bean-name>taskInfoBean</managed-bean-name>
