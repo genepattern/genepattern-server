@@ -144,6 +144,22 @@ public class UIBeanHelper {
         return s;
     }
     }
+    
+    /**
+     * special case to url encode each part of a file path, without url encoding the slash ('/') characters,
+     * so that it can be used as a reference to a file served by the data servlet.
+     * @param file
+     * @return
+     */
+    public static String encodeFilePath(String filePath) {
+        if (filePath == null) {
+            return null;
+        }
+        String encodedPath = UIBeanHelper.encode(filePath);
+        encodedPath = encodedPath.replace("+", "%20");
+        encodedPath = encodedPath.replace("%2F", "/");
+        return encodedPath;
+    }
 
     public static String decode(String s) {
     if (s == null) {

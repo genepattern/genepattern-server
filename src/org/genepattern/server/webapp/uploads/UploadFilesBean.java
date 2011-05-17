@@ -50,10 +50,18 @@ public class UploadFilesBean {
     public final String SELECTED_TAB = "selectedTab";
 
     public class FileInfoWrapper {
-        private UploadFile file;
+        private UploadFile file = null;
+        private String url = null;
         
         public FileInfoWrapper(UploadFile file) {
             this.file = file;
+        }
+        
+        private String initUrl() {
+            String encodedPath = UIBeanHelper.encodeFilePath(file.getPath());
+            String server = UIBeanHelper.getServer();
+            String url = server + "/data/" + encodedPath;
+            return url;
         }
         
         public UploadFile getFile() {
@@ -77,13 +85,17 @@ public class UploadFilesBean {
         }
         
         public String getUrl() {
+            //TODO: not sure if we want this
             return file.getLink();
         }
         
         public String getFullUrl() {
-            return UIBeanHelper.getServer() + "/data/" + urlEncodePathParts(file.getPath());
+            if (url==null) {
+               url = initUrl();
+            }
+            return url;
         }
-        
+
         public String getPath() {
             return file.getPath();
         }
@@ -298,7 +310,7 @@ public class UploadFilesBean {
         return ServerConfiguration.instance().getGPBooleanProperty(userContext, "upload.jumploader", false);
     }
     
-    public static String urlEncodePathParts(String path) {
+    public static String _urlEncodePathParts(String path) {
         String toReturn = "";
         String[] parts = path.split("/");
         for (String i : parts) {

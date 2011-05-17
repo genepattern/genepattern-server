@@ -40,7 +40,7 @@
       <tr class="admin-row">
         <td><h:outputText value="#{file.file.fileLength}" converter="fl" /></td>
         <td><h:outputText value="#{file.file.lastModified}" converter="gp" /></td>
-        <td><h:outputLink value="#{file.file.link}">#{file.file.name}</h:outputLink></td>
+        <td><h:outputLink value="#{file.url}">#{file.file.name}</h:outputLink></td>
         <td>[<h:commandLink value="Download" action="#{file.downloadFile}" />]
             [<h:commandLink value="Delete" action="#{file.deleteFile}">
                <f:param name="filePath" value="#{file.file.path}" />
