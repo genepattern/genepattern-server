@@ -72,6 +72,10 @@ public class UploadFilesBean {
             return file.getLink();
         }
         
+        public String getFullUrl() {
+            return UIBeanHelper.getServer() + "/data/" + file.getPath();
+        }
+        
         public String getPath() {
             return file.getPath();
         }
