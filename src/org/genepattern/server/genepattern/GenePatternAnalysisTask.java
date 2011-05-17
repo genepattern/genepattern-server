@@ -248,6 +248,7 @@ public class GenePatternAnalysisTask {
     protected static final String OUTPUT_FILENAME = "output_filename";
     protected static final String ORIGINAL_PATH = "originalPath";
     public static final String TASK_NAME = "GenePatternAnalysisTask";
+    final static String DATA_SERVLET_TOKEN = "/gp/data/";
     
     //these flags are for input files which have been moved, copied, or downloaded into the working directory for the job
     //properties get set during onJob and removed during handleJobCompletion
@@ -475,6 +476,19 @@ public class GenePatternAnalysisTask {
             }
         }
         
+        // If the URL passed in uses the data servlet
+        if (path.contains(DATA_SERVLET_TOKEN)) {
+            String filePath = path.substring(path.indexOf(DATA_SERVLET_TOKEN) + DATA_SERVLET_TOKEN.length());
+            File file = new File(filePath);
+            if (file.exists()) {
+                return file;
+            }
+            else {
+                return null;
+            }
+        }
+        
+        // Assumes that the file is passed in through a /jobResults/ URL and will throw an error otherwise
         LocalUrlParser parser = new LocalUrlParser(url);
         try {
             parser.parse();
