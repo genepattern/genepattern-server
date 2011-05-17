@@ -79,7 +79,7 @@ public class UploadFilesBean {
         }
         
         public String getFullUrl() {
-            return UIBeanHelper.getServer() + "/data/" + file.getPath();
+            return UIBeanHelper.getServer() + "/data/" + file.getPath().replaceAll(" ", "%20");
         }
         
         public String getPath() {
