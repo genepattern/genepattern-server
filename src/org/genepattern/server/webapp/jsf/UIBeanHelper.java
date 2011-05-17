@@ -22,6 +22,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -45,6 +46,13 @@ public class UIBeanHelper {
 
     public static FacesContext getFacesContext() {
     return FacesContext.getCurrentInstance();
+    }
+    
+    public static ServletContext getServletContext() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = facesContext.getExternalContext();
+        ServletContext servletContext = (ServletContext) externalContext.getContext();
+        return servletContext;
     }
 
     public static ExternalContext getExternalContext() {

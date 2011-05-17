@@ -1,7 +1,6 @@
 package org.genepattern.server.webapp.uploads;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,16 +12,13 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.DataManager;
 import org.genepattern.server.domain.UploadFile;
 import org.genepattern.server.domain.UploadFileDAO;
 import org.genepattern.server.webapp.FileDownloader;
@@ -44,7 +40,7 @@ public class UploadFilesBean {
     static {
         formatter.applyPattern("MMM dd hh:mm:ss aaa");
     }
-    
+
     public class FileInfoWrapper {
         private UploadFile file;
         
@@ -111,7 +107,41 @@ public class UploadFilesBean {
             //nice to have a map of kind -> inputParameters for the current task
             String kind = file.getKind();
             return currentTaskInfo._getSendToParameterInfos(kind); 
-        } 
+        }
+        
+        
+        //--- JSF actions
+        public void downloadFile() { 
+            try { 
+                ServletContext servletContext = UIBeanHelper.getServletContext();
+                HttpServletResponse response = UIBeanHelper.getResponse();
+                HttpServletRequest request = UIBeanHelper.getRequest();
+
+                boolean serveContent = true;
+                File fileObj = new File(file.getPath());
+
+                FileDownloader.serveFile(servletContext, request, response, serveContent, FileDownloader.ContentDisposition.ATTACHMENT, fileObj);
+            }
+            catch (Throwable t) {
+                log.error("Error downloading "+file.getPath()+" for user "+UIBeanHelper.getUserId(), t);
+                UIBeanHelper.setErrorMessage("Error downloading "+file.getName()+": "+t.getLocalizedMessage());
+            }
+            FacesContext.getCurrentInstance().responseComplete();
+        }
+        
+        
+        public void deleteFile() {
+            boolean deleted = DataManager.deleteFile(file);
+            if (deleted) {
+                UIBeanHelper.setInfoMessage("Deleted file: "+file.getName());
+                //remove the deleted item from the view
+                UploadFilesBean.this.files.remove(file);
+            }
+            else {
+                UIBeanHelper.setErrorMessage("Error deleting file: "+file.getName());
+            }
+        }
+        
     }
     
 /*
@@ -124,8 +154,8 @@ public class UploadFilesBean {
       #{file.name}
       #{file.path}
 */
-    private String currentUser;
     private List<FileInfoWrapper> files;
+    private String currentUser;
     private String currentTaskLsid = null;
     private TaskInfo currentTaskInfo = null;
     private Map<String,SortedSet<TaskInfo>> kindToTaskInfo;
@@ -173,7 +203,7 @@ public class UploadFilesBean {
         }
         return files;
     }
-    
+
     public UploadDirectory getUploadDir() {
         if (uploadDir == null) {
             uploadDir = new UploadDirectory("UploadedFiles");
@@ -184,7 +214,7 @@ public class UploadFilesBean {
             return uploadDir;
         } 
     }
-    
+   
     public List<UploadDirectory> getAvailableDirectories() {
         List<UploadDirectory> dirs = new ArrayList<UploadDirectory>();
         dirs.add(this.getUploadDir());
@@ -220,50 +250,5 @@ public class UploadFilesBean {
             }
         }
     }
-    
-    /**
-     * Delete a file from the user's home dir
-     * 
-     * @param ae
-     */
-    public void deleteFile(ActionEvent ae) {
-        String filenameParam = UIBeanHelper.getRequest().getParameter("filename");
-        String dirnameParam = UIBeanHelper.getRequest().getParameter("path");
-        
-        Context context = Context.getContextForUser(UIBeanHelper.getUserId());
-        File userUploadDir = ServerConfiguration.instance().getUserUploadDir(context);
-        File theFile = new File(userUploadDir, filenameParam);
-        boolean success = false;
-        if (theFile.canRead()) {
-            success = theFile.delete();
-        }
-        
-        if (success) {
-            log.debug("Deleted from upload directories: '" + dirnameParam + "/" + filenameParam + "'");
-            UIBeanHelper.setInfoMessage("Deleted from upload directories: '" + filenameParam + "'");
-        }
-        
-    }
-    
-    public void saveFile(ActionEvent ae) {
-        FacesContext facesContext = FacesContext.getCurrentInstance();
-        ExternalContext externalContext = facesContext.getExternalContext();
-        ServletContext servletContext = (ServletContext) externalContext.getContext();
-        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
-        HttpServletRequest request = (HttpServletRequest) externalContext.getRequest();
-        
-        String path = request.getParameter("path");
-        File fileObj = new File(path);
-
-        try {
-            FileDownloader.serveFile(servletContext, request, response, true, FileDownloader.ContentDisposition.ATTACHMENT, fileObj);
-        }
-        catch (IOException e) {
-            log.error("Error downloading file to client, file="+fileObj.getPath(), e);
-            UIBeanHelper.setErrorMessage("Error downloading "+fileObj.getName()+": "+e.getLocalizedMessage());
-        }
-        facesContext.responseComplete();
-    }
-
 }
 

@@ -20,17 +20,14 @@
           <tr>
             <td>
             <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file from the upload directory?');" 
-              		actionListener="#{uploadedFilesBean.deleteFile}" immediate="true">
-                <f:param value="#{aFile.filename}" name="filename"/>
-                <f:param value="#{aFile.path}" name="path"/>
-                <f:param value="#{uploadDir.name}" name="dirname"/>           
+              		action="#{aFile.deleteFile}" immediate="true">
+                <f:param name="filePath" value="#{aFile.file.path}" />
               </h:commandLink>
             </td>
           </tr>
           <tr>
             <td>
-              <h:commandLink value="Save" actionListener="#{uploadedFilesBean.saveFile}" immediate="true" rendered="#{not aFile.partial}">
-                <f:param name="path" value="#{aFile.file.path}" />
+              <h:commandLink value="Save" action="#{aFile.downloadFile}" immediate="true" rendered="#{not aFile.partial}">
               </h:commandLink>
             </td>
           </tr>
