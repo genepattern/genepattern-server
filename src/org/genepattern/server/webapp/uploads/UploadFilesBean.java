@@ -1,6 +1,8 @@
 package org.genepattern.server.webapp.uploads;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,7 +81,7 @@ public class UploadFilesBean {
         }
         
         public String getFullUrl() {
-            return UIBeanHelper.getServer() + "/data/" + file.getPath().replaceAll(" ", "%20");
+            return UIBeanHelper.getServer() + "/data/" + urlEncodePathParts(file.getPath());
         }
         
         public String getPath() {
@@ -294,6 +296,22 @@ public class UploadFilesBean {
         String userId = UIBeanHelper.getUserId();
         Context userContext = Context.getContextForUser(userId);
         return ServerConfiguration.instance().getGPBooleanProperty(userContext, "upload.jumploader", false);
+    }
+    
+    public static String urlEncodePathParts(String path) {
+        String toReturn = "";
+        String[] parts = path.split("/");
+        for (String i : parts) {
+            try {
+                i = URLEncoder.encode(i, "UTF-8");
+                toReturn += i + "/";
+            }
+            catch (UnsupportedEncodingException e) {
+                log.error("Error encoding in urlEncodePathParts for " + path);
+            }
+        }
+        toReturn = toReturn.substring(0, toReturn.length()-1);
+        return toReturn;
     }
 }
 

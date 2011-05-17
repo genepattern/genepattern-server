@@ -293,7 +293,7 @@ public class RunTaskBean {
         
         String prevUploadedFileUrl = null;
         if ("uploadedfiles".equalsIgnoreCase(matchOutputFileSource)) {
-            downloadPath = downloadPath.replaceAll(" ", "%20");
+            downloadPath = UploadFilesBean.urlEncodePathParts(downloadPath);
             prevUploadedFileUrl = attachServerPath(downloadPath);
         }
         else if (matchOutputFileSource.equalsIgnoreCase("inputfiles")) {
