@@ -89,7 +89,7 @@ public class RunTaskBean {
     /**
      * Initialize the task lsid. This page needs to support redirects from older
      * .jsp pages as well as jsf navigation. JSP pages will pass the lsid in as
-     * a request parameter. Look for it there first, if the paramter is null get
+     * a request parameter. Look for it there first, if the parameter is null get
      * it from the moduleChooserBean.
      * 
      */
@@ -293,8 +293,8 @@ public class RunTaskBean {
         
         String prevUploadedFileUrl = null;
         if ("uploadedfiles".equalsIgnoreCase(matchOutputFileSource)) {
-            downloadPath = UploadFilesBean.urlEncodePathParts(downloadPath);
-            prevUploadedFileUrl = attachServerPath(downloadPath);
+            prevUploadedFileUrl = downloadPath;
+
         }
         else if (matchOutputFileSource.equalsIgnoreCase("inputfiles")) {
             prevUploadedFileUrl = UIBeanHelper.getServer() + matchOutputFileParameterName;
@@ -302,7 +302,7 @@ public class RunTaskBean {
 
         Map<String, String> reloadValues = new HashMap<String, String>();
 
-        if (matchOutputFileSource.equalsIgnoreCase("genomespace")){
+        if (matchOutputFileSource.equalsIgnoreCase("genomespace")) {
             Map<String, List<String>> kindToInputParameters = new HashMap<String, List<String>>();
                if (taskParameters != null) {
                    int idx = matchOutputFileParameterName.lastIndexOf(".");
@@ -311,41 +311,32 @@ public class RunTaskBean {
                
                    for (ParameterInfo p : taskParameters) {
                        if (p.isInputFile()) {
-                           List<String> fileFormats = SemanticUtil.getFileFormats(p);
-                      
+                           List<String> fileFormats = SemanticUtil.getFileFormats(p); 
                            for (String format: fileFormats){
                                System.out.println("format " + format);
                                if (format.equalsIgnoreCase(gsType)){
                                    reloadValues.put(p.getName(), gsUrl);
                                    break;
                                }
-                           }
-                       
-                           
-                       
-                           
+                           }                           
                        }
                    }
                } 
-              
-              
-        }
-        
+        } 
         
         if (matchOutputFileSource.equalsIgnoreCase("uploadedfiles") || matchOutputFileSource.equalsIgnoreCase("inputfiles")){
-            Map<String, List<String>> kindToInputParameters = new HashMap<String, List<String>>();
+            //Map<String, List<String>> kindToInputParameters = new HashMap<String, List<String>>();
             if (taskParameters != null) {
                 int idx = matchOutputFileParameterName.lastIndexOf(".");
                 String gsType = matchOutputFileParameterName.substring(idx+1);
                 gsType = gsType.trim();
-                System.out.println("uploaded File is a " + gsType);
+                //System.out.println("uploaded File is a " + gsType);
 
                 for (ParameterInfo p : taskParameters) {
                     if (p.isInputFile()) {
                         List<String> fileFormats = SemanticUtil.getFileFormats(p);
-
                         for (String format: fileFormats){
-                            System.out.println("format " + format);
+                            //System.out.println("format " + format);
                             if (format.equalsIgnoreCase(gsType)){
                                 reloadValues.put(p.getName(), prevUploadedFileUrl);
                                 break;
