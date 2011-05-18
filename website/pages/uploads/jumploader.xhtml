@@ -22,13 +22,24 @@
 	<head>
 		<title>GenePattern | Upload</title>
 		<script language="JavaScript">
+			var oldMessage = null;
 			function uploaderFileStatusChanged(uploader, file) {
 				if (file.getStatus() == file.STATUS_FAILED) {
 					var alertPanel = document.getElementById("alertPanel");
-					alertPanel.innerHTML = file.getError().getMessage();
+					var closeSpan = document.getElementById("closeSpan");
+					oldMessage = alertPanel.innerHTML;
+					alertPanel.innerHTML = file.getError().getMessage() + closeSpan.innerHTML;
 					alertPanel.style.background = "#EE9999";
 					alertPanel.style.padding = "10px";
 				}
+			}
+			
+			function closeError() {
+				var alertPanel = document.getElementById("alertPanel");
+				var closeSpan = document.getElementById("closeSpan");
+				alertPanel.style.background = "#FFFFFF";
+				alertPanel.style.padding = "5px";
+				alertPanel.innerHTML = oldMessage;
 			}
 		
 		    window.onbeforeunload = confirmExit;
@@ -45,6 +56,7 @@
 		<div id="alertPanel">
 			<div style="font-family: Verdana, Arial, Helvetica, sans-serif;font-size: 11px;line-height: 14px;"><strong>Note:</strong> This window must remain open for the upload to complete.  New files will not show up in the main window until the page has been <a style="text-decoration:none;font-weight: bolder;color: #009;" href="JavaScript:window.opener.location.reload(true);">refreshed</a>.</div>
 		</div>
+		<span id="closeSpan" style="display:none;"> [<a href="JavaScript:closeError()">Close</a>]</span>
 		<applet id="jumpLoaderApplet" name="jumpLoaderApplet"
 				code="jmaster.jumploader.app.JumpLoaderApplet.class"
 				archive="/gp/downloads/jl_core_z.jar"
