@@ -88,11 +88,12 @@ public class UploadFilesBean {
             return file.getName();
         }
         
+        // Returns relative URL
         public String getUrl() {
-            //TODO: not sure if we want this
             return file.getLink();
         }
         
+        // Returns absolute URL
         public String getFullUrl() {
             if (url==null) {
                url = initUrl();
