@@ -48,6 +48,10 @@ public class UploadFilesBean {
     public final String RECENT_JOBS = "recentJobs";
     public final String UPLOADS = "uploads";
     public final String SELECTED_TAB = "selectedTab";
+    
+    public UploadFilesBean() {
+        initFiles();
+    }
 
     public class FileInfoWrapper {
         private UploadFile file = null;
@@ -123,10 +127,15 @@ public class UploadFilesBean {
          * @param file
          * @return
          */
-        public List<ParameterInfo> getSendToParameters() { 
+        public List<ParameterInfo> getSendToParameters() {
+            if (currentTaskInfo == null && currentTaskLsid != null) {
+                AdminDAO adminDao = new AdminDAO();
+                initCurrentLsid(adminDao);
+            }
             if (currentTaskInfo == null) {
                 return Collections.emptyList();
             }
+            
             
             //nice to have a map of kind -> inputParameters for the current task
             String kind = file.getKind();
@@ -254,13 +263,17 @@ public class UploadFilesBean {
         }
         initModuleMenuItems();
     }
+    
+    public void initCurrentLsid(AdminDAO adminDao) {
+        currentTaskInfo = adminDao.getTask(currentTaskLsid, currentUser);
+    }
 
     private void initModuleMenuItems() {
         kindToTaskInfo = new HashMap<String, SortedSet<TaskInfo>>();
         
         AdminDAO adminDao = new AdminDAO();
         if (currentTaskLsid != null) {
-            currentTaskInfo = adminDao.getTask(currentTaskLsid, currentUser);
+            initCurrentLsid(adminDao);
         }
         TaskInfo[] taskInfos = adminDao.getLatestTasks(currentUser);
         for(TaskInfo taskInfo : taskInfos) {
