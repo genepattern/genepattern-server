@@ -293,7 +293,7 @@ public class RunTaskBean {
         
         String prevUploadedFileUrl = null;
         if ("uploadedfiles".equalsIgnoreCase(matchOutputFileSource)) {
-            downloadPath = UploadFilesBean._urlEncodePathParts(downloadPath);
+            downloadPath = UIBeanHelper.encodeFilePath(downloadPath);
             prevUploadedFileUrl = attachServerPath(downloadPath);
         }
         else if (matchOutputFileSource.equalsIgnoreCase("inputfiles")) {
