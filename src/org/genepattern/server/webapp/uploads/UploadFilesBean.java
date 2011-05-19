@@ -1,8 +1,7 @@
 package org.genepattern.server.webapp.uploads;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,12 +30,12 @@ import org.genepattern.server.webapp.jsf.UsersAndGroupsBean;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoCache;
 
 /**
- * Created for debugging, 
- * Display direct uploaded files for current user.
+ * Backing bean for displaying user uploaded files and their associated popup menus.
+ * 
  * @author pcarr
- *
  */
 public class UploadFilesBean {
     private static Logger log = Logger.getLogger(UsersAndGroupsBean.class);
@@ -53,19 +52,79 @@ public class UploadFilesBean {
         initFiles();
     }
 
+    /**
+     * Helper class for displaying the send to module menu item for a file.
+     * @author pcarr
+     *
+     */
+    static public class SendToModule {
+        private TaskInfo toTask;
+        private FileInfoWrapper sendFile;
+        private String paramName;
+        
+        public SendToModule(FileInfoWrapper sendFile, TaskInfo task) {
+            this.sendFile = sendFile;
+            this.toTask = task;
+        }
+        
+        public String getName() {
+            return toTask.getName();
+        }
+        
+        /**
+         * Get the first parameter from the taskInfo which accepts this file type.
+         * @return
+         */
+        public String getLsid() {
+            return toTask.getLsid();
+        }
+        /**
+         * In response to a sendToModule request for a given file, get the name of the first parameter
+         * which accepts the file.
+         * 
+         * @param taskInfo
+         * @param kind
+         * @return
+         */
+        public String getParamName() {
+            if (paramName == null) {
+                initParamName();
+            }
+            return paramName;
+        }
+
+        private void initParamName() {
+            String kind = sendFile.getKind();
+            List<ParameterInfo> l = toTask._getSendToParameterInfos(kind);
+            if (l != null && l.size() > 0) {
+                paramName = l.get(0).getName();
+            }
+            else {
+                //TODO: log error, shouldn't be here
+                paramName = "";
+            }
+        }
+
+        /**
+         * Get the link to redirect to in order to load the task.
+         * @return
+         */
+        public String getSendToLink() {
+            String link = UIBeanHelper.getServer() + "/pages/index.jsf?lsid=" 
+                + UIBeanHelper.encode( toTask.getLsid() ) 
+                + "&" + UIBeanHelper.encode( getParamName() ) 
+                + "=" + UIBeanHelper.encode( sendFile.getFullUrl() );
+            return link;
+        }
+    }
+
     public class FileInfoWrapper {
         private UploadFile file = null;
         private String url = null;
+        private List<SendToModule> sendToModules = null;
         
         public FileInfoWrapper(UploadFile file) {
             this.file = file;
-        }
-        
-        private String initUrl() {
-            String encodedPath = UIBeanHelper.encodeFilePath(file.getPath());
-            String server = UIBeanHelper.getServer();
-            String url = server + "/data/" + encodedPath;
-            return url;
         }
         
         public UploadFile getFile() {
@@ -90,7 +149,8 @@ public class UploadFilesBean {
         
         // Returns relative URL
         public String getUrl() {
-            return file.getLink();
+            //return file.getLink();
+            return getFullUrl();
         }
         
         // Returns absolute URL
@@ -98,6 +158,13 @@ public class UploadFilesBean {
             if (url==null) {
                url = initUrl();
             }
+            return url;
+        }
+
+        private String initUrl() {
+            String encodedPath = UIBeanHelper.encodeFilePath(file.getPath());
+            String server = UIBeanHelper.getServer();
+            String url = server + "/data/" + encodedPath;
             return url;
         }
 
@@ -114,15 +181,32 @@ public class UploadFilesBean {
             }
         }
         
-        public Collection<TaskInfo> getSendToModules() {
+        public Collection<SendToModule> getSendToModules() {
+            if (sendToModules == null) {
+                sendToModules = initSendToModules();
+            }
+            return sendToModules;
+        }
+
+        private List<SendToModule> initSendToModules() {
+            List<SendToModule> sendToModules = new ArrayList<SendToModule>();
+            Collection<TaskInfo> sendToTaskInfos = initSendToTaskInfos();
+            for(TaskInfo taskInfo : sendToTaskInfos ) {
+                SendToModule sendToModule = new SendToModule(this, taskInfo);
+                sendToModules.add( sendToModule );
+            }
+            return Collections.unmodifiableList( sendToModules );            
+        }
+
+        private Collection<TaskInfo> initSendToTaskInfos() {
             String kind = file.getKind();
             Collection<TaskInfo> taskInfos =  kindToTaskInfo.get(kind);
             if (taskInfos == null) {
                 return Collections.emptySet();
             }
-            return taskInfos;
+            return Collections.unmodifiableCollection(taskInfos);
         }
-
+        
         /**
          * Get the list of input parameters which accept this file as input.
          * @param file
@@ -143,8 +227,43 @@ public class UploadFilesBean {
             return currentTaskInfo._getSendToParameterInfos(kind); 
         }
         
-        
         //--- JSF actions
+        
+        /**
+         * In response to selecting a module from the send to menu for a file, 
+         * load the run module page, setting the appropriate input parameter to the value for this file.
+         * 
+         * Currently implemented by redirecting to the home page with the 'lsid' and <input.param.name> values set.
+         * Similar to the way pages are loaded from the protocols links.
+         * 
+         * E.g. http://127.0.0.1:8080/gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
+         */
+        public void sendToTaskInfo() {
+            String lsid = UIBeanHelper.getRequest().getParameter("lsid");
+            if (lsid == null) {
+                log.error("Missing required parameter, lsid");
+                UIBeanHelper.setErrorMessage("Missing required parameter, lsid");
+                return;
+            }
+            
+            TaskInfo taskInfo = TaskInfoCache.instance().getTask(lsid);
+            SendToModule s = new SendToModule(this, taskInfo);
+            
+            //redirect ...
+            String redirect = s.getSendToLink();
+            try {
+                UIBeanHelper.getResponse().sendRedirect(redirect);
+            }
+            catch (IOException e) {
+                //e is ignored, usually means client connection was closed
+            }
+            UIBeanHelper.getFacesContext().responseComplete();
+            return;
+        }
+        
+        /**
+         * In response to selecting the 'Download' link from the popup menu for the file.
+         */
         public void downloadFile() { 
             try { 
                 ServletContext servletContext = UIBeanHelper.getServletContext();
@@ -163,7 +282,9 @@ public class UploadFilesBean {
             FacesContext.getCurrentInstance().responseComplete();
         }
         
-        
+        /**
+         * In response to selecting the 'Delete' link from the popup menu for the file.
+         */
         public void deleteFile() {
             boolean deleted = DataManager.deleteFile(file);
             if (deleted) {
@@ -175,7 +296,6 @@ public class UploadFilesBean {
                 UIBeanHelper.setErrorMessage("Error deleting file: "+file.getName());
             }
         }
-        
     }
     
 /*
@@ -322,22 +442,6 @@ public class UploadFilesBean {
         String userId = UIBeanHelper.getUserId();
         Context userContext = Context.getContextForUser(userId);
         return ServerConfiguration.instance().getGPBooleanProperty(userContext, "upload.jumploader", false);
-    }
-    
-    public static String _urlEncodePathParts(String path) {
-        String toReturn = "";
-        String[] parts = path.split("/");
-        for (String i : parts) {
-            try {
-                i = URLEncoder.encode(i, "UTF-8");
-                toReturn += i + "/";
-            }
-            catch (UnsupportedEncodingException e) {
-                log.error("Error encoding in urlEncodePathParts for " + path);
-            }
-        }
-        toReturn = toReturn.substring(0, toReturn.length()-1);
-        return toReturn;
     }
 }
 

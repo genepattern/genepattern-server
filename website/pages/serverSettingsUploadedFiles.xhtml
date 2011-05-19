@@ -52,7 +52,13 @@
       <t:dataList var="sendToTaskInfo" value="#{file.sendToModules}">
       <tr>
         <td></td>
-        <td colspan="4">#{sendToTaskInfo.name} (#{sendToTaskInfo.lsid})</td>
+        <td>Send to <h:commandLink value="#{sendToTaskInfo.name}" action="#{file.sendToTaskInfo}" immediate="true">
+          <f:param name="lsid" value="#{sendToTaskInfo.lsid}" />
+        </h:commandLink>
+        <br />
+        Send to <h:outputLink value="#{sendToTaskInfo.sendToLink}">#{sendToTaskInfo.name}</h:outputLink>
+        </td>
+        <td colspan="3"></td>
       </tr>
       </t:dataList>
     </t:dataList>
