@@ -133,7 +133,7 @@ public class UploadReceiver extends HttpServlet {
         }
     }
     
-    private void updateDatabase(String userId, File file, boolean complete) throws FileUploadException {
+    private void updateDatabase(String userId, File file, int status) throws FileUploadException {
         if (log.isDebugEnabled()) {
             log.debug("Uploaded file to: "+file.getAbsolutePath());
         } 
@@ -141,7 +141,7 @@ public class UploadReceiver extends HttpServlet {
         try {
             //record the uploaded file into the DB
             final UploadFile uploadFile = new UploadFile();
-            uploadFile.initFromFile(file, complete);
+            uploadFile.initFromFile(file, status);
             uploadFile.setUserId(userId);
             
             //constructor begins a Hibernate Transaction
@@ -155,7 +155,7 @@ public class UploadReceiver extends HttpServlet {
         catch (Exception e) {
             log.error(e);
             HibernateUtil.rollbackTransaction();
-            throw new FileUploadException("Problem uploading file to database" + complete);
+            throw new FileUploadException("Problem uploading file to database");
         }
     }
     
@@ -173,7 +173,7 @@ public class UploadReceiver extends HttpServlet {
                 
                 // If partial file, set file to be .part, removing old file parts first
                 if (partial) {
-                    updateDatabase(userId, file, false);
+                    updateDatabase(userId, file, UploadFile.PARTIAL);
                 }
                 
                 try {
@@ -186,7 +186,7 @@ public class UploadReceiver extends HttpServlet {
                 // Do final tasks for the last partition
                 if (last) {
                     // If last partition, rename .part file to actual file
-                    updateDatabase(userId, file, true);
+                    updateDatabase(userId, file, UploadFile.COMPLETE);
                 }
                 try {
                     responeText += file.getParent() + ";" + file.getCanonicalPath();

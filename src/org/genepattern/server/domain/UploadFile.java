@@ -22,15 +22,15 @@ public class UploadFile {
     private int status;
     
     // File status constants, defined this way because hibernate doesn't play nice with enums
-    public final int COMPLETE = 0;
-    public final int PARTIAL = 1;
-    public final int DELETED = -1;
+    public final static int COMPLETE = 0;
+    public final static int PARTIAL = 1;
+    public final static int DELETED = -1;
 
     /**
      * Reset the properties based on the given file.
      * @param file
      */
-    public void initFromFile(File file, boolean complete) throws IOException {
+    public void initFromFile(File file, int status) throws IOException {
         this.path = file.getCanonicalPath();
         this.name = file.getName();
         
@@ -45,11 +45,17 @@ public class UploadFile {
         this.extension = SemanticUtil.getExtension(file);
         this.kind = SemanticUtil.getKind(file);
         
-        if (complete) {
+        if (status == COMPLETE) {
             this.status = COMPLETE;
         }
-        else {
+        else if (status == PARTIAL) {
             this.status = PARTIAL;
+        }
+        else if (status == DELETED) {
+            this.status = DELETED;
+        }
+        else {
+            throw new IOException("Invalis status given for UploadFile: " + file.getName());
         }
     }
     
