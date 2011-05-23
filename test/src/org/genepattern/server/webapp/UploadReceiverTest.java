@@ -1,7 +1,14 @@
 package org.genepattern.server.webapp;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
@@ -21,7 +28,7 @@ public class UploadReceiverTest extends TestCase {
     UploadReceiver theTest = new UploadReceiver();
     Mockery context = new Mockery();
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         JUnitCore.main("org.genepattern.server.webapp.UploadReceiverTest");
     }
     
@@ -103,7 +110,7 @@ public class UploadReceiverTest extends TestCase {
         List<FileItem> postParameters = buildTestParameterList();
         PrintWriter responseWriter = new PrintWriter(System.out);
         
-        theTest.writeFile(request, postParameters, true, true, "admin");
+        theTest.writeFile(request, postParameters, true, false, "admin");
         
         File file1 = new File(TMPDIR, "test.txt");
         File file2 = new File(TMPDIR, "test2.txt");

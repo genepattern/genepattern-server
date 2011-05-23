@@ -186,13 +186,6 @@ public class UploadReceiver extends HttpServlet {
                 // Do final tasks for the last partition
                 if (last) {
                     // If last partition, rename .part file to actual file
-                    if (partial) {
-                        boolean success = file.renameTo(getUploadFile(request, fileItem.getName()));
-                        if (!success) {
-                            throw new FileUploadException("Unable to finalize uploaded file");
-                        }
-                    }
-                    
                     updateDatabase(userId, file, true);
                 }
                 try {
