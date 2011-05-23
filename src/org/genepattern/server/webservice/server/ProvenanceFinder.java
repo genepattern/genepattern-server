@@ -68,29 +68,30 @@ public class ProvenanceFinder {
     }
 
     public ProvenanceFinder(String user) {
-	userID = user;
+        userID = user;
     }
 
     public String createProvenancePipeline(Set<JobInfo> jobs, String pipelineName) {
-	String lsid = null;
+        String lsid = null;
 
-	try {
-	    PipelineModel model = this.createPipelineModel(jobs, pipelineName);
-	    PipelineCreationHelper helper = new PipelineCreationHelper(model);
-	    lsid = helper.generateTask();
-	    model.setLsid(lsid);
-	    copyFilesToPipelineDir(lsid, pipelineName);
-	} catch (Exception e) {
-	    log.error(e);
-	}
-	return lsid;
+        try {
+            PipelineModel model = this.createPipelineModel(jobs, pipelineName);
+            PipelineCreationHelper helper = new PipelineCreationHelper(model);
+            lsid = helper.generateTask();
+            model.setLsid(lsid);
+            copyFilesToPipelineDir(lsid, pipelineName);
+        }
+        catch (Exception e) {
+            log.error(e);
+        }
+        return lsid;
     }
 
     public String createProvenancePipeline(String filename, String pipelineName) {
-	String lsid = null;
-	Set<JobInfo> jobs = this.findJobsThatCreatedFile(filename);
-	lsid = createProvenancePipeline(jobs, pipelineName);
-	return lsid;
+        String lsid = null;
+        Set<JobInfo> jobs = this.findJobsThatCreatedFile(filename);
+        lsid = createProvenancePipeline(jobs, pipelineName);
+        return lsid;
     }
 
     public Set<JobInfo> findJobsThatCreatedFile(String fileURL) {
@@ -161,135 +162,137 @@ public class ProvenanceFinder {
      * Given an reverse ordered set of jobs (ordered by decreasing Job #) create a pipeline model that represents it
      * with the appropriate file inheritence representing the original jobs
      */
-    protected PipelineModel createPipelineModel(Set<JobInfo> jobs, String pipelineName) throws OmnigeneException,
-	    WebServiceException {
-	filesToCopy = new ArrayList();
-	// create an array list with the taskinfos at their taskid location for
-	// easier retrieval later
-	Collection<TaskInfo> taskCatalog = new LocalAdminClient(userID).getTaskCatalog();
-	HashMap<String, TaskInfo> taskList = new HashMap<String, TaskInfo>();
-	HashMap<Integer, Integer> jobOrder = new HashMap<Integer, Integer>();
+    protected PipelineModel createPipelineModel(Set<JobInfo> jobs, String pipelineName) 
+    throws OmnigeneException, WebServiceException 
+    {
+        filesToCopy = new ArrayList();
+        // create an array list with the taskinfos at their taskid location for easier retrieval later
+        Collection<TaskInfo> taskCatalog = new LocalAdminClient(userID).getTaskCatalog();
+        HashMap<String, TaskInfo> taskList = new HashMap<String, TaskInfo>();
+        HashMap<Integer, Integer> jobOrder = new HashMap<Integer, Integer>();
 
-	for (Iterator<TaskInfo> iter = taskCatalog.iterator(); iter.hasNext();) {
-	    TaskInfo ti = iter.next();
-	    taskList.put(ti.getLsid(), ti);
-	}
+        for (Iterator<TaskInfo> iter = taskCatalog.iterator(); iter.hasNext();) {
+            TaskInfo ti = iter.next();
+            taskList.put(ti.getLsid(), ti);
+        }
 
-	String taskLSID = "";
+        String taskLSID = "";
 
-	PipelineModel model = new PipelineModel();
-	model.setName(pipelineName); // XXX
-	model.setDescription("describe it here");// XXX
-	model.setAuthor(userID);
-	model.setUserID(userID);
-	model.setLsid(taskLSID); // temp pipeline
-	model.setVersion("0");
-	model.setPrivacy(GPConstants.PRIVATE);
-	int i = 0;
-	for (Iterator<JobInfo> iter = jobs.iterator(); iter.hasNext(); i++) {
-	    JobInfo job = iter.next();
-	    if (!job.getUserId().equals(userID) && !AuthorizationHelper.adminJobs(userID)) {
-		throw new WebServiceException("You do not have the required permission access job number "
-			+ job.getJobNumber() + ".");
-	    }
-	    jobOrder.put(new Integer(job.getJobNumber()), new Integer(i));
-	    // map old job number to order in pipeline
+        PipelineModel model = new PipelineModel();
+        model.setName(pipelineName); // XXX
+        model.setDescription("describe it here");// XXX
+        model.setAuthor(userID);
+        model.setUserID(userID);
+        model.setLsid(taskLSID); // temp pipeline
+        model.setVersion("0");
+        model.setPrivacy(GPConstants.PRIVATE);
+        int i = 0;
+        for (Iterator<JobInfo> iter = jobs.iterator(); iter.hasNext(); i++) {
+            JobInfo job = iter.next();
+            if (!job.getUserId().equals(userID) && !AuthorizationHelper.adminJobs(userID)) {
+                throw new WebServiceException("You do not have the required permission access job number "
+                        + job.getJobNumber() + ".");
+            }
+            jobOrder.put(new Integer(job.getJobNumber()), new Integer(i));
+            // map old job number to order in pipeline
 
-	    TaskInfo mTaskInfo = taskList.get(job.getTaskLSID());
-	    if (mTaskInfo == null) {
-		throw new WebServiceException("Could not find job number: " + job.getJobNumber() + ", module: "
-			+ job.getTaskName() + " in module list.");
-	    }
-	    TaskInfoAttributes mTia = mTaskInfo.giveTaskInfoAttributes();
-	    boolean isVisualizer = TaskInfo.isVisualizer(mTaskInfo.getTaskInfoAttributes());
+            TaskInfo mTaskInfo = taskList.get(job.getTaskLSID());
+            if (mTaskInfo == null) {
+                throw new WebServiceException("Could not find job number: " + job.getJobNumber() + ", module: "
+                        + job.getTaskName() + " in module list.");
+            }
+            TaskInfoAttributes mTia = mTaskInfo.giveTaskInfoAttributes();
+            boolean isVisualizer = TaskInfo.isVisualizer(mTaskInfo.getTaskInfoAttributes());
 
-	    ParameterInfo[] adjustedParams = createPipelineParams(job.getParameterInfoArray(), mTaskInfo
-		    .getParameterInfoArray(), jobOrder);
+            ParameterInfo[] adjustedParams = createPipelineParams(job.getParameterInfoArray(), mTaskInfo
+                    .getParameterInfoArray(), jobOrder);
 
-	    // runtime prompts will always be false in generated pipelines
-	    boolean[] runTimePrompt = (adjustedParams != null ? new boolean[adjustedParams.length] : null);
-	    if (runTimePrompt != null) {
-		for (int j = 0; j < adjustedParams.length; j++) {
-		    runTimePrompt[j] = false;
-		}
+            // runtime prompts will always be false in generated pipelines
+            boolean[] runTimePrompt = (adjustedParams != null ? new boolean[adjustedParams.length] : null);
+            if (runTimePrompt != null) {
+                for (int j = 0; j < adjustedParams.length; j++) {
+                    runTimePrompt[j] = false;
+                }
 
-	    }
+            }
 
-	    JobSubmission jobSubmission = new JobSubmission(mTaskInfo.getName(), mTaskInfo.getDescription(), mTia
-		    .get(GPConstants.LSID), adjustedParams, runTimePrompt, isVisualizer, mTaskInfo);
+            JobSubmission jobSubmission = new JobSubmission(mTaskInfo.getName(), mTaskInfo.getDescription(), mTia
+                    .get(GPConstants.LSID), adjustedParams, runTimePrompt, isVisualizer, mTaskInfo);
 
-	    model.addTask(jobSubmission);
+            model.addTask(jobSubmission);
 
-	}
-	return model;
+        }
+        return model;
     }
 
     protected void copyFilesToPipelineDir(String pipelineLSID, String pipelineName) {
-	String attachmentDir = null;
-	try {
-	    attachmentDir = DirectoryManager.getTaskLibDir(pipelineName, pipelineLSID, userID);
-	} 
-	catch (Exception e) {
-	    log.error("Could not copy files for pipeline: " + pipelineLSID, e);
-	    return;
-	}
+        String attachmentDir = null;
+        try {
+            attachmentDir = DirectoryManager.getTaskLibDir(pipelineName, pipelineLSID, userID);
+        }
+        catch (Exception e) {
+            log.error("Could not copy files for pipeline: " + pipelineLSID, e);
+            return;
+        }
 
-	File dir = new File(attachmentDir);
-	dir.mkdir();
-	byte[] buf = new byte[100000];
-	int j;
+        File dir = new File(attachmentDir);
+        dir.mkdir();
+        byte[] buf = new byte[100000];
+        int j;
 
-	for (Iterator iter = filesToCopy.iterator(); iter.hasNext();) {
-	    File aFile = (File) iter.next();
-	    FileInputStream is = null;
-	    FileOutputStream os = null;
-	    try {
-	        is = new FileInputStream(aFile);
-	        os = new FileOutputStream(new File(dir, aFile.getName()));
-	        while ((j = is.read(buf, 0, buf.length)) > 0) {
-	            os.write(buf, 0, j);
-	        }
-	    } 
-	    catch (IOException e) {
-    		log.error("Could not copy file " + aFile.getAbsolutePath() + " todir " + dir.getAbsolutePath(), e);
-	    } 
-	    finally {
-	        try {
-	            if (is != null) {
-	                is.close();
-	            }
-	        } catch (IOException e) {
-	        }
-	        try {
-	            if (os != null) {
-	                os.close();
-	            }
-	        } 
-	        catch (IOException e) {
-	        }
-	    }
-	}
-	filesToCopy.clear();
+        for (Iterator iter = filesToCopy.iterator(); iter.hasNext();) {
+            File aFile = (File) iter.next();
+            FileInputStream is = null;
+            FileOutputStream os = null;
+            try {
+                is = new FileInputStream(aFile);
+                os = new FileOutputStream(new File(dir, aFile.getName()));
+                while ((j = is.read(buf, 0, buf.length)) > 0) {
+                    os.write(buf, 0, j);
+                }
+            }
+            catch (IOException e) {
+                log.error("Could not copy file " + aFile.getAbsolutePath() + " todir " + dir.getAbsolutePath(), e);
+            }
+            finally {
+                try {
+                    if (is != null) {
+                        is.close();
+                    }
+                }
+                catch (IOException e) {
+                }
+                try {
+                    if (os != null) {
+                        os.close();
+                    }
+                }
+                catch (IOException e) {
+                }
+            }
+        }
+        filesToCopy.clear();
     }
 
     protected String getJobNoFromURL(String fileURL) {
-	String j = getParamFromURL(fileURL, "job");
-	if (j == null) {
-		// maybe a "job#/filename"
-    	try {
-    		int idx = fileURL.indexOf(File.separator);
-    		String jobNumMaybe = fileURL.substring(0,idx);
-    		Integer.parseInt(jobNumMaybe);
-    		j = jobNumMaybe;
-    	} catch (Exception e){
-    	}
-	}
-	
-	if (fileURL != null) {
-	    log.debug("GJFU "+ fileURL + "  " + j);
-	}
-	
-	return j;
+        String j = getParamFromURL(fileURL, "job");
+        if (j == null) {
+            // maybe a "job#/filename"
+            try {
+                int idx = fileURL.indexOf(File.separator);
+                String jobNumMaybe = fileURL.substring(0, idx);
+                Integer.parseInt(jobNumMaybe);
+                j = jobNumMaybe;
+            }
+            catch (Exception e) {
+            }
+        }
+
+        if (fileURL != null) {
+            log.debug("GJFU " + fileURL + "  " + j);
+        }
+
+        return j;
     }
 
     protected String getParamFromURL(String fileURL, String key) {
@@ -357,50 +360,49 @@ public class ProvenanceFinder {
     }
 
     protected ArrayList<String> getLocalInputFiles(JobInfo job) {
-    	
-    	log.debug(" GLIF inputs for " + job.getJobNumber());
-    	
-	ArrayList<String> inputFiles = new ArrayList<String>();
-	if (job == null)
-	    return inputFiles;
-
-	ParameterInfo[] params = job.getParameterInfoArray();
-	if (params != null) {
-	    for (int i = 0; i < params.length; i++) {
-	     	
-		String val = getURLFromParam(params[i]);
-		if (val != null)
-		    inputFiles.add(val);
-	    }
-	}
-	return inputFiles;
+        log.debug(" GLIF inputs for " + job.getJobNumber());
+        ArrayList<String> inputFiles = new ArrayList<String>();
+        if (job == null) {
+            return inputFiles;
+        }
+        ParameterInfo[] params = job.getParameterInfoArray();
+        if (params != null) {
+            for (int i = 0; i < params.length; i++) {
+                String val = getURLFromParam(params[i]);
+                if (val != null) {
+                    inputFiles.add(val);
+                }
+            }
+        }
+        return inputFiles;
     }
 
     public String getURLFromParam(ParameterInfo pinfo) {
-	HashMap attributes = pinfo.getAttributes();
-	String pvalue = pinfo.getValue();
+        HashMap attributes = pinfo.getAttributes();
+        String pvalue = pinfo.getValue();
 
-	
-	if (pvalue.toUpperCase().startsWith(serverURL.toUpperCase()) || pvalue.toUpperCase().startsWith(serverURL) || pvalue.toUpperCase().startsWith("HTTP://LOCALHOST")  || pvalue.toUpperCase().startsWith("HTTP://127.0.0.1")) {
-	   	log.debug("\t\t" + pinfo.getName()+ "=" + pvalue);
-		
-		return pvalue;
-	} else if ("FILE".equals(attributes.get("TYPE"))) {
-	
-	    if ("CACHED_IN".equals(attributes.get("MODE"))) {
-		int idx = pvalue.indexOf("/");
-		String jobstr = pvalue.substring(0, idx);
-		String filename = pvalue.substring(idx + 1);
+        if (pvalue.toUpperCase().startsWith(serverURL.toUpperCase()) || pvalue.toUpperCase().startsWith(serverURL) || pvalue.toUpperCase().startsWith("HTTP://LOCALHOST") || pvalue.toUpperCase().startsWith("HTTP://127.0.0.1")) {
+            log.debug("\t\t" + pinfo.getName() + "=" + pvalue);
 
-		return serverURL + "/gp/jobResults/" + jobstr + "/" + filename;
-	    } else {
-	    	
-		return pvalue;
+            return pvalue;
+        }
+        else if ("FILE".equals(attributes.get("TYPE"))) {
 
-	    }
-	}	   	
+            if ("CACHED_IN".equals(attributes.get("MODE"))) {
+                int idx = pvalue.indexOf("/");
+                String jobstr = pvalue.substring(0, idx);
+                String filename = pvalue.substring(idx + 1);
 
-	return null;
+                return serverURL + "/gp/jobResults/" + jobstr + "/" + filename;
+            }
+            else {
+
+                return pvalue;
+
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -408,77 +410,66 @@ public class ProvenanceFinder {
      * pattern like we did to find these jobs and replace with gpUseResult() calls. Create a new ParameterInfo array to
      * return.
      */
-    protected ParameterInfo[] createPipelineParams(ParameterInfo[] oldJobParams, ParameterInfo[] taskParams,
-	    HashMap jobOrder) throws WebServiceException {
-	ParameterInfo[] newParams = new ParameterInfo[taskParams.length];
+    protected ParameterInfo[] createPipelineParams(ParameterInfo[] oldJobParams, ParameterInfo[] taskParams, HashMap jobOrder) 
+    throws WebServiceException 
+    {
+        ParameterInfo[] newParams = new ParameterInfo[taskParams.length];
 
-	for (int i = 0; i < taskParams.length; i++) {
-	    ParameterInfo taskParam = taskParams[i];
-	    ParameterInfo oldJobParam = null;
-	    for (int j = 0; j < oldJobParams.length; j++) {
-		oldJobParam = oldJobParams[j];
-		if (oldJobParam.getName().equalsIgnoreCase(taskParam.getName()))
-		    break;
-	    }
-	    HashMap attrs = oldJobParam.getAttributes();
+        for (int i = 0; i < taskParams.length; i++) {
+            ParameterInfo taskParam = taskParams[i];
+            ParameterInfo oldJobParam = null;
+            for (int j = 0; j < oldJobParams.length; j++) {
+                oldJobParam = oldJobParams[j];
+                if (oldJobParam.getName().equalsIgnoreCase(taskParam.getName())) {
+                    break;
+                }
+            }
+            HashMap attrs = oldJobParam.getAttributes();
+            String value = getURLFromParam(oldJobParam);
+            String jobNoStr = getJobNoFromURL(value);
+            if (jobNoStr == null) {
+                // for files that are on the server, replace with generic URL with LSID to be substituted at runtime
+                // for anything else leave it unmodified
+                value = oldJobParam.getValue();
+                File inFile = new File(value);
+                if (inFile.exists()) {
+                    filesToCopy.add(inFile);
+                    value = "<GenePatternURL>getFile.jsp?task=" + GPConstants.LEFT_DELIMITER + GPConstants.LSID + GPConstants.RIGHT_DELIMITER + "&file=" + URLEncoder.encode(inFile.getName());
+                }
+            }
+            else {
+                // figure out the jobs order in the new pipeline and use gpUseResult
+                Integer jobNo = new Integer(jobNoStr);
+                Integer pipeNo = (Integer) jobOrder.get(jobNo);
+                attrs.put(PipelineModel.INHERIT_TASKNAME, "" + pipeNo);
+                JobInfo priorJob = new AnalysisDAO().getJobInfo(jobNo);
+                String name = getParamFromURL(value, "filename");
+                //
+                // XXX use file index for now, 
+                // Change to file type when I understand how
+                // to get the right information
+                //
+                ParameterInfo[] pjp = priorJob.getParameterInfoArray();
+                int fileIdx = 0;
+                for (int j = 0; j < pjp.length; j++) {
+                    if (pjp[j].isOutputFile()) {
+                        fileIdx++;
+                        log.debug("CPP " + pjp[j].getValue() + " " + name);
+                        if (name != null) {
+                            if (pjp[j].getValue().endsWith(name)) {
+                                attrs.put(PipelineModel.INHERIT_FILENAME, "" + fileIdx);
+                            }
+                        }
+                    }
+                }
 
-	    String value = getURLFromParam(oldJobParam);
-	 
-        
-	    String jobNoStr = getJobNoFromURL(value);
-
-	    if (jobNoStr == null) {
-		// for files that are on the server, replace with generic URL
-		// with LSID to be substituted at runtime
-		// for anything else leave it unmodified
-		value = oldJobParam.getValue();
-
-		File inFile = new File(value);
-		if (inFile.exists()) {
-		    filesToCopy.add(inFile);
-		    value = "<GenePatternURL>getFile.jsp?task=" + GPConstants.LEFT_DELIMITER + GPConstants.LSID
-			    + GPConstants.RIGHT_DELIMITER + "&file=" + URLEncoder.encode(inFile.getName());
-		}
-
-	    } else {
-		// figure out the jobs order in the new pipeline and use
-		// gpUseResult
-		Integer jobNo = new Integer(jobNoStr);
-		Integer pipeNo = (Integer) jobOrder.get(jobNo);
-
-		attrs.put(PipelineModel.INHERIT_TASKNAME, "" + pipeNo);
-		
-		JobInfo priorJob = new AnalysisDAO().getJobInfo(jobNo);
-
-		String name = getParamFromURL(value, "filename");
-		//
-		// XXX use file index for now, Change to file type when I
-		// understand how
-		// to get the right information
-		//
-		ParameterInfo[] pjp = priorJob.getParameterInfoArray();
-		int fileIdx = 0;
-		for (int j = 0; j < pjp.length; j++) {
-			if (pjp[j].isOutputFile()) {
-				fileIdx++;
-
-				log.debug("CPP " + pjp[j].getValue() + " " + name);
-				if (name != null){
-					if (pjp[j].getValue().endsWith(name)) {
-						attrs.put(PipelineModel.INHERIT_FILENAME, "" + fileIdx);
-					}
-				}
-			}
-		}
-
-		// now we figure out which file to use from the job
-		value = "";
-	    }
-	    newParams[i] = new ParameterInfo(taskParam.getName(), value, taskParam.getDescription());
-	    newParams[i].setAttributes(attrs);
-
-	}
-	return newParams;
+                // now we figure out which file to use from the job
+                value = "";
+            }
+            newParams[i] = new ParameterInfo(taskParam.getName(), value, taskParam.getDescription());
+            newParams[i].setAttributes(attrs);
+        }
+        return newParams;
     }
 
 }
