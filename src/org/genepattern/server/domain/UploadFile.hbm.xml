@@ -10,6 +10,7 @@
   
   <property name="userId" column="USER_ID" />
   <property name="name" column="NAME" />
+  <property name="status" type="int" column="STATUS"/>
   <property name="extension" column="EXTENSION" />
   <property name="kind" column="KIND" />
   <property name="fileLength" column="FILE_LENGTH" />

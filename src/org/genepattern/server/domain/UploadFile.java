@@ -19,12 +19,18 @@ public class UploadFile {
     private String kind;
     private long fileLength;
     private Date lastModified;
+    private int status;
     
+    // File status constants, defined this way because hibernate doesn't play nice with enums
+    public final int COMPLETE = 0;
+    public final int PARTIAL = 1;
+    public final int DELETED = -1;
+
     /**
      * Reset the properties based on the given file.
      * @param file
      */
-    public void initFromFile(File file) throws IOException {
+    public void initFromFile(File file, boolean complete) throws IOException {
         this.path = file.getCanonicalPath();
         this.name = file.getName();
         
@@ -38,6 +44,33 @@ public class UploadFile {
 
         this.extension = SemanticUtil.getExtension(file);
         this.kind = SemanticUtil.getKind(file);
+        
+        if (complete) {
+            this.status = COMPLETE;
+        }
+        else {
+            this.status = PARTIAL;
+        }
+    }
+    
+    public boolean isPartial() {
+        return status == PARTIAL;
+    }
+    
+    public boolean isComplete() {
+        return status == COMPLETE;
+    }
+    
+    public boolean isDeleted() {
+        return status == DELETED;
+    }
+    
+    public int getStatus() {
+        return status;
+    }
+    
+    public void setStatus(int s) {
+        status = s;
     }
 
     public String getPath() {
@@ -113,5 +146,4 @@ public class UploadFile {
         String link = "/gp/data/" +  path;
         return link;
     }
-
 }

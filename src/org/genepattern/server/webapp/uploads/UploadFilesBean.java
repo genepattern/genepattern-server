@@ -173,12 +173,7 @@ public class UploadFilesBean {
         }
         
         public boolean getPartial() {
-            if (file.getName().endsWith(".part")) {
-                return true;
-            }
-            else {
-                return false;
-            }
+            return file.isPartial();
         }
         
         public Collection<SendToModule> getSendToModules() {
