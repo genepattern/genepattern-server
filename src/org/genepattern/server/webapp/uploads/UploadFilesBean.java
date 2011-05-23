@@ -14,6 +14,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -284,8 +285,6 @@ public class UploadFilesBean {
             boolean deleted = DataManager.deleteFile(file);
             if (deleted) {
                 UIBeanHelper.setInfoMessage("Deleted file: "+file.getName());
-                //remove the deleted item from the view
-                UploadFilesBean.this.files.remove(file);
             }
             else {
                 UIBeanHelper.setErrorMessage("Error deleting file: "+file.getName());
@@ -402,6 +401,17 @@ public class UploadFilesBean {
                 taskInfosForMap.add(taskInfo);
             }
         }
+    }
+    
+    public void deleteFile(ActionEvent ae) {
+        String filePath = UIBeanHelper.getRequest().getParameter("filePath");
+        for (final FileInfoWrapper i : files) {
+            if (i.getPath().equals(filePath)) {
+                i.deleteFile();
+                files.remove(i);
+                break;
+            }
+        } 
     }
     
     public String getSelectedTab() {

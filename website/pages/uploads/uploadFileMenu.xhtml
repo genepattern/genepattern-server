@@ -20,7 +20,7 @@
           <tr>
             <td>
             <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file from the upload directory?');" 
-              		action="#{aFile.deleteFile}" immediate="true">
+              		actionListener="#{uploadFilesBean.deleteFile}">
                 <f:param name="filePath" value="#{aFile.file.path}" />
               </h:commandLink>
             </td>
