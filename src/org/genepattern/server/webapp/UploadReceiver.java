@@ -30,6 +30,9 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.UploadFile;
 import org.genepattern.server.domain.UploadFileDAO;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.server.webapp.uploads.UploadFilesBean;
+import org.genepattern.server.webapp.uploads.UploadFilesBean.FileInfoWrapper;
 
 public class UploadReceiver extends HttpServlet {
     private static Logger log = Logger.getLogger(UploadReceiver.class);
@@ -159,6 +162,20 @@ public class UploadReceiver extends HttpServlet {
         }
     }
     
+    private void databaseAddIfNecessary(String userId, File file) throws FileUploadException {
+        List<UploadFile> dbFiles = new UploadFileDAO().findByUserId(userId);
+        boolean foundMatch = false;
+        for (UploadFile i : dbFiles) {
+            if (i.getPath().equals(file.getAbsolutePath())) {
+                foundMatch = true;
+                break;
+            }
+        }
+        if (!foundMatch) {
+            updateDatabase(userId, file, UploadFile.COMPLETE);
+        }
+    }
+    
     protected String writeFile(HttpServletRequest request, List<FileItem> postParameters, boolean first, boolean last, String userId) throws FileUploadException { 
         final boolean partial = !(first && last);
         String responeText = "";
@@ -168,6 +185,7 @@ public class UploadReceiver extends HttpServlet {
                 
                 // Check if the file exists and throw an error if it does
                 if (first && file.exists()) {
+                    databaseAddIfNecessary(userId, file);
                     throw new FileUploadException("File already exists");
                 }
                 
