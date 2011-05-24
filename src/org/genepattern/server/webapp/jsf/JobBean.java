@@ -12,11 +12,8 @@
 
 package org.genepattern.server.webapp.jsf;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -33,9 +30,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.log4j.Logger;
 import org.genepattern.codegenerator.CodeGeneratorUtil;
@@ -54,6 +54,7 @@ import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
+import org.genepattern.server.webapp.FileDownloader;
 import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -324,43 +325,28 @@ public class JobBean {
         }
         String jobNumber = jobFileName.substring(0, idx);
         String filename = jobFileName.substring(idx + 1);
-        File in = new File(GenePatternAnalysisTask.getJobDir(jobNumber), filename);
-        if (!in.exists()) {
+        File fileObj = new File(GenePatternAnalysisTask.getJobDir(jobNumber), filename);
+        if (!fileObj.exists()) {
             UIBeanHelper.setInfoMessage("File " + filename + " does not exist.");
             return;
         }
-        InputStream is = null;
-        try {
-            HttpServletResponse response = UIBeanHelper.getResponse();
-            response.setHeader("Content-Disposition", "attachment; filename=" + in.getName() + ";");
-            response.setHeader("Content-Type", "application/octet-stream");
-            response.setHeader("Cache-Control", "no-store"); // HTTP 1.1
-            response.setHeader("Pragma", "no-cache"); // HTTP 1.0 cache
-            response.setDateHeader("Expires", 0);
+        
+        //TODO: Hack, based on comments in http://seamframework.org/Community/LargeFileDownload
+        ServletContext servletContext = UIBeanHelper.getServletContext();
+        HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();        
+        if (response instanceof HttpServletResponseWrapper) {
+            response = (HttpServletResponse) ((HttpServletResponseWrapper) response).getResponse();
+        }
 
-            OutputStream os = response.getOutputStream();
-            is = new BufferedInputStream(new FileInputStream(in));
-            byte[] b = new byte[10000];
-            int bytesRead;
-            while ((bytesRead = is.read(b)) != -1) {
-                os.write(b, 0, bytesRead);
-            }
-            os.flush();
-            os.close();
-            UIBeanHelper.getFacesContext().responseComplete();
+        boolean serveContent = true;
+        try {
+            FileDownloader.serveFile(servletContext, request, response, serveContent, FileDownloader.ContentDisposition.ATTACHMENT, fileObj);
         }
-        catch (IOException e) {
-            log.error("Error saving file.", e);
+        catch (Throwable t) {
+            log.error("Error downloading "+jobFileName+" for user "+UIBeanHelper.getUserId(), t);
+            UIBeanHelper.setErrorMessage("Error downloading "+jobFileName+": "+t.getLocalizedMessage());
         }
-        finally {
-            if (is != null) {
-                try {
-                    is.close();
-                }
-                catch (IOException e) {
-                }
-            }
-        }
+        FacesContext.getCurrentInstance().responseComplete();
     }
 
     public void setShowExecutionLogs(boolean showExecutionLogs) {
