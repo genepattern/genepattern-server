@@ -23,12 +23,14 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.webapp.PipelineCreationHelper;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -46,6 +48,9 @@ public class ProvenanceFinder {
 
     private static String serverURL = null;
     private String userID = null;
+    //the max size (in bytes) for copying a file into the taskLib
+    // pipeline.max.file.size
+    private long maxFileSize = 0L;
     private ArrayList filesToCopy = new ArrayList();
 
     static {
@@ -69,6 +74,11 @@ public class ProvenanceFinder {
 
     public ProvenanceFinder(String user) {
         userID = user;
+
+        //init system configured setting for max file size
+        ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userID);
+        final Long defaultMaxFileSize = 250L * 1000L * 1024L; //250 mB
+        maxFileSize = ServerConfiguration.instance().getGPLongProperty(userContext, "pipeline.max.file.size", defaultMaxFileSize);
     }
 
     public String createProvenancePipeline(Set<JobInfo> jobs, String pipelineName) {
@@ -203,28 +213,34 @@ public class ProvenanceFinder {
             }
             TaskInfoAttributes mTia = mTaskInfo.giveTaskInfoAttributes();
             boolean isVisualizer = TaskInfo.isVisualizer(mTaskInfo.getTaskInfoAttributes());
-
-            ParameterInfo[] adjustedParams = createPipelineParams(job.getParameterInfoArray(), mTaskInfo
-                    .getParameterInfoArray(), jobOrder);
-
-            // runtime prompts will always be false in generated pipelines
-            boolean[] runTimePrompt = (adjustedParams != null ? new boolean[adjustedParams.length] : null);
-            if (runTimePrompt != null) {
-                for (int j = 0; j < adjustedParams.length; j++) {
-                    runTimePrompt[j] = false;
+            
+            final List<ParameterInfo> adjustedParamList = createPipelineParams(job.getParameterInfoArray(), mTaskInfo.getParameterInfoArray(), jobOrder);
+            ParameterInfo[] adjustedParams = new ParameterInfo[ adjustedParamList.size() ];
+            boolean[] runTimePrompt = new boolean[ adjustedParamList.size() ];
+            int j=0;
+            for(ParameterInfo paramInfo : adjustedParamList) {
+                adjustedParams[j] = paramInfo;
+                boolean isPromptWhenRun = "1".equals(paramInfo.getAttributes().get("runTimePrompt"));                    
+                runTimePrompt[j] = isPromptWhenRun; 
+                if (isPromptWhenRun) {
+                    //... add prompt when run parameter to the pipeline,
+                    //    reverse-engineered from makePipeline.jsp
+                    // i is the taskNum
+                    int taskNum = i;
+                    String taskName = job.getTaskName();
+                    String paramName = paramInfo.getName();
+                    model.addInputParameter(taskName + (taskNum + 1) + "." + paramName, paramInfo);
                 }
-
+                ++j;
             }
-
-            JobSubmission jobSubmission = new JobSubmission(mTaskInfo.getName(), mTaskInfo.getDescription(), mTia
-                    .get(GPConstants.LSID), adjustedParams, runTimePrompt, isVisualizer, mTaskInfo);
+            JobSubmission jobSubmission = new JobSubmission(mTaskInfo.getName(), mTaskInfo.getDescription(), 
+                    mTia.get(GPConstants.LSID), adjustedParams, runTimePrompt, isVisualizer, mTaskInfo);
 
             model.addTask(jobSubmission);
-
         }
         return model;
     }
-
+    
     protected void copyFilesToPipelineDir(String pipelineLSID, String pipelineName) {
         String attachmentDir = null;
         try {
@@ -410,11 +426,11 @@ public class ProvenanceFinder {
      * pattern like we did to find these jobs and replace with gpUseResult() calls. Create a new ParameterInfo array to
      * return.
      */
-    protected ParameterInfo[] createPipelineParams(ParameterInfo[] oldJobParams, ParameterInfo[] taskParams, HashMap jobOrder) 
+    protected List<ParameterInfo> createPipelineParams(ParameterInfo[] oldJobParams, ParameterInfo[] taskParams, HashMap jobOrder) 
     throws WebServiceException 
     {
-        ParameterInfo[] newParams = new ParameterInfo[taskParams.length];
-
+        List<ParameterInfo> newParams = new ArrayList<ParameterInfo>();
+        
         for (int i = 0; i < taskParams.length; i++) {
             ParameterInfo taskParam = taskParams[i];
             ParameterInfo oldJobParam = null;
@@ -424,6 +440,7 @@ public class ProvenanceFinder {
                     break;
                 }
             }
+            boolean promptWhenRun = false;
             HashMap attrs = oldJobParam.getAttributes();
             String value = getURLFromParam(oldJobParam);
             String jobNoStr = getJobNoFromURL(value);
@@ -432,9 +449,21 @@ public class ProvenanceFinder {
                 // for anything else leave it unmodified
                 value = oldJobParam.getValue();
                 File inFile = new File(value);
-                if (inFile.exists()) {
-                    filesToCopy.add(inFile);
-                    value = "<GenePatternURL>getFile.jsp?task=" + GPConstants.LEFT_DELIMITER + GPConstants.LSID + GPConstants.RIGHT_DELIMITER + "&file=" + URLEncoder.encode(inFile.getName());
+                if (inFile.exists()) { 
+                    if (inFile.length() > maxFileSize) {
+                        //special-case, replace large files with 'prompt when run'
+                        promptWhenRun = true;
+                        log.error("Ignoring input file because it exceeds pipeline.max.file.size for user, \n\t"+
+                                "inFile="+value+" size ="+inFile.length()+" bytes");
+                        //TODO: communicate this back to end user
+                    }
+                    else { 
+                        filesToCopy.add(inFile);
+                        value = "<GenePatternURL>getFile.jsp?task=" + GPConstants.LEFT_DELIMITER + GPConstants.LSID + GPConstants.RIGHT_DELIMITER + "&file=" + URLEncoder.encode(inFile.getName());
+                    }
+                    
+                    //TODO: special-case, when inFile is a server-file or a user uploaded file, 
+                    //      we may want to pass by reference rather than by value
                 }
             }
             else {
@@ -466,8 +495,16 @@ public class ProvenanceFinder {
                 // now we figure out which file to use from the job
                 value = "";
             }
-            newParams[i] = new ParameterInfo(taskParam.getName(), value, taskParam.getDescription());
-            newParams[i].setAttributes(attrs);
+            ParameterInfo paramInfo = new ParameterInfo(taskParam.getName(), value, taskParam.getDescription());
+            paramInfo.setAttributes(attrs);
+            //special-case for 'prompt when run' parameters
+            //reverse-engineered from makePipeline.jsp
+            if (promptWhenRun) {
+                paramInfo.getAttributes().put("runTimePrompt", "1");
+                paramInfo.setDescription("");
+                paramInfo.setValue("");
+            }
+            newParams.add(paramInfo);
         }
         return newParams;
     }

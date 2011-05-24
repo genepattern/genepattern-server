@@ -226,6 +226,20 @@ public class ServerConfiguration {
             return defaultValue;
         }
     }
+    
+    public Long getGPLongProperty(Context context, String key, Long defaultValue) {
+        String val = getGPProperty(context, key);
+        if (val == null) {
+            return defaultValue;
+        }
+        try {
+            return Long.parseLong(val);
+        }
+        catch (NumberFormatException e) {
+            log.error("Error parsing long value for property, "+key+"="+val);
+            return defaultValue;
+        }
+    }
 
     /**
      * @deprecated, use getValue instead, which supports lists.

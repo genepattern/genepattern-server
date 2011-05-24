@@ -43,6 +43,10 @@ default.properties:
 
     # for the file downloader, set the max file size (in bytes) to display inline in the web browser
     max.inline.size: 10000000
+    
+    # for 'Create Pipeline', the max file size (in bytes) to copy when creating a new pipeline
+    # (default=250mB)
+    pipeline.max.file.size: 256000000
 executors:
     # default executor for all jobs, it is included in GenePattern
     RuntimeExec:
