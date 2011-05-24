@@ -30,9 +30,6 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.UploadFile;
 import org.genepattern.server.domain.UploadFileDAO;
-import org.genepattern.server.webapp.jsf.UIBeanHelper;
-import org.genepattern.server.webapp.uploads.UploadFilesBean;
-import org.genepattern.server.webapp.uploads.UploadFilesBean.FileInfoWrapper;
 
 public class UploadReceiver extends HttpServlet {
     private static Logger log = Logger.getLogger(UploadReceiver.class);
@@ -210,8 +207,7 @@ public class UploadReceiver extends HttpServlet {
                     responeText += file.getParent() + ";" + file.getCanonicalPath();
                 }
                 catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    log.error("Error generating response text for canonical paths");
                 }
             }
         }
@@ -252,6 +248,9 @@ public class UploadReceiver extends HttpServlet {
         catch (FileUploadException e) {
             returnErrorResponse(responseWriter, e);
         } 
+        catch (Exception e) {
+            log.error("Unknown exception occured in UploadReceiver.doPost(): " + e.getMessage());
+        }
         finally {
             responseWriter.close();
         } 
