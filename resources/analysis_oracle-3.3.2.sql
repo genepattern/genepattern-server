@@ -5,6 +5,7 @@ create table UPLOAD_FILE (
     -- owner of the file
     USER_ID varchar2 (255) not null,
     NAME varchar2 (255),
+    STATUS NUMBER(4,0) DEFAULT 1 NOT NULL,
     EXTENSION varchar2 (16),
     KIND varchar2 (32), -- from SemanticUtil.getKind, usually the extension
     FILE_LENGTH NUMBER(20,0), -- the length in bytes of the file
