@@ -25,6 +25,7 @@ public class UploadFile {
     public final static int COMPLETE = 0;
     public final static int PARTIAL = 1;
     public final static int DELETED = -1;
+    public final static int TERMINATED_BY_ADMIN = -2;
 
     /**
      * Reset the properties based on the given file.

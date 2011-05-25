@@ -173,6 +173,11 @@ public class UploadReceiver extends HttpServlet {
         }
     }
     
+    private int getFileStatus(File file) throws IOException {
+        UploadFile uploadFile = new UploadFileDAO().findByPath(file.getCanonicalPath());
+        return uploadFile.getStatus();
+    }
+    
     protected String writeFile(HttpServletRequest request, List<FileItem> postParameters, boolean first, boolean last, String userId) throws FileUploadException { 
         final boolean partial = !(first && last);
         String responeText = "";
@@ -192,6 +197,10 @@ public class UploadReceiver extends HttpServlet {
                 }
                 
                 try {
+                    if (!first && !last && getFileStatus(file) == UploadFile.TERMINATED_BY_ADMIN) {
+                        throw new FileUploadException("This upload was terminated by the server administrator");
+                    }
+                    
                     appendPartition(fileItem, file);
                 }
                 catch (IOException e) {
@@ -250,6 +259,7 @@ public class UploadReceiver extends HttpServlet {
         } 
         catch (Exception e) {
             log.error("Unknown exception occured in UploadReceiver.doPost(): " + e.getMessage());
+            returnErrorResponse(responseWriter, new FileUploadException("Unknown error occured: " + e.getMessage()));
         }
         finally {
             responseWriter.close();
