@@ -26,6 +26,7 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.domain.UploadFile;
 import org.genepattern.server.domain.UploadFileDAO;
 import org.genepattern.server.webapp.FileDownloader;
+import org.genepattern.server.webapp.jsf.RunTaskBean;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webapp.jsf.UsersAndGroupsBean;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
@@ -235,6 +236,46 @@ public class UploadFilesBean {
          * E.g. http://127.0.0.1:8080/gp/pages/index.jsf?lsid=PreprocessDataset&input.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/all_aml/all_aml_test.gct
          */
         public void sendToTaskInfo() {
+            //sendToAlaProtocolsLink();
+            //for legacy
+            sendToAlaLoadTask();
+        }
+        
+        /**
+         * Based on JobBean#loadTask, this method is similar to that which was in place circa GP 3.3.1 and earlier.
+         * Request attributes are set here and are read in RunTaskBean#setTask.
+         * 
+         * @return
+         */
+        private String sendToAlaLoadTask() {
+            HttpServletRequest request = UIBeanHelper.getRequest();
+            String lsid = request.getParameter("lsid");
+            if (lsid == null) {
+                log.error("Missing required parameter, lsid");
+                UIBeanHelper.setErrorMessage("Missing required parameter, lsid");
+                return "error";
+            }
+            
+            request.setAttribute("lsid", lsid);
+            request.setAttribute("outputFileName", this.getFilename());
+            request.setAttribute("downloadPath", this.getUrl());
+            request.setAttribute("outputFileSource", "UploadedFiles");
+            
+            RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
+            if (runTaskBean != null) {
+                runTaskBean.setTask(lsid);
+                return "run task";
+            }
+            
+            return "error";
+        }
+
+        /**
+         * Equivalent to the links from the protocols pages, which include the lsid and the url to the input file in the path.
+         * TODO: once we refactor file references we should use a simpler approach which passes a reference to a file object
+         * along to the run task form.
+         */
+        private void sendToAlaProtocolsLink() {
             String lsid = UIBeanHelper.getRequest().getParameter("lsid");
             if (lsid == null) {
                 log.error("Missing required parameter, lsid");
@@ -343,6 +384,17 @@ public class UploadFilesBean {
     
     public void setCurrentTaskLsid(String lsid) {
         this.currentTaskLsid = lsid;
+    }
+    
+    /**
+     * for debugging
+     * @return
+     */
+    public FileInfoWrapper getFile() {
+        if (this.getFiles().size() > 0) {
+            return this.getFiles().get(0);
+        }
+        return null;
     }
     
     public List<FileInfoWrapper> getFiles() {

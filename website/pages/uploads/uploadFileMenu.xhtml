@@ -72,29 +72,14 @@
           </tr>
         </h:outputText>	
           <t:dataList value="#{aFile.sendToModules}" var="moduleMenuItem">
-            <!-- duplicate links, option 1) direct to aFile.sendToTaskInfo -->
             <tr>
               <td>
                 <h:commandLink value="#{moduleMenuItem.name}" action="#{aFile.sendToTaskInfo}" immediate="true">
                   <f:param name="lsid" value="#{moduleMenuItem.lsid}" />
                 </h:commandLink>
               </td>
-            </tr>
-            <!-- or, option 2) jobsBean.loadTask -->
-            <tr>
-              <td>
-                <h:commandLink value="#{moduleMenuItem.name}" action="#{jobsBean.loadTask}" immediate="true">
-                  <f:param value="#{moduleMenuItem.lsid}" name="module"/>
-                  <f:param value="UploadedFiles" name="source"/>
-                  <f:param value="${aFile.filename}" name="name"/>
-                  <f:param value="#{aFile.url}" name="path"/>
-                </h:commandLink>
-              </td>
-            </tr>
-            
+            </tr> 
           </t:dataList>
-
-
         </tbody>
       </table>
     </div>
