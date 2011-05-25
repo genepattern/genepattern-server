@@ -8,11 +8,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -218,32 +215,6 @@ public class UploadReceiver extends HttpServlet {
     }
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Enumeration enames;
-        Map map;
-        String title;
-
-        // Print the request headers
-
-        map = new TreeMap();
-        enames = request.getHeaderNames();
-        while (enames.hasMoreElements()) {
-           String name = (String) enames.nextElement();
-           String value = request.getHeader(name);
-           System.out.println(name + " : " + value);
-        }
-        
-
-        // Print the session attributes
-
-        map = new TreeMap();
-        enames = request.getParameterNames();
-        while (enames.hasMoreElements()) {
-           String name = (String) enames.nextElement();
-           String value = "" + request.getAttribute(name);
-           System.out.println(name + " : " + value);
-        }
-        
-        
         PrintWriter responseWriter = response.getWriter();
         String responseText = null;
         
