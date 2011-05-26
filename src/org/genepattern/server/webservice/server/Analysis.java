@@ -42,6 +42,7 @@ import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.GenericWebService;
+import org.genepattern.server.webservice.server.ProvenanceFinder.ProvidencePipelineResult;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.StringUtils;
 import org.genepattern.webservice.FileWrapper;
@@ -93,7 +94,7 @@ public class Analysis extends GenericWebService {
      * @return The pipeline LSID.
      * @throws WebServiceException
      */
-    public String createProvenancePipeline(JobInfo[] jobs, String pipelineName) throws WebServiceException {
+    public ProvidencePipelineResult createProvenancePipeline(JobInfo[] jobs, String pipelineName) throws WebServiceException {
         if (!AuthorizationHelper.createPipeline(getUsernameFromContext())) {
             throw new WebServiceException("You are not authorized to perform this action.");
         }
@@ -114,7 +115,7 @@ public class Analysis extends GenericWebService {
      * @return The pipeline LSID.
      * @throws WebServiceException
      */
-    public String createProvenancePipeline(String fileUrlOrJobNumber, String pipelineName) throws WebServiceException {
+    public ProvidencePipelineResult createProvenancePipeline(String fileUrlOrJobNumber, String pipelineName) throws WebServiceException {
         if (!AuthorizationHelper.createPipeline(getUsernameFromContext())) {
             throw new WebServiceException("You are not authorized to perform this action.");
         }
@@ -122,8 +123,7 @@ public class Analysis extends GenericWebService {
 
         ProvenanceFinder pf = new ProvenanceFinder(userID);
         JobInfo job = pf.findJobThatCreatedFile(fileUrlOrJobNumber);
-        String lsid = pf.createProvenancePipeline(fileUrlOrJobNumber, pipelineName);
-        return lsid;
+        return pf.createProvenancePipeline(fileUrlOrJobNumber, pipelineName);
     }
 
     /**

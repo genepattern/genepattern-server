@@ -52,6 +52,7 @@ public class ProvenanceFinder {
     // pipeline.max.file.size
     private long maxFileSize = 0L;
     private ArrayList filesToCopy = new ArrayList();
+    private ProvidencePipelineResult result = new ProvidencePipelineResult();
 
     static {
         serverURL = System.getProperty("GenePatternURL");
@@ -81,7 +82,7 @@ public class ProvenanceFinder {
         maxFileSize = ServerConfiguration.instance().getGPLongProperty(userContext, "pipeline.max.file.size", defaultMaxFileSize);
     }
 
-    public String createProvenancePipeline(Set<JobInfo> jobs, String pipelineName) {
+    public ProvidencePipelineResult createProvenancePipeline(Set<JobInfo> jobs, String pipelineName) {
         String lsid = null;
 
         try {
@@ -90,18 +91,18 @@ public class ProvenanceFinder {
             lsid = helper.generateTask();
             model.setLsid(lsid);
             copyFilesToPipelineDir(lsid, pipelineName);
+            result.setLsid(lsid);
         }
         catch (Exception e) {
             log.error(e);
         }
-        return lsid;
+        return result;
     }
 
-    public String createProvenancePipeline(String filename, String pipelineName) {
+    public ProvidencePipelineResult createProvenancePipeline(String filename, String pipelineName) {
         String lsid = null;
         Set<JobInfo> jobs = this.findJobsThatCreatedFile(filename);
-        lsid = createProvenancePipeline(jobs, pipelineName);
-        return lsid;
+        return createProvenancePipeline(jobs, pipelineName);
     }
 
     public Set<JobInfo> findJobsThatCreatedFile(String fileURL) {
@@ -453,6 +454,7 @@ public class ProvenanceFinder {
                     if (inFile.length() > maxFileSize) {
                         //special-case, replace large files with 'prompt when run'
                         promptWhenRun = true;
+                        result.getReplacedParams().add(oldJobParam);
                         log.error("Ignoring input file because it exceeds pipeline.max.file.size for user, \n\t"+
                                 "inFile="+value+" size ="+inFile.length()+" bytes");
                         //TODO: communicate this back to end user
@@ -508,5 +510,26 @@ public class ProvenanceFinder {
         }
         return newParams;
     }
-
+    
+    public class ProvidencePipelineResult {
+        private String lsid;
+        private List<ParameterInfo> replacedParams = new ArrayList<ParameterInfo>();
+        
+        public String getLsid() {
+            return lsid;
+        }
+        
+        public void setLsid(String lsid) {
+            this.lsid = lsid;
+        }
+        
+        public List<ParameterInfo> getReplacedParams() {
+            return replacedParams;
+        }
+        
+        public void setReplacedParams(List<ParameterInfo> replacedParams) {
+            this.replacedParams = replacedParams;
+        }
+        
+    }
 }

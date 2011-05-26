@@ -1509,6 +1509,14 @@ nextTask:
 </head>
 <body>
 <jsp:include page="navbar.jsp"/>
+<div id="messageBox" style="color:red;text-align:center;font-weight:bold;">
+	<% 
+		String message = request.getParameter("message");
+		if (message != null) {
+			out.print(message); 
+		}
+	%>
+</div>
 
 <%
 		viewer.writeStartBody();

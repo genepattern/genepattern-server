@@ -14,6 +14,7 @@ package org.genepattern.server.webservice.server.local;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.Analysis;
+import org.genepattern.server.webservice.server.ProvenanceFinder.ProvidencePipelineResult;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.WebServiceException;
 
@@ -42,7 +43,7 @@ public class LocalAnalysisClient {
         service.deleteJobResultFile(jobId, value);
     }
 
-    public String createProvenancePipeline(String fileUrlOrJobNumber, String pipelineName) throws WebServiceException {
+    public ProvidencePipelineResult createProvenancePipeline(String fileUrlOrJobNumber, String pipelineName) throws WebServiceException {
         return service.createProvenancePipeline(fileUrlOrJobNumber, pipelineName);
     }
 

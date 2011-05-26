@@ -60,6 +60,7 @@ import org.genepattern.server.util.EmailNotificationManager;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.RunTaskBean;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.server.webservice.server.ProvenanceFinder.ProvidencePipelineResult;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.WebServiceException;
@@ -741,7 +742,8 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
         try {
             // TODO prompt user for name
             String pipelineName = "job" + jobNumber; 
-            String lsid = new LocalAnalysisClient(currentUserId).createProvenancePipeline(""+jobNumber, pipelineName);
+            ProvidencePipelineResult pipelineResult = new LocalAnalysisClient(currentUserId).createProvenancePipeline(""+jobNumber, pipelineName);
+            String lsid = pipelineResult.getLsid();
             if (lsid == null) {
                 UIBeanHelper.setErrorMessage("Unable to create pipeline.");
                 return;

@@ -16,6 +16,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -56,6 +58,7 @@ import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webapp.FileDownloader;
 import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
+import org.genepattern.server.webservice.server.ProvenanceFinder.ProvidencePipelineResult;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
@@ -118,6 +121,19 @@ public class JobBean {
         }
         return _userProps;
     }
+    
+    public String createPipelineMessage(List<ParameterInfo> params) throws UnsupportedEncodingException {
+        String toReturn = "";
+        Context userContext = ServerConfiguration.Context.getContextForUser(UIBeanHelper.getUserId());
+        long maxFileSize = ServerConfiguration.instance().getGPLongProperty(userContext, "pipeline.max.file.size", 250L * 1000L * 1024L);
+        for (ParameterInfo i : params) {
+            toReturn += "Changed parameter " + i.getName() + " to 'Prompt When Run' because it exceeded maximum file size of " + JobHelper.getFormattedSize(maxFileSize) + " for pipelines.  ";
+        }
+        if (!toReturn.isEmpty()) {
+            toReturn = "&message=" + URLEncoder.encode(toReturn, "UTF-8");
+        }
+        return toReturn;
+    }
 
     public void createPipeline(ActionEvent e) {
         try {
@@ -140,7 +156,9 @@ public class JobBean {
 
             // TODO prompt user for name
             String pipelineName = "job" + jobNumber;
-            String lsid = new LocalAnalysisClient(UIBeanHelper.getUserId()).createProvenancePipeline(jobNumber, pipelineName);
+            ProvidencePipelineResult pipelineResult = new LocalAnalysisClient(UIBeanHelper.getUserId()).createProvenancePipeline(jobNumber, pipelineName);
+            String lsid = pipelineResult.getLsid();
+            String message = createPipelineMessage(pipelineResult.getReplacedParams());
             if (lsid == null) {
                 UIBeanHelper.setErrorMessage("Unable to create pipeline.");
                 return;
@@ -148,7 +166,7 @@ public class JobBean {
             UIBeanHelper.getResponse().sendRedirect(
                     UIBeanHelper.getRequest().getContextPath()
                             + "/pipelineDesigner.jsp?name="
-                            + UIBeanHelper.encode(lsid));
+                            + UIBeanHelper.encode(lsid) + message);
         }
         catch (WebServiceException wse) {
             log.error("Error creating pipeline.", wse);
