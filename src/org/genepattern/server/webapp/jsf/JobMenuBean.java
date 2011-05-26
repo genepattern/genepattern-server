@@ -50,7 +50,7 @@ public class JobMenuBean {
         for (ParameterInfo i : params) {
             toReturn += "Changed parameter " + i.getName() + " to 'Prompt When Run' because it exceeded maximum file size of " + JobHelper.getFormattedSize(maxFileSize) + " for pipelines.  ";
         }
-        if (!toReturn.isEmpty()) {
+        if (toReturn.length() != 0) {
             toReturn = "&message=" + URLEncoder.encode(toReturn, "UTF-8");
         }
         return toReturn;
