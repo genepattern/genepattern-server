@@ -52,7 +52,7 @@ public class ProvenanceFinder {
     // pipeline.max.file.size
     private long maxFileSize = 0L;
     private ArrayList filesToCopy = new ArrayList();
-    private ProvidencePipelineResult result = new ProvidencePipelineResult();
+    private ProvenancePipelineResult result = new ProvenancePipelineResult();
 
     static {
         serverURL = System.getProperty("GenePatternURL");
@@ -82,7 +82,7 @@ public class ProvenanceFinder {
         maxFileSize = ServerConfiguration.instance().getGPLongProperty(userContext, "pipeline.max.file.size", defaultMaxFileSize);
     }
 
-    public ProvidencePipelineResult createProvenancePipeline(Set<JobInfo> jobs, String pipelineName) {
+    public ProvenancePipelineResult createProvenancePipeline(Set<JobInfo> jobs, String pipelineName) {
         String lsid = null;
 
         try {
@@ -99,7 +99,7 @@ public class ProvenanceFinder {
         return result;
     }
 
-    public ProvidencePipelineResult createProvenancePipeline(String filename, String pipelineName) {
+    public ProvenancePipelineResult createProvenancePipeline(String filename, String pipelineName) {
         String lsid = null;
         Set<JobInfo> jobs = this.findJobsThatCreatedFile(filename);
         return createProvenancePipeline(jobs, pipelineName);
@@ -511,7 +511,7 @@ public class ProvenanceFinder {
         return newParams;
     }
     
-    public class ProvidencePipelineResult {
+    public class ProvenancePipelineResult {
         private String lsid;
         private List<ParameterInfo> replacedParams = new ArrayList<ParameterInfo>();
         

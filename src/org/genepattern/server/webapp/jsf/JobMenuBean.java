@@ -32,7 +32,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webapp.FileDownloader;
 import org.genepattern.server.webapp.jsf.jobinfo.JobStatusBean;
-import org.genepattern.server.webservice.server.ProvenanceFinder.ProvidencePipelineResult;
+import org.genepattern.server.webservice.server.ProvenanceFinder.ProvenancePipelineResult;
 import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.WebServiceException;
@@ -66,7 +66,7 @@ public class JobMenuBean {
             }
             // TODO prompt user for name
             String pipelineName = "job" + jobNumber;
-            ProvidencePipelineResult pipelineResult = new LocalAnalysisClient(UIBeanHelper.getUserId()).createProvenancePipeline(jobNumber, pipelineName);
+            ProvenancePipelineResult pipelineResult = new LocalAnalysisClient(UIBeanHelper.getUserId()).createProvenancePipeline(jobNumber, pipelineName);
             String lsid = pipelineResult.getLsid();
             String message = createPipelineMessage(pipelineResult.getReplacedParams());
             if (lsid == null) {

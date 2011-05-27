@@ -58,7 +58,7 @@ import org.genepattern.server.user.UserProp;
 import org.genepattern.server.user.UserPropKey;
 import org.genepattern.server.webapp.FileDownloader;
 import org.genepattern.server.webservice.server.Analysis.JobSortOrder;
-import org.genepattern.server.webservice.server.ProvenanceFinder.ProvidencePipelineResult;
+import org.genepattern.server.webservice.server.ProvenanceFinder.ProvenancePipelineResult;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.server.webservice.server.local.IAdminClient;
@@ -156,7 +156,7 @@ public class JobBean {
 
             // TODO prompt user for name
             String pipelineName = "job" + jobNumber;
-            ProvidencePipelineResult pipelineResult = new LocalAnalysisClient(UIBeanHelper.getUserId()).createProvenancePipeline(jobNumber, pipelineName);
+            ProvenancePipelineResult pipelineResult = new LocalAnalysisClient(UIBeanHelper.getUserId()).createProvenancePipeline(jobNumber, pipelineName);
             String lsid = pipelineResult.getLsid();
             String message = createPipelineMessage(pipelineResult.getReplacedParams());
             if (lsid == null) {
