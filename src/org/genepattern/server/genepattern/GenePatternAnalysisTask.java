@@ -157,6 +157,7 @@ import org.genepattern.server.executor.pipeline.PipelineHandler;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager_3_2;
+import org.genepattern.server.webapp.genomespace.GenomeSpaceJobHelper;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.Status;
@@ -173,6 +174,7 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
+import org.genomespace.client.GsSession;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -1139,6 +1141,14 @@ public class GenePatternAnalysisTask {
                                         downloadUrl = false;
                                     }
                                 }
+                                
+                                // Handle getting the InputStream for GenomeSpace
+                                if (GenomeSpaceJobHelper.isGenomeSpaceFile(url)) {
+                                    String token = GenomeSpaceJobHelper.getGSToken(jobInfo.getUserId());
+                                    GsSession session = new GsSession(token);
+                                    is = session.getDataManagerClient().getInputStream(url);
+                                }
+                                
                                 if (is == null && downloadUrl) {
                                     try {
                                         URLConnection conn = url.openConnection();
@@ -1146,7 +1156,7 @@ public class GenePatternAnalysisTask {
                                         is = conn.getInputStream();
                                     } 
                                     catch (IOException e) {
-                                        vProblems.add("Unable to connect to " + url + ".");
+                                        vProblems.add("Unable to connect to " + url + ". " + e);
                                         downloadUrl = false;
                                     }
                                 }

@@ -39,6 +39,7 @@ import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
+import org.genomespace.client.ConfigurationUrls;
 import org.genomespace.client.DataManagerClient;
 import org.genomespace.client.GsSession;
 import org.genomespace.client.User;
@@ -156,7 +157,11 @@ public class GenomeSpaceBean {
      *                ignored
      */
     public String submitLogin() {
-        
+        String env = UIBeanHelper.getRequest().getParameter("envSelect");
+        if (env == null) {
+            log.error("Environment for GenomeSpace not set");
+            env = "test";
+        }
         
         if (username == null) {
             unknownUser = true;
@@ -164,11 +169,13 @@ public class GenomeSpaceBean {
         }
 
        try {
+           ConfigurationUrls.init(env);
            GsSession gsSession = new GsSession();
             User gsUser = gsSession.login(username, password);
             HttpSession httpSession = UIBeanHelper.getSession();
-            httpSession.setAttribute(GS_USER_KEY,gsUser);
-            httpSession.setAttribute(GS_SESSION_KEY,gsSession);
+            httpSession.setAttribute(GS_USER_KEY, gsUser);
+            httpSession.setAttribute(GS_SESSION_KEY, gsSession);
+            GenomeSpaceJobHelper.updateDatabase(UIBeanHelper.getUserId(), gsSession);
             unknownUser = false;
             this.setMessageToUser("Signed in to GenomeSpace as " + gsUser.getUsername()  );
             
@@ -309,9 +316,9 @@ public class GenomeSpaceBean {
     public String getFileURL(GSFileMetadata gsFile){
         if (gsFile == null) return null;
         HttpSession httpSession = UIBeanHelper.getSession();
-        GsSession sess = (GsSession)httpSession.getAttribute(GS_SESSION_KEY);
-    
-        URL s3Url = sess.getDataManagerClient().getDownloadUrl(gsFile);
+        GsSession sess = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
+        
+        URL s3Url = sess.getDataManagerClient().getFileUrl(gsFile, null);
         return s3Url.toString();
     }
     
