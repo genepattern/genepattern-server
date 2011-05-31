@@ -96,13 +96,11 @@
     </target>
 
     <target name="compile" depends="init" description="Compiles all the source.">
-
-        <javac debug="true" classpathref="library.classpath" destdir="${genepattern.build}" srcdir="${src}" compiler="javac1.5" source="${java.target}" excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**" />
+        <javac debug="true" classpathref="library.classpath" destdir="${genepattern.build}" srcdir="${src}" compiler="javac1.5" source="${java.target}" target="${java.target}" excludes="org/genepattern/server/analysis/*,org/genepattern/server/handler/*,org/genepattern/jaxb/**" />
 
         <copy todir="${genepattern.build}">
             <fileset dir="${src}" includes="**/*.xml" />
         </copy>
-
     </target>
 
     <target depends="init" name="get_dependencies">
