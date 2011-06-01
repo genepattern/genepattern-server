@@ -68,6 +68,7 @@ public class GenomeSpaceBean {
     private boolean unknownUser = false;
     private boolean invalidPassword = false;
     private boolean invalidRegistration = false;
+    private boolean loginError = false;
     
     private boolean genomeSpaceEnabled = false;
 
@@ -128,6 +129,10 @@ public class GenomeSpaceBean {
 
     public boolean isInvalidPassword() {
         return invalidPassword;
+    }
+    
+    public boolean isLoginError() {
+        return loginError;
     }
 
     public boolean isUnknownUser() {
@@ -212,19 +217,23 @@ public class GenomeSpaceBean {
         if (! regPassword.equals(password)) {
             UIBeanHelper.setInfoMessage("GenomeSpace password does not match");
             invalidRegistration = true;
+            invalidPassword = true;
             return "genomeSpaceRegFailed";
         }
 
        try {
-           ConfigurationUrls.init("test");
+           //ConfigurationUrls.init("test");
            GsSession gsSession = new GsSession();
            gsSession.registerUser(username, password, regEmail);
-           
+           invalidRegistration = false;
+           invalidPassword = false;
+           loginError = false;
            submitLogin();
        }
        catch (Exception e) {
            UIBeanHelper.setInfoMessage("Error logging into GenomeSpace");
-           e.printStackTrace();
+           invalidRegistration = true;
+           loginError = true;
            log.error("Error logging into GenomeSpace" + e.getMessage());
            return "genomeSpaceRegFailed";
         }

@@ -51,11 +51,10 @@
 			<h:outputText
 				value="Username and password do not match."
 				style="color: red; font-weight: bold;"
-				rendered="#{genomeSpaceBean.unknownUser}" />
-			
-
-			<h:outputText value="Username and password do not match."
-				rendered="#{genomeSpaceBean.invalidPassword}"
+				rendered="#{genomeSpaceBean.invalidPassword}" />
+				
+			<h:outputText value="Error Registering for GenomeSpace."
+				rendered="#{genomeSpaceBean.loginError}"
 				style="color: red; font-weight: bold;" />
 
 			<h:panelGrid columns="2">
@@ -79,9 +78,7 @@
 					required="true" requiredMessage="Email is required" >
                   <f:attribute name="forceId" value="true"/>
                 </t:inputText>
-			
-			
-			
+
 			</h:panelGrid>
 			<h:commandButton id="signIn" action="#{genomeSpaceBean.submitRegistration}" value="Sign in" />
 			<br />
