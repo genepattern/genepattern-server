@@ -175,6 +175,7 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 import org.genomespace.client.GsSession;
+import org.genomespace.client.exceptions.InternalServerException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -1147,11 +1148,21 @@ public class GenePatternAnalysisTask {
                                     String token = GenomeSpaceJobHelper.getGSToken(jobInfo.getUserId());
                                     if (token == null) {
                                         vProblems.add("Unable to get the GenomeSpace session token needed to access GenomeSpace files");
+                                        log.error("Unable to get the GenomeSpace session token needed to access GenomeSpace files: " + url.getPath());
                                         downloadUrl = false;
                                     }
                                     else {
-                                        GsSession session = new GsSession(token);
-                                        is = session.getDataManagerClient().getInputStream(url);
+                                        GsSession session;
+                                        try {
+                                            session = new GsSession(token);
+                                            is = session.getDataManagerClient().getInputStream(url);
+                                        }
+                                        catch (InternalServerException e) {
+                                            vProblems.add("Error Creating GenomeSpace Exception");
+                                            log.error("Error Creating GenomeSpace Exception: " + e.getMessage());
+                                            downloadUrl = false;
+                                        }
+                                        
                                     }
                                 }
                                 
