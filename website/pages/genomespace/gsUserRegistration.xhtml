@@ -51,12 +51,7 @@
 			<h:outputText
 				value="Username and password do not match."
 				style="color: red; font-weight: bold;"
-				rendered="#{genomeSpaceBean.unknownUser and genomeSpaceBean.createAccountAllowed}" />
-		
-			<h:outputText
-				value="Username and password do not match."
-				style="color: red; font-weight: bold;"
-				rendered="#{genomeSpaceBean.unknownUser and !genomeSpaceBean.createAccountAllowed}" />
+				rendered="#{genomeSpaceBean.unknownUser}" />
 			
 
 			<h:outputText value="Username and password do not match."
