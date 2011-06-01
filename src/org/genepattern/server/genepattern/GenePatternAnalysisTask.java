@@ -1145,8 +1145,14 @@ public class GenePatternAnalysisTask {
                                 // Handle getting the InputStream for GenomeSpace
                                 if (GenomeSpaceJobHelper.isGenomeSpaceFile(url)) {
                                     String token = GenomeSpaceJobHelper.getGSToken(jobInfo.getUserId());
-                                    GsSession session = new GsSession(token);
-                                    is = session.getDataManagerClient().getInputStream(url);
+                                    if (token == null) {
+                                        vProblems.add("Unable to get the GenomeSpace session token needed to access GenomeSpace files");
+                                        downloadUrl = false;
+                                    }
+                                    else {
+                                        GsSession session = new GsSession(token);
+                                        is = session.getDataManagerClient().getInputStream(url);
+                                    }
                                 }
                                 
                                 if (is == null && downloadUrl) {
@@ -1156,7 +1162,7 @@ public class GenePatternAnalysisTask {
                                         is = conn.getInputStream();
                                     } 
                                     catch (IOException e) {
-                                        vProblems.add("Unable to connect to " + url + ". " + e);
+                                        vProblems.add("Unable to connect to " + url + ". ");
                                         downloadUrl = false;
                                     }
                                 }
