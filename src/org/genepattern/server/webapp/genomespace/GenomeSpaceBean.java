@@ -171,30 +171,25 @@ public class GenomeSpaceBean {
        try {
            ConfigurationUrls.init(env);
            GsSession gsSession = new GsSession();
-            User gsUser = gsSession.login(username, password);
-            HttpSession httpSession = UIBeanHelper.getSession();
-            httpSession.setAttribute(GS_USER_KEY, gsUser);
-            httpSession.setAttribute(GS_SESSION_KEY, gsSession);
-            GenomeSpaceJobHelper.updateDatabase(UIBeanHelper.getUserId(), gsSession);
-            unknownUser = false;
-            this.setMessageToUser("Signed in to GenomeSpace as " + gsUser.getUsername()  );
+           User gsUser = gsSession.login(username, password);
+           HttpSession httpSession = UIBeanHelper.getSession();
+           httpSession.setAttribute(GS_USER_KEY, gsUser);
+           httpSession.setAttribute(GS_SESSION_KEY, gsSession);
+           GenomeSpaceJobHelper.updateDatabase(UIBeanHelper.getUserId(), gsSession);
+           unknownUser = false;
+           this.setMessageToUser("Signed in to GenomeSpace as " + gsUser.getUsername()  );
             
-            return "home";
+           return "home";
             
         }  catch (AuthorizationException e) {
-            e.printStackTrace();
-             log.error(e);
-             //     throw new RuntimeException(e); // @TODO -- wrap in gp system exception.
-        
-             // TODO figure out what went wrong and send error message to the user
-             unknownUser = true;
-             this.setMessageToUser("Authentication error, please check your username and password." );
-             return "genomeSpaceLoginFailed";
+            log.info("Problem logging into GenomeSpace");
+            unknownUser = true;
+            this.setMessageToUser("Authentication error, please check your username and password." );
+            return "genomeSpaceLoginFailed";
              
              
         } catch (Exception e) {
-            e.printStackTrace();
-            log.error(e);
+            log.error("Exception logging into GenomeSpace>: " + e.getMessage());
             unknownUser = true;
             this.setMessageToUser("An error occurred logging in to GenomeSpace.  Please contact the GenePattern administrator." );
             
