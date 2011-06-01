@@ -286,7 +286,7 @@
                 <include name="commons-discovery-0.2.jar" />
                 <include name="commons-logging.jar" />
                 <include name="commons-fileupload-1.1.1.jar" />
-                <include name="commons-io-1.2.jar" />
+                <include name="commons-io-2.0.1.jar" />
                 <include name="hsqldb.jar" />
                 <include name="jaxb-rt-1.0-ea.jar" />
                 <include name="jaxp.jar" />
