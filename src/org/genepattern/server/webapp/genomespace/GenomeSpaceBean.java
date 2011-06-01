@@ -205,29 +205,28 @@ public class GenomeSpaceBean {
   public String submitRegistration() {
         
         if (username == null) {
+            this.setMessageToUser("GenomeSpace username is blank");
             invalidRegistration = true;
-            return "home";
+            return "genomeSpaceRegFailed";
         }
         if (! regPassword.equals(password)) {
+            UIBeanHelper.setInfoMessage("GenomeSpace password does not match");
             invalidRegistration = true;
-            return "home";
+            return "genomeSpaceRegFailed";
         }
 
        try {
+           ConfigurationUrls.init("test");
            GsSession gsSession = new GsSession();
-           User gsUser = gsSession.registerUser(username, password, regEmail);
+           gsSession.registerUser(username, password, regEmail);
            
-            HttpSession httpSession = UIBeanHelper.getSession();
-            httpSession.setAttribute(GS_USER_KEY,gsUser);
-            httpSession.setAttribute(GS_SESSION_KEY,gsSession);
-            
-            this.setMessageToUser("Signed in to GenomeSpace as " + gsUser.getUsername()  );
-            
-            
-        }   catch (Exception e) {
-            e.printStackTrace();
-            log.error(e);
-            
+           submitLogin();
+       }
+       catch (Exception e) {
+           UIBeanHelper.setInfoMessage("Error logging into GenomeSpace");
+           e.printStackTrace();
+           log.error("Error logging into GenomeSpace" + e.getMessage());
+           return "genomeSpaceRegFailed";
         }
         return "home";
     }
