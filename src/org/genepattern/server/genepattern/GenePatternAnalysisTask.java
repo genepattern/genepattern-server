@@ -1156,6 +1156,7 @@ public class GenePatternAnalysisTask {
                                         try {
                                             session = new GsSession(token);
                                             is = session.getDataManagerClient().getInputStream(url);
+                                            name = getDownloadFileName(url.openConnection(), url);
                                         }
                                         catch (InternalServerException e) {
                                             vProblems.add("Error Creating GenomeSpace Exception");
