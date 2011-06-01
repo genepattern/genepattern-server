@@ -34,12 +34,6 @@
   
     <!--  Loop through gs files -->
     <t:dataList var="aFile" value="#{gsDir.gsFiles}" rowIndexVar="fileIndex">
-    		<ui:include src="gsFileMenu.xhtml">
-              <ui:param name="gsFileDir" value="#{gsDir}"/>
-              <ui:param name="aFile" value="#{aFile}"/>
-            </ui:include>
-    
-    
       <h:outputLink value="#{aFile.url}">#{aFile.filename}</h:outputLink>
       
       <!-- Image for popup menu -->

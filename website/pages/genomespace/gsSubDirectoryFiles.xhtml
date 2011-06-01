@@ -32,13 +32,7 @@
   
     <!--  Loop through gs files -->
     <t:dataList var="aSubFile" value="#{gsSubDir.gsFiles}" rowIndexVar="subFileIndex">
-    		<ui:include src="gsFileMenu.xhtml">
-              <ui:param name="gsFileDir" value="#{gsSubDir}"/>
-              <ui:param name="aFile" value="#{aSubFile}"/>
-            </ui:include>
-    
-    
-      &#160;&#160;&#160;&#160;&#160;&#160; &#160;&#160;&#160;&#160;<h:outputLink value="">#{aSubFile.filename}      </h:outputLink>
+      &#160;&#160;&#160;&#160;&#160;&#160; &#160;&#160;&#160;&#160;<h:outputLink value="">#{aSubFile.filename}</h:outputLink>
       
       <!-- Image for popup menu -->
       <img src="/gp/images/smallOptions.gif" 
