@@ -373,13 +373,13 @@ function showFileInput(id) {
               			<ui:param name="gsFileDir" value="#{gsDir}"/>
               			<ui:param name="aFile" value="#{aFile}"/>
             		</ui:include>
-            		<t:dataList var="aDir" value="#{gsDir.gsDirectories}" rowIndexVar="dirIndex">
-            			<t:dataList var="aSubFile" value="#{gsSubDir.gsFiles}" rowIndexVar="subFileIndex">
-            				<ui:include src="genomespace/gsFileMenu.xhtml">
-              					<ui:param name="gsFileDir" value="#{gsSubDir}"/>
-              					<ui:param name="aFile" value="#{aSubFile}"/>
-            				</ui:include>
-            			</t:dataList>
+            	</t:dataList>
+            	<t:dataList var="gsSubDir" value="#{gsDir.gsDirectories}" rowIndexVar="subDirIndex">
+            		<t:dataList var="aSubFile" value="#{gsSubDir.gsFiles}" rowIndexVar="subFileIndex">
+            			<ui:include src="genomespace/gsFileMenu.xhtml">
+              				<ui:param name="gsFileDir" value="#{gsSubDir}"/>
+              				<ui:param name="aFile" value="#{aSubFile}"/>
+            			</ui:include>
             		</t:dataList>
             	</t:dataList>
             </t:dataList>
