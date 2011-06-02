@@ -111,7 +111,7 @@ function toggleJobVisibility(jobNo) {
               <ui:param name="gsDir" value="#{gsDir}"/>
             </ui:include>
             
-            <h:outputText rendered="#{empty gsDir.gsFiles}">
+            <h:outputText rendered="#{empty gsDir.gsFiles and empty gsDir.gsDirectories}">
    		  		No GenomeSpace files to display
       		</h:outputText>
 			</div>
