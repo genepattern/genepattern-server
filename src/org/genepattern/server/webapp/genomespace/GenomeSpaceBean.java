@@ -208,36 +208,41 @@ public class GenomeSpaceBean {
      * @return
      */
   public String submitRegistration() {
+      String env = UIBeanHelper.getRequest().getParameter("envSelect");
+      if (env == null) {
+          log.error("Environment for GenomeSpace not set");
+          env = "test";
+      }
         
-        if (username == null) {
-            this.setMessageToUser("GenomeSpace username is blank");
-            invalidRegistration = true;
-            return "genomeSpaceRegFailed";
-        }
-        if (! regPassword.equals(password)) {
-            UIBeanHelper.setInfoMessage("GenomeSpace password does not match");
-            invalidRegistration = true;
-            invalidPassword = true;
-            return "genomeSpaceRegFailed";
-        }
-
-       try {
-           //ConfigurationUrls.init("test");
+      if (username == null) {
+          this.setMessageToUser("GenomeSpace username is blank");
+          invalidRegistration = true;
+          return "genomeSpaceRegFailed";
+      }
+      if (! regPassword.equals(password)) {
+          UIBeanHelper.setInfoMessage("GenomeSpace password does not match");
+          invalidRegistration = true;
+          invalidPassword = true;
+          return "genomeSpaceRegFailed";
+      }
+    
+      try {
+           ConfigurationUrls.init(env);
            GsSession gsSession = new GsSession();
            gsSession.registerUser(username, password, regEmail);
            invalidRegistration = false;
            invalidPassword = false;
            loginError = false;
            submitLogin();
-       }
-       catch (Exception e) {
-           UIBeanHelper.setInfoMessage("Error logging into GenomeSpace");
-           invalidRegistration = true;
-           loginError = true;
-           log.error("Error logging into GenomeSpace" + e.getMessage());
-           return "genomeSpaceRegFailed";
-        }
-        return "home";
+      }
+      catch (Exception e) {
+          UIBeanHelper.setInfoMessage("Error logging into GenomeSpace");
+          invalidRegistration = true;
+          loginError = true;
+          log.error("Error logging into GenomeSpace" + e.getMessage());
+          return "genomeSpaceRegFailed";
+      }
+    return "home";
     }
 
 

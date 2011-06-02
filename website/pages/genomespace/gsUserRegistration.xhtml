@@ -78,7 +78,12 @@
 					required="true" requiredMessage="Email is required" >
                   <f:attribute name="forceId" value="true"/>
                 </t:inputText>
-
+                <h:outputLabel value="Environment"></h:outputLabel>
+				<select id="envSelect">
+					<option value="dev">dev</option>
+					<option value="test" selected="true">test</option>
+					<option value="prod">prod</option>
+				</select>
 			</h:panelGrid>
 			<h:commandButton id="signIn" action="#{genomeSpaceBean.submitRegistration}" value="Sign in" />
 			<br />
