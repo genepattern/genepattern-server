@@ -258,7 +258,7 @@ public class GenomeSpaceBean {
         httpSession.setAttribute(GS_SESSION_KEY,null);
             
         this.setMessageToUser( " Logged out of GenomeSpace." );
-        this.availableDirectories = null;
+        this.setGenomeSpaceDirectories(null);
             
        
         return "home";
@@ -277,7 +277,7 @@ public class GenomeSpaceBean {
       
       GsSession sess = (GsSession)httpSession.getAttribute(GS_SESSION_KEY);
       sess.getDataManagerClient().delete(theFile.gsFile);
-      this.availableDirectories = null; // force a refresh
+      this.setGenomeSpaceDirectories(null); // force a refresh
       this.setMessageToUser( "Deleted from GS " + dirnameParam + "/" + filenameParam );
         
     }
@@ -289,7 +289,7 @@ public class GenomeSpaceBean {
      * @return
      */
     public GenomeSpaceFileInfo getFile(String dirname, String file){
-       for (GenomeSpaceDirectory dir: availableDirectories){
+       for (GenomeSpaceDirectory dir: this.getGenomeSpaceDirectories()){
             if ((dir.getName().equals(dirname)) || (dirname == null)){
                 
                 for (GenomeSpaceFileInfo aFile: dir.getGsFiles()){
@@ -402,7 +402,7 @@ public class GenomeSpaceBean {
             dmClient.uploadFile(in, rootDir.getDirectory());
         
             this.setMessageToUser( "File uploaded to GS " + in.getName() );
-            this.availableDirectories = null;
+            this.setGenomeSpaceDirectories(null);
             
         } catch (Exception e){
             e.printStackTrace();
@@ -410,53 +410,43 @@ public class GenomeSpaceBean {
         }
     }
     
-    
-    
-    public List<GenomeSpaceDirectory> availableDirectories;
-    
     /**
      * get the list of directories in GenomeSpace this user can look at
      * @return
      */
     public List<GenomeSpaceDirectory> getAvailableDirectories(){
+        List<GenomeSpaceDirectory> availableDirectories = this.getGenomeSpaceDirectories();
         
         if ((availableDirectories == null) || (availableDirectories.size() == 0)) {
             availableDirectories = new ArrayList<GenomeSpaceDirectory>();
             
+           
+            HttpSession httpSession = UIBeanHelper.getSession();
+            GsSession gsSession = (GsSession)httpSession.getAttribute(GS_SESSION_KEY);
+            User gsUser = (User)httpSession.getAttribute(GS_USER_KEY);
+            if ((gsSession == null) || (! gsSession.isLoggedIn())) return availableDirectories;
             
-          HttpSession httpSession = UIBeanHelper.getSession();
-          GsSession gsSession = (GsSession)httpSession.getAttribute(GS_SESSION_KEY);
-          User gsUser = (User)httpSession.getAttribute(GS_USER_KEY);
-          if ((gsSession == null) || (! gsSession.isLoggedIn())) return availableDirectories;
-            
-          DataManagerClient dmClient = gsSession.getDataManagerClient();
-          GSDirectoryListing rootDir = dmClient.listDefaultDirectory();
+            DataManagerClient dmClient = gsSession.getDataManagerClient();
+            GSDirectoryListing rootDir = dmClient.listDefaultDirectory();
     
         
         
          
-         GenomeSpaceDirectory userDir = new GenomeSpaceDirectory(rootDir, dmClient, kindToModules, this);
+            GenomeSpaceDirectory userDir = new GenomeSpaceDirectory(rootDir, dmClient, kindToModules, this);
          
-         availableDirectories.add(userDir);
-//            
-//            if (gsSession.isLoggedIn()){
-//                GSDirectoryListing rootGSDir;
-//                try {
-//                    rootGSDir = dmClient.listDefaultDirectory();
-//                    userDir.setGsFileList(rootGSDir, this.kindToModules, this);
-//                    
-//                    
-//                } catch (Exception e1) {
-//                    // TODO Auto-generated catch block
-//                    e1.printStackTrace();
-//                }
-//                
-//            }
+            availableDirectories.add(userDir);
+            this.setGenomeSpaceDirectories(availableDirectories);
         }
         return availableDirectories;
     }
 
-  
+    public List<GenomeSpaceDirectory> getGenomeSpaceDirectories() {
+        return (List<GenomeSpaceDirectory>) UIBeanHelper.getSession().getAttribute("GS_DIRECTORIES");
+    }
+    
+    public void setGenomeSpaceDirectories(List<GenomeSpaceDirectory> dirs) {
+        UIBeanHelper.getSession().setAttribute("GS_DIRECTORIES", dirs);
+    }
     
     public void setSelectedModule(String selectedModule) {
         
