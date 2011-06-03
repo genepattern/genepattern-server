@@ -32,7 +32,7 @@
   
     <!--  Loop through gs files -->
     <t:dataList var="aSubFile" value="#{gsSubDir.gsFiles}" rowIndexVar="subFileIndex">
-      &#160;&#160;&#160;&#160;&#160;&#160; &#160;&#160;&#160;&#160;<h:outputLink value="">#{aSubFile.filename}</h:outputLink>
+      &#160;&#160;&#160;&#160;&#160;&#160; &#160;&#160;&#160;&#160;<h:outputLink value="#{aSubFile.url}">#{aSubFile.filename}</h:outputLink>
       
       <!-- Image for popup menu -->
       <img src="/gp/images/smallOptions.gif" 
