@@ -65,7 +65,7 @@ public class GenomeSpaceDirectory {
     public void setGsFileList(GSDirectoryListing gsDirList, Map<String, Set<TaskInfo>> kindToModules, GenomeSpaceBean genomeSpaceBean) {
         this.gsFiles = new ArrayList<GenomeSpaceFileInfo>();
         for (GSFileMetadata afile: gsDirList.findFiles()){
-            GenomeSpaceFileInfo info = new GenomeSpaceFileInfo(afile);
+            GenomeSpaceFileInfo info = new GenomeSpaceFileInfo(afile, this);
             this.gsFiles.add(info);
             info.setUrl(genomeSpaceBean.getFileURL(afile));
             
@@ -106,6 +106,15 @@ public class GenomeSpaceDirectory {
 
     public void setName(String name) {
         this.name = name;
+    }
+    
+    public List<GenomeSpaceFileInfo> getRecursiveGsFiles() {
+        List<GenomeSpaceFileInfo> allFiles = new ArrayList<GenomeSpaceFileInfo>();
+        allFiles.addAll(gsFiles);
+        for (GenomeSpaceDirectory i : gsDirectories) {
+            allFiles.addAll(i.getRecursiveGsFiles());
+        }
+        return allFiles;
     }
 
 

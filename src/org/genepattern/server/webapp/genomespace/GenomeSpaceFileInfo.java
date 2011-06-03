@@ -12,11 +12,21 @@ public class GenomeSpaceFileInfo {
     String url;
     List<KeyValuePair> moduleInputParameters;
     List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
+    GenomeSpaceDirectory dir;
 
-    
-    public GenomeSpaceFileInfo(GSFileMetadata md){
+    public GenomeSpaceFileInfo(GSFileMetadata md, GenomeSpaceDirectory parent){
         gsFile = md;
         filename = md.getName();
+        dir = parent;
+    }
+    
+    public GenomeSpaceDirectory getDir() {
+        return dir;
+    }
+
+
+    public void setDir(GenomeSpaceDirectory dir) {
+        this.dir = dir;
     }
 
 

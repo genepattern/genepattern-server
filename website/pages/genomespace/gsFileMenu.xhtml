@@ -14,7 +14,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
   <ui:composition>
   	
-    <div id="menuDiv_#{gsFileDir.name}_#{aFile.filename}"  style="visibility:hidden;" class="popupMenu">
+    <div id="menuDiv_#{aFile.dir.name}_#{aFile.filename}"  style="visibility:hidden;" class="popupMenu">
       <table>
         <tbody>
           <tr>
@@ -22,7 +22,7 @@
               <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file from GenomeSpace?');" 
               		actionListener="#{genomeSpaceBean.deleteFileFromGenomeSpace}" immediate="true" >
                 <f:param value="#{aFile.filename}" name="filename"/>
-                <f:param value="#{gsFileDir.name}" name="dirname"/>           
+                <f:param value="#{aFile.dir.name}" name="dirname"/>           
               </h:commandLink>
             </td>
           </tr>
@@ -30,7 +30,7 @@
             <td>
               <h:commandLink value="Save" actionListener="#{genomeSpaceBean.saveFileLocally}" immediate="true">
                 <f:param value="#{aFile.filename}" name="filename"/>
-                <f:param value="#{gsFileDir.name}" name="dirname"/>
+                <f:param value="#{aFile.dir.name}" name="dirname"/> 
               </h:commandLink>
             </td>
           </tr>
@@ -68,7 +68,7 @@
                   <f:param value="#{moduleMenuItem.value}" name="module"/>
                   <f:param value="GenomeSpace" name="source"/>
                   <f:param value="${aFile.filename}" name="name"/>
-                  <f:param value="#{gsFileDir.name}" name="dirname"/>
+                  <f:param value="#{aFile.dir.name}" name="dirname"/>
                 </h:commandLink>
               </td>
             </tr>
