@@ -39,8 +39,7 @@
           <tr>
            	 <td><img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle" />
               &#160;<h:commandLink value="Save to GenomeSpace" action="#{genomeSpaceBean.sendInputFileToGenomeSpace}" immediate="true">
-                <f:param value="#{aFile.filename}" name="filename"/>
-                <f:param value="#{aFile.path}" name="dirname"/>
+                <f:param value="#{aFile.path}" name="path"/>
               </h:commandLink>
           	  </td>
           	</tr>

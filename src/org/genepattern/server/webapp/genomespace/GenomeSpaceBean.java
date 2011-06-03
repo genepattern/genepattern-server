@@ -355,14 +355,8 @@ public class GenomeSpaceBean {
      * @return
      */
     public String sendInputFileToGenomeSpace(){
-        String filenameParam = UIBeanHelper.getRequest().getParameter("filename");
-        String dirnameParam = UIBeanHelper.getRequest().getParameter("dirname");
-         
-        String tmpDir = System.getProperty("java.io.tmpdir");
-        
-        File tmp = new File(tmpDir);
-        File subDir = new File(tmp, dirnameParam);
-        File theFile = new File(subDir, filenameParam);
+        String pathParam = UIBeanHelper.getRequest().getParameter("path");
+        File theFile = new File(pathParam);
         HttpSession httpSession = UIBeanHelper.getSession();
         
         saveFileToGenomeSpace(httpSession, theFile);
@@ -402,7 +396,7 @@ public class GenomeSpaceBean {
             GSDirectoryListing rootDir = dmClient.listDefaultDirectory();
             dmClient.uploadFile(in, rootDir.getDirectory());
         
-            this.setMessageToUser( "File uploaded to GS " + in.getName() );
+            UIBeanHelper.setInfoMessage("File uploaded to GS " + in.getName() );
             this.setGenomeSpaceDirectories(null);
             
         } catch (Exception e){
