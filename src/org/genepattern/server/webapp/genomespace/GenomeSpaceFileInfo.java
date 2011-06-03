@@ -4,6 +4,8 @@ import java.util.*;
 
 import org.genomespace.datamanager.core.GSFileMetadata;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.webservice.ParameterInfo;
 
 public class GenomeSpaceFileInfo {
 
@@ -57,8 +59,14 @@ public class GenomeSpaceFileInfo {
         this.filename = filename;
     }
     
-    public List<KeyValuePair> getModuleInputParameters() {
-        return moduleInputParameters;
+    public String getType() {
+        return filename.substring(filename.lastIndexOf(".") + 1);
+    }
+    
+    public List<ParameterInfo> getSendToParameters() {
+        GenomeSpaceBean gsb = (GenomeSpaceBean)UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
+        String type = getType();
+        return gsb.getSendToParameters(type);
     }
 
     public void setModuleInputParameters(List<KeyValuePair> moduleInputParameters) {

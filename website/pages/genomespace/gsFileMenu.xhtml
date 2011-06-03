@@ -35,7 +35,7 @@
             </td>
           </tr>
         
-          	<h:outputText rendered="#{not empty aFile.moduleInputParameters}">
+          	<h:outputText rendered="#{not empty aFile.sendToParameters}">
   		
           <tr>
             <td>
@@ -44,11 +44,11 @@
           </tr>
           </h:outputText>
           
-           <t:dataList value="#{aFile.moduleInputParameters}" var="p">
+           <t:dataList value="#{aFile.sendToParameters}" var="p">
             <tr>
               <td>
-               <h:outputLink value="#" onclick="setInputField('#{p.key}', '#{aFile.url}');">
-               	 <h:outputText>Send to #{p.value}</h:outputText>
+               <h:outputLink value="#" onclick="setInputField('#{p.name}', '#{aFile.url}');">
+               	 <h:outputText>Send to #{p.name}</h:outputText>
                </h:outputLink>
               </td>
             </tr>

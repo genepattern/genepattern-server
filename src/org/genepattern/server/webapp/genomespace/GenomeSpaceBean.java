@@ -69,7 +69,8 @@ public class GenomeSpaceBean {
     private boolean invalidPassword = false;
     private boolean invalidRegistration = false;
     private boolean loginError = false;
-    
+    private String currentTaskLsid;
+    private TaskInfo currentTaskInfo;
     private boolean genomeSpaceEnabled = false;
 
     private Map<String, Set<TaskInfo>> kindToModules;
@@ -448,77 +449,94 @@ public class GenomeSpaceBean {
         UIBeanHelper.getSession().setAttribute("GS_DIRECTORIES", dirs);
     }
     
+    public List<ParameterInfo> getSendToParameters(String type) {
+        if (currentTaskInfo == null && currentTaskLsid != null && currentTaskLsid.length() != 0) {
+            initCurrentLsid();
+        }
+        else if (currentTaskInfo == null && (currentTaskLsid == null || currentTaskLsid.length() == 0)) {
+            return null;
+        }
+        return currentTaskInfo._getSendToParameterInfos(type);
+    }
+    
+    public void initCurrentLsid() {
+        String currentUser = UIBeanHelper.getUserId();
+        AdminDAO adminDao = new AdminDAO();
+        this.currentTaskInfo = adminDao.getTask(currentTaskLsid, currentUser);
+    }
+    
     public void setSelectedModule(String selectedModule) {
-        
-        List<GenomeSpaceDirectory> dirs =  getAvailableDirectories();
-        
-        
-        if (selectedModule == null || dirs == null || dirs.size() == 0) {
-            return;
-        }
-        Map<String, List<KeyValuePair>> kindToInputParameters = new HashMap<String, List<KeyValuePair>>();
-
-        TaskInfo taskInfo = null;
-        try {
-            taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(selectedModule);
-        } catch (WebServiceException e) {
-            log.error("Could not get module", e);
-            return;
-        }
-        ParameterInfo[] inputParameters = taskInfo != null ? taskInfo.getParameterInfoArray() : null;
-        List<KeyValuePair> unannotatedParameters = new ArrayList<KeyValuePair>();
-        if (inputParameters != null) {
-            for (ParameterInfo inputParameter : inputParameters) {
-            if (inputParameter.isInputFile()) {
-                List<String> fileFormats = SemanticUtil.getFileFormats(inputParameter);
-                String displayValue = (String) inputParameter.getAttributes().get("altName");
-
-                if (displayValue == null) {
-                displayValue = inputParameter.getName();
-                }
-                displayValue = displayValue.replaceAll("\\.", " ");
-
-                KeyValuePair kvp = new KeyValuePair();
-                kvp.setKey(inputParameter.getName());
-                kvp.setValue(displayValue);
-
-                if (fileFormats.size() == 0) {
-                unannotatedParameters.add(kvp);
-                }
-                for (String format : fileFormats) {
-                List<KeyValuePair> inputParameterNames = kindToInputParameters.get(format);
-                if (inputParameterNames == null) {
-                    inputParameterNames = new ArrayList<KeyValuePair>();
-                    kindToInputParameters.put(format, inputParameterNames);
-                }
-                inputParameterNames.add(kvp);
-                }
-            }
-            }
-        }
-
-        // add unannotated parameters to end of list for each kind
-        if (unannotatedParameters.size() > 0) {
-            for (Iterator<String> it = kindToInputParameters.keySet().iterator(); it.hasNext();) {
-            List<KeyValuePair> inputParameterNames = kindToInputParameters.get(it.next());
-            inputParameterNames.addAll(unannotatedParameters);
-            }
-        }
-            
-//        for (GenomeSpaceDirectory aDir : dirs) {
-//            List<GenomeSpaceFileInfo> outputFiles = aDir.getGsFiles();
-//            if (outputFiles != null) {
-//            for (GenomeSpaceFileInfo o : outputFiles) {
-//                List<KeyValuePair> moduleInputParameters = kindToInputParameters.get(o.getKind());
+        this.currentTaskLsid = selectedModule;
+        initCurrentLsid();
+//        List<GenomeSpaceDirectory> dirs =  getAvailableDirectories();
+//        
+//        
+//        if (selectedModule == null || dirs == null || dirs.size() == 0) {
+//            return;
+//        }
+//        Map<String, List<KeyValuePair>> kindToInputParameters = new HashMap<String, List<KeyValuePair>>();
 //
-//                if (moduleInputParameters == null) {
-//                    moduleInputParameters = unannotatedParameters;
+//        TaskInfo taskInfo = null;
+//        try {
+//            taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(selectedModule);
+//        } catch (WebServiceException e) {
+//            log.error("Could not get module", e);
+//            return;
+//        }
+//        ParameterInfo[] inputParameters = taskInfo != null ? taskInfo.getParameterInfoArray() : null;
+//        List<KeyValuePair> unannotatedParameters = new ArrayList<KeyValuePair>();
+//        if (inputParameters != null) {
+//            for (ParameterInfo inputParameter : inputParameters) {
+//            if (inputParameter.isInputFile()) {
+//                List<String> fileFormats = SemanticUtil.getFileFormats(inputParameter);
+//                String displayValue = (String) inputParameter.getAttributes().get("altName");
+//
+//                if (displayValue == null) {
+//                displayValue = inputParameter.getName();
 //                }
-//                o.moduleInputParameters = moduleInputParameters;
+//                displayValue = displayValue.replaceAll("\\.", " ");
+//
+//                KeyValuePair kvp = new KeyValuePair();
+//                kvp.setKey(inputParameter.getName());
+//                kvp.setValue(displayValue);
+//
+//                if (fileFormats.size() == 0) {
+//                unannotatedParameters.add(kvp);
+//                }
+//                for (String format : fileFormats) {
+//                List<KeyValuePair> inputParameterNames = kindToInputParameters.get(format);
+//                if (inputParameterNames == null) {
+//                    inputParameterNames = new ArrayList<KeyValuePair>();
+//                    kindToInputParameters.put(format, inputParameterNames);
+//                }
+//                inputParameterNames.add(kvp);
+//                }
 //            }
 //            }
 //        }
-
+//
+//        // add unannotated parameters to end of list for each kind
+//        if (unannotatedParameters.size() > 0) {
+//            for (Iterator<String> it = kindToInputParameters.keySet().iterator(); it.hasNext();) {
+//            List<KeyValuePair> inputParameterNames = kindToInputParameters.get(it.next());
+//            inputParameterNames.addAll(unannotatedParameters);
+//            }
+//        }
+//            
+////        for (GenomeSpaceDirectory aDir : dirs) {
+////            List<GenomeSpaceFileInfo> outputFiles = aDir.getGsFiles();
+////            if (outputFiles != null) {
+////            for (GenomeSpaceFileInfo o : outputFiles) {
+////                List<KeyValuePair> moduleInputParameters = kindToInputParameters.get(o.getKind());
+////
+////                if (moduleInputParameters == null) {
+////                    moduleInputParameters = unannotatedParameters;
+////                }
+////                o.moduleInputParameters = moduleInputParameters;
+////            }
+////            }
+////        }
+//
         }
     
     
