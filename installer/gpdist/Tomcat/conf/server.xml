@@ -77,16 +77,17 @@
     <Connector port="$GENEPATTERN_PORT$" maxHttpHeaderSize="8192"
                maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
                enableLookups="true" redirectPort="8443" acceptCount="100"
-               connectionTimeout="20000" disableUploadTimeout="true" />
+               connectionTimeout="20000" disableUploadTimeout="true" 
+    />
+    <!-- Note : To configure the Axis Servlet when running the server behind a firewall, set the following properties:
+        proxyName="$HOST_ADDRESS$" proxyPort="$GENEPATTERN_PORT$"
+    -->
     <!-- Note : To disable connection timeouts, set connectionTimeout value to 0 -->	
 	<!-- Note : To use gzip compression you could set the following properties :
 			   compression="on" 
 			   compressionMinSize="2048" 
 			   noCompressionUserAgents="gozilla, traviata" 
 			   compressableMimeType="text/html,text/xml"
-	-->
-	<!-- Note : To configure the Axis Servlet when running the server behind a firewall, set the following properties:
-	    proxyName="$HOST_ADDRESS$" proxyPort="$GENEPATTERN_PORT$"
 	-->
 
     <!-- Define a SSL HTTP/1.1 Connector on port 8443 -->
