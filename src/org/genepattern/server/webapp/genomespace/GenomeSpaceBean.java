@@ -401,7 +401,7 @@ public class GenomeSpaceBean {
             
         } catch (Exception e){
             e.printStackTrace();
-            this.setMessageToUser( "There was a problem uploadeing the file to GS, " + in.getName() );
+            UIBeanHelper.setErrorMessage("There was a problem uploading the file to GS, " + in.getName() );
         }
     }
     
