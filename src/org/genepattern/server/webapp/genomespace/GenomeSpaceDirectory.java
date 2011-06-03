@@ -17,7 +17,6 @@ public class GenomeSpaceDirectory {
     public int level = 0;
     public boolean expanded = true;
     private static final Comparator<KeyValuePair> COMPARATOR = new KeyValueComparator();
-
     
     private GenomeSpaceDirectory(){
         gsFiles = new ArrayList<GenomeSpaceFileInfo>();
@@ -30,11 +29,7 @@ public class GenomeSpaceDirectory {
         name = adir.getName();
         this.level = level;
         GSDirectoryListing aDir = dmClient.list(adir);
-        
-//        for (GSFileMetadata aFile: aDir.findFiles()){
-//            System.out.println("2. Add file " + aFile.getName()+ " to " + adir.getName());
-//                   gsFiles.add(new GenomeSpaceFileInfo(aFile));
-//        }
+
         for (GSFileMetadata gsdir: aDir.findDirectories()){
             System.out.println("2. Add dir " + gsdir.getName() + " to " + adir.getName());
                  gsDirectories.add(new GenomeSpaceDirectory(gsdir, level + 1, dmClient, kindToModules, genomeSpaceBean));
@@ -46,19 +41,12 @@ public class GenomeSpaceDirectory {
         this();
         dir = aDir.getDirectory();
         name = dir.getName();
-       
-        
-//        for (GSFileMetadata aFile: aDir.findFiles()){
-//            System.out.println("1. Add file " + aFile.getName()+ " to " + aDir.getDirectory().getName());
-//            gsFiles.add(new GenomeSpaceFileInfo(aFile));
-//        }
+
         for (GSFileMetadata gsdir: aDir.findDirectories()){
             System.out.println("1. Add dir " + gsdir.getName()+ " to " + aDir.getDirectory().getName());
                   gsDirectories.add(new GenomeSpaceDirectory(gsdir, level + 1, dmClient, kindToModules, genomeSpaceBean));
         }
         setGsFileList(aDir, kindToModules, genomeSpaceBean);
-        
-        
     }
 
     
@@ -82,8 +70,6 @@ public class GenomeSpaceDirectory {
                 Collections.sort(moduleMenuItems, COMPARATOR);
             }
             info.setModuleMenuItems(moduleMenuItems);
-            
-            
         }
     
     }
@@ -158,11 +144,8 @@ public class GenomeSpaceDirectory {
     }
     
     private static class KeyValueComparator implements Comparator<KeyValuePair> {
-
         public int compare(KeyValuePair o1, KeyValuePair o2) {
             return o1.getKey().compareToIgnoreCase(o2.getKey());
         }
-
     }
-
 }
