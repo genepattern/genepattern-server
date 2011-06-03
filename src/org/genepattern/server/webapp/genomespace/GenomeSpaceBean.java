@@ -17,8 +17,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,14 +29,11 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
-import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.WebServiceException;
 import org.genomespace.client.ConfigurationUrls;
 import org.genomespace.client.DataManagerClient;
 import org.genomespace.client.GsSession;
@@ -50,16 +45,13 @@ import org.genomespace.datamanager.core.GSFileMetadata;
 
 /**
  * Backing bean for login to GenomeSpace.
- * 
- * @author liefeld
- * 
  */
 public class GenomeSpaceBean {
     private static Logger log = Logger.getLogger(GenomeSpaceBean.class);
 
     public static String GS_SESSION_KEY = "GS_SESSION";
     public static String GS_USER_KEY = "GS_USER";
-    
+    public static String GS_DIRECTORIES_KEY = "GS_DIRECTORIES";
     
     private String username;
     private String password;
@@ -120,10 +112,7 @@ public class GenomeSpaceBean {
     public String getUsername() {
         return username;
     }
-
-  
-   
-
+    
     public void setMessageToUser(String messageToUser) {
         UIBeanHelper.setInfoMessage(messageToUser);
     }
@@ -154,7 +143,6 @@ public class GenomeSpaceBean {
         return ((gsSession != null) && (gsSession.isLoggedIn()));
      }
     
-
     /**
      * Submit the user / password. For now this uses an action listener since we are redirecting to a page outside of
      * the JSF framework. This should be changed to an action to use jsf navigation in the future.
@@ -174,7 +162,7 @@ public class GenomeSpaceBean {
             return "home";
         }
 
-       try {
+        try {
            ConfigurationUrls.init(env);
            GsSession gsSession = new GsSession();
            User gsUser = gsSession.login(username, password);
@@ -187,14 +175,14 @@ public class GenomeSpaceBean {
             
            return "home";
             
-        }  catch (AuthorizationException e) {
+        }  
+        catch (AuthorizationException e) {
             log.info("Problem logging into GenomeSpace");
             unknownUser = true;
             this.setMessageToUser("Authentication error, please check your username and password." );
             return "genomeSpaceLoginFailed";
-             
-             
-        } catch (Exception e) {
+        } 
+        catch (Exception e) {
             log.error("Exception logging into GenomeSpace>: " + e.getMessage());
             unknownUser = true;
             this.setMessageToUser("An error occurred logging in to GenomeSpace.  Please contact the GenePattern administrator." );
@@ -208,51 +196,49 @@ public class GenomeSpaceBean {
      * register a user into GenomeSpace
      * @return
      */
-  public String submitRegistration() {
-      String env = UIBeanHelper.getRequest().getParameter("envSelect");
-      if (env == null) {
-          log.error("Environment for GenomeSpace not set");
-          env = "test";
-      }
+    public String submitRegistration() {
+        String env = UIBeanHelper.getRequest().getParameter("envSelect");
+        if (env == null) {
+            log.error("Environment for GenomeSpace not set");
+            env = "test";
+        }
         
-      if (username == null) {
-          this.setMessageToUser("GenomeSpace username is blank");
-          invalidRegistration = true;
-          return "genomeSpaceRegFailed";
-      }
-      if (! regPassword.equals(password)) {
-          UIBeanHelper.setInfoMessage("GenomeSpace password does not match");
-          invalidRegistration = true;
-          invalidPassword = true;
-          return "genomeSpaceRegFailed";
-      }
+        if (username == null) {
+            this.setMessageToUser("GenomeSpace username is blank");
+            invalidRegistration = true;
+            return "genomeSpaceRegFailed";
+        }
+        if (! regPassword.equals(password)) {
+            UIBeanHelper.setInfoMessage("GenomeSpace password does not match");
+            invalidRegistration = true;
+            invalidPassword = true;
+            return "genomeSpaceRegFailed";
+        }
     
-      try {
-           ConfigurationUrls.init(env);
-           GsSession gsSession = new GsSession();
-           gsSession.registerUser(username, password, regEmail);
-           invalidRegistration = false;
-           invalidPassword = false;
-           loginError = false;
-           submitLogin();
-      }
-      catch (Exception e) {
-          UIBeanHelper.setInfoMessage("Error logging into GenomeSpace");
-          invalidRegistration = true;
-          loginError = true;
-          log.error("Error logging into GenomeSpace" + e.getMessage());
-          return "genomeSpaceRegFailed";
-      }
-    return "home";
+        try {
+            ConfigurationUrls.init(env);
+            GsSession gsSession = new GsSession();
+            gsSession.registerUser(username, password, regEmail);
+            invalidRegistration = false;
+            invalidPassword = false;
+            loginError = false;
+            submitLogin();
+        }
+        catch (Exception e) {
+            UIBeanHelper.setInfoMessage("Error logging into GenomeSpace");
+            invalidRegistration = true;
+            loginError = true;
+            log.error("Error logging into GenomeSpace" + e.getMessage());
+            return "genomeSpaceRegFailed";
+        }
+      
+        return "home";
     }
 
-
-    
     public String submitLogout() {
+        HttpSession httpSession = UIBeanHelper.getSession();
         
-      HttpSession httpSession = UIBeanHelper.getSession();
-        
-        GsSession gsSession = (GsSession)httpSession.getAttribute("GS_SESSION");
+        GsSession gsSession = (GsSession)httpSession.getAttribute(GS_SESSION_KEY);
             
         gsSession.logout();
         httpSession.setAttribute(GS_USER_KEY,null);
@@ -273,13 +259,13 @@ public class GenomeSpaceBean {
         String filenameParam = UIBeanHelper.getRequest().getParameter("filename");
         String dirnameParam = UIBeanHelper.getRequest().getParameter("dirname");
         
-      GenomeSpaceFileInfo theFile = getFile(dirnameParam, filenameParam);
-      HttpSession httpSession = UIBeanHelper.getSession();
+        GenomeSpaceFileInfo theFile = getFile(dirnameParam, filenameParam);
+        HttpSession httpSession = UIBeanHelper.getSession();
       
-      GsSession sess = (GsSession)httpSession.getAttribute(GS_SESSION_KEY);
-      sess.getDataManagerClient().delete(theFile.gsFile);
-      this.setGenomeSpaceDirectories(null); // force a refresh
-      this.setMessageToUser( "Deleted from GS " + dirnameParam + "/" + filenameParam );
+        GsSession sess = (GsSession)httpSession.getAttribute(GS_SESSION_KEY);
+        sess.getDataManagerClient().delete(theFile.gsFile);
+        this.setGenomeSpaceDirectories(null); // force a refresh
+        this.setMessageToUser( "Deleted from GS " + dirnameParam + "/" + filenameParam );
         
     }
     
@@ -381,8 +367,7 @@ public class GenomeSpaceBean {
         File in = new File(GenePatternAnalysisTask.getJobDir(jobNumber), filename);
         
         saveFileToGenomeSpace(httpSession, in);
-        return "home";
-        
+        return "home";     
     }
 
     /**
@@ -399,7 +384,8 @@ public class GenomeSpaceBean {
             UIBeanHelper.setInfoMessage("File uploaded to GS " + in.getName() );
             this.setGenomeSpaceDirectories(null);
             
-        } catch (Exception e){
+       } 
+       catch (Exception e){
             e.printStackTrace();
             UIBeanHelper.setErrorMessage("There was a problem uploading the file to GS, " + in.getName() );
         }
@@ -417,16 +403,13 @@ public class GenomeSpaceBean {
             
            
             HttpSession httpSession = UIBeanHelper.getSession();
-            GsSession gsSession = (GsSession)httpSession.getAttribute(GS_SESSION_KEY);
-            User gsUser = (User)httpSession.getAttribute(GS_USER_KEY);
+            GsSession gsSession = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
+            User gsUser = (User) httpSession.getAttribute(GS_USER_KEY);
             if ((gsSession == null) || (! gsSession.isLoggedIn())) return availableDirectories;
             
             DataManagerClient dmClient = gsSession.getDataManagerClient();
             GSDirectoryListing rootDir = dmClient.listDefaultDirectory();
-    
-        
-        
-         
+            
             GenomeSpaceDirectory userDir = new GenomeSpaceDirectory(rootDir, dmClient, kindToModules, this);
          
             availableDirectories.add(userDir);
@@ -436,11 +419,11 @@ public class GenomeSpaceBean {
     }
 
     public List<GenomeSpaceDirectory> getGenomeSpaceDirectories() {
-        return (List<GenomeSpaceDirectory>) UIBeanHelper.getSession().getAttribute("GS_DIRECTORIES");
+        return (List<GenomeSpaceDirectory>) UIBeanHelper.getSession().getAttribute(GS_DIRECTORIES_KEY);
     }
     
     public void setGenomeSpaceDirectories(List<GenomeSpaceDirectory> dirs) {
-        UIBeanHelper.getSession().setAttribute("GS_DIRECTORIES", dirs);
+        UIBeanHelper.getSession().setAttribute(GS_DIRECTORIES_KEY, dirs);
     }
     
     public List<ParameterInfo> getSendToParameters(String type) {
@@ -462,77 +445,5 @@ public class GenomeSpaceBean {
     public void setSelectedModule(String selectedModule) {
         this.currentTaskLsid = selectedModule;
         initCurrentLsid();
-//        List<GenomeSpaceDirectory> dirs =  getAvailableDirectories();
-//        
-//        
-//        if (selectedModule == null || dirs == null || dirs.size() == 0) {
-//            return;
-//        }
-//        Map<String, List<KeyValuePair>> kindToInputParameters = new HashMap<String, List<KeyValuePair>>();
-//
-//        TaskInfo taskInfo = null;
-//        try {
-//            taskInfo = new LocalAdminClient(UIBeanHelper.getUserId()).getTask(selectedModule);
-//        } catch (WebServiceException e) {
-//            log.error("Could not get module", e);
-//            return;
-//        }
-//        ParameterInfo[] inputParameters = taskInfo != null ? taskInfo.getParameterInfoArray() : null;
-//        List<KeyValuePair> unannotatedParameters = new ArrayList<KeyValuePair>();
-//        if (inputParameters != null) {
-//            for (ParameterInfo inputParameter : inputParameters) {
-//            if (inputParameter.isInputFile()) {
-//                List<String> fileFormats = SemanticUtil.getFileFormats(inputParameter);
-//                String displayValue = (String) inputParameter.getAttributes().get("altName");
-//
-//                if (displayValue == null) {
-//                displayValue = inputParameter.getName();
-//                }
-//                displayValue = displayValue.replaceAll("\\.", " ");
-//
-//                KeyValuePair kvp = new KeyValuePair();
-//                kvp.setKey(inputParameter.getName());
-//                kvp.setValue(displayValue);
-//
-//                if (fileFormats.size() == 0) {
-//                unannotatedParameters.add(kvp);
-//                }
-//                for (String format : fileFormats) {
-//                List<KeyValuePair> inputParameterNames = kindToInputParameters.get(format);
-//                if (inputParameterNames == null) {
-//                    inputParameterNames = new ArrayList<KeyValuePair>();
-//                    kindToInputParameters.put(format, inputParameterNames);
-//                }
-//                inputParameterNames.add(kvp);
-//                }
-//            }
-//            }
-//        }
-//
-//        // add unannotated parameters to end of list for each kind
-//        if (unannotatedParameters.size() > 0) {
-//            for (Iterator<String> it = kindToInputParameters.keySet().iterator(); it.hasNext();) {
-//            List<KeyValuePair> inputParameterNames = kindToInputParameters.get(it.next());
-//            inputParameterNames.addAll(unannotatedParameters);
-//            }
-//        }
-//            
-////        for (GenomeSpaceDirectory aDir : dirs) {
-////            List<GenomeSpaceFileInfo> outputFiles = aDir.getGsFiles();
-////            if (outputFiles != null) {
-////            for (GenomeSpaceFileInfo o : outputFiles) {
-////                List<KeyValuePair> moduleInputParameters = kindToInputParameters.get(o.getKind());
-////
-////                if (moduleInputParameters == null) {
-////                    moduleInputParameters = unannotatedParameters;
-////                }
-////                o.moduleInputParameters = moduleInputParameters;
-////            }
-////            }
-////        }
-//
-        }
-    
-    
-    
+    }
 }
