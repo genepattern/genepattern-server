@@ -1,13 +1,14 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.wq.org/1999.xhtml">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <title>SNP Copy Number Estimation</title>
-	<link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
+        <link href="../../css/protocolsWindow.css" rel="stylesheet" type="text/css" />
     <script type="text/javascript" src="../../js/protocol.js"></script>
 </head>
 
 <body>
+
 
 <h1>SNP Copy Number and Loss of Heterozygosity Estimation</h1>
 <table width="100%" border="0" cellpadding="0" cellspacing="0">
@@ -31,20 +32,19 @@ sporadic and hereditary cancer (Monti, 2005).
   <h2>Before You Begin</h2>
   
   <ul>
-<li>CEL files from the Affymetrix 500K Array Chip Set (250K Sty, 250K NSP) or 
-     100K Array Chip Set (50K Xba, 50K Hind).    
-     <br />Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip">GISTIC_Hind_subset.zip</a>.</li>
+<li>CEL files from Affymetrix Genome-Wide Human SNP Array 5.0 and 6.0, Human Mapping 100K Set, Human Mapping 500K Array Set, 
+Mapping 10K 2.0 Array Set, or 250K Array    
+     <br>Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip">GISTIC_Hind_subset.zip</a>.</li>
 <li>Optionally, for each CEL file, a TXT file containing the genotype calls for the SNP array. 
-<br />Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip">GISTIC_Hind_subset.zip</a>.</li>
+<br>Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip">GISTIC_Hind_subset.zip</a>.</li>
 <li>A tab-delimited text file (<a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html#snpsample">sample information file</a> format) that describes the SNP array. The array must include target/normal paired samples for copy number and LOH determination. 
-<br />Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt">sample_info_subset.txt</a>.</li>
-</li>
-</ul>
+<br>Example file: <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt">sample_info_subset.txt</a>.</li>
+  </ul>
   
 
 <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
-    <td align="right">learn more:<br />
+    <td align="right">learn more:<br>
     <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html">file formats</a>
     </td>
   </tr>
@@ -58,24 +58,20 @@ sporadic and hereditary cancer (Monti, 2005).
     <p>SNPFileCreator converts the CEL files from an array into a GenePattern .snp file.
      Raw data for the probes in each SNP probe set are converted to a
     single intensity value per SNP using one of four modeling algorithms:
-    Average Difference, PM/MM Difference Model (dChip, the default), Median Probe, or Trimmed Mean.
+    Median Polish, Average Difference, PM/MM Difference Model (dChip, the default), Median Probe, or Trimmed Mean.
   </p>
   
    
   <p><b>20-30 minutes:</b> Processing this example on the GenePattern public server takes time. 
   The example source data and resulting SNP file are provided here for your convenience: 
-  <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip">GISTIC_Hind_subset.zip</a>, <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.snp">GISTIC_Hind_subset.snp</a>.
+  <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip" target="_blank">GISTIC_Hind_subset.zip</a>, <a href="ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.snp" target="_blank">GISTIC_Hind_subset.snp</a>.
 
-  <div class="gpLinks">
+  </p><div class="gpLinks">
   <ul>
-    <li><a href="/gp/pages/index.jsf?lsid=SNPFileCreator" 
-           onclick="return openModuleWindow(this, event);"
-        >Open SNPFileCreator module</a> in the GenePattern window.</li>
-    <li><a href="/gp/pages/index.jsf?lsid=SNPFileCreator&cel.files=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip&output.file=GISTIC_Hind_subset.snp&genome.annotation=hg19" 
-           onclick="return openModuleWindow(this, event);"
-        >Open SNPFileCreator with example data, selecting the UCSC hg19 genome annotation</a></li>
-        <li>&nbsp;</li>
-   <li><b>Warning:</b> Processing this example on a <a class="notGpLinks" href="http://www.broadinstitute.org/genepattern/tutorial/gp_concepts.html#_GenePattern_Server">local GenePattern server</a> is likely to generate an <a class="notGpLinks" href="http://www.broadinstitute.org/cancer/software/genepattern/doc/messages/index.html#memory">OutOfMemoryError</a>.
+    <li><a href="/gp/pages/index.jsf?lsid=SNPFileCreator" onclick="return openModuleWindow(this, event);">Open SNPFileCreator module</a> in the GenePattern window.</li>
+    <li><a href="/gp/pages/index.jsf?lsid=SNPFileCreator&cel.files=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/GISTIC_Hind_subset.zip&output.file=GISTIC_Hind_subset.snp&genome.annotation=hg19" onclick="return openModuleWindow (this, event);">Open SNPFileCreator with example data, selecting the UCSC hg19 genome annotation</a></li>
+    <li>&nbsp;</li>
+   <li><b>Warning:</b> Processing this example on a <a href="http://www.broadinstitute.org/genepattern/tutorial/gp_concepts.html#_GenePattern_Server" target="_blank">local GenePattern server</a> is likely to generate an <a class="notGPLinks" href="http://www.broadinstitute.org/cancer/software/genepattern/doc/messages/index.html#memory" target="_blank">OutOfMemoryError</a>.
    </li>
   </ul>
   </div>
@@ -86,12 +82,7 @@ sporadic and hereditary cancer (Monti, 2005).
    accepts CEL file formats generated by either the Affymetrix GeneChip Command Console Software (AGCC) or 
    Affymetrix GeneChip Operating Software (GCOS). The module converts the CEL files for one array into a .snp 
    file. To create a .snp file for a chip set, use the MergeRows module to combine the .snp files for the two arrays.</li>
-  <li>SNPFileCreator creates a .snp file in one of two formats: 
-     Non Allele-Specific (default) or Allele-Specific.
-     For each sample, the Non Allele-Specific format contains an intensity value 
-     and a genotype call; the Allele-Specific format contains an
-     intensity value for allele A, intensity value for allele B, and genotype call. 
-     All GenePattern modules accept the Non Allele-Specific format; many do not yet accept the Allele-Specific format.</li>
+  <li>This version of SNPFileCreator currently produces only allele-specific SNP files which are not accepted by some GenePattern SNP modules, such as LOHPaired version 3 and XChromosomeCorrect version 3</li>
   <li>SNPFileCreator provides the Human Genome of March 2006 (hg18) or February 2009 (hg19) to include Chromosome and 
   Physical Location columns in the .snp file. You should select your preference, or upload a custom genome annotation. By 
   default, it sorts the SNPs by chromosome and physical location.</li>
@@ -99,13 +90,14 @@ sporadic and hereditary cancer (Monti, 2005).
 
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
-    <td align="right">learn more:<br />
+    <td align="right">learn more:<br>
     <a href="/gp/getTaskDoc.jsp?name=SNPFileCreator">SNPFileCreator</a>
     </td>
   </tr>
 </table>
 </div>
 
+<!for 3.3.2 on public server, we should leave this out until we've updated XChromosomeCorrect>
 <div class="steps">
   <h2>Step 2: XChromosomeCorrect</h2>
   <p>For gender-specific samples, run the XChromosomeCorrect module to correct intensity values for SNPs on the X chromosome.
@@ -114,16 +106,14 @@ sporadic and hereditary cancer (Monti, 2005).
      include a column labeled Gender that contains a value of M or F for each sample.</p>
   <div class="gpLinks">
   <ul>
-    <li><a href="/gp/pages/index.jsf?lsid=XChromosomeCorrect" onclick="return openModuleWindow(this, event);"
-        >Open XChromosomeCorrect module</a></li>
-    <li><a href="/gp/pages/index.jsf?lsid=XChromosomeCorrect&snp.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.snp&sample.info.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt" onclick="return openModuleWindow(this, event);"
-        >Open XChromosomeCorrect with example data</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=XChromosomeCorrect" onclick="return openModuleWindow(this, event);">Open XChromosomeCorrect module</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=XChromosomeCorrect&snp.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.snp&sample.info.filename=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt" onclick="return openModuleWindow(this, event);">Open XChromosomeCorrect with example data</a></li>
   </ul>
   </div>
 
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
-    <td align="right">learn more:<br />
+    <td align="right">learn more:<br>
     <a href="/gp/getTaskDoc.jsp?name=XChromosomeCorrect">XChromosomeCorrect</a>
     </td>
   </tr>
@@ -136,24 +126,22 @@ sporadic and hereditary cancer (Monti, 2005).
     <p>CopyNumberDivideByNormals computes the raw copy number of each target SNP by dividing its intensity value 
      by the mean intensity value of all normal SNPs. This calculation is referred to as 
      copy number normalization or normalization with respect to normals.</p>
-  </p>
+  
   <p>CopyNumberDivideByNormals creates one of two files:
-  <ul>
-  <li>.cn (default) does not include genotype calls.
-  <li>.xcn includes genotype calls. 
+  </p><ul>
+  <li>.cn (default) does not include genotype calls.</li>
+  <li>.xcn includes genotype calls. </li>
   </ul>
   <div class="gpLinks">
   <ul>
-    <li><a href="/gp/pages/index.jsf?lsid=CopyNumberDivideByNormals" onclick="return openModuleWindow(this, event);"
-        >Open CopyNumberDivideByNormals module</a></li>
-            <li><a href="/gp/pages/index.jsf?lsid=CopyNumberDivideByNormals&snp.file=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.xcorrected.snp&sample.info.file=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt&include.genotype.calls=xcn" onclick="return openModuleWindow(this, event);"
-        >Open with example data and create .xcn file</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=CopyNumberDivideByNormals" onclick="return openModuleWindow(this, event);">Open CopyNumberDivideByNormals module</a></li>
+            <li><a href="/gp/pages/index.jsf?lsid=CopyNumberDivideByNormals&snp.file=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.xcorrected.snp&sample.info.file=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/gistic/sample_info_subset.txt&include.genotype.calls=xcn" onclick="return openModuleWindow(this, event);">Open with example data and create .xcn file</a></li>
 
   </ul>
   </div>
     <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
-    <td align="right">learn more:<br />
+    <td align="right">learn more:<br>
     <a href="/gp/getTaskDoc.jsp?name=CopyNumberDivideByNormals">CopyNumberDivideByNormals</a>
     </td>
   </tr>
@@ -163,32 +151,22 @@ sporadic and hereditary cancer (Monti, 2005).
 
 <div class="steps">
   <h2>Step 4: IGV</h2>
-  <p>IGV displays SNP copy number and loss of heterozygosity (LOH) data using a heat map. 
+  <p>>IGV displays SNP copy number and loss of heterozygosity (LOH) data using a heat map. 
   To zoom in on a chromosome, select it from the chromosome drop-down list in the tool bar. 
   To zoom in on a region of the chromosome, double-click on that area on the heat map, or click a zoom 
   level on the "railroad track" zoom tool in the tool bar.</p>
 
    <div class="gpLinks">
   <ul>
-    <li><a href="/gp/pages/index.jsf?lsid=IGV" onclick="return openModuleWindow(this, event);"
-        >Open IGV module</a></li>
-     <li><a href="/gp/pages/index.jsf?lsid=IGV&input.file=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.xcorrected.xcn&genomeId=hg19" onclick="return openModuleWindow(this, event);"
-        >Open IGV module with example data</a></li>
+    <li><a href="/gp/pages/index.jsf?lsid=IGV" onclick="return openModuleWindow(this, event);">Open IGV module</a></li>
+     <li><a href="/gp/pages/index.jsf?lsid=IGV&input.file=ftp://ftp.broadinstitute.org/pub/genepattern/datasets/protocols/GISTIC_Hind_subset.xcorrected.xcn&genomeId=hg19" onclick="return openModuleWindow(this, event);">Open IGV module with example data</a></li>
 
   </ul>
   </div>
    <h5>Considerations</h5>
   <ul>
-  <li>To view a .xcn or .cn file that is on your local drive or network, install your own GenePattern server. 
-  Then add or edit the following in your genepattern.properties file:  allow.input.file.paths=true
-  Restart your server. This will allow users to input an arbitrary network file path 
-  (such as file:///server/directory/file.gct) as the value for an input file parameter. When input 
-  file paths are allowed, you can use the server.browse.file.system.root property to set a root directory 
-  where the GenePattern server begins browsing for the specified network file path. 
-    If you specify a local file as a parameter to the IGV module, 
-    GenePattern copies the file to the GenePattern server, which can be time consuming for a large
-    .xcn or .cn file.</li>
-  <li>To detect and display LOH calls, IGV requires genotype calls (.xcn file format). The LOH calls are: </p>
+  <li>Use the large file upload function (<i>Upload Files</i> button under the Uploads tab) to make your .xcn and/or .cn files  available on the GenePattern server before running the module.</li>
+  <li>To detect and display LOH calls, IGV requires genotype calls (.xcn file format). The LOH calls are: 
     <ul>
     <li>Loss: AB in normal and A or B in target.</li>
     <li>Retained: AB in both normal and target or No Call in normal and AB in target.</li>
@@ -207,7 +185,7 @@ sporadic and hereditary cancer (Monti, 2005).
  
     <table width="100%" border="0" cellpadding="0" cellspacing="0">
   <tr>
-    <td align="right">learn more:<br />
+    <td align="right">learn more:<br>
     <a href="/gp/getTaskDoc.jsp?name=SnpViewer">SnpViewer</a>
     </td>
   </tr>
@@ -215,7 +193,8 @@ sporadic and hereditary cancer (Monti, 2005).
 </div>
 <h2>Reference</h2>
 <p>Monti, S. 2005. Class slides: SNP microarrays and high-density genotyping. 
-http://www.chip.org/teaching/hst950/slides/class6.pdf.</p>
+<a href="http://www.chip.org/teaching/hst950/slides/class6.pdf" >http://www.chip.org/teaching/<wbr>hst950/slides/class6.pdf</a>.</p>
+
 
 </body>
 </html>
