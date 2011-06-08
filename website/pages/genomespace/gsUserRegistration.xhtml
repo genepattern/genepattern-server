@@ -79,11 +79,11 @@
                   <f:attribute name="forceId" value="true"/>
                 </t:inputText>
                 <h:outputLabel value="Environment"></h:outputLabel>
-				<select id="envSelect">
-					<option value="dev">dev</option>
-					<option value="test" selected="true">test</option>
-					<option value="prod">prod</option>
-				</select>
+				<t:selectOneMenu id="envSelect" value="test" forceId="true">
+					<f:selectItem id="dev" itemLabel="dev" itemValue="dev" />
+					<f:selectItem id="test" itemLabel="test" itemValue="test" />
+					<f:selectItem id="prod" itemLabel="prod" itemValue="prod" />
+				</t:selectOneMenu>
 			</h:panelGrid>
 			<h:commandButton id="signIn" action="#{genomeSpaceBean.submitRegistration}" value="Sign in" />
 			<br />
