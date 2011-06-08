@@ -42,6 +42,10 @@ import org.genomespace.client.exceptions.AuthorizationException;
 import org.genomespace.client.exceptions.InternalServerException;
 import org.genomespace.datamanager.core.GSDirectoryListing;
 import org.genomespace.datamanager.core.GSFileMetadata;
+import org.genomespace.datamanager.core.GSFileMetadataImpl;
+import org.richfaces.component.UITree;
+import org.richfaces.model.TreeNode;
+import org.richfaces.model.TreeNodeImpl;
 
 /**
  * Backing bean for login to GenomeSpace.
@@ -385,6 +389,60 @@ public class GenomeSpaceBean {
             e.printStackTrace();
             UIBeanHelper.setErrorMessage("There was a problem uploading the file to GS, " + in.getName());
         }
+    }
+    
+    public boolean openTreeNode(UITree tree) {
+        return true;
+    }
+    
+    public TreeNode<GenomeSpaceFileInfo> getFileTree() {
+        // Set up the root node
+        TreeNode<GenomeSpaceFileInfo> rootNode = new TreeNodeImpl<GenomeSpaceFileInfo>();
+        GSFileMetadata rootFileFacade = new GSFileMetadataImpl("GenomeSpace Files", null, UIBeanHelper.getUserId(), 0, null, null, true);
+        GenomeSpaceFileInfo rootWrapper = new GenomeSpaceFileInfo(rootFileFacade, null);
+        rootNode.setData(rootWrapper);
+        
+        // Add component trees
+        List<GenomeSpaceDirectory> dirs = getAvailableDirectories();
+        int count = 0;
+        for (GenomeSpaceDirectory i : dirs) {
+            rootNode.addChild(count, getGenomeSpaceFilesTree(i));
+            count++;
+        }
+        
+        return rootNode;
+    }
+    
+    public TreeNode<GenomeSpaceFileInfo> getGenomeSpaceFilesTree(GenomeSpaceDirectory gsDir) {
+        GSFileMetadata metadataFacade = new GSFileMetadataImpl(gsDir.getName(), null, UIBeanHelper.getUserId(), 0, null, null, true);
+        GenomeSpaceFileInfo wrapper = new GenomeSpaceFileInfo(metadataFacade, null);
+        TreeNode<GenomeSpaceFileInfo> rootNode = new TreeNodeImpl<GenomeSpaceFileInfo>();
+        rootNode.setData(wrapper);
+        int count = 0;
+        
+        // Add subdirectories
+        for (GenomeSpaceDirectory i : gsDir.getGsDirectories()) {
+            rootNode.addChild(count, getGenomeSpaceFilesTree(i));
+            count++;
+        }
+        
+        // Add child files
+        for (GenomeSpaceFileInfo i : gsDir.getGsFiles()) {
+            TreeNode<GenomeSpaceFileInfo> fileNode = new TreeNodeImpl<GenomeSpaceFileInfo>();
+            fileNode.setData(i);
+            rootNode.addChild(count, fileNode);
+            count++;
+        }
+
+        return rootNode;
+    }
+    
+    public List<GenomeSpaceDirectory> getGsDirectories() {
+        return getAvailableDirectories().get(0).getGsDirectories();
+    }
+    
+    public List<GenomeSpaceFileInfo> getGsFiles() {
+        return getAvailableDirectories().get(0).getGsFiles();
     }
     
     /**

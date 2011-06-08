@@ -16,6 +16,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:t="http://myfaces.apache.org/tomahawk"
+	  xmlns:rich="http://richfaces.org/rich"
       xmlns:c="http://java.sun.com/jstl/core">
 
 <ui:composition>
@@ -66,67 +67,39 @@ function toggleJobVisibility(jobNo) {
 <h:form>    
   <table width="100%" border="0" cellspacing="0" cellpadding="0">
     
-    <tr>
-      <td height="6" colspan="6">
-        <t:graphicImage value="/images/spacer.gif" width="1" height="6"/>
-      </td>
-    </tr>
-  
-
-      <!-- Loop through jobs -->
-      <t:dataList var="gsDir" value="#{genomeSpaceBean.availableDirectories}" rowIndexVar="dirIndex">
-          <tr>
-          <td width="0">
-            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="0" height="1"/>
-          </td>
-          <td valign="top" class="recentjobs-sh"></td>
-          <td width="9">
-            <img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
-          </td>
-          <td align="right" width="12px" valign="top" style="cursor:pointer;" onclick="toggleJobVisibility('#{gsDir.name}');">
-        	<t:div rendered="#{gsDir.level == 0}" style="display:inline; cursor:pointer;">
-          		<img id="#{gsDir.name}_expanded_img"
-                src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-down.gif"
-                width="8" height="8" border="0" style="display:inline;"/>
-          		<img id="#{gsDir.name}_collapsed_img"
-               src="#{facesContext.externalContext.requestContextPath}/images/arrow-pipelinetask-right.gif"
-               width="8" height="8" border="0" style="display:none;"/>
-        	</t:div>
-      	  </td>
-          
-          <td align="left">
-          	
-            <span class="recentjobs-sh yui-skin-sam" style="white-space: nowrap">
-            	#{gsDir.name}
-            </span>
-        
-            <br/>
-			
-			<div id="#{gsDir.name}_div" style="#{gsDir.expanded ? 'display:inline;' : 'display:none;'}">
-             
-           
-            <br/>
-            <!--  Loop through output files -->
-            <ui:include src="gsDirectoryFiles.xhtml">
-              <ui:param name="gsDir" value="#{gsDir}"/>
-            </ui:include>
-            
-            <h:outputText rendered="#{empty gsDir.gsFiles and empty gsDir.gsDirectories}">
-   		  		No GenomeSpace files to display
-      		</h:outputText>
-			</div>
-          </td>
-          <td width="9">
-			<img src="#{facesContext.externalContext.requestContextPath}/images/spacer.gif" width="9" height="1"/>
-          </td>
-        </tr>
-
-        <tr>
+      <tr>
+      	<td height="6" colspan="6">
+        	<t:graphicImage value="/images/spacer.gif" width="1" height="6"/>
+      	</td>
+      </tr>
+  	  <tr>
+  	  	  <td>
+  	  	  	  <rich:tree value="#{genomeSpaceBean.fileTree}" var="aFile" switchType="client" adviseNodeOpened="#{genomeSpaceBean.openTreeNode}">
+			  	  <rich:treeNode>
+	      		  	  <h:outputLink rendered="#{not aFile.gsFile.directory}" value="#{aFile.url}">#{aFile.filename}</h:outputLink>
+    	  		  	  <h:outputText rendered="#{aFile.gsFile.directory}">#{aFile.filename}</h:outputText>
+		
+				  	  <!-- Image for popup menu -->
+	      			  	  <t:graphicImage rendered="#{not aFile.gsFile.directory}" value="/images/smallOptions.gif" 
+    	       				name="Image_#{aFile.encodedPath}"
+       	       				onclick="pm_showMenu('menuDiv_#{aFile.dir.name}_#{aFile.filename}', Position.cumulativeOffset(this), 50, 50);" 
+           					onmouseover="MM_swapImage('Image_#{aFile.dir.name}_#{aFile.filename}','','/gp/images/smallOptions2.gif',2)" 
+    	       				onmouseout="MM_swapImgRestore();" />
+      			  	  <br />
+      			  	  <h:outputText rendered="#{not aFile.gsFile.directory}">#{aFile.gsFile.lastModified}</h:outputText>
+	  			  	  <br />
+			  	  </rich:treeNode>
+		  	  </rich:tree>
+  			  <h:outputText rendered="#{empty genomeSpaceBean.gsFiles and empty genomeSpaceBean.gsDirectories}">
+   		  		  No GenomeSpace files to display
+      		  </h:outputText>
+  		  </td>
+  	  </tr>
+      <tr>
           <td colspan="6">
-            <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1" vspace="5"/>
+              <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1" vspace="5"/>
           </td>
-        </tr>
-      </t:dataList>
+      </tr>
   </table>
   </h:form>
   <p>
