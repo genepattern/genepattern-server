@@ -33,6 +33,9 @@ import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoCache;
+import org.richfaces.component.UITree;
+import org.richfaces.model.TreeNode;
+import org.richfaces.model.TreeNodeImpl;
 
 /**
  * Backing bean for displaying user uploaded files and their associated popup menus.
@@ -124,9 +127,18 @@ public class UploadFilesBean {
         private UploadFile file = null;
         private String url = null;
         private List<SendToModule> sendToModules = null;
-        
+        private boolean directory = false;
+
         public FileInfoWrapper(UploadFile file) {
             this.file = file;
+        }
+        
+        public boolean isDirectory() {
+            return directory;
+        }
+
+        public void setDirectory(boolean directory) {
+            this.directory = directory;
         }
         
         public UploadFile getFile() {
@@ -172,6 +184,11 @@ public class UploadFilesBean {
 
         public String getPath() {
             return file.getPath();
+        }
+        
+        // Returns a path encoded for use in div names
+        public String getEncodedPath() {
+            return file.getPath() != null ? file.getPath().replaceAll("[^a-zA-Z0-9]", "_") : "";
         }
         
         public boolean getPartial() {
@@ -402,6 +419,44 @@ public class UploadFilesBean {
             initFiles(); 
         }
         return files;
+    }
+    
+    public boolean openTreeNode(UITree tree) {
+        return true;
+    }
+    
+    public TreeNode<FileInfoWrapper> getFileTree() {
+        // Set up the root node
+        TreeNode<FileInfoWrapper> rootNode = new TreeNodeImpl<FileInfoWrapper>();
+        UploadFile rootFileFacade = new UploadFile();
+        rootFileFacade.setName(UIBeanHelper.getUserId());
+        FileInfoWrapper rootWrapper = new FileInfoWrapper(rootFileFacade);
+        rootWrapper.setDirectory(true);
+        rootNode.setData(rootWrapper);
+        
+        // Add component trees
+        rootNode.addChild(0, getUploadFilesTree());
+        return rootNode;
+    }
+    
+    public TreeNode<FileInfoWrapper> getUploadFilesTree() {
+        // Set up the root node
+        TreeNode<FileInfoWrapper> rootNode = new TreeNodeImpl<FileInfoWrapper>();
+        UploadFile rootFileFacade = new UploadFile();
+        rootFileFacade.setName("Uploaded Files");
+        FileInfoWrapper rootWrapper = new FileInfoWrapper(rootFileFacade);
+        rootWrapper.setDirectory(true);
+        rootNode.setData(rootWrapper);
+        
+        // Set up the child nodes
+        int count = 0;
+        for (FileInfoWrapper i : getFiles()) {
+            TreeNode<FileInfoWrapper> fileNode = new TreeNodeImpl<FileInfoWrapper>();
+            fileNode.setData(i);
+            rootNode.addChild(count, fileNode);
+            count++;
+        }
+        return rootNode;
     }
 
     public UploadDirectory getUploadDir() {
