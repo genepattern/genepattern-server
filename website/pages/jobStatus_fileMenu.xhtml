@@ -85,7 +85,7 @@
           <t:dataList  var="moduleMenuItem" value="#{outputFile.moduleMenuItems}">
             <tr>
               <td>
-              <h:commandLink value="#{moduleMenuItem.key}" action="#{jobsBean.loadTask}" immediate="true">
+              <h:commandLink value="#{moduleMenuItem.key}" action="#{jobsMenuBean.loadTask}" immediate="true">
                   <f:param name="module" value="#{moduleMenuItem.value}" />
                   <f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
                   <f:param name="jobMenuNumber" value="#{jobOnMenu.jobNumber}" />
