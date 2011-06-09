@@ -195,6 +195,20 @@ public class UploadFilesBean {
             return file.isPartial();
         }
         
+        public boolean isParent(DirectoryInfoWrapper dir) {
+            int occur = this.getPath().indexOf(dir.getPath());
+            if (occur < 0) { // This file is not inside the dir or the dir's subdirs
+                return false;
+            }
+            String relPath = this.getPath().substring(occur + dir.getPath().length() + 1);
+            if (relPath.equalsIgnoreCase(this.getFilename())) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        
         public Collection<SendToModule> getSendToModules() {
             if (sendToModules == null) {
                 sendToModules = initSendToModules();
@@ -350,6 +364,50 @@ public class UploadFilesBean {
         }
     }
     
+    public class DirectoryInfoWrapper extends FileInfoWrapper {
+        List<FileInfoWrapper> dirFiles;
+        boolean init = false;
+
+        public DirectoryInfoWrapper(UploadFile file) {
+            super(file);
+            this.setDirectory(true);
+        }
+
+        public List<FileInfoWrapper> getFiles() {
+            return dirFiles;
+        }
+
+        public void setFiles(List<FileInfoWrapper> files) {
+            this.dirFiles = files;
+        }
+        
+        public boolean isInit() {
+            return init;
+        }
+        
+        public void initDirectory() {
+            if (files == null) {
+                initFiles();
+            }
+            dirFiles = new ArrayList<FileInfoWrapper>();
+            
+            // Add subdirectories
+            for (DirectoryInfoWrapper i : directories) {
+                if (i.isParent(this)) {
+                    dirFiles.add(i);
+                }
+            }
+            
+            // Add files
+            for (FileInfoWrapper i : files) {
+                if (i.isParent(this)) {
+                    dirFiles.add(i);
+                }
+            }
+            init = true;
+        }
+    }
+    
 /*
  * JSF usage:
    #{uploadFileBean.user}
@@ -361,6 +419,7 @@ public class UploadFilesBean {
       #{file.path}
 */
     private List<FileInfoWrapper> files;
+    private List<DirectoryInfoWrapper> directories;
     private String currentUser;
     private String currentTaskLsid = null;
     private TaskInfo currentTaskInfo = null;
@@ -421,10 +480,21 @@ public class UploadFilesBean {
         return files;
     }
     
+    public List<DirectoryInfoWrapper> getDirectories() {
+        if (directories == null) {
+            initFiles(); 
+        }
+        return directories;
+    }
+    
     public boolean openTreeNode(UITree tree) {
         return true;
     }
     
+    /**
+     * Lists input files from all sources in a unified tree
+     * @return
+     */
     public TreeNode<FileInfoWrapper> getFileTree() {
         // Set up the root node
         TreeNode<FileInfoWrapper> rootNode = new TreeNodeImpl<FileInfoWrapper>();
@@ -433,25 +503,46 @@ public class UploadFilesBean {
         FileInfoWrapper rootWrapper = new FileInfoWrapper(rootFileFacade);
         rootWrapper.setDirectory(true);
         rootNode.setData(rootWrapper);
-        
+
         // Add component trees
         rootNode.addChild(0, getUploadFilesTree());
         return rootNode;
     }
     
+    /**
+     * Lists all upload files in a tree with the root being the user's upload dir
+     * @return
+     */
     public TreeNode<FileInfoWrapper> getUploadFilesTree() {
-        // Set up the root node
-        TreeNode<FileInfoWrapper> rootNode = new TreeNodeImpl<FileInfoWrapper>();
+        // Set up the fake UploadFile for the wrapper
         UploadFile rootFileFacade = new UploadFile();
         rootFileFacade.setName("Uploaded Files");
-        FileInfoWrapper rootWrapper = new FileInfoWrapper(rootFileFacade);
-        rootWrapper.setDirectory(true);
-        rootNode.setData(rootWrapper);
+        rootFileFacade.setPath(getUserUploadDir().getAbsolutePath());
         
-        // Set up the child nodes
+        // Create the dir wrapper for the user upload dir
+        DirectoryInfoWrapper rootWrapper = new DirectoryInfoWrapper(rootFileFacade);
+        rootWrapper.initDirectory();
+        
+        // Set up the tree's directory structure
+        initDirectories();
+        return getDirectoryNode(rootWrapper);
+    }
+    
+    public TreeNode<FileInfoWrapper> getDirectoryNode(DirectoryInfoWrapper dir) {
+        // Set up the root node
+        TreeNode<FileInfoWrapper> rootNode = new TreeNodeImpl<FileInfoWrapper>();
+        rootNode.setData(dir);
         int count = 0;
-        for (FileInfoWrapper i : getFiles()) {
-            TreeNode<FileInfoWrapper> fileNode = new TreeNodeImpl<FileInfoWrapper>();
+
+        // Add the upload dir's files
+        for (FileInfoWrapper i : dir.getFiles()) {
+            TreeNode<FileInfoWrapper> fileNode;
+            if (i.isDirectory()) {
+                fileNode = getDirectoryNode((DirectoryInfoWrapper) i);
+            }
+            else {
+                fileNode = new TreeNodeImpl<FileInfoWrapper>();  
+            }
             fileNode.setData(i);
             rootNode.addChild(count, fileNode);
             count++;
@@ -476,14 +567,39 @@ public class UploadFilesBean {
         return dirs;
     }
     
+    public File getUserUploadDir() {
+        String dir = ServerConfiguration.instance().getGPProperty(Context.getContextForUser(UIBeanHelper.getUserId()), "user.upload.dir", System.getProperty("java.io.tmpdir"));
+        dir += "/user.uploads";
+        return new File(dir);
+    }
+    
     private void initFiles() {
         currentUser = UIBeanHelper.getUserId();
         List<UploadFile> uploadedFiles = new UploadFileDAO().findByUserId(currentUser);
         files = new ArrayList<FileInfoWrapper>();
+        directories = new ArrayList<DirectoryInfoWrapper>();
         for(UploadFile file : uploadedFiles) {
-            files.add(new FileInfoWrapper(file));
+            if (file.getKind() == null || !file.getKind().equalsIgnoreCase("directory")) {
+                files.add(new FileInfoWrapper(file));
+            }
+            else {
+                directories.add(new DirectoryInfoWrapper(file));
+            }
+            
         }
         initModuleMenuItems();
+    }
+    
+    private void initDirectories() {
+        if (files == null) {
+            initFiles();
+        }
+        
+        for (DirectoryInfoWrapper i : directories) {
+            if (!i.isInit()) {
+                i.initDirectory();
+            }
+        }
     }
     
     public void initCurrentLsid(AdminDAO adminDao) {
