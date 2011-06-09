@@ -1,8 +1,12 @@
 package org.genepattern.server;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.UploadFile;
 import org.genepattern.server.domain.UploadFileDAO;
@@ -102,6 +106,51 @@ public class DataManager {
         
         return userid.equals(uf.getUserId());
     }
-
     
+    private static void handleFileSync(UploadFileDAO dao, File file, String user) throws IOException {
+        UploadFile uploadFile = new UploadFile();
+        uploadFile.initFromFile(file, UploadFile.COMPLETE);
+        uploadFile.setUserId(user);
+        dao.saveOrUpdate(uploadFile);
+        
+        if (file.isDirectory()) {
+            for (File i : file.listFiles()) {
+                handleFileSync(dao, i, user);
+            }
+        }
+    }
+    
+    public static void syncUploadFiles(String user) {
+        try {
+            UploadFileDAO dao = new UploadFileDAO();
+            List<UploadFile> userFiles = dao.findByUserId(user);
+            File uploadDir = getUserUploadDirectory(user);
+            if (uploadDir == null) {
+                log.error("Unable to get the user's upload directory in syncUploadFiles()");
+                return;
+            }
+            
+            // Remove all the old database entries
+            for (UploadFile i : userFiles) {
+                dao.delete(i);
+            }
+            HibernateUtil.commitTransaction();
+            dao = new UploadFileDAO();
+            // Add new entries to the database
+            for (File i : uploadDir.listFiles()) {
+                handleFileSync(dao, i, user);
+            }
+            
+            // Commit
+            HibernateUtil.commitTransaction();
+        }
+        catch (Exception e) {
+            log.error("Error committing upload file sync to database");
+            HibernateUtil.rollbackTransaction();
+        }
+    }
+
+    public static File getUserUploadDirectory(String user) {
+        return ServerConfiguration.instance().getUserUploadDir(Context.getContextForUser(user));
+    }
 }

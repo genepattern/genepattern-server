@@ -46,6 +46,10 @@ public class UploadFile {
         this.extension = SemanticUtil.getExtension(file);
         this.kind = SemanticUtil.getKind(file);
         
+        if (file.isDirectory()) {
+            this.kind = "directory";
+        }
+        
         if (status == COMPLETE) {
             this.status = COMPLETE;
         }

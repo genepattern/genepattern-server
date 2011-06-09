@@ -200,6 +200,11 @@ public class UploadFilesBean {
             if (occur < 0) { // This file is not inside the dir or the dir's subdirs
                 return false;
             }
+            int dirlength = dir.getPath().length();
+            int thislength = this.getPath().length();
+            if (occur + dir.getPath().length() >= this.getPath().length()) {
+                return false; // A dir is never a parent of itself
+            }
             String relPath = this.getPath().substring(occur + dir.getPath().length() + 1);
             if (relPath.equalsIgnoreCase(this.getFilename())) {
                 return true;
@@ -494,8 +499,9 @@ public class UploadFilesBean {
     /**
      * Lists input files from all sources in a unified tree
      * @return
+     * @throws IOException 
      */
-    public TreeNode<FileInfoWrapper> getFileTree() {
+    public TreeNode<FileInfoWrapper> getFileTree() throws IOException {
         // Set up the root node
         TreeNode<FileInfoWrapper> rootNode = new TreeNodeImpl<FileInfoWrapper>();
         UploadFile rootFileFacade = new UploadFile();
@@ -512,13 +518,14 @@ public class UploadFilesBean {
     /**
      * Lists all upload files in a tree with the root being the user's upload dir
      * @return
+     * @throws IOException 
      */
-    public TreeNode<FileInfoWrapper> getUploadFilesTree() {
+    public TreeNode<FileInfoWrapper> getUploadFilesTree() throws IOException {
         // Set up the fake UploadFile for the wrapper
         UploadFile rootFileFacade = new UploadFile();
         rootFileFacade.setName("Uploaded Files");
-        rootFileFacade.setPath(getUserUploadDir().getAbsolutePath());
-        
+        rootFileFacade.setPath(getUserUploadDir().getCanonicalPath());
+
         // Create the dir wrapper for the user upload dir
         DirectoryInfoWrapper rootWrapper = new DirectoryInfoWrapper(rootFileFacade);
         rootWrapper.initDirectory();
@@ -568,9 +575,7 @@ public class UploadFilesBean {
     }
     
     public File getUserUploadDir() {
-        String dir = ServerConfiguration.instance().getGPProperty(Context.getContextForUser(UIBeanHelper.getUserId()), "user.upload.dir", System.getProperty("java.io.tmpdir"));
-        dir += "/user.uploads";
-        return new File(dir);
+        return ServerConfiguration.instance().getUserUploadDir(Context.getContextForUser(UIBeanHelper.getUserId()));
     }
     
     private void initFiles() {
@@ -645,6 +650,10 @@ public class UploadFilesBean {
         else {
             return attr;
         }
+    }
+    
+    public void syncFiles() {
+        DataManager.syncUploadFiles(UIBeanHelper.getUserId());
     }
     
     public void setSelectedTab(String selected) {
