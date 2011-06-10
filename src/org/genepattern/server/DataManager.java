@@ -21,6 +21,26 @@ import org.genepattern.server.webapp.jsf.UIBeanHelper;
  */
 public class DataManager {
     private static Logger log = Logger.getLogger(DataManager.class);
+    
+    public static boolean createSubdirectory(File parent, String name, String userId) {
+        File subdir = new File(parent.getAbsolutePath() + "/" + name);
+        boolean success = subdir.mkdir();
+        if (success) {
+            try {
+                UploadFileDAO dao = new UploadFileDAO();
+                UploadFile subdirFile = new UploadFile();
+                subdirFile.initFromFile(subdir, UploadFile.COMPLETE);
+                subdirFile.setUserId(userId);
+                dao.save(subdirFile);
+                HibernateUtil.commitTransaction();
+            } 
+            catch (Exception e) {
+                log.error("Error adding new subdirectory " + name + " to the database: " + e.getMessage());
+                success = false;
+            }
+        }
+        return success;
+    }
 
     /**
      * Delete the file from the server file system, checking permissions based on user context.

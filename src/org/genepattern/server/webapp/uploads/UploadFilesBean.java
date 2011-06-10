@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -646,8 +647,30 @@ public class UploadFilesBean {
         } 
     }
     
-    public void createSubdirectory(ActionEvent ae) {
-        
+    public void createSubdirectory() {
+        String name = null;
+        for (Object i : UIBeanHelper.getRequest().getParameterMap().keySet()) {
+            if (((String) i).contains("subdirName")) {
+                name = UIBeanHelper.getRequest().getParameter((String) i);
+                break;
+            }
+        }
+        File parent = new File(UIBeanHelper.getRequest().getParameter("parentPath"));
+        if (name != null) {
+            name = name.replaceAll("[^a-zA-Z0-9 ]", "");
+        }
+        if (name != null && name.length() > 0) {
+            if (parent.exists() && DataManager.createSubdirectory(parent, name, UIBeanHelper.getUserId())) {
+                UIBeanHelper.setInfoMessage("Subdirectory " + name + " successfully created");
+                files = null;
+            }
+            else {
+                UIBeanHelper.setErrorMessage("Unable to create the subdirectory");
+            }
+        }
+        else {
+            UIBeanHelper.setErrorMessage("Please enter a valid subdirectory name");
+        }
     }
     
     public String getSelectedTab() {

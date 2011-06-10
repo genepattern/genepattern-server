@@ -33,9 +33,15 @@
           </tr>
 		  <tr>
             <td>
-              <h:commandLink value="Create Subdirectory" action="#{uploadFilesBean.createSubdirectory}" immediate="true" rendered="#{aFile.directory}"
-			  		onclick="return prompt('What is the name of the subdirectory you\'d like to create?');">
-              </h:commandLink>
+              	<h:outputText value="Create Subdirectory" rendered="#{aFile.directory}" />
+            </td>
+          </tr>
+		  <tr>
+            <td>
+            	<t:inputText id="subdirName" rendered="#{aFile.directory}" />
+				<h:commandLink value="Create" action="#{uploadFilesBean.createSubdirectory}" immediate="true" rendered="#{aFile.directory}">
+					<f:param name="parentPath" value="#{aFile.file.path}" />
+				</h:commandLink>
             </td>
           </tr>
 
