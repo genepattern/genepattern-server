@@ -359,13 +359,15 @@ function showFileInput(id) {
 					</ui:include>
 				</t:dataList>
 			</t:dataList>
-			<t:dataList var="uploadDir" value="#{uploadFilesBean.availableDirectories}" rowIndexVar="dirIndex">
-				<t:dataList var="aFile" value="#{uploadDir.uploadFiles}" rowIndexVar="fileIndex">
-					<ui:include src="uploads/uploadFileMenu.xhtml">
-	              		<ui:param name="uploadDir" value="#{uploadDir}"/>
-	              		<ui:param name="aFile" value="#{aFile}"/>
-	            	</ui:include>
-				</t:dataList>
+			<t:dataList var="aFile" value="#{uploadFilesBean.files}" rowIndexVar="dirIndex">
+				<ui:include src="uploads/uploadFileMenu.xhtml">
+	            	<ui:param name="aFile" value="#{aFile}"/>
+	            </ui:include>
+			</t:dataList>
+			<t:dataList var="aFile" value="#{uploadFilesBean.directories}" rowIndexVar="dirIndex">
+				<ui:include src="uploads/uploadFileMenu.xhtml">
+	            	<ui:param name="aFile" value="#{aFile}"/>
+	            </ui:include>
 			</t:dataList>
 			<t:dataList var="gsDir" value="#{genomeSpaceBean.availableDirectories}" rowIndexVar="dirIndex">
 				<t:dataList var="aFile" value="#{gsDir.recursiveGsFiles}" rowIndexVar="fileIndex">

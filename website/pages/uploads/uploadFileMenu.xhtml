@@ -27,7 +27,7 @@
           </tr>
           <tr>
             <td>
-              <h:commandLink value="Save" action="#{aFile.downloadFile}" immediate="true" rendered="#{not aFile.partial}">
+              <h:commandLink value="Save" action="#{aFile.downloadFile}" immediate="true" rendered="#{not aFile.partial and not aFile.directory}">
               </h:commandLink>
             </td>
           </tr>

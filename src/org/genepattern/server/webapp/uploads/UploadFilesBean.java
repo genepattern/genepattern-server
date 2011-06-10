@@ -429,7 +429,6 @@ public class UploadFilesBean {
     private String currentTaskLsid = null;
     private TaskInfo currentTaskInfo = null;
     private Map<String,SortedSet<TaskInfo>> kindToTaskInfo;
-    private UploadDirectory uploadDir;
     
     private static final Comparator<TaskInfo> taskInfoComparator =  new Comparator<TaskInfo>() {
         public int compare(TaskInfo o1, TaskInfo o2) {
@@ -555,23 +554,6 @@ public class UploadFilesBean {
             count++;
         }
         return rootNode;
-    }
-
-    public UploadDirectory getUploadDir() {
-        if (uploadDir == null) {
-            uploadDir = new UploadDirectory("UploadedFiles");
-            uploadDir.setUploadFiles(this.getFiles());
-            return uploadDir;
-        }
-        else {
-            return uploadDir;
-        } 
-    }
-   
-    public List<UploadDirectory> getAvailableDirectories() {
-        List<UploadDirectory> dirs = new ArrayList<UploadDirectory>();
-        dirs.add(this.getUploadDir());
-        return dirs;
     }
     
     public File getUserUploadDir() {
