@@ -63,9 +63,13 @@ public class UploadReceiver extends HttpServlet {
      * @throws FileUploadException
      */
     protected File getUploadDirectory(HttpServletRequest request) throws FileUploadException {
-        final String userId = LoginManager.instance().getUserIdFromSession(request);
-        final Context context = Context.getContextForUser(userId);
-        final File dir = ServerConfiguration.instance().getUserUploadDir(context);
+        String userId = LoginManager.instance().getUserIdFromSession(request);
+        Context context = Context.getContextForUser(userId);
+        String uploadDirPath = (String) request.getSession().getAttribute("uploadPath");
+        File dir = new File(uploadDirPath);
+        if (uploadDirPath == null) {
+            dir = ServerConfiguration.instance().getUserUploadDir(context);
+        }
         
         // lazily create directory if need be
         if (!dir.exists()) {

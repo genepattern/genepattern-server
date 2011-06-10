@@ -570,6 +570,11 @@ public class UploadFilesBean {
         return rootNode;
     }
     
+    public void flagUploadPath() {
+        String filePath = UIBeanHelper.getRequest().getParameter("uploadPath");
+        UIBeanHelper.getSession().setAttribute("uploadPath", filePath);
+    }
+    
     public File getUserUploadDir() {
         return ServerConfiguration.instance().getUserUploadDir(Context.getContextForUser(UIBeanHelper.getUserId()));
     }

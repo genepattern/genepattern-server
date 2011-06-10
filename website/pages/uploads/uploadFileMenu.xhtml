@@ -33,6 +33,18 @@
           </tr>
 		  <tr>
             <td>
+              	<h:commandLink value="Upload Files" action="#{uploadFilesBean.flagUploadPath}" onclick="JavaScript:openUploadWindow();" immediate="true" rendered="#{aFile.directory}">
+              		<f:param name="uploadPath" value="#{aFile.file.path}" />
+				</h:commandLink>
+            </td>
+          </tr>
+		  <h:outputText rendered="#{aFile.directory}">
+		  	  <tr>
+            	  <td><img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/></td>
+          	  </tr>
+		  </h:outputText>
+		  <tr>
+            <td>
               	<h:outputText value="Create Subdirectory" rendered="#{aFile.directory}" />
             </td>
           </tr>
