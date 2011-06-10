@@ -82,8 +82,8 @@ public class DataManager {
             return false;
         }
         File toDel = new File(uf.getPath());
-        if (toDel.isDirectory()) {
-            //TODO: log.error("Deleting directories not implemented");
+        if (toDel.isDirectory() && toDel.listFiles().length > 0) {
+            log.info("Unable to delete non-empty directories: " + toDel.getPath());
             return false;
         }
         String userid = UIBeanHelper.getUserId();

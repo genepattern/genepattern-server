@@ -20,7 +20,7 @@
           <tr>
             <td>
             <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file from the upload directory?');" 
-              		actionListener="#{uploadFilesBean.deleteFile}">
+              		actionListener="#{uploadFilesBean.deleteFile}" rendered="#{not aFile.root}">
                 <f:param name="filePath" value="#{aFile.file.path}" />
               </h:commandLink>
             </td>
@@ -28,6 +28,13 @@
           <tr>
             <td>
               <h:commandLink value="Save" action="#{aFile.downloadFile}" immediate="true" rendered="#{not aFile.partial and not aFile.directory}">
+              </h:commandLink>
+            </td>
+          </tr>
+		  <tr>
+            <td>
+              <h:commandLink value="Create Subdirectory" action="#{uploadFilesBean.createSubdirectory}" immediate="true" rendered="#{aFile.directory}"
+			  		onclick="return prompt('What is the name of the subdirectory you\'d like to create?');">
               </h:commandLink>
             </td>
           </tr>

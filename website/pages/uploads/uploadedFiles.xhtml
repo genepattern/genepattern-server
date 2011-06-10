@@ -81,7 +81,7 @@ function toggleJobVisibility(jobNo) {
     	  		  	  <h:outputText rendered="#{aFile.partial or aFile.directory}">#{aFile.filename}</h:outputText>
 		
 				  	  <!-- Image for popup menu -->
-	      			  	  <t:graphicImage value="/images/smallOptions.gif" 
+	      			  	  <t:graphicImage value="/images/smallOptions.gif"
     	       				name="Image_#{aFile.encodedPath}"
        	       				onclick="pm_showMenu('menuDiv_#{aFile.encodedPath}', Position.cumulativeOffset(this), 50, 50);" 
   	           				onmouseover="MM_swapImage('Image_#{aFile.encodedPath}','','/gp/images/smallOptions2.gif',2)" 

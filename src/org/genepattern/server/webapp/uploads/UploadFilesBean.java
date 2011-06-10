@@ -128,6 +128,7 @@ public class UploadFilesBean {
         private String url = null;
         private List<SendToModule> sendToModules = null;
         private boolean directory = false;
+        private boolean root = false;
 
         public FileInfoWrapper(UploadFile file) {
             this.file = file;
@@ -151,6 +152,14 @@ public class UploadFilesBean {
         
         public String getFormattedModified() {
             return formatter.format(file.getLastModified());
+        }
+        
+        public boolean isRoot() {
+            return root;
+        }
+
+        public void setRoot(boolean root) {
+            this.root = root;
         }
         
         public String getKind() {
@@ -358,13 +367,15 @@ public class UploadFilesBean {
         /**
          * In response to selecting the 'Delete' link from the popup menu for the file.
          */
-        public void deleteFile() {
+        public boolean deleteFile() {
             boolean deleted = DataManager.deleteFile(file);
             if (deleted) {
-                UIBeanHelper.setInfoMessage("Deleted file: "+file.getName());
+                UIBeanHelper.setInfoMessage("Deleted file: " + file.getName());
+                return true;
             }
             else {
-                UIBeanHelper.setErrorMessage("Error deleting file: "+file.getName());
+                UIBeanHelper.setErrorMessage("Unable to delete file: " + file.getName());
+                return false;
             }
         }
     }
@@ -507,6 +518,7 @@ public class UploadFilesBean {
         rootFileFacade.setName(UIBeanHelper.getUserId());
         FileInfoWrapper rootWrapper = new FileInfoWrapper(rootFileFacade);
         rootWrapper.setDirectory(true);
+        rootWrapper.setRoot(true);
         rootNode.setData(rootWrapper);
 
         // Add component trees
@@ -528,6 +540,7 @@ public class UploadFilesBean {
         // Create the dir wrapper for the user upload dir
         DirectoryInfoWrapper rootWrapper = new DirectoryInfoWrapper(rootFileFacade);
         rootWrapper.initDirectory();
+        rootWrapper.setRoot(true);
         
         // Set up the tree's directory structure
         initDirectories();
@@ -617,11 +630,24 @@ public class UploadFilesBean {
         String filePath = UIBeanHelper.getRequest().getParameter("filePath");
         for (final FileInfoWrapper i : files) {
             if (i.getPath().equals(filePath)) {
-                i.deleteFile();
-                files.remove(i);
-                break;
+                if (i.deleteFile()) {
+                    files.remove(i);
+                }
+                return;
+            }
+        }
+        for (final DirectoryInfoWrapper i : directories) {
+            if (i.getPath().equals(filePath)) {
+                if (i.deleteFile()) {
+                    directories.remove(i);
+                }
+                return;
             }
         } 
+    }
+    
+    public void createSubdirectory(ActionEvent ae) {
+        
     }
     
     public String getSelectedTab() {
