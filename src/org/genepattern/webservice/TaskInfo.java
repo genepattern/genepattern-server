@@ -289,7 +289,16 @@ public class TaskInfo implements Serializable {
                     }
                     pinfosForMap.add(paramInfo);
                 }
-            } 
+            }
+            if (paramInfo._isDirectory()) {
+                inputFileTypes.add("directory");
+                List<ParameterInfo> pinfosForMap = _kindToParameterInfoMap.get("directory");
+                if (pinfosForMap == null) {
+                    pinfosForMap = new ArrayList<ParameterInfo>();
+                    _kindToParameterInfoMap.put("directory", pinfosForMap);
+                }
+                pinfosForMap.add(paramInfo);
+            }
         }
         return inputFileTypes;
     }
