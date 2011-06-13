@@ -124,7 +124,7 @@ use, misuse, or functionality.
                                     <!--Directory -->
                                     <div id="#{p.name}_div">
                                     	<h:outputText value="Specify Directory" />
-                                        <input name="#{p.name}_url" id="#{p.name}_url" size="30" type="#{p.inputType}" value="#{p.defaultValue}"/>
+                                        <input name="#{p.name}_url" id="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}"/>
                                     </div>
                                 </h:outputText>
                                 <h:outputText rendered="${p.inputType=='directory' and !runTaskBean.allowBatchProcess}">

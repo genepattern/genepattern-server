@@ -342,6 +342,9 @@ public class RunTaskBean {
                             }
                         }
                     }
+                    if (p._isDirectory()) {
+                        reloadValues.put(p.getName(), prevUploadedFileUrl);
+                    }
                 }
             } 
         }
