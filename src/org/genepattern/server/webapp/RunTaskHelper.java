@@ -204,7 +204,7 @@ public class RunTaskHelper {
         for (int i = 0; i < parameterInfoArray.length; i++) {
             ParameterInfo pinfo = parameterInfoArray[i];
             String value;
-            if (pinfo.isInputFile()) {
+            if (pinfo.isInputFile() || pinfo._isDirectory()) {
                 value = inputFileParameters.get(pinfo.getName());
                 if (value == null) {
                     pinfo.getAttributes().put(ParameterInfo.TYPE, "");
