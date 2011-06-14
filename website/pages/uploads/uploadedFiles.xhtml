@@ -74,11 +74,11 @@ function toggleJobVisibility(jobNo) {
       </tr>
   	  <tr>
   	  	  <td>
-  	  	  	  <rich:tree value="#{uploadFilesBean.fileTree}" var="aFile" switchType="client" adviseNodeOpened="#{uploadFilesBean.openTreeNode}">
-			  	  <rich:treeNode>
+  	  	  	  <rich:tree value="#{uploadFilesBean.fileTree}" var="aFile" switchType="client" adviseNodeOpened="#{uploadFilesBean.openTreeNode}" nodeFace="#{aFile.type}">
+			  	  <rich:treeNode type="file" icon="/a4j/a4j/g/3_2_2.GAimages/iconLeaf.gif" iconLeaf="/a4j/a4j/g/3_2_2.GAimages/iconLeaf.gif">
 				  	  <h:outputText rendered="#{aFile.partial}">(Uploading) </h:outputText>
-	      		  	  <h:outputLink rendered="#{not aFile.partial and not aFile.directory}" value="#{aFile.url}">#{aFile.filename}</h:outputLink>
-    	  		  	  <h:outputText rendered="#{aFile.partial or aFile.directory}">#{aFile.filename}</h:outputText>
+	      		  	  <h:outputLink rendered="#{not aFile.partial}" value="#{aFile.url}">#{aFile.filename}</h:outputLink>
+    	  		  	  <h:outputText rendered="#{aFile.partial}">#{aFile.filename}</h:outputText>
 		
 				  	  <!-- Image for popup menu -->
 	      			  	  <t:graphicImage value="/images/smallOptions.gif"
@@ -88,6 +88,18 @@ function toggleJobVisibility(jobNo) {
     	       				onmouseout="MM_swapImgRestore();" />
       			  	  <br />
       			  	  <h:outputText rendered="#{not aFile.directory}">#{aFile.formattedModified}</h:outputText>
+	  			  	  <br />
+			  	  </rich:treeNode>
+			  	  <rich:treeNode type="directory" icon="/a4j/a4j/g/3_2_2.GAimages/iconFolder.gif" iconLeaf="/a4j/a4j/g/3_2_2.GAimages/iconFolder.gif">
+    	  		  	  <h:outputText>#{aFile.filename}</h:outputText>
+		
+				  	  <!-- Image for popup menu -->
+	      			  	  <t:graphicImage value="/images/smallOptions.gif"
+    	       				name="Image_#{aFile.encodedPath}"
+       	       				onclick="pm_showMenu('menuDiv_#{aFile.encodedPath}', Position.cumulativeOffset(this), 50, 50);" 
+  	           				onmouseover="MM_swapImage('Image_#{aFile.encodedPath}','','/gp/images/smallOptions2.gif',2)" 
+    	       				onmouseout="MM_swapImgRestore();" />
+      			  	  <br />
 	  			  	  <br />
 			  	  </rich:treeNode>
 		  	  </rich:tree>

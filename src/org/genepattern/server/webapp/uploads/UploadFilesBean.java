@@ -135,6 +135,15 @@ public class UploadFilesBean {
             this.file = file;
         }
         
+        public String getType() {
+            if (isDirectory()) {
+                return "directory";
+            }
+            else {
+                return "file";
+            }
+        }
+        
         public boolean isDirectory() {
             return directory;
         }
