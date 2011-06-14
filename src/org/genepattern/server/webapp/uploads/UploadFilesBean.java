@@ -678,10 +678,14 @@ public class UploadFilesBean {
     
     public void createSubdirectory() {
         String name = null;
+        java.util.Map keys = UIBeanHelper.getRequest().getParameterMap();
         for (Object i : UIBeanHelper.getRequest().getParameterMap().keySet()) {
             if (((String) i).contains("subdirName")) {
-                name = UIBeanHelper.getRequest().getParameter((String) i);
-                break;
+                String potentialName = UIBeanHelper.getRequest().getParameter((String) i);
+                if (potentialName.length() > 0) {
+                    name = potentialName;
+                    break;
+                }
             }
         }
         File parent = new File(UIBeanHelper.getRequest().getParameter("parentPath"));
