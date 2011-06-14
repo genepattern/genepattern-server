@@ -1,111 +1,112 @@
 <!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2011) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+The Broad Institute
+SOFTWARE COPYRIGHT NOTICE AGREEMENT
+This software and its documentation are copyright (2003-2011) by the
+Broad Institute/Massachusetts Institute of Technology. All rights are
+reserved.
+This software is supplied without any warranty or guaranteed support
+whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+use, misuse, or functionality.
+*/ -->
+ <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://java.sun.com/jsf/html" xmlns:f="http://java.sun.com/jsf/core" xmlns:t="http://myfaces.apache.org/tomahawk" xmlns:c="http://java.sun.com/jstl/core">
-  <ui:composition>
-  	
-    <div id="menuDiv_#{aFile.encodedPath}"  style="visibility:hidden;" class="popupMenu">
-      <table>
-        <tbody>
-          <tr>
-            <td>
-            <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file from the upload directory?');" 
-              		actionListener="#{uploadFilesBean.deleteFile}" rendered="#{not aFile.root}">
-                <f:param name="filePath" value="#{aFile.file.path}" />
-              </h:commandLink>
-            </td>
-          </tr>
-          <tr>
-            <td>
-              <h:commandLink value="Save" action="#{aFile.downloadFile}" immediate="true" rendered="#{not aFile.partial and not aFile.directory}">
-              </h:commandLink>
-            </td>
-          </tr>
-		  <tr>
-            <td>
-              	<h:commandLink value="Upload Files" action="#{uploadFilesBean.flagUploadPath}" onclick="JavaScript:openUploadWindow();" immediate="true" rendered="#{aFile.directory}">
-              		<f:param name="uploadPath" value="#{aFile.file.path}" />
-				</h:commandLink>
-            </td>
-          </tr>
-		  <h:outputText rendered="#{aFile.directory}">
-		  	  <tr>
-            	  <td><img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/></td>
-          	  </tr>
-		  </h:outputText>
-		  <tr>
-            <td>
-              	<h:outputText value="Create Subdirectory" rendered="#{aFile.directory}" />
-            </td>
-          </tr>
-		  <tr>
-            <td>
-            	<t:inputText id="subdirName" rendered="#{aFile.directory}" />
-				<h:commandLink value="Create" action="#{uploadFilesBean.createSubdirectory}" immediate="true" rendered="#{aFile.directory}">
-					<f:param name="parentPath" value="#{aFile.file.path}" />
-				</h:commandLink>
-            </td>
-          </tr>
-
-          <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
-          <tr>
-            <td><img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/></td>
-          </tr>
-          <tr>
-           	 <td><img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle" />
-              &#160;<h:commandLink value="Save to GenomeSpace" action="#{genomeSpaceBean.sendInputFileToGenomeSpace}" immediate="true">
-                <f:param value="#{aFile.path}" name="path"/>
-              </h:commandLink>
-          	  </td>
-          	</tr>
-            </h:outputText>
-
-          	<h:outputText rendered="#{not empty aFile.sendToParameters}">
-          <tr>
-            <td>
-              <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
-            </td>
-          </tr>
-          </h:outputText>
-          
-           <t:dataList value="#{aFile.sendToParameters}" var="p">
-            <tr>
-              <td>
-               <h:outputLink value="#" onclick="setInputField('#{p.name}', '#{aFile.fullUrl}');">
-               	 <h:outputText>Send to #{p.name}</h:outputText>
-               </h:outputLink>
-              </td>
-            </tr>
-          </t:dataList>
-  			
-  		<h:outputText rendered="#{not empty aFile.sendToModules}">
-  		<tr>
-            <td>
-              <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
-            </td>
-          </tr>
-        </h:outputText>	
-          <t:dataList value="#{aFile.sendToModules}" var="moduleMenuItem">
-            <tr>
-              <td>
-                <h:commandLink value="#{moduleMenuItem.name}" action="#{aFile.sendToTaskInfo}" immediate="true">
-                  <f:param name="lsid" value="#{moduleMenuItem.lsid}" />
-                </h:commandLink>
-              </td>
-            </tr> 
-          </t:dataList>
-        </tbody>
-      </table>
-    </div>
-  </ui:composition>
+    <ui:composition>
+        <div id="menuDiv_#{aFile.encodedPath}" style="visibility:hidden;" class="popupMenu">
+            <table>
+                <tbody>
+                    <tr>
+                        <td>
+                            <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file from the upload directory?');" actionListener="#{uploadFilesBean.deleteFile}" rendered="#{not aFile.root}">
+                                <f:param name="filePath" value="#{aFile.file.path}" />
+                            </h:commandLink>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:commandLink value="Save" action="#{aFile.downloadFile}" immediate="true" rendered="#{not aFile.partial and not aFile.directory}">
+                            </h:commandLink>
+                        </td>
+                    </tr>
+                    <h:outputText rendered="#{aFile.directory}">
+                        <tr>
+                            <td>
+                                <h:commandLink value="Upload Files" action="#{uploadFilesBean.flagUploadPath}" onclick="JavaScript:openUploadWindow();" immediate="true">
+                                    <f:param name="uploadPath" value="#{aFile.file.path}" />
+                                </h:commandLink>
+                            </td>
+                        </tr>
+                        <h:outputText rendered="#{aFile.directory}">
+                            <tr>
+                                <td>
+                                    <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
+                                </td>
+                            </tr>
+                        </h:outputText>
+                        <tr>
+                            <td>
+                                <h:outputText value="Create Subdirectory" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <t:inputText id="subdirName" rendered="#{aFile.directory}" />
+                                <h:commandLink value="Create" action="#{uploadFilesBean.createSubdirectory}" immediate="true">
+                                    <f:param name="parentPath" value="#{aFile.file.path}" />
+                                </h:commandLink>
+                            </td>
+                        </tr>
+                    </h:outputText>
+                    <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
+                        <tr>
+                            <td>
+                                <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle"/>&#160;
+                                <h:commandLink value="Save to GenomeSpace" action="#{genomeSpaceBean.sendInputFileToGenomeSpace}" immediate="true">
+                                    <f:param value="#{aFile.path}" name="path"/>
+                                </h:commandLink>
+                            </td>
+                        </tr>
+                    </h:outputText>
+                    <h:outputText rendered="#{not empty aFile.sendToParameters}">
+                        <tr>
+                            <td>
+                                <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
+                            </td>
+                        </tr>
+                    </h:outputText>
+                    <t:dataList value="#{aFile.sendToParameters}" var="p">
+                        <tr>
+                            <td>
+                                <h:outputLink value="#" onclick="setInputField('#{p.name}', '#{aFile.fullUrl}');">
+                                    <h:outputText>
+                                        Send to #{p.name}
+                                    </h:outputText>
+                                </h:outputLink>
+                            </td>
+                        </tr>
+                    </t:dataList>
+                    <h:outputText rendered="#{not empty aFile.sendToModules}">
+                        <tr>
+                            <td>
+                                <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
+                            </td>
+                        </tr>
+                    </h:outputText>
+                    <t:dataList value="#{aFile.sendToModules}" var="moduleMenuItem">
+                        <tr>
+                            <td>
+                                <h:commandLink value="#{moduleMenuItem.name}" action="#{aFile.sendToTaskInfo}" immediate="true">
+                                    <f:param name="lsid" value="#{moduleMenuItem.lsid}" />
+                                </h:commandLink>
+                            </td>
+                        </tr>
+                    </t:dataList>
+                </tbody>
+            </table>
+        </div>
+    </ui:composition>
 </html>
