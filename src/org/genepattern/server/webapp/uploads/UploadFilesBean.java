@@ -579,6 +579,21 @@ public class UploadFilesBean {
         return ServerConfiguration.instance().getUserUploadDir(Context.getContextForUser(UIBeanHelper.getUserId()));
     }
     
+    public DirectoryInfoWrapper getWrappedUploadDir() {
+        UploadFile uploadDir = new UploadFile();
+        uploadDir.setKind("directory");
+        uploadDir.setName("Uploaded Files");
+        try {
+            uploadDir.setPath(getUserUploadDir().getCanonicalPath());
+        }
+        catch (IOException e) {
+            log.error("Unable to get canonical path for user root upload dir");
+        }
+        DirectoryInfoWrapper toReturn = new DirectoryInfoWrapper(uploadDir);
+        toReturn.setRoot(true);
+        return toReturn;
+    }
+    
     private void initFiles() {
         currentUser = UIBeanHelper.getUserId();
         List<UploadFile> uploadedFiles = new UploadFileDAO().findByUserId(currentUser);
@@ -600,7 +615,7 @@ public class UploadFilesBean {
         if (files == null) {
             initFiles();
         }
-        
+        directories.add(getWrappedUploadDir());
         for (DirectoryInfoWrapper i : directories) {
             if (!i.isInit()) {
                 i.initDirectory();
