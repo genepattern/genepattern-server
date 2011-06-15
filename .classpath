@@ -107,9 +107,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/dm-messages.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/ejb3-persistence.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-jaxrs-1.5.5.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-api-3.2.2.GA.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-impl-3.2.2.GA.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-ui-3.2.2.GA.jar"/>
 	<classpathentry kind="lib" path="test/lib/hamcrest-core-1.1.jar"/>
 	<classpathentry kind="lib" path="test/lib/hamcrest-library-1.1.jar"/>
 	<classpathentry kind="lib" path="test/lib/jmock-2.5.1.jar"/>
@@ -123,5 +120,9 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jackson-xc-1.7.1.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jaxb-api-2.2.2.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/jaxb-impl-2.2.3.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-api-3.3.3.Final.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-impl-3.3.3.Final.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-impl-jsf2-3.3.3.Final.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-ui-3.3.3.Final.jar"/>
 	<classpathentry kind="output" path="website/WEB-INF/classes"/>
 </classpath>
