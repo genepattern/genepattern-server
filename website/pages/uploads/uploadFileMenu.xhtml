@@ -49,7 +49,7 @@ use, misuse, or functionality.
                         </tr>
                         <tr>
                             <td>
-                                <t:inputText id="subdirName" rendered="#{aFile.directory}" />
+                                <t:inputText id="subdirName" rendered="#{aFile.directory}" onfocus="JavaScript:setSubdirFocus()" />
                                 <h:commandLink value="Create" action="#{uploadFilesBean.createSubdirectory}" immediate="true">
                                     <f:param name="parentPath" value="#{aFile.file.path}" />
                                 </h:commandLink>

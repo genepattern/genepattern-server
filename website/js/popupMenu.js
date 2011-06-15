@@ -1,16 +1,26 @@
 
 var pm_currentId;
 var pm_showing = false;
+var pm_subdir_focus = false;
+
+function setSubdirFocus() {
+	pm_subdir_focus = true;
+}
 
 function pm_registerClickHandler() {
     Event.observe(window.document, 'click', pm_clickHandler, false);
 }
 
 function pm_clickHandler() {
+  if (pm_subdir_focus) {
+	  pm_subdir_focus = false;
+	  return;
+  }
   if(!pm_showing) {
     pm_hideMenu(pm_currentId);
   }
   pm_showing = false;
+  pm_subdir_focus = false;
   return true;
 }
 
