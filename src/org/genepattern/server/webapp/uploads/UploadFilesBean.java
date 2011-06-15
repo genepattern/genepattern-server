@@ -27,6 +27,7 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.domain.UploadFile;
 import org.genepattern.server.domain.UploadFileDAO;
 import org.genepattern.server.webapp.FileDownloader;
+import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.server.webapp.jsf.RunTaskBean;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webapp.jsf.UsersAndGroupsBean;
@@ -162,6 +163,10 @@ public class UploadFilesBean {
         
         public String getFormattedModified() {
             return formatter.format(file.getLastModified());
+        }
+        
+        public String getFormattedLength() {
+            return JobHelper.getFormattedSize(file.getFileLength());
         }
         
         public boolean isRoot() {
