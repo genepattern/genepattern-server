@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -185,9 +184,8 @@ public class UploadFilesBean {
             return file.getName();
         }
         
-        // Returns relative URL
+        // Returns full URL
         public String getUrl() {
-            //return file.getLink();
             return getFullUrl();
         }
         
@@ -203,6 +201,16 @@ public class UploadFilesBean {
             String encodedPath = UIBeanHelper.encodeFilePath(file.getPath());
             String server = UIBeanHelper.getServer();
             String url = server + "/data/" + encodedPath;
+            return url;
+        }
+        
+        private String initUrl2() {
+            String server = UIBeanHelper.getServer();
+            String link = file.getLink();
+            String url = server + link;
+            
+            //String encodedPath = UIBeanHelper.encodeFilePath(file.getPath());
+            //String url = server + "/data/" + encodedPath;
             return url;
         }
 
@@ -381,6 +389,19 @@ public class UploadFilesBean {
         
         /**
          * In response to selecting the 'Delete' link from the popup menu for the file.
+         * Make sure to update the model (aka list of files).
+         */
+        public String deleteFileAction() {
+            boolean deleted = deleteFile();
+            if (deleted) {
+                UploadFilesBean.this.files = null;
+                return "success";
+            }
+            return "error";
+        }
+
+        /**
+         * Helper method, which actually deletes the file.
          */
         public boolean deleteFile() {
             boolean deleted = DataManager.deleteFile(file);
@@ -615,7 +636,6 @@ public class UploadFilesBean {
             else {
                 directories.add(new DirectoryInfoWrapper(file));
             }
-            
         }
         initModuleMenuItems();
     }

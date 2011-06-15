@@ -16,7 +16,10 @@
       xmlns:h="http://java.sun.com/jsf/html" 
       xmlns:f="http://java.sun.com/jsf/core" 
       xmlns:t="http://myfaces.apache.org/tomahawk" 
-      xmlns:c="http://java.sun.com/jstl/core">
+      xmlns:c="http://java.sun.com/jstl/core"
+      xmlns:a4j="http://richfaces.org/a4j"
+      xmlns:rich="http://richfaces.org/rich"
+      >
 
     <table width="100%" class="barhead-other">
       <tr>
@@ -25,45 +28,42 @@
       </tr>
     </table>
 
-<h:form>
-    <table border="0" cellpadding="0" cellspacing="0" >
+    <h:form id="form_id_00">
+    <table>
       <thead>
-      <tr class="tableheader-row2">
-        <td align="left">length</td>
-        <td align="left">lastModified</td>
-        <td align="left">name</td>
-        <td>actions</td>
-        <td align="left">kind</td>
-        <td align="left">path</td>
-      </tr>
+        <tr class="tableheader-row2">
+          <td align="left">Length</td>
+          <td align="left">Last Modified</td>
+          <td align="left">Name</td>
+          <td align="left">Kind</td>
+          <td align="left">Path</td>
+        </tr>
       </thead>
-    <t:dataList var="file" value="#{uploadFilesBean.files}">
-      <tr class="admin-row">
-        <td><h:outputText value="#{file.file.fileLength}" converter="fl" /></td>
-        <td><h:outputText value="#{file.file.lastModified}" converter="gp" /></td>
-        <td><h:outputLink value="#{file.url}">#{file.file.name}</h:outputLink></td>
-        <td>[<h:commandLink value="Download" action="#{file.downloadFile}" />]
-            [<h:commandLink value="Delete" action="#{file.deleteFile}">
-               <f:param name="filePath" value="#{file.file.path}" />
-             </h:commandLink>]
-        </td>
-        <td>#{file.file.kind}</td>
-        <td>#{file.file.path}</td>
-      </tr>
-      <t:dataList var="sendToTaskInfo" value="#{file.sendToModules}">
-      <tr>
-        <td></td>
-        <td>Send to <h:commandLink value="#{sendToTaskInfo.name}" action="#{file.sendToTaskInfo}" immediate="true">
-          <f:param name="lsid" value="#{sendToTaskInfo.lsid}" />
-        </h:commandLink>
-        <br />
-        Send to <h:outputLink value="#{sendToTaskInfo.sendToLink}">#{sendToTaskInfo.name}</h:outputLink>
-        </td>
-        <td colspan="3"></td>
-      </tr>
-      </t:dataList>
-    </t:dataList>
+    
+      <c:forEach var="file" items="#{uploadFilesBean.files}" varStatus="pStatus">
+
+        <tr class="admin-row">
+          <td nowrap="nowrap"><h:outputText value="#{file.file.fileLength}" converter="fl" /></td>
+          <td nowrap="nowrap"><h:outputText value="#{file.file.lastModified}" converter="gp" /></td>
+          <td nowrap="nowrap">
+          
+          <!--  popup menu for each file -->
+          <rich:contextMenu event="onclick" attachTo="pic_#{pStatus.index}" id="fm_#{pStatus.index}" submitMode="none">
+            <rich:menuItem submitMode="none"><h:commandLink value="Download" action="#{file.downloadFile}" /></rich:menuItem>
+            <rich:menuItem submitMode="none"><h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file from the upload directory?');" action="#{file.deleteFileAction}" >
+              <f:param name="filePath" value="#{file.file.path}" />
+            </h:commandLink></rich:menuItem>
+            <c:forEach var="sendTo" items="#{file.sendToModules}">
+              <rich:menuItem submitMode="none" onclick="document.location.href='#{sendTo.sendToLink}'">Send to <h:outputLink value="#{sendTo.sendToLink}">#{sendTo.name}</h:outputLink></rich:menuItem>
+            </c:forEach>
+          </rich:contextMenu>
+
+          <h:outputLink value="#{file.url}">#{file.file.name}</h:outputLink><h:graphicImage value="/images/smallOptions.gif" id="pic_#{pStatus.index}" /></td>
+          <td>#{file.file.kind}</td>
+          <td>#{file.file.path}</td>
+        </tr>
+      </c:forEach>
     </table>
-</h:form>
+    </h:form>
     
 </html>
