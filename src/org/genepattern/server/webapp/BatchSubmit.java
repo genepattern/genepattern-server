@@ -57,10 +57,8 @@ public class BatchSubmit {
 	// Todo in the future: Allow groups of matched files,
 	// Create resolution screen for mismatches
 	// Submit a job for each file.
-	public BatchSubmit(HttpServletRequest request) throws IOException,
-			FileUploadException {
-		userName = (String) request.getSession().getAttribute(
-				GPConstants.USERID);
+	public BatchSubmit(HttpServletRequest request) throws IOException, FileUploadException {
+		userName = (String) request.getSession().getAttribute(GPConstants.USERID);
 		readFormValuesAndLoadAttachedFiles(request);
 	}
 
@@ -77,8 +75,7 @@ public class BatchSubmit {
 			// Try the task name instead
 			taskLsid = formValues.get("taskName");
 		}
-		taskLsid = (taskLsid) != null ? URLDecoder.decode(taskLsid, "UTF-8")
-				: null;
+		taskLsid = (taskLsid) != null ? URLDecoder.decode(taskLsid, "UTF-8") : null;
 
 		// And get all the parameters that need to be filled in for this task
 		ParameterInfo parameterInfoArray[] = null;
@@ -102,9 +99,8 @@ public class BatchSubmit {
 			} else {
 				// Perhaps, this form value has been submitted as a url
 				value = formValues.get(pinfo.getName() + "_url");
-				if (value != null  && value.length() > 0) {
-					pinfo.getAttributes().put(ParameterInfo.MODE,
-							ParameterInfo.URL_INPUT_MODE);
+				if (value != null && value.length() > 0) {
+					pinfo.getAttributes().put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
 					pinfo.getAttributes().remove(ParameterInfo.TYPE);
 					pinfo.setValue(value);
 				}
@@ -114,11 +110,7 @@ public class BatchSubmit {
 			if ((value == null) || (value.trim().length() == 0)) {
 				// Is it going to be filled in by our multi file submit process
 				if (multiFileValues.get(pinfo.getName()) == null) {
-					boolean isOptional = ((String) pinfo
-							.getAttributes()
-							.get(
-									GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]))
-							.length() > 0;
+					boolean isOptional = ((String) pinfo.getAttributes().get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET])).length() > 0;
 					if (!isOptional) {
 						missingParameters.add(pinfo);
 					}
@@ -142,57 +134,48 @@ public class BatchSubmit {
 		// Now, submit the job if there's no multi-file field
 		// Or, submit multiple jobs for each filename in the multi-file field
 		if (multiFileValues.size() == 0) {
-            JobInfo job = submitJob(taskInfo.getID(), parameterInfoArray);       
+			JobInfo job = submitJob(taskInfo.getID(), parameterInfoArray);
 			id = job.getJobNumber();
 		} else {
 			BatchJob batchJob = new BatchJob(userName);
 
-			int numFiles = multiFileValues.values().iterator().next()
-					.getNumFiles();
+			int numFiles = multiFileValues.values().iterator().next().getNumFiles();
 			for (int i = 0; i < numFiles; i++) {
 				for (String parameter : multiFileValues.keySet()) {
-					String parameterValue = multiFileValues.get(parameter)
-							.getFilenames().get(i).fullPath();
-					assignParameter(parameter, parameterValue,
-							parameterInfoArray);
+					String parameterValue = multiFileValues.get(parameter).getFilenames().get(i).fullPath();
+					assignParameter(parameter, parameterValue, parameterInfoArray);
 				}
 				// The task runner can move files to the output directory.
 				// So if we're using a single file input for multiple jobs,
 				// we have to make copies of the file.
 				for (int p = 0; p < parameterInfoArray.length; p++) {
 					ParameterInfo pi = parameterInfoArray[p];
-    				if (pi.getValue() != null  && pi.getValue().trim().length() != 0){
-    					// Make sure it's not a parameter we just set
-    					if (!multiFileValues.containsKey(pi.getName())) {
-    						String type = (String) pi.getAttributes().get(
-    								ParameterInfo.TYPE);
-    						if (type != null
-    								&& type.compareTo(ParameterInfo.FILE_TYPE) == 0) {
-    							String mode = (String) pi.getAttributes().get(
-    									ParameterInfo.MODE);
-    							if (mode != null
-    									&& mode.compareTo(ParameterInfo.INPUT_MODE) == 0) {
-    								File source = new File(pi.getValue());
-    								if (!source.isDirectory()){
-    									// It's an input file. Make a copy.								.
-    									Filename filename = new Filename(pi.getValue());								
-    	
-    									File tempDir = File.createTempFile(userName
-    											+ "_run", null);
-    									tempDir.delete();
-    									tempDir.mkdir();
-    									File file = new File(tempDir, filename
-    											.filenameWithExtension());
-    									GenePatternAnalysisTask.copyFile(source, file);
-    									pi.setValue(file.getCanonicalPath());
-    								}
-    							}
-    						}
-    					}
-    				}
+					if (pi.getValue() != null && pi.getValue().trim().length() != 0) {
+						// Make sure it's not a parameter we just set
+						if (!multiFileValues.containsKey(pi.getName())) {
+							String type = (String) pi.getAttributes().get(ParameterInfo.TYPE);
+							if (type != null && type.compareTo(ParameterInfo.FILE_TYPE) == 0) {
+								String mode = (String) pi.getAttributes().get(ParameterInfo.MODE);
+								if (mode != null && mode.compareTo(ParameterInfo.INPUT_MODE) == 0) {
+									File source = new File(pi.getValue());
+									if (!source.isDirectory()) {
+										// It's an input file. Make a copy. .
+										Filename filename = new Filename(pi.getValue());
+
+										File tempDir = File.createTempFile(userName + "_run", null);
+										tempDir.delete();
+										tempDir.mkdir();
+										File file = new File(tempDir, filename.filenameWithExtension());
+										GenePatternAnalysisTask.copyFile(source, file);
+										pi.setValue(file.getCanonicalPath());
+									}
+								}
+							}
+						}
+					}
 				}
-                JobInfo job = submitJob(taskInfo.getID(), parameterInfoArray);                   
-				batchJob.getBatchJobs().add(new AnalysisJobDAO().findById(job.getJobNumber()));	
+				JobInfo job = submitJob(taskInfo.getID(), parameterInfoArray);
+				batchJob.getBatchJobs().add(new AnalysisJobDAO().findById(job.getJobNumber()));
 			}
 			new BatchJobDAO().save(batchJob);
 
@@ -200,18 +183,17 @@ public class BatchSubmit {
 			id = batchJob.getJobNo();
 		}
 	}
-	
-    private JobInfo submitJob(int taskID, ParameterInfo[] parameters) throws WebServiceException {
-        AddNewJobHandler req = new AddNewJobHandler(taskID, userName, parameters);
-        try {
-            JobInfo jobInfo = req.executeRequest();
-            return jobInfo;
-        }
-        catch (JobSubmissionException e) {
-            throw new WebServiceException(e);
-        }
-    }
-	
+
+	private JobInfo submitJob(int taskID, ParameterInfo[] parameters) throws WebServiceException {
+		AddNewJobHandler req = new AddNewJobHandler(taskID, userName, parameters);
+		try {
+			JobInfo jobInfo = req.executeRequest();
+			return jobInfo;
+		} catch (JobSubmissionException e) {
+			throw new WebServiceException(e);
+		}
+	}
+
 	// If the user uploaded multiple files for multiple parameters,
 	// make sure we can match sets of files for submission to the batch process
 	private boolean multiFileListsAreSameSize() {
@@ -234,15 +216,12 @@ public class BatchSubmit {
 	private boolean checkForMatchedParameters() {
 		// Make sure the filenames only differ by extension
 		if (multiFileValues.size() > 1) {
-			MultiFileParameter firstParameter = multiFileValues.values()
-					.iterator().next();
+			MultiFileParameter firstParameter = multiFileValues.values().iterator().next();
 			int numFiles = firstParameter.getNumFiles();
 			for (int i = 0; i < numFiles; i++) {
-				String rootFileName = firstParameter.getFilenames().get(i)
-						.filename();
+				String rootFileName = firstParameter.getFilenames().get(i).filename();
 				for (String parameter : multiFileValues.keySet()) {
-					String filename = multiFileValues.get(parameter)
-							.getFilenames().get(i).filename();
+					String filename = multiFileValues.get(parameter).getFilenames().get(i).filename();
 					if (rootFileName.compareTo(filename) != 0) {
 						return false;
 					}
@@ -252,14 +231,14 @@ public class BatchSubmit {
 		return true;
 	}
 
-	//Submitted multifile fields for param XX arrive in the field XX_multiSuffix
-	//Get the root value here
-	private String undecorate(String key) {		
+	// Submitted multifile fields for param XX arrive in the field
+	// XX_multiSuffix
+	// Get the root value here
+	private String undecorate(String key) {
 		return key.substring(0, key.length() - multiSuffix.length());
 	}
 
-	private void assignParameter(String key, String val,
-			ParameterInfo[] parameterInfoArray) {
+	private void assignParameter(String key, String val, ParameterInfo[] parameterInfoArray) {
 		for (int i = 0; i < parameterInfoArray.length; i++) {
 			ParameterInfo pinfo = parameterInfoArray[i];
 			if (pinfo.getName().compareTo(key) == 0) {
@@ -270,8 +249,7 @@ public class BatchSubmit {
 		log.error("Key value " + key + " was not found in parameter info");
 	}
 
-	private void readFormValuesAndLoadAttachedFiles(HttpServletRequest request)
-			throws IOException, FileUploadException {
+	private void readFormValuesAndLoadAttachedFiles(HttpServletRequest request) throws IOException, FileUploadException {
 		// Though the batch files will have been uploaded already through our
 		// upload applet and MultiFileUploadReceiver,
 		// the form may still contain single attached files. Save them now.
@@ -292,35 +270,35 @@ public class BatchSubmit {
 				}
 			}
 		} else {
-			throw new FileUploadException(
-					"Expecting form with encoding multipart/form-data");
+			throw new FileUploadException("Expecting form with encoding multipart/form-data");
 		}
 	}
 
 	private void readFormParameter(FileItem submission) {
 		String formName = submission.getFieldName();
 		String formValue = submission.getString();
-		
-		if (! formName.endsWith(multiSuffix)){
-			formValues.put(formName, formValue);					
+
+		if (!formName.endsWith(multiSuffix)) {
+			formValues.put(formName, formValue);
 		} else {
-			MultiFileParameter multiFile = new MultiFileParameter(formValue);	
+			MultiFileParameter multiFile = new MultiFileParameter(formValue);
 			if (multiFile.getNumFiles() > 1) {
 				multiFileValues.put(undecorate(formName), multiFile);
-			} else if (formValue.endsWith(";")) {				
-			//Handle the special case where the user used the MultiFile uploader to upload a single file.
-			//If the formName is in the style XX_multifile, and the value ends with ;, then it's 
-			// a single value for parameter XX, so put it in formValues, not multiFileValues
-				formValues.put(undecorate(formName),
-						formValue.substring(0, formValue.length() - 1));
+			} else if (formValue.endsWith(";")) {
+				// Handle the special case where the user used the MultiFile
+				// uploader to upload a single file.
+				// If the formName is in the style XX_multifile, and the value
+				// ends with ;, then it's
+				// a single value for parameter XX, so put it in formValues, not
+				// multiFileValues
+				formValues.put(undecorate(formName), formValue.substring(0, formValue.length() - 1));
 			} else {
-				log.error ("Unexpected submission form parameter " + formName + ":" + formValue);
+				log.error("Unexpected submission form parameter " + formName + ":" + formValue);
 			}
 		}
 	}
 
-	private void loadAttachedFile(String prefix, FileItem submission)
-			throws IOException {
+	private void loadAttachedFile(String prefix, FileItem submission) throws IOException {
 		// We expect to find an attached file. But perhaps, this field was never
 		// filled in
 		// if the user specified a URL instead.
@@ -338,8 +316,7 @@ public class BatchSubmit {
 				throw new IOException("Could not write file");
 			}
 			formValues.put(submission.getFieldName(), file.getCanonicalPath());
-			log.debug("Storing " + submission.getFieldName() + " : "
-					+ file.getCanonicalPath());
+			log.debug("Storing " + submission.getFieldName() + " : " + file.getCanonicalPath());
 		}
 	}
 
