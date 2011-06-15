@@ -2,6 +2,7 @@ package org.genepattern.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -21,6 +22,10 @@ import org.genepattern.server.webapp.jsf.UIBeanHelper;
  */
 public class DataManager {
     private static Logger log = Logger.getLogger(DataManager.class);
+    public final static List<String> FILE_EXCLUDES = new ArrayList<String>();
+    static {
+        FILE_EXCLUDES.add(".DS_Store");
+    }
     
     public static boolean createSubdirectory(File parent, String name, String userId) {
         File subdir = new File(parent.getAbsolutePath() + "/" + name);
@@ -127,7 +132,21 @@ public class DataManager {
         return userid.equals(uf.getUserId());
     }
     
+    private static boolean isExcludedFile(File file) {
+        for (String i : FILE_EXCLUDES) {
+            if (file.getName().equalsIgnoreCase(i)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private static void handleFileSync(UploadFileDAO dao, File file, String user) throws IOException {
+        // Exclude file on exclude list (ex: .DS_Store)
+        if (isExcludedFile(file)) {
+            return;
+        }
+        
         UploadFile uploadFile = new UploadFile();
         uploadFile.initFromFile(file, UploadFile.COMPLETE);
         uploadFile.setUserId(user);
