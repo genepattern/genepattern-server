@@ -75,7 +75,7 @@ function toggleJobVisibility(jobNo) {
   	  <tr>
   	  	  <td>
   	  	  	  <rich:tree value="#{uploadFilesBean.fileTree}" var="aFile" switchType="client" adviseNodeOpened="#{uploadFilesBean.openTreeNode}" nodeFace="#{aFile.type}">
-			  	  <rich:treeNode type="file" icon="/a4j/a4j/g/3_2_2.GAimages/iconLeaf.gif" iconLeaf="/a4j/a4j/g/3_2_2.GAimages/iconLeaf.gif">
+			  	  <rich:treeNode type="file" icon="/images/iconLeaf.gif" iconLeaf="/images/iconLeaf.gif">
 				  	  <h:outputText rendered="#{aFile.partial}">(Uploading) </h:outputText>
 	      		  	  <h:outputLink rendered="#{not aFile.partial}" value="#{aFile.url}">#{aFile.filename}</h:outputLink>
     	  		  	  <h:outputText rendered="#{aFile.partial}">#{aFile.filename}</h:outputText>
@@ -91,7 +91,7 @@ function toggleJobVisibility(jobNo) {
       			  	  
 	  			  	  <br />
 			  	  </rich:treeNode>
-			  	  <rich:treeNode type="directory" icon="/a4j/a4j/g/3_2_2.GAimages/iconFolder.gif" iconLeaf="/a4j/a4j/g/3_2_2.GAimages/iconFolder.gif">
+			  	  <rich:treeNode type="directory" icon="/images/iconFolder.gif" iconLeaf="/images/iconFolder.gif">
     	  		  	  <h:outputText>#{aFile.filename}</h:outputText>
 		
 				  	  <!-- Image for popup menu -->
