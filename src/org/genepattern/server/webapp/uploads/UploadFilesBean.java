@@ -542,19 +542,9 @@ public class UploadFilesBean {
      * @throws IOException 
      */
     public TreeNode<FileInfoWrapper> getUploadFilesTree() throws IOException {
-        // Set up the fake UploadFile for the wrapper
-        UploadFile rootFileFacade = new UploadFile();
-        rootFileFacade.setName("Uploaded Files");
-        rootFileFacade.setPath(getUserUploadDir().getCanonicalPath());
-
-        // Create the dir wrapper for the user upload dir
-        DirectoryInfoWrapper rootWrapper = new DirectoryInfoWrapper(rootFileFacade);
-        rootWrapper.initDirectory();
-        rootWrapper.setRoot(true);
-        
         // Set up the tree's directory structure
         initDirectories();
-        return getDirectoryNode(rootWrapper);
+        return getDirectoryNode(getWrappedUploadDir());
     }
     
     public TreeNode<FileInfoWrapper> getDirectoryNode(DirectoryInfoWrapper dir) {
@@ -589,18 +579,22 @@ public class UploadFilesBean {
     }
     
     public DirectoryInfoWrapper getWrappedUploadDir() {
-        UploadFile uploadDir = new UploadFile();
-        uploadDir.setKind("directory");
-        uploadDir.setName("Uploaded Files");
+     // Set up the fake UploadFile for the wrapper
+        UploadFile rootFileFacade = new UploadFile();
         try {
-            uploadDir.setPath(getUserUploadDir().getCanonicalPath());
+            rootFileFacade.initFromFile(getUserUploadDir(), UploadFile.COMPLETE);
         }
         catch (IOException e) {
             log.error("Unable to get canonical path for user root upload dir");
         }
-        DirectoryInfoWrapper toReturn = new DirectoryInfoWrapper(uploadDir);
-        toReturn.setRoot(true);
-        return toReturn;
+        rootFileFacade.setUserId(UIBeanHelper.getUserId());
+        rootFileFacade.setName("Uploaded Files");
+
+        // Create the dir wrapper for the user upload dir
+        DirectoryInfoWrapper rootWrapper = new DirectoryInfoWrapper(rootFileFacade);
+        rootWrapper.initDirectory();
+        rootWrapper.setRoot(true);
+        return rootWrapper;
     }
     
     private void initFiles() {
@@ -608,6 +602,7 @@ public class UploadFilesBean {
         List<UploadFile> uploadedFiles = new UploadFileDAO().findByUserId(currentUser);
         files = new ArrayList<FileInfoWrapper>();
         directories = new ArrayList<DirectoryInfoWrapper>();
+        directories.add(getWrappedUploadDir());
         for(UploadFile file : uploadedFiles) {
             if (file.getKind() == null || !file.getKind().equalsIgnoreCase("directory")) {
                 files.add(new FileInfoWrapper(file));
@@ -624,7 +619,7 @@ public class UploadFilesBean {
         if (files == null) {
             initFiles();
         }
-        directories.add(getWrappedUploadDir());
+        
         for (DirectoryInfoWrapper i : directories) {
             if (!i.isInit()) {
                 i.initDirectory();
@@ -678,7 +673,6 @@ public class UploadFilesBean {
     
     public void createSubdirectory() {
         String name = null;
-        java.util.Map keys = UIBeanHelper.getRequest().getParameterMap();
         for (Object i : UIBeanHelper.getRequest().getParameterMap().keySet()) {
             if (((String) i).contains("subdirName")) {
                 String potentialName = UIBeanHelper.getRequest().getParameter((String) i);
