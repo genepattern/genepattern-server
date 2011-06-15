@@ -1,4 +1,4 @@
--- record of user upload files
+-- for GenomeSpace integration, link GP user account to GS user account
 create table GS_ACCOUNT (
     GP_USERID varchar2(255),
     TOKEN varchar2 (255),
