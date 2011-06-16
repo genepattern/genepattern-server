@@ -150,15 +150,10 @@ public class DataServlet extends HttpServlet implements Servlet {
      * @return a File, or null if the path is not specified in the request.
      */
     private File getRequestedFile(HttpServletRequest request) {
-        return getRequestedFile(request.getRequestURI());
-    }
-    
-    public static File getRequestedFile(String url) {
-        String[] parts = url.split("/data/", 2);
-        if (parts.length > 2) {
+        String path = request.getPathInfo();
+        if (path == null) {
             return null;
         }
-        String path = parts[1];
         
         //the server file path is taken directly from request#pathInfo
         File fileObj = new File(path);
