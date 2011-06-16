@@ -133,15 +133,15 @@ public class JobMenuBean {
             return;
         }
 
-        //TODO: Hack, based on comments in http://seamframework.org/Community/LargeFileDownload
-        ServletContext servletContext = UIBeanHelper.getServletContext();
-        HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();        
-        if (response instanceof HttpServletResponseWrapper) {
-            response = (HttpServletResponse) ((HttpServletResponseWrapper) response).getResponse();
-        }
 
         boolean serveContent = true;
         try {
+            //TODO: Hack, based on comments in http://seamframework.org/Community/LargeFileDownload
+            ServletContext servletContext = UIBeanHelper.getServletContext();
+            HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();        
+            if (response instanceof HttpServletResponseWrapper) {
+                response = (HttpServletResponse) ((HttpServletResponseWrapper) response).getResponse();
+            }
             FileDownloader.serveFile(servletContext, request, response, serveContent, FileDownloader.ContentDisposition.ATTACHMENT, fileObj);
         }
         catch (Throwable t) {

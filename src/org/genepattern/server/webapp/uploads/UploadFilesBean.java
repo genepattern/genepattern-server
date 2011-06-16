@@ -19,6 +19,7 @@ import javax.faces.event.ActionEvent;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
@@ -396,13 +397,16 @@ public class UploadFilesBean {
          */
         public void downloadFile() { 
             try { 
-                ServletContext servletContext = UIBeanHelper.getServletContext();
-                HttpServletResponse response = UIBeanHelper.getResponse();
-                HttpServletRequest request = UIBeanHelper.getRequest();
-
                 boolean serveContent = true;
                 File fileObj = new File(file.getPath());
 
+                //TODO: Hack, based on comments in http://seamframework.org/Community/LargeFileDownload
+                ServletContext servletContext = UIBeanHelper.getServletContext();
+                HttpServletRequest request = UIBeanHelper.getRequest();
+                HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();        
+                if (response instanceof HttpServletResponseWrapper) {
+                    response = (HttpServletResponse) ((HttpServletResponseWrapper) response).getResponse();
+                }
                 FileDownloader.serveFile(servletContext, request, response, serveContent, FileDownloader.ContentDisposition.ATTACHMENT, fileObj);
             }
             catch (Throwable t) {
