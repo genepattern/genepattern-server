@@ -18,9 +18,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.JobInfoManager;
@@ -213,8 +215,12 @@ public class JobStatusBean {
             UIBeanHelper.setErrorMessage("Invalid job, can't download zip files.");
             return;
         }
-
-        HttpServletResponse response = UIBeanHelper.getResponse();
+        
+        //TODO: Hack, based on comments in http://seamframework.org/Community/LargeFileDownload
+        HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();        
+        if (response instanceof HttpServletResponseWrapper) {
+            response = (HttpServletResponse) ((HttpServletResponseWrapper) response).getResponse();
+        } 
         response.setHeader("Content-Disposition", "attachment; filename=" + jobInfoWrapper.getJobNumber() + ".zip" + ";");
         response.setHeader("Content-Type", "application/octet-stream");
         response.setHeader("Cache-Control", "no-store");
