@@ -92,7 +92,7 @@ use, misuse, or functionality.
 					<t:dataList value="#{aFile.sendToBatch}" var="p" rendered="#{aFile.directory}">
                         <tr>
                             <td>
-                                <h:outputLink value="#" onclick="setInputField('#{p.name}', '#{aFile.fullUrl}');">
+                                <h:outputLink value="#" onclick="setInputField('#{p.name}', '#{aFile.fullUrl}');checkBatch('#{p.name}');">
                                     <h:outputText>
                                         Send Batch to #{p.name}
                                     </h:outputText>
