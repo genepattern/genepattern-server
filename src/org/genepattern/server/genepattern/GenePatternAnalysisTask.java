@@ -1680,10 +1680,6 @@ public class GenePatternAnalysisTask {
             }
             addFileToOutputParameters(jobInfo, fPath, fPath, null);
         }
-
-        if (taskLog != null) {
-            addFileToOutputParameters(jobInfo, taskLog.getName(), taskLog.getName(), null);
-        }
         
         int jobStatus = JobStatus.JOB_FINISHED;
         if (checkExitValue) {
@@ -1702,6 +1698,11 @@ public class GenePatternAnalysisTask {
         if (stdoutFile != null && stdoutFile.exists() && stdoutFile.length() > 0L) {
             addFileToOutputParameters(jobInfo, stdoutFile.getName(), stdoutFile.getName(), null);
         }
+        
+        if (taskLog != null) {
+            addFileToOutputParameters(jobInfo, taskLog.getName(), taskLog.getName(), null);
+        }
+
         try {
             HibernateUtil.beginTransaction();
             recordJobCompletion(jobInfo, parentJobInfo, jobStatus);
