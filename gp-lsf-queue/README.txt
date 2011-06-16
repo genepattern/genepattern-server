@@ -1,6 +1,11 @@
+In GP 3.3.3 and later, LSF libraries are included in the core GenePattern library. In order to use LSF you must do the following:
+1) Make sure to create the necessary DB tables. See 'lsf_schema_*.sql' file in the resources directory.
+2) Edit your configuration file. See the config_example.yaml file in the resources directory.
+
+For GP 3.3.2 and earlier, in order to use the LSF library you need to do the following:
+
 Note: BroadCore requires Java 6
 
-To integrate this library into your GenePattern Server you need to:
 1. Configure your GP server
 2. Install the BroadCore library into your web app.
 3. Install the GP LSF library into your web app. 
