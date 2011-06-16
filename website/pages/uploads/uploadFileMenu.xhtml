@@ -71,7 +71,7 @@ use, misuse, or functionality.
                             </td>
                         </tr>
                     </h:outputText>
-                    <h:outputText rendered="#{not empty aFile.sendToParameters}">
+                    <h:outputText rendered="#{not empty aFile.sendToParameters or (aFile.directory and not empty aFile.sendToBatch)}">
                         <tr>
                             <td>
                                 <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
@@ -84,6 +84,17 @@ use, misuse, or functionality.
                                 <h:outputLink value="#" onclick="setInputField('#{p.name}', '#{aFile.fullUrl}');">
                                     <h:outputText>
                                         Send to #{p.name}
+                                    </h:outputText>
+                                </h:outputLink>
+                            </td>
+                        </tr>
+                    </t:dataList>
+					<t:dataList value="#{aFile.sendToBatch}" var="p" rendered="#{aFile.directory}">
+                        <tr>
+                            <td>
+                                <h:outputLink value="#" onclick="setInputField('#{p.name}', '#{aFile.fullUrl}');">
+                                    <h:outputText>
+                                        Send Batch to #{p.name}
                                     </h:outputText>
                                 </h:outputLink>
                             </td>

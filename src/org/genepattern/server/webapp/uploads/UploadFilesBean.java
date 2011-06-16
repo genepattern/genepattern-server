@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -128,6 +129,7 @@ public class UploadFilesBean {
         private UploadFile file = null;
         private String url = null;
         private List<SendToModule> sendToModules = null;
+        private List<ParameterInfo> batchParams = null;
         private boolean directory = false;
         private boolean root = false;
 
@@ -225,6 +227,29 @@ public class UploadFilesBean {
         
         public boolean getPartial() {
             return file.isPartial();
+        }
+        
+        public List<ParameterInfo> getSendToBatch() {
+            if (currentTaskInfo == null && currentTaskLsid != null) {
+                initCurrentLsid(new AdminDAO());
+            }
+            if (currentTaskInfo == null) {
+                return Collections.emptyList();
+            }
+            if (batchParams == null) {
+                initBatchList();
+            }
+            
+            return batchParams;
+        }
+        
+        private void initBatchList() {
+            batchParams = new ArrayList<ParameterInfo>();
+            for (ParameterInfo i : currentTaskInfo.getParameterInfoArray()) {
+                if (i.isInputFile()) {
+                    batchParams.add(i);
+                }
+            }
         }
         
         public boolean isParent(DirectoryInfoWrapper dir) {
