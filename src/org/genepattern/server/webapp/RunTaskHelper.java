@@ -36,6 +36,7 @@ import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
+import org.jfree.util.Log;
 
 /**
  * Class for parsing request parameters for running tasks
@@ -73,6 +74,9 @@ public class RunTaskHelper {
 
         if (ServletFileUpload.isMultipartContent(request)) {
             List params = fub.parseRequest(request);
+            if (isBatchJob(params)) {
+                handleBatch(request, params);
+            }
 
             for (Iterator iter = params.iterator(); iter.hasNext();) {
                 FileItem fi = (FileItem) iter.next();
@@ -132,10 +136,13 @@ public class RunTaskHelper {
                 else {
                     String parameterName = fieldName;
                     if (fieldName.endsWith("_url")) {
-                        parameterName = fieldName.substring(0, "_url".length());
+                        parameterName = fieldName.substring(0, "_url".length() + 1);
                     }
                     FileItem cbItem = (FileItem) nameToFileItemMap.get(parameterName + "_cb");
                     boolean urlChecked = cbItem != null ? "url".equals(cbItem.getString()) : false;
+                    if (cbItem == null && fieldName.endsWith("_url")) {
+                        urlChecked = true;
+                    }
                     if (urlChecked) {
                         urlParameters.add(parameterName);
                         inputFileParameters.put(parameterName, fi.getString());
@@ -181,6 +188,34 @@ public class RunTaskHelper {
             parameterInfoArray = new ParameterInfo[0];
         }
         setParameterValues(request);
+    }
+    
+    public boolean isBatchJob(List<FileItem> params) {
+        boolean foundBatchParam = false;
+        for (FileItem i : params) {
+            if (i.getFieldName().endsWith("_batch")) {
+                foundBatchParam = true;
+                break;
+            }
+        }
+        return foundBatchParam;
+    }
+    
+    private void handleBatch(HttpServletRequest request, List<FileItem> params) {
+        BatchSubmit batchSubmit;
+        try {
+            batchSubmit = new BatchSubmit(request);
+            batchSubmit.submitJobs();
+        }
+        catch (FileUploadException e) {
+            Log.error("Problem handling batch submission: " + e.getMessage());
+        }
+        catch (WebServiceException e) {
+            Log.error("Problem handling batch submission: " + e.getMessage());
+        }
+        catch (IOException e) {
+            Log.error("Problem handling batch submission: " + e.getMessage());
+        }
     }
 
     public ParameterInfo[] getParameterInfoArray() {
