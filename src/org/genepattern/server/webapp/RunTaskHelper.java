@@ -136,7 +136,9 @@ public class RunTaskHelper {
                 else {
                     String parameterName = fieldName;
                     if (fieldName.endsWith("_url")) {
-                        parameterName = fieldName.substring(0, "_url".length() + 1);
+                        //strip the trailing '_url' from the fieldName
+                        final int K = fieldName.length() - "_url".length();
+                        parameterName = fieldName.substring(0, K);
                     }
                     FileItem cbItem = (FileItem) nameToFileItemMap.get(parameterName + "_cb");
                     boolean urlChecked = cbItem != null ? "url".equals(cbItem.getString()) : false;
