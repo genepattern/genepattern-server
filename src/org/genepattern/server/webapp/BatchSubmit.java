@@ -22,6 +22,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.log4j.Logger;
+import org.genepattern.server.DataManager;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
@@ -49,7 +50,7 @@ public class BatchSubmit {
     private boolean matchedFiles = true;
     private Integer id;
     List<ParameterInfo> missingParameters = new ArrayList<ParameterInfo>();
-    private final String multiSuffix = "_multifile";
+    private final String multiSuffix = "_batch";
 
     // Collect input parameters.
     // Find multi-file input file parameters
@@ -57,9 +58,9 @@ public class BatchSubmit {
     // Todo in the future: Allow groups of matched files,
     // Create resolution screen for mismatches
     // Submit a job for each file.
-    public BatchSubmit(HttpServletRequest request) throws IOException, FileUploadException {
+    public BatchSubmit(HttpServletRequest request, List<FileItem> params) throws IOException, FileUploadException {
         userName = (String) request.getSession().getAttribute(GPConstants.USERID);
-        readFormValuesAndLoadAttachedFiles(request);
+        readFormValuesAndLoadAttachedFiles(request, params);
     }
 
     public List<ParameterInfo> getMissingParameters() {
@@ -145,7 +146,7 @@ public class BatchSubmit {
             int numFiles = multiFileValues.values().iterator().next().getNumFiles();
             for (int i = 0; i < numFiles; i++) {
                 for (String parameter : multiFileValues.keySet()) {
-                    String parameterValue = multiFileValues.get(parameter).getFilenames().get(i).fullPath();
+                    String parameterValue = multiFileValues.get(parameter).getFiles().get(i).getCanonicalPath();
                     assignParameter(parameter, parameterValue, parameterInfoArray);
                 }
                 // The task runner can move files to the output directory.
@@ -163,12 +164,12 @@ public class BatchSubmit {
                                     File source = new File(pi.getValue());
                                     if (!source.isDirectory()) {
                                         // It's an input file. Make a copy. .
-                                        Filename filename = new Filename(pi.getValue());
+                                        File fileTemp = new File(pi.getValue());
 
                                         File tempDir = File.createTempFile(userName + "_run", null);
                                         tempDir.delete();
                                         tempDir.mkdir();
-                                        File file = new File(tempDir, filename.filenameWithExtension());
+                                        File file = new File(tempDir, fileTemp.getName());
                                         GenePatternAnalysisTask.copyFile(source, file);
                                         pi.setValue(file.getCanonicalPath());
                                     }
@@ -219,9 +220,9 @@ public class BatchSubmit {
             MultiFileParameter firstParameter = multiFileValues.values().iterator().next();
             int numFiles = firstParameter.getNumFiles();
             for (int i = 0; i < numFiles; i++) {
-                String rootFileName = firstParameter.getFilenames().get(i).filename();
+                String rootFileName = firstParameter.getFiles().get(i).getName();
                 for (String parameter : multiFileValues.keySet()) {
-                    String filename = multiFileValues.get(parameter).getFilenames().get(i).filename();
+                    String filename = multiFileValues.get(parameter).getFiles().get(i).getName();
                     if (rootFileName.compareTo(filename) != 0) { return false; }
                 }
             }
@@ -247,18 +248,14 @@ public class BatchSubmit {
         log.error("Key value " + key + " was not found in parameter info");
     }
 
-    private void readFormValuesAndLoadAttachedFiles(HttpServletRequest request) throws IOException, FileUploadException {
+    private void readFormValuesAndLoadAttachedFiles(HttpServletRequest request, List<FileItem> params) throws IOException, FileUploadException {
         // Though the batch files will have been uploaded already through our
         // upload applet and MultiFileUploadReceiver,
         // the form may still contain single attached files. Save them now.
 
         RequestContext reqContext = new ServletRequestContext(request);
         if (FileUploadBase.isMultipartContent(reqContext)) {
-            FileItemFactory factory = new DiskFileItemFactory();
-            ServletFileUpload upload = new ServletFileUpload(factory);
-
-            List<FileItem> submittedData = upload.parseRequest(reqContext);
-            Iterator<FileItem> it = submittedData.iterator();
+            Iterator<FileItem> it = params.iterator();
             while (it.hasNext()) {
                 FileItem submission = it.next();
                 if (!submission.isFormField()) {
@@ -268,36 +265,68 @@ public class BatchSubmit {
                     readFormParameter(submission);
                 }
             }
+            readBatchDirectories();
+            verifyBatchParameters();
         }
         else {
             throw new FileUploadException("Expecting form with encoding multipart/form-data");
+        }
+    }
+    
+    private void readBatchDirectories() throws FileUploadException {
+        for (String i : multiFileValues.keySet()) {
+            String dirUrl = formValues.get(i + "_url");
+            File dir = DataManager.getFileFromDataServletUrl(dirUrl);
+            
+            if (dir == null || !dir.exists() || !dir.isDirectory()) {
+                throw new FileUploadException("Batch directory not valid");
+            }
+            
+            MultiFileParameter multiFile = new MultiFileParameter(dir.listFiles());
+            multiFileValues.put(i, multiFile);
+        }
+    }
+    
+    private void verifyBatchParameters() throws FileUploadException {
+        boolean sizesMatch = listSizesMatch();
+        boolean paramsMatch = checkForMatchedParameters();
+        if (!sizesMatch) {
+            throw new FileUploadException("The number of files in the batch directories do not match");
+        }
+        if (!paramsMatch) {
+            throw new FileUploadException("The file names in batch directories do not match");
         }
     }
 
     private void readFormParameter(FileItem submission) {
         String formName = submission.getFieldName();
         String formValue = submission.getString();
-
+        
+        //if (formName.endsWith("_url")) {
+        //    formValues.put(formName.substring(0, formName.length() - 4), formValue);
+        //}
         if (!formName.endsWith(multiSuffix)) {
             formValues.put(formName, formValue);
         }
         else {
-            MultiFileParameter multiFile = new MultiFileParameter(formValue);
-            if (multiFile.getNumFiles() > 1) {
-                multiFileValues.put(undecorate(formName), multiFile);
-            }
-            else if (formValue.endsWith(";")) {
-                // Handle the special case where the user used the MultiFile
-                // uploader to upload a single file.
-                // If the formName is in the style XX_multifile, and the value
-                // ends with ;, then it's
-                // a single value for parameter XX, so put it in formValues, not
-                // multiFileValues
-                formValues.put(undecorate(formName), formValue.substring(0, formValue.length() - 1));
-            }
-            else {
-                log.error("Unexpected submission form parameter " + formName + ":" + formValue);
-            }
+            multiFileValues.put(undecorate(formName), null);
+            
+//            MultiFileParameter multiFile = new MultiFileParameter(formValue);
+//            if (multiFile.getNumFiles() > 1) {
+//                multiFileValues.put(undecorate(formName), multiFile);
+//            }
+//            else if (formValue.endsWith(";")) {
+//                // Handle the special case where the user used the MultiFile
+//                // uploader to upload a single file.
+//                // If the formName is in the style XX_multifile, and the value
+//                // ends with ;, then it's
+//                // a single value for parameter XX, so put it in formValues, not
+//                // multiFileValues
+//                formValues.put(undecorate(formName), formValue.substring(0, formValue.length() - 1));
+//            }
+//            else {
+//                log.error("Unexpected submission form parameter " + formName + ":" + formValue);
+//            }
         }
     }
 
@@ -341,102 +370,39 @@ public class BatchSubmit {
     }
 
     private class MultiFileParameter {
-        private List<Filename> filenames = new ArrayList();
+        private List<File> files = new ArrayList<File>();
         private final CompareByFilename comparator = new CompareByFilename();
 
-        public MultiFileParameter(String formValue) {
-            String[] multiFiles = formValue.split(";");
-            for (int i = 0; i < multiFiles.length; i++) {
-                if (multiFiles[i].trim().length() > 0) {
-                    filenames.add(new Filename(multiFiles[i]));
+        public MultiFileParameter(File[] values) {
+            for (File i : values) {
+                boolean includeThis = true;
+                // Exclude unwanted system files
+                for (String j : DataManager.FILE_EXCLUDES) {
+                    if (i.getName().equalsIgnoreCase(j)) {
+                        includeThis = false;
+                    }
+                }
+                if (includeThis && !i.isDirectory()) {
+                    files.add(i);
                 }
             }
-            Collections.sort(filenames, comparator);
+            
+            Collections.sort(files, comparator);
         }
 
         public int getNumFiles() {
-            return filenames.size();
+            return files.size();
         }
 
-        public List<Filename> getFilenames() {
-            return filenames;
+        public List<File> getFiles() {
+            return files;
         }
 
     }
 
-    /*
-     * Copyright (c) 1995 - 2008 Sun Microsystems, Inc. All rights reserved.
-     * 
-     * Redistribution and use in source and binary forms, with or without
-     * modification, are permitted provided that the following conditions are
-     * met: - Redistributions of source code must retain the above copyright
-     * notice, this list of conditions and the following disclaimer. -
-     * Redistributions in binary form must reproduce the above copyright notice,
-     * this list of conditions and the following disclaimer in the documentation
-     * and/or other materials provided with the distribution. - Neither the name
-     * of Sun Microsystems nor the names of its contributors may be used to
-     * endorse or promote products derived from this software without specific
-     * prior written permission.
-     * 
-     * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-     * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
-     * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-     * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
-     * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-     * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-     * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
-     * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-     * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-     * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-     * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-     */
-
-    /**
-     * This class assumes that the string used to initialize fullPath has a
-     * directory path, filename, and extension. The methods won't work if it
-     * doesn't.
-     */
-
-    private class Filename {
-        private String fullPath;
-        private char pathSeparator = File.separatorChar;
-        private char extensionSeparator = '.';
-
-        public Filename(String str) {
-            fullPath = str;
-        }
-
-        public String filenameWithExtension() {
-            int sep = fullPath.lastIndexOf(pathSeparator);
-            if (sep < 0) {
-                return fullPath;
-            }
-            else {
-                return fullPath.substring(sep + 1);
-            }
-        }
-
-        public String filename() { // gets filename without extension
-            int dot = fullPath.lastIndexOf(extensionSeparator);
-            int sep = fullPath.lastIndexOf(pathSeparator);
-            if (dot > sep) {
-                // file has an extension
-                return fullPath.substring(sep + 1, dot);
-            }
-            else {
-                // special case, no file extension
-                return fullPath.substring(sep + 1);
-            }
-        }
-
-        public String fullPath() {
-            return fullPath;
-        }
-    }
-
-    private class CompareByFilename implements Comparator<Filename> {
-        public int compare(Filename o1, Filename o2) {
-            return o1.filename().compareTo(o2.filename());
+    private class CompareByFilename implements Comparator<File> {
+        public int compare(File o1, File o2) {
+            return o1.getName().compareTo(o2.getName());
         }
     }
 

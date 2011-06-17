@@ -55,6 +55,7 @@ public class RunTaskHelper {
     private String taskLsid;
     private String taskName;
     private ParameterInfo[] parameterInfoArray;
+    private boolean batchJob = false;
 
     /**
      * Creates a new RunTaskHelper instance.
@@ -75,6 +76,7 @@ public class RunTaskHelper {
         if (ServletFileUpload.isMultipartContent(request)) {
             List params = fub.parseRequest(request);
             if (isBatchJob(params)) {
+                batchJob = true;
                 handleBatch(request, params);
             }
 
@@ -136,9 +138,7 @@ public class RunTaskHelper {
                 else {
                     String parameterName = fieldName;
                     if (fieldName.endsWith("_url")) {
-                        //strip the trailing '_url' from the fieldName
-                        final int K = fieldName.length() - "_url".length();
-                        parameterName = fieldName.substring(0, K);
+                        parameterName = fieldName.substring(0, fieldName.length() - 4);
                     }
                     FileItem cbItem = (FileItem) nameToFileItemMap.get(parameterName + "_cb");
                     boolean urlChecked = cbItem != null ? "url".equals(cbItem.getString()) : false;
@@ -203,10 +203,14 @@ public class RunTaskHelper {
         return foundBatchParam;
     }
     
+    public boolean isBatchJob() {
+        return batchJob;
+    }
+    
     private void handleBatch(HttpServletRequest request, List<FileItem> params) {
         BatchSubmit batchSubmit;
         try {
-            batchSubmit = new BatchSubmit(request);
+            batchSubmit = new BatchSubmit(request, params);
             batchSubmit.submitJobs();
         }
         catch (FileUploadException e) {

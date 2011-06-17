@@ -27,6 +27,16 @@ public class DataManager {
         FILE_EXCLUDES.add(".DS_Store");
     }
     
+    public static File getFileFromDataServletUrl(String url) {
+        String[] parts = url.split("/data/", 2);
+        if (parts.length > 1) {
+            return new File(parts[1]);
+        }
+        else {
+            return null;
+        }
+    }
+    
     public static boolean createSubdirectory(File parent, String name, String userId) {
         File subdir = new File(parent.getAbsolutePath() + "/" + name);
         boolean success = subdir.mkdir();
