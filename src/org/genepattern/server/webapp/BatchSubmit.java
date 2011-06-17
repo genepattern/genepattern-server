@@ -210,6 +210,16 @@ public class BatchSubmit {
         }
         return true;
     }
+    
+    private String getBaseFilename(File file) {
+        int periodIndex = file.getName().lastIndexOf('.');
+        if (periodIndex > 0) {
+            return file.getName().substring(0, periodIndex);
+        }
+        else {
+            return file.getName();
+        }
+    }
 
     // If the user uploaded multiple files for multiple parameters,
     // attempt to match them up for job submissions. Automatic matching
@@ -220,9 +230,9 @@ public class BatchSubmit {
             MultiFileParameter firstParameter = multiFileValues.values().iterator().next();
             int numFiles = firstParameter.getNumFiles();
             for (int i = 0; i < numFiles; i++) {
-                String rootFileName = firstParameter.getFiles().get(i).getName();
+                String rootFileName = getBaseFilename(firstParameter.getFiles().get(i));
                 for (String parameter : multiFileValues.keySet()) {
-                    String filename = multiFileValues.get(parameter).getFiles().get(i).getName();
+                    String filename = getBaseFilename(multiFileValues.get(parameter).getFiles().get(i));
                     if (rootFileName.compareTo(filename) != 0) { return false; }
                 }
             }
