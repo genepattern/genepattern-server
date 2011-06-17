@@ -1,5 +1,6 @@
 package org.genepattern.server;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -22,7 +23,7 @@ import org.genepattern.server.webservice.server.dao.AnalysisDAO;
  * @author pcarr
  *
  */
-public class PermissionsHelper {
+public class PermissionsHelper implements Serializable {
     //the user viewing or editing the job
     private String currentUser = null;
     //is the current user the owner of the job
@@ -40,7 +41,7 @@ public class PermissionsHelper {
     
     private Permission publicAccessPermission = GroupPermission.Permission.NONE;
     private List<GroupPermission> nonPublicPermissions = null;
-    private List<GroupPermission >jobResultPermissionsWithGroups = null;
+    private List<GroupPermission> jobResultPermissionsWithGroups = null;
     private List<GroupPermission> jobResultPermissionsNoGroups = null;
     
     private int rootJobNo;
