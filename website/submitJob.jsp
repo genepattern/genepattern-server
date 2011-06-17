@@ -10,7 +10,7 @@
                  org.apache.commons.fileupload.FileUploadException"
          session="false" contentType="text/html" language="Java" %>
 <%
-String userID = (String) request.getAttribute(GPConstants.USERID);
+	String userID = (String) request.getAttribute(GPConstants.USERID);
     RunTaskHelper runTaskHelper = null;
     TaskInfo task = null;
     List<ParameterInfo> missingReqParams = new ArrayList<ParameterInfo>();
@@ -23,6 +23,7 @@ String userID = (String) request.getAttribute(GPConstants.USERID);
             return;
         }
         missingReqParams = runTaskHelper.getMissingParameters();
+        // Check for unmatched batch params here then add to missingReqParams if true
     }
     catch (FileUploadException e) {
         fileUploadException = e;
@@ -61,14 +62,19 @@ String userID = (String) request.getAttribute(GPConstants.USERID);
     return;
     }
     
-    RunJobFromJsp runner = new RunJobFromJsp();
-    runner.setUserId(userID);
-    runner.setTaskInfo(task);
-    String jobId = runner.submitJob();
-    if (jobId == null) {
-        response.sendRedirect("/gp/jobResults");
+    if (runTaskHelper.isBatchJob()) {
+    	response.sendRedirect("/gp/jobResults");
     }
     else {
-        response.sendRedirect("/gp/jobResults/"+jobId + "?openVisualizers=true");
+    	RunJobFromJsp runner = new RunJobFromJsp();
+        runner.setUserId(userID);
+        runner.setTaskInfo(task);
+        String jobId = runner.submitJob();
+        if (jobId == null) {
+            response.sendRedirect("/gp/jobResults");
+        }
+        else {
+            response.sendRedirect("/gp/jobResults/"+jobId + "?openVisualizers=true");
+        }
     }
 %>
