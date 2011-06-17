@@ -124,5 +124,7 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-impl-3.3.3.Final.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-impl-jsf2-3.3.3.Final.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/richfaces-ui-3.3.3.Final.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/broad-core-main-2.9.2.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/groovy-all-1.0.jar"/>
 	<classpathentry kind="output" path="website/WEB-INF/classes"/>
 </classpath>
