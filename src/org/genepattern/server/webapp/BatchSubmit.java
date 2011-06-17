@@ -362,7 +362,7 @@ public class BatchSubmit {
                         includeThis = false;
                     }
                 }
-                if (includeThis && !i.isDirectory()) {
+                if (includeThis) {
                     files.add(i);
                 }
             }
