@@ -301,32 +301,12 @@ public class BatchSubmit {
     private void readFormParameter(FileItem submission) {
         String formName = submission.getFieldName();
         String formValue = submission.getString();
-        
-        //if (formName.endsWith("_url")) {
-        //    formValues.put(formName.substring(0, formName.length() - 4), formValue);
-        //}
+
         if (!formName.endsWith(multiSuffix)) {
             formValues.put(formName, formValue);
         }
         else {
             multiFileValues.put(undecorate(formName), null);
-            
-//            MultiFileParameter multiFile = new MultiFileParameter(formValue);
-//            if (multiFile.getNumFiles() > 1) {
-//                multiFileValues.put(undecorate(formName), multiFile);
-//            }
-//            else if (formValue.endsWith(";")) {
-//                // Handle the special case where the user used the MultiFile
-//                // uploader to upload a single file.
-//                // If the formName is in the style XX_multifile, and the value
-//                // ends with ;, then it's
-//                // a single value for parameter XX, so put it in formValues, not
-//                // multiFileValues
-//                formValues.put(undecorate(formName), formValue.substring(0, formValue.length() - 1));
-//            }
-//            else {
-//                log.error("Unexpected submission form parameter " + formName + ":" + formValue);
-//            }
         }
     }
 
