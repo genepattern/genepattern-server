@@ -2,9 +2,11 @@ package org.genepattern.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.webservice.server.DirectoryManager;
+import org.genepattern.server.config.ServerConfiguration;
 
 /**
  * Utility class for GenePattern input files.
@@ -65,4 +67,123 @@ public class FileUtil {
         File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
         return fileEquals(inputFileGrandParent, soapAttachmentDir);
     }
+
+    /**
+     * If the given file is in the user dir for the given user, return the path to the file, relative
+     * to the user dir. Otherwise, return null.
+     * 
+     * @param userContext
+     * @param fileObj
+     * @return
+     */
+    public static String getUserUploadPath(ServerConfiguration.Context userContext, File fileObj) {
+        File userDir = ServerConfiguration.instance().getUserUploadDir(userContext);
+        String relativePath = FileUtil.getRelativePath(userDir, fileObj);
+        if (relativePath != null) {
+            return relativePath;
+        }
+        return null;
+    }
+    
+    /**
+     * @param userContext
+     * @param fileObj
+     * @return true if the given file is in the user upload directory
+     */
+    public static boolean isInUserUploadDir(ServerConfiguration.Context userContext, File fileObj) {
+        File userUploadDir = ServerConfiguration.instance().getUserUploadDir(userContext);
+        return isDescendant(userUploadDir, fileObj);
+    }
+
+    /**
+     * Is the given child file a descendant of the parent file,
+     * based on comparing canonical path names.
+     * 
+     * Returns true if the files are 
+     * 
+     * @param parent
+     * @param child
+     * @return true if the files are equal or if the child is a descendant of the parent.
+     * 
+     * Note: swallows IOException, which can occur when calling getCanonicalPath, logs the error and returns false.
+     * TODO: doesn't follow symbolic links
+     * 
+     * See: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5002170
+     */
+    public static boolean isDescendant(File parent, File child) {
+        if (child.equals(parent)) {
+            return true;
+        } 
+
+        try {
+            //assume canonical paths are sufficient
+            String canonicalParent = parent.getAbsoluteFile().getCanonicalPath();
+            String canonicalChild = child.getAbsoluteFile().getCanonicalPath();
+            if (canonicalChild.startsWith(canonicalParent)) {
+                return true;
+            }
+
+        }
+        catch (IOException e) {
+            log.error("Error in isDescendant(parent="+ parent.getAbsolutePath()
+                    +", child="+child.getAbsolutePath()
+                    +"): "+e.getLocalizedMessage(), e);
+        }
+        return false;
+    }
+
+    /**
+     * Get the relative path from the parent to the child, if, and only if, the child is a descendant of the parent.
+     * Otherwise, return null.
+     * 
+     * @param parent
+     * @param child
+     * @return
+     */
+    public static String getRelativePath(File parent, File child) { 
+        try {
+            File relativePath = relativizePath(parent, child);
+            if (relativePath != child) {
+                return relativePath.getPath();
+            }
+            else {
+                return null;
+            }
+        }
+        catch (IOException e) {
+            log.error(e);
+            return null;
+        }
+    }
+    
+    /**
+     * Transform the given path into a path relative to the given parent directory.
+     * 
+     * @param childFile, The path.
+     * @param parentDir, The dir.
+     * @return If childFile is descendant of the parentDir, the path relative to the parentDir, Otherwise the childFile unmodified.
+     * @throws IOException, in the event of system errors with {@link File#getCanonicalFile()}
+     */
+    private static File relativizePath(File parentDir, File childFile)
+            throws IOException {
+        File parent = parentDir.getCanonicalFile();
+        File child = childFile.getCanonicalFile();
+        if (!child.getPath().startsWith(parent.getPath())) {
+            return childFile;
+        }
+        if (child.equals(parent)) {
+            return childFile;
+        }
+        List<String> names = new ArrayList<String>();
+        while (!child.equals(parent)) {
+            names.add(child.getName());
+            child = child.getParentFile();
+        }
+        File f = new File(names.get(names.size() - 1));
+        for (int i = names.size() - 2; i >= 0; i--) {
+            f = new File(f, names.get(i));
+        }
+        return f;
+    }
+
 }
