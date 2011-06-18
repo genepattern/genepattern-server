@@ -172,7 +172,15 @@
 
  <filter-mapping>
   <filter-name>IgvFilter</filter-name>
-  <url-pattern>/*</url-pattern>
+  <url-pattern>/getFile.jsp</url-pattern>
+ </filter-mapping>
+ <filter-mapping>
+  <filter-name>IgvFilter</filter-name>
+  <url-pattern>/jobResults/*</url-pattern>
+ </filter-mapping>
+ <filter-mapping>
+  <filter-name>IgvFilter</filter-name>
+  <url-pattern>/data/*</url-pattern>
  </filter-mapping>
  <filter-mapping>
   <filter-name>RedirectToFQHostFilter</filter-name>
