@@ -25,6 +25,7 @@ public class DataManager {
     public final static List<String> FILE_EXCLUDES = new ArrayList<String>();
     static {
         FILE_EXCLUDES.add(".DS_Store");
+        FILE_EXCLUDES.add("Thumbs.db");
     }
     
     public static File getFileFromDataServletUrl(String url) {
