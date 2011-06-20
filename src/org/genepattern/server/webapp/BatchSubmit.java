@@ -14,12 +14,9 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.RequestContext;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
@@ -49,8 +46,8 @@ public class BatchSubmit {
     private boolean listSizesMatch = true;
     private boolean matchedFiles = true;
     private Integer id;
-    List<ParameterInfo> missingParameters = new ArrayList<ParameterInfo>();
-    private final String multiSuffix = "_batch";
+    private List<ParameterInfo> missingParameters = new ArrayList<ParameterInfo>();
+    private static final String multiSuffix = "_batch";
 
     // Collect input parameters.
     // Find multi-file input file parameters
