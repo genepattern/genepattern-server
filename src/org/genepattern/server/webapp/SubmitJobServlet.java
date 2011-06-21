@@ -24,6 +24,12 @@ public class SubmitJobServlet extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String userID = (String) request.getAttribute(GPConstants.USERID);
+        
+        if (userID == null) {
+            response.sendRedirect("/gp/pages/notFound.jsf");
+            return;
+        }
+        
         RunTaskHelper runTaskHelper = null;
         TaskInfo task = null;
         List<ParameterInfo> missingReqParams = new ArrayList<ParameterInfo>();
