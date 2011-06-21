@@ -139,7 +139,7 @@ public class RunTaskBean {
     }
 
     public String getFormAction() {
-        return "submitJob.jsp";
+        return "SubmitJob";
     }
 
     public String getLsid() {

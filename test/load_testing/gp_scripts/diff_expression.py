@@ -10,7 +10,7 @@ go(gp_client.gp_url()+'/pages/index.jsf?lsid=PreprocessDataset')
 fv('taskForm', 'taskName', 'PreprocessDataset')
 submit()
 code(200)
-url('/gp/submitJob.jsp')
+url('/gp/SubmitJob')
 find('The module could not be run. The following required parameters need to have values provided;')
 
 # Step 2: Preprocess Dataset, Upload file

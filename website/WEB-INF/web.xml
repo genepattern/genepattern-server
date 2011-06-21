@@ -405,6 +405,21 @@
  </servlet-mapping>
  
  <servlet>
+    <display-name>Submit Job Servlet</display-name>
+    <servlet-name>SubmitJob</servlet-name>
+    <servlet-class>org.genepattern.server.webapp.SubmitJobServlet</servlet-class>    
+ </servlet>
+ <servlet-mapping>
+  <servlet-name>SubmitJob</servlet-name>
+  <url-pattern>/SubmitJob</url-pattern>
+ </servlet-mapping>
+  <servlet-mapping>
+  	<!-- DEPRICATED: Point old references to submitJob.jsp to the new servlet -->
+  <servlet-name>SubmitJob</servlet-name>
+  <url-pattern>/submitJob.jsp</url-pattern>
+ </servlet-mapping>
+ 
+ <servlet>
     <display-name>Upload Receiver Servlet</display-name>
     <servlet-name>UploadReceiver</servlet-name>
     <servlet-class>org.genepattern.server.webapp.UploadReceiver</servlet-class>    
