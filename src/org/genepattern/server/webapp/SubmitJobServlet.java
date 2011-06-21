@@ -23,7 +23,7 @@ public class SubmitJobServlet extends HttpServlet {
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String userID = (String) request.getAttribute(GPConstants.USERID);
+        String userID = (String) request.getSession().getAttribute(GPConstants.USERID);
         
         if (userID == null) {
             response.sendRedirect("/gp/pages/notFound.jsf");
