@@ -86,7 +86,6 @@ public class BatchSubmit {
             return;
         }
 
-        LocalAnalysisClient analysisClient = new LocalAnalysisClient(userName);
         // Now try and match the parameters to the form fields we've just read
         for (int i = 0; i < parameterInfoArray.length; i++) {
             ParameterInfo pinfo = parameterInfoArray[i];
