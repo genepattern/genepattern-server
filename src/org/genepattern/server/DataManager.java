@@ -2,6 +2,8 @@ package org.genepattern.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +33,15 @@ public class DataManager {
     public static File getFileFromDataServletUrl(String url) {
         String[] parts = url.split("/data/", 2);
         if (parts.length > 1) {
-            return new File(parts[1]);
+            String path;
+            try {
+                path = URLDecoder.decode(parts[1], "UTF-8");
+            }
+            catch (UnsupportedEncodingException e) {
+                log.error("Unable to decode " + parts[1] + " using UTF-8");
+                path = parts[1];
+            }
+            return new File(path);
         }
         else {
             return null;
