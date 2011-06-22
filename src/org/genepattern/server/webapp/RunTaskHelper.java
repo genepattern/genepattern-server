@@ -31,12 +31,12 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.WebServiceException;
-import org.jfree.util.Log;
 
 /**
  * Class for parsing request parameters for running tasks
@@ -45,6 +45,7 @@ import org.jfree.util.Log;
  * 
  */
 public class RunTaskHelper {
+    private static Logger log = Logger.getLogger(RunTaskHelper.class);
     /** map between form field name and filesystem name */
     private HashMap<String, String> inputFileParameters = new HashMap<String, String>();
     private HashMap<String, String> requestParameters = new HashMap<String, String>();
@@ -216,13 +217,13 @@ public class RunTaskHelper {
             batchSubmit.submitJobs();
         }
         catch (FileUploadException e) {
-            Log.error("Problem handling batch submission: " + e.getMessage());
+            log.error("Problem handling batch submission: " + e.getMessage());
         }
         catch (WebServiceException e) {
-            Log.error("Problem handling batch submission: " + e.getMessage());
+            log.error("Problem handling batch submission: " + e.getMessage());
         }
         catch (IOException e) {
-            Log.error("Problem handling batch submission: " + e.getMessage());
+            log.error("Problem handling batch submission: " + e.getMessage());
         }
     }
 
