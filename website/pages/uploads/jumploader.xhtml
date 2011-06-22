@@ -24,10 +24,13 @@
 		<script src="../../js/genepattern.js" />
 		<script language="JavaScript">
 			var dirName = gup("dirName");
+			function decode(str) {
+    			return unescape(str.replace(/\+/g, " "));
+			}
 			
 			function addDirName() {
 				if (dirName != null) if (dirName.length > 0)
-					document.write(" - " + dirName);
+					document.write(" - " + decode(dirName));
 			}
 			
 			var oldMessage = null;
