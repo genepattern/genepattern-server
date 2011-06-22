@@ -30,7 +30,7 @@ use, misuse, or functionality.
                     <h:outputText rendered="#{aFile.directory}">
                         <tr>
                             <td>
-                                <h:commandLink value="Upload Files" action="#{uploadFilesBean.flagUploadPath}" onclick="JavaScript:openUploadWindow();" immediate="true">
+                                <h:commandLink value="Upload Files" action="#{uploadFilesBean.flagUploadPath}" onclick="JavaScript:openUploadWindow('#{aFile.file.name}');" immediate="true">
                                     <f:param name="uploadPath" value="#{aFile.file.path}" />
                                 </h:commandLink>
                             </td>

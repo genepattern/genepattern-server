@@ -123,20 +123,20 @@ function toggleJobVisibility(jobNo) {
   <script language="JavaScript">
   	var uploadWindow = null;
   
-  	function openUploadWindow() {
+  	function openUploadWindow(dirName) {
   		if (uploadWindow == null) {
   			uploadWindow = window.open('','#{uploadFilesBean.uploadWindowName}','width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
   			var currentLoc = uploadWindow.location + "";
-  			if (currentLoc.indexOf("/gp/pages/uploads/jumploader.jsf") == -1) {
-  				uploadWindow.location = "/gp/pages/uploads/jumploader.jsf";
+  			if (currentLoc.indexOf("/gp/pages/uploads/jumploader.jsf?dirName=" + dirName) == -1) {
+  				uploadWindow.location = "/gp/pages/uploads/jumploader.jsf?dirName=" + dirName;
   	  		}
   			uploadWindow.focus();
   		}
   		else if (uploadWindow.closed) {
   			uploadWindow = window.open('','#{uploadFilesBean.uploadWindowName}','width=620,height=400,status=no,menubar=no,location=no,toolbar=no,scrollbars=no');
   			var currentLoc = uploadWindow.location + "";
-  			if (currentLoc.indexOf("/gp/pages/uploads/jumploader.jsf") == -1) {
-  				uploadWindow.location = "/gp/pages/uploads/jumploader.jsf";
+  			if (currentLoc.indexOf("/gp/pages/uploads/jumploader.jsf?dirName=" + dirName) == -1) {
+  				uploadWindow.location = "/gp/pages/uploads/jumploader.jsf?dirName=" + dirName;
   	  		}
   			uploadWindow.focus();
   		}
