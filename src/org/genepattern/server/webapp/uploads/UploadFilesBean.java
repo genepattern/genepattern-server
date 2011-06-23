@@ -790,7 +790,7 @@ public class UploadFilesBean {
     public boolean getUploadEnabled() {
         String userId = UIBeanHelper.getUserId();
         Context userContext = Context.getContextForUser(userId);
-        return ServerConfiguration.instance().getGPBooleanProperty(userContext, "upload.jumploader", false);
+        return ServerConfiguration.instance().getGPBooleanProperty(userContext, "upload.jumploader", true);
     }
 }
 
