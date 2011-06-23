@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.util.GPConstants;
 
+import edu.mit.broad.core.Main;
 import edu.mit.broad.core.lsf.LsfJob;
 import edu.mit.broad.core.lsf.LsfJob.JobCompletionListener;
 
@@ -87,6 +88,16 @@ public class LsfJobCompletionListener implements JobCompletionListener {
             String message = "Error handling job completion for job #"+gpJobId;
             log.error(message,t);
             throw new Exception(message, t);
+        }
+        finally {
+            try {
+                //delete the entry from the JOB_LSF table, see GP-3336
+                Main.getInstance().getHibernateSession().delete(job);
+            }
+            catch (Throwable t) {
+                String message = "Error deleting entry from JOB_LSF table for gpJobId="+gpJobId;
+                log.error(message, t);
+            }
         }
     }
 }
