@@ -779,7 +779,7 @@ public class UploadFilesBean {
     
     public long getMaxUploadSize() {
         Context context = Context.getContextForUser(UIBeanHelper.getUserId());
-        return Long.parseLong(ServerConfiguration.instance().getGPProperty(context, "upload.max.size", "20000000000"));
+        return ServerConfiguration.instance().getGPLongProperty(context, "upload.max.size", 20000000000L);
     }
     
     public String getUploadWindowName() {
