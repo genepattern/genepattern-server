@@ -2,6 +2,8 @@ package org.genepattern.server.webapp;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.List;
 
 import javax.servlet.Servlet;
@@ -14,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
 
 /**
  * Access to GP data files which are on the server file path. 
@@ -270,6 +273,40 @@ public class DataServlet extends HttpServlet implements Servlet {
                     +"): "+e.getLocalizedMessage(), e);
         }
         return false;
+    }
+    
+    public static String getDataServlertUrl() {
+        return UIBeanHelper.getServer() + "/data/";
+    }
+    
+    public static File getFileFromUrl(String url) {
+        String[] parts = url.split("/data/", 2);
+        if (parts.length > 1) {
+            String path;
+            try {
+                path = URLDecoder.decode(parts[1], "UTF-8");
+            }
+            catch (UnsupportedEncodingException e) {
+                log.error("Unable to decode " + parts[1] + " using UTF-8");
+                path = parts[1];
+            }
+            return new File(path);
+        }
+        else {
+            return null;
+        }
+    }
+    
+    public static String getUrlFromFile(File file) {
+        String path;
+        try {
+            path = file.getCanonicalPath();
+        }
+        catch (IOException e) {
+            log.error("Unable to getCanonicalPath() in getUrlFromFile()");
+            path = file.getAbsolutePath();
+        }
+        return getDataServlertUrl() + path.replace("\\", "/");
     }
 
 }

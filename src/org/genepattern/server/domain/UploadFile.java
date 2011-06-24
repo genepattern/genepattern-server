@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
+import org.genepattern.server.webapp.DataServlet;
 import org.genepattern.util.SemanticUtil;
 
 
@@ -147,14 +148,6 @@ public class UploadFile {
      * @return
      */
     public String getLink() {
-        //hard-coded to the dataservlet
-        //example 1, fully qualified server file path
-        //    http://127.0.0.1:8080/gp/data//Shared/file.txt
-        //example 2, relative server file path, relative to the working dir of the server
-        //    http://127.0.0.1:8080/gp/data/../users/test/user.uploads/file.txt
-        
-        //TODO: hard-coded context path should be configurable
-        String link = "/gp/data/" +  path;
-        return link;
+        return DataServlet.getUrlFromFile(new File(path));
     }
 }

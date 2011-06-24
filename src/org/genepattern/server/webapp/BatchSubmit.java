@@ -27,7 +27,6 @@ import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
-import org.genepattern.server.webservice.server.local.LocalAnalysisClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
@@ -282,7 +281,7 @@ public class BatchSubmit {
     private void readBatchDirectories() throws FileUploadException {
         for (String i : multiFileValues.keySet()) {
             String dirUrl = formValues.get(i + "_url");
-            File dir = DataManager.getFileFromDataServletUrl(dirUrl);
+            File dir = DataServlet.getFileFromUrl(dirUrl);
             
             if (dir == null || !dir.exists() || !dir.isDirectory()) {
                 throw new FileUploadException("Batch directory not valid");

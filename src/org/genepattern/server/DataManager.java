@@ -30,24 +30,6 @@ public class DataManager {
         FILE_EXCLUDES.add("Thumbs.db");
     }
     
-    public static File getFileFromDataServletUrl(String url) {
-        String[] parts = url.split("/data/", 2);
-        if (parts.length > 1) {
-            String path;
-            try {
-                path = URLDecoder.decode(parts[1], "UTF-8");
-            }
-            catch (UnsupportedEncodingException e) {
-                log.error("Unable to decode " + parts[1] + " using UTF-8");
-                path = parts[1];
-            }
-            return new File(path);
-        }
-        else {
-            return null;
-        }
-    }
-    
     public static boolean createSubdirectory(File parent, String name, String userId) {
         File subdir = new File(parent, name);
         boolean success = subdir.mkdir();
