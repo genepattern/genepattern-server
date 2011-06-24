@@ -737,7 +737,7 @@ public class UploadFilesBean {
                 }
             }
         }
-        File parent = new File(UIBeanHelper.getRequest().getParameter("parentPath"));
+        File parent = DataServlet.getFileFromUrl(UIBeanHelper.getRequest().getParameter("parentPath"));
         if (name != null) {
             name = name.replaceAll("[^a-zA-Z0-9 ]", "");
         }

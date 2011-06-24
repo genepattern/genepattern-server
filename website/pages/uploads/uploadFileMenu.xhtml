@@ -51,7 +51,7 @@ use, misuse, or functionality.
                             <td>
                                 <t:inputText id="subdirName" rendered="#{aFile.directory}" onfocus="JavaScript:setSubdirFocus()" />
                                 <h:commandLink value="Create" action="#{uploadFilesBean.createSubdirectory}" immediate="true">
-                                    <f:param name="parentPath" value="#{aFile.file.path}" />
+                                    <f:param name="parentPath" value="#{aFile.file.link}" />
                                 </h:commandLink>
                             </td>
                         </tr>
