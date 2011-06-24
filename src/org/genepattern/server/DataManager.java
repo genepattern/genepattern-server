@@ -49,7 +49,7 @@ public class DataManager {
     }
     
     public static boolean createSubdirectory(File parent, String name, String userId) {
-        File subdir = new File(parent.getAbsolutePath() + "/" + name);
+        File subdir = new File(parent, name);
         boolean success = subdir.mkdir();
         if (success) {
             try {
