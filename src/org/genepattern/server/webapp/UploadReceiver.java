@@ -66,7 +66,7 @@ public class UploadReceiver extends HttpServlet {
         String userId = LoginManager.instance().getUserIdFromSession(request);
         Context context = Context.getContextForUser(userId);
         String uploadDirPath = (String) request.getSession().getAttribute("uploadPath");
-        File dir = new File(uploadDirPath);
+        File dir = DataServlet.getFileFromUrl(uploadDirPath);
         if (uploadDirPath == null) {
             dir = ServerConfiguration.instance().getUserUploadDir(context);
         }

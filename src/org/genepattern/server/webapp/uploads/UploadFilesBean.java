@@ -26,6 +26,7 @@ import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.domain.UploadFile;
 import org.genepattern.server.domain.UploadFileDAO;
+import org.genepattern.server.webapp.DataServlet;
 import org.genepattern.server.webapp.FileDownloader;
 import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.server.webapp.jsf.RunTaskBean;
@@ -704,8 +705,9 @@ public class UploadFilesBean {
         }
     }
     
-    public void deleteFile(ActionEvent ae) {
+    public void deleteFile(ActionEvent ae) throws IOException {
         String filePath = UIBeanHelper.getRequest().getParameter("filePath");
+        filePath = DataServlet.getFileFromUrl(filePath).getCanonicalPath();
         for (final FileInfoWrapper i : files) {
             if (i.getPath().equals(filePath)) {
                 if (i.deleteFile()) {
