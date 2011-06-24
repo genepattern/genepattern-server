@@ -24,8 +24,9 @@
    		</filterset>
 	</copy>	
 	
-	<exec dir="." executable="/xchip/genepattern/tools/InstallAnywhere2008/build" >
-	  <arg line="${basedir}/GP_server.iap_xml +x +l +s +lv +j +wv"/>
+    <exec dir="." executable="/xchip/genepattern/tools/InstallAnywhere2008/build" >
+        <!-- arg line="${basedir}/GP_server.iap_xml +x +l +s +lv +j +wv"/ -->
+        <arg line="${basedir}/GP_server.iap_xml"/>
 	</exec>
 
 
