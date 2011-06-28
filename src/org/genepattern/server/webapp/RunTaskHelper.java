@@ -210,7 +210,7 @@ public class RunTaskHelper {
         return batchJob;
     }
     
-    private void handleBatch(HttpServletRequest request, List<FileItem> params) {
+    private void handleBatch(HttpServletRequest request, List<FileItem> params) throws FileUploadException {
         BatchSubmit batchSubmit;
         try {
             batchSubmit = new BatchSubmit(request, params);
@@ -218,6 +218,7 @@ public class RunTaskHelper {
         }
         catch (FileUploadException e) {
             log.error("Problem handling batch submission: " + e.getMessage());
+            throw e;
         }
         catch (WebServiceException e) {
             log.error("Problem handling batch submission: " + e.getMessage());

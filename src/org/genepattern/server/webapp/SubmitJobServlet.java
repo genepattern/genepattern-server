@@ -10,13 +10,21 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.fileupload.FileUploadException;
 import org.genepattern.server.executor.JobSubmissionException;
-import org.genepattern.server.webapp.jsf.UIBeanHelper;
+import org.genepattern.server.webapp.jsf.PageMessages;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 
 public class SubmitJobServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
+    
+    private void redirectToHome(HttpServletResponse response) throws IOException {
+        response.sendRedirect("/gp/");
+    }
+    
+    private void setErrorMessage(HttpServletRequest request, String message) {
+        request.getSession().setAttribute(PageMessages.ERROR_MESSAGE_KEY, message);
+    }
     
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         doPost(request, response);
@@ -33,38 +41,32 @@ public class SubmitJobServlet extends HttpServlet {
         RunTaskHelper runTaskHelper = null;
         TaskInfo task = null;
         List<ParameterInfo> missingReqParams = new ArrayList<ParameterInfo>();
-        FileUploadException fileUploadException = null;
         try {
             runTaskHelper = new RunTaskHelper(userID, request);
             task = runTaskHelper.getTaskInfo();
             if (task == null) {
-                UIBeanHelper.setErrorMessage("Unable to find module");
-                response.sendRedirect("/gp/");
+                setErrorMessage(request, "Unable to find module");
+                redirectToHome(response);
                 return;
             }
             missingReqParams = runTaskHelper.getMissingParameters();
             // Check for unmatched batch params here then add to missingReqParams if true
         }
         catch (FileUploadException e) {
-            fileUploadException = e;
+            setErrorMessage(request, e.getMessage() + " Hit the back button to resubmit the job.");
+            redirectToHome(response);
+            return;
         }
         
-        if (fileUploadException != null || missingReqParams.size() > 0) {
-            if (missingReqParams.size() > 0) {
-                String params = "";
-                for (int i=0; i < missingReqParams.size(); i++){
-                    ParameterInfo pinfo = missingReqParams.get(i);
-                    params += pinfo.getName().replaceAll(".", " ") + " ";
-                }
-                UIBeanHelper.setErrorMessage("The module could not be run. The following required parameters need to have values provided: " + params);
-                response.sendRedirect("/gp/");
-                return;
+        if (missingReqParams.size() > 0) {
+            String params = "";
+            for (int i=0; i < missingReqParams.size(); i++){
+                ParameterInfo pinfo = missingReqParams.get(i);
+                params += pinfo.getName().replaceAll(".", " ") + " ";
             }
-            else { 
-                UIBeanHelper.setErrorMessage(fileUploadException.getLocalizedMessage() + " Hit the back button to resubmit the job.");
-                response.sendRedirect("/gp/");
-                return;
-            }
+            setErrorMessage(request, "The module could not be run. The following required parameters need to have values provided: " + params);
+            redirectToHome(response);
+            return;
         }
  
         if (runTaskHelper.isBatchJob()) {
@@ -79,8 +81,8 @@ public class SubmitJobServlet extends HttpServlet {
                 jobId = runner.submitJob();
             }
             catch (JobSubmissionException e) {
-                UIBeanHelper.setErrorMessage("Error submitting job");
-                response.sendRedirect("/gp/");
+                setErrorMessage(request, "Error submitting job");
+                redirectToHome(response);
                 return;
             }
             if (jobId == null) {

@@ -115,9 +115,13 @@ public class BatchSubmit {
                 }
             }
         }
+        
+        if (batchParamEmpty()) {
+            return;
+        }
 
         if (missingParameters.size() > 0) {
-            log.warn("Missing required parameters");
+            log.info("Missing required parameters");
             return;
         }
 
@@ -125,10 +129,12 @@ public class BatchSubmit {
             listSizesMatch = false;
             return;
         }
+        
         if (!checkForMatchedParameters()) {
             matchedFiles = false;
             return;
         }
+        
         // Now, submit the job if there's no multi-file field
         // Or, submit multiple jobs for each filename in the multi-file field
         if (multiFileValues.size() == 0) {
@@ -292,9 +298,21 @@ public class BatchSubmit {
         }
     }
     
+    private boolean batchParamEmpty() {
+        for (MultiFileParameter i : multiFileValues.values()) {
+            if (i.getNumFiles() == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private void verifyBatchParameters() throws FileUploadException {
         boolean sizesMatch = listSizesMatch();
         boolean paramsMatch = checkForMatchedParameters();
+        if (batchParamEmpty()) {
+            throw new FileUploadException("One or more batch parameters is an empty directory");
+        }
         if (!sizesMatch) {
             throw new FileUploadException("The number of files in the batch directories do not match");
         }

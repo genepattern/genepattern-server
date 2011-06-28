@@ -258,8 +258,6 @@ public class UploadFilesBean {
             if (occur < 0) { // This file is not inside the dir or the dir's subdirs
                 return false;
             }
-            int dirlength = dir.getPath().length();
-            int thislength = this.getPath().length();
             if (occur + dir.getPath().length() >= this.getPath().length()) {
                 return false; // A dir is never a parent of itself
             }
