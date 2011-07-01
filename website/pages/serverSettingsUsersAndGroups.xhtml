@@ -27,6 +27,8 @@
     <div>
     <h:form>
     <h:commandLink immediate="false" action="#{usersAndGroupsBean.reloadUsersAndGroups}">Reload Users and Groups</h:commandLink>
+    <t:inputText id="resync_username" value="#{uploadFilesBean.username}" forceId="true"/>
+    <h:commandButton value="Resync Uploads" action="#{uploadFilesBean.syncFiles}" immediate="true" />
     </h:form>
     </div>
     

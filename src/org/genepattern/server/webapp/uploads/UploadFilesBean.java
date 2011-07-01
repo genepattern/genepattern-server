@@ -540,6 +540,10 @@ public class UploadFilesBean {
         this.currentTaskLsid = lsid;
     }
     
+    public String getUsername() {
+        return UIBeanHelper.getUserId();
+    }
+    
     /**
      * for debugging
      * @return
@@ -764,7 +768,11 @@ public class UploadFilesBean {
     }
     
     public void syncFiles() {
-        DataManager.syncUploadFiles(UIBeanHelper.getUserId());
+        String passedId = (String) UIBeanHelper.getRequest().getParameter("resync_username");
+        if (passedId == null) {
+            passedId = UIBeanHelper.getUserId();
+        }
+        DataManager.syncUploadFiles(passedId);
     }
     
     public void setSelectedTab(String selected) {
