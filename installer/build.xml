@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="installer" name="ServerInstaller">
+<target name="installers" depends="installer" />
 <target name="installer" depends="setVersionFile" >
   <property file="../resources/build.properties"/>
   <delete verbose="true" file="GP_serverlocales/custom_en"/>
