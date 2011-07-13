@@ -2,6 +2,7 @@ package org.genepattern.server.webapp;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +29,7 @@ import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.handler.AddNewJobHandler;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -42,8 +44,6 @@ public class BatchSubmit {
     private Map<String, String> formValues = new HashMap<String, String>();
     private Map<String, MultiFileParameter> multiFileValues = new HashMap<String, MultiFileParameter>();
     private boolean isBatch;
-    private boolean listSizesMatch = true;
-    private boolean matchedFiles = true;
     private Integer id;
     private List<ParameterInfo> missingParameters = new ArrayList<ParameterInfo>();
     private static final String multiSuffix = "_batch";
@@ -54,7 +54,7 @@ public class BatchSubmit {
     // Todo in the future: Allow groups of matched files,
     // Create resolution screen for mismatches
     // Submit a job for each file.
-    public BatchSubmit(HttpServletRequest request, List<FileItem> params) throws IOException, FileUploadException {
+    public BatchSubmit(HttpServletRequest request, List<FileItem> params) throws IOException, FileUploadException, WebServiceException {
         userName = (String) request.getSession().getAttribute(GPConstants.USERID);
         readFormValuesAndLoadAttachedFiles(request, params);
     }
@@ -62,17 +62,22 @@ public class BatchSubmit {
     public List<ParameterInfo> getMissingParameters() {
         return missingParameters;
     }
-
-    public void submitJobs() throws WebServiceException, IOException {
-        isBatch = false;
-
-        // Look up the task name, stored in a hidden field
+    
+    private String getTaskLsid() throws UnsupportedEncodingException {
         String taskLsid = formValues.get("taskLSID");
         if (taskLsid == null) {
             // Try the task name instead
             taskLsid = formValues.get("taskName");
         }
         taskLsid = (taskLsid) != null ? URLDecoder.decode(taskLsid, "UTF-8") : null;
+        return taskLsid;
+    }
+
+    public void submitJobs() throws WebServiceException, IOException {
+        isBatch = false;
+
+        // Look up the task name, stored in a hidden field
+        String taskLsid = getTaskLsid();
 
         // And get all the parameters that need to be filled in for this task
         ParameterInfo parameterInfoArray[] = null;
@@ -88,6 +93,7 @@ public class BatchSubmit {
         // Now try and match the parameters to the form fields we've just read
         for (int i = 0; i < parameterInfoArray.length; i++) {
             ParameterInfo pinfo = parameterInfoArray[i];
+            
             String value;
 
             value = formValues.get(pinfo.getName());
@@ -122,16 +128,6 @@ public class BatchSubmit {
 
         if (missingParameters.size() > 0) {
             log.info("Missing required parameters");
-            return;
-        }
-
-        if (!multiFileListsAreSameSize()) {
-            listSizesMatch = false;
-            return;
-        }
-        
-        if (!checkForMatchedParameters()) {
-            matchedFiles = false;
             return;
         }
         
@@ -221,6 +217,16 @@ public class BatchSubmit {
             return file.getName();
         }
     }
+    
+    private String getFileExtension(File file) {
+        int periodIndex = file.getName().lastIndexOf('.');
+        if (periodIndex > 0) {
+            return file.getName().substring(periodIndex + 1);
+        }
+        else {
+            return null;
+        }
+    }
 
     // If the user uploaded multiple files for multiple parameters,
     // attempt to match them up for job submissions. Automatic matching
@@ -259,7 +265,7 @@ public class BatchSubmit {
         log.error("Key value " + key + " was not found in parameter info");
     }
 
-    private void readFormValuesAndLoadAttachedFiles(HttpServletRequest request, List<FileItem> params) throws IOException, FileUploadException {
+    private void readFormValuesAndLoadAttachedFiles(HttpServletRequest request, List<FileItem> params) throws IOException, FileUploadException, WebServiceException {
         // Though the batch files will have been uploaded already through our
         // upload applet and MultiFileUploadReceiver,
         // the form may still contain single attached files. Save them now.
@@ -277,7 +283,7 @@ public class BatchSubmit {
                 }
             }
             readBatchDirectories();
-            verifyBatchParameters();
+            unionBatchParameters();
         }
         else {
             throw new FileUploadException("Expecting form with encoding multipart/form-data");
@@ -307,17 +313,76 @@ public class BatchSubmit {
         return false;
     }
     
-    private void verifyBatchParameters() throws FileUploadException {
-        boolean sizesMatch = listSizesMatch();
-        boolean paramsMatch = checkForMatchedParameters();
+    private void unionBatchParameters() throws FileUploadException, UnsupportedEncodingException, WebServiceException {
+        String taskLsid = getTaskLsid();
+        if (taskLsid == null) { throw new FileUploadException("No Task LSID specified"); }
+        TaskInfo taskInfo = new LocalAdminClient(userName).getTask(taskLsid);
+        ParameterInfo parameterInfoArray[] = taskInfo.getParameterInfoArray();
+        
+        boolean firstSet = true;
+        List<String> matchingFileNames = new ArrayList<String>();
+        
+        // Filter all parameters to only parameters with matching file types
+        for (ParameterInfo i : parameterInfoArray) {
+            List<String> extensions = SemanticUtil.getFileFormats(i);
+            List<File> matchedFiles = new ArrayList<File>();
+            MultiFileParameter param = multiFileValues.get(i.getName());
+            if (param != null) {
+                for (File j : param.getFiles()) {
+                    boolean match = false;
+                    String ext = getFileExtension(j);
+                    for (String k : extensions) {
+                        if (k.equals(ext)) {
+                            match = true;
+                        }
+                    }
+                    if (match) {
+                        matchedFiles.add(j);
+                    }
+                }
+                multiFileValues.put(i.getName(), new MultiFileParameter(matchedFiles.toArray(new File[matchedFiles.size()])));
+            }
+        }
+        
+        // Get the union of base file names
+        for (MultiFileParameter i : multiFileValues.values()) {
+            if (firstSet) {
+                for (File j : i.getFiles()) {
+                    matchingFileNames.add(getBaseFilename(j));
+                }
+                firstSet = false;
+            }
+            
+            for (String j : matchingFileNames) {
+                boolean matched = false;
+                for (File k : i.getFiles()) {
+                    if (j.equals(getBaseFilename(k))) {
+                        matched = true;
+                    }
+                }
+                if (!matched) {
+                    matchingFileNames.remove(j);
+                }
+            }
+        }
+        
+        // Filter all parameters to unioned filenames
+        for (String i : multiFileValues.keySet()) {
+            List<File> filtered = new ArrayList<File>();
+            for (File j : multiFileValues.get(i).getFiles()) {
+                String basename = getBaseFilename(j);
+                for (String k : matchingFileNames) {
+                    if (basename.equals(k)) {
+                        filtered.add(j);
+                        break;
+                    }
+                }
+            }
+            multiFileValues.put(i, new MultiFileParameter(filtered.toArray(new File[filtered.size()])));
+        }
+        
         if (batchParamEmpty()) {
-            throw new FileUploadException("One or more batch parameters is an empty directory");
-        }
-        if (!sizesMatch) {
-            throw new FileUploadException("The number of files in the batch directories do not match");
-        }
-        if (!paramsMatch) {
-            throw new FileUploadException("The file names in batch directories do not match");
+            throw new FileUploadException("One or more batch parameters is an empty directory or doesn't conatin any files that can be matched to other batch parameters");
         }
     }
 
@@ -362,14 +427,6 @@ public class BatchSubmit {
 
     public boolean isBatch() {
         return isBatch;
-    }
-
-    public boolean listSizesMatch() {
-        return listSizesMatch;
-    }
-
-    public boolean matchedFiles() {
-        return matchedFiles;
     }
 
     private class MultiFileParameter {
