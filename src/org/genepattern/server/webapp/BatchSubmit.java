@@ -21,6 +21,8 @@ import org.apache.commons.fileupload.RequestContext;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
@@ -298,6 +300,8 @@ public class BatchSubmit {
     }
     
     private void readBatchDirectories() throws FileUploadException {
+        Context context = Context.getContextForUser(userName);
+        
         for (String i : multiFileValues.keySet()) {
             String dirUrl = formValues.get(i + "_url");
             File dir = null;
@@ -305,7 +309,7 @@ public class BatchSubmit {
             if (isUrl(dirUrl)) {
                 dir = DataServlet.getFileFromUrl(dirUrl);
             }
-            else {
+            else if (ServerConfiguration.instance().getAllowInputFilePaths(context)) {
                 dir = new File(dirUrl);
             }
             
