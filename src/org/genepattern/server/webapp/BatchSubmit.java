@@ -247,8 +247,6 @@ public class BatchSubmit {
         return true;
     }
 
-    // Submitted multifile fields for param XX arrive in the field
-    // XX_multiSuffix
     // Get the root value here
     private String undecorate(String key) {
         return key.substring(0, key.length() - multiSuffix.length());
@@ -290,10 +288,26 @@ public class BatchSubmit {
         }
     }
     
+    private boolean isUrl(String url) {
+        if (url.startsWith("http")) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    
     private void readBatchDirectories() throws FileUploadException {
         for (String i : multiFileValues.keySet()) {
             String dirUrl = formValues.get(i + "_url");
-            File dir = DataServlet.getFileFromUrl(dirUrl);
+            File dir = null;
+            
+            if (isUrl(dirUrl)) {
+                dir = DataServlet.getFileFromUrl(dirUrl);
+            }
+            else {
+                dir = new File(dirUrl);
+            }
             
             if (dir == null || !dir.exists() || !dir.isDirectory()) {
                 throw new FileUploadException("Batch directory not valid");
