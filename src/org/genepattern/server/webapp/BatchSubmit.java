@@ -145,7 +145,16 @@ public class BatchSubmit {
             int numFiles = multiFileValues.values().iterator().next().getNumFiles();
             for (int i = 0; i < numFiles; i++) {
                 for (String parameter : multiFileValues.keySet()) {
-                    String parameterValue = multiFileValues.get(parameter).getFiles().get(i).getCanonicalPath();
+                    boolean urlInput = multiFileValues.get(parameter).isUrl();
+                    String parameterValue = null;
+                    
+                    if (urlInput) {
+                        parameterValue = DataServlet.getUrlFromFile(multiFileValues.get(parameter).getFiles().get(i));
+                    }
+                    else {
+                        parameterValue = multiFileValues.get(parameter).getFiles().get(i).getCanonicalPath();
+                    }
+                    
                     assignParameter(parameter, parameterValue, parameterInfoArray);
                 }
                 // The task runner can move files to the output directory.
@@ -304,9 +313,10 @@ public class BatchSubmit {
         
         for (String i : multiFileValues.keySet()) {
             String dirUrl = formValues.get(i + "_url");
+            boolean urlInput = isUrl(dirUrl);
             File dir = null;
             
-            if (isUrl(dirUrl)) {
+            if (urlInput) {
                 dir = DataServlet.getFileFromUrl(dirUrl);
             }
             else if (ServerConfiguration.instance().getAllowInputFilePaths(context)) {
@@ -317,7 +327,7 @@ public class BatchSubmit {
                 throw new FileUploadException("Batch directory not valid");
             }
             
-            MultiFileParameter multiFile = new MultiFileParameter(dir.listFiles());
+            MultiFileParameter multiFile = new MultiFileParameter(dir.listFiles(), urlInput);
             multiFileValues.put(i, multiFile);
         }
     }
@@ -358,7 +368,7 @@ public class BatchSubmit {
                         matchedFiles.add(j);
                     }
                 }
-                multiFileValues.put(i.getName(), new MultiFileParameter(matchedFiles.toArray(new File[matchedFiles.size()])));
+                multiFileValues.put(i.getName(), new MultiFileParameter(matchedFiles.toArray(new File[matchedFiles.size()]), param.isUrl()));
             }
         }
         
@@ -396,7 +406,8 @@ public class BatchSubmit {
                     }
                 }
             }
-            multiFileValues.put(i, new MultiFileParameter(filtered.toArray(new File[filtered.size()])));
+            boolean isUrl = multiFileValues.get(i).isUrl();
+            multiFileValues.put(i, new MultiFileParameter(filtered.toArray(new File[filtered.size()]), isUrl));
         }
         
         if (batchParamEmpty()) {
@@ -450,8 +461,10 @@ public class BatchSubmit {
     private class MultiFileParameter {
         private List<File> files = new ArrayList<File>();
         private final CompareByFilename comparator = new CompareByFilename();
+        private boolean url;
 
-        public MultiFileParameter(File[] values) {
+        public MultiFileParameter(File[] values, boolean url) {
+            this.url = url;
             for (File i : values) {
                 boolean includeThis = true;
                 // Exclude unwanted system files
@@ -466,6 +479,10 @@ public class BatchSubmit {
             }
             
             Collections.sort(files, comparator);
+        }
+        
+        public boolean isUrl(){
+            return url;
         }
 
         public int getNumFiles() {
