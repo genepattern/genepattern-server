@@ -182,7 +182,7 @@ public class DataServlet extends HttpServlet implements Servlet {
      * @param fileObj, a file on the server's file system.
      * @return true iff the current user has permission to read the file.
      */
-    private boolean gpUserCanRead(String userid, File fileObj) {
+    public static boolean gpUserCanRead(String userid, File fileObj) {
         //admin users can read all files
         //TODO: come up with an improved policy for ACL for admin users
         boolean isAdmin = false;
@@ -209,7 +209,7 @@ public class DataServlet extends HttpServlet implements Servlet {
      * @param fileObj
      * @return true if the given file is in the user upload directory
      */
-    private boolean isInUserUploadDir(ServerConfiguration.Context userContext, File fileObj) {
+    private static boolean isInUserUploadDir(ServerConfiguration.Context userContext, File fileObj) {
         File userUploadDir = ServerConfiguration.instance().getUserUploadDir(userContext);
         return isDescendant(userUploadDir, fileObj);
     }
@@ -220,7 +220,7 @@ public class DataServlet extends HttpServlet implements Servlet {
      * @param fileObj
      * @return true of the given user has permission to read the file on the server file path.
      */
-    private boolean canReadServerFile(ServerConfiguration.Context userContext, File fileObj) {
+    public static boolean canReadServerFile(ServerConfiguration.Context userContext, File fileObj) {
         CommandProperties.Value value = ServerConfiguration.instance().getValue(userContext, "server.browse.file.system.root");
         if (value == null) {
             //Note: by default, all files on the server's file system are readable
