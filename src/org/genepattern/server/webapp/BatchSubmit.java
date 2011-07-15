@@ -323,9 +323,9 @@ public class BatchSubmit {
                 dir = new File(dirUrl);
             }
             
-            if (dir == null || !dir.exists() || !dir.isDirectory()) {
+            if (dir == null || !dir.exists() || !dir.isDirectory() || !DataServlet.gpUserCanRead(userName, dir)) {
                 throw new FileUploadException("Batch directory not valid");
-            }
+            } 
             
             MultiFileParameter multiFile = new MultiFileParameter(dir.listFiles(), urlInput);
             multiFileValues.put(i, multiFile);
