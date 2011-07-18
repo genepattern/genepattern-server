@@ -102,9 +102,31 @@ public class DataServlet extends HttpServlet implements Servlet {
     private void processRequest(HttpServletRequest request, HttpServletResponse response, HTTPMethod httpMethod) throws IOException {
         if (log.isDebugEnabled()) {
             //for debugging
-            String requestUrl = request.getRequestURL().toString();
-            String userAgent = request.getHeader("User-Agent");
+            final String requestUrl = request.getRequestURL().toString();
+            final String userAgent = request.getHeader("User-Agent");
             log.debug(request.getMethod()+" "+requestUrl+" from "+userAgent);
+
+            final String scheme = request.getScheme();
+            final String serverName = request.getServerName();
+            final int serverPort = request.getServerPort();
+            final String contextPath = request.getContextPath();
+            final String servletPath = request.getServletPath();
+            final String pathInfo = request.getPathInfo();
+            final String queryString = request.getQueryString();
+
+            String u = scheme + "://" + serverName;
+            if (serverPort > 0) {
+                u += (":" +serverPort);
+            }
+            u += contextPath + servletPath;
+            if (pathInfo != null) {
+                u+= pathInfo;
+            }
+            if (queryString != null) {
+                u+= ("?" + queryString);
+            }
+
+            log.debug(request.getMethod()+" "+u);
         }
 
         //1) require an authenticated GP user account
