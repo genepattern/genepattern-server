@@ -256,7 +256,8 @@ public class RunTaskBean {
         }
         if (gsb != null){
             gsb.setSelectedModule(taskNameOrLsid);
-        } 
+        }
+        UIBeanHelper.getRequest().getSession().setAttribute(GPConstants.LSID, taskNameOrLsid);
         
         TaskInfo taskInfo = null;
         try {

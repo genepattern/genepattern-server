@@ -1,6 +1,7 @@
 package org.genepattern.server.webapp;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,9 +18,15 @@ import org.genepattern.webservice.TaskInfo;
 
 public class SubmitJobServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
+    private String lsid = null;
     
     private void redirectToHome(HttpServletResponse response) throws IOException {
-        response.sendRedirect("/gp/");
+        if (lsid != null) {
+            response.sendRedirect("/gp/pages/index.jsf?lsid=" + URLEncoder.encode(lsid, "UTF-8"));
+        }
+        else {
+            response.sendRedirect("/gp/");
+        }
     }
     
     private void setErrorMessage(HttpServletRequest request, String message) {
@@ -32,6 +39,7 @@ public class SubmitJobServlet extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String userID = (String) request.getSession().getAttribute(GPConstants.USERID);
+        lsid = (String) request.getSession().getAttribute(GPConstants.LSID);
         
         if (userID == null) {
             response.sendRedirect("/gp/pages/notFound.jsf");
