@@ -30,6 +30,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -74,7 +75,7 @@ public class RunTaskHelper {
         tempDir.delete();
         tempDir.mkdir();
 
-        if (ServletFileUpload.isMultipartContent(request)) {
+        if (ServletFileUpload.isMultipartContent(new ServletRequestContext(request))) {
             List params = fub.parseRequest(request);
             if (isBatchJob(params)) {
                 batchJob = true;
@@ -269,9 +270,7 @@ public class RunTaskHelper {
             // look for missing required params
             if ((value == null) || (value.trim().length() == 0)) {
                 HashMap pia = pinfo.getAttributes();
-                boolean isOptional = ((String) pia
-                        .get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET]))
-                        .length() > 0;
+                boolean isOptional = ((String) pia.get(GPConstants.PARAM_INFO_OPTIONAL[GPConstants.PARAM_INFO_NAME_OFFSET])).length() > 0;
                 if (!isOptional) {
                     missingParameters.add(pinfo);
                 }
