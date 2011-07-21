@@ -65,7 +65,7 @@ public class BatchSubmit {
         return missingParameters;
     }
     
-    private String getTaskLsid() throws UnsupportedEncodingException {
+    protected String getTaskLsid() throws UnsupportedEncodingException {
         String taskLsid = formValues.get("taskLSID");
         if (taskLsid == null) {
             // Try the task name instead
@@ -196,7 +196,7 @@ public class BatchSubmit {
         }
     }
 
-    private JobInfo submitJob(int taskID, ParameterInfo[] parameters) throws WebServiceException {
+    protected JobInfo submitJob(int taskID, ParameterInfo[] parameters) throws WebServiceException {
         AddNewJobHandler req = new AddNewJobHandler(taskID, userName, parameters);
         try {
             JobInfo jobInfo = req.executeRequest();
@@ -209,7 +209,7 @@ public class BatchSubmit {
 
     // If the user uploaded multiple files for multiple parameters,
     // make sure we can match sets of files for submission to the batch process
-    private boolean multiFileListsAreSameSize() {
+    protected boolean multiFileListsAreSameSize() {
         if (multiFileValues.size() <= 1) { return true; }
 
         int listSize = multiFileValues.values().iterator().next().getNumFiles();
@@ -219,7 +219,7 @@ public class BatchSubmit {
         return true;
     }
     
-    private String getBaseFilename(File file) {
+    protected String getBaseFilename(File file) {
         int periodIndex = file.getName().lastIndexOf('.');
         if (periodIndex > 0) {
             return file.getName().substring(0, periodIndex);
@@ -229,7 +229,7 @@ public class BatchSubmit {
         }
     }
     
-    private String getFileExtension(File file) {
+    protected String getFileExtension(File file) {
         int periodIndex = file.getName().lastIndexOf('.');
         if (periodIndex > 0) {
             return file.getName().substring(periodIndex + 1);
@@ -242,7 +242,7 @@ public class BatchSubmit {
     // If the user uploaded multiple files for multiple parameters,
     // attempt to match them up for job submissions. Automatic matching
     // can only be done by same filename - different extension.
-    private boolean checkForMatchedParameters() {
+    protected boolean checkForMatchedParameters() {
         // Make sure the filenames only differ by extension
         if (multiFileValues.size() > 1) {
             MultiFileParameter firstParameter = multiFileValues.values().iterator().next();
@@ -259,11 +259,11 @@ public class BatchSubmit {
     }
 
     // Get the root value here
-    private String undecorate(String key) {
+    protected String undecorate(String key) {
         return key.substring(0, key.length() - multiSuffix.length());
     }
 
-    private void assignParameter(String key, String val, ParameterInfo[] parameterInfoArray) {
+    protected void assignParameter(String key, String val, ParameterInfo[] parameterInfoArray) {
         for (int i = 0; i < parameterInfoArray.length; i++) {
             ParameterInfo pinfo = parameterInfoArray[i];
             if (pinfo.getName().compareTo(key) == 0) {
@@ -274,7 +274,7 @@ public class BatchSubmit {
         log.error("Key value " + key + " was not found in parameter info");
     }
 
-    private void readFormValuesAndLoadAttachedFiles(HttpServletRequest request, List<FileItem> params) throws IOException, FileUploadException, WebServiceException {
+    protected void readFormValuesAndLoadAttachedFiles(HttpServletRequest request, List<FileItem> params) throws IOException, FileUploadException, WebServiceException {
         // Though the batch files will have been uploaded already through our
         // upload applet and MultiFileUploadReceiver,
         // the form may still contain single attached files. Save them now.
@@ -299,7 +299,7 @@ public class BatchSubmit {
         }
     }
     
-    private boolean isUrl(String url) {
+    protected boolean isUrl(String url) {
         if (url.startsWith("http")) {
             return true;
         }
@@ -308,7 +308,7 @@ public class BatchSubmit {
         }
     }
     
-    private void readBatchDirectories() throws FileUploadException {
+    protected void readBatchDirectories() throws FileUploadException {
         Context context = Context.getContextForUser(userName);
         
         for (String i : multiFileValues.keySet()) {
@@ -332,7 +332,7 @@ public class BatchSubmit {
         }
     }
     
-    private boolean batchParamEmpty() {
+    protected boolean batchParamEmpty() {
         for (MultiFileParameter i : multiFileValues.values()) {
             if (i.getNumFiles() == 0) {
                 return true;
@@ -341,7 +341,7 @@ public class BatchSubmit {
         return false;
     }
     
-    private void unionBatchParameters() throws FileUploadException, UnsupportedEncodingException, WebServiceException {
+    protected void unionBatchParameters() throws FileUploadException, UnsupportedEncodingException, WebServiceException {
         String taskLsid = getTaskLsid();
         if (taskLsid == null) { throw new FileUploadException("No Task LSID specified"); }
         TaskInfo taskInfo = new LocalAdminClient(userName).getTask(taskLsid);
@@ -420,7 +420,7 @@ public class BatchSubmit {
         }
     }
 
-    private void readFormParameter(FileItem submission) {
+    protected void readFormParameter(FileItem submission) {
         String formName = submission.getFieldName();
         String formValue = submission.getString();
 
@@ -432,7 +432,7 @@ public class BatchSubmit {
         }
     }
 
-    private void loadAttachedFile(String prefix, FileItem submission) throws IOException {
+    protected void loadAttachedFile(String prefix, FileItem submission) throws IOException {
         // We expect to find an attached file. But perhaps, this field was never
         // filled in
         // if the user specified a URL instead.
