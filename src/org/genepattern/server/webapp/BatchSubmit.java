@@ -352,7 +352,12 @@ public class BatchSubmit {
         
         // Filter all parameters to only parameters with matching file types
         for (ParameterInfo i : parameterInfoArray) {
+            boolean acceptAll = false;
             List<String> extensions = SemanticUtil.getFileFormats(i);
+            if (extensions.size() == 0) { // Special case for inputs that accept no file types
+                acceptAll = true; 
+                log.debug("Input parameter for batch accepts no file types, setting to accept all") ;
+            } 
             List<File> matchedFiles = new ArrayList<File>();
             MultiFileParameter param = multiFileValues.get(i.getName());
             if (param != null) {
@@ -364,7 +369,7 @@ public class BatchSubmit {
                             match = true;
                         }
                     }
-                    if (match) {
+                    if (match || acceptAll) {
                         matchedFiles.add(j);
                     }
                 }
