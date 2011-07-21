@@ -61,7 +61,7 @@ public class SubmitJobServlet extends HttpServlet {
             // Check for unmatched batch params here then add to missingReqParams if true
         }
         catch (FileUploadException e) {
-            setErrorMessage(request, e.getMessage() + " Hit the back button to resubmit the job.");
+            setErrorMessage(request, e.getMessage() + " Please resubmit the job.");
             redirectToHome(response);
             return;
         }
