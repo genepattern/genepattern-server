@@ -982,7 +982,11 @@ public class JobInfoWrapper implements Serializable {
         }
         //special case: URL input via SOAP interface
         String mode = (String) param.getAttributes().get("MODE");
-        if (mode != null && mode.equals("URL_IN") && !type.equals("DIRECTORY")) {
+        boolean dirFlag = true;
+        if (type != null && type.equals("DIRECTORY")) {
+        	dirFlag = false;
+        }
+        if (mode != null && mode.equals("URL_IN") && dirFlag) {
             return true;
         }
         return false;
