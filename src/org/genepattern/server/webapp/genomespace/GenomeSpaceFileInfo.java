@@ -80,4 +80,8 @@ public class GenomeSpaceFileInfo {
     public void setModuleMenuItems(List<KeyValuePair> moduleMenuItems) {
         this.moduleMenuItems = moduleMenuItems;
     }
+    
+    public String getKey() {
+        return super.toString();
+    }
 }

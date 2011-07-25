@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,8 +35,11 @@ import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genomespace.atm.model.FileParameter;
+import org.genomespace.atm.model.WebToolDescriptor;
 import org.genomespace.client.ConfigurationUrls;
 import org.genomespace.client.DataManagerClient;
+import org.genomespace.client.FileParameterWrapper;
 import org.genomespace.client.GsSession;
 import org.genomespace.client.User;
 import org.genomespace.client.exceptions.AuthorizationException;
@@ -46,6 +50,8 @@ import org.genomespace.datamanager.core.GSFileMetadataImpl;
 import org.richfaces.component.UITree;
 import org.richfaces.model.TreeNode;
 import org.richfaces.model.TreeNodeImpl;
+
+import com.sun.mail.iap.Response;
 
 /**
  * Backing bean for login to GenomeSpace.
@@ -70,6 +76,7 @@ public class GenomeSpaceBean {
     private boolean genomeSpaceEnabled = false;
 
     private Map<String, Set<TaskInfo>> kindToModules;
+    private Map<String, List<GSClientUrl>> clientUrls = new HashMap<String, List<GSClientUrl>>();
     
     public GenomeSpaceBean() {
         String userId = UIBeanHelper.getUserId();
@@ -374,21 +381,105 @@ public class GenomeSpaceBean {
      * @param httpSession
      * @param in
      */
-    private void saveFileToGenomeSpace(HttpSession httpSession, File in) {
-       try {
+    private GSFileMetadata saveFileToGenomeSpace(HttpSession httpSession, File in) {
+        GSFileMetadata metadata = null;
+        try {
             GsSession sess = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
             DataManagerClient dmClient = sess.getDataManagerClient();
             GSDirectoryListing rootDir = dmClient.listDefaultDirectory();
-            dmClient.uploadFile(in, rootDir.getDirectory());
+            metadata = dmClient.uploadFile(in, rootDir.getDirectory());
         
             UIBeanHelper.setInfoMessage("File uploaded to GS " + in.getName());
             this.setGenomeSpaceDirectories(null);
             
-       } 
-       catch (Exception e) {
+        } 
+        catch (Exception e) {
             e.printStackTrace();
             UIBeanHelper.setErrorMessage("There was a problem uploading the file to GS, " + in.getName());
+         }
+        return metadata;
+    }
+    
+    public List<WebToolDescriptor> getGSClients() throws InternalServerException {
+        HttpSession httpSession = UIBeanHelper.getSession();
+        GsSession gsSession = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
+        List<WebToolDescriptor> tools = gsSession.getAnalysisToolManagerClient().getWebTools();
+        WebToolDescriptor gp = null;  // Remove GenePattern from the list
+        for (WebToolDescriptor i : tools) { 
+            if (i.getName().equals("GenePattern")) {
+                gp = i;
+            }
         }
+        tools.remove(gp);
+        
+        return tools;
+    }
+    
+    public void addToClientUrls(GenomeSpaceFileInfo file) {
+        try {
+            clientUrls.put(file.getKey(), getGSClientURLs(file));
+        }
+        catch (InternalServerException e) {
+            log.error("Error adding GS file to map:" + file);
+        }
+    }
+    
+    public void sendGSFileToGSClient() throws IOException {
+        String fileParam = UIBeanHelper.getRequest().getParameter("file");
+        String toolParam = UIBeanHelper.getRequest().getParameter("tool");
+        List<GSClientUrl> urls = clientUrls.get(fileParam);
+        for (GSClientUrl i : urls) {
+            if (i.getTool().equals(toolParam)) {
+                UIBeanHelper.getResponse().sendRedirect(i.getUrl().toString());
+                break;
+            }
+        }
+    }
+    
+    public void sendInputFileToGSClient() throws IOException, InternalServerException {
+        String fileParam = UIBeanHelper.getRequest().getParameter("file");
+        String toolParam = UIBeanHelper.getRequest().getParameter("tool");
+        File file = new File(fileParam);
+        if (!file.exists()) { 
+            UIBeanHelper.setErrorMessage("Unable to upload input file to GenomeSpace");
+            return;
+        }
+        GSFileMetadata metadata = saveFileToGenomeSpace(UIBeanHelper.getSession(), file);
+        GenomeSpaceFileInfo gsFile = new GenomeSpaceFileInfo(metadata, null);
+        List<GSClientUrl> urls = getGSClientURLs(gsFile);
+
+        for (GSClientUrl i : urls) {
+            if (i.getTool().equals(toolParam)) {
+                UIBeanHelper.getResponse().sendRedirect(i.getUrl().toString());
+                break;
+            }
+        }
+    }
+    
+    public List<WebToolDescriptor> getRelevantGSClients(GenomeSpaceFileInfo file) throws InternalServerException {
+        return getGSClients();
+    }
+    
+    private List<FileParameterWrapper> prepareFileParameterWrappers(List<FileParameter> params, GSFileMetadata metadata) {
+        List<FileParameterWrapper> wrappers = new ArrayList<FileParameterWrapper>();
+        for (FileParameter i : params) {
+            wrappers.add(new FileParameterWrapper(i, metadata));
+        }
+        return wrappers;
+    }
+    
+    public List<GSClientUrl> getGSClientURLs(GenomeSpaceFileInfo file) throws InternalServerException {
+        GSFileMetadata metadata = file.gsFile;
+        HttpSession httpSession = UIBeanHelper.getSession();
+        GsSession gsSession = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
+        List<WebToolDescriptor> tools = getRelevantGSClients(file);
+        List<GSClientUrl> urls = new ArrayList<GSClientUrl>();
+        for (WebToolDescriptor i : tools) {
+            List<FileParameterWrapper> wrappers = prepareFileParameterWrappers(i.getFileParameters(), metadata);
+            URL url = gsSession.getAnalysisToolManagerClient().getWebToolLaunchUrl(i, wrappers);
+            urls.add(new GSClientUrl(i.getName(), url));
+        }
+        return urls;
     }
     
     public boolean openTreeNode(UITree tree) {
@@ -499,5 +590,31 @@ public class GenomeSpaceBean {
     public void setSelectedModule(String selectedModule) {
         this.currentTaskLsid = selectedModule;
         initCurrentLsid();
+    }
+    
+    public class GSClientUrl {
+        String tool;
+        URL url;
+        
+        GSClientUrl(String tool, URL url) {
+            this.tool = tool;
+            this.url = url;
+        }
+        
+        public String getTool() {
+            return tool;
+        }
+        
+        public void setTool(String tool) {
+            this.tool = tool;
+        }
+        
+        public URL getUrl() {
+            return url;
+        }
+        
+        public void setUrl(URL url) {
+            this.url = url;
+        }
     }
 }

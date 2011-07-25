@@ -70,6 +70,17 @@ use, misuse, or functionality.
                                 </h:commandLink>
                             </td>
                         </tr>
+						<t:dataList value="#{genomeSpaceBean.GSClients}" var="i">
+                        	<tr>
+                            	<td>
+                                	<img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle"/>&#160;
+                                	<h:commandLink value="Send to #{i.name}" action="#{genomeSpaceBean.sendInputFileToGSClient}" immediate="true" target="_blank">
+                                    	<f:param value="#{i.name}" name="tool"/>
+										<f:param value="#{aFile.path}" name="file"/>
+                                	</h:commandLink>
+                            	</td>
+                        	</tr>
+                        </t:dataList>
                     </h:outputText>
                     <h:outputText rendered="#{not empty aFile.sendToParameters or (aFile.directory and not empty aFile.sendToBatch)}">
                         <tr>

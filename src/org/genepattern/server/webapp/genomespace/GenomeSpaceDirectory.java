@@ -70,6 +70,7 @@ public class GenomeSpaceDirectory {
                 Collections.sort(moduleMenuItems, COMPARATOR);
             }
             info.setModuleMenuItems(moduleMenuItems);
+            genomeSpaceBean.addToClientUrls(info);
         }
     
     }
