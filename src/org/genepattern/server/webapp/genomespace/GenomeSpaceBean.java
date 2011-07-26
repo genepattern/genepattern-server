@@ -48,12 +48,10 @@ import org.genomespace.client.exceptions.InternalServerException;
 import org.genomespace.datamanager.core.GSDataFormat;
 import org.genomespace.datamanager.core.GSDirectoryListing;
 import org.genomespace.datamanager.core.GSFileMetadata;
-import org.genomespace.datamanager.core.GSFileMetadataImpl;
+import org.genomespace.datamanager.core.impl.GSFileMetadataImpl;
 import org.richfaces.component.UITree;
 import org.richfaces.model.TreeNode;
 import org.richfaces.model.TreeNodeImpl;
-
-import com.sun.mail.iap.Response;
 
 /**
  * Backing bean for login to GenomeSpace.
@@ -200,7 +198,6 @@ public class GenomeSpaceBean {
             
             return "genomeSpaceLoginFailed";
         }
-       
     }
     
     /**
@@ -438,6 +435,16 @@ public class GenomeSpaceBean {
         }
     }
     
+    private void testClientMap() {
+        for (String i : gsClientTypes.keySet()) {
+            log.info("TOOL: " + i);
+            log.info("\tTYPES: ");
+            for (String j : gsClientTypes.get(i)) {
+                log.info("\t\t" + j);
+            }
+        }
+    }
+    
     public Map<String, List<GSClientUrl>>getClientUrls() {
         return clientUrls;
     }
@@ -534,7 +541,7 @@ public class GenomeSpaceBean {
     public TreeNode<GenomeSpaceFileInfo> getFileTree() {
         // Set up the root node
         TreeNode<GenomeSpaceFileInfo> rootNode = new TreeNodeImpl<GenomeSpaceFileInfo>();
-        GSFileMetadata rootFileFacade = new GSFileMetadataImpl("GenomeSpace Files", null, UIBeanHelper.getUserId(), 0, null, null, true);
+        GSFileMetadata rootFileFacade = new GSFileMetadataImpl("GenomeSpace Files", null, UIBeanHelper.getServer(), UIBeanHelper.getUserId(), 0, null, null, true);
         GenomeSpaceFileInfo rootWrapper = new GenomeSpaceFileInfo(rootFileFacade, null);
         rootNode.setData(rootWrapper);
         
@@ -550,7 +557,7 @@ public class GenomeSpaceBean {
     }
     
     public TreeNode<GenomeSpaceFileInfo> getGenomeSpaceFilesTree(GenomeSpaceDirectory gsDir) {
-        GSFileMetadata metadataFacade = new GSFileMetadataImpl(gsDir.getName(), null, UIBeanHelper.getUserId(), 0, null, null, true);
+        GSFileMetadata metadataFacade = new GSFileMetadataImpl(gsDir.getName(), null, UIBeanHelper.getServer(), UIBeanHelper.getUserId(), 0, null, null, true);
         GenomeSpaceFileInfo wrapper = new GenomeSpaceFileInfo(metadataFacade, null);
         TreeNode<GenomeSpaceFileInfo> rootNode = new TreeNodeImpl<GenomeSpaceFileInfo>();
         rootNode.setData(wrapper);
