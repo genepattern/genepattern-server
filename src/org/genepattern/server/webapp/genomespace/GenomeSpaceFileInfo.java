@@ -3,6 +3,7 @@ package org.genepattern.server.webapp.genomespace;
 import java.util.*;
 
 import org.genomespace.datamanager.core.GSFileMetadata;
+import org.genepattern.server.webapp.genomespace.GenomeSpaceBean.GSClientUrl;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.webservice.ParameterInfo;

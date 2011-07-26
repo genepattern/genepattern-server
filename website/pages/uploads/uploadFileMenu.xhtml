@@ -49,7 +49,7 @@ use, misuse, or functionality.
                         </tr>
                         <tr>
                             <td>
-                                <t:inputText id="subdirName" rendered="#{aFile.directory}" onfocus="JavaScript:setSubdirFocus()" />
+                                <t:inputText id="subdirName" rendered="#{aFile.directory}" onfocus="JavaScript:setSubdirFocus()"/>
                                 <h:commandLink value="Create" action="#{uploadFilesBean.createSubdirectory}" immediate="true">
                                     <f:param name="parentPath" value="#{aFile.file.link}" />
                                 </h:commandLink>
@@ -70,16 +70,17 @@ use, misuse, or functionality.
                                 </h:commandLink>
                             </td>
                         </tr>
-						<t:dataList value="#{genomeSpaceBean.GSClients}" var="i">
-                        	<tr>
-                            	<td>
-                                	<img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle"/>&#160;
-                                	<h:commandLink value="Send to #{i.name}" action="#{genomeSpaceBean.sendInputFileToGSClient}" immediate="true" target="_blank">
-                                    	<f:param value="#{i.name}" name="tool"/>
-										<f:param value="#{aFile.path}" name="file"/>
-                                	</h:commandLink>
-                            	</td>
-                        	</tr>
+                        <t:dataList value="#{genomeSpaceBean.toolWrappers}" var="i">
+                            <h:outputText rendered="#{i.typeMap[aFile.kind] != null}">
+                                <tr>
+                                    <td>
+                                        <img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle"/>&#160;
+                                        <h:commandLink value="Send to #{i.tool.name}" action="#{genomeSpaceBean.sendInputFileToGSClient}" immediate="true" target="_blank">
+                                            <f:param value="#{i.tool.name}" name="tool"/><f:param value="#{aFile.path}" name="file"/>
+                                        </h:commandLink>
+                                    </td>
+                                </tr>
+                            </h:outputText>
                         </t:dataList>
                     </h:outputText>
                     <h:outputText rendered="#{not empty aFile.sendToParameters or (aFile.directory and not empty aFile.sendToBatch)}">
@@ -100,7 +101,7 @@ use, misuse, or functionality.
                             </td>
                         </tr>
                     </t:dataList>
-					<t:dataList value="#{aFile.sendToBatch}" var="p" rendered="#{aFile.directory}">
+                    <t:dataList value="#{aFile.sendToBatch}" var="p" rendered="#{aFile.directory}">
                         <tr>
                             <td>
                                 <h:outputLink value="#" onclick="setInputField('#{p.name}', '#{aFile.fullUrl}');checkBatch('#{p.name}');">

@@ -18,6 +18,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,6 +45,7 @@ import org.genomespace.client.GsSession;
 import org.genomespace.client.User;
 import org.genomespace.client.exceptions.AuthorizationException;
 import org.genomespace.client.exceptions.InternalServerException;
+import org.genomespace.datamanager.core.GSDataFormat;
 import org.genomespace.datamanager.core.GSDirectoryListing;
 import org.genomespace.datamanager.core.GSFileMetadata;
 import org.genomespace.datamanager.core.GSFileMetadataImpl;
@@ -77,6 +79,7 @@ public class GenomeSpaceBean {
 
     private Map<String, Set<TaskInfo>> kindToModules;
     private Map<String, List<GSClientUrl>> clientUrls = new HashMap<String, List<GSClientUrl>>();
+    private Map<String, List<String>> gsClientTypes = null;
     
     public GenomeSpaceBean() {
         String userId = UIBeanHelper.getUserId();
@@ -412,7 +415,31 @@ public class GenomeSpaceBean {
         }
         tools.remove(gp);
         
+        if (gsClientTypes == null) {
+            initGSClientTypesMap(tools);
+        }
+        
         return tools;
+    }
+    
+    public List<WebToolDescriptorWrapper> getToolWrappers() throws InternalServerException {
+        List<WebToolDescriptorWrapper> wrappers = new ArrayList<WebToolDescriptorWrapper>();
+        for (WebToolDescriptor i : getGSClients()) {
+            wrappers.add(new WebToolDescriptorWrapper(i));
+        }
+        return wrappers;
+    }
+    
+    private void initGSClientTypesMap(List<WebToolDescriptor> tools) {
+        gsClientTypes = new HashMap<String, List<String>>();
+        for (WebToolDescriptor i : tools) {
+            List<String> types = prepareTypesFilter(i.getFileParameters());
+            gsClientTypes.put(i.getName(), types);
+        }
+    }
+    
+    public Map<String, List<GSClientUrl>>getClientUrls() {
+        return clientUrls;
     }
     
     public void addToClientUrls(GenomeSpaceFileInfo file) {
@@ -456,8 +483,16 @@ public class GenomeSpaceBean {
         }
     }
     
-    public List<WebToolDescriptor> getRelevantGSClients(GenomeSpaceFileInfo file) throws InternalServerException {
-        return getGSClients();
+    private List<String> prepareTypesFilter(List<FileParameter> params) {
+        Set<GSDataFormat> superset = new HashSet<GSDataFormat>();
+        List<String> types = new ArrayList<String>();
+        for (FileParameter i : params) {
+            superset.addAll(i.getFormats());
+        }
+        for (GSDataFormat i : superset) {
+            types.add(i.getName());
+        }
+        return types;
     }
     
     private List<FileParameterWrapper> prepareFileParameterWrappers(List<FileParameter> params, GSFileMetadata metadata) {
@@ -468,11 +503,21 @@ public class GenomeSpaceBean {
         return wrappers;
     }
     
+    private boolean typeMatchesTool(String type, WebToolDescriptor tool) {
+        List<String> toolTypes = gsClientTypes.get(tool.getName());
+        for (String i : toolTypes) {
+            if (i.equals(type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public List<GSClientUrl> getGSClientURLs(GenomeSpaceFileInfo file) throws InternalServerException {
         GSFileMetadata metadata = file.gsFile;
         HttpSession httpSession = UIBeanHelper.getSession();
         GsSession gsSession = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
-        List<WebToolDescriptor> tools = getRelevantGSClients(file);
+        List<WebToolDescriptor> tools = getGSClients();
         List<GSClientUrl> urls = new ArrayList<GSClientUrl>();
         for (WebToolDescriptor i : tools) {
             List<FileParameterWrapper> wrappers = prepareFileParameterWrappers(i.getFileParameters(), metadata);
@@ -615,6 +660,40 @@ public class GenomeSpaceBean {
         
         public void setUrl(URL url) {
             this.url = url;
+        }
+    }
+    
+    public class WebToolDescriptorWrapper {
+        WebToolDescriptor tool;
+        Map<String, Boolean> typeMap = new HashMap<String, Boolean>();
+        boolean init = false;
+        
+        WebToolDescriptorWrapper(WebToolDescriptor tool) {
+            this.tool = tool;
+        }
+        
+        public WebToolDescriptor getTool() {
+            return tool;
+        }
+        
+        public void setTool(WebToolDescriptor tool) {
+            this.tool = tool;
+        }
+        
+        public Map<String, Boolean> getTypeMap() {
+            if (!init) {
+                List<String> types = gsClientTypes.get(tool.getName());
+                for (String i : types) {
+                    typeMap.put(i, true);
+                }
+                init = true;
+            }
+            
+            return typeMap;
+        }
+        
+        public void setTypeMap(Map<String, Boolean> typeMap) {
+            this.typeMap = typeMap;
         }
     }
 }
