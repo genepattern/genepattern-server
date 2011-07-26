@@ -78,7 +78,7 @@ public class GenomeSpaceBean {
     private Map<String, Set<TaskInfo>> kindToModules;
     private Map<String, List<GSClientUrl>> clientUrls = new HashMap<String, List<GSClientUrl>>();
     private Map<String, List<String>> gsClientTypes = null;
-    
+
     public GenomeSpaceBean() {
         String userId = UIBeanHelper.getUserId();
         
@@ -433,6 +433,10 @@ public class GenomeSpaceBean {
             List<String> types = prepareTypesFilter(i.getFileParameters());
             gsClientTypes.put(i.getName(), types);
         }
+    }
+    
+    public Map<String, List<String>> getGsClientTypes() {
+        return gsClientTypes;
     }
     
     private void testClientMap() {

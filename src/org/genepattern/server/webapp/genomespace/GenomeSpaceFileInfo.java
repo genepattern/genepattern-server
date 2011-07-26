@@ -2,6 +2,9 @@ package org.genepattern.server.webapp.genomespace;
 
 import java.util.*;
 
+import org.genomespace.atm.model.WebToolDescriptor;
+import org.genomespace.client.exceptions.InternalServerException;
+import org.genomespace.datamanager.core.GSDataFormat;
 import org.genomespace.datamanager.core.GSFileMetadata;
 import org.genepattern.server.webapp.genomespace.GenomeSpaceBean.GSClientUrl;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
@@ -16,6 +19,7 @@ public class GenomeSpaceFileInfo {
     List<KeyValuePair> moduleInputParameters;
     List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
     GenomeSpaceDirectory dir;
+    Set<String> toolUrls;
 
     public GenomeSpaceFileInfo(GSFileMetadata md, GenomeSpaceDirectory parent){
         gsFile = md;
@@ -84,5 +88,33 @@ public class GenomeSpaceFileInfo {
     
     public String getKey() {
         return super.toString();
+    }
+    
+    public Set<String> getConversions() {
+        Set<String> types = new HashSet<String>();
+        for (GSDataFormat i : gsFile.getAvailableDataFormats()) {
+            types.add(i.getName());
+        }
+        types.add(this.getType());
+        return types;
+    }
+    
+    public Set<String> getRelevantTools() throws InternalServerException {
+        if (toolUrls == null) {
+            toolUrls = new HashSet<String>();
+            GenomeSpaceBean gsb = (GenomeSpaceBean)UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
+            Set<String> types = getConversions();
+            Map<String, List<String>> gsClientTypes = gsb.getGsClientTypes();
+            for (String i : gsClientTypes.keySet()) {
+                for (String j : gsClientTypes.get(i)) {
+                    for (String k : types) {
+                        if (j.equals(k)) {
+                            toolUrls.add(i);
+                        }
+                    }
+                }
+            }
+        }
+        return toolUrls;
     }
 }

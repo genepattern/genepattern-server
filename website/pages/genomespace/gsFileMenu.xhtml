@@ -35,18 +35,16 @@ use, misuse, or functionality.
                             </td>
                         </tr>
                     </h:outputText>
-                    <t:dataList value="#{genomeSpaceBean.toolWrappers}" var="i">
-                        <h:outputText rendered="#{i.typeMap[aFile.type] != null}">
-                            <tr>
-                                <td>
-                                    <img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle"/>&#160;
-                                    <h:commandLink value="Send to #{i.tool.name}" action="#{genomeSpaceBean.sendGSFileToGSClient}" immediate="true" target="_blank">
-                                        <f:param value="#{i.tool.name}" name="tool"/>
-										<f:param value="#{aFile.key}" name="file"/>
-                                    </h:commandLink>
-                                </td>
-                            </tr>
-                        </h:outputText>
+                    <t:dataList value="#{aFile.relevantTools}" var="i">
+                        <tr>
+                            <td>
+                                <img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle"/>&#160;
+                                <h:commandLink value="Send to #{i}" action="#{genomeSpaceBean.sendGSFileToGSClient}" immediate="true" target="_blank">
+                                    <f:param value="#{i}" name="tool"/>
+									<f:param value="#{aFile.key}" name="file"/>
+                                </h:commandLink>
+                            </td>
+                        </tr>
                     </t:dataList>
                     <t:dataList value="#{aFile.sendToParameters}" var="p">
                         <tr>
