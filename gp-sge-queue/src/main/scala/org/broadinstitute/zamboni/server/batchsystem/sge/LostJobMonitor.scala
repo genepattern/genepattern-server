@@ -30,7 +30,6 @@ import LostJobMonitor._
 import org.broadinstitute.zamboni.server.batchsystem.BatchJob
 import java.util.concurrent.LinkedBlockingQueue
 import org.broadinstitute.zamboni.server.util.log.Log
-import org.broadinstitute.zamboni.server.ServerInitializer
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.HashMap
 import java.util.Date
@@ -125,7 +124,7 @@ class LostJobMonitor(val batchSystem : SgeBatchSystem)
         }
 
         if(ripeWithTimeJobs.size > 0) {
-          val reader = new AccountingReader(ServerInitializer.singleton.sgeAccountingFile, new Date(smallestTime))
+          val reader = new AccountingReader(SgeBatchSystem.sgeAccountingFile, new Date(smallestTime))
 
           Log.info((("SGE session lost track of the following jobs: " /: ripeWithTimeJobs)(_ + " " + _._2.batchJob.toString)) + "; checking accounting file.")
 

@@ -25,7 +25,6 @@
 package org.broadinstitute.zamboni.server.batchsystem
 
 import org.broadinstitute.zamboni.server.util.ZamboniDef._
-import org.broadinstitute.zamboni.server.workflowexecution.ZamboniJob
 import java.util.Date
 import collection.mutable.HashMap
 
@@ -33,7 +32,7 @@ import collection.mutable.HashMap
 /**
  * Encapsulates all configuration and status information for a batch job.
  */
-class BatchJob(val batchSystem : BatchSystem) extends ZamboniJob with Cloneable {
+class BatchJob(val batchSystem : BatchSystem) extends Cloneable {
 
   private var workingDirectory : Option[String] = None
   private var theCommand : Option[String] = None

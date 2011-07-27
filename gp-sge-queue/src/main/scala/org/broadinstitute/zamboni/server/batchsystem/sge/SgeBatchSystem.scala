@@ -34,7 +34,6 @@ import java.util.{Date, LinkedList, HashSet}
 import java.io.{FileWriter, BufferedWriter, PrintWriter, File}
 import scala.collection.JavaConversions._
 import SgeBatchSystem._
-import org.broadinstitute.zamboni.server.ServerInitializer
 
 object SgeBatchSystem {
   private def jobInfoToString(jobInfo: JobInfo): String = {
@@ -59,7 +58,15 @@ object SgeBatchSystem {
     ):::tailInfo).mkString("(", ", ", ")")
   }
 
-  val contactFile = new File("conf", "sge_contact.txt")
+  //val contactFile = new File("conf", "sge_contact.txt")
+  val contactFile = new File( System.getProperty("SGE_SESSION_FILE", System.getProperty("resources", ".") + "/conf/sge_contact.txt" ) );
+  
+  // This is empty in production, but for testing it may be set to something else via sge.project
+  val project = System.getProperty("SGE_PROJECT", "default_sge_project");
+  // $SGE_ROOT/$SGE_CELL/common/accounting 
+  val sgeRoot = System.getProperty("SGE_ROOT", "sge_root");
+  val sgeCell = System.getProperty("SGE_CELL", "sge_cell");
+  val sgeAccountingFile : File = new File( sgeRoot + "/" + sgeCell + "/common/accounting" );
 }
 
 /**
@@ -109,9 +116,6 @@ class SgeBatchSystem(batchSystemName : String) extends AbstractBatchSystem(batch
     }
     (jm, s)
   }
-
-  // This is empty in production, but for testing it may be set to something else via sge.project
-  val project = ServerInitializer.singleton.sgeProject
   
 	/**
 	 * Factory method that returns a new BatchJob object which can be configured and
@@ -234,7 +238,7 @@ class SgeBatchSystem(batchSystemName : String) extends AbstractBatchSystem(batch
       session.deleteJobTemplate(jt)
 
       if (jobId == null || jobId.isEmpty) {
-        throw new BatchTransientException("SGE API did not return a jobId for job: " + job);
+        throw new Exception("SGE API did not return a jobId for job: " + job);
       }
       else {
         job.setJobId(Some(jobId))
