@@ -27,45 +27,52 @@ import scala.Some;
 public class SgeCommandExecutor implements CommandExecutor {
     public static Logger log = Logger.getLogger(SgeCommandExecutor.class);
     
-    private String SGE_PROJECT = "gp_sge";
-    private String SGE_ROOT;
-    private String SGE_CELL;
-    private String SGE_SESSION_FILE; //the path to the session file, stored relative to the resources directory
+    //configuration property names; loaded from the config.file at runtime
+    public enum Prop {
+        SGE_PROJECT,
+        SGE_ROOT,
+        SGE_CELL,
+        SGE_SESSION_FILE,
+        SGE_BATCH_SYSTEM_NAME;
+    }
     
     private SgeBatchSystem sgeBatchSystem = null;
+    private final CommandProperties configurationProperties = new CommandProperties();
 
     public void setConfigurationFilename(String filename) {
     }
 
     public void setConfigurationProperties(CommandProperties properties) {
+        //set properties from config.file, section for this executor
+        this.configurationProperties.putAll( properties );
     }
 
     public void start() { 
         log.info("starting SGE CommandExecutor...");
-        ServerConfiguration.Context serverContext = ServerConfiguration.Context.getServerContext();
-        this.SGE_PROJECT = ServerConfiguration.instance().getGPProperty(serverContext, "SGE_PROJECT");
-        this.SGE_ROOT = ServerConfiguration.instance().getGPProperty(serverContext, "SGE_ROOT");
-        this.SGE_CELL = ServerConfiguration.instance().getGPProperty(serverContext, "SGE_CELL");
-        this.SGE_SESSION_FILE = ServerConfiguration.instance().getGPProperty(serverContext, "SGE_SESSION_FILE", "conf/sge_contact.txt");
-        //if the session_file is relative, assume it is relative to the resources directory (rather than the working directory)
-        File sessionFile = new File(SGE_SESSION_FILE);
-        if (!sessionFile.isAbsolute()) {
-            sessionFile = new File(System.getProperty("resources"), sessionFile.getPath());
-        }
-        this.SGE_SESSION_FILE = sessionFile.getAbsolutePath();
         
-        log.info("SGE_PROJECT="+this.SGE_PROJECT);
-        log.info("SGE_ROOT="+this.SGE_ROOT);
-        log.info("SGE_CELL="+this.SGE_CELL);
-        log.info("SGE_SESSION_FILE="+this.SGE_SESSION_FILE);
+        String sgeRoot = configurationProperties.getProperty(Prop.SGE_ROOT.toString(), System.getProperty(Prop.SGE_ROOT.toString()));
+        String sgeCell = configurationProperties.getProperty(Prop.SGE_CELL.toString(), System.getProperty(Prop.SGE_CELL.toString()));
+        String sgeProject = configurationProperties.getProperty(Prop.SGE_PROJECT.toString());
+        //if the session_file is relative, assume it is relative to the resources directory (rather than the working directory)
+        String sgeSessionFile = configurationProperties.getProperty(Prop.SGE_SESSION_FILE.toString());
+        if (sgeSessionFile == null) {
+            sgeSessionFile = System.getProperty("resources", ".") + "/conf/sge_contact.txt";
+        }
+        String sgeBatchSystemName = configurationProperties.getProperty(Prop.SGE_BATCH_SYSTEM_NAME.toString(), "gpSge");
+        
+        log.info(Prop.SGE_ROOT+"="+sgeRoot);
+        log.info(Prop.SGE_CELL+"="+sgeCell);
+        log.info(Prop.SGE_PROJECT+"="+sgeProject);
+        log.info(Prop.SGE_SESSION_FILE+"="+sgeSessionFile);
+        log.info(Prop.SGE_BATCH_SYSTEM_NAME+"="+sgeBatchSystemName);
 
-        System.setProperty("SGE_PROJECT", this.SGE_PROJECT);
-        System.setProperty("SGE_ROOT", this.SGE_ROOT);
-        System.setProperty("SGE_CELL", this.SGE_CELL);
-        System.setProperty("SGE_SESSION_FILE", this.SGE_SESSION_FILE);
+        System.setProperty("SGE_ROOT", sgeRoot);
+        System.setProperty("SGE_CELL", sgeCell);
+        System.setProperty("SGE_PROJECT", sgeProject);
+        System.setProperty("SGE_SESSION_FILE", sgeSessionFile);
         
         //initialize Zamboni's SGE service
-        sgeBatchSystem = new SgeBatchSystem("gpSge");
+        sgeBatchSystem = new SgeBatchSystem(sgeBatchSystemName);
     }
 
     public void stop() {
