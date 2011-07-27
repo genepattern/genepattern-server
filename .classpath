@@ -123,7 +123,8 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/groovy-all-1.0.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/analysistoolmgmt-messages-0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/datamanager-messages-0.1-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="website/WEB-INF/lib/jets3t-0.7.4.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/clientdevelopmentkit-0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/jets3t-0.8.1.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/com.springsource.org.jets3t-0.8.0.jar"/>
 	<classpathentry kind="output" path="website/WEB-INF/classes"/>
 </classpath>
