@@ -50,6 +50,11 @@ public class SgeCommandExecutor implements CommandExecutor {
     public void start() { 
         log.info("starting SGE CommandExecutor...");
         
+        // listing system properties
+        log.info("SGE_ROOT="+System.getProperty("SGE_ROOT"));
+        log.info("SGE_CELL="+System.getProperty("SGE_CELL"));
+        
+        
         String sgeRoot = configurationProperties.getProperty(Prop.SGE_ROOT.toString(), System.getProperty(Prop.SGE_ROOT.toString()));
         String sgeCell = configurationProperties.getProperty(Prop.SGE_CELL.toString(), System.getProperty(Prop.SGE_CELL.toString()));
         String sgeProject = configurationProperties.getProperty(Prop.SGE_PROJECT.toString());
@@ -66,11 +71,18 @@ public class SgeCommandExecutor implements CommandExecutor {
         log.info(Prop.SGE_SESSION_FILE+"="+sgeSessionFile);
         log.info(Prop.SGE_BATCH_SYSTEM_NAME+"="+sgeBatchSystemName);
 
-        System.setProperty("SGE_ROOT", sgeRoot);
-        System.setProperty("SGE_CELL", sgeCell);
-        System.setProperty("SGE_PROJECT", sgeProject);
-        System.setProperty("SGE_SESSION_FILE", sgeSessionFile);
-        
+        if (sgeRoot != null) {
+            System.setProperty("SGE_ROOT", sgeRoot);
+        }
+        if (sgeCell != null) {
+            System.setProperty("SGE_CELL", sgeCell);
+        }
+        if (sgeProject != null) {
+            System.setProperty("SGE_PROJECT", sgeProject);
+        }
+        if (sgeProject != null) {
+            System.setProperty("SGE_SESSION_FILE", sgeSessionFile);
+        }
         //initialize Zamboni's SGE service
         sgeBatchSystem = new SgeBatchSystem(sgeBatchSystemName);
     }
