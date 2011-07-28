@@ -1,8 +1,6 @@
 package org.genepattern.server.executor.sge;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -15,7 +13,6 @@ import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;
 
-import scala.None;
 import scala.Option;
 import scala.Some;
 
@@ -42,6 +39,8 @@ public class SgeCommandExecutor implements CommandExecutor {
     
     private SgeBatchSystem sgeBatchSystem = null;
     private final CommandProperties configurationProperties = new CommandProperties();
+    //this is a monitor which monitors the SgeBatchSystem for completed jobs
+    private JobMonitor jobMonitor = null;
 
     public void setConfigurationFilename(String filename) {
     }
@@ -50,14 +49,13 @@ public class SgeCommandExecutor implements CommandExecutor {
         //set properties from config.file, section for this executor
         this.configurationProperties.putAll( properties );
     }
-
+    
     public void start() { 
         log.info("starting SGE CommandExecutor...");
         
         // listing system properties
         log.info("SGE_ROOT="+System.getProperty("SGE_ROOT"));
-        log.info("SGE_CELL="+System.getProperty("SGE_CELL"));
-        
+        log.info("SGE_CELL="+System.getProperty("SGE_CELL")); 
         
         String sgeRoot = configurationProperties.getProperty(Prop.SGE_ROOT.toString(), System.getProperty(Prop.SGE_ROOT.toString()));
         String sgeCell = configurationProperties.getProperty(Prop.SGE_CELL.toString(), System.getProperty(Prop.SGE_CELL.toString()));
@@ -67,7 +65,7 @@ public class SgeCommandExecutor implements CommandExecutor {
         if (sgeSessionFile == null) {
             sgeSessionFile = System.getProperty("resources", ".") + "/conf/sge_contact.txt";
         }
-        String sgeBatchSystemName = configurationProperties.getProperty(Prop.SGE_BATCH_SYSTEM_NAME.toString(), "gpSge");
+        String sgeBatchSystemName = configurationProperties.getProperty(Prop.SGE_BATCH_SYSTEM_NAME.toString(), "gp_server");
         
         log.info(Prop.SGE_ROOT+"="+sgeRoot);
         log.info(Prop.SGE_CELL+"="+sgeCell);
@@ -89,6 +87,7 @@ public class SgeCommandExecutor implements CommandExecutor {
         }
         //initialize Zamboni's SGE service
         sgeBatchSystem = new SgeBatchSystem(sgeBatchSystemName);
+        startJobMonitor();
     }
 
     public void stop() {
@@ -102,6 +101,20 @@ public class SgeCommandExecutor implements CommandExecutor {
                 log.error("Error shutting down SGE Batch System: "+t.getLocalizedMessage(), t);
             }
         }
+        stopJobMonitor();
+    }
+    
+    private void startJobMonitor() {
+        if (jobMonitor == null) {
+            jobMonitor = new JobMonitor( sgeBatchSystem );
+        }
+        jobMonitor.start();
+    }
+    
+    private void stopJobMonitor() {
+        if (jobMonitor != null) {
+            jobMonitor.stop();
+        }
     }
 
     public int handleRunningJob(JobInfo jobInfo) throws Exception {
@@ -112,24 +125,29 @@ public class SgeCommandExecutor implements CommandExecutor {
             throw new Exception("sgeBatchSystem not initialized; handleRunningJob(jobId="+jobInfo.getJobNumber()+")");
         }
         
-        BatchJob sgeJob = getBatchJobFromGpJobInfo( jobInfo );
-        File workingDir = getWorkingDir(jobInfo);
-        sgeJob.setWorkingDirectory(new scala.Some<String>(workingDir.getPath()));
+        log.error("handleRunningJob not implemented for SGE jobs; jobId="+jobInfo.getJobNumber());
+        return JobStatus.JOB_ERROR;
         
+        //TODO: implement this method, here is pseudo-code, not yet tested
+        //BatchJob sgeJob = getBatchJobFromGpJobInfo( jobInfo );
+        //File workingDir = getWorkingDir(jobInfo);
+        //sgeJob.setWorkingDirectory(new scala.Some<String>(workingDir.getPath()));
         
-        
-        List<BatchJob> sgeJobs = new ArrayList<BatchJob>();
-        sgeJobs.add(sgeJob);
-        sgeBatchSystem.restore( scala.collection.JavaConversions.asScalaBuffer( sgeJobs ) );
+        //List<BatchJob> sgeJobs = new ArrayList<BatchJob>();
+        //sgeJobs.add(sgeJob);
+        //sgeBatchSystem.restore( scala.collection.JavaConversions.asScalaBuffer( sgeJobs ) );
 
         // don't change the status
-        int currentStatus = JobStatus.JOB_PROCESSING;
-        if (JobStatus.STATUS_MAP.get( jobInfo.getStatus() ) instanceof Integer) {
-            currentStatus = (Integer) JobStatus.STATUS_MAP.get( jobInfo.getStatus() );
-        }
-        return currentStatus;
+        //int currentStatus = JobStatus.JOB_PROCESSING;
+        //if (JobStatus.STATUS_MAP.get( jobInfo.getStatus() ) instanceof Integer) {
+        //    currentStatus = (Integer) JobStatus.STATUS_MAP.get( jobInfo.getStatus() );
+        //}
+        //return currentStatus;
     }
 
+    /**
+     * Submit a GenePattern job to SGE.
+     */
     public void runCommand(String[] commandLine, Map<String, String> environmentVariables, File runDir, File stdoutFile, File stderrFile, JobInfo jobInfo, File stdinFile) throws CommandExecutorException {
         //TODO: handle environmentVariables
         //TODO: handle stdinFile
@@ -163,7 +181,9 @@ public class SgeCommandExecutor implements CommandExecutor {
         } 
     }
 
-
+    /**
+     * Cancel an SGE job submitted from GenePattern.
+     */
     public void terminateJob(JobInfo jobInfo) throws Exception {
         log.info("termminating SGE job, gp_job_id="+jobInfo.getJobNumber());
         BatchJob sgeJob = getBatchJobFromGpJobInfo( jobInfo );

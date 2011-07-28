@@ -222,7 +222,7 @@ class SgeBatchSystem(batchSystemName : String) extends AbstractBatchSystem(batch
         nativeSpec += " -m e"
       }
 
-      if (job.isRestartable.get) nativeSpec += " -r y"
+      if (job.isRestartable.getOrElse(false)) nativeSpec += " -r y" 
 
       if (!project.isEmpty) nativeSpec += " -P " + project
 
