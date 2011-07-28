@@ -15,6 +15,7 @@ import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;
 
+import scala.None;
 import scala.Option;
 import scala.Some;
 
@@ -210,21 +211,21 @@ public class SgeCommandExecutor implements CommandExecutor {
     private BatchJob getBatchJobFromGpJobInfo(JobInfo jobInfo) throws Exception {
         File runDir = getWorkingDir(jobInfo);
         Option<String> workingDirectory = new Some<String>(runDir.getPath());
-        Option<String> command = new Some<String>( null );
+        Option<String> command = null;
         String[] args = null;
-        Option<String> outputPath = new Some<String>( null );
-        Option<String>  errorPath = new Some<String>( null );
-        Option<String[]> emailAddresses = new Some<String[]>( null );
-        Option<Integer> priority = new Some<Integer>( null );
+        Option<String> outputPath = null;
+        Option<String>  errorPath = null;
+        Option<String[]> emailAddresses = null;
+        Option<Integer> priority = null;
         Option<String> jobName = new Some<String>( ""+jobInfo.getJobNumber() );
-        Option<String> queueName = new Some<String>(null);
-        Option<Boolean> exclusive = new Some<Boolean>(null);
-        Option<Integer> maxRunningTime = new Some<Integer>(null);
-        Option<Integer> memoryReservation = new Some<Integer>(null);
-        Option<Integer> maxMemory = new Some<Integer>(null);
-        Option<Integer> slotReservation = new Some<Integer>(null);
-        Option<Integer> maxSlots = new Some<Integer>(null);
-        Option<Boolean> restartable = new Some<Boolean>(null);
+        Option<String> queueName = null;
+        Option<Boolean> exclusive = null;
+        Option<Integer> maxRunningTime = null;
+        Option<Integer> memoryReservation = null;
+        Option<Integer> maxMemory = null;
+        Option<Integer> slotReservation = null;
+        Option<Integer> maxSlots = null;
+        Option<Boolean> restartable = null;
 
         BatchJob sgeJob = sgeBatchSystem.newBatchJob(
                 workingDirectory,
