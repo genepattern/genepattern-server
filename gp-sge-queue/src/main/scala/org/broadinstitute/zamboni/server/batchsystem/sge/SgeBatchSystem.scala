@@ -62,7 +62,8 @@ object SgeBatchSystem {
   val contactFile = new File( System.getProperty("SGE_SESSION_FILE", System.getProperty("resources", ".") + "/conf/sge_contact.txt" ) );
   
   // This is empty in production, but for testing it may be set to something else via sge.project
-  val project = System.getProperty("SGE_PROJECT", "default_sge_project");
+  //val project = System.getProperty("SGE_PROJECT", "default_sge_project");
+  val project = None;
   // $SGE_ROOT/$SGE_CELL/common/accounting 
   val sgeRoot = System.getProperty("SGE_ROOT", "sge_root");
   val sgeCell = System.getProperty("SGE_CELL", "sge_cell");

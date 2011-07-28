@@ -22,6 +22,9 @@ import scala.Some;
 /**
  * CommandExecutor for SGE with DRMAA / Java, based on Zamboni implementation, via src code provided circa July 2011.
  * 
+ * Developer notes:
+ *     @see: http://stackoverflow.com/questions/1997433/how-to-use-scala-none-from-java-code
+ * 
  * @author pcarr
  *
  */
@@ -149,7 +152,7 @@ public class SgeCommandExecutor implements CommandExecutor {
             sgeJob.setWorkingDirectory( new scala.Some<String>(runDir.getPath()) );
             sgeJob.setOutputPath( new scala.Some<String>(stdoutFile.getPath()) );
             sgeJob.setErrorPath( new scala.Some<String>(stderrFile.getPath()) );
-            sgeJob.setJobName( new scala.Some<String>(""+jobInfo.getJobNumber()) );
+            sgeJob.setJobName( new scala.Some<String>("GP_"+jobInfo.getJobNumber()) );
             
             sgeJob = sgeBatchSystem.submit(sgeJob);
             //TODO: record the sge job id in the db
@@ -209,23 +212,33 @@ public class SgeCommandExecutor implements CommandExecutor {
      * @return
      */
     private BatchJob getBatchJobFromGpJobInfo(JobInfo jobInfo) throws Exception {
+        
+        //init all variables to None
+        Option<String> workingDirectory = scala.Option.apply(null);
+        Option<String> command = scala.Option.apply(null);
+        String[] args = new String[0];
+        Option<String> outputPath = scala.Option.apply(null);
+        Option<String>  errorPath = scala.Option.apply(null);
+        Option<String[]> emailAddresses = scala.Option.apply(null);
+        Option<Integer> priority = scala.Option.apply(null);
+        Option<String> jobName = scala.Option.apply(null);
+        Option<String> queueName = scala.Option.apply(null);
+        Option<Boolean> exclusive = scala.Option.apply(null);
+        Option<Integer> maxRunningTime = scala.Option.apply(null);
+        Option<Integer> memoryReservation = scala.Option.apply(null);
+        Option<Integer> maxMemory = scala.Option.apply(null);
+        Option<Integer> slotReservation = scala.Option.apply(null);
+        Option<Integer> maxSlots = scala.Option.apply(null);
+        Option<Boolean> restartable = scala.Option.apply(null);
+
+
+        //set workingDirectory from jobInfo
         File runDir = getWorkingDir(jobInfo);
-        Option<String> workingDirectory = new Some<String>(runDir.getPath());
-        Option<String> command = null;
-        String[] args = null;
-        Option<String> outputPath = null;
-        Option<String>  errorPath = null;
-        Option<String[]> emailAddresses = null;
-        Option<Integer> priority = null;
-        Option<String> jobName = new Some<String>( ""+jobInfo.getJobNumber() );
-        Option<String> queueName = null;
-        Option<Boolean> exclusive = null;
-        Option<Integer> maxRunningTime = null;
-        Option<Integer> memoryReservation = null;
-        Option<Integer> maxMemory = null;
-        Option<Integer> slotReservation = null;
-        Option<Integer> maxSlots = null;
-        Option<Boolean> restartable = null;
+        workingDirectory = new Some<String>(runDir.getPath());
+        //set jobName from jobInfo, must not start with a digit
+        jobName = new Some<String>( "GP_"+jobInfo.getJobNumber() );
+        //set restartable to false (None causes an error in SgeBatchSystem.scala)
+        restartable = scala.Option.apply(false);
 
         BatchJob sgeJob = sgeBatchSystem.newBatchJob(
                 workingDirectory,
