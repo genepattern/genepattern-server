@@ -163,7 +163,9 @@ class SgeBatchSystem(batchSystemName : String) extends AbstractBatchSystem(batch
       jt.setWorkingDirectory(job.getWorkingDirectory.get) // Set the directory where the job is executed.
       jt.setRemoteCommand(job.getCommand.get) // Set the command string to execute as the job.
 
-
+      if (!job.getInputPath.isEmpty) {
+          jt.setInputPath( job.getInputPath.get );
+      }
 
       if (job.getArgs != None) {
         val list = new LinkedList[String]
