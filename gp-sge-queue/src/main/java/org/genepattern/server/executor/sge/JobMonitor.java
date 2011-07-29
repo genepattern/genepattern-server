@@ -66,12 +66,12 @@ class JobMonitor {
         }
     }
     
-    private void handleJobCompletion(BatchJob job) {
-        log.debug("handleJobCompletion, jobName="+job.getJobName());
+    private void handleJobCompletion(BatchJob sgeJob) {
+        log.debug("handleJobCompletion, jobName="+sgeJob.getJobName());
 
         int gpJobId = -1;
         String jobName = "";
-        Option<String> opt = job.getJobName();
+        Option<String> opt = sgeJob.getJobName();
         if (opt.isDefined()) {
             jobName = opt.get();
         }
@@ -93,7 +93,7 @@ class JobMonitor {
 
             boolean success = false;
             scala.Enumeration.Value succeeded = JobCompletionStatus.withName( "SUCCEEDED" ); 
-            scala.Option<scala.Enumeration.Value> jobCompletionStatusWrapper = job.getCompletionStatus();
+            scala.Option<scala.Enumeration.Value> jobCompletionStatusWrapper = sgeJob.getCompletionStatus();
             if (jobCompletionStatusWrapper.isDefined()) {
                 scala.Enumeration.Value jobCompletionStatus = jobCompletionStatusWrapper.get();
                 if (succeeded.equals( jobCompletionStatus )) {
@@ -110,8 +110,9 @@ class JobMonitor {
                 errorMessage = JobCompletionStatus.SUCCEEDED().toString();
                 GenePatternAnalysisTask.handleJobCompletion(gpJobId, exitCode, errorMessage);
             }
+            
+            //TODO: clean up JOB_SGE table to prevent errors when duplicate sge_job_ids are used
+            new JobRecorder().updateSgeJobRecord(gpJobId, sgeJob);
         } 
     }
-
-
 }

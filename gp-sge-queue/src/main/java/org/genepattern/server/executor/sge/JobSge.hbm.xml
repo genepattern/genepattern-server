@@ -1,0 +1,15 @@
+<hibernate-mapping package="org.genepattern.server.executor.sge"> 
+  <class name="JobSge" table="JOB_SGE"> 
+    <id name="gpJobNo" type="integer" unsaved-value="null">
+      <column name="GP_JOB_NO" not-null="true" unique="true" precision="10" scale="0"/>
+       <generator class="assigned"/>
+    </id>
+    <property name="sgeJobId" column="SGE_JOB_ID" />
+    <property name="sgeSubmitTime" type="timestamp" column="SGE_SUBMIT_TIME" /> 
+    <property name="sgeStartTime" type="timestamp" column="SGE_START_TIME" /> 
+    <property name="sgeEndTime" type="timestamp" column="SGE_END_TIME" /> 
+    <property name="sgeReturnCode" type="integer" column="SGE_RETURN_CODE" />
+    <property name="sgeJobCompletionStatus" column="SGE_JOB_COMPLETION_STATUS" />
+  </class>  
+   
+</hibernate-mapping>

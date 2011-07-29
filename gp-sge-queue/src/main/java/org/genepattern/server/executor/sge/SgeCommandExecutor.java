@@ -34,7 +34,8 @@ public class SgeCommandExecutor implements CommandExecutor {
         SGE_ROOT,
         SGE_CELL,
         SGE_SESSION_FILE,
-        SGE_BATCH_SYSTEM_NAME;
+        SGE_BATCH_SYSTEM_NAME,
+        SGE_LOG_FILENAME;
     }
     
     private SgeBatchSystem sgeBatchSystem = null;
@@ -57,33 +58,38 @@ public class SgeCommandExecutor implements CommandExecutor {
         log.info("SGE_ROOT="+System.getProperty("SGE_ROOT"));
         log.info("SGE_CELL="+System.getProperty("SGE_CELL")); 
         
-        String sgeRoot = configurationProperties.getProperty(Prop.SGE_ROOT.toString(), System.getProperty(Prop.SGE_ROOT.toString()));
-        String sgeCell = configurationProperties.getProperty(Prop.SGE_CELL.toString(), System.getProperty(Prop.SGE_CELL.toString()));
-        String sgeProject = configurationProperties.getProperty(Prop.SGE_PROJECT.toString());
+        String sgeRoot = configurationProperties.getProperty(Prop.SGE_ROOT.name(), System.getProperty(Prop.SGE_ROOT.name()));
+        String sgeCell = configurationProperties.getProperty(Prop.SGE_CELL.name(), System.getProperty(Prop.SGE_CELL.name()));
+        String sgeProject = configurationProperties.getProperty(Prop.SGE_PROJECT.name());
         //if the session_file is relative, assume it is relative to the resources directory (rather than the working directory)
-        String sgeSessionFile = configurationProperties.getProperty(Prop.SGE_SESSION_FILE.toString());
+        String sgeSessionFile = configurationProperties.getProperty(Prop.SGE_SESSION_FILE.name());
         if (sgeSessionFile == null) {
             sgeSessionFile = System.getProperty("resources", ".") + "/conf/sge_contact.txt";
         }
-        String sgeBatchSystemName = configurationProperties.getProperty(Prop.SGE_BATCH_SYSTEM_NAME.toString(), "gp_server");
+        String sgeBatchSystemName = configurationProperties.getProperty(Prop.SGE_BATCH_SYSTEM_NAME.name(), "gp_server");
+        String sgeLogFilename = configurationProperties.getProperty(Prop.SGE_LOG_FILENAME.name(), ",sge.out");
         
-        log.info(Prop.SGE_ROOT+"="+sgeRoot);
-        log.info(Prop.SGE_CELL+"="+sgeCell);
-        log.info(Prop.SGE_PROJECT+"="+sgeProject);
-        log.info(Prop.SGE_SESSION_FILE+"="+sgeSessionFile);
-        log.info(Prop.SGE_BATCH_SYSTEM_NAME+"="+sgeBatchSystemName);
+        log.info(Prop.SGE_ROOT.name()+"="+sgeRoot);
+        log.info(Prop.SGE_CELL.name()+"="+sgeCell);
+        log.info(Prop.SGE_PROJECT.name()+"="+sgeProject);
+        log.info(Prop.SGE_SESSION_FILE.name()+"="+sgeSessionFile);
+        log.info(Prop.SGE_BATCH_SYSTEM_NAME.name()+"="+sgeBatchSystemName);
+        log.info(Prop.SGE_LOG_FILENAME.name()+"="+sgeLogFilename);
 
         if (sgeRoot != null) {
-            System.setProperty("SGE_ROOT", sgeRoot);
+            System.setProperty(Prop.SGE_ROOT.name(), sgeRoot);
         }
         if (sgeCell != null) {
-            System.setProperty("SGE_CELL", sgeCell);
+            System.setProperty(Prop.SGE_CELL.name(), sgeCell);
         }
         if (sgeProject != null) {
-            System.setProperty("SGE_PROJECT", sgeProject);
+            System.setProperty(Prop.SGE_PROJECT.name(), sgeProject);
         }
         if (sgeProject != null) {
-            System.setProperty("SGE_SESSION_FILE", sgeSessionFile);
+            System.setProperty(Prop.SGE_SESSION_FILE.name(), sgeSessionFile);
+        }
+        if (sgeLogFilename != null) {
+            System.setProperty(Prop.SGE_LOG_FILENAME.name(), sgeLogFilename);
         }
         //initialize Zamboni's SGE service
         sgeBatchSystem = new SgeBatchSystem(sgeBatchSystemName);
@@ -125,24 +131,17 @@ public class SgeCommandExecutor implements CommandExecutor {
             throw new Exception("sgeBatchSystem not initialized; handleRunningJob(jobId="+jobInfo.getJobNumber()+")");
         }
         
-        log.error("handleRunningJob not implemented for SGE jobs; jobId="+jobInfo.getJobNumber());
-        return JobStatus.JOB_ERROR;
+        String sgeJobId = new JobRecorder().getSgeJobId(jobInfo);
+        BatchJob sgeJob = this.getBatchJobFromGpJobInfo(jobInfo);
+        sgeJob.setJobId(new scala.Some<String>(sgeJobId)); 
+        sgeBatchSystem.restoreOne( sgeJob );
         
-        //TODO: implement this method, here is pseudo-code, not yet tested
-        //BatchJob sgeJob = getBatchJobFromGpJobInfo( jobInfo );
-        //File workingDir = getWorkingDir(jobInfo);
-        //sgeJob.setWorkingDirectory(new scala.Some<String>(workingDir.getPath()));
-        
-        //List<BatchJob> sgeJobs = new ArrayList<BatchJob>();
-        //sgeJobs.add(sgeJob);
-        //sgeBatchSystem.restore( scala.collection.JavaConversions.asScalaBuffer( sgeJobs ) );
-
         // don't change the status
-        //int currentStatus = JobStatus.JOB_PROCESSING;
-        //if (JobStatus.STATUS_MAP.get( jobInfo.getStatus() ) instanceof Integer) {
-        //    currentStatus = (Integer) JobStatus.STATUS_MAP.get( jobInfo.getStatus() );
-        //}
-        //return currentStatus;
+        int currentStatus = JobStatus.JOB_PROCESSING;
+        if (JobStatus.STATUS_MAP.get( jobInfo.getStatus() ) instanceof Integer) {
+            currentStatus = (Integer) JobStatus.STATUS_MAP.get( jobInfo.getStatus() );
+        }
+        return currentStatus;
     }
 
     /**
@@ -171,10 +170,16 @@ public class SgeCommandExecutor implements CommandExecutor {
             sgeJob.setOutputPath( new scala.Some<String>(stdoutFile.getPath()) );
             sgeJob.setErrorPath( new scala.Some<String>(stderrFile.getPath()) );
             sgeJob.setJobName( new scala.Some<String>("GP_"+jobInfo.getJobNumber()) );
+            if (stdinFile != null) {
+                sgeJob.setInputPath(stdinFile.getPath());
+            }
             
             sgeJob = sgeBatchSystem.submit(sgeJob);
-            //TODO: record the sge job id in the db
-            log.info("submitted job to SGE, gp_job_id="+jobInfo.getJobNumber()+", sge_job_id="+sgeJob.getJobId());
+            
+            //TODO: think about error handling, the job is presumably running on SGE, however if we have DB errors in the 
+            //    following lines of code, the GP server will assume the job is not running
+            log.debug("submitted job to SGE, gp_job_id="+jobInfo.getJobNumber()+", sge_job_id="+sgeJob.getJobId());
+            new JobRecorder().createSgeJobRecord(jobInfo, sgeJob);
         }
         catch (Throwable t) {
             throw new CommandExecutorException("Error submitting job "+jobInfo.getJobNumber()+" to SGE: "+t.getLocalizedMessage(), t);
@@ -185,7 +190,7 @@ public class SgeCommandExecutor implements CommandExecutor {
      * Cancel an SGE job submitted from GenePattern.
      */
     public void terminateJob(JobInfo jobInfo) throws Exception {
-        log.info("termminating SGE job, gp_job_id="+jobInfo.getJobNumber());
+        log.info("terminating SGE job, gp_job_id="+jobInfo.getJobNumber());
         BatchJob sgeJob = getBatchJobFromGpJobInfo( jobInfo );
         //TODO: need to optionally set the sgeJob.jobId by looking it up in the GP DB table 
         sgeBatchSystem.kill( sgeJob );

@@ -7,5 +7,6 @@
 	<classpathentry kind="lib" path="lib/gp-full-3.3.2-prod.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
 	<classpathentry kind="lib" path="lib/sge-drmaa.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
