@@ -37,6 +37,7 @@ class BatchJob(val batchSystem : BatchSystem) extends Cloneable {
   private var workingDirectory : Option[String] = None
   private var theCommand : Option[String] = None
   private var args : Option[Array[String]] = None
+  private var inputPath : Option[String] = None; // [optional] path to stdin file
   private var outputPath : Option[String] = None
   private var errorPath : Option[String] = None
   private var emailAddresses : Option[Array[String]] = None  //emails to which job completion status should be sent
@@ -53,7 +54,6 @@ class BatchJob(val batchSystem : BatchSystem) extends Cloneable {
 
   private var slotReservation : Option[Int] = None //number of CPU slots
   private var maxSlots : Option[Int] = None //max number of CPU slots - hard limit
-
 
   private var restartable: Option[Boolean] = None
 
@@ -114,6 +114,17 @@ class BatchJob(val batchSystem : BatchSystem) extends Cloneable {
     args match {
       case None    => this.args = None
       case Some(a) => this.args = Some(a.filterNot(_ == null))
+    }
+  }
+
+  /** File that contains stdin (optional) */
+  def getInputPath = inputPath
+  def setInputPath(stdin : String) = { 
+    if (stdin == null) {
+      this.inputPath = None;
+    }
+    else {
+        this.inputPath = Some(stdin) 
     }
   }
 
