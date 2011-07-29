@@ -68,6 +68,10 @@ object SgeBatchSystem {
   val sgeRoot = System.getProperty("SGE_ROOT", "sge_root");
   val sgeCell = System.getProperty("SGE_CELL", "sge_cell");
   val sgeAccountingFile : File = new File( sgeRoot + "/" + sgeCell + "/common/accounting" );
+  
+  val sgeLogFilename : String = ".sge.out"; //when this is set, it means, don't write anything to stdout
+  //TODO: read this setting from the config file
+  //val sgeLogFilename = System.getProperty("SGE_LOG_FILENAME");
 }
 
 /**
@@ -233,7 +237,18 @@ class SgeBatchSystem(batchSystemName : String) extends AbstractBatchSystem(batch
       }
 
       Log.debug("Submitting SGE job: " + jobTemplateToString(jt))
-      if (job.getOutputPath.isDefined) writeCommandToLog(jt, new File(job.getOutputPath.get))
+      //don't write to stdout
+      //if (job.getOutputPath.isDefined) writeCommandToLog(jt, new File(job.getOutputPath.get))
+      var logFile : File = null;
+      if (sgeLogFilename != null && job.getWorkingDirectory.isDefined) {
+        logFile = new File(job.getWorkingDirectory.get, sgeLogFilename);
+      }
+      else if (job.getOutputPath.isDefined) {
+        logFile = new File(job.getOutputPath.get);
+      }
+      if (logFile != null) {
+        writeCommandToLog(jt, logFile);
+      }
 
       val jobId = session.runJob(jt)
       session.deleteJobTemplate(jt)
