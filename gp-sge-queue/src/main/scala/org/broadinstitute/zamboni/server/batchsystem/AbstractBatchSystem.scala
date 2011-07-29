@@ -138,6 +138,10 @@ abstract class AbstractBatchSystem(private val batchSystemName : String) extends
     completedJobsQueue.put(endedBatchJob)
   }
 
+  def restoreOne(batchJob : BatchJob) = {
+    validateJob( batchJob );
+  }
+  
   /**
    * Tells the batch system to track the the given BatchJobs.
    */
