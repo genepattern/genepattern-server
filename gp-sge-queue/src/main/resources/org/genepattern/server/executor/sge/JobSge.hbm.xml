@@ -1,15 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping package="org.genepattern.server.executor.sge"> 
   <class name="JobSge" table="JOB_SGE"> 
-    <id name="gpJobNo" type="integer" unsaved-value="null">
-      <column name="GP_JOB_NO" not-null="true" unique="true" precision="10" scale="0"/>
-       <generator class="assigned"/>
-    </id>
+    <id name="gpJobNo" column="GP_JOB_NO" />
+
     <property name="sgeJobId" column="SGE_JOB_ID" />
-    <property name="sgeSubmitTime" type="timestamp" column="SGE_SUBMIT_TIME" /> 
-    <property name="sgeStartTime" type="timestamp" column="SGE_START_TIME" /> 
-    <property name="sgeEndTime" type="timestamp" column="SGE_END_TIME" /> 
-    <property name="sgeReturnCode" type="integer" column="SGE_RETURN_CODE" />
+    <property name="sgeSubmitTime" column="SGE_SUBMIT_TIME" type="timestamp" /> 
+    <property name="sgeStartTime" column="SGE_START_TIME" type="timestamp" /> 
+    <property name="sgeEndTime" column="SGE_END_TIME" type="timestamp" /> 
+    <property name="sgeReturnCode" column="SGE_RETURN_CODE" />
     <property name="sgeJobCompletionStatus" column="SGE_JOB_COMPLETION_STATUS" />
-  </class>  
-   
+
+  </class>
 </hibernate-mapping>

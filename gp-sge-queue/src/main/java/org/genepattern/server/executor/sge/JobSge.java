@@ -8,24 +8,22 @@ import java.util.Date;
  *
  */
 public class JobSge {
-    private long gpJobNo;
+    private int gpJobNo = -1;
     
-    private String sgeJobId;
-    private Date sgeSubmitTime;
-    private Date sgeStartTime;
-    private Date sgeEndTime;
-    private long sgeReturnCode;
-    private String sgeJobCompletionStatus;
-
-    
+    private String sgeJobId = null;
+    private Date sgeSubmitTime = null;
+    private Date sgeStartTime = null;
+    private Date sgeEndTime = null;
+    private int sgeReturnCode = 0;
+    private String sgeJobCompletionStatus = null;
     
     public JobSge() {
     }
 
-    public long getGpJobNo() {
+    public int getGpJobNo() {
         return gpJobNo;
     }
-    public void setGpJobNo(long gpJobNo) {
+    public void setGpJobNo(int gpJobNo) {
         this.gpJobNo = gpJobNo;
     }
 
@@ -57,10 +55,10 @@ public class JobSge {
         this.sgeEndTime = sgeEndTime;
     }
 
-    public long getSgeReturnCode() {
+    public int getSgeReturnCode() {
         return sgeReturnCode;
     }
-    public void setSgeReturnCode(long sgeReturnCode) {
+    public void setSgeReturnCode(int sgeReturnCode) {
         this.sgeReturnCode = sgeReturnCode;
     }
 

@@ -39,7 +39,7 @@ public class JobRecorder {
      * @param gpJobNo
      * @param sgeJob
      */
-    public void updateSgeJobRecord(long gpJobNo, BatchJob sgeJob) {
+    public void updateSgeJobRecord(int gpJobNo, BatchJob sgeJob) {
         JobSge jobRecord = new JobSge();
         jobRecord.setGpJobNo(gpJobNo);
         populateJobRecordFromSgeJob( jobRecord, sgeJob );
