@@ -171,7 +171,9 @@ public class SgeCommandExecutor implements CommandExecutor {
             sgeJob.setErrorPath( new scala.Some<String>(stderrFile.getPath()) );
             sgeJob.setJobName( new scala.Some<String>("GP_"+jobInfo.getJobNumber()) );
             if (stdinFile != null) {
-                sgeJob.setInputPath(stdinFile.getPath());
+                //@see org.ggf.drmaa.JobTemplate#setInputPath for details 
+                String inputPath = ":"+stdinFile.getAbsolutePath();
+                sgeJob.setInputPath(inputPath);
             }
             
             sgeJob = sgeBatchSystem.submit(sgeJob);
