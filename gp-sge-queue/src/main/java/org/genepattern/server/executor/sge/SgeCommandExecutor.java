@@ -13,6 +13,7 @@ import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;
 
+import scala.Array;
 import scala.Option;
 import scala.Some;
 
@@ -133,9 +134,10 @@ public class SgeCommandExecutor implements CommandExecutor {
         
         log.debug("handleRunningJob( jobId="+jobInfo.getJobNumber()+" )");
         
-        String sgeJobId = new JobRecorder().getSgeJobId(jobInfo);
+        //String sgeJobId = new JobRecorder().getSgeJobId(jobInfo);
         BatchJob sgeJob = this.getBatchJobFromGpJobInfo(jobInfo);
-        sgeJob.setJobId(new scala.Some<String>(sgeJobId)); 
+        //sgeJob.setJobId(new scala.Some<String>(sgeJobId)); 
+        new JobRecorder().initSgeBatchJobFromJobInfoAndDb(sgeJob, jobInfo);
         sgeBatchSystem.restoreOne( sgeJob );
         
         // don't change the status
@@ -235,12 +237,7 @@ public class SgeCommandExecutor implements CommandExecutor {
         return jobDir;
     }
     
-    /**
-     * Create a new BatchJob instance, based on the given JobInfo. If we already have a BatchJob.id for the job set it.
-     * @param jobInfo
-     * @return
-     */
-    private BatchJob getBatchJobFromGpJobInfo(JobInfo jobInfo) throws Exception {
+    public BatchJob getNewBatchJob() {
         
         //init all variables to None
         Option<String> workingDirectory = scala.Option.apply(null);
@@ -260,12 +257,6 @@ public class SgeCommandExecutor implements CommandExecutor {
         Option<Integer> maxSlots = scala.Option.apply(null);
         Option<Boolean> restartable = scala.Option.apply(null);
 
-
-        //set workingDirectory from jobInfo
-        File runDir = getWorkingDir(jobInfo);
-        workingDirectory = new Some<String>(runDir.getPath());
-        //set jobName from jobInfo, must not start with a digit
-        jobName = new Some<String>( "GP_"+jobInfo.getJobNumber() );
         //set restartable to false (None causes an error in SgeBatchSystem.scala)
         restartable = scala.Option.apply(false);
 
@@ -288,5 +279,63 @@ public class SgeCommandExecutor implements CommandExecutor {
                 restartable );
        
         return sgeJob;
+    }
+    
+    /**
+     * Create a new BatchJob instance, based on the given JobInfo. If we already have a BatchJob.id for the job set it.
+     * @param jobInfo
+     * @return
+     */
+    private BatchJob getBatchJobFromGpJobInfo(JobInfo jobInfo) throws Exception {
+        BatchJob sgeBatchJob = getNewBatchJob();
+        
+//        //init all variables to None
+//        Option<String> workingDirectory = scala.Option.apply(null);
+//        Option<String> command = scala.Option.apply(null);
+//        String[] args = new String[0];
+//        Option<String> outputPath = scala.Option.apply(null);
+//        Option<String>  errorPath = scala.Option.apply(null);
+//        Option<String[]> emailAddresses = scala.Option.apply(null);
+//        Option<Integer> priority = scala.Option.apply(null);
+//        Option<String> jobName = scala.Option.apply(null);
+//        Option<String> queueName = scala.Option.apply(null);
+//        Option<Boolean> exclusive = scala.Option.apply(null);
+//        Option<Integer> maxRunningTime = scala.Option.apply(null);
+//        Option<Integer> memoryReservation = scala.Option.apply(null);
+//        Option<Integer> maxMemory = scala.Option.apply(null);
+//        Option<Integer> slotReservation = scala.Option.apply(null);
+//        Option<Integer> maxSlots = scala.Option.apply(null);
+//        Option<Boolean> restartable = scala.Option.apply(null);
+
+
+        //set workingDirectory from jobInfo
+        File runDir = getWorkingDir(jobInfo);
+        //workingDirectory = new Some<String>(runDir.getPath());
+        //set jobName from jobInfo, must not start with a digit
+        //jobName = new Some<String>( "GP_"+jobInfo.getJobNumber() );
+        //set restartable to false (None causes an error in SgeBatchSystem.scala)
+        //restartable = scala.Option.apply(false);
+
+//        BatchJob sgeJob = sgeBatchSystem.newBatchJob(
+//                workingDirectory,
+//                command,
+//                args,
+//                outputPath,
+//                errorPath,
+//                emailAddresses,
+//                priority,
+//                jobName,
+//                queueName,
+//                exclusive,
+//                maxRunningTime,
+//                memoryReservation,
+//                maxMemory,
+//                slotReservation,
+//                maxSlots,
+//                restartable );
+        
+        sgeBatchJob.setWorkingDirectory( new Some<String>(runDir.getPath()) );
+        sgeBatchJob.setJobName( new Some<String>( "GP_"+jobInfo.getJobNumber() ) );
+        return sgeBatchJob;
     }
 }

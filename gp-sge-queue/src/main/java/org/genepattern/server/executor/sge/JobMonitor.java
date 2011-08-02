@@ -67,52 +67,53 @@ class JobMonitor {
     }
     
     private void handleJobCompletion(BatchJob sgeJob) {
-        log.debug("handleJobCompletion, jobName="+sgeJob.getJobName());
-
-        int gpJobId = -1;
         String jobName = "";
         Option<String> opt = sgeJob.getJobName();
         if (opt.isDefined()) {
             jobName = opt.get();
         }
+        log.debug("handleJobCompletion: sgeJob.jobName="+jobName);
+
+        int gpJobId = -1;
         if (jobName.startsWith("GP_")) {
             String gpJobIdStr = jobName.substring( "GP_".length() );
             try {
                 gpJobId = Integer.parseInt(gpJobIdStr);
             }
             catch (NumberFormatException e) {
-                //TODO: implement better error handling
-                log.error("Invalid gp jobId="+gpJobIdStr);
-                return;
+                log.error("Invalid gpJobId, expecting an integer. gpJobId="+gpJobIdStr);
             }
+        }
+        if (gpJobId == -1) {
+            log.error("Unable to handleJobCompletion for jobName="+jobName);
+            return;
+        }
 
-            //TODO: handle stdout and stderr
-            //TODO: clean up code, single invocation to GPAT.handleJobCompletion, better messages on error
-            int exitCode = JobStatus.JOB_PROCESSING;
-            String errorMessage = null;
+        //TODO: handle stdout and stderr
+        int exitCode = JobStatus.JOB_PROCESSING;
+        String errorMessage = null;
 
-            boolean success = false;
-            scala.Enumeration.Value succeeded = JobCompletionStatus.withName( "SUCCEEDED" ); 
-            scala.Option<scala.Enumeration.Value> jobCompletionStatusWrapper = sgeJob.getCompletionStatus();
-            if (jobCompletionStatusWrapper.isDefined()) {
-                scala.Enumeration.Value jobCompletionStatus = jobCompletionStatusWrapper.get();
-                if (succeeded.equals( jobCompletionStatus )) {
-                    success = true;
-                }
+        boolean success = false;
+        scala.Enumeration.Value succeeded = JobCompletionStatus.withName( "SUCCEEDED" ); 
+        scala.Option<scala.Enumeration.Value> jobCompletionStatusWrapper = sgeJob.getCompletionStatus();
+        if (jobCompletionStatusWrapper.isDefined()) {
+            scala.Enumeration.Value jobCompletionStatus = jobCompletionStatusWrapper.get();
+            if (succeeded.equals( jobCompletionStatus )) {
+                success = true;
             }
+        }
             
-            if (success) {
-                exitCode = JobStatus.JOB_FINISHED;
-                GenePatternAnalysisTask.handleJobCompletion(gpJobId, exitCode);
-            }
-            else {
-                exitCode = JobStatus.JOB_ERROR;
-                errorMessage = JobCompletionStatus.SUCCEEDED().toString();
-                GenePatternAnalysisTask.handleJobCompletion(gpJobId, exitCode, errorMessage);
-            }
-            
-            //TODO: clean up JOB_SGE table to prevent errors when duplicate sge_job_ids are used
-            new JobRecorder().updateSgeJobRecord(gpJobId, sgeJob);
-        } 
-    }
+        //TODO: clean up code, single invocation to GPAT.handleJobCompletion, better messages on error
+        if (success) {
+            exitCode = JobStatus.JOB_FINISHED;
+            GenePatternAnalysisTask.handleJobCompletion(gpJobId, exitCode);
+        }
+        else {
+            exitCode = JobStatus.JOB_ERROR;
+            errorMessage = JobCompletionStatus.SUCCEEDED().toString();
+            GenePatternAnalysisTask.handleJobCompletion(gpJobId, exitCode, errorMessage);
+        }
+        new JobRecorder().updateSgeJobRecord(gpJobId, sgeJob);
+    } 
+
 }

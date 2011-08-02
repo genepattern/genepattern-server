@@ -116,22 +116,16 @@ public class JobRecorder {
         }
     }
 
-    /**
-     * Get the sge job id for the given GP job.
-     * 
-     * @param gpJobInfo
-     * @return
-     * @throws Exception
-     */
-    public String getSgeJobId(JobInfo gpJobInfo) throws Exception {
+    public void initSgeBatchJobFromJobInfoAndDb(BatchJob sgeBatchJob, JobInfo gpJobInfo) throws Exception {
         boolean alreadyInTransaction = HibernateUtil.isInTransaction();
         JobSge jobSge = null;
         try {
             jobSge = new JobSgeDAO().getJobRecord(gpJobInfo);
             if (jobSge != null) {
-                return jobSge.getSgeJobId();
+                sgeBatchJob.setJobId( new scala.Some<String>(jobSge.getSgeJobId()) );
+                sgeBatchJob.submitTime_$eq(new scala.Some<Date>(jobSge.getSgeSubmitTime()));
+                sgeBatchJob.startTime_$eq(new scala.Some<Date>(jobSge.getSgeStartTime()));
             }
-            throw new Exception("Error getting sgeJobId from DB, for gpJobNo="+gpJobInfo.getJobNumber()+": No record found in DB");
         }
         catch (Throwable t) {
             log.error("Error getting sgeJobId from DB, for gpJobNo="+gpJobInfo.getJobNumber(), t);
@@ -141,6 +135,9 @@ public class JobRecorder {
             if (!alreadyInTransaction) {
                 HibernateUtil.closeCurrentSession();
             }
+        }
+        if (jobSge == null) {
+            throw new Exception("Error getting sgeJobId from DB, for gpJobNo="+gpJobInfo.getJobNumber()+": No record found in DB");
         }
     }
 
