@@ -206,7 +206,7 @@ class BatchJob(val batchSystem : BatchSystem) extends Cloneable {
   def getStatus = getBatchSystem.getStatus(this)
 
   // Implementations of ZamboniJob abstract methods
-  def command = getCommand.get
+  def command = getCommand.getOrElse("no-command")
   def jobName = getJobName.getOrElse("no-job-name")
 
   def commandLine = command + args.get.mkString(" ", " ", "")

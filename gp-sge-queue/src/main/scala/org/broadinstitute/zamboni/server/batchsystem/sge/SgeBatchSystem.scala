@@ -579,7 +579,11 @@ class SgeBatchSystem(batchSystemName : String) extends AbstractBatchSystem(batch
       jobMonitor.addJob(job)
     }
   }
-
+  
+  override def restoreOne( batchJob : BatchJob ) {
+    super.restore( batchJob );
+    jobMonitor.addJob(batchJob);
+  }
 
   def isMonitoringJobs = jobMonitor.isMonitoringJobs
   def numJobsMonitoring = jobMonitor.numJobsMonitoring
