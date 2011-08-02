@@ -115,30 +115,4 @@ public class JobRecorder {
             HibernateUtil.rollbackTransaction();
         }
     }
-
-    public void initSgeBatchJobFromJobInfoAndDb(BatchJob sgeBatchJob, JobInfo gpJobInfo) throws Exception {
-        boolean alreadyInTransaction = HibernateUtil.isInTransaction();
-        JobSge jobSge = null;
-        try {
-            jobSge = new JobSgeDAO().getJobRecord(gpJobInfo);
-            if (jobSge != null) {
-                sgeBatchJob.setJobId( new scala.Some<String>(jobSge.getSgeJobId()) );
-                sgeBatchJob.submitTime_$eq(new scala.Some<Date>(jobSge.getSgeSubmitTime()));
-                sgeBatchJob.startTime_$eq(new scala.Some<Date>(jobSge.getSgeStartTime()));
-            }
-        }
-        catch (Throwable t) {
-            log.error("Error getting sgeJobId from DB, for gpJobNo="+gpJobInfo.getJobNumber(), t);
-            throw new Exception(t);
-        }
-        finally {
-            if (!alreadyInTransaction) {
-                HibernateUtil.closeCurrentSession();
-            }
-        }
-        if (jobSge == null) {
-            throw new Exception("Error getting sgeJobId from DB, for gpJobNo="+gpJobInfo.getJobNumber()+": No record found in DB");
-        }
-    }
-
 }

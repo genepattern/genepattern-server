@@ -67,25 +67,9 @@ class JobMonitor {
     }
     
     private void handleJobCompletion(BatchJob sgeJob) {
-        String jobName = "";
-        Option<String> opt = sgeJob.getJobName();
-        if (opt.isDefined()) {
-            jobName = opt.get();
-        }
-        log.debug("handleJobCompletion: sgeJob.jobName="+jobName);
-
-        int gpJobId = -1;
-        if (jobName.startsWith("GP_")) {
-            String gpJobIdStr = jobName.substring( "GP_".length() );
-            try {
-                gpJobId = Integer.parseInt(gpJobIdStr);
-            }
-            catch (NumberFormatException e) {
-                log.error("Invalid gpJobId, expecting an integer. gpJobId="+gpJobIdStr);
-            }
-        }
+        int gpJobId = BatchJobUtil.getGpJobId(sgeJob);
         if (gpJobId == -1) {
-            log.error("Unable to handleJobCompletion for jobName="+jobName);
+            log.error("Unable to handleJobCompletion for jobName="+ (sgeJob.getJobName().isDefined() ? sgeJob.getJobName().get() : ""));
             return;
         }
 
@@ -112,8 +96,8 @@ class JobMonitor {
             exitCode = JobStatus.JOB_ERROR;
             errorMessage = JobCompletionStatus.SUCCEEDED().toString();
             GenePatternAnalysisTask.handleJobCompletion(gpJobId, exitCode, errorMessage);
-        }
-        new JobRecorder().updateSgeJobRecord(gpJobId, sgeJob);
+        } 
+        BatchJobUtil.updateJobRecord(gpJobId, sgeJob);
     } 
 
 }

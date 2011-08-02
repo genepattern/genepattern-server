@@ -6,19 +6,28 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.broadinstitute.zamboni.server.batchsystem.BatchJob;
 import org.broadinstitute.zamboni.server.batchsystem.sge.SgeBatchSystem;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.JobStatus;
 
-import scala.Array;
-import scala.Option;
-import scala.Some;
-
 /**
  * CommandExecutor for SGE with DRMAA / Java, based on Zamboni implementation, via src code provided circa July 2011.
+ * 
+ * Example config.file settings
+ * <pre>
+executors:
+    # [Experimental] SGE executor
+    SGE:
+        classname: org.genepattern.server.executor.sge.SgeCommandExecutor
+        configuration.properties:
+            #SGE_PROJECT: gpdev_server
+            SGE_ROOT: /broad/gridengine
+            SGE_CELL: broad
+            SGE_SESSION_FILE: ./sge/sge_contact.txt
+            SGE_BATCH_SYSTEM_NAME: gpdev_server
+ * <pre>
  * 
  * Developer notes:
  *     @see: http://stackoverflow.com/questions/1997433/how-to-use-scala-none-from-java-code
@@ -45,6 +54,7 @@ public class SgeCommandExecutor implements CommandExecutor {
     private JobMonitor jobMonitor = null;
 
     public void setConfigurationFilename(String filename) {
+        log.error("Ignoring setConfigurationFilename( "+filename+" ): use setConfigurationProperties instead.");
     }
 
     public void setConfigurationProperties(CommandProperties properties) {
@@ -56,8 +66,8 @@ public class SgeCommandExecutor implements CommandExecutor {
         log.info("starting SGE CommandExecutor...");
         
         // listing system properties
-        log.info("SGE_ROOT="+System.getProperty("SGE_ROOT"));
-        log.info("SGE_CELL="+System.getProperty("SGE_CELL")); 
+        log.debug("SGE_ROOT="+System.getProperty("SGE_ROOT"));
+        log.debug("SGE_CELL="+System.getProperty("SGE_CELL")); 
         
         String sgeRoot = configurationProperties.getProperty(Prop.SGE_ROOT.name(), System.getProperty(Prop.SGE_ROOT.name()));
         String sgeCell = configurationProperties.getProperty(Prop.SGE_CELL.name(), System.getProperty(Prop.SGE_CELL.name()));
@@ -124,6 +134,10 @@ public class SgeCommandExecutor implements CommandExecutor {
         }
     }
 
+    /**
+     * Called on startup of the GP server, for all GP jobs on this queue which have not been
+     * flagged as completed.
+     */
     public int handleRunningJob(JobInfo jobInfo) throws Exception {
         if (jobInfo == null) {
             throw new IllegalArgumentException("jobInfo is null");
@@ -133,11 +147,7 @@ public class SgeCommandExecutor implements CommandExecutor {
         }
         
         log.debug("handleRunningJob( jobId="+jobInfo.getJobNumber()+" )");
-        
-        //String sgeJobId = new JobRecorder().getSgeJobId(jobInfo);
-        BatchJob sgeJob = this.getBatchJobFromGpJobInfo(jobInfo);
-        //sgeJob.setJobId(new scala.Some<String>(sgeJobId)); 
-        new JobRecorder().initSgeBatchJobFromJobInfoAndDb(sgeJob, jobInfo);
+        BatchJob sgeJob = BatchJobUtil.findBatchJob(sgeBatchSystem, jobInfo);
         sgeBatchSystem.restoreOne( sgeJob );
         
         // don't change the status
@@ -156,9 +166,8 @@ public class SgeCommandExecutor implements CommandExecutor {
         //TODO: handle stdinFile
         
         try {
-            BatchJob sgeJob = getBatchJobFromGpJobInfo( jobInfo );
-            //TODO: need to optionally set the sgeJob.jobId by looking it up in the GP DB table
-            sgeJob.setCommand(new scala.Some<String>(commandLine[0])); 
+            BatchJob sgeJob = BatchJobUtil.createBatchJob(sgeBatchSystem, jobInfo); 
+            sgeJob.setCommand( scala.Option.apply( commandLine[0] ) );
             String[] args = null;
             if (commandLine.length <= 1) {
                 args = new String[0];
@@ -179,13 +188,11 @@ public class SgeCommandExecutor implements CommandExecutor {
                 String inputPath = ":"+stdinFile.getAbsolutePath();
                 sgeJob.setInputPath(inputPath);
             }
-            
             sgeJob = sgeBatchSystem.submit(sgeJob);
-            
             //TODO: think about error handling, the job is presumably running on SGE, however if we have DB errors in the 
             //    following lines of code, the GP server will assume the job is not running
             log.debug("submitted job to SGE, gp_job_id="+jobInfo.getJobNumber()+", sge_job_id="+sgeJob.getJobId());
-            new JobRecorder().createSgeJobRecord(jobInfo, sgeJob);
+            BatchJobUtil.createJobRecord(jobInfo, sgeJob);
         }
         catch (Throwable t) {
             throw new CommandExecutorException("Error submitting job "+jobInfo.getJobNumber()+" to SGE: "+t.getLocalizedMessage(), t);
@@ -197,145 +204,8 @@ public class SgeCommandExecutor implements CommandExecutor {
      */
     public void terminateJob(JobInfo jobInfo) throws Exception {
         log.info("terminating SGE job, gp_job_id="+jobInfo.getJobNumber());
-        BatchJob sgeJob = getBatchJobFromGpJobInfo( jobInfo );
-        //TODO: need to optionally set the sgeJob.jobId by looking it up in the GP DB table 
+        BatchJob sgeJob = BatchJobUtil.findBatchJob(sgeBatchSystem, jobInfo);
         sgeBatchSystem.kill( sgeJob );
     }
     
-    //helper methods
-    /**
-     * Get the working directory for the given job.
-     * 
-     * @param jobInfo
-     * @return
-     * @throws Exception
-     */
-    private File getWorkingDir(JobInfo jobInfo) throws Exception {
-        boolean gp_3_3_3 = false;
-        if (gp_3_3_3) {
-            //TODO: if you are working with GP 3.3.3 or later, use JobManager#getWorkingDirectory
-            //return JobManager.getWorkingDirectory(jobInfo);
-        }
-        
-        //3.3.2 based 
-        if (jobInfo == null) {
-            throw new IllegalArgumentException("Can't get working directory for jobInfo=null");
-        }
-        if (jobInfo.getJobNumber() < 0) {
-            throw new IllegalArgumentException("Can't get working directory for jobInfo.jobNumber="+jobInfo.getJobNumber());
-        }
-
-        File jobDir = null;
-        try {
-            ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo);
-            File rootJobDir = ServerConfiguration.instance().getRootJobDir(jobContext);
-            jobDir = new File(rootJobDir, ""+jobInfo.getJobNumber());
-        }
-        catch (ServerConfiguration.Exception e) {
-            throw new Exception(e.getLocalizedMessage());
-        }
-        return jobDir;
-    }
-    
-    public BatchJob getNewBatchJob() {
-        
-        //init all variables to None
-        Option<String> workingDirectory = scala.Option.apply(null);
-        Option<String> command = scala.Option.apply(null);
-        String[] args = new String[0];
-        Option<String> outputPath = scala.Option.apply(null);
-        Option<String>  errorPath = scala.Option.apply(null);
-        Option<String[]> emailAddresses = scala.Option.apply(null);
-        Option<Integer> priority = scala.Option.apply(null);
-        Option<String> jobName = scala.Option.apply(null);
-        Option<String> queueName = scala.Option.apply(null);
-        Option<Boolean> exclusive = scala.Option.apply(null);
-        Option<Integer> maxRunningTime = scala.Option.apply(null);
-        Option<Integer> memoryReservation = scala.Option.apply(null);
-        Option<Integer> maxMemory = scala.Option.apply(null);
-        Option<Integer> slotReservation = scala.Option.apply(null);
-        Option<Integer> maxSlots = scala.Option.apply(null);
-        Option<Boolean> restartable = scala.Option.apply(null);
-
-        //set restartable to false (None causes an error in SgeBatchSystem.scala)
-        restartable = scala.Option.apply(false);
-
-        BatchJob sgeJob = sgeBatchSystem.newBatchJob(
-                workingDirectory,
-                command,
-                args,
-                outputPath,
-                errorPath,
-                emailAddresses,
-                priority,
-                jobName,
-                queueName,
-                exclusive,
-                maxRunningTime,
-                memoryReservation,
-                maxMemory,
-                slotReservation,
-                maxSlots,
-                restartable );
-       
-        return sgeJob;
-    }
-    
-    /**
-     * Create a new BatchJob instance, based on the given JobInfo. If we already have a BatchJob.id for the job set it.
-     * @param jobInfo
-     * @return
-     */
-    private BatchJob getBatchJobFromGpJobInfo(JobInfo jobInfo) throws Exception {
-        BatchJob sgeBatchJob = getNewBatchJob();
-        
-//        //init all variables to None
-//        Option<String> workingDirectory = scala.Option.apply(null);
-//        Option<String> command = scala.Option.apply(null);
-//        String[] args = new String[0];
-//        Option<String> outputPath = scala.Option.apply(null);
-//        Option<String>  errorPath = scala.Option.apply(null);
-//        Option<String[]> emailAddresses = scala.Option.apply(null);
-//        Option<Integer> priority = scala.Option.apply(null);
-//        Option<String> jobName = scala.Option.apply(null);
-//        Option<String> queueName = scala.Option.apply(null);
-//        Option<Boolean> exclusive = scala.Option.apply(null);
-//        Option<Integer> maxRunningTime = scala.Option.apply(null);
-//        Option<Integer> memoryReservation = scala.Option.apply(null);
-//        Option<Integer> maxMemory = scala.Option.apply(null);
-//        Option<Integer> slotReservation = scala.Option.apply(null);
-//        Option<Integer> maxSlots = scala.Option.apply(null);
-//        Option<Boolean> restartable = scala.Option.apply(null);
-
-
-        //set workingDirectory from jobInfo
-        File runDir = getWorkingDir(jobInfo);
-        //workingDirectory = new Some<String>(runDir.getPath());
-        //set jobName from jobInfo, must not start with a digit
-        //jobName = new Some<String>( "GP_"+jobInfo.getJobNumber() );
-        //set restartable to false (None causes an error in SgeBatchSystem.scala)
-        //restartable = scala.Option.apply(false);
-
-//        BatchJob sgeJob = sgeBatchSystem.newBatchJob(
-//                workingDirectory,
-//                command,
-//                args,
-//                outputPath,
-//                errorPath,
-//                emailAddresses,
-//                priority,
-//                jobName,
-//                queueName,
-//                exclusive,
-//                maxRunningTime,
-//                memoryReservation,
-//                maxMemory,
-//                slotReservation,
-//                maxSlots,
-//                restartable );
-        
-        sgeBatchJob.setWorkingDirectory( new Some<String>(runDir.getPath()) );
-        sgeBatchJob.setJobName( new Some<String>( "GP_"+jobInfo.getJobNumber() ) );
-        return sgeBatchJob;
-    }
 }
