@@ -131,6 +131,8 @@ public class SgeCommandExecutor implements CommandExecutor {
             throw new Exception("sgeBatchSystem not initialized; handleRunningJob(jobId="+jobInfo.getJobNumber()+")");
         }
         
+        log.debug("handleRunningJob( jobId="+jobInfo.getJobNumber()+" )");
+        
         String sgeJobId = new JobRecorder().getSgeJobId(jobInfo);
         BatchJob sgeJob = this.getBatchJobFromGpJobInfo(jobInfo);
         sgeJob.setJobId(new scala.Some<String>(sgeJobId)); 

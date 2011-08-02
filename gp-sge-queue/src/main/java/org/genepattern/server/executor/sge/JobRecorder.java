@@ -124,14 +124,18 @@ public class JobRecorder {
      * @throws Exception
      */
     public String getSgeJobId(JobInfo gpJobInfo) throws Exception {
-        JobSge jobSge = getSgeJobRecord(gpJobInfo);
-        return jobSge.getSgeJobId();
-    }
-    
-    private JobSge getSgeJobRecord(JobInfo gpJob) throws Exception {
         boolean alreadyInTransaction = HibernateUtil.isInTransaction();
+        JobSge jobSge = null;
         try {
-            return new JobSgeDAO().getJobRecord(gpJob);
+            jobSge = new JobSgeDAO().getJobRecord(gpJobInfo);
+            if (jobSge != null) {
+                return jobSge.getSgeJobId();
+            }
+            throw new Exception("Error getting sgeJobId from DB, for gpJobNo="+gpJobInfo.getJobNumber()+": No record found in DB");
+        }
+        catch (Throwable t) {
+            log.error("Error getting sgeJobId from DB, for gpJobNo="+gpJobInfo.getJobNumber(), t);
+            throw new Exception(t);
         }
         finally {
             if (!alreadyInTransaction) {
