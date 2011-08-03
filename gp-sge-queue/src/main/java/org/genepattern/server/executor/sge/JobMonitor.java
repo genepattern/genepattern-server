@@ -59,7 +59,6 @@ class JobMonitor {
     }
 
     private void stopJobCompletionService() {
-        //TODO: improve shutdown process
         if (jobCompletionService != null) {
             log.info("shutting down jobCompletionService ...");
             jobCompletionService.shutdown();
@@ -73,7 +72,6 @@ class JobMonitor {
             return;
         }
 
-        //TODO: handle stdout and stderr
         int exitCode = JobStatus.JOB_PROCESSING;
         String errorMessage = null;
 
@@ -85,16 +83,17 @@ class JobMonitor {
             if (succeeded.equals( jobCompletionStatus )) {
                 success = true;
             }
+            else {
+                errorMessage = "SGE job completed with jobCompletionStatus: "+jobCompletionStatus.toString();
+            }
         }
             
-        //TODO: clean up code, single invocation to GPAT.handleJobCompletion, better messages on error
         if (success) {
             exitCode = JobStatus.JOB_FINISHED;
             GenePatternAnalysisTask.handleJobCompletion(gpJobId, exitCode);
         }
         else {
             exitCode = JobStatus.JOB_ERROR;
-            errorMessage = JobCompletionStatus.SUCCEEDED().toString();
             GenePatternAnalysisTask.handleJobCompletion(gpJobId, exitCode, errorMessage);
         } 
         BatchJobUtil.updateJobRecord(gpJobId, sgeJob);
