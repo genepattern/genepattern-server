@@ -13,6 +13,7 @@
 package org.genepattern.server.process;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimerTask;
@@ -20,14 +21,16 @@ import java.util.TimerTask;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
+import org.genepattern.server.DataManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
+import org.genepattern.server.domain.UploadFile;
+import org.genepattern.server.domain.UploadFileDAO;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
-import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 
 /**
@@ -116,12 +119,13 @@ public class Purger extends TimerTask {
      * @param dateCutoff
      */
     private void purgeDirectUploads(long dateCutoff) {
+        UploadFileDAO uploadDAO = new UploadFileDAO();
         List<User> users = (new UserDAO()).getAllUsers();
         for (User i : users) {
             Context context = Context.getContextForUser(i.getUserId());
             File userUploadDir = ServerConfiguration.instance().getUserUploadDir(context);
             boolean purgeAll = ServerConfiguration.instance().getGPBooleanProperty(context, "upload.purge.all", false);
-            purgeUserUploads(userUploadDir, dateCutoff, purgeAll);
+            purgeUserUploads(userUploadDir, dateCutoff, purgeAll, uploadDAO);
         }
     }
     
@@ -131,29 +135,33 @@ public class Purger extends TimerTask {
      * @param dateCutoff
      * @param purgeAll
      */
-    private void purgeUserUploads(File dir, long dateCutoff, boolean purgeAll) {
+    private void purgeUserUploads(File dir, long dateCutoff, boolean purgeAll, UploadFileDAO uploadDAO) {
         for (File i : dir.listFiles()) {
-            if (!i.isDirectory() && i.lastModified() < dateCutoff && (purgeAll || isPartialFile(i))) {
+            UploadFile file = null;
+            try {
+                file = uploadDAO.findByPath(i.getCanonicalPath());
+                if (file == null) {
+                    log.warn("Unable to find file in database, deteting manually: " + i.getAbsolutePath());
+                    i.delete();
+                    break;
+                }
+            }
+            catch (IOException e) {
+                log.error("Unable to get cannonical path of file: " + i.getAbsolutePath());
+                break;
+            }
+
+            if (!i.isDirectory() && i.lastModified() < dateCutoff && (purgeAll || file.isPartial())) {
                 // Delete the file
-                i.delete();
+                boolean success = DataManager.deleteFile(file);
+                if (!success) {
+                    log.error("Problems deleting file: " + i.getAbsolutePath());
+                }
             }
             else if (i.isDirectory()) {
                 // Recurse into that directory
-                purgeUserUploads(i, dateCutoff, purgeAll);
+                purgeUserUploads(i, dateCutoff, purgeAll, uploadDAO);
             }
-            else if (i.isDirectory() && i.lastModified() < dateCutoff && !i.getName().endsWith("_ftp") && i.listFiles().length == 0) {
-                // Delete the directory
-                i.delete();
-            }  
-        }
-    }
-    
-    private boolean isPartialFile(File file) {
-        if (file.getName().endsWith(".part")) {
-            return true;
-        }
-        else {
-            return false;
         }
     }
     
