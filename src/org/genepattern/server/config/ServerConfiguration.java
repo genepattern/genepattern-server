@@ -282,6 +282,10 @@ public class ServerConfiguration {
      * The default location can be changed with the 'user.root.dir' configuration property. 
      * The 'gp.user.dir' property can be set on a per user basis to change from the standard location.
      * 
+     * Note: The 'gp.user.dir' property is an untested feature. If an admin sets a non-standard user dir,
+     *     they need to take measures (undocumented and unsupported, @see gp-help) to deal with 
+     *     pre-existing files and file entries in the DB.
+     * 
      * @param context
      * @return
      */
@@ -422,7 +426,8 @@ public class ServerConfiguration {
         if (userUploadPath == null) {
             File userDir = getUserDir(context);
             if (userDir != null) {
-                File f = new File(userDir, "user.uploads");
+                //TODO: this setting should be part of the UserUploadFile class
+                File f = new File(userDir, "uploads");
                 userUploadPath = f.getPath();
             }
         }
