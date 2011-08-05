@@ -68,6 +68,10 @@ public class ServerProperties {
     
     public synchronized void reloadProperties() {
         String r = System.getProperty("genepattern.properties");
+        if (r==null) {
+            log.error("SystemProperty not defined, 'genepattern.properties'");
+            return;
+        }
         File resourceDir = new File(r);
         reloadProperties(resourceDir);
     }
