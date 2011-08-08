@@ -15,66 +15,41 @@ public class GpFileObjFactory {
      * Create a new UserUploadFile object for the given user.
      * 
      * @param userContext, must contain a valid user_id for the currentUser
-     * @param parentDir, can be null, otherwise must be a valid URI to the relative path to the parent directory
-     *                   for the upload file.
+     * @param parentDir, the relative path to the parent directory for the uploaded file. 
+     *     The path can be null, which means the file is uploaded to the user's upload directory.
+     *     When it is not null, the path must be a relative path to the user's upload directory.
+     *     Subdirectories must be separated by forward slashes ('/'). No need to append a trailing slash.
      * @param filename, the filename
      * @return
      */
     static public GpFileObj getUserUploadFile(ServerConfiguration.Context userContext, String parentDir, String filename) {
         File userUploadDir = ServerConfiguration.instance().getUserUploadDir(userContext);
         
-        URI parentDirUri = null;
-        if (parentDir != null) {
-            try {
-                parentDirUri = new URI(parentDir);
-            }
-            catch (URISyntaxException e) {
-                //TODO: throw exception
-            }
+        File relativeFile = null;
+        if (parentDir == null) {
+            relativeFile = new File(filename);
         }
-        return getUserUploadFile(userContext.getUserId(), userUploadDir, parentDirUri, filename);
-    }
-
-    static private UserUploadFile getUserUploadFile(String userId, File userUploadDir, URI parentDir, String filename) {
-        UserUploadFile userUpload = null;
+        else {
+            relativeFile = new File(parentDir, filename);
+        }
+        //1) construct a file reference to the server file
+        //   e.g. serverFile=<user.upload.dir>[/relativeParentDir]/filename
+        File serverFile = new File(userUploadDir, relativeFile.getPath());
         
-        String parentPath = null;
-        if (parentDir != null) {
-            parentPath = parentDir.getPath();
-            if (parentPath.endsWith("/")) {
-                //drop the trailing '/'
-                parentPath = parentPath.substring(0, parentPath.length()-1);
-            }
-        }
-        String relativePath = parentPath != null ? parentPath + "/" + filename : filename;
-        //String path = "/users/"+userId+relativePath;
+        //2) construct a URI from the file, to get the relative uri path
+        //   e.g. uriPath=/users/<user_id>[/relativeParentDir]/filename
+        //Note: creating a File obj so that we can use UrlUtil methods to encode the path
+        File tmp = new File("/users/"+userContext.getUserId()+"/"+relativeFile.getPath());
+        String tmpPath = UrlUtil.encodeFilePath(tmp);
+        URI relativeUri = null;
         try {
-            File file = new File("/users/"+userId+"/"+relativePath);
-            String encodedPath = UrlUtil.encodeFilePath( file );
-            URI relativeUri = new URI(encodedPath);
-            userUpload = new UserUploadFile(relativeUri);
+            relativeUri = new URI(tmpPath);
         }
         catch (URISyntaxException e) {
-            //TODO: throw an exception rather than return null
-            log.error("Error initializing UserUploadFile from relativePath="+relativePath, e);
-            return null;
+            log.error("Invalid URI: "+tmpPath, e);
         }
-        
-        //set the server file path
-        //ServerConfiguration config = ServerConfiguration.instance();
-        //File userUploadDir = null;
-        //try {
-        //    userUploadDir = config.getUserUploadDir(userContext);
-        //}
-        //catch (Throwable t) {
-        //    //TODO: handle exception
-        //    log.error("Unable to get userUploadDir for userId="+userContext.getUserId(), t);
-        //    return null;
-        //}
-        File serverFile = new File(userUploadDir, relativePath);
-                    UrlUtil.encodeFilePath( serverFile );
-
-        userUpload.setServerFile( serverFile );
-        return userUpload;
+        UserUploadFile userUploadFile = new UserUploadFile( relativeUri );
+        userUploadFile.setServerFile( serverFile );
+        return userUploadFile;
     }
 }
