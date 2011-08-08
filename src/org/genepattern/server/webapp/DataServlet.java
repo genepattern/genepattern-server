@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
@@ -328,7 +329,9 @@ public class DataServlet extends HttpServlet implements Servlet {
             log.error("Unable to getCanonicalPath() in getUrlFromFile()");
             path = file.getAbsolutePath();
         }
-        return getDataServlertUrl() + path.replace("\\", "/");
+        path = path.replace("\\", "/");
+        path = UrlUtil.encodeURIcomponent(path);
+        return getDataServlertUrl() + path;
     }
 
 }
