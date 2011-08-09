@@ -18,7 +18,7 @@ public class GenomeSpaceJobHelper {
     public static String getGSToken(String gpUserId) {
         GsAccount account = new GsAccountDAO().getGsAccount(gpUserId);
         if (account == null) {
-            log.error("Unable to get the GsAccount from the database fopr the user");
+            log.error("Unable to get the GsAccount from the database for the user");
             return null;
         }
         return account.getToken();
