@@ -192,7 +192,7 @@ public class GenomeSpaceBean {
             return "genomeSpaceLoginFailed";
         } 
         catch (Exception e) {
-            log.error("Exception logging into GenomeSpace>: " + e.getMessage());
+            log.error("Exception logging into GenomeSpace: " + e.getMessage());
             unknownUser = true;
             this.setMessageToUser("An error occurred logging in to GenomeSpace.  Please contact the GenePattern administrator.");
             
