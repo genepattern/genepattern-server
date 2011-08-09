@@ -400,10 +400,17 @@ public class GenomeSpaceBean {
         return metadata;
     }
     
-    public List<WebToolDescriptor> getGSClients() throws InternalServerException {
+    public List<WebToolDescriptor> getGSClients() {
         HttpSession httpSession = UIBeanHelper.getSession();
         GsSession gsSession = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
-        List<WebToolDescriptor> tools = gsSession.getAnalysisToolManagerClient().getWebTools();
+        List<WebToolDescriptor> tools;
+        try {
+            tools = gsSession.getAnalysisToolManagerClient().getWebTools();
+        }
+        catch (InternalServerException e) {
+            log.error("Error getting getAnalysisToolManagerClient().getWebTools().  Session: " + gsSession + " Message: " + e.getMessage());
+            return new ArrayList<WebToolDescriptor>();
+        }
         WebToolDescriptor gp = null;  // Remove GenePattern from the list
         for (WebToolDescriptor i : tools) { 
             if (i.getName().equals("GenePattern")) {
@@ -454,12 +461,7 @@ public class GenomeSpaceBean {
     }
     
     public void addToClientUrls(GenomeSpaceFileInfo file) {
-        try {
-            clientUrls.put(file.getKey(), getGSClientURLs(file));
-        }
-        catch (InternalServerException e) {
-            log.error("Error adding GS file to map:" + file);
-        }
+        clientUrls.put(file.getKey(), getGSClientURLs(file));
     }
     
     public void sendGSFileToGSClient() throws IOException {
@@ -524,7 +526,7 @@ public class GenomeSpaceBean {
         return false;
     }
     
-    public List<GSClientUrl> getGSClientURLs(GenomeSpaceFileInfo file) throws InternalServerException {
+    public List<GSClientUrl> getGSClientURLs(GenomeSpaceFileInfo file)  {
         GSFileMetadata metadata = file.gsFile;
         HttpSession httpSession = UIBeanHelper.getSession();
         GsSession gsSession = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
@@ -532,7 +534,13 @@ public class GenomeSpaceBean {
         List<GSClientUrl> urls = new ArrayList<GSClientUrl>();
         for (WebToolDescriptor i : tools) {
             List<FileParameterWrapper> wrappers = prepareFileParameterWrappers(i.getFileParameters(), metadata);
-            URL url = gsSession.getAnalysisToolManagerClient().getWebToolLaunchUrl(i, wrappers);
+            URL url = null;
+            try {
+                url = gsSession.getAnalysisToolManagerClient().getWebToolLaunchUrl(i, wrappers);
+            }
+            catch (InternalServerException e) {
+                log.error("Error getting gs url. Session: " + gsSession + " WebToolDescriptor: " + i + " FileParameterWrappers: " + wrappers + " Message: " + e.getMessage());
+            }
             urls.add(new GSClientUrl(i.getName(), url));
         }
         return urls;
