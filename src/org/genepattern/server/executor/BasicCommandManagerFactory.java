@@ -1,6 +1,7 @@
 package org.genepattern.server.executor;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ExecutorConfig;
 import org.genepattern.server.config.JobConfigObj;
 import org.genepattern.server.config.ServerConfiguration;
 
@@ -24,12 +25,24 @@ public class BasicCommandManagerFactory {
     }
     
     //initialize executors list
-    private void initializeCommandExecutors(BasicCommandManager cmdMgr, org.genepattern.server.config.JobConfigObj jobConfigObj)  throws ConfigurationException {
+    private void initializeCommandExecutors(BasicCommandManager cmdMgr, JobConfigObj jobConfigObj)  throws ConfigurationException {
+        log.info("initializing command executors ...");
         for(String execId : jobConfigObj.getExecutors().keySet()) {
-            org.genepattern.server.config.ExecutorConfig execObj = jobConfigObj.getExecutors().get(execId);
-            CommandExecutor cmdExecutor = initializeCommandExecutor(execObj);
-            cmdMgr.addCommandExecutor(execId, cmdExecutor);
+            try {
+                log.info("initializing command executor, execId='"+execId+"' ...");
+                initializeCommandExecutor(cmdMgr, jobConfigObj, execId);
+                log.info("... done initializing '"+execId+"'.");
+            }
+            catch (Throwable t) {
+                log.error("error initializing command executor, execId='"+execId+"'", t);
+            }
         }
+    }
+    
+    private void initializeCommandExecutor(BasicCommandManager cmdMgr, JobConfigObj jobConfigObj, String execId) throws ConfigurationException {
+        ExecutorConfig execObj = jobConfigObj.getExecutors().get(execId);
+        CommandExecutor cmdExecutor = initializeCommandExecutor(execObj);
+        cmdMgr.addCommandExecutor(execId, cmdExecutor);
     }
 
     /**
