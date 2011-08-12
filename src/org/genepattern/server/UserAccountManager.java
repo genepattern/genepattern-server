@@ -134,6 +134,10 @@ public class UserAccountManager {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME, 
                     "Invalid username: '"+username+"': Can't contain a file separator ('"+File.separator+"') character.");
         }
+        if (username.contains("/")) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
+                    "Invalid username: '"+username+"': Can't contain ('/') character.");
+        } 
         if (username.startsWith("\"")) {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
                     "Invalid username: '"+username+"': Can't begin with a quote ('\"') character.");
