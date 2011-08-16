@@ -57,7 +57,7 @@ public class PageMessages {
     public String getMessageHeader() {
         String messages = (String) UIBeanHelper.getRequest().getSession().getAttribute(ERROR_MESSAGE_KEY);
         if (messages != null) {
-            if (messageHeader == null || messageHeader.isEmpty()) {
+            if (messageHeader == null || messageHeader.length() == 0) {
                 messageHeader = messages;
             }
             else {
