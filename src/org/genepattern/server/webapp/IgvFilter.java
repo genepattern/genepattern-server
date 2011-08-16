@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.auth.AuthenticationException;
 
 /**
  * Custom filter to use HTTP Basic Authentication for all requests coming from the configured set of 
@@ -74,10 +75,18 @@ public class IgvFilter implements Filter {
 
         //announce support for partial get
         resp.setHeader("Accept-Ranges", "bytes");
+
+        String gpUserId = null;
+        try {
+            gpUserId = BasicAuthUtil.getAuthenticatedUserId(req, resp);
+        }
+        catch (AuthenticationException e) {
+            BasicAuthUtil.requestAuthentication(resp, e.getLocalizedMessage());
+        }
         
-        String gpUserId = BasicAuthUtil.getAuthenticatedUserId(req, resp);
         if (gpUserId == null) {
-            BasicAuthUtil.requestAuthentication(resp);
+            log.error("Expecting an AuthenticationException to be thrown");
+            BasicAuthUtil.requestAuthentication(req, resp);
             return;
         }
         chain.doFilter(req, resp);

@@ -28,9 +28,9 @@ public class BasicAuthUtil {
      * @param req
      * @param resp
      * @return a valid userid, or null if not authenticated.
-     * @throws IOException
+     * @throws AuthenticationException - indicating that the current request is not authorized.
      */
-    static public String getAuthenticatedUserId(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    static public String getAuthenticatedUserId(HttpServletRequest req, HttpServletResponse resp) throws AuthenticationException {
         String userIdFromSession = LoginManager.instance().getUserIdFromSession(req);
 
         // Get Authorization header
@@ -50,22 +50,26 @@ public class BasicAuthUtil {
                 return userIdFromSession;
             }
             //special-case when the userId from the session doesn't match the one in the authorization header
-            LoginManager.instance().logout(req, resp, false);
+            try {
+                boolean redirect = false;
+                LoginManager.instance().logout(req, resp, redirect);
+            }
+            catch (IOException e) {
+                //ignoring IOException because the redirect arg is false
+                log.error("Unexpected IOException", e);
+            }
             userIdFromSession = null;
         }
 
         //if we are here, check the authorization header ...
-        try {
-            boolean authenticated = UserAccountManager.instance().authenticateUser(userIdFromAuthorizationHeader, password);
-            if (authenticated) {
-                LoginManager.instance().addUserIdToSession(req, userIdFromAuthorizationHeader);
-                return userIdFromAuthorizationHeader;
-            }
-        }
-        catch (AuthenticationException e) {
+        boolean authenticated = UserAccountManager.instance().authenticateUser(userIdFromAuthorizationHeader, password);
+        if (authenticated) {
+            LoginManager.instance().addUserIdToSession(req, userIdFromAuthorizationHeader);
+            return userIdFromAuthorizationHeader;
         }
 
-        //if we are here, it means we are not authenticated, return null
+        //if we are here, the user was not authenticated, an AuthenticationException should have been thrown
+        log.error("An AuthenticationException should have been thrown, returning null userId instead.");
         return null;
     }
     
@@ -120,13 +124,22 @@ public class BasicAuthUtil {
      * Note that this is the normal situation the first time you request a protected resource.
      * The client web browser will prompt for userID and password and cache them
      * so that it doesn't have to prompt you again.
+     * 
+     * 1. request requires a valid username/password, but none has been provided.
+     * 2a. request refused, even though a username/password was provided. Server says it's a bogus username/password pair.
+     * 2b. request refused, Server says the user does not have permission to read the requested resource.
+     * 
      * @param response
      * @throws IOException
      */
-    static public void requestAuthentication(HttpServletResponse response) throws IOException {
+    static public void requestAuthentication(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        requestAuthentication(response, "You must log in to view the page: "+request.getPathInfo());
+    }
+    
+    static public void requestAuthentication(HttpServletResponse response, String message) throws IOException {
         final String realm = "GenePattern";
         response.setHeader("WWW-Authenticate", "BASIC realm=\""+realm+"\"");
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, message);
     }
 
 }

@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.executor.CommandProperties;
@@ -119,7 +120,7 @@ public class DataServlet extends HttpServlet implements Servlet {
             if (serverPort > 0) {
                 u += (":" +serverPort);
             }
-            u += contextPath + servletPath;
+            u += contextPath + servletPath + "/";
             if (pathInfo != null) {
                 u+= pathInfo;
             }
@@ -131,10 +132,17 @@ public class DataServlet extends HttpServlet implements Servlet {
         }
 
         //1) require an authenticated GP user account
-        String gpUserId = BasicAuthUtil.getAuthenticatedUserId(request, response);
+        String gpUserId = null;
+        try {
+            gpUserId = BasicAuthUtil.getAuthenticatedUserId(request, response);
+        }
+        catch (AuthenticationException e) {
+            BasicAuthUtil.requestAuthentication(response, e.getLocalizedMessage());
+            return;
+        }
         if (gpUserId == null) {
-            log.debug("Not authenticated, request authentication");
-            BasicAuthUtil.requestAuthentication(response);
+            log.error("Unexpected null gpUserId, AuthenticationException should have been thrown.");
+            BasicAuthUtil.requestAuthentication(request, response);
             return;
         }
 
@@ -160,8 +168,9 @@ public class DataServlet extends HttpServlet implements Servlet {
         //3) require the GP user account is authorized to read the file
         boolean gpUserCanRead = gpUserCanRead(gpUserId, fileObj);
         if (!gpUserCanRead) {
-            log.debug("Gp user does not have permission to read file, gpUserId="+gpUserId+", fileObj="+fileObj.getPath());
-            BasicAuthUtil.requestAuthentication(response);
+            String message = "The user '"+gpUserId+"' does not have permission to read the file '"+fileObj.getPath()+"'";
+            log.debug(message);
+            BasicAuthUtil.requestAuthentication(response, message);
             return;
         }
 
