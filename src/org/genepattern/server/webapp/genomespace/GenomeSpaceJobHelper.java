@@ -6,7 +6,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.GsAccount;
 import org.genepattern.server.domain.GsAccountDAO;
-import org.genomespace.client.GsSession;
 
 public class GenomeSpaceJobHelper {
     private static final Logger log = Logger.getLogger(GenomeSpaceJobHelper.class);
@@ -24,11 +23,11 @@ public class GenomeSpaceJobHelper {
         return account.getToken();
     }
     
-    public static void updateDatabase(String userId, GsSession gsSession) {
+    public static void updateDatabase(String userId, String gsAuthenticationToken) {
         GsAccountDAO dao = new GsAccountDAO();
         GsAccount account = new GsAccount();
         account.setGpUserid(userId);
-        account.setToken(gsSession.getAuthenticationToken());
+        account.setToken(gsAuthenticationToken);
         dao.saveOrUpdate(account);
         HibernateUtil.commitTransaction();
     }

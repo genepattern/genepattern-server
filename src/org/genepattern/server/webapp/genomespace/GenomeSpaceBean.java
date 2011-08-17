@@ -36,12 +36,13 @@ import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genomespace.client.GsSession;
+
 import org.genomespace.atm.model.FileParameter;
 import org.genomespace.atm.model.WebToolDescriptor;
 import org.genomespace.client.ConfigurationUrls;
 import org.genomespace.client.DataManagerClient;
 import org.genomespace.client.FileParameterWrapper;
-import org.genomespace.client.GsSession;
 import org.genomespace.client.User;
 import org.genomespace.client.exceptions.AuthorizationException;
 import org.genomespace.client.exceptions.InternalServerException;
@@ -49,6 +50,7 @@ import org.genomespace.datamanager.core.GSDataFormat;
 import org.genomespace.datamanager.core.GSDirectoryListing;
 import org.genomespace.datamanager.core.GSFileMetadata;
 import org.genomespace.datamanager.core.impl.GSFileMetadataImpl;
+
 import org.richfaces.component.UITree;
 import org.richfaces.model.TreeNode;
 import org.richfaces.model.TreeNodeImpl;
@@ -178,7 +180,7 @@ public class GenomeSpaceBean {
            HttpSession httpSession = UIBeanHelper.getSession();
            httpSession.setAttribute(GS_USER_KEY, gsUser);
            httpSession.setAttribute(GS_SESSION_KEY, gsSession);
-           GenomeSpaceJobHelper.updateDatabase(UIBeanHelper.getUserId(), gsSession);
+           GenomeSpaceJobHelper.updateDatabase(UIBeanHelper.getUserId(), gsSession.getAuthenticationToken());
            unknownUser = false;
            this.setMessageToUser("Signed in to GenomeSpace as " + gsUser.getUsername());
             
