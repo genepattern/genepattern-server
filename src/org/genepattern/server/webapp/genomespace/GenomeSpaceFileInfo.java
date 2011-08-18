@@ -2,11 +2,9 @@ package org.genepattern.server.webapp.genomespace;
 
 import java.util.*;
 
-import org.genomespace.atm.model.WebToolDescriptor;
 import org.genomespace.client.exceptions.InternalServerException;
 import org.genomespace.datamanager.core.GSDataFormat;
 import org.genomespace.datamanager.core.GSFileMetadata;
-import org.genepattern.server.webapp.genomespace.GenomeSpaceBean.GSClientUrl;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.webservice.ParameterInfo;
