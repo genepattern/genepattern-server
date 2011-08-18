@@ -1,13 +1,25 @@
 package org.genepattern.server.webapp.genomespace;
 
 import java.io.File;
-import java.util.*;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.genepattern.server.webapp.jsf.*;
+import javax.servlet.http.HttpSession;
+
+import org.genepattern.server.webapp.jsf.KeyValuePair;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.TaskInfo;
 import org.genomespace.client.DataManagerClient;
-import org.genomespace.datamanager.core.*;
+import org.genomespace.client.GsSession;
+import org.genomespace.datamanager.core.GSDirectoryListing;
+import org.genomespace.datamanager.core.GSFileMetadata;
 
 public class GenomeSpaceDirectory {
     public GSFileMetadata dir;
@@ -23,7 +35,7 @@ public class GenomeSpaceDirectory {
         gsDirectories = new ArrayList<GenomeSpaceDirectory>();
     }
     
-    public GenomeSpaceDirectory(GSFileMetadata adir , int level, DataManagerClient dmClient, Map<String, Set<TaskInfo>> kindToModules, GenomeSpaceBean genomeSpaceBean){
+    public GenomeSpaceDirectory(GSFileMetadata adir , int level, DataManagerClient dmClient, Map<String, Set<TaskInfo>> kindToModules, GenomeSpaceBeanHelper genomeSpaceBean) {
         this(); 
         this.dir = adir;
         name = adir.getName();
@@ -37,7 +49,7 @@ public class GenomeSpaceDirectory {
         setGsFileList(aDir, kindToModules, genomeSpaceBean);
     }
     
-    public GenomeSpaceDirectory(GSDirectoryListing aDir, DataManagerClient dmClient, Map<String, Set<TaskInfo>> kindToModules, GenomeSpaceBean genomeSpaceBean){
+    public GenomeSpaceDirectory(GSDirectoryListing aDir, DataManagerClient dmClient, Map<String, Set<TaskInfo>> kindToModules, GenomeSpaceBeanHelper genomeSpaceBean) {
         this();
         dir = aDir.getDirectory();
         name = dir.getName();
@@ -50,12 +62,12 @@ public class GenomeSpaceDirectory {
     }
 
     
-    public void setGsFileList(GSDirectoryListing gsDirList, Map<String, Set<TaskInfo>> kindToModules, GenomeSpaceBean genomeSpaceBean) {
+    public void setGsFileList(GSDirectoryListing gsDirList, Map<String, Set<TaskInfo>> kindToModules, GenomeSpaceBeanHelper genomeSpaceBean) {
         this.gsFiles = new ArrayList<GenomeSpaceFileInfo>();
         for (GSFileMetadata afile: gsDirList.findFiles()){
             GenomeSpaceFileInfo info = new GenomeSpaceFileInfo(afile, this);
             this.gsFiles.add(info);
-            info.setUrl(genomeSpaceBean.getFileURL(afile));
+            info.setUrl(getFileURL(afile));
             
             String kind = SemanticUtil.getKind(new File(afile.getName()));
             Collection<TaskInfo> modules;
@@ -73,6 +85,15 @@ public class GenomeSpaceDirectory {
             genomeSpaceBean.addToClientUrls(info);
         }
     
+    }
+    
+    private String getFileURL(GSFileMetadata gsFile) {
+        if (gsFile == null) return null;
+        HttpSession httpSession = UIBeanHelper.getSession();
+        GsSession sess = (GsSession) httpSession.getAttribute(GenomeSpaceBeanHelper.GS_SESSION_KEY);
+        
+        URL s3Url = sess.getDataManagerClient().getFileUrl(gsFile, null);
+        return s3Url.toString();
     }
     
 

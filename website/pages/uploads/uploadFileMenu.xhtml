@@ -75,8 +75,8 @@ use, misuse, or functionality.
                                 <tr>
                                     <td>
                                         <img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle"/>&#160;
-                                        <h:commandLink value="Send to #{i.tool.name}" action="#{genomeSpaceBean.sendInputFileToGSClient}" immediate="true" target="_blank">
-                                            <f:param value="#{i.tool.name}" name="tool"/><f:param value="#{aFile.path}" name="file"/>
+                                        <h:commandLink value="Send to #{i.tool}" action="#{genomeSpaceBean.sendInputFileToGSClient}" immediate="true" target="_blank">
+                                            <f:param value="#{i.tool}" name="tool"/><f:param value="#{aFile.path}" name="file"/>
                                         </h:commandLink>
                                     </td>
                                 </tr>

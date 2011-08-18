@@ -1,720 +1,188 @@
-/*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2011) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */
-
 package org.genepattern.server.webapp.genomespace;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.faces.event.ActionEvent;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
-import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.webapp.jsf.UIBeanHelper;
-import org.genepattern.server.webservice.server.dao.AdminDAO;
-import org.genepattern.util.SemanticUtil;
+import org.genepattern.server.gs.GsClientException;
 import org.genepattern.webservice.ParameterInfo;
-import org.genepattern.webservice.TaskInfo;
-import org.genomespace.client.GsSession;
-
-import org.genomespace.atm.model.FileParameter;
-import org.genomespace.atm.model.WebToolDescriptor;
-import org.genomespace.client.ConfigurationUrls;
-import org.genomespace.client.DataManagerClient;
-import org.genomespace.client.FileParameterWrapper;
-import org.genomespace.client.User;
-import org.genomespace.client.exceptions.AuthorizationException;
-import org.genomespace.client.exceptions.InternalServerException;
-import org.genomespace.datamanager.core.GSDataFormat;
-import org.genomespace.datamanager.core.GSDirectoryListing;
-import org.genomespace.datamanager.core.GSFileMetadata;
-import org.genomespace.datamanager.core.impl.GSFileMetadataImpl;
-
 import org.richfaces.component.UITree;
 import org.richfaces.model.TreeNode;
-import org.richfaces.model.TreeNodeImpl;
 
-/**
- * Backing bean for login to GenomeSpace.
- */
-public class GenomeSpaceBean {
-    private static Logger log = Logger.getLogger(GenomeSpaceBean.class);
-
-    public static String GS_SESSION_KEY = "GS_SESSION";
-    public static String GS_USER_KEY = "GS_USER";
-    public static String GS_DIRECTORIES_KEY = "GS_DIRECTORIES";
+public class GenomeSpaceBean implements GenomeSpaceBeanHelper {
+    GenomeSpaceBeanHelper gsHelper = null;
     
-    private String username;
-    private String password;
-    private String regPassword;
-    private String regEmail;
-    private boolean unknownUser = false;
-    private boolean invalidPassword = false;
-    private boolean invalidRegistration = false;
-    private boolean loginError = false;
-    private String currentTaskLsid;
-    private TaskInfo currentTaskInfo;
-    private boolean genomeSpaceEnabled = false;
-
-    private Map<String, Set<TaskInfo>> kindToModules;
-    private Map<String, List<GSClientUrl>> clientUrls = new HashMap<String, List<GSClientUrl>>();
-    private Map<String, List<String>> gsClientTypes = null;
-
     public GenomeSpaceBean() {
-        String userId = UIBeanHelper.getUserId();
-        
-        TaskInfo[] moduleArray = new AdminDAO().getLatestTasks(userId);
-        List<TaskInfo> allModules = Arrays.asList(moduleArray);
-        kindToModules = SemanticUtil.getKindToModulesMap(allModules);
-    
-        Context userContext = Context.getContextForUser(userId);
-        String prop = ServerConfiguration.instance().getGPProperty(userContext, "genomeSpaceEnabled");
-        genomeSpaceEnabled = Boolean.parseBoolean(prop);
-        log.info("\n\n======= genomeSpaceEnabled=" + genomeSpaceEnabled + " for userId="+userId+"\n\n");
+        gsHelper = new GenomeSpaceBeanHelperImpl();
     }
 
     public boolean isGenomeSpaceEnabled() {
-        return this.genomeSpaceEnabled;
+        return gsHelper.isGenomeSpaceEnabled();
     }
-    
+
     public void setGenomeSpaceEnabled(boolean genomeSpaceEnabled) {
-        this.genomeSpaceEnabled = genomeSpaceEnabled;
+        gsHelper.setGenomeSpaceEnabled(genomeSpaceEnabled);
     }
 
     public String getRegPassword() {
-        return regPassword;
+        return gsHelper.getRegPassword();
     }
 
     public void setRegPassword(String regPassword) {
-        this.regPassword = regPassword;
+        gsHelper.setRegPassword(regPassword);
     }
 
     public String getRegEmail() {
-        return regEmail;
+        return gsHelper.getRegEmail();
     }
 
     public void setRegEmail(String regEmail) {
-        this.regEmail = regEmail;
+        gsHelper.setRegEmail(regEmail);
     }
 
     public String getPassword() {
-        return this.password;
+        return gsHelper.getPassword();
     }
 
     public String getUsername() {
-        return username;
+        return gsHelper.getUsername();
     }
-    
+
     public void setMessageToUser(String messageToUser) {
-        UIBeanHelper.setInfoMessage(messageToUser);
+        gsHelper.setMessageToUser(messageToUser);
     }
 
     public boolean isInvalidPassword() {
-        return invalidPassword;
+        return gsHelper.isInvalidPassword();
     }
-    
+
     public boolean isLoginError() {
-        return loginError;
+        return gsHelper.isLoginError();
     }
 
     public boolean isUnknownUser() {
-        return unknownUser;
+        return gsHelper.isUnknownUser();
     }
 
     public void setPassword(String password) {
-        this.password = password;
+        gsHelper.setPassword(password);
     }
 
     public void setUsername(String username) {
-        this.username = username;
+        gsHelper.setUsername(username);
     }
-    
-    public boolean isLoggedIn() {
-        HttpSession httpSession = UIBeanHelper.getSession();
-        GsSession gsSession = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
-        return ((gsSession != null) && (gsSession.isLoggedIn()));
-     }
-    
-    /**
-     * Submit the user / password. For now this uses an action listener since we are redirecting to a page outside of
-     * the JSF framework. This should be changed to an action to use jsf navigation in the future.
-     * @param event -- ignored        
-     */
-    public String submitLogin() {
-        String env = UIBeanHelper.getRequest().getParameter("envSelect");
-        if (env == null) {
-            log.error("Environment for GenomeSpace not set");
-            env = "test";
-        }
-        
-        if (username == null) {
-            unknownUser = true;
-            return "home";
-        }
 
-        try {
-           ConfigurationUrls.init(env);
-           GsSession gsSession = new GsSession();
-           User gsUser = gsSession.login(username, password);
-           HttpSession httpSession = UIBeanHelper.getSession();
-           httpSession.setAttribute(GS_USER_KEY, gsUser);
-           httpSession.setAttribute(GS_SESSION_KEY, gsSession);
-           GenomeSpaceJobHelper.updateDatabase(UIBeanHelper.getUserId(), gsSession.getAuthenticationToken());
-           unknownUser = false;
-           this.setMessageToUser("Signed in to GenomeSpace as " + gsUser.getUsername());
-            
-           return "home";
-            
-        }  
-        catch (AuthorizationException e) {
-            log.info("Problem logging into GenomeSpace");
-            unknownUser = true;
-            this.setMessageToUser("Authentication error, please check your username and password.");
-            return "genomeSpaceLoginFailed";
-        } 
-        catch (Exception e) {
-            log.error("Exception logging into GenomeSpace: " + e.getMessage());
-            unknownUser = true;
-            this.setMessageToUser("An error occurred logging in to GenomeSpace.  Please contact the GenePattern administrator.");
-            
-            return "genomeSpaceLoginFailed";
-        }
+    public boolean isLoggedIn() {
+        return gsHelper.isLoggedIn();
     }
-    
-    /**
-     * register a user into GenomeSpace
-     * @return
-     */
+
+    public String submitLogin() {
+        return gsHelper.submitLogin();
+    }
+
     public String submitRegistration() {
-        String env = UIBeanHelper.getRequest().getParameter("envSelect");
-        if (env == null) {
-            log.error("Environment for GenomeSpace not set");
-            env = "test";
-        }
-        
-        if (username == null) {
-            this.setMessageToUser("GenomeSpace username is blank");
-            invalidRegistration = true;
-            return "genomeSpaceRegFailed";
-        }
-        if (! regPassword.equals(password)) {
-            UIBeanHelper.setInfoMessage("GenomeSpace password does not match");
-            invalidRegistration = true;
-            invalidPassword = true;
-            return "genomeSpaceRegFailed";
-        }
-    
-        try {
-            ConfigurationUrls.init(env);
-            GsSession gsSession = new GsSession();
-            gsSession.registerUser(username, password, regEmail);
-            invalidRegistration = false;
-            invalidPassword = false;
-            loginError = false;
-            submitLogin();
-        }
-        catch (Exception e) {
-            UIBeanHelper.setInfoMessage("Error logging into GenomeSpace");
-            invalidRegistration = true;
-            loginError = true;
-            log.error("Error logging into GenomeSpace" + e.getMessage());
-            return "genomeSpaceRegFailed";
-        }
-      
-        return "home";
+        return gsHelper.submitRegistration();
     }
 
     public String submitLogout() {
-        HttpSession httpSession = UIBeanHelper.getSession();
-        
-        GsSession gsSession = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
-            
-        gsSession.logout();
-        httpSession.setAttribute(GS_USER_KEY,null);
-        httpSession.setAttribute(GS_SESSION_KEY,null);
-            
-        this.setMessageToUser("Logged out of GenomeSpace.");
-        this.setGenomeSpaceDirectories(null);
-            
-       
-        return "home";
+        return gsHelper.submitLogout();
     }
-    
-    /**
-     * Delete a file from the user's home dir on GenomeSpace
-     * @param ae
-     */
-    public void deleteFileFromGenomeSpace(ActionEvent ae) throws InternalServerException{
-        String filenameParam = UIBeanHelper.getRequest().getParameter("filename");
-        String dirnameParam = UIBeanHelper.getRequest().getParameter("dirname");
-        
-        GenomeSpaceFileInfo theFile = getFile(dirnameParam, filenameParam);
-        HttpSession httpSession = UIBeanHelper.getSession();
-      
-        GsSession sess = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
-        sess.getDataManagerClient().delete(theFile.gsFile);
-        this.setGenomeSpaceDirectories(null); // force a refresh
-        this.setMessageToUser("Deleted from GS " + dirnameParam + "/" + filenameParam);
-        
+
+    public void deleteFileFromGenomeSpace(ActionEvent ae) throws GsClientException {
+        gsHelper.deleteFileFromGenomeSpace(ae);
     }
-    
-    /**
-     * lots of room for optimization and caching here
-     * @param dirname
-     * @param file
-     * @return
-     */
+
     public GenomeSpaceFileInfo getFile(String dirname, String file) {
-       for (GenomeSpaceDirectory dir: this.getGenomeSpaceDirectories()) {
-            if ((dir.getName().equals(dirname)) || (dirname == null)) {
-                
-                for (GenomeSpaceFileInfo aFile: dir.getGsFiles()) {
-                    if (aFile.getFilename().equals(file)) return aFile;
-                }
-             }
-            
-            for (GenomeSpaceDirectory aDir: dir.getGsDirectories()) {
-                if ((aDir.getName().equals(dirname)) || (dirname == null)) {
-                    
-                    for (GenomeSpaceFileInfo aFile: aDir.getGsFiles()) {
-                        if (aFile.getFilename().equals(file)) return aFile;
-                    }
-                 }
-            }
-        }
-        return null;
+        return gsHelper.getFile(dirname, file);
     }
-    
-    
-    /**
-     * gets a one time use link to the file on S3
-     * @param ae
-     */
+
     public String getFileURL(String dirname, String filename) {
-        if (filename == null) return null;
-        GenomeSpaceFileInfo theFile = getFile(dirname, filename);
-        return getFileURL(theFile.gsFile);
+        return gsHelper.getFileURL(dirname, filename);
     }
-    
-    public String getFileURL(GSFileMetadata gsFile) {
-        if (gsFile == null) return null;
-        HttpSession httpSession = UIBeanHelper.getSession();
-        GsSession sess = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
-        
-        URL s3Url = sess.getDataManagerClient().getFileUrl(gsFile, null);
-        return s3Url.toString();
-    }
-    
-    /**
-     * redirects to a time limited, one time use link to the file on S3
-     * @param ae
-     */
+
     public void saveFileLocally(ActionEvent ae) {
-        String filenameParam = UIBeanHelper.getRequest().getParameter("filename");
-        String dirnameParam = UIBeanHelper.getRequest().getParameter("dirname");
-        
-        try {
-            String s3Url = getFileURL(dirnameParam, filenameParam);
-            HttpServletResponse response = UIBeanHelper.getResponse();
-            response.sendRedirect(s3Url.toString());
-         
-        } 
-        catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
+        gsHelper.saveFileLocally(ae);
     }
-    
-    /**
-     * Save a local GenePattern result file back to the GenomeSpace data repository
-     * @return
-     */
+
     public String sendInputFileToGenomeSpace() {
-        String pathParam = UIBeanHelper.getRequest().getParameter("path");
-        File theFile = new File(pathParam);
-        HttpSession httpSession = UIBeanHelper.getSession();
-        
-        saveFileToGenomeSpace(httpSession, theFile);
-        return "home";
-        
+        return gsHelper.sendInputFileToGenomeSpace();
     }
-    
-    /**
-     * Save a local GenePattern result file back to the GenomeSpace data repository
-     * @return
-     */
+
     public String sendToGenomeSpace() {
-        String filenameParam = UIBeanHelper.getRequest().getParameter("jobFileName");
-        String jobFileName = UIBeanHelper.decode(filenameParam);
-         
-        int idx = jobFileName.indexOf('/');
-        
-        String jobNumber = jobFileName.substring(0, idx);
-        String filename = jobFileName.substring(idx+1);
-        
-        HttpSession httpSession = UIBeanHelper.getSession();
-        File in = new File(GenePatternAnalysisTask.getJobDir(jobNumber), filename);
-        
-        saveFileToGenomeSpace(httpSession, in);
-        return "home";     
+        return gsHelper.sendToGenomeSpace();
     }
 
-    /**
-     * @param httpSession
-     * @param in
-     */
-    private GSFileMetadata saveFileToGenomeSpace(HttpSession httpSession, File in) {
-        GSFileMetadata metadata = null;
-        try {
-            GsSession sess = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
-            DataManagerClient dmClient = sess.getDataManagerClient();
-            GSDirectoryListing rootDir = dmClient.listDefaultDirectory();
-            metadata = dmClient.uploadFile(in, rootDir.getDirectory());
-        
-            UIBeanHelper.setInfoMessage("File uploaded to GS " + in.getName());
-            this.setGenomeSpaceDirectories(null);
-            
-        } 
-        catch (Exception e) {
-            e.printStackTrace();
-            UIBeanHelper.setErrorMessage("There was a problem uploading the file to GS, " + in.getName());
-         }
-        return metadata;
-    }
-    
-    public List<WebToolDescriptor> getGSClients() {
-        HttpSession httpSession = UIBeanHelper.getSession();
-        GsSession gsSession = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
-        List<WebToolDescriptor> tools;
-        try {
-            tools = gsSession.getAnalysisToolManagerClient().getWebTools();
-        }
-        catch (InternalServerException e) {
-            log.error("Error getting getAnalysisToolManagerClient().getWebTools().  Session: " + gsSession + " Message: " + e.getMessage());
-            return new ArrayList<WebToolDescriptor>();
-        }
-        WebToolDescriptor gp = null;  // Remove GenePattern from the list
-        for (WebToolDescriptor i : tools) { 
-            if (i.getName().equals("GenePattern")) {
-                gp = i;
-            }
-        }
-        tools.remove(gp);
-        
-        if (gsClientTypes == null) {
-            initGSClientTypesMap(tools);
-        }
-        
-        return tools;
-    }
-    
-    public List<WebToolDescriptorWrapper> getToolWrappers() throws InternalServerException {
-        List<WebToolDescriptorWrapper> wrappers = new ArrayList<WebToolDescriptorWrapper>();
-        for (WebToolDescriptor i : getGSClients()) {
-            wrappers.add(new WebToolDescriptorWrapper(i));
-        }
-        return wrappers;
-    }
-    
-    private void initGSClientTypesMap(List<WebToolDescriptor> tools) {
-        gsClientTypes = new HashMap<String, List<String>>();
-        for (WebToolDescriptor i : tools) {
-            List<String> types = prepareTypesFilter(i.getFileParameters());
-            gsClientTypes.put(i.getName(), types);
-        }
-    }
-    
     public Map<String, List<String>> getGsClientTypes() {
-        return gsClientTypes;
+        return gsHelper.getGsClientTypes();
     }
-    
-    private void testClientMap() {
-        for (String i : gsClientTypes.keySet()) {
-            log.info("TOOL: " + i);
-            log.info("\tTYPES: ");
-            for (String j : gsClientTypes.get(i)) {
-                log.info("\t\t" + j);
-            }
-        }
+
+    public Map<String, List<GSClientUrl>> getClientUrls() {
+        return gsHelper.getClientUrls();
     }
-    
-    public Map<String, List<GSClientUrl>>getClientUrls() {
-        return clientUrls;
-    }
-    
+
     public void addToClientUrls(GenomeSpaceFileInfo file) {
-        clientUrls.put(file.getKey(), getGSClientURLs(file));
+        gsHelper.addToClientUrls(file);
     }
-    
+
     public void sendGSFileToGSClient() throws IOException {
-        String fileParam = UIBeanHelper.getRequest().getParameter("file");
-        String toolParam = UIBeanHelper.getRequest().getParameter("tool");
-        List<GSClientUrl> urls = clientUrls.get(fileParam);
-        for (GSClientUrl i : urls) {
-            if (i.getTool().equals(toolParam)) {
-                UIBeanHelper.getResponse().sendRedirect(i.getUrl().toString());
-                break;
-            }
-        }
+        gsHelper.sendGSFileToGSClient();
     }
-    
-    public void sendInputFileToGSClient() throws IOException, InternalServerException {
-        String fileParam = UIBeanHelper.getRequest().getParameter("file");
-        String toolParam = UIBeanHelper.getRequest().getParameter("tool");
-        File file = new File(fileParam);
-        if (!file.exists()) { 
-            UIBeanHelper.setErrorMessage("Unable to upload input file to GenomeSpace");
-            return;
-        }
-        GSFileMetadata metadata = saveFileToGenomeSpace(UIBeanHelper.getSession(), file);
-        GenomeSpaceFileInfo gsFile = new GenomeSpaceFileInfo(metadata, null);
-        List<GSClientUrl> urls = getGSClientURLs(gsFile);
 
-        for (GSClientUrl i : urls) {
-            if (i.getTool().equals(toolParam)) {
-                UIBeanHelper.getResponse().sendRedirect(i.getUrl().toString());
-                break;
-            }
-        }
+    public void sendInputFileToGSClient() throws IOException, GsClientException {
+        gsHelper.sendInputFileToGSClient();
     }
-    
-    private List<String> prepareTypesFilter(List<FileParameter> params) {
-        Set<GSDataFormat> superset = new HashSet<GSDataFormat>();
-        List<String> types = new ArrayList<String>();
-        for (FileParameter i : params) {
-            superset.addAll(i.getFormats());
-        }
-        for (GSDataFormat i : superset) {
-            types.add(i.getName());
-        }
-        return types;
+
+    public List<GSClientUrl> getGSClientURLs(GenomeSpaceFileInfo file) {
+        return gsHelper.getGSClientURLs(file);
     }
-    
-    private List<FileParameterWrapper> prepareFileParameterWrappers(List<FileParameter> params, GSFileMetadata metadata) {
-        List<FileParameterWrapper> wrappers = new ArrayList<FileParameterWrapper>();
-        for (FileParameter i : params) {
-            wrappers.add(new FileParameterWrapper(i, metadata));
-        }
-        return wrappers;
-    }
-    
-    private boolean typeMatchesTool(String type, WebToolDescriptor tool) {
-        List<String> toolTypes = gsClientTypes.get(tool.getName());
-        for (String i : toolTypes) {
-            if (i.equals(type)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    public List<GSClientUrl> getGSClientURLs(GenomeSpaceFileInfo file)  {
-        GSFileMetadata metadata = file.gsFile;
-        HttpSession httpSession = UIBeanHelper.getSession();
-        GsSession gsSession = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
-        List<WebToolDescriptor> tools = getGSClients();
-        List<GSClientUrl> urls = new ArrayList<GSClientUrl>();
-        for (WebToolDescriptor i : tools) {
-            List<FileParameterWrapper> wrappers = prepareFileParameterWrappers(i.getFileParameters(), metadata);
-            URL url = null;
-            try {
-                url = gsSession.getAnalysisToolManagerClient().getWebToolLaunchUrl(i, wrappers);
-            }
-            catch (InternalServerException e) {
-                log.error("Error getting gs url. Session: " + gsSession + " WebToolDescriptor: " + i + " FileParameterWrappers: " + wrappers + " Message: " + e.getMessage());
-            }
-            urls.add(new GSClientUrl(i.getName(), url));
-        }
-        return urls;
-    }
-    
+
     public boolean openTreeNode(UITree tree) {
-        return true;
+        return gsHelper.openTreeNode(tree);
     }
-    
-    public TreeNode<GenomeSpaceFileInfo> getFileTree() {
-        // Set up the root node
-        TreeNode<GenomeSpaceFileInfo> rootNode = new TreeNodeImpl<GenomeSpaceFileInfo>();
-        GSFileMetadata rootFileFacade = new GSFileMetadataImpl("GenomeSpace Files", null, UIBeanHelper.getServer(), UIBeanHelper.getUserId(), 0, null, null, true);
-        GenomeSpaceFileInfo rootWrapper = new GenomeSpaceFileInfo(rootFileFacade, null);
-        rootNode.setData(rootWrapper);
-        
-        // Add component trees
-        List<GenomeSpaceDirectory> dirs = getAvailableDirectories();
-        int count = 0;
-        for (GenomeSpaceDirectory i : dirs) {
-            rootNode.addChild(count, getGenomeSpaceFilesTree(i));
-            count++;
-        }
-        
-        return rootNode;
-    }
-    
-    public TreeNode<GenomeSpaceFileInfo> getGenomeSpaceFilesTree(GenomeSpaceDirectory gsDir) {
-        GSFileMetadata metadataFacade = new GSFileMetadataImpl(gsDir.getName(), null, UIBeanHelper.getServer(), UIBeanHelper.getUserId(), 0, null, null, true);
-        GenomeSpaceFileInfo wrapper = new GenomeSpaceFileInfo(metadataFacade, null);
-        TreeNode<GenomeSpaceFileInfo> rootNode = new TreeNodeImpl<GenomeSpaceFileInfo>();
-        rootNode.setData(wrapper);
-        int count = 0;
-        
-        // Add subdirectories
-        for (GenomeSpaceDirectory i : gsDir.getGsDirectories()) {
-            rootNode.addChild(count, getGenomeSpaceFilesTree(i));
-            count++;
-        }
-        
-        // Add child files
-        for (GenomeSpaceFileInfo i : gsDir.getGsFiles()) {
-            TreeNode<GenomeSpaceFileInfo> fileNode = new TreeNodeImpl<GenomeSpaceFileInfo>();
-            fileNode.setData(i);
-            rootNode.addChild(count, fileNode);
-            count++;
-        }
 
-        return rootNode;
+    public TreeNode<GenomeSpaceFileInfo> getFileTree() {
+        return gsHelper.getFileTree();
     }
-    
+
+    public TreeNode<GenomeSpaceFileInfo> getGenomeSpaceFilesTree(GenomeSpaceDirectory gsDir) {
+        return gsHelper.getGenomeSpaceFilesTree(gsDir);
+    }
+
     public List<GenomeSpaceDirectory> getGsDirectories() {
-        return getAvailableDirectories().get(0).getGsDirectories();
+        return gsHelper.getGsDirectories();
     }
-    
+
     public List<GenomeSpaceFileInfo> getGsFiles() {
-        return getAvailableDirectories().get(0).getGsFiles();
+        return gsHelper.getGsFiles();
     }
-    
-    /**
-     * get the list of directories in GenomeSpace this user can look at
-     * @return
-     */
+
     public List<GenomeSpaceDirectory> getAvailableDirectories() {
-        List<GenomeSpaceDirectory> availableDirectories = this.getGenomeSpaceDirectories();
-        
-        if ((availableDirectories == null) || (availableDirectories.size() == 0)) {
-            availableDirectories = new ArrayList<GenomeSpaceDirectory>();
-            
-           
-            HttpSession httpSession = UIBeanHelper.getSession();
-            GsSession gsSession = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
-            User gsUser = (User) httpSession.getAttribute(GS_USER_KEY);
-            if ((gsSession == null) || (! gsSession.isLoggedIn())) return availableDirectories;
-            
-            DataManagerClient dmClient = gsSession.getDataManagerClient();
-            GSDirectoryListing rootDir = dmClient.listDefaultDirectory();
-            
-            GenomeSpaceDirectory userDir = new GenomeSpaceDirectory(rootDir, dmClient, kindToModules, this);
-         
-            availableDirectories.add(userDir);
-            this.setGenomeSpaceDirectories(availableDirectories);
-        }
-        return availableDirectories;
+        return gsHelper.getAvailableDirectories();
     }
 
     public List<GenomeSpaceDirectory> getGenomeSpaceDirectories() {
-        return (List<GenomeSpaceDirectory>) UIBeanHelper.getSession().getAttribute(GS_DIRECTORIES_KEY);
+        return gsHelper.getGenomeSpaceDirectories();
     }
-    
+
     public void setGenomeSpaceDirectories(List<GenomeSpaceDirectory> dirs) {
-        UIBeanHelper.getSession().setAttribute(GS_DIRECTORIES_KEY, dirs);
+        gsHelper.setGenomeSpaceDirectories(dirs);
     }
-    
+
     public List<ParameterInfo> getSendToParameters(String type) {
-        if (currentTaskInfo == null && currentTaskLsid != null && currentTaskLsid.length() != 0) {
-            initCurrentLsid();
-        }
-        else if (currentTaskInfo == null && (currentTaskLsid == null || currentTaskLsid.length() == 0)) {
-            return null;
-        }
-        return currentTaskInfo._getSendToParameterInfos(type);
+        return gsHelper.getSendToParameters(type);
     }
-    
+
     public void initCurrentLsid() {
-        String currentUser = UIBeanHelper.getUserId();
-        AdminDAO adminDao = new AdminDAO();
-        this.currentTaskInfo = adminDao.getTask(currentTaskLsid, currentUser);
+        gsHelper.initCurrentLsid();
     }
-    
+
     public void setSelectedModule(String selectedModule) {
-        this.currentTaskLsid = selectedModule;
-        initCurrentLsid();
+        gsHelper.setSelectedModule(selectedModule);
     }
-    
-    public class GSClientUrl {
-        String tool;
-        URL url;
-        
-        GSClientUrl(String tool, URL url) {
-            this.tool = tool;
-            this.url = url;
-        }
-        
-        public String getTool() {
-            return tool;
-        }
-        
-        public void setTool(String tool) {
-            this.tool = tool;
-        }
-        
-        public URL getUrl() {
-            return url;
-        }
-        
-        public void setUrl(URL url) {
-            this.url = url;
-        }
-    }
-    
-    public class WebToolDescriptorWrapper {
-        WebToolDescriptor tool;
-        Map<String, Boolean> typeMap = new HashMap<String, Boolean>();
-        boolean init = false;
-        
-        WebToolDescriptorWrapper(WebToolDescriptor tool) {
-            this.tool = tool;
-        }
-        
-        public WebToolDescriptor getTool() {
-            return tool;
-        }
-        
-        public void setTool(WebToolDescriptor tool) {
-            this.tool = tool;
-        }
-        
-        public Map<String, Boolean> getTypeMap() {
-            if (!init) {
-                List<String> types = gsClientTypes.get(tool.getName());
-                for (String i : types) {
-                    typeMap.put(i, true);
-                }
-                init = true;
-            }
-            
-            return typeMap;
-        }
-        
-        public void setTypeMap(Map<String, Boolean> typeMap) {
-            this.typeMap = typeMap;
-        }
+
+    public List<WebToolDescriptorWrapper> getToolWrappers() {
+        return gsHelper.getToolWrappers();
     }
 }

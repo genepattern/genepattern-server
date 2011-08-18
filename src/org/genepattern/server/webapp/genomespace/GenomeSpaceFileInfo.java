@@ -1,13 +1,16 @@
 package org.genepattern.server.webapp.genomespace;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.genomespace.client.exceptions.InternalServerException;
-import org.genomespace.datamanager.core.GSDataFormat;
-import org.genomespace.datamanager.core.GSFileMetadata;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.webservice.ParameterInfo;
+import org.genomespace.datamanager.core.GSDataFormat;
+import org.genomespace.datamanager.core.GSFileMetadata;
 
 public class GenomeSpaceFileInfo {
 
@@ -67,7 +70,7 @@ public class GenomeSpaceFileInfo {
     }
     
     public List<ParameterInfo> getSendToParameters() {
-        GenomeSpaceBean gsb = (GenomeSpaceBean)UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
+        GenomeSpaceBeanHelper gsb = (GenomeSpaceBeanHelper)UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
         String type = getType();
         return gsb.getSendToParameters(type);
     }
@@ -97,10 +100,10 @@ public class GenomeSpaceFileInfo {
         return types;
     }
     
-    public Set<String> getRelevantTools() throws InternalServerException {
+    public Set<String> getRelevantTools() {
         if (toolUrls == null) {
             toolUrls = new HashSet<String>();
-            GenomeSpaceBean gsb = (GenomeSpaceBean)UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
+            GenomeSpaceBeanHelper gsb = (GenomeSpaceBeanHelper)UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
             Set<String> types = getConversions();
             Map<String, List<String>> gsClientTypes = gsb.getGsClientTypes();
             for (String i : gsClientTypes.keySet()) {
