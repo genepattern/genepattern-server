@@ -1,6 +1,7 @@
 package org.genepattern.server.webapp.genomespace;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -9,42 +10,58 @@ import java.util.Set;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.webservice.ParameterInfo;
-import org.genomespace.datamanager.core.GSDataFormat;
-import org.genomespace.datamanager.core.GSFileMetadata;
 
 public class GenomeSpaceFileInfo {
-
-    public GSFileMetadata gsFile;
+    public static final String DIRECTORY = "directory";
+    
     public String filename;
     String url;
     List<KeyValuePair> moduleInputParameters;
     List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
     GenomeSpaceDirectory dir;
     Set<String> toolUrls;
+    Set<String> availableDataFormats;
+    boolean directory = false;;
+    Date lastModified;
 
-    public GenomeSpaceFileInfo(GSFileMetadata md, GenomeSpaceDirectory parent){
-        gsFile = md;
-        filename = md.getName();
-        dir = parent;
+    public GenomeSpaceFileInfo(GenomeSpaceDirectory parent, String filename, String url, Set<String> availableDataFormats, Date lastModified) {
+        this.filename = filename;
+        this.dir = parent;
+        this.url = url;
+        this.lastModified = lastModified;
+        if (availableDataFormats == null) {
+            this.availableDataFormats = new HashSet<String>();
+        }
+        else {
+            this.availableDataFormats = availableDataFormats;
+        }
+        if (url.equals(GenomeSpaceFileInfo.DIRECTORY)) {
+            directory = true;
+        }
+    }
+    
+    public Date getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(Date lastModified) {
+        this.lastModified = lastModified;
     }
     
     public GenomeSpaceDirectory getDir() {
         return dir;
     }
 
-
     public void setDir(GenomeSpaceDirectory dir) {
         this.dir = dir;
     }
-
-
-    public GSFileMetadata getGsFile() {
-        return gsFile;
+    
+    public boolean isDirectory() {
+        return directory;
     }
 
-
-    public void setGsFile(GSFileMetadata file) {
-        this.gsFile = file;
+    public void setDirectory(boolean directory) {
+        this.directory = directory;
     }
 
     public void setUrl(String u){
@@ -92,12 +109,7 @@ public class GenomeSpaceFileInfo {
     }
     
     public Set<String> getConversions() {
-        Set<String> types = new HashSet<String>();
-        for (GSDataFormat i : gsFile.getAvailableDataFormats()) {
-            types.add(i.getName());
-        }
-        types.add(this.getType());
-        return types;
+        return availableDataFormats;
     }
     
     public Set<String> getRelevantTools() {
