@@ -6,7 +6,6 @@ import java.net.URL;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper;
 
 /**
  * GenomeSpace integration, wrapper class. This is part of the core of GenePattern,
@@ -41,7 +40,7 @@ public class GsClientFactory {
         GenomeSpaceBeanHelper gsHelper = null;
         Class classDefinition;
         try {
-            classDefinition = Class.forName("org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelperImpl");
+            classDefinition = Class.forName("org.genepattern.server.gs.GenomeSpaceBeanHelperImpl");
             gsHelper = (GenomeSpaceBeanHelper) classDefinition.newInstance();
             return gsHelper;
         }

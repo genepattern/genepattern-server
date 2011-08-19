@@ -31,12 +31,12 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper;
-import org.genepattern.server.webapp.genomespace.GenomeSpaceDirectory;
-import org.genepattern.server.webapp.genomespace.GenomeSpaceFileInfo;
-import org.genepattern.server.webapp.genomespace.GenomeSpaceJobHelper;
-import org.genepattern.server.webapp.genomespace.GsClientUrl;
-import org.genepattern.server.webapp.genomespace.WebToolDescriptorWrapper;
+import org.genepattern.server.gs.GenomeSpaceBeanHelper;
+import org.genepattern.server.gs.GenomeSpaceDirectory;
+import org.genepattern.server.gs.GenomeSpaceFileInfo;
+import org.genepattern.server.gs.GenomeSpaceJobHelper;
+import org.genepattern.server.gs.GsClientUrl;
+import org.genepattern.server.gs.WebToolDescriptorWrapper;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.util.SemanticUtil;
@@ -103,105 +103,105 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#isGenomeSpaceEnabled()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#isGenomeSpaceEnabled()
      */
     public boolean isGenomeSpaceEnabled() {
         return this.genomeSpaceEnabled;
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#setGenomeSpaceEnabled(boolean)
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#setGenomeSpaceEnabled(boolean)
      */
     public void setGenomeSpaceEnabled(boolean genomeSpaceEnabled) {
         this.genomeSpaceEnabled = genomeSpaceEnabled;
     }
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getRegPassword()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getRegPassword()
      */
     public String getRegPassword() {
         return regPassword;
     }
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#setRegPassword(java.lang.String)
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#setRegPassword(java.lang.String)
      */
     public void setRegPassword(String regPassword) {
         this.regPassword = regPassword;
     }
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getRegEmail()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getRegEmail()
      */
     public String getRegEmail() {
         return regEmail;
     }
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#setRegEmail(java.lang.String)
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#setRegEmail(java.lang.String)
      */
     public void setRegEmail(String regEmail) {
         this.regEmail = regEmail;
     }
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getPassword()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getPassword()
      */
     public String getPassword() {
         return this.password;
     }
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getUsername()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getUsername()
      */
     public String getUsername() {
         return username;
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#setMessageToUser(java.lang.String)
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#setMessageToUser(java.lang.String)
      */
     public void setMessageToUser(String messageToUser) {
         UIBeanHelper.setInfoMessage(messageToUser);
     }
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#isInvalidPassword()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#isInvalidPassword()
      */
     public boolean isInvalidPassword() {
         return invalidPassword;
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#isLoginError()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#isLoginError()
      */
     public boolean isLoginError() {
         return loginError;
     }
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#isUnknownUser()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#isUnknownUser()
      */
     public boolean isUnknownUser() {
         return unknownUser;
     }
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#setPassword(java.lang.String)
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#setPassword(java.lang.String)
      */
     public void setPassword(String password) {
         this.password = password;
     }
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#setUsername(java.lang.String)
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#setUsername(java.lang.String)
      */
     public void setUsername(String username) {
         this.username = username;
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#isLoggedIn()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#isLoggedIn()
      */
     public boolean isLoggedIn() {
         HttpSession httpSession = UIBeanHelper.getSession();
@@ -210,7 +210,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
      }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#submitLogin()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#submitLogin()
      */
     public String submitLogin() {
         String env = UIBeanHelper.getRequest().getParameter("envSelect");
@@ -254,7 +254,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#submitRegistration()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#submitRegistration()
      */
     public String submitRegistration() {
         String env = UIBeanHelper.getRequest().getParameter("envSelect");
@@ -292,7 +292,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#submitLogout()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#submitLogout()
      */
     public String submitLogout() {
         HttpSession httpSession = UIBeanHelper.getSession();
@@ -311,7 +311,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#deleteFileFromGenomeSpace(javax.faces.event.ActionEvent)
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#deleteFileFromGenomeSpace(javax.faces.event.ActionEvent)
      */
     public void deleteFileFromGenomeSpace(ActionEvent ae) {
         String filenameParam = UIBeanHelper.getRequest().getParameter("filename");
@@ -329,7 +329,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getFile(java.lang.String, java.lang.String)
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getFile(java.lang.String, java.lang.String)
      */
     public GenomeSpaceFileInfo getFile(String dirname, String file) {
        for (GenomeSpaceDirectory dir: this.getGenomeSpaceDirectories()) {
@@ -354,7 +354,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getFileURL(java.lang.String, java.lang.String)
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getFileURL(java.lang.String, java.lang.String)
      */
     public String getFileURL(String dirname, String filename) {
         if (filename == null) return null;
@@ -363,7 +363,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getFileURL(org.genomespace.datamanager.core.GSFileMetadata)
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getFileURL(org.genomespace.datamanager.core.GSFileMetadata)
      */
     private String getFileURL(GSFileMetadata gsFile) {
         if (gsFile == null) return null;
@@ -375,7 +375,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#saveFileLocally(javax.faces.event.ActionEvent)
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#saveFileLocally(javax.faces.event.ActionEvent)
      */
     public void saveFileLocally(ActionEvent ae) {
         String filenameParam = UIBeanHelper.getRequest().getParameter("filename");
@@ -393,7 +393,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#sendInputFileToGenomeSpace()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#sendInputFileToGenomeSpace()
      */
     public String sendInputFileToGenomeSpace() {
         String pathParam = UIBeanHelper.getRequest().getParameter("path");
@@ -406,7 +406,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#sendToGenomeSpace()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#sendToGenomeSpace()
      */
     public String sendToGenomeSpace() {
         String filenameParam = UIBeanHelper.getRequest().getParameter("jobFileName");
@@ -474,7 +474,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getToolWrappers()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getToolWrappers()
      */
     public List<WebToolDescriptorWrapper> getToolWrappers() {
         List<WebToolDescriptorWrapper> wrappers = new ArrayList<WebToolDescriptorWrapper>();
@@ -493,28 +493,28 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getGsClientTypes()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getGsClientTypes()
      */
     public Map<String, List<String>> getGsClientTypes() {
         return gsClientTypes;
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getClientUrls()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getClientUrls()
      */
     public Map<String, List<GsClientUrl>>getClientUrls() {
         return clientUrls;
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#addToClientUrls(org.genepattern.server.webapp.genomespace.GenomeSpaceFileInfo)
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#addToClientUrls(org.genepattern.server.gs.GenomeSpaceFileInfo)
      */
     public void addToClientUrls(GenomeSpaceFileInfo file) {
         clientUrls.put(file.getKey(), getGSClientURLs(file));
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#sendGSFileToGSClient()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#sendGSFileToGSClient()
      */
     public void sendGSFileToGSClient() throws IOException {
         String fileParam = UIBeanHelper.getRequest().getParameter("file");
@@ -529,7 +529,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#sendInputFileToGSClient()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#sendInputFileToGSClient()
      */
     public void sendInputFileToGSClient() throws IOException {
         String fileParam = UIBeanHelper.getRequest().getParameter("file");
@@ -581,7 +581,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getGSClientURLs(org.genepattern.server.webapp.genomespace.GenomeSpaceFileInfo)
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getGSClientURLs(org.genepattern.server.gs.GenomeSpaceFileInfo)
      */
     public List<GsClientUrl> getGSClientURLs(GenomeSpaceFileInfo file)  {
         GSFileMetadata metadata = getMetadatas().get(file.getUrl());
@@ -607,14 +607,14 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#openTreeNode(org.richfaces.component.UITree)
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#openTreeNode(org.richfaces.component.UITree)
      */
     public boolean openTreeNode(UITree tree) {
         return true;
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getFileTree()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getFileTree()
      */
     public TreeNode<GenomeSpaceFileInfo> getFileTree() {
         // Set up the root node
@@ -634,7 +634,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getGenomeSpaceFilesTree(org.genepattern.server.webapp.genomespace.GenomeSpaceDirectory)
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getGenomeSpaceFilesTree(org.genepattern.server.gs.GenomeSpaceDirectory)
      */
     public TreeNode<GenomeSpaceFileInfo> getGenomeSpaceFilesTree(GenomeSpaceDirectory gsDir) {
         GenomeSpaceFileInfo wrapper = new GenomeSpaceFileInfo(null, gsDir.getName(), GenomeSpaceFileInfo.DIRECTORY, new HashSet<String>(), null);
@@ -660,21 +660,21 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getGsDirectories()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getGsDirectories()
      */
     public List<GenomeSpaceDirectory> getGsDirectories() {
         return getAvailableDirectories().get(0).getGsDirectories();
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getGsFiles()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getGsFiles()
      */
     public List<GenomeSpaceFileInfo> getGsFiles() {
         return getAvailableDirectories().get(0).getGsFiles();
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getAvailableDirectories()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getAvailableDirectories()
      */
     public List<GenomeSpaceDirectory> getAvailableDirectories() {
         List<GenomeSpaceDirectory> availableDirectories = this.getGenomeSpaceDirectories();
@@ -700,21 +700,21 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getGenomeSpaceDirectories()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getGenomeSpaceDirectories()
      */
     public List<GenomeSpaceDirectory> getGenomeSpaceDirectories() {
         return (List<GenomeSpaceDirectory>) UIBeanHelper.getSession().getAttribute(GS_DIRECTORIES_KEY);
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#setGenomeSpaceDirectories(java.util.List)
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#setGenomeSpaceDirectories(java.util.List)
      */
     public void setGenomeSpaceDirectories(List<GenomeSpaceDirectory> dirs) {
         UIBeanHelper.getSession().setAttribute(GS_DIRECTORIES_KEY, dirs);
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getSendToParameters(java.lang.String)
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getSendToParameters(java.lang.String)
      */
     public List<ParameterInfo> getSendToParameters(String type) {
         if (currentTaskInfo == null && currentTaskLsid != null && currentTaskLsid.length() != 0) {
@@ -727,7 +727,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#initCurrentLsid()
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#initCurrentLsid()
      */
     public void initCurrentLsid() {
         String currentUser = UIBeanHelper.getUserId();
@@ -736,7 +736,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#setSelectedModule(java.lang.String)
+     * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#setSelectedModule(java.lang.String)
      */
     public void setSelectedModule(String selectedModule) {
         this.currentTaskLsid = selectedModule;

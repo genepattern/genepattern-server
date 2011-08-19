@@ -62,7 +62,7 @@
  </managed-bean>
  <managed-bean>
    <managed-bean-name>genomeSpaceBean</managed-bean-name>
-  <managed-bean-class>org.genepattern.server.webapp.genomespace.GenomeSpaceBean</managed-bean-class>
+  <managed-bean-class>org.genepattern.server.gs.GenomeSpaceBean</managed-bean-class>
   <managed-bean-scope>session</managed-bean-scope>
  </managed-bean>
 

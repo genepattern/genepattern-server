@@ -1,4 +1,4 @@
-package org.genepattern.server.webapp.genomespace;
+package org.genepattern.server.gs;
 
 import java.net.URL;
 

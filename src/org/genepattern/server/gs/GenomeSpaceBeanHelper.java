@@ -1,4 +1,4 @@
-package org.genepattern.server.webapp.genomespace;
+package org.genepattern.server.gs;
 
 import java.io.IOException;
 import java.util.List;
@@ -6,7 +6,6 @@ import java.util.Map;
 
 import javax.faces.event.ActionEvent;
 
-import org.genepattern.server.gs.GsClientException;
 import org.genepattern.webservice.ParameterInfo;
 import org.richfaces.component.UITree;
 import org.richfaces.model.TreeNode;

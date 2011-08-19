@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper;
-import org.genepattern.server.webapp.genomespace.GenomeSpaceDirectory;
-import org.genepattern.server.webapp.genomespace.GenomeSpaceFileInfo;
+import org.genepattern.server.gs.GenomeSpaceBeanHelper;
+import org.genepattern.server.gs.GenomeSpaceDirectory;
+import org.genepattern.server.gs.GenomeSpaceFileInfo;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.SemanticUtil;
@@ -61,7 +61,7 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
 
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.IGenomeSpaceDirectory#setGsFileList(org.genomespace.datamanager.core.GSDirectoryListing, java.util.Map, org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper)
+     * @see org.genepattern.server.gs.IGenomeSpaceDirectory#setGsFileList(org.genomespace.datamanager.core.GSDirectoryListing, java.util.Map, org.genepattern.server.gs.GenomeSpaceBeanHelper)
      */
     public void setGsFileList(String name, Set<GenomeSpaceFileInfo> files, Map<String, Set<TaskInfo>> kindToModules, GenomeSpaceBeanHelper genomeSpaceBean) {
         this.gsFiles = new ArrayList<GenomeSpaceFileInfo>();
@@ -94,7 +94,7 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
     
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.IGenomeSpaceDirectory#getDir()
+     * @see org.genepattern.server.gs.IGenomeSpaceDirectory#getDir()
      */
     public GSFileMetadata getDir() {
         return dir;
@@ -102,7 +102,7 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
 
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.IGenomeSpaceDirectory#setDir(org.genomespace.datamanager.core.GSFileMetadata)
+     * @see org.genepattern.server.gs.IGenomeSpaceDirectory#setDir(org.genomespace.datamanager.core.GSFileMetadata)
      */
     public void setDir(GSFileMetadata dir) {
         this.dir = dir;
@@ -110,7 +110,7 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
 
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.IGenomeSpaceDirectory#getName()
+     * @see org.genepattern.server.gs.IGenomeSpaceDirectory#getName()
      */
     public String getName() {
         return name;
@@ -118,14 +118,14 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
 
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.IGenomeSpaceDirectory#setName(java.lang.String)
+     * @see org.genepattern.server.gs.IGenomeSpaceDirectory#setName(java.lang.String)
      */
     public void setName(String name) {
         this.name = name;
     }
     
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.IGenomeSpaceDirectory#getRecursiveGsFiles()
+     * @see org.genepattern.server.gs.IGenomeSpaceDirectory#getRecursiveGsFiles()
      */
     public List<GenomeSpaceFileInfo> getRecursiveGsFiles() {
         List<GenomeSpaceFileInfo> allFiles = new ArrayList<GenomeSpaceFileInfo>();
@@ -138,7 +138,7 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
 
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.IGenomeSpaceDirectory#getGsFiles()
+     * @see org.genepattern.server.gs.IGenomeSpaceDirectory#getGsFiles()
      */
     public List<GenomeSpaceFileInfo> getGsFiles() {
         return gsFiles;
@@ -146,7 +146,7 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
 
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.IGenomeSpaceDirectory#setGsFiles(java.util.List)
+     * @see org.genepattern.server.gs.IGenomeSpaceDirectory#setGsFiles(java.util.List)
      */
     public void setGsFiles(List<GenomeSpaceFileInfo> gsFiles) {
         this.gsFiles = gsFiles;
@@ -154,7 +154,7 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
 
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.IGenomeSpaceDirectory#getGsDirectories()
+     * @see org.genepattern.server.gs.IGenomeSpaceDirectory#getGsDirectories()
      */
     public List<GenomeSpaceDirectory> getGsDirectories() {
         return gsDirectories;
@@ -162,7 +162,7 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
 
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.IGenomeSpaceDirectory#setGsDirectories(java.util.List)
+     * @see org.genepattern.server.gs.IGenomeSpaceDirectory#setGsDirectories(java.util.List)
      */
     public void setGsDirectories(List<GenomeSpaceDirectory> gsDirectories) {
         this.gsDirectories = gsDirectories;
@@ -170,7 +170,7 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
 
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.IGenomeSpaceDirectory#getLevel()
+     * @see org.genepattern.server.gs.IGenomeSpaceDirectory#getLevel()
      */
     public int getLevel() {
         return level;
@@ -178,7 +178,7 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
 
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.IGenomeSpaceDirectory#setLevel(int)
+     * @see org.genepattern.server.gs.IGenomeSpaceDirectory#setLevel(int)
      */
     public void setLevel(int level) {
         this.level = level;
@@ -186,7 +186,7 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
 
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.IGenomeSpaceDirectory#isExpanded()
+     * @see org.genepattern.server.gs.IGenomeSpaceDirectory#isExpanded()
      */
     public boolean isExpanded() {
         return expanded;
@@ -194,7 +194,7 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
 
 
     /* (non-Javadoc)
-     * @see org.genepattern.server.webapp.genomespace.IGenomeSpaceDirectory#setExpanded(boolean)
+     * @see org.genepattern.server.gs.IGenomeSpaceDirectory#setExpanded(boolean)
      */
     public void setExpanded(boolean expanded) {
         this.expanded = expanded;

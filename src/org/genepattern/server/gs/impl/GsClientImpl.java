@@ -3,9 +3,9 @@ package org.genepattern.server.gs.impl;
 import java.io.InputStream;
 import java.net.URL;
 
+import org.genepattern.server.gs.GenomeSpaceJobHelper;
 import org.genepattern.server.gs.GsClient;
 import org.genepattern.server.gs.GsClientException;
-import org.genepattern.server.webapp.genomespace.GenomeSpaceJobHelper;
 import org.genomespace.client.DataManagerClient;
 import org.genomespace.client.GsSession;
 import org.genomespace.client.exceptions.InternalServerException;
