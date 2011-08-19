@@ -8,6 +8,7 @@ import javax.faces.event.ActionEvent;
 
 import org.genepattern.server.gs.GsClientException;
 import org.genepattern.webservice.ParameterInfo;
+import org.jfree.util.Log;
 import org.richfaces.component.UITree;
 import org.richfaces.model.TreeNode;
 
@@ -15,7 +16,20 @@ public class GenomeSpaceBean implements GenomeSpaceBeanHelper {
     GenomeSpaceBeanHelper gsHelper = null;
     
     public GenomeSpaceBean() {
-        gsHelper = new GenomeSpaceBeanHelperImpl();
+        Class classDefinition;
+        try {
+            classDefinition = Class.forName("org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelperImpl");
+            gsHelper = (GenomeSpaceBeanHelper) classDefinition.newInstance();
+        }
+        catch (ClassNotFoundException e) {
+            Log.error("ClassNotFoundException creating GenomeSpaceBeanHelper through reflection");
+        }
+        catch (InstantiationException e) {
+            Log.error("InstantiationException creating GenomeSpaceBeanHelper through reflection");
+        }
+        catch (IllegalAccessException e) {
+            Log.error("IllegalAccessException creating GenomeSpaceBeanHelper through reflection");
+        }
     }
 
     public boolean isGenomeSpaceEnabled() {
