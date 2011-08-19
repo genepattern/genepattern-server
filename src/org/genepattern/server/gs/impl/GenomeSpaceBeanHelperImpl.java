@@ -10,7 +10,7 @@
  use, misuse, or functionality.
  */
 
-package org.genepattern.server.webapp.genomespace;
+package org.genepattern.server.gs.impl;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,26 +31,29 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper;
+import org.genepattern.server.webapp.genomespace.GenomeSpaceDirectory;
+import org.genepattern.server.webapp.genomespace.GenomeSpaceFileInfo;
+import org.genepattern.server.webapp.genomespace.GenomeSpaceJobHelper;
+import org.genepattern.server.webapp.genomespace.GsClientUrl;
+import org.genepattern.server.webapp.genomespace.WebToolDescriptorWrapper;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.genomespace.client.GsSession;
-
 import org.genomespace.atm.model.FileParameter;
 import org.genomespace.atm.model.WebToolDescriptor;
 import org.genomespace.client.ConfigurationUrls;
 import org.genomespace.client.DataManagerClient;
 import org.genomespace.client.FileParameterWrapper;
+import org.genomespace.client.GsSession;
 import org.genomespace.client.User;
 import org.genomespace.client.exceptions.AuthorizationException;
 import org.genomespace.client.exceptions.InternalServerException;
 import org.genomespace.datamanager.core.GSDataFormat;
 import org.genomespace.datamanager.core.GSDirectoryListing;
 import org.genomespace.datamanager.core.GSFileMetadata;
-import org.genomespace.datamanager.core.impl.GSFileMetadataImpl;
-
 import org.richfaces.component.UITree;
 import org.richfaces.model.TreeNode;
 import org.richfaces.model.TreeNodeImpl;
@@ -61,10 +64,6 @@ import org.richfaces.model.TreeNodeImpl;
 public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     private static Logger log = Logger.getLogger(GenomeSpaceBeanHelperImpl.class);
 
-    public static String GS_SESSION_KEY = "GS_SESSION";
-    public static String GS_USER_KEY = "GS_USER";
-    public static String GS_DIRECTORIES_KEY = "GS_DIRECTORIES";
-    public static String GSFILEMETADATAS = "GSFILEMETADATAS";
     
     private String username;
     private String password;
@@ -72,14 +71,13 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     private String regEmail;
     private boolean unknownUser = false;
     private boolean invalidPassword = false;
-    private boolean invalidRegistration = false;
     private boolean loginError = false;
     private String currentTaskLsid;
     private TaskInfo currentTaskInfo;
     private boolean genomeSpaceEnabled = false;
 
     private Map<String, Set<TaskInfo>> kindToModules;
-    private Map<String, List<GSClientUrl>> clientUrls = new HashMap<String, List<GSClientUrl>>();
+    private Map<String, List<GsClientUrl>> clientUrls = new HashMap<String, List<GsClientUrl>>();
     private Map<String, List<String>> gsClientTypes = null;
 
     public GenomeSpaceBeanHelperImpl() {
@@ -267,12 +265,10 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
         
         if (username == null) {
             this.setMessageToUser("GenomeSpace username is blank");
-            invalidRegistration = true;
             return "genomeSpaceRegFailed";
         }
         if (! regPassword.equals(password)) {
             UIBeanHelper.setInfoMessage("GenomeSpace password does not match");
-            invalidRegistration = true;
             invalidPassword = true;
             return "genomeSpaceRegFailed";
         }
@@ -281,14 +277,12 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
             ConfigurationUrls.init(env);
             GsSession gsSession = new GsSession();
             gsSession.registerUser(username, password, regEmail);
-            invalidRegistration = false;
             invalidPassword = false;
             loginError = false;
             submitLogin();
         }
         catch (Exception e) {
             UIBeanHelper.setInfoMessage("Error logging into GenomeSpace");
-            invalidRegistration = true;
             loginError = true;
             log.error("Error logging into GenomeSpace" + e.getMessage());
             return "genomeSpaceRegFailed";
@@ -505,20 +499,10 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
         return gsClientTypes;
     }
     
-    private void testClientMap() {
-        for (String i : gsClientTypes.keySet()) {
-            log.info("TOOL: " + i);
-            log.info("\tTYPES: ");
-            for (String j : gsClientTypes.get(i)) {
-                log.info("\t\t" + j);
-            }
-        }
-    }
-    
     /* (non-Javadoc)
      * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getClientUrls()
      */
-    public Map<String, List<GSClientUrl>>getClientUrls() {
+    public Map<String, List<GsClientUrl>>getClientUrls() {
         return clientUrls;
     }
     
@@ -535,8 +519,8 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     public void sendGSFileToGSClient() throws IOException {
         String fileParam = UIBeanHelper.getRequest().getParameter("file");
         String toolParam = UIBeanHelper.getRequest().getParameter("tool");
-        List<GSClientUrl> urls = clientUrls.get(fileParam);
-        for (GSClientUrl i : urls) {
+        List<GsClientUrl> urls = clientUrls.get(fileParam);
+        for (GsClientUrl i : urls) {
             if (i.getTool().equals(toolParam)) {
                 UIBeanHelper.getResponse().sendRedirect(i.getUrl().toString());
                 break;
@@ -558,9 +542,9 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
         GSFileMetadata metadata = saveFileToGenomeSpace(UIBeanHelper.getSession(), file);
         GenomeSpaceFileInfo gsFile = new GenomeSpaceFileInfo(null, metadata.getName(), getFileURL(metadata), 
                 getAvailableDataFormatNames(metadata.getAvailableDataFormats()), metadata.getLastModified());
-        List<GSClientUrl> urls = getGSClientURLs(gsFile);
+        List<GsClientUrl> urls = getGSClientURLs(gsFile);
 
-        for (GSClientUrl i : urls) {
+        for (GsClientUrl i : urls) {
             if (i.getTool().equals(toolParam)) {
                 UIBeanHelper.getResponse().sendRedirect(i.getUrl().toString());
                 break;
@@ -596,20 +580,10 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
         return wrappers;
     }
     
-    private boolean typeMatchesTool(String type, WebToolDescriptor tool) {
-        List<String> toolTypes = gsClientTypes.get(tool.getName());
-        for (String i : toolTypes) {
-            if (i.equals(type)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
     /* (non-Javadoc)
      * @see org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper#getGSClientURLs(org.genepattern.server.webapp.genomespace.GenomeSpaceFileInfo)
      */
-    public List<GSClientUrl> getGSClientURLs(GenomeSpaceFileInfo file)  {
+    public List<GsClientUrl> getGSClientURLs(GenomeSpaceFileInfo file)  {
         GSFileMetadata metadata = getMetadatas().get(file.getUrl());
         if (metadata == null) {
             log.error("Error getting metadata for " + file.getFilename() + " URL: " + file.getUrl());
@@ -617,7 +591,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
         HttpSession httpSession = UIBeanHelper.getSession();
         GsSession gsSession = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
         List<WebToolDescriptor> tools = getGSClients();
-        List<GSClientUrl> urls = new ArrayList<GSClientUrl>();
+        List<GsClientUrl> urls = new ArrayList<GsClientUrl>();
         for (WebToolDescriptor i : tools) {
             List<FileParameterWrapper> wrappers = prepareFileParameterWrappers(i.getFileParameters(), metadata);
             URL url = null;
@@ -627,7 +601,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
             catch (InternalServerException e) {
                 log.error("Error getting gs url. Session: " + gsSession + " WebToolDescriptor: " + i + " FileParameterWrappers: " + wrappers + " Message: " + e.getMessage());
             }
-            urls.add(new GSClientUrl(i.getName(), url));
+            urls.add(new GsClientUrl(i.getName(), url));
         }
         return urls;
     }
@@ -711,7 +685,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
            
             HttpSession httpSession = UIBeanHelper.getSession();
             GsSession gsSession = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
-            User gsUser = (User) httpSession.getAttribute(GS_USER_KEY);
+            //User gsUser = (User) httpSession.getAttribute(GS_USER_KEY);
             if ((gsSession == null) || (! gsSession.isLoggedIn())) return availableDirectories;
             
             DataManagerClient dmClient = gsSession.getDataManagerClient();

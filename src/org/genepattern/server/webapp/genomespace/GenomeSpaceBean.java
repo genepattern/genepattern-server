@@ -7,8 +7,8 @@ import java.util.Map;
 import javax.faces.event.ActionEvent;
 
 import org.genepattern.server.gs.GsClientException;
+import org.genepattern.server.gs.GsClientFactory;
 import org.genepattern.webservice.ParameterInfo;
-import org.jfree.util.Log;
 import org.richfaces.component.UITree;
 import org.richfaces.model.TreeNode;
 
@@ -16,19 +16,11 @@ public class GenomeSpaceBean implements GenomeSpaceBeanHelper {
     GenomeSpaceBeanHelper gsHelper = null;
     
     public GenomeSpaceBean() {
-        Class classDefinition;
         try {
-            classDefinition = Class.forName("org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelperImpl");
-            gsHelper = (GenomeSpaceBeanHelper) classDefinition.newInstance();
+            gsHelper = GsClientFactory.getNewGenomeSpaceBeanHelper();
         }
-        catch (ClassNotFoundException e) {
-            Log.error("ClassNotFoundException creating GenomeSpaceBeanHelper through reflection");
-        }
-        catch (InstantiationException e) {
-            Log.error("InstantiationException creating GenomeSpaceBeanHelper through reflection");
-        }
-        catch (IllegalAccessException e) {
-            Log.error("IllegalAccessException creating GenomeSpaceBeanHelper through reflection");
+        catch (GsClientException e) {
+            //TODO: exception is being ignored
         }
     }
 
@@ -132,7 +124,7 @@ public class GenomeSpaceBean implements GenomeSpaceBeanHelper {
         return gsHelper.getGsClientTypes();
     }
 
-    public Map<String, List<GSClientUrl>> getClientUrls() {
+    public Map<String, List<GsClientUrl>> getClientUrls() {
         return gsHelper.getClientUrls();
     }
 
@@ -148,7 +140,7 @@ public class GenomeSpaceBean implements GenomeSpaceBeanHelper {
         gsHelper.sendInputFileToGSClient();
     }
 
-    public List<GSClientUrl> getGSClientURLs(GenomeSpaceFileInfo file) {
+    public List<GsClientUrl> getGSClientURLs(GenomeSpaceFileInfo file) {
         return gsHelper.getGSClientURLs(file);
     }
 

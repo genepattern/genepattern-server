@@ -1,4 +1,4 @@
-package org.genepattern.server.webapp.genomespace;
+package org.genepattern.server.gs.impl;
 
 import java.io.File;
 import java.net.URL;
@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper;
+import org.genepattern.server.webapp.genomespace.GenomeSpaceDirectory;
+import org.genepattern.server.webapp.genomespace.GenomeSpaceFileInfo;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.SemanticUtil;

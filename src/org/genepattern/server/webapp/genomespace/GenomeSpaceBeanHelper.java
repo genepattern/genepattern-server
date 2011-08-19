@@ -1,8 +1,6 @@
 package org.genepattern.server.webapp.genomespace;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +16,7 @@ public interface GenomeSpaceBeanHelper {
     public static String GS_SESSION_KEY = "GS_SESSION";
     public static String GS_USER_KEY = "GS_USER";
     public static String GS_DIRECTORIES_KEY = "GS_DIRECTORIES";
+    public static String GSFILEMETADATAS = "GSFILEMETADATAS";
 
     public abstract boolean isGenomeSpaceEnabled();
 
@@ -104,7 +103,7 @@ public interface GenomeSpaceBeanHelper {
 
     public abstract Map<String, List<String>> getGsClientTypes();
 
-    public abstract Map<String, List<GSClientUrl>> getClientUrls();
+    public abstract Map<String, List<GsClientUrl>> getClientUrls();
 
     public abstract void addToClientUrls(GenomeSpaceFileInfo file);
 
@@ -112,7 +111,7 @@ public interface GenomeSpaceBeanHelper {
 
     public abstract void sendInputFileToGSClient() throws IOException, GsClientException;
 
-    public abstract List<GSClientUrl> getGSClientURLs(GenomeSpaceFileInfo file);
+    public abstract List<GsClientUrl> getGSClientURLs(GenomeSpaceFileInfo file);
 
     public abstract boolean openTreeNode(UITree tree);
 
@@ -142,66 +141,6 @@ public interface GenomeSpaceBeanHelper {
 
     public abstract void setSelectedModule(String selectedModule);
     
-    public class WebToolDescriptorWrapper {
-        String tool;
-        Map<String, Boolean> typeMap = new HashMap<String, Boolean>();
-        boolean init = false;
-        GenomeSpaceBeanHelper gsbh;
-        
-        WebToolDescriptorWrapper(String tool, GenomeSpaceBeanHelper gsbh) {
-            this.tool = tool;
-            this.gsbh = gsbh;
-        }
-        
-        public String getTool() {
-            return tool;
-        }
-        
-        public void setTool(String tool) {
-            this.tool = tool;
-        }
-        
-        public Map<String, Boolean> getTypeMap() {
-            if (!init) {
-                List<String> types = gsbh.getGsClientTypes().get(tool);
-                for (String i : types) {
-                    typeMap.put(i, true);
-                }
-                init = true;
-            }
-            
-            return typeMap;
-        }
-        
-        public void setTypeMap(Map<String, Boolean> typeMap) {
-            this.typeMap = typeMap;
-        }
-    }
     
-    public class GSClientUrl {
-        String tool;
-        URL url;
-        
-        GSClientUrl(String tool, URL url) {
-            this.tool = tool;
-            this.url = url;
-        }
-        
-        public String getTool() {
-            return tool;
-        }
-        
-        public void setTool(String tool) {
-            this.tool = tool;
-        }
-        
-        public URL getUrl() {
-            return url;
-        }
-        
-        public void setUrl(URL url) {
-            this.url = url;
-        }
-    }
 
 }

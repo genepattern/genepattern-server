@@ -6,15 +6,20 @@ import java.net.URL;
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelper;
 
 /**
  * GenomeSpace integration, wrapper class. This is part of the core of GenePattern,
  * however, to allow for a GP server to run on a Java 5 VM, the actual GS implementation
  * will be loaded by reflection only when GS is enabled.
  * 
+ * This class is a factory for instances which implement GenomeSpace integration interfaces.
+ * 
  * @author pcarr
  */
-public class GsWrapper {
+public class GsClientFactory {
+    public static Logger log = Logger.getLogger(GsClientFactory.class);
+
     static public boolean isGenomeSpaceEnabled(Context context) {
         return ServerConfiguration.instance().getGPBooleanProperty(context, "genomeSpaceEnabled", false);
     }
@@ -26,6 +31,34 @@ public class GsWrapper {
      */
     static public GsClient getGsClient() {
         return GsClientSingleton.gsClient;
+    }
+    
+    /**
+     * Factory method for the GenomeSpaceBeanHelper interface
+     * @return a new instanceof a GenomeSpaceBeanHelper
+     */
+    static public GenomeSpaceBeanHelper getNewGenomeSpaceBeanHelper() throws GsClientException {
+        GenomeSpaceBeanHelper gsHelper = null;
+        Class classDefinition;
+        try {
+            classDefinition = Class.forName("org.genepattern.server.webapp.genomespace.GenomeSpaceBeanHelperImpl");
+            gsHelper = (GenomeSpaceBeanHelper) classDefinition.newInstance();
+            return gsHelper;
+        }
+        catch (ClassNotFoundException e) {
+            log.error("ClassNotFoundException creating GenomeSpaceBeanHelper through reflection", e);
+        }
+        catch (InstantiationException e) {
+            log.error("InstantiationException creating GenomeSpaceBeanHelper through reflection", e);
+        }
+        catch (IllegalAccessException e) {
+            log.error("IllegalAccessException creating GenomeSpaceBeanHelper through reflection", e);
+        }
+        catch (Throwable t) {
+            log.error("Error initializing GenomeSpaceBeanHelper: "+t.getLocalizedMessage(), t);
+        }
+        
+        throw new GsClientException("Error initializing GenomeSpaceBeanHelper, there are server errors which prevent you from using GenomeSpace");
     }
 }
 
