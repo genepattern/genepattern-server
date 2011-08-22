@@ -37,7 +37,7 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
         gsDirectories = new ArrayList<GenomeSpaceDirectory>();
     }
     
-    public GenomeSpaceDirectoryImpl(String name, int level, GSDirectoryListing adir, DataManagerClient dmClient, Map<String, Set<TaskInfo>> kindToModules, GenomeSpaceBeanHelper genomeSpaceBean) {
+    public GenomeSpaceDirectoryImpl(String name, int level, GSDirectoryListing adir, DataManagerClient dmClient, Map<String, Set<TaskInfo>> kindToModules) {
         this(); 
         this.name = name;
         this.level = level;
@@ -49,21 +49,20 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
                 formats.add(j.getName());
             }
             String url = getFileURL(i, dmClient);
-            ((GenomeSpaceBeanHelperImpl) genomeSpaceBean).getMetadatas().put(url, i);
-            files.add(new GenomeSpaceFileInfo(this, i.getName(), url, formats, i.getLastModified()));
+            files.add(new GenomeSpaceFileInfo(this, i.getName(), url, formats, i.getLastModified(), i));
         }
 
         for (GSFileMetadata gsdir: adir.findDirectories()) {
-            gsDirectories.add(new GenomeSpaceDirectoryImpl(gsdir.getName(), level + 1, dmClient.list(gsdir), dmClient, kindToModules, genomeSpaceBean));
+            gsDirectories.add(new GenomeSpaceDirectoryImpl(gsdir.getName(), level + 1, dmClient.list(gsdir), dmClient, kindToModules));
         }
-        setGsFileList(name, files, kindToModules, genomeSpaceBean);
+        setGsFileList(name, files, kindToModules);
     }
 
     
     /* (non-Javadoc)
      * @see org.genepattern.server.gs.IGenomeSpaceDirectory#setGsFileList(org.genomespace.datamanager.core.GSDirectoryListing, java.util.Map, org.genepattern.server.gs.GenomeSpaceBeanHelper)
      */
-    public void setGsFileList(String name, Set<GenomeSpaceFileInfo> files, Map<String, Set<TaskInfo>> kindToModules, GenomeSpaceBeanHelper genomeSpaceBean) {
+    public void setGsFileList(String name, Set<GenomeSpaceFileInfo> files, Map<String, Set<TaskInfo>> kindToModules) {
         this.gsFiles = new ArrayList<GenomeSpaceFileInfo>();
         for (GenomeSpaceFileInfo info: files){
             this.gsFiles.add(info);
@@ -81,7 +80,8 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
                 Collections.sort(moduleMenuItems, COMPARATOR);
             }
             info.setModuleMenuItems(moduleMenuItems);
-            genomeSpaceBean.addToClientUrls(info);
+            GenomeSpaceBeanHelper gsb = (GenomeSpaceBeanHelper) UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
+            gsb.addToClientUrls(info);
         }
     
     }

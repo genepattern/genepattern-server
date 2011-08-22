@@ -8,7 +8,7 @@ import org.genepattern.webservice.TaskInfo;
 
 public interface GenomeSpaceDirectory {
 
-    public abstract void setGsFileList(String name, Set<GenomeSpaceFileInfo> files, Map<String, Set<TaskInfo>> kindToModules, GenomeSpaceBeanHelper genomeSpaceBean);
+    public abstract void setGsFileList(String name, Set<GenomeSpaceFileInfo> files, Map<String, Set<TaskInfo>> kindToModules);
 
     public abstract String getName();
 

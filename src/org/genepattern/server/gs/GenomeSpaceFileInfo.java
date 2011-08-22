@@ -23,12 +23,14 @@ public class GenomeSpaceFileInfo {
     Set<String> availableDataFormats;
     boolean directory = false;;
     Date lastModified;
+    Object metadata;
 
-    public GenomeSpaceFileInfo(GenomeSpaceDirectory parent, String filename, String url, Set<String> availableDataFormats, Date lastModified) {
+    public GenomeSpaceFileInfo(GenomeSpaceDirectory parent, String filename, String url, Set<String> availableDataFormats, Date lastModified, Object metadata) {
         this.filename = filename;
         this.dir = parent;
         this.url = url;
         this.lastModified = lastModified;
+        this.metadata = metadata;
         if (availableDataFormats == null) {
             this.availableDataFormats = new HashSet<String>();
         }
@@ -38,6 +40,14 @@ public class GenomeSpaceFileInfo {
         if (url.equals(GenomeSpaceFileInfo.DIRECTORY)) {
             directory = true;
         }
+    }
+    
+    public Object getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Object metadata) {
+        this.metadata = metadata;
     }
     
     public Date getLastModified() {

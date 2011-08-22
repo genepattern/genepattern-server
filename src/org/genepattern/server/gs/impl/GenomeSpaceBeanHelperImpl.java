@@ -92,15 +92,6 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
         genomeSpaceEnabled = Boolean.parseBoolean(prop);
         log.info("\n\n======= genomeSpaceEnabled=" + genomeSpaceEnabled + " for userId="+userId+"\n\n");
     }
-    
-    public Map<String, GSFileMetadata> getMetadatas() {
-        Map<String, GSFileMetadata> metadatas = (Map<String, GSFileMetadata>) UIBeanHelper.getSession().getAttribute(GSFILEMETADATAS);
-        if (metadatas == null) {
-            metadatas = new HashMap<String, GSFileMetadata>();
-            UIBeanHelper.getSession().setAttribute(GSFILEMETADATAS, metadatas);
-        }
-        return metadatas;
-    }
 
     /* (non-Javadoc)
      * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#isGenomeSpaceEnabled()
@@ -321,7 +312,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
         HttpSession httpSession = UIBeanHelper.getSession();
       
         GsSession sess = (GsSession) httpSession.getAttribute(GS_SESSION_KEY);
-        GSFileMetadata metadata = getMetadatas().get(theFile.getUrl());
+        GSFileMetadata metadata = (GSFileMetadata) theFile.getMetadata();
         sess.getDataManagerClient().delete(metadata);
         this.setGenomeSpaceDirectories(null); // force a refresh
         this.setMessageToUser("Deleted from GS " + dirnameParam + "/" + filenameParam);
@@ -541,7 +532,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
         }
         GSFileMetadata metadata = saveFileToGenomeSpace(UIBeanHelper.getSession(), file);
         GenomeSpaceFileInfo gsFile = new GenomeSpaceFileInfo(null, metadata.getName(), getFileURL(metadata), 
-                getAvailableDataFormatNames(metadata.getAvailableDataFormats()), metadata.getLastModified());
+                getAvailableDataFormatNames(metadata.getAvailableDataFormats()), metadata.getLastModified(), metadata);
         List<GsClientUrl> urls = getGSClientURLs(gsFile);
 
         for (GsClientUrl i : urls) {
@@ -584,7 +575,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
      * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getGSClientURLs(org.genepattern.server.gs.GenomeSpaceFileInfo)
      */
     public List<GsClientUrl> getGSClientURLs(GenomeSpaceFileInfo file)  {
-        GSFileMetadata metadata = getMetadatas().get(file.getUrl());
+        GSFileMetadata metadata = (GSFileMetadata) file.getMetadata();
         if (metadata == null) {
             log.error("Error getting metadata for " + file.getFilename() + " URL: " + file.getUrl());
         }
@@ -619,7 +610,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
     public TreeNode<GenomeSpaceFileInfo> getFileTree() {
         // Set up the root node
         TreeNode<GenomeSpaceFileInfo> rootNode = new TreeNodeImpl<GenomeSpaceFileInfo>();
-        GenomeSpaceFileInfo rootWrapper = new GenomeSpaceFileInfo(null, "GenomeSpace Files", GenomeSpaceFileInfo.DIRECTORY, new HashSet<String>(), null);
+        GenomeSpaceFileInfo rootWrapper = new GenomeSpaceFileInfo(null, "GenomeSpace Files", GenomeSpaceFileInfo.DIRECTORY, new HashSet<String>(), null, null);
         rootNode.setData(rootWrapper);
         
         // Add component trees
@@ -637,7 +628,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
      * @see org.genepattern.server.gs.GenomeSpaceBeanHelper#getGenomeSpaceFilesTree(org.genepattern.server.gs.GenomeSpaceDirectory)
      */
     public TreeNode<GenomeSpaceFileInfo> getGenomeSpaceFilesTree(GenomeSpaceDirectory gsDir) {
-        GenomeSpaceFileInfo wrapper = new GenomeSpaceFileInfo(null, gsDir.getName(), GenomeSpaceFileInfo.DIRECTORY, new HashSet<String>(), null);
+        GenomeSpaceFileInfo wrapper = new GenomeSpaceFileInfo(null, gsDir.getName(), GenomeSpaceFileInfo.DIRECTORY, new HashSet<String>(), null, null);
         TreeNode<GenomeSpaceFileInfo> rootNode = new TreeNodeImpl<GenomeSpaceFileInfo>();
         rootNode.setData(wrapper);
         int count = 0;
@@ -691,7 +682,7 @@ public class GenomeSpaceBeanHelperImpl implements GenomeSpaceBeanHelper {
             DataManagerClient dmClient = gsSession.getDataManagerClient();
             GSDirectoryListing rootDir = dmClient.listDefaultDirectory();
             
-            GenomeSpaceDirectory userDir = new GenomeSpaceDirectoryImpl("GenomeSpace Files", 0, rootDir, dmClient, kindToModules, (GenomeSpaceBeanHelper) this);
+            GenomeSpaceDirectory userDir = new GenomeSpaceDirectoryImpl("GenomeSpace Files", 0, rootDir, dmClient, kindToModules);
          
             availableDirectories.add(userDir);
             this.setGenomeSpaceDirectories(availableDirectories);
