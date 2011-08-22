@@ -1,120 +1,119 @@
 <!-- /*
- The Broad Institute
- SOFTWARE COPYRIGHT NOTICE AGREEMENT
- This software and its documentation are copyright (2003-2011) by the
- Broad Institute/Massachusetts Institute of Technology. All rights are
- reserved.
- 
- This software is supplied without any warranty or guaranteed support
- whatsoever. Neither the Broad Institute nor MIT can be responsible for its
- use, misuse, or functionality.
- */ -->
-
-<!DOCTYPE html PUBLIC "-/W3C/DTD XHTML 1.0 Transitional/EN" "http:/www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:t="http://myfaces.apache.org/tomahawk"
-	  xmlns:rich="http://richfaces.org/rich"
-      xmlns:c="http://java.sun.com/jstl/core">
-
-<ui:composition>
-<ui:define name="headText">
-
-<script type="text/javascript" language="javascript">	
-/* <![CDATA[ */
-var jobIdToChildJobs = new Object();
-
-function addChildJob(jobNumber, childJobId) {
-	var rowIds = jobIdToChildJobs[jobNumber];
-	if(rowIds == null) {
-		rowIds = new Array();
-        jobIdToChildJobs[jobNumber] = rowIds;
-	}
-	rowIds[rowIds.length] = childJobId;
-}
-
-function toggleJobVisibility(jobNo) {
-	var d = $(jobNo + "_div");
- 	var downArrow = $(jobNo + "_expanded_img");
-   	var rightArrow = $(jobNo + "_collapsed_img");
-   	var style = "none";
-   	if(d.style.display == "inline") {
-		d.style.display = "none";
-      	downArrow.style.display = "none";
-		rightArrow.style.display = "inline";
-		// $("expansion_state_" + jobNo).value = "false";
-	} else {
-		style = "inline";
-      	d.style.display = "inline";
-      	downArrow.style.display = "inline";
-		rightArrow.style.display = "none";
-		// $("expansion_state_" + jobNo).value = "true";
-	} 
-	
-	var childJobs = jobIdToChildJobs[jobNo];
-	if(childJobs!=null) {
-		for(var i=0; i<childJobs.length; i++) {
-			$(childJobs[i]).style.display = style;
-		}
-	}
-}
-/* ]]> */http://bm4e9-098.broadinstitute.org:8080/gp/pages/index.jsf?splash=resources
-</script>
-</ui:define>   
-
-<h:form>    
-  <table width="100%" border="0" cellspacing="0" cellpadding="0">
-    
-      <tr>
-      	<td height="6" colspan="6">
-        	<t:graphicImage value="/images/spacer.gif" width="1" height="6"/>
-      	</td>
-      </tr>
-  	  <tr>
-  	  	  <td>
-  	  	  	  <rich:tree value="#{genomeSpaceBean.fileTree}" var="aFile" switchType="client" adviseNodeOpened="#{genomeSpaceBean.openTreeNode}">
-			  	  <rich:treeNode>
-	      		  	  <h:outputLink rendered="#{not aFile.directory}" value="#{aFile.url}">#{aFile.filename}</h:outputLink>
-    	  		  	  <h:outputText rendered="#{aFile.directory}">#{aFile.filename}</h:outputText>
-		
-				  	  <!-- Image for popup menu -->
-	      			  	  <t:graphicImage rendered="#{not aFile.directory}" value="/images/smallOptions.gif" 
-    	       				name="Image_#{aFile.encodedPath}"
-       	       				onclick="pm_showMenu('menuDiv_#{aFile.dir.name}_#{aFile.filename}', Position.cumulativeOffset(this), 50, 50);" 
-           					onmouseover="MM_swapImage('Image_#{aFile.dir.name}_#{aFile.filename}','','/gp/images/smallOptions2.gif',2)" 
-    	       				onmouseout="MM_swapImgRestore();" />
-      			  	  <br />
-      			  	  <h:outputText rendered="#{not aFile.directory}">#{aFile.lastModified}</h:outputText>
-	  			  	  <br />
-			  	  </rich:treeNode>
-		  	  </rich:tree>
-  			  <h:outputText rendered="#{empty genomeSpaceBean.gsFiles and empty genomeSpaceBean.gsDirectories}">
-   		  		  No GenomeSpace files to display
-      		  </h:outputText>
-  		  </td>
-  	  </tr>
-      <tr>
-          <td colspan="6">
-              <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1" vspace="5"/>
-          </td>
-      </tr>
-  </table>
-  </h:form>
-  <p>
-    <br/>
-  </p>
-  <p>
-    <br/>
-  </p>
-  <p>&nbsp;</p>
-  <p>
-    <br/>
-  </p>
-  <p>
-    <br/>
-  </p>
-
-  </ui:composition>
+The Broad Institute
+SOFTWARE COPYRIGHT NOTICE AGREEMENT
+This software and its documentation are copyright (2003-2011) by the
+Broad Institute/Massachusetts Institute of Technology. All rights are
+reserved.
+This software is supplied without any warranty or guaranteed support
+whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+use, misuse, or functionality.
+*/ -->
+ <!DOCTYPE html PUBLIC "-/W3C/DTD XHTML 1.0 Transitional/EN" "http:/www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+		xmlns:ui="http://java.sun.com/jsf/facelets" 
+		xmlns:h="http://java.sun.com/jsf/html" 
+		xmlns:f="http://java.sun.com/jsf/core" 
+		xmlns:t="http://myfaces.apache.org/tomahawk" 
+		xmlns:rich="http://richfaces.org/rich" 
+		xmlns:c="http://java.sun.com/jstl/core">
+    <ui:composition>
+        <ui:define name="headText">
+            <script type="text/javascript" language="javascript">	
+                /* <![CDATA[ */
+                var jobIdToChildJobs = new Object();
+                
+                function addChildJob(jobNumber, childJobId) {
+                	var rowIds = jobIdToChildJobs[jobNumber];
+                	if(rowIds == null) {
+                		rowIds = new Array();
+                        jobIdToChildJobs[jobNumber] = rowIds;
+                	}
+                	rowIds[rowIds.length] = childJobId;
+                }
+                
+                function toggleJobVisibility(jobNo) {
+                	var d = $(jobNo + "_div");
+                 	var downArrow = $(jobNo + "_expanded_img");
+                   	var rightArrow = $(jobNo + "_collapsed_img");
+                   	var style = "none";
+                   	if(d.style.display == "inline") {
+                		d.style.display = "none";
+                      	downArrow.style.display = "none";
+                		rightArrow.style.display = "inline";
+                		// $("expansion_state_" + jobNo).value = "false";
+                	} else {
+                		style = "inline";
+                      	d.style.display = "inline";
+                      	downArrow.style.display = "inline";
+                		rightArrow.style.display = "none";
+                		// $("expansion_state_" + jobNo).value = "true";
+                	} 
+                	
+                	var childJobs = jobIdToChildJobs[jobNo];
+                	if(childJobs!=null) {
+                		for(var i=0; i<childJobs.length; i++) {
+                			$(childJobs[i]).style.display = style;
+                		}
+                	}
+                }
+                /* ]]> */http://bm4e9-098.broadinstitute.org:8080/gp/pages/index.jsf?splash=resources
+            </script>
+        </ui:define>
+        <h:form>
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td height="6" colspan="6">
+                        <t:graphicImage value="/images/spacer.gif" width="1" height="6"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <rich:tree value="#{genomeSpaceBean.fileTree}" var="aFile" switchType="client" adviseNodeOpened="#{genomeSpaceBean.openTreeNode}">
+                            <rich:treeNode>
+                                <h:outputLink rendered="#{not aFile.directory}" value="#{aFile.url}">
+                                    #{aFile.filename}
+                                </h:outputLink>
+                                <h:outputText rendered="#{aFile.directory}">
+                                    #{aFile.filename}
+                                </h:outputText>
+                                <!-- Image for popup menu -->
+								<t:graphicImage rendered="#{not aFile.directory}" value="/images/smallOptions.gif" name="Image_#{aFile.encodedPath}" 
+										onclick="pm_showMenu('menuDiv_#{aFile.dir.name}_#{aFile.filename}', Position.cumulativeOffset(this), 50, 50);" 
+										onmouseover="MM_swapImage('Image_#{aFile.dir.name}_#{aFile.filename}','','/gp/images/smallOptions2.gif',2)" 
+										onmouseout="MM_swapImgRestore();"/>
+                                <br/>
+                                <h:outputText rendered="#{not aFile.directory}">
+                                    #{aFile.lastModified}
+                                </h:outputText>
+                                <br/>
+                            </rich:treeNode>
+                        </rich:tree>
+                        <h:outputText rendered="#{empty genomeSpaceBean.gsFiles and empty genomeSpaceBean.gsDirectories}">
+                            No GenomeSpace files to display
+                        </h:outputText>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="6">
+                        <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1" vspace="5"/>
+                    </td>
+                </tr>
+            </table>
+        </h:form>
+        <p>
+            <br/>
+        </p>
+        <p>
+            <br/>
+        </p>
+        <p>
+            &nbsp;
+        </p>
+        <p>
+            <br/>
+        </p>
+        <p>
+            <br/>
+        </p>
+    </ui:composition>
 </html>
