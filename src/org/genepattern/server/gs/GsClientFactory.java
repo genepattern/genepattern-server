@@ -40,7 +40,7 @@ public class GsClientFactory {
         GenomeSpaceBeanHelper gsHelper = null;
         Class classDefinition;
         try {
-            classDefinition = Class.forName("org.genepattern.server.gs.GenomeSpaceBeanHelperImpl");
+            classDefinition = Class.forName("org.genepattern.server.gs.impl.GenomeSpaceBeanHelperImpl");
             gsHelper = (GenomeSpaceBeanHelper) classDefinition.newInstance();
             return gsHelper;
         }
