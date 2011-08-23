@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.genepattern.server.webapp.jsf.KeyValuePair;
-import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.webservice.ParameterInfo;
 
 public class GenomeSpaceFileInfo {
@@ -103,6 +102,10 @@ public class GenomeSpaceFileInfo {
     
     public List<ParameterInfo> getSendToParameters() {
         return Collections.unmodifiableList( sendToParameters );
+    }
+    
+    public void setSendToParameters(List<ParameterInfo> list) {
+        sendToParameters = list;
     }
     
     public void addSendToParameter( ParameterInfo p ) {

@@ -2,6 +2,7 @@ package org.genepattern.server.gs;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -408,21 +409,29 @@ public class GenomeSpaceBean {
         List<GenomeSpaceDirectory> availableDirectories = this.getGenomeSpaceDirectories(); 
         if ((availableDirectories == null) || (availableDirectories.size() == 0)) {
             availableDirectories = initUserDirs();
-            //initialize the send to parameters
-            for(GenomeSpaceDirectory dir : availableDirectories) {
-                for(GenomeSpaceFileInfo file : dir.getGsFiles()) {
-                    String type = file.getType();
-                    List<ParameterInfo> sendToParams = this.getSendToParameters(type);
-                    if (sendToParams != null) {
-                        for(ParameterInfo p : sendToParams) {
-                            file.addSendToParameter(p);
-                        }
-                    }
+        }
+        //initialize the send to parameters
+        for(GenomeSpaceDirectory dir : availableDirectories) {
+            setSendToParameters(dir);
+        }
+        this.setGenomeSpaceDirectories(availableDirectories);
+        return availableDirectories;
+    }
+    
+    private void setSendToParameters(GenomeSpaceDirectory dir) {
+        for(GenomeSpaceFileInfo file : dir.getGsFiles()) {
+            String type = file.getType();
+            List<ParameterInfo> sendToParams = this.getSendToParameters(type);
+            if (sendToParams != null) {
+                file.setSendToParameters(new ArrayList<ParameterInfo>());
+                for(ParameterInfo p : sendToParams) {
+                    file.addSendToParameter(p);
                 }
             }
-            this.setGenomeSpaceDirectories(availableDirectories);
         }
-        return availableDirectories;
+        for (GenomeSpaceDirectory subdir : dir.getGsDirectories()) {
+            setSendToParameters(subdir);
+        }
     }
 
     private List<GenomeSpaceDirectory> initUserDirs() {
