@@ -413,8 +413,10 @@ public class GenomeSpaceBean {
                 for(GenomeSpaceFileInfo file : dir.getGsFiles()) {
                     String type = file.getType();
                     List<ParameterInfo> sendToParams = this.getSendToParameters(type);
-                    for(ParameterInfo p : sendToParams) {
-                        file.addSendToParameter(p);
+                    if (sendToParams != null) {
+                        for(ParameterInfo p : sendToParams) {
+                            file.addSendToParameter(p);
+                        }
                     }
                 }
             }
