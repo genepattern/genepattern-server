@@ -7,29 +7,16 @@ import java.util.Set;
 import org.genepattern.webservice.TaskInfo;
 
 public interface GenomeSpaceDirectory {
-
-    public abstract void setGsFileList(String name, Set<GenomeSpaceFileInfo> files, Map<String, Set<TaskInfo>> kindToModules);
-
-    public abstract String getName();
-
-    public abstract void setName(String name);
-
-    public abstract List<GenomeSpaceFileInfo> getRecursiveGsFiles();
-
-    public abstract List<GenomeSpaceFileInfo> getGsFiles();
-
-    public abstract void setGsFiles(List<GenomeSpaceFileInfo> gsFiles);
-
-    public abstract List<GenomeSpaceDirectory> getGsDirectories();
-
-    public abstract void setGsDirectories(List<GenomeSpaceDirectory> gsDirectories);
-
-    public abstract int getLevel();
-
-    public abstract void setLevel(int level);
-
-    public abstract boolean isExpanded();
-
-    public abstract void setExpanded(boolean expanded);
-
+    void setGsFileList(Object gsSessionObj, String name, Set<GenomeSpaceFileInfo> files, Map<String, Set<TaskInfo>> kindToModules, Map<String, List<GsClientUrl>> clientUrls);
+    String getName();
+    void setName(String name);
+    List<GenomeSpaceFileInfo> getRecursiveGsFiles();
+    List<GenomeSpaceFileInfo> getGsFiles();
+    void setGsFiles(List<GenomeSpaceFileInfo> gsFiles);
+    List<GenomeSpaceDirectory> getGsDirectories();
+    void setGsDirectories(List<GenomeSpaceDirectory> gsDirectories);
+    int getLevel();
+    void setLevel(int level);
+    boolean isExpanded();
+    void setExpanded(boolean expanded);
 }

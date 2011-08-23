@@ -1,11 +1,17 @@
 package org.genepattern.server.gs;
 
+import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.webservice.TaskInfo;
 
 /**
  * GenomeSpace integration, wrapper class. This is part of the core of GenePattern,
@@ -31,33 +37,13 @@ public class GsClientFactory {
     static public GsClient getGsClient() {
         return GsClientSingleton.gsClient;
     }
-    
+
     /**
-     * Factory method for the GenomeSpaceBeanHelper interface
-     * @return a new instanceof a GenomeSpaceBeanHelper
+     * Get the singleton instance of the GsClientUtil interface, for GenomeSpace integration.
+     * @return
      */
-    static public GenomeSpaceBeanHelper getNewGenomeSpaceBeanHelper() throws GsClientException {
-        GenomeSpaceBeanHelper gsHelper = null;
-        Class classDefinition;
-        try {
-            classDefinition = Class.forName("org.genepattern.server.gs.impl.GenomeSpaceBeanHelperImpl");
-            gsHelper = (GenomeSpaceBeanHelper) classDefinition.newInstance();
-            return gsHelper;
-        }
-        catch (ClassNotFoundException e) {
-            log.error("ClassNotFoundException creating GenomeSpaceBeanHelper through reflection", e);
-        }
-        catch (InstantiationException e) {
-            log.error("InstantiationException creating GenomeSpaceBeanHelper through reflection", e);
-        }
-        catch (IllegalAccessException e) {
-            log.error("IllegalAccessException creating GenomeSpaceBeanHelper through reflection", e);
-        }
-        catch (Throwable t) {
-            log.error("Error initializing GenomeSpaceBeanHelper: "+t.getLocalizedMessage(), t);
-        }
-        
-        throw new GsClientException("Error initializing GenomeSpaceBeanHelper, there are server errors which prevent you from using GenomeSpace");
+    static public GsClientUtil getGsClientUtil() {
+        return GsClientUtilSingleton.gsClientUtil;
     }
 }
 
@@ -108,3 +94,64 @@ class GsClientSingleton {
         };
     }
 }
+
+class GsClientUtilSingleton {
+    public static Logger log = Logger.getLogger(GsClientUtilSingleton.class);
+    static GsClientUtil gsClientUtil = initGsClientUtil();
+    private static GsClientUtil initGsClientUtil() {
+        log.info("initializing GsClientUtil ... ");
+        try {
+            Class<?> gsClientUtilClass = Class.forName("org.genepattern.server.gs.impl.GsClientUtilImpl");
+            if (GsClientUtil.class.isAssignableFrom(gsClientUtilClass)) {
+                GsClientUtil gsClientUtil = (GsClientUtil) gsClientUtilClass.newInstance();
+                log.info(" ... done!");
+                return gsClientUtil;
+            }
+        }
+        catch (Throwable t) {
+            log.error("Error initializing GsClientUtil: "+t.getLocalizedMessage(), t);
+        }
+        return new GsClientUtil() {
+
+            public boolean isLoggedIn(Object gsSessionObj) {
+                return false;
+            }
+
+            public GsLoginResponse submitLogin(String env, String username, String password) throws GsClientException {
+                throw new GsClientException("GP - GenomeSpace configuration error");
+            }
+
+            public void registerUser(String env, String username, String password, String regEmail) throws GsClientException {
+                throw new GsClientException("GP - GenomeSpace configuration error");
+            }
+
+            public void logout(Object gsSessionObj) {
+            }
+
+            public void deleteFile(Object gsSessionObj, GenomeSpaceFileInfo file) throws GsClientException {
+                throw new GsClientException("GP - GenomeSpace configuration error");
+            }
+
+            public GenomeSpaceFileInfo saveFileToGenomeSpace(Object gsSessionObj, Map<String, List<String>> gsClientTypes, File in) throws GsClientException {
+                throw new GsClientException("GP - GenomeSpace configuration error");
+            }
+
+            public List<WebToolDescriptorWrapper> getToolWrappers(Object gsSessionObj, Map<String, List<String>> gsClientTypes) {
+                return Collections.emptyList();
+            }
+
+            public void initGsClientTypes(Object gsSessionObj, Map<String, List<String>> gsClientTypes) {
+            }
+
+            public List<GsClientUrl> getGSClientURLs(Object gsSessionObj, GenomeSpaceFileInfo file) {
+                return Collections.emptyList();
+            }
+
+            public List<GenomeSpaceDirectory> initUserDirs(Object gsSessionObj, Map<String, Set<TaskInfo>> kindToModules, Map<String, List<String>> gsClientTypes, Map<String, List<GsClientUrl>> clientUrls) {
+                return Collections.emptyList();
+            }
+        };
+    }
+}
+
+

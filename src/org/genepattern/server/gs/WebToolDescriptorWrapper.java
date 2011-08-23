@@ -8,11 +8,12 @@ public class WebToolDescriptorWrapper {
     private String tool;
     private Map<String, Boolean> typeMap = new HashMap<String, Boolean>();
     private boolean init = false;
-    private GenomeSpaceBeanHelper gsbh;
+    private Map<String, List<String>> gsClientTypes;
     
-    public WebToolDescriptorWrapper(String tool, GenomeSpaceBeanHelper gsbh) {
+    
+    public WebToolDescriptorWrapper(String tool, Map<String, List<String>> gsClientTypes) {
         this.tool = tool;
-        this.gsbh = gsbh;
+        this.gsClientTypes = gsClientTypes;
     }
     
     public String getTool() {
@@ -25,7 +26,7 @@ public class WebToolDescriptorWrapper {
     
     public Map<String, Boolean> getTypeMap() {
         if (!init) {
-            List<String> types = gsbh.getGsClientTypes().get(tool);
+            List<String> types = gsClientTypes.get(tool);
             for (String i : types) {
                 typeMap.put(i, true);
             }

@@ -33,7 +33,7 @@ import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
-import org.genepattern.server.gs.GenomeSpaceBeanHelper;
+import org.genepattern.server.gs.GenomeSpaceBean;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -247,7 +247,7 @@ public class RunTaskBean {
     public void setTask(String taskNameOrLsid) {
         JobBean jobBean = (JobBean) UIBeanHelper.getManagedBean("#{jobsBean}");
         UploadFilesBean ufb = (UploadFilesBean) UIBeanHelper.getManagedBean("#{uploadFilesBean}");
-        GenomeSpaceBeanHelper gsb = (GenomeSpaceBeanHelper)UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
+        GenomeSpaceBean gsb = (GenomeSpaceBean)UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
         if (jobBean != null) {
             jobBean.setSelectedModule(taskNameOrLsid);
         }

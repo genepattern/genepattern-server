@@ -1,6 +1,7 @@
 package org.genepattern.server.gs;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -24,8 +25,10 @@ public class GenomeSpaceFileInfo {
     boolean directory = false;;
     Date lastModified;
     Object metadata;
+    List<ParameterInfo> sendToParameters = new ArrayList<ParameterInfo>();
+    List<GsClientUrl> gsClientUrls = new ArrayList<GsClientUrl>();
 
-    public GenomeSpaceFileInfo(GenomeSpaceDirectory parent, String filename, String url, Set<String> availableDataFormats, Date lastModified, Object metadata) {
+    public GenomeSpaceFileInfo(GenomeSpaceDirectory parent, String filename, String url, Set<String> availableDataFormats, Date lastModified, Object metadata, Map<String, List<String>> gsClientTypes) {
         this.filename = filename;
         this.dir = parent;
         this.url = url;
@@ -40,7 +43,9 @@ public class GenomeSpaceFileInfo {
         if (url.equals(GenomeSpaceFileInfo.DIRECTORY)) {
             directory = true;
         }
+        initRelevantTools(gsClientTypes);
     }
+    
     
     public Object getMetadata() {
         return metadata;
@@ -97,9 +102,11 @@ public class GenomeSpaceFileInfo {
     }
     
     public List<ParameterInfo> getSendToParameters() {
-        GenomeSpaceBeanHelper gsb = (GenomeSpaceBeanHelper)UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
-        String type = getType();
-        return gsb.getSendToParameters(type);
+        return Collections.unmodifiableList( sendToParameters );
+    }
+    
+    public void addSendToParameter( ParameterInfo p ) {
+        this.sendToParameters.add(p);
     }
 
     public void setModuleInputParameters(List<KeyValuePair> moduleInputParameters) {
@@ -123,21 +130,21 @@ public class GenomeSpaceFileInfo {
     }
     
     public Set<String> getRelevantTools() {
-        if (toolUrls == null) {
-            toolUrls = new HashSet<String>();
-            GenomeSpaceBeanHelper gsb = (GenomeSpaceBeanHelper)UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
-            Set<String> types = getConversions();
-            Map<String, List<String>> gsClientTypes = gsb.getGsClientTypes();
-            for (String i : gsClientTypes.keySet()) {
-                for (String j : gsClientTypes.get(i)) {
-                    for (String k : types) {
-                        if (j.equals(k)) {
-                            toolUrls.add(i);
-                        }
+        return toolUrls;
+    }
+    
+    private Set<String> initRelevantTools(Map<String, List<String>> gsClientTypes) {
+        Set<String> relevantTools = new HashSet<String>();
+        Set<String> types = getConversions();
+        for (String i : gsClientTypes.keySet()) {
+            for (String j : gsClientTypes.get(i)) {
+                for (String k : types) {
+                    if (j.equals(k)) {
+                        relevantTools.add(i);
                     }
                 }
             }
         }
-        return toolUrls;
+        return relevantTools;
     }
 }

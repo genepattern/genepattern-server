@@ -11,9 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.genepattern.server.gs.GenomeSpaceBeanHelper;
 import org.genepattern.server.gs.GenomeSpaceDirectory;
 import org.genepattern.server.gs.GenomeSpaceFileInfo;
+import org.genepattern.server.gs.GsClientFactory;
+import org.genepattern.server.gs.GsClientUrl;
 import org.genepattern.server.webapp.jsf.KeyValuePair;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.SemanticUtil;
@@ -37,7 +38,7 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
         gsDirectories = new ArrayList<GenomeSpaceDirectory>();
     }
     
-    public GenomeSpaceDirectoryImpl(String name, int level, GSDirectoryListing adir, DataManagerClient dmClient, Map<String, Set<TaskInfo>> kindToModules) {
+    public GenomeSpaceDirectoryImpl(Object gsSessionObj, String name, int level, GSDirectoryListing adir, DataManagerClient dmClient, Map<String, Set<TaskInfo>> kindToModules, Map<String, List<String>> gsClientTypes,  Map<String, List<GsClientUrl>> clientUrls) {
         this(); 
         this.name = name;
         this.level = level;
@@ -49,20 +50,20 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
                 formats.add(j.getName());
             }
             String url = getFileURL(i, dmClient);
-            files.add(new GenomeSpaceFileInfo(this, i.getName(), url, formats, i.getLastModified(), i));
+            files.add(new GenomeSpaceFileInfo(this, i.getName(), url, formats, i.getLastModified(), i, gsClientTypes));
         }
 
         for (GSFileMetadata gsdir: adir.findDirectories()) {
-            gsDirectories.add(new GenomeSpaceDirectoryImpl(gsdir.getName(), level + 1, dmClient.list(gsdir), dmClient, kindToModules));
+            gsDirectories.add(new GenomeSpaceDirectoryImpl(gsSessionObj, gsdir.getName(), level + 1, dmClient.list(gsdir), dmClient, kindToModules, gsClientTypes, clientUrls));
         }
-        setGsFileList(name, files, kindToModules);
+        setGsFileList(gsSessionObj, name, files, kindToModules, clientUrls);
     }
 
     
     /* (non-Javadoc)
      * @see org.genepattern.server.gs.IGenomeSpaceDirectory#setGsFileList(org.genomespace.datamanager.core.GSDirectoryListing, java.util.Map, org.genepattern.server.gs.GenomeSpaceBeanHelper)
      */
-    public void setGsFileList(String name, Set<GenomeSpaceFileInfo> files, Map<String, Set<TaskInfo>> kindToModules) {
+    public void setGsFileList(Object gsSessionObj, String name, Set<GenomeSpaceFileInfo> files, Map<String, Set<TaskInfo>> kindToModules, Map<String, List<GsClientUrl>> clientUrlMap) {
         this.gsFiles = new ArrayList<GenomeSpaceFileInfo>();
         for (GenomeSpaceFileInfo info: files){
             this.gsFiles.add(info);
@@ -80,8 +81,8 @@ public class GenomeSpaceDirectoryImpl implements GenomeSpaceDirectory {
                 Collections.sort(moduleMenuItems, COMPARATOR);
             }
             info.setModuleMenuItems(moduleMenuItems);
-            GenomeSpaceBeanHelper gsb = (GenomeSpaceBeanHelper) UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
-            gsb.addToClientUrls(info);
+            List<GsClientUrl> gsClientUrls = GsClientFactory.getGsClientUtil().getGSClientURLs(gsSessionObj, info);
+            clientUrlMap.put(info.getKey(), gsClientUrls);
         }
     
     }
