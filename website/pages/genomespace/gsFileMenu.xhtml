@@ -17,14 +17,16 @@ use, misuse, or functionality.
                     <tr>
                         <td>
                             <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file from GenomeSpace?');" actionListener="#{genomeSpaceBean.deleteFileFromGenomeSpace}" immediate="true">
-                                <f:param value="#{aFile.filename}" name="filename"/><f:param value="#{aFile.dir.name}" name="dirname"/>
+                                <f:param value="#{aFile.filename}" name="filename"/>
+								<f:param value="#{aFile.dir.name}" name="dirname"/>
                             </h:commandLink>
                         </td>
                     </tr>
                     <tr>
                         <td>
                             <h:commandLink value="Save" actionListener="#{genomeSpaceBean.saveFileLocally}" immediate="true">
-                                <f:param value="#{aFile.filename}" name="filename"/><f:param value="#{aFile.dir.name}" name="dirname"/>
+                                <f:param value="#{aFile.filename}" name="filename"/>
+								<f:param value="#{aFile.dir.name}" name="dirname"/>
                             </h:commandLink>
                         </td>
                     </tr>
@@ -40,8 +42,7 @@ use, misuse, or functionality.
                             <td>
                                 <img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle"/>&#160;
                                 <h:commandLink value="Send to #{i}" action="#{genomeSpaceBean.sendGSFileToGSClient}" immediate="true" target="_blank">
-                                    <f:param value="#{i}" name="tool"/>
-									<f:param value="#{aFile.key}" name="file"/>
+									<f:param value="#{aFile.gsClientUrls[i]}" name="url"/>
                                 </h:commandLink>
                             </td>
                         </tr>
@@ -68,7 +69,10 @@ use, misuse, or functionality.
                         <tr>
                             <td>
                                 <h:commandLink value="#{moduleMenuItem.key}" action="#{jobsBean.loadTask}" immediate="true">
-                                    <f:param value="#{moduleMenuItem.value}" name="module"/><f:param value="GenomeSpace" name="source"/><f:param value="${aFile.filename}" name="name"/><f:param value="#{aFile.dir.name}" name="dirname"/>
+                                    <f:param value="#{moduleMenuItem.value}" name="module"/>
+									<f:param value="GenomeSpace" name="source"/>
+									<f:param value="${aFile.filename}" name="name"/>
+									<f:param value="#{aFile.dir.name}" name="dirname"/>
                                 </h:commandLink>
                             </td>
                         </tr>

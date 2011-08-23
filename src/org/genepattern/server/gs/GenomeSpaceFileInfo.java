@@ -3,12 +3,16 @@ package org.genepattern.server.gs;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpSession;
+
 import org.genepattern.server.webapp.jsf.KeyValuePair;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.webservice.ParameterInfo;
 
 public class GenomeSpaceFileInfo {
@@ -19,13 +23,13 @@ public class GenomeSpaceFileInfo {
     List<KeyValuePair> moduleInputParameters;
     List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
     GenomeSpaceDirectory dir;
-    Set<String> toolUrls;
+    Set<String> relevantTools;
     Set<String> availableDataFormats;
     boolean directory = false;;
     Date lastModified;
     Object metadata;
     List<ParameterInfo> sendToParameters = new ArrayList<ParameterInfo>();
-    List<GsClientUrl> gsClientUrls = new ArrayList<GsClientUrl>();
+    Map<String, String> gsClientUrls = new HashMap<String, String>();
 
     public GenomeSpaceFileInfo(GenomeSpaceDirectory parent, String filename, String url, Set<String> availableDataFormats, Date lastModified, Object metadata, Map<String, List<String>> gsClientTypes) {
         this.filename = filename;
@@ -42,7 +46,22 @@ public class GenomeSpaceFileInfo {
         if (url.equals(GenomeSpaceFileInfo.DIRECTORY)) {
             directory = true;
         }
-        initRelevantTools(gsClientTypes);
+        else {
+            setGSClientURLs();
+            initRelevantTools(gsClientTypes);
+        }
+    }
+    
+    public Map<String, String> getGsClientUrls() {
+        return gsClientUrls;
+    }
+    
+    private void setGSClientURLs()  {
+        HttpSession httpSession = UIBeanHelper.getSession();
+        Object gsSessionObj = httpSession.getAttribute(GenomeSpaceBean.GS_SESSION_KEY);
+        for (GsClientUrl i : GsClientFactory.getGsClientUtil().getGSClientURLs(gsSessionObj, this)) {
+            gsClientUrls.put(i.getTool(), i.getUrl().toString());
+        }
     }
     
     
@@ -133,10 +152,10 @@ public class GenomeSpaceFileInfo {
     }
     
     public Set<String> getRelevantTools() {
-        return toolUrls;
+        return relevantTools;
     }
     
-    private Set<String> initRelevantTools(Map<String, List<String>> gsClientTypes) {
+    private void initRelevantTools(Map<String, List<String>> gsClientTypes) {
         Set<String> relevantTools = new HashSet<String>();
         Set<String> types = getConversions();
         for (String i : gsClientTypes.keySet()) {
@@ -148,6 +167,7 @@ public class GenomeSpaceFileInfo {
                 }
             }
         }
-        return relevantTools;
+        
+        this.relevantTools = relevantTools;
     }
 }

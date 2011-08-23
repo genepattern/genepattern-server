@@ -315,15 +315,8 @@ public class GenomeSpaceBean {
     }
 
     public void sendGSFileToGSClient() throws IOException {
-        String fileParam = UIBeanHelper.getRequest().getParameter("file");
-        String toolParam = UIBeanHelper.getRequest().getParameter("tool");
-        List<GsClientUrl> urls = clientUrls.get(fileParam);
-        for (GsClientUrl i : urls) {
-            if (i.getTool().equals(toolParam)) {
-                UIBeanHelper.getResponse().sendRedirect(i.getUrl().toString());
-                break;
-            }
-        }
+        String url = UIBeanHelper.getRequest().getParameter("url");
+        if (url != null) UIBeanHelper.getResponse().sendRedirect(url);
     }
 
     public void sendInputFileToGSClient() throws IOException {
