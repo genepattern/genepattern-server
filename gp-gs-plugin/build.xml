@@ -8,11 +8,12 @@
     <!-- the installation directory of your GenePattern Server -->
     <property name="gp.classes" location="../website/WEB-INF/classes" />
     <property name="build.dir" value="build"  />
+    <property name="dist.dir" value="dist" />
 
     <target name="init">
         <mkdir dir="${build.dir}" />
+        <mkdir dir="${dist.dir}" />
     </target>
-
 
     <path id="compile.classpath">
         <pathelement location="${build.dir}" />
@@ -20,6 +21,7 @@
         <fileset dir="lib">
             <include name="**/*.jar"/>
         </fileset>
+        <pathelement location="../build/gp-full.jar" />
     </path>
     
     <target name="compile" depends="init">
@@ -33,6 +35,7 @@
     
     <target name="clean">
         <delete dir="${build.dir}" />
+        <delete dir="${dist.dir}" />
     </target>
     
 </project>
