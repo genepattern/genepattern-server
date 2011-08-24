@@ -52,9 +52,9 @@ public class GenomeSpaceBean {
     private TaskInfo currentTaskInfo;
     private boolean genomeSpaceEnabled = false;
 
-    private Map<String, Set<TaskInfo>> kindToModules;
-    private Map<String, List<GsClientUrl>> clientUrls = new HashMap<String, List<GsClientUrl>>();
-    private Map<String, List<String>> gsClientTypes = new HashMap<String, List<String>>();
+    private Map<String, Set<TaskInfo>> kindToModules;                                               // Map of file types to modules that take a file of that type
+    private Map<String, List<GsClientUrl>> clientUrls = new HashMap<String, List<GsClientUrl>>();   // Map of file keys to a list of GsClient Urls accepting that file
+    private Map<String, List<String>> gsClientTypes = new HashMap<String, List<String>>();          // Map of file types to a lost of module names taking that type
     private List<WebToolDescriptorWrapper> toolWrappers = null;
 
     public GenomeSpaceBean() {

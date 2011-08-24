@@ -23,13 +23,13 @@ public class GenomeSpaceFileInfo {
     List<KeyValuePair> moduleInputParameters;
     List<KeyValuePair> moduleMenuItems = new ArrayList<KeyValuePair>();
     GenomeSpaceDirectory dir;
-    Set<String> relevantTools;
-    Set<String> availableDataFormats;
+    Set<String> relevantTools;          // Set of GS Client Names relevant to the file
+    Set<String> availableDataFormats;   // Set of file types relevant to the file either natively or through converters
     boolean directory = false;;
     Date lastModified;
     Object metadata;
     List<ParameterInfo> sendToParameters = new ArrayList<ParameterInfo>();
-    Map<String, String> gsClientUrls = new HashMap<String, String>();
+    Map<String, String> gsClientUrls = new HashMap<String, String>();       // Map of GS client names to the URL to send this file to that client
 
     public GenomeSpaceFileInfo(GenomeSpaceDirectory parent, String filename, String url, Set<String> availableDataFormats, Date lastModified, Object metadata, Map<String, List<String>> gsClientTypes) {
         this.filename = filename;
