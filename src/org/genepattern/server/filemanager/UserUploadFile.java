@@ -3,9 +3,10 @@ package org.genepattern.server.filemanager;
 import java.io.File;
 import java.net.URI;
 
-public class UserUploadFile extends GpFileObj {
+public class UserUploadFile extends GpFilePath {
     private URI relativeUri;
     private File serverFile;
+    private File relativeFile;
 
     public UserUploadFile(URI relativeUri) {
         this.relativeUri = relativeUri;
@@ -20,6 +21,13 @@ public class UserUploadFile extends GpFileObj {
     }
     void setServerFile(File file) {
         this.serverFile = file;
+    }
+    
+    public File getRelativeFile() {
+        return this.relativeFile;
+    }
+    void setRelativeFile(File file) {
+        this.relativeFile = file;
     }
 
     public String getFormFieldValue() {

@@ -9,12 +9,14 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.dm.UrlUtil;
 
 /**
- * Reference to a GenePattern datafile. Several types of files should be supported:
- *     UserUpload, JobResult, JobInput, TasklibInput, 
+ * Represents a path to a GenePattern datafile, with the ability to generate a representation for use in various contexts such as: 
+ * URI for presentation in web client, File path on the server's file system, entry in database.
+ * Several types of files should be supported:
+ *     UserUpload, JobResult, JobInput, TasklibInput, ServerFile
  * @author pcarr
  */
-abstract public class GpFileObj {
-    private static Logger log = Logger.getLogger(GpFileObj.class);
+abstract public class GpFilePath {
+    private static Logger log = Logger.getLogger(GpFilePath.class);
     private static URL gpUrl = null;
     /**
      * Get the GenePatternURL, e.g.
@@ -51,6 +53,11 @@ abstract public class GpFileObj {
         return gpUrl;
     }
     
+    /**
+     * Get the fully qualified URL to this file.
+     * @return
+     * @throws Exception
+     */
     public URL getUrl() throws Exception {
         URL gpUrl = getGenePatternUrl();
         URI uri = getRelativeUri();
@@ -59,9 +66,46 @@ abstract public class GpFileObj {
         String newPath = gpUri.getPath() + uri.getPath();
         File file = new File(newPath);
         newPath = UrlUtil.encodeFilePath(file);
+        
+        if (isDirectory()) {
+            newPath = newPath + "/";
+        }
         URI full = gpUri.resolve( newPath );
         return full.toURL();
     }
+
+    /**
+     * Same as {@link java.io.File#isFile()}.
+     * @return
+     */
+    public boolean isFile() {
+        return getRelativeFile().isFile();
+    }
+
+    /**
+     * Same as {@link java.io.File#isDirectory()}.
+     */
+    public boolean isDirectory() {
+        return getRelativeFile().isDirectory();
+    }
+    
+    /**
+     * Get the relative path, converting, if necessary, all path separators to the forward slash ('/').
+     * @return the relative path
+     */
+    public String getRelativePath() {
+        File file = getRelativeFile();
+        if (file == null) {
+            return "";
+        }
+        String path = file.getPath();
+        String r = path.replace( File.separator, "/");
+        if (file.isDirectory() && file.getName() != null && file.getName().length() > 0) {
+            r = r + "/";
+        }
+        return r;
+    }
+
     
     /**
      * Get the relative URI to this file, the path is specified relative to the GenePatternURL.
@@ -75,6 +119,13 @@ abstract public class GpFileObj {
      * @return
      */
     abstract public File getServerFile();
+    
+    /**
+     * Get the relative path to the File, for example, a user upload file's relative path is relative to the user's upload directory,
+     * a job result file's relative path is relative to the result dir for the job.
+     * @return
+     */
+    abstract public File getRelativeFile();
     
     /**
      * Get the string literal to use as an input form value in a job submit form, when this file is to be specified as an input
