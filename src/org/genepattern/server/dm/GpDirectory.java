@@ -19,7 +19,6 @@ import org.genepattern.server.config.ServerConfiguration;
 public class GpDirectory extends Node<GpFilePath> {
     private Map<String, Node<GpFilePath>> allElements = new HashMap<String, Node<GpFilePath>>();
     static private Comparator<Node<GpFilePath>> comparator = new Comparator<Node<GpFilePath>>() {
-        @Override
         public int compare(Node<GpFilePath> o1, Node<GpFilePath> o2) {
             return o1.getValue().getRelativeUri().getPath().compareTo( o2.getValue().getRelativeUri().getPath() );
         }
