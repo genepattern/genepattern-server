@@ -1,4 +1,4 @@
-package org.genepattern.server.filemanager;
+package org.genepattern.server.dm;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -6,7 +6,6 @@ import java.net.URI;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.dm.UrlUtil;
 
 /**
  * Represents a path to a GenePattern datafile, with the ability to generate a representation for use in various contexts such as: 
@@ -15,7 +14,7 @@ import org.genepattern.server.dm.UrlUtil;
  *     UserUpload, JobResult, JobInput, TasklibInput, ServerFile
  * @author pcarr
  */
-abstract public class GpFilePath {
+abstract public class GpFilePath implements Comparable<GpFilePath> {
     private static Logger log = Logger.getLogger(GpFilePath.class);
     private static URL gpUrl = null;
     /**
@@ -51,6 +50,35 @@ abstract public class GpFilePath {
             log.info("GenePatternURL="+gpUrl.toExternalForm());
         }
         return gpUrl;
+    }
+    
+    @Override
+    public int compareTo(GpFilePath o) {
+        return getRelativeUri().getPath().compareTo( o.getRelativeUri().getPath() );
+    }
+    
+    public int hashCode() {
+        return getRelativeUri().getPath().hashCode();
+    }
+    
+    public boolean equals(Object o) {
+        if (!(o instanceof GpFilePath)) {
+            return false;
+        }
+        GpFilePath gpFilePath = (GpFilePath) o;
+        return getRelativeUri().getPath().equals( gpFilePath.getRelativeUri().getPath() );
+    }
+
+    
+    public static void init() {
+        Comparable<GpFilePath> c = new Comparable<GpFilePath>() {
+
+            @Override
+            public int compareTo(GpFilePath o) {
+                // TODO Auto-generated method stub
+                return 0;
+            }
+        };
     }
     
     /**

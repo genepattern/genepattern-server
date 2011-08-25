@@ -1,7 +1,8 @@
-package org.genepattern.server.filemanager;
+package org.genepattern.server.dm;
 
 import java.io.File;
 import java.net.URI;
+
 
 public class UserUploadFile extends GpFilePath {
     private URI relativeUri;

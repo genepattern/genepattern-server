@@ -7,6 +7,9 @@
     <property name="hibernate.connection.datasource">java:comp/env/jdbc/gp/hsql</property>
     <property name="hibernate.current_session_context_class">thread</property>
     <property name="hibernate.transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
+    
+    <!--  auto-create ddl -->
+    <property name="hbm2ddl.auto">update</property> 
 
     <!--  hsql settings -->
     <property name="hibernate.default_schema">PUBLIC</property>
@@ -42,5 +45,7 @@
     <mapping resource="org/genepattern/server/user/User.hbm.xml"/>
     <mapping resource="org/genepattern/server/user/UserProp.hbm.xml"/>
     <mapping resource="org/genepattern/server/auth/JobGroup.hbm.xml"/>
+    <!-- annotated classes -->
+    <mapping class="org.genepattern.server.dm.userupload.dao.UserUpload" />
   </session-factory>
 </hibernate-configuration>

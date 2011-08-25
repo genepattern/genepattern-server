@@ -1,4 +1,4 @@
-package org.genepattern.server.filemanager;
+package org.genepattern.server.dm;
 
 import java.io.File;
 import java.net.URI;
@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.dm.UrlUtil;
 
 public class GpFileObjFactory {
     private static Logger log = Logger.getLogger(GpFileObjFactory.class);

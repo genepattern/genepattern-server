@@ -3,8 +3,8 @@ import java.io.File;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.filemanager.GpFilePath;
-import org.genepattern.server.filemanager.GpFileObjFactory;
+import org.genepattern.server.dm.GpFileObjFactory;
+import org.genepattern.server.dm.GpFilePath;
 
 /**
  * Test fixture for GreenPepper testing.

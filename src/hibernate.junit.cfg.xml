@@ -9,6 +9,9 @@
     <property name="c3p0.timeout">1000</property>
     <property name="connection.provider_class">org.hibernate.connection.C3P0ConnectionProvider</property>
 
+    <!--  auto-create ddl -->
+    <property name="hbm2ddl.auto">update</property> 
+
     <!-- HSQL setup (the default).  These values can be overriden in genepattern.properties  -->
     <property name="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</property>
     <property name="hibernate.connection.shutdown">true</property>
@@ -22,8 +25,10 @@
     <property name="hibernate.statement_cache.size">0</property>
     <property name="hibernate.transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
 
+    
     <!-- Mappings -->
     <mapping resource="org/genepattern/server/domain/AnalysisJob.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/BatchJob.hbm.xml"/>
     <mapping resource="org/genepattern/server/domain/JobStatus.hbm.xml"/>
     <mapping resource="org/genepattern/server/domain/Lsid.hbm.xml"/>
     <mapping resource="org/genepattern/server/domain/Props.hbm.xml"/>
@@ -31,10 +36,15 @@
     <mapping resource="org/genepattern/server/domain/Suite.hbm.xml"/>
     <mapping resource="org/genepattern/server/domain/TaskAccess.hbm.xml"/>
     <mapping resource="org/genepattern/server/domain/TaskMaster.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/UploadFile.hbm.xml"/>
+    <mapping resource="org/genepattern/server/domain/GsAccount.hbm.xml"/>
     <mapping resource="org/genepattern/server/message/SystemMessage.hbm.xml"/>
     <mapping resource="org/genepattern/server/user/JobCompletionEvent.hbm.xml"/>
     <mapping resource="org/genepattern/server/user/User.hbm.xml"/>
     <mapping resource="org/genepattern/server/user/UserProp.hbm.xml"/>
     <mapping resource="org/genepattern/server/auth/JobGroup.hbm.xml"/>
+    <!-- annotated classes -->
+    <mapping class="org.genepattern.server.dm.userupload.dao.UserUpload" />
+    
   </session-factory>
 </hibernate-configuration>

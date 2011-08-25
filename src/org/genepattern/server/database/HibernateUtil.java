@@ -25,6 +25,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.StatelessSession;
 import org.hibernate.Transaction;
+import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
 
 public class HibernateUtil {
@@ -59,10 +60,12 @@ public class HibernateUtil {
                 log.debug("", ex);
             }
         }
+        
     }
 
     private static SessionFactory createSessionFactory(String configResource, boolean mergeSystemProperties, String datasource) {
-        Configuration config = new Configuration();
+        //Configuration config = new Configuration();
+        AnnotationConfiguration config = new AnnotationConfiguration();
         config.configure(configResource);
         if (mergeSystemProperties) {
             mergeSystemProperties(config);
