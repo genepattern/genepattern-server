@@ -125,5 +125,6 @@
 	<classpathentry kind="lib" path="website/WEB-INF/lib/datamanager-messages-0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/clientdevelopmentkit-0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="website/WEB-INF/lib/com.springsource.org.jets3t-0.8.0.jar"/>
+	<classpathentry kind="lib" path="website/WEB-INF/lib/hibernate-annotations.jar"/>
 	<classpathentry kind="output" path="website/WEB-INF/classes"/>
 </classpath>
