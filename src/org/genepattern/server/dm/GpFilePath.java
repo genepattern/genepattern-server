@@ -68,18 +68,6 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
         return getRelativeUri().getPath().equals( gpFilePath.getRelativeUri().getPath() );
     }
 
-    
-    public static void init() {
-        Comparable<GpFilePath> c = new Comparable<GpFilePath>() {
-
-            @Override
-            public int compareTo(GpFilePath o) {
-                // TODO Auto-generated method stub
-                return 0;
-            }
-        };
-    }
-    
     /**
      * Get the fully qualified URL to this file.
      * @return
