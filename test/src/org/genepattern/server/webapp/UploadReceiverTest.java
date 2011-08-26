@@ -110,7 +110,7 @@ public class UploadReceiverTest extends TestCase {
         List<FileItem> postParameters = buildTestParameterList();
         PrintWriter responseWriter = new PrintWriter(System.out);
         
-        theTest.writeFile(request, postParameters, true, false, "admin");
+        theTest.writeFile(request, postParameters, 0, 1, "admin");
         
         File file1 = new File(TMPDIR, "test.txt");
         File file2 = new File(TMPDIR, "test2.txt");

@@ -34,14 +34,20 @@ public class UserUploadManager {
      * @param userContext, requires a valid userId,
      * @param gpFilePath, a GpFilePath to the upload file
      * @param numParts, the number of parts this file is broken up into, based on the jumploader applet.
+     * @throws Exception if a duplicate entry for the file is found in the database
      */
-    static public UserUpload createUploadFile(Context userContext, GpFilePath gpFileObj, int numParts) {
+    static public UserUpload createUploadFile(Context userContext, GpFilePath gpFileObj, int numParts) throws Exception {
         UserUpload uu = UserUpload.initFromGpFileObj(userContext, gpFileObj);
         uu.setNumParts(numParts);
         
         UserUploadDao dao = new UserUploadDao();
-        dao.saveOrUpdate( uu );
-        return uu;
+        try {
+            dao.save( uu );
+            return uu;
+        }
+        catch (RuntimeException e) {
+            throw new Exception("Duplicate entry found in the database for file: " + gpFileObj.getRelativePath());
+        }
     }
 
     /**
@@ -114,7 +120,30 @@ public class UserUploadManager {
         UserUploadDao dao = new UserUploadDao();
         return dao.selectAllUserUpload(userId);
     }
-
-
+    
+    /**
+     * Converts an absolute file path to a path relative to the user's upload directory. 
+     * Throws an exception if the absolute path not in that directory.
+     * @param context
+     * @param absolute The absolute path
+     * @return
+     * @throws Exception Thrown is the path provided is not in the user's upload dir
+     */
+    static public String absoluteToRelativePath(Context context, String absolute) throws Exception {
+        File userUploadDir = ServerConfiguration.instance().getUserUploadDir(context);
+        String uploadPath = userUploadDir.getCanonicalPath();
+        if (!absolute.contains(uploadPath)) {
+            throw new Exception("Absolute path provided is not in the user's upload directory");
+        }
+        String[] parts = absolute.split(userUploadDir.getCanonicalPath());
+        String relative = null;
+        if (parts.length == 2) {
+            relative = "." + parts[1];
+        }
+        else {
+            relative = ".";
+        }
+        return relative;
+    }
 }
 

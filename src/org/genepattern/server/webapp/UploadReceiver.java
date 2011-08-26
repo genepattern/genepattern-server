@@ -28,12 +28,15 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.domain.UploadFile;
 import org.genepattern.server.domain.UploadFileDAO;
 
 public class UploadReceiver extends HttpServlet {
     private static Logger log = Logger.getLogger(UploadReceiver.class);
     private static final long serialVersionUID = -6720003935924717973L;
+    private Context context = null;
     
     public void returnErrorResponse(PrintWriter responseWriter, FileUploadException error) {
         responseWriter.println("Error: " + error.getMessage());
@@ -56,6 +59,15 @@ public class UploadReceiver extends HttpServlet {
         return null;
     }
     
+    protected Context initUserContext(HttpServletRequest request) {
+        if (context == null) {
+            String userId = LoginManager.instance().getUserIdFromSession(request);
+            this.context = Context.getContextForUser(userId);
+        }
+        
+        return context;
+    }
+    
     /**
      * Get the parent directory on the server file system to which to upload the file
      * @param request
@@ -63,14 +75,9 @@ public class UploadReceiver extends HttpServlet {
      * @throws FileUploadException
      */
     protected File getUploadDirectory(HttpServletRequest request) throws FileUploadException {
-        String userId = LoginManager.instance().getUserIdFromSession(request);
-        Context context = Context.getContextForUser(userId);
         String uploadDirPath = (String) request.getSession().getAttribute("uploadPath");
         File dir = DataServlet.getFileFromUrl(uploadDirPath);
-        if (uploadDirPath == null) {
-            dir = ServerConfiguration.instance().getUserUploadDir(context);
-        }
-        
+
         // lazily create directory if need be
         if (!dir.exists()) {
             boolean success = dir.mkdir();
@@ -78,6 +85,15 @@ public class UploadReceiver extends HttpServlet {
                 log.error("Failed to mkdir for dir="+dir.getAbsolutePath());
                 throw new FileUploadException("Could not get the appropriate directory for file upload");
             }
+        }
+        
+        // Convert to a path relative to the user's upload dir
+        try { uploadDirPath = UserUploadManager.absoluteToRelativePath(context, dir.getAbsolutePath()); }
+        catch (Exception e) { throw new FileUploadException("Unable to upload to this location"); }
+        dir = new File(uploadDirPath);
+        
+        if (uploadDirPath == null) {
+            dir = ServerConfiguration.instance().getUserUploadDir(context);
         }
         
         return dir;
@@ -91,23 +107,21 @@ public class UploadReceiver extends HttpServlet {
      * @return
      * @throws FileUploadException
      */
-    protected File getUploadFile(HttpServletRequest request, String name) throws FileUploadException {
+    protected GpFilePath getUploadFile(HttpServletRequest request, String name) throws FileUploadException {
         File parentDir = getUploadDirectory(request);
-        File file = getUploadFile(parentDir, name);
+        GpFilePath file = getUploadFile(parentDir, name);
         return file;
     }
     
-    protected File getUploadFile(File uploadDir, String name) throws FileUploadException {
-        return new File(uploadDir, name);
-    }
-    
-    // Older implementation of appendPartition
-    private void appendPartitionOld(FileItem from, File to) throws IOException {
-        RandomAccessFile raf = new RandomAccessFile(to, "rw");
-        raf.seek(to.length());
-        byte[] bytes = from.get();
-        raf.write(bytes);
-        raf.close();
+    protected GpFilePath getUploadFile(File uploadDir, String name) throws FileUploadException {
+        File file = new File(uploadDir, name);
+        try {
+            return UserUploadManager.getUploadFileObj(context, file);
+        }
+        catch (Exception e) {
+            log.error(e.getMessage());
+            throw new FileUploadException("Unable to retrieve the uploaded file");
+        }
     }
     
     /**
@@ -137,87 +151,44 @@ public class UploadReceiver extends HttpServlet {
         }
     }
     
-    private void updateDatabase(String userId, File file, int status) throws FileUploadException {
-        if (log.isDebugEnabled()) {
-            log.debug("Uploaded file to: "+file.getAbsolutePath());
-        } 
-
-        try {
-            //record the uploaded file into the DB
-            final UploadFile uploadFile = new UploadFile();
-            uploadFile.initFromFile(file, status);
-            uploadFile.setUserId(userId);
-            
-            //constructor begins a Hibernate Transaction
-            UploadFileDAO dao = new UploadFileDAO();
-            dao.saveOrUpdate(uploadFile);
-            HibernateUtil.commitTransaction();
-        }
-        catch (IOException e) {
-            throw new FileUploadException("Problem uploading file");
-        }
-        catch (Exception e) {
-            log.error(e);
-            HibernateUtil.rollbackTransaction();
-            throw new FileUploadException("Problem uploading file to database");
-        }
-    }
-    
-    private void databaseAddIfNecessary(String userId, File file) throws FileUploadException {
-        List<UploadFile> dbFiles = new UploadFileDAO().findByUserId(userId);
-        boolean foundMatch = false;
-        for (UploadFile i : dbFiles) {
-            if (i.getPath().equals(file.getAbsolutePath())) {
-                foundMatch = true;
-                break;
-            }
-        }
-        if (!foundMatch) {
-            updateDatabase(userId, file, UploadFile.COMPLETE);
-        }
-    }
-    
-    private int getFileStatus(File file) throws IOException {
-        UploadFile uploadFile = new UploadFileDAO().findByPath(file.getCanonicalPath());
-        return uploadFile.getStatus();
-    }
-    
-    protected String writeFile(HttpServletRequest request, List<FileItem> postParameters, boolean first, boolean last, String userId) throws FileUploadException { 
-        final boolean partial = !(first && last);
+    protected String writeFile(HttpServletRequest request, List<FileItem> postParameters, int index, int count, String userId) throws FileUploadException { 
+        final boolean partial = !(count == 1);
+        final boolean first = index == 0;
+        // final boolean last = (index + 1) == count;
         String responeText = "";
         for(FileItem fileItem : postParameters) {
             if (!fileItem.isFormField()) {
-                File file = getUploadFile(request, fileItem.getName()); 
+                GpFilePath file = getUploadFile(request, fileItem.getName()); 
+                
+                if (first) {
+                    try { UserUploadManager.createUploadFile(context, file, count); } 
+                    catch (Exception e) { throw new FileUploadException("File already exists in system"); }
+                }
                 
                 // Check if the file exists and throw an error if it does
-                if (first && file.exists()) {
-                    databaseAddIfNecessary(userId, file);
+                if (first && file.getServerFile().exists()) {
                     throw new FileUploadException("File already exists");
                 }
                 
                 // If partial file the update the database to include the file as partial
-                if (partial) {
-                    updateDatabase(userId, file, UploadFile.PARTIAL);
+                if (partial && !first) {
+                    try {
+                        UserUploadManager.updateUploadFile(context, file, index, count);
+                    }
+                    catch (Exception e) {
+                        throw new FileUploadException("File part received out of order for " + file.getServerFile().getName());
+                    }
                 }
                 
                 try {
-                    if (!first && !last && getFileStatus(file) == UploadFile.TERMINATED_BY_ADMIN) {
-                        throw new FileUploadException("This upload was terminated by the server administrator");
-                    }
-                    
-                    appendPartition(fileItem, file);
+                    appendPartition(fileItem, file.getServerFile());
                 }
                 catch (IOException e) {
                     throw new FileUploadException("Problems appending partition onto uploaded file");
                 }
                 
-                // Do final tasks for the last partition
-                if (last) {
-                    // Update the database to include the file as complete
-                    updateDatabase(userId, file, UploadFile.COMPLETE);
-                }
                 try {
-                    responeText += file.getParent() + ";" + file.getCanonicalPath();
+                    responeText += file.getServerFile().getParent() + ";" + file.getServerFile().getCanonicalPath();
                 }
                 catch (IOException e) {
                     log.error("Error generating response text for canonical paths");
@@ -228,6 +199,7 @@ public class UploadReceiver extends HttpServlet {
     }
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        initUserContext(request);
         PrintWriter responseWriter = response.getWriter();
         String responseText = null;
         
@@ -246,9 +218,7 @@ public class UploadReceiver extends HttpServlet {
                 List<FileItem> postParameters = upload.parseRequest(reqContext);
                 final int partitionCount = Integer.parseInt(getParameter(postParameters, "partitionCount"));
                 final int partitionIndex = Integer.parseInt(getParameter(postParameters, "partitionIndex"));
-                final boolean firstPartition = partitionIndex == 0;
-                final boolean lastPartition = (partitionIndex + 1) == partitionCount;
-                responseText = writeFile(request, postParameters, firstPartition, lastPartition, userId);
+                responseText = writeFile(request, postParameters, partitionIndex, partitionCount, userId);
                 
             }
             else {
