@@ -93,12 +93,18 @@ public class UserUploadManager {
         UserUpload uu = UserUpload.initFromGpFileObj(userContext, gpFileObj);
         uu.setNumParts(numParts);
         
+        boolean inTransaction = HibernateUtil.isInTransaction();
+        
         UserUploadDao dao = new UserUploadDao();
         try {
             dao.save( uu );
+            if (!inTransaction) {
+                HibernateUtil.commitTransaction();
+            }
             return uu;
         }
         catch (RuntimeException e) {
+            HibernateUtil.rollbackTransaction();
             throw new Exception("Duplicate entry found in the database for file: " + gpFileObj.getRelativePath());
         }
     }
