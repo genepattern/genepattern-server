@@ -16,6 +16,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
@@ -74,6 +75,11 @@ public class FileDownloader {
     public static void serveFile(ServletContext context, HttpServletRequest request, HttpServletResponse response, boolean content, ContentDisposition contentDisposition, File file) 
     throws IOException
     {
+        //TODO: Hack, based on comments in http://seamframework.org/Community/LargeFileDownload
+        if (response instanceof HttpServletResponseWrapper) {
+            response = (HttpServletResponse) ((HttpServletResponseWrapper) response).getResponse();
+        } 
+        
         // Check if file actually exists in filesystem.
         if (file == null || !file.exists()) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
