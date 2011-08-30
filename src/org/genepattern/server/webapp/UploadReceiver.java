@@ -152,7 +152,7 @@ public class UploadReceiver extends HttpServlet {
     }
     
     protected String writeFile(HttpServletRequest request, List<FileItem> postParameters, int index, int count, String userId) throws FileUploadException { 
-        final boolean partial = !(count == 1);
+        // final boolean partial = !(count == 1);
         final boolean first = index == 0;
         // final boolean last = (index + 1) == count;
         String responeText = "";
@@ -170,21 +170,18 @@ public class UploadReceiver extends HttpServlet {
                     throw new FileUploadException("File already exists");
                 }
                 
-                // If partial file the update the database to include the file as partial
-                if (partial && !first) {
-                    try {
-                        UserUploadManager.updateUploadFile(context, file, index, count);
-                    }
-                    catch (Exception e) {
-                        throw new FileUploadException("File part received out of order for " + file.getServerFile().getName());
-                    }
-                }
-                
                 try {
                     appendPartition(fileItem, file.getServerFile());
                 }
                 catch (IOException e) {
                     throw new FileUploadException("Problems appending partition onto uploaded file");
+                }
+                
+                try {
+                    UserUploadManager.updateUploadFile(context, file, index, count);
+                }
+                catch (Exception e) {
+                    throw new FileUploadException("File part received out of order for " + file.getServerFile().getName());
                 }
                 
                 try {
