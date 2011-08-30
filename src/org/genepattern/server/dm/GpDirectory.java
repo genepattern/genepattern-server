@@ -28,6 +28,7 @@ public class GpDirectory extends Node<GpFilePath> {
         super(comparator, val);
     }
     
+    //TODO: cache this list
     public List<GpFilePath> getAllFilePaths() {
         List<GpFilePath> rval = new ArrayList<GpFilePath>();
         GpFilePath root = this.getValue();

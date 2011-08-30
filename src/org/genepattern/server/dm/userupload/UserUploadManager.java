@@ -3,6 +3,7 @@ package org.genepattern.server.dm.userupload;
 import java.io.File;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
@@ -13,8 +14,10 @@ import org.genepattern.server.dm.userupload.dao.UserUpload;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 
 public class UserUploadManager {
+    private static Logger log = Logger.getLogger(UserUploadManager.class);
     /**
-     * Create an instance of a GpFilePath object.
+     * Create an instance of a GpFilePath object for the user upload file. 
+     * If there is already a record in the DB, initialize the file meta data.
      * 
      * @param userContext, must contain the valid userId of the user who is uploading the file.
      * @param relativePath, must be a relative file path, relative to the current user's upload directory.
@@ -22,7 +25,57 @@ public class UserUploadManager {
      * @throws Exception
      */
     static public GpFilePath getUploadFileObj(Context userContext, File relativePath) throws Exception {
-        return GpFileObjFactory.getUserUploadFile(userContext, relativePath);
+        GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, relativePath);
+        
+        //if there is a record in the DB ... 
+        boolean isInTransaction = false;
+        try {
+            isInTransaction = HibernateUtil.isInTransaction();
+        }
+        catch (Throwable t) {
+            String message = "DB connection error: "+t.getLocalizedMessage();
+            log.error(message, t);
+            throw new Exception(message);
+        }
+        
+        try {
+            UserUploadDao dao = new UserUploadDao();
+            UserUpload fromDb = dao.selectUserUpload(userContext.getUserId(), relativePath);
+            if (fromDb != null) {
+                //... initialize meta data 
+                initMetadata(uploadFilePath, fromDb);
+            }
+            return uploadFilePath;
+        }
+        catch (Throwable t) {
+            String message = "DB error getting file meta data: "+t.getLocalizedMessage();
+            log.error(message, t);
+            throw new Exception(message);
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+
+    /**
+     * Set all file metadata for the given uploadFilePath from the settings in the DB record.
+     * 
+     * @param uploadFilePath
+     * @param fromDb
+     */
+    static private void initMetadata(GpFilePath uploadFilePath, UserUpload fromDb) {
+        if (fromDb == null) {
+            log.error("Unexpected null arg");
+            return;
+        }
+        uploadFilePath.setLastModified( fromDb.getLastModified() );
+        uploadFilePath.setExtension( fromDb.getExtension() );
+        uploadFilePath.setFileLength( fromDb.getFileLength() );
+        uploadFilePath.setKind( fromDb.getKind() );
+        uploadFilePath.setNumParts( fromDb.getNumParts() );
+        uploadFilePath.setNumPartsRecd( fromDb.getNumPartsRecd() ); 
     }
 
     /**
@@ -105,6 +158,7 @@ public class UserUploadManager {
         List<UserUpload> all = getAllFiles(userContext.getUserId());
         for(UserUpload uploadFile : all) {
             GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, new File(uploadFile.getPath()));
+            initMetadata( uploadFilePath, uploadFile ); 
             root.add( userContext, uploadFilePath );
         }
         

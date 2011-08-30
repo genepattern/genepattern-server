@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 
@@ -119,6 +120,64 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
             r = r + "/";
         }
         return r;
+    }
+    
+    public String getName() {
+        return getRelativeFile().getName();
+    }
+
+    //cached file metadata
+    private Date lastModified;
+    private long fileLength;
+    private String extension;
+    private String kind;
+    
+    //required for partial uploads
+    private int numParts = 1;    
+    private int numPartsRecd = 0;
+    
+    public Date getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(Date lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    public long getFileLength() {
+        return fileLength;
+    }
+
+    public void setFileLength(long fileLength) {
+        this.fileLength = fileLength;
+    }
+
+    public String getExtension() {
+        return extension;
+    }
+
+    public void setExtension(String extension) {
+        this.extension = extension;
+    }
+
+    public String getKind() {
+        return kind;
+    }
+
+    public void setKind(String kind) {
+        this.kind = kind;
+    }
+    public int getNumParts() {
+        return numParts;
+    }
+    public void setNumParts(int numParts) {
+        this.numParts = numParts;
+    }
+    public int getNumPartsRecd() {
+        return numPartsRecd;
+    }
+    public void setNumPartsRecd(int numPartsRecd) {
+        this.numPartsRecd = numPartsRecd;
     }
 
     
