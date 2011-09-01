@@ -8,7 +8,6 @@ import org.genepattern.server.database.BaseDAO;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.hibernate.Query;
-import org.hibernate.criterion.Example;
 
 public class UserUploadDao extends BaseDAO {
     

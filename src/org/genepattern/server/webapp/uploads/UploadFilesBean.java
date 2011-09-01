@@ -38,7 +38,6 @@ import org.genepattern.server.webapp.jsf.UsersAndGroupsBean;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.TaskInfoCache;
 import org.richfaces.component.UITree;
 import org.richfaces.model.TreeNode;
 import org.richfaces.model.TreeNodeImpl;

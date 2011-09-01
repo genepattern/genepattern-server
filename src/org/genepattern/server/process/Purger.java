@@ -13,7 +13,6 @@
 package org.genepattern.server.process;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimerTask;
@@ -32,8 +31,6 @@ import org.genepattern.server.dm.userupload.dao.UserUpload;
 import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
-import org.genepattern.server.domain.UploadFile;
-import org.genepattern.server.domain.UploadFileDAO;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;

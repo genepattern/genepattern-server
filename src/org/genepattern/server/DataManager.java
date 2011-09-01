@@ -29,6 +29,13 @@ public class DataManager {
         FILE_EXCLUDES.add("Thumbs.db");
     }
     
+    /**
+     * Creates a subdirectory on the file system and adds it to the database
+     * @param parent
+     * @param name
+     * @param userId
+     * @return
+     */
     public static boolean createSubdirectory(File parent, String name, String userId) {
         Context context = UIBeanHelper.getUserContext();
         File absoluteFile = new File(parent, name);
@@ -107,6 +114,11 @@ public class DataManager {
         return deleted;
     }
     
+    /**
+     * Checks whether it is possible to delete a given file
+     * @param uf
+     * @return
+     */
     public static boolean canDelete(UserUpload uf) {
         if (uf == null) {
             return false;
@@ -137,6 +149,12 @@ public class DataManager {
         return userid.equals(uf.getUserId());
     }
     
+    /**
+     * Checks whether a file is on the excluded files list.
+     * Used when syncing the file system and database.
+     * @param file
+     * @return
+     */
     private static boolean isExcludedFile(File file) {
         for (String i : FILE_EXCLUDES) {
             if (file.getName().equalsIgnoreCase(i)) {
@@ -146,6 +164,13 @@ public class DataManager {
         return false;
     }
     
+    /**
+     * Updates the database  with a particular file found when syncing the file system and database
+     * @param dao
+     * @param file
+     * @param user
+     * @throws Exception
+     */
     private static void handleFileSync(UserUploadDao dao, File file, String user) throws Exception {
         // Exclude file on exclude list (ex: .DS_Store)
         if (isExcludedFile(file)) {
@@ -167,6 +192,12 @@ public class DataManager {
         }
     }
     
+    /**
+     * Wipes all of a user's uploads from the database, then crawls the upload directory for a given user 
+     * and adds database entries for all found files, except those whose filenames match a name on the 
+     * exclude files list (used to ignore system files)
+     * @param user
+     */
     public static void syncUploadFiles(String user) {
         try {
             UserUploadDao dao = new UserUploadDao();

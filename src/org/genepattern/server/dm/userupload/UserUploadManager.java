@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.FileUtil;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
@@ -195,17 +196,19 @@ public class UserUploadManager {
      */
     static public String absoluteToRelativePath(Context context, String absolute) throws Exception {
         File userUploadDir = ServerConfiguration.instance().getUserUploadDir(context);
-        String uploadPath = userUploadDir.getCanonicalPath();
-        if (!absolute.contains(uploadPath)) {
-            throw new Exception("Absolute path provided is not in the user's upload directory");
-        }
-        String[] parts = absolute.split(userUploadDir.getCanonicalPath() + "/");
-        if (parts.length == 2) {
-            return parts[1];
-        }
-        else {
+        File absoluteFile = new File(absolute);
+        
+        // Handle special case of trying to get a relative path to the root upload directory
+        if (userUploadDir.getCanonicalPath().equals(absoluteFile.getCanonicalPath())) {
             return "";
         }
+        
+        String relativePath = FileUtil.getRelativePath(userUploadDir, absoluteFile);
+        if (relativePath == null) {
+            throw new Exception("Absolute path provided is not in the user's upload directory");
+        }
+        
+        return relativePath;
     }
 }
 

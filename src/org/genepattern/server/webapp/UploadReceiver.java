@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.RandomAccessFile;
 import java.util.Iterator;
 import java.util.List;
 
@@ -25,14 +24,10 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
-import org.genepattern.server.domain.UploadFile;
-import org.genepattern.server.domain.UploadFileDAO;
 
 public class UploadReceiver extends HttpServlet {
     private static Logger log = Logger.getLogger(UploadReceiver.class);
@@ -70,7 +65,7 @@ public class UploadReceiver extends HttpServlet {
     }
     
     /**
-     * Get the parent directory on the server file system to which to upload the file
+     * Get the GenePattern file path to which to upload the file
      * @param request
      * @return
      * @throws FileUploadException
@@ -101,7 +96,7 @@ public class UploadReceiver extends HttpServlet {
     }
     
     /**
-     * Get the path on the server file system to which to upload the file.
+     * Get the GenePattern file path to which to upload the file.
      * 
      * @param request
      * @param name
@@ -152,6 +147,16 @@ public class UploadReceiver extends HttpServlet {
         }
     }
     
+    /**
+     * Write the file to disk and to the database
+     * @param request
+     * @param postParameters
+     * @param index
+     * @param count
+     * @param userId
+     * @return
+     * @throws FileUploadException
+     */
     protected String writeFile(HttpServletRequest request, List<FileItem> postParameters, int index, int count, String userId) throws FileUploadException { 
         // final boolean partial = !(count == 1);
         final boolean first = index == 0;
@@ -196,6 +201,12 @@ public class UploadReceiver extends HttpServlet {
         return responeText;
     }
     
+    /**
+     * Handle post requests to the servlet
+     * 
+     * All exceptions in the servlet are bubbled up to this level for 
+     * unified exception handling used by JumpLoader's error messaging system
+     */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         initUserContext(request);
         PrintWriter responseWriter = response.getWriter();
