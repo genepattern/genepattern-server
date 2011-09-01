@@ -163,6 +163,8 @@ public class UserUploadManager {
      * @return
      */
     static public GpDirectory getFileTree(ServerConfiguration.Context userContext) throws Exception {
+        // FIXME: I don't think this method works properly building the tree.  Fix before that functionality is used.
+        
         GpFilePath userDir = GpFileObjFactory.getUserUploadDir(userContext);
         GpDirectory root = new GpDirectory(userDir);
         
