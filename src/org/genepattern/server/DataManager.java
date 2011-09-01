@@ -63,15 +63,15 @@ public class DataManager {
      * @return true if the file was deleted
      */
     public static boolean deleteFile(GpFilePath fileObj) {
-        Context context = UIBeanHelper.getUserContext();
-        // Reselect GpFilePath from the database so the id is attached
-        UserUpload uploadedFile = UserUpload.initFromGpFileObj(context, fileObj);
+        //this begins a new transaction
+        UserUploadDao dao = new UserUploadDao();
+        
+        // Reselect GpFilePath from the database
+        UserUpload uploadedFile = dao.selectUserUpload(UIBeanHelper.getUserId(), fileObj);
         
         //if we are in a transaction, don't commit and close
         boolean inTransaction = HibernateUtil.isInTransaction();
-        
-        //this begins a new transaction
-        UserUploadDao dao = new UserUploadDao();
+
         if (uploadedFile == null) {
             log.error("FileObj is null");
             return false;
