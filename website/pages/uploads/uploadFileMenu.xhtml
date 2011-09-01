@@ -17,7 +17,7 @@ use, misuse, or functionality.
                     <tr>
                         <td>
                             <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file from the upload directory?');" actionListener="#{uploadFilesBean.deleteFile}" rendered="#{not aFile.root}">
-                                <f:param name="filePath" value="#{aFile.file.link}" />
+                                <f:param name="filePath" value="#{aFile.path}" />
                             </h:commandLink>
                         </td>
                     </tr>
@@ -30,8 +30,8 @@ use, misuse, or functionality.
                     <h:outputText rendered="#{aFile.directory}">
                         <tr>
                             <td>
-                                <h:commandLink value="Upload Files" rendered="#{uploadFilesBean.uploadEnabled}" action="#{uploadFilesBean.flagUploadPath}" onclick="JavaScript:openUploadWindow('#{aFile.file.name}');" immediate="true">
-                                    <f:param name="uploadPath" value="#{aFile.file.link}" />
+                                <h:commandLink value="Upload Files" rendered="#{uploadFilesBean.uploadEnabled}" action="#{uploadFilesBean.flagUploadPath}" onclick="JavaScript:openUploadWindow('#{aFile.filename}');" immediate="true">
+                                    <f:param name="uploadPath" value="#{aFile.path}" />
                                 </h:commandLink>
                             </td>
                         </tr>
@@ -51,7 +51,7 @@ use, misuse, or functionality.
                             <td>
                                 <t:inputText id="subdirName" rendered="#{aFile.directory}" onfocus="JavaScript:setSubdirFocus()"/>
                                 <h:commandLink value="Create" action="#{uploadFilesBean.createSubdirectory}" immediate="true">
-                                    <f:param name="parentPath" value="#{aFile.file.link}" />
+                                    <f:param name="parentPath" value="#{aFile.url}" />
                                 </h:commandLink>
                             </td>
                         </tr>

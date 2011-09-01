@@ -25,6 +25,11 @@ import org.genepattern.server.DataManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.GpFileObjFactory;
+import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.userupload.UserUploadManager;
+import org.genepattern.server.dm.userupload.dao.UserUpload;
+import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
 import org.genepattern.server.domain.UploadFile;
@@ -119,13 +124,13 @@ public class Purger extends TimerTask {
      * @param dateCutoff
      */
     private void purgeDirectUploads(long dateCutoff) {
-        UploadFileDAO uploadDAO = new UploadFileDAO();
+        UserUploadDao uploadDAO = new UserUploadDao();
         List<User> users = (new UserDAO()).getAllUsers();
         for (User i : users) {
             Context context = Context.getContextForUser(i.getUserId());
             File userUploadDir = ServerConfiguration.instance().getUserUploadDir(context);
             boolean purgeAll = ServerConfiguration.instance().getGPBooleanProperty(context, "upload.purge.all", false);
-            purgeUserUploads(userUploadDir, dateCutoff, purgeAll, uploadDAO);
+            purgeUserUploads(userUploadDir, i.getUserId(), dateCutoff, purgeAll, uploadDAO);
         }
     }
     
@@ -135,32 +140,35 @@ public class Purger extends TimerTask {
      * @param dateCutoff
      * @param purgeAll
      */
-    private void purgeUserUploads(File dir, long dateCutoff, boolean purgeAll, UploadFileDAO uploadDAO) {
+    private void purgeUserUploads(File dir, String user, long dateCutoff, boolean purgeAll, UserUploadDao uploadDAO) {
+        Context context = Context.getContextForUser(user);
         for (File i : dir.listFiles()) {
-            UploadFile file = null;
+            UserUpload file = null;
             try {
-                file = uploadDAO.findByPath(i.getCanonicalPath());
+                File relFile = new File(UserUploadManager.absoluteToRelativePath(context, i.getCanonicalPath()));
+                GpFilePath filepath = GpFileObjFactory.getUserUploadFile(context, relFile);
+                file = uploadDAO.selectUserUpload(user, filepath);
                 if (file == null) {
                     log.warn("Unable to find file in database, deteting manually: " + i.getAbsolutePath());
                     i.delete();
                     break;
                 }
-            }
-            catch (IOException e) {
-                log.error("Unable to get cannonical path of file: " + i.getAbsolutePath());
-                break;
-            }
-
-            if (!i.isDirectory() && i.lastModified() < dateCutoff && (purgeAll || file.isPartial())) {
-                // Delete the file
-                boolean success = DataManager.deleteFile(file);
-                if (!success) {
-                    log.error("Problems deleting file: " + i.getAbsolutePath());
+                
+                if (!i.isDirectory() && i.lastModified() < dateCutoff && (purgeAll || file.getNumPartsRecd() < file.getNumParts())) {
+                    // Delete the file
+                    boolean success = DataManager.deleteFile(filepath);
+                    if (!success) {
+                        log.error("Problems deleting file: " + i.getAbsolutePath());
+                    }
+                }
+                else if (i.isDirectory()) {
+                    // Recurse into that directory
+                    purgeUserUploads(i, user, dateCutoff, purgeAll, uploadDAO);
                 }
             }
-            else if (i.isDirectory()) {
-                // Recurse into that directory
-                purgeUserUploads(i, dateCutoff, purgeAll, uploadDAO);
+            catch (Exception e) {
+                log.error("Unable to get cannonical path of file: " + i.getAbsolutePath());
+                break;
             }
         }
     }

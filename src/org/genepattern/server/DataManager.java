@@ -1,9 +1,6 @@
 package org.genepattern.server;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,8 +8,10 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.domain.UploadFile;
-import org.genepattern.server.domain.UploadFileDAO;
+import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.userupload.UserUploadManager;
+import org.genepattern.server.dm.userupload.dao.UserUpload;
+import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 
@@ -31,22 +30,21 @@ public class DataManager {
     }
     
     public static boolean createSubdirectory(File parent, String name, String userId) {
-        File subdir = new File(parent, name);
-        boolean success = subdir.mkdir();
+        Context context = UIBeanHelper.getUserContext();
+        File absoluteFile = new File(parent, name);
+        boolean success = absoluteFile.mkdir();
         if (success) {
             try {
-                UploadFileDAO dao = new UploadFileDAO();
-                UploadFile subdirFile = new UploadFile();
-                subdirFile.initFromFile(subdir, UploadFile.COMPLETE);
-                subdirFile.setUserId(userId);
-                dao.save(subdirFile);
-                HibernateUtil.commitTransaction();
-            } 
+                File relativeFile = new File(UserUploadManager.absoluteToRelativePath(context, absoluteFile.getAbsolutePath()));
+                GpFilePath subdir = UserUploadManager.getUploadFileObj(context, relativeFile);
+                UserUploadManager.createUploadFile(context, subdir, 1);
+                UserUploadManager.updateUploadFile(context, subdir, 1, 1);
+            }
             catch (Exception e) {
-                log.error("Error adding new subdirectory " + name + " to the database: " + e.getMessage());
                 success = false;
             }
         }
+        
         return success;
     }
 
@@ -57,18 +55,22 @@ public class DataManager {
      * 
      * @return true if the file was deleted
      */
-    public static boolean deleteFile(UploadFile uploadedFile) {
+    public static boolean deleteFile(GpFilePath fileObj) {
+        Context context = UIBeanHelper.getUserContext();
+        // Reselect GpFilePath from the database so the id is attached
+        UserUpload uploadedFile = UserUpload.initFromGpFileObj(context, fileObj);
+        
         //if we are in a transaction, don't commit and close
         boolean inTransaction = HibernateUtil.isInTransaction();
         
         //this begins a new transaction
-        UploadFileDAO dao = new UploadFileDAO();
+        UserUploadDao dao = new UserUploadDao();
         if (uploadedFile == null) {
             log.error("FileObj is null");
             return false;
         }
 
-        File file = new File(uploadedFile.getPath());
+        File file = fileObj.getServerFile();
 
         boolean deleted = false;
         boolean canDelete = canDelete(uploadedFile);
@@ -105,7 +107,7 @@ public class DataManager {
         return deleted;
     }
     
-    public static boolean canDelete(UploadFile uf) {
+    public static boolean canDelete(UserUpload uf) {
         if (uf == null) {
             return false;
         }
@@ -144,15 +146,18 @@ public class DataManager {
         return false;
     }
     
-    private static void handleFileSync(UploadFileDAO dao, File file, String user) throws IOException {
+    private static void handleFileSync(UserUploadDao dao, File file, String user) throws Exception {
         // Exclude file on exclude list (ex: .DS_Store)
         if (isExcludedFile(file)) {
             return;
         }
         
-        UploadFile uploadFile = new UploadFile();
-        uploadFile.initFromFile(file, UploadFile.COMPLETE);
+        UserUpload uploadFile = new UserUpload();
+        uploadFile.setPath(UserUploadManager.absoluteToRelativePath(UIBeanHelper.getUserContext(), file.getCanonicalPath()));
         uploadFile.setUserId(user);
+        uploadFile.setNumParts(1);
+        uploadFile.setNumPartsRecd(1);
+        uploadFile.init(file);
         dao.saveOrUpdate(uploadFile);
         
         if (file.isDirectory()) {
@@ -164,8 +169,8 @@ public class DataManager {
     
     public static void syncUploadFiles(String user) {
         try {
-            UploadFileDAO dao = new UploadFileDAO();
-            List<UploadFile> userFiles = dao.findByUserId(user);
+            UserUploadDao dao = new UserUploadDao();
+            List<UserUpload> userFiles = dao.selectAllUserUpload(user);
             File uploadDir = getUserUploadDirectory(user);
             if (uploadDir == null) {
                 log.error("Unable to get the user's upload directory in syncUploadFiles()");
@@ -173,11 +178,11 @@ public class DataManager {
             }
             
             // Remove all the old database entries
-            for (UploadFile i : userFiles) {
+            for (UserUpload i : userFiles) {
                 dao.delete(i);
             }
             HibernateUtil.commitTransaction();
-            dao = new UploadFileDAO();
+            dao = new UserUploadDao();
             // Add new entries to the database
             for (File i : uploadDir.listFiles()) {
                 handleFileSync(dao, i, user);

@@ -71,9 +71,6 @@ public class GpDirectory extends Node<GpFilePath> {
      * @throws Exception
      */
     public Node<GpFilePath> add(ServerConfiguration.Context userContext, GpFilePath gpFilePath) throws Exception {
-        if (gpFilePath.isDirectory()) {
-            throw new Exception("Server error: can't add directory to tree: "+gpFilePath.getRelativePath());
-        }
         String relativePath = gpFilePath.getRelativePath();
         Node<GpFilePath> node = allElements.get( relativePath );
         if (node != null) {

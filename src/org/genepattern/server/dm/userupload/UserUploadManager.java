@@ -41,9 +41,9 @@ public class UserUploadManager {
         try {
             UserUploadDao dao = new UserUploadDao();
             UserUpload fromDb = dao.selectUserUpload(userContext.getUserId(), relativePath);
-            if (fromDb != null) {
-                //... initialize meta data 
-                initMetadata(uploadFilePath, fromDb);
+            initMetadata(uploadFilePath, fromDb);
+            if (!isInTransaction) {
+                HibernateUtil.commitTransaction();
             }
             return uploadFilePath;
         }
@@ -70,12 +70,13 @@ public class UserUploadManager {
             log.error("Unexpected null arg");
             return;
         }
-        uploadFilePath.setLastModified( fromDb.getLastModified() );
-        uploadFilePath.setExtension( fromDb.getExtension() );
-        uploadFilePath.setFileLength( fromDb.getFileLength() );
-        uploadFilePath.setKind( fromDb.getKind() );
-        uploadFilePath.setNumParts( fromDb.getNumParts() );
-        uploadFilePath.setNumPartsRecd( fromDb.getNumPartsRecd() ); 
+        uploadFilePath.setName(fromDb.getName());
+        uploadFilePath.setLastModified(fromDb.getLastModified());
+        uploadFilePath.setExtension(fromDb.getExtension());
+        uploadFilePath.setFileLength(fromDb.getFileLength());
+        uploadFilePath.setKind(fromDb.getKind());
+        uploadFilePath.setNumParts(fromDb.getNumParts());
+        uploadFilePath.setNumPartsRecd(fromDb.getNumPartsRecd()); 
     }
 
     /**
@@ -92,6 +93,7 @@ public class UserUploadManager {
     static public UserUpload createUploadFile(Context userContext, GpFilePath gpFileObj, int numParts) throws Exception {
         UserUpload uu = UserUpload.initFromGpFileObj(userContext, gpFileObj);
         uu.setNumParts(numParts);
+        uu.init(gpFileObj.getServerFile());
         
         boolean inTransaction = HibernateUtil.isInTransaction();
         
@@ -127,20 +129,22 @@ public class UserUploadManager {
             UserUploadDao dao = new UserUploadDao();
             UserUpload uu = dao.selectUserUpload(userContext.getUserId(), gpFilePath);
             if (uu.getNumParts() != totalParts) {
-                throw new Exception("Expecting numParts to be "+uu.getNumParts()+" but it was "+totalParts);
+                throw new Exception("Expecting numParts to be " + uu.getNumParts() + " but it was " + totalParts);
             }
             if (uu.getNumPartsRecd() != (partNum - 1)) {
-                throw new Exception("Received partial upload out of order, partNum="+partNum+", expecting partNum to be "+ (uu.getNumPartsRecd() + 1));
-            }        
+                throw new Exception("Received partial upload out of order, partNum=" + partNum + ", expecting partNum to be " + (uu.getNumPartsRecd() + 1));
+            }
             uu.setNumPartsRecd(partNum);
-            dao.saveOrUpdate( uu );
+            
+            uu.init(gpFilePath.getServerFile());
+            dao.saveOrUpdate(uu);
             if (!inTransaction) {
                 HibernateUtil.commitTransaction();
             }
         }
         catch (Throwable t) {
             HibernateUtil.rollbackTransaction();
-            throw new Exception("Error updating upload file record for file '"+gpFilePath.getRelativePath()+"': "+t.getLocalizedMessage(), t);
+            throw new Exception("Error updating upload file record for file '" + gpFilePath.getRelativePath() + "': " + t.getLocalizedMessage(), t);
         }
         finally {
             if (!inTransaction) {
@@ -164,8 +168,8 @@ public class UserUploadManager {
         List<UserUpload> all = getAllFiles(userContext.getUserId());
         for(UserUpload uploadFile : all) {
             GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, new File(uploadFile.getPath()));
-            initMetadata( uploadFilePath, uploadFile ); 
-            root.add( userContext, uploadFilePath );
+            initMetadata(uploadFilePath, uploadFile); 
+            root.add(userContext, uploadFilePath);
         }
         
         return root;
@@ -195,15 +199,13 @@ public class UserUploadManager {
         if (!absolute.contains(uploadPath)) {
             throw new Exception("Absolute path provided is not in the user's upload directory");
         }
-        String[] parts = absolute.split(userUploadDir.getCanonicalPath());
-        String relative = null;
+        String[] parts = absolute.split(userUploadDir.getCanonicalPath() + "/");
         if (parts.length == 2) {
-            relative = "." + parts[1];
+            return parts[1];
         }
         else {
-            relative = ".";
+            return "";
         }
-        return relative;
     }
 }
 

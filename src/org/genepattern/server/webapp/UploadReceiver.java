@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.domain.UploadFile;
@@ -76,27 +77,27 @@ public class UploadReceiver extends HttpServlet {
      */
     protected File getUploadDirectory(HttpServletRequest request) throws FileUploadException {
         String uploadDirPath = (String) request.getSession().getAttribute("uploadPath");
-        File dir = DataServlet.getFileFromUrl(uploadDirPath);
+        if (!uploadDirPath.startsWith("./")) {
+            uploadDirPath = "./" + uploadDirPath;
+        }
+        GpFilePath dir;
+        try {
+            dir = GpFileObjFactory.getUserUploadFile(context, new File(uploadDirPath));
+        }
+        catch (Exception e) {
+            throw new FileUploadException("Could not get the appropriate directory path for file upload");
+        }
 
         // lazily create directory if need be
-        if (!dir.exists()) {
-            boolean success = dir.mkdir();
+        if (!dir.getServerFile().exists()) {
+            boolean success = dir.getServerFile().mkdir();
             if (!success) {
-                log.error("Failed to mkdir for dir="+dir.getAbsolutePath());
+                log.error("Failed to mkdir for dir=" + dir.getServerFile().getAbsolutePath());
                 throw new FileUploadException("Could not get the appropriate directory for file upload");
             }
         }
-        
-        // Convert to a path relative to the user's upload dir
-        try { uploadDirPath = UserUploadManager.absoluteToRelativePath(context, dir.getAbsolutePath()); }
-        catch (Exception e) { throw new FileUploadException("Unable to upload to this location"); }
-        dir = new File(uploadDirPath);
-        
-        if (uploadDirPath == null) {
-            dir = ServerConfiguration.instance().getUserUploadDir(context);
-        }
-        
-        return dir;
+
+        return dir.getRelativeFile();
     }
     
     /**
@@ -178,7 +179,7 @@ public class UploadReceiver extends HttpServlet {
                 }
                 
                 try {
-                    UserUploadManager.updateUploadFile(context, file, index, count);
+                    UserUploadManager.updateUploadFile(context, file, index + 1, count);
                 }
                 catch (Exception e) {
                     throw new FileUploadException("File part received out of order for " + file.getServerFile().getName());

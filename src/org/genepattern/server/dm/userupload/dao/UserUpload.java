@@ -6,8 +6,6 @@ import java.util.Date;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -24,30 +22,9 @@ public class UserUpload {
         UserUpload uf = new UserUpload();
         uf.setUserId(userContext.getUserId());
         uf.setPath(fileObj.getRelativePath());
-        File file = fileObj.getServerFile();
-        uf.name = file.getName();
-        int idx = uf.name.lastIndexOf('.');
-        if (idx > 0 && idx < uf.name.length() - 1) {
-            uf.setExtension(uf.name.substring(idx+1));
-        }
-        
-        if (file.exists()) {
-            uf.setLastModified(new Date(file.lastModified()));
-            uf.setFileLength(file.length());
-            uf.setExtension(SemanticUtil.getExtension(file));
-            uf.setKind(SemanticUtil.getKind(file));
-            if (file.isDirectory()) {
-                uf.setKind("directory");
-            }
-        }
+        uf.init(fileObj.getServerFile());
         return uf;
     }
-    
-    
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO )
-    private Long id;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
@@ -56,6 +33,7 @@ public class UserUpload {
     @Column(name = "user_id")
     private String userId;
     
+    @Id
     private String path;
     private String name;
     
@@ -73,13 +51,23 @@ public class UserUpload {
     @Column(name = "num_parts_recd")
     private int numPartsRecd = 0;
     
-    public Long getId() {
-        return id;
+    public void init(File file) {
+        name = file.getName();
+        int idx = name.lastIndexOf('.');
+        if (idx > 0 && idx < name.length() - 1) {
+            setExtension(name.substring(idx+1));
+        }
+        
+        if (file.exists()) {
+            setLastModified(new Date(file.lastModified()));
+            setFileLength(file.length());
+            setExtension(SemanticUtil.getExtension(file));
+            setKind(SemanticUtil.getKind(file));
+            if (file.isDirectory()) {
+                setKind("directory");
+            }
+        }
     }
-    public void setId(Long id) {
-        this.id = id;
-    }
-
 
     public UserUpload getParentDir() {
         return parentDir;

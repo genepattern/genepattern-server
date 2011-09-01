@@ -24,8 +24,11 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.domain.UploadFile;
-import org.genepattern.server.domain.UploadFileDAO;
+import org.genepattern.server.dm.GpDirectory;
+import org.genepattern.server.dm.GpFileObjFactory;
+import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.UserUploadFile;
+import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.webapp.DataServlet;
 import org.genepattern.server.webapp.FileDownloader;
 import org.genepattern.server.webapp.jsf.JobHelper;
@@ -59,7 +62,336 @@ public class UploadFilesBean {
     public UploadFilesBean() {
         initFiles();
     }
+    
+/*
+ * JSF usage:
+   #{uploadFileBean.user}
+   #{uploadFileBean.files}"
 
+      #{file.fileLength}
+      #{file.lastModified}
+      #{file.name}
+      #{file.path}
+*/
+    private List<FileInfoWrapper> files;
+    private List<DirectoryInfoWrapper> directories;
+    private String currentUser;
+    private String currentTaskLsid = null;
+    private TaskInfo currentTaskInfo = null;
+    private Map<String,SortedSet<TaskInfo>> kindToTaskInfo;
+    
+    private static final Comparator<TaskInfo> taskInfoComparator =  new Comparator<TaskInfo>() {
+        public int compare(TaskInfo o1, TaskInfo o2) {
+            //1) null arg test
+            if (o1 == null) {
+                if (o2 == null) {
+                    return 0;
+                }
+                return -1;
+            } 
+            if (o2 == null) {
+                return 1;
+            }
+
+            //2) null name test
+            if (o1.getName() == null) {
+                if (o2.getName() == null) {
+                    return 0;
+                }
+                return -1;
+            }
+            
+            return o1.getName().compareTo( o2.getName() );
+        } 
+    };
+
+    public String getCurrentUser() {
+        if (currentUser == null) {
+            currentUser = UIBeanHelper.getUserId();
+        }
+        return currentUser;
+    }
+    
+    public void setCurrentTaskLsid(String lsid) {
+        this.currentTaskLsid = lsid;
+    }
+    
+    public String getUsername() {
+        return UIBeanHelper.getUserId();
+    }
+    
+    /**
+     * for debugging
+     * @return
+     */
+    public FileInfoWrapper getFile() {
+        if (this.getFiles().size() > 0) {
+            return this.getFiles().get(0);
+        }
+        return null;
+    }
+    
+    public List<FileInfoWrapper> getFiles() {
+        if (files == null) {
+            initFiles(); 
+        }
+        return files;
+    }
+    
+    public List<DirectoryInfoWrapper> getDirectories() {
+        if (directories == null) {
+            initFiles(); 
+        }
+        return directories;
+    }
+    
+    public boolean openTreeNode(UITree tree) {
+        return true;
+    }
+    
+    /**
+     * Lists input files from all sources in a unified tree
+     * @return
+     * @throws IOException 
+     */
+    public TreeNode<FileInfoWrapper> getFileTree() throws Exception {
+        // Set up the root node
+        TreeNode<FileInfoWrapper> rootNode = new TreeNodeImpl<FileInfoWrapper>();
+        GpFilePath rootFileFacade = new UserUploadFile(null);
+        rootFileFacade.setName(UIBeanHelper.getUserId());
+        FileInfoWrapper rootWrapper = new FileInfoWrapper(rootFileFacade);
+        rootWrapper.setDirectory(true);
+        rootWrapper.setRoot(true);
+        rootNode.setData(rootWrapper);
+
+        // Add component trees
+        rootNode.addChild(0, getUploadFilesTree());
+        return rootNode;
+    }
+    
+    public DirectoryInfoWrapper getUploadDirectory() {
+        for (DirectoryInfoWrapper i : directories) {
+            if (i.isRoot()) {
+                return i;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Lists all upload files in a tree with the root being the user's upload dir
+     * @return
+     * @throws IOException 
+     */
+    public TreeNode<FileInfoWrapper> getUploadFilesTree() throws Exception {
+        initDirectories();
+        
+        // Set up the tree's directory structure
+        return getDirectoryNode(getUploadDirectory());
+    }
+    
+    public TreeNode<FileInfoWrapper> getDirectoryNode(DirectoryInfoWrapper dir) {
+        // Set up the root node
+        TreeNode<FileInfoWrapper> rootNode = new TreeNodeImpl<FileInfoWrapper>();
+        rootNode.setData(dir);
+        int count = 0;
+
+        // Add the upload dir's files
+        for (FileInfoWrapper i : dir.getFiles()) {
+            TreeNode<FileInfoWrapper> fileNode;
+            if (i.isDirectory()) {
+                fileNode = getDirectoryNode((DirectoryInfoWrapper) i);
+            }
+            else {
+                fileNode = new TreeNodeImpl<FileInfoWrapper>();  
+            }
+            fileNode.setData(i);
+            rootNode.addChild(count, fileNode);
+            count++;
+        }
+        return rootNode;
+    }
+    
+    public void flagUploadPath() {
+        String filePath = UIBeanHelper.getRequest().getParameter("uploadPath");
+        UIBeanHelper.getSession().setAttribute("uploadPath", filePath);
+    }
+    
+    public File getUserUploadDir() {
+        return ServerConfiguration.instance().getUserUploadDir(Context.getContextForUser(UIBeanHelper.getUserId()));
+    }
+    
+    public DirectoryInfoWrapper getWrappedUploadDir(GpDirectory root) {
+        // Create the dir wrapper for the user upload dir
+        DirectoryInfoWrapper rootWrapper = new DirectoryInfoWrapper(root);
+        rootWrapper.setRoot(true);
+        return rootWrapper;
+    }
+    
+    private boolean isFileDirectory(GpFilePath file) {
+        if (file.getKind() == null || !file.getKind().equalsIgnoreCase("directory")) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+    
+    private void initFiles() {
+        currentUser = UIBeanHelper.getUserId();
+        files = new ArrayList<FileInfoWrapper>();
+        directories = new ArrayList<DirectoryInfoWrapper>();
+        List<GpFilePath> uploadedFiles;
+        try {
+            GpDirectory root = UserUploadManager.getFileTree(Context.getContextForUser(currentUser));
+            uploadedFiles = root.getAllFilePaths();
+            directories.add(getWrappedUploadDir(root));
+        }
+        catch (Exception e) {
+            log.error("Error getting all file paths: " + e.getMessage());
+            uploadedFiles = new ArrayList<GpFilePath>();
+        }
+        
+        for(GpFilePath file : uploadedFiles) {
+            if (isFileDirectory(file)) {
+                directories.add(new DirectoryInfoWrapper(file));
+            }
+            else {
+                files.add(new FileInfoWrapper(file));
+            }
+        }
+        initModuleMenuItems();
+    }
+    
+    private void initDirectories() {
+        if (files == null) {
+            initFiles();
+        }
+        
+        for (DirectoryInfoWrapper i : directories) {
+            if (!i.isInit()) {
+                i.initDirectory();
+            }
+        }
+    }
+    
+    public void initCurrentLsid(AdminDAO adminDao) {
+        currentTaskInfo = adminDao.getTask(currentTaskLsid, currentUser);
+    }
+
+    private void initModuleMenuItems() {
+        kindToTaskInfo = new HashMap<String, SortedSet<TaskInfo>>();
+        
+        AdminDAO adminDao = new AdminDAO();
+        if (currentTaskLsid != null) {
+            initCurrentLsid(adminDao);
+        }
+        TaskInfo[] taskInfos = adminDao.getLatestTasks(currentUser);
+        for(TaskInfo taskInfo : taskInfos) {
+            for(String kind : taskInfo._getInputFileTypes()) {
+                SortedSet<TaskInfo> taskInfosForMap = kindToTaskInfo.get(kind);
+                if (taskInfosForMap == null) {
+                    taskInfosForMap = new TreeSet<TaskInfo>(taskInfoComparator);
+                    kindToTaskInfo.put(kind, taskInfosForMap);
+                }
+                taskInfosForMap.add(taskInfo);
+            }
+        }
+    }
+    
+    public void deleteFile(ActionEvent ae) throws IOException {
+        String filePath = UIBeanHelper.getRequest().getParameter("filePath");
+        //filePath = DataServlet.getFileFromUrl(filePath).getCanonicalPath();
+        for (final FileInfoWrapper i : files) {
+            if (i.getPath().equals(filePath)) {
+                if (i.deleteFile()) {
+                    files.remove(i);
+                }
+                return;
+            }
+        }
+        for (final DirectoryInfoWrapper i : directories) {
+            if (i.getPath().equals(filePath)) {
+                if (i.deleteFile()) {
+                    directories.remove(i);
+                }
+                return;
+            }
+        } 
+    }
+    
+    public void createSubdirectory() {
+        String name = null;
+        for (Object i : UIBeanHelper.getRequest().getParameterMap().keySet()) {
+            if (((String) i).contains("subdirName")) {
+                String potentialName = UIBeanHelper.getRequest().getParameter((String) i);
+                if (potentialName.length() > 0) {
+                    name = potentialName;
+                    break;
+                }
+            }
+        }
+        File parent = DataServlet.getFileFromUrl(UIBeanHelper.getRequest().getParameter("parentPath"));
+        if (name != null) {
+            name = name.replaceAll("[^a-zA-Z0-9 ]", "");
+        }
+        if (name != null && name.length() > 0) {
+            if (parent.exists() && DataManager.createSubdirectory(parent, name, UIBeanHelper.getUserId())) {
+                UIBeanHelper.setInfoMessage("Subdirectory " + name + " successfully created");
+                files = null;
+            }
+            else {
+                UIBeanHelper.setErrorMessage("Unable to create the subdirectory");
+            }
+        }
+        else {
+            UIBeanHelper.setErrorMessage("Please enter a valid subdirectory name");
+        }
+    }
+    
+    public String getSelectedTab() {
+        String attr = (String) UIBeanHelper.getSession().getAttribute(SELECTED_TAB);
+        if (attr == null) {
+            return RECENT_JOBS;
+        }
+        else {
+            return attr;
+        }
+    }
+    
+    public void syncFiles() {
+        String passedId = (String) UIBeanHelper.getRequest().getParameter("resync_username");
+        if (passedId == null) {
+            passedId = UIBeanHelper.getUserId();
+        }
+        DataManager.syncUploadFiles(passedId);
+    }
+    
+    public void setSelectedTab(String selected) {
+        UIBeanHelper.getSession().setAttribute(SELECTED_TAB, selected);
+    }
+    
+    public int getPartitionLength() {
+        Context context = Context.getContextForUser(UIBeanHelper.getUserId());
+        return ServerConfiguration.instance().getGPIntegerProperty(context, "upload.partition.size", 10000000);
+    }
+    
+    public long getMaxUploadSize() {
+        Context context = Context.getContextForUser(UIBeanHelper.getUserId());
+        return ServerConfiguration.instance().getGPLongProperty(context, "upload.max.size", 20000000000L);
+    }
+    
+    public String getUploadWindowName() {
+        // The replaceAll is necessary because IE is picky about what characters can be in window names
+        return "uploadWindow" + (UIBeanHelper.getRequest().getServerName() +  UIBeanHelper.getUserId()).replaceAll("[^A-Za-z0-9 ]", "");
+    }
+    
+    public boolean getUploadEnabled() {
+        String userId = UIBeanHelper.getUserId();
+        Context userContext = Context.getContextForUser(userId);
+        return ServerConfiguration.instance().getGPBooleanProperty(userContext, "upload.jumploader", true);
+    }
+    
     /**
      * Helper class for displaying the send to module menu item for a file.
      * @author pcarr
@@ -127,14 +459,14 @@ public class UploadFilesBean {
     }
 
     public class FileInfoWrapper {
-        private UploadFile file = null;
+        private GpFilePath file = null;
         private String url = null;
         private List<SendToModule> sendToModules = null;
         private List<ParameterInfo> batchParams = null;
         private boolean directory = false;
         private boolean root = false;
 
-        public FileInfoWrapper(UploadFile file) {
+        public FileInfoWrapper(GpFilePath file) {
             this.file = file;
         }
         
@@ -155,7 +487,7 @@ public class UploadFilesBean {
             this.directory = directory;
         }
         
-        public UploadFile getFile() {
+        public GpFilePath getFile() {
             return file;
         }
         
@@ -164,6 +496,7 @@ public class UploadFilesBean {
         }
         
         public String getFormattedModified() {
+            if (file.getLastModified() == null) { return "Last Modified Unknown"; }
             return formatter.format(file.getLastModified());
         }
         
@@ -201,33 +534,20 @@ public class UploadFilesBean {
         }
 
         private String initUrl() {
-            String encodedPath = UIBeanHelper.encodeFilePath(file.getPath());
-            String server = UIBeanHelper.getServer();
-            String url = server + "/data/" + encodedPath;
-            return url;
-        }
-        
-        private String initUrl2() {
-            String server = UIBeanHelper.getServer();
-            String link = file.getLink();
-            String url = server + link;
-            
-            //String encodedPath = UIBeanHelper.encodeFilePath(file.getPath());
-            //String url = server + "/data/" + encodedPath;
-            return url;
+            return DataServlet.getUrlFromFile(file.getServerFile());
         }
 
         public String getPath() {
-            return file.getPath();
+            return file.getRelativePath();
         }
         
         // Returns a path encoded for use in div names
         public String getEncodedPath() {
-            return file.getPath() != null ? file.getPath().replaceAll("[^a-zA-Z0-9]", "_") : "";
+            return file.getRelativePath() != null ? file.getRelativePath().replaceAll("[^a-zA-Z0-9]", "_") : "";
         }
         
         public boolean getPartial() {
-            return file.isPartial();
+            return file.getNumParts() != file.getNumPartsRecd();
         }
         
         public List<ParameterInfo> getSendToBatch() {
@@ -254,6 +574,13 @@ public class UploadFilesBean {
         }
         
         public boolean isParent(DirectoryInfoWrapper dir) {
+            String thisPath = this.getPath();
+            String dirPath = dir.getPath();
+            // Special case for root directory
+            if (dirPath.equals("./") && !thisPath.contains("/")) {
+                return true;
+            }
+            
             int occur = this.getPath().indexOf(dir.getPath());
             if (occur < 0) { // This file is not inside the dir or the dir's subdirs
                 return false;
@@ -361,34 +688,6 @@ public class UploadFilesBean {
             
             return "error";
         }
-
-        /**
-         * Equivalent to the links from the protocols pages, which include the lsid and the url to the input file in the path.
-         * TODO: once we refactor file references we should use a simpler approach which passes a reference to a file object
-         * along to the run task form.
-         */
-        private void sendToAlaProtocolsLink() {
-            String lsid = UIBeanHelper.getRequest().getParameter("lsid");
-            if (lsid == null) {
-                log.error("Missing required parameter, lsid");
-                UIBeanHelper.setErrorMessage("Missing required parameter, lsid");
-                return;
-            }
-            
-            TaskInfo taskInfo = TaskInfoCache.instance().getTask(lsid);
-            SendToModule s = new SendToModule(this, taskInfo);
-            
-            //redirect ...
-            String redirect = s.getSendToLink();
-            try {
-                UIBeanHelper.getResponse().sendRedirect(redirect);
-            }
-            catch (IOException e) {
-                //e is ignored, usually means client connection was closed
-            }
-            UIBeanHelper.getFacesContext().responseComplete();
-            return;
-        }
         
         /**
          * In response to selecting the 'Download' link from the popup menu for the file.
@@ -396,7 +695,7 @@ public class UploadFilesBean {
         public void downloadFile() { 
             try { 
                 boolean serveContent = true;
-                File fileObj = new File(file.getPath());
+                File fileObj = new File(file.getRelativePath());
 
                 //TODO: Hack, based on comments in http://seamframework.org/Community/LargeFileDownload
                 ServletContext servletContext = UIBeanHelper.getServletContext();
@@ -408,7 +707,7 @@ public class UploadFilesBean {
                 FileDownloader.serveFile(servletContext, request, response, serveContent, FileDownloader.ContentDisposition.ATTACHMENT, fileObj);
             }
             catch (Throwable t) {
-                log.error("Error downloading "+file.getPath()+" for user "+UIBeanHelper.getUserId(), t);
+                log.error("Error downloading "+file.getRelativePath()+" for user "+UIBeanHelper.getUserId(), t);
                 UIBeanHelper.setErrorMessage("Error downloading "+file.getName()+": "+t.getLocalizedMessage());
             }
             FacesContext.getCurrentInstance().responseComplete();
@@ -446,10 +745,29 @@ public class UploadFilesBean {
     public class DirectoryInfoWrapper extends FileInfoWrapper {
         List<FileInfoWrapper> dirFiles;
         boolean init = false;
-
-        public DirectoryInfoWrapper(UploadFile file) {
+        GpDirectory gpDirectory;
+        
+        public DirectoryInfoWrapper(GpFilePath file) {
             super(file);
+            String relativePath = file.getRelativePath();
+            File serverFile = new File(relativePath);
+            Context context = Context.getContextForUser(UIBeanHelper.getUserId());
+            GpFilePath filePath = null;
+            try {
+                filePath = GpFileObjFactory.getUserUploadFile(context, serverFile);
+            }
+            catch (Exception e) {
+                log.error("Unable to get the user upload file from " + serverFile.getAbsolutePath());
+            }
+            GpDirectory directory = new GpDirectory(filePath);
             this.setDirectory(true);
+            this.gpDirectory = directory;
+        }
+
+        public DirectoryInfoWrapper(GpDirectory dir) {
+            super(dir.getValue());
+            this.setDirectory(true);
+            this.gpDirectory = dir;
         }
 
         public List<FileInfoWrapper> getFiles() {
@@ -470,6 +788,15 @@ public class UploadFilesBean {
             }
             dirFiles = new ArrayList<FileInfoWrapper>();
             
+//            for (Node<GpFilePath> i : gpDirectory.getChildren()) {
+//                if (i.getValue().isDirectory()) {
+//                    dirFiles.add(new DirectoryInfoWrapper(new GpDirectory(i.getValue())));
+//                }
+//                else {
+//                    dirFiles.add(new FileInfoWrapper(i.getValue()));
+//                }
+//            }
+            
             // Add subdirectories
             for (DirectoryInfoWrapper i : directories) {
                 if (i.isParent(this)) {
@@ -485,319 +812,6 @@ public class UploadFilesBean {
             }
             init = true;
         }
-    }
-    
-/*
- * JSF usage:
-   #{uploadFileBean.user}
-   #{uploadFileBean.files}"
-
-      #{file.fileLength}
-      #{file.lastModified}
-      #{file.name}
-      #{file.path}
-*/
-    private List<FileInfoWrapper> files;
-    private List<DirectoryInfoWrapper> directories;
-    private String currentUser;
-    private String currentTaskLsid = null;
-    private TaskInfo currentTaskInfo = null;
-    private Map<String,SortedSet<TaskInfo>> kindToTaskInfo;
-    
-    private static final Comparator<TaskInfo> taskInfoComparator =  new Comparator<TaskInfo>() {
-        public int compare(TaskInfo o1, TaskInfo o2) {
-            //1) null arg test
-            if (o1 == null) {
-                if (o2 == null) {
-                    return 0;
-                }
-                return -1;
-            } 
-            if (o2 == null) {
-                return 1;
-            }
-
-            //2) null name test
-            if (o1.getName() == null) {
-                if (o2.getName() == null) {
-                    return 0;
-                }
-                return -1;
-            }
-            
-            return o1.getName().compareTo( o2.getName() );
-        } 
-    };
-
-    public String getCurrentUser() {
-        if (currentUser == null) {
-            currentUser = UIBeanHelper.getUserId();
-        }
-        return currentUser;
-    }
-    
-    public void setCurrentTaskLsid(String lsid) {
-        this.currentTaskLsid = lsid;
-    }
-    
-    public String getUsername() {
-        return UIBeanHelper.getUserId();
-    }
-    
-    /**
-     * for debugging
-     * @return
-     */
-    public FileInfoWrapper getFile() {
-        if (this.getFiles().size() > 0) {
-            return this.getFiles().get(0);
-        }
-        return null;
-    }
-    
-    public List<FileInfoWrapper> getFiles() {
-        if (files == null) {
-            initFiles(); 
-        }
-        return files;
-    }
-    
-    public List<DirectoryInfoWrapper> getDirectories() {
-        if (directories == null) {
-            initFiles(); 
-        }
-        return directories;
-    }
-    
-    public boolean openTreeNode(UITree tree) {
-        return true;
-    }
-    
-    /**
-     * Lists input files from all sources in a unified tree
-     * @return
-     * @throws IOException 
-     */
-    public TreeNode<FileInfoWrapper> getFileTree() throws IOException {
-        // Set up the root node
-        TreeNode<FileInfoWrapper> rootNode = new TreeNodeImpl<FileInfoWrapper>();
-        UploadFile rootFileFacade = new UploadFile();
-        rootFileFacade.setName(UIBeanHelper.getUserId());
-        FileInfoWrapper rootWrapper = new FileInfoWrapper(rootFileFacade);
-        rootWrapper.setDirectory(true);
-        rootWrapper.setRoot(true);
-        rootNode.setData(rootWrapper);
-
-        // Add component trees
-        rootNode.addChild(0, getUploadFilesTree());
-        return rootNode;
-    }
-    
-    /**
-     * Lists all upload files in a tree with the root being the user's upload dir
-     * @return
-     * @throws IOException 
-     */
-    public TreeNode<FileInfoWrapper> getUploadFilesTree() throws IOException {
-        // Set up the tree's directory structure
-        initDirectories();
-        return getDirectoryNode(getWrappedUploadDir());
-    }
-    
-    public TreeNode<FileInfoWrapper> getDirectoryNode(DirectoryInfoWrapper dir) {
-        // Set up the root node
-        TreeNode<FileInfoWrapper> rootNode = new TreeNodeImpl<FileInfoWrapper>();
-        rootNode.setData(dir);
-        int count = 0;
-
-        // Add the upload dir's files
-        for (FileInfoWrapper i : dir.getFiles()) {
-            TreeNode<FileInfoWrapper> fileNode;
-            if (i.isDirectory()) {
-                fileNode = getDirectoryNode((DirectoryInfoWrapper) i);
-            }
-            else {
-                fileNode = new TreeNodeImpl<FileInfoWrapper>();  
-            }
-            fileNode.setData(i);
-            rootNode.addChild(count, fileNode);
-            count++;
-        }
-        return rootNode;
-    }
-    
-    public void flagUploadPath() {
-        String filePath = UIBeanHelper.getRequest().getParameter("uploadPath");
-        UIBeanHelper.getSession().setAttribute("uploadPath", filePath);
-    }
-    
-    public File getUserUploadDir() {
-        return ServerConfiguration.instance().getUserUploadDir(Context.getContextForUser(UIBeanHelper.getUserId()));
-    }
-    
-    public DirectoryInfoWrapper getWrappedUploadDir() {
-     // Set up the fake UploadFile for the wrapper
-        UploadFile rootFileFacade = new UploadFile();
-        try {
-            rootFileFacade.initFromFile(getUserUploadDir(), UploadFile.COMPLETE);
-        }
-        catch (IOException e) {
-            log.error("Unable to get canonical path for user root upload dir");
-        }
-        rootFileFacade.setUserId(UIBeanHelper.getUserId());
-        rootFileFacade.setName("Uploaded Files");
-
-        // Create the dir wrapper for the user upload dir
-        DirectoryInfoWrapper rootWrapper = new DirectoryInfoWrapper(rootFileFacade);
-        rootWrapper.initDirectory();
-        rootWrapper.setRoot(true);
-        return rootWrapper;
-    }
-    
-    private void initFiles() {
-        currentUser = UIBeanHelper.getUserId();
-        List<UploadFile> uploadedFiles = new UploadFileDAO().findByUserId(currentUser);
-        files = new ArrayList<FileInfoWrapper>();
-        directories = new ArrayList<DirectoryInfoWrapper>();
-        directories.add(getWrappedUploadDir());
-        for(UploadFile file : uploadedFiles) {
-            if (file.getKind() == null || !file.getKind().equalsIgnoreCase("directory")) {
-                files.add(new FileInfoWrapper(file));
-            }
-            else {
-                directories.add(new DirectoryInfoWrapper(file));
-            }
-        }
-        initModuleMenuItems();
-    }
-    
-    private void initDirectories() {
-        if (files == null) {
-            initFiles();
-        }
-        
-        for (DirectoryInfoWrapper i : directories) {
-            if (!i.isInit()) {
-                i.initDirectory();
-            }
-        }
-    }
-    
-    public void initCurrentLsid(AdminDAO adminDao) {
-        currentTaskInfo = adminDao.getTask(currentTaskLsid, currentUser);
-    }
-
-    private void initModuleMenuItems() {
-        kindToTaskInfo = new HashMap<String, SortedSet<TaskInfo>>();
-        
-        AdminDAO adminDao = new AdminDAO();
-        if (currentTaskLsid != null) {
-            initCurrentLsid(adminDao);
-        }
-        TaskInfo[] taskInfos = adminDao.getLatestTasks(currentUser);
-        for(TaskInfo taskInfo : taskInfos) {
-            for(String kind : taskInfo._getInputFileTypes()) {
-                SortedSet<TaskInfo> taskInfosForMap = kindToTaskInfo.get(kind);
-                if (taskInfosForMap == null) {
-                    taskInfosForMap = new TreeSet<TaskInfo>(taskInfoComparator);
-                    kindToTaskInfo.put(kind, taskInfosForMap);
-                }
-                taskInfosForMap.add(taskInfo);
-            }
-        }
-    }
-    
-    public void deleteFile(ActionEvent ae) throws IOException {
-        String filePath = UIBeanHelper.getRequest().getParameter("filePath");
-        filePath = DataServlet.getFileFromUrl(filePath).getCanonicalPath();
-        for (final FileInfoWrapper i : files) {
-            if (i.getPath().equals(filePath)) {
-                if (i.deleteFile()) {
-                    files.remove(i);
-                }
-                return;
-            }
-        }
-        for (final DirectoryInfoWrapper i : directories) {
-            if (i.getPath().equals(filePath)) {
-                if (i.deleteFile()) {
-                    directories.remove(i);
-                }
-                return;
-            }
-        } 
-    }
-    
-    public void createSubdirectory() {
-        String name = null;
-        for (Object i : UIBeanHelper.getRequest().getParameterMap().keySet()) {
-            if (((String) i).contains("subdirName")) {
-                String potentialName = UIBeanHelper.getRequest().getParameter((String) i);
-                if (potentialName.length() > 0) {
-                    name = potentialName;
-                    break;
-                }
-            }
-        }
-        File parent = DataServlet.getFileFromUrl(UIBeanHelper.getRequest().getParameter("parentPath"));
-        if (name != null) {
-            name = name.replaceAll("[^a-zA-Z0-9 ]", "");
-        }
-        if (name != null && name.length() > 0) {
-            if (parent.exists() && DataManager.createSubdirectory(parent, name, UIBeanHelper.getUserId())) {
-                UIBeanHelper.setInfoMessage("Subdirectory " + name + " successfully created");
-                files = null;
-            }
-            else {
-                UIBeanHelper.setErrorMessage("Unable to create the subdirectory");
-            }
-        }
-        else {
-            UIBeanHelper.setErrorMessage("Please enter a valid subdirectory name");
-        }
-    }
-    
-    public String getSelectedTab() {
-        String attr = (String) UIBeanHelper.getSession().getAttribute(SELECTED_TAB);
-        if (attr == null) {
-            return RECENT_JOBS;
-        }
-        else {
-            return attr;
-        }
-    }
-    
-    public void syncFiles() {
-        String passedId = (String) UIBeanHelper.getRequest().getParameter("resync_username");
-        if (passedId == null) {
-            passedId = UIBeanHelper.getUserId();
-        }
-        DataManager.syncUploadFiles(passedId);
-    }
-    
-    public void setSelectedTab(String selected) {
-        UIBeanHelper.getSession().setAttribute(SELECTED_TAB, selected);
-    }
-    
-    public int getPartitionLength() {
-        Context context = Context.getContextForUser(UIBeanHelper.getUserId());
-        return ServerConfiguration.instance().getGPIntegerProperty(context, "upload.partition.size", 10000000);
-    }
-    
-    public long getMaxUploadSize() {
-        Context context = Context.getContextForUser(UIBeanHelper.getUserId());
-        return ServerConfiguration.instance().getGPLongProperty(context, "upload.max.size", 20000000000L);
-    }
-    
-    public String getUploadWindowName() {
-        // The replaceAll is necessary because IE is picky about what characters can be in window names
-        return "uploadWindow" + (UIBeanHelper.getRequest().getServerName() +  UIBeanHelper.getUserId()).replaceAll("[^A-Za-z0-9 ]", "");
-    }
-    
-    public boolean getUploadEnabled() {
-        String userId = UIBeanHelper.getUserId();
-        Context userContext = Context.getContextForUser(userId);
-        return ServerConfiguration.instance().getGPBooleanProperty(userContext, "upload.jumploader", true);
     }
 }
 

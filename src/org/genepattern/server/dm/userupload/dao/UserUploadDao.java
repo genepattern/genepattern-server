@@ -33,9 +33,9 @@ public class UserUploadDao extends BaseDAO {
         Query query = HibernateUtil.getSession().createQuery( hql );
         query.setString("userId", userId);
         query.setString("path", relativeFile.getPath());
-        List rval = query.list();
+        List<UserUpload> rval = query.list();
         if (rval != null && rval.size() == 1) {
-            return (UserUpload) rval.get(0);
+            return rval.get(0);
         }
         return null;
     }
@@ -47,11 +47,11 @@ public class UserUploadDao extends BaseDAO {
      */
     public List<UserUpload> selectAllUserUpload(String userId) {
         if (userId == null) return Collections.emptyList();
-        
-        UserUpload ex = new UserUpload();
-        ex.setUserId( userId );
-        List results = HibernateUtil.getSession().createCriteria( UserUpload.class ).add( Example.create( ex ) ).list();
-        return results;
+        String hql = "from "+UserUpload.class.getName()+" uu where uu.userId = :userId";
+        Query query = HibernateUtil.getSession().createQuery( hql );
+        query.setString("userId", userId);
+        List<UserUpload> rval = query.list();
+        return rval;
     }
     
     public int deleteUserUpload(String userId, GpFilePath gpFileObj) {

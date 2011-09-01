@@ -340,6 +340,7 @@ public class DataServlet extends HttpServlet implements Servlet {
         }
         path = path.replace("\\", "/");
         path = UrlUtil.encodeURIcomponent(path);
+        path = path.replace("%2F", "/");
         return getDataServlertUrl() + path;
     }
 

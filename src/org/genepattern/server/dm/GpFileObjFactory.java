@@ -3,11 +3,13 @@ package org.genepattern.server.dm;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.dm.userupload.UserUploadManager;
 
 public class GpFileObjFactory {
     private static Logger log = Logger.getLogger(GpFileObjFactory.class);
@@ -40,6 +42,9 @@ public class GpFileObjFactory {
         UserUploadFile userUploadFile = new UserUploadFile( relativeUri );
         userUploadFile.setServerFile( userUploadDir );
         userUploadFile.setRelativeFile( new File("./") );
+        userUploadFile.setKind("directory");
+        userUploadFile.setName(userUploadFile.getServerFile().getName());
+        userUploadFile.setLastModified(new Date(userUploadFile.getServerFile().lastModified()));
         return userUploadFile;
     }
     
@@ -57,9 +62,6 @@ public class GpFileObjFactory {
         }
         if (uploadFile.isAbsolute()) {
             throw new Exception("user upload file must be a relative path, uploadFile="+uploadFile.getPath());
-        }
-        if (uploadFile.isDirectory()) {
-            throw new Exception("uploadFile can't be a directory, uploadFile="+uploadFile.getPath());
         }
         if (uploadFile.getPath().contains("..")) {
             //TODO: quick and dirty way to prevent relative paths to forbidden parent directories

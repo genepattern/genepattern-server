@@ -102,7 +102,7 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      * Same as {@link java.io.File#isDirectory()}.
      */
     public boolean isDirectory() {
-        return getRelativeFile().isDirectory();
+        return getServerFile().isDirectory();
     }
     
     /**
@@ -123,18 +123,32 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
     }
     
     public String getName() {
-        return getRelativeFile().getName();
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
     }
 
     //cached file metadata
+    private String name;
     private Date lastModified;
     private long fileLength;
     private String extension;
     private String kind;
-    
+    private Long id;
+
     //required for partial uploads
     private int numParts = 1;    
     private int numPartsRecd = 0;
+    
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
     
     public Date getLastModified() {
         return lastModified;
