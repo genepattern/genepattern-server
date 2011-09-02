@@ -331,7 +331,8 @@ public class RunTaskBean {
                 String gsType = matchOutputFileParameterName.substring(idx+1);
                 gsType = gsType.trim();
                 //System.out.println("uploaded File is a " + gsType);
-
+                  
+                boolean fullBreak = false;
                 for (ParameterInfo p : taskParameters) {
                     if (p.isInputFile()) {
                         List<String> fileFormats = SemanticUtil.getFileFormats(p);
@@ -339,12 +340,17 @@ public class RunTaskBean {
                             //System.out.println("format " + format);
                             if (format.equalsIgnoreCase(gsType)){
                                 reloadValues.put(p.getName(), prevUploadedFileUrl);
+                                fullBreak = true;
                                 break;
                             }
+                        }
+                        if (fullBreak) {
+                            break;
                         }
                     }
                     if (p._isDirectory()) {
                         reloadValues.put(p.getName(), prevUploadedFileUrl);
+                        break;
                     }
                 }
             } 
