@@ -43,7 +43,6 @@ class JobMonitor {
         //    there is probably a cleaner way to implement this
         final int numSecondsToWait = 1;
         jobCompletionService.execute(new Runnable() {
-            @Override
             public void run() {
                 log.info("starting jobCompletionService ...");
                 while(!jobCompletionService.isShutdown()) {
