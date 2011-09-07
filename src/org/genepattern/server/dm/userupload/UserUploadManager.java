@@ -94,7 +94,6 @@ public class UserUploadManager {
     static public UserUpload createUploadFile(Context userContext, GpFilePath gpFileObj, int numParts) throws Exception {
         UserUpload uu = UserUpload.initFromGpFileObj(userContext, gpFileObj);
         uu.setNumParts(numParts);
-        uu.init(gpFileObj.getServerFile());
         
         boolean inTransaction = HibernateUtil.isInTransaction();
         
