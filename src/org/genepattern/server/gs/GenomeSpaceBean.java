@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,7 +17,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
-import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
@@ -66,8 +66,7 @@ public class GenomeSpaceBean {
         kindToModules = SemanticUtil.getKindToModulesMap(allModules);
     
         Context userContext = Context.getContextForUser(userId);
-        String prop = ServerConfiguration.instance().getGPProperty(userContext, "genomeSpaceEnabled");
-        genomeSpaceEnabled = Boolean.parseBoolean(prop);
+        genomeSpaceEnabled = GsClientFactory.isGenomeSpaceEnabled(userContext);
         log.info("\n\n======= genomeSpaceEnabled=" + genomeSpaceEnabled + " for userId="+userId+"\n\n");
     }
     
@@ -130,12 +129,20 @@ public class GenomeSpaceBean {
     }
 
     public boolean isLoggedIn() {
+        if (!genomeSpaceEnabled) {
+            return false;
+        }
         HttpSession httpSession = UIBeanHelper.getSession();
         Object gsSessionObj = httpSession.getAttribute(GS_SESSION_KEY);
         return GsClientFactory.getGsClientUtil().isLoggedIn(gsSessionObj);
     }
 
     public String submitLogin() {
+        if (!genomeSpaceEnabled) {
+            log.error("GenomeSpace action when genomeSpaceEnabled=false");
+            unknownUser = true;
+            return "home";
+        }
         if (username == null) {
             unknownUser = true;
             return "home";
@@ -166,6 +173,12 @@ public class GenomeSpaceBean {
     }
 
     public String submitRegistration() {
+        if (!genomeSpaceEnabled) {
+            UIBeanHelper.setErrorMessage("GenomeSpace is not enabled");
+            log.error("GenomeSpace is not enabled");
+            return "genomeSpaceRegFailed";
+        }
+        
         String env = UIBeanHelper.getRequest().getParameter("envSelect");
         if (env == null) {
             log.error("Environment for GenomeSpace not set");
@@ -199,6 +212,11 @@ public class GenomeSpaceBean {
     }
 
     public String submitLogout() {
+        if (!genomeSpaceEnabled) {
+            log.error("GenomeSpace is not enabled");
+            return "home";
+        }
+        
         HttpSession httpSession = UIBeanHelper.getSession();
         Object gsSessionObj = httpSession.getAttribute(GS_SESSION_KEY);
         
@@ -213,6 +231,11 @@ public class GenomeSpaceBean {
     }
 
     public void deleteFileFromGenomeSpace(ActionEvent ae) {
+        if (!genomeSpaceEnabled) {
+            this.setMessageToUser("GenomeSpace is not enabled");
+            return;
+        }
+        
         String filenameParam = UIBeanHelper.getRequest().getParameter("filename");
         String dirnameParam = UIBeanHelper.getRequest().getParameter("dirname");
         
@@ -295,6 +318,10 @@ public class GenomeSpaceBean {
     }
 
     public Map<String, List<String>> getGsClientTypes() {
+        if (!genomeSpaceEnabled) {
+            log.error("GenomeSpace is not enabled");
+            return Collections.emptyMap();
+        }
         if (gsClientTypes == null) {
             gsClientTypes = new HashMap<String, List<String>>();
         }
@@ -339,11 +366,14 @@ public class GenomeSpaceBean {
     }
     
     public List<GsClientUrl> getGSClientURLs(GenomeSpaceFileInfo file)  {
+        if (!genomeSpaceEnabled) {
+            log.error("GenomeSpace is not enabled");
+            return Collections.emptyList();
+        }
         HttpSession httpSession = UIBeanHelper.getSession();
         Object gsSessionObj = httpSession.getAttribute(GS_SESSION_KEY);
         return GsClientFactory.getGsClientUtil().getGSClientURLs(gsSessionObj, file);
     }
-    
     
     public boolean openTreeNode(UITree tree) {
         return true;
@@ -428,6 +458,10 @@ public class GenomeSpaceBean {
     }
 
     private List<GenomeSpaceDirectory> initUserDirs() {
+        if (!genomeSpaceEnabled) {
+            log.error("GenomeSpace is not enabled");
+            return Collections.emptyList();
+        }
         HttpSession httpSession = UIBeanHelper.getSession();
         Object gsSessionObj = httpSession.getAttribute(GS_SESSION_KEY);
         return GsClientFactory.getGsClientUtil().initUserDirs(gsSessionObj, kindToModules, gsClientTypes, clientUrls);
