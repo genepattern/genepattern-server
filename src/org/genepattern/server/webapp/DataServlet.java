@@ -15,7 +15,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.dm.GpFileObjFactory;
+import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
@@ -311,7 +315,7 @@ public class DataServlet extends HttpServlet implements Servlet {
         return UIBeanHelper.getServer() + "/data/";
     }
     
-    public static File getFileFromUrl(String url) {
+    public static String getPathFromUrl(String url) {
         String[] parts = url.split("/data/", 2);
         if (parts.length > 1) {
             String path;
@@ -322,26 +326,42 @@ public class DataServlet extends HttpServlet implements Servlet {
                 log.error("Unable to decode " + parts[1] + " using UTF-8");
                 path = parts[1];
             }
-            return new File(path);
+            return path;
         }
         else {
             return null;
         }
     }
     
-    public static String getUrlFromFile(File file) {
-        String path;
+    public static File getFileFromUrl(String url) {
+        String path = getPathFromUrl(url);
+        if (path == null) {
+            return null;
+        }
+        File file = new File(path);
         try {
-            path = file.getCanonicalPath();
+            GpFilePath filePath = GpFileObjFactory.getUserUploadFile(UIBeanHelper.getUserContext(), file);
+            return filePath.getServerFile();
         }
-        catch (IOException e) {
-            log.error("Unable to getCanonicalPath() in getUrlFromFile()");
-            path = file.getAbsolutePath();
+        catch (Exception e) {
+            log.error("Error getting the filePath for " + UIBeanHelper.getUserId() + "'s file " + url);
+            return null;
         }
-        path = path.replace("\\", "/");
-        path = UrlUtil.encodeURIcomponent(path);
-        path = path.replace("%2F", "/");
-        return getDataServlertUrl() + path;
+    }
+    
+    public static String getUrlFromFile(File file) {
+        Context context = UIBeanHelper.getUserContext();
+        try {
+            String path = file.getCanonicalPath();
+            String relative = UserUploadManager.absoluteToRelativePath(context, path);
+            File relativeFile = new File(relative);
+            GpFilePath filePath = GpFileObjFactory.getUserUploadFile(context, relativeFile);
+            return filePath.getUrl().toString();
+        }
+        catch (Exception e) {
+            log.error("Error in getUrlFromFile()");
+            return null;
+        }
     }
 
 }
