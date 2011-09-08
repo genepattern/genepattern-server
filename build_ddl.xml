@@ -1,0 +1,35 @@
+<project basedir="." default="export.ddl" name="hibernatetool">
+    <description>
+    Ant project which generates DDL from Hibernate configuration.
+    To generate different DDL for Oracle you need to edit the hibernate.cfg.xml file.
+    By default, it generates DDL for HSQLDB.
+    </description>
+    
+    <!-- this project depends on the Eclipse Hibernate plugin -->
+    <property name="eclipse.plugins" location="/Broad/Applications/Eclipse/app/eclipse_3.7_indigo/plugins" />
+    <property name="hibernate.plugin.lib.dir" location="${eclipse.plugins}/org.hibernate.eclipse_3.4.0.v20110827-1315-H431-M3/lib" />
+
+    <path id="toolslib">
+        <fileset dir="${hibernate.plugin.lib.dir}/tools" includes="*.jar "/>
+        <fileset dir="${hibernate.plugin.lib.dir}/annotations" includes="*.jar "/>
+        <fileset dir="${hibernate.plugin.lib.dir}/hibernate" includes="*.jar "/>
+    </path>
+   
+    <taskdef name="hibernatetool" 
+           classname="org.hibernate.tool.ant.HibernateToolTask" 
+           classpathref="toolslib" />
+
+    <target name="export.ddl">
+        <echo>generating ddl for GP DB schema ... </echo>
+        
+        <hibernatetool destdir=".">
+         <classpath>
+             <path refid="toolslib"/>
+             <pathelement location="./website/WEB-INF/classes" />
+         </classpath>
+             
+         <annotationconfiguration configurationfile="src/hibernate.cfg.xml"/>
+         <hbm2ddl export="false" format="true" outputfilename="sql.ddl"/>
+        </hibernatetool>
+    </target>
+</project>
