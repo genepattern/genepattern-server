@@ -281,6 +281,22 @@
 
 <filter-mapping>
  <filter-name>richfaces</filter-name>
+ <url-pattern>/pages/serverSettings.jsf</url-pattern>
+ <dispatcher>REQUEST</dispatcher>
+ <dispatcher>FORWARD</dispatcher>
+ <dispatcher>INCLUDE</dispatcher>
+</filter-mapping>
+
+<filter-mapping>
+ <filter-name>richfaces</filter-name>
+ <url-pattern>/pages/admin/*</url-pattern>
+ <dispatcher>REQUEST</dispatcher>
+ <dispatcher>FORWARD</dispatcher>
+ <dispatcher>INCLUDE</dispatcher>
+</filter-mapping>
+
+<filter-mapping>
+ <filter-name>richfaces</filter-name>
  <url-pattern>/pages/jobResults.jsf</url-pattern>
  <dispatcher>REQUEST</dispatcher>
  <dispatcher>FORWARD</dispatcher>
@@ -366,6 +382,10 @@
  <servlet-mapping>
   <servlet-name>DataServlet</servlet-name>
   <url-pattern>/data/*</url-pattern>
+ </servlet-mapping>
+ <servlet-mapping>
+  <servlet-name>DataServlet</servlet-name>
+  <url-pattern>/users/*</url-pattern>
  </servlet-mapping>
 
  <servlet>
