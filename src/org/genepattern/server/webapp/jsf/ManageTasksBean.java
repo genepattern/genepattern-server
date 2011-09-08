@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import javax.faces.event.ActionEvent;
@@ -154,10 +153,6 @@ public class ManageTasksBean {
 
     public static class TaskGroup implements Serializable {
         private String lsidNoVersion = null;
-        //set the name to the name of the latest version
-        private String name = null;
-        //set the description to the description of the latest version
-        private String description = null;
         private TreeMap<String, VersionInfo> indexedVersions;
         private IAdminClient adminClient = null;
         private boolean pipeline;
@@ -181,8 +176,6 @@ public class ManageTasksBean {
             });
 
             lsidNoVersion = getLSID(ti.getLsid()).toStringNoVersion();
-            name = ti.getName();
-            description = ti.getDescription();
         }
 
         /**
@@ -197,11 +190,6 @@ public class ManageTasksBean {
             String key = taskInfo.getLsid() + "." + taskInfo.getID();
             VersionInfo versionInfo = new VersionInfo(taskInfo);
             indexedVersions.put(key, versionInfo);// changed to include id jtl 12/11/07
-            
-            //assuming that the first entry is the latest version, changed by pcarr 09/08/11
-            Entry<String,VersionInfo> entry = indexedVersions.firstEntry();
-            this.name = entry.getValue().getName();
-            this.description = entry.getValue().getDescription();
 
             if (taskInfo.isPipeline() && showEveryonesModules) {
                 TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
@@ -246,10 +234,6 @@ public class ManageTasksBean {
             indexedVersions.remove(lsid);
         }
 
-        public String getDescription() {
-            return description;
-        }
-
         public Collection<VersionInfo> getIndexedVersions() {
             return indexedVersions.values();
         }
@@ -260,6 +244,10 @@ public class ManageTasksBean {
 
         public String getName() {
             return indexedVersions.isEmpty() ? "" : indexedVersions.get(indexedVersions.firstKey()).getName();
+        }
+        
+        public String getDescription() {
+            return indexedVersions.isEmpty() ? "" : indexedVersions.get(indexedVersions.firstKey()).getDescription();
         }
 
         public boolean isAllowed() {
