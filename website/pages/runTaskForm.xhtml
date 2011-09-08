@@ -169,6 +169,7 @@ use, misuse, or functionality.
                                         </div>
                                         <div id="#{p.name}_div_url">
                                             <input id="#{p.name}_url" name="#{p.name}_url" size="30" type="text" value="#{p.defaultValue}"/>
+                                            <input type="checkbox" name="#{p.name}_batch" id="#{p.name}_batch" value="true" /><label for="{p.name}_batch">Batch Parameter</label> 
                                             <h:outputText rendered="#{runTaskBean.allowInputFilePaths}">
                                                 <a rel="lyteframe" title="Browse for #{p.name}" rev="width: 400px; height: 300px; scrolling: auto" href="#{facesContext.externalContext.requestContextPath}/jqueryFileTree/index.jsf?p=#{p.name}">Browse Server File System...</a>
                                             </h:outputText>
