@@ -139,16 +139,6 @@ public class GpFileObjFactory {
     
     /**
      * Get the GpFilePath reference from a GP URL request.
-     * @param url
-     * @return
-     * @throws Exception
-     */
-    static public GpFilePath getRequestedGpFileObj(String url) throws Exception {
-        return getRequestedGpFileObj(new URL(url));
-    }
-    
-    /**
-     * Get the GpFilePath reference from a GP URL request.
      * 
      * @param url, expecting a full url to a resource on the GP server
      * 
@@ -156,8 +146,18 @@ public class GpFileObjFactory {
      * @throws Exception
      */
     static public GpFilePath getRequestedGpFileObj(URL url) throws Exception {
-        //1) get the /servletPath/pathInfo from the url
         String urlStr = url.toExternalForm();
+        return getRequestedGpFileObj(urlStr);
+    }
+
+    /**
+     * Get the GpFilePath reference from a GP URL request.
+     * @param url
+     * @return
+     * @throws Exception
+     */
+    static public GpFilePath getRequestedGpFileObj(String urlStr) throws Exception {
+        //1) get the /servletPath/pathInfo from the url
         String genePatternUrl = System.getProperty("GenePatternURL");
         if (genePatternUrl.endsWith("/")) {
             genePatternUrl = genePatternUrl.substring(0, genePatternUrl.length() - 1);
