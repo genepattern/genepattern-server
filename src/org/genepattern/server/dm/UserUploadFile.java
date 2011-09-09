@@ -3,8 +3,12 @@ package org.genepattern.server.dm;
 import java.io.File;
 import java.net.URI;
 
+import org.apache.log4j.Logger;
+
 
 public class UserUploadFile extends GpFilePath {
+    private static Logger log = Logger.getLogger(UserUploadFile.class);
+
     private URI relativeUri;
     private File serverFile;
     private File relativeFile;
@@ -32,8 +36,15 @@ public class UserUploadFile extends GpFilePath {
     }
 
     public String getFormFieldValue() {
-        // TODO Auto-generated method stub
-        return null;
+        //TODO: experimental, untested implementation
+        String formFieldValue = "";
+        try {
+            formFieldValue = this.getUrl().toExternalForm();
+        }
+        catch (Exception e) {
+            log.error(e);
+        }
+        return formFieldValue;
     }
 
     public String getParamInfoValue() {
