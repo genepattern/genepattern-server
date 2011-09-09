@@ -19,12 +19,13 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
     private static Logger log = Logger.getLogger(GpFilePath.class);
     private static URL gpUrl = null;
     /**
-     * Get the GenePatternURL, e.g.
+     * Get the GenePatternURL. For example,
      * <pre>
        http://127.0.0.1:8080/gp
      * </pre>
      * This should never include the trailing slash.
-     * @return
+     * 
+     * TODO: refactor into a Utility class.
      * 
      * @see org.genepattern.server.webapp.StartupServlet#setServerURLs, which initializes the GenePatternURL.
      */
@@ -68,6 +69,19 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
         GpFilePath gpFilePath = (GpFilePath) o;
         return getRelativeUri().getPath().equals( gpFilePath.getRelativeUri().getPath() );
     }
+    
+    private String owner = null;
+    /**
+     * Get the GP userid for the owner of the file.
+     * @return
+     */
+    public String getOwner() {
+        return owner;
+    }
+    
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
 
     /**
      * Get the fully qualified URL to this file.
@@ -95,7 +109,7 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      * @return
      */
     public boolean isFile() {
-        return getRelativeFile().isFile();
+        return getServerFile().isFile();
     }
 
     /**
@@ -122,14 +136,6 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
         return r;
     }
     
-    public String getName() {
-        return name;
-    }
-    
-    public void setName(String name) {
-        this.name = name;
-    }
-
     //cached file metadata
     private String name;
     private Date lastModified;
@@ -141,6 +147,14 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
     private int numParts = 1;    
     private int numPartsRecd = 0;
     
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public Date getLastModified() {
         return lastModified;
     }
