@@ -3,6 +3,7 @@ package org.genepattern.server.dm;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
@@ -12,7 +13,22 @@ import org.genepattern.server.config.ServerConfiguration;
 
 public class GpFileObjFactory {
     private static Logger log = Logger.getLogger(GpFileObjFactory.class);
-
+    
+    
+    /**
+     * TODO: implement this method
+     * Get the working directory for a newly created job instance. This method assumes that this is for a job which is about to 
+     * be added to the queue, once a job is added to the queue its directory is stored in the DB.
+     * 
+     * @param jobContext
+     * @return
+     * @throws Exception
+     */
+    static public GpFilePath getWorkingDirectoryForNewJob(ServerConfiguration.Context userContext, String jobId) throws Exception {
+        throw new Exception("Not implemented");
+        //File jobDir = ServerConfiguration.instance().getRootJobDir(userContext);
+    }
+    
     /**
      * Get the root user upload directory for the given user.
      * 
@@ -106,6 +122,7 @@ public class GpFileObjFactory {
         UserUploadFile userUploadFile = new UserUploadFile( relativeUri );
         userUploadFile.setServerFile( serverFile );
         userUploadFile.setRelativeFile( new File(relativePath) );
+        userUploadFile.setOwner( userContext.getUserId() );
         return userUploadFile;
     }
     
@@ -119,27 +136,60 @@ public class GpFileObjFactory {
             throw new Exception("Unable to find gpFileObj for request: "+request.toString());
         }
     }
+    
+    /**
+     * Get the GpFilePath reference from a GP URL request.
+     * 
+     * @param url, expecting a full url to a resource on the GP server
+     * 
+     * @return
+     * @throws Exception
+     */
+    static public GpFilePath getRequestedGpFileObj(URL url) throws Exception {
+        //1) get the /servletPath/pathInfo from the url
+        String urlStr = url.toExternalForm();
+        String genePatternUrl = System.getProperty("GenePatternURL");
+        if (genePatternUrl.endsWith("/")) {
+            genePatternUrl = genePatternUrl.substring(0, genePatternUrl.length() - 1);
+        }
+        String servletPathPlus = urlStr.substring( genePatternUrl.length() );
+        
+        String servletPath = servletPathPlus;
+        String pathInfo = "";
+        int idx = servletPathPlus.indexOf("/", 1);
+        if (idx > 0) {
+            servletPath = servletPathPlus.substring(0, idx);
+            pathInfo = servletPathPlus.substring(idx);
+        }
+        return getRequestedGpFileObj(servletPath, pathInfo);
+    }
+    
     static public GpFilePath getRequestedGpFileObj(String servletPath, String pathInfo) throws Exception {
         if ("/users".equals(servletPath)) {
             String userId = extractUserId(pathInfo);
-            String relativePath = pathInfo.substring( userId.length() + 1 );
+            //drop the wrapping slashes from '/user_id/'
+            String relativePath = pathInfo.substring( userId.length() + 2 );
             File uploadFilePath = new File(relativePath);
             ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
             GpFilePath gpFileObj = GpFileObjFactory.getUserUploadFile(userContext, uploadFilePath);
             return gpFileObj;
         }
+        if ("/data".equals(servletPath)) {
+            throw new Exception("/data/ paths not immplemented!");
+        }
         throw new Exception("Invalid servletPath: "+servletPath);
     }
     
     private static String extractUserId(String pathInfo) throws Exception {
-        if (pathInfo.startsWith("/")) {
+        if (!pathInfo.startsWith("/")) {
+            //pathInfo should start with a '/'
             throw new Exception("Unexpected input: "+pathInfo);
         }
-        int endIndex = pathInfo.indexOf("/");
+        int endIndex = pathInfo.indexOf("/", 1);
         if (endIndex < 0) {
             throw new Exception("Unexpected input: "+pathInfo);
         }
-        String userId = pathInfo.substring(0, endIndex);
+        String userId = pathInfo.substring(1, endIndex);
         return userId;
     }
 

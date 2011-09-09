@@ -3,6 +3,8 @@ package org.genepattern.server.webapp;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.util.List;
 
@@ -18,7 +20,6 @@ import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
@@ -91,6 +92,39 @@ public class DataServlet extends HttpServlet implements Servlet {
         resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
     
+    private URL getRequestUrl(HttpServletRequest request) {
+        //final String requestUrl = request.getRequestURL().toString();
+
+        final String scheme = request.getScheme();
+        final String serverName = request.getServerName();
+        final int serverPort = request.getServerPort();
+        final String contextPath = request.getContextPath();
+        final String servletPath = request.getServletPath();
+        final String pathInfo = request.getPathInfo();
+        final String queryString = request.getQueryString();
+
+        String u = scheme + "://" + serverName;
+        if (serverPort > 0) {
+            u += (":" +serverPort);
+        }
+        u += contextPath + servletPath;
+        if (pathInfo != null) {
+            u+= pathInfo;
+        }
+        if (queryString != null) {
+            u+= ("?" + queryString);
+        }
+        
+        URL url = null;
+        try {
+            url = new URL(u);
+        }
+        catch (MalformedURLException e) {
+            log.error(e);
+        }
+        return url;
+    }
+    
     /**
      * Map the request to a local file path, authorize the current user, and stream the file back in response.
      * 
@@ -133,6 +167,10 @@ public class DataServlet extends HttpServlet implements Servlet {
             }
 
             log.debug(request.getMethod()+" "+u);
+        }
+        
+        if (isUserUploadRequest(request)) {
+            processUserUploadRequest(request, response, httpMethod);
         }
 
         //1) require an authenticated GP user account
@@ -181,6 +219,85 @@ public class DataServlet extends HttpServlet implements Servlet {
         // Accept ranges header
         response.setHeader("Accept-Ranges", "bytes");
         serveFile(request, response, httpMethod, fileObj);
+    }
+
+    /**
+     * Is this a request for a user upload file? Based on our naming convention, '/users'.
+     * @param request
+     * @return
+     */
+    private boolean isUserUploadRequest(HttpServletRequest request) {
+        return "/users".equals( request.getServletPath() );
+    }
+    
+    /**
+     * Serve the requested user upload file, checking for permission first.
+     * 
+     * Examples,
+     *     http://127.0.0.1:8080/gp     /users  /   test    /   test.cls
+     *     http://127.0.0.1:8080/gp     /users  /   test    /   tutorial/all_aml_test.cls
+     * 
+     * @param request
+     * @param response
+     * @param httpMethod
+     */
+    private void processUserUploadRequest(HttpServletRequest request, HttpServletResponse response, HTTPMethod httpMethod) throws IOException {  
+        final URL requestUrl = getRequestUrl( request );
+        GpFilePath requestedFile = null;
+        try {
+            //TODO: delete the following commented out line(s), it is here to illustrate
+            //    how to get a GpFileObj from an arbitrary GP URL
+            //requestedFile = GpFileObjFactory.getRequestedGpFileObj(requestUrl);
+            requestedFile = GpFileObjFactory.getRequestedGpFileObj(request);
+        }
+        catch (Throwable t) {
+            log.error(t);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, t.getLocalizedMessage());
+            return;
+        }
+        if (requestedFile == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Error processing request: "+request.getPathInfo());
+            return;
+        }
+        
+        //1) require an authenticated GP user account
+        String gpUserId = null;
+        try {
+            gpUserId = BasicAuthUtil.getAuthenticatedUserId(request, response);
+        }
+        catch (AuthenticationException e) {
+            BasicAuthUtil.requestAuthentication(response, e.getLocalizedMessage());
+            return;
+        }
+        if (gpUserId == null) {
+            log.error("Unexpected null gpUserId, AuthenticationException should have been thrown.");
+            BasicAuthUtil.requestAuthentication(request, response);
+            return;
+        }
+
+        //2) check if the current user is authorized to read the file
+        boolean canRead = false;
+        boolean isAdmin = AuthorizationHelper.adminJobs(gpUserId);
+        if (isAdmin) {
+            //admin users can read all files
+            canRead = true;
+        }
+        else {
+            //otherwise, only the owner of a file can read it
+            //TODO: implement sharing for user upload files
+            canRead = gpUserId != null && gpUserId.equals( requestedFile.getOwner() );
+        }
+        
+        if (!canRead) {
+            String message = "The user '"+gpUserId+"' does not have permission to read the file '"+requestedFile.getRelativeUri()+"'";
+            log.debug(message);
+            BasicAuthUtil.requestAuthentication(response, message);
+            return;
+        }
+        
+        // Accept ranges header
+        response.setHeader("Accept-Ranges", "bytes");
+        serveFile(request, response, httpMethod, requestedFile.getServerFile());
     }
 
     /**
@@ -332,7 +449,8 @@ public class DataServlet extends HttpServlet implements Servlet {
             return null;
         }
     }
-    
+  
+
     public static File getFileFromUrl(String url) {
         String path = getPathFromUrl(url);
         if (path == null) {

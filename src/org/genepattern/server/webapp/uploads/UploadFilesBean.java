@@ -319,32 +319,39 @@ public class UploadFilesBean {
         } 
     }
     
+    /**
+     * Create a new subdirectory in the current user's upload directory.
+     * 
+     * Depends on two request parameters:
+     *     subdirName - a relative path to the parent directory in which the new subdir is created
+     *     parentPath - the name of the subdir
+     */
     public void createSubdirectory() {
-        String name = null;
+        String parentPath = null;
+        String subdirName = null;
         for (Object i : UIBeanHelper.getRequest().getParameterMap().keySet()) {
             if (((String) i).contains("subdirName")) {
                 String potentialName = UIBeanHelper.getRequest().getParameter((String) i);
                 if (potentialName.length() > 0) {
-                    name = potentialName;
+                    subdirName = potentialName;
                     break;
                 }
             }
         }
-        File parent = DataServlet.getFileFromUrl(UIBeanHelper.getRequest().getParameter("parentPath"));
-        if (name != null) {
-            name = name.replaceAll("[^a-zA-Z0-9 ]", "");
+        if (subdirName == null || subdirName.length() == 0) {
+            UIBeanHelper.setErrorMessage("Please enter a valid subdirectory name");
+            return;
         }
-        if (name != null && name.length() > 0) {
-            if (parent.exists() && DataManager.createSubdirectory(parent, name, UIBeanHelper.getUserId())) {
-                UIBeanHelper.setInfoMessage("Subdirectory " + name + " successfully created");
-                files = null;
-            }
-            else {
-                UIBeanHelper.setErrorMessage("Unable to create the subdirectory");
-            }
+        parentPath = UIBeanHelper.getRequest().getParameter("parentPath");
+        
+        Context userContext = Context.getContextForUser(UIBeanHelper.getUserId());
+        boolean success = DataManager.createSubdirectory(userContext, parentPath, subdirName);
+        if (success) {
+            UIBeanHelper.setInfoMessage("Subdirectory " + subdirName + " successfully created");
+            files = null;
         }
         else {
-            UIBeanHelper.setErrorMessage("Please enter a valid subdirectory name");
+            UIBeanHelper.setErrorMessage("Unable to create the subdirectory");
         }
     }
     
