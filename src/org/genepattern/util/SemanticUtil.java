@@ -56,6 +56,18 @@ public class SemanticUtil {
         }
         return extension;
     }
+    
+    public static String getGzKind(File file) {
+        String name = file.getName();
+        // Get the index of the next to last period, assumes the .gz
+        int index = name.substring(0, name.length() - 3).lastIndexOf(".");
+        if (index > 0) {
+            return name.substring(index + 1);
+        }
+        else {
+            return "gz";
+        }
+    }
 
     public static String getKind(File file) {
         String extension = getExtension(file);
@@ -64,6 +76,9 @@ public class SemanticUtil {
         }
         if (extension.equalsIgnoreCase("odf")) {
             return getOdfKind(file);
+        }
+        if (extension.equalsIgnoreCase("gz")) {
+            return getGzKind(file);
         }
         return extension.toLowerCase();
     }
