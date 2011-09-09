@@ -30,28 +30,57 @@ public class DataManager {
     }
     
     /**
-     * Creates a subdirectory on the file system and adds it to the database
-     * @param parent
-     * @param name
-     * @param userId
-     * @return
+     * Create a subdirectory in the user's upload directory and records the entry in the DB.
+     * 
+     *  TODO: refactor this into the UserUploadManager (or at least into the dm pacakge)
+     * 
+     * @param userContext, requires a valid userId
+     * @param parentPath, the path to the parent directory, specified relative to the user's upload directory.
+     *     It can be null. When null it means create a subdir in the user upload dir.
+     * @param name, the filename
+     * 
+     * @return true if the directory was successfully created
      */
-    public static boolean createSubdirectory(File parent, String name, String userId) {
-        Context context = UIBeanHelper.getUserContext();
-        File absoluteFile = new File(parent, name);
-        boolean success = absoluteFile.mkdir();
+    public static boolean createSubdirectory(ServerConfiguration.Context userContext, String parentPath, String name) {
+        File relativePath = null;
+        //numerous tests for the parentPath ...
+        if (parentPath == null || parentPath.length() == 0 || ".".equals(parentPath) || "./".equals(parentPath) ) {
+            //mkdir in the user's upload dir
+            relativePath = new File(name);
+        }
+        else {
+            //mkdir in a path relative to the user's upload dir
+            relativePath = new File(parentPath, name);
+        }
+        GpFilePath subdirRef = null;
+        try {
+            //another option ... subdirRef = GpFileObjFactory.getUserUploadFile(userContext, relativePath);
+            subdirRef = UserUploadManager.getUploadFileObj(userContext, relativePath);
+        }
+        catch (Throwable t) {
+            log.error(t.getLocalizedMessage());
+            return false;
+        }
+        File dir = subdirRef.getServerFile();
+        boolean success = false;
+        try {
+            success = dir.mkdir();
+        }
+        catch (Throwable t) {
+            log.error("system error creating directory: "+subdirRef.getRelativeUri()+": "+t.getLocalizedMessage());
+            return false;
+        } 
         if (success) {
+            //update the DB
             try {
-                File relativeFile = new File(UserUploadManager.absoluteToRelativePath(context, absoluteFile.getAbsolutePath()));
-                GpFilePath subdir = UserUploadManager.getUploadFileObj(context, relativeFile);
-                UserUploadManager.createUploadFile(context, subdir, 1);
-                UserUploadManager.updateUploadFile(context, subdir, 1, 1);
+                UserUploadManager.createUploadFile(userContext, subdirRef, 1);
+                UserUploadManager.updateUploadFile(userContext, subdirRef, 1, 1);
             }
-            catch (Exception e) {
+            catch (Throwable t) {
+                log.error(t);
                 success = false;
             }
         }
-        
         return success;
     }
 
