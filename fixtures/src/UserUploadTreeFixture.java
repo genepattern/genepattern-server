@@ -55,6 +55,8 @@ public class UserUploadTreeFixture {
             uu = createUploadFile("test", "sub/a/file_04.txt", 1);
             uu = createUploadFile("test", "sub/g/01/file_05.txt", 1);
             uu = createUploadFile("test", "sub/g/01/file_06.txt", 1);
+            
+            uu = createUploadFile("test", "sub", 1);
         }
         catch (Throwable t) {
             log.error("error creating upload file: "+t.getLocalizedMessage(), t);
