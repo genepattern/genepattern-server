@@ -13,6 +13,8 @@
 package org.genepattern.server.process;
 
 import java.io.File;
+import java.io.FilenameFilter;
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimerTask;
@@ -21,14 +23,14 @@ import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.genepattern.server.DataManager;
+import org.genepattern.server.FileUtil;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
-import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
-import org.genepattern.server.dm.userupload.dao.UserUpload;
-import org.genepattern.server.dm.userupload.dao.UserUploadDao;
+//import org.genepattern.server.dm.userupload.dao.UserUpload;
+//import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
 import org.genepattern.server.user.User;
@@ -70,9 +72,10 @@ public class Purger extends TimerTask {
                 
                 long dateCutoff = purgeDate.getTime().getTime();
                 // remove input files uploaded using web form
-                purge(new File(System.getProperty("java.io.tmpdir")), dateCutoff);
+                purgeWebUploads(dateCutoff);
                 // Other code purging uploads directory is also called; this is called in addition
-                purgeDirectUploads(dateCutoff);
+                //purgeDirectUploads(dateCutoff);
+                purgeUserUploads(dateCutoff);
 
                 File soapAttachmentDir = new File(System.getProperty("soap.attachment.dir"));
                 File[] userDirs = soapAttachmentDir.listFiles();
@@ -96,6 +99,15 @@ public class Purger extends TimerTask {
         }
     }
 
+    /**
+     * Purge files from the system web upload directory.
+     * @param dateCutoff
+     */
+    private void purgeWebUploads(long dateCutoff) {
+        File webUploadDir = new File(System.getProperty("java.io.tmpdir"));
+        purge(webUploadDir, dateCutoff);
+    }
+
     private void purge(File dir, long dateCutoff) {
         File[] files = dir.listFiles();
         if (files != null) {
@@ -117,56 +129,126 @@ public class Purger extends TimerTask {
     }
     
     /**
-     * Purge the direct upload directories of all users
+     * Purge files in the user upload directory for each user.
+     * 
+     * Note: added by pcarr as a replacement for purgeDirectUploads
+     * 
      * @param dateCutoff
      */
-    private void purgeDirectUploads(long dateCutoff) {
-        UserUploadDao uploadDAO = new UserUploadDao();
-        List<User> users = (new UserDAO()).getAllUsers();
-        for (User i : users) {
-            Context context = Context.getContextForUser(i.getUserId());
-            File userUploadDir = ServerConfiguration.instance().getUserUploadDir(context);
-            boolean purgeAll = ServerConfiguration.instance().getGPBooleanProperty(context, "upload.purge.all", false);
-            purgeUserUploads(userUploadDir, i.getUserId(), dateCutoff, purgeAll, uploadDAO);
+    private void purgeUserUploads(long dateCutoff) {
+        List<String> userIds = new ArrayList<String>();
+        HibernateUtil.beginTransaction();
+        UserDAO userDao = new UserDAO();
+        List<User> users = userDao.getAllUsers();
+        for(User user : users) {
+            userIds.add( user.getUserId() );
+        }
+        HibernateUtil.closeCurrentSession();
+        for(String userId : userIds) {
+            Context userContext = Context.getContextForUser(userId);
+            purgeUserUploadsForUser(userContext, dateCutoff);
+        }
+    }
+    
+    private void purgeUserUploadsForUser(Context userContext, long dateCutoff) {
+        boolean purgeAll = ServerConfiguration.instance().getGPBooleanProperty(userContext, "upload.purge.all", false);
+        
+        GpFilePath rootDir = null;
+        try {
+            rootDir = UserUploadManager.getUserUploadDir(userContext);
+        }
+        catch (Exception e) {
+            log.error("Error purging upload files for user: "+userContext.getUserId(), e);
+            return;
+        }
+        purgeUserUploadsFromDir(userContext, rootDir, rootDir, dateCutoff, purgeAll);
+    }
+
+    /**
+     * recursively purge each file from the given dir
+     */
+    private void purgeUserUploadsFromDir(Context userContext, GpFilePath rootDir, GpFilePath dir, long dateCutoff, boolean purgeAll) {
+        File f = dir.getServerFile();
+        //filter some files from the list of files and directories to be purged
+        FilenameFilter filenameFilter = new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                if ( DataManager.FILE_EXCLUDES.contains( name ) ) {
+                    return false;
+                }
+                return true;
+            }
+        };
+        File[] uploadFiles = f.listFiles(filenameFilter);
+        for(File uploadFile : uploadFiles) {
+            GpFilePath filePath = null;
+
+            try {
+                //get relative path
+                File relativePath = FileUtil.relativizePath(rootDir.getServerFile(), uploadFile);
+                filePath = UserUploadManager.getUploadFileObj(userContext, relativePath);
+            }
+            catch (Throwable t) {
+                String message = "Error getting GpFilePath for file, '"+uploadFile.getPath()+", :"+t.getLocalizedMessage();
+                log.error(message, t);
+            }
+            if (filePath != null) {
+                if (filePath.isDirectory()) {
+                    //depth-first delete, just in case
+                    //NOTE: as currently implemented, depth-first is not necessary, because
+                    //    we are not deleting directories, just files in directories
+                    purgeUserUploadsFromDir(userContext, rootDir, filePath, dateCutoff, purgeAll);
+                }
+                else {
+                    //purge each individual file here, 
+                    boolean purged = purgeUserUploadFile(userContext, filePath, dateCutoff, purgeAll);
+                }
+            }
         }
     }
     
     /**
-     * Purge the direct upload directory of a given user
-     * @param dir
-     * @param dateCutoff
-     * @param purgeAll
+     * Purge the given file, if and only if, it is supposed to be purged.
+     * 
+     * @param userContext, requires a valid userId
+     * @param uploadFilePath, the file to purge
+     * @param dateCutoff, don't purge if the file is newer than this date
+     * @param purgeAll, when this is true, purge all files, when false, only purge partial uploads
+     * 
+     * @return true if the file was deleted
      */
-    private void purgeUserUploads(File dir, String user, long dateCutoff, boolean purgeAll, UserUploadDao uploadDAO) {
-        Context context = Context.getContextForUser(user);
-        for (File i : dir.listFiles()) {
-            UserUpload file = null;
-            try {
-                File relFile = new File(UserUploadManager.absoluteToRelativePath(context, i.getCanonicalPath()));
-                GpFilePath filepath = GpFileObjFactory.getUserUploadFile(context, relFile);
-                file = uploadDAO.selectUserUpload(user, filepath);
-                if (file == null) {
-                    log.warn("Unable to find file in database, deteting manually: " + i.getAbsolutePath());
-                    i.delete();
-                    break;
-                }
-                
-                if (!i.isDirectory() && i.lastModified() < dateCutoff && (purgeAll || file.getNumPartsRecd() < file.getNumParts())) {
-                    // Delete the file
-                    boolean success = DataManager.deleteFile(filepath);
-                    if (!success) {
-                        log.error("Problems deleting file: " + i.getAbsolutePath());
-                    }
-                }
-                else if (i.isDirectory()) {
-                    // Recurse into that directory
-                    purgeUserUploads(i, user, dateCutoff, purgeAll, uploadDAO);
-                }
+    private boolean purgeUserUploadFile(Context userContext, GpFilePath uploadFilePath, long dateCutoff, boolean purgeAll) {
+        //Note: operating on server files because optimization is not as important as consistency
+        File serverFile = uploadFilePath.getServerFile();
+        
+        //double-check that it's not a directory
+        if (serverFile.isDirectory()) {
+            return false;
+        }
+        //check that it is older than the purge date
+        if (serverFile.lastModified() >= dateCutoff) {
+            return false;
+        }
+        if (!purgeAll) {
+            //only delete partial uploads
+            if (uploadFilePath.getNumPartsRecd() == uploadFilePath.getNumParts()) {
+                return false;
             }
-            catch (Exception e) {
-                log.error("Unable to get cannonical path of file: " + i.getAbsolutePath());
-                break;
-            }
+        }
+        
+        //if we are here, it means delete the file, whether we have a record in the DB or not
+        //1) delete the file from the filesystem
+        //2) remove the record from the db, single db transaction per file
+        boolean deleted = false;
+        try {
+            HibernateUtil.beginTransaction();
+            deleted = DataManager.deleteUserUploadFile(userContext.getUserId(), uploadFilePath);
+            HibernateUtil.commitTransaction();
+            return deleted;
+        }
+        catch (Throwable t) {
+            log.error("Error in purgeUserUploadFile for file '"+ uploadFilePath.getRelativeUri()+"': "+t.getLocalizedMessage(), t);
+            HibernateUtil.rollbackTransaction();
+            return false;
         }
     }
     

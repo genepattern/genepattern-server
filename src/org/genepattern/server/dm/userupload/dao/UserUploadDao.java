@@ -54,7 +54,7 @@ public class UserUploadDao extends BaseDAO {
     }
     
     public int deleteUserUpload(String userId, GpFilePath gpFileObj) {
-        String hql = "delete UploadFile uf where uf.userId = :userId and uf.path = :path";
+        String hql = "delete "+UserUpload.class.getName()+" uu where uu.userId = :userId and uu.path = :path";
         Query query = HibernateUtil.getSession().createQuery( hql );
         query.setString("userId", userId);
         query.setString("path", gpFileObj.getRelativePath());

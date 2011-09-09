@@ -26,24 +26,21 @@ import org.genepattern.webservice.WebServiceException;
 public class JobManager {
     private static Logger log = Logger.getLogger(JobManager.class);
     
-    //public static File getJobDirectory(JobInfo jobInfo) {
-    //    
-    //}
-
     /**
-     * Create the job directory for a newly added job.
-     * This method requires a valid jobId, but does not check if the jobId is valid.
-     * 
-     * @throws IllegalArgumentException, JobDispatchException
+     * Get the working directory for the given job.
+     * In GP 3.3.2 and earlier, this is hard-coded based on a configured property.
+     * In future releases, the working directory is configurable, and must be stored in the DB.
+     * @param jobInfo
+     * @return
      */
-    public static File createJobDirectory(JobInfo jobInfo) throws JobSubmissionException {
+    public static File getWorkingDirectory(JobInfo jobInfo) throws Exception {
         if (jobInfo == null) {
-            throw new IllegalArgumentException("Can't create job directory for jobInfo=null");
+            throw new IllegalArgumentException("Can't get working directory for jobInfo=null");
         }
         if (jobInfo.getJobNumber() < 0) {
-            throw new IllegalArgumentException("Can't create job directory for jobInfo.jobNumber="+jobInfo.getJobNumber());
+            throw new IllegalArgumentException("Can't get working directory for jobInfo.jobNumber="+jobInfo.getJobNumber());
         }
-        
+
         File jobDir = null;
         try {
             ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo);
@@ -51,9 +48,26 @@ public class JobManager {
             jobDir = new File(rootJobDir, ""+jobInfo.getJobNumber());
         }
         catch (ServerConfiguration.Exception e) {
-            throw new JobSubmissionException(e.getLocalizedMessage());
+            throw new Exception(e.getLocalizedMessage());
         }
+        return jobDir;
+    }
 
+    /**
+     * Create the job directory for a newly added job.
+     * This method requires a valid jobId, but does not check if the jobId is valid.
+     * 
+     * @throws IllegalArgumentException, JobDispatchException
+     */
+    public static File createJobDirectory(JobInfo jobInfo) throws JobSubmissionException { 
+        File jobDir = null;
+        try {
+            jobDir = getWorkingDirectory(jobInfo);
+        }
+        catch (Throwable t) {
+            throw new JobSubmissionException(t.getLocalizedMessage());
+        }
+        
         //TODO: record the working dir with the jobInfo and save to DB
         //jobInfo.setWorkingDir(jobDir.getPath());
         // make directory to hold input and output files

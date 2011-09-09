@@ -85,33 +85,25 @@ public class DataManager {
     }
 
     /**
-     * Delete the file from the server file system, checking permissions based on user context.
+     * Delete the user upload file from the server file system, checking permissions based on the given userId.
      * 
-     * @param uploadedFile
+     * @param userId, the current user who is requesting to delete the file
+     * @param uploadedFileObj, the record of the user upload file to delete
      * 
      * @return true if the file was deleted
      */
-    public static boolean deleteFile(GpFilePath fileObj) {
-        //this begins a new transaction
-        UserUploadDao dao = new UserUploadDao();
+    public static boolean deleteUserUploadFile(String userId, GpFilePath uploadedFileObj) {
+        File file = uploadedFileObj.getServerFile();
         
-        // Reselect GpFilePath from the database
-        UserUpload uploadedFile = dao.selectUserUpload(UIBeanHelper.getUserId(), fileObj);
-        
-        //if we are in a transaction, don't commit and close
-        boolean inTransaction = HibernateUtil.isInTransaction();
-
-        if (uploadedFile == null) {
-            log.error("FileObj is null");
-            return false;
-        }
-
-        File file = fileObj.getServerFile();
-
+        //1) if it exists, delete the file from the file system
         boolean deleted = false;
-        boolean canDelete = canDelete(uploadedFile);
+        boolean canDelete = canDelete(userId, uploadedFileObj);
         if (!canDelete) {
             return false;
+        }
+        if (!file.exists()) {
+            //indicate success even if the file doesn't exist
+            deleted = true;
         }
             
         if (file.exists()) {
@@ -120,11 +112,22 @@ public class DataManager {
                 log.error("Error deleting file: "+file.getPath());
             }
         }
-        // as currently implemented there is a small chance the db will not get updated
-        // after deleting the file, therefore, we remove the record from the DB in all cases
+        //2) remove the record from the DB, even if it doesn't exist in the file system
         if (!file.exists()) {
+            //if we are in a transaction, don't commit and close
+            boolean inTransaction = HibernateUtil.isInTransaction();
             try {
-                dao.delete(uploadedFile);
+                //this begins a new transaction
+                UserUploadDao dao = new UserUploadDao();
+                int numDeleted = dao.deleteUserUpload(userId, uploadedFileObj);
+                if (numDeleted != 1) {
+                    log.error("Error deleting user upload file record from db, '"+uploadedFileObj.getRelativeUri()+"'. numDeleted="+numDeleted);
+                    if (numDeleted > 1) {
+                        deleted = false;
+                        //rollback if more than one row was deleted
+                        HibernateUtil.rollbackTransaction();
+                    }
+                }
                 if (!inTransaction) {
                     HibernateUtil.commitTransaction();
                 }
@@ -132,52 +135,58 @@ public class DataManager {
             catch  (Throwable t) {
                 deleted = false;
                 //possible error updating the DB
-                log.error("Error deleting file record from db, path="+uploadedFile.getPath(), t);
-            }
-            finally {
-                if (!inTransaction) {
-                    HibernateUtil.rollbackTransaction();
-                } 
+                log.error("Error deleting user upload file record from db, '"+uploadedFileObj.getRelativeUri()+"'", t);
+                HibernateUtil.rollbackTransaction();
             }
         } 
         return deleted;
     }
-    
+
     /**
-     * Checks whether it is possible to delete a given file
+     * Checks whether the given user has permission to delete the server file at the given filePath reference.
+     * 
+     * Note: If for some reason the file no longer exists on the server, still return true.
+     * TODO: should have better error handling/doc for when the file is still on the DB but not on the file system
+     * 
+     * @param currentUser
      * @param uf
      * @return
      */
-    public static boolean canDelete(UserUpload uf) {
+    private static boolean canDelete(String currentUserId, GpFilePath uf) {
         if (uf == null) {
             return false;
         }
-        File toDel = new File(uf.getPath());
+        File toDel = uf.getServerFile();
+        if (!toDel.exists()) {
+            //Note: returning true to simplify code
+            log.error("Attempt to delete a file which doesn't exist: "+toDel.getPath());
+            return true;
+        }
+        
         if (toDel.isDirectory() && toDel.listFiles().length > 0) {
-            log.info("Unable to delete non-empty directories: " + toDel.getPath());
+            log.error("Unable to delete non-empty directories: " + toDel.getPath());
             return false;
         }
-        String userid = UIBeanHelper.getUserId();
-        if (userid == null) {
+        if (currentUserId == null) {
             //require a userid
+            log.error("Require a valid userId to delete file: " + toDel.getPath());
+            return false;
+        }
+        if (!toDel.canWrite()) {
+            log.error("Server error, GP server doesn't have permission to delete file: "+toDel.getPath());
             return false;
         }
 
         //TODO: come up with an improved policy for ACL for admin users
         boolean isAdmin = false;
-        isAdmin = AuthorizationHelper.adminJobs(userid);
+        isAdmin = AuthorizationHelper.adminJobs(currentUserId);
         if (isAdmin) {
             return true;
         }
         
-        if (!toDel.canWrite()) {
-            //TODO: server error
-            return false;
-        }
-        
-        return userid.equals(uf.getUserId());
+        return currentUserId.equals(uf.getOwner());
     }
-    
+
     /**
      * Checks whether a file is on the excluded files list.
      * Used when syncing the file system and database.

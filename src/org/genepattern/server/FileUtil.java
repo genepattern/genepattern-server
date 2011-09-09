@@ -164,7 +164,7 @@ public class FileUtil {
      * @return If childFile is descendant of the parentDir, the path relative to the parentDir, Otherwise the childFile unmodified.
      * @throws IOException, in the event of system errors with {@link File#getCanonicalFile()}
      */
-    private static File relativizePath(File parentDir, File childFile)
+    public static File relativizePath(File parentDir, File childFile)
             throws IOException {
         File parent = parentDir.getCanonicalFile();
         File child = childFile.getCanonicalFile();

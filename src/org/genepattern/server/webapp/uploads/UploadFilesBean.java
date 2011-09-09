@@ -736,7 +736,7 @@ public class UploadFilesBean {
          * Helper method, which actually deletes the file.
          */
         public boolean deleteFile() {
-            boolean deleted = DataManager.deleteFile(file);
+            boolean deleted = DataManager.deleteUserUploadFile(currentUser, file);
             if (deleted) {
                 UIBeanHelper.setInfoMessage("Deleted file: " + file.getName());
                 return true;

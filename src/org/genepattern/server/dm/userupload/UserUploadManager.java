@@ -16,6 +16,17 @@ import org.genepattern.server.dm.userupload.dao.UserUploadDao;
 
 public class UserUploadManager {
     private static Logger log = Logger.getLogger(UserUploadManager.class);
+
+    /**
+     * Get the root upload directory for the given user.
+     * @param userContext, requires a valid userId
+     * @return
+     * @throws Exception
+     */
+    static public GpFilePath getUserUploadDir(ServerConfiguration.Context userContext) throws Exception {
+        return GpFileObjFactory.getUserUploadDir(userContext);
+    }
+    
     /**
      * Create an instance of a GpFilePath object for the user upload file. 
      * If there is already a record in the DB, initialize the file meta data.
