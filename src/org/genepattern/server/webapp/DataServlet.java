@@ -431,25 +431,6 @@ public class DataServlet extends HttpServlet implements Servlet {
     public static String getDataServlertUrl() {
         return UIBeanHelper.getServer() + "/data/";
     }
-    
-    public static String getPathFromUrl(String url) {
-        String[] parts = url.split("/data/", 2);
-        if (parts.length > 1) {
-            String path;
-            try {
-                path = URLDecoder.decode(parts[1], "UTF-8");
-            }
-            catch (UnsupportedEncodingException e) {
-                log.error("Unable to decode " + parts[1] + " using UTF-8");
-                path = parts[1];
-            }
-            return path;
-        }
-        else {
-            return null;
-        }
-    }
-  
 
     public static GpFilePath getFileFromUrl(String url) {
         try {
