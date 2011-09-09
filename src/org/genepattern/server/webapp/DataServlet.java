@@ -451,15 +451,9 @@ public class DataServlet extends HttpServlet implements Servlet {
     }
   
 
-    public static File getFileFromUrl(String url) {
-        String path = getPathFromUrl(url);
-        if (path == null) {
-            return null;
-        }
-        File file = new File(path);
+    public static GpFilePath getFileFromUrl(String url) {
         try {
-            GpFilePath filePath = GpFileObjFactory.getUserUploadFile(UIBeanHelper.getUserContext(), file);
-            return filePath.getServerFile();
+            return GpFileObjFactory.getRequestedGpFileObj(url);
         }
         catch (Exception e) {
             log.error("Error getting the filePath for " + UIBeanHelper.getUserId() + "'s file " + url);

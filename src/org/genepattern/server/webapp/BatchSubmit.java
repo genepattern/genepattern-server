@@ -317,7 +317,7 @@ public class BatchSubmit {
             File dir = null;
             
             if (urlInput) {
-                dir = DataServlet.getFileFromUrl(dirUrl);
+                dir = DataServlet.getFileFromUrl(dirUrl).getServerFile();
             }
             else if (ServerConfiguration.instance().getAllowInputFilePaths(context)) {
                 dir = new File(dirUrl);

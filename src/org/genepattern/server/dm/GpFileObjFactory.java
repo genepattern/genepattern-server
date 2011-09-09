@@ -139,6 +139,16 @@ public class GpFileObjFactory {
     
     /**
      * Get the GpFilePath reference from a GP URL request.
+     * @param url
+     * @return
+     * @throws Exception
+     */
+    static public GpFilePath getRequestedGpFileObj(String url) throws Exception {
+        return getRequestedGpFileObj(new URL(url));
+    }
+    
+    /**
+     * Get the GpFilePath reference from a GP URL request.
      * 
      * @param url, expecting a full url to a resource on the GP server
      * 
