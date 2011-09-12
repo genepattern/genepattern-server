@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 
 public class GpFileObjFactory {
     private static Logger log = Logger.getLogger(GpFileObjFactory.class);
@@ -162,8 +163,12 @@ public class GpFileObjFactory {
         if (genePatternUrl.endsWith("/")) {
             genePatternUrl = genePatternUrl.substring(0, genePatternUrl.length() - 1);
         }
-        String servletPathPlus = urlStr.substring( genePatternUrl.length() );
-        
+        //initialize as if it is a path relative to the GenePatternURL
+        String servletPathPlus = urlStr;
+        if (urlStr.startsWith(genePatternUrl)) {
+            //cut the GenePatternURL
+            servletPathPlus = urlStr.substring( genePatternUrl.length() );
+        }
         String servletPath = servletPathPlus;
         String pathInfo = "";
         int idx = servletPathPlus.indexOf("/", 1);
@@ -185,7 +190,9 @@ public class GpFileObjFactory {
             return gpFileObj;
         }
         if ("/data".equals(servletPath)) {
-            throw new Exception("/data/ paths not immplemented!");
+            File serverFile = extractServerFile(pathInfo);
+            GpFilePath serverFileObj = ServerFileObjFactory.getServerFile(serverFile);
+            return serverFileObj;
         }
         throw new Exception("Invalid servletPath: "+servletPath);
     }
@@ -201,6 +208,14 @@ public class GpFileObjFactory {
         }
         String userId = pathInfo.substring(1, endIndex);
         return userId;
+    }
+    
+    private static File extractServerFile(String pathInfo) throws Exception {
+        if (!pathInfo.startsWith("/")) {
+            throw new Exception("Unexpected input: "+pathInfo);
+        }
+        //skip past the first slash
+        return new File( pathInfo.substring(1) );
     }
 
     /**
