@@ -197,7 +197,7 @@ public class GpFileObjFactory {
         throw new Exception("Invalid servletPath: "+servletPath);
     }
     
-    private static String extractUserId(String pathInfo) throws Exception {
+    public static String extractUserId(String pathInfo) throws Exception {
         if (!pathInfo.startsWith("/")) {
             //pathInfo should start with a '/'
             throw new Exception("Unexpected input: "+pathInfo);

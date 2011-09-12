@@ -2,10 +2,8 @@ package org.genepattern.server.webapp;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.List;
 
 import javax.servlet.Servlet;
@@ -442,9 +440,19 @@ public class DataServlet extends HttpServlet implements Servlet {
         }
     }
     
+    public static String getUserFromUploadFile(File file) throws Exception {
+        String path = file.getCanonicalPath();
+        String[] parts = path.split("/users", 2);
+        if (parts.length > 1) {
+            return GpFileObjFactory.extractUserId(parts[1]);
+        }
+        throw new Exception("Unable to get the username from the upload file");
+    }
+    
     public static String getUrlFromFile(File file) {
-        Context context = UIBeanHelper.getUserContext();
         try {
+            String user = getUserFromUploadFile(file);
+            Context context = Context.getContextForUser(user);
             String path = file.getCanonicalPath();
             String relative = UserUploadManager.absoluteToRelativePath(context, path);
             File relativeFile = new File(relative);
