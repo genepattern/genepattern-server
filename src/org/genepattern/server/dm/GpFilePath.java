@@ -225,17 +225,17 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      * to a module.
      * @return
      */
-    abstract String getFormFieldValue();
+    abstract public String getFormFieldValue();
     
     /**
      * Get the string literal to use when serializing a job result into the ANALYSIS_JOB.PARAMETER_INFO CLOB.
      * @return
      */
-    abstract String getParamInfoValue();
+    abstract public String getParamInfoValue();
     
     /**
      * Get the string literal to use when serializing a module into the TASK_MASTER table.
      * @return
      */
-    abstract String getTasklibValue();
+    abstract public String getTasklibValue();
 }
