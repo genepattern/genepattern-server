@@ -70,9 +70,11 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
         return getRelativeUri().getPath().equals( gpFilePath.getRelativeUri().getPath() );
     }
     
-    private String owner = null;
+    private String owner = "";
     /**
      * Get the GP userid for the owner of the file.
+     * this can be set to the empty string if there is no de facto owner for the file,
+     * for example server files are not owned by a particular user.
      * @return
      */
     public String getOwner() {
