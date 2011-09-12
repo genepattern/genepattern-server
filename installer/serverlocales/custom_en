@@ -52,9 +52,6 @@ ASCIIFileManipulator.9c9d2bb985a5.additionalText=
 # ASCIIFileManipulator.9cb004b38637.additionalText=
 ASCIIFileManipulator.9cb004b38637.additionalText=
 
-# ASCIIFileManipulator.d5531da3a535.additionalText=gpServerHostAddress=$HOST_ADDRESS$\r\n\r\n
-ASCIIFileManipulator.d5531da3a535.additionalText=gpServerHostAddress=$HOST_ADDRESS$\r\n\r\n
-
 # ASCIIFileManipulator.da094140a30e.additionalText=http.proxyHost=$HTTP_PROXYSERVER$\r\nhttp.proxyPort=$HTTP_PROXYPORT$\r\n\r\n\r\n
 ASCIIFileManipulator.da094140a30e.additionalText=http.proxyHost=$HTTP_PROXYSERVER$\r\nhttp.proxyPort=$HTTP_PROXYPORT$\r\n\r\n\r\n
 

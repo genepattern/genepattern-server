@@ -5230,11 +5230,6 @@ ftp.proxyPort=$HTTP_PROXYPORT$
 					</method>
 					<method name="addElement">
 						<object class="com.zerog.ia.installer.actions.ASCIIFileManipulator" objectID="d5531da3a535">
-							<property name="additionalText">
-								<string><![CDATA[gpServerHostAddress=$HOST_ADDRESS$
-
-]]></string>
-							</property>
 							<property name="fileTargetType">
 								<int>1</int>
 							</property>

@@ -86,7 +86,7 @@ public class EmailNotificationManager {
 	}
 
 	String addresses = email;
-	String from = "GenePattern@" + System.getProperty("gpServerHostAddress");
+    String from = "GenePattern@" + System.getProperty("fqHostName");
 	String subject = "Job " + jobId + " - " + moduleName + " - " + status;
 	StringBuffer msg = new StringBuffer();
 	msg.append("The results for job " + jobId + ", " + moduleName + ", are available on the ");
@@ -240,7 +240,7 @@ class JobWaitThread extends Thread {
 
 	    EmailNotificationManager em = EmailNotificationManager.getInstance();
 	    String addresses = email;
-	    String from = "GenePattern@" + System.getProperty("gpServerHostAddress");
+	    String from = "GenePattern@" + System.getProperty("fqHostName");
 	    String subject = "Job " + jobID + " - status unavailable";
 	    StringBuffer msg = new StringBuffer();
 	    msg.append("There was a problem getting the status for job " + jobID);
