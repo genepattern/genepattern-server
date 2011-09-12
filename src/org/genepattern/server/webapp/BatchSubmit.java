@@ -23,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
@@ -317,7 +318,11 @@ public class BatchSubmit {
             File dir = null;
             
             if (urlInput) {
-                dir = DataServlet.getFileFromUrl(dirUrl).getServerFile();
+                GpFilePath attainedFile = DataServlet.getFileFromUrl(dirUrl);
+                if (attainedFile == null) {
+                    throw new FileUploadException("Unable to attain the file at this URL: " + dirUrl);
+                }
+                dir = attainedFile.getServerFile();
             }
             else if (ServerConfiguration.instance().getAllowInputFilePaths(context)) {
                 dir = new File(dirUrl);
