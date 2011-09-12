@@ -33,6 +33,8 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
+import org.genepattern.server.dm.GpFileObjFactory;
+import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
@@ -256,6 +258,18 @@ public class RunTaskHelper {
                     pinfo.getAttributes().put(ParameterInfo.TYPE, "");
                 }
                 if (value != null && !value.equals("")) {
+                    if (pinfo._isDirectory()) {
+                        GpFilePath directory = null;
+                        try {
+                            directory = GpFileObjFactory.getRequestedGpFileObj(value);
+                            inputFileParameters.put(pinfo.getName(), directory.getServerFile().getPath());
+                            value = directory.getServerFile().getPath();
+                        }
+                        catch (Exception e) {
+                            log.error("Could not get a GP file path to the directory " + value);
+                        }
+                    }
+                    
                     if (urlParameters.contains(pinfo.getName())) {
                         HashMap attrs = pinfo.getAttributes();
                         attrs.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
