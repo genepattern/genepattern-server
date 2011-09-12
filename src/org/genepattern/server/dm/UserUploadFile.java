@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.URI;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration.Context;
 
 
 public class UserUploadFile extends GpFilePath {
@@ -55,6 +56,22 @@ public class UserUploadFile extends GpFilePath {
     public String getTasklibValue() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    public boolean canRead(boolean isAdmin, Context userContext) {
+        if (isAdmin) {
+            return true;
+        }
+        
+        if (owner == null || owner.length() == 0) {
+            return false;
+        }
+        
+        if (userContext == null) {
+            return false;
+        }
+        
+        return owner.equals( userContext.getUserId() );
     }
     
     

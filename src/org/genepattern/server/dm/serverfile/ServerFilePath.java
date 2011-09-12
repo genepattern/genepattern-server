@@ -3,10 +3,15 @@ package org.genepattern.server.dm.serverfile;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.server.executor.CommandProperties;
+import org.genepattern.server.webapp.DataServlet;
 
 /**
  * Implement GpFilePath for server files.
@@ -69,6 +74,43 @@ public class ServerFilePath extends GpFilePath {
     public String getTasklibValue() {
         // TODO Auto-generated method stub
         throw new IllegalArgumentException("Not implemented!");
+    }
+    
+    /**
+     * Implement user permissions for server files.
+     */
+    public boolean canRead(boolean isAdmin, Context userContext) {
+        if (isAdmin) {
+            return true;
+        }
+        
+        if (userContext == null) {
+            return false;
+        }
+
+        final boolean allowInputFilePaths = ServerConfiguration.instance().getAllowInputFilePaths(userContext);
+        if (!allowInputFilePaths) {
+            return false;
+        }
+
+        final CommandProperties.Value value = ServerConfiguration.instance().getValue(userContext, "server.browse.file.system.root");
+        if (value == null) {
+            //Note: by default, all files on the server's file system are readable
+            //final String DEFAULT_ROOT = "/";            
+            //value = new CommandProperties.Value(DEFAULT_ROOT);
+            return true;
+        }
+        
+        final File theFile = getServerFile();
+        final List<String> filepaths = value.getValues();
+        for(final String filepath : filepaths) {
+            final File rootFile = new File(filepath);
+            //if the fileObj is a descendant of the root file, return true
+            if (DataServlet.isDescendant(rootFile, theFile)) {
+                return true;
+            }
+        }
+        return false; 
     }
 
 }

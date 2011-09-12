@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration.Context;
 
 /**
  * Represents a path to a GenePattern datafile, with the ability to generate a representation for use in various contexts such as: 
@@ -70,7 +71,7 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
         return getRelativeUri().getPath().equals( gpFilePath.getRelativeUri().getPath() );
     }
     
-    private String owner = "";
+    protected String owner = "";
     /**
      * Get the GP userid for the owner of the file.
      * this can be set to the empty string if there is no de facto owner for the file,
@@ -221,6 +222,17 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
      * @return
      */
     abstract public File getRelativeFile();
+
+    /**
+     * Get the read access permission flag for this file path.
+     * 
+     * TODO: implement isAdmin in the ServerConfiguration Context class.
+     * 
+     * @param isAdmin, true if the current user has admin privileges.
+     * @param userContext
+     * @return true iff the currentUser has permission to read this file.
+     */
+    abstract public boolean canRead(boolean isAdmin, Context userContext);
     
     /**
      * Get the string literal to use as an input form value in a job submit form, when this file is to be specified as an input

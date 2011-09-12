@@ -141,6 +141,8 @@ import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.GpFileObjFactory;
+import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.JobStatus;
@@ -350,7 +352,29 @@ public class GenePatternAnalysisTask {
      * @throws IllegalArgumentException, If the URL refers to a file that the specified userId does not have permission to access.
      * @return The file or <tt>null</tt>
      */
-    private File localInputUrlToFile(URL url, boolean isAdmin, JobInfo jobInfo) {
+    private File localInputUrlToFile(URL url, boolean isAdmin, Context jobContext) {
+        JobInfo jobInfo = jobContext.getJobInfo();
+        //new way of converting server url to file path
+        GpFilePath inputFilePath = null;
+        try {
+            inputFilePath = GpFileObjFactory.getRequestedGpFileObj(url);
+        }
+        catch (Throwable t) {
+            //ignore exception, because we have not fully implemented GpFileObjFactory methods
+            //TODO: eventually we should not ignore this exception
+        }
+        if (inputFilePath != null) {
+            boolean canRead = inputFilePath.canRead(isAdmin, jobContext);
+            if (!canRead) {
+                String errorMessage = "You are not permitted to access the requested file: "+url;
+                log.error(errorMessage);
+                throw new IllegalArgumentException(errorMessage);
+            }
+            return inputFilePath.getServerFile().getAbsoluteFile();
+        }
+        
+        //TODO: eventually, we shouldn't need any code beyond this point
+        
         String path = url.getPath();
         try {
             path = URLDecoder.decode(path, "UTF-8");
@@ -1116,7 +1140,7 @@ public class GenePatternAnalysisTask {
                                 URL url = uri.toURL();
                                 if (isLocalHost(url)) {
                                     try {
-                                        File file = localInputUrlToFile(url, isAdmin, jobInfo);
+                                        File file = localInputUrlToFile(url, isAdmin, jobContext);
                                         if (file != null) {
                                             if (inputFileMode == INPUT_FILE_MODE.PATH) {
                                                 paramsCopy[i].setValue(file.getAbsolutePath());
