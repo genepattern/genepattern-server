@@ -1173,7 +1173,7 @@ public class GenePatternAnalysisTask {
                                     if (gsClient.isGenomeSpaceFile(url)) {
                                         try {
                                             is = gsClient.getInputStream(jobInfo.getUserId(), url);
-                                            name = getDownloadFileName(url.openConnection(), url);
+                                            name = getGSDownloadFileName(url.openConnection(), url);
                                         }
                                         catch (GsClientException e) {
                                             vProblems.add("Error connecting to GenomeSpace: "+e.getLocalizedMessage());
@@ -2010,6 +2010,36 @@ public class GenePatternAnalysisTask {
 	return strippedParams.toArray(new ParameterInfo[strippedParams.size()]);
 
     }
+    
+    public static String getGSDownloadFileName(URLConnection conn, URL url) {
+        String baseFilename = getDownloadFileName(conn, url);
+        String query = url.getQuery();
+        boolean converted = query != null && query.startsWith("dataformat");
+        String extension = null;
+
+        if (converted) {
+            boolean nextIsIt = false;
+            for (String i : query.split("/")) {
+                if (nextIsIt) {
+                    extension = i; 
+                    break;
+                }
+                if (i.equals("dataformat")) {
+                    nextIsIt= true;
+                }
+            } 
+            if (extension == null) return baseFilename;
+            
+            int dotIndex = baseFilename.lastIndexOf('.');
+            if (dotIndex < 0) return baseFilename;
+            
+            String filename = baseFilename.subSequence(0, dotIndex + 1) + extension;
+            return filename;
+        }
+        else {
+            return baseFilename;
+        }
+    }
 
     /**
      * Gets a filename that is as similar as possible to the given url
@@ -2022,6 +2052,7 @@ public class GenePatternAnalysisTask {
      */
     public static String getDownloadFileName(URLConnection conn, URL u) {
 	try {
+	    Map<String, List<String>> fields = conn.getHeaderFields();
 	    String contentDis = conn.getHeaderField("Content-Disposition");
 	    if (contentDis != null) {
 		String[] tokens = contentDis.split(";");
