@@ -261,9 +261,12 @@ public class RunTaskHelper {
                     if (pinfo._isDirectory()) {
                         GpFilePath directory = null;
                         try {
+                            //TODO: improve this; it works on the first run, but
+                            //    ... the input param value changes on the job status page, (from a url to a server file),
+                            //    ... and reload job doesn't work as expected
                             directory = GpFileObjFactory.getRequestedGpFileObj(value);
-                            inputFileParameters.put(pinfo.getName(), directory.getServerFile().getPath());
-                            value = directory.getServerFile().getPath();
+                            value = directory.getServerFile().getAbsolutePath();
+                            inputFileParameters.put(pinfo.getName(), value);
                         }
                         catch (Exception e) {
                             log.error("Could not get a GP file path to the directory " + value);
