@@ -2052,7 +2052,6 @@ public class GenePatternAnalysisTask {
      */
     public static String getDownloadFileName(URLConnection conn, URL u) {
 	try {
-	    Map<String, List<String>> fields = conn.getHeaderFields();
 	    String contentDis = conn.getHeaderField("Content-Disposition");
 	    if (contentDis != null) {
 		String[] tokens = contentDis.split(";");
