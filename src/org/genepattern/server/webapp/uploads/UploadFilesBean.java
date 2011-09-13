@@ -540,7 +540,14 @@ public class UploadFilesBean {
         }
 
         private String initUrl() {
-            return DataServlet.getUrlFromFile(file.getServerFile());
+            String url = "";
+            try {
+                url = file.getUrl().toString();
+            }
+            catch (Throwable t) {
+                log.error(t);
+            }
+            return url;
         }
 
         public String getPath() {
