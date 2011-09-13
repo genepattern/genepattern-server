@@ -440,7 +440,7 @@ public class DataServlet extends HttpServlet implements Servlet {
         }
     }
     
-    public static String getUserFromUploadFile(File file) throws Exception {
+    private static String getUserFromUploadFile(File file) throws Exception {
         String path = file.getCanonicalPath();
         String[] parts = path.split("/users", 2);
         if (parts.length > 1) {

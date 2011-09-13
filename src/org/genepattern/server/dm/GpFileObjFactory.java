@@ -124,6 +124,7 @@ public class GpFileObjFactory {
         userUploadFile.setServerFile( serverFile );
         userUploadFile.setRelativeFile( new File(relativePath) );
         userUploadFile.setOwner( userContext.getUserId() );
+        userUploadFile.setName( serverFile.getName() );
         return userUploadFile;
     }
     
@@ -187,6 +188,8 @@ public class GpFileObjFactory {
             File uploadFilePath = new File(relativePath);
             ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
             GpFilePath gpFileObj = GpFileObjFactory.getUserUploadFile(userContext, uploadFilePath);
+            
+            //TODO: init from either file system or DB depending on context, currently client must do this 
             return gpFileObj;
         }
         if ("/data".equals(servletPath)) {

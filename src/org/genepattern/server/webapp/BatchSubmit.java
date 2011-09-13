@@ -23,13 +23,17 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.DataManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.UrlUtil;
+import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.domain.BatchJob;
 import org.genepattern.server.domain.BatchJobDAO;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.handler.AddNewJobHandler;
+import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
 import org.genepattern.util.SemanticUtil;
@@ -146,14 +150,22 @@ public class BatchSubmit {
             int numFiles = multiFileValues.values().iterator().next().getNumFiles();
             for (int i = 0; i < numFiles; i++) {
                 for (String parameter : multiFileValues.keySet()) {
-                    boolean urlInput = multiFileValues.get(parameter).isUrl();
+                    MultiFileParameter param = multiFileValues.get(parameter);
+                    List<GpFilePath> files = param.getFiles();
+                    GpFilePath file = files.get(i);
+                    boolean urlInput = param.isUrl();
                     String parameterValue = null;
                     
-                    if (urlInput) {
-                        parameterValue = DataServlet.getUrlFromFile(multiFileValues.get(parameter).getFiles().get(i));
+                    if (urlInput) { 
+                        try {
+                            parameterValue = file.getUrl().toString();
+                        }
+                        catch (Throwable t) {
+                            log.error(t);
+                        }
                     }
                     else {
-                        parameterValue = multiFileValues.get(parameter).getFiles().get(i).getCanonicalPath();
+                        parameterValue = file.getServerFile().getCanonicalPath();
                     }
                     
                     assignParameter(parameter, parameterValue, parameterInfoArray);
@@ -220,7 +232,7 @@ public class BatchSubmit {
         return true;
     }
     
-    protected String getBaseFilename(File file) {
+    protected String getBaseFilename(GpFilePath file) {
         int periodIndex = file.getName().lastIndexOf('.');
         if (periodIndex > 0) {
             return file.getName().substring(0, periodIndex);
@@ -310,33 +322,79 @@ public class BatchSubmit {
     }
     
     protected void readBatchDirectories() throws FileUploadException {
-        Context context = Context.getContextForUser(userName);
+        Context userContext = Context.getContextForUser(userName);
+        boolean isAdmin = AuthorizationHelper.adminJobs(userName);
         
-        for (String i : multiFileValues.keySet()) {
-            String dirUrl = formValues.get(i + "_url");
-            boolean urlInput = isUrl(dirUrl);
-            File dir = null;
-            
-            if (urlInput) {
-                GpFilePath attainedFile = DataServlet.getFileFromUrl(dirUrl);
-                if (attainedFile == null) {
-                    throw new FileUploadException("Unable to attain the file at this URL: " + dirUrl);
-                }
-                dir = attainedFile.getServerFile();
-            }
-            else if (ServerConfiguration.instance().getAllowInputFilePaths(context)) {
-                dir = new File(dirUrl);
-            }
-            
-            if (dir == null || !dir.exists() || !dir.isDirectory() || !DataServlet.gpUserCanRead(userName, dir)) {
-                throw new FileUploadException("Batch directory not valid");
-            } 
-            
-            MultiFileParameter multiFile = new MultiFileParameter(dir.listFiles(), urlInput);
-            multiFileValues.put(i, multiFile);
-        }
+        for (String key : multiFileValues.keySet()) {
+            String dirUrl = formValues.get(key + "_url");
+            MultiFileParameter multiFile = getMultiFileParameter(isAdmin, userContext, dirUrl);
+            multiFileValues.put(key, multiFile);
+        }            
     }
     
+
+    //dirUrl is parsed from the form ( <paramname>_url )
+    private MultiFileParameter getMultiFileParameter(boolean isAdmin, Context userContext, String dirUrl) throws FileUploadException {
+        boolean urlInput = false; //TODO: don't need this anymore
+        GpFilePath inputDirPath = null;
+        try {
+            inputDirPath = GpFileObjFactory.getRequestedGpFileObj(dirUrl);
+            urlInput = true;
+        }
+        catch (Throwable t) {
+            //ignore thrown exception, it wasn't a valid url, but that is expected in some cases
+        }
+        
+        if (inputDirPath == null) {
+            //assume it is a literal server file path
+            if (ServerConfiguration.instance().getAllowInputFilePaths(userContext)) {
+                File serverFile = new File(dirUrl);
+                inputDirPath = ServerFileObjFactory.getServerFile(serverFile);
+            }
+        }
+        
+        if (inputDirPath == null) {
+            throw new FileUploadException("Unable to attain the file at this URL: " + dirUrl);
+        }
+        if (!inputDirPath.getServerFile().exists()) {
+            throw new FileUploadException("Batch directory does not exist: " + dirUrl);
+        }
+        if (!inputDirPath.getServerFile().isDirectory()) {
+            throw new FileUploadException("Batch directory is not a directory: " + dirUrl);
+        }
+        if (!inputDirPath.canRead(isAdmin, userContext)) {
+            throw new FileUploadException("You don't have permission to read this directory: " + dirUrl);
+        }
+
+        inputDirPath.initMetadata();
+        String parentUrl = "";
+        try {
+            parentUrl = inputDirPath.getUrl().toString();
+        }
+        catch (Throwable t) {
+            log.error(t);
+            throw new FileUploadException("Server error preparing batch input directory: " + dirUrl);
+        }
+        if (!parentUrl.endsWith("/")) {
+            parentUrl = parentUrl + "/";
+        }
+        List<GpFilePath> filePaths = new ArrayList<GpFilePath>();
+        File[] files = inputDirPath.getServerFile().listFiles();
+        for(File file : files) {
+            final String fileUrl = parentUrl + UrlUtil.encodeURIcomponent( file.getName() );
+            try {
+                GpFilePath filePath = GpFileObjFactory.getRequestedGpFileObj(fileUrl);
+                filePath.initMetadata();
+                filePaths.add(filePath);
+            }
+            catch (Throwable t) {
+                log.error("Server error preparing batch input file in directory: " + dirUrl +", fileUrl="+fileUrl);
+            }
+        }
+        MultiFileParameter multiFile = new MultiFileParameter(filePaths, urlInput);
+        return multiFile;
+    }
+
     protected boolean batchParamEmpty() {
         for (MultiFileParameter i : multiFileValues.values()) {
             if (i.getNumFiles() == 0) {
@@ -363,29 +421,29 @@ public class BatchSubmit {
                 acceptAll = true; 
                 log.debug("Input parameter for batch accepts no file types, setting to accept all") ;
             } 
-            List<File> matchedFiles = new ArrayList<File>();
+            List<GpFilePath> matchedFilePaths = new ArrayList<GpFilePath>();
             MultiFileParameter param = multiFileValues.get(i.getName());
             if (param != null) {
-                for (File j : param.getFiles()) {
+                for (GpFilePath j : param.getFiles()) {
                     boolean match = false;
-                    String ext = getFileExtension(j);
+                    String ext = j.getExtension();
                     for (String k : extensions) {
                         if (k.equals(ext)) {
                             match = true;
                         }
                     }
                     if (match || acceptAll) {
-                        matchedFiles.add(j);
+                        matchedFilePaths.add(j);
                     }
                 }
-                multiFileValues.put(i.getName(), new MultiFileParameter(matchedFiles.toArray(new File[matchedFiles.size()]), param.isUrl()));
+                multiFileValues.put(i.getName(), new MultiFileParameter(matchedFilePaths, param.isUrl()));
             }
         }
         
         // Get the union of base file names
         for (MultiFileParameter i : multiFileValues.values()) {
             if (firstSet) {
-                for (File j : i.getFiles()) {
+                for (GpFilePath j : i.getFiles()) {
                     matchingFileNames.add(getBaseFilename(j));
                 }
                 firstSet = false;
@@ -393,7 +451,7 @@ public class BatchSubmit {
             
             for (String j : matchingFileNames) {
                 boolean matched = false;
-                for (File k : i.getFiles()) {
+                for (GpFilePath k : i.getFiles()) {
                     if (j.equals(getBaseFilename(k))) {
                         matched = true;
                     }
@@ -406,18 +464,18 @@ public class BatchSubmit {
         
         // Filter all parameters to unioned filenames
         for (String i : multiFileValues.keySet()) {
-            List<File> filtered = new ArrayList<File>();
-            for (File j : multiFileValues.get(i).getFiles()) {
+            List<GpFilePath> filteredPaths = new ArrayList<GpFilePath>();
+            for (GpFilePath j : multiFileValues.get(i).getFiles()) {
                 String basename = getBaseFilename(j);
                 for (String k : matchingFileNames) {
                     if (basename.equals(k)) {
-                        filtered.add(j);
+                        filteredPaths.add(j);
                         break;
                     }
                 }
             }
             boolean isUrl = multiFileValues.get(i).isUrl();
-            multiFileValues.put(i, new MultiFileParameter(filtered.toArray(new File[filtered.size()]), isUrl));
+            multiFileValues.put(i, new MultiFileParameter(filteredPaths, isUrl));
         }
         
         if (batchParamEmpty()) {
@@ -438,12 +496,10 @@ public class BatchSubmit {
     }
 
     protected void loadAttachedFile(String prefix, FileItem submission) throws IOException {
-        // We expect to find an attached file. But perhaps, this field was never
-        // filled in
-        // if the user specified a URL instead.
+        // We expect to find an attached file. 
+        // But perhaps, this field was never filled in if the user specified a URL instead.
         if (submission.getSize() > 0) {
-            // use createTempFile to guarantee a unique name, but then change it
-            // to a directory
+            // use createTempFile to guarantee a unique name, but then change it to a directory
             File tempDir = File.createTempFile(prefix, null);
             tempDir.delete();
             tempDir.mkdir();
@@ -469,13 +525,17 @@ public class BatchSubmit {
     }
 
     private class MultiFileParameter {
-        private List<File> files = new ArrayList<File>();
-        private final CompareByFilename comparator = new CompareByFilename();
+        private List<GpFilePath> files = new ArrayList<GpFilePath>();
+        private final Comparator<GpFilePath> comparator = new Comparator<GpFilePath>() {
+                public int compare(GpFilePath o1, GpFilePath o2) {
+                    return o1.getName().compareTo( o2.getName() );
+                }
+        };
         private boolean url;
 
-        public MultiFileParameter(File[] values, boolean url) {
+        public MultiFileParameter(List<GpFilePath> values, boolean url) {
             this.url = url;
-            for (File i : values) {
+            for (GpFilePath i : values) {
                 boolean includeThis = true;
                 // Exclude unwanted system files
                 for (String j : DataManager.FILE_EXCLUDES) {
@@ -499,16 +559,10 @@ public class BatchSubmit {
             return files.size();
         }
 
-        public List<File> getFiles() {
+        public List<GpFilePath> getFiles() {
             return files;
         }
 
-    }
-
-    private class CompareByFilename implements Comparator<File> {
-        public int compare(File o1, File o2) {
-            return o1.getName().compareTo(o2.getName());
-        }
     }
 
 }
