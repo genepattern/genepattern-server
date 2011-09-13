@@ -8,6 +8,7 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.util.SemanticUtil;
 
 /**
  * Represents a path to a GenePattern datafile, with the ability to generate a representation for use in various contexts such as: 
@@ -94,17 +95,13 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
     public URL getUrl() throws Exception {
         URL gpUrl = getGenePatternUrl();
         URI uri = getRelativeUri();
-        
-        URI gpUri = gpUrl.toURI();
-        String newPath = gpUri.getPath() + uri.getPath();
-        File file = new File(newPath);
-        newPath = UrlUtil.encodeFilePath(file);
-        
-        if (isDirectory()) {
-            newPath = newPath + "/";
+
+        String str = gpUrl.toString() + uri.toString();
+        if (isDirectory() && !str.endsWith("/")) {
+            str = str + "/";
         }
-        URI full = gpUri.resolve( newPath );
-        return full.toURL();
+        URL url = new URL(str);
+        return url;
     }
 
     /**
@@ -137,6 +134,22 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
             r = r + "/";
         }
         return r;
+    }
+    
+    public void initMetadata() {
+        File file = getServerFile();
+        if (file != null && file.exists()) {
+            this.name = file.getName();
+            this.lastModified = new Date(file.lastModified());
+            this.fileLength = file.length();
+            this.extension = SemanticUtil.getExtension(file);
+            if (file.isDirectory()) {
+                this.kind = "directory";
+            }
+            else {
+                this.kind = SemanticUtil.getKind(file);
+            }
+        }
     }
     
     //cached file metadata

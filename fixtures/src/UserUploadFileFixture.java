@@ -1,4 +1,5 @@
 import java.io.File;
+import java.net.URL;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
@@ -44,7 +45,10 @@ public class UserUploadFileFixture {
 
     public String getUrl() throws Exception {
         GpFilePath uploadFile = initUserUploadFile();
-        return uploadFile.getUrl().toExternalForm();
+        URL url = uploadFile.getUrl();
+        String urlStr = url.toString();
+        String urlExt = url.toExternalForm();
+        return urlStr;
     }
     
     public String getServerFile() throws Exception {
