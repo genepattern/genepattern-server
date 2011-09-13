@@ -15,10 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.executor.CommandProperties;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
@@ -439,30 +437,31 @@ public class DataServlet extends HttpServlet implements Servlet {
             return null;
         }
     }
+
+    //TODO: delete these
+//    private static String getUserFromUploadFile(File file) throws Exception {
+//        String path = file.getCanonicalPath();
+//        String[] parts = path.split("/users", 2);
+//        if (parts.length > 1) {
+//            return GpFileObjFactory.extractUserId(parts[1]);
+//        }
+//        throw new Exception("Unable to get the username from the upload file");
+//    }
     
-    private static String getUserFromUploadFile(File file) throws Exception {
-        String path = file.getCanonicalPath();
-        String[] parts = path.split("/users", 2);
-        if (parts.length > 1) {
-            return GpFileObjFactory.extractUserId(parts[1]);
-        }
-        throw new Exception("Unable to get the username from the upload file");
-    }
-    
-    public static String getUrlFromFile(File file) {
-        try {
-            String user = getUserFromUploadFile(file);
-            Context context = Context.getContextForUser(user);
-            String path = file.getCanonicalPath();
-            String relative = UserUploadManager.absoluteToRelativePath(context, path);
-            File relativeFile = new File(relative);
-            GpFilePath filePath = GpFileObjFactory.getUserUploadFile(context, relativeFile);
-            return filePath.getUrl().toString();
-        }
-        catch (Exception e) {
-            log.error("Error in getUrlFromFile()");
-            return null;
-        }
-    }
+//    private static String getUrlFromFile(File file) {
+//        try {
+//            String user = getUserFromUploadFile(file);
+//            Context context = Context.getContextForUser(user);
+//            String path = file.getCanonicalPath();
+//            String relative = UserUploadManager.absoluteToRelativePath(context, path);
+//            File relativeFile = new File(relative);
+//            GpFilePath filePath = GpFileObjFactory.getUserUploadFile(context, relativeFile);
+//            return filePath.getUrl().toString();
+//        }
+//        catch (Exception e) {
+//            log.error("Error in getUrlFromFile()");
+//            return null;
+//        }
+//    }
 
 }
