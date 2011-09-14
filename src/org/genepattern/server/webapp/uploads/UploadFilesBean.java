@@ -708,7 +708,7 @@ public class UploadFilesBean {
         public void downloadFile() { 
             try { 
                 boolean serveContent = true;
-                File fileObj = new File(file.getRelativePath());
+                File fileObj = file.getServerFile();
 
                 //TODO: Hack, based on comments in http://seamframework.org/Community/LargeFileDownload
                 ServletContext servletContext = UIBeanHelper.getServletContext();
