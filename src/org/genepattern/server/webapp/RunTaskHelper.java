@@ -126,10 +126,13 @@ public class RunTaskHelper {
                             }
                             try {
                                 fi.write(file);
-                                // deal with reload files that are not uploaded and so for which
-                                // the write leaves an empty file
                                 if (file.length() == 0) {
-                                    file = oldFile;
+                                    log.debug("empty input file: "+fieldName+"="+file.getPath());
+                                    //TODO: not sure under what circumstances the following applies, so I am commenting it out, pcarr
+                                    //    @see: GP-3326
+                                    // deal with reload files that are not uploaded and so for which
+                                    // the write leaves an empty file
+                                    //    file = oldFile;
                                 }
                             } 
                             catch (Exception e) {
