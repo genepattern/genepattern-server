@@ -43,24 +43,24 @@
       <c:forEach var="file" items="#{uploadFilesBean.files}" varStatus="pStatus">
 
         <tr class="admin-row">
-          <td nowrap="nowrap"><h:outputText value="#{file.file.fileLength}" converter="fl" /></td>
-          <td nowrap="nowrap"><h:outputText value="#{file.file.lastModified}" converter="gp" /></td>
+          <td nowrap="nowrap"><h:outputText value="#{file.formattedLength}" /></td>
+          <td nowrap="nowrap"><h:outputText value="#{file.formattedModified}" /></td>
           <td nowrap="nowrap">
           
           <!--  popup menu for each file -->
           <rich:contextMenu event="onclick" attachTo="pic_#{pStatus.index}" id="fm_#{pStatus.index}" submitMode="none">
             <rich:menuItem submitMode="none"><h:commandLink value="Download" action="#{file.downloadFile}" /></rich:menuItem>
             <rich:menuItem submitMode="none"><h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file from the upload directory?');" action="#{file.deleteFileAction}" >
-              <f:param name="filePath" value="#{file.file.path}" />
+              <f:param name="filePath" value="#{file.path}" />
             </h:commandLink></rich:menuItem>
             <c:forEach var="sendTo" items="#{file.sendToModules}">
               <rich:menuItem submitMode="none" onclick="document.location.href='#{sendTo.sendToLink}'">Send to <h:outputLink value="#{sendTo.sendToLink}">#{sendTo.name}</h:outputLink></rich:menuItem>
             </c:forEach>
           </rich:contextMenu>
 
-          <h:outputLink value="#{file.url}">#{file.file.name}</h:outputLink><h:graphicImage value="/images/smallOptions.gif" id="pic_#{pStatus.index}" /></td>
-          <td>#{file.file.kind}</td>
-          <td>#{file.file.path}</td>
+          <h:outputLink value="#{file.url}">#{file.filename}</h:outputLink><h:graphicImage value="/images/smallOptions.gif" id="pic_#{pStatus.index}" /></td>
+          <td>#{file.kind}</td>
+          <td>#{file.path}</td>
         </tr>
       </c:forEach>
     </table>
