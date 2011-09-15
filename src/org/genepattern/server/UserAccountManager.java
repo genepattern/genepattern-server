@@ -81,6 +81,7 @@ public class UserAccountManager {
     /**
      * Validate the username before creating a new account.
      * Prohibit creating new user accounts whose names differ only by case.
+     * The username must be a valid filename on the server's file system.
      * 
      * @param username
      * @throws AuthenticationException
