@@ -372,7 +372,7 @@ public class RunTaskBean {
                     if (p.isInputFile()) {
                         List<String> fileFormats = SemanticUtil.getFileFormats(p);
                         for (String format : fileFormats) {
-                            List<String> inputParameterNames = kindToInputParameters.get(p.getName());
+                            List<String> inputParameterNames = kindToInputParameters.get(format);
                             if (inputParameterNames == null) {
                                 inputParameterNames = new ArrayList<String>();
                                 kindToInputParameters.put(format, inputParameterNames);

@@ -263,7 +263,8 @@ public class JobBean {
         HttpServletRequest request = UIBeanHelper.getRequest();
         String lsid = request.getParameter("module");
         lsid = UIBeanHelper.decode(lsid);
-
+        request.setAttribute("lsid", lsid);
+        
         String jobNumber = request.getParameter("jobNumber");
         jobNumber = UIBeanHelper.decode(jobNumber);
         request.setAttribute("matchJob", jobNumber);
@@ -277,7 +278,7 @@ public class JobBean {
         request.setAttribute("outputFileDirName", dirname);
 
         String path = request.getParameter("path");
-        dirname = UIBeanHelper.decode(path);
+        path = UIBeanHelper.decode(path);
         request.setAttribute("downloadPath", path);
 
         String source = request.getParameter("source");
