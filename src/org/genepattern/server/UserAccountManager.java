@@ -138,6 +138,10 @@ public class UserAccountManager {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
                     "Invalid username: '"+username+"': Can't contain ('/') character.");
         } 
+        if (username.contains("\\")) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
+                    "Invalid username: '"+username+"': Can't contain ('\\') character.");
+        } 
         if (username.startsWith("\"")) {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
                     "Invalid username: '"+username+"': Can't begin with a quote ('\"') character.");
@@ -160,7 +164,7 @@ public class UserAccountManager {
         }
         if (username.contains("\t")) {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
-                    "Invalid username: '"+username+"': Can't end contain a TAB character.");
+                    "Invalid username: '"+username+"': Can't contain a TAB character.");
         }
     }
 
