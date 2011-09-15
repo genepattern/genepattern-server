@@ -1,7 +1,10 @@
 GenePattern Sun Grid Engine Integration Plugin
 ===============================================
-This project includes source code and build scripts necessary to build the SGE plugin for GenePattern.
-This plugin was developed with source code provided from the Zamboni team at the Broad.
+This project includes source code and scripts necessary to build the SGE plugin for GenePattern.
+This plugin uses source code developed by the Zamboni team at the Broad Institute.
+Special thanks to Alec Wysoker who assisted with the implementation of this plugin
+and the rest of the team who developed the code in Zamboni on which it is based: 
+Ben Weisburd, Jonathan Burke, Kathleen Tibbetts, Tim Fennell, and Alec Wysoker.
 
 Project dependencies:
 * requires an installation of GenePattern Server. Tested with GP 3.3.3-beta; Byte compatible with GP 3.3.2-production.
