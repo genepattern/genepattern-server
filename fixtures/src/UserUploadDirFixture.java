@@ -29,7 +29,7 @@ public class UserUploadDirFixture {
     }
 
     private GpFilePath initUserUploadFile() throws Exception {
-        UserAccountManager.validateUsername(userId); 
+        //UserAccountManager.validateUsername(userId); 
         ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
         return GpFileObjFactory.getUserUploadDir(userContext);
     }

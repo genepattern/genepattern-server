@@ -219,28 +219,45 @@ for guidelines on file names.
 </tbody></table>
 
 <p>Tests for representing links to user upload directories.
-<table><tbody>
-<tr>
-<td> rule for </td>
-<td> UserUploadDir </td>
-</tr>
-<tr>
- <td> userId </td>
- <td> isDirectory? </td>
- <td> url? </td>
- <td> serverFile? </td>
- <td> relativeFile? </td>
-</tr>
-<tr>
- <td> test </td>
- <td> true </td>
- <td> http://127.0.0.1:8080/gp/users/test/ </td>
- <td> /Applications/GenePatternServer/users/test/uploads </td>
- <td> . </td>
-</tr>
 
-</tbody>
-</table>
+  
+  <table>
+    <tbody>
+      <tr>
+        <td>rule for</td>
+        <td>UserUploadDir</td>
+      </tr>
+      <tr>
+        <td>userId</td>
+        <td>isDirectory?</td>
+        <td>url?</td>
+        <td>serverFile?</td>
+        <td>relativeFile?</td>
+      </tr>
+      <tr>
+        <td>test</td>
+        <td>true</td>
+        <td>http://127.0.0.1:8080/gp/users/test/</td>
+        <td>/Applications/GenePatternServer/users/test/uploads</td>
+        <td>.</td>
+      </tr>
+
+      <tr>
+        <td>Ed Spacey</td>
+        <td>true</td>
+        <td>http://127.0.0.1:8080/gp/users/Ed%20Spacey/</td>
+        <td>/Applications/GenePatternServer/users/Ed Spacey/uploads</td>
+        <td>.</td>
+      </tr>
+      <tr>
+        <td>Mr. BackS\lash</td>
+        <td>true</td>
+        <td>http://127.0.0.1:8080/gp/users/Mr.%20BackS%5Clash/</td>
+        <td>/Applications/GenePatternServer/users/Mr. BackS\lash/uploads</td>
+        <td>.</td>
+      </tr>
+    </tbody>
+  </table>
 
 
 </body>
