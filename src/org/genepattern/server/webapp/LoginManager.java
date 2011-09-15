@@ -13,7 +13,6 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
-import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.GPConstants;
 
 /**
