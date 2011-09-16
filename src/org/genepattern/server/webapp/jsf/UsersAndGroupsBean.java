@@ -1,6 +1,5 @@
 package org.genepattern.server.webapp.jsf;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -13,12 +12,9 @@ import java.util.TreeSet;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.GroupPermission;
-import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
-import org.genepattern.server.util.AuthorizationManagerFactory;
-import org.genepattern.server.util.IAuthorizationManager;
+import org.genepattern.server.user.UserEntry;
 
 /**
  * Backing bean for the admin page for displaying all genepattern users and groups.
@@ -37,17 +33,13 @@ public class UsersAndGroupsBean {
     //toggle whether or not to include the '*' wildcard group on the users and groups page
     //    if this is enabled, the '*' group, which includes all registered users, will be displayed.
     //    Set this to false to help with debugging.
-    private final static boolean ignorePublicGroups = true;
-    
-    private IAuthorizationManager authManager;
-        
+    public final static boolean ignorePublicGroups = true;
+  
     public UsersAndGroupsBean() {
         init();
     }
     
     private void init() {
-        authManager = AuthorizationManagerFactory.getAuthorizationManager();
-
         List<User> allUsers = new UserDAO().getAllUsers();
 
         userEntries = new TreeSet<UserEntry>(new UserEntryComparator());
@@ -109,52 +101,7 @@ public class UsersAndGroupsBean {
         }
     }
 
-    /**
-     * Map each user to its groups.
-     */
-    public class UserEntry {
-        private User user;
-        private SortedSet<String> groups;
-        private boolean isAdmin = false;
-        
-        public UserEntry(User user) {
-            this.user = user;
-            this.groups = new TreeSet<String>();
-            this.isAdmin = UsersAndGroupsBean.this.authManager.checkPermission("adminServer", user.getUserId());
-        }
-        
-        public void addGroup(String groupId) {
-            if (UsersAndGroupsBean.ignorePublicGroups && GroupPermission.PUBLIC.equalsIgnoreCase(groupId)) {
-                return;
-            }
-            groups.add(groupId);
-        }
-        
-        public User getUser() {
-            return user;
-        }
-        
-        public List<String> getGroups() {
-            return new ArrayList<String>(groups);
-        }
-        
-        public boolean isAdmin() {
-            return isAdmin;
-        }
-        
-        public String getUserDir() {
-            Context context = ServerConfiguration.Context.getContextForUser(user.getUserId());
-            try {
-                File userDir = ServerConfiguration.instance().getUserDir(context);
-                return userDir.getPath();
-            }
-            catch (Throwable t) {
-                log.error(t);
-                return t.getLocalizedMessage();
-            }
-            
-        }
-    }
+    
 
     /**
      * Map each group to its members.

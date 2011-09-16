@@ -29,12 +29,10 @@ import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UserUploadFile;
 import org.genepattern.server.dm.userupload.UserUploadManager;
-import org.genepattern.server.webapp.DataServlet;
 import org.genepattern.server.webapp.FileDownloader;
 import org.genepattern.server.webapp.jsf.JobHelper;
 import org.genepattern.server.webapp.jsf.RunTaskBean;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
-import org.genepattern.server.webapp.jsf.UsersAndGroupsBean;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -48,7 +46,7 @@ import org.richfaces.model.TreeNodeImpl;
  * @author pcarr
  */
 public class UploadFilesBean {
-    private static Logger log = Logger.getLogger(UsersAndGroupsBean.class);
+    private static Logger log = Logger.getLogger(UploadFilesBean.class);
     static SimpleDateFormat formatter = new SimpleDateFormat();
     static {
         formatter.applyPattern("MMM dd hh:mm:ss aaa");
@@ -136,7 +134,7 @@ public class UploadFilesBean {
         }
         return files;
     }
-    
+
     public List<DirectoryInfoWrapper> getDirectories() {
         if (directories == null) {
             initFiles(); 
@@ -227,7 +225,7 @@ public class UploadFilesBean {
         return rootWrapper;
     }
     
-    private boolean isFileDirectory(GpFilePath file) {
+    public static boolean isFileDirectory(GpFilePath file) {
         if (file.getKind() == null || !file.getKind().equalsIgnoreCase("directory")) {
             return false;
         }
