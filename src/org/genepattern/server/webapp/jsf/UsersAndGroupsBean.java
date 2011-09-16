@@ -29,14 +29,22 @@ public class UsersAndGroupsBean {
 
     private SortedSet<UserEntry> userEntries;
     private SortedSet<GroupEntry> groupEntries;
+    private boolean displayGroups = false;
     
     //toggle whether or not to include the '*' wildcard group on the users and groups page
     //    if this is enabled, the '*' group, which includes all registered users, will be displayed.
     //    Set this to false to help with debugging.
     public final static boolean ignorePublicGroups = true;
   
-    public UsersAndGroupsBean() {
+    public UsersAndGroupsBean() {}
+    
+    public boolean getDisplayGroups() {
+        return displayGroups;
+    }
+    
+    public void display() {
         init();
+        displayGroups = true;
     }
     
     private void init() {

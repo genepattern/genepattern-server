@@ -27,47 +27,51 @@
 <div><h:form>
 	<h:commandLink immediate="false"
 		action="#{usersAndGroupsBean.reloadUsersAndGroups}">Reload Users and Groups</h:commandLink>
-</h:form> <h:form>
-	<t:inputText id="resync_username" value="#{uploadFilesBean.username}"
-		forceId="true" />
-	<h:commandButton value="Resync Uploads"
-		action="#{uploadFilesBean.syncFiles}" immediate="true" />
+</h:form> 
+<h:form>
+	<t:inputText id="resync_username" value="#{uploadFilesBean.username}" />
+	<h:commandButton value="Resync Uploads" action="#{uploadFilesBean.syncFiles}" immediate="true" />
 </h:form></div>
+<br/>
+<h:form rendered="#{!usersAndGroupsBean.displayGroups}">
+	<h:commandButton value="Display Users and Groups" action="#{usersAndGroupsBean.display}" immediate="true" />
+</h:form>
 
-<h3>Users</h3>
-<table border="0" cellpadding="0" cellspacing="0">
-	<thead>
-		<tr class="tableheader-row2">
-			<td align="left">user_id</td>
-			<td align="left">email</td>
-			<td align="left">groups</td>
-			<td align="left" style="padding-left: 10px; padding-right: 10px;">admin?</td>
-			<td align="left">user.dir</td>
-		</tr>
-	</thead>
-	<t:dataList var="userEntry" value="#{usersAndGroupsBean.userEntries}">
-		<tr class="admin-row">
-			<td>#{userEntry.user.userId}</td>
-			<td><a href="mailto:#{userEntry.user.email}">#{userEntry.user.email}</a></td>
-			<td><t:dataList var="userGroupId" value="#{userEntry.groups}">
-          #{userGroupId} <br />
-			</t:dataList></td>
-			<td style="text-align: center; padding-left: 10px; color: green;"><h:outputText
-				rendered="#{userEntry.admin}">&#x2713;</h:outputText></td>
-			<td>#{userEntry.userDir}</td>
-		</tr>
-	</t:dataList>
-</table>
-
-<h3>Groups</h3>
-<dl>
-	<t:dataList var="groupEntry" value="#{usersAndGroupsBean.groupEntries}">
-		<dt>#{groupEntry.groupId}</dt>
-		<dd><t:dataList var="userId" rowIndexVar="idx"
-			value="#{groupEntry.users}">
-            #{userId}<br />
-		</t:dataList></dd>
-	</t:dataList>
-</dl>
-
+<t:div rendered="#{usersAndGroupsBean.displayGroups}">
+	<h3>Users</h3>
+	<table border="0" cellpadding="0" cellspacing="0">
+		<thead>
+			<tr class="tableheader-row2">
+				<td align="left">user_id</td>
+				<td align="left">email</td>
+				<td align="left">groups</td>
+				<td align="left" style="padding-left: 10px; padding-right: 10px;">admin?</td>
+				<td align="left">user.dir</td>
+			</tr>
+		</thead>
+		<t:dataList var="userEntry" value="#{usersAndGroupsBean.userEntries}">
+			<tr class="admin-row">
+				<td>#{userEntry.user.userId}</td>
+				<td><a href="mailto:#{userEntry.user.email}">#{userEntry.user.email}</a></td>
+				<td><t:dataList var="userGroupId" value="#{userEntry.groups}">
+	          #{userGroupId} <br />
+				</t:dataList></td>
+				<td style="text-align: center; padding-left: 10px; color: green;"><h:outputText
+					rendered="#{userEntry.admin}">&#x2713;</h:outputText></td>
+				<td>#{userEntry.userDir}</td>
+			</tr>
+		</t:dataList>
+	</table>
+	
+	<h3>Groups</h3>
+	<dl>
+		<t:dataList var="groupEntry" value="#{usersAndGroupsBean.groupEntries}">
+			<dt>#{groupEntry.groupId}</dt>
+			<dd><t:dataList var="userId" rowIndexVar="idx"
+				value="#{groupEntry.users}">
+	            #{userId}<br />
+			</t:dataList></dd>
+		</t:dataList>
+	</dl>
+</t:div>
 </html>
