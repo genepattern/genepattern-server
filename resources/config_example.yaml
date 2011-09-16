@@ -105,6 +105,15 @@ executors:
             # default setting, no need to set
             #lsf.job.completion.listener: org.genepattern.server.executor.lsf.LsfJobCompletionListener
 
+    # Example configuration for Sun Grid Engine (SGE) executor
+    SGE:
+        classname: org.genepattern.server.executor.sge.SgeCommandExecutor
+        configuration.properties:
+            SGE_ROOT: /broad/gridengine
+            SGE_CELL: broad
+            SGE_SESSION_FILE: ./sge/sge_contact.txt
+            SGE_BATCH_SYSTEM_NAME: genepattern_server
+
 # override default.properties and executor->default.properties based on taskname or lsid
 # Note: executor->configuration.properties are intended to be applied at startup and are not overwritten here
 module.properties:
