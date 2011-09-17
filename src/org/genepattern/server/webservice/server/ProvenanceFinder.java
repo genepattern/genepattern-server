@@ -31,6 +31,9 @@ import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.dm.GetFileDotJspUtil;
+import org.genepattern.server.dm.GpFileObjFactory;
+import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.webapp.PipelineCreationHelper;
 import org.genepattern.server.webapp.jsf.AuthorizationHelper;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -450,6 +453,34 @@ public class ProvenanceFinder {
                 // for anything else leave it unmodified
                 value = oldJobParam.getValue();
                 File inFile = new File(value);
+                
+                if (!inFile.exists()) {
+                    //this could be a user upload file
+                    try {
+                        GpFilePath inputFilePath = GpFileObjFactory.getRequestedGpFileObj(value);
+                        inFile = inputFilePath.getServerFile();
+                    }
+                    catch (Throwable t) {
+                        //it is expected that exceptions are thrown,
+                        //such as when the initial value is an inherited default value
+                    }
+                }
+                
+                if (!inFile.exists()) {
+                    //this could be a web upload file for a reloaded job
+                    try {
+                        GpFilePath inputFilePath = GetFileDotJspUtil.getRequestedGpFileObjFromGetFileDotJsp(value);
+                        if (inputFilePath != null) {
+                            inFile = inputFilePath.getServerFile();
+                        }
+                    }
+                    catch (Throwable t) {
+                        //because this is a hack, it is expected that exceptions are thrown, such as when the 
+                        //initial value is an inherited default value
+                        log.debug("Error creating pipeline parameter from previous job, "+taskParam.getName()+"="+value+": "+t.getLocalizedMessage(), t);
+                    }
+                }
+                
                 if (inFile.exists()) { 
                     if (inFile.length() > maxFileSize) {
                         //special-case, replace large files with 'prompt when run'
@@ -463,9 +494,6 @@ public class ProvenanceFinder {
                         filesToCopy.add(inFile);
                         value = "<GenePatternURL>getFile.jsp?task=" + GPConstants.LEFT_DELIMITER + GPConstants.LSID + GPConstants.RIGHT_DELIMITER + "&file=" + URLEncoder.encode(inFile.getName());
                     }
-                    
-                    //TODO: special-case, when inFile is a server-file or a user uploaded file, 
-                    //      we may want to pass by reference rather than by value
                 }
             }
             else {
@@ -496,6 +524,11 @@ public class ProvenanceFinder {
 
                 // now we figure out which file to use from the job
                 value = "";
+            }
+            // HACK++: special-case for when the value still has a literal
+            String genePatternUrl = System.getProperty("GenePatternURL");
+            if (value != null && genePatternUrl != null && value.startsWith(genePatternUrl)) {
+                value = value.replace(genePatternUrl, "<GenePatternURL>");
             }
             ParameterInfo paramInfo = new ParameterInfo(taskParam.getName(), value, taskParam.getDescription());
             paramInfo.setAttributes(attrs);
