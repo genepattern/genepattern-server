@@ -20,15 +20,21 @@ public class UserUploadFileFixture {
     public String serverPath = null;
     public String url = null;
     public String userId = null;
+    
+    private GpFilePath userUploadFile = null;
 
     public UserUploadFileFixture() {
         this(null, "http://127.0.0.1:8080/gp");
     }
     
-    public UserUploadFileFixture(String userId, String genePatternUrl ) {
+    public UserUploadFileFixture(String userId, String genePatternUrl) {
         this.userId = userId;
         System.setProperty("GenePatternURL", genePatternUrl);
         System.setProperty("user.root.dir", "/Applications/GenePatternServer/users");
+    }
+    
+    public void setUrlStr(String urlStr) throws Exception {
+        this.userUploadFile = GpFileObjFactory.getRequestedGpFileObj(urlStr);
     }
 
     private GpFilePath initUserUploadFile() throws Exception {
@@ -43,6 +49,11 @@ public class UserUploadFileFixture {
         return userUploadFile;
     }
 
+    public String getOwner() throws Exception {
+        GpFilePath uploadFile = initUserUploadFile();
+        return uploadFile.getOwner();
+    }
+    
     public String getUrl() throws Exception {
         GpFilePath uploadFile = initUserUploadFile();
         URL url = uploadFile.getUrl();

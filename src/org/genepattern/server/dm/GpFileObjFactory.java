@@ -148,28 +148,46 @@ public class GpFileObjFactory {
      * @throws Exception
      */
     static public GpFilePath getRequestedGpFileObj(URL url) throws Exception {
-        String urlStr = url.toExternalForm();
-        return getRequestedGpFileObj(urlStr);
+        URI uri = url.toURI();
+        return getRequestedGpFileObj(uri);
     }
 
     /**
      * Get the GpFilePath reference from a GP URL request.
-     * @param url
-     * @return
+     * 
+     * This method does the same stuff that the servlet engine is doing for us.
+     * It extracts the servletPath and decoded pathInfo from the URL.
+     * 
+     * The rest of the work is done by {@link GpFileObjFactory#getRequestedGpFileObj(String, String)}
+     * 
+     * @param url, requires a valid url
+     * @return a GpFilePath
      * @throws Exception
      */
-    static public GpFilePath getRequestedGpFileObj(String urlStr) throws Exception {
-        //1) get the /servletPath/pathInfo from the url
-        String genePatternUrl = System.getProperty("GenePatternURL");
-        if (genePatternUrl.endsWith("/")) {
-            genePatternUrl = genePatternUrl.substring(0, genePatternUrl.length() - 1);
+    static public GpFilePath getRequestedGpFileObj(String urlStr) throws Exception { 
+        //create a uri, which automatically decodes the url
+        URI uri = null;
+        try {
+            uri = new URI(urlStr);
         }
-        //initialize as if it is a path relative to the GenePatternURL
-        String servletPathPlus = urlStr;
-        if (urlStr.startsWith(genePatternUrl)) {
-            //cut the GenePatternURL
-            servletPathPlus = urlStr.substring( genePatternUrl.length() );
+        catch (URISyntaxException e) {
+            log.error("Invalid url: "+urlStr, e);
+            throw new Exception("Invalid url: "+urlStr);
         }
+        return getRequestedGpFileObj(uri);
+    }
+
+    static private GpFilePath getRequestedGpFileObj(URI uri) throws Exception {
+        String servletPathPlus = uri.getPath();
+        //1) chop off the servlet context (e.g. '/gp')
+        //TODO: put all of the GenePatternURL code into a single utility class
+        //GP_Path=/gp
+        String gpPath = System.getProperty("GP_Path", "/gp");
+        if (servletPathPlus.startsWith(gpPath)) {
+            servletPathPlus = servletPathPlus.substring( gpPath.length() );
+        }
+        
+        //2) extract the servletPath and the remaining pathInfo
         String servletPath = servletPathPlus;
         String pathInfo = "";
         int idx = servletPathPlus.indexOf("/", 1);
@@ -177,9 +195,9 @@ public class GpFileObjFactory {
             servletPath = servletPathPlus.substring(0, idx);
             pathInfo = servletPathPlus.substring(idx);
         }
-        return getRequestedGpFileObj(servletPath, pathInfo);
+        return getRequestedGpFileObj(servletPath, pathInfo);        
     }
-    
+
     static public GpFilePath getRequestedGpFileObj(String servletPath, String pathInfo) throws Exception {
         if ("/users".equals(servletPath)) {
             String userId = extractUserId(pathInfo);
@@ -197,6 +215,15 @@ public class GpFileObjFactory {
             GpFilePath serverFileObj = ServerFileObjFactory.getServerFile(serverFile);
             return serverFileObj;
         }
+        
+        //special-case for legacy web upload and tasklib paths
+        //TODO: implement this properly, in most cases the String literal '<GenePatternURL>' is passed in rather than the actual GenePatternURL
+        //    http://127.0.0.1:8080/gp/getFile.jsp?task=&job=1222&file=test_run89....546.tmp/all_aml_test.gct
+        //    <GenePatternURL>getFile.jsp?task=&job=<job_no>&file=<userid>_run<random_number>.tmp/<filename>
+        //if (pathInfo.startsWith("/getFile.jsp?task=&job=")) {
+        //    GpFilePath webUploadFileObj = WebUploadFileObjFactory.getWebUploadPath(pathInfo);
+        //    return webUploadFileObj;
+        //}
         throw new Exception("Invalid servletPath: "+servletPath);
     }
     
