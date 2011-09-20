@@ -441,15 +441,17 @@ public class BatchSubmit {
         }
         
         // Get the union of base file names
+        List<String> tenativeMatches = new ArrayList<String>();
         for (MultiFileParameter i : multiFileValues.values()) {
             if (firstSet) {
                 for (GpFilePath j : i.getFiles()) {
+                    tenativeMatches.add(getBaseFilename(j));
                     matchingFileNames.add(getBaseFilename(j));
                 }
                 firstSet = false;
             }
             
-            for (String j : matchingFileNames) {
+            for (String j : tenativeMatches) {
                 boolean matched = false;
                 for (GpFilePath k : i.getFiles()) {
                     if (j.equals(getBaseFilename(k))) {
