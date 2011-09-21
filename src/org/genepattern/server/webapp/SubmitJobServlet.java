@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.fileupload.FileUploadException;
 import org.genepattern.server.executor.JobSubmissionException;
+import org.genepattern.server.webapp.jsf.JobBean;
 import org.genepattern.server.webapp.jsf.PageMessages;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.ParameterInfo;
@@ -78,7 +79,8 @@ public class SubmitJobServlet extends HttpServlet {
         }
  
         if (runTaskHelper.isBatchJob()) {
-             response.sendRedirect("/gp/jobResults");
+            request.getSession().setAttribute(JobBean.DISPLAY_BATCH, runTaskHelper.getBatchJob().getId());
+            response.sendRedirect("/gp/jobResults");
         }
         else {
             RunJobFromJsp runner = new RunJobFromJsp();

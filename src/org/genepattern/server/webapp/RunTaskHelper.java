@@ -59,7 +59,7 @@ public class RunTaskHelper {
     private String taskLsid;
     private String taskName;
     private ParameterInfo[] parameterInfoArray;
-    private boolean batchJob = false;
+    private BatchSubmit batchJob = null;
 
     /**
      * Creates a new RunTaskHelper instance.
@@ -80,7 +80,6 @@ public class RunTaskHelper {
         if (ServletFileUpload.isMultipartContent(new ServletRequestContext(request))) {
             List params = fub.parseRequest(request);
             if (isBatchJob(params)) {
-                batchJob = true;
                 handleBatch(request, params);
             }
 
@@ -213,14 +212,17 @@ public class RunTaskHelper {
     }
     
     public boolean isBatchJob() {
+        return batchJob != null;
+    }
+    
+    public BatchSubmit getBatchJob() {
         return batchJob;
     }
     
     private void handleBatch(HttpServletRequest request, List<FileItem> params) throws FileUploadException {
-        BatchSubmit batchSubmit;
         try {
-            batchSubmit = new BatchSubmit(request, params);
-            batchSubmit.submitJobs();
+            batchJob = new BatchSubmit(request, params);
+            batchJob.submitJobs();
         }
         catch (FileUploadException e) {
             log.error("Problem handling batch submission: " + e.getMessage());

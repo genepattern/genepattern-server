@@ -73,6 +73,7 @@ import org.genepattern.webservice.WebServiceException;
 
 public class JobBean {
     private static Logger log = Logger.getLogger(JobBean.class);
+    public static final String DISPLAY_BATCH = "DisplayBatchJob";
 
     private List<JobResultsWrapper> recentJobs;
     private List<JobResultsWrapper> allJobs;
@@ -106,10 +107,16 @@ public class JobBean {
 
     public void setJobResultsFilterBean(JobResultsFilterBean j) {
         this.jobResultsFilterBean = j;
+        
+        String displayBatch = (String) UIBeanHelper.getSession().getAttribute(DISPLAY_BATCH);
+        if (displayBatch != null && jobResultsFilterBean!= null) {
+            jobResultsFilterBean.setJobFilter(BatchJob.BATCH_KEY + displayBatch);
+            UIBeanHelper.getSession().setAttribute(DISPLAY_BATCH, null);
+        }
     }
 
     public JobBean() {
-        resetJobs();
+        resetJobs(); 
     }
 
     private Set<UserProp> _userProps = null;
