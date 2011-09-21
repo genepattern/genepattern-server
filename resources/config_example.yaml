@@ -106,12 +106,19 @@ executors:
             #lsf.job.completion.listener: org.genepattern.server.executor.lsf.LsfJobCompletionListener
 
     # Example configuration for Sun Grid Engine (SGE) executor
+    # This example is based on the gp server deployed at the Broad institute
+    # You need to set them based on your own installation
+    # In order to maintain consistency of jobs after a server restart, 
+    #     you need to use the same SGE_CELL and SGE_SESSION_FILE
     SGE:
         classname: org.genepattern.server.executor.sge.SgeCommandExecutor
         configuration.properties:
+            # SGE config variables, see the SGE doc for more explanation
             SGE_ROOT: /broad/gridengine
             SGE_CELL: broad
+            # path to the session file, relative to the gp server's working directory
             SGE_SESSION_FILE: ./sge/sge_contact.txt
+            # internal variable used by the GP SGE plugin. You probably don't need to change this.
             SGE_BATCH_SYSTEM_NAME: genepattern_server
 
 # override default.properties and executor->default.properties based on taskname or lsid
