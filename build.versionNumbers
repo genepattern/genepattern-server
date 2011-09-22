@@ -3,7 +3,7 @@
 # This property is used to set the System property 'GenePatternVersion'
 genepattern.version=3.3.3
 # optional property can be used to display, for example, the svn tag for this release
-version.label=DEV
+version.label=
 
 # deprecated, required for Java Desktop Client
 version.major=3
