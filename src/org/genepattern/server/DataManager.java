@@ -209,15 +209,24 @@ public class DataManager {
      * @param user
      * @throws Exception
      */
-    private static void handleFileSync(UserUploadDao dao, File file, String user) throws Exception {
+    private static void handleFileSync(UserUploadDao dao, File file, ServerConfiguration.Context userContext) throws Exception {
         // Exclude file on exclude list (ex: .DS_Store)
         if (isExcludedFile(file)) {
             return;
         }
         
+        if (userContext == null) {
+            throw new Exception("Missing required parameter, userContext is null");
+        }
+        if (userContext.getUserId() == null) {
+            throw new Exception("Missing required parameter, userContext.userId is null");
+        }
+        
         UserUpload uploadFile = new UserUpload();
-        uploadFile.setPath(UserUploadManager.absoluteToRelativePath(UIBeanHelper.getUserContext(), file.getCanonicalPath()));
-        uploadFile.setUserId(user);
+        
+        String relativePath = UserUploadManager.absoluteToRelativePath(userContext, file.getCanonicalPath());
+        uploadFile.setPath(relativePath);
+        uploadFile.setUserId(userContext.getUserId());
         uploadFile.setNumParts(1);
         uploadFile.setNumPartsRecd(1);
         uploadFile.init(file);
@@ -225,22 +234,22 @@ public class DataManager {
         
         if (file.isDirectory()) {
             for (File i : file.listFiles()) {
-                handleFileSync(dao, i, user);
+                handleFileSync(dao, i, userContext);
             }
         }
     }
-    
+
     /**
      * Wipes all of a user's uploads from the database, then crawls the upload directory for a given user 
      * and adds database entries for all found files, except those whose filenames match a name on the 
      * exclude files list (used to ignore system files)
      * @param user
      */
-    public static void syncUploadFiles(String user) {
+    public static void syncUploadFiles(String userId) {
         try {
             UserUploadDao dao = new UserUploadDao();
-            List<UserUpload> userFiles = dao.selectAllUserUpload(user);
-            File uploadDir = getUserUploadDirectory(user);
+            List<UserUpload> userFiles = dao.selectAllUserUpload(userId);
+            File uploadDir = getUserUploadDirectory(userId);
             if (uploadDir == null) {
                 log.error("Unable to get the user's upload directory in syncUploadFiles()");
                 return;
@@ -252,9 +261,11 @@ public class DataManager {
             }
             HibernateUtil.commitTransaction();
             dao = new UserUploadDao();
+
             // Add new entries to the database
+            ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
             for (File i : uploadDir.listFiles()) {
-                handleFileSync(dao, i, user);
+                handleFileSync(dao, i, userContext);
             }
             
             // Commit
