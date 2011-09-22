@@ -167,6 +167,7 @@ public class DataServlet extends HttpServlet implements Servlet {
         
         if (isUserUploadRequest(request)) {
             processUserUploadRequest(request, response, httpMethod);
+            return;
         }
 
         //1) require an authenticated GP user account
