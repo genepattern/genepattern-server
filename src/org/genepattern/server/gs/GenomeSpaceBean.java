@@ -319,7 +319,6 @@ public class GenomeSpaceBean {
 
     public Map<String, List<String>> getGsClientTypes() {
         if (!genomeSpaceEnabled) {
-            log.error("GenomeSpace is not enabled");
             return Collections.emptyMap();
         }
         if (gsClientTypes == null) {
@@ -367,7 +366,6 @@ public class GenomeSpaceBean {
     
     public List<GsClientUrl> getGSClientURLs(GenomeSpaceFileInfo file)  {
         if (!genomeSpaceEnabled) {
-            log.error("GenomeSpace is not enabled");
             return Collections.emptyList();
         }
         HttpSession httpSession = UIBeanHelper.getSession();
@@ -429,6 +427,9 @@ public class GenomeSpaceBean {
     }
     
     public List<GenomeSpaceDirectory> getAvailableDirectories() {
+        if (!genomeSpaceEnabled) {
+            return Collections.emptyList();
+        }
         List<GenomeSpaceDirectory> availableDirectories = this.getGenomeSpaceDirectories(); 
         if ((availableDirectories == null) || (availableDirectories.size() == 0)) {
             availableDirectories = initUserDirs();
