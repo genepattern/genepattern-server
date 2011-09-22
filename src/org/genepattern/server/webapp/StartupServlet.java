@@ -36,6 +36,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.database.HsqlDbUtil;
+import org.genepattern.server.dm.userupload.MigrationTool;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.message.SystemAlertFactory;
 import org.genepattern.server.process.JobPurger;
@@ -139,6 +140,15 @@ public class StartupServlet extends HttpServlet {
         }
         catch (Exception e) {
             log.error("Error clearing system messages on restart: "+e.getLocalizedMessage(), e);
+        }
+        
+        //attempt to migrate user upload files from GP 3.3.2 to GP 3.3.3
+        try {
+            log.info("\tinitializing user upload directories ...");
+            MigrationTool.migrateUserUploads();
+        }
+        catch (Throwable t) {
+            log.error("Error initializing user upload directories: "+t.getLocalizedMessage(), t);
         }
         announceReady();
     }
