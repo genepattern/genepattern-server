@@ -82,6 +82,7 @@ public class IgvFilter implements Filter {
         }
         catch (AuthenticationException e) {
             BasicAuthUtil.requestAuthentication(resp, e.getLocalizedMessage());
+            return;
         }
         
         if (gpUserId == null) {
