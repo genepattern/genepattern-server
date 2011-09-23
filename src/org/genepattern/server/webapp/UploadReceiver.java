@@ -24,6 +24,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -32,7 +33,6 @@ import org.genepattern.server.dm.userupload.UserUploadManager;
 public class UploadReceiver extends HttpServlet {
     private static Logger log = Logger.getLogger(UploadReceiver.class);
     private static final long serialVersionUID = -6720003935924717973L;
-    private Context context = null;
     
     public void returnErrorResponse(PrintWriter responseWriter, FileUploadException error) {
         responseWriter.println("Error: " + error.getMessage());
@@ -55,29 +55,20 @@ public class UploadReceiver extends HttpServlet {
         return null;
     }
     
-    protected Context initUserContext(HttpServletRequest request) {
-        if (context == null) {
-            String userId = LoginManager.instance().getUserIdFromSession(request);
-            this.context = Context.getContextForUser(userId);
-        }
-        
-        return context;
-    }
-    
     /**
      * Get the GenePattern file path to which to upload the file
      * @param request
      * @return
      * @throws FileUploadException
      */
-    protected File getUploadDirectory(HttpServletRequest request) throws FileUploadException {
+    private File getUploadDirectory(Context userContext, HttpServletRequest request) throws FileUploadException {
         String uploadDirPath = (String) request.getSession().getAttribute("uploadPath");
         if (!uploadDirPath.startsWith("./")) {
             uploadDirPath = "./" + uploadDirPath;
         }
         GpFilePath dir;
         try {
-            dir = GpFileObjFactory.getUserUploadFile(context, new File(uploadDirPath));
+            dir = GpFileObjFactory.getUserUploadFile(userContext, new File(uploadDirPath));
         }
         catch (Exception e) {
             throw new FileUploadException("Could not get the appropriate directory path for file upload");
@@ -103,16 +94,16 @@ public class UploadReceiver extends HttpServlet {
      * @return
      * @throws FileUploadException
      */
-    protected GpFilePath getUploadFile(HttpServletRequest request, String name) throws FileUploadException {
-        File parentDir = getUploadDirectory(request);
-        GpFilePath file = getUploadFile(parentDir, name);
+    private GpFilePath getUploadFile(Context userContext, HttpServletRequest request, String name) throws FileUploadException {
+        File parentDir = getUploadDirectory(userContext, request);
+        GpFilePath file = getUploadFile(userContext, parentDir, name);
         return file;
     }
     
-    protected GpFilePath getUploadFile(File uploadDir, String name) throws FileUploadException {
+    protected GpFilePath getUploadFile(Context userContext, File uploadDir, String name) throws FileUploadException {
         File file = new File(uploadDir, name);
         try {
-            return UserUploadManager.getUploadFileObj(context, file);
+            return UserUploadManager.getUploadFileObj(userContext, file);
         }
         catch (Exception e) {
             log.error(e.getMessage());
@@ -157,18 +148,22 @@ public class UploadReceiver extends HttpServlet {
      * @return
      * @throws FileUploadException
      */
-    protected String writeFile(HttpServletRequest request, List<FileItem> postParameters, int index, int count, String userId) throws FileUploadException { 
+    private String writeFile(Context userContext, HttpServletRequest request, List<FileItem> postParameters, int index, int count, String userId) throws FileUploadException { 
         // final boolean partial = !(count == 1);
         final boolean first = index == 0;
         // final boolean last = (index + 1) == count;
         String responeText = "";
         for(FileItem fileItem : postParameters) {
             if (!fileItem.isFormField()) {
-                GpFilePath file = getUploadFile(request, fileItem.getName()); 
+                GpFilePath file = getUploadFile(userContext, request, fileItem.getName()); 
                 
                 if (first) {
-                    try { UserUploadManager.createUploadFile(context, file, count); } 
-                    catch (Exception e) { throw new FileUploadException("File already exists in system"); }
+                    try { 
+                        UserUploadManager.createUploadFile(userContext, file, count); 
+                    } 
+                    catch (Exception e) { 
+                        throw new FileUploadException("File already exists in system"); 
+                    }
                 }
                 
                 // Check if the file exists and throw an error if it does
@@ -184,7 +179,7 @@ public class UploadReceiver extends HttpServlet {
                 }
                 
                 try {
-                    UserUploadManager.updateUploadFile(context, file, index + 1, count);
+                    UserUploadManager.updateUploadFile(userContext, file, index + 1, count);
                 }
                 catch (Exception e) {
                     throw new FileUploadException("File part received out of order for " + file.getServerFile().getName());
@@ -208,7 +203,6 @@ public class UploadReceiver extends HttpServlet {
      * unified exception handling used by JumpLoader's error messaging system
      */
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        initUserContext(request);
         PrintWriter responseWriter = response.getWriter();
         String responseText = null;
         
@@ -219,6 +213,7 @@ public class UploadReceiver extends HttpServlet {
                 // Return error to the applet; this happens if a user logged out during an upload
                 throw new FileUploadException("No user ID attached to session");
             }
+            Context userContext = ServerConfiguration.Context.getContextForUser(userId);
             
             RequestContext reqContext = new ServletRequestContext(request);
             if (FileUploadBase.isMultipartContent(reqContext)) {
@@ -227,8 +222,7 @@ public class UploadReceiver extends HttpServlet {
                 List<FileItem> postParameters = upload.parseRequest(reqContext);
                 final int partitionCount = Integer.parseInt(getParameter(postParameters, "partitionCount"));
                 final int partitionIndex = Integer.parseInt(getParameter(postParameters, "partitionIndex"));
-                responseText = writeFile(request, postParameters, partitionIndex, partitionCount, userId);
-                
+                responseText = writeFile(userContext, request, postParameters, partitionIndex, partitionCount, userId); 
             }
             else {
                 // This servlet wasn't called by a multi-file uploader. Return an error page.
