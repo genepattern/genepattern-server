@@ -167,6 +167,10 @@ public class UserAccountManager {
             throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
                     "Invalid username: '"+username+"': Can't contain a TAB character.");
         }
+        if (username.contains(";")) {
+            throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME,
+                    "Invalid username: '"+username+"': Can't contain a semicolon (';') character.");
+        }
     }
 
     /**
