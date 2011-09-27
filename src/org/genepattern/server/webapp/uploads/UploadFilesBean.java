@@ -349,7 +349,7 @@ public class UploadFilesBean {
             files = null;
         }
         else {
-            UIBeanHelper.setErrorMessage("Unable to create the subdirectory");
+            UIBeanHelper.setErrorMessage("Unable to create the subdirectory: "+subdirName);
         }
     }
     
