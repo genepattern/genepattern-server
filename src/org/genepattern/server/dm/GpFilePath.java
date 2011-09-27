@@ -56,6 +56,20 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
         return gpUrl;
     }
     
+    /**
+     * replace all separators with the forward slash ('/').
+     * @param file
+     * @return
+     */
+    static public String getPathForwardSlashed(File file) {
+        String path = file.getPath();
+        String r = path.replace( File.separator, "/");
+        if (file.isDirectory() && file.getName() != null && file.getName().length() > 0) {
+            r = r + "/";
+        }
+        return r;
+    }
+    
     public int compareTo(GpFilePath o) {
         return getRelativeUri().getPath().compareTo( o.getRelativeUri().getPath() );
     }
@@ -128,12 +142,7 @@ abstract public class GpFilePath implements Comparable<GpFilePath> {
         if (file == null) {
             return "";
         }
-        String path = file.getPath();
-        String r = path.replace( File.separator, "/");
-        if (file.isDirectory() && file.getName() != null && file.getName().length() > 0) {
-            r = r + "/";
-        }
-        return r;
+        return getPathForwardSlashed(file);
     }
     
     public void initMetadata() {

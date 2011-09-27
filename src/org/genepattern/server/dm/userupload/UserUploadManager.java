@@ -36,7 +36,7 @@ public class UserUploadManager {
      * @return
      * @throws Exception
      */
-    static public GpFilePath getUploadFileObj(Context userContext, File relativePath) throws Exception {
+    static public GpFilePath getUploadFileObj(Context userContext, File relativePath, boolean initMetaData) throws Exception {
         GpFilePath uploadFilePath = GpFileObjFactory.getUserUploadFile(userContext, relativePath);
         
         //if there is a record in the DB ... 
@@ -52,8 +52,10 @@ public class UserUploadManager {
         
         try {
             UserUploadDao dao = new UserUploadDao();
-            UserUpload fromDb = dao.selectUserUpload(userContext.getUserId(), relativePath);
-            initMetadata(uploadFilePath, fromDb);
+            UserUpload fromDb = dao.selectUserUpload(userContext.getUserId(), uploadFilePath);
+            if (initMetaData) {
+                initMetadata(uploadFilePath, fromDb);
+            }
             if (!isInTransaction) {
                 HibernateUtil.commitTransaction();
             }

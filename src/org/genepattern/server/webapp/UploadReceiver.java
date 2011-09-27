@@ -91,23 +91,21 @@ public class UploadReceiver extends HttpServlet {
      * 
      * @param request
      * @param name
+     * @param first, if it's the first chunk of data, it means the file or directory should not be on the file system
      * @return
      * @throws FileUploadException
      */
-    private GpFilePath getUploadFile(Context userContext, HttpServletRequest request, String name) throws FileUploadException {
-        File parentDir = getUploadDirectory(userContext, request);
-        GpFilePath file = getUploadFile(userContext, parentDir, name);
-        return file;
-    }
-    
-    protected GpFilePath getUploadFile(Context userContext, File uploadDir, String name) throws FileUploadException {
-        File file = new File(uploadDir, name);
+    private GpFilePath getUploadFile(Context userContext, HttpServletRequest request, String name, boolean first) throws FileUploadException {
+        File uploadDir = getUploadDirectory(userContext, request);
+        File relativeFile = new File(uploadDir, name);
         try {
-            return UserUploadManager.getUploadFileObj(userContext, file);
+            boolean initMetaData = !first;
+            GpFilePath uploadFile = UserUploadManager.getUploadFileObj(userContext, relativeFile, initMetaData);
+            return uploadFile;
         }
         catch (Exception e) {
             log.error(e.getMessage());
-            throw new FileUploadException("Unable to retrieve the uploaded file");
+            throw new FileUploadException("Error initializing upload file reference for '"+relativeFile.getPath()+"': "+e.getLocalizedMessage());
         }
     }
     
@@ -155,7 +153,7 @@ public class UploadReceiver extends HttpServlet {
         String responeText = "";
         for(FileItem fileItem : postParameters) {
             if (!fileItem.isFormField()) {
-                GpFilePath file = getUploadFile(userContext, request, fileItem.getName()); 
+                GpFilePath file = getUploadFile(userContext, request, fileItem.getName(), first); 
                 
                 if (first) {
                     try { 

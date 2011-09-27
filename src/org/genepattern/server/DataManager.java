@@ -55,7 +55,8 @@ public class DataManager {
         GpFilePath subdirRef = null;
         try {
             //another option ... subdirRef = GpFileObjFactory.getUserUploadFile(userContext, relativePath);
-            subdirRef = UserUploadManager.getUploadFileObj(userContext, relativePath);
+            boolean initMetaData = false;
+            subdirRef = UserUploadManager.getUploadFileObj(userContext, relativePath, initMetaData);
         }
         catch (Throwable t) {
             log.error(t.getLocalizedMessage());

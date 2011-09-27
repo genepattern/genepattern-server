@@ -185,7 +185,8 @@ public class Purger extends TimerTask {
             try {
                 //get relative path
                 File relativePath = FileUtil.relativizePath(rootDir.getServerFile(), uploadFile);
-                filePath = UserUploadManager.getUploadFileObj(userContext, relativePath);
+                boolean initMetaData = true;
+                filePath = UserUploadManager.getUploadFileObj(userContext, relativePath, initMetaData);
             }
             catch (Throwable t) {
                 String message = "Error getting GpFilePath for file, '"+uploadFile.getPath()+", :"+t.getLocalizedMessage();

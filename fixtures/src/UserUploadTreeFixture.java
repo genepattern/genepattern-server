@@ -64,8 +64,9 @@ public class UserUploadTreeFixture {
     }
     
     static private UserUpload createUploadFile(String userId, String relativePath, int numParts) throws Exception {
+        boolean initMetaData = false;
         ServerConfiguration.Context userContext = ServerConfiguration.Context.getContextForUser(userId);
-        GpFilePath gpFileObj = UserUploadManager.getUploadFileObj(userContext, new File(relativePath));
+        GpFilePath gpFileObj = UserUploadManager.getUploadFileObj(userContext, new File(relativePath), initMetaData);
         UserUpload uu = UserUploadManager.createUploadFile(userContext, gpFileObj, numParts);
         return uu;
     }
