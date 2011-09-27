@@ -30,13 +30,10 @@ default.properties:
     
     # location for user data
     user.root.dir: "../users"
-    # by default user data is stored in <user.root.dir>/<user.id>
-    # this can be overridden with the 'gp.user.dir' property, Note: 'user.dir' is a java system property
+    # by default each gp user account gets a home directory in <user.root.dir>/<user.id>
     
     # location for user files uploaded directly to the server from the upload tab
-    # by default, <user.root.dir>/<user.id>/user.uploads/
-    # can be overridden with the 'user.upload.dir' property.
-    # if there are server config errors, files are uploaded directly to java.io.tmpdir
+    # by default, files are uploaded to each user's uploads directory, <user.root.dir>/<user.id>/uploads
 
     # Turn off input file displays
     display.input.results: false
@@ -47,6 +44,7 @@ default.properties:
     # for 'Create Pipeline', the max file size (in bytes) to copy when creating a new pipeline
     # (default=250mB)
     pipeline.max.file.size: 256000000
+
 executors:
     # default executor for all jobs, it is included in GenePattern
     RuntimeExec:
