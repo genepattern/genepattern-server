@@ -152,6 +152,10 @@ public class BatchSubmit {
                 for (String parameter : multiFileValues.keySet()) {
                     MultiFileParameter param = multiFileValues.get(parameter);
                     List<GpFilePath> files = param.getFiles();
+                    if (files.size() <= i) {
+                        log.error("Number of files in batch directory out of sync: " + files.size() + " : " + i);
+                        break;
+                    }
                     GpFilePath file = files.get(i);
                     boolean urlInput = param.isUrl();
                     String parameterValue = null;
