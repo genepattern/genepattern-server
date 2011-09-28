@@ -56,6 +56,7 @@ public class GpFileObjFactory {
             log.error("Invalid URI: "+tmpPath, e);
         }
         UserUploadFile userUploadFile = new UserUploadFile( relativeUri );
+        userUploadFile.setOwner(userContext.getUserId());
         userUploadFile.setServerFile( userUploadDir );
         userUploadFile.setRelativeFile( new File("./") );
         userUploadFile.setKind("directory");
