@@ -14,7 +14,7 @@ import org.genepattern.server.dm.userupload.dao.UserUpload;
 public class UserUploadTreeFixture {
     public static Logger log = Logger.getLogger(UserUploadTreeFixture.class);
 
-    public String userId = "test";
+    private static String userId = "test user@me.com";
     
     private static boolean isDbInitialized = false;
     private static void init() {
@@ -47,16 +47,39 @@ public class UserUploadTreeFixture {
         
         try {
             //TODO: create table rows from specification (.html doc) rather than hard coded here in the fixture
-            UserUpload uu = createUploadFile("test", "all_aml_test.gct", 1);
-            uu = createUploadFile("test", "z.txt", 1);
-            uu = createUploadFile("test", "sub/file_01.txt", 1);
-            uu = createUploadFile("test", "sub/file_02.txt", 1);
-            uu = createUploadFile("test", "sub/a/file_03.txt", 1);
-            uu = createUploadFile("test", "sub/a/file_04.txt", 1);
-            uu = createUploadFile("test", "sub/g/01/file_05.txt", 1);
-            uu = createUploadFile("test", "sub/g/01/file_06.txt", 1);
+            UserUpload uu = createUploadFile(userId, "all_aml_test.gct", 1);
+            uu = createUploadFile(userId, "z.txt", 1);
+            uu = createUploadFile(userId, "sub/file_01.txt", 1);
+            uu = createUploadFile(userId, "sub/file_02.txt", 1);
+            uu = createUploadFile(userId, "sub/a/file_03.txt", 1);
+            uu = createUploadFile(userId, "sub/a/file_04.txt", 1);
+            uu = createUploadFile(userId, "sub/g/01/file_05.txt", 1);
+            uu = createUploadFile(userId, "sub/g/01/file_06.txt", 1);
+            uu = createUploadFile(userId, "sub", 1);
             
-            uu = createUploadFile("test", "sub", 1);
+            //test-cases for special characters
+            String[] filenames = {
+                    "all ! aml test.cls",
+                    "all # aml test.cls",
+                    "all $ aml test.cls",
+                    "all % aml test.cls",
+                    "all & aml test.cls",
+                    "all ' aml test.cls",
+                    "all * aml test.cls",
+                    "all + aml test.cls",
+                    "all , aml test.cls",
+                    "all : aml test.cls",
+                    "all ; aml test.cls",
+                    "all = aml test.cls",
+                    "all ? aml test.cls",
+                    "all @ aml test.cls",
+                    "all [ aml test.cls",
+                    "all ] aml test.cls",
+                    "all aml test (version 1).cls",
+            };
+            for(String filename : filenames) { 
+                uu = createUploadFile(userId, filename, 1);
+            }
         }
         catch (Throwable t) {
             log.error("error creating upload file: "+t.getLocalizedMessage(), t);
