@@ -51,6 +51,11 @@ public class JobResultsFilterBean implements Serializable {
     }
     
     public Object getJobFilter() {
+        String displayBatch = (String) UIBeanHelper.getSession().getAttribute(JobBean.DISPLAY_BATCH);
+        if (displayBatch != null) {
+            selectedGroup = BatchJob.BATCH_KEY + displayBatch;
+        }
+        
         if (selectedGroup != null) {
             return selectedGroup;
         }
