@@ -150,6 +150,16 @@ public class StartupServlet extends HttpServlet {
         catch (Throwable t) {
             log.error("Error initializing user upload directories: "+t.getLocalizedMessage(), t);
         }
+        
+        //attempt to migrate job upload files from GP 3.3.2 (and earlier) to GP 3.3.3
+        try {
+            log.info("\tmigrating job upload directories ...");
+            MigrationTool.migrateJobUploads();
+        }
+        catch (Throwable t) {
+            log.error("Error migrating job upload directories: "+t.getLocalizedMessage(), t);
+        }
+
         announceReady();
     }
     

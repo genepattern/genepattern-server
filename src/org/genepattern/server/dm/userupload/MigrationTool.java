@@ -1,6 +1,8 @@
 package org.genepattern.server.dm.userupload;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +32,118 @@ import org.hibernate.SQLQuery;
  */
 public class MigrationTool {
     private static Logger log = Logger.getLogger(MigrationTool.class);
+    
+    /**
+     * added this with the 3.3.3 release to correct a bug (which also exists in previous versions of GP) in the installer.
+     * The bug: after installing an updated version of GP, the job upload files for jobs run in the previous version of GP
+     * are not in the correct location on the file system.
+     */
+    public static void migrateJobUploads() {
+        //1) check the DB, if the flag is not already set, go ahead and migrate the files
+        final String KEY = "sync.job.uploads.complete";
+        try {
+            HibernateUtil.beginTransaction();
+            String sql = "select value from PROPS where key = :key";
+            SQLQuery query = HibernateUtil.getSession().createSQLQuery(sql);
+            query.setString("key", KEY);
+            List<String> rval = query.list();
+            if (rval != null && rval.size() > 0) {
+                //if the flag is already set, exit
+                log.debug(KEY+"="+rval.get(0));
+                return;
+            }
+            HibernateUtil.closeCurrentSession();
+        }
+        catch (Throwable t) {
+            log.error("Server error: "+t.getLocalizedMessage(), t);
+            HibernateUtil.closeCurrentSession();
+            return;
+        }
+        
+        migrateJobUploadDirs();
+
+        //finally) make sure to set the flag in the DB
+        try {
+            HibernateUtil.beginTransaction();
+            final String sql = "insert into PROPS ( key, value ) values ( :key, :value )";
+            final SQLQuery query = HibernateUtil.getSession().createSQLQuery(sql);
+            query.setString("key", KEY);
+            query.setString("value", "true");
+            int num = query.executeUpdate();
+            if (num != 1) {
+                String message = "Error updating db, expecting 1 result but received "+num+". \n"+
+                        "\t insert into PROPS ( key, value ) values ( '"+KEY+"', 'true')";
+                log.error(message);
+                HibernateUtil.rollbackTransaction();
+            }
+            HibernateUtil.commitTransaction();
+        }
+        catch (Throwable t) {
+            log.error(t);
+            HibernateUtil.rollbackTransaction();
+        } 
+
+    }
+    
+    private static void migrateJobUploadDirs() {
+        File jobResultsDir = null;
+        Context serverContext = ServerConfiguration.Context.getServerContext();
+        try {
+            jobResultsDir = ServerConfiguration.instance().getRootJobDir(serverContext);
+        }
+        catch (Throwable t) {
+            log.error(t);
+            return;
+        }
+        
+        if (jobResultsDir == null) {
+            log.error("jobResultsDir == null");
+            return;
+        }
+        
+        if (!jobResultsDir.canRead()) {
+            log.error("Can't read jobResultsDir: "+jobResultsDir.getAbsolutePath());
+            return;
+        }
+        
+        String str = System.getProperty("java.io.tmpdir");
+        File webUploadDir = new File(str);
+        if (!webUploadDir.canRead()) {
+            log.error("Can't read webUploadDir: "+webUploadDir.getAbsolutePath());
+            return;
+        }
+
+        /**
+         * Filter which only includes files where are 'job upload' directories. 
+         * A 'job upload' directory is created files uploaded via the Basic Upload option on the job submit form. 
+         * For example:
+         *     admin_run7240032464616637247.tmp
+         */
+        FileFilter fileFilter = new FileFilter() {
+            public boolean accept(File pathname) {
+                if (!pathname.isDirectory()) {
+                    //must be a directory
+                    return false;
+                }
+                String name = pathname.getName();
+                if (name.endsWith(".tmp")) {
+                    return true;
+                }
+                return false;
+            }
+        };
+        
+        File[] tempFiles = jobResultsDir.listFiles(fileFilter);
+        log.info("Found "+tempFiles.length+" .tmp files in jobResults dir: "+jobResultsDir.getAbsolutePath());
+        for(File tempFile : tempFiles) {
+            File dest = new File( webUploadDir, tempFile.getName() );
+            log.info("\tmigrating job upload dir to "+dest.getAbsolutePath());
+            boolean success = tempFile.renameTo(dest);
+            if (!success) {
+                log.error("Failed to rename: "+tempFile.getAbsolutePath());
+            }
+        }
+    }
 
     /**
      * Migrate all user upload files from GP 3.3.2 format to GP 3.3.3 format.
@@ -66,7 +180,11 @@ public class MigrationTool {
         //3) resync the DB entries
         syncUserUploadFiles();
         
-        //4) finally, tab the DB, so that we don't do this again
+        //4) TODO: update any previous jobs so that the link to user upload files is correct
+        // e.g. change http://127.0.0.1:8080/gp/data//Applications/GenePatternServer/users/admin/user.uploads/all_aml_test.gct to
+        //     http://127.0.0.1:8080/gp/users/admin/all_aml_test.gct
+        
+        //5) finally, update the flag in the DB, so that we don't do this again
         try {
             HibernateUtil.beginTransaction();
             //insert into props ( key, value ) values ('sync.user.uploads.complete', 'true')
