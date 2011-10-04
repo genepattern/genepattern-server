@@ -265,11 +265,10 @@ public class MigrationTool {
                     log.error("jobInfo is null, for jobNo: "+jobNo);
                     break;
                 }
-                //TODO: null check, jobInfo can be null
                 ParameterInfo[] parameterInfoArray = jobInfo.getParameterInfoArray();
                 for(ParameterInfo pInfo : parameterInfoArray) {
-                    //Note: pInfo.isInputFile() returns a bogus value
-                    //TODO: hard-coded just to match GP 3.3.2 user uploaded input files (which are treated as URL_INPUT_MODE)
+                    //Note: hard-coded just to match GP 3.3.2 user uploaded input files (which are treated as URL_INPUT_MODE)
+                    //    pInfo#isInputFile() returns a bogus value
                     boolean isInputFile = false;
                     Object mode = pInfo.getAttributes().get(ParameterInfo.MODE);
                     isInputFile = ParameterInfo.URL_INPUT_MODE.equals( mode );
@@ -310,14 +309,6 @@ public class MigrationTool {
         log.info("updated "+totalNumParamsChanged+" parameters in "+numJobsChanged+" jobs");
     }
     
-    private static void savePinfo(final JobInfo jobInfo) {
-        AnalysisJobDAO home = new AnalysisJobDAO();
-        AnalysisJob aJob = home.findById(jobInfo.getJobNumber());
-        String paramString = jobInfo.getParameterInfo();
-        aJob.setParameterInfo(paramString);
-        HibernateUtil.getSession().update(aJob);
-    }
-
     /**
      * For example, change 
      *     http://127.0.0.1:8080/gp/data//Applications/GenePatternServer/users/admin/user.uploads/all_aml_test.gct
