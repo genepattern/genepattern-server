@@ -2,7 +2,6 @@ package org.genepattern.server.dm.userupload;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,8 +11,13 @@ import org.genepattern.server.DataManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.domain.AnalysisJob;
+import org.genepattern.server.domain.AnalysisJobDAO;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
+import org.genepattern.server.webservice.server.dao.AnalysisDAO;
+import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
 import org.hibernate.SQLQuery;
 
 /**
@@ -180,9 +184,8 @@ public class MigrationTool {
         //3) resync the DB entries
         syncUserUploadFiles();
         
-        //4) TODO: update any previous jobs so that the link to user upload files is correct
-        // e.g. change http://127.0.0.1:8080/gp/data//Applications/GenePatternServer/users/admin/user.uploads/all_aml_test.gct to
-        //     http://127.0.0.1:8080/gp/users/admin/all_aml_test.gct
+        //4) update prev job input parameters
+        updatePrevJobInputParams();
         
         //5) finally, update the flag in the DB, so that we don't do this again
         try {
@@ -205,6 +208,178 @@ public class MigrationTool {
             log.error(t);
             HibernateUtil.rollbackTransaction();
         } 
+    }
+
+    /**
+     * Update all previous jobs which have a user upload file as an input parameter.
+     * Replace the 3.3.2 style link with the 3.3.3 style link. E.g.,
+     * change 
+     *     http://127.0.0.1:8080/gp/data//Applications/GenePatternServer/users/admin/user.uploads/all_aml_test.gct
+     * to
+     *     <GenePatternURL>users/admin/all_aml_test.gct
+     */
+    private static void updatePrevJobInputParams() {
+        //get the list of all jobs which reference 'user.uploads' anywhere in the parameter_info clob
+        List<Integer> jobNos = new ArrayList<Integer>();
+        try {
+            HibernateUtil.beginTransaction();
+            String sql = "select job_no from analysis_job where parameter_info like '%user.uploads%' and deleted = 0";
+            SQLQuery query = HibernateUtil.getSession().createSQLQuery(sql);
+            List<?> jobNoObjs = query.list();
+            for(Object jobNoObj : jobNoObjs) {
+                int jobNo = -1;
+                if (jobNoObj instanceof Number) {
+                    jobNo = ((Number) jobNoObj).intValue();
+                }
+                else if (jobNoObj instanceof String) {
+                    try {
+                        jobNo = Integer.parseInt(jobNoObj.toString());
+                    }
+                    catch (NumberFormatException e) {
+                        log.error("Error parsing job_no from sql query result set: "+jobNoObj, e);
+                    }
+                }
+                if (jobNo >= 0) {
+                    jobNos.add( jobNo );
+                }
+            }
+        }
+        catch (Throwable t) {
+            log.error("Error getting list of jobIds with 'user.uploads' in PARAMETER_INFO clob", t);
+            return;
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+
+        int numJobsChanged = 0;
+        int totalNumParamsChanged = 0;
+        //for each job in the list, update input parameters which reference a GP 3.3.2 user upload file
+        for(int jobNo : jobNos) {
+            try {
+                boolean save_update = false;
+                int numParamsChanged = 0;
+                AnalysisDAO dao = new AnalysisDAO();
+                JobInfo jobInfo = dao.getJobInfo(jobNo);
+                if (jobInfo == null) {
+                    log.error("jobInfo is null, for jobNo: "+jobNo);
+                    break;
+                }
+                //TODO: null check, jobInfo can be null
+                ParameterInfo[] parameterInfoArray = jobInfo.getParameterInfoArray();
+                for(ParameterInfo pInfo : parameterInfoArray) {
+                    //Note: pInfo.isInputFile() returns a bogus value
+                    //TODO: hard-coded just to match GP 3.3.2 user uploaded input files (which are treated as URL_INPUT_MODE)
+                    boolean isInputFile = false;
+                    Object mode = pInfo.getAttributes().get(ParameterInfo.MODE);
+                    isInputFile = ParameterInfo.URL_INPUT_MODE.equals( mode );
+                    if (isInputFile) {
+                        String origValue = pInfo.getValue();
+                        String newValue = migrateInputParameterValue(origValue);
+                        if (!origValue.equals(newValue)) {
+                            log.info("migrating user upload input parameter for "+jobNo+", param="+pInfo.getName());
+                            log.info("\told="+origValue);
+                            log.info("\tnew="+newValue);
+                            save_update = true;
+                            pInfo.setValue(newValue);
+                            ++numParamsChanged;
+                        }
+                    }
+                }
+                if (save_update) {
+                    AnalysisJobDAO analysisJobDao = new AnalysisJobDAO();
+                    AnalysisJob aJob = analysisJobDao.findById(jobNo);
+                    String paramString = jobInfo.getParameterInfo();
+                    aJob.setParameterInfo(paramString);
+                    HibernateUtil.getSession().update(aJob);
+                    HibernateUtil.commitTransaction();
+                    log.info("committed change to DB");
+                    ++numJobsChanged;
+                    totalNumParamsChanged += numParamsChanged;
+                }
+            }
+            catch (Throwable t) { 
+                log.error("Error updating parameterInfo for jobNo="+jobNo, t);
+                HibernateUtil.rollbackTransaction();
+            }
+            finally {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+        
+        log.info("updated "+totalNumParamsChanged+" parameters in "+numJobsChanged+" jobs");
+    }
+    
+    private static void savePinfo(final JobInfo jobInfo) {
+        AnalysisJobDAO home = new AnalysisJobDAO();
+        AnalysisJob aJob = home.findById(jobInfo.getJobNumber());
+        String paramString = jobInfo.getParameterInfo();
+        aJob.setParameterInfo(paramString);
+        HibernateUtil.getSession().update(aJob);
+    }
+
+    /**
+     * For example, change 
+     *     http://127.0.0.1:8080/gp/data//Applications/GenePatternServer/users/admin/user.uploads/all_aml_test.gct
+     * to
+     *     <GenePatternURL>users/admin/all_aml_test.gct
+     *     
+     * For example on win, change
+     *     http://gpdevwin64.lab.broad:8080/gp/data/C%3A%5CGenepatternServer%5CGP_332_prod%5Cusers%5Cpcarr%40broadinstitute.org%5Cuser.uploads%5Call%20%5D%20aml%20test.gct
+     * to 
+     *     <GenePatternURL>users/pcarr%40broadinstitute.org/all%20%5D%20aml%20test.gct </td>
+     */
+    public static String migrateInputParameterValue(String origValue) {
+        if (!origValue.contains("user.uploads")) {
+            //no change
+            return origValue;
+        }
+        int idx0 = origValue.indexOf("/gp/data/");
+        if (idx0 < 0) {
+            return origValue;
+        }
+        int idx1 = origValue.indexOf("/users/", idx0);
+        if (idx1 >= 0) {
+            idx1 += "/users/".length();
+        }
+        else {
+            idx1 = origValue.indexOf("%5Cusers%5C", idx0);
+            if (idx1 >= 0) {
+                idx1 += "%5Cusers%5C".length();
+            }
+        }
+        if (idx1 < 0) {
+            return origValue;
+        }
+        int idx2 = origValue.indexOf("/", idx1);
+        if (idx2 < 0) {
+            idx2 = origValue.indexOf("%5C", idx1);
+        }
+        if (idx2 < 0) {
+            return origValue;
+        }
+        String userId = origValue.substring(idx1, idx2);
+        int idx3 = origValue.indexOf("/user.uploads/", idx2);
+        if (idx3 >= 0) {
+            idx3 += "/user.uploads/".length();
+        }
+        else {
+            idx3 = origValue.indexOf("%5Cuser.uploads%5C");
+            if (idx3 >= 0) {
+                idx3 += "%5Cuser.uploads%5C".length();
+            }
+        }
+        if (idx3 < 0) {
+            return origValue;
+        }
+        String filepath = origValue.substring(idx3);
+        
+        //String newValue = origValue.substring(0, idx0);
+        //newValue += "/gp/users/";
+        String newValue = "<GenePatternURL>users/";
+        newValue += userId;
+        newValue += "/"+filepath;
+        return newValue;
     }
     
     private static void syncUserUploadFiles() {
