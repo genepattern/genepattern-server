@@ -147,51 +147,44 @@ public class UploadReceiver extends HttpServlet {
      * @throws FileUploadException
      */
     private String writeFile(Context userContext, HttpServletRequest request, List<FileItem> postParameters, int index, int count, String userId) throws FileUploadException { 
-        // final boolean partial = !(count == 1);
         final boolean first = index == 0;
-        // final boolean last = (index + 1) == count;
-        String responeText = "";
+        String responseText = "";
         for(FileItem fileItem : postParameters) {
             if (!fileItem.isFormField()) {
                 GpFilePath file = getUploadFile(userContext, request, fileItem.getName(), first); 
-                
-                if (first) {
-                    try { 
-                        UserUploadManager.createUploadFile(userContext, file, count); 
-                    } 
-                    catch (Exception e) { 
-                        throw new FileUploadException("File already exists in system"); 
-                    }
-                }
                 
                 // Check if the file exists and throw an error if it does
                 if (first && file.getServerFile().exists()) {
                     throw new FileUploadException("File already exists");
                 }
                 
+                if (first) {
+                    try { 
+                        UserUploadManager.createUploadFile(userContext, file, count); 
+                    } 
+                    catch (Throwable t) { 
+                        throw new FileUploadException("Error creating entry in DB for '"+file.getName()+"': "+t.getLocalizedMessage()); 
+                    }
+                }
+                
                 try {
                     appendPartition(fileItem, file.getServerFile());
                 }
-                catch (IOException e) {
-                    throw new FileUploadException("Problems appending partition onto uploaded file");
+                catch (Throwable t) {
+                    throw new FileUploadException("Error appending partition for '"+file.getName()+"': "+t.getLocalizedMessage());
                 }
                 
                 try {
                     UserUploadManager.updateUploadFile(userContext, file, index + 1, count);
                 }
-                catch (Exception e) {
-                    throw new FileUploadException("File part received out of order for " + file.getServerFile().getName());
+                catch (Throwable t) {
+                    throw new FileUploadException(t.getLocalizedMessage());
                 }
                 
-                try {
-                    responeText += file.getServerFile().getParent() + ";" + file.getServerFile().getCanonicalPath();
-                }
-                catch (IOException e) {
-                    log.error("Error generating response text for canonical paths");
-                }
+                responseText += file.getRelativePath();
             }
         }
-        return responeText;
+        return responseText;
     }
     
     /**
