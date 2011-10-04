@@ -10,9 +10,11 @@ create table user_upload (
         num_parts_recd number(10,0),
         path varchar2(255 char),
         user_id varchar2(255 char),
-        primary key (id)
+        primary key (id),
+        unique (user_id, path)
     );
 create sequence user_upload_SEQ;
+create index idx_user_upload_user_id on user_upload (user_id);
 
 -- for GenomeSpace integration, link GP user account to GS user account
 create table GS_ACCOUNT (

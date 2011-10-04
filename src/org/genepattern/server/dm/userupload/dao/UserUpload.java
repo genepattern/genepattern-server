@@ -8,13 +8,14 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.util.SemanticUtil;
 
 @Entity
-@Table(name="user_upload")
+@Table(name="user_upload", uniqueConstraints = {@UniqueConstraint(columnNames={"user_id", "path"})})
 public class UserUpload {
     static public UserUpload initFromGpFileObj(Context userContext, GpFilePath fileObj) {
         UserUpload uf = new UserUpload();

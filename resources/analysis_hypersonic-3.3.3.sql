@@ -10,8 +10,10 @@ create table user_upload (
     kind varchar(255), 
     num_parts integer, 
     num_parts_recd integer, 
-    primary key (id)
+    primary key (id),
+    unique (user_id, path)
 );
+create index idx_user_upload_user_id on user_upload (user_id);
 
 -- for GenomeSpace integration, link GP user account to GS user account
 create table GS_ACCOUNT (
