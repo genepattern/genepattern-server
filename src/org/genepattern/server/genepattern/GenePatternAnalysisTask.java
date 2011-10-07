@@ -133,13 +133,13 @@ import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.server.InputFilePermissionsHelper;
 import org.genepattern.server.JobInfoManager;
 import org.genepattern.server.JobInfoWrapper;
+import org.genepattern.server.JobInfoWrapper.InputFile;
 import org.genepattern.server.JobManager;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.TaskIDNotFoundException;
-import org.genepattern.server.JobInfoWrapper.InputFile;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.config.ServerProperties;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFileObjFactory;
 import org.genepattern.server.dm.GpFilePath;
@@ -156,9 +156,10 @@ import org.genepattern.server.executor.JobDispatchException;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.executor.pipeline.PipelineException;
 import org.genepattern.server.executor.pipeline.PipelineHandler;
-import org.genepattern.server.gs.GsClient;
-import org.genepattern.server.gs.GsClientException;
-import org.genepattern.server.gs.GsClientFactory;
+import org.genepattern.server.genomespace.GenomeSpaceClient;
+import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
+import org.genepattern.server.genomespace.GenomeSpaceException;
+import org.genepattern.server.genomespace.GenomeSpaceFileManager;
 import org.genepattern.server.user.UsageLog;
 import org.genepattern.server.util.JobResultsFilenameFilter;
 import org.genepattern.server.util.PropertiesManager_3_2;
@@ -1168,14 +1169,14 @@ public class GenePatternAnalysisTask {
                                 }
                                 
                                 // Handle getting the InputStream for GenomeSpace
-                                if (GsClientFactory.isGenomeSpaceEnabled(jobContext)) {
-                                    GsClient gsClient = GsClientFactory.getGsClient();
-                                    if (gsClient.isGenomeSpaceFile(url)) {
+                                if (GenomeSpaceClientFactory.isGenomeSpaceEnabled(jobContext)) {
+                                    GenomeSpaceClient gsClient = GenomeSpaceClientFactory.getGenomeSpaceClient();
+                                    if (GenomeSpaceFileManager.isGenomeSpaceFile(url)) {
                                         try {
                                             is = gsClient.getInputStream(jobInfo.getUserId(), url);
                                             name = getGSDownloadFileName(url.openConnection(), url);
                                         }
-                                        catch (GsClientException e) {
+                                        catch (GenomeSpaceException e) {
                                             vProblems.add("Error connecting to GenomeSpace: "+e.getLocalizedMessage());
                                             log.error("Error connecting to GenomeSpace", e);
                                             downloadUrl = false;

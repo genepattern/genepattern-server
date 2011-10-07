@@ -228,6 +228,21 @@ public class TaskInfo implements Serializable {
 
     private transient Set<String> _inputFileTypes = null;
     private transient Map<String, List<ParameterInfo>> _kindToParameterInfoMap = null;
+    
+    /**
+     * Get the map of kinds to relevant parameters
+     * 
+     * Note: To preserve compatibility with earlier versions of the SOAP client,
+     *     This method deliberately named using a non JavaBean naming convention so that the axis serializer does not
+     *     include the inputFileTypes parameter in the serialized bean.
+     */
+    public Map<String, List<ParameterInfo>> _getKindToParameterInfoMap() {
+        //initialize
+        _getInputFileTypes();
+        
+        return Collections.unmodifiableMap(_kindToParameterInfoMap);
+    }
+    
     /**
      * Get the list of input file types that this module accepts, by getting the input file types for each of its 
      * input file parameters.

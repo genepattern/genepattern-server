@@ -68,27 +68,23 @@ use, misuse, or functionality.
                 </tr>
                 <tr>
                     <td>
-                        <rich:tree value="#{genomeSpaceBean.fileTree}" var="aFile" switchType="client" adviseNodeOpened="#{genomeSpaceBean.openTreeNode}">
-                            <rich:treeNode>
-                                <h:outputLink rendered="#{not aFile.directory}" value="#{aFile.url}">
-                                    #{aFile.filename}
-                                </h:outputLink>
-                                <h:outputText rendered="#{aFile.directory}">
-                                    #{aFile.filename}
-                                </h:outputText>
+                        <rich:tree value="#{genomeSpaceBean.fileTree}" var="aFile" switchType="client" adviseNodeOpened="#{genomeSpaceBean.openTreeNode}" nodeFace="#{aFile.directory}">
+                            <rich:treeNode type="false" icon="/images/iconLeaf.gif" iconLeaf="/images/iconLeaf.gif">
+                                <h:outputLink value="#{aFile.url}">#{aFile.name}</h:outputLink>
                                 <!-- Image for popup menu -->
-								<t:graphicImage rendered="#{not aFile.directory}" value="/images/smallOptions.gif" name="Image_#{aFile.encodedPath}" 
-										onclick="pm_showMenu('menuDiv_#{aFile.dir.name}_#{aFile.filename}', Position.cumulativeOffset(this), 50, 50);" 
-										onmouseover="MM_swapImage('Image_#{aFile.dir.name}_#{aFile.filename}','','/gp/images/smallOptions2.gif',2)" 
+								<t:graphicImage rendered="#{not aFile.directory}" value="/images/smallOptions.gif" name="Image_#{aFile.formattedId}"
+										onclick="pm_showMenu('menuDiv_#{aFile.formattedId}', Position.cumulativeOffset(this), 50, 50);" 
+										onmouseover="MM_swapImage('Image_#{aFile.formattedId}','','/gp/images/smallOptions2.gif',2)" 
 										onmouseout="MM_swapImgRestore();"/>
                                 <br/>
-                                <h:outputText rendered="#{not aFile.directory}">
-                                    #{aFile.lastModified}
-                                </h:outputText>
+                                <h:outputText>#{aFile.formattedModified}; #{aFile.formattedLength}</h:outputText>
                                 <br/>
                             </rich:treeNode>
+							<rich:treeNode type="true" icon="/images/iconFolder.gif" iconLeaf="/images/iconFolder.gif">
+                                <h:outputText>#{aFile.name}</h:outputText>
+                            </rich:treeNode>
                         </rich:tree>
-                        <h:outputText rendered="#{empty genomeSpaceBean.gsFiles and empty genomeSpaceBean.gsDirectories}">
+                        <h:outputText rendered="#{genomeSpaceBean.emptyTree}">
                             No GenomeSpace files to display
                         </h:outputText>
                     </td>

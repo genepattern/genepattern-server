@@ -77,6 +77,10 @@ public class UploadFilesBean {
     private TaskInfo currentTaskInfo = null;
     private Map<String,SortedSet<TaskInfo>> kindToTaskInfo;
     
+    public Map<String, SortedSet<TaskInfo>> getKindToTaskInfo() {
+        return kindToTaskInfo;
+    }
+
     private static final Comparator<TaskInfo> taskInfoComparator =  new Comparator<TaskInfo>() {
         public int compare(TaskInfo o1, TaskInfo o2) {
             //1) null arg test

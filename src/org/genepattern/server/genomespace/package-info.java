@@ -7,4 +7,4 @@
  * which must not be loaded at runtime unless genomeSpaceEnabled is set to true.
  * 
  */
-package org.genepattern.server.gs;
+package org.genepattern.server.genomespace;

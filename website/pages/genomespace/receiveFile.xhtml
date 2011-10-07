@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- /*
+The Broad Institute
+SOFTWARE COPYRIGHT NOTICE AGREEMENT
+This software and its documentation are copyright (2003-2011) by the
+Broad Institute/Massachusetts Institute of Technology. All rights are
+reserved.
+This software is supplied without any warranty or guaranteed support
+whatsoever. Neither the Broad Institute nor MIT can be responsible for its
+use, misuse, or functionality.
+*/ -->
+<html xmlns="http://www.w3.org/1999/xhtml" 
+		xmlns:ui="http://java.sun.com/jsf/facelets" 
+		xmlns:h="http://java.sun.com/jsf/html" 
+		xmlns:f="http://java.sun.com/jsf/core" 
+		xmlns:t="http://myfaces.apache.org/tomahawk"
+		xmlns:c="http://java.sun.com/jstl/core">
+    <ui:composition template="/templates/common.xhtml">
+        <ui:define name="pageTitle">
+            Receive GenomeSpace File
+        </ui:define>
+        <ui:define name="body">
+        	<h2>GenomeSpace has sent you a file</h2>
+			<t:dataList var="file" value="#{genomeSpaceReceiveBean.receivedFiles}" rowIndexVar="index">
+				<t:div style="text-indent:50px;"><strong>#{file.file.name}</strong>
+				<t:graphicImage rendered="#{genomeSpaceBean.loggedIn and genomeSpaceBean.genomeSpaceEnabled}" value="/images/smallOptions.gif" name="Image_#{index}"
+			           onclick="pm_showMenu('menuDiv_#{file.file.formattedId}', Position.cumulativeOffset(this), 50, 50);" 
+			           onmouseover="MM_swapImage('Image_#{index}','','/gp/images/smallOptions2.gif',2)" 
+			           onmouseout="MM_swapImgRestore();" />
+				<h:outputText rendered="#{file.file.converted}"> <em>Converted to #{file.file.kind}</em></h:outputText>
+				<ol style="margin-left:50px;">
+					<h:form>
+						<li style="text-indent:10px;">Save a Copy: 
+							<t:selectOneMenu value="#{genomeSpaceReceiveBean.rootUploadDirectory}" id="uploadDirectory" forceId="true">
+								<f:selectItems value="#{genomeSpaceReceiveBean.uploadDirectories}" />
+							</t:selectOneMenu>
+							<h:commandLink value="Submit" action="#{genomeSpaceReceiveBean.prepareSaveFile}" immediate="true">
+								<f:param value="GenomeSpace" name="source"/>
+								<f:param value="${file.file.name}" name="name"/>
+								<f:param value="#{file.file.url}" name="path"/>
+							</h:commandLink>
+						</li>
+					</h:form>
+					<h:form>
+						<li style="text-indent:10px;">Send to Module:
+							<t:selectOneMenu id="module" forceId="true">
+								<f:selectItems value="#{file.moduleSelects}" />
+							</t:selectOneMenu>
+							<h:commandLink value="Submit" action="#{genomeSpaceReceiveBean.prepareLoadTask}" immediate="true">
+								<f:param value="GenomeSpace" name="source"/>
+								<f:param value="${file.file.name}" name="name"/>
+								<f:param value="#{file.file.url}" name="path"/>
+							</h:commandLink>
+						</li>
+					</h:form>
+				</ol>
+			</t:div>
+			</t:dataList>
+			<t:div style="text-indent:50px;" rendered="#{empty genomeSpaceReceiveBean.receivedFiles}">
+				<strong>No files were received</strong>
+			</t:div>
+			
+			<h:form>
+				<t:dataList var="file" value="#{genomeSpaceReceiveBean.receivedFiles}" rowIndexVar="fileIndex" 
+						rendered="#{genomeSpaceBean.loggedIn and genomeSpaceBean.genomeSpaceEnabled}">
+					<ui:include src="fileMenu.xhtml">
+	          			<ui:param name="file" value="#{file.file}"/>
+	        		</ui:include>
+	        	</t:dataList>
+			</h:form>
+				
+        </ui:define>
+    </ui:composition>
+</html>

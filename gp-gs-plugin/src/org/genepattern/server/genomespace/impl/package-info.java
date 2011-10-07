@@ -5,4 +5,4 @@
  * GP interfaces, making use of the GS CDK library and necessary support classes.
  * 
  */
-package org.genepattern.server.gs.impl;
+package org.genepattern.server.genomespace.impl;
