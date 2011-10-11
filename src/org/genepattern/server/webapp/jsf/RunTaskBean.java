@@ -32,8 +32,10 @@ import org.genepattern.data.pipeline.PipelineUtil;
 import org.genepattern.server.PermissionsHelper;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genomespace.GenomeSpaceBean;
+import org.genepattern.server.genomespace.GenomeSpaceFileManager;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -305,8 +307,8 @@ public class RunTaskBean {
         if (matchOutputFileSource.equalsIgnoreCase("genomespace")) {
             Map<String, List<String>> kindToInputParameters = new HashMap<String, List<String>>();
                if (taskParameters != null) {
-                   int idx = matchOutputFileParameterName.lastIndexOf(".");
-                   String gsType = matchOutputFileParameterName.substring(idx+1);
+                   GpFilePath gsFile = GenomeSpaceFileManager.createFile(gsUrl);
+                   String gsType = gsFile.getKind();
                    System.out.println("GS File is a " + gsType);
                
                    for (ParameterInfo p : taskParameters) {
