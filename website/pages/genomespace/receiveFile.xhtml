@@ -20,55 +20,61 @@ use, misuse, or functionality.
             Receive GenomeSpace File
         </ui:define>
         <ui:define name="body">
-        	<h2>GenomeSpace has sent you a file</h2>
-			<t:dataList var="file" value="#{genomeSpaceReceiveBean.receivedFiles}" rowIndexVar="index">
-				<t:div style="text-indent:50px;"><strong>#{file.file.name}</strong>
-				<t:graphicImage rendered="#{genomeSpaceBean.loggedIn and genomeSpaceBean.genomeSpaceEnabled}" value="/images/smallOptions.gif" name="Image_#{index}"
-			           onclick="pm_showMenu('menuDiv_#{file.file.formattedId}', Position.cumulativeOffset(this), 50, 50);" 
-			           onmouseover="MM_swapImage('Image_#{index}','','/gp/images/smallOptions2.gif',2)" 
-			           onmouseout="MM_swapImgRestore();" />
-				<h:outputText rendered="#{file.file.converted}"> <em>Converted to #{file.file.kind}</em></h:outputText>
-				<ol style="margin-left:50px;">
-					<h:form>
-						<li style="text-indent:10px;">Save a Copy: 
-							<t:selectOneMenu value="#{genomeSpaceReceiveBean.rootUploadDirectory}" id="uploadDirectory" forceId="true">
-								<f:selectItems value="#{genomeSpaceReceiveBean.uploadDirectories}" />
-							</t:selectOneMenu>
-							<h:commandLink value="Submit" action="#{genomeSpaceReceiveBean.prepareSaveFile}" immediate="true">
-								<f:param value="GenomeSpace" name="source"/>
-								<f:param value="${file.file.name}" name="name"/>
-								<f:param value="#{file.file.url}" name="path"/>
-							</h:commandLink>
-						</li>
-					</h:form>
-					<h:form>
-						<li style="text-indent:10px;">Send to Module:
-							<t:selectOneMenu id="module" forceId="true">
-								<f:selectItems value="#{file.moduleSelects}" />
-							</t:selectOneMenu>
-							<h:commandLink value="Submit" action="#{genomeSpaceReceiveBean.prepareLoadTask}" immediate="true">
-								<f:param value="GenomeSpace" name="source"/>
-								<f:param value="${file.file.name}" name="name"/>
-								<f:param value="#{file.file.url}" name="path"/>
-							</h:commandLink>
-						</li>
-					</h:form>
-				</ol>
+            <t:div rendered="#{not genomeSpaceBean.loggedIn or not genomeSpaceBean.genomeSpaceEnabled}">
+				<h2>Unable to access to the GenomeSpace landing page.</h2><br/>
+				<h:outputText rendered="#{not genomeSpaceBean.genomeSpaceEnabled}"><em>GenomeSpace is not enabled.</em><br/></h:outputText>
+				<h:outputText rendered="#{not genomeSpaceBean.loggedIn}"><em>Not logged in to GenomeSpace.</em><br/></h:outputText>
 			</t:div>
-			</t:dataList>
-			<t:div style="text-indent:50px;" rendered="#{empty genomeSpaceReceiveBean.receivedFiles}">
-				<strong>No files were received</strong>
-			</t:div>
-			
-			<h:form>
-				<t:dataList var="file" value="#{genomeSpaceReceiveBean.receivedFiles}" rowIndexVar="fileIndex" 
-						rendered="#{genomeSpaceBean.loggedIn and genomeSpaceBean.genomeSpaceEnabled}">
-					<ui:include src="fileMenu.xhtml">
-	          			<ui:param name="file" value="#{file.file}"/>
-	        		</ui:include>
-	        	</t:dataList>
-			</h:form>
+			<t:div rendered="#{genomeSpaceBean.loggedIn and genomeSpaceBean.genomeSpaceEnabled}">
+	        	<h2>GenomeSpace has sent you a file</h2>
+				<t:dataList var="file" value="#{genomeSpaceReceiveBean.receivedFiles}" rowIndexVar="index">
+					<t:div style="text-indent:50px;"><strong>#{file.file.name}</strong>
+					<t:graphicImage rendered="#{genomeSpaceBean.loggedIn and genomeSpaceBean.genomeSpaceEnabled}" value="/images/smallOptions.gif" name="Image_#{index}"
+				           onclick="pm_showMenu('menuDiv_#{file.file.formattedId}', Position.cumulativeOffset(this), 50, 50);" 
+				           onmouseover="MM_swapImage('Image_#{index}','','/gp/images/smallOptions2.gif',2)" 
+				           onmouseout="MM_swapImgRestore();" />
+					<h:outputText rendered="#{file.file.converted}"> <em>Converted to #{file.file.kind}</em></h:outputText>
+					<ol style="margin-left:50px;">
+						<h:form>
+							<li style="text-indent:10px;">Save a Copy: 
+								<t:selectOneMenu value="#{genomeSpaceReceiveBean.rootUploadDirectory}" id="uploadDirectory">
+									<f:selectItems value="#{genomeSpaceReceiveBean.uploadDirectories}" />
+								</t:selectOneMenu>
+								<h:commandLink value="Submit" action="#{genomeSpaceReceiveBean.prepareSaveFile}" immediate="true">
+									<f:param value="GenomeSpace" name="source"/>
+									<f:param value="${file.file.name}" name="name"/>
+									<f:param value="#{file.file.url}" name="path"/>
+								</h:commandLink>
+							</li>
+						</h:form>
+						<h:form>
+							<li style="text-indent:10px;">Send to Module:
+								<t:selectOneMenu id="module" forceId="true">
+									<f:selectItems value="#{file.moduleSelects}" />
+								</t:selectOneMenu>
+								<h:commandLink value="Submit" action="#{genomeSpaceReceiveBean.prepareLoadTask}" immediate="true">
+									<f:param value="GenomeSpace" name="source"/>
+									<f:param value="${file.file.name}" name="name"/>
+									<f:param value="#{file.file.url}" name="path"/>
+								</h:commandLink>
+							</li>
+						</h:form>
+					</ol>
+				</t:div>
+				</t:dataList>
+				<t:div style="text-indent:50px;" rendered="#{empty genomeSpaceReceiveBean.receivedFiles}">
+					<strong>No files were received</strong>
+				</t:div>
 				
+				<h:form>
+					<t:dataList var="file" value="#{genomeSpaceReceiveBean.receivedFiles}" rowIndexVar="fileIndex" 
+							rendered="#{genomeSpaceBean.loggedIn and genomeSpaceBean.genomeSpaceEnabled}">
+						<ui:include src="fileMenu.xhtml">
+		          			<ui:param name="file" value="#{file.file}"/>
+		        		</ui:include>
+		        	</t:dataList>
+				</h:form>
+			</t:div>
         </ui:define>
     </ui:composition>
 </html>
