@@ -10,6 +10,7 @@
 		<property name="gsUserId" column="GS_USERID" type="string" />
         <property name="token" column="TOKEN" type="string" />
 		<property name="tokenTimestamp" column="TOKEN_TIMESTAMP" type="timestamp" />
+		<property name="email" column="GS_EMAIL" type="string" />
     </class>
     
 </hibernate-mapping>

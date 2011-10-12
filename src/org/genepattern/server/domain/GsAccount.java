@@ -7,6 +7,7 @@ public class GsAccount {
     String gsUserId = null;
     String token = null;
     Date tokenTimestamp = null;
+    String email = null;
     
     public String getGpUserId() {
         return gpUserId;
@@ -37,5 +38,13 @@ public class GsAccount {
 
     public void setTokenTimestamp(Date tokenTimestamp) {
         this.tokenTimestamp = tokenTimestamp;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

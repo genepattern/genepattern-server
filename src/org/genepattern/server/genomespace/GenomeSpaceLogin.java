@@ -11,6 +11,7 @@ public class GenomeSpaceLogin {
     private Map<String,Object> attributes;
     private String authenticationToken;
     private String username = "";
+    private String email = null;
 
     public boolean isUnknownUser() {
         return unknownUser;
@@ -42,6 +43,14 @@ public class GenomeSpaceLogin {
     
     public void setUsername(String username) {
         this.username = username;
+    }
+    
+    public String getEmail() {
+        return email;
+    }
+    
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
 

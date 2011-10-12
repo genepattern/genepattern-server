@@ -82,6 +82,7 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
            response.setAuthenticationToken(gsSession.getAuthenticationToken());
            response.setUnknownUser(false);
            response.setUsername(gsUser.getUsername());
+           response.setEmail(gsUser.getEmail());
            return response;
         }  
         catch (AuthorizationException e) {

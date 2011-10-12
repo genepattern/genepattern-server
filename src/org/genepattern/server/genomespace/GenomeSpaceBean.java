@@ -130,7 +130,7 @@ public class GenomeSpaceBean {
             HttpSession httpSession = UIBeanHelper.getSession();
             for(Entry<String,Object> entry : login.getAttributes().entrySet()) {
                 httpSession.setAttribute(entry.getKey(), entry.getValue());
-                GenomeSpaceDatabaseManager.updateDatabase(UIBeanHelper.getUserId(), login.getAuthenticationToken(), login.getUsername());
+                GenomeSpaceDatabaseManager.updateDatabase(UIBeanHelper.getUserId(), login.getAuthenticationToken(), login.getUsername(), login.getEmail());
             }
             
             // Attain a copy of the kindToModules map

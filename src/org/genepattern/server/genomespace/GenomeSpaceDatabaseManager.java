@@ -34,13 +34,14 @@ public class GenomeSpaceDatabaseManager {
      * @param userId
      * @param gsAuthenticationToken
      */
-    public static void updateDatabase(String userId, String gsAuthenticationToken, String gsUsername) {
+    public static void updateDatabase(String userId, String gsAuthenticationToken, String gsUsername, String email) {
         GsAccountDAO dao = new GsAccountDAO();
         GsAccount account = new GsAccount();
         account.setGpUserId(userId);
         account.setToken(gsAuthenticationToken);
         account.setTokenTimestamp(new Date());
         account.setGsUserId(gsUsername);
+        account.setEmail(email);
         dao.saveOrUpdate(account);
         HibernateUtil.commitTransaction();
     }
