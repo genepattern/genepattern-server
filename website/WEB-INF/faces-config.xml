@@ -322,13 +322,11 @@
   </navigation-case>
   <navigation-case>
    <from-outcome>genomeSpaceLoginFailed</from-outcome>
-   <to-view-id>/pages/genomespace/gssignin.xhtml</to-view-id>
-   <redirect />
+   <to-view-id>/pages/genomespace/signon.xhtml</to-view-id>   <redirect />
   </navigation-case>
   <navigation-case>
    	<from-outcome>genomeSpaceRegFailed</from-outcome>
-   	<to-view-id>/pages/genomespace/gsUserRegistration.xhtml</to-view-id>
-   	<redirect />
+    <to-view-id>/pages/genomespace/userRegistration.xhtml</to-view-id>   	<redirect />
   </navigation-case>
   <navigation-case>
    <from-outcome>home</from-outcome>
@@ -458,8 +456,7 @@
  </navigation-rule>
  <application>
   <view-handler>com.sun.facelets.FaceletViewHandler</view-handler>
-  <!-- Replace view-handler tag with the tag below to enable trinidad
- <default-render-kit-id>org.apache.myfaces.trinidad.core</default-render-kit-id>  -->
+  <!-- Replace view-handler tag with the tag below to enable trinidad <default-render-kit-id>org.apache.myfaces.trinidad.core</default-render-kit-id> -->
  </application>
 
 
