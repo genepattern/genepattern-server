@@ -1,5 +1,7 @@
 package org.genepattern.server.genomespace;
 
+import java.util.Date;
+
 import org.apache.log4j.Logger;
 import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.GsAccount;
@@ -19,7 +21,7 @@ public class GenomeSpaceDatabaseManager {
      * @return
      */
     public static String getGSToken(String genomeSpaceUsername) {
-        GsAccount account = new GsAccountDAO().getGsAccount(genomeSpaceUsername);
+        GsAccount account = new GsAccountDAO().getByGPUserId(genomeSpaceUsername);
         if (account == null) {
             log.error("Unable to get the GsAccount from the database for the user");
             return null;
@@ -32,11 +34,13 @@ public class GenomeSpaceDatabaseManager {
      * @param userId
      * @param gsAuthenticationToken
      */
-    public static void updateDatabase(String userId, String gsAuthenticationToken) {
+    public static void updateDatabase(String userId, String gsAuthenticationToken, String gsUsername) {
         GsAccountDAO dao = new GsAccountDAO();
         GsAccount account = new GsAccount();
-        account.setGpUserid(userId);
+        account.setGpUserId(userId);
         account.setToken(gsAuthenticationToken);
+        account.setTokenTimestamp(new Date());
+        account.setGsUserId(gsUsername);
         dao.saveOrUpdate(account);
         HibernateUtil.commitTransaction();
     }

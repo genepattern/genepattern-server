@@ -1,14 +1,11 @@
 package org.genepattern.server.genomespace;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -17,23 +14,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.faces.context.FacesContext;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
-import org.genepattern.server.webapp.FileDownloader;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webapp.uploads.UploadFilesBean.DirectoryInfoWrapper;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
-import org.genepattern.util.JobDownloader;
 import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
@@ -139,7 +130,7 @@ public class GenomeSpaceBean {
             HttpSession httpSession = UIBeanHelper.getSession();
             for(Entry<String,Object> entry : login.getAttributes().entrySet()) {
                 httpSession.setAttribute(entry.getKey(), entry.getValue());
-                GenomeSpaceDatabaseManager.updateDatabase(UIBeanHelper.getUserId(), login.getAuthenticationToken());
+                GenomeSpaceDatabaseManager.updateDatabase(UIBeanHelper.getUserId(), login.getAuthenticationToken(), login.getUsername());
             }
             
             // Attain a copy of the kindToModules map

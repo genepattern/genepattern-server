@@ -1,15 +1,19 @@
 package org.genepattern.server.domain;
 
+import java.util.Date;
+
 public class GsAccount {
-    String gpUserid = null;
+    String gpUserId = null;
+    String gsUserId = null;
     String token = null;
+    Date tokenTimestamp = null;
     
-    public String getGpUserid() {
-        return gpUserid;
+    public String getGpUserId() {
+        return gpUserId;
     }
     
-    public void setGpUserid(String gp_userid) {
-        this.gpUserid = gp_userid;
+    public void setGpUserId(String gp_userid) {
+        this.gpUserId = gp_userid;
     }
     public String getToken() {
         return token;
@@ -17,5 +21,21 @@ public class GsAccount {
     
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getGsUserId() {
+        return gsUserId;
+    }
+
+    public void setGsUserId(String gsUserId) {
+        this.gsUserId = gsUserId;
+    }
+
+    public Date getTokenTimestamp() {
+        return tokenTimestamp;
+    }
+
+    public void setTokenTimestamp(Date tokenTimestamp) {
+        this.tokenTimestamp = tokenTimestamp;
     }
 }
