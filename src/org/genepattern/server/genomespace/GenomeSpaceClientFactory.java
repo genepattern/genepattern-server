@@ -26,6 +26,10 @@ public class GenomeSpaceClientFactory {
     static public boolean isGenomeSpaceEnabled(Context context) {
         return ServerConfiguration.instance().getGPBooleanProperty(context, "genomeSpaceEnabled", false);
     }
+    
+    static public String getGenomeSpaceEnvironment(Context context) {
+        return ServerConfiguration.instance().getGPProperty(context, "genomeSpaceEnvironment", "test");
+    }
 
     /**
      * This method initializes the singleton instance of a GsClient interface.
@@ -91,6 +95,7 @@ class GenomeSpaceClientSingleton {
             public void saveFileToGenomeSpace(Object gsSessionObj, GpFilePath savedFile, GenomeSpaceFile directory) throws GenomeSpaceException {}
             public Map<String, Set<String>> getKindToTools(Object gsSession) { return null; }
             public URL getSendToToolUrl(Object gsSession, GenomeSpaceFile file, String toolName) throws GenomeSpaceException { return null; }
+            public GenomeSpaceLogin submitLogin(String env, String token) throws GenomeSpaceException { return null; }
         };
     }
 }

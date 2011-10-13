@@ -11,6 +11,10 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
+import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
+import org.genepattern.server.genomespace.GenomeSpaceException;
+import org.genepattern.server.genomespace.GenomeSpaceLoginManager;
 import org.genepattern.server.user.User;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.util.GPConstants;
@@ -62,7 +66,7 @@ public class LoginManager {
      * @throws IOException
      */
     public void login(HttpServletRequest request, HttpServletResponse response, boolean redirect) 
-    throws AuthenticationException, IOException { 
+    throws AuthenticationException, IOException {
         String gp_username = UserAccountManager.instance().getAuthentication().authenticate(request, response);
         if (gp_username == null) {
             return;
@@ -75,12 +79,26 @@ public class LoginManager {
         }
 
         addUserIdToSession(request, gp_username);
+        handGenomeSpaceLogin(gp_username, request.getSession());
 
         if (redirect) {
             redirect(request, response);
         }
     }
     
+    public static void handGenomeSpaceLogin(String gp_username, HttpSession session) {
+        Context context = Context.getContextForUser(gp_username);
+        boolean genomeSpaceEnabled = GenomeSpaceClientFactory.isGenomeSpaceEnabled(context);
+        if (genomeSpaceEnabled) {
+            try {
+                GenomeSpaceLoginManager.loginFromToken(gp_username, session);
+            }
+            catch (GenomeSpaceException e) {
+                log.info("Error thrown trying to handle GS login in LoginManager: " + e.getMessage());
+            }
+        }
+    }
+
     public void addUserIdToSession(HttpServletRequest request, String gp_username) {
         HttpSession session = request.getSession();
         if (session == null) {

@@ -17,6 +17,7 @@ import org.genepattern.server.dm.GpFilePath;
 public interface GenomeSpaceClient {
     public InputStream getInputStream(String gpUserId, URL url) throws GenomeSpaceException;
     public GenomeSpaceLogin submitLogin(String env, String username, String password) throws GenomeSpaceException;
+    public GenomeSpaceLogin submitLogin(String env, String token) throws GenomeSpaceException;
     public boolean isLoggedIn(Object gsSession);
     public void logout(Object gsSession);
     public void registerUser(String env, String username, String password, String regEmail) throws GenomeSpaceException;

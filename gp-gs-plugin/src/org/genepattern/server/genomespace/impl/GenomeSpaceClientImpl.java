@@ -92,6 +92,36 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
             throw new GenomeSpaceException("An error occurred logging in to GenomeSpace.  Please contact the GenePattern administrator. Error was: "+ e.getLocalizedMessage(), e);
         }
 	}
+	
+	public GenomeSpaceLogin submitLogin(String env, String token) throws GenomeSpaceException {
+	    if (env == null) {
+            log.error("Environment for GenomeSpace not set");
+            env = "test";
+        }
+        
+        if (token == null) {
+            throw new GenomeSpaceException("Token must be set");
+        }
+        
+        try {
+            ConfigurationUrls.init(env);
+            GsSession gsSession = new GsSession(token);
+
+            GenomeSpaceLogin response = new GenomeSpaceLogin();
+            response.setAttributes(new HashMap<String,Object>());
+            response.getAttributes().put(GenomeSpaceBean.GS_SESSION_KEY, gsSession);
+            response.setAuthenticationToken(gsSession.getAuthenticationToken());
+            response.setUnknownUser(false);
+            response.setUsername(gsSession.getCachedUsernameForSSO());
+            return response;
+         }  
+         catch (AuthorizationException e) {
+             throw new GenomeSpaceException("Authentication error, please check your username and password.");
+         } 
+         catch (Exception e) {
+             throw new GenomeSpaceException("An error occurred logging in to GenomeSpace.  Please contact the GenePattern administrator. Error was: "+ e.getLocalizedMessage(), e);
+         }
+    }
 
 	public boolean isLoggedIn(Object gsSessionObject) {
 		GsSession gsSession = null;

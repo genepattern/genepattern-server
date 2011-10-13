@@ -64,7 +64,12 @@ public class GenomeSpaceBean {
      */
     public GenomeSpaceBean() {
         genomeSpaceEnabled = GenomeSpaceClientFactory.isGenomeSpaceEnabled(UIBeanHelper.getUserContext());
-        log.info("GenomeSpaceEnabled = " + genomeSpaceEnabled + " for " + UIBeanHelper.getUserId()); 
+        log.info("GenomeSpaceEnabled = " + genomeSpaceEnabled + " for " + UIBeanHelper.getUserId());
+        
+        // Attain a copy of the kindToModules map
+        TaskInfo[] moduleArray = new AdminDAO().getLatestTasks(UIBeanHelper.getUserId());
+        List<TaskInfo> allModules = Arrays.asList(moduleArray);
+        kindToModules = SemanticUtil.getKindToModulesMap(allModules);
     }
     
     /**
@@ -118,30 +123,20 @@ public class GenomeSpaceBean {
         }
         
         try {
-            GenomeSpaceLogin login = GenomeSpaceClientFactory.getGenomeSpaceClient().submitLogin(env, genomeSpaceUsername, genomeSpacePassword);
-            if (login == null) {
+            boolean loginSuccess = GenomeSpaceLoginManager.loginFromUsername(env, genomeSpaceUsername, genomeSpacePassword, UIBeanHelper.getSession());
+            
+            if (loginSuccess) {
+                this.setMessageToUser("Signed in to GenomeSpace as " + genomeSpaceUsername);
+                loginFailed = false;
+                return "home";
+            }
+            else {
                 log.error("GenomeSpaceLogin was null loging into GenomeSpace");
                 this.loginFailed = true;
                 this.setMessageToUser("Error logging into GenomeSpace");
                 return "genomeSpaceLoginFailed";
             }
-            
-            // Set attributes from login in the GenePattern session
-            HttpSession httpSession = UIBeanHelper.getSession();
-            for(Entry<String,Object> entry : login.getAttributes().entrySet()) {
-                httpSession.setAttribute(entry.getKey(), entry.getValue());
-                GenomeSpaceDatabaseManager.updateDatabase(UIBeanHelper.getUserId(), login.getAuthenticationToken(), login.getUsername(), login.getEmail());
-            }
-            
-            // Attain a copy of the kindToModules map
-            TaskInfo[] moduleArray = new AdminDAO().getLatestTasks(UIBeanHelper.getUserId());
-            List<TaskInfo> allModules = Arrays.asList(moduleArray);
-            kindToModules = SemanticUtil.getKindToModulesMap(allModules);
-            
-            this.setMessageToUser("Signed in to GenomeSpace as " + login.getUsername());
-            loginFailed = false;
-            return "home";
-        }
+        } 
         catch (GenomeSpaceException e) {
             this.loginFailed = true;
             this.setMessageToUser(e.getMessage());

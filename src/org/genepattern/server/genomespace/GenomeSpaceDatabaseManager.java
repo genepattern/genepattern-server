@@ -16,17 +16,28 @@ public class GenomeSpaceDatabaseManager {
     private static final Logger log = Logger.getLogger(GenomeSpaceDatabaseManager.class);
     
     /**
-     * Return the GenomeSpace token associated with the given GenomeSpace username
+     * Return the GenomeSpace token associated with the given GenePattern username
      * @param gpUserId
      * @return
      */
-    public static String getGSToken(String genomeSpaceUsername) {
-        GsAccount account = new GsAccountDAO().getByGPUserId(genomeSpaceUsername);
+    public static String getGSToken(String gpUsername) {
+        GsAccount account = new GsAccountDAO().getByGPUserId(gpUsername);
         if (account == null) {
             log.error("Unable to get the GsAccount from the database for the user");
             return null;
         }
         return account.getToken();
+    }
+    
+    public static boolean isGPAccountAssociated(String gpUsername) {
+        GsAccount account = new GsAccountDAO().getByGPUserId(gpUsername);
+        if (account == null) return false;
+        if (account.getGsUserId() == null) {
+            return false;
+        }
+        else {
+            return true;
+        }
     }
     
     /**
@@ -36,7 +47,8 @@ public class GenomeSpaceDatabaseManager {
      */
     public static void updateDatabase(String userId, String gsAuthenticationToken, String gsUsername, String email) {
         GsAccountDAO dao = new GsAccountDAO();
-        GsAccount account = new GsAccount();
+        GsAccount account = new GsAccountDAO().getByGPUserId(userId);
+        if (account == null) account = new GsAccount();
         account.setGpUserId(userId);
         account.setToken(gsAuthenticationToken);
         account.setTokenTimestamp(new Date());
