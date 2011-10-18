@@ -90,48 +90,15 @@
 				
 				<td width="400" valign="top">
 					<h:form onsubmit="return validateForm(this);" id="gsLoginForm" rendered="#{genomeSpaceBean.genomeSpaceEnabled}">
-						<img src="genomespace/genomespacelogo.png"/>
-						<table width="330">
-							<tr>
-								<td>
-									<img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle"/>&#160;
-									<span style="font-weight: bold;">Sign in Using GenomeSpace</span>
-								</td>
-								<td align="right">
-									<h:outputLink rendered="false" value="#{facesContext.externalContext.requestContextPath}/pages/genomespace/userRegistration.jsf">
-						    			Click to Register
-						  			</h:outputLink>
-								</td>
-							</tr>
-						</table>
-			
-						<h:outputText
-							value="Username and password do not match."
-							style="color: red; font-weight: bold;"
-							rendered="#{loginBean.unknownUser and loginBean.createAccountAllowed}" />
-					
-						<h:outputText
-							value="Username and password do not match."
-							style="color: red; font-weight: bold;"
-							rendered="#{loginBean.unknownUser and !loginBean.createAccountAllowed}" />
-						
-			
-						<h:outputText value="Username and password do not match."
-							rendered="#{loginBean.invalidPassword}"
-							style="color: red; font-weight: bold;" />
-			
-						<h:panelGrid columns="2">
-							<h:outputLabel value="Username:" for="username"></h:outputLabel>
-							<t:inputText size="50" id="gsUsername" required="true" requiredMessage="Username is required" >
-			                	<f:attribute name="forceId" value="true"/>
-			                </t:inputText>
-							
-							<h:outputLabel value="Password:" for="password" />
-							<t:inputSecret size="50" id="gsPassword">
-			                	<f:attribute name="forceId" value="true"/>
-							</t:inputSecret>
-						</h:panelGrid>
-						<h:commandButton id="signIn" actionListener="#{loginBean.submitLogin}" value="Sign in" />
+						<h:outputLink value="../GenomeSpaceOpenID">
+							<h:graphicImage url="genomespace/genomespacelogo.png" />
+							<f:verbatim>
+								<br />
+								<img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle" />&#160;
+								<span style="font-weight: bold;">Sign in Using GenomeSpace</span>
+							</f:verbatim>
+							<f:param name="login" value="Login" />
+						</h:outputLink>
 					</h:form>
 				</td>
 			</tr>
