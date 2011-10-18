@@ -38,54 +38,54 @@
 		<table cols="2">
 			<tr>
 				<td width="400" valign="top">
-					<h:form onsubmit="return validateForm(this);" id="loginForm">
-						<table width="330">
-							<tr>
-								<td><span style="font-weight: bold;"> Sign in to
-								GenePattern</span></td>
-								<td align="right"><h:outputLink
-									value="#{facesContext.externalContext.requestContextPath}/pages/registerUser.jsf"
-									rendered="#{loginBean.createAccountAllowed and loginBean.showRegistrationLink}">
+		<h:form onsubmit="return validateForm(this);" id="loginForm">
+			<table width="330">
+				<tr>
+					<td><span style="font-weight: bold;"> Sign in to
+					GenePattern</span></td>
+					<td align="right"><h:outputLink
+						value="#{facesContext.externalContext.requestContextPath}/pages/registerUser.jsf"
+						rendered="#{loginBean.createAccountAllowed and loginBean.showRegistrationLink}">
 						    Click to Register
-						  </h:outputLink></td>
-							</tr>
-						</table>
+			  </h:outputLink></td>
+				</tr>
+			</table>
+
+			<h:outputText
+				value="Username and password do not match."
+				style="color: red; font-weight: bold;"
+				rendered="#{loginBean.unknownUser and loginBean.createAccountAllowed}" />
+		
+			<h:outputText
+				value="Username and password do not match."
+				style="color: red; font-weight: bold;"
+				rendered="#{loginBean.unknownUser and !loginBean.createAccountAllowed}" />
 			
-						<h:outputText
-							value="Username and password do not match."
-							style="color: red; font-weight: bold;"
-							rendered="#{loginBean.unknownUser and loginBean.createAccountAllowed}" />
-					
-						<h:outputText
-							value="Username and password do not match."
-							style="color: red; font-weight: bold;"
-							rendered="#{loginBean.unknownUser and !loginBean.createAccountAllowed}" />
-						
-			
-						<h:outputText value="Username and password do not match."
-							rendered="#{loginBean.invalidPassword}"
-							style="color: red; font-weight: bold;" />
-			
-						<h:panelGrid columns="2">
+
+			<h:outputText value="Username and password do not match."
+				rendered="#{loginBean.invalidPassword}"
+				style="color: red; font-weight: bold;" />
+
+			<h:panelGrid columns="2">
 							<h:outputLabel value="Username:" for="username" />
 							<t:inputText size="50" value="#{loginBean.username}" id="username" required="true" requiredMessage="Username is required" >
-			                	<f:attribute name="forceId" value="true"/>
-			                </t:inputText>
-							
-							<h:outputLabel value="Password:" for="password"
-								rendered="#{loginBean.passwordRequired}"></h:outputLabel>
-							<t:inputSecret size="50" value="#{loginBean.password}" id="password" rendered="#{loginBean.passwordRequired}" >
-			                	<f:attribute name="forceId" value="true"/>
-							</t:inputSecret>
-						</h:panelGrid>
-						<h:commandButton id="signIn" actionListener="#{loginBean.submitLogin}" value="Sign in" />
-						<br />
+                  <f:attribute name="forceId" value="true"/>
+                </t:inputText>
+				
+				<h:outputLabel value="Password:" for="password"
+					rendered="#{loginBean.passwordRequired}"></h:outputLabel>
+				<t:inputSecret size="50" value="#{loginBean.password}" id="password" rendered="#{loginBean.passwordRequired}" >
+                  <f:attribute name="forceId" value="true"/>
+				</t:inputSecret>
+			</h:panelGrid>
+			<h:commandButton id="signIn" actionListener="#{loginBean.submitLogin}" value="Sign in" />
+			<br />
 						<h:outputLink value="#{facesContext.externalContext.requestContextPath}/pages/forgotPassword.jsf"
-								rendered="#{loginBean.passwordRequired}">
-							Forgot your password?
-						</h:outputLink>
-			
-					</h:form>		
+				rendered="#{loginBean.passwordRequired}">
+			  Forgot your password?
+			</h:outputLink>
+
+		</h:form>
 				</td>
 				
 				<td width="400" valign="top">
