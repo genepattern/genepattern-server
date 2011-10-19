@@ -13,13 +13,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
+import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webapp.uploads.UploadFilesBean.DirectoryInfoWrapper;
@@ -42,6 +45,8 @@ public class GenomeSpaceBean {
 
     public static String GS_SESSION_KEY = "GS_SESSION";
     public static String GS_USER_KEY = "GS_USER";
+    public static String GS_TOKEN_KEY = "GS_TOKEN";
+    public static String GS_EMAIL_KEY = "GS_EMAIL";
     public static String GS_DIRECTORIES_KEY = "GS_DIRECTORIES";
     public static String GS_FILE_METADATAS = "GS_FILE_METADATAS";
     

@@ -52,8 +52,8 @@ public class GenomeSpaceOpenID extends HttpServlet {
     
     private String getProviderURL() {
         // https://identityDev.genomespace.org:8444/identityServer/xrd.jsp
-        // https://identity.genomespace.org/identityServer/xrd.jsp
-        return "https://identityTest.genomespace.org:8444/identityServer/xrd.jsp";
+        return "https://identity.genomespace.org/identityServer/xrd.jsp";
+        // return "https://identityTest.genomespace.org:8444/identityServer/xrd.jsp";
 //        Context context = Context.getContextForUser(null);
 //        boolean enabled = ServerConfiguration.instance().getGPBooleanProperty(context, "genomeSpaceEnabled", false);
 //        String gsServer = ServerConfiguration.instance().getGPProperty(context, "genomeSpaceServer", "test");
@@ -175,8 +175,19 @@ public class GenomeSpaceOpenID extends HttpServlet {
             resp.sendRedirect("/gp/pages/genomespace/index.jsp");
         }
         else {
-            // Forward to faces context for associating GS account with GP account and logging in
-            resp.sendRedirect("https://dmdev.genomespace.org:8444/datamanager/files/users/" + username);
+            // Set session variables for GS
+            req.getSession().setAttribute(GenomeSpaceBean.GS_USER_KEY, username);
+            req.getSession().setAttribute(GenomeSpaceBean.GS_TOKEN_KEY, token);
+            req.getSession().setAttribute(GenomeSpaceBean.GS_EMAIL_KEY, email);
+            
+            // Check if there is an associated GP Account and forward to appropriate place
+            boolean isAccountAssociated = GenomeSpaceLoginManager.isGSAccountAssociated(username);
+            if (isAccountAssociated) {
+                resp.sendRedirect("/gp/pages/index.jsf"); 
+            }
+            else {
+                resp.sendRedirect("/gp/pages/genomespace/associateAccount.jsf");
+            }
         }
     }
 

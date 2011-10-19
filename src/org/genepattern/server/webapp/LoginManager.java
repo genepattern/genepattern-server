@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.genomespace.GenomeSpaceBean;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceLoginManager;
@@ -67,7 +68,11 @@ public class LoginManager {
      */
     public void login(HttpServletRequest request, HttpServletResponse response, boolean redirect) 
     throws AuthenticationException, IOException {
-        String gp_username = UserAccountManager.instance().getAuthentication().authenticate(request, response);
+        String gp_username = null;
+        gp_username = handleGenomeSpaceAuthentication(request, response);
+        if (gp_username == null) {
+            gp_username = UserAccountManager.instance().getAuthentication().authenticate(request, response);
+        }
         if (gp_username == null) {
             return;
         }
@@ -84,6 +89,15 @@ public class LoginManager {
         if (redirect) {
             redirect(request, response);
         }
+    }
+    
+    public static String handleGenomeSpaceAuthentication(HttpServletRequest request, HttpServletResponse response) {
+        String gsUsername = (String) request.getSession().getAttribute(GenomeSpaceBean.GS_USER_KEY);
+        if (gsUsername == null) return null;
+        
+        String gp_username = null;
+        gp_username = GenomeSpaceLoginManager.authenticate(request, response);
+        return gp_username;
     }
     
     public static void handGenomeSpaceLogin(String gp_username, HttpSession session) {

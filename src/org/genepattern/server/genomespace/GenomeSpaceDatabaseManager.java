@@ -40,6 +40,23 @@ public class GenomeSpaceDatabaseManager {
         }
     }
     
+    public static boolean isGSAccountAssociated(String gsUsername) {
+        GsAccount account = new GsAccountDAO().getByGSUserId(gsUsername);
+        if (account == null) return false;
+        if (account.getGpUserId() == null) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    }
+    
+    public static String getGPUsername(String gsUsername) {
+        GsAccount account = new GsAccountDAO().getByGSUserId(gsUsername);
+        if (account == null) return null;
+        return account.getGpUserId();
+    }
+    
     /**
      * Update the database for the given GenomeSpace username and token
      * @param userId
