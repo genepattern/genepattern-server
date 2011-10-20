@@ -1,12 +1,15 @@
 package org.genepattern.server.genomespace;
 
 import java.util.Map.Entry;
+import java.util.Random;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.util.GPConstants;
 
@@ -20,7 +23,21 @@ public class GenomeSpaceLoginManager {
     public static String GS_DIRECTORIES_KEY = "GS_DIRECTORIES";
     public static String GS_FILE_METADATAS = "GS_FILE_METADATAS";
     
-    public static boolean loginFromToken(String gp_username, HttpSession httpSession) throws GenomeSpaceException {
+    public static boolean loginFromSession(HttpSession httpSession) throws GenomeSpaceException {
+        String token = (String) httpSession.getAttribute(GS_TOKEN_KEY);
+        String gp_username = (String) httpSession.getAttribute(GPConstants.USERID);
+        if (token == null || gp_username == null) return false;
+        
+        Context context = Context.getContextForUser(gp_username);
+        String genomeSpaceEnvironment = GenomeSpaceClientFactory.getGenomeSpaceEnvironment(context);
+        
+        GenomeSpaceLogin login = GenomeSpaceClientFactory.getGenomeSpaceClient().submitLogin(genomeSpaceEnvironment, token);
+        if (login == null) return false;
+        setSessionAttributes(login, httpSession);
+        return true;
+    }
+    
+    public static boolean loginFromDatabase(String gp_username, HttpSession httpSession) throws GenomeSpaceException {
         Context context = Context.getContextForUser(gp_username);
         String genomeSpaceEnvironment = GenomeSpaceClientFactory.getGenomeSpaceEnvironment(context);
         
@@ -41,7 +58,7 @@ public class GenomeSpaceLoginManager {
         return true;
     }
     
-    private static void setSessionAttributes(GenomeSpaceLogin login, HttpSession httpSession) {
+    public static void setSessionAttributes(GenomeSpaceLogin login, HttpSession httpSession) {
         // Set attributes from login in the GenePattern session
         for(Entry<String,Object> entry : login.getAttributes().entrySet()) {
             httpSession.setAttribute(entry.getKey(), entry.getValue()); 
@@ -76,5 +93,30 @@ public class GenomeSpaceLoginManager {
         }
         
         return gpUsername;
+    }
+    
+    public static String generateUsername(String gsUsername) {
+        String suggestedName = gsUsername;
+        int count = 1;
+        while (UserAccountManager.instance().userExists(suggestedName)) {
+            suggestedName = gsUsername + count;
+            count++;
+        }
+        
+        return suggestedName;
+    }
+    
+    public static String generatePassword() {
+        Random rand = new Random();
+        return "GS" + rand.nextInt();
+    }
+    
+    public static void createGenePatternAccount(String username, String password, String email) {
+        try {
+            UserAccountManager.instance().createUser(username, password, email);
+        }
+        catch (AuthenticationException e) {
+            log.error("Error auto-creating a new GenePattern user: " + username);
+        }
     }
 }

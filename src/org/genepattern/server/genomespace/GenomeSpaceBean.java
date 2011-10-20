@@ -13,13 +13,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.UserAccountManager;
+import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.userupload.UserUploadManager;
+import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webapp.uploads.UploadFilesBean.DirectoryInfoWrapper;
@@ -739,6 +743,61 @@ public class GenomeSpaceBean {
         catch (Exception e) {
             UIBeanHelper.setErrorMessage("Unable to update database to include new file");
             log.error("Unable to update database to include new file " + e.getMessage());
+        }
+    }
+    
+    public void associateAccounts() throws IOException {
+        HttpServletRequest request = UIBeanHelper.getRequest();
+        HttpServletResponse response = UIBeanHelper.getResponse();
+        HttpSession session = UIBeanHelper.getSession();
+        
+        try {
+            String gpUsername = UserAccountManager.instance().getAuthentication().authenticate(request, response);
+            if (gpUsername == null) {
+                throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME, "Username was null");
+            }
+            
+            // Associate accounts in database
+            LoginManager.instance().addUserIdToSession(request, gpUsername);
+            GenomeSpaceLoginManager.loginFromSession(session);
+            
+            // Forward to index
+            response.sendRedirect("/gp/pages/index.jsf"); 
+        }
+        catch (AuthenticationException e) {
+            loginFailed = true;
+        }
+        catch (GenomeSpaceException e) {
+            log.error("GenomeSpaceException in associateAccounts(): " + e.getMessage());
+            loginFailed = true;
+        }
+    }
+    
+    public void autoCreateAccount() throws IOException {
+        HttpServletRequest request = UIBeanHelper.getRequest();
+        HttpServletResponse response = UIBeanHelper.getResponse();
+        HttpSession session = UIBeanHelper.getSession();
+        String gsUsername = (String) session.getAttribute(GenomeSpaceLoginManager.GS_USER_KEY);
+        String gsEmail = (String) session.getAttribute(GenomeSpaceLoginManager.GS_EMAIL_KEY);
+        if (gsUsername == null) {
+            log.error("GenomeSpace username was null in autoCreateAccount()");
+            gsUsername = GenomeSpaceLoginManager.generatePassword();
+        }
+        String username = GenomeSpaceLoginManager.generateUsername(gsUsername);
+        String password = GenomeSpaceLoginManager.generatePassword();
+        GenomeSpaceLoginManager.createGenePatternAccount(username, password, gsEmail);
+
+        try {
+            // Associate accounts in database
+            LoginManager.instance().addUserIdToSession(request, username);
+            GenomeSpaceLoginManager.loginFromSession(session);
+            
+            // Forward to index
+            response.sendRedirect("/gp/pages/index.jsf"); 
+        }
+        catch (GenomeSpaceException e) {
+            log.error("GenomeSpaceException in autoCreateAccount(): " + e.getMessage());
+            loginFailed = true;
         }
     }
 }

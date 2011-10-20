@@ -116,7 +116,7 @@ public class LoginManager {
         boolean genomeSpaceEnabled = GenomeSpaceClientFactory.isGenomeSpaceEnabled(context);
         if (genomeSpaceEnabled) {
             try {
-                GenomeSpaceLoginManager.loginFromToken(gp_username, session);
+                GenomeSpaceLoginManager.loginFromDatabase(gp_username, session);
             }
             catch (GenomeSpaceException e) {
                 log.info("Error thrown trying to handle GS login in LoginManager: " + e.getMessage());
