@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.openid4java.OpenIDException;
 import org.openid4java.association.AssociationSessionType;
 import org.openid4java.consumer.ConsumerManager;
@@ -51,15 +53,9 @@ public class GenomeSpaceOpenID extends HttpServlet {
     public static final String EMAIL_ALIAS = "email";
     
     private String getProviderURL() {
-        // https://identityDev.genomespace.org:8444/identityServer/xrd.jsp
-        return "https://identity.genomespace.org/identityServer/xrd.jsp";
-        // return "https://identityTest.genomespace.org:8444/identityServer/xrd.jsp";
-//        Context context = Context.getContextForUser(null);
-//        boolean enabled = ServerConfiguration.instance().getGPBooleanProperty(context, "genomeSpaceEnabled", false);
-//        String gsServer = ServerConfiguration.instance().getGPProperty(context, "genomeSpaceServer", "test");
-//        String gsUrl = ServerConfiguration.instance().getGPProperty(context, "genomeSpaceUrl." + gsServer, "https://identityTest.genomespace.org:8444/identityServer/xrd.jsp");
-//        if (enabled) return gsUrl;
-//        else return null;
+        Context context = Context.getServerContext();
+        String gsUrl = ServerConfiguration.instance().getGPProperty(context, "genomeSpaceUrl", "https://identityTest.genomespace.org:8444/identityServer/xrd.jsp");
+        return gsUrl;
     }
 
     /** Returns the URL to GenomeSpace server OpenId logout page. */

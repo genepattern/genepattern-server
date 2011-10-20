@@ -44,6 +44,9 @@ default.properties:
     # for 'Create Pipeline', the max file size (in bytes) to copy when creating a new pipeline
     # (default=250mB)
     pipeline.max.file.size: 256000000
+    
+    genomeSpaceEnabled: false
+    genomeSpaceUrl: https://identityTest.genomespace.org:8444/identityServer/xrd.jsp
 
 executors:
     # default executor for all jobs, it is included in GenePattern
