@@ -63,7 +63,7 @@ public class GenomeSpaceBean {
     public GenomeSpaceBean() {
         genomeSpaceEnabled = GenomeSpaceClientFactory.isGenomeSpaceEnabled(UIBeanHelper.getUserContext());
         log.info("GenomeSpaceEnabled = " + genomeSpaceEnabled + " for " + UIBeanHelper.getUserId());
-        
+
         // Attain a copy of the kindToModules map
         TaskInfo[] moduleArray = new AdminDAO().getLatestTasks(UIBeanHelper.getUserId());
         List<TaskInfo> allModules = Arrays.asList(moduleArray);
@@ -277,6 +277,10 @@ public class GenomeSpaceBean {
      * @return
      */
     public String getUsername() {
+        if (genomeSpaceUsername == null) {
+            // Lazily initialize
+            genomeSpaceUsername = (String) UIBeanHelper.getSession().getAttribute(GenomeSpaceLoginManager.GS_USER_KEY);
+        }
         return genomeSpaceUsername;
     }
     
@@ -676,7 +680,7 @@ public class GenomeSpaceBean {
         InputStream is = null;
         FileOutputStream fos = null;
         try {
-            is = GenomeSpaceClientFactory.getGenomeSpaceClient().getInputStream(genomeSpaceUsername, url);
+            is = GenomeSpaceClientFactory.getGenomeSpaceClient().getInputStream(getUsername(), url);
             fos = new FileOutputStream(destinationFile);
             byte[] buf = new byte[100000];
             int j;

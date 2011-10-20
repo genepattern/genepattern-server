@@ -63,6 +63,9 @@ public class GenomeSpaceLoginManager {
         for(Entry<String,Object> entry : login.getAttributes().entrySet()) {
             httpSession.setAttribute(entry.getKey(), entry.getValue()); 
         }
+        httpSession.setAttribute(GS_USER_KEY, login.getUsername());
+        httpSession.setAttribute(GS_TOKEN_KEY, login.getAuthenticationToken());
+        httpSession.setAttribute(GS_EMAIL_KEY, login.getEmail());
         String gpUsername = (String) httpSession.getAttribute(GPConstants.USERID);
         log.info("Writing to database: " + gpUsername);
         GenomeSpaceDatabaseManager.updateDatabase(gpUsername, login.getAuthenticationToken(), login.getUsername(), login.getEmail());
