@@ -19,6 +19,7 @@ import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceFile;
 import org.genepattern.server.genomespace.GenomeSpaceFileManager;
 import org.genepattern.server.genomespace.GenomeSpaceLogin;
+import org.genepattern.server.genomespace.GenomeSpaceLoginManager;
 import org.genomespace.atm.model.FileParameter;
 import org.genomespace.atm.model.WebToolDescriptor;
 import org.genomespace.client.ConfigurationUrls;
@@ -77,8 +78,8 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
 
            GenomeSpaceLogin response = new GenomeSpaceLogin();
            response.setAttributes(new HashMap<String,Object>());
-           response.getAttributes().put(GenomeSpaceBean.GS_USER_KEY, gsUser);
-           response.getAttributes().put(GenomeSpaceBean.GS_SESSION_KEY, gsSession);
+           response.getAttributes().put(GenomeSpaceLoginManager.GS_USER_KEY, gsUser);
+           response.getAttributes().put(GenomeSpaceLoginManager.GS_SESSION_KEY, gsSession);
            response.setAuthenticationToken(gsSession.getAuthenticationToken());
            response.setUnknownUser(false);
            response.setUsername(gsUser.getUsername());
@@ -109,7 +110,7 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
 
             GenomeSpaceLogin response = new GenomeSpaceLogin();
             response.setAttributes(new HashMap<String,Object>());
-            response.getAttributes().put(GenomeSpaceBean.GS_SESSION_KEY, gsSession);
+            response.getAttributes().put(GenomeSpaceLoginManager.GS_SESSION_KEY, gsSession);
             response.setAuthenticationToken(gsSession.getAuthenticationToken());
             response.setUnknownUser(false);
             response.setUsername(gsSession.getCachedUsernameForSSO());

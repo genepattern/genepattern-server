@@ -13,6 +13,13 @@ import org.genepattern.util.GPConstants;
 public class GenomeSpaceLoginManager {
     private static Logger log = Logger.getLogger(GenomeSpaceLoginManager.class);
     
+    public static String GS_SESSION_KEY = "GS_SESSION";
+    public static String GS_USER_KEY = "GS_USER";
+    public static String GS_TOKEN_KEY = "GS_TOKEN";
+    public static String GS_EMAIL_KEY = "GS_EMAIL";
+    public static String GS_DIRECTORIES_KEY = "GS_DIRECTORIES";
+    public static String GS_FILE_METADATAS = "GS_FILE_METADATAS";
+    
     public static boolean loginFromToken(String gp_username, HttpSession httpSession) throws GenomeSpaceException {
         Context context = Context.getContextForUser(gp_username);
         String genomeSpaceEnvironment = GenomeSpaceClientFactory.getGenomeSpaceEnvironment(context);
@@ -56,9 +63,9 @@ public class GenomeSpaceLoginManager {
      * @return
      */
     public static String authenticate(HttpServletRequest request, HttpServletResponse response) {
-        String gsUsername = (String) request.getSession().getAttribute(GenomeSpaceBean.GS_USER_KEY);
-        String gsToken = (String) request.getSession().getAttribute(GenomeSpaceBean.GS_TOKEN_KEY);
-        String gsEmail = (String) request.getSession().getAttribute(GenomeSpaceBean.GS_EMAIL_KEY);
+        String gsUsername = (String) request.getSession().getAttribute(GenomeSpaceLoginManager.GS_USER_KEY);
+        String gsToken = (String) request.getSession().getAttribute(GenomeSpaceLoginManager.GS_TOKEN_KEY);
+        String gsEmail = (String) request.getSession().getAttribute(GenomeSpaceLoginManager.GS_EMAIL_KEY);
         String gpUsername = GenomeSpaceDatabaseManager.getGPUsername(gsUsername);
         
         if (gpUsername != null && gsToken != null) {

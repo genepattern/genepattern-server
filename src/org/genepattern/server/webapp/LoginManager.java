@@ -12,7 +12,6 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.ServerConfiguration.Context;
-import org.genepattern.server.genomespace.GenomeSpaceBean;
 import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
 import org.genepattern.server.genomespace.GenomeSpaceException;
 import org.genepattern.server.genomespace.GenomeSpaceLoginManager;
@@ -91,8 +90,14 @@ public class LoginManager {
         }
     }
     
+    /**
+     * Checks if one has logged in through the GenomeSpace OpenOD.  Returns null if not.
+     * @param request
+     * @param response
+     * @return
+     */
     public static String handleGenomeSpaceAuthentication(HttpServletRequest request, HttpServletResponse response) {
-        String gsUsername = (String) request.getSession().getAttribute(GenomeSpaceBean.GS_USER_KEY);
+        String gsUsername = (String) request.getSession().getAttribute(GenomeSpaceLoginManager.GS_USER_KEY);
         if (gsUsername == null) return null;
         
         String gp_username = null;
@@ -100,6 +105,12 @@ public class LoginManager {
         return gp_username;
     }
     
+    /**
+     * Initialize the GenomeSpace session and add it to the GenePattern session if one's GenePattern and GenomeSpace 
+     * accounts are associated in the database
+     * @param gp_username
+     * @param session
+     */
     public static void handGenomeSpaceLogin(String gp_username, HttpSession session) {
         Context context = Context.getContextForUser(gp_username);
         boolean genomeSpaceEnabled = GenomeSpaceClientFactory.isGenomeSpaceEnabled(context);
