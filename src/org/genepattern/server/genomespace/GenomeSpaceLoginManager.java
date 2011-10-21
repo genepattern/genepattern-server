@@ -25,6 +25,7 @@ public class GenomeSpaceLoginManager {
     
     public static boolean loginFromSession(HttpSession httpSession) throws GenomeSpaceException {
         String token = (String) httpSession.getAttribute(GS_TOKEN_KEY);
+        String gsUsername = (String) httpSession.getAttribute(GS_USER_KEY);
         String gp_username = (String) httpSession.getAttribute(GPConstants.USERID);
         if (token == null || gp_username == null) return false;
         
@@ -33,6 +34,12 @@ public class GenomeSpaceLoginManager {
         
         GenomeSpaceLogin login = GenomeSpaceClientFactory.getGenomeSpaceClient().submitLogin(genomeSpaceEnvironment, token);
         if (login == null) return false;
+        
+        // Get the correct username because in the CDK as it stands now GsSession.getCachedUsernameForSSO() is sometimes stale
+        if (gsUsername != null) {
+            login.setUsername(gsUsername);
+        }
+        
         setSessionAttributes(login, httpSession);
         return true;
     }
@@ -45,6 +52,13 @@ public class GenomeSpaceLoginManager {
             String token = GenomeSpaceDatabaseManager.getGSToken(gp_username);
             GenomeSpaceLogin login = GenomeSpaceClientFactory.getGenomeSpaceClient().submitLogin(genomeSpaceEnvironment, token);
             if (login == null) return false;
+            
+            // Get the correct username because in the CDK as it stands now GsSession.getCachedUsernameForSSO() is sometimes stale
+            String gsUsername = GenomeSpaceDatabaseManager.getGSUsername(gp_username);
+            if (gsUsername != null) {
+                login.setUsername(gsUsername);
+            }
+            
             setSessionAttributes(login, httpSession);
             return true;
         }

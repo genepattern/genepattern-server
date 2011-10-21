@@ -29,6 +29,15 @@ public class GenomeSpaceDatabaseManager {
         return account.getToken();
     }
     
+    public static String getGSUsername(String gpUsername) {
+        GsAccount account = new GsAccountDAO().getByGPUserId(gpUsername);
+        if (account == null) {
+            log.error("Unable to get the GsAccount from the database for the user");
+            return null;
+        }
+        return account.getGsUserId();
+    }
+    
     public static boolean isGPAccountAssociated(String gpUsername) {
         GsAccount account = new GsAccountDAO().getByGPUserId(gpUsername);
         if (account == null) return false;
