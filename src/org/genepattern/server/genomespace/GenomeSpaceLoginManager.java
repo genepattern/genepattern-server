@@ -26,6 +26,7 @@ public class GenomeSpaceLoginManager {
     public static String GS_USER_KEY = "GS_USER";
     public static String GS_TOKEN_KEY = "GS_TOKEN";
     public static String GS_EMAIL_KEY = "GS_EMAIL";
+    public static String GS_OPENID_KEY = "GS_OPENID";
     public static String GS_DIRECTORIES_KEY = "GS_DIRECTORIES";
     public static String GS_FILE_METADATAS = "GS_FILE_METADATAS";
     

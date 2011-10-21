@@ -822,4 +822,14 @@ public class GenomeSpaceBean {
             loginFailed = true;
         }
     }
+    
+    /**
+     * Returns if the user has successfully logged in through OpenID
+     * @return
+     */
+    public boolean isOpenID() {
+        HttpSession session = UIBeanHelper.getSession();
+        Boolean openID = (Boolean) session.getAttribute(GenomeSpaceLoginManager.GS_OPENID_KEY);
+        return openID;
+    }
 }

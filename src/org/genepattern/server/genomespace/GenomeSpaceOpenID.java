@@ -206,6 +206,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
             req.getSession().setAttribute(GenomeSpaceLoginManager.GS_USER_KEY, username);
             req.getSession().setAttribute(GenomeSpaceLoginManager.GS_TOKEN_KEY, token);
             req.getSession().setAttribute(GenomeSpaceLoginManager.GS_EMAIL_KEY, email);
+            req.getSession().setAttribute(GenomeSpaceLoginManager.GS_OPENID_KEY, true);
             
             // Check if there is an associated GP Account and forward to appropriate place
             boolean isAccountAssociated = GenomeSpaceLoginManager.isGSAccountAssociated(username);
