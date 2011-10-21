@@ -90,6 +90,7 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
             throw new GenomeSpaceException("Authentication error, please check your username and password.");
         } 
         catch (Exception e) {
+            log.error("An error occurred logging in to GenomeSpace.  Please contact the GenePattern administrator. Error was: "+ e.getMessage());
             throw new GenomeSpaceException("An error occurred logging in to GenomeSpace.  Please contact the GenePattern administrator. Error was: "+ e.getLocalizedMessage(), e);
         }
 	}
