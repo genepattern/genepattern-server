@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -23,6 +24,9 @@ import org.genepattern.server.JobManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.database.HibernateUtil;
+import org.genepattern.server.dm.GpFileObjFactory;
+import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.domain.AnalysisJob;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.AnalysisJobScheduler;
@@ -53,6 +57,12 @@ import org.hibernate.Query;
 public class PipelineHandler {
     private static Logger log = Logger.getLogger(PipelineHandler.class);
     
+    public static boolean isBatchStep(JobInfo jobInfo) {
+        //TODO: get this info from the config file
+        boolean isBatchStep = "BatchExecPipeline".equals(jobInfo.getTaskName());
+        return isBatchStep;
+    }
+    
     /**
      * Initialize the pipeline and add the first job to the queue.
      */
@@ -60,8 +70,11 @@ public class PipelineHandler {
         if (pipelineJobInfo == null) {
             throw new CommandExecutorException("Error starting pipeline, pipelineJobInfo is null");
         }
+        
+        boolean isBatchStep = isBatchStep(pipelineJobInfo);
+
         try {
-            runPipeline(pipelineJobInfo, stopAfterTask);
+            runPipeline(pipelineJobInfo, stopAfterTask, isBatchStep);
             HibernateUtil.commitTransaction();
         }
         catch (Throwable t) {
@@ -155,7 +168,8 @@ public class PipelineHandler {
      * @return a List of [jobNo(Integer),statusId(Integer)]
      */
     private static List<Object[]> getChildJobObjs(int parentJobId) {
-        final int maxChildJobs = 1000; //limit total number of results to 1000
+        //TODO: hard-coded so that no more than 10000 batch jobs can be handled
+        final int maxChildJobs = 10000; //limit total number of results to 10000
         String hql = "select a.jobNo, jobStatus.statusId from org.genepattern.server.domain.AnalysisJob a where a.parent = :jobNo ";
         hql += " ORDER BY jobNo ASC";
         Query query = HibernateUtil.getSession().createQuery(hql);
@@ -168,13 +182,14 @@ public class PipelineHandler {
     
     public static boolean startNextJob(int parentJobNumber) {
         Integer nextJobId = getNextJobId(parentJobNumber);
-        if (nextJobId != null) {
-            //if there is another job to run, change the status of the next job to pending
-            int rval = AnalysisJobScheduler.changeJobStatus(nextJobId, JobStatus.JOB_WAITING, JobStatus.JOB_PENDING);
-            //indicate there is another step waiting on the queue
-            return true;
+        if (nextJobId == null) {
+            return false;
         }
-        return false;
+
+        //if there is another job to run, change the status of the next job to pending
+        int rval = AnalysisJobScheduler.changeJobStatus(nextJobId, JobStatus.JOB_WAITING, JobStatus.JOB_PENDING);
+        //indicate there is another step waiting on the queue
+        return true;
     }
     
     /**
@@ -206,26 +221,48 @@ public class PipelineHandler {
             log.error("Invalid parentJobNumber: "+parentJobNumber);
             return false;
         }
+        
+        //change from the 3.3.3 implementation to support for parallel execution of batch jobs
+        // a) in batch pipelines, more than one step in a pipeline gets started; we can't automically flag the parent
+        //    pipeline as complete until all of the steps are complete
+        // b) in batch pipelines, we don't want to terminate the parent pipeline, when one of the steps fails
+
 
         //check the status of the job
         if (JobStatus.FINISHED.equals(childJobInfo.getStatus())) { 
             //get the next step in the pipeline, by jobId
             HibernateUtil.beginTransaction();
-            Integer nextJobId = getNextJobId(parentJobNumber);
+            List<Object[]> jobInfoObjs = getChildJobObjs(parentJobNumber);
             HibernateUtil.closeCurrentSession();
-            if (nextJobId != null) {
+            
+            // the job is complete iff the list is empty
+            int nextWaitingJob = -1;
+            boolean lastStepComplete = true;
+            for(Object[] row : jobInfoObjs) {
+                int jobId = (Integer) row[0];
+                int statusId = (Integer) row[1];
+                if (nextWaitingJob == -1 && JobStatus.JOB_WAITING == statusId) {
+                    nextWaitingJob = jobId;
+                }
+                if (JobStatus.JOB_FINISHED != statusId && JobStatus.JOB_ERROR != statusId) {
+                    lastStepComplete = false;
+                }
+            }
+            
+            if (nextWaitingJob >= 0) {
                 //if there is another job to run, change the status of the next job to pending
-                startNextStep(nextJobId);
+                startNextStep(nextWaitingJob);
                 //indicate there is another step waiting on the queue
                 return true;
             }
-            else {
+            if (lastStepComplete) {
                 //it's the last step in the pipeline, update its status
                 handlePipelineJobCompletion(parentJobNumber, 0);
                 return false;
             }
         }
         else {
+            //TODO: in some cases, we don't want to kill the parent pipeline or its child jobs
             //handle an error in a pipeline step
             terminatePipelineSteps(parentJobNumber);
             handlePipelineJobCompletion(parentJobNumber, -1, "Pipeline terminated because of an error in child job [id: "+childJobNumber+"]");
@@ -323,6 +360,25 @@ public class PipelineHandler {
      * @param errorMessage, can be null
      */
     private static void handlePipelineJobCompletion(int parentJobNumber, int exitCode, String errorMessage) {
+        //HACK: special-case code
+        //if this pipeline is a batch exec pipeline, gather all result files from all submitted jobs
+        //into a filelist and save this filelist as the first output file of the pipeline
+        try {
+            AnalysisDAO dao = new AnalysisDAO();
+            JobInfo parentJobInfo = dao.getJobInfo(parentJobNumber);
+            boolean isBatchStep = isBatchStep(parentJobInfo);
+            if (isBatchStep) {
+                List<ParameterInfo> allResultFiles = getOutputFilesRecursive(dao, parentJobInfo); 
+                GatherResults gatherResults = new GatherResults(parentJobInfo, allResultFiles);
+                GpFilePath filelist = gatherResults.writeFilelist();
+            }
+        }
+        catch (Throwable t) {
+        }
+        finally {
+            HibernateUtil.closeCurrentSession();
+        }
+
         try {
             if (exitCode != 0 && errorMessage == null) {
                 errorMessage = "Pipeline terminated with non-zero exitCode: "+exitCode;
@@ -377,7 +433,138 @@ public class PipelineHandler {
         }
         return waitingJobs;
     }
+    
+    private static Integer runPipeline(JobInfo pipelineJobInfo, int stopAfterTask, boolean isBatchStep) 
+    throws PipelineModelException, MissingTasksException, JobSubmissionException
+    {
+        if (!isBatchStep) {
+            return runPipeline(pipelineJobInfo, stopAfterTask);
+        }
+        
+        //custom implementation
+        PipelineModel pipelineModel = PipelineUtil.getPipelineModel(pipelineJobInfo);
+        pipelineModel.setLsid(pipelineJobInfo.getTaskLSID());
+        checkForMissingTasks(pipelineJobInfo.getUserId(), pipelineModel);
 
+        //initialize the pipeline args
+        Map<String,String> additionalArgs = new HashMap<String,String>();
+        for(ParameterInfo param : pipelineJobInfo.getParameterInfoArray()) {
+            additionalArgs.put(param.getName(), param.getValue());
+        }
+
+        int stepNum = 0;
+        Vector<JobSubmission> tasks = pipelineModel.getTasks();
+        if (tasks.size() == 0)  {
+            throw new JobSubmissionException("Don't know what to do with 0 tasks in pipelineModel");
+        }
+        if (tasks.size() > 1) {
+            //TODO: fix this
+            throw new JobSubmissionException("Only a single batch parameter is allowed");           
+        }
+        
+        TaskInfo taskInfo = tasks.get(0).getTaskInfo();
+        ParameterInfo[] parameterInfo = tasks.get(0).giveParameterInfoArray();
+        substituteLsidInInputFiles(pipelineJobInfo.getTaskLSID(), parameterInfo);
+        ParameterInfo[] params = parameterInfo;
+        params = setJobParametersFromArgs(tasks.get(0).getName(), stepNum + 1, params, additionalArgs);
+        
+        //for each step, if it has a batch input parameter, expand into a bunch of child steps
+        Map<ParameterInfo,List<String>> batchParamMap = new HashMap<ParameterInfo, List<String>>();
+        //for(ParameterInfo[] params : taskParams) {
+        for(ParameterInfo p : params) {
+            if (p.isInputFile()) {
+                if (p.getValue().endsWith(".filelist.txt")) {
+                    //assume it's a batch job
+                    try {
+                        List<String> inputFiles = parseFileList( p.getValue() );
+                        batchParamMap.put(p, inputFiles);
+                    }
+                    catch (Throwable t) {
+                        log.error("Error reading filelist from file: "+p.getValue(), t);
+                    }
+                }
+            }
+        }
+
+        Integer firstJob = null;
+        for(Entry<ParameterInfo, List<String>> entry : batchParamMap.entrySet()) {
+            ParameterInfo batchParam = entry.getKey();
+            List<String> batchParamValues = entry.getValue();
+            List<JobInfo> submittedJobs = addBatchJobsToPipeline(pipelineJobInfo, taskInfo, params, batchParam, batchParamValues); 
+            if (submittedJobs != null && submittedJobs.size() > 0) {
+                firstJob = submittedJobs.get(0).getJobNumber();
+            }
+        }
+        return firstJob;
+    }
+
+    private static List<JobInfo> addBatchJobsToPipeline(JobInfo pipelineJobInfo, TaskInfo taskInfo, ParameterInfo[] params, ParameterInfo batchParam, List<String> batchParamValues) 
+    throws JobSubmissionException
+    {
+        List<JobInfo> submittedJobs = new ArrayList<JobInfo>();
+        for(String batchParamValue : batchParamValues) {
+            batchParam.setValue(batchParamValue);
+            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params, JobStatus.JOB_WAITING);
+            submittedJobs.add(submittedJob);
+        }
+        return submittedJobs;
+    }
+    
+    private static List<String> parseFileList(String value) throws IOException {
+        log.debug("Reading filelist from: "+value);
+        List<String> inputValues = new ArrayList<String>();
+        File filelist = new File(value);
+        if (!filelist.canRead()) {
+            //special-case, url input
+            try {
+                //TODO: GpFileObjFactory#getRequestedGpFileObj is the correct thing to do, 
+                //    but it has not yet been implemented for /jobResults/ files
+                //GpFilePath path = GpFileObjFactory.getRequestedGpFileObj(value);
+                //if (path != null) {
+                //    filelist = path.getServerFile();
+                //}
+                String[] parts = GpFileObjFactory.getPathInfo(value);
+                String servletPath = parts[0];
+                String pathInfo = parts[1];
+                if ("/jobResults".equals(servletPath)) {
+                    JobResultFile jobResultFile = new JobResultFile(pathInfo);
+                    filelist = jobResultFile.getServerFile();
+                }
+
+            }
+            catch (Exception e) {
+                log.error(e);
+            }
+        }
+        if (!filelist.canRead()) {
+            //TODO: throw exception
+            return inputValues;
+        }
+        FileReader fileReader = null;
+        try {
+            fileReader = new FileReader(filelist);
+        }
+        catch (FileNotFoundException e) {
+            //TODO: throw exception
+            return inputValues;
+        }
+        
+        BufferedReader in = null;        
+        try {
+            in = new BufferedReader(fileReader);
+            String line = null;
+            while((line = in.readLine()) != null) {
+                inputValues.add(line);
+            }
+        }
+        finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+        return inputValues;
+    }
+    
     /**
      * Start the pipeline.
      * 
@@ -469,7 +656,46 @@ public class PipelineHandler {
         JobInfo jobInfo = JobManager.addJobToQueue(jobSubmission.getTaskInfo(), userID, params, parentJobId, jobStatusId);
         return jobInfo;
     }
+    
+    /**
+     * Add the job to the pipeline and add it to the internal job queue in a WAITING state.
+     * 
+     * @throws IllegalArgumentException, if the given JobSubmission does not have a valid taskId
+     * @throws JobSubmissionException, if not able to add the job to the internal queue
+     */
+    private static JobInfo addJobToPipeline(int parentJobId, String userID, TaskInfo taskInfo, ParameterInfo[] params, int jobStatusId)
+    throws JobSubmissionException
+    {
+        if (taskInfo == null) {
+            throw new IllegalArgumentException("taskInfo is null");
+        }
+        if (taskInfo.getID() < 0) {
+            throw new IllegalArgumentException("taskInfo.ID not set");
+        }
 
+        if (params != null) {
+            for (int i = 0; i < params.length; i++) {
+                if (params[i].isInputFile()) {
+                    String file = params[i].getValue(); // bug 724
+                    if (file != null && file.trim().length() != 0) {
+                        String val = file;
+                        try {
+                            new URL(file);
+                        } 
+                        catch (MalformedURLException e) {
+                            val = new File(file).toURI().toString();
+                        }
+                        params[i].setValue(val);
+                        params[i].getAttributes().remove("TYPE");
+                        params[i].getAttributes().remove("MODE");
+                    }
+                }
+            }
+        }
+
+        JobInfo jobInfo = JobManager.addJobToQueue(taskInfo, userID, params, parentJobId, jobStatusId);
+        return jobInfo;
+    }
     
     private static void checkForMissingTasks(String userID, PipelineModel model) throws MissingTasksException {
         MissingTasksException ex = null;

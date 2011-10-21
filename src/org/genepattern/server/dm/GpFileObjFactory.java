@@ -216,6 +216,11 @@ public class GpFileObjFactory {
             GpFilePath serverFileObj = ServerFileObjFactory.getServerFile(serverFile);
             return serverFileObj;
         }
+        //TODO: include /jobResults 
+        //if ("/jobResults".equals(servletPath)) {
+        //    JobResultFile jobResultFile = new JobResultFile(pathInfo);
+        //    return jobResultFile;
+        //}
         
         //special-case for legacy web upload and tasklib paths
         //TODO: implement this properly, in most cases the String literal '<GenePatternURL>' is passed in rather than the actual GenePatternURL
@@ -228,6 +233,48 @@ public class GpFileObjFactory {
         throw new Exception("Invalid servletPath: "+servletPath);
     }
     
+    /**
+     * Quick and dirty hack to get an array containing the [ <servletPath>, <pathInfo> ] from
+     * a GP server url.
+     * 
+     * @deprecated -- will be deprecated as soon as getRequestedGpFileObj is fully implemented
+     *     for all types of GP server urls.
+     *     
+     * @param urlStr
+     * @return
+     * @throws Exception
+     */
+    static public String[] getPathInfo(String urlStr) throws Exception {
+        //create a uri, which automatically decodes the url
+        URI uri = null;
+        try {
+            uri = new URI(urlStr);
+        }
+        catch (URISyntaxException e) {
+            log.error("Invalid url: "+urlStr, e);
+            throw new Exception("Invalid url: "+urlStr);
+        }
+        String servletPathPlus = uri.getPath();
+        //1) chop off the servlet context (e.g. '/gp')
+        //TODO: put all of the GenePatternURL code into a single utility class
+        //GP_Path=/gp
+        String gpPath = System.getProperty("GP_Path", "/gp");
+        if (servletPathPlus.startsWith(gpPath)) {
+            servletPathPlus = servletPathPlus.substring( gpPath.length() );
+        }
+        
+        //2) extract the servletPath and the remaining pathInfo
+        String servletPath = servletPathPlus;
+        String pathInfo = "";
+        int idx = servletPathPlus.indexOf("/", 1);
+        if (idx > 0) {
+            servletPath = servletPathPlus.substring(0, idx);
+            pathInfo = servletPathPlus.substring(idx);
+        }
+        
+        return new String[] { servletPath, pathInfo };
+    }
+
     private static String extractUserId(String pathInfo) throws Exception {
         if (!pathInfo.startsWith("/")) {
             //pathInfo should start with a '/'
