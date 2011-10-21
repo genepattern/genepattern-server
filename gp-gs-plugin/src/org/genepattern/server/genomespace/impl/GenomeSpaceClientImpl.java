@@ -12,7 +12,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.genomespace.GenomeSpaceBean;
 import org.genepattern.server.genomespace.GenomeSpaceClient;
 import org.genepattern.server.genomespace.GenomeSpaceDatabaseManager;
 import org.genepattern.server.genomespace.GenomeSpaceException;

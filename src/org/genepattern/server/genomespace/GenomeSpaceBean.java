@@ -676,6 +676,13 @@ public class GenomeSpaceBean {
         }
     }
     
+    /**
+     * Handles transferring a GenomeSpace file from GenomeSpace to the GenePattern server
+     * @param url
+     * @param destinationFile
+     * @throws IOException
+     * @throws GenomeSpaceException
+     */
     private void downloadGenomeSpaceFile(URL url, File destinationFile) throws IOException, GenomeSpaceException {
         InputStream is = null;
         FileOutputStream fos = null;
@@ -750,6 +757,11 @@ public class GenomeSpaceBean {
         }
     }
     
+    /**
+     * Associates a GenomeSpace account with a GenePattern account upon successful authentication with
+     * the GenePattern account.  Then redirects to the GenePattern index page if successful.
+     * @throws IOException
+     */
     public void associateAccounts() throws IOException {
         HttpServletRequest request = UIBeanHelper.getRequest();
         HttpServletResponse response = UIBeanHelper.getResponse();
@@ -777,6 +789,12 @@ public class GenomeSpaceBean {
         }
     }
     
+    /**
+     * Handles the automatic creation of a GenePattern account and its association with a GenomeSpace 
+     * account, if this option is selected from the associate account page.  Then redirects the user
+     * to the index page is successful, or back to the associate account page if an error.
+     * @throws IOException
+     */
     public void autoCreateAccount() throws IOException {
         HttpServletRequest request = UIBeanHelper.getRequest();
         HttpServletResponse response = UIBeanHelper.getResponse();

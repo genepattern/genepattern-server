@@ -29,6 +29,25 @@ public class GenomeSpaceDatabaseManager {
         return account.getToken();
     }
     
+    /**
+     * Return the timestamp of the GenomeSpace token associated with the given GenePattern username
+     * @param gpUsername
+     * @return
+     */
+    public static Date getTokenTimestamp(String gpUsername) {
+        GsAccount account = new GsAccountDAO().getByGPUserId(gpUsername);
+        if (account == null) {
+            log.error("Unable to get the GsAccount from the database for the user");
+            return null;
+        }
+        return account.getTokenTimestamp();
+    }
+    
+    /**
+     * Returns the GenomeSpace username associated with the given GenePattern username
+     * @param gpUsername
+     * @return
+     */
     public static String getGSUsername(String gpUsername) {
         GsAccount account = new GsAccountDAO().getByGPUserId(gpUsername);
         if (account == null) {
@@ -38,6 +57,11 @@ public class GenomeSpaceDatabaseManager {
         return account.getGsUserId();
     }
     
+    /**
+     * Determines if the given GenePattern account is associated with a GenomeSpace account
+     * @param gpUsername
+     * @return
+     */
     public static boolean isGPAccountAssociated(String gpUsername) {
         GsAccount account = new GsAccountDAO().getByGPUserId(gpUsername);
         if (account == null) return false;
@@ -49,6 +73,11 @@ public class GenomeSpaceDatabaseManager {
         }
     }
     
+    /**
+     * Determines if the given GenomeSpace account is associated with a GenePattern account
+     * @param gsUsername
+     * @return
+     */
     public static boolean isGSAccountAssociated(String gsUsername) {
         GsAccount account = new GsAccountDAO().getByGSUserId(gsUsername);
         if (account == null) return false;
@@ -60,6 +89,11 @@ public class GenomeSpaceDatabaseManager {
         }
     }
     
+    /**
+     * Returns the associated GenePattern username for the given GenomeSpace username
+     * @param gsUsername
+     * @return
+     */
     public static String getGPUsername(String gsUsername) {
         GsAccount account = new GsAccountDAO().getByGSUserId(gsUsername);
         if (account == null) return null;
@@ -67,7 +101,7 @@ public class GenomeSpaceDatabaseManager {
     }
     
     /**
-     * Update the database for the given GenomeSpace username and token
+     * Update the database for the given GenomeSpace username and token, deleting other associations for that GS account
      * @param gpUsername
      * @param gsAuthenticationToken
      */

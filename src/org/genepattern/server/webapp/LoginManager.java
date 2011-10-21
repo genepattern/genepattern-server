@@ -83,7 +83,7 @@ public class LoginManager {
         }
 
         addUserIdToSession(request, gp_username);
-        handGenomeSpaceLogin(gp_username, request.getSession());
+        handleGenomeSpaceLogin(gp_username, request.getSession());
 
         if (redirect) {
             redirect(request, response);
@@ -111,7 +111,7 @@ public class LoginManager {
      * @param gp_username
      * @param session
      */
-    public static void handGenomeSpaceLogin(String gp_username, HttpSession session) {
+    public static void handleGenomeSpaceLogin(String gp_username, HttpSession session) {
         Context context = Context.getContextForUser(gp_username);
         boolean genomeSpaceEnabled = GenomeSpaceClientFactory.isGenomeSpaceEnabled(context);
         if (genomeSpaceEnabled) {

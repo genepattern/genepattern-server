@@ -1,5 +1,6 @@
 package org.genepattern.server.genomespace;
 
+import java.util.Date;
 import java.util.Map.Entry;
 import java.util.Random;
 
@@ -13,9 +14,14 @@ import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.util.GPConstants;
 
+/**
+ * Manager for handing logging into and registering GenomeSpace accounts
+ * @author tabor
+ */
 public class GenomeSpaceLoginManager {
     private static Logger log = Logger.getLogger(GenomeSpaceLoginManager.class);
     
+    // Keys used to attach or retrieve GenomeSpace information from the current GenePattern session
     public static String GS_SESSION_KEY = "GS_SESSION";
     public static String GS_USER_KEY = "GS_USER";
     public static String GS_TOKEN_KEY = "GS_TOKEN";
@@ -23,6 +29,16 @@ public class GenomeSpaceLoginManager {
     public static String GS_DIRECTORIES_KEY = "GS_DIRECTORIES";
     public static String GS_FILE_METADATAS = "GS_FILE_METADATAS";
     
+    // Constants used to redirect the user to a GenomeSpace login prompt if their session is expiring
+    public static String REDIRECT_KEY = "origin";
+    public static String GS_LOGIN_PAGE = "/gp/pages/genomespace/signon.jsf";
+    
+    /**
+     * Logs a user into GenomeSpace using the GenomeSpace information attached to the current GenePattern session
+     * @param httpSession
+     * @return
+     * @throws GenomeSpaceException
+     */
     public static boolean loginFromSession(HttpSession httpSession) throws GenomeSpaceException {
         String token = (String) httpSession.getAttribute(GS_TOKEN_KEY);
         String gsUsername = (String) httpSession.getAttribute(GS_USER_KEY);
@@ -44,11 +60,24 @@ public class GenomeSpaceLoginManager {
         return true;
     }
     
+    /**
+     * Logs a user into GenomeSpace using the information in the database associated with the given GenePattern user
+     * @param gp_username
+     * @param httpSession
+     * @return
+     * @throws GenomeSpaceException
+     */
     public static boolean loginFromDatabase(String gp_username, HttpSession httpSession) throws GenomeSpaceException {
         Context context = Context.getContextForUser(gp_username);
         String genomeSpaceEnvironment = GenomeSpaceClientFactory.getGenomeSpaceEnvironment(context);
         
         if (GenomeSpaceDatabaseManager.isGPAccountAssociated(gp_username)) {
+            // Check for GS token expiration and redirect to GenomeSpace login if expired or about to expire
+            if (tokenExpiring(gp_username)) {
+                httpSession.setAttribute(REDIRECT_KEY, GS_LOGIN_PAGE);
+                return false;
+            }
+
             String token = GenomeSpaceDatabaseManager.getGSToken(gp_username);
             GenomeSpaceLogin login = GenomeSpaceClientFactory.getGenomeSpaceClient().submitLogin(genomeSpaceEnvironment, token);
             if (login == null) return false;
@@ -65,6 +94,15 @@ public class GenomeSpaceLoginManager {
         return false;
     }
     
+    /**
+     * Logs a user into GenomeSpace using a provided username and password
+     * @param env
+     * @param genomeSpaceUsername
+     * @param genomeSpacePassword
+     * @param httpSession
+     * @return
+     * @throws GenomeSpaceException
+     */
     public static boolean loginFromUsername(String env, String genomeSpaceUsername, String genomeSpacePassword, HttpSession httpSession) throws GenomeSpaceException {
         GenomeSpaceLogin login = GenomeSpaceClientFactory.getGenomeSpaceClient().submitLogin(env, genomeSpaceUsername, genomeSpacePassword);
         if (login == null) return false;
@@ -72,6 +110,11 @@ public class GenomeSpaceLoginManager {
         return true;
     }
     
+    /**
+     * Attaches the provided GenomeSpace information to the current GenePattern session
+     * @param login
+     * @param httpSession
+     */
     public static void setSessionAttributes(GenomeSpaceLogin login, HttpSession httpSession) {
         // Set attributes from login in the GenePattern session
         for(Entry<String,Object> entry : login.getAttributes().entrySet()) {
@@ -85,6 +128,11 @@ public class GenomeSpaceLoginManager {
         GenomeSpaceDatabaseManager.updateDatabase(gpUsername, login.getAuthenticationToken(), login.getUsername(), login.getEmail());
     }
     
+    /**
+     * Determines whether the provided GenomeSpace user has an associated GenePattern account
+     * @param gsAccount
+     * @return
+     */
     public static boolean isGSAccountAssociated(String gsAccount) {
         return GenomeSpaceDatabaseManager.isGSAccountAssociated(gsAccount);
     }
@@ -112,6 +160,11 @@ public class GenomeSpaceLoginManager {
         return gpUsername;
     }
     
+    /**
+     * Generates an available GenePattern username based on the given GenomeSpace username
+     * @param gsUsername
+     * @return
+     */
     public static String generateUsername(String gsUsername) {
         String suggestedName = gsUsername;
         int count = 1;
@@ -123,11 +176,21 @@ public class GenomeSpaceLoginManager {
         return suggestedName;
     }
     
+    /**
+     * Generates a random password for auto-creating a GenePattern account
+     * @return
+     */
     public static String generatePassword() {
         Random rand = new Random();
         return "GS" + rand.nextInt();
     }
     
+    /**
+     * Creates a GenePattern account with the given username, password and email
+     * @param username
+     * @param password
+     * @param email
+     */
     public static void createGenePatternAccount(String username, String password, String email) {
         try {
             UserAccountManager.instance().createUser(username, password, email);
@@ -135,5 +198,30 @@ public class GenomeSpaceLoginManager {
         catch (AuthenticationException e) {
             log.error("Error auto-creating a new GenePattern user: " + username);
         }
+    }
+    
+    /**
+     * Reads the token timestamp from the database for the given GenePattern user and estimates 
+     * when the timestamp will expire based on an assumed expiration of one week, with one day's
+     * wiggle room before expiration
+     * @param gpUsername
+     * @return
+     */
+    public static Date estimateTokenExpiration(String gpUsername) {
+        Date timestamp = GenomeSpaceDatabaseManager.getTokenTimestamp(gpUsername);
+        // Assumed to expire in a week, but here to estimate 6 days to give it some wiggle room
+        long expiration = timestamp.getTime() + 518400000;
+        return new Date(expiration);
+    }
+    
+    /**
+     * Returns whether the GenomeSpace token for the given GenePattern user has expired or is about to expire
+     * @param gpUsername
+     * @return
+     */
+    public static boolean tokenExpiring(String gpUsername) {
+        Date expiration = estimateTokenExpiration(gpUsername);
+        Date currentTime = new Date();
+        return currentTime.after(expiration);
     }
 }
