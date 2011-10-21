@@ -114,13 +114,14 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
             response.getAttributes().put(GenomeSpaceLoginManager.GS_SESSION_KEY, gsSession);
             response.setAuthenticationToken(gsSession.getAuthenticationToken());
             response.setUnknownUser(false);
-            response.setUsername(gsSession.getCachedUsernameForSSO());
+            response.setUsername(gsSession.getCachedUsernameForSSO()); // Known to have stale data sometimes
             return response;
          }  
          catch (AuthorizationException e) {
              throw new GenomeSpaceException("Authentication error, please check your username and password.");
          } 
          catch (Exception e) {
+             log.error("An error occurred logging in to GenomeSpace.  Please contact the GenePattern administrator. Error was: "+ e.getMessage());
              throw new GenomeSpaceException("An error occurred logging in to GenomeSpace.  Please contact the GenePattern administrator. Error was: "+ e.getLocalizedMessage(), e);
          }
     }

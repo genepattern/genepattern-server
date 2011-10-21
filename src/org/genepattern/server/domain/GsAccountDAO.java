@@ -29,5 +29,18 @@ public class GsAccountDAO extends BaseDAO {
         
         return accountList.get(0);
     }
+    
+    public boolean deleteExtraGSAssociation(String gsUsername, String gpUsername) {
+        Query query = HibernateUtil.getSession().createQuery("from org.genepattern.server.domain.GsAccount where GS_USERID = :gsUsername and GP_USERID != :gpUsername");
+        query.setString("gsUsername", gsUsername);
+        query.setString("gpUsername", gpUsername);
+        List<GsAccount> accountList = query.list();
+        
+        for (GsAccount i : accountList) {
+            this.delete(i);
+        }
+        
+        return accountList.size() > 0;
+    }
 
 }
