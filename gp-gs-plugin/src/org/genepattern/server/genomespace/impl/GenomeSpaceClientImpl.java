@@ -108,6 +108,9 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         try {
             ConfigurationUrls.init(env);
             GsSession gsSession = new GsSession(token);
+            
+            // Make a simple call to GenomeSpace to test the validity of the token
+            gsSession.getAnalysisToolManagerClient().getWebTools();
 
             GenomeSpaceLogin response = new GenomeSpaceLogin();
             response.setAttributes(new HashMap<String,Object>());
