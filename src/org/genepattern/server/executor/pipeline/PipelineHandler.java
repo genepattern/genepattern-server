@@ -59,8 +59,15 @@ public class PipelineHandler {
     
     public static boolean isBatchStep(JobInfo jobInfo) {
         //TODO: get this info from the config file
-        boolean isBatchStep = "BatchExecPipeline".equals(jobInfo.getTaskName());
-        return isBatchStep;
+        final String[] batchSteps = { "BatchExecPipeline", "BatchPreprocessThenCMS" };
+        
+        String taskName = jobInfo.getTaskName();
+        for (String match : batchSteps) {
+            if (match.equals(taskName)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     /**
@@ -440,8 +447,62 @@ public class PipelineHandler {
         if (!isBatchStep) {
             return runPipeline(pipelineJobInfo, stopAfterTask);
         }
+        return runBatchPipeline(pipelineJobInfo, stopAfterTask);
+    }
+    
+    /**
+     * Start the pipeline.
+     * 
+     * @param pipelineJobInfo, must be a valid pipeline job
+     * @param stopAfterTask
+     * 
+     * @return the jobNumber of the first step of the pipeline
+     * 
+     * @throws PipelineModelException
+     * @throws MissingTasksException, if the required modules are not installed on the server
+     * @throws WebServiceException
+     * @throws JobSubmissionException
+     */
+    private static Integer runPipeline(JobInfo pipelineJobInfo, int stopAfterTask) 
+    throws PipelineModelException, MissingTasksException, JobSubmissionException
+    {  
+        PipelineModel pipelineModel = PipelineUtil.getPipelineModel(pipelineJobInfo);
+        pipelineModel.setLsid(pipelineJobInfo.getTaskLSID());
+        checkForMissingTasks(pipelineJobInfo.getUserId(), pipelineModel);
         
-        //custom implementation
+        //initialize the pipeline args
+        Map<String,String> additionalArgs = new HashMap<String,String>();
+        for(ParameterInfo param : pipelineJobInfo.getParameterInfoArray()) {
+            additionalArgs.put(param.getName(), param.getValue());
+        }
+
+        int stepNum = 0;
+        Vector<JobSubmission> tasks = pipelineModel.getTasks();
+        Integer firstStep = null;
+        for(JobSubmission jobSubmission : tasks) { 
+            if (stepNum >= stopAfterTask) {
+                break; // stop and execute no further
+            }
+            
+            ParameterInfo[] parameterInfo = jobSubmission.giveParameterInfoArray();
+            substituteLsidInInputFiles(pipelineJobInfo.getTaskLSID(), parameterInfo);
+            ParameterInfo[] params = parameterInfo;
+            params = setJobParametersFromArgs(jobSubmission.getName(), stepNum + 1, params, additionalArgs);
+
+            int jobStatusId = JobStatus.JOB_WAITING;
+            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), jobSubmission, params, jobStatusId);
+            if (firstStep == null) {
+                firstStep = submittedJob.getJobNumber();
+            }
+            ++stepNum;
+        }
+        return firstStep;
+    }
+
+    private static Integer runBatchPipeline(JobInfo pipelineJobInfo, int stopAfterTask) 
+    throws PipelineModelException, MissingTasksException, JobSubmissionException
+    { 
+        // add a batch of jobs, as children of the given pipelineJobInfo 
         PipelineModel pipelineModel = PipelineUtil.getPipelineModel(pipelineJobInfo);
         pipelineModel.setLsid(pipelineJobInfo.getTaskLSID());
         checkForMissingTasks(pipelineJobInfo.getUserId(), pipelineModel);
@@ -459,9 +520,10 @@ public class PipelineHandler {
         }
         if (tasks.size() > 1) {
             //TODO: fix this
-            throw new JobSubmissionException("Only a single batch parameter is allowed");           
+            throw new JobSubmissionException("Only a single batch step is allowed, num steps = "+tasks.size());
         }
-        
+
+        //assuming a 1-step pipeline
         TaskInfo taskInfo = tasks.get(0).getTaskInfo();
         ParameterInfo[] parameterInfo = tasks.get(0).giveParameterInfoArray();
         substituteLsidInInputFiles(pipelineJobInfo.getTaskLSID(), parameterInfo);
@@ -470,7 +532,6 @@ public class PipelineHandler {
         
         //for each step, if it has a batch input parameter, expand into a bunch of child steps
         Map<ParameterInfo,List<String>> batchParamMap = new HashMap<ParameterInfo, List<String>>();
-        //for(ParameterInfo[] params : taskParams) {
         for(ParameterInfo p : params) {
             if (p.isInputFile()) {
                 if (p.getValue().endsWith(".filelist.txt")) {
@@ -485,30 +546,68 @@ public class PipelineHandler {
                 }
             }
         }
-
+        
         Integer firstJob = null;
-        for(Entry<ParameterInfo, List<String>> entry : batchParamMap.entrySet()) {
-            ParameterInfo batchParam = entry.getKey();
-            List<String> batchParamValues = entry.getValue();
-            List<JobInfo> submittedJobs = addBatchJobsToPipeline(pipelineJobInfo, taskInfo, params, batchParam, batchParamValues); 
-            if (submittedJobs != null && submittedJobs.size() > 0) {
-                firstJob = submittedJobs.get(0).getJobNumber();
-            }
+        List<JobInfo> submittedJobs = addBatchJobsToPipeline(pipelineJobInfo, taskInfo, params, batchParamMap);
+        if (submittedJobs != null && submittedJobs.size() > 0) {
+            firstJob = submittedJobs.get(0).getJobNumber();
         }
         return firstJob;
     }
 
-    private static List<JobInfo> addBatchJobsToPipeline(JobInfo pipelineJobInfo, TaskInfo taskInfo, ParameterInfo[] params, ParameterInfo batchParam, List<String> batchParamValues) 
+    
+    private static List<JobInfo> addBatchJobsToPipeline(JobInfo pipelineJobInfo, TaskInfo taskInfo, ParameterInfo[] params, Map<ParameterInfo,List<String>> batchParamMap) 
     throws JobSubmissionException
     {
         List<JobInfo> submittedJobs = new ArrayList<JobInfo>();
-        for(String batchParamValue : batchParamValues) {
-            batchParam.setValue(batchParamValue);
+        //validate the number of batch jobs to submit
+        List<List<String>> row = new ArrayList<List<String>>();
+        int jobCount = -1;
+        List<Integer> jobCounts = new ArrayList<Integer>();
+        List<List<String>> table = new ArrayList<List<String>>();
+        for(Entry<ParameterInfo, List<String>> entry : batchParamMap.entrySet()) {
+            List<String> values = new ArrayList<String>();
+            row.add(values);
+            ParameterInfo batchParam = entry.getKey();
+            int numJobs = 0;
+            for(String batchParamValue : entry.getValue()) {
+                values.add( batchParamValue );
+                //batchParam.setValue( batchParamValue );
+                ++numJobs;
+            }
+            jobCounts.add(numJobs);
+            if (jobCount == -1) {
+                jobCount = numJobs;
+            }
+            else {
+                if (jobCount != numJobs) {
+                    throw new IllegalArgumentException("Mismatch of batch input files: maxJobCount="+jobCount+", jobCount for batch param, "+batchParam.getName()+", is "+numJobs );
+                }
+            }
+        }
+        
+        for(int job_idx = 0; job_idx < jobCount; ++job_idx) {
+            for(ParameterInfo batchParam : batchParamMap.keySet()) {
+                String batchParamValue = batchParamMap.get(batchParam).get(job_idx);
+                batchParam.setValue(batchParamValue);
+            }
             JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params, JobStatus.JOB_WAITING);
             submittedJobs.add(submittedJob);
         }
         return submittedJobs;
     }
+
+//    private static List<JobInfo> addBatchJobsToPipeline(JobInfo pipelineJobInfo, TaskInfo taskInfo, ParameterInfo[] params, ParameterInfo batchParam, List<String> batchParamValues) 
+//    throws JobSubmissionException
+//    {
+//        List<JobInfo> submittedJobs = new ArrayList<JobInfo>();
+//        for(String batchParamValue : batchParamValues) {
+//            batchParam.setValue(batchParamValue);
+//            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params, JobStatus.JOB_WAITING);
+//            submittedJobs.add(submittedJob);
+//        }
+//        return submittedJobs;
+//    }
     
     private static List<String> parseFileList(String value) throws IOException {
         log.debug("Reading filelist from: "+value);
@@ -565,55 +664,6 @@ public class PipelineHandler {
         return inputValues;
     }
     
-    /**
-     * Start the pipeline.
-     * 
-     * @param pipelineJobInfo, must be a valid pipeline job
-     * @param stopAfterTask
-     * 
-     * @return the jobNumber of the first step of the pipeline
-     * 
-     * @throws PipelineModelException
-     * @throws MissingTasksException, if the required modules are not installed on the server
-     * @throws WebServiceException
-     * @throws JobSubmissionException
-     */
-    private static Integer runPipeline(JobInfo pipelineJobInfo, int stopAfterTask) 
-    throws PipelineModelException, MissingTasksException, JobSubmissionException
-    {  
-        PipelineModel pipelineModel = PipelineUtil.getPipelineModel(pipelineJobInfo);
-        pipelineModel.setLsid(pipelineJobInfo.getTaskLSID());
-        checkForMissingTasks(pipelineJobInfo.getUserId(), pipelineModel);
-        
-        //initialize the pipeline args
-        Map<String,String> additionalArgs = new HashMap<String,String>();
-        for(ParameterInfo param : pipelineJobInfo.getParameterInfoArray()) {
-            additionalArgs.put(param.getName(), param.getValue());
-        }
-
-        int stepNum = 0;
-        Vector<JobSubmission> tasks = pipelineModel.getTasks();
-        Integer firstStep = null;
-        for(JobSubmission jobSubmission : tasks) { 
-            if (stepNum >= stopAfterTask) {
-                break; // stop and execute no further
-            }
-            
-            ParameterInfo[] parameterInfo = jobSubmission.giveParameterInfoArray();
-            substituteLsidInInputFiles(pipelineJobInfo.getTaskLSID(), parameterInfo);
-            ParameterInfo[] params = parameterInfo;
-            params = setJobParametersFromArgs(jobSubmission.getName(), stepNum + 1, params, additionalArgs);
-
-            int jobStatusId = JobStatus.JOB_WAITING;
-            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), jobSubmission, params, jobStatusId);
-            if (firstStep == null) {
-                firstStep = submittedJob.getJobNumber();
-            }
-            ++stepNum;
-        }
-        return firstStep;
-    }
-
     /**
      * Add the job to the pipeline and add it to the internal job queue in a WAITING state.
      * 
