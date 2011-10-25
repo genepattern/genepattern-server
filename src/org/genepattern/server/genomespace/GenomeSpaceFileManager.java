@@ -15,18 +15,43 @@ import org.genepattern.util.SemanticUtil;
 public class GenomeSpaceFileManager {
     private static Logger log = Logger.getLogger(GenomeSpaceFileManager.class);
     
+    /**
+     * Determines whether a given URL is a GenomeSpace URL or not
+     * @param url
+     * @return
+     */
     public static boolean isGenomeSpaceFile(URL url) {
         return url.getHost().contains("genomespace.org");
     }
 
+    /**
+     * Creates a GpFilePath object for the given string URL.
+     * Since no GenomeSpace metadata is provided for the file the metadata will be null.
+     * @param url
+     * @return
+     */
     public static GpFilePath createFile(String url) {
         return createFile(url, null);
     }
     
+    /**
+     * Creates a GpFilePath object for the given URL.
+     * Since no GenomeSpace metadata is provided for the file the metadata will be null.
+     * @param url
+     * @return
+     */
     public static GpFilePath createFile(URL url) {
         return createFile(url, null);
     }
     
+    /**
+     * Creates a GpFilePath object for the given string URL and attaches the provided 
+     * GenomeSpace metadata.  Metadata uses the Object type to keep GenomeSpace classes 
+     * out of the core of GenePattern.
+     * @param url
+     * @param metadata
+     * @return
+     */
     public static GpFilePath createFile(String url, Object metadata) {
         try {
             return createFile(new URL(url), null);
@@ -37,6 +62,14 @@ public class GenomeSpaceFileManager {
         }
     }
     
+    /**
+     * Creates a GpFilePath object for the given URL and attaches the provided 
+     * GenomeSpace metadata.  Metadata uses the Object type to keep GenomeSpace classes 
+     * out of the core of GenePattern.
+     * @param url
+     * @param metadata
+     * @return
+     */
     public static GpFilePath createFile(URL url, Object metadata) {
         if (!isGenomeSpaceFile(url)) {
             log.error("URL is not a GenomeSpace URL in GenomeSpaceFileManager: " + url);
@@ -73,6 +106,13 @@ public class GenomeSpaceFileManager {
         }
     }
     
+    /**
+     * Determines whether a GenomeSpace file created from a URL is a converted file or not.
+     * If it is a converted file the kind will not match the extension.
+     * @param kind
+     * @param ext
+     * @return
+     */
     private static boolean determineConversion(String kind, String ext) {
         if (kind == null || ext == null) return false;
         
@@ -84,6 +124,14 @@ public class GenomeSpaceFileManager {
         }
     }
     
+    /**
+     * Extracts the file's kind from the URL and filename.  Uses a separate implementation from the one 
+     * found in SemanticUtil because we need to handle GenomeSpace file conversions.
+     * @param url
+     * @param filename
+     * @return
+     * @throws UnsupportedEncodingException
+     */
     private static String extractKind(URL url, String filename) throws UnsupportedEncodingException {
         String urlString = URLDecoder.decode(url.toString(), "UTF-8");
         int question = urlString.indexOf("?");
@@ -109,6 +157,12 @@ public class GenomeSpaceFileManager {
 
     }
     
+    /**
+     * Extracts the filename of the file from the URL
+     * @param url
+     * @return
+     * @throws IOException
+     */
     private static String extractFilename(URL url) throws IOException {
         String urlString = URLDecoder.decode(url.toString(), "UTF-8");
         int question = urlString.indexOf("?");
