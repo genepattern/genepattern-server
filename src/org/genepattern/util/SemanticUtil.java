@@ -139,7 +139,7 @@ public class SemanticUtil {
 //    }
 
     private static class MyOdfHandler implements OdfHandler {
-        public String model;
+        public String model = "odf";
 
         public void endHeader() throws ParseException {
             throw new ParseException("");
