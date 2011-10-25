@@ -39,6 +39,9 @@ import org.genomespace.datamanager.core.GSFileMetadata;
 public class GenomeSpaceClientImpl implements GenomeSpaceClient {
 	private static Logger log = Logger.getLogger(GenomeSpaceClientImpl.class);
 	
+	/**
+	 * Returns an InputStream used to download a GenomeSpace file to the local GenePattern install
+	 */
     public InputStream getInputStream(String gpUserId, URL url) throws GenomeSpaceException {
         InputStream inputStream = null;
         String token = GenomeSpaceDatabaseManager.getGSToken(gpUserId);
@@ -59,7 +62,10 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         }
         return inputStream;
     }
-
+    
+    /**
+     * Submits login to GenomeSpace.  Intended for use when the user is manually logging in.
+     */
 	public GenomeSpaceLogin submitLogin(String env, String username, String password) throws GenomeSpaceException {
 		if (env == null) {
             log.error("Environment for GenomeSpace not set");
@@ -94,6 +100,9 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         }
 	}
 	
+	/**
+     * Submits login to GenomeSpace.  Intended for use when reconstructing a session from the token.
+     */
 	public GenomeSpaceLogin submitLogin(String env, String token) throws GenomeSpaceException {
 	    if (env == null) {
             log.error("Environment for GenomeSpace not set");
@@ -128,6 +137,9 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
          }
     }
 
+	/**
+	 * Determines if a GenomeSpace session is currently logged in
+	 */
 	public boolean isLoggedIn(Object gsSessionObject) {
 		GsSession gsSession = null;
         if (gsSessionObject instanceof GsSession) {
@@ -146,7 +158,10 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         }
         gsSession.logout();
     }
-
+    
+    /**
+     * Registers a new user with GenomeSpace using the provided information
+     */
     public void registerUser(String env, String username, String password, String regEmail) throws GenomeSpaceException {
         if (env == null) {
             log.error("Environment for GenomeSpace not set");
@@ -162,7 +177,10 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
             throw new GenomeSpaceException("Error registering GenomeSpace account for username: " + username + ": " + t.getLocalizedMessage());
         }
     }
-
+    
+    /**
+     * Constructs a tree of GenomeSpaceFiles representing the user's files on GenomeSpace
+     */
     public GenomeSpaceFile buildFileTree(Object gsSessionObject) {
         GsSession gsSession = null;
         if (gsSessionObject instanceof GsSession) {
@@ -178,6 +196,13 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         return buildDirectory(dmClient, root, root.getDirectory());
     }
     
+    /**
+     * Constructs a recursive representation as a directory as a GenomeSpaceFile
+     * @param dmClient
+     * @param dir
+     * @param metadata
+     * @return
+     */
     private GenomeSpaceFile buildDirectory(DataManagerClient dmClient, GSDirectoryListing dir, GSFileMetadata metadata) {
         GenomeSpaceFile directoryFile = (GenomeSpaceFile) GenomeSpaceFileManager.createFile(metadata.getUrl(), metadata);
         directoryFile.setKind(GenomeSpaceFile.DIRECTORY_KIND);
@@ -195,7 +220,10 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         
         return directoryFile;
     }
-
+    
+    /**
+     * Returns the last modified date of a file, given the file's metadata object
+     */
     public Date getModifiedFromMetadata(Object metadataObject) {
         GSFileMetadata metadata = null;
         if (metadataObject instanceof GSFileMetadata) {
@@ -209,6 +237,9 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         return metadata.getLastModified();
     }
 
+    /**
+     * Returns the size of a file given the file's metadata object
+     */
     public Long getSizeFromMetadata(Object metadataObject) {
         GSFileMetadata metadata = null;
         if (metadataObject instanceof GSFileMetadata) {
@@ -221,7 +252,10 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         
         return metadata.getSize();
     }
-
+    
+    /**
+     * Deletes a file from GenomeSpace given that file's GenomeSpaceFile object
+     */
     public void deleteFile(Object gsSessionObject, GenomeSpaceFile file) throws GenomeSpaceException {
         GsSession gsSession = null;
         if (gsSessionObject instanceof GsSession) {
@@ -235,7 +269,10 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         GSFileMetadata metadata = (GSFileMetadata) file.getMetadata();
         gsSession.getDataManagerClient().delete(metadata);
     }
-
+    
+    /**
+     * Lists all available conversion formats for a file given the file's metadata object
+     */
     public Set<String> getAvailableFormats(Object metadataObject) {
         GSFileMetadata metadata = null;
         if (metadataObject instanceof GSFileMetadata) {
@@ -253,7 +290,10 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         }
         return formats;
     }
-
+    
+    /**
+     * Saves a file local to the GenePattern server to GenomeSpace in the given GenomeSpace directory
+     */
     public void saveFileToGenomeSpace(Object gsSessionObject, GpFilePath savedFile, GenomeSpaceFile directory) throws GenomeSpaceException {
         GsSession gsSession = null;
         if (gsSessionObject instanceof GsSession) {
@@ -283,7 +323,14 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
             return null;
         }
     }
-
+    
+    /**
+     * Takes a GenomeSpace session and returns a map of file kinds to GenomeSpace-enabled tools.
+     * 
+     * Note: Currently uses format.getName() as the file extension accepted by the tools.  When 
+     * the CDK changes this likely won't be correct and something like format.getExtension() 
+     * should be used instead.
+     */
     public Map<String, Set<String>> getKindToTools(Object gsSessionObject) {
         GsSession gsSession = null;
         if (gsSessionObject instanceof GsSession) {
@@ -316,6 +363,13 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         return kindToTools;
     }
     
+    /**
+     * Given a list of parameters for a file and that file's metadata, this will wrap the parameters in a way that 
+     * AnalysisToolManagerClient.getWebToolLaunchUrl() understands.
+     * @param params
+     * @param metadata
+     * @return
+     */
     private List<FileParameterWrapper> prepareFileParameterWrappers(List<FileParameter> params, GSFileMetadata metadata) {
         List<FileParameterWrapper> wrappers = new ArrayList<FileParameterWrapper>();
         for (FileParameter i : params) {
@@ -323,7 +377,14 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         }
         return wrappers;
     }
-
+    
+    /**
+     * Get the URL for sending a specified GenomeSpace file to a specified GenomeSpace tool.
+     * 
+     * Note: Will automatically convert the file to one the tool accepts, is available.  If multiple formats are available it 
+     * will arbitrarily pick the first one.  This oddity is part of the GenomeSpace implementation which can cause errors in 
+     * the UI if we are not aware of it.  Hopefully they will fix this in future versions of the CDK.
+     */
     public URL getSendToToolUrl(Object gsSessionObject, GenomeSpaceFile file, String toolName) throws GenomeSpaceException {
         GsSession gsSession = null;
         if (gsSessionObject instanceof GsSession) {
