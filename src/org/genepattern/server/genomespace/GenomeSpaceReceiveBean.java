@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Logger;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.webapp.jsf.JobBean;
+import org.genepattern.server.webapp.jsf.RunTaskBean;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webapp.uploads.UploadFilesBean.DirectoryInfoWrapper;
@@ -105,16 +106,50 @@ public class GenomeSpaceReceiveBean {
         return uploadBean.getKindToTaskInfo();
     }
 
-    public String prepareLoadTask() {
-        JobBean jobBean = (JobBean) UIBeanHelper.getManagedBean("#{jobsBean}");
+    public String loadTask() {
+        HttpServletRequest request = UIBeanHelper.getRequest();
+        String lsid = request.getParameter("module");
+        lsid = UIBeanHelper.decode(lsid);
+        request.setAttribute("lsid", lsid);
+        
+        for (Object i : request.getParameterMap().keySet()) {
+            String parameter = (String) i;
+            if (parameter.endsWith(":source")) {
+                String attribute = UIBeanHelper.decode(request.getParameter(parameter));
+                request.setAttribute("outputFileSource", attribute);
+            }
+            if (parameter.endsWith(":name")) {
+                String attribute = UIBeanHelper.decode(request.getParameter(parameter));
+                request.setAttribute("outputFileName", attribute);
+            }
+            if (parameter.endsWith(":path")) {
+                String attribute = UIBeanHelper.decode(request.getParameter(parameter));
+                request.setAttribute("downloadPath", attribute);
+            }
+        }
+        
         cleanBean();
-        return jobBean.loadTask();
+        RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
+        assert runTaskBean != null;
+        runTaskBean.setTask(lsid);
+        return "run task";
     }
     
     public String prepareSaveFile() {
         HttpServletRequest request = UIBeanHelper.getRequest();
-        String directoryPath = request.getParameter("uploadDirectory");
-        String fileUrl = request.getParameter("path");
+        String directoryPath = null;
+        String fileUrl = null;
+        
+        for (Object i : request.getParameterMap().keySet()) {
+            String parameter = (String) i;
+            if (parameter.endsWith(":uploadDirectory")) {
+                directoryPath = UIBeanHelper.decode(request.getParameter(parameter));
+            }
+            if (parameter.endsWith(":path")) {
+                fileUrl = UIBeanHelper.decode(request.getParameter(parameter));
+            }
+        }
+        
         if (directoryPath == null || fileUrl == null) {
             log.error("directoryPath was null in prepareSaveFile(): " + fileUrl);
             UIBeanHelper.setErrorMessage("Unable to get the selected directory to save file");

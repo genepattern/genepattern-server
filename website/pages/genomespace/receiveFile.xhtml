@@ -40,11 +40,9 @@ use, misuse, or functionality.
 								<t:selectOneMenu value="#{genomeSpaceReceiveBean.rootUploadDirectory}" id="uploadDirectory">
 									<f:selectItems value="#{genomeSpaceReceiveBean.uploadDirectories}" />
 								</t:selectOneMenu>
-								<h:commandLink value="Submit" action="#{genomeSpaceReceiveBean.prepareSaveFile}" immediate="true">
-									<f:param value="GenomeSpace" name="source"/>
-									<f:param value="${file.file.name}" name="name"/>
-									<f:param value="#{file.file.url}" name="path"/>
-								</h:commandLink>
+								<h:inputHidden id="path" value="#{file.file.url}"/>
+								<h:commandButton value="Submit" action="#{genomeSpaceReceiveBean.prepareSaveFile}" immediate="true">
+								</h:commandButton>
 							</li>
 						</h:form>
 						<h:form>
@@ -52,11 +50,11 @@ use, misuse, or functionality.
 								<t:selectOneMenu id="module" forceId="true">
 									<f:selectItems value="#{file.moduleSelects}" />
 								</t:selectOneMenu>
-								<h:commandLink value="Submit" action="#{genomeSpaceReceiveBean.prepareLoadTask}" immediate="true">
-									<f:param value="GenomeSpace" name="source"/>
-									<f:param value="${file.file.name}" name="name"/>
-									<f:param value="#{file.file.url}" name="path"/>
-								</h:commandLink>
+								<h:inputHidden id="source" value="GenomeSpace"/>
+								<h:inputHidden id="name" value="#{file.file.name}"/>
+								<h:inputHidden id="path" value="#{file.file.url}"/>
+								<h:commandButton value="Submit" action="#{genomeSpaceReceiveBean.loadTask}" immediate="true">
+								</h:commandButton>
 							</li>
 						</h:form>
 					</ol>
