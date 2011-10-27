@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.dm.GpFilePath;
-import org.genepattern.server.webapp.jsf.JobBean;
 import org.genepattern.server.webapp.jsf.RunTaskBean;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
@@ -56,8 +55,14 @@ public class GenomeSpaceReceiveBean {
         }
     }
     
+    private void blankCurrentTaskInfo() {
+        GenomeSpaceBean genomeSpaceBean = (GenomeSpaceBean) UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
+        genomeSpaceBean.setSelectedModule("");
+    }
+    
     public List<GSReceivedFileWrapper> getReceivedFiles() {
         if (receivedFiles == null) {
+            blankCurrentTaskInfo();
             receivedFiles = parseParameters();
             populateSelectItems();
         }
