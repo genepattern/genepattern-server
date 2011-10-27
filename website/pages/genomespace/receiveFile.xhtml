@@ -17,7 +17,7 @@ use, misuse, or functionality.
 		xmlns:c="http://java.sun.com/jstl/core">
     <ui:composition template="/templates/common.xhtml">
         <ui:define name="pageTitle">
-            Receive GenomeSpace File
+            Receive GenomeSpace File #{genomeSpaceReceiveBean.refreshPage}
         </ui:define>
         <ui:define name="body">
             <t:div rendered="#{not genomeSpaceBean.loggedIn or not genomeSpaceBean.genomeSpaceEnabled}">

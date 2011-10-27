@@ -22,6 +22,16 @@ public class GenomeSpaceReceiveBean {
     private UploadFilesBean uploadBean = null;
     private List<GSReceivedFileWrapper> receivedFiles = null;
     
+    public String getRefreshPage() {
+        HttpServletRequest request = UIBeanHelper.getRequest();
+        String queryString = request.getQueryString();
+        if (queryString != null && queryString.length() > 0) {
+            blankCurrentTaskInfo();
+            cleanBean();
+        }
+        return null;
+    }
+    
     private void cleanBean() {
         receivedFiles = null;
     }
@@ -62,7 +72,6 @@ public class GenomeSpaceReceiveBean {
     
     public List<GSReceivedFileWrapper> getReceivedFiles() {
         if (receivedFiles == null) {
-            blankCurrentTaskInfo();
             receivedFiles = parseParameters();
             populateSelectItems();
         }
