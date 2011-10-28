@@ -850,6 +850,7 @@ public class GenomeSpaceBean {
     public boolean isOpenID() {
         HttpSession session = UIBeanHelper.getSession();
         Boolean openID = (Boolean) session.getAttribute(GenomeSpaceLoginManager.GS_OPENID_KEY);
+        if (openID == null) openID = false;
         return openID;
     }
 }
