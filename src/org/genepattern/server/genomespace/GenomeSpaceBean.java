@@ -22,6 +22,7 @@ import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFilePath;
+import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.dm.userupload.UserUploadManager;
 import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.server.webapp.jsf.UIBeanHelper;
@@ -618,6 +619,25 @@ public class GenomeSpaceBean {
         
         if (fileToSend == null || directoryTarget == null) {
             log.error("Error saving a file to GenomeSpace: " + fileToSend + " " + directoryTarget);
+        }
+        
+        // FIXME: Do the Result File hack.  To be removed once Result Files are fully integrated into GpFilePath
+        String resultFile = UIBeanHelper.getRequest().getParameter("resultFile");
+        if ("true".equals(resultFile)) {
+            try {
+                GpFilePath file = new JobResultFile("/" + fileToSend);
+                GenomeSpaceFile directory = getDirectory(directoryTarget);
+                
+                HttpSession httpSession = UIBeanHelper.getSession();
+                Object gsSession = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
+                GenomeSpaceClientFactory.getGenomeSpaceClient().saveFileToGenomeSpace(gsSession, file, directory); 
+                setMessageToUser("File uploaded to GenomeSpace " + file.getName());
+                forceFileRefresh();
+            }
+            catch (Exception e) {
+                UIBeanHelper.setErrorMessage(e.getLocalizedMessage());
+            }
+            return "home";
         }
 
         try {
