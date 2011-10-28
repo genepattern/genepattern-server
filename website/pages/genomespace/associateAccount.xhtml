@@ -38,8 +38,8 @@
 
 		<!--  login page if not logged in -->
 		<h:outputText rendered="#{not genomeSpaceBean.loggedIn and genomeSpaceBean.genomeSpaceEnabled and genomeSpaceBean.openID}">
-			<h2>Associate Your GenomeSpace Account With a GenePattern
-			Account</h2>
+			<h2>Associate Your GenomeSpace Account With a GenePattern Account</h2>
+			<h3>Welcome #{genomeSpaceBean.username}</h3>
 			<div>You have successfully logged in through GenomeSpace, but
 			in order to use GenePattern you need to associate this account with a
 			GenePattern account. You'll only need to do this once, then the
