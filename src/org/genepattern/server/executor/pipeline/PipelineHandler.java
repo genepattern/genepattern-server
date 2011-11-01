@@ -83,8 +83,8 @@ public class PipelineHandler {
             throw new CommandExecutorException("Error starting pipeline, pipelineJobInfo is null");
         }
         
+        log.debug("starting pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
         boolean isBatchStep = isBatchStep(pipelineJobInfo);
-
         try {
             runPipeline(pipelineJobInfo, stopAfterTask, isBatchStep);
             HibernateUtil.commitTransaction();
@@ -269,7 +269,10 @@ public class PipelineHandler {
             }
             if (lastStepComplete) {
                 //it's the last step in the pipeline, update its status
+                //TODO: double-check this code ...
+                HibernateUtil.beginTransaction();
                 handlePipelineJobCompletion(parentJobNumber, 0);
+                HibernateUtil.commitTransaction();
                 return false;
             }
         }
@@ -531,6 +534,8 @@ public class PipelineHandler {
     private static Integer runBatchPipeline(JobInfo pipelineJobInfo, int stopAfterTask) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     { 
+        log.debug("starting batch pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
+        
         // add a batch of jobs, as children of the given pipelineJobInfo 
         PipelineModel pipelineModel = PipelineUtil.getPipelineModel(pipelineJobInfo);
         pipelineModel.setLsid(pipelineJobInfo.getTaskLSID());
@@ -563,7 +568,11 @@ public class PipelineHandler {
         Map<ParameterInfo,List<String>> batchParamMap = new HashMap<ParameterInfo, List<String>>();
         for(ParameterInfo p : params) {
             if (p.isInputFile()) {
-                if (p.getValue().endsWith(".filelist.txt")) {
+                //TODO: come up with a better way to tag an input parameter as a batch value
+                boolean isBatchParameter = false;
+                isBatchParameter = (p.getValue().endsWith("filelist.txt"));
+                if (isBatchParameter) {
+                    log.debug("batch input parameter: "+p.getName()+"="+p.getValue());
                     //assume it's a batch job
                     try {
                         List<String> inputFiles = parseFileList( p.getValue() );
@@ -588,6 +597,7 @@ public class PipelineHandler {
     private static List<JobInfo> addBatchJobsToPipeline(JobInfo pipelineJobInfo, TaskInfo taskInfo, ParameterInfo[] params, Map<ParameterInfo,List<String>> batchParamMap) 
     throws JobSubmissionException
     {
+        log.debug("adding batch jobs to pipeline, "+pipelineJobInfo.getTaskName()+"["+pipelineJobInfo.getJobNumber()+"] ... ");
         List<JobInfo> submittedJobs = new ArrayList<JobInfo>();
         //validate the number of batch jobs to submit
         List<List<String>> row = new ArrayList<List<String>>();
@@ -614,11 +624,21 @@ public class PipelineHandler {
                 }
             }
         }
+
+        //don't create a batch job if there are no input values
+        if (jobCount <= 0) {
+            //TODO: should we allow empty batch steps?
+            //     as currently implemented, a batch job with zero steps will get stuck in a permanent processing state, 
+            //     because it waits for all of its sub-steps to complete
+            throw new IllegalArgumentException("No batch jobs to submit");
+        }
         
+        log.debug("\tsubmitting "+jobCount+" batch jobs...");
         for(int job_idx = 0; job_idx < jobCount; ++job_idx) {
             for(ParameterInfo batchParam : batchParamMap.keySet()) {
                 String batchParamValue = batchParamMap.get(batchParam).get(job_idx);
                 batchParam.setValue(batchParamValue);
+                log.debug("\t\tstep "+job_idx+": "+batchParam.getName()+"="+batchParam.getValue());
             }
             JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params, JobStatus.JOB_WAITING);
             submittedJobs.add(submittedJob);
@@ -760,6 +780,7 @@ public class PipelineHandler {
             }
         }
 
+        //make sure to commit db changes
         JobInfo jobInfo = JobManager.addJobToQueue(taskInfo, userID, params, parentJobId, jobStatusId);
         return jobInfo;
     }
