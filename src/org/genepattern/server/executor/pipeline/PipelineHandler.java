@@ -2,6 +2,7 @@ package org.genepattern.server.executor.pipeline;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -63,6 +64,10 @@ public class PipelineHandler {
         
         String taskName = jobInfo.getTaskName();
         for (String match : batchSteps) {
+            //all pipelines named 'Scatter*' ...
+            if (taskName.startsWith("Scatter")) {
+                return true;
+            }
             if (match.equals(taskName)) {
                 return true;
             }
@@ -376,8 +381,32 @@ public class PipelineHandler {
             boolean isBatchStep = isBatchStep(parentJobInfo);
             if (isBatchStep) {
                 List<ParameterInfo> allResultFiles = getOutputFilesRecursive(dao, parentJobInfo); 
-                GatherResults gatherResults = new GatherResults(parentJobInfo, allResultFiles);
+                GatherResults gatherResults = new GatherResults(parentJobInfo, allResultFiles); 
+                //TODO: parameterize this ... so that each scatter module can define a custom 
+                //    set of output filelists, e.g. { 0: *.gtf, 1: *.bam }
                 GpFilePath filelist = gatherResults.writeFilelist();
+                if (parentJobInfo.getTaskName().startsWith("Scatter")) {
+                    //2nd output is the list of all bam files
+                    FileFilter f2 = new FileFilter() {
+                        public boolean accept(File arg0) {
+                            if (arg0 != null && arg0.getName() != null && arg0.getName().toLowerCase().endsWith(".bam")) {
+                                return true;
+                            }
+                            return false;
+                        }
+                    };
+                    gatherResults.writeFilelist("all.bam.filelist.txt", f2);
+                    //3rd output is the list of all gtf files
+                    FileFilter f3 = new FileFilter() {
+                        public boolean accept(File arg0) {
+                            if (arg0 != null && arg0.getName() != null && arg0.getName().toLowerCase().endsWith(".gtf")) {
+                                return true;
+                            }
+                            return false;
+                        }
+                    };
+                    gatherResults.writeFilelist("all.gtf.filelist.txt", f3);
+                }
             }
         }
         catch (Throwable t) {
@@ -597,18 +626,6 @@ public class PipelineHandler {
         return submittedJobs;
     }
 
-//    private static List<JobInfo> addBatchJobsToPipeline(JobInfo pipelineJobInfo, TaskInfo taskInfo, ParameterInfo[] params, ParameterInfo batchParam, List<String> batchParamValues) 
-//    throws JobSubmissionException
-//    {
-//        List<JobInfo> submittedJobs = new ArrayList<JobInfo>();
-//        for(String batchParamValue : batchParamValues) {
-//            batchParam.setValue(batchParamValue);
-//            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params, JobStatus.JOB_WAITING);
-//            submittedJobs.add(submittedJob);
-//        }
-//        return submittedJobs;
-//    }
-    
     private static List<String> parseFileList(String value) throws IOException {
         log.debug("Reading filelist from: "+value);
         List<String> inputValues = new ArrayList<String>();

@@ -44,19 +44,17 @@ public class GatherResults {
      * The list of all result files, recursively generated, for all child jobs of the rootJobInfo.
      */
     private List<ParameterInfo> allResultFiles;
-    
-    private FileFilter fileFilter = null;
 
-    /**
-     * The optional filter to apply to the list of job results
-     * before creating the filelist.
-     */
-    private String filterFilenameByGlob = null;
-
-    /**
-     * The optional comparator to use when sorting the filelist.
-     */
-    private Comparator<File> orderBy = null;
+//    /**
+//     * The optional filter to apply to the list of job results
+//     * before creating the filelist.
+//     */
+//    private String filterFilenameByGlob = null;
+//
+//    /**
+//     * The optional comparator to use when sorting the filelist.
+//     */
+//    private Comparator<File> orderBy = null;
     
     /**
      * @param rootJobInfo
@@ -67,13 +65,13 @@ public class GatherResults {
         this.allResultFiles = allResultFiles;
     }
 
-    public void setFilterFilenameGlob(String glob) {
-        this.filterFilenameByGlob = glob;
-    }
+//    public void setFilterFilenameGlob(String glob) {
+//        this.filterFilenameByGlob = glob;
+//    }
 
-    public void setOrderBy(Comparator<File> orderBy) {
-        this.orderBy = orderBy;
-    }
+//    public void setOrderBy(Comparator<File> orderBy) {
+//        this.orderBy = orderBy;
+//    }
     
     final private Comparator<File> filenameComparator = new Comparator<File>() {
         public int compare(File arg0, File arg1) {
@@ -88,26 +86,26 @@ public class GatherResults {
         }
     };
     
-    final private Comparator<File> timestampComparator = new Comparator<File>() {
-        public int compare(File arg0, File arg1) {
-            if (arg0 == null) {
-                if (arg1 == null) {
-                    return 0;
-                }
-                //null is > than everything else
-                return 1;
-            }
-            long t0 = arg0.lastModified();
-            long t1 = arg1.lastModified();
-            if (t0 < t1) {
-                return -1;
-            }
-            if (t0 > t1) {
-                return 1;
-            }
-            return 0;
-        }
-    };
+//    final private Comparator<File> timestampComparator = new Comparator<File>() {
+//        public int compare(File arg0, File arg1) {
+//            if (arg0 == null) {
+//                if (arg1 == null) {
+//                    return 0;
+//                }
+//                //null is > than everything else
+//                return 1;
+//            }
+//            long t0 = arg0.lastModified();
+//            long t1 = arg1.lastModified();
+//            if (t0 < t1) {
+//                return -1;
+//            }
+//            if (t0 > t1) {
+//                return 1;
+//            }
+//            return 0;
+//        }
+//    };
     
     final private Comparator<GpFilePath> gpFilePathComparator = new Comparator<GpFilePath>() {
         public int compare(GpFilePath arg0, GpFilePath arg1) {
@@ -123,11 +121,16 @@ public class GatherResults {
      * @return
      */
     public GpFilePath writeFilelist() throws Exception {
-        String filelistFilename = "" + rootJobInfo.getJobNumber() + ".filelist.txt";
-        return writeFilelist(filelistFilename);
+        FileFilter nullFileFilter = null;
+        return writeFilelist(nullFileFilter);
     }
 
-    public GpFilePath writeFilelist(String filelistFilename) throws Exception {
+    public GpFilePath writeFilelist(FileFilter fileFilter) throws Exception {
+        String filelistFilename = "" + rootJobInfo.getJobNumber() + ".filelist.txt";
+        return writeFilelist(filelistFilename, fileFilter);
+    }
+
+    public GpFilePath writeFilelist(String outputFilename, FileFilter fileFilter) throws Exception {
         List<GpFilePath> resultFilePaths = new ArrayList<GpFilePath>();
         for(ParameterInfo outputParam : allResultFiles) {
             GpFilePath gpFilePath = getFilePath(outputParam);
@@ -140,7 +143,7 @@ public class GatherResults {
         Collections.sort(resultFilePaths, gpFilePathComparator);
         
         //output the filelist, one fully qualified path per line
-        GpFilePath outputFilePath = new JobResultFile(rootJobInfo, new File(filelistFilename));
+        GpFilePath outputFilePath = new JobResultFile(rootJobInfo, new File(outputFilename));
 
         File output = outputFilePath.getServerFile();
         writeFileList(output, resultFilePaths, false);
