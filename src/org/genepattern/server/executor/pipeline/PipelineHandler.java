@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,23 +59,6 @@ import org.hibernate.Query;
 public class PipelineHandler {
     private static Logger log = Logger.getLogger(PipelineHandler.class);
     
-    public static boolean isBatchStep(JobInfo jobInfo) {
-        //TODO: get this info from the config file
-        final String[] batchSteps = { "BatchExecPipeline", "BatchPreprocessThenCMS" };
-        
-        String taskName = jobInfo.getTaskName();
-        for (String match : batchSteps) {
-            //all pipelines named 'Scatter*' ...
-            if (taskName.startsWith("Scatter")) {
-                return true;
-            }
-            if (match.equals(taskName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
     /**
      * Initialize the pipeline and add the first job to the queue.
      */
@@ -84,9 +68,14 @@ public class PipelineHandler {
         }
         
         log.debug("starting pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
-        boolean isBatchStep = isBatchStep(pipelineJobInfo);
+        boolean isScatterStep = isScatterStep(pipelineJobInfo);
         try {
-            runPipeline(pipelineJobInfo, stopAfterTask, isBatchStep);
+            List<JobInfo> jobsToStart = runPipeline(pipelineJobInfo, stopAfterTask, isScatterStep);
+            //set the parent pipeline's status to PROCESSING 
+            AnalysisJobScheduler.changeJobStatus(pipelineJobInfo.getJobNumber(), JobStatus.JOB_DISPATCHING, JobStatus.JOB_PROCESSING);            
+            for(JobInfo jobInfo : jobsToStart) {
+                AnalysisJobScheduler.changeJobStatus(jobInfo.getJobNumber(), JobStatus.JOB_WAITING, JobStatus.JOB_PENDING);
+            }
             HibernateUtil.commitTransaction();
         }
         catch (Throwable t) {
@@ -148,10 +137,10 @@ public class PipelineHandler {
         try {
             AnalysisDAO dao = new AnalysisDAO();
             boolean updated = setInheritedParams(dao, parentJobId, jobInfo);
-            //TODO: double-check that we don't need to updateParameterInfo unless there were inherited parameters used
-            //    as input to this step in the pipeline
-            updateParameterInfo(jobInfo);
-            HibernateUtil.commitTransaction();
+            if (updated) {
+                updateParameterInfo(jobInfo);
+                HibernateUtil.commitTransaction();
+            }
         }
         catch (Throwable t) {
             HibernateUtil.rollbackTransaction();
@@ -234,11 +223,10 @@ public class PipelineHandler {
             return false;
         }
         
-        //change from the 3.3.3 implementation to support for parallel execution of batch jobs
-        // a) in batch pipelines, more than one step in a pipeline gets started; we can't automically flag the parent
+        //change from the 3.3.3 implementation to support for parallel execution of scattered jobs
+        // a) in scatter pipelines, more than one step in a pipeline gets started; we can't automatically flag the parent
         //    pipeline as complete until all of the steps are complete
-        // b) in batch pipelines, we don't want to terminate the parent pipeline, when one of the steps fails
-
+        // b) in scatter pipelines, we don't want to terminate the parent pipeline, when one of the steps fails
 
         //check the status of the job
         if (JobStatus.FINISHED.equals(childJobInfo.getStatus())) { 
@@ -268,11 +256,8 @@ public class PipelineHandler {
                 return true;
             }
             if (lastStepComplete) {
-                //it's the last step in the pipeline, update its status
-                //TODO: double-check this code ...
-                HibernateUtil.beginTransaction();
+                //it's the last step in the pipeline, update its status, and notify downstream jobs
                 handlePipelineJobCompletion(parentJobNumber, 0);
-                HibernateUtil.commitTransaction();
                 return false;
             }
         }
@@ -381,8 +366,8 @@ public class PipelineHandler {
         try {
             AnalysisDAO dao = new AnalysisDAO();
             JobInfo parentJobInfo = dao.getJobInfo(parentJobNumber);
-            boolean isBatchStep = isBatchStep(parentJobInfo);
-            if (isBatchStep) {
+            boolean isScatterStep = isScatterStep(parentJobInfo);
+            if (isScatterStep) {
                 List<ParameterInfo> allResultFiles = getOutputFilesRecursive(dao, parentJobInfo); 
                 GatherResults gatherResults = new GatherResults(parentJobInfo, allResultFiles); 
                 //TODO: parameterize this ... so that each scatter module can define a custom 
@@ -413,6 +398,7 @@ public class PipelineHandler {
             }
         }
         catch (Throwable t) {
+            log.error(t);
         }
         finally {
             HibernateUtil.closeCurrentSession();
@@ -438,7 +424,7 @@ public class PipelineHandler {
      * For the given pipeline, get the next 'WAITING' job id.
      * 
      * @param parentJobId, the jobId of the pipeline
-     * @return the jobId if the first job whose status is WAITING, or null if no waiting jobs are found
+     * @return the jobId of the first job whose status is WAITING, or null if no waiting jobs are found
      */
     private static Integer getNextJobId(final int parentJobId) {
         List<Object[]> jobInfoObjs = getChildJobObjs(parentJobId);
@@ -473,13 +459,18 @@ public class PipelineHandler {
         return waitingJobs;
     }
     
-    private static Integer runPipeline(JobInfo pipelineJobInfo, int stopAfterTask, boolean isBatchStep) 
+    private static List<JobInfo> runPipeline(JobInfo pipelineJobInfo, int stopAfterTask, boolean isScatterStep) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     {
-        if (!isBatchStep) {
-            return runPipeline(pipelineJobInfo, stopAfterTask);
+        List<JobInfo> jobsToStart = new ArrayList<JobInfo>();
+        if (!isScatterStep) {
+            JobInfo firstJob = runPipeline(pipelineJobInfo, stopAfterTask);
+            jobsToStart.add( firstJob );
         }
-        return runBatchPipeline(pipelineJobInfo, stopAfterTask);
+        else {
+            jobsToStart = runScatterPipeline(pipelineJobInfo, stopAfterTask);
+        }
+        return jobsToStart;
     }
     
     /**
@@ -495,7 +486,7 @@ public class PipelineHandler {
      * @throws WebServiceException
      * @throws JobSubmissionException
      */
-    private static Integer runPipeline(JobInfo pipelineJobInfo, int stopAfterTask) 
+    private static JobInfo runPipeline(JobInfo pipelineJobInfo, int stopAfterTask) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     {  
         PipelineModel pipelineModel = PipelineUtil.getPipelineModel(pipelineJobInfo);
@@ -511,6 +502,7 @@ public class PipelineHandler {
         int stepNum = 0;
         Vector<JobSubmission> tasks = pipelineModel.getTasks();
         Integer firstStep = null;
+        JobInfo firstJobInfo = null;
         for(JobSubmission jobSubmission : tasks) { 
             if (stepNum >= stopAfterTask) {
                 break; // stop and execute no further
@@ -525,16 +517,33 @@ public class PipelineHandler {
             JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), jobSubmission, params, jobStatusId);
             if (firstStep == null) {
                 firstStep = submittedJob.getJobNumber();
+                firstJobInfo = submittedJob;
             }
             ++stepNum;
         }
-        return firstStep;
+        return firstJobInfo;
     }
 
-    private static Integer runBatchPipeline(JobInfo pipelineJobInfo, int stopAfterTask) 
+    private static boolean isScatterStep(final JobInfo jobInfo) {
+        //TODO: get this info from the config file
+        final String[] scatterPipelines = { "BatchExecPipeline", "BatchPreprocessThenCMS" }; 
+        String taskName = jobInfo.getTaskName();
+        //all pipelines named 'Scatter*' ...
+        if (taskName.startsWith("Scatter")) {
+            return true;
+        }
+        for (String match : scatterPipelines) {
+            if (match.equals(taskName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private static List<JobInfo> runScatterPipeline(JobInfo pipelineJobInfo, int stopAfterTask) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     { 
-        log.debug("starting batch pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
+        log.debug("starting scatter pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
         
         // add a batch of jobs, as children of the given pipelineJobInfo 
         PipelineModel pipelineModel = PipelineUtil.getPipelineModel(pipelineJobInfo);
@@ -565,53 +574,106 @@ public class PipelineHandler {
         params = setJobParametersFromArgs(tasks.get(0).getName(), stepNum + 1, params, additionalArgs);
         
         //for each step, if it has a batch input parameter, expand into a bunch of child steps
-        Map<ParameterInfo,List<String>> batchParamMap = new HashMap<ParameterInfo, List<String>>();
+        Map<ParameterInfo,List<String>> scatterParamMap = new HashMap<ParameterInfo, List<String>>();
         for(ParameterInfo p : params) {
-            if (p.isInputFile()) {
-                //TODO: come up with a better way to tag an input parameter as a batch value
-                boolean isBatchParameter = false;
-                isBatchParameter = (p.getValue().endsWith("filelist.txt"));
-                if (isBatchParameter) {
-                    log.debug("batch input parameter: "+p.getName()+"="+p.getValue());
-                    //assume it's a batch job
-                    try {
-                        List<String> inputFiles = parseFileList( p.getValue() );
-                        batchParamMap.put(p, inputFiles);
-                    }
-                    catch (Throwable t) {
-                        log.error("Error reading filelist from file: "+p.getValue(), t);
-                    }
-                }
+            List<String> scatterParamValues = getScatterParamValues(p);
+            if (scatterParamValues != null && scatterParamValues.size() > 0) {
+                scatterParamMap.put(p, scatterParamValues);
             }
         }
         
-        Integer firstJob = null;
-        List<JobInfo> submittedJobs = addBatchJobsToPipeline(pipelineJobInfo, taskInfo, params, batchParamMap);
-        if (submittedJobs != null && submittedJobs.size() > 0) {
-            firstJob = submittedJobs.get(0).getJobNumber();
-        }
-        return firstJob;
+        List<JobInfo> submittedJobs = addScatterJobsToPipeline(pipelineJobInfo, taskInfo, params, scatterParamMap);
+        return submittedJobs;
     }
-
     
-    private static List<JobInfo> addBatchJobsToPipeline(JobInfo pipelineJobInfo, TaskInfo taskInfo, ParameterInfo[] params, Map<ParameterInfo,List<String>> batchParamMap) 
+    /**
+     * Get the list of scatter parameter values for the given input parameter.
+     * 
+     * If the param is a scatter parameter, return the list of all values to be used as input to 
+     * each new scattered sub job. One new job should be added to the pipeline for each
+     * value in the returned list.
+     * 
+     * A null or empty list return value means that the param is not a scatter parameter.
+     * 
+     * @param param
+     * @return a list of values or null
+     * @throws JobSubmissionException
+     */
+    private static List<String> getScatterParamValues(ParameterInfo param) throws JobSubmissionException {
+        //note: currently implemented with ad-hoc rules for determining if it's a scatter - parameter
+        if (!param.isInputFile()) {
+            return null;
+        }
+
+        String value = param.getValue();
+        JobResultFile gpFilePath = null;
+        try {
+            gpFilePath = GpFileObjFactory.getRequestedJobResultFileObj(value);
+        }
+        catch (Exception e) {
+            //this is to be expected ... 
+            // ... not all input parameters will map to JobResultFile objects
+            return null;
+        }
+        
+        //rule 1: it's a scatter param if the value is a file whose name ends in 'filelist.txt'
+        //    In this case, create one new sub job for each path in the file list file
+        if (gpFilePath.isFile() && gpFilePath.getName().endsWith("filelist.txt")) {
+            try {
+                List<String> inputFiles = parseFileList( gpFilePath.getServerFile() );
+                return inputFiles;
+            }
+            catch (Throwable t) {
+                    throw new JobSubmissionException("Error reading filelist from file: "+param.getValue(), t);
+            }
+        }
+
+        //rule 2: it's a scatter param if the value is a reference to a job result directory for a particular job
+        //    In this case, create one new sub job for each job result file
+        if (gpFilePath.isDirectory() && gpFilePath.isWorkingDir()) {
+            try {
+                //JobResultFile jobDir = GpFileObjFactory.getRequestedJobResultFileObj(value);
+                String jobId = gpFilePath.getJobId();
+                AnalysisDAO dao = new AnalysisDAO();
+                JobInfo jobInfo = dao.getJobInfo(Integer.parseInt(jobId));
+                List<ParameterInfo> outputFiles = getOutputParameterInfos(jobInfo);
+                List<String> rval = new ArrayList<String>();
+                for(ParameterInfo outputFile : outputFiles) {
+                    JobResultFile resultFile = new JobResultFile(jobInfo, outputFile);
+                    String urlStr = resultFile.getUrl().toString();
+                    //urlStr = urlStr.replace(System.getProperty("GenePatternURL"), "<GenePatternURL>");
+                    rval.add( urlStr );
+                }
+                //always sorted alphabetically
+                Collections.sort(rval);
+                return rval;
+            }
+            catch (Throwable t) {
+                //expected
+                log.debug(t);
+            }
+        }
+
+        return null;
+    }
+    
+    private static List<JobInfo> addScatterJobsToPipeline(JobInfo pipelineJobInfo, TaskInfo taskInfo, ParameterInfo[] params, Map<ParameterInfo,List<String>> scatterParamMap) 
     throws JobSubmissionException
     {
-        log.debug("adding batch jobs to pipeline, "+pipelineJobInfo.getTaskName()+"["+pipelineJobInfo.getJobNumber()+"] ... ");
+        log.debug("adding scatter jobs to pipeline, "+pipelineJobInfo.getTaskName()+"["+pipelineJobInfo.getJobNumber()+"] ... ");
         List<JobInfo> submittedJobs = new ArrayList<JobInfo>();
         //validate the number of batch jobs to submit
         List<List<String>> row = new ArrayList<List<String>>();
         int jobCount = -1;
         List<Integer> jobCounts = new ArrayList<Integer>();
         List<List<String>> table = new ArrayList<List<String>>();
-        for(Entry<ParameterInfo, List<String>> entry : batchParamMap.entrySet()) {
+        for(Entry<ParameterInfo, List<String>> entry : scatterParamMap.entrySet()) {
             List<String> values = new ArrayList<String>();
             row.add(values);
-            ParameterInfo batchParam = entry.getKey();
+            ParameterInfo scatterParam = entry.getKey();
             int numJobs = 0;
-            for(String batchParamValue : entry.getValue()) {
-                values.add( batchParamValue );
-                //batchParam.setValue( batchParamValue );
+            for(String scatterParamValue : entry.getValue()) {
+                values.add( scatterParamValue );
                 ++numJobs;
             }
             jobCounts.add(numJobs);
@@ -620,12 +682,12 @@ public class PipelineHandler {
             }
             else {
                 if (jobCount != numJobs) {
-                    throw new IllegalArgumentException("Mismatch of batch input files: maxJobCount="+jobCount+", jobCount for batch param, "+batchParam.getName()+", is "+numJobs );
+                    throw new IllegalArgumentException("Mismatch of batch input files: maxJobCount="+jobCount+", jobCount for batch param, "+scatterParam.getName()+", is "+numJobs );
                 }
             }
         }
 
-        //don't create a batch job if there are no input values
+        //don't create a scatter job if there are no input values
         if (jobCount <= 0) {
             //TODO: should we allow empty batch steps?
             //     as currently implemented, a batch job with zero steps will get stuck in a permanent processing state, 
@@ -633,48 +695,24 @@ public class PipelineHandler {
             throw new IllegalArgumentException("No batch jobs to submit");
         }
         
-        log.debug("\tsubmitting "+jobCount+" batch jobs...");
+        log.debug("\tsubmitting "+jobCount+" scatter jobs...");
         for(int job_idx = 0; job_idx < jobCount; ++job_idx) {
-            for(ParameterInfo batchParam : batchParamMap.keySet()) {
-                String batchParamValue = batchParamMap.get(batchParam).get(job_idx);
-                batchParam.setValue(batchParamValue);
-                log.debug("\t\tstep "+job_idx+": "+batchParam.getName()+"="+batchParam.getValue());
+            for(ParameterInfo scatterParam : scatterParamMap.keySet()) {
+                String batchParamValue = scatterParamMap.get(scatterParam).get(job_idx);
+                scatterParam.setValue(batchParamValue);
+                log.debug("\t\tstep "+job_idx+": "+scatterParam.getName()+"="+scatterParam.getValue());
             }
             JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params, JobStatus.JOB_WAITING);
             submittedJobs.add(submittedJob);
         }
         return submittedJobs;
     }
-
-    private static List<String> parseFileList(String value) throws IOException {
-        log.debug("Reading filelist from: "+value);
+    
+    private static List<String> parseFileList(File filelist) throws Exception {
+        log.debug("Reading filelist from: "+filelist.getPath());
         List<String> inputValues = new ArrayList<String>();
-        File filelist = new File(value);
         if (!filelist.canRead()) {
-            //special-case, url input
-            try {
-                //TODO: GpFileObjFactory#getRequestedGpFileObj is the correct thing to do, 
-                //    but it has not yet been implemented for /jobResults/ files
-                //GpFilePath path = GpFileObjFactory.getRequestedGpFileObj(value);
-                //if (path != null) {
-                //    filelist = path.getServerFile();
-                //}
-                String[] parts = GpFileObjFactory.getPathInfo(value);
-                String servletPath = parts[0];
-                String pathInfo = parts[1];
-                if ("/jobResults".equals(servletPath)) {
-                    JobResultFile jobResultFile = new JobResultFile(pathInfo);
-                    filelist = jobResultFile.getServerFile();
-                }
-
-            }
-            catch (Exception e) {
-                log.error(e);
-            }
-        }
-        if (!filelist.canRead()) {
-            //TODO: throw exception
-            return inputValues;
+            throw new Exception("Can't read filelist, "+filelist.getPath());
         }
         FileReader fileReader = null;
         try {
@@ -700,7 +738,7 @@ public class PipelineHandler {
         }
         return inputValues;
     }
-    
+
     /**
      * Add the job to the pipeline and add it to the internal job queue in a WAITING state.
      * 
@@ -939,6 +977,14 @@ public class PipelineHandler {
 
             if (lastIdx != -1) {
                 fileName = fileName.substring(lastIdx + 1);
+            }
+        }
+        
+        if (fileName == null) {
+            //check for scatter-gather inputs
+            //TODO: hack for scatter-gather steps, replace '*' with the job directory
+            if ("*".equals(fileStr)) {
+                return fromJob.getJobNumber() + "";
             }
         }
         if (fileName == null) {
