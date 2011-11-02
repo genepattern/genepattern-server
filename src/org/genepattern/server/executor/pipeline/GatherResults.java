@@ -44,17 +44,6 @@ public class GatherResults {
      * The list of all result files, recursively generated, for all child jobs of the rootJobInfo.
      */
     private List<ParameterInfo> allResultFiles;
-
-//    /**
-//     * The optional filter to apply to the list of job results
-//     * before creating the filelist.
-//     */
-//    private String filterFilenameByGlob = null;
-//
-//    /**
-//     * The optional comparator to use when sorting the filelist.
-//     */
-//    private Comparator<File> orderBy = null;
     
     /**
      * @param rootJobInfo
@@ -64,16 +53,28 @@ public class GatherResults {
         this.rootJobInfo = rootJobInfo;
         this.allResultFiles = allResultFiles;
     }
-
-//    public void setFilterFilenameGlob(String glob) {
-//        this.filterFilenameByGlob = glob;
-//    }
-
-//    public void setOrderBy(Comparator<File> orderBy) {
-//        this.orderBy = orderBy;
-//    }
     
     final private Comparator<File> filenameComparator = new Comparator<File>() {
+        public int compare(File arg0, File arg1) {
+            if (arg0 == null) {
+                if (arg1 == null) {
+                    return 0;
+                }
+                //null is > than everything else
+                return 1;
+            }
+            //compare by name
+            int nameCmp = arg0.getName().compareTo(arg1.getName());
+            if (nameCmp != 0) {
+                return nameCmp;
+            }
+            //if the names are identical, sort by job number
+            //note: results may vary because there is no guarantee that the job numbers are in order
+            return arg0.getPath().compareTo( arg1.getPath() );
+        }
+    };
+
+    final private Comparator<File> filepathComparator = new Comparator<File>() {
         public int compare(File arg0, File arg1) {
             if (arg0 == null) {
                 if (arg1 == null) {

@@ -6,8 +6,10 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +38,7 @@ import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.util.FindFileFilter;
 import org.genepattern.server.webservice.server.AdminService;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
@@ -606,6 +609,16 @@ public class PipelineHandler {
         }
 
         String value = param.getValue();
+        //maybe there is a filter pattern
+        FileFilter filenameFilter = null;
+        String filter = null;
+        int idx = value.lastIndexOf("?filter=");
+        if (idx >= 0) {
+            filter = value.substring(idx + "?filter=".length());
+            value = value.substring(0,  idx);
+            filenameFilter = createFilterFromPattern(filter);
+        }
+        
         JobResultFile gpFilePath = null;
         try {
             gpFilePath = GpFileObjFactory.getRequestedJobResultFileObj(value);
@@ -632,17 +645,22 @@ public class PipelineHandler {
         //    In this case, create one new sub job for each job result file
         if (gpFilePath.isDirectory() && gpFilePath.isWorkingDir()) {
             try {
-                //JobResultFile jobDir = GpFileObjFactory.getRequestedJobResultFileObj(value);
                 String jobId = gpFilePath.getJobId();
                 AnalysisDAO dao = new AnalysisDAO();
                 JobInfo jobInfo = dao.getJobInfo(Integer.parseInt(jobId));
                 List<ParameterInfo> outputFiles = getOutputParameterInfos(jobInfo);
                 List<String> rval = new ArrayList<String>();
                 for(ParameterInfo outputFile : outputFiles) {
-                    JobResultFile resultFile = new JobResultFile(jobInfo, outputFile);
+                    //JobResultFile resultFile = new JobResultFile(jobInfo, outputFile);
+                    JobResultFile resultFile = new JobResultFile(outputFile);
                     String urlStr = resultFile.getUrl().toString();
-                    //urlStr = urlStr.replace(System.getProperty("GenePatternURL"), "<GenePatternURL>");
-                    rval.add( urlStr );
+                    boolean accept = true;
+                    if (filenameFilter != null) {
+                        accept = filenameFilter.accept(resultFile.getServerFile());
+                    }
+                    if (accept) {
+                        rval.add( urlStr );
+                    }
                 }
                 //always sorted alphabetically
                 Collections.sort(rval);
@@ -657,6 +675,25 @@ public class PipelineHandler {
         return null;
     }
     
+    /**
+     * Create a FileFilter from a comma-separated list of glob patterns.
+     * 
+     * A globPattern is one of,
+     * a) a glob, e.g. "*.cls", or
+     * b) a list of globs, e.g. "*.gct,*.cls", or
+     * c) an anti-glob, e.g. "!*.gct"
+     * 
+     * @param globPattern
+     */
+    private static FileFilter createFilterFromPattern(String globPattern) {
+        FindFileFilter includeFileFilter = new FindFileFilter();
+        String[] globList = globPattern.split(",");
+        for(String globSpec : globList) {
+            includeFileFilter.addGlob(globSpec);
+        }
+        return includeFileFilter;
+    }
+
     private static List<JobInfo> addScatterJobsToPipeline(JobInfo pipelineJobInfo, TaskInfo taskInfo, ParameterInfo[] params, Map<ParameterInfo,List<String>> scatterParamMap) 
     throws JobSubmissionException
     {
@@ -972,21 +1009,35 @@ public class PipelineHandler {
             fileName = getOutputFilenameByType(fromJob, outputType, allResultFiles);
         }
         if (fileName != null) {
+            //TODO: can't get job results from sub-directories because of this code
             int lastIdx = fileName.lastIndexOf(File.separator);
-            lastIdx = fileName.lastIndexOf(File.separator, lastIdx - 1); // get the job # too
-
+            lastIdx = fileName.lastIndexOf(File.separator, lastIdx - 1);
             if (lastIdx != -1) {
                 fileName = fileName.substring(lastIdx + 1);
             }
         }
-        
-        if (fileName == null) {
+
+        //TODO: modify pipelineDesigner.jsp to set a well-defined, unambiguous pattern to indicate two things:
+        //    1) whether this is a scatter input parameter, and
+        //    2) how to filter and order the files in the job results directory
+        //    Proposal:    value=<fromJobId>?filter=<comma-separated glob patterns>
+        if (fileStr.startsWith("*") || fileStr.startsWith("!")) {
             //check for scatter-gather inputs
             //TODO: hack for scatter-gather steps, replace '*' with the job directory
-            if ("*".equals(fileStr)) {
-                return fromJob.getJobNumber() + "";
+            String encodedFileStr = fileStr;
+            try {
+                encodedFileStr = URLEncoder.encode(fileStr, "UTF-8");
             }
+            catch (UnsupportedEncodingException e) {
+                log.error(e);
+            }
+            fileName = fromJob.getJobNumber() + "?filter="+encodedFileStr;
+            // to assume output file is a filter pattern on all job results fromJob="+fromJob.getJobNumber());
+            log.debug("setting outputFileName to "+fileName);
+                
+            return fileName;
         }
+
         if (fileName == null) {
             throw new FileNotFoundException("Unable to find output file from job " + fromJob.getJobNumber() + " that matches " + fileStr + ".");
         }

@@ -52,42 +52,11 @@ public class JobResultFile extends GpFilePath {
         init(jobId, new File(relativePath));
     }
 
-    public JobResultFile(JobInfo jobInfo, ParameterInfo param) throws Exception {
-        if (jobInfo == null) {
-            throw new IllegalArgumentException("jobInfo is null");
-        }
-        if (param == null) {
-            throw new IllegalArgumentException("param is null");
-        }
-
-        String value = param.getValue();
-        String relativePath = ".";
-        int jobNumberFromValue = -1;
-        //expecting value to be of the form, <jobNumber>/<relativeFilePath>
-        int idx = value.indexOf("/");
-        String jobIdFromValue = null;
-        if (idx < 0) {
-            jobIdFromValue = value;
-        }
-        else {
-            jobIdFromValue = value.substring(0, idx);
-            if (idx < value.length()) {
-                relativePath = value.substring(idx + 1);
-            }
-        }
-        try {
-            jobNumberFromValue = Integer.parseInt(jobIdFromValue);
-        }
-        catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Expecting jobNumber to be first element of parameter value, value="+value);
-        }
-        if (jobNumberFromValue != jobInfo.getJobNumber()) {
-            throw new IllegalArgumentException("jobNumber from value ("+jobNumberFromValue+
-                    ") does not match jobNumber from jobInfo ("+jobInfo.getJobNumber()+")");
-        }
-        
-        init(jobIdFromValue, new File(relativePath));
+    public JobResultFile(ParameterInfo outputParam) throws Exception {
+        //circa gp-3.3.3 and earlier, value is of the form, <jobid>/<filepath>, e.g. "1531/Hind_0001.snp"
+        this("/" + outputParam.getValue());
     }
+
     
     private void init(String jobId, File relativeFile) throws ServerConfiguration.Exception {
         if (relativeFile == null) {
