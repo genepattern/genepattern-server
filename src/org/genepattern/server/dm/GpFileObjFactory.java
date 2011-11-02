@@ -10,26 +10,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.dm.jobresult.JobResultFile;
 import org.genepattern.server.dm.serverfile.ServerFileObjFactory;
 
 public class GpFileObjFactory {
     private static Logger log = Logger.getLogger(GpFileObjFactory.class);
-    
-    
-    /**
-     * TODO: implement this method
-     * Get the working directory for a newly created job instance. This method assumes that this is for a job which is about to 
-     * be added to the queue, once a job is added to the queue its directory is stored in the DB.
-     * 
-     * @param jobContext
-     * @return
-     * @throws Exception
-     */
-    static public GpFilePath getWorkingDirectoryForNewJob(ServerConfiguration.Context userContext, String jobId) throws Exception {
-        throw new Exception("Not implemented");
-        //File jobDir = ServerConfiguration.instance().getRootJobDir(userContext);
-    }
-    
+        
     /**
      * Get the root user upload directory for the given user.
      * 
@@ -179,23 +165,9 @@ public class GpFileObjFactory {
     }
 
     static private GpFilePath getRequestedGpFileObj(URI uri) throws Exception {
-        String servletPathPlus = uri.getPath();
-        //1) chop off the servlet context (e.g. '/gp')
-        //TODO: put all of the GenePatternURL code into a single utility class
-        //GP_Path=/gp
-        String gpPath = System.getProperty("GP_Path", "/gp");
-        if (servletPathPlus.startsWith(gpPath)) {
-            servletPathPlus = servletPathPlus.substring( gpPath.length() );
-        }
-        
-        //2) extract the servletPath and the remaining pathInfo
-        String servletPath = servletPathPlus;
-        String pathInfo = "";
-        int idx = servletPathPlus.indexOf("/", 1);
-        if (idx > 0) {
-            servletPath = servletPathPlus.substring(0, idx);
-            pathInfo = servletPathPlus.substring(idx);
-        }
+        final String[] split = splitUri(uri);
+        final String servletPath = split[0];
+        final String pathInfo = split[1];
         return getRequestedGpFileObj(servletPath, pathInfo);        
     }
 
@@ -234,30 +206,36 @@ public class GpFileObjFactory {
     }
     
     /**
-     * Quick and dirty hack to get an array containing the [ <servletPath>, <pathInfo> ] from
-     * a GP server url.
+     * Get a JobResultFile, GpFilePath instance, for the given url. 
+     * This method is a temporary helper method until  {@link #getRequestedGpFileObj(String, String)} is fully implemented for the '/jobResults/' type. 
      * 
-     * @deprecated -- will be deprecated as soon as getRequestedGpFileObj is fully implemented
-     *     for all types of GP server urls.
-     *     
+     * TODO: remove this method when possible
+     * 
+     * @deprecated - as soon  as {@link #getRequestedGpFileObj(String, String)} is fully implemented for the '/jobResults/' type
      * @param urlStr
      * @return
      * @throws Exception
      */
-    static public String[] getPathInfo(String urlStr) throws Exception {
+    static public JobResultFile getRequestedJobResultFileObj(String urlStr) throws Exception {
+        URI uri = getUri(urlStr);
+        String[] split = splitUri(uri);
+        String servletPath = split[0];
+        String pathInfo = split[1];
+        if ("/jobResults".equals(servletPath)) {
+            JobResultFile jobResultFile = new JobResultFile(pathInfo);
+            return jobResultFile;
+        }
+        throw new Exception("Invalid servletPath: "+servletPath);
+    }
+    
+    static public URI getUri(String urlStr) throws URISyntaxException {
         //create a uri, which automatically decodes the url
-        URI uri = null;
-        try {
-            uri = new URI(urlStr);
-        }
-        catch (URISyntaxException e) {
-            log.error("Invalid url: "+urlStr, e);
-            throw new Exception("Invalid url: "+urlStr);
-        }
+        URI uri = new URI(urlStr);
+        return uri;
+    }
+    static private String[] splitUri(URI uri) {
         String servletPathPlus = uri.getPath();
         //1) chop off the servlet context (e.g. '/gp')
-        //TODO: put all of the GenePatternURL code into a single utility class
-        //GP_Path=/gp
         String gpPath = System.getProperty("GP_Path", "/gp");
         if (servletPathPlus.startsWith(gpPath)) {
             servletPathPlus = servletPathPlus.substring( gpPath.length() );
@@ -272,7 +250,7 @@ public class GpFileObjFactory {
             pathInfo = servletPathPlus.substring(idx);
         }
         
-        return new String[] { servletPath, pathInfo };
+        return new String[]{ servletPath, pathInfo };
     }
 
     private static String extractUserId(String pathInfo) throws Exception {

@@ -12,6 +12,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.UrlUtil;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterInfo;
 
 public class JobResultFile extends GpFilePath {
     public static Logger log = Logger.getLogger(JobResultFile.class);
@@ -20,6 +21,7 @@ public class JobResultFile extends GpFilePath {
     private File relativeFile = null;
     private File serverFile = null;
     private URI relativeUri = null;
+    private boolean isWorkingDir = false;
     
     public JobResultFile(JobInfo jobInfo, File relativePath) throws ServerConfiguration.Exception {
         String jobId = ""+jobInfo.getJobNumber();
@@ -34,12 +36,59 @@ public class JobResultFile extends GpFilePath {
         if (!pathInfo.startsWith("/")) {
             throw new Exception("pathInfo must start with a '/'");
         }
+        String jobId = "";
+        String relativePath = ".";
         int idx = pathInfo.indexOf("/", 1);
-        String jobId = pathInfo.substring(1, idx);
-        String relativePath = pathInfo.substring(idx+1);
+        if (idx < 0) {
+            jobId = pathInfo.substring(1);
+            relativePath = ".";
+        }
+        else {
+            jobId = pathInfo.substring(1, idx);
+            if (pathInfo.length() > (idx + 1)) {
+                relativePath = pathInfo.substring(idx + 1);
+            }
+        }
         init(jobId, new File(relativePath));
     }
 
+    public JobResultFile(JobInfo jobInfo, ParameterInfo param) throws Exception {
+        if (jobInfo == null) {
+            throw new IllegalArgumentException("jobInfo is null");
+        }
+        if (param == null) {
+            throw new IllegalArgumentException("param is null");
+        }
+
+        String value = param.getValue();
+        String relativePath = ".";
+        int jobNumberFromValue = -1;
+        //expecting value to be of the form, <jobNumber>/<relativeFilePath>
+        int idx = value.indexOf("/");
+        String jobIdFromValue = null;
+        if (idx < 0) {
+            jobIdFromValue = value;
+        }
+        else {
+            jobIdFromValue = value.substring(0, idx);
+            if (idx < value.length()) {
+                relativePath = value.substring(idx + 1);
+            }
+        }
+        try {
+            jobNumberFromValue = Integer.parseInt(jobIdFromValue);
+        }
+        catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Expecting jobNumber to be first element of parameter value, value="+value);
+        }
+        if (jobNumberFromValue != jobInfo.getJobNumber()) {
+            throw new IllegalArgumentException("jobNumber from value ("+jobNumberFromValue+
+                    ") does not match jobNumber from jobInfo ("+jobInfo.getJobNumber()+")");
+        }
+        
+        init(jobIdFromValue, new File(relativePath));
+    }
+    
     private void init(String jobId, File relativeFile) throws ServerConfiguration.Exception {
         if (relativeFile == null) {
             throw new IllegalArgumentException("invalid null arg, relativePath");
@@ -49,9 +98,10 @@ public class JobResultFile extends GpFilePath {
         }
         this.jobId = jobId;
         this.relativeFile = relativeFile;
+        this.isWorkingDir = relativeFile.getName().equals("") || relativeFile.getName().equals(".");
 
         //init the relativeUri
-        String uriPath = "/jobResults/" + UrlUtil.encodeFilePath(relativeFile);
+        String uriPath = "/jobResults/" + jobId + "/" + UrlUtil.encodeFilePath(relativeFile);
         try {
             relativeUri = new URI( uriPath );
         }
@@ -65,7 +115,20 @@ public class JobResultFile extends GpFilePath {
         File rootJobDir = ServerConfiguration.instance().getRootJobDir(context);
         
         File jobDir = new File(rootJobDir, jobId);
-        this.serverFile = new File(jobDir, relativeFile.getPath());        
+        this.serverFile = new File(jobDir, relativeFile.getPath()); 
+        //TODO: cache this in the DB
+        this.initMetadata();
+    }
+    
+    public String getJobId() {
+        return jobId;
+    }
+
+    /**
+     * @return true if this file object refers to the working directory for its job.
+     */
+    public boolean isWorkingDir() {
+        return isWorkingDir;
     }
 
     public URI getRelativeUri() {
