@@ -375,6 +375,7 @@ public class PipelineHandler {
                 GatherResults gatherResults = new GatherResults(parentJobInfo, allResultFiles); 
                 //TODO: parameterize this ... so that each scatter module can define a custom 
                 //    set of output filelists, e.g. { 0: *.gtf, 1: *.bam }
+                //1st output is the filelist of all files
                 GpFilePath filelist = gatherResults.writeFilelist();
                 if (parentJobInfo.getTaskName().startsWith("Scatter")) {
                     //2nd output is the list of all bam files
@@ -386,6 +387,8 @@ public class PipelineHandler {
                             return false;
                         }
                     };
+                    //2nd output is a filelist of all the bam files
+                    Thread.sleep(1000);
                     gatherResults.writeFilelist("all.bam.filelist.txt", f2);
                     //3rd output is the list of all gtf files
                     FileFilter f3 = new FileFilter() {
@@ -396,6 +399,10 @@ public class PipelineHandler {
                             return false;
                         }
                     };
+                    //3rd output is a filelist of all the gtf files
+                    //sleep for a sec to force the ordering of the files
+                    Thread.sleep(1000);
+                    
                     gatherResults.writeFilelist("all.gtf.filelist.txt", f3);
                 }
             }
