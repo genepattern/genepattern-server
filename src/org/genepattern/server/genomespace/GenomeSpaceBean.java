@@ -662,6 +662,9 @@ public class GenomeSpaceBean {
      * @return
      */
     public Map<String, Set<String>> getKindToTools() {
+        // Protect against GenomeSpace not being enabled
+        if (!genomeSpaceEnabled) return null;
+        
         if (kindToTools == null) {
             HttpSession httpSession = UIBeanHelper.getSession();
             Object gsSessionObject = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
