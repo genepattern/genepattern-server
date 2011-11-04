@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
 import org.genepattern.server.config.ServerConfiguration.Context;
+import org.genepattern.server.webapp.jsf.UIBeanHelper;
 import org.genepattern.util.GPConstants;
 
 /**
@@ -75,6 +76,8 @@ public class GenomeSpaceLoginManager {
         if (GenomeSpaceDatabaseManager.isGPAccountAssociated(gp_username)) {
             // Check for GS token expiration and redirect to GenomeSpace login if expired or about to expire
             if (tokenExpiring(gp_username)) {
+                GenomeSpaceBean genomeSpaceBean = (GenomeSpaceBean) UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
+                genomeSpaceBean.flagTokenExpired();
                 httpSession.setAttribute(REDIRECT_KEY, GS_LOGIN_PAGE);
                 return false;
             }

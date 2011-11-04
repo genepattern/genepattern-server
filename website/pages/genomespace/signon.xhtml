@@ -49,6 +49,11 @@
 		</td>
 				</tr>
 			</table>
+			
+			<h:outputText
+				value="Your GenomeSpace session has expired.  Please log in again."
+				style="color: red; font-weight: bold;"
+				rendered="#{genomeSpaceBean.tokenExpired}" />
 
 			<h:outputText
 				value="Username and password do not match."

@@ -21,11 +21,18 @@ public class GenomeSpaceDatabaseManager {
      * @return
      */
     public static String getGSToken(String gpUsername) {
+        boolean isInTransaction = HibernateUtil.isInTransaction();
+        
         GsAccount account = new GsAccountDAO().getByGPUserId(gpUsername);
         if (account == null) {
             log.error("Unable to get the GsAccount from the database for the user");
             return null;
         }
+        
+        if (!isInTransaction) {
+            HibernateUtil.closeCurrentSession();
+        }
+        
         return account.getToken();
     }
     
@@ -35,11 +42,19 @@ public class GenomeSpaceDatabaseManager {
      * @return
      */
     public static Date getTokenTimestamp(String gpUsername) {
+        boolean isInTransaction = HibernateUtil.isInTransaction();
+        
         GsAccount account = new GsAccountDAO().getByGPUserId(gpUsername);
+        
+        if (!isInTransaction) {
+            HibernateUtil.closeCurrentSession();
+        }
+        
         if (account == null) {
             log.error("Unable to get the GsAccount from the database for the user");
             return null;
         }
+
         return account.getTokenTimestamp();
     }
     
@@ -49,11 +64,19 @@ public class GenomeSpaceDatabaseManager {
      * @return
      */
     public static String getGSUsername(String gpUsername) {
+        boolean isInTransaction = HibernateUtil.isInTransaction();
+        
         GsAccount account = new GsAccountDAO().getByGPUserId(gpUsername);
+        
+        if (!isInTransaction) {
+            HibernateUtil.closeCurrentSession();
+        }
+        
         if (account == null) {
             log.error("Unable to get the GsAccount from the database for the user");
             return null;
         }
+
         return account.getGsUserId();
     }
     
@@ -63,7 +86,14 @@ public class GenomeSpaceDatabaseManager {
      * @return
      */
     public static boolean isGPAccountAssociated(String gpUsername) {
+        boolean isInTransaction = HibernateUtil.isInTransaction();
+        
         GsAccount account = new GsAccountDAO().getByGPUserId(gpUsername);
+        
+        if (!isInTransaction) {
+            HibernateUtil.closeCurrentSession();
+        }
+        
         if (account == null) return false;
         if (account.getGsUserId() == null) {
             return false;
@@ -79,7 +109,14 @@ public class GenomeSpaceDatabaseManager {
      * @return
      */
     public static boolean isGSAccountAssociated(String gsUsername) {
+        boolean isInTransaction = HibernateUtil.isInTransaction();
+        
         GsAccount account = new GsAccountDAO().getByGSUserId(gsUsername);
+        
+        if (!isInTransaction) {
+            HibernateUtil.closeCurrentSession();
+        }
+        
         if (account == null) return false;
         if (account.getGpUserId() == null) {
             return false;
@@ -95,7 +132,14 @@ public class GenomeSpaceDatabaseManager {
      * @return
      */
     public static String getGPUsername(String gsUsername) {
+        boolean isInTransaction = HibernateUtil.isInTransaction();
+        
         GsAccount account = new GsAccountDAO().getByGSUserId(gsUsername);
+        
+        if (!isInTransaction) {
+            HibernateUtil.closeCurrentSession();
+        }
+        
         if (account == null) return null;
         return account.getGpUserId();
     }
@@ -106,16 +150,28 @@ public class GenomeSpaceDatabaseManager {
      * @param gsAuthenticationToken
      */
     public static void updateDatabase(String gpUsername, String gsAuthenticationToken, String gsUsername, String email) {
-        GsAccountDAO dao = new GsAccountDAO();
-        GsAccount account = new GsAccountDAO().getByGPUserId(gpUsername);
-        if (account == null) account = new GsAccount();
-        account.setGpUserId(gpUsername);
-        account.setToken(gsAuthenticationToken);
-        account.setTokenTimestamp(new Date());
-        account.setGsUserId(gsUsername);
-        account.setEmail(email);
-        dao.deleteExtraGSAssociation(gsUsername, gpUsername);
-        dao.saveOrUpdate(account);
-        HibernateUtil.commitTransaction();
+        boolean inTransaction = HibernateUtil.isInTransaction();
+        try {
+            GsAccountDAO dao = new GsAccountDAO();
+            GsAccount account = new GsAccountDAO().getByGPUserId(gpUsername);
+            if (account == null) account = new GsAccount();
+            account.setGpUserId(gpUsername);
+            account.setToken(gsAuthenticationToken);
+            account.setTokenTimestamp(new Date());
+            account.setGsUserId(gsUsername);
+            account.setEmail(email);
+            dao.deleteExtraGSAssociation(gsUsername, gpUsername);
+            dao.saveOrUpdate(account);
+            HibernateUtil.commitTransaction();
+        }
+        catch (Throwable t) {
+            HibernateUtil.rollbackTransaction();
+            log.error("Error updating the GenomeSpace information in the database: " + t.getMessage());
+        }
+        finally {
+            if (!inTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
     }
 }

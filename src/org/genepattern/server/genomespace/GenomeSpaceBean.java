@@ -44,9 +44,13 @@ import org.richfaces.model.TreeNodeImpl;
  */
 public class GenomeSpaceBean {
     private static Logger log = Logger.getLogger(GenomeSpaceBean.class);
+    public static String HOME_NAVIGATION_KEY = "home";
+    public static String LOGIN_FAIL_NAVIGATION_KEY = "genomeSpaceLoginFailed";
+    public static String REG_FAIL_NAVIGATION_KEY = "genomeSpaceRegFailed";
     
     private boolean genomeSpaceEnabled = false;
     private boolean loginFailed = false;
+    private boolean tokenExpired = false;
     private String genomeSpaceUsername = null;
     private Map<String, Set<TaskInfo>> kindToModules = null;
     private String currentTaskLsid = null;
@@ -88,6 +92,21 @@ public class GenomeSpaceBean {
     }
     
     /**
+     * Lets the GenomeSpace bean know that the token is expired
+     */
+    public void flagTokenExpired() {
+        tokenExpired = true;
+    }
+    
+    /**
+     * Returns whether the GenomeSpace token has expired
+     * @return
+     */
+    public boolean getTokenExpired() {
+        return tokenExpired;
+    }
+    
+    /**
      * If the GenomeSpace file tree has changed this method should be called to tell the bean that
      * it should rebuild the tree the next time it loads.
      */
@@ -104,11 +123,11 @@ public class GenomeSpaceBean {
     public String submitLogin() {
         if (!genomeSpaceEnabled) {
             log.error("GenomeSpace is not enabled at GenomeSpace login");
-            return "home";
+            return HOME_NAVIGATION_KEY;
         }
         
         if (UIBeanHelper.getUserId() == null) {
-            return "home";
+            return HOME_NAVIGATION_KEY;
         } 
         
         genomeSpaceUsername = UIBeanHelper.getRequest().getParameter("username");
@@ -118,7 +137,7 @@ public class GenomeSpaceBean {
             log.error("Error getting login criteria for GenomeSpace. Username: " + genomeSpaceUsername + " Password: " + genomeSpacePassword + " Environment: " + env);
             this.setMessageToUser("Error logging into GenomeSpace");
             this.loginFailed = true;
-            return "genomeSpaceLoginFailed";
+            return LOGIN_FAIL_NAVIGATION_KEY;
         }
         
         try {
@@ -127,19 +146,20 @@ public class GenomeSpaceBean {
             if (loginSuccess) {
                 this.setMessageToUser("Signed in to GenomeSpace as " + genomeSpaceUsername);
                 loginFailed = false;
-                return "home";
+                tokenExpired = false;
+                return HOME_NAVIGATION_KEY;
             }
             else {
                 log.error("GenomeSpaceLogin was null loging into GenomeSpace");
                 this.loginFailed = true;
                 this.setMessageToUser("Error logging into GenomeSpace");
-                return "genomeSpaceLoginFailed";
+                return LOGIN_FAIL_NAVIGATION_KEY;
             }
         } 
         catch (GenomeSpaceException e) {
             this.loginFailed = true;
             this.setMessageToUser(e.getMessage());
-            return "genomeSpaceLoginFailed";
+            return LOGIN_FAIL_NAVIGATION_KEY;
         }
     }
     
@@ -164,7 +184,7 @@ public class GenomeSpaceBean {
     public String submitLogout() {
         if (!genomeSpaceEnabled) {
             log.error("GenomeSpace is not enabled");
-            return "home";
+            return HOME_NAVIGATION_KEY;
         }
         
         HttpSession httpSession = UIBeanHelper.getSession();
@@ -175,7 +195,7 @@ public class GenomeSpaceBean {
         clearSessionParameters();
         setMessageToUser("Logged out of GenomeSpace.");
        
-        return "home";
+        return HOME_NAVIGATION_KEY;
     }
     
     /**
@@ -187,7 +207,7 @@ public class GenomeSpaceBean {
         if (!genomeSpaceEnabled) {
             UIBeanHelper.setErrorMessage("GenomeSpace is not enabled");
             log.error("GenomeSpace is not enabled");
-            return "genomeSpaceRegFailed";
+            return REG_FAIL_NAVIGATION_KEY;
         }
         
         genomeSpaceUsername = UIBeanHelper.getRequest().getParameter("username");
@@ -200,18 +220,18 @@ public class GenomeSpaceBean {
                     " " + regPassword + " " + regEmail + " " + env);
             this.setMessageToUser("Error Registering With GenomeSpace");
             this.loginFailed = true;
-            return "genomeSpaceRegFailed";
+            return REG_FAIL_NAVIGATION_KEY;
         }
         
         if (genomeSpaceUsername == null) {
             this.setMessageToUser("GenomeSpace username is blank");
             this.loginFailed = true;
-            return "genomeSpaceRegFailed";
+            return REG_FAIL_NAVIGATION_KEY;
         }
         if (! regPassword.equals(genomeSpacePassword)) {
             UIBeanHelper.setInfoMessage("GenomeSpace password does not match");
             this.loginFailed = true;
-            return "genomeSpaceRegFailed";
+            return REG_FAIL_NAVIGATION_KEY;
         }
     
         try {
@@ -223,10 +243,10 @@ public class GenomeSpaceBean {
             log.error(e);
             setMessageToUser(e.getLocalizedMessage());
             this.loginFailed = true;
-            return "genomeSpaceRegFailed";
+            return REG_FAIL_NAVIGATION_KEY;
         }
       
-        return "home";
+        return HOME_NAVIGATION_KEY;
     }
     
     /**
@@ -637,7 +657,7 @@ public class GenomeSpaceBean {
             catch (Exception e) {
                 UIBeanHelper.setErrorMessage(e.getLocalizedMessage());
             }
-            return "home";
+            return HOME_NAVIGATION_KEY;
         }
 
         try {
@@ -653,7 +673,7 @@ public class GenomeSpaceBean {
         catch (Exception e) {
             UIBeanHelper.setErrorMessage(e.getLocalizedMessage());
         }
-        return "home";
+        return HOME_NAVIGATION_KEY;
     }
     
     /**
