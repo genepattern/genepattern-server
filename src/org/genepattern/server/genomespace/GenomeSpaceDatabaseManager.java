@@ -21,16 +21,18 @@ public class GenomeSpaceDatabaseManager {
      * @return
      */
     public static String getGSToken(String gpUsername) {
-        boolean isInTransaction = HibernateUtil.isInTransaction();
+        GsAccount account = null;
         
-        GsAccount account = new GsAccountDAO().getByGPUserId(gpUsername);
-        if (account == null) {
-            log.error("Unable to get the GsAccount from the database for the user");
-            return null;
+        boolean inTransaction = HibernateUtil.isInTransaction();
+        try {
+            account = new GsAccountDAO().getByGPUserId(gpUsername);
         }
-        
-        if (!isInTransaction) {
-            HibernateUtil.closeCurrentSession();
+        catch (Throwable t) {
+            HibernateUtil.rollbackTransaction();
+            log.error("Error in querying database for GenomeSpace: " + t.getMessage());
+        }
+        finally {
+            if (!inTransaction) HibernateUtil.closeCurrentSession();
         }
         
         return account.getToken();
@@ -42,12 +44,18 @@ public class GenomeSpaceDatabaseManager {
      * @return
      */
     public static Date getTokenTimestamp(String gpUsername) {
-        boolean isInTransaction = HibernateUtil.isInTransaction();
+        GsAccount account = null;
         
-        GsAccount account = new GsAccountDAO().getByGPUserId(gpUsername);
-        
-        if (!isInTransaction) {
-            HibernateUtil.closeCurrentSession();
+        boolean inTransaction = HibernateUtil.isInTransaction();
+        try {
+            account = new GsAccountDAO().getByGPUserId(gpUsername);
+        }
+        catch (Throwable t) {
+            HibernateUtil.rollbackTransaction();
+            log.error("Error in querying database for GenomeSpace: " + t.getMessage());
+        }
+        finally {
+            if (!inTransaction) HibernateUtil.closeCurrentSession();
         }
         
         if (account == null) {
@@ -64,14 +72,20 @@ public class GenomeSpaceDatabaseManager {
      * @return
      */
     public static String getGSUsername(String gpUsername) {
-        boolean isInTransaction = HibernateUtil.isInTransaction();
+        GsAccount account = null;
         
-        GsAccount account = new GsAccountDAO().getByGPUserId(gpUsername);
-        
-        if (!isInTransaction) {
-            HibernateUtil.closeCurrentSession();
+        boolean inTransaction = HibernateUtil.isInTransaction();
+        try {
+            account = new GsAccountDAO().getByGPUserId(gpUsername);
         }
-        
+        catch (Throwable t) {
+            HibernateUtil.rollbackTransaction();
+            log.error("Error in querying database for GenomeSpace: " + t.getMessage());
+        }
+        finally {
+            if (!inTransaction) HibernateUtil.closeCurrentSession();
+        }
+
         if (account == null) {
             log.error("Unable to get the GsAccount from the database for the user");
             return null;
@@ -86,14 +100,20 @@ public class GenomeSpaceDatabaseManager {
      * @return
      */
     public static boolean isGPAccountAssociated(String gpUsername) {
-        boolean isInTransaction = HibernateUtil.isInTransaction();
+        GsAccount account = null;
         
-        GsAccount account = new GsAccountDAO().getByGPUserId(gpUsername);
-        
-        if (!isInTransaction) {
-            HibernateUtil.closeCurrentSession();
+        boolean inTransaction = HibernateUtil.isInTransaction();
+        try {
+            account = new GsAccountDAO().getByGPUserId(gpUsername);
         }
-        
+        catch (Throwable t) {
+            HibernateUtil.rollbackTransaction();
+            log.error("Error in querying database for GenomeSpace: " + t.getMessage());
+        }
+        finally {
+            if (!inTransaction) HibernateUtil.closeCurrentSession();
+        }
+
         if (account == null) return false;
         if (account.getGsUserId() == null) {
             return false;
@@ -109,14 +129,20 @@ public class GenomeSpaceDatabaseManager {
      * @return
      */
     public static boolean isGSAccountAssociated(String gsUsername) {
-        boolean isInTransaction = HibernateUtil.isInTransaction();
+        GsAccount account = null;
         
-        GsAccount account = new GsAccountDAO().getByGSUserId(gsUsername);
-        
-        if (!isInTransaction) {
-            HibernateUtil.closeCurrentSession();
+        boolean inTransaction = HibernateUtil.isInTransaction();
+        try {
+            account = new GsAccountDAO().getByGSUserId(gsUsername);
         }
-        
+        catch (Throwable t) {
+            HibernateUtil.rollbackTransaction();
+            log.error("Error in querying database for GenomeSpace: " + t.getMessage());
+        }
+        finally {
+            if (!inTransaction) HibernateUtil.closeCurrentSession();
+        }
+
         if (account == null) return false;
         if (account.getGpUserId() == null) {
             return false;
@@ -132,12 +158,18 @@ public class GenomeSpaceDatabaseManager {
      * @return
      */
     public static String getGPUsername(String gsUsername) {
-        boolean isInTransaction = HibernateUtil.isInTransaction();
+        GsAccount account = null;
         
-        GsAccount account = new GsAccountDAO().getByGSUserId(gsUsername);
-        
-        if (!isInTransaction) {
-            HibernateUtil.closeCurrentSession();
+        boolean inTransaction = HibernateUtil.isInTransaction();
+        try {
+            account = new GsAccountDAO().getByGSUserId(gsUsername);
+        }
+        catch (Throwable t) {
+            HibernateUtil.rollbackTransaction();
+            log.error("Error in querying database for GenomeSpace: " + t.getMessage());
+        }
+        finally {
+            if (!inTransaction) HibernateUtil.closeCurrentSession();
         }
         
         if (account == null) return null;
