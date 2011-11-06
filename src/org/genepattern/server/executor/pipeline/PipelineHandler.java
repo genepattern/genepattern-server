@@ -6,10 +6,8 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -363,57 +361,6 @@ public class PipelineHandler {
      * @param errorMessage, can be null
      */
     private static void handlePipelineJobCompletion(int parentJobNumber, int exitCode, String errorMessage) {
-        //HACK: special-case code
-        //if this pipeline is a batch exec pipeline, gather all result files from all submitted jobs
-        //into a filelist and save this filelist as the first output file of the pipeline
-        try {
-            AnalysisDAO dao = new AnalysisDAO();
-            JobInfo parentJobInfo = dao.getJobInfo(parentJobNumber);
-            boolean isScatterStep = isScatterStep(parentJobInfo);
-            if (isScatterStep) {
-                List<ParameterInfo> allResultFiles = getOutputFilesRecursive(dao, parentJobInfo); 
-                GatherResults gatherResults = new GatherResults(parentJobInfo, allResultFiles); 
-                //TODO: parameterize this ... so that each scatter module can define a custom 
-                //    set of output filelists, e.g. { 0: *.gtf, 1: *.bam }
-                //1st output is the filelist of all files
-                GpFilePath filelist = gatherResults.writeFilelist();
-                if (parentJobInfo.getTaskName().startsWith("Scatter")) {
-                    //2nd output is the list of all bam files
-                    FileFilter f2 = new FileFilter() {
-                        public boolean accept(File arg0) {
-                            if (arg0 != null && arg0.getName() != null && arg0.getName().toLowerCase().endsWith(".bam")) {
-                                return true;
-                            }
-                            return false;
-                        }
-                    };
-                    //2nd output is a filelist of all the bam files
-                    Thread.sleep(1000);
-                    gatherResults.writeFilelist("all.bam.filelist.txt", f2);
-                    //3rd output is the list of all gtf files
-                    FileFilter f3 = new FileFilter() {
-                        public boolean accept(File arg0) {
-                            if (arg0 != null && arg0.getName() != null && arg0.getName().toLowerCase().endsWith(".gtf")) {
-                                return true;
-                            }
-                            return false;
-                        }
-                    };
-                    //3rd output is a filelist of all the gtf files
-                    //sleep for a sec to force the ordering of the files
-                    Thread.sleep(1000);
-                    
-                    gatherResults.writeFilelist("all.gtf.filelist.txt", f3);
-                }
-            }
-        }
-        catch (Throwable t) {
-            log.error(t);
-        }
-        finally {
-            HibernateUtil.closeCurrentSession();
-        }
-
         try {
             if (exitCode != 0 && errorMessage == null) {
                 errorMessage = "Pipeline terminated with non-zero exitCode: "+exitCode;
@@ -534,18 +481,43 @@ public class PipelineHandler {
         return firstJobInfo;
     }
 
+    /**
+     * rule: a scatter-step is any step in a pipeline which has at least one scatter-input-parameter.
+     * @param jobInfo
+     * @return
+     */
     private static boolean isScatterStep(final JobInfo jobInfo) {
-        //TODO: get this info from the config file
-        final String[] scatterPipelines = { "BatchExecPipeline", "BatchPreprocessThenCMS" }; 
-        String taskName = jobInfo.getTaskName();
-        //all pipelines named 'Scatter*' ...
-        if (taskName.startsWith("Scatter")) {
-            return true;
-        }
-        for (String match : scatterPipelines) {
-            if (match.equals(taskName)) {
+        // look for pipelines with a scatter-param
+        ParameterInfo[] params = jobInfo.getParameterInfoArray();
+        for(ParameterInfo param : params) {
+            if (isScatterParam(param)) {
                 return true;
             }
+        }
+        
+        //TODO: remove this special-case, which is required only for prototype Cufflinks pipeline
+        //    instead, add a flag directly to the pipeline manifest (see PipelineModel.java)
+        //    in which case, isScatterParam will return true for any scatter input parameter
+        if (jobInfo.getTaskName().toLowerCase().startsWith("scatter")) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * rule: a parameter is a scatter-input-parameter if the value of the INHERIT_FILENAME starts with '&scatter'.
+     * rule: [not yet implemented] a parameter is a scatter-input parameter if the value of the IS_SCATTER_PARAM is true
+     * 
+     * @param param
+     * @return
+     */
+    private static boolean isScatterParam(final ParameterInfo param) {
+        HashMap attributes = param.getAttributes();
+        final String taskStr = (String) attributes.get(PipelineModel.INHERIT_TASKNAME);
+        final String fileStr = (String) attributes.get(PipelineModel.INHERIT_FILENAME);
+        
+        if (taskStr != null && fileStr != null && fileStr.startsWith("?scatter")) {
+            return true;
         }
         return false;
     }
@@ -616,16 +588,13 @@ public class PipelineHandler {
         }
 
         String value = param.getValue();
-        //maybe there is a filter pattern
-        FileFilter filenameFilter = null;
-        String filter = null;
-        int idx = value.lastIndexOf("?filter=");
+        String queryString = null;
+        int idx = value.lastIndexOf("?scatter");
         if (idx >= 0) {
-            filter = value.substring(idx + "?filter=".length());
-            value = value.substring(0,  idx);
-            filenameFilter = createFilterFromPattern(filter);
+            //TODO: use standard http methods for extracting the parameters from the query string
+            queryString = value.substring(idx);
+            value = value.substring(0, idx);
         }
-        
         JobResultFile gpFilePath = null;
         try {
             gpFilePath = GpFileObjFactory.getRequestedJobResultFileObj(value);
@@ -634,6 +603,15 @@ public class PipelineHandler {
             //this is to be expected ... 
             // ... not all input parameters will map to JobResultFile objects
             return null;
+        }
+
+        //parse the query string, for optional filter pattern
+        FileFilter fileFilter = null;
+        if (queryString != null && queryString.startsWith("?scatter")) {
+            if (queryString.startsWith("?scatter&filter=")) {
+                String filter = queryString.substring( "?scatter&filter=".length() );
+                fileFilter = createFilterFromPattern(filter);
+            }
         }
         
         //rule 1: it's a scatter param if the value is a file whose name ends in 'filelist.txt'
@@ -662,8 +640,8 @@ public class PipelineHandler {
                     JobResultFile resultFile = new JobResultFile(outputFile);
                     String urlStr = resultFile.getUrl().toString();
                     boolean accept = true;
-                    if (filenameFilter != null) {
-                        accept = filenameFilter.accept(resultFile.getServerFile());
+                    if (fileFilter != null) {
+                        accept = fileFilter.accept(resultFile.getServerFile());
                     }
                     if (accept) {
                         rval.add( urlStr );
@@ -1022,33 +1000,90 @@ public class PipelineHandler {
             if (lastIdx != -1) {
                 fileName = fileName.substring(lastIdx + 1);
             }
+            return fileName;
         }
 
-        //TODO: modify pipelineDesigner.jsp to set a well-defined, unambiguous pattern to indicate two things:
-        //    1) whether this is a scatter input parameter, and
-        //    2) how to filter and order the files in the job results directory
-        //    Proposal:    value=<fromJobId>?filter=<comma-separated glob patterns>
-        if (fileStr.startsWith("*") || fileStr.startsWith("!")) {
-            //check for scatter-gather inputs
-            //TODO: hack for scatter-gather steps, replace '*' with the job directory
-            String encodedFileStr = fileStr;
-            try {
-                encodedFileStr = URLEncoder.encode(fileStr, "UTF-8");
+        try {
+            String fileNameFromPattern = getOutputFileNameFromPattern(fromJob, fileStr);
+            if (fileNameFromPattern != null) {
+                return fileNameFromPattern;
             }
-            catch (UnsupportedEncodingException e) {
-                log.error(e);
-            }
-            fileName = fromJob.getJobNumber() + "?filter="+encodedFileStr;
-            // to assume output file is a filter pattern on all job results fromJob="+fromJob.getJobNumber());
-            log.debug("setting outputFileName to "+fileName);
-                
-            return fileName;
+        }
+        catch (Exception e) {
+            log.error(e);
         }
 
         if (fileName == null) {
             throw new FileNotFoundException("Unable to find output file from job " + fromJob.getJobNumber() + " that matches " + fileStr + ".");
         }
         return fileName;
+    }
+    
+    /**
+     * Added this method to support scatter-gather pipelines.
+     * See the pipelineDesigner.jsp page, which generates the values that we are checking for in this method.
+     * 
+     *     ctl.options[ctl.options.length]  = new Option('scatter each output', '?scatter&filter=*');
+     *     ctl.options[ctl.options.length]  = new Option('file list of all outputs', '?filelist&filter=*');
+     * 
+     * @return
+     */
+    private static String getOutputFileNameFromPattern(JobInfo fromJob, String fileStr) throws Exception {
+        if (fileStr.startsWith("?scatter")) {
+            //it's a scatter-step
+            return fromJob.getJobNumber() + fileStr;
+        }
+        if (fileStr.startsWith("?filelist")) {
+            //it's a gather-step, write the filelist as an output of the fromJob 
+            GpFilePath filelist = writeFileList(fromJob, fileStr);
+            return fromJob.getJobNumber() + "/" + filelist.getRelativePath();
+        } 
+        //unknown
+        return null;
+    }
+    
+    //fileStr=?filelist[&filter=<list of patterns>]
+    private static GpFilePath writeFileList(JobInfo fromJob, String fileStr) throws Exception {
+        boolean isInTransaction = false;
+        AnalysisDAO dao = null;
+        try {
+            isInTransaction = HibernateUtil.isInTransaction();
+            dao = new AnalysisDAO();
+            List<ParameterInfo> allResultFiles = getOutputFilesRecursive(dao, fromJob); 
+            
+            //let's see if there's a filter
+            FileFilter fileFilter = null;
+            int idx = fileStr.indexOf("&filter=");
+            if (idx >= 0) {
+                int endIdx = fileStr.indexOf("&", 1+idx);
+                if (endIdx < 0) {
+                    endIdx = fileStr.length();
+                }
+                String filterStr = fileStr.substring(idx + "&filter=".length(), endIdx);
+                fileFilter = createFilterFromPattern(filterStr);
+            }
+            
+            //let's see if there's a filename
+            String filename = "all.filelist.txt";
+            idx = fileStr.indexOf("&filename=");
+            if (idx >= 0) {
+                int endIdx = fileStr.indexOf("&", idx+1);
+                if (endIdx < 0) {
+                    endIdx = fileStr.length();
+                }
+                filename = fileStr.substring(idx + "&filename=".length(), endIdx);
+            }
+
+            GatherResults gatherResults = new GatherResults(fromJob, allResultFiles); 
+            GpFilePath filelist = gatherResults.writeFilelist(filename, fileFilter);
+            return filelist;            
+            //TODO: add the filelist to the fromJob
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
     }
     
     /**

@@ -304,6 +304,7 @@ function isUniqueName(varName, pipeLsid){
 }
 
 function chooseInheritTask(taskNum, param) {
+	//alert("chooseInheritTask: taskNum="+taskNum+", param="+param);
 	var frm = document.forms['pipeline'];
 	frm['t' + taskNum + '_shadow' + param].value="";
 	var ctl = frm['t' + taskNum + '_i_' + param];
@@ -347,10 +348,12 @@ function chooseInheritTask(taskNum, param) {
 	ctl.options[ctl.options.length]  = new Option('4th output', '4');
 	ctl.options[ctl.options.length]  = new Option('stdout', 'stdout');
 	ctl.options[ctl.options.length]  = new Option('stderr', 'stderr');
-
+    ctl.options[ctl.options.length]  = new Option('scatter each output', '?scatter&amp;filter=*');
+    ctl.options[ctl.options.length]  = new Option('file list of all outputs', '?filelist&amp;filter=*');
 }
 
 function promptOnRunChecked(checkbox, taskNum, param, paramName) {
+	//alert('promptOnRunChecked, checkbox=' + checkbox + ', taskNum=' + taskNum + ', param=' + param + ', paramName='+paramName);
 	var frm = checkbox.form;
 	if (checkbox.checked) {
 		spanner = document.getElementById('span_' + taskNum + '_' + param);
