@@ -1908,7 +1908,8 @@ public class GenePatternAnalysisTask {
                 return -1;
             }
             if (f1Date == f2Date) {
-                return 0;
+                //sort by filename if the timestamps are identical
+                return o1.compareTo(o2);
             }
             return 1;
         }
