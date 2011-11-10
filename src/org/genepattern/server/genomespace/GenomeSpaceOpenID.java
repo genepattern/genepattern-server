@@ -1,6 +1,8 @@
 package org.genepattern.server.genomespace;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
@@ -232,6 +234,30 @@ public class GenomeSpaceOpenID extends HttpServlet {
             displayResult(req, resp, null, null, null, "OpenId Provider does not support logout.");
         }
     }
+    
+    /**
+     * Returns the correct request URL with the fqHostname
+     * @param request
+     * @return
+     */
+    private String getRequestURL(HttpServletRequest request) {
+        Context context = Context.getServerContext();
+        final String scheme = request.getScheme();
+        String hostName = ServerConfiguration.instance().getGPProperty(context, "fqHostName", "127.0.0.1");
+        String port = ServerConfiguration.instance().getGPProperty(context, "GENEPATTERN_PORT", "8080");
+        final String contextPath = request.getContextPath();
+        final String servletPath = request.getServletPath();
+        final String pathInfo = request.getPathInfo();
+
+        String u = scheme + "://" + hostName;
+        u += (":" + port);
+        u += contextPath + servletPath;
+        if (pathInfo != null) {
+            u+= pathInfo;
+        }
+        
+        return u;
+    }
 
     /** 
      * Logs into OpenId 
@@ -241,7 +267,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
         try {
             // "return_to URL" needs to come back to this servlet
             // in order to verify the OP response.
-            String returnToUrl = httpReq.getRequestURL().toString() + "?is_return=true";
+            String returnToUrl = getRequestURL(httpReq) + "?is_return=true";
 
             // Performs openId discovery, puts association into in-memory
             // store, and creates the auth request.
