@@ -1,8 +1,6 @@
 package org.genepattern.server.genomespace;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
@@ -322,9 +320,9 @@ public class GenomeSpaceOpenID extends HttpServlet {
             DiscoveryInformation discovered = (DiscoveryInformation) httpReq.getSession().getAttribute("openid-disc");
 
             // extract the receiving URL from the HTTP request
-            StringBuffer receivingURL = httpReq.getRequestURL();
+            String receivingURL = getRequestURL(httpReq);
             String queryString = httpReq.getQueryString();
-            if (queryString != null && queryString.length() > 0) receivingURL.append("?").append(httpReq.getQueryString());
+            if (queryString != null && queryString.length() > 0) receivingURL += "?" + httpReq.getQueryString();
 
             // Response must match what was used to place the authentication request.
             VerificationResult verification = manager.verify(receivingURL.toString(), response, discovered);
