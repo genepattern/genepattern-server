@@ -688,6 +688,7 @@ public class GenomeSpaceBean {
         if (kindToTools == null) {
             HttpSession httpSession = UIBeanHelper.getSession();
             Object gsSessionObject = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
+            if (gsSessionObject == null) return null;
             kindToTools = GenomeSpaceClientFactory.getGenomeSpaceClient().getKindToTools(gsSessionObject);
         }
         
