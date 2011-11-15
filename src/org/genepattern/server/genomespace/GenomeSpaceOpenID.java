@@ -37,9 +37,8 @@ import org.openid4java.util.ProxyProperties;
 public class GenomeSpaceOpenID extends HttpServlet {
     private static Logger log = Logger.getLogger(GenomeSpaceOpenID.class);
     
-    // These flags control which extension type to use. If neither is set the
-    // the GenomeSpace Provider will create a custom extension and pass the
-    // token, username, and email.
+    // These flags control which extension type to use. If neither is set the the GenomeSpace 
+    // Provider will create a custom extension and pass the token, username, and email.
     private static final boolean USE_SREG = true;
     private static final boolean USE_AX = true;
 
@@ -60,6 +59,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
     private String getProviderURL() {
         Context context = Context.getServerContext();
         String gsUrl = ServerConfiguration.instance().getGPProperty(context, "genomeSpaceUrl", "https://identityTest.genomespace.org:8444/identityServer/xrd.jsp");
+        log.debug("Getting the OpenID provider URL.  URL is: " + gsUrl);
         return gsUrl;
     }
 
@@ -69,7 +69,9 @@ public class GenomeSpaceOpenID extends HttpServlet {
     private String getGsLogoutUrl() {
         int idx = getProviderURL().lastIndexOf("identityServer");
         if (idx < 0) { return null; }
-        return getProviderURL().substring(0, idx) + "identityServer/openIdProvider?_action=logout";
+        String gsUrl = getProviderURL().substring(0, idx) + "identityServer/openIdProvider?_action=logout";
+        log.debug("Getting the OpenID logout URL.  URL is: " + gsUrl);
+        return gsUrl;
     }
     
     /**
@@ -77,9 +79,11 @@ public class GenomeSpaceOpenID extends HttpServlet {
      */
     @Override
     public void init(ServletConfig config) throws ServletException {
+        log.debug("Initializing the OpenID servlet");
         super.init(config);
 
         // --- Forward proxy setup (only if needed) ---
+        log.debug("Setting up the proxy properties");
         ProxyProperties proxyProps = getProxyProperties(config);
         if (proxyProps != null) {
             log.debug("ProxyProperties: " + proxyProps);
@@ -87,6 +91,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
         }
 
         try {
+            log.debug("Initializing the consumer manager");
             manager = new ConsumerManager();
         }
         catch (Throwable e) {
@@ -102,6 +107,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        log.debug("OpenID servlet handling GET request");
         doPost(req, resp);
     }
 
@@ -117,33 +123,36 @@ public class GenomeSpaceOpenID extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        log.debug("OpenID servlet handling POST request");
         // Clears out the error message on the JSP
         req.getSession().removeAttribute("gsOIcClientMessage");
 
         if ("true".equals(req.getParameter("is_cancel"))) {
+            log.debug("OpenID servlet found CANCEL action");
             // User clicked "cancel" on the openId login page, so do nothing.
             displayResult(req, resp, null, null, null, "Login was canceled.");
 
         }
         else if ("Logout".equals(req.getParameter("logout"))) {
-            // Logs out of open id by removing server side cookies, and session
-            // username and token.
+            // Logs out of open id by removing server side cookies, and session username and token.
+            log.debug("OpenID servlet found LOGOUT action");
             removeGenomeSpaceInfo(req);
             doOpenIdLogout(req, resp);
 
         }
         else if ("true".equals(req.getParameter("is_return"))) {
-            // Handles the Auth Response callback from OpenId Provider.
-            // OpenId protocol requires the response be verified.
-            // Login token and username are gotten from the OpenId
-            // MessageExtension.
+            // Handles the Auth Response callback from OpenId Provider. OpenId protocol requires the response be verified.
+            // Login token and username are gotten from the OpenId MessageExtension.
+            log.debug("OpenID servlet found RETURN action");
             ParameterList paramList = verifyResponse(req);
             String token = null;
             String username = null;
             String email = null;
-
+            
+            log.debug("ParameterList has been obtained: " + paramList);
             if (paramList != null) {
                 if (paramList.hasParameter(TOKEN_ALIAS) && paramList.hasParameter(USERNAME_ALIAS)) {
+                    log.debug("Getting Parameter Values");
                     token = paramList.getParameterValue(TOKEN_ALIAS);
                     username = paramList.getParameterValue(USERNAME_ALIAS);
                     email = paramList.getParameterValue(EMAIL_ALIAS);
@@ -154,18 +163,20 @@ public class GenomeSpaceOpenID extends HttpServlet {
                 }
             }
             if (token == null || token.length() == 0 || username == null || username.length() == 0) {
+                log.debug("OpenID login failed, displaying failure results");
                 removeGenomeSpaceInfo(req);
                 displayResult(req, resp, null, null, null, "OpenId login failed.");
             }
             else {
+                log.debug("OpenID login was success, displaying results");
                 putGenomeSpaceInfo(req, token, username);
                 displayResult(req, resp, username, token, email, null);
             }
 
         }
         else {
-            // Does an openId login, which will put up a login page if user
-            // has not previously logged into the openId server.
+            // Does an openId login, which will put up a login page if user has not previously logged into the openId server.
+            log.debug("OpenID servlet assuming LOGIN action");
             authRequest(getProviderURL(), req, resp);
         }
     }
@@ -177,6 +188,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
      * @param username
      */
     private void putGenomeSpaceInfo(HttpServletRequest req, String token, String username) {
+        log.debug("Attaching GenomeSpace info to session");
         req.getSession().setAttribute(SESSION_TOKEN, token);
         req.getSession().setAttribute(SESSION_USERNAME, username);
     }
@@ -186,6 +198,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
      * @param req
      */
     private void removeGenomeSpaceInfo(HttpServletRequest req) {
+        log.debug("Removing GenomeSpace info from session");
         req.getSession().removeAttribute(SESSION_TOKEN);
         req.getSession().removeAttribute(SESSION_USERNAME);
     }
@@ -197,11 +210,14 @@ public class GenomeSpaceOpenID extends HttpServlet {
      * If they do have an associated account this will be the GenePattern index page.
      */
     private void displayResult(HttpServletRequest req, HttpServletResponse resp, String username, String token, String email, String error) throws ServletException, IOException {
+        log.debug("Displaying the results of the OpenID call");
         if (error != null) {
+            log.debug("Displaying error");
             req.getSession().setAttribute("gsOIcClientMessage", error);
             resp.sendRedirect("/gp/pages/genomespace/index.jsp");
         }
         else {
+            log.debug("Displaying success and attaching GS info to session");
             // Set session variables for GS
             req.getSession().setAttribute(GenomeSpaceLoginManager.GS_USER_KEY, username);
             req.getSession().setAttribute(GenomeSpaceLoginManager.GS_TOKEN_KEY, token);
@@ -209,11 +225,14 @@ public class GenomeSpaceOpenID extends HttpServlet {
             req.getSession().setAttribute(GenomeSpaceLoginManager.GS_OPENID_KEY, true);
             
             // Check if there is an associated GP Account and forward to appropriate place
+            log.debug("Checking for associated GP account");
             boolean isAccountAssociated = GenomeSpaceLoginManager.isGSAccountAssociated(username);
             if (isAccountAssociated) {
+                log.debug("Account is associated, redirecting to index page");
                 resp.sendRedirect("/gp/pages/index.jsf"); 
             }
             else {
+                log.debug("Redirecting to associate accountpage");
                 resp.sendRedirect("/gp/pages/genomespace/associateAccount.jsf");
             }
         }
@@ -223,6 +242,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
      * Removes the GenomeSpace server cookies to effect an open id logout. 
      */
     private void doOpenIdLogout(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+        log.debug("Performing OpenID logout");
         String url = getGsLogoutUrl();
         if (url != null) {
             log.info("Logging out at " + url);
@@ -239,6 +259,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
      * @return
      */
     private String getRequestURL(HttpServletRequest request) {
+        log.debug("Contructing the OpenID return URL");
         Context context = Context.getServerContext();
         final String scheme = request.getScheme();
         String hostName = ServerConfiguration.instance().getGPProperty(context, "fqHostName", "127.0.0.1");
@@ -262,20 +283,25 @@ public class GenomeSpaceOpenID extends HttpServlet {
      * */
     @SuppressWarnings("rawtypes")
     private void authRequest(String claimedId, HttpServletRequest httpReq, HttpServletResponse httpResp) throws IOException, ServletException {
+        log.debug("Beginning OpenID authentication");
         try {
-            // "return_to URL" needs to come back to this servlet
-            // in order to verify the OP response.
+            // "return_to URL" needs to come back to this servlet in order to verify the OP response.
+            log.debug("Obtaining return URL");
             String returnToUrl = getRequestURL(httpReq) + "?is_return=true";
 
-            // Performs openId discovery, puts association into in-memory
-            // store, and creates the auth request.
+            // Performs openId discovery, puts association into in-memory store, and creates the auth request.
+            log.debug("Obtaining list of OpenID discoveries");
             List discoveries = manager.discover(claimedId);
+            log.debug("Obtaining discovery info");
             DiscoveryInformation discovered = manager.associate(discoveries);
+            log.debug("Attaching discovery info to session");
             httpReq.getSession().setAttribute("openid-disc", discovered);
+            log.debug("Performing authentication");
             AuthRequest authReq = manager.authenticate(discovered, returnToUrl);
 
             if (USE_AX) {
                 // Add Attribute Exchange request for gs token and username
+                log.debug("AX auth used");
                 FetchRequest fetch = FetchRequest.createFetchRequest();
                 fetch.addAttribute(TOKEN_ALIAS, EXTENSION_URI + TOKEN_ALIAS, true);
                 fetch.addAttribute(USERNAME_ALIAS, EXTENSION_URI + USERNAME_ALIAS, true);
@@ -284,6 +310,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
             }
 
             if (USE_SREG) {
+                log.debug("SREG auth used");
                 SRegRequest sregReq = SRegRequest.createFetchRequest();
                 sregReq.addAttribute("gender", true);
                 sregReq.addAttribute("nickname", true);
@@ -291,6 +318,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
                 authReq.addExtension(sregReq);
             }
 
+            log.debug("Catching errors and redirecting, ending authentication");
             if (discovered.isVersion2()) { throw new ServletException("No support for HTML PUT redirect from OpenId Provider."); }
             httpResp.sendRedirect(authReq.getDestinationUrl(true));
 
@@ -311,30 +339,32 @@ public class GenomeSpaceOpenID extends HttpServlet {
      * empty ParameterList if not found. If the verify fails, returns null.
      */
     private ParameterList verifyResponse(HttpServletRequest httpReq) throws ServletException {
+        log.debug("Beginning OpenID response verification");
         try {
-            // extract the parameters from the authentication response
-            // (which comes in as a HTTP request from the OpenID provider)
+            // extract the parameters from the authentication response (which comes in as a HTTP request from the OpenID provider)
+            log.debug("Creating parameter response list");
             ParameterList response = new ParameterList(httpReq.getParameterMap());
 
             // retrieve the previously stored discovery information
+            log.debug("Obtaining discovery info from session");
             DiscoveryInformation discovered = (DiscoveryInformation) httpReq.getSession().getAttribute("openid-disc");
 
             // extract the receiving URL from the HTTP request
             String receivingURL = getRequestURL(httpReq);
             String queryString = httpReq.getQueryString();
+            log.debug("Attaching receiving URL with query string: " + queryString);
             if (queryString != null && queryString.length() > 0) receivingURL += "?" + httpReq.getQueryString();
 
             // Response must match what was used to place the authentication request.
+            log.debug("Verifying receivingURL, parameter response and discovery info");
             VerificationResult verification = manager.verify(receivingURL.toString(), response, discovered);
 
             AuthSuccess authSuccess = null;
+            log.debug("VerificationResult is: " + verification);
             if (verification.getVerifiedId() == null) {
-                // Client verification can fail despite the server doing a
-                // successful login (possibly related to http->https redirect?)
-                // This means the server will have set token and username
-                // cookies in genomespace.org domain, which means GenomeSpace
-                // will allow access. Ideally the client here should redirect
-                // to the openId logout page to remove those cookies.
+                // Client verification can fail despite the server doing a successful login (possibly related to http->https redirect?)
+                // This means the server will have set token and username cookies in genomespace.org domain, which means GenomeSpace
+                // will allow access. Ideally the client here should redirect to the openId logout page to remove those cookies.
                 log.info("OpenId Client side verification failed.");
                 removeGenomeSpaceInfo(httpReq);
             }
@@ -342,11 +372,13 @@ public class GenomeSpaceOpenID extends HttpServlet {
                 log.info("OpenId Client side verification succeeded.");
                 authSuccess = (AuthSuccess) verification.getAuthResponse();
             }
+            log.debug("Ending OpenID response verification");
             return extractGenomespaceToken(authSuccess);
 
         }
         catch (OpenIDException e) {
             // present error to the user
+            log.debug("ServletException thrown");
             throw new ServletException(e);
         }
     }
@@ -355,6 +387,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
      * Extracts the GenomeSpace token from the OpenId message. 
      * */
     private ParameterList extractGenomespaceToken(AuthSuccess authSuccess) throws MessageException {
+        log.debug("Extracting GS token");
         if (authSuccess == null) { return null; }
         ParameterList returnList = new ParameterList();
         
@@ -362,6 +395,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
         String username = authSuccess.getParameterValue("openid.ext1.value.gs-username");
         String email = authSuccess.getParameterValue("openid.ext1.value.email");
         
+        log.debug("Setting token in param list");
         returnList.set(new Parameter(TOKEN_ALIAS, token));
         returnList.set(new Parameter(USERNAME_ALIAS, username));
         returnList.set(new Parameter(EMAIL_ALIAS, email));
@@ -374,6 +408,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
      * @return proxy properties
      */
     private static ProxyProperties getProxyProperties(ServletConfig config) {
+        log.debug("Obtaining proxy properties");
         ProxyProperties proxyProps;
         String host = config.getInitParameter("proxy.host");
         log.debug("proxy.host: " + host);
@@ -381,6 +416,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
             proxyProps = null;
         }
         else {
+            log.debug("Setting proxy properties");
             proxyProps = new ProxyProperties();
             String port = config.getInitParameter("proxy.port");
             String username = config.getInitParameter("proxy.username");
