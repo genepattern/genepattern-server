@@ -250,7 +250,9 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
             return null;
         }
         
-        return metadata.getSize();
+        Long size = metadata.getSize();
+        if (size == null) return 0L;
+        else return size;
     }
     
     /**
