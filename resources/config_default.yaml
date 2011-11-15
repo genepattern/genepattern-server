@@ -47,7 +47,7 @@ default.properties:
     
     genomeSpaceEnabled: false
     genomeSpaceUrl: https://identityTest.genomespace.org:8444/identityServer/xrd.jsp
-    genomeSpaceEnvironment: test
+    genomeSpaceEnvironment: prod
 
 executors:
     # default executor for all jobs, it is included in GenePattern
