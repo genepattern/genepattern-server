@@ -263,7 +263,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
         Context context = Context.getServerContext();
         final String scheme = request.getScheme();
         String hostName = ServerConfiguration.instance().getGPProperty(context, "fqHostName", "127.0.0.1");
-        String port = ServerConfiguration.instance().getGPProperty(context, "GENEPATTERN_PORT", "8080");
+        String port = ServerConfiguration.instance().getGPProperty(context, "fqPort", "8080");
         final String contextPath = request.getContextPath();
         final String servletPath = request.getServletPath();
         final String pathInfo = request.getPathInfo();
