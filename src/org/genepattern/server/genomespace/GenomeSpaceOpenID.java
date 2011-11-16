@@ -214,7 +214,7 @@ public class GenomeSpaceOpenID extends HttpServlet {
         if (error != null) {
             log.debug("Displaying error");
             req.getSession().setAttribute("gsOIcClientMessage", error);
-            resp.sendRedirect("/gp/pages/genomespace/index.jsp");
+            resp.sendRedirect("/gp/pages/genomespace/error.jsp");
         }
         else {
             log.debug("Displaying success and attaching GS info to session");
