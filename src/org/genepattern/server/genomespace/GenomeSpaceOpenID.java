@@ -260,17 +260,15 @@ public class GenomeSpaceOpenID extends HttpServlet {
      */
     private String getRequestURL(HttpServletRequest request) {
         log.debug("Contructing the OpenID return URL");
-        Context context = Context.getServerContext();
-        final String scheme = request.getScheme();
-        String hostName = ServerConfiguration.instance().getGPProperty(context, "fqHostName", "127.0.0.1");
-        String port = ServerConfiguration.instance().getGPProperty(context, "fqPort", "8080");
-        final String contextPath = request.getContextPath();
-        final String servletPath = request.getServletPath();
-        final String pathInfo = request.getPathInfo();
+        String servletPath = request.getServletPath();
+        String pathInfo = request.getPathInfo();
+        
+        // Remove preceding slash
+        if (servletPath.startsWith("/")) {
+            servletPath = servletPath.substring(1);
+        }
 
-        String u = scheme + "://" + hostName;
-        u += (":" + port);
-        u += contextPath + servletPath;
+        String u = ServerConfiguration.instance().getGenePatternURL() + servletPath;
         if (pathInfo != null) {
             u+= pathInfo;
         }
