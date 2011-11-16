@@ -1,6 +1,8 @@
 package org.genepattern.server.config;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -118,6 +120,7 @@ public class ServerConfiguration {
         }
     }
 
+    private URL genePatternUrl = null;
     private String configFilepath = null;
     private File configFile = null;
 
@@ -273,6 +276,36 @@ public class ServerConfiguration {
             return null;
         }
         return cmdMgrProps.getValue(context, key);
+    }
+
+    /**
+     * Get the public facing URL for this GenePattern Server.
+     * Note: replaces <pre>System.getProperty("GenePatternURL");</pre>
+     * @return
+     */
+    public URL getGenePatternURL() {
+        if (genePatternUrl == null) {
+            initGpUrl();
+        }
+        return genePatternUrl;
+    }
+
+    private void initGpUrl() {
+        String urlStr = "";
+        try {
+            urlStr = System.getProperty("GenePatternURL");
+            this.genePatternUrl = new URL(urlStr);
+        }
+        catch (Throwable t) {
+            log.error("Error initializing GenePatternURL="+urlStr);
+            
+            try {
+                this.genePatternUrl = new URL("http://127.0.0.1:8080/gp/");
+            }
+            catch(Throwable t1) {
+                throw new IllegalArgumentException("shouldn't ever be here", t1);
+            }
+        }
     }
     
     //helper methods for locating server files and folders
