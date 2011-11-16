@@ -70,13 +70,6 @@
 					requiredMessage="Email is required">
 					<f:attribute name="forceId" value="true" />
 				</t:inputText>
-				<h:outputLabel value="Environment"></h:outputLabel>
-				<t:selectOneMenu id="envSelect" value="test">
-					<f:attribute name="forceId" value="true" />
-					<f:selectItem id="dev" itemLabel="dev" itemValue="dev" />
-					<f:selectItem id="test" itemLabel="test" itemValue="test" />
-					<f:selectItem id="prod" itemLabel="prod" itemValue="prod" />
-				</t:selectOneMenu>
 			</h:panelGrid>
 			<h:commandButton id="signIn" action="#{genomeSpaceBean.submitRegistration}" value="Sign in" />
 			<br />

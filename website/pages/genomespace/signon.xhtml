@@ -72,13 +72,6 @@
 				<t:inputSecret size="50" value="" id="password" >
                   <f:attribute name="forceId" value="true"/>
 				</t:inputSecret>
-				<h:outputLabel value="Environment"></h:outputLabel>
-				<t:selectOneMenu id="envSelect" value="test">
-					<f:attribute name="forceId" value="true"/>
-					<f:selectItem id="dev" itemLabel="dev" itemValue="dev" />
-					<f:selectItem id="test" itemLabel="test" itemValue="test" />
-					<f:selectItem id="prod" itemLabel="prod" itemValue="prod" />
-				</t:selectOneMenu>
 			</h:panelGrid>
 			<h:commandButton id="signIn" action="#{genomeSpaceBean.submitLogin}" value="Sign in" />
 			<br />

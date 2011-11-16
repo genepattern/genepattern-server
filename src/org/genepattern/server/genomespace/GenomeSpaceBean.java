@@ -20,6 +20,7 @@ import javax.servlet.http.HttpSession;
 import org.apache.log4j.Logger;
 import org.genepattern.server.UserAccountManager;
 import org.genepattern.server.auth.AuthenticationException;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.dm.jobresult.JobResultFile;
@@ -132,7 +133,7 @@ public class GenomeSpaceBean {
         
         genomeSpaceUsername = UIBeanHelper.getRequest().getParameter("username");
         String genomeSpacePassword = UIBeanHelper.getRequest().getParameter("password");
-        String env = UIBeanHelper.getRequest().getParameter("envSelect");
+        String env = ServerConfiguration.instance().getGPProperty(UIBeanHelper.getUserContext(), "genomeSpaceEnvironment", "prod");
         if (env == null || genomeSpaceUsername == null || genomeSpacePassword == null) {
             log.error("Error getting login criteria for GenomeSpace. Username: " + genomeSpaceUsername + " Password: " + genomeSpacePassword + " Environment: " + env);
             this.setMessageToUser("Error logging into GenomeSpace");
@@ -214,7 +215,7 @@ public class GenomeSpaceBean {
         String genomeSpacePassword = UIBeanHelper.getRequest().getParameter("password");
         String regPassword = UIBeanHelper.getRequest().getParameter("regPassword");
         String regEmail = UIBeanHelper.getRequest().getParameter("email");
-        String env = UIBeanHelper.getRequest().getParameter("envSelect");
+        String env = ServerConfiguration.instance().getGPProperty(UIBeanHelper.getUserContext(), "genomeSpaceEnvironment", "prod");
         if (env == null || genomeSpaceUsername == null || genomeSpacePassword == null || regPassword == null || regEmail == null) {
             log.error("Field null when trying to register for GenomeSpace " + genomeSpaceUsername + " " + genomeSpacePassword + 
                     " " + regPassword + " " + regEmail + " " + env);
