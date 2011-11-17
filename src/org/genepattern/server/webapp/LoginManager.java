@@ -121,6 +121,9 @@ public class LoginManager {
             catch (GenomeSpaceException e) {
                 log.info("Error thrown trying to handle GS login in LoginManager: " + e.getMessage());
             }
+            catch (Throwable t) {
+                log.warn("Problem thrown logging into GenomeSpace");
+            }
         }
     }
 
