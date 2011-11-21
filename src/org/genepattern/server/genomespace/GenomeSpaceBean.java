@@ -640,6 +640,8 @@ public class GenomeSpaceBean {
         
         if (fileToSend == null || directoryTarget == null) {
             log.error("Error saving a file to GenomeSpace: " + fileToSend + " " + directoryTarget);
+            this.setMessageToUser("Error Sending File to GenomeSpace");
+            return HOME_NAVIGATION_KEY;
         }
         
         // FIXME: Do the Result File hack.  To be removed once Result Files are fully integrated into GpFilePath
