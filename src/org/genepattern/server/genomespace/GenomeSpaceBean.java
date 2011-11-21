@@ -93,6 +93,16 @@ public class GenomeSpaceBean {
     }
     
     /**
+     * Clears all errors after a page has been displayed that will show the errors.
+     * Returns a String so that call can be embeded in a JSF page.
+     * @return
+     */
+    public String getClearErrors() {
+        clearSessionParameters();
+        return "";
+    }
+    
+    /**
      * Lets the GenomeSpace bean know that the token is expired
      */
     public void flagTokenExpired() {

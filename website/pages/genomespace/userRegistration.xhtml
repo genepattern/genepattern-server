@@ -35,9 +35,6 @@
 	</ui:define>
 	<ui:define name="pageTitle">GenomeSpace Registration</ui:define>
 	<ui:define name="body">
-
-
-
 		<h:form onsubmit="return validateForm(this);" id="loginForm">
 			<table width="330">
 				<tr>
@@ -73,13 +70,8 @@
 			</h:panelGrid>
 			<h:commandButton id="signIn" action="#{genomeSpaceBean.submitRegistration}" value="Register" />
 			<br />
-
-
 		</h:form>
-
-
+		#{genomeSpaceBean.clearErrors}
 	</ui:define>
-
-
 </ui:composition>
 </html>
