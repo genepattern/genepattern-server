@@ -119,10 +119,10 @@ public class LoginManager {
                 GenomeSpaceLoginManager.loginFromDatabase(gp_username, session);
             }
             catch (GenomeSpaceException e) {
-                log.info("Error thrown trying to handle GS login in LoginManager: " + e.getMessage());
+                log.error("Error thrown trying to handle GS login in LoginManager: " + e.getMessage());
             }
             catch (Throwable t) {
-                log.warn("Problem thrown logging into GenomeSpace");
+                log.error("Problem thrown logging into GenomeSpace");
             }
         }
     }
