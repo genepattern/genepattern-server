@@ -28,6 +28,12 @@
         var objForm = document.forms["loginForm"];
         objForm.username.required = 1;
         objForm.username.err = "Username is required";
+        objForm.password.required = 1;
+        objForm.password.err = "Password is required";
+        objForm.regPassword.required = 1;
+        objForm.regPassword.err = "Password is required";
+        objForm.email.required = 1;
+        objForm.email.err = "Email is required";
       }
        /* ]]> */
 
@@ -54,17 +60,16 @@
 				</t:inputText>
 
 				<h:outputLabel value="Password:" for="password"></h:outputLabel>
-				<t:inputSecret size="50" value="" id="password">
+				<t:inputSecret size="50" value="" id="password" required="true" requiredMessage="Password is required">
 					<f:attribute name="forceId" value="true" />
 				</t:inputSecret>
 				<h:outputLabel value="Repeat Password:" for="regPassword"></h:outputLabel>
-				<t:inputSecret size="50" value="" id="regPassword">
+				<t:inputSecret size="50" value="" id="regPassword" required="true" requiredMessage="Password is required">
 					<f:attribute name="forceId" value="true" />
 				</t:inputSecret>
 
 				<h:outputLabel value="Email:" for="email"></h:outputLabel>
-				<t:inputText size="50" value="" id="email" required="true"
-					requiredMessage="Email is required">
+				<t:inputText size="50" value="" id="email" required="true" requiredMessage="Email is required">
 					<f:attribute name="forceId" value="true" />
 				</t:inputText>
 			</h:panelGrid>

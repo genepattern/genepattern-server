@@ -28,6 +28,8 @@
         var objForm = document.forms["loginForm"];
         objForm.username.required = 1;
         objForm.username.err = "Username is required";
+        objForm.password.required = 1;
+        objForm.password.err = "Password is required";
       }
        /* ]]> */
 
@@ -49,7 +51,7 @@
 		</td>
 				</tr>
 			</table>
-			
+
 			<h:outputText
 				value="Your GenomeSpace session has expired.  Please log in again."
 				style="color: red; font-weight: bold;"
@@ -63,13 +65,12 @@
 
 			<h:panelGrid columns="2">
 				<h:outputLabel value="Username:" for="username"></h:outputLabel>
-				<t:inputText size="50" value="" id="username"
-					required="true" requiredMessage="Username is required" >
+				<t:inputText size="50" value="" id="username" required="true" requiredMessage="Username is required" >
                   <f:attribute name="forceId" value="true"/>
                 </t:inputText>
 				
 				<h:outputLabel value="Password:" for="password"></h:outputLabel>
-				<t:inputSecret size="50" value="" id="password" >
+				<t:inputSecret size="50" value="" id="password" required="true" requiredMessage="Password is required">
                   <f:attribute name="forceId" value="true"/>
 				</t:inputSecret>
 			</h:panelGrid>
