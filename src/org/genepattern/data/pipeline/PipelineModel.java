@@ -337,19 +337,25 @@ public class PipelineModel implements Serializable {
                     attributes = empty;
                 }
                 HashMap pAttributes = p.getAttributes();
-                if (pAttributes == null)
+                if (pAttributes == null) {
                     pAttributes = new HashMap();
+                }
                 String inheritedFilename = (String) pAttributes.get(INHERIT_FILENAME);
                 String inheritedTaskNum = (String) pAttributes.get(INHERIT_TASKNAME);
                 if (inheritedTaskNum != null && !inheritedTaskNum.equals("NOT SET") && inheritedFilename != null) {
                     int t = Integer.parseInt(inheritedTaskNum);
-                    outputWriter.write("\n\t\t" + p.getName() + "=\"gpUseResult(" + (t + 1) + ", '" + inheritedFilename
-                            + "')\"");
-                } else if (attributes.get("runTimePrompt") == null) {
+                    //encode the inheritedFilename, (e.g. '?filelist&filter=*.bam&filename=<step.1.output_basename>.filelist.txt'
+                    //HACK: replace '&', '<', and '>', but not '=' and others
+                    String encInheritedFilename = inheritedFilename.replaceAll("&", "&amp;");
+                    encInheritedFilename = encInheritedFilename.replaceAll("<", "&lt;");
+                    encInheritedFilename = encInheritedFilename.replaceAll(">", "&gt;");
+                    outputWriter.write("\n\t\t" + p.getName() + "=\"gpUseResult(" + (t + 1) + ", '" + encInheritedFilename + "')\"");
+                } 
+                else if (attributes.get("runTimePrompt") == null) {
                     outputWriter.write("\n\t\t" + p.getName() + "=\"" + xmlEncode(p.getValue()) + "\"");
-                } else {
-                    outputWriter.write("\n\t\t" + p.getName() + "=\"$" + task.getName() + taskNum + "." + p.getName()
-                            + "\"");
+                } 
+                else {
+                    outputWriter.write("\n\t\t" + p.getName() + "=\"$" + task.getName() + taskNum + "." + p.getName() + "\"");
                 }
             }
             outputWriter.write("/>\n");
