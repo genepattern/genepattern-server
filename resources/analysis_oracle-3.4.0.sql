@@ -3,6 +3,15 @@ alter table GS_ACCOUNT add(GS_USERID VARCHAR2(512));
 alter table GS_ACCOUNT add(TOKEN_TIMESTAMP TIMESTAMP);
 alter table GS_ACCOUNT add (GS_EMAIL VARCHAR2(512));
 
+-- updates for Word Add-In bug fix
+create table job_queue (
+    job_no number(10,0) not null,
+    date_submitted timestamp,
+    parent_job_no number(10,0),
+    status varchar2(255 char),
+    primary key (job_no)
+);
+
 -- update schema version
 insert into PROPS (KEY, VALUE) VALUES ('registeredVersion3.4.0', '3.4.0');
 commit;
