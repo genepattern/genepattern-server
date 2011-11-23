@@ -867,9 +867,11 @@ public class JobInfoWrapper implements Serializable {
         //for debugging only, 
         //change this flag to include the raw xml from the analysis_job table in the input parameters
         //which are displayed on the job status page
-        boolean debug = false;
+        //boolean debug = false;
         //debug = true;
-        if (debug) {
+        boolean displayParameterInfoDetails = false;
+        //displayParameterInfoDetails = ServerConfiguration.instance().getGPBooleanProperty(userContext, "display.parameter.info.details", false);
+        if (displayParameterInfoDetails) {
             //list each item in the parameter info array (including nested parameter attributes)
             int i=0;
             for(ParameterInfo p : jobInfo.getParameterInfoArray()) {

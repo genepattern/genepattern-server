@@ -12,6 +12,8 @@ import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.JobDeletionException;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.executor.JobTerminationException;
+import org.genepattern.server.jobqueue.JobQueueStatus;
+import org.genepattern.server.jobqueue.JobQueueUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
@@ -101,13 +103,13 @@ public class JobManager {
      * @return
      * @throws JobSubmissionException
      */
-    static public JobInfo addJobToQueue(final TaskInfo taskInfo, final String userId, final ParameterInfo[] parameterInfoArray, final Integer parentJobNumber, final Integer initialJobStatus) 
+    static public JobInfo addJobToQueue(final TaskInfo taskInfo, final String userId, final ParameterInfo[] parameterInfoArray, final Integer parentJobNumber, final JobQueueStatus.Status initialJobStatus) 
     throws JobSubmissionException
     {
         JobInfo jobInfo = null;
         try {
             AnalysisDAO ds = new AnalysisDAO();
-            Integer jobNo = ds.addNewJob(userId, taskInfo, parameterInfoArray, parentJobNumber, initialJobStatus);
+            Integer jobNo = ds.addNewJob(userId, taskInfo, parameterInfoArray, parentJobNumber);
             if (jobNo != null) {
                 jobInfo = ds.getJobInfo(jobNo);
             }
@@ -116,6 +118,10 @@ public class JobManager {
                 "addJobToQueue: Operation failed, null value returned for JobInfo");
             } 
             createJobDirectory(jobInfo);
+            
+            //add record to the internal job queue, for dispatching ...
+            JobQueueUtil.addJobToQueue(jobInfo, initialJobStatus);
+            
             return jobInfo;
         }
         catch (JobSubmissionException e) {
