@@ -48,5 +48,6 @@
     
     <!-- annotated classes -->
     <mapping class="org.genepattern.server.dm.userupload.dao.UserUpload" />
+    <mapping class="org.genepattern.server.jobqueue.JobQueue" />
   </session-factory>
 </hibernate-configuration>
