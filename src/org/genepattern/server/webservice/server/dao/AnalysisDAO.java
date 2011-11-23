@@ -210,7 +210,7 @@ public class AnalysisDAO extends BaseDAO {
     /**
      * Add a new job, first getting a TaskInfo object with the given taskId.
      */
-    private Integer addNewJob(String userId, int taskId, ParameterInfo[] parameterInfoArray, Integer parentJobNumber, Integer initialJobStatus) 
+    private Integer addNewJob(String userId, int taskId, ParameterInfo[] parameterInfoArray, Integer parentJobNumber) 
     throws JobSubmissionException
     {
         TaskInfo taskInfo = null;
@@ -220,10 +220,10 @@ public class AnalysisDAO extends BaseDAO {
         catch (Throwable t) {
             throw new JobSubmissionException("Error adding new job, not able to get taskInfo for taskId="+taskId, t);
         }
-        return addNewJob(userId, taskInfo, parameterInfoArray, parentJobNumber, initialJobStatus);
+        return addNewJob(userId, taskInfo, parameterInfoArray, parentJobNumber);
     }
 
-    public Integer addNewJob(String userId, TaskInfo taskInfo, ParameterInfo[] parameterInfoArray, Integer parentJobNumber, Integer initialJobStatus) 
+    public Integer addNewJob(String userId, TaskInfo taskInfo, ParameterInfo[] parameterInfoArray, Integer parentJobNumber) 
     throws JobSubmissionException
     { 
         if (taskInfo == null) {
@@ -247,10 +247,7 @@ public class AnalysisDAO extends BaseDAO {
             aJob.setParent(parentJobNumber);
             aJob.setTaskLsid(taskInfo.getLsid());
 
-            if (initialJobStatus == null) {
-                initialJobStatus = JobStatus.JOB_PENDING;
-            }
-            JobStatus js = (new JobStatusDAO()).findById(initialJobStatus);
+            JobStatus js = (new JobStatusDAO()).findById(JobStatus.JOB_PENDING);
             aJob.setJobStatus(js);
 
             jobId = (Integer) getSession().save(aJob);
@@ -939,7 +936,7 @@ public class AnalysisDAO extends BaseDAO {
     throws OmnigeneException {
         Integer jobNo = null;
         try {
-            jobNo = this.addNewJob(user_id, taskID, parameterInfoArray, parentJobNumber, null);
+            jobNo = this.addNewJob(user_id, taskID, parameterInfoArray, parentJobNumber);
         } 
         catch (JobSubmissionException e) {
             throw new OmnigeneException(e);

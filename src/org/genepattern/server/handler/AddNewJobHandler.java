@@ -18,6 +18,7 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandManagerFactory;
 import org.genepattern.server.executor.JobSubmissionException;
+import org.genepattern.server.jobqueue.JobQueueStatus;
 import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.webservice.JobInfo;
 import org.genepattern.webservice.ParameterInfo;
@@ -82,7 +83,7 @@ public class AddNewJobHandler extends RequestHandler {
         try {
             HibernateUtil.beginTransaction();
             taskInfo = new AdminDAO().getTask(taskId);
-            JobInfo jobInfo = JobManager.addJobToQueue(taskInfo, userId, parameterInfoArray, parentJobId, JobStatus.JOB_PENDING);
+            JobInfo jobInfo = JobManager.addJobToQueue(taskInfo, userId, parameterInfoArray, parentJobId, JobQueueStatus.Status.PENDING);
             HibernateUtil.commitTransaction();
             if (wakeupJobQueue) {
                 log.debug("Waking up job queue");                

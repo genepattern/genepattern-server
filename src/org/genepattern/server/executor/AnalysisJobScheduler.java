@@ -32,6 +32,8 @@ import org.genepattern.server.database.HibernateUtil;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.CommandProperties.Value;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.jobqueue.JobQueue;
+import org.genepattern.server.jobqueue.JobQueueUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
 import org.hibernate.Query;
@@ -130,23 +132,43 @@ public class AnalysisJobScheduler implements Runnable {
 
     /** Main AnalysisTask's thread method. */
     public void run() {
-        log.debug("Starting AnalysisTask thread");
+        log.info("Starting AnalysisTask thread ... ");
         try {
             while (true) {
                 // Load input data to input queue
-                List<Integer> waitingJobs = null;
                 synchronized (jobQueueWaitObject) {
                     if (!suspended && pendingJobQueue.isEmpty()) {
-                        waitingJobs = AnalysisJobScheduler.getJobsWithStatusId(JobStatus.JOB_PENDING, batchSize);
+                        List<Integer> waitingJobs = null;
+                        try {
+                            List<JobQueue> records = JobQueueUtil.getPendingJobs(batchSize);
+
+                            
+                            waitingJobs = new ArrayList<Integer>();
+                            if (records != null) {
+                                for(JobQueue record : records) {
+                                    waitingJobs.add( record.getJobNo() );
+                                }
+                            }
+                        }
+                        catch (Exception e) {
+                            log.error(e);
+                        }
+                        //waitingJobs = AnalysisJobScheduler.getJobsWithStatusId(JobStatus.JOB_PENDING, batchSize);
                         if (waitingJobs != null && !waitingJobs.isEmpty()) {
-                            waitingJobs = changeJobStatus(waitingJobs, JobStatus.JOB_PENDING, JobStatus.JOB_DISPATCHING);
+                            //waitingJobs = changeJobStatus(waitingJobs, JobStatus.JOB_PENDING, JobStatus.JOB_DISPATCHING);
                             if (waitingJobs != null) {
                                 for(Integer jobId : waitingJobs) { 
                                     if (pendingJobQueue.contains(jobId)) {
                                         log.error("duplicate entry in pending jobs queue: "+jobId);
                                     }
                                     else {
-                                        pendingJobQueue.put(jobId);
+                                        try {
+                                            JobQueueUtil.deleteJobQueueStatusRecord(jobId);
+                                            pendingJobQueue.put(jobId);
+                                        }
+                                        catch (Throwable t) {
+                                            log.error(t);
+                                        }
                                     }
                                 }
                             }
@@ -163,6 +185,7 @@ public class AnalysisJobScheduler implements Runnable {
         catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
+        log.debug("Exited AnalysisTask thread.");
     }
 
     static private List<Integer> getJobsWithStatusId(int statusId, int maxJobCount) {

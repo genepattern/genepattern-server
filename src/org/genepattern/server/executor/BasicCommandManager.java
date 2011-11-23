@@ -129,7 +129,7 @@ public class BasicCommandManager implements CommandManager {
             AnalysisDAO dao = new AnalysisDAO();
             int numRunningJobs = -1;
             List<Integer> statusIds = new ArrayList<Integer>();
-            statusIds.add(JobStatus.JOB_DISPATCHING);
+            //statusIds.add(JobStatus.JOB_DISPATCHING);
             statusIds.add(JobStatus.JOB_PROCESSING);
             openJobs = getJobsWithStatusId(statusIds, dao, numRunningJobs);
         }

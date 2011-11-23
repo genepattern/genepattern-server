@@ -36,6 +36,9 @@ import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.jobqueue.JobQueue;
+import org.genepattern.server.jobqueue.JobQueueStatus;
+import org.genepattern.server.jobqueue.JobQueueUtil;
 import org.genepattern.server.util.FindFileFilter;
 import org.genepattern.server.webservice.server.AdminService;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -73,9 +76,11 @@ public class PipelineHandler {
         try {
             List<JobInfo> jobsToStart = runPipeline(pipelineJobInfo, stopAfterTask, isScatterStep);
             //set the parent pipeline's status to PROCESSING 
-            AnalysisJobScheduler.changeJobStatus(pipelineJobInfo.getJobNumber(), JobStatus.JOB_DISPATCHING, JobStatus.JOB_PROCESSING);            
+            //TODO: AnalysisJobScheduler.changeJobStatus(pipelineJobInfo.getJobNumber(), JobStatus.JOB_DISPATCHING, JobStatus.JOB_PROCESSING);            
+            AnalysisJobScheduler.setJobStatus(pipelineJobInfo.getJobNumber(), JobStatus.JOB_PROCESSING);            
             for(JobInfo jobInfo : jobsToStart) {
-                AnalysisJobScheduler.changeJobStatus(jobInfo.getJobNumber(), JobStatus.JOB_WAITING, JobStatus.JOB_PENDING);
+                JobQueueUtil.setJobStatus(jobInfo.getJobNumber(), JobQueueStatus.Status.PENDING);
+                //TODDO: AnalysisJobScheduler.changeJobStatus(jobInfo.getJobNumber(), JobStatus.JOB_WAITING, JobStatus.JOB_PENDING);
             }
             HibernateUtil.commitTransaction();
         }
@@ -164,11 +169,11 @@ public class PipelineHandler {
     }
     
     //DAO helpers
-    /**
-     * Get all of the immediate child jobs for the given pipeline.
-     * 
-     * @return a List of [jobNo(Integer),statusId(Integer)]
-     */
+//    /**
+//     * Get all of the immediate child jobs for the given pipeline.
+//     * 
+//     * @return a List of [jobNo(Integer),statusId(Integer)]
+//     */
     private static List<Object[]> getChildJobObjs(int parentJobId) {
         //TODO: hard-coded so that no more than 10000 batch jobs can be handled
         final int maxChildJobs = 10000; //limit total number of results to 10000
@@ -182,17 +187,17 @@ public class PipelineHandler {
         return rval;
     }
     
-    public static boolean startNextJob(int parentJobNumber) {
-        Integer nextJobId = getNextJobId(parentJobNumber);
-        if (nextJobId == null) {
-            return false;
-        }
-
-        //if there is another job to run, change the status of the next job to pending
-        int rval = AnalysisJobScheduler.changeJobStatus(nextJobId, JobStatus.JOB_WAITING, JobStatus.JOB_PENDING);
-        //indicate there is another step waiting on the queue
-        return true;
-    }
+//    public static boolean startNextJob(int parentJobNumber) {
+//        Integer nextJobId = getNextJobId(parentJobNumber);
+//        if (nextJobId == null) {
+//            return false;
+//        }
+//
+//        //if there is another job to run, change the status of the next job to pending
+//        int rval = AnalysisJobScheduler.changeJobStatus(nextJobId, JobStatus.JOB_WAITING, JobStatus.JOB_PENDING);
+//        //indicate there is another step waiting on the queue
+//        return true;
+//    }
     
     /**
      * Called when a step in a pipeline job has completed, put the next job on the queue.
@@ -231,23 +236,31 @@ public class PipelineHandler {
 
         //check the status of the job
         if (JobStatus.FINISHED.equals(childJobInfo.getStatus())) { 
+
             //get the next step in the pipeline, by jobId
-            HibernateUtil.beginTransaction();
-            List<Object[]> jobInfoObjs = getChildJobObjs(parentJobNumber);
-            HibernateUtil.closeCurrentSession();
-            
-            // the job is complete iff the list is empty
             int nextWaitingJob = -1;
-            boolean lastStepComplete = true;
-            for(Object[] row : jobInfoObjs) {
-                int jobId = (Integer) row[0];
-                int statusId = (Integer) row[1];
-                if (nextWaitingJob == -1 && JobStatus.JOB_WAITING == statusId) {
-                    nextWaitingJob = jobId;
+            //boolean lastStepComplete = false;
+            
+            try {
+                List<JobQueue> records = getWaitingJobs(parentJobNumber);
+                if (records == null) {
+                    log.error("Unexpected null result from getChildJobStatus, assuming all child steps are complete for parentJobNumber="+parentJobNumber);
                 }
-                if (JobStatus.JOB_FINISHED != statusId && JobStatus.JOB_ERROR != statusId) {
-                    lastStepComplete = false;
+                //if (records == null || records.size() == 0) {
+                //    lastStepComplete = true;
+                //}
+                if (records != null) {
+                    for(JobQueue record : records) {
+                        if (record.getStatus().equals( JobQueueStatus.Status.WAITING.toString() )) {
+                            if (nextWaitingJob == -1) {
+                                nextWaitingJob = record.getJobNo();
+                            }
+                        }
+                    }
                 }
+            }
+            catch (Throwable t) {
+                log.error(t);
             }
             
             if (nextWaitingJob >= 0) {
@@ -256,6 +269,20 @@ public class PipelineHandler {
                 //indicate there is another step waiting on the queue
                 return true;
             }
+            
+            //no waiting jobs found, find out if the last step in the pipeline is complete
+            HibernateUtil.beginTransaction();
+            List<Object[]> jobInfoObjs = getChildJobObjs(parentJobNumber);
+            HibernateUtil.closeCurrentSession();
+            // the job is complete iff the list is empty
+            boolean lastStepComplete = true;
+            for(Object[] row : jobInfoObjs) {
+                int statusId = (Integer) row[1];
+                if (JobStatus.JOB_FINISHED != statusId && JobStatus.JOB_ERROR != statusId) {
+                    lastStepComplete = false;
+                }
+            }
+
             if (lastStepComplete) {
                 //it's the last step in the pipeline, update its status, and notify downstream jobs
                 handlePipelineJobCompletion(parentJobNumber, 0);
@@ -269,6 +296,15 @@ public class PipelineHandler {
             handlePipelineJobCompletion(parentJobNumber, -1, "Pipeline terminated because of an error in child job [id: "+childJobNumber+"]");
         }
         return false;
+    }
+    
+    /**
+     * Get the next step in the pipeline, by jobId.
+     * @return
+     */
+    private static List<JobQueue> getWaitingJobs(int parentJobNo) throws Exception {
+        List<JobQueue> records = JobQueueUtil.getWaitingJobs(parentJobNo);
+        return records;
     }
     
     public static void handleRunningPipeline(JobInfo pipeline) {
@@ -325,7 +361,8 @@ public class PipelineHandler {
     private static void startNextStep(int nextJobId) {
         try {
             HibernateUtil.beginTransaction();
-            int rval = AnalysisJobScheduler.changeJobStatus(nextJobId, JobStatus.JOB_WAITING, JobStatus.JOB_PENDING);
+            //TODO: int rval = AnalysisJobScheduler.changeJobStatus(nextJobId, JobStatus.JOB_WAITING, JobStatus.JOB_PENDING);
+            JobQueueUtil.setJobStatus(nextJobId, JobQueueStatus.Status.PENDING);
             HibernateUtil.commitTransaction();
         }
         catch (Throwable t) {
@@ -377,23 +414,40 @@ public class PipelineHandler {
         }
     }
     
-    /**
-     * For the given pipeline, get the next 'WAITING' job id.
-     * 
-     * @param parentJobId, the jobId of the pipeline
-     * @return the jobId of the first job whose status is WAITING, or null if no waiting jobs are found
-     */
-    private static Integer getNextJobId(final int parentJobId) {
-        List<Object[]> jobInfoObjs = getChildJobObjs(parentJobId);
-        for(Object[] row : jobInfoObjs) {
-            int jobNo = (Integer) row[0];
-            int statusId = (Integer) row[1];
-            if (JobStatus.JOB_WAITING == statusId) {
-                return jobNo;
-            }
-        }
-        return null;
-    }
+//    /**
+//     * For the given pipeline, get the next 'WAITING' job id.
+//     * 
+//     * @param parentJobId, the jobId of the pipeline
+//     * @return the jobId of the first job whose status is WAITING, or null if no waiting jobs are found
+//     */
+//    private static Integer _getNextJobId(final int parentJobId) {
+//        List<Object[]> jobInfoObjs = getChildJobObjs(parentJobId);
+//        for(Object[] row : jobInfoObjs) {
+//            int jobNo = (Integer) row[0];
+//            int statusId = (Integer) row[1];
+//            if (JobStatus.JOB_WAITING == statusId) {
+//                return jobNo;
+//            }
+//        }
+//        return null;
+//    }
+//    /**
+//     * For the given pipeline, get the next 'WAITING' job id.
+//     * 
+//     * @param parentJobId, the jobId of the pipeline
+//     * @return the jobId of the first job whose status is WAITING, or null if no waiting jobs are found
+//     */
+//    private static Integer getNextJobIdOrig(final int parentJobId) {
+//        List<Object[]> jobInfoObjs = getChildJobObjs(parentJobId);
+//        for(Object[] row : jobInfoObjs) {
+//            int jobNo = (Integer) row[0];
+//            int statusId = (Integer) row[1];
+//            if (JobStatus.JOB_WAITING == statusId) {
+//                return jobNo;
+//            }
+//        }
+//        return null;
+//    }
 
     /**
      * For the given pipeline, get the list of child jobs which have not yet finished.
@@ -470,8 +524,7 @@ public class PipelineHandler {
             ParameterInfo[] params = parameterInfo;
             params = setJobParametersFromArgs(jobSubmission.getName(), stepNum + 1, params, additionalArgs);
 
-            int jobStatusId = JobStatus.JOB_WAITING;
-            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), jobSubmission, params, jobStatusId);
+            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), jobSubmission, params, JobQueueStatus.Status.WAITING);
             if (firstStep == null) {
                 firstStep = submittedJob.getJobNumber();
                 firstJobInfo = submittedJob;
@@ -724,7 +777,7 @@ public class PipelineHandler {
                 scatterParam.setValue(batchParamValue);
                 log.debug("\t\tstep "+job_idx+": "+scatterParam.getName()+"="+scatterParam.getValue());
             }
-            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params, JobStatus.JOB_WAITING);
+            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params, JobQueueStatus.Status.WAITING);
             submittedJobs.add(submittedJob);
         }
         return submittedJobs;
@@ -767,7 +820,7 @@ public class PipelineHandler {
      * @throws IllegalArgumentException, if the given JobSubmission does not have a valid taskId
      * @throws JobSubmissionException, if not able to add the job to the internal queue
      */
-    private static JobInfo addJobToPipeline(int parentJobId, String userID, JobSubmission jobSubmission, ParameterInfo[] params, int jobStatusId)
+    private static JobInfo addJobToPipeline(int parentJobId, String userID, JobSubmission jobSubmission, ParameterInfo[] params, JobQueueStatus.Status initialStatus)
     throws JobSubmissionException
     {
         if (jobSubmission == null) {
@@ -800,7 +853,7 @@ public class PipelineHandler {
             }
         }
 
-        JobInfo jobInfo = JobManager.addJobToQueue(jobSubmission.getTaskInfo(), userID, params, parentJobId, jobStatusId);
+        JobInfo jobInfo = JobManager.addJobToQueue(jobSubmission.getTaskInfo(), userID, params, parentJobId, initialStatus);
         return jobInfo;
     }
     
@@ -810,7 +863,7 @@ public class PipelineHandler {
      * @throws IllegalArgumentException, if the given JobSubmission does not have a valid taskId
      * @throws JobSubmissionException, if not able to add the job to the internal queue
      */
-    private static JobInfo addJobToPipeline(int parentJobId, String userID, TaskInfo taskInfo, ParameterInfo[] params, int jobStatusId)
+    private static JobInfo addJobToPipeline(int parentJobId, String userID, TaskInfo taskInfo, ParameterInfo[] params, JobQueueStatus.Status initialJobStatus)
     throws JobSubmissionException
     {
         if (taskInfo == null) {
@@ -841,7 +894,7 @@ public class PipelineHandler {
         }
 
         //make sure to commit db changes
-        JobInfo jobInfo = JobManager.addJobToQueue(taskInfo, userID, params, parentJobId, jobStatusId);
+        JobInfo jobInfo = JobManager.addJobToQueue(taskInfo, userID, params, parentJobId, initialJobStatus);
         return jobInfo;
     }
     
