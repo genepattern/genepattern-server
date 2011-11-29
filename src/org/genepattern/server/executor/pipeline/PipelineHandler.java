@@ -1008,6 +1008,10 @@ public class PipelineHandler {
         String fileName = null;
         try {
             fileName = getOutputFileName(dao, fromJob, fileStr);
+            if (fileName == null || fileName.trim().length() == 0) {
+                //return an empty string if no output filename is found
+                return "";
+            }
             attributes.put(ParameterInfo.MODE, ParameterInfo.URL_INPUT_MODE);
             String context = System.getProperty("GP_Path", "/gp");
             String url = getServer() + context + "/jobResults/" + fileName;
