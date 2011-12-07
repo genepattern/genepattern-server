@@ -229,7 +229,13 @@ public class GenomeSpaceOpenID extends HttpServlet {
             boolean isAccountAssociated = GenomeSpaceLoginManager.isGSAccountAssociated(username);
             if (isAccountAssociated) {
                 log.debug("Account is associated, redirecting to index page");
-                resp.sendRedirect("/gp/pages/index.jsf"); 
+                String origin = (String) req.getSession().getAttribute("origin");
+                if (origin != null) {
+                    resp.sendRedirect(origin);
+                }
+                else {
+                    resp.sendRedirect("/gp/pages/index.jsf");
+                }
             }
             else {
                 log.debug("Redirecting to associate accountpage");
