@@ -56,3 +56,6 @@ executors:
         configuration.properties:
             # the total number of jobs to run concurrently
             num.threads: 20
+    # pipeline flow control executor (prototype introduced in gp 3.4.0-beta-02)
+    ServerThread:
+        classname: org.genepattern.server.executor.serverthread.ServerThreadExecutor
