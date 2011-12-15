@@ -120,6 +120,18 @@ executors:
             SGE_SESSION_FILE: ./sge/sge_contact.txt
             # internal variable used by the GP SGE plugin. You probably don't need to change this.
             SGE_BATCH_SYSTEM_NAME: genepattern_server
+        # below is a list of configuration parameters for the sge executor
+        # these can be set globally, by uncommenting this default.properties section
+        # Note: experimental. These settings have not all been tested.
+        #default.properties:
+        #    sge.priority:
+        #    sge.queueName:
+        #    sge.exclusive:
+        #    sge.maxRunningTime:
+        #    sge.memoryReservation:
+        #    sge.maxMemory:
+        #    sge.slotReservation:
+        #    sge.restartable:
 
 # override default.properties and executor->default.properties based on taskname or lsid
 # Note: executor->configuration.properties are intended to be applied at startup and are not overwritten here
