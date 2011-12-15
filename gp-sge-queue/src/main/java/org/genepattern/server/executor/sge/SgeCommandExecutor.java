@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.broadinstitute.zamboni.server.batchsystem.BatchJob;
 import org.broadinstitute.zamboni.server.batchsystem.sge.SgeBatchSystem;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.executor.CommandExecutor;
 import org.genepattern.server.executor.CommandExecutorException;
 import org.genepattern.server.executor.CommandProperties;
@@ -187,6 +188,53 @@ public class SgeCommandExecutor implements CommandExecutor {
                 //@see org.ggf.drmaa.JobTemplate#setInputPath for details 
                 String inputPath = ":"+stdinFile.getAbsolutePath();
                 sgeJob.setInputPath(inputPath);
+            }
+            
+            //load custom properties for job
+            /*
+             * "sge.priority"
+             * "sge.queueName"
+             * "sge.exclusive"
+             * "sge.maxRunningTime"
+             * "sge.memoryReservation"
+             * "sge.maxMemory"
+             * "sge.slotReservation"
+             * "sge.restartable");
+             */
+            ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo); 
+            Integer priority = ServerConfiguration.instance().getGPIntegerProperty(jobContext, "sge.priority", null);
+            if (priority != null) {
+                sgeJob.setPriority( scala.Option.apply( priority ) );
+            }
+            String queueName = ServerConfiguration.instance().getGPProperty(jobContext, "sge.queueName", null);
+            if (queueName != null) {
+                sgeJob.setQueueName( scala.Option.apply( queueName ) );
+            }
+            Object exclusiveObj = ServerConfiguration.instance().getValue(jobContext, "sge.exclusive");
+            if (exclusiveObj != null) {
+                Boolean exclusive = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "sge.exclusive");
+                sgeJob.setExclusive( scala.Option.apply( exclusive ) );
+            }
+            Integer maxRunningTime = ServerConfiguration.instance().getGPIntegerProperty(jobContext, "sge.maxRunningTime", null);
+            if (maxRunningTime != null) {
+                sgeJob.setMaxRunningTime( scala.Option.apply( maxRunningTime ) );
+            }
+            Integer memoryReservation = ServerConfiguration.instance().getGPIntegerProperty(jobContext, "sge.memoryReservation", null);
+            if (memoryReservation != null) {
+                sgeJob.setMemoryReservation( scala.Option.apply( memoryReservation ) );
+            }
+            Integer maxMemory = ServerConfiguration.instance().getGPIntegerProperty(jobContext, "sge.maxMemory", null);
+            if (maxMemory != null) {
+                sgeJob.setMaxMemory( scala.Option.apply( maxMemory ) );
+            }
+            Integer slotReservation = ServerConfiguration.instance().getGPIntegerProperty(jobContext, "sge.slotReservation", null);
+            if (slotReservation != null) {
+                sgeJob.setSlotReservation( scala.Option.apply( slotReservation ) );
+            }
+            Object restartableObj = ServerConfiguration.instance().getValue(jobContext, "sge.restartable");
+            if (restartableObj != null) {
+                Boolean restartable = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "sge.restartable");
+                sgeJob.setRestartable( scala.Option.apply( restartable ) );
             }
             sgeJob = sgeBatchSystem.submit(sgeJob);
             //TODO: think about error handling, the job is presumably running on SGE, however if we have DB errors in the 

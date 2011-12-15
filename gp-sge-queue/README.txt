@@ -53,3 +53,14 @@ executors:
             # the session file, when a relative path is used, is relative to the resources directory of your GP server
             SGE_SESSION_FILE: ./sge/sge_contact.txt
             SGE_BATCH_SYSTEM_NAME: gpdev_server
+        # additional properties
+        #default.properties:
+        #    sge.priority:
+        #    sge.queueName:
+        #    sge.exclusive:
+        #    sge.maxRunningTime:
+        #    sge.memoryReservation:
+        #    sge.maxMemory:
+        #    sge.slotReservation:
+        #    sge.restartable:
+            
