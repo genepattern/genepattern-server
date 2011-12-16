@@ -1,6 +1,9 @@
 package org.genepattern.server.executor;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
@@ -12,6 +15,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
+import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.domain.JobStatus;
 import org.genepattern.server.executor.RuntimeExecCommand.Status;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
@@ -116,6 +120,14 @@ public class RuntimeCommandExecutor implements CommandExecutor {
     throws CommandExecutorException 
     { 
         String jobId = ""+jobInfo.getJobNumber();
+        try {
+            logCommandLine(commandLine, runDir, jobInfo);
+        }
+        catch (Throwable t) {
+            log.error("server configuration error, logging command line: "+t.getLocalizedMessage(), t);
+            throw new CommandExecutorException("job #"+jobId+" was not started", t);
+        }
+        
         CallableRuntimeExecCommand task = new CallableRuntimeExecCommand(commandLine, environmentVariables, runDir, stdoutFile, stderrFile, jobInfo, stdinFile);
         runningJobs.put(jobId, task);
         try {
@@ -125,7 +137,7 @@ public class RuntimeCommandExecutor implements CommandExecutor {
         catch (RejectedExecutionException e) {
             //TODO: when the queue is full, reset the job status back to PENDING
             runningJobs.remove(jobId);
-            throw new CommandExecutorException("job #"+jobId+" was not scheduled for execution", e);
+            throw new CommandExecutorException("job #"+jobId+" was not started", e);
         }
         catch (Throwable t) {
             log.error("unexpected error starting job #"+jobId, t);
@@ -153,6 +165,76 @@ public class RuntimeCommandExecutor implements CommandExecutor {
             return JobStatus.JOB_PENDING;
         }
         return -1;
+    }
+    
+    /**
+     * If configured by the server admin, write the command line into a log file in the working directory for the job.
+     * <pre>
+     *     # flag, if true save the command line into a log file in the working directory for each job
+           rte.save.logfile: false
+           # the name of the command line log file
+           rte.logfile: .rte.out
+     * </pre>
+     * 
+     * @author pcarr
+     */
+    private void logCommandLine(String[] commandLine, File runDir, JobInfo jobInfo) {
+        ServerConfiguration.Context jobContext = ServerConfiguration.Context.getContextForJob(jobInfo);
+
+        boolean saveLogFile = ServerConfiguration.instance().getGPBooleanProperty(jobContext, "rte.save.logfile", false);
+        if (!saveLogFile) {
+            return;
+        }
+        log.debug("saving command line to log file ...");
+        String commandLineStr = "";
+        boolean first = true;
+        for(String arg : commandLine) {
+            if (first) {
+                commandLineStr = arg;
+                first = false;
+            }
+            else {
+                commandLineStr += (" "+arg);
+            }
+        }
+
+        String filename = ServerConfiguration.instance().getGPProperty(jobContext, "rte.logfile", ".rte.out");
+        File commandLogFile = new File(runDir, filename);
+        if (commandLogFile.exists()) {
+            log.error("log file already exists: "+commandLogFile.getAbsolutePath());
+            return;
+        }
+
+        BufferedWriter bw = null;
+        try {
+            FileWriter fw = new FileWriter(commandLogFile);
+            bw = new BufferedWriter(fw);
+            bw.write(commandLineStr);
+            bw.newLine();
+            for(int i=0; i<commandLine.length; ++i) {
+                bw.write("    arg["+i+"]: '"+commandLine[i]+"'");
+                bw.newLine();
+            }
+            bw.close();
+        }
+        catch (IOException e) {
+            log.error("error writing log file: "+commandLogFile.getAbsolutePath(), e);
+            return;
+        }
+        catch (Throwable t) {
+            log.error("error writing log file: "+commandLogFile.getAbsolutePath(), t);
+            log.error(t);
+        }
+        finally {
+            if (bw != null) {
+                try {
+                    bw.close();
+                }
+                catch (IOException e) {
+                    log.error(e);
+                }
+            }
+        }
     }
     
     private class CallableRuntimeExecCommand implements Callable<RuntimeExecCommand> 

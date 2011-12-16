@@ -35,7 +35,7 @@ default.properties:
     job.error_status.stderr: true
     job.error_status.exit_value: false
     # filter job results based on the given comma separated list of glob patterns
-    job.FilenameFilter: [ ".nfs*", ".lsf*" ]
+    job.FilenameFilter: [ ".nfs*", ".rte.out", ".lsf*", ".sge.out" ]
     # initial status of the internal job queue, if true, it means jobs won't execute until the internal queue is resumed
     job.queue.suspend_on_start: false
     # flag to allow users to submit jobs
@@ -58,6 +58,10 @@ executors:
             num.threads: 20
             # the total number of jobs to keep on the queue, not yet implemented
             #max.pending.jobs: 20000
+            # flag, if true save the command line into a log file in the working directory for each job
+            rte.save.logfile: false
+            # the name of the command line log file
+            rte.logfile: .rte.out
 
     # nested declaration with configuration file, <id>: { classname: <classname>, configuration: <config_file> }
     Test:
