@@ -69,11 +69,6 @@ public class GenomeSpaceBean {
     public GenomeSpaceBean() {
         genomeSpaceEnabled = GenomeSpaceClientFactory.isGenomeSpaceEnabled(UIBeanHelper.getUserContext());
         log.info("GenomeSpaceEnabled = " + genomeSpaceEnabled + " for " + UIBeanHelper.getUserId());
-
-        // Attain a copy of the kindToModules map
-        TaskInfo[] moduleArray = new AdminDAO().getLatestTasks(UIBeanHelper.getUserId());
-        List<TaskInfo> allModules = Arrays.asList(moduleArray);
-        kindToModules = SemanticUtil.getKindToModulesMap(allModules);
     }
     
     /**
@@ -293,6 +288,13 @@ public class GenomeSpaceBean {
      * @return
      */
     public Map<String, Set<TaskInfo>> getKindToModules() {
+        if (kindToModules == null) {
+            // Attain a copy of the kindToModules map
+            TaskInfo[] moduleArray = new AdminDAO().getLatestTasks(UIBeanHelper.getUserId());
+            List<TaskInfo> allModules = Arrays.asList(moduleArray);
+            kindToModules = SemanticUtil.getKindToModulesMap(allModules);
+        }
+        
         return kindToModules;
     }
     

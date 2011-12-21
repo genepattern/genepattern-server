@@ -61,7 +61,8 @@ use, misuse, or functionality.
         </ui:define>
         <h:form>
         	<div style="float:right">
-        		<strong>#{genomeSpaceBean.username}</strong> <h:commandButton value="Refresh" action="#{genomeSpaceBean.forceFileRefresh}" />
+        		<strong>Logged in as: #{genomeSpaceBean.username} &nbsp;&nbsp;&nbsp;</strong>  
+				<h:commandButton value="Refresh" action="#{genomeSpaceBean.forceFileRefresh}" />
         	</div>
             <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
