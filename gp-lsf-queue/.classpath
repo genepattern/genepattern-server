@@ -7,7 +7,7 @@
 	<classpathentry kind="lib" path="lib/json_simple-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.8.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
-	<classpathentry exported="true" kind="lib" path="lib/broad-core-main-2.9.2.jar" sourcepath="/Broad/Projects/BroadCore/src/main"/>
+	<classpathentry exported="true" kind="lib" path="lib/broad-core-main-2.9.2.jar" sourcepath="/Broad/Projects/BroadCore/src"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/BroadCore"/>
 	<classpathentry kind="lib" path="/BroadCore/lib/deploy/hibernate/hibernate3.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/gp-trunk"/>
