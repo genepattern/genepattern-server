@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +22,6 @@ import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.MissingTasksException;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.data.pipeline.PipelineModelException;
-import org.genepattern.data.pipeline.PipelineUtil;
 import org.genepattern.server.JobManager;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
@@ -37,15 +37,18 @@ import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.executor.JobTerminationException;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.jobqueue.JobQueue;
-import org.genepattern.server.jobqueue.JobQueueStatus;
 import org.genepattern.server.jobqueue.JobQueueUtil;
+import org.genepattern.server.util.AuthorizationManagerFactory;
 import org.genepattern.server.util.FindFileFilter;
-import org.genepattern.server.webservice.server.AdminService;
+import org.genepattern.server.util.IAuthorizationManager;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.util.GPConstants;
 import org.genepattern.webservice.JobInfo;
+import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.WebServiceException;
 import org.hibernate.Query;
 
@@ -74,13 +77,12 @@ public class PipelineHandler {
         log.debug("starting pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
         boolean isScatterStep = isScatterStep(pipelineJobInfo);
         try {
+            HibernateUtil.beginTransaction();
             List<JobInfo> jobsToStart = runPipeline(pipelineJobInfo, stopAfterTask, isScatterStep);
             //set the parent pipeline's status to PROCESSING 
-            //TODO: AnalysisJobScheduler.changeJobStatus(pipelineJobInfo.getJobNumber(), JobStatus.JOB_DISPATCHING, JobStatus.JOB_PROCESSING);            
             AnalysisJobScheduler.setJobStatus(pipelineJobInfo.getJobNumber(), JobStatus.JOB_PROCESSING);            
             for(JobInfo jobInfo : jobsToStart) {
-                JobQueueUtil.setJobStatus(jobInfo.getJobNumber(), JobQueueStatus.Status.PENDING);
-                //TODDO: AnalysisJobScheduler.changeJobStatus(jobInfo.getJobNumber(), JobStatus.JOB_WAITING, JobStatus.JOB_PENDING);
+                JobQueueUtil.setJobStatus(jobInfo.getJobNumber(), JobQueue.Status.PENDING);
             }
             HibernateUtil.commitTransaction();
         }
@@ -169,11 +171,11 @@ public class PipelineHandler {
     }
     
     //DAO helpers
-//    /**
-//     * Get all of the immediate child jobs for the given pipeline.
-//     * 
-//     * @return a List of [jobNo(Integer),statusId(Integer)]
-//     */
+    /**
+     * Get all of the immediate child jobs for the given pipeline.
+     * 
+     * @return a List of [jobNo(Integer),statusId(Integer)]
+     */
     private static List<Object[]> getChildJobObjs(int parentJobId) {
         //TODO: hard-coded so that no more than 10000 batch jobs can be handled
         final int maxChildJobs = 10000; //limit total number of results to 10000
@@ -186,18 +188,21 @@ public class PipelineHandler {
         List<Object[]> rval = query.list();
         return rval;
     }
-    
-//    public static boolean startNextJob(int parentJobNumber) {
-//        Integer nextJobId = getNextJobId(parentJobNumber);
-//        if (nextJobId == null) {
-//            return false;
-//        }
-//
-//        //if there is another job to run, change the status of the next job to pending
-//        int rval = AnalysisJobScheduler.changeJobStatus(nextJobId, JobStatus.JOB_WAITING, JobStatus.JOB_PENDING);
-//        //indicate there is another step waiting on the queue
-//        return true;
-//    }
+
+    public static JobInfo getJobInfo(int jobId) {
+        boolean inTransaction = HibernateUtil.isInTransaction();
+        try {
+            HibernateUtil.beginTransaction();
+            AnalysisDAO ds = new AnalysisDAO();
+            JobInfo jobInfo = ds.getJobInfo(jobId);
+            return jobInfo;
+        }
+        finally {
+            if (!inTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
     
     /**
      * Called when a step in a pipeline job has completed, put the next job on the queue.
@@ -251,7 +256,7 @@ public class PipelineHandler {
                 //}
                 if (records != null) {
                     for(JobQueue record : records) {
-                        if (record.getStatus().equals( JobQueueStatus.Status.WAITING.toString() )) {
+                        if (record.getStatus().equals( JobQueue.Status.WAITING.toString() )) {
                             if (nextWaitingJob == -1) {
                                 nextWaitingJob = record.getJobNo();
                             }
@@ -361,8 +366,7 @@ public class PipelineHandler {
     private static void startNextStep(int nextJobId) {
         try {
             HibernateUtil.beginTransaction();
-            //TODO: int rval = AnalysisJobScheduler.changeJobStatus(nextJobId, JobStatus.JOB_WAITING, JobStatus.JOB_PENDING);
-            JobQueueUtil.setJobStatus(nextJobId, JobQueueStatus.Status.PENDING);
+            JobQueueUtil.setJobStatus(nextJobId, JobQueue.Status.PENDING);
             HibernateUtil.commitTransaction();
         }
         catch (Throwable t) {
@@ -413,41 +417,6 @@ public class PipelineHandler {
             log.error("Error recording pipeline job completion for job #"+parentJobNumber, t);
         }
     }
-    
-//    /**
-//     * For the given pipeline, get the next 'WAITING' job id.
-//     * 
-//     * @param parentJobId, the jobId of the pipeline
-//     * @return the jobId of the first job whose status is WAITING, or null if no waiting jobs are found
-//     */
-//    private static Integer _getNextJobId(final int parentJobId) {
-//        List<Object[]> jobInfoObjs = getChildJobObjs(parentJobId);
-//        for(Object[] row : jobInfoObjs) {
-//            int jobNo = (Integer) row[0];
-//            int statusId = (Integer) row[1];
-//            if (JobStatus.JOB_WAITING == statusId) {
-//                return jobNo;
-//            }
-//        }
-//        return null;
-//    }
-//    /**
-//     * For the given pipeline, get the next 'WAITING' job id.
-//     * 
-//     * @param parentJobId, the jobId of the pipeline
-//     * @return the jobId of the first job whose status is WAITING, or null if no waiting jobs are found
-//     */
-//    private static Integer getNextJobIdOrig(final int parentJobId) {
-//        List<Object[]> jobInfoObjs = getChildJobObjs(parentJobId);
-//        for(Object[] row : jobInfoObjs) {
-//            int jobNo = (Integer) row[0];
-//            int statusId = (Integer) row[1];
-//            if (JobStatus.JOB_WAITING == statusId) {
-//                return jobNo;
-//            }
-//        }
-//        return null;
-//    }
 
     /**
      * For the given pipeline, get the list of child jobs which have not yet finished.
@@ -500,8 +469,9 @@ public class PipelineHandler {
     private static JobInfo runPipeline(JobInfo pipelineJobInfo, int stopAfterTask) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     {  
-        PipelineModel pipelineModel = PipelineUtil.getPipelineModel(pipelineJobInfo);
-        pipelineModel.setLsid(pipelineJobInfo.getTaskLSID());
+        log.debug("starting pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
+
+        PipelineModel pipelineModel = getPipelineModel(pipelineJobInfo);
         checkForMissingTasks(pipelineJobInfo.getUserId(), pipelineModel);
         
         //initialize the pipeline args
@@ -516,7 +486,8 @@ public class PipelineHandler {
         JobInfo firstJobInfo = null;
         for(JobSubmission jobSubmission : tasks) { 
             if (stepNum >= stopAfterTask) {
-                break; // stop and execute no further
+                // stop and execute no further
+                break;
             }
             
             ParameterInfo[] parameterInfo = jobSubmission.giveParameterInfoArray();
@@ -524,7 +495,7 @@ public class PipelineHandler {
             ParameterInfo[] params = parameterInfo;
             params = setJobParametersFromArgs(jobSubmission.getName(), stepNum + 1, params, additionalArgs);
 
-            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), jobSubmission, params, JobQueueStatus.Status.WAITING);
+            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), jobSubmission, params, JobQueue.Status.WAITING);
             if (firstStep == null) {
                 firstStep = submittedJob.getJobNumber();
                 firstJobInfo = submittedJob;
@@ -534,6 +505,51 @@ public class PipelineHandler {
         return firstJobInfo;
     }
 
+    private static List<JobInfo> runScatterPipeline(JobInfo pipelineJobInfo, int stopAfterTask) 
+    throws PipelineModelException, MissingTasksException, JobSubmissionException
+    { 
+        log.debug("starting scatter pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
+        
+        // add a batch of jobs, as children of the given pipelineJobInfo 
+        PipelineModel pipelineModel = getPipelineModel(pipelineJobInfo);
+        checkForMissingTasks(pipelineJobInfo.getUserId(), pipelineModel);
+
+        //initialize the pipeline args
+        Map<String,String> additionalArgs = new HashMap<String,String>();
+        for(ParameterInfo param : pipelineJobInfo.getParameterInfoArray()) {
+            additionalArgs.put(param.getName(), param.getValue());
+        }
+
+        int stepNum = 0;
+        Vector<JobSubmission> tasks = pipelineModel.getTasks();
+        if (tasks.size() == 0)  {
+            throw new JobSubmissionException("Don't know what to do with 0 tasks in pipelineModel");
+        }
+        if (tasks.size() > 1) {
+            //TODO: fix this
+            throw new JobSubmissionException("Only a single batch step is allowed, num steps = "+tasks.size());
+        }
+
+        //assuming a 1-step pipeline
+        TaskInfo taskInfo = tasks.get(0).getTaskInfo();
+        ParameterInfo[] parameterInfo = tasks.get(0).giveParameterInfoArray();
+        substituteLsidInInputFiles(pipelineJobInfo.getTaskLSID(), parameterInfo);
+        ParameterInfo[] params = parameterInfo;
+        params = setJobParametersFromArgs(tasks.get(0).getName(), stepNum + 1, params, additionalArgs);
+        
+        //for each step, if it has a batch input parameter, expand into a bunch of child steps
+        Map<ParameterInfo,List<String>> scatterParamMap = new HashMap<ParameterInfo, List<String>>();
+        for(ParameterInfo p : params) {
+            List<String> scatterParamValues = getScatterParamValues(p);
+            if (scatterParamValues != null && scatterParamValues.size() > 0) {
+                scatterParamMap.put(p, scatterParamValues);
+            }
+        }
+        
+        List<JobInfo> submittedJobs = addScatterJobsToPipeline(pipelineJobInfo, taskInfo, params, scatterParamMap);
+        return submittedJobs;
+    }
+    
     /**
      * rule: a scatter-step is any step in a pipeline which has at least one scatter-input-parameter.
      * @param jobInfo
@@ -574,51 +590,88 @@ public class PipelineHandler {
         }
         return false;
     }
+
+    /**
+     * Create a task_info instance for the given job.
+     * @param jobInfo
+     * @return
+     */
+    private static TaskInfo getTaskInfo(JobInfo jobInfo) throws Exception {
+        if (jobInfo == null) {
+            throw new IllegalArgumentException("jobInfo == null");
+        }
+        String lsid = jobInfo.getTaskLSID();
+        return getTaskInfo(lsid);
+    }
     
-    private static List<JobInfo> runScatterPipeline(JobInfo pipelineJobInfo, int stopAfterTask) 
-    throws PipelineModelException, MissingTasksException, JobSubmissionException
-    { 
-        log.debug("starting scatter pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
-        
-        // add a batch of jobs, as children of the given pipelineJobInfo 
-        PipelineModel pipelineModel = PipelineUtil.getPipelineModel(pipelineJobInfo);
-        pipelineModel.setLsid(pipelineJobInfo.getTaskLSID());
-        checkForMissingTasks(pipelineJobInfo.getUserId(), pipelineModel);
-
-        //initialize the pipeline args
-        Map<String,String> additionalArgs = new HashMap<String,String>();
-        for(ParameterInfo param : pipelineJobInfo.getParameterInfoArray()) {
-            additionalArgs.put(param.getName(), param.getValue());
+    private static TaskInfo getTaskInfo(String lsid) throws Exception {
+        if (lsid == null) {
+            throw new IllegalArgumentException("lsid == null");
         }
-
-        int stepNum = 0;
-        Vector<JobSubmission> tasks = pipelineModel.getTasks();
-        if (tasks.size() == 0)  {
-            throw new JobSubmissionException("Don't know what to do with 0 tasks in pipelineModel");
+        boolean isInTransaction = HibernateUtil.isInTransaction();
+        try {
+            return TaskInfoCache.instance().getTask(lsid);
         }
-        if (tasks.size() > 1) {
-            //TODO: fix this
-            throw new JobSubmissionException("Only a single batch step is allowed, num steps = "+tasks.size());
+        catch (Throwable t) {
+            throw new Exception(t);
         }
-
-        //assuming a 1-step pipeline
-        TaskInfo taskInfo = tasks.get(0).getTaskInfo();
-        ParameterInfo[] parameterInfo = tasks.get(0).giveParameterInfoArray();
-        substituteLsidInInputFiles(pipelineJobInfo.getTaskLSID(), parameterInfo);
-        ParameterInfo[] params = parameterInfo;
-        params = setJobParametersFromArgs(tasks.get(0).getName(), stepNum + 1, params, additionalArgs);
-        
-        //for each step, if it has a batch input parameter, expand into a bunch of child steps
-        Map<ParameterInfo,List<String>> scatterParamMap = new HashMap<ParameterInfo, List<String>>();
-        for(ParameterInfo p : params) {
-            List<String> scatterParamValues = getScatterParamValues(p);
-            if (scatterParamValues != null && scatterParamValues.size() > 0) {
-                scatterParamMap.put(p, scatterParamValues);
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
             }
         }
-        
-        List<JobInfo> submittedJobs = addScatterJobsToPipeline(pipelineJobInfo, taskInfo, params, scatterParamMap);
-        return submittedJobs;
+    }
+    
+    /**
+     * Get the PipelineModle for the given job, based on the job's task lsid.
+     */
+    private static PipelineModel getPipelineModel(JobInfo pipelineJobInfo) throws PipelineModelException
+    {
+        if (pipelineJobInfo == null) {
+            throw new IllegalArgumentException("pipelineJobInfo == null");
+        }
+        TaskInfo taskInfo = null;
+        try {
+            taskInfo = getTaskInfo(pipelineJobInfo);
+        }
+        catch (Exception e) {
+            String errorMessage = "Error getting taskInfo for "+pipelineJobInfo.getTaskName()+"(job="+pipelineJobInfo.getJobNumber()+"): "+ e.getLocalizedMessage();
+            throw new PipelineModelException(errorMessage);
+        }
+        if (taskInfo == null) {
+            throw new PipelineModelException("taskInfo is null for jobInfo.taskID="+pipelineJobInfo.getTaskID());
+        }
+        if (!taskInfo.isPipeline()) {
+            throw new PipelineModelException("task (id="+taskInfo.getID()+", name="+taskInfo.getName()+") is not a pipeline.");
+        }
+        return getPipelineModel(taskInfo);
+    }
+
+    private static PipelineModel getPipelineModel(TaskInfo taskInfo) throws PipelineModelException
+    {
+        if (taskInfo == null) {
+            throw new IllegalArgumentException("taskInfo is null");
+        }
+        TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
+        if (tia == null) {
+            throw new PipelineModelException("taskInfo.giveTaskInfoAttributes is null for taskInfo.ID="+taskInfo.getID()+", taskInfo.name="+taskInfo.getName());
+        }
+        String serializedModel = (String) tia.get(GPConstants.SERIALIZED_MODEL);
+        if (serializedModel == null || serializedModel.length() == 0) {
+            throw new PipelineModelException("Missing "+GPConstants.SERIALIZED_MODEL+" for taskInfo.ID="+taskInfo.getID()+", taskInfo.name="+taskInfo.getName());
+        }
+        PipelineModel model = null;
+        try {
+            model = PipelineModel.toPipelineModel(serializedModel);
+        } 
+        catch (Throwable t) {
+            throw new PipelineModelException(t);
+        }
+        if (model == null) {
+            throw new PipelineModelException("pipeline model is null for taskInfo.ID="+taskInfo.getID()+", taskInfo.name="+taskInfo.getName());
+        }
+        model.setLsid(taskInfo.getLsid());
+        return model;
     }
     
     /**
@@ -777,13 +830,13 @@ public class PipelineHandler {
                 scatterParam.setValue(batchParamValue);
                 log.debug("\t\tstep "+job_idx+": "+scatterParam.getName()+"="+scatterParam.getValue());
             }
-            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params, JobQueueStatus.Status.WAITING);
+            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params, JobQueue.Status.WAITING);
             submittedJobs.add(submittedJob);
         }
         return submittedJobs;
     }
     
-    private static List<String> parseFileList(File filelist) throws Exception {
+    public static List<String> parseFileList(File filelist) throws Exception {
         log.debug("Reading filelist from: "+filelist.getPath());
         List<String> inputValues = new ArrayList<String>();
         if (!filelist.canRead()) {
@@ -820,7 +873,7 @@ public class PipelineHandler {
      * @throws IllegalArgumentException, if the given JobSubmission does not have a valid taskId
      * @throws JobSubmissionException, if not able to add the job to the internal queue
      */
-    private static JobInfo addJobToPipeline(int parentJobId, String userID, JobSubmission jobSubmission, ParameterInfo[] params, JobQueueStatus.Status initialStatus)
+    private static JobInfo addJobToPipeline(int parentJobId, String userID, JobSubmission jobSubmission, ParameterInfo[] params, JobQueue.Status initialStatus)
     throws JobSubmissionException
     {
         if (jobSubmission == null) {
@@ -832,29 +885,8 @@ public class PipelineHandler {
         if (jobSubmission.getTaskInfo().getID() < 0) {
             throw new IllegalArgumentException("jobSubmission.taskInfo.ID not set");
         }
-
-        if (params != null) {
-            for (int i = 0; i < params.length; i++) {
-                if (params[i].isInputFile()) {
-                    String file = params[i].getValue(); // bug 724
-                    if (file != null && file.trim().length() != 0) {
-                        String val = file;
-                        try {
-                            new URL(file);
-                        } 
-                        catch (MalformedURLException e) {
-                            val = new File(file).toURI().toString();
-                        }
-                        params[i].setValue(val);
-                        params[i].getAttributes().remove("TYPE");
-                        params[i].getAttributes().remove("MODE");
-                    }
-                }
-            }
-        }
-
-        JobInfo jobInfo = JobManager.addJobToQueue(jobSubmission.getTaskInfo(), userID, params, parentJobId, initialStatus);
-        return jobInfo;
+        TaskInfo taskInfo = jobSubmission.getTaskInfo();
+        return addJobToPipeline(parentJobId, userID, taskInfo, params, initialStatus);
     }
     
     /**
@@ -863,7 +895,7 @@ public class PipelineHandler {
      * @throws IllegalArgumentException, if the given JobSubmission does not have a valid taskId
      * @throws JobSubmissionException, if not able to add the job to the internal queue
      */
-    private static JobInfo addJobToPipeline(int parentJobId, String userID, TaskInfo taskInfo, ParameterInfo[] params, JobQueueStatus.Status initialJobStatus)
+    private static JobInfo addJobToPipeline(int parentJobId, String userID, TaskInfo taskInfo, ParameterInfo[] params, JobQueue.Status initialStatus)
     throws JobSubmissionException
     {
         if (taskInfo == null) {
@@ -894,33 +926,37 @@ public class PipelineHandler {
         }
 
         //make sure to commit db changes
-        JobInfo jobInfo = JobManager.addJobToQueue(taskInfo, userID, params, parentJobId, initialJobStatus);
+        JobInfo jobInfo = addJobToQueue(taskInfo, userID, params, parentJobId, initialStatus);
         return jobInfo;
     }
     
-    private static void checkForMissingTasks(String userID, PipelineModel model) throws MissingTasksException {
+    private static void checkForMissingTasks(String userId, PipelineModel model) throws MissingTasksException {
         MissingTasksException ex = null;
-        AdminService adminService = new AdminService(userID);
+        IAuthorizationManager authManager = AuthorizationManagerFactory.getAuthorizationManager();
+        boolean isAdmin = (authManager.checkPermission("adminServer", userId) || authManager.checkPermission("adminModules", userId));
+        
         for(JobSubmission jobSubmission : model.getTasks()) {
             String lsid = jobSubmission.getLSID();
             TaskInfo taskInfo = null;
+            boolean canRun = false;
             try {
-                taskInfo = adminService.getTask(lsid);
+                taskInfo = getTaskInfo(lsid);
+                canRun = canRun(isAdmin, userId, taskInfo);
             }
             catch (Exception e) {
             }
-            if (taskInfo == null) {
+            if (taskInfo == null || canRun == false) {
                 if (ex == null) {
                     ex = new MissingTasksException();
                 }
                 ex.addError(jobSubmission);
             }
-        }
+        }        
         if (ex != null) {
             throw ex;
         }
     }
-    
+
     /**
      * Before starting the next step in the pipeline, link output files from previous steps to input parameters for this step.
      * 
@@ -1369,7 +1405,7 @@ public class PipelineHandler {
      * 
      * @param parameterInfos
      */
-    private static void substituteLsidInInputFiles(String lsidValue, ParameterInfo[] parameterInfos) {
+    public static void substituteLsidInInputFiles(String lsidValue, ParameterInfo[] parameterInfos) {
         final String lsidTag = "<LSID>";
         final String gpUrlTag = "<GenePatternURL>";
         for (ParameterInfo param : parameterInfos) {
@@ -1416,4 +1452,116 @@ public class PipelineHandler {
         }
         return parameterInfo;
     }
+    
+    /**
+     * Rule for whether the given user (the owner of the parent pipeline) has permission
+     * to execute the given task (a step in the parent pipeline).
+     * 
+     * TODO: this method should be implemented in a more globally accessible part of the code base.
+     * TODO: implement permissions for modules, similar to access permissions for job results
+     * 
+     * @param currentUser
+     * @param taskInfo
+     * @return true iff the current user can run the given task.
+     */
+    private static boolean canRun(boolean isAdmin, String currentUser, TaskInfo taskInfo) {
+        if (isAdmin) {
+            return true;
+        }
+        boolean isPublic =  taskInfo != null && taskInfo.getAccessId() == GPConstants.ACCESS_PUBLIC;
+        if (isPublic) {
+            return true;
+        }
+        String taskOwner = taskInfo.getUserId();
+        return currentUser != null && currentUser.equals(taskOwner);
+    }
+    
+    //custom implementation of JobManager code
+    /**
+     * Adds a new job entry to the ANALYSIS_JOB table, with initial status either PENDING or WAITING.
+     * 
+     * @param taskID
+     * @param userID
+     * @param parameterInfoArray
+     * @param parentJobID
+     * @param jobStatusId
+     * @return
+     * @throws JobSubmissionException
+     */
+    static private JobInfo addJobToQueue(final TaskInfo taskInfo, final String userId, final ParameterInfo[] parameterInfoArray, final Integer parentJobNumber, final JobQueue.Status initialJobStatus) 
+    throws JobSubmissionException
+    {
+        JobInfo jobInfo = null;
+        boolean isInTransaction = HibernateUtil.isInTransaction();
+        try {
+            HibernateUtil.beginTransaction();
+            AnalysisJob newJob = addNewJob(userId, taskInfo, parameterInfoArray, parentJobNumber);
+            jobInfo = new JobInfo(newJob);
+            JobManager.createJobDirectory(jobInfo);
+            
+            //add record to the internal job queue, for dispatching ...
+            JobQueueUtil.addJobToQueue( jobInfo, initialJobStatus );
+            
+            if (!isInTransaction) {
+                HibernateUtil.commitTransaction();
+            }
+            
+            return jobInfo;
+        }
+        catch (Throwable t) {
+            HibernateUtil.rollbackTransaction();
+            if (t instanceof JobSubmissionException) {
+                throw (JobSubmissionException) t;
+            }
+            throw new JobSubmissionException(t);
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
+    }
+
+    private static AnalysisJob addNewJob(String userId, TaskInfo taskInfo, ParameterInfo[] parameterInfoArray, Integer parentJobNumber) 
+    throws JobSubmissionException
+    { 
+        if (taskInfo == null) {
+            throw new JobSubmissionException("Error adding job to queue, taskInfo is null");
+        }
+        
+        if (taskInfo.getID() < 0) {
+            throw new JobSubmissionException("Error adding job to queue, invalid taskId, taskInfo.getID="+taskInfo.getID());
+        }
+        
+        boolean inTransaction = HibernateUtil.isInTransaction();
+
+        //Integer jobId = null;
+        try {
+            String parameter_info = ParameterFormatConverter.getJaxbString(parameterInfoArray);
+
+            AnalysisJob aJob = new AnalysisJob();
+            aJob.setTaskId(taskInfo.getID());
+            aJob.setSubmittedDate(Calendar.getInstance().getTime());
+            aJob.setParameterInfo(parameter_info);
+            aJob.setUserId(userId);
+            aJob.setTaskName(taskInfo.getName());
+            aJob.setParent(parentJobNumber);
+            aJob.setTaskLsid(taskInfo.getLsid());
+            
+            JobStatus js = new JobStatus();
+            js.setStatusId(JobStatus.JOB_PENDING);
+            js.setStatusName(JobStatus.PENDING);
+            aJob.setJobStatus(js);
+            
+            HibernateUtil.getSession().save(aJob);
+            //jobId = aJob.getJobNo();
+            return aJob;
+        }
+        catch (Throwable t) {
+            throw new JobSubmissionException("Error adding job to queue, taskId="+taskInfo.getID()+
+                    ", taskName="+taskInfo.getName()+
+                    ", taskLsid="+taskInfo.getLsid(), t);
+        }
+    }
+
 }
