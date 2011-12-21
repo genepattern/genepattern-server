@@ -94,15 +94,15 @@ public class ServerThreadExecutor implements CommandExecutor {
         Callable<String> wrapper = new Callable<String>() {
             public String call() throws Exception {
                 String status = JobStatus.ERROR;
+                String errorMessage = "Error running server task";
                 try {
                     status = serverTask.call();
                 }
                 catch (Exception e) {
                     status = JobStatus.ERROR;
+                    errorMessage = e.getLocalizedMessage();
                 }
-
                 if (JobStatus.ERROR.equals(status)) {
-                    String errorMessage = "job completed with ERROR status";
                     int exitCode = -1;
                     GenePatternAnalysisTask.handleJobCompletion(jobInfo.getJobNumber(), exitCode, errorMessage);
                 }
