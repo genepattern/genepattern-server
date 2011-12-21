@@ -27,7 +27,12 @@ import org.genepattern.webservice.TaskInfo;
  * Use the output of each run as input to the next run.
  * 
  * To use the BwaLoop, create a module with the following command line:
- * org.genepattern.server.executor.serverthread.BwaLoop BWAPipeline fastq <initial.query.fq> <db.list> 
+ * org.genepattern.server.executor.serverthread.BwaLoop \
+ *     BWAPipeline \
+ *     fastq \
+ *     BWAunmapped3.output.filename=<input.sam_basename>.final.unmapped.fastq \
+ *     <initial.query.fq> \
+ *     <db.list> 
  * 
  * @author pcarr
  */
@@ -40,7 +45,8 @@ public class BwaLoop extends AbstractServerTask {
     private BatchParams batchParams = new BatchParams();
     private String inputFileParamName = "";
     private String inheritFilename = "1"; //default, "1", means "use 1st output from"
-    //private boolean addToParent = false; //either add to parent or add to child
+    private String outputFilenameParamName = "BWAunmapped3.output.filename";
+    private String finalOutputFilename = "<input.sam_basename>.final.unmapped.fastq";
     
     private AddToFlag addToFlag = AddToFlag.add_to_child;
 
@@ -51,20 +57,23 @@ public class BwaLoop extends AbstractServerTask {
     }
     
     private void parseArgs() throws Exception {
-        //1) the first arg must be the tasknameOrLsid 
+        //1) the first arg must be the tasknameOrLsid of the module or pipeline to run for each db
         this.tasknameOrLsid = args[0]; //default, "BWAPipeline"
-        //2) the second arg must be the 'inheritFilename'
+        //2) the second arg must be the 'inheritFilename' e.g. use 1st, 2nd, 3rd, 4th, 'gct', 'fastq' from ...
         this.inheritFilename = args[1];  //default, 'fastq'
+        //3) the third arg must be the name of the final fastq output file, e.g.
+        SplitArg outputSpec = splitSplit(args[2], '=');
+        this.outputFilenameParamName =  outputSpec.getNames().get(0);
+        this.finalOutputFilename = outputSpec.getValues().get(0);
         
-        //3) hard-code the addTo parameter (not parsed from the command line)
-        addToFlag = AddToFlag.add_to_child;
+        //4) hard-code the addTo parameter (not parsed from the command line)
+        addToFlag = AddToFlag.add_to_child; //defalt, add each job as a child of this job
         
         //helper field, in case two or more parameters (by name) have the same filelist value
         Map<String,List<String>> parameterListCache = new HashMap<String,List<String>>();
-        
-        
+
         boolean first = true;
-        for(int idx=2; idx<args.length; ++idx) {
+        for(int idx=3; idx<args.length; ++idx) {
             String arg = args[idx];
             SplitArg splitArg = splitSplit(arg, '=');
             for(final String name : splitArg.getNames()) {
@@ -89,7 +98,7 @@ public class BwaLoop extends AbstractServerTask {
                         batchParams.addEntry(name, value);
                     }
                 }
-            }
+            }            
         }
         batchParams.validate();
     }
@@ -150,6 +159,7 @@ public class BwaLoop extends AbstractServerTask {
      */
     private JobInfo addStep(int currentStepIdx) throws Exception {
         final boolean first = currentStepIdx==0;
+        final boolean last = currentStepIdx==(batchParams.getNumJobsToSubmit()-1);
         
         boolean isInTransaction = HibernateUtil.isInTransaction(); 
         HibernateUtil.beginTransaction();
@@ -163,6 +173,13 @@ public class BwaLoop extends AbstractServerTask {
                 String value = batchParams.get(param.getName(), currentStepIdx); 
                 if (value == null) {
                     value = param.getDefaultValue();
+                    if (last) {
+                        //special-case: set a unique output filename for the last step in the loop
+                        String pname = param.getName();
+                        if (pname.equals(this.outputFilenameParamName)) {
+                            value = this.finalOutputFilename;
+                        }
+                    }
                 }
                 if (inputFileParamName.equals(param.getName())) {
                     if (first) {
@@ -181,6 +198,7 @@ public class BwaLoop extends AbstractServerTask {
                 else if (value != null) {
                     param.setValue(value);
                 }
+                
             }
             JobQueue.Status initialStatus = JobQueue.Status.WAITING;
             if (first) {
