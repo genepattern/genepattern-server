@@ -1,6 +1,7 @@
 package org.genepattern.server.jobqueue;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -18,13 +19,19 @@ import org.hibernate.Session;
 public class JobQueueUtil {
     private static Logger log = Logger.getLogger(JobQueueUtil.class);
 
-    static public void addJobToQueue(JobInfo jobInfo, JobQueueStatus.Status statusId) 
+    static public void addJobToQueue(JobInfo jobInfo, JobQueue.Status statusId) 
+    throws Exception
+    {
+        addJobToQueue(jobInfo.getJobNumber(), jobInfo._getParentJobNumber(), jobInfo.getDateSubmitted(), statusId);
+    }
+
+    static public void addJobToQueue(int jobNo, int parent, Date dateSubmitted, JobQueue.Status statusId) 
     throws Exception
     { 
         JobQueue record = new JobQueue();
-        record.setJobNo(jobInfo.getJobNumber());
-        record.setParentJobNo(jobInfo._getParentJobNumber());
-        record.setDateSubmitted(jobInfo.getDateSubmitted());
+        record.setJobNo(jobNo);
+        record.setParentJobNo(parent);
+        record.setDateSubmitted(dateSubmitted);
         record.setStatus(statusId.toString());
         
         boolean inTransaction = HibernateUtil.isInTransaction();
@@ -54,7 +61,7 @@ public class JobQueueUtil {
             if (maxJobCount > 0) {
                 query.setMaxResults(maxJobCount);
             }
-            query.setString("status", JobQueueStatus.Status.PENDING.toString());
+            query.setString("status", JobQueue.Status.PENDING.toString());
             List<JobQueue> records = query.list();
             return records;
         }
@@ -69,7 +76,7 @@ public class JobQueueUtil {
         }
     }
     
-    static public void setJobStatus(int jobNo, JobQueueStatus.Status status) 
+    static public void setJobStatus(int jobNo, JobQueue.Status status) 
     throws Exception
     {
         boolean inTransaction = HibernateUtil.isInTransaction();
@@ -109,7 +116,7 @@ public class JobQueueUtil {
             Session session = HibernateUtil.getSession();
             Query query = session.createQuery(hql);
             query.setParameter("parentJobNo", parentJobNo);
-            query.setParameter("status", JobQueueStatus.Status.WAITING.toString());
+            query.setParameter("status", JobQueue.Status.WAITING.toString());
             List<JobQueue> records = query.list();
             return records;
         }
@@ -130,7 +137,7 @@ public class JobQueueUtil {
             String hql = "delete "+JobQueue.class.getName()+" jq where jq.jobNo = :jobNo and jq.status = :status";
             Query query = HibernateUtil.getSession().createQuery( hql );
             query.setInteger("jobNo", jobNo);
-            query.setString("status", JobQueueStatus.Status.PENDING.toString());
+            query.setString("status", JobQueue.Status.PENDING.toString());
             int numDeleted = query.executeUpdate();
             if (numDeleted == 1) {
                 if (!inTransaction) {

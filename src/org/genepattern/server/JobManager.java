@@ -12,7 +12,7 @@ import org.genepattern.server.executor.AnalysisJobScheduler;
 import org.genepattern.server.executor.JobDeletionException;
 import org.genepattern.server.executor.JobSubmissionException;
 import org.genepattern.server.executor.JobTerminationException;
-import org.genepattern.server.jobqueue.JobQueueStatus;
+import org.genepattern.server.jobqueue.JobQueue;
 import org.genepattern.server.jobqueue.JobQueueUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
@@ -103,7 +103,7 @@ public class JobManager {
      * @return
      * @throws JobSubmissionException
      */
-    static public JobInfo addJobToQueue(final TaskInfo taskInfo, final String userId, final ParameterInfo[] parameterInfoArray, final Integer parentJobNumber, final JobQueueStatus.Status initialJobStatus) 
+    static public JobInfo addJobToQueue(final TaskInfo taskInfo, final String userId, final ParameterInfo[] parameterInfoArray, final Integer parentJobNumber, final JobQueue.Status initialJobStatus) 
     throws JobSubmissionException
     {
         JobInfo jobInfo = null;
