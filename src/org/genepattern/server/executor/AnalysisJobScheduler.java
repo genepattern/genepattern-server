@@ -36,9 +36,7 @@ import org.genepattern.server.jobqueue.JobQueue;
 import org.genepattern.server.jobqueue.JobQueueUtil;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
 import org.genepattern.webservice.JobInfo;
-import org.hibernate.Query;
 import org.hibernate.SQLQuery;
-import org.hibernate.Session;
 
 /**
  * Polls the db for new PENDING jobs and submits them to GenePatternAnalysisTask for execution.
@@ -188,47 +186,47 @@ public class AnalysisJobScheduler implements Runnable {
         log.debug("Exited AnalysisTask thread.");
     }
 
-    static private List<Integer> getJobsWithStatusId(int statusId, int maxJobCount) {
-        try {
-            String hql = "select jobNo from org.genepattern.server.domain.AnalysisJob where deleted = :deleted and jobStatus.statusId = :statusId order by submittedDate ";
-            HibernateUtil.beginTransaction();
-            Session session = HibernateUtil.getSession();
-            Query query = session.createQuery(hql);
-            if (maxJobCount > 0) {
-                query.setMaxResults(maxJobCount);
-            }
-            query.setInteger("statusId", statusId);
-            query.setBoolean("deleted", false);
-            List<Integer> jobIds = query.list();
-            return jobIds;
-        }
-        catch (Throwable t) {
-            log.error("Error getting list of pending jobs from queue", t);
-            return new ArrayList<Integer>();
-        }
-        finally {
-            HibernateUtil.closeCurrentSession();
-        }
-    }
-
-    static private List<Integer> changeJobStatus(List<Integer> jobIds, int fromStatusId, int toStatusId) {
-        List<Integer> updatedJobIds = new ArrayList<Integer>();
-        HibernateUtil.beginTransaction();
-        try {
-            for(Integer jobId : jobIds) {
-                AnalysisJobScheduler.changeJobStatus(jobId, fromStatusId, toStatusId);
-                updatedJobIds.add(jobId);
-            }
-            HibernateUtil.commitTransaction();
-        }
-        catch (Throwable t) {
-            // don't add it to updated jobs, record the failure and move on
-            updatedJobIds.clear();
-            log.error("Error updating job status to processing", t);
-            HibernateUtil.rollbackTransaction();
-        } 
-        return updatedJobIds;
-    }
+//    static private List<Integer> getJobsWithStatusId(int statusId, int maxJobCount) {
+//        try {
+//            String hql = "select jobNo from org.genepattern.server.domain.AnalysisJob where deleted = :deleted and jobStatus.statusId = :statusId order by submittedDate ";
+//            HibernateUtil.beginTransaction();
+//            Session session = HibernateUtil.getSession();
+//            Query query = session.createQuery(hql);
+//            if (maxJobCount > 0) {
+//                query.setMaxResults(maxJobCount);
+//            }
+//            query.setInteger("statusId", statusId);
+//            query.setBoolean("deleted", false);
+//            List<Integer> jobIds = query.list();
+//            return jobIds;
+//        }
+//        catch (Throwable t) {
+//            log.error("Error getting list of pending jobs from queue", t);
+//            return new ArrayList<Integer>();
+//        }
+//        finally {
+//            HibernateUtil.closeCurrentSession();
+//        }
+//    }
+//
+//    static private List<Integer> changeJobStatus(List<Integer> jobIds, int fromStatusId, int toStatusId) {
+//        List<Integer> updatedJobIds = new ArrayList<Integer>();
+//        HibernateUtil.beginTransaction();
+//        try {
+//            for(Integer jobId : jobIds) {
+//                AnalysisJobScheduler.changeJobStatus(jobId, fromStatusId, toStatusId);
+//                updatedJobIds.add(jobId);
+//            }
+//            HibernateUtil.commitTransaction();
+//        }
+//        catch (Throwable t) {
+//            // don't add it to updated jobs, record the failure and move on
+//            updatedJobIds.clear();
+//            log.error("Error updating job status to processing", t);
+//            HibernateUtil.rollbackTransaction();
+//        } 
+//        return updatedJobIds;
+//    }
 
     /**
      * Change the statusId for the given job, only if the job's current status id is the same as the fromStatusId.
