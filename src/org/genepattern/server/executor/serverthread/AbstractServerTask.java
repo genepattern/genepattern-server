@@ -84,8 +84,8 @@ public abstract class AbstractServerTask implements ServerTask {
     }
 
     static public class SplitArg {
-        private List<String> names = new ArrayList<String>();
-        private List<String> values = new ArrayList<String>();
+        final private List<String> names = new ArrayList<String>();
+        final private List<String> values = new ArrayList<String>();
         
         public void addName(String name) {
             names.add(name);

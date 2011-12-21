@@ -51,19 +51,37 @@ public class BwaLoop extends AbstractServerTask {
     private AddToFlag addToFlag = AddToFlag.add_to_child;
 
     public String call() throws Exception {
+        log.debug("starting BwaLoop");
         parseArgs();
         doLoop();
         return JobStatus.PROCESSING;
     }
     
     private void parseArgs() throws Exception {
+        if (log.isDebugEnabled()) {
+            log.debug("parsing args...");
+            for(int i=0; i<args.length; ++i) {
+                String arg = args[i];
+                log.debug("\targ["+i+"]='"+arg+"'");
+            }
+        }
+        
         //1) the first arg must be the tasknameOrLsid of the module or pipeline to run for each db
         this.tasknameOrLsid = args[0]; //default, "BWAPipeline"
         //2) the second arg must be the 'inheritFilename' e.g. use 1st, 2nd, 3rd, 4th, 'gct', 'fastq' from ...
         this.inheritFilename = args[1];  //default, 'fastq'
         //3) the third arg must be the name of the final fastq output file, e.g.
         SplitArg outputSpec = splitSplit(args[2], '=');
+        if (outputSpec == null) {
+            throw new Exception("Error parsing command line args[2]='"+args[2]+"': outputSpec == null");
+        }
+        if (outputSpec.getNames().get(0) == null) {
+            throw new Exception("Error parsing command line args[2]='"+args[2]+"': outputSpec.names[0] == null");
+        }
         this.outputFilenameParamName =  outputSpec.getNames().get(0);
+        if (outputSpec.getValues().get(0) == null) {
+            throw new Exception("Error parsing command line args[2]='"+args[2]+"': outputSpec.values[0] == null");
+        }
         this.finalOutputFilename = outputSpec.getValues().get(0);
         
         //4) hard-code the addTo parameter (not parsed from the command line)
@@ -72,9 +90,11 @@ public class BwaLoop extends AbstractServerTask {
         //helper field, in case two or more parameters (by name) have the same filelist value
         Map<String,List<String>> parameterListCache = new HashMap<String,List<String>>();
 
+        log.debug("parsing batch params from command line args...");
         boolean first = true;
         for(int idx=3; idx<args.length; ++idx) {
             String arg = args[idx];
+            log.debug("parsing args["+idx+"]='"+args[idx]+"'");
             SplitArg splitArg = splitSplit(arg, '=');
             for(final String name : splitArg.getNames()) {
                 for(final String value : splitArg.getValues()) {
@@ -100,6 +120,7 @@ public class BwaLoop extends AbstractServerTask {
                 }
             }            
         }
+        log.debug("validating batch params");
         batchParams.validate();
     }
     
@@ -108,12 +129,15 @@ public class BwaLoop extends AbstractServerTask {
     }
 
     private List<String> parseParameterList(String value) throws Exception {
+        log.debug("initializing file list from file: "+value);
         File parameterList = new File(value);
         List<String> rval = PipelineHandler.parseFileList(parameterList);
+        log.debug("...done!");
         return rval;
     }
 
     private void doLoop() throws Exception {
+        log.debug("adding jobs...");
         try {
             HibernateUtil.beginTransaction();
             JobInfo self = PipelineHandler.getJobInfo(jobId);
@@ -144,7 +168,7 @@ public class BwaLoop extends AbstractServerTask {
         }
         catch (Throwable t) {
             HibernateUtil.rollbackTransaction();
-            throw new Exception(t);
+            throw new Exception("Error adding jobs", t);
         }
         finally {
             HibernateUtil.closeCurrentSession();
