@@ -189,7 +189,21 @@ public class BwaLoop extends AbstractServerTask {
         HibernateUtil.beginTransaction();
         try {
             AdminDAO adminDao = new AdminDAO();
-            TaskInfo taskInfo = adminDao.getTask(tasknameOrLsid, userId);
+            
+            TaskInfo taskInfo = null;
+            try {
+                taskInfo = adminDao.getTask(tasknameOrLsid, userId);
+            }
+            catch (Throwable t) {
+                String errorMessage = 
+                        "Error creating taskInfo for task='"+tasknameOrLsid+"', userId='"+userId+"': "+t.getLocalizedMessage();
+                throw new Exception(errorMessage, t );
+            }
+            if (taskInfo == null) {
+                String errorMessage = 
+                        "Missing module '"+tasknameOrLsid+"' for userId='"+userId;
+                throw new Exception(errorMessage);
+            }
             ParameterInfo[] parameterInfoArray = taskInfo.getParameterInfoArray();
             PipelineHandler.substituteLsidInInputFiles(taskInfo.getLsid(), parameterInfoArray);
             
