@@ -190,10 +190,20 @@ public abstract class AbstractServerTask implements ServerTask {
         }
 
         public String get(final String paramName, int idx) throws IndexOutOfBoundsException {
-            
-            String key = paramName;
+            boolean matchLast = false;
+            return get(paramName, idx, matchLast);
+        }
 
-            List<String> values = map.get(key);
+        public String get(final String paramName, int idx, boolean matchLast) throws IndexOutOfBoundsException {    
+            List<String> values = map.get(paramName);
+            if (values == null && matchLast) {
+                for(String key : map.keySet()) {
+                    if (paramName.endsWith(key)) {
+                        values = map.get(key);
+                        break;
+                    }
+                }
+            }
             if (values == null) {
                 // no matching list for paramName
                 return null;
