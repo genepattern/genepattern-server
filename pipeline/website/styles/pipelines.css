@@ -1,0 +1,89 @@
+body{ height:100% }
+
+#library {
+	position:absolute;
+	z-index: 3000; 
+	top: 0px;
+	left: 0px;
+	width: 99%;
+	height: 45px;;
+	background-color: #FFFFCC;
+	border-style: solid;
+	border-color: #FFFF00;
+	border-width: 2px;
+	padding: 5px;
+	overflow-x: hidden;
+	overflow: hidden;
+}
+
+#workspace {
+	background-image:url('../images/dots.gif');
+	display: block;
+	position: absolute;
+    top: 60px;
+    left: 0;
+	width: 99%;
+	height: 100%;
+	padding-left: 10px;
+}
+
+#properties {
+	display: none;
+	position: absolute;
+	z-index: 4000;
+    top: 0px;
+	right: 0px;
+	height: 100%;
+	width: 400px;
+	background-color: #FFDDAA;
+	border-style: solid;
+	border-color: #EECC99;
+	border-width: 2px;
+	padding: 5px;
+}
+
+#pipelinePencil {
+	border-style: solid;
+	border-width: 1px;
+	border-color: #999999;
+	height: 16px;
+}
+
+.libraryModuleButton {
+	font-size: 8pt;
+}
+
+.propertiesButton {
+	border-style: solid;
+	border-width: 1px;
+	border-color: #999999;
+	height: 16px;
+}
+
+.module {
+	position:absolute;
+	z-index: 2000; 
+	height: 100px;
+	width: 250px;
+	text-align: center;
+	opacity:0.8; 
+	filter:alpha(opacity=80); 
+	border-style: solid;
+	border-color: #00FF00;
+	border-width: 2px;
+	background-color: #CCFFCC;
+}
+
+.pipeline {
+	background-color: #FFCCCC;
+	border-color: #FF0000;
+}
+
+.visualizer {
+	background-color: #CCCCFF;
+	border-color: #0000FF;
+}
+
+.ui-selected {
+	border-color: #FF0000;
+}
