@@ -110,7 +110,7 @@ var library = {
 		modules: {},			// The JSON structure of all modules in the library
 		
 		init: function(moduleJSON) {
-			this.readModules(moduleJSON);
+			this._readModules(moduleJSON);
 			this._readModuleNames();
 			$("#modulesDropdown").autocomplete({ source: this.moduleNames });
 			$("#addModule").button();
@@ -140,7 +140,7 @@ var library = {
 			}
 		},
 		
-		readModules: function(moduleJSON) {
+		_readModules: function(moduleJSON) {
 			this.modules = {};
 			for (var i = 0; i < moduleJSON.modules.length; i++) {
 				var module = moduleJSON.modules[i];
@@ -265,6 +265,14 @@ function Module(moduleJSON) {
 		var clone = new Module(this.json);
 		clone.type = this.type;
 		return clone;
+	}
+	
+	this.getMasterInput = function() {
+		return this.inputEnds[0];
+	}
+	
+	this.getMasterOutput = function() {
+		return this.outputEnds[0];
 	}
 }
 
