@@ -108,29 +108,53 @@ var library = {
 		div: "library",			// The id of the div used by the library
 		moduleNames: [],		// A list of all module names
 		modules: {},			// The JSON structure of all modules in the library
+		recent: [],
 		
 		init: function(moduleJSON) {
 			this._readModules(moduleJSON);
 			this._readModuleNames();
+			
+			this._addModuleComboBox();
+			
+			for (var i = 0; i < this.recent.length; i++) {
+				var name = this.recent[i];
+				this._addModuleButton(name);
+			}
+		},
+		
+		_addRecentModule: function(name) {
+			for (var i = 0; i < this.recent.length; i++) {
+				if (this.recent[i] == name) { return }
+			}
+			
+			this.recent.push(name);
+			var removed = null;
+			if (this.recent.length > 10) { removed = this.recent.shift(); }
+			if (removed != null) { $("button[name|=" + removed + "]").remove(); }
+			this._addModuleButton(name);
+		},
+		
+		_addModuleComboBox: function() {
 			$("#modulesDropdown").autocomplete({ source: this.moduleNames });
 			$("#addModule").button();
 			
 			$("#addModule").click(function() {
-				editor.addModule($("#modulesDropdown")[0].value);
+				var name = $("#modulesDropdown")[0].value;
+				var module = editor.addModule(name);
+				if (module != null) { library._addRecentModule(name); }
 			});
-			
-			for (var i = 0; i < this.moduleNames.length; i++) {
-				var modButton = document.createElement("button");
-				var name = this.moduleNames[i];
-				modButton.innerHTML = name;
-				modButton.setAttribute("class", "libraryModuleButton");
-				modButton.setAttribute("name", name);
-				$("#" + this.div)[0].appendChild(modButton);
-				$(modButton).click(function() {
-					editor.addModule(this.name);
-				});
-			}
-			$(".libraryModuleButton").button();
+		},
+		
+		_addModuleButton: function(name) {
+			var modButton = document.createElement("button");
+			modButton.innerHTML = name;
+			modButton.setAttribute("class", "libraryModuleButton");
+			modButton.setAttribute("name", name);
+			$("#" + this.div)[0].appendChild(modButton);
+			$(modButton).click(function() {
+				editor.addModule(this.name);
+			});
+			$("button[name|=" + name + "]").button();
 		},
 		
 		_readModuleNames: function() {
@@ -222,10 +246,27 @@ function Module(moduleJSON) {
 		this._createButtons();
 	}
 	
+	this._addMasterOutput = function() {
+		this.outputEnds[0] = jsPlumb.addEndpoint(this.id.toString(), editor.OUTPUT_FILE_STYLE, { 
+			anchor: [0.5, 1, 0, 1], 
+			maxConnections: -1,
+			dragAllowedWhenFull: true,
+			paintStyle: {fillStyle: "blue"}
+		});
+	}
+	
+	this._addMasterInput = function() {
+		this.inputEnds[0] = jsPlumb.addEndpoint(this.id.toString(), editor.INPUT_FILE_STYLE, { 
+			anchor: [0.5, 0, 0, -1],
+			maxConnections: 1,
+			paintStyle: {fillStyle: "blue"}
+		});
+	}
+	
+	// FIXME: Make it so it completely redraws the outputs with the new system
 	this._addOutputs = function() {
-		if (this.type == "module visualizer") {
-			return;
-		}
+		if (this.type == "module visualizer") { return; }
+		
 		var increment = 1.0 / (4 + this.output.length);
 		for (var i = 1; i <= this.output.length + 3; i++) {
 			this.outputEnds[this.outputEnds.length] = jsPlumb.addEndpoint(this.id.toString(), editor.OUTPUT_FILE_STYLE, { 
@@ -236,6 +277,7 @@ function Module(moduleJSON) {
 		}
 	}
 	
+	// FIXME: Make it so it completely redraws the inputs with the new system
 	this._addInputs = function() {
 		var length = 0;
 		for (var input in this.fileInput) {
@@ -256,8 +298,8 @@ function Module(moduleJSON) {
 		this.ui.style.top = location["top"] + "px";
 		this.ui.style.left = location["left"] + "px";
 		$("#" + editor.div)[0].appendChild(this.ui);
-		this._addOutputs();
-		this._addInputs();
+		this._addMasterOutput();
+		this._addMasterInput();
 		jsPlumb.draggable(this.ui);
 	}
 	

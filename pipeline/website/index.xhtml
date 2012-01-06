@@ -215,21 +215,19 @@
 				var j = editor.addModule("WeightedVoting");
 				var k = editor.addModule("PredictionResultsViewer");
 
-				editor.addConnection(a.outputEnds[3], c.inputEnds[0]);
-				editor.addConnection(a.outputEnds[3], d.inputEnds[0]);
-				editor.addConnection(a.outputEnds[3], g.inputEnds[0]);
-				editor.addConnection(a.outputEnds[3], j.inputEnds[0]);
-				editor.addConnection(b.outputEnds[3], j.inputEnds[3]);
-				editor.addConnection(c.outputEnds[3], e.inputEnds[0]);
-				editor.addConnection(d.outputEnds[3], f.inputEnds[0]);
-				
-				editor.addConnection(g.outputEnds[3], h.inputEnds[0]);
-				editor.addConnection(g.outputEnds[3], i.inputEnds[0]);
-				
-				editor.addConnection(j.outputEnds[3], k.inputEnds[0]);
+				//editor.addConnection(a.outputEnds[3], c.inputEnds[0]);
+				//editor.addConnection(a.outputEnds[3], d.inputEnds[0]);
+				//editor.addConnection(a.outputEnds[3], g.inputEnds[0]);
+				//editor.addConnection(a.outputEnds[3], j.inputEnds[0]);
+				//editor.addConnection(b.outputEnds[3], j.inputEnds[3]);
+				//editor.addConnection(c.outputEnds[3], e.inputEnds[0]);
+				//editor.addConnection(d.outputEnds[3], f.inputEnds[0]);
+				//editor.addConnection(g.outputEnds[3], h.inputEnds[0]);
+				//editor.addConnection(g.outputEnds[3], i.inputEnds[0]);
+				//editor.addConnection(j.outputEnds[3], k.inputEnds[0]);
 				
 				// Example of hacking the jsPlumb event listeners
-				// c.outputEnds[0].bind("mouseenter", function() {alert("HELLO");});		
+				a.inputEnds[0].bind("mouseenter", function() {alert("HELLO");});
 			}
 			
 			jsPlumb.ready(function() {
@@ -238,7 +236,7 @@
 				properties.init();
 				createALLAML();
 				
-				$("#workspace").selectable();
+				//$("#workspace").selectable();
 				
 				$(".module").click(function() {
 					this.setAttribute("class", this.getAttribute("class") + " ui-selected");
