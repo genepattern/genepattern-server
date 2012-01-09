@@ -34,6 +34,30 @@ var editor = {
 		return this.workspace["idCounter"] - 1;
 	},
 	
+	// Takes a module child id in the form of "prefix_moduleid" and returns the module id.
+	_extractId: function(element) {
+		var parts = element.split("_");
+		return parts [parts.length - 1];
+	},
+	
+	// Takes a module child element or child element id and returns the parent module
+	getParentModule: function(element) {
+		if (element.constructor != String) {
+			element = element.id;
+		}
+		if (element == null) {
+			console.log("getParentModule() received null value");
+			return null;
+		}
+		var id = this._extractId(element);
+		var parent = editor.workspace[id];
+		return parent;
+	},
+	
+	removeModule: function(id) {
+		delete editor.workspace[id];
+	},
+	
 	addModule: function(name) {
 		var module = library.modules[name];
 		if (module == null) { 
@@ -230,9 +254,28 @@ function Module(moduleJSON) {
 	
 	this._createButtons = function() {
 		var propertiesButton = document.createElement("img");
+		propertiesButton.setAttribute("id", "prop_" + this.id);
 		propertiesButton.setAttribute("src", "images/pencil.gif");
 		propertiesButton.setAttribute("class", "propertiesButton");
 		this.ui.appendChild(propertiesButton);
+
+		var deleteButton = document.createElement("img");
+		deleteButton.setAttribute("id", "del_" + this.id);
+		deleteButton.setAttribute("src", "images/delete.gif");
+		deleteButton.setAttribute("class", "deleteButton");
+		this.ui.appendChild(deleteButton);
+
+	}
+	
+	this._addButonCalls = function() {
+		$("#" + "prop_" + this.id).click(function() {
+			properties.show(this.parentNode.getAttribute("name"));
+		});
+		
+		$("#" + "del_" + this.id).click(function() {
+			var module = editor.getParentModule(this.id);
+			module.delete();
+		});
 	}
 	
 	this._createDiv = function() {
@@ -247,6 +290,7 @@ function Module(moduleJSON) {
 	}
 	
 	this._addMasterOutput = function() {
+		if (this.type == "module visualizer") { return; }
 		this.outputEnds[0] = jsPlumb.addEndpoint(this.id.toString(), editor.OUTPUT_FILE_STYLE, { 
 			anchor: [0.5, 1, 0, 1], 
 			maxConnections: -1,
@@ -291,6 +335,40 @@ function Module(moduleJSON) {
 			count++;
 		}
 	}
+	
+	this._detachInputs = function() {
+		for (var i = 0; i < this.inputEnds.length; i++) {
+			this.inputEnds[i].detachAll();
+		}
+	}
+	
+	this._detachOutputs = function() {
+		for (var i = 0; i < this.outputEnds.length; i++) {
+			this.outputEnds[i].detachAll();
+		}
+	}
+	
+	this._removeEndpoints = function() {
+		for (var i = 0; i < this.inputEnds.length; i++) {
+			jsPlumb.deleteEndpoint(this.inputEnds[i]);
+		}
+		
+		for (var i = 0; i < this.outputEnds.length; i++) {
+			jsPlumb.deleteEndpoint(this.outputEnds[i]);
+		}
+	}
+	
+	this._removeUI = function() {
+		this._removeEndpoints();
+		$("#" + this.id).remove();
+	}
+	
+	this.delete = function() {
+		this._detachInputs();
+		this._detachOutputs();
+		this._removeUI();
+		editor.removeModule(this.id);
+	}
 
 	this.add = function() {
 		this._createDiv();
@@ -301,6 +379,7 @@ function Module(moduleJSON) {
 		this._addMasterOutput();
 		this._addMasterInput();
 		jsPlumb.draggable(this.ui);
+		this._addButonCalls();
 	}
 	
 	this.spawn = function() {

@@ -238,16 +238,16 @@
 				
 				//$("#workspace").selectable();
 				
-				$(".module").click(function() {
-					this.setAttribute("class", this.getAttribute("class") + " ui-selected");
-				});
-				
-				$(".propertiesButton").click(function() {
-					properties.show(this.parentNode.getAttribute("name"));
-				});
-				
+				//$(".module").click(function() {
+				//	this.setAttribute("class", this.getAttribute("class") + " ui-selected");
+				//});
+	
 				$("#pipelinePencil").click(function() {
 					properties.show(this.parentNode.getAttribute("name"));
+				});
+				
+				jsPlumb.bind("jsPlumbConnection", function(connection) {
+					alert("Hurray");
 				});
 			});
 		</script>
