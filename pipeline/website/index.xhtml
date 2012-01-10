@@ -230,6 +230,7 @@
 				a.inputEnds[0].bind("mouseenter", function() {alert("HELLO");});
 			}
 			
+			var testCount = 0;
 			jsPlumb.ready(function() {
 				editor.init();
 				library.init(allamlModules);
@@ -247,7 +248,18 @@
 				});
 				
 				jsPlumb.bind("jsPlumbConnection", function(connection) {
-					alert("Hurray");
+					if (connection.sourceEndpoint.canvas.getAttribute("name").indexOf("master") == -1) { return; }
+					
+					var source = editor.getParentModule(connection.sourceEndpoint.canvas.getAttribute("name"));
+					var target = editor.getParentModule(connection.targetEndpoint.canvas.getAttribute("name"));
+					
+					var newOut = source._addOutput(testCount);
+					var newIn = target._addInput(testCount);
+					editor.addConnection(newOut, newIn);
+					//jsPlumb.connect({"source": source.outputEnds[source.outputEnds.length-1], "target": target.inputEnds[target.inputEnds.length-1]});
+					source.getMasterOutput().detachAll();
+					properties.show(source.name + " to " + target.name);
+					testCount++;
 				});
 			});
 		</script>

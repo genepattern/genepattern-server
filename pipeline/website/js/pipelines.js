@@ -288,23 +288,46 @@ function Module(moduleJSON) {
 		this.ui.innerHTML = "<br /><br />" + this.name + "<br />";
 		this._createButtons();
 	}
-	
-	this._addMasterOutput = function() {
-		if (this.type == "module visualizer") { return; }
-		this.outputEnds[0] = jsPlumb.addEndpoint(this.id.toString(), editor.OUTPUT_FILE_STYLE, { 
-			anchor: [0.5, 1, 0, 1], 
+	this._addOutput = function(id) {
+		var color = "black";
+		if (id == "master") {
+			color = "blue";
+		}
+		var index = this.outputEnds.length;
+		var position = 0.1 * (index + 1);
+		this.outputEnds[index] = jsPlumb.addEndpoint(this.id.toString(), editor.OUTPUT_FILE_STYLE, { 
+			anchor: [position, 1, 0, 1], 
 			maxConnections: -1,
 			dragAllowedWhenFull: true,
-			paintStyle: {fillStyle: "blue"}
+			paintStyle: {fillStyle: color}
 		});
+		this.outputEnds[index].canvas.setAttribute("name", "out_" + id + "_" + this.id);
+		return this.outputEnds[index];
+	}
+	
+	this._addMasterOutput = function() {
+		if (this.type == "module visualizer") { return null; }
+		return this._addOutput("master");
+	}
+	
+	this._addInput = function(id) {
+		var color = "black";
+		if (id == "master") {
+			color = "blue";
+		}
+		var index = this.inputEnds.length;
+		var position = 0.1 * (index + 1);
+		this.inputEnds[index] = jsPlumb.addEndpoint(this.id.toString(), editor.INPUT_FILE_STYLE, { 
+			anchor: [position, 0, 0, -1], 
+			maxConnections: 1,
+			paintStyle: {fillStyle: color}
+		});
+		this.inputEnds[index].canvas.setAttribute("name", "in_" + id + "_" + this.id);
+		return this.inputEnds[index];
 	}
 	
 	this._addMasterInput = function() {
-		this.inputEnds[0] = jsPlumb.addEndpoint(this.id.toString(), editor.INPUT_FILE_STYLE, { 
-			anchor: [0.5, 0, 0, -1],
-			maxConnections: 1,
-			paintStyle: {fillStyle: "blue"}
-		});
+		return this._addInput("master");
 	}
 	
 	// FIXME: Make it so it completely redraws the outputs with the new system
