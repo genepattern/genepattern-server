@@ -282,13 +282,17 @@ function Module(moduleJSON) {
 	this.type = "module";
 	this.ui = null;
 	
+	this._nameToId = function(name) {
+		return name.replace(/ /g,"_");
+	}
+	
 	// TODO: Eventually replace with smarter suggestions of which endpoint to connect
 	this.suggestInput = function() {
 		for (i in this.fileInput) {
 			var used = this.fileInput[i].used;
 			if (used == null) {
 				this.fileInput[i].used = true;
-				return this._addInput(i)
+				return this._addInput(this._nameToId(i));
 			}
 		}
 	}
@@ -298,18 +302,18 @@ function Module(moduleJSON) {
 		return this._addOutput(this.outputEnds.length);
 	}
 	
-	this._createButtons = function() {
+	this._createButtons = function(appendTo) {
 		var propertiesButton = document.createElement("img");
 		propertiesButton.setAttribute("id", "prop_" + this.id);
 		propertiesButton.setAttribute("src", "images/pencil.gif");
 		propertiesButton.setAttribute("class", "propertiesButton");
-		this.ui.appendChild(propertiesButton);
+		appendTo.appendChild(propertiesButton);
 
 		var deleteButton = document.createElement("img");
 		deleteButton.setAttribute("id", "del_" + this.id);
 		deleteButton.setAttribute("src", "images/delete.gif");
 		deleteButton.setAttribute("class", "deleteButton");
-		this.ui.appendChild(deleteButton);
+		appendTo.appendChild(deleteButton);
 
 	}
 	
@@ -332,13 +336,31 @@ function Module(moduleJSON) {
 		}
 		this.ui.setAttribute("name", this.name);
 		this.ui.innerHTML = "<br /><br />" + this.name + "<br />";
-		this._createButtons();
-		
-		this.tooltip = document.createElement("div");
-		this.tooltip.setAttribute("id", "tip_" + this.id);
-		this.tooltip.setAttribute("style", "position: absolute; top: 0px; left: 0px;");
-		this.tooltip.innerHTML = "OK";
+		this._createButtons(this.ui);
 	}
+	
+	this._createTooltip = function(endpoint, id, type) {
+		var master = id == "master";
+		
+		endpoint.tooltip = document.createElement("div");
+		endpoint.tooltip.setAttribute("id", "tip_" + endpoint.canvas.getAttribute("name"));
+		endpoint.tooltip.setAttribute("class", "tooltip");
+		if (master) {
+			if (type == "output") {
+				endpoint.tooltip.innerHTML = "Drag Connections From Here";
+			}
+			else if (type == "input") {
+				endpoint.tooltip.innerHTML = "Drag Connections To Here";
+			}
+		}
+		else {
+			endpoint.tooltip.innerHTML = (type == "output" ? "Output: " : "Parameter: ") + id + "<br />";
+			this._createButtons(endpoint.tooltip);
+		}
+		$("#" + editor.div)[0].appendChild(endpoint.tooltip);
+		$("#" + endpoint.canvas.id).tooltip({"tip": "#" + endpoint.tooltip.id, "offset": [-50, 0]});
+	}
+	
 	this._addOutput = function(id) {
 		var color = "black";
 		if (id == "master") {
@@ -352,8 +374,13 @@ function Module(moduleJSON) {
 			dragAllowedWhenFull: true,
 			paintStyle: {fillStyle: color}
 		});
-		this.outputEnds[index].canvas.setAttribute("name", "out_" + id + "_" + this.id);
-		return this.outputEnds[index];
+		var addedEnd = this.outputEnds[index];
+		addedEnd.canvas.setAttribute("name", "out_" + id + "_" + this.id);
+		
+		// Add tooltip
+		this._createTooltip(addedEnd, id, "output");
+		
+		return addedEnd;
 	}
 	
 	this._addMasterOutput = function() {
@@ -373,8 +400,13 @@ function Module(moduleJSON) {
 			maxConnections: 1,
 			paintStyle: {fillStyle: color}
 		});
-		this.inputEnds[index].canvas.setAttribute("name", "in_" + id + "_" + this.id);
-		return this.inputEnds[index];
+		var addedEnd = this.inputEnds[index];
+		addedEnd.canvas.setAttribute("name", "in_" + id + "_" + this.id);
+		
+		// Add tooltip
+		this._createTooltip(addedEnd, id, "input");
+		
+		return addedEnd;
 	}
 	
 	this._addMasterInput = function() {
@@ -450,7 +482,6 @@ function Module(moduleJSON) {
 		this.ui.style.top = location["top"] + "px";
 		this.ui.style.left = location["left"] + "px";
 		$("#" + editor.div)[0].appendChild(this.ui);
-		$("#" + editor.div)[0].appendChild(this.tooltip);
 		this._addMasterOutput();
 		this._addMasterInput();
 		jsPlumb.draggable(this.ui);

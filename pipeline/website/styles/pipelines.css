@@ -100,3 +100,15 @@ body{ height:100% }
 .ui-selected {
 	border-color: #FF0000;
 }
+
+.tooltip {
+	display:none;
+	background:transparent url(../images/black_arrow.png);
+	font-size:12px;
+	height:70px;
+	width:160px;
+	padding:25px;
+	color:#fff;
+	text-align: center;
+	z-index: 9000;
+}
