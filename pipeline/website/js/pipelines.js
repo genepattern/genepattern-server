@@ -1,7 +1,7 @@
 /**
  * JavaScript used by the GenePattern Pipeline Editor
  * @requires jQuery, jQuery UI, jsPlumb
- * @author tabor
+ * @author Thorin Tabor
  */
 
 /**
@@ -14,7 +14,7 @@ var editor = {
 	div: "workspace",		// The id of the div used for pipeline editing
 	workspace: {			// A map containing all the instance data of the current workspace
 		idCounter: 0, 		// Used to keep track of module instance IDs
-		connections: [],	// A list of all current connections in the workspace
+		pipes: [],	// A list of all current connections in the workspace
 		suggestRow: 0, 		// Used by the GridLayoutManager
 		suggestCol: 0		// Used by the GridLayoutManager
 	},
@@ -27,6 +27,33 @@ var editor = {
 		jsPlumb.Defaults.Anchors =  ["BottomCenter", "TopCenter"];
 		jsPlumb.Defaults.Overlays =  [[ "Arrow", { location:0.9 } ]];
 		jsPlumb.Defaults.MaxConnections = -1;
+		
+		jsPlumb.bind("jsPlumbConnection", function(event) {
+			var pipe = new Pipe(event.connection);
+			if (pipe.fromMaster()) {
+				var output = pipe.outputModule;
+				var input = pipe.inputModule;
+				editor.addPipe(output, input);
+			}
+		});
+	},
+	
+	addPipe: function(output, input) {
+		var newIn = input.suggestInput();
+		
+		// If there are no valid inputs left return null and cancel the pipe
+		if (newIn == null) {
+			output.getMasterOutput().detachAll();
+			return;
+		}
+		
+		var newOut = output.suggestOutput(newIn);
+		var connection = editor.addConnection(newOut, newIn);
+		var newPipe = new Pipe(connection);
+		
+		editor.workspace["pipes"].push(newPipe);
+		output.getMasterOutput().detachAll();
+		properties.show(output.name + " to " + input.name);
 	},
 
 	_nextId: function() {
@@ -114,6 +141,10 @@ var editor = {
 		// Pick your layout manager
 		// return this._allAmlLayoutManager();
 		return this._gridLayoutManager();
+	},
+	
+	smartPipeSelection: function(output, input) {
+		
 	},
 	
 	query: function() {
@@ -238,7 +269,6 @@ var properties = {
 /**
  * Class representing an available normal module for use in the editor
  * @param moduleJSON - A JSON representation of the module
- * @returns
  */
 function Module(moduleJSON) {
 	this.json = moduleJSON;
@@ -251,6 +281,22 @@ function Module(moduleJSON) {
 	this.fileInput = moduleJSON.fileInput;
 	this.type = "module";
 	this.ui = null;
+	
+	// TODO: Eventually replace with smarter suggestions of which endpoint to connect
+	this.suggestInput = function() {
+		for (i in this.fileInput) {
+			var used = this.fileInput[i].used;
+			if (used == null) {
+				this.fileInput[i].used = true;
+				return this._addInput(i)
+			}
+		}
+	}
+	
+	// TODO: Eventually replace with smarter suggestions of which endpoint to connect
+	this.suggestOutput = function(input) {
+		return this._addOutput(this.outputEnds.length);
+	}
 	
 	this._createButtons = function() {
 		var propertiesButton = document.createElement("img");
@@ -287,6 +333,11 @@ function Module(moduleJSON) {
 		this.ui.setAttribute("name", this.name);
 		this.ui.innerHTML = "<br /><br />" + this.name + "<br />";
 		this._createButtons();
+		
+		this.tooltip = document.createElement("div");
+		this.tooltip.setAttribute("id", "tip_" + this.id);
+		this.tooltip.setAttribute("style", "position: absolute; top: 0px; left: 0px;");
+		this.tooltip.innerHTML = "OK";
 	}
 	this._addOutput = function(id) {
 		var color = "black";
@@ -399,6 +450,7 @@ function Module(moduleJSON) {
 		this.ui.style.top = location["top"] + "px";
 		this.ui.style.left = location["left"] + "px";
 		$("#" + editor.div)[0].appendChild(this.ui);
+		$("#" + editor.div)[0].appendChild(this.tooltip);
 		this._addMasterOutput();
 		this._addMasterInput();
 		jsPlumb.draggable(this.ui);
@@ -423,7 +475,6 @@ function Module(moduleJSON) {
 /**
  * Class representing an available pipeline for nesting in the editor
  * @param moduleJSON - A JSON representation of the module
- * @returns
  */
 function Pipeline(moduleJSON) {
 	var module = new Module(moduleJSON);
@@ -434,10 +485,39 @@ function Pipeline(moduleJSON) {
 /**
  * Class representing an available visualizer for use in the editor
  * @param moduleJSON - A JSON representation of the module
- * @returns
  */
 function Visualizer(moduleJSON) {
 	var module = new Module(moduleJSON);
 	module.type = "module visualizer";
 	return module;
+}
+
+/**
+ * Class representing a connection between two modules
+ */
+function Pipe(connection) {
+	this.connection = connection;
+	this.outputModule = null;
+	this.inputModule = null;
+	this.inputEnd = null;
+	this.outputEnd = null;
+	this.ui = null;
+	
+	this._init = function(connection) {
+		// Set output module
+		this.outputModule = editor.getParentModule(connection.endpoints[0].canvas.getAttribute("name"));
+		// Set input module
+		this.inputModule = editor.getParentModule(connection.endpoints[1].canvas.getAttribute("name"));
+		// Set input endpoint
+		this.inputEnd = connection.endpoints[1];
+		// Set output endpoint
+		this.outputEnd = connection.endpoints[0];
+		// Set canvas UI element
+		this.ui = connection.canvas;
+	}
+	this._init(connection);
+	
+	this.fromMaster = function() {
+		return this.outputEnd.canvas.getAttribute("name").indexOf("master") >= 0;
+	}
 }
