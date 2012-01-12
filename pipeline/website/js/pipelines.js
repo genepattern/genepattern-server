@@ -431,25 +431,33 @@ function Module(moduleJSON) {
 		}
 	}
 	
-	this._removePorts = function() {
-		for (var i = 0; i < this.inputEnds.length; i++) {
-			this.inputEnds[i].delete();
+	this._removePipes = function() {
+		while (this.inputEnds.length > 0) {
+			if (this.inputEnds[0].master) {
+				this.inputEnds[0].delete();
+				continue;
+			}
+
+			if (this.inputEnds[0].isConnected()) {
+				this.inputEnds[0].pipe.delete();
+			}
 		}
 		
-		for (var i = 0; i < this.outputEnds.length; i++) {
-			this.outputEnds[i].delete();
+		while (this.outputEnds.length > 0) {
+			if (this.outputEnds[0].master) {
+				this.outputEnds[0].delete();
+				continue;
+			}
+			
+			if (this.outputEnds[0].isConnected()) {
+				outputEnds[0].pipe.delete();
+			}
 		}
-	}
-	
-	this._removeUI = function() {
-		this._removePorts();
-		$("#" + this.id).remove();
 	}
 	
 	this.delete = function() {
-		this._detachInputs();
-		this._detachOutputs();
-		this._removeUI();
+		this._removePipes();
+		$("#" + this.id).remove();
 		editor.removeModule(this.id);
 	}
 
@@ -592,19 +600,18 @@ function Port(module, id) {
 	}
 	
 	this.delete = function() {
-		this.detachAll();
 		jsPlumb.deleteEndpoint(this.endpoint);
 		
 		for (var i = 0; i < this.module.inputEnds.length; i++) {
-			if (i == this) {
-				delete this.module.inputEnds[i];
+			if (this.module.inputEnds[i] == this) {
+				this.module.inputEnds.splice(i, 1);
 				return;
 			}
 		}
 		
 		for (var i = 0; i < this.module.outputEnds.length; i++) {
-			if (i == this) {
-				delete this.module.outputEnds[i];
+			if (this.module.outputEnds[i] == this) {
+				this.module.outputEnds.splice(i, 1);
 				return;
 			}
 		}
@@ -716,10 +723,10 @@ function Pipe(connection) {
 	}
 	
 	this.delete = function() {
-		var deleteOutput = this.outputEnd.connections.length <= 1;
+		var deleteOutput = this.outputPort.endpoint.connections.length <= 1;
 		this.inputPort.detachAll();
-		jsPlumb.deleteEndpoint(this.inputPort.endpoint);
-		if (deleteOutput) { jsPlumb.deleteEndpoint(this.outputPort.endpoint); }
+		this.inputPort.delete();
+		if (deleteOutput) { this.outputPort.delete(); }
 		editor.removePipe(this);
 	}
 }
