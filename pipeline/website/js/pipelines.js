@@ -50,6 +50,8 @@ var editor = {
 		var newOut = output.suggestOutput(newIn);
 		var connection = editor.addConnection(newOut, newIn);
 		var newPipe = new Pipe(connection);
+		newIn.connectPipe(newPipe);
+		newOut.connectPipe(newPipe);
 		
 		editor.workspace["pipes"].push(newPipe);
 		output.getMasterOutput().detachAll();
@@ -62,7 +64,7 @@ var editor = {
 	},
 	
 	// Takes a module child id in the form of "prefix_moduleid" and returns the module id.
-	_extractId: function(element) {
+	_extractModuleId: function(element) {
 		var parts = element.split("_");
 		return parts [parts.length - 1];
 	},
@@ -76,9 +78,31 @@ var editor = {
 			console.log("getParentModule() received null value");
 			return null;
 		}
-		var id = this._extractId(element);
+		var id = this._extractModuleId(element);
 		var parent = editor.workspace[id];
 		return parent;
+	},
+	
+	// Takes a port child id in the form of "prefix_portid_moduleid" and returns the port id.
+	_extractPortId: function(element) {
+		var parts = element.split("_");
+		return parts [parts.length - 2];
+	},
+	
+	// Takes a port child or child element id and returns the parent port
+	getParentPort: function(element) {
+		if (element.constructor != String) {
+			element = element.id;
+		}
+		if (element == null) {
+			console.log("getParentPort() received null value");
+			return null;
+		}
+		var moduleId = this._extractModuleId(element);
+		var module = editor.workspace[moduleId];
+		var portId = this._extractPortId(element);
+		var port = module.getPort(portId);
+		return port;
 	},
 	
 	removeModule: function(id) {
@@ -293,7 +317,23 @@ function Module(moduleJSON) {
 	this.ui = null;
 	
 	this._nameToId = function(name) {
-		return name.replace(/ /g,"_");
+		return name.replace(/ /g,"");
+	}
+	
+	this.getPort = function(id) {
+		for (var i = 0; i < this.inputEnds.length; i++) {
+			if (id == this.inputEnds[i].id) {
+				return this.inputEnds[i];
+			}
+		}
+		
+		for (var i = 0; i < this.outputEnds.length; i++) {
+			if (id == this.outputEnds[i].id) {
+				return this.outputEnds[i];
+			}
+		}
+		
+		console.log("Unable to find port with id: " + id + " in module " + this.id);
 	}
 	
 	// TODO: Eventually replace with smarter suggestions of which endpoint to connect
@@ -462,10 +502,9 @@ function Port(module, id) {
 	this.id = id;
 	this.master = id == "master";
 	this.type = null;
-	
 	this.endpoint = null;
-	this.pipe = null;
 	this.tooltip = null;
+	this.pipe = null;
 	
 	this.init = function() {
 		// Set correct color for master port
@@ -523,6 +562,10 @@ function Port(module, id) {
 		
 		// Add tooltip
 		this._createTooltip(this.id);
+	}
+	
+	this.connectPipe = function(pipe) {
+		this.pipe = pipe;
 	}
 	
 	this.isConnected = function() {
@@ -591,12 +634,13 @@ function Port(module, id) {
 	
 	this._addTooltipButtonCalls = function(id) {
 		$("#" + "prop_" + id).click(function() {
-			properties.show("Bang");
+			var port = editor.getParentPort(this);
+			properties.show(port.pipe.outputModule.name + " to " + port.pipe.inputModule.name);
 		});
 		
 		$("#" + "del_" + id).click(function() {
-			var module = editor.getParentModule(this.id);
-			module.delete();
+			var port = editor.getParentPort(this);
+			port.pipe.delete();
 		});
 	}
 	
@@ -676,9 +720,10 @@ function Pipe(connection) {
 	}
 	
 	this.delete = function() {
-		this.outputEnd.detachAll();
+		var deleteOutput = this.outputEnd.connections.length <= 1;
+		this.inputEnd.detachAll();
 		jsPlumb.deleteEndpoint(this.inputEnd);
-		jsPlumb.deleteEndpoint(this.outputEnd);
+		if (deleteOutput) { jsPlumb.deleteEndpoint(this.outputEnd); }
 		editor.removePipe(this);
 	}
 }
