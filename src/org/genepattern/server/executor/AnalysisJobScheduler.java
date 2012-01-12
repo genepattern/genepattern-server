@@ -252,16 +252,28 @@ public class AnalysisJobScheduler implements Runnable {
     }
     
     static public int setJobStatus(int jobNo, int toStatusId) {
-        String sqlUpdate = "update ANALYSIS_JOB set status_id=:toStatusId where job_no=:jobNo";
-        SQLQuery sqlQuery = HibernateUtil.getSession().createSQLQuery(sqlUpdate);
-        sqlQuery.setInteger("toStatusId", toStatusId);
-        sqlQuery.setInteger("jobNo", jobNo);
-
-        int rval = sqlQuery.executeUpdate();
-        if (rval != 1) {
-            log.error("setJobStatus(jobNo="+jobNo+", toStatusId="+toStatusId+") had no effect");
+        final boolean isInTransaction = HibernateUtil.isInTransaction();
+        HibernateUtil.beginTransaction();
+        
+        try {
+            final String sqlUpdate = "update ANALYSIS_JOB set status_id=:toStatusId where job_no=:jobNo"; 
+            final SQLQuery sqlQuery = HibernateUtil.getSession().createSQLQuery(sqlUpdate);
+            sqlQuery.setInteger("toStatusId", toStatusId);
+            sqlQuery.setInteger("jobNo", jobNo);
+            int rval = sqlQuery.executeUpdate();
+            if (rval != 1) {
+                log.error("setJobStatus(jobNo="+jobNo+", toStatusId="+toStatusId+") had no effect");
+            }
+            if (!isInTransaction) {
+                HibernateUtil.commitTransaction();
+            }
+            return rval;
         }
-        return rval;
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
+        }
     }
 
     /**
