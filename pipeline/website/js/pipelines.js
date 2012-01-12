@@ -85,6 +85,16 @@ var editor = {
 		delete editor.workspace[id];
 	},
 	
+	removePipe: function(pipe) {
+		for (var i = 0; i < this.workspace["pipes"].length; i++) {
+			if (i == pipe) {
+				alert("Got It");
+				delete editor.workspace["pipes"][i];
+				return
+			}
+		}
+	},
+	
 	addModule: function(name) {
 		var module = library.modules[name];
 		if (module == null) { 
@@ -302,22 +312,22 @@ function Module(moduleJSON) {
 		return this._addOutput(this.outputEnds.length);
 	}
 	
-	this._createButtons = function(appendTo) {
+	this._createButtons = function(appendTo, baseId) {
 		var propertiesButton = document.createElement("img");
-		propertiesButton.setAttribute("id", "prop_" + this.id);
+		propertiesButton.setAttribute("id", "prop_" + baseId);
 		propertiesButton.setAttribute("src", "images/pencil.gif");
 		propertiesButton.setAttribute("class", "propertiesButton");
 		appendTo.appendChild(propertiesButton);
 
 		var deleteButton = document.createElement("img");
-		deleteButton.setAttribute("id", "del_" + this.id);
+		deleteButton.setAttribute("id", "del_" + baseId);
 		deleteButton.setAttribute("src", "images/delete.gif");
 		deleteButton.setAttribute("class", "deleteButton");
 		appendTo.appendChild(deleteButton);
 
 	}
 	
-	this._addButonCalls = function() {
+	this._addModuleButtonCalls = function() {
 		$("#" + "prop_" + this.id).click(function() {
 			properties.show(this.parentNode.getAttribute("name"));
 		});
@@ -336,7 +346,18 @@ function Module(moduleJSON) {
 		}
 		this.ui.setAttribute("name", this.name);
 		this.ui.innerHTML = "<br /><br />" + this.name + "<br />";
-		this._createButtons(this.ui);
+		this._createButtons(this.ui, this.id);
+	}
+	
+	this._addTooltipButtonCalls = function(id) {
+		$("#" + "prop_" + id).click(function() {
+			properties.show("Bang");
+		});
+		
+		$("#" + "del_" + id).click(function() {
+			var module = editor.getParentModule(this.id);
+			module.delete();
+		});
 	}
 	
 	this._createTooltip = function(endpoint, id, type) {
@@ -354,10 +375,13 @@ function Module(moduleJSON) {
 			}
 		}
 		else {
-			endpoint.tooltip.innerHTML = (type == "output" ? "Output: " : "Parameter: ") + id + "<br />";
-			this._createButtons(endpoint.tooltip);
+			endpoint.tooltip.innerHTML = (type == "output" ? "Output Selection:<br />" : "Input Parameter:<br />") + id + "<br />";
+			if (type == "input") {
+				this._createButtons(endpoint.tooltip, endpoint.tooltip.getAttribute("id"));
+			}	
 		}
 		$("#" + editor.div)[0].appendChild(endpoint.tooltip);
+		if (!master && type == "input") { this._addTooltipButtonCalls(endpoint.tooltip.getAttribute("id")); }
 		$("#" + endpoint.canvas.id).tooltip({"tip": "#" + endpoint.tooltip.id, "offset": [-50, 0]});
 	}
 	
@@ -367,7 +391,7 @@ function Module(moduleJSON) {
 			color = "blue";
 		}
 		var index = this.outputEnds.length;
-		var position = 0.1 * (index + 1);
+		var position = 0.2 * (index + 1) - 0.1;
 		this.outputEnds[index] = jsPlumb.addEndpoint(this.id.toString(), editor.OUTPUT_FILE_STYLE, { 
 			anchor: [position, 1, 0, 1], 
 			maxConnections: -1,
@@ -394,7 +418,7 @@ function Module(moduleJSON) {
 			color = "blue";
 		}
 		var index = this.inputEnds.length;
-		var position = 0.1 * (index + 1);
+		var position = 0.2 * (index + 1) - 0.1;
 		this.inputEnds[index] = jsPlumb.addEndpoint(this.id.toString(), editor.INPUT_FILE_STYLE, { 
 			anchor: [position, 0, 0, -1], 
 			maxConnections: 1,
@@ -485,7 +509,7 @@ function Module(moduleJSON) {
 		this._addMasterOutput();
 		this._addMasterInput();
 		jsPlumb.draggable(this.ui);
-		this._addButonCalls();
+		this._addModuleButtonCalls();
 	}
 	
 	this.spawn = function() {
@@ -550,5 +574,12 @@ function Pipe(connection) {
 	
 	this.fromMaster = function() {
 		return this.outputEnd.canvas.getAttribute("name").indexOf("master") >= 0;
+	}
+	
+	this.delete = function() {
+		this.outputEnd.detachAll();
+		jsPlumb.deleteEndpoint(this.inputEnd);
+		jsPlumb.deleteEndpoint(this.outputEnd);
+		editor.removePipe(this);
 	}
 }

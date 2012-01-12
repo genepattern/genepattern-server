@@ -104,11 +104,11 @@ body{ height:100% }
 .tooltip {
 	display:none;
 	background:transparent url(../images/black_arrow.png);
-	font-size:12px;
+	font-size:13px;
 	height:70px;
 	width:160px;
 	padding:25px;
-	color:#fff;
+	color:#000000;
 	text-align: center;
 	z-index: 9000;
 }
