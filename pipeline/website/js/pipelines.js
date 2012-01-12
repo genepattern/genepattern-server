@@ -109,7 +109,7 @@ var editor = {
 	},
 	
 	addConnection: function(source, target) {
-		return jsPlumb.connect({"source": source, "target": target});
+		return jsPlumb.connect({"source": source.endpoint, "target": target.endpoint});
 	},
 	
 	_gridLayoutManager: function() {
@@ -349,62 +349,11 @@ function Module(moduleJSON) {
 		this._createButtons(this.ui, this.id);
 	}
 	
-	this._addTooltipButtonCalls = function(id) {
-		$("#" + "prop_" + id).click(function() {
-			properties.show("Bang");
-		});
-		
-		$("#" + "del_" + id).click(function() {
-			var module = editor.getParentModule(this.id);
-			module.delete();
-		});
-	}
-	
-	this._createTooltip = function(endpoint, id, type) {
-		var master = id == "master";
-		
-		endpoint.tooltip = document.createElement("div");
-		endpoint.tooltip.setAttribute("id", "tip_" + endpoint.canvas.getAttribute("name"));
-		endpoint.tooltip.setAttribute("class", "tooltip");
-		if (master) {
-			if (type == "output") {
-				endpoint.tooltip.innerHTML = "Drag Connections From Here";
-			}
-			else if (type == "input") {
-				endpoint.tooltip.innerHTML = "Drag Connections To Here";
-			}
-		}
-		else {
-			endpoint.tooltip.innerHTML = (type == "output" ? "Output Selection:<br />" : "Input Parameter:<br />") + id + "<br />";
-			if (type == "input") {
-				this._createButtons(endpoint.tooltip, endpoint.tooltip.getAttribute("id"));
-			}	
-		}
-		$("#" + editor.div)[0].appendChild(endpoint.tooltip);
-		if (!master && type == "input") { this._addTooltipButtonCalls(endpoint.tooltip.getAttribute("id")); }
-		$("#" + endpoint.canvas.id).tooltip({"tip": "#" + endpoint.tooltip.id, "offset": [-50, 0]});
-	}
-	
 	this._addOutput = function(id) {
-		var color = "black";
-		if (id == "master") {
-			color = "blue";
-		}
+		var output = new Output(this, id);
 		var index = this.outputEnds.length;
-		var position = 0.2 * (index + 1) - 0.1;
-		this.outputEnds[index] = jsPlumb.addEndpoint(this.id.toString(), editor.OUTPUT_FILE_STYLE, { 
-			anchor: [position, 1, 0, 1], 
-			maxConnections: -1,
-			dragAllowedWhenFull: true,
-			paintStyle: {fillStyle: color}
-		});
-		var addedEnd = this.outputEnds[index];
-		addedEnd.canvas.setAttribute("name", "out_" + id + "_" + this.id);
-		
-		// Add tooltip
-		this._createTooltip(addedEnd, id, "output");
-		
-		return addedEnd;
+		this.outputEnds[index] = output;
+		return output;
 	}
 	
 	this._addMasterOutput = function() {
@@ -413,57 +362,14 @@ function Module(moduleJSON) {
 	}
 	
 	this._addInput = function(id) {
-		var color = "black";
-		if (id == "master") {
-			color = "blue";
-		}
+		var input = new Input(this, id);
 		var index = this.inputEnds.length;
-		var position = 0.2 * (index + 1) - 0.1;
-		this.inputEnds[index] = jsPlumb.addEndpoint(this.id.toString(), editor.INPUT_FILE_STYLE, { 
-			anchor: [position, 0, 0, -1], 
-			maxConnections: 1,
-			paintStyle: {fillStyle: color}
-		});
-		var addedEnd = this.inputEnds[index];
-		addedEnd.canvas.setAttribute("name", "in_" + id + "_" + this.id);
-		
-		// Add tooltip
-		this._createTooltip(addedEnd, id, "input");
-		
-		return addedEnd;
+		this.inputEnds[index] = input;
+		return input;
 	}
 	
 	this._addMasterInput = function() {
 		return this._addInput("master");
-	}
-	
-	// FIXME: Make it so it completely redraws the outputs with the new system
-	this._addOutputs = function() {
-		if (this.type == "module visualizer") { return; }
-		
-		var increment = 1.0 / (4 + this.output.length);
-		for (var i = 1; i <= this.output.length + 3; i++) {
-			this.outputEnds[this.outputEnds.length] = jsPlumb.addEndpoint(this.id.toString(), editor.OUTPUT_FILE_STYLE, { 
-				anchor: [increment * i, 1, 0, 1], 
-				maxConnections: -1,
-				paintStyle: {fillStyle: "blue"}
-			});
-		}
-	}
-	
-	// FIXME: Make it so it completely redraws the inputs with the new system
-	this._addInputs = function() {
-		var length = 0;
-		for (var input in this.fileInput) {
-			length++;
-		}
-		
-		var increment = 1.0 / (length + 1);
-		var count = 1;
-		for (var input in this.fileInput) {
-			this.inputEnds[this.inputEnds.length] = jsPlumb.addEndpoint(this.id.toString(), editor.INPUT_FILE_STYLE, { anchor: [increment * count, 0, 0, -1] });
-			count++;
-		}
 	}
 	
 	this._detachInputs = function() {
@@ -478,18 +384,18 @@ function Module(moduleJSON) {
 		}
 	}
 	
-	this._removeEndpoints = function() {
+	this._removePorts = function() {
 		for (var i = 0; i < this.inputEnds.length; i++) {
-			jsPlumb.deleteEndpoint(this.inputEnds[i]);
+			this.inputEnds[i].delete();
 		}
 		
 		for (var i = 0; i < this.outputEnds.length; i++) {
-			jsPlumb.deleteEndpoint(this.outputEnds[i]);
+			this.outputEnds[i].delete();
 		}
 	}
 	
 	this._removeUI = function() {
-		this._removeEndpoints();
+		this._removePorts();
 		$("#" + this.id).remove();
 	}
 	
@@ -545,6 +451,199 @@ function Visualizer(moduleJSON) {
 	var module = new Module(moduleJSON);
 	module.type = "module visualizer";
 	return module;
+}
+
+/**
+ * Class representing a port for connecting modules
+ * @param endpoint - A jsPlumb Endpoint object
+ */
+function Port(module, id) {
+	this.module = module;
+	this.id = id;
+	this.master = id == "master";
+	this.type = null;
+	
+	this.endpoint = null;
+	this.pipe = null;
+	this.tooltip = null;
+	
+	this.init = function() {
+		// Set correct color for master port
+		var color = "black";
+		if (this.master) { color = "blue"; }
+		
+		// Get correct list on module for type
+		var correctList = null;
+		if (this.isOutput()) {
+			correctList = this.module.outputEnds;
+		}
+		else {
+			correctList = this.module.inputEnds;
+		}
+		
+		// Get the correct base style
+		var baseStyle = null;
+		if (this.isOutput()) {
+			baseStyle = editor.OUTPUT_FILE_STYLE;
+		}
+		else {
+			baseStyle = editor.INPUT_FILE_STYLE
+		}
+		
+		// Get the correct endpoint name prefix
+		var prefix = null;
+		if (this.isOutput()) {
+			prefix = "out_";
+		}
+		else {
+			prefix = "in_";
+		}
+		
+		// Calculate position
+		var index = correctList.length;
+		var position = 0.2 * (index + 1) - 0.1;
+		
+		// Get the correct position array
+		var posArray = null;
+		if (this.isOutput()) {
+			posArray = [position, 1, 0, 1];
+		}
+		else {
+			posArray = [position, 0, 0, -1];
+		}
+
+		// Create endpoint
+		this.endpoint = jsPlumb.addEndpoint(this.module.id.toString(), baseStyle, { 
+			anchor: posArray, 
+			maxConnections: -1,
+			dragAllowedWhenFull: true,
+			paintStyle: {fillStyle: color}
+		});
+		this.endpoint.canvas.setAttribute("name", prefix + this.id + "_" + this.module.id);
+		
+		// Add tooltip
+		this._createTooltip(this.id);
+	}
+	
+	this.isConnected = function() {
+		if (this.pipe == null) {
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+	
+	this.isOutput = function() {
+		if (this.type == "output") {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	this.isInput = function() {
+		if (this.type == "input") {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	this.delete = function() {
+		this.detachAll();
+		jsPlumb.deleteEndpoint(this.endpoint);
+		
+		for (var i = 0; i < this.module.inputEnds.length; i++) {
+			if (i == this) {
+				delete this.module.inputEnds[i];
+				return;
+			}
+		}
+		
+		for (var i = 0; i < this.module.outputEnds.length; i++) {
+			if (i == this) {
+				delete this.module.outputEnds[i];
+				return;
+			}
+		}
+	}
+	
+	this.detachAll = function() {
+		this.endpoint.detachAll();
+	}
+	
+	this._createButtons = function(appendTo, baseId) {
+		var propertiesButton = document.createElement("img");
+		propertiesButton.setAttribute("id", "prop_" + baseId);
+		propertiesButton.setAttribute("src", "images/pencil.gif");
+		propertiesButton.setAttribute("class", "propertiesButton");
+		appendTo.appendChild(propertiesButton);
+
+		var deleteButton = document.createElement("img");
+		deleteButton.setAttribute("id", "del_" + baseId);
+		deleteButton.setAttribute("src", "images/delete.gif");
+		deleteButton.setAttribute("class", "deleteButton");
+		appendTo.appendChild(deleteButton);
+	}
+	
+	this._addTooltipButtonCalls = function(id) {
+		$("#" + "prop_" + id).click(function() {
+			properties.show("Bang");
+		});
+		
+		$("#" + "del_" + id).click(function() {
+			var module = editor.getParentModule(this.id);
+			module.delete();
+		});
+	}
+	
+	this._createTooltip = function(name) {
+		this.tooltip = document.createElement("div");
+		this.tooltip.setAttribute("id", "tip_" + this.endpoint.canvas.getAttribute("name"));
+		this.tooltip.setAttribute("class", "tooltip");
+		if (this.master) {
+			if (this.isOutput()) {
+				this.tooltip.innerHTML = "Drag Connections From Here";
+			}
+			else if (this.isInput()) {
+				this.tooltip.innerHTML = "Drag Connections To Here";
+			}
+		}
+		else {
+			this.tooltip.innerHTML = (this.isOutput() ? "Output Selection:<br />" : "Input Parameter:<br />") + name + "<br />";
+			if (this.isInput()) {
+				this._createButtons(this.tooltip, this.tooltip.getAttribute("id"));
+			}	
+		}
+		$("#" + editor.div)[0].appendChild(this.tooltip);
+		if (!this.master && this.isInput()) { this._addTooltipButtonCalls(this.tooltip.getAttribute("id")); }
+		$("#" + this.endpoint.canvas.id).tooltip({"tip": "#" + this.tooltip.id, "offset": [-50, 0]});
+	}
+}
+
+/**
+ * Class an input port on a module
+ * @param endpoint - A jsPlumb Endpoint object
+ */
+function Input(module, id) {
+	var port = new Port(module, id);
+	port.type = "input";
+	port.init();
+	return port;
+}
+
+/**
+ * Class an output port on a module
+ * @param endpoint - A jsPlumb Endpoint object
+ */
+function Output(module, id) {
+	var port = new Port(module, id);
+	port.type = "output";
+	port.init();
+	return port;
 }
 
 /**
