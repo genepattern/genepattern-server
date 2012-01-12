@@ -75,16 +75,32 @@ public class PipelineHandler {
         }
         
         log.debug("starting pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
-        boolean isScatterStep = isScatterStep(pipelineJobInfo);
+        final boolean isInTransaction = HibernateUtil.isInTransaction();
+        final boolean isScatterStep = isScatterStep(pipelineJobInfo);
         try {
             HibernateUtil.beginTransaction();
-            List<JobInfo> jobsToStart = runPipeline(pipelineJobInfo, stopAfterTask, isScatterStep);
+            List<JobInfo> addedJobs = runPipeline(pipelineJobInfo, stopAfterTask, isScatterStep);
             //set the parent pipeline's status to PROCESSING 
-            AnalysisJobScheduler.setJobStatus(pipelineJobInfo.getJobNumber(), JobStatus.JOB_PROCESSING);            
-            for(JobInfo jobInfo : jobsToStart) {
-                JobQueueUtil.setJobStatus(jobInfo.getJobNumber(), JobQueue.Status.PENDING);
+            AnalysisJobScheduler.setJobStatus(pipelineJobInfo.getJobNumber(), JobStatus.JOB_PROCESSING); 
+
+            //add job records to the job_queue
+            if (!isScatterStep) {
+                //for standard pipelines, set the status of the first job to PENDING, the rest to WAITING
+                JobQueue.Status status = JobQueue.Status.PENDING;
+                for(final JobInfo jobInfo : addedJobs) {
+                    JobQueueUtil.addJobToQueue( jobInfo,  status);
+                    status = JobQueue.Status.WAITING;
+                }
             }
-            HibernateUtil.commitTransaction();
+            else {
+                //for scatter-gather pipelines, set the status of all jobs to PENDING
+                for(final JobInfo jobInfo : addedJobs) {
+                    JobQueueUtil.addJobToQueue( jobInfo,  JobQueue.Status.PENDING);
+                }
+            }
+            if (!isInTransaction) {
+                HibernateUtil.commitTransaction();
+            }
         }
         catch (Throwable t) {
             HibernateUtil.rollbackTransaction();
@@ -439,18 +455,32 @@ public class PipelineHandler {
         return waitingJobs;
     }
     
+    /**
+     * Add all of the steps in the pipeline as new jobs.
+     * 
+     * @param pipelineJobInfo
+     * @param stopAfterTask
+     * @param isScatterStep
+     * 
+     * @return - the list of added jobs
+     * 
+     * @throws PipelineModelException
+     * @throws MissingTasksException
+     * @throws JobSubmissionException
+     */
     private static List<JobInfo> runPipeline(JobInfo pipelineJobInfo, int stopAfterTask, boolean isScatterStep) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     {
-        List<JobInfo> jobsToStart = new ArrayList<JobInfo>();
+        List<JobInfo> addedJobs = new ArrayList<JobInfo>();
         if (!isScatterStep) {
-            JobInfo firstJob = runPipeline(pipelineJobInfo, stopAfterTask);
-            jobsToStart.add( firstJob );
+            // add job records to the analysis_job table
+            addedJobs = runPipeline(pipelineJobInfo, stopAfterTask);
+            return addedJobs;
         }
         else {
-            jobsToStart = runScatterPipeline(pipelineJobInfo, stopAfterTask);
+            addedJobs = runScatterPipeline(pipelineJobInfo, stopAfterTask);
+            return addedJobs;
         }
-        return jobsToStart;
     }
     
     /**
@@ -466,7 +496,7 @@ public class PipelineHandler {
      * @throws WebServiceException
      * @throws JobSubmissionException
      */
-    private static JobInfo runPipeline(JobInfo pipelineJobInfo, int stopAfterTask) 
+    private static List<JobInfo> runPipeline(JobInfo pipelineJobInfo, int stopAfterTask) 
     throws PipelineModelException, MissingTasksException, JobSubmissionException
     {  
         log.debug("starting pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
@@ -482,8 +512,7 @@ public class PipelineHandler {
 
         int stepNum = 0;
         Vector<JobSubmission> tasks = pipelineModel.getTasks();
-        Integer firstStep = null;
-        JobInfo firstJobInfo = null;
+        List<JobInfo> submittedJobs = new ArrayList<JobInfo>();
         for(JobSubmission jobSubmission : tasks) { 
             if (stepNum >= stopAfterTask) {
                 // stop and execute no further
@@ -495,14 +524,11 @@ public class PipelineHandler {
             ParameterInfo[] params = parameterInfo;
             params = setJobParametersFromArgs(jobSubmission.getName(), stepNum + 1, params, additionalArgs);
 
-            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), jobSubmission, params, JobQueue.Status.WAITING);
-            if (firstStep == null) {
-                firstStep = submittedJob.getJobNumber();
-                firstJobInfo = submittedJob;
-            }
+            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), jobSubmission, params);
+            submittedJobs.add(submittedJob);
             ++stepNum;
         }
-        return firstJobInfo;
+        return submittedJobs;
     }
 
     private static List<JobInfo> runScatterPipeline(JobInfo pipelineJobInfo, int stopAfterTask) 
@@ -830,7 +856,7 @@ public class PipelineHandler {
                 scatterParam.setValue(batchParamValue);
                 log.debug("\t\tstep "+job_idx+": "+scatterParam.getName()+"="+scatterParam.getValue());
             }
-            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params, JobQueue.Status.WAITING);
+            JobInfo submittedJob = addJobToPipeline(pipelineJobInfo.getJobNumber(), pipelineJobInfo.getUserId(), taskInfo, params);
             submittedJobs.add(submittedJob);
         }
         return submittedJobs;
@@ -873,7 +899,7 @@ public class PipelineHandler {
      * @throws IllegalArgumentException, if the given JobSubmission does not have a valid taskId
      * @throws JobSubmissionException, if not able to add the job to the internal queue
      */
-    private static JobInfo addJobToPipeline(int parentJobId, String userID, JobSubmission jobSubmission, ParameterInfo[] params, JobQueue.Status initialStatus)
+    private static JobInfo addJobToPipeline(int parentJobId, String userID, JobSubmission jobSubmission, ParameterInfo[] params)
     throws JobSubmissionException
     {
         if (jobSubmission == null) {
@@ -886,7 +912,7 @@ public class PipelineHandler {
             throw new IllegalArgumentException("jobSubmission.taskInfo.ID not set");
         }
         TaskInfo taskInfo = jobSubmission.getTaskInfo();
-        return addJobToPipeline(parentJobId, userID, taskInfo, params, initialStatus);
+        return addJobToPipeline(parentJobId, userID, taskInfo, params);
     }
     
     /**
@@ -895,7 +921,7 @@ public class PipelineHandler {
      * @throws IllegalArgumentException, if the given JobSubmission does not have a valid taskId
      * @throws JobSubmissionException, if not able to add the job to the internal queue
      */
-    private static JobInfo addJobToPipeline(int parentJobId, String userID, TaskInfo taskInfo, ParameterInfo[] params, JobQueue.Status initialStatus)
+    private static JobInfo addJobToPipeline(int parentJobId, String userID, TaskInfo taskInfo, ParameterInfo[] params)
     throws JobSubmissionException
     {
         if (taskInfo == null) {
@@ -926,7 +952,7 @@ public class PipelineHandler {
         }
 
         //make sure to commit db changes
-        JobInfo jobInfo = addJobToQueue(taskInfo, userID, params, parentJobId, initialStatus);
+        JobInfo jobInfo = addJobToQueue(taskInfo, userID, params, parentJobId);
         return jobInfo;
     }
     
@@ -1478,7 +1504,10 @@ public class PipelineHandler {
     
     //custom implementation of JobManager code
     /**
-     * Adds a new job entry to the ANALYSIS_JOB table, with initial status either PENDING or WAITING.
+     * Adds a new job entry to the ANALYSIS_JOB table.
+     * 
+     * Don't forget to add a record to the internal job queue, for dispatching ...
+     *     JobQueueUtil.addJobToQueue( jobInfo, initialJobStatus );
      * 
      * @param taskID
      * @param userID
@@ -1488,24 +1517,19 @@ public class PipelineHandler {
      * @return
      * @throws JobSubmissionException
      */
-    static private JobInfo addJobToQueue(final TaskInfo taskInfo, final String userId, final ParameterInfo[] parameterInfoArray, final Integer parentJobNumber, final JobQueue.Status initialJobStatus) 
+    static private JobInfo addJobToQueue(final TaskInfo taskInfo, final String userId, final ParameterInfo[] parameterInfoArray, final Integer parentJobNumber) 
     throws JobSubmissionException
     {
         JobInfo jobInfo = null;
-        boolean isInTransaction = HibernateUtil.isInTransaction();
+        final boolean isInTransaction = HibernateUtil.isInTransaction();
         try {
             HibernateUtil.beginTransaction();
             AnalysisJob newJob = addNewJob(userId, taskInfo, parameterInfoArray, parentJobNumber);
             jobInfo = new JobInfo(newJob);
-            JobManager.createJobDirectory(jobInfo);
-            
-            //add record to the internal job queue, for dispatching ...
-            JobQueueUtil.addJobToQueue( jobInfo, initialJobStatus );
-            
+            JobManager.createJobDirectory(jobInfo); 
             if (!isInTransaction) {
                 HibernateUtil.commitTransaction();
             }
-            
             return jobInfo;
         }
         catch (Throwable t) {
@@ -1533,9 +1557,7 @@ public class PipelineHandler {
             throw new JobSubmissionException("Error adding job to queue, invalid taskId, taskInfo.getID="+taskInfo.getID());
         }
         
-        boolean inTransaction = HibernateUtil.isInTransaction();
-
-        //Integer jobId = null;
+        final boolean isInTransaction = HibernateUtil.isInTransaction();
         try {
             String parameter_info = ParameterFormatConverter.getJaxbString(parameterInfoArray);
 
@@ -1554,13 +1576,21 @@ public class PipelineHandler {
             aJob.setJobStatus(js);
             
             HibernateUtil.getSession().save(aJob);
-            //jobId = aJob.getJobNo();
+            if (!isInTransaction) {
+                HibernateUtil.commitTransaction();
+            }
             return aJob;
         }
         catch (Throwable t) {
+            HibernateUtil.closeCurrentSession();
             throw new JobSubmissionException("Error adding job to queue, taskId="+taskInfo.getID()+
                     ", taskName="+taskInfo.getName()+
                     ", taskLsid="+taskInfo.getLsid(), t);
+        }
+        finally {
+            if (!isInTransaction) {
+                HibernateUtil.closeCurrentSession();
+            }
         }
     }
 
