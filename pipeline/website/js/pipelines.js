@@ -30,32 +30,39 @@ var editor = {
 		
 		jsPlumb.bind("jsPlumbConnection", function(event) {
 			var pipe = new Pipe(event.connection);
-			if (pipe.fromMaster()) {
-				var output = pipe.outputModule;
-				var input = pipe.inputModule;
+			if (pipe.toMaster()) {
+				var output = pipe.outputPort;
+				var input = pipe.inputPort;
 				editor.addPipe(output, input);
 			}
 		});
 	},
 	
 	addPipe: function(output, input) {
-		var newIn = input.suggestInput();
-		
+		var newIn = input.module.suggestInput();
 		// If there are no valid inputs left return null and cancel the pipe
 		if (newIn == null) {
-			output.getMasterOutput().detachAll();
+			output.module.getMasterOutput().detachAll();
 			return;
 		}
-		
-		var newOut = output.suggestOutput(newIn);
+
+		// Select the correct output port
+		var newOut = null;
+		if (output.master) {
+			newOut = output.module.suggestOutput(newIn);
+		}
+		else {
+			newOut = output;
+		}
+
 		var connection = editor.addConnection(newOut, newIn);
 		var newPipe = new Pipe(connection);
 		newIn.connectPipe(newPipe);
 		newOut.connectPipe(newPipe);
 		
 		editor.workspace["pipes"].push(newPipe);
-		output.getMasterOutput().detachAll();
-		properties.show(output.name + " to " + input.name);
+		input.module.getMasterInput().detachAll();
+		properties.show(output.module.name + " to " + input.module.name);
 	},
 
 	_nextId: function() {
@@ -513,30 +520,18 @@ function Port(module, id) {
 		
 		// Get correct list on module for type
 		var correctList = null;
-		if (this.isOutput()) {
-			correctList = this.module.outputEnds;
-		}
-		else {
-			correctList = this.module.inputEnds;
-		}
+		if (this.isOutput()) { correctList = this.module.outputEnds; }
+		else { correctList = this.module.inputEnds; }
 		
 		// Get the correct base style
 		var baseStyle = null;
-		if (this.isOutput()) {
-			baseStyle = editor.OUTPUT_FILE_STYLE;
-		}
-		else {
-			baseStyle = editor.INPUT_FILE_STYLE
-		}
+		if (this.isOutput()) { baseStyle = editor.OUTPUT_FILE_STYLE; }
+		else { baseStyle = editor.INPUT_FILE_STYLE; }
 		
 		// Get the correct endpoint name prefix
 		var prefix = null;
-		if (this.isOutput()) {
-			prefix = "out_";
-		}
-		else {
-			prefix = "in_";
-		}
+		if (this.isOutput()) { prefix = "out_"; }
+		else { prefix = "in_"; }
 		
 		// Calculate position
 		var index = correctList.length;
@@ -544,17 +539,18 @@ function Port(module, id) {
 		
 		// Get the correct position array
 		var posArray = null;
-		if (this.isOutput()) {
-			posArray = [position, 1, 0, 1];
-		}
-		else {
-			posArray = [position, 0, 0, -1];
-		}
-
+		if (this.isOutput()) { posArray = [position, 1, 0, 1]; }
+		else { posArray = [position, 0, 0, -1]; }
+		
+		// Get the correct number of max connections
+		var maxConn = null;
+		if (this.isOutput()) { maxConn = -1; }
+		else { maxConn = 1; }
+		
 		// Create endpoint
 		this.endpoint = jsPlumb.addEndpoint(this.module.id.toString(), baseStyle, { 
 			anchor: posArray, 
-			maxConnections: -1,
+			maxConnections: maxConn,
 			dragAllowedWhenFull: true,
 			paintStyle: {fillStyle: color}
 		});
@@ -697,8 +693,8 @@ function Pipe(connection) {
 	this.connection = connection;
 	this.outputModule = null;
 	this.inputModule = null;
-	this.inputEnd = null;
-	this.outputEnd = null;
+	this.inputPort = null;
+	this.outputPort = null;
 	this.ui = null;
 	
 	this._init = function(connection) {
@@ -706,24 +702,24 @@ function Pipe(connection) {
 		this.outputModule = editor.getParentModule(connection.endpoints[0].canvas.getAttribute("name"));
 		// Set input module
 		this.inputModule = editor.getParentModule(connection.endpoints[1].canvas.getAttribute("name"));
-		// Set input endpoint
-		this.inputEnd = connection.endpoints[1];
-		// Set output endpoint
-		this.outputEnd = connection.endpoints[0];
+		// Set output port
+		this.outputPort = editor.getParentPort(connection.endpoints[0].canvas.getAttribute("name"));
+		// Set input port
+		this.inputPort = editor.getParentPort(connection.endpoints[1].canvas.getAttribute("name"));
 		// Set canvas UI element
 		this.ui = connection.canvas;
 	}
 	this._init(connection);
 	
-	this.fromMaster = function() {
-		return this.outputEnd.canvas.getAttribute("name").indexOf("master") >= 0;
+	this.toMaster = function() {
+		return this.inputPort.endpoint.canvas.getAttribute("name").indexOf("_master_") >= 0;
 	}
 	
 	this.delete = function() {
 		var deleteOutput = this.outputEnd.connections.length <= 1;
-		this.inputEnd.detachAll();
-		jsPlumb.deleteEndpoint(this.inputEnd);
-		if (deleteOutput) { jsPlumb.deleteEndpoint(this.outputEnd); }
+		this.inputPort.detachAll();
+		jsPlumb.deleteEndpoint(this.inputPort.endpoint);
+		if (deleteOutput) { jsPlumb.deleteEndpoint(this.outputPort.endpoint); }
 		editor.removePipe(this);
 	}
 }
