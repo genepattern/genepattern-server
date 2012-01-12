@@ -28,18 +28,18 @@ public class JobQueueUtil {
     static public void addJobToQueue(int jobNo, int parent, Date dateSubmitted, JobQueue.Status statusId) 
     throws Exception
     { 
+        final boolean isInTransaction = HibernateUtil.isInTransaction();
+
         JobQueue record = new JobQueue();
         record.setJobNo(jobNo);
         record.setParentJobNo(parent);
         record.setDateSubmitted(dateSubmitted);
         record.setStatus(statusId.toString());
-        
-        boolean inTransaction = HibernateUtil.isInTransaction();
-        
+
         try {
             HibernateUtil.beginTransaction();
             HibernateUtil.getSession().save( record );
-            if (!inTransaction) {
+            if (!isInTransaction) {
                 HibernateUtil.commitTransaction();
             }
         }
