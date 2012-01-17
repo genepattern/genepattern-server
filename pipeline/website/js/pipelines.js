@@ -344,6 +344,8 @@ function Module(moduleJSON) {
 	}
 	
 	// TODO: Eventually replace with smarter suggestions of which endpoint to connect
+	// FIXME: This method is broken.  By altering the fileInput we may be altering for all module instances of this type.
+	//            We also need to be able to set as unused when a port is deleted.
 	this.suggestInput = function() {
 		for (i in this.fileInput) {
 			var used = this.fileInput[i].used;

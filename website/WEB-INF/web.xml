@@ -462,6 +462,16 @@
   <servlet-name>GenomeSpaceOpenID</servlet-name>
   <url-pattern>/GenomeSpaceOpenID</url-pattern>
  </servlet-mapping>
+ 
+ <servlet>
+    <display-name>Pipeline Designer Servlet</display-name>
+    <servlet-name>PipelineDesigner</servlet-name>
+    <servlet-class>org.genepattern.pipelines.PipelineQueryServlet</servlet-class>    
+ </servlet>
+ <servlet-mapping>
+  <servlet-name>PipelineDesigner</servlet-name>
+  <url-pattern>/PipelineDesigner/*</url-pattern>
+ </servlet-mapping>
 
  <servlet>
   <display-name>JobConfigurationServlet</display-name>
