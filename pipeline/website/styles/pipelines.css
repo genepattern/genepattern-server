@@ -17,7 +17,6 @@ body{ height:100% }
 }
 
 #workspace {
-	/*background-image:url('../images/dots.gif');*/
 	display: block;
 	position: absolute;
     top: 60px;
