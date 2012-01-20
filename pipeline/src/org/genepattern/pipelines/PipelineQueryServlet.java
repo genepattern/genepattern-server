@@ -23,7 +23,7 @@ public class PipelineQueryServlet extends HttpServlet {
 		
 		// Route to the appropriate action, returning an error if unknown
 		if (LIBRARY.equals(action)) {
-		    constructLibrary();
+		    constructLibrary(response);
 		}
 		else {
 		    sendError(response, action);
@@ -40,15 +40,19 @@ public class PipelineQueryServlet extends HttpServlet {
 	    doGet(request, response);
 	}
 	
-	public void sendError(HttpServletResponse response, String action) {
-	    // TODO: Implement returning a JSON error to the client
+	private void write(HttpServletResponse response, Object content) {
+	    this.write(response, content.toString());
+	}
+	
+	private void write(HttpServletResponse response, String content) {
 	    PrintWriter writer = null;
         try {
             writer = response.getWriter();
-            writer.println("Error routing in servlet for: " + action);
+            writer.println(content);
             writer.flush();
         }
         catch (IOException e) {
+            log.error("Error writing to the response in PipelineQueryServlet: " + content);
             e.printStackTrace();
         }
         finally {
@@ -56,11 +60,19 @@ public class PipelineQueryServlet extends HttpServlet {
         }
 	}
 	
-	public void constructLibrary() {
-	    // TODO: Construct and return an array of ModuleJSONs
-	    for (TaskInfo info : TaskInfoCache.instance().getAllTasks()) {
+	public void sendError(HttpServletResponse response, String action) {
+	    ListJSON error = new ListJSON();
+	    error.addError("Error routing in servlet for: " + action);
+	    this.write(response, error);
+	}
+	
+	public void constructLibrary(HttpServletResponse response) {
+	    ListJSON listObject = new ListJSON();
+        for (TaskInfo info : TaskInfoCache.instance().getAllTasks()) {
             ModuleJSON mj = new ModuleJSON(info);
-            log.info(mj.toString());
+            listObject.addChild(mj);
         }
+        
+        this.write(response, listObject);
 	}
 }

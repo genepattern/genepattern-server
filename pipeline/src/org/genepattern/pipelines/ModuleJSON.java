@@ -95,8 +95,14 @@ public class ModuleJSON extends JSONObject {
     }
     
     public void constructInputs(ParameterInfo[] params) throws JSONException {
-        // TODO: Implement
-        this.put(INPUTS, new JSONArray());
+        JSONArray inputs = new JSONArray();
+        
+        for (ParameterInfo i : params) {
+            InputJSON param = new InputJSON(i);
+            inputs.put(param);
+        }
+        
+        this.put(INPUTS, inputs);
     }
     
     public JSONArray getOutputs() throws JSONException {
