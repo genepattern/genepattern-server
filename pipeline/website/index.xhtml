@@ -276,13 +276,23 @@
 				//a.inputEnds[0].bind("mouseenter", function() {alert("HELLO");});
 			}
 			
+			function doLibrary(data) {
+				//alert("IN");
+				//console.log(data);
+				library.init(data);
+				
+			}
+			
 			var testCount = 0;
 			jsPlumb.ready(function() {
 				editor.init();
-				library.init(allamlModules);
+				//library.init(allamlModules);
+				//alert("OUT");
+				$.getJSON("test.json", doLibrary);
+				//createALLAML();
+				//alert("AFTER");
 				properties.init();
-				createALLAML();
-				
+
 				//$("#workspace").selectable();
 				
 				//$(".module").click(function() {

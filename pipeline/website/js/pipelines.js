@@ -211,11 +211,22 @@ var library = {
 			this._readModuleNames();
 			
 			this._addModuleComboBox();
+			this._addDefaultRecent();
 			
 			for (var i = 0; i < this.recent.length; i++) {
 				var name = this.recent[i];
 				this._addModuleButton(name);
 			}
+		},
+		
+		_addDefaultRecent: function() {
+			this.recent = ["PreprocessDataset", 
+			               "ConvertLineEndings",
+			               "HierarchicalClustering",
+			               "HierarchicalClusteringViewer",
+			               "AuDIT",
+			               "ComparativeMarkerSelection",
+			               "HeatMapViewer"];
 		},
 		
 		_addRecentModule: function(name) {
@@ -262,21 +273,31 @@ var library = {
 		
 		_readModules: function(moduleJSON) {
 			this.modules = {};
-			for (var i = 0; i < moduleJSON.modules.length; i++) {
-				var module = moduleJSON.modules[i];
-				if (module.type == "Module") {
+			for (var i in moduleJSON) {
+				var module = moduleJSON[i];
+				if (module.type == "module") {
 					this.modules[module.name] = new Module(module);
 				}
-				else if (module.type == "Visualizer") {
+				else if (module.type == "visualizer") {
 					this.modules[module.name] = new Visualizer(module);
 				}
-				else if (module.type == "Pipeline") {
+				else if (module.type == "pipeline") {
 					this.modules[module.name] = new Pipeline(module);
 				}
 				else {
 					console.log("Error detecting module type: " + module.name);
 				}
 			}
+		},
+		
+		_extractFileInputs: function(inputsJSON) {
+			var files = new Array();
+			for (var i = 0; i < inputsJSON.length; i++) {
+				if (inputsJSON[i].type == "java.io.File") {
+					files[files.length] = inputsJSON[i];
+				}
+			}
+			return files;
 		}
 };
 
@@ -316,15 +337,17 @@ function Module(moduleJSON) {
 	this.id = null;
 	this.name = moduleJSON.name;
 	this.lsid = moduleJSON.lsid;
-	this.output = moduleJSON.output;
+	this.version = moduleJSON.version;
+	this.output = moduleJSON.outputs;
 	this.outputEnds = [];
 	this.inputEnds = [];
-	this.fileInput = moduleJSON.fileInput;
+	this.input = moduleJSON.inputs;
+	this.fileInput = library._extractFileInputs(moduleJSON.inputs);
 	this.type = "module";
 	this.ui = null;
 	
 	this._nameToId = function(name) {
-		return name.replace(/ /g,"");
+		return name.replace(/\./g,"");
 	}
 	
 	this.getPort = function(id) {
@@ -347,11 +370,11 @@ function Module(moduleJSON) {
 	// FIXME: This method is broken.  By altering the fileInput we may be altering for all module instances of this type.
 	//            We also need to be able to set as unused when a port is deleted.
 	this.suggestInput = function() {
-		for (i in this.fileInput) {
+		for (var i = 0; i < this.fileInput.length; i++) {
 			var used = this.fileInput[i].used;
 			if (used == null) {
 				this.fileInput[i].used = true;
-				return this._addInput(this._nameToId(i));
+				return this._addInput(this._nameToId(this.fileInput[i].name));
 			}
 		}
 	}

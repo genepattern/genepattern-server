@@ -3,6 +3,7 @@ package org.genepattern.pipelines;
 import org.apache.log4j.Logger;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,7 +28,7 @@ public class ModuleJSON extends JSONObject {
             this.extractVersion(info.getLsid());
             this.determineType(info);
             this.constructInputs(info.getParameterInfoArray());
-            this.constructOutputs(info.getParameterInfoArray());
+            this.constructOutputs(info.getTaskInfoAttributes());
         }
         catch (JSONException e) {
             log.error("Error parsing JSON and initializing ModuleJSON from TaskInfo: " + info.getName());
@@ -113,8 +114,16 @@ public class ModuleJSON extends JSONObject {
         this.put(OUTPUTS, outputs);
     }
     
-    public void constructOutputs(ParameterInfo[] params) throws JSONException {
-        // TODO: Implement
-        this.put(OUTPUTS, new JSONArray());
+    public void constructOutputs(TaskInfoAttributes tia) throws JSONException {
+        JSONArray outputs = new JSONArray();
+        String formatString = tia.get("fileFormat");
+        if (formatString != null && formatString.length() > 0) {
+            String[] parts = formatString.split(";");
+            for (String i : parts) {
+                if (i.length() > 0) outputs.put(i);
+            }
+        }
+        
+        this.put(OUTPUTS, outputs);
     }
 }
