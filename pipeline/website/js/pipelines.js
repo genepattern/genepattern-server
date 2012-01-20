@@ -473,9 +473,9 @@ function Module(moduleJSON) {
 				this.outputEnds[0].delete();
 				continue;
 			}
-			
+
 			if (this.outputEnds[0].isConnected()) {
-				outputEnds[0].pipe.delete();
+				this.outputEnds[0].pipe.delete();
 			}
 		}
 	}
@@ -568,7 +568,7 @@ function Port(module, id) {
 		
 		// Calculate position
 		var index = correctList.length;
-		var position = 0.2 * (index + 1) - 0.1;
+		var position = 0.1 * (index + 1);
 		
 		// Get the correct position array
 		var posArray = null;
