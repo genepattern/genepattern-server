@@ -347,7 +347,7 @@ function Module(moduleJSON) {
 	this.suggestInput = function () {
         for (var i = 0; i < this.fileInput.length; i++) {
             var used = this.fileInput[i].used;
-            if (used === null) {
+            if (used == null) {
                 this.fileInput[i].used = true;
                 return this._addInput(this._nameToId(this.fileInput[i].name));
             }
