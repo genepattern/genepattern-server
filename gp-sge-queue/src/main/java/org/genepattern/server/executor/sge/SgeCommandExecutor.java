@@ -79,7 +79,7 @@ public class SgeCommandExecutor implements CommandExecutor {
             sgeSessionFile = System.getProperty("resources", ".") + "/conf/sge_contact.txt";
         }
         String sgeBatchSystemName = configurationProperties.getProperty(Prop.SGE_BATCH_SYSTEM_NAME.name(), "gp_server");
-        String sgeLogFilename = configurationProperties.getProperty(Prop.SGE_LOG_FILENAME.name(), ",sge.out");
+        String sgeLogFilename = configurationProperties.getProperty(Prop.SGE_LOG_FILENAME.name(), ".sge.out");
         
         log.info(Prop.SGE_ROOT.name()+"="+sgeRoot);
         log.info(Prop.SGE_CELL.name()+"="+sgeCell);
