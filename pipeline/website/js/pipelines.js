@@ -280,6 +280,11 @@ var library = {
  * Class representing the properties pane
  */
 var properties = {
+        div: "properties",
+        titleDiv: "propertiesTitle",
+        inputDiv: "propertiesInput",
+        buttonDiv: "propertiesSubmit",
+
 		init: function() {
 			$("#propertiesOk").button();
 			$("#propertiesCancel").button();
@@ -298,9 +303,46 @@ var properties = {
 		},
 
 		show: function(name) {
-			$("#propertiesName")[0].innerHTML = name;
+			$("#" + this.titleDiv)[0].innerHTML = name;
 			$("#properties").show("slide", { direction: "right" }, 500);
-		}
+		},
+
+        _encodeToHTML: function(text) {
+            return text.replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+        },
+
+        _clearInputDiv: function() {
+            $("#" + this.inputDiv)[0].innerHTML = "";
+        },
+
+        addTextBoxInput: function(input) {
+            var required = input.required ? "*" : "";
+            var checkBox = document.createElement("input");
+            checkBox.setAttribute("type", "checkbox");
+            var label = document.createElement("div");
+            label.appendChild(checkBox);
+            label.innerHTML += " " + input.name + required + " ";
+            var inputBox = document.createElement("input");
+            inputBox.setAttribute("type", "text");
+            inputBox.setAttribute("value", this._encodeToHTML(input.defaultValue));
+            label.appendChild(inputBox);
+            var desc = document.createElement("div");
+            desc.setAttribute("class", "inputDescription");
+            console.log(input);
+            desc.innerHTML = this._encodeToHTML(input.description);
+            var hr = document.createElement("hr");
+            $("#" + this.inputDiv).append(label);
+            $("#" + this.inputDiv).append(desc);
+            $("#" + this.inputDiv).append(hr);
+        },
+
+        displayModule: function(module) {
+            this._clearInputDiv();
+            var inputs = module.input;
+            for (var i in inputs) {
+                this.addTextBoxInput(inputs[i]);
+            }
+        }
 };
 
 /**
@@ -376,6 +418,7 @@ function Module(moduleJSON) {
 
 	this._addModuleButtonCalls = function () {
         $("#" + "prop_" + this.id).click(function () {
+            properties.displayModule(editor.getParentModule(this.id));
             properties.show(this.parentNode.getAttribute("name"));
         });
 
