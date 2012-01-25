@@ -54,6 +54,10 @@ var editor = {
         });
 	},
 
+    nameToId: function (name) {
+        return name.replace(/\./g, "");
+    },
+
     _setPipelineName: function() {
         var name = this.workspace["pipelineName"];
         $("#" + this.titleSpan)[0].innerHTML = name;
@@ -175,7 +179,6 @@ var editor = {
 
 	suggestLocation: function() {
 		// Pick your layout manager
-		// return this._allAmlLayoutManager();
 		return this._gridLayoutManager();
 	},
 
@@ -183,8 +186,18 @@ var editor = {
 
 	},
 
+    saveProps: function(save) {
+        this.workspace["pipelineName"] = save["Pipeline Name"];
+        this.workspace["pipelineDescription"] = save["Description"];
+        this.workspace["pipelineAuthor"] = save["Author"];
+        this.workspace["pipelinePrivacy"] = save["Privacy"];
+        this.workspace["pipelineVersionComment"] = save["Version Comment"];
+        this.workspace["pipelineDocumentation"] = save["Documentation"];
+        editor._setPipelineName();
+    },
+
     // TODO: Implement
-	query: function() {
+	load: function() {
 		return "TODO";
 	},
 
@@ -310,16 +323,19 @@ var library = {
  * Class representing the properties pane
  */
 var properties = {
+        PROMPT_WHEN_RUN: "PROMPT_WHEN_RUN",
         div: "properties",
         titleDiv: "propertiesTitle",
         inputDiv: "propertiesInput",
         buttonDiv: "propertiesSubmit",
+        current: null,
 
 		init: function() {
 			$("#propertiesOk").button();
 			$("#propertiesCancel").button();
 
 			$("#propertiesOk").click(function () {
+                properties.saveToModel();
 				properties.hide();
 			});
 
@@ -327,6 +343,56 @@ var properties = {
 				properties.hide();
 			});
 		},
+
+        saveToModel: function() {
+            if (this.current instanceof Module) {
+                var save = this._bundleSave();
+                this.current.saveProps(save);
+            }
+            else if (this.current instanceof Pipe) {
+                var save = this._bundleSave();
+                this.current.saveProps(save);
+            }
+            else if (this.current instanceof String && this.current == "Pipeline") {
+                var save = this._bundleSave();
+                editor.saveProps(save);
+            }
+            else {
+                console.log("ERROR: Cannot determine what is being edited to save to the model");
+            }
+        },
+
+        _findCheckBox: function(checks, name) {
+            for (var i = 0; i < checks.length; i++) {
+                if (checks[i].getAttribute("name") == name) {
+                    return checks[i].checked;
+                }
+            }
+            return false;
+        },
+
+        _bundleSave: function() {
+            var bundle = {};
+            var inputs = $(".propertyValue");
+            var checks = $(".propertyCheckBox");
+            for (var i = 0; i < inputs.length; i++) {
+                var name = inputs[i].getAttribute("name");
+                var checked = this._findCheckBox(checks, name);
+
+                // Removed the trailing asterisk if a required param
+                if (name.substr(-1) === "*") {
+                    name = name.substr(0, name.length - 1);
+                }
+
+                if (checked) {
+                    bundle[name] = properties.PROMPT_WHEN_RUN;
+                }
+                else {
+                    bundle[name] = inputs[i].value;
+                }
+            }
+            return bundle;
+        },
 
 		hide: function() {
 			$("#properties").hide("slide", { direction: "right" }, 500);
@@ -368,12 +434,14 @@ var properties = {
 
             label.innerHTML += this._encodeToHTML(labelText) + " ";
             var select = document.createElement("select");
+            select.setAttribute("name", labelText);
+            select.setAttribute("class", "propertyValue");
             for (var i = 0; i < values.length; i++) {
                 var parts = values[i].split("=");
                 if (parts.length < 2) parts[1] = parts[0];
                 var option = document.createElement("option");
                 option.innerHTML = this._encodeToHTML(parts[0]);
-                option.setAttribute("value", parts[1]);
+                option.value = parts[1];
                 select.appendChild(option);
             }
             label.appendChild(select);
@@ -396,6 +464,11 @@ var properties = {
             if (pwr) {
                 var checkBox = document.createElement("input");
                 checkBox.setAttribute("type", "checkbox");
+                checkBox.setAttribute("name", labelText);
+                checkBox.setAttribute("class", "propertyCheckBox");
+                if (value == properties.PROMPT_WHEN_RUN) {
+                    checkBox.setAttribute("checked", "true");
+                }
                 label.appendChild(checkBox);
                 label.innerHTML += " ";
             }
@@ -403,7 +476,9 @@ var properties = {
             label.innerHTML += this._encodeToHTML(labelText) + " ";
             var inputBox = document.createElement("input");
             inputBox.setAttribute("type", "text");
-            inputBox.setAttribute("value", value);
+            inputBox.setAttribute("name", labelText);
+            inputBox.value = value != properties.PROMPT_WHEN_RUN ? value : "";
+            inputBox.setAttribute("class", "propertyValue");
             label.appendChild(inputBox);
             $("#" + this.inputDiv).append(label);
 
@@ -420,10 +495,11 @@ var properties = {
 
         _addTextBoxInput: function(input) {
             var required = input.required ? "*" : "";
-            this._addTextBox(input.name + required, input.defaultValue, input.description, true);
+            this._addTextBox(input.name + required, input.value, input.description, true);
         },
 
         displayModule: function(module) {
+            this.current = module;
             this._setTitle(module.name);
             this._clearInputDiv();
             this._displayInputKey();
@@ -434,6 +510,7 @@ var properties = {
         },
 
         displayPipe: function(pipe) {
+            this.current = pipe;
             this._setTitle(pipe.outputModule.name + " to " + pipe.inputModule.name);
             this._clearInputDiv();
             this._addDropDown("Output", ["1st Output=1", "2nd Output=2", "3rd Output=3", "4th Output=4"].concat(pipe.outputModule.outputs), false, false);
@@ -446,6 +523,7 @@ var properties = {
         },
 
         displayPipeline: function() {
+            this.current = new String("Pipeline");
             this._setTitle("Editing Pipeline");
             this._clearInputDiv();
             this._addTextBox("Pipeline Name", editor.workspace["pipelineName"], false, false);
@@ -475,8 +553,18 @@ function Module(moduleJSON) {
 	this.type = "module";
 	this.ui = null;
 
-	this._nameToId = function (name) {
-        return name.replace(/\./g, "");
+    this.saveProps = function(save) {
+        for (var i = 0; i < this.inputs.length; i++) {
+            var value = save[this.inputs[i].name];
+            if (value === null) continue;
+            if (value == properties.PROMPT_WHEN_RUN) {
+                this.inputs[i].promptWhenRun = true;
+                this.inputs[i].value = properties.PROMPT_WHEN_RUN;
+            }
+            else {
+                this.inputs[i].value = value;
+            }
+        }
     };
 
 	this.getPort = function (id) {
@@ -501,7 +589,7 @@ function Module(moduleJSON) {
             var used = this.fileInputs[i].used;
             if (used == false) {
                 this.fileInputs[i].used = true;
-                return this._addInput(this._nameToId(this.fileInputs[i].name));
+                return this._addInput(editor.nameToId(this.fileInputs[i].name));
             }
         }
     };
@@ -662,9 +750,10 @@ function InputParam(paramJSON) {
     this.kinds = paramJSON.kinds;
     this.required = paramJSON.required;
     this.promptWhenRun = paramJSON.promptWhenRun;
-    this.defaultValue= paramJSON.defaultValue;
+    this.defaultValue = paramJSON.defaultValue;
     this.choices = paramJSON.choices;
     this.used = false;
+    this.value = this.defaultValue;
 }
 
 /**
@@ -899,4 +988,9 @@ function Pipe(connection) {
 		if (deleteOutput) { this.outputPort.remove(); }
 		editor.removePipe(this);
 	}
+
+    this.saveProps = function(save) {
+        console.log(save["Output"]);
+        console.log(save["Input"]);
+    }
 }
