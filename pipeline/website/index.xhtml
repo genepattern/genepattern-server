@@ -16,15 +16,12 @@
 		<div id="library">
 			<label for="modulesDropdown" class="ui-autocomplete-input">Select Module: </label>
 			<input id="modulesDropdown" />
-			<button id="addModule">Add</button>&nbsp;&nbsp;&nbsp;
+			<button id="addModule" class="libraryModuleButton">Add</button>&nbsp;&nbsp;&nbsp;
 		</div>
-		<div id="workspace">
-			<h2 name="Golub.Slonim.1999.Nature.all.aml.pipeline">Golub.Slonim.1999.Nature.all.aml.pipeline <img id="pipelinePencil" src="images/pencil.gif" class="pencil" /></h2>
-		</div>
+        <div id="titleBar"><span id="titleSpan"></span> <img id="pipelinePencil" src="images/pencil.gif" class="pencil" /></div>
+		<div id="workspace"></div>
 		<div id="properties">
 			<div id="propertiesTitle">PreprocessDataset</div>
-            <div><em>Check for Prompt When Run &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; * Required</em></div>
-            <hr />
             <div id="propertiesInput" />
             <div id="propertiesSubmit"><button id="propertiesOk">OK</button><button id="propertiesCancel">Cancel</button></div>
 		</div>
@@ -58,9 +55,7 @@
 				//	this.setAttribute("class", this.getAttribute("class") + " ui-selected");
 				//});
 	
-				$("#pipelinePencil").click(function() {
-					properties.show(this.parentNode.getAttribute("name"));
-				});
+
 
 			});
 		</script>

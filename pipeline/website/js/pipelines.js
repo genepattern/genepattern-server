@@ -12,11 +12,21 @@ var editor = {
 	INPUT_FILE_STYLE: { isTarget: true },
 
 	div: "workspace",		// The id of the div used for pipeline editing
+    titleSpan: "titleSpan", // The id of the title span of the pipeline
 	workspace: {			// A map containing all the instance data of the current workspace
 		idCounter: 0, 		// Used to keep track of module instance IDs
-		pipes: [],	// A list of all current connections in the workspace
+		pipes: [],	        // A list of all current connections in the workspace
 		suggestRow: 0, 		// Used by the GridLayoutManager
-		suggestCol: 0		// Used by the GridLayoutManager
+		suggestCol: 0,		// Used by the GridLayoutManager
+
+        pipelineName: "UntitledPipeline",
+        pipelineDescription: "",
+        pipelineAuthor: "",
+        pipelinePrivacy: "private",
+        pipelineVersion: 1,
+        pipelineVersionComment: "",
+        pipelineDocumentation: "",
+        pipelineLsid: 0
 	},
 
 	init: function() {
@@ -36,7 +46,18 @@ var editor = {
 				editor.addPipe(output, input);
 			}
 		});
+
+        editor._setPipelineName();
+        $("#pipelinePencil").click(function() {
+            properties.displayPipeline();
+            properties.show();
+        });
 	},
+
+    _setPipelineName: function() {
+        var name = this.workspace["pipelineName"];
+        $("#" + this.titleSpan)[0].innerHTML = name;
+    },
 
 	addPipe: function(output, input) {
 		var newIn = input.module.suggestInput();
@@ -62,7 +83,8 @@ var editor = {
 
 		editor.workspace["pipes"].push(newPipe);
 		input.module.getMasterInput().detachAll();
-		properties.show(output.module.name + " to " + input.module.name);
+        properties.displayPipe(newPipe);
+		properties.show();
 	},
 
 	_nextId: function() {
@@ -302,8 +324,7 @@ var properties = {
 			$("#properties").hide("slide", { direction: "right" }, 500);
 		},
 
-		show: function(name) {
-			$("#" + this.titleDiv)[0].innerHTML = name;
+		show: function() {
 			$("#properties").show("slide", { direction: "right" }, 500);
 		},
 
@@ -315,33 +336,116 @@ var properties = {
             $("#" + this.inputDiv)[0].innerHTML = "";
         },
 
-        addTextBoxInput: function(input) {
-            var required = input.required ? "*" : "";
-            var checkBox = document.createElement("input");
-            checkBox.setAttribute("type", "checkbox");
-            var label = document.createElement("div");
-            label.appendChild(checkBox);
-            label.innerHTML += " " + input.name + required + " ";
-            var inputBox = document.createElement("input");
-            inputBox.setAttribute("type", "text");
-            inputBox.setAttribute("value", this._encodeToHTML(input.defaultValue));
-            label.appendChild(inputBox);
-            var desc = document.createElement("div");
-            desc.setAttribute("class", "inputDescription");
-            console.log(input);
-            desc.innerHTML = this._encodeToHTML(input.description);
+        _setTitle: function(title) {
+            $("#" + this.titleDiv)[0].innerHTML = this._encodeToHTML(title);
+        },
+
+        _displayInputKey: function() {
+            var key = document.createElement("div");
+            key.innerHTML = "<em>* Required <br /> Check for Prompt When Run</em>";
+            $("#" + this.inputDiv).append(key);
             var hr = document.createElement("hr");
-            $("#" + this.inputDiv).append(label);
-            $("#" + this.inputDiv).append(desc);
             $("#" + this.inputDiv).append(hr);
         },
 
+        _addDropDown: function(labelText, values, description, pwr) {
+            var label = document.createElement("div");
+
+            if (pwr) {
+                var checkBox = document.createElement("input");
+                checkBox.setAttribute("type", "checkbox");
+                label.appendChild(checkBox);
+                label.innerHTML += " ";
+            }
+
+            label.innerHTML += this._encodeToHTML(labelText) + " ";
+            var select = document.createElement("select");
+            for (var i = 0; i < values.length; i++) {
+                var parts = values[i].split("=");
+                if (parts.length < 2) parts[1] = parts[0];
+                var option = document.createElement("option");
+                option.innerHTML = this._encodeToHTML(parts[0]);
+                option.setAttribute("value", parts[1]);
+                select.appendChild(option);
+            }
+            label.appendChild(select);
+            $("#" + this.inputDiv).append(label);
+
+            if (description !== null && description != false) {
+                var desc = document.createElement("div");
+                desc.setAttribute("class", "inputDescription");
+                desc.innerHTML = this._encodeToHTML(description);
+                $("#" + this.inputDiv).append(desc);
+            }
+
+            var hr = document.createElement("hr");
+            $("#" + this.inputDiv).append(hr);
+        },
+
+        _addTextBox: function(labelText, value, description, pwr) {
+            var label = document.createElement("div");
+
+            if (pwr) {
+                var checkBox = document.createElement("input");
+                checkBox.setAttribute("type", "checkbox");
+                label.appendChild(checkBox);
+                label.innerHTML += " ";
+            }
+
+            label.innerHTML += this._encodeToHTML(labelText) + " ";
+            var inputBox = document.createElement("input");
+            inputBox.setAttribute("type", "text");
+            inputBox.setAttribute("value", value);
+            label.appendChild(inputBox);
+            $("#" + this.inputDiv).append(label);
+
+            if (description !== null && description != false) {
+                var desc = document.createElement("div");
+                desc.setAttribute("class", "inputDescription");
+                desc.innerHTML = this._encodeToHTML(description);
+                $("#" + this.inputDiv).append(desc);
+            }
+
+            var hr = document.createElement("hr");
+            $("#" + this.inputDiv).append(hr);
+        },
+
+        _addTextBoxInput: function(input) {
+            var required = input.required ? "*" : "";
+            this._addTextBox(input.name + required, input.defaultValue, input.description, true);
+        },
+
         displayModule: function(module) {
+            this._setTitle(module.name);
             this._clearInputDiv();
+            this._displayInputKey();
             var inputs = module.input;
             for (var i in inputs) {
-                this.addTextBoxInput(inputs[i]);
+                this._addTextBoxInput(inputs[i]);
             }
+        },
+
+        displayPipe: function(pipe) {
+            this._setTitle(pipe.outputModule.name + " to " + pipe.inputModule.name);
+            this._clearInputDiv();
+            this._addDropDown("Output", ["1st Output=1", "2nd Output=2", "3rd Output=3", "4th Output=4"].concat(pipe.outputModule.output), false, false);
+
+            var inputsToList = new Array();
+            for (var i = 0; i < pipe.inputModule.fileInput.length; i++) {
+                inputsToList[inputsToList.length] = pipe.inputModule.fileInput[i].name;
+            }
+            this._addDropDown("Input", inputsToList, false, false);
+        },
+
+        displayPipeline: function() {
+            this._setTitle("Editing Pipeline");
+            this._clearInputDiv();
+            this._addTextBox("Pipeline Name", editor.workspace["pipelineName"], false, false);
+            this._addTextBox("Description", editor.workspace["pipelineDescription"], false, false);
+            this._addTextBox("Author", editor.workspace["pipelineAuthor"], false, false);
+            this._addTextBox("Privacy", editor.workspace["pipelinePrivacy"], false, false);
+            this._addTextBox("Version Comment", editor.workspace["pipelineVersionComment"], false, false);
+            this._addTextBox("Documentation", editor.workspace["pipelineDocumentation"], false, false);
         }
 };
 
@@ -419,7 +523,7 @@ function Module(moduleJSON) {
 	this._addModuleButtonCalls = function () {
         $("#" + "prop_" + this.id).click(function () {
             properties.displayModule(editor.getParentModule(this.id));
-            properties.show(this.parentNode.getAttribute("name"));
+            properties.show();
         });
 
         $("#" + "del_" + this.id).click(function () {
@@ -679,7 +783,8 @@ function Port(module, id) {
 	this._addTooltipButtonCalls = function (id) {
         $("#" + "prop_" + id).click(function () {
             var port = editor.getParentPort(this);
-            properties.show(port.pipe.outputModule.name + " to " + port.pipe.inputModule.name);
+            properties.displayPipe(port.pipe);
+            properties.show();
         });
 
         $("#" + "del_" + id).click(function () {
@@ -708,7 +813,7 @@ function Port(module, id) {
 		}
 		$("#" + editor.div)[0].appendChild(this.tooltip);
 		if (!this.master && this.isInput()) { this._addTooltipButtonCalls(this.tooltip.getAttribute("id")); }
-		$("#" + this.endpoint.canvas.id).tooltip({"tip": "#" + this.tooltip.id, "offset": [-50, 0]});
+		$("#" + this.endpoint.canvas.id).tooltip({"tip": "#" + this.tooltip.id, "offset": [-70, 0]});
 	}
 }
 

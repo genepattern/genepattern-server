@@ -6,20 +6,40 @@ body{ height:100% }
 	top: 0px;
 	left: 0px;
 	width: 99%;
-	height: 45px;;
-	background-color: #FFFFCC;
-	border-style: solid;
-	border-color: #FFFF00;
+	height: 27px;
+    background-color: #FFFFCC;
+    border-style: solid;
+    border-color: #FFFF00;
 	border-width: 2px;
 	padding: 5px;
 	overflow-x: hidden;
 	overflow: hidden;
 }
 
+#titleBar {
+    position:absolute;
+    z-index: 2999;
+    top: 41px;
+    left: 0px;
+    width: 99%;
+    height: 20px;
+    background-color: #FFCCFF;
+    border-style: solid;
+    border-color: #FF00FF;
+    border-width: 2px;
+    padding: 5px;
+    overflow-x: hidden;
+    overflow: hidden;
+}
+
+#titleSpan {
+    font-size: 14pt;
+}
+
 #workspace {
 	display: block;
 	position: absolute;
-    top: 60px;
+    top: 80px;
     left: 0;
 	width: 99%;
 	height: 100%;
