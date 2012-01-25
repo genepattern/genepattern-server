@@ -287,15 +287,23 @@ var library = {
 			}
 		},
 
-		_extractFileInputs: function(inputsJSON) {
+		extractFileInputs: function(inputsJSON) {
 			var files = new Array();
 			for (var i = 0; i < inputsJSON.length; i++) {
 				if (inputsJSON[i].type == "java.io.File") {
-					files[files.length] = inputsJSON[i];
+					files[files.length] = new InputParam(inputsJSON[i]);
 				}
 			}
 			return files;
-		}
+		},
+
+        extractInputs: function(inputsJSON) {
+            var inputs = new Array();
+            for (var i = 0; i < inputsJSON.length; i++) {
+                inputs[inputs.length] = new InputParam(inputsJSON[i]);
+            }
+            return inputs;
+        }
 };
 
 /**
@@ -419,7 +427,7 @@ var properties = {
             this._setTitle(module.name);
             this._clearInputDiv();
             this._displayInputKey();
-            var inputs = module.input;
+            var inputs = module.inputs;
             for (var i in inputs) {
                 this._addTextBoxInput(inputs[i]);
             }
@@ -428,11 +436,11 @@ var properties = {
         displayPipe: function(pipe) {
             this._setTitle(pipe.outputModule.name + " to " + pipe.inputModule.name);
             this._clearInputDiv();
-            this._addDropDown("Output", ["1st Output=1", "2nd Output=2", "3rd Output=3", "4th Output=4"].concat(pipe.outputModule.output), false, false);
+            this._addDropDown("Output", ["1st Output=1", "2nd Output=2", "3rd Output=3", "4th Output=4"].concat(pipe.outputModule.outputs), false, false);
 
             var inputsToList = new Array();
-            for (var i = 0; i < pipe.inputModule.fileInput.length; i++) {
-                inputsToList[inputsToList.length] = pipe.inputModule.fileInput[i].name;
+            for (var i = 0; i < pipe.inputModule.fileInputs.length; i++) {
+                inputsToList[inputsToList.length] = pipe.inputModule.fileInputs[i].name;
             }
             this._addDropDown("Input", inputsToList, false, false);
         },
@@ -459,11 +467,11 @@ function Module(moduleJSON) {
 	this.name = moduleJSON.name;
 	this.lsid = moduleJSON.lsid;
 	this.version = moduleJSON.version;
-	this.output = moduleJSON.outputs;
+	this.outputs = moduleJSON.outputs;
 	this.outputEnds = [];
 	this.inputEnds = [];
-	this.input = moduleJSON.inputs;
-	this.fileInput = library._extractFileInputs(moduleJSON.inputs);
+	this.inputs = library.extractInputs(moduleJSON.inputs);
+	this.fileInputs = library.extractFileInputs(moduleJSON.inputs);
 	this.type = "module";
 	this.ui = null;
 
@@ -488,14 +496,12 @@ function Module(moduleJSON) {
     };
 
 	// TODO: Eventually replace with smarter suggestions of which endpoint to connect
-	// FIXME: This method is broken.  By altering the fileInput we may be altering for all module instances of this type.
-	//            We also need to be able to set as unused when a port is deleted.
 	this.suggestInput = function () {
-        for (var i = 0; i < this.fileInput.length; i++) {
-            var used = this.fileInput[i].used;
-            if (used == null) {
-                this.fileInput[i].used = true;
-                return this._addInput(this._nameToId(this.fileInput[i].name));
+        for (var i = 0; i < this.fileInputs.length; i++) {
+            var used = this.fileInputs[i].used;
+            if (used == false) {
+                this.fileInputs[i].used = true;
+                return this._addInput(this._nameToId(this.fileInputs[i].name));
             }
         }
     };
@@ -643,6 +649,22 @@ function Visualizer(moduleJSON) {
 	var module = new Module(moduleJSON);
 	module.type = "module visualizer";
 	return module;
+}
+
+/**
+ * Class representing an input parameter for a module
+ * @param paramJSON - A JSON representation of the input param
+ */
+function InputParam(paramJSON) {
+    this.name = paramJSON.name;
+    this.description = paramJSON.description;
+    this.type = paramJSON.type;
+    this.kinds = paramJSON.kinds;
+    this.required = paramJSON.required;
+    this.promptWhenRun = paramJSON.promptWhenRun;
+    this.defaultValue= paramJSON.defaultValue;
+    this.choices = paramJSON.choices;
+    this.used = false;
 }
 
 /**
