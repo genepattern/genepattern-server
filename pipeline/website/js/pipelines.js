@@ -803,9 +803,10 @@ function Module(moduleJSON) {
             var used = this.fileInputs[i].used;
             if (!used) {
                 this.fileInputs[i].used = true;
-                return this.addInput(editor.nameToId(this.fileInputs[i].name));
+                return this.addInput(this.fileInputs[i].name);
             }
         }
+        return null;
     };
 
 	// TODO: Eventually replace with smarter suggestions of which endpoint to connect
@@ -851,8 +852,8 @@ function Module(moduleJSON) {
         this._createButtons(this.ui, this.id);
     };
 
-	this.addOutput = function (id) {
-        var output = new Output(this, id);
+	this.addOutput = function (pointer) {
+        var output = new Output(this, pointer);
         var index = this.outputEnds.length;
         this.outputEnds[index] = output;
         return output;
@@ -865,8 +866,8 @@ function Module(moduleJSON) {
         return this.addOutput("master");
     };
 
-	this.addInput = function (id) {
-        var input = new Input(this, id);
+	this.addInput = function (pointer) {
+        var input = new Input(this, pointer);
         var index = this.inputEnds.length;
         this.inputEnds[index] = input;
         return input;
@@ -991,10 +992,11 @@ function InputParam(paramJSON) {
  * @param module - A reference to the parent module
  * @param id - The id of the port
  */
-function Port(module, id) {
+function Port(module, pointer) {
 	this.module = module;
-	this.id = id;
-	this.master = id == "master";
+	this.id = Math.floor(Math.random() * 1000000000000);
+    this.pointer = pointer;
+	this.master = pointer == "master";
 	this.type = null;
 	this.endpoint = null;
 	this.tooltip = null;
@@ -1066,7 +1068,7 @@ function Port(module, id) {
         this.endpoint.canvas.setAttribute("name", prefix + this.id + "_" + this.module.id);
 
         // Add tooltip
-        this._createTooltip(this.id);
+        this._createTooltip(this.pointer);
     };
 
 	this.connectPipe = function (pipe) {
@@ -1134,9 +1136,14 @@ function Port(module, id) {
         });
     };
 
+    this.setPointer = function(pointer) {
+        this.pointer = pointer;
+        $("#tip_point_" + this.id)[0].innerHTML = pointer;
+    };
+
 	this._createTooltip = function(name) {
 		this.tooltip = document.createElement("div");
-		this.tooltip.setAttribute("id", "tip_" + this.endpoint.canvas.getAttribute("name"));
+		this.tooltip.setAttribute("id", "tip_" + this.id);
 		this.tooltip.setAttribute("class", "tooltip");
 		if (this.master) {
 			if (this.isOutput()) {
@@ -1147,7 +1154,7 @@ function Port(module, id) {
 			}
 		}
 		else {
-			this.tooltip.innerHTML = (this.isOutput() ? "Output Selection:<br />" : "Input Parameter:<br />") + name + "<br />";
+			this.tooltip.innerHTML = (this.isOutput() ? "Output Selection:<br />" : "Input Parameter:<br />") + "<span id='tip_point_" + this.id + "'>" + name + "</span><br />";
 			if (this.isInput()) {
 				this._createButtons(this.tooltip, this.tooltip.getAttribute("id"));
 			}
@@ -1161,10 +1168,10 @@ function Port(module, id) {
 /**
  * Class an input port on a module
  * @param module - A reference to the parent module
- * @param id - The id of the port
+ * @param pointer - The input the port is for
  */
-function Input(module, id) {
-	var port = new Port(module, id);
+function Input(module, pointer) {
+	var port = new Port(module, pointer);
 	port.type = "input";
 	port.init();
 	return port;
@@ -1173,10 +1180,10 @@ function Input(module, id) {
 /**
  * Class an output port on a module
  * @param module - A reference to the parent module
- * @param id - The id of the port
+ * @param pointer - The output the port is for
  */
-function Output(module, id) {
-	var port = new Port(module, id);
+function Output(module, pointer) {
+	var port = new Port(module, pointer);
 	port.type = "output";
 	port.init();
 	return port;
@@ -1208,7 +1215,7 @@ function Pipe(connection) {
 	this._init(connection);
 
 	this.toMaster = function () {
-        return this.inputPort.endpoint.canvas.getAttribute("name").indexOf("_master_") >= 0;
+        return this.inputPort.master;
     };
 
 	this.remove = function() {
@@ -1220,19 +1227,16 @@ function Pipe(connection) {
 	};
 
     this.saveProps = function(save) {
-        this.outputPort.id = save["Output"];
-        this.outputPort._createTooltip(save["Output"]);
-
-        console.log(save["Output"]);
-        console.log(save["Input"]);
+        this.outputPort.setPointer(save["Output"]);
+        this.inputPort.setPointer(save["Input"]);
     };
 
     this.prepTransport = function() {
         var transport = {};
         transport["outputModule"] = this.outputModule.id;
-        transport["outputPort"] = this.outputPort.id;
+        transport["outputPort"] = this.outputPort.pointer;
         transport["inputModule"] = this.inputModule.id;
-        transport["inputPort"] = this.inputPort.id;
+        transport["inputPort"] = this.inputPort.pointer;
         return transport;
     };
 }
