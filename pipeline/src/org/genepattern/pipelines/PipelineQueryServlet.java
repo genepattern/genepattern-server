@@ -2,6 +2,7 @@ package org.genepattern.pipelines;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Map;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -27,7 +28,7 @@ public class PipelineQueryServlet extends HttpServlet {
 		    constructLibrary(response);
 		}
 		else if (SAVE.equals(action)) {
-		    savePipeline(response);
+		    savePipeline(request, response);
 		}
 		else {
 		    sendError(response, action);
@@ -71,8 +72,9 @@ public class PipelineQueryServlet extends HttpServlet {
 	}
 	
 	// TODO: Implement
-	public void savePipeline(HttpServletResponse response) {
-	    
+	public void savePipeline(HttpServletRequest request, HttpServletResponse response) {
+	    Map x = request.getParameterMap();
+	    System.out.println(x);
 	}
 	
 	public void constructLibrary(HttpServletResponse response) {

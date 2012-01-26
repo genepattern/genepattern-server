@@ -27,17 +27,17 @@
 		<script type="text/javascript">
 			// Hard-coded calls for ALL-AML Pipeline
 			function createALLAML() {
-				var a = editor.addModule("PreprocessDataset");
-				var b = editor.addModule("PreprocessDataset");
-				var c = editor.addModule("SOMClustering");
-				var d = editor.addModule("ClassNeighbors");
-				var e = editor.addModule("SOMClusterViewer");
-				var f = editor.addModule("GeneListSignificanceViewer");
-				var g = editor.addModule("WeightedVotingXValidation");
-				var h = editor.addModule("FeatureSummaryViewer");
-				var i = editor.addModule("PredictionResultsViewer");
-				var j = editor.addModule("WeightedVoting");
-				var k = editor.addModule("PredictionResultsViewer");
+				var a = editor.addModuleByName("PreprocessDataset");
+				var b = editor.addModuleByName("PreprocessDataset");
+				var c = editor.addModuleByName("SOMClustering");
+				var d = editor.addModuleByName("ClassNeighbors");
+				var e = editor.addModuleByName("SOMClusterViewer");
+				var f = editor.addModuleByName("GeneListSignificanceViewer");
+				var g = editor.addModuleByName("WeightedVotingXValidation");
+				var h = editor.addModuleByName("FeatureSummaryViewer");
+				var i = editor.addModuleByName("PredictionResultsViewer");
+				var j = editor.addModuleByName("WeightedVoting");
+				var k = editor.addModuleByName("PredictionResultsViewer");
 			}
 			
 			jsPlumb.ready(function() {

@@ -135,6 +135,14 @@ var editor = {
         return module.getPort(portId);
 	},
 
+    removeAllModules: function() {
+        for (var i in editor.workspace) {
+            if (editor.workspace[i] instanceof Module) {
+                editor.workspace[i].remove();
+            }
+        }
+    },
+
 	removeModule: function(id) {
 		delete editor.workspace[id];
 	},
@@ -149,18 +157,45 @@ var editor = {
 		}
 	},
 
-	addModule: function(name) {
-		var module = library.modules[name];
-		if (module === null) {
-			console.log("Error adding module: " + name);
-			return;
-		}
-		var spawn = module.spawn();
-		spawn.id = this._nextId();
-		this.workspace[spawn.id] = spawn;
-		spawn.add();
-		return spawn;
+    _addModule: function(lsid, id) {
+        var module = library.modules[lsid];
+        if (module === null) {
+            console.log("Error adding module: " + lsid);
+            return;
+        }
+        var spawn = module.spawn();
+        spawn.id = id;
+        this.workspace[spawn.id] = spawn;
+        spawn.add();
+        return spawn;
+    },
+
+    loadModule: function(lsid, id) {
+        this._addModule(lsid, id);
+    },
+
+	addModule: function(lsid) {
+        this._addModule(lsid, this._nextId());
 	},
+
+    addModuleByName: function(name) {
+        var module = null;
+        for (var i in library.modules) {
+            if (library.modules[i].name == name) {
+                module = library.modules[i];
+                break;
+            }
+        }
+        if (module === null) {
+            console.log("Error adding module: " + name);
+            return;
+        }
+        var spawn = module.spawn();
+        spawn.id = this._nextId();
+        this.workspace[spawn.id] = spawn;
+        spawn.add();
+        return spawn;
+    },
 
 	addConnection: function(source, target) {
 		return jsPlumb.connect({"source": source.endpoint, "target": target.endpoint});
@@ -235,24 +270,74 @@ var editor = {
         return json;
     },
 
-    // TODO: Implement
-	load: function() {
-		return "TODO";
-	},
+    _loadPipeline: function(pipeline) {
+        this.workspace["pipelineName"] = pipeline["Pipeline Name"];
+        this.workspace["pipelineDescription"] = pipeline["Description"];
+        this.workspace["pipelineAuthor"] = pipeline["Author"];
+        this.workspace["pipelinePrivacy"] = pipeline["Privacy"];
+        this.workspace["pipelineVersion"] = pipeline["pipelineVersion"];
+        this.workspace["pipelineVersionComment"] = pipeline["Version Comment"];
+        this.workspace["pipelineDocumentation"] = pipeline["Documentation"];
+        this.workspace["pipelineLsid"] = pipeline["pipelineLsid"];
+        editor._setPipelineName();
+    },
+
+    _loadModules: function(modules) {
+        this.removeAllModules();
+        for (var i in modules) {
+            // Update the idCounter as necessary
+            if (modules[i].id >= this.idCounter) { this.idCounter = modules[i].id + 1; }
+
+            // Add each module as it is read
+            var added = this.loadModule(modules[i].lsid, modules[i].id);
+
+            // Set the correct properties for the module
+            added.loadProps(modules[i]);
+        }
+    },
 
     // TODO: Implement
+    _loadPipes: function(pipes) {
+        ;
+    },
+
+	load: function(lsid) {
+        $.ajax({
+            type: "POST",
+            url: "/gp/PipelineDesigner/load",
+            data: lsid,
+            success: function(response) {
+                var error = response["ERROR"];
+                if (error !== null) {
+                    alert(error);
+                }
+                else {
+                    editor._loadPipeline(response["pipeline"]);
+                    editor._loadModules(response["modules"]);
+                    editor._loadPipes(response["pipes"]);
+                }
+            },
+            dataType: "json"
+        });
+	},
+
 	save: function() {
 		var toSend = editor._bundleForSave();
-        console.log(toSend);
-        $.json("/gp/PipelineDesigner/save", function(response) {
-            var message = response["MESSAGE"];
-            var error = response["ERROR"];
-            if (error !== null) {
-                alert(error);
-            }
-            if (message !== null) {
-                alert(message);
-            }
+        $.ajax({
+            type: "POST",
+            url: "/gp/PipelineDesigner/save",
+            data: toSend,
+            success: function(response) {
+                var message = response["MESSAGE"];
+                var error = response["ERROR"];
+                if (error !== null) {
+                    alert(error);
+                }
+                if (message !== null) {
+                    alert(message);
+                }
+            },
+            dataType: "json"
         });
 	}
 };
@@ -307,7 +392,7 @@ var library = {
 
 			$("#addModule").click(function() {
 				var name = $("#modulesDropdown")[0].value;
-				var module = editor.addModule(name);
+				var module = editor.addModuleByName(name);
 				if (module !== null) { library._addRecentModule(name); }
 			});
 		},
@@ -319,7 +404,7 @@ var library = {
 			modButton.setAttribute("name", name);
 			$("#" + this.div)[0].appendChild(modButton);
 			$(modButton).click(function() {
-				editor.addModule(this.name);
+				editor.addModuleByName(this.name);
 			});
 			$("button[name|=" + name + "]").button();
 		},
@@ -327,7 +412,7 @@ var library = {
 		_readModuleNames: function() {
 			this.moduleNames = new Array();
 			for (var i in library.modules) {
-				this.moduleNames.push(i);
+				this.moduleNames.push(library.modules[i].name);
 			}
 		},
 
@@ -336,13 +421,13 @@ var library = {
 			for (var i in moduleJSON) {
 				var module = moduleJSON[i];
 				if (module.type == "module") {
-					this.modules[module.name] = new Module(module);
+					this.modules[module.lsid] = new Module(module);
 				}
 				else if (module.type == "visualizer") {
-					this.modules[module.name] = new Visualizer(module);
+					this.modules[module.lsid] = new Visualizer(module);
 				}
 				else if (module.type == "pipeline") {
-					this.modules[module.name] = new Pipeline(module);
+					this.modules[module.lsid] = new Pipeline(module);
 				}
 				else {
 					console.log("Error detecting module type: " + module.name);
@@ -603,6 +688,24 @@ function Module(moduleJSON) {
 	this.type = "module";
 	this.ui = null;
 
+    this._loadInputs = function(inputs) {
+        if (this.inputs.length != inputs.length) {
+            console.log("ERROR: Inputs lengths do not match when loading: " + this.name);
+            return;
+        }
+
+        for (var i = 0; i < this.inputs.length; i++) {
+            this.inputs[i].loadProps(inputs[i]);
+        }
+    };
+
+    this.loadProps = function(props) {
+        this.id = props["id"];
+        this._loadInputs(props["inputs"]);
+        this.ui.style.top = props["top"];
+        this.ui.style.left = props["left"];
+    };
+
     this._prepInputs = function() {
         var transport = [];
         for (var i = 0; i < this.inputs.length; i++) {
@@ -784,7 +887,7 @@ function Module(moduleJSON) {
 
 	this.getMasterOutput = function() {
 		return this.outputEnds[0];
-	}
+	};
 }
 
 /**
@@ -829,6 +932,14 @@ function InputParam(paramJSON) {
         transport["promptWhenRun"] = this.promptWhenRun;
         transport["value"] = this.value;
         return transport;
+    };
+
+    this.loadProps = function(input) {
+        if (this.name != input["name"]) {
+            console.log("ERROR: Mismatched parameter loading properties: " + this.name + " and " + input["name"]);
+        }
+        this.promptWhenRun = input["promptWhenRun"];
+        this.value = input["value"];
     };
 }
 
@@ -1001,7 +1112,7 @@ function Port(module, id) {
 		$("#" + editor.div)[0].appendChild(this.tooltip);
 		if (!this.master && this.isInput()) { this._addTooltipButtonCalls(this.tooltip.getAttribute("id")); }
 		$("#" + this.endpoint.canvas.id).tooltip({"tip": "#" + this.tooltip.id, "offset": [-70, 0]});
-	}
+	};
 }
 
 /**
