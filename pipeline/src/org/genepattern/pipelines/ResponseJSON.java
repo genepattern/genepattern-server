@@ -4,8 +4,8 @@ import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ListJSON extends JSONObject {
-    public static Logger log = Logger.getLogger(ListJSON.class);
+public class ResponseJSON extends JSONObject {
+    public static Logger log = Logger.getLogger(ResponseJSON.class);
     
     private Integer counter = 0;
     
@@ -14,9 +14,18 @@ public class ListJSON extends JSONObject {
             this.put(counter.toString(), object);
         }
         catch (JSONException e) {
-            log.error("Error attaching object to ListJSON: " + object);
+            log.error("Error attaching object to ResponseJSON: " + object);
         }
         counter++;
+    }
+    
+    public void addMessage(String message) {
+        try {
+            this.put("MESSAGE", message);
+        }
+        catch (JSONException e) {
+            log.error("Error attaching message to ResponseJSON: " + message);
+        }
     }
     
     public void addError(String message) {
@@ -24,7 +33,7 @@ public class ListJSON extends JSONObject {
             this.put("ERROR", message);
         }
         catch (JSONException e) {
-            log.error("Error attaching error to ListJSON: " + message);
+            log.error("Error attaching error to ResponseJSON: " + message);
         }
     }
 }

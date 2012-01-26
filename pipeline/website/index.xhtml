@@ -42,6 +42,7 @@
 			
 			jsPlumb.ready(function() {
 				editor.init();
+                // Real URL to query is: /gp/PipelineDesigner/library
 				$.getJSON("test.json", function(data) {
 					library.init(data);
 					createALLAML();

@@ -16,6 +16,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	public static Logger log = Logger.getLogger(PipelineQueryServlet.class);
 	
 	public static final String LIBRARY = "/library";
+	public static final String SAVE = "/save";
 	
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) {
@@ -24,6 +25,9 @@ public class PipelineQueryServlet extends HttpServlet {
 		// Route to the appropriate action, returning an error if unknown
 		if (LIBRARY.equals(action)) {
 		    constructLibrary(response);
+		}
+		else if (SAVE.equals(action)) {
+		    savePipeline(response);
 		}
 		else {
 		    sendError(response, action);
@@ -61,13 +65,18 @@ public class PipelineQueryServlet extends HttpServlet {
 	}
 	
 	public void sendError(HttpServletResponse response, String action) {
-	    ListJSON error = new ListJSON();
+	    ResponseJSON error = new ResponseJSON();
 	    error.addError("Error routing in servlet for: " + action);
 	    this.write(response, error);
 	}
 	
+	// TODO: Implement
+	public void savePipeline(HttpServletResponse response) {
+	    
+	}
+	
 	public void constructLibrary(HttpServletResponse response) {
-	    ListJSON listObject = new ListJSON();
+	    ResponseJSON listObject = new ResponseJSON();
         for (TaskInfo info : TaskInfoCache.instance().getAllTasks()) {
             ModuleJSON mj = new ModuleJSON(info);
             listObject.addChild(mj);

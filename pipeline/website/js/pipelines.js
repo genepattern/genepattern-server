@@ -59,8 +59,7 @@ var editor = {
     },
 
     _setPipelineName: function() {
-        var name = this.workspace["pipelineName"];
-        $("#" + this.titleSpan)[0].innerHTML = name;
+        $("#" + this.titleSpan)[0].innerHTML = this.workspace["pipelineName"];
     },
 
 	addPipe: function(output, input) {
@@ -196,6 +195,46 @@ var editor = {
         editor._setPipelineName();
     },
 
+    _pipelineTransport: function() {
+        var transport = {};
+        transport["pipelineName"] = this.workspace["pipelineName"];
+        transport["pipelineDescription"] = this.workspace["pipelineDescription"];
+        transport["pipelineAuthor"] = this.workspace["pipelineAuthor"];
+        transport["pipelinePrivacy"] = this.workspace["pipelinePrivacy"];
+        transport["pipelineVersion"] = this.workspace["pipelineVersion"];
+        transport["pipelineVersionComment"] = this.workspace["pipelineVersionComment"];
+        transport["pipelineDocumentation"] = this.workspace["pipelineDocumentation"];
+        transport["pipelineLsid"] = this.workspace["pipelineLsid"];
+        return transport;
+    },
+
+    _pipeTransport: function() {
+        var transport = {};
+        var pipes = editor.workspace["pipes"];
+        for (var i = 0; i < pipes.length; i++) {
+            transport[i] = pipes[i].prepTransport();
+        }
+        return transport;
+    },
+
+    _moduleTransport: function() {
+        var transport = {};
+        for (var i in editor.workspace) {
+            if (editor.workspace[i] instanceof Module) {
+                transport[i] = editor.workspace[i].prepTransport();
+            }
+        }
+        return transport;
+    },
+
+    _bundleForSave: function() {
+        var json = {};
+        json["pipeline"] = editor._pipelineTransport();
+        json["pipes"] = editor._pipeTransport();
+        json["modules"] = editor._moduleTransport();
+        return json;
+    },
+
     // TODO: Implement
 	load: function() {
 		return "TODO";
@@ -203,7 +242,18 @@ var editor = {
 
     // TODO: Implement
 	save: function() {
-		return "TODO";
+		var toSend = editor._bundleForSave();
+        console.log(toSend);
+        $.json("/gp/PipelineDesigner/save", function(response) {
+            var message = response["MESSAGE"];
+            var error = response["ERROR"];
+            if (error !== null) {
+                alert(error);
+            }
+            if (message !== null) {
+                alert(message);
+            }
+        });
 	}
 };
 
@@ -447,7 +497,7 @@ var properties = {
             label.appendChild(select);
             $("#" + this.inputDiv).append(label);
 
-            if (description !== null && description != false) {
+            if (description !== null && description !== false) {
                 var desc = document.createElement("div");
                 desc.setAttribute("class", "inputDescription");
                 desc.innerHTML = this._encodeToHTML(description);
@@ -482,7 +532,7 @@ var properties = {
             label.appendChild(inputBox);
             $("#" + this.inputDiv).append(label);
 
-            if (description !== null && description != false) {
+            if (description !== null && description !== false) {
                 var desc = document.createElement("div");
                 desc.setAttribute("class", "inputDescription");
                 desc.innerHTML = this._encodeToHTML(description);
@@ -553,6 +603,24 @@ function Module(moduleJSON) {
 	this.type = "module";
 	this.ui = null;
 
+    this._prepInputs = function() {
+        var transport = [];
+        for (var i = 0; i < this.inputs.length; i++) {
+            transport[transport.length] = this.inputs[i].prepTransport();
+        }
+        return transport;
+    };
+
+    this.prepTransport = function() {
+        var transport = {};
+        transport["id"] = this.id;
+        transport["lsid"] = this.lsid;
+        transport["inputs"] = this._prepInputs();
+        transport["top"] = this.ui.style.top;
+        transport["left"] = this.ui.style.left;
+        return transport;
+    };
+
     this.saveProps = function(save) {
         for (var i = 0; i < this.inputs.length; i++) {
             var value = save[this.inputs[i].name];
@@ -587,7 +655,7 @@ function Module(moduleJSON) {
 	this.suggestInput = function () {
         for (var i = 0; i < this.fileInputs.length; i++) {
             var used = this.fileInputs[i].used;
-            if (used == false) {
+            if (!used) {
                 this.fileInputs[i].used = true;
                 return this._addInput(editor.nameToId(this.fileInputs[i].name));
             }
@@ -754,6 +822,14 @@ function InputParam(paramJSON) {
     this.choices = paramJSON.choices;
     this.used = false;
     this.value = this.defaultValue;
+
+    this.prepTransport = function() {
+        var transport = {};
+        transport["name"] = this.name;
+        transport["promptWhenRun"] = this.promptWhenRun;
+        transport["value"] = this.value;
+        return transport;
+    };
 }
 
 /**
@@ -987,10 +1063,19 @@ function Pipe(connection) {
 		this.inputPort.remove();
 		if (deleteOutput) { this.outputPort.remove(); }
 		editor.removePipe(this);
-	}
+	};
 
     this.saveProps = function(save) {
         console.log(save["Output"]);
         console.log(save["Input"]);
-    }
+    };
+
+    this.prepTransport = function() {
+        var transport = {};
+        transport["outputModule"] = this.outputModule.id;
+        transport["outputPort"] = this.outputPort.id;
+        transport["inputModule"] = this.inputModule.id;
+        transport["inputPort"] = this.inputPort.id;
+        return transport;
+    };
 }
