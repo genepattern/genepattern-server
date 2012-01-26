@@ -43,7 +43,7 @@ var editor = {
 			if (pipe.toMaster()) {
 				var output = pipe.outputPort;
 				var input = pipe.inputPort;
-				editor.addPipe(output, input);
+				editor.addDefaultPipe(output, input);
 			}
 		});
 
@@ -62,7 +62,17 @@ var editor = {
         $("#" + this.titleSpan)[0].innerHTML = this.workspace["pipelineName"];
     },
 
-	addPipe: function(output, input) {
+    addPipe: function(newIn, newOut) {
+        var connection = editor.addConnection(newOut, newIn);
+        var newPipe = new Pipe(connection);
+        newIn.connectPipe(newPipe);
+        newOut.connectPipe(newPipe);
+
+        editor.workspace["pipes"].push(newPipe);
+        return newPipe;
+    },
+
+    addDefaultPipe: function(output, input) {
 		var newIn = input.module.suggestInput();
 		// If there are no valid inputs left return null and cancel the pipe
 		if (newIn === null) {
@@ -79,15 +89,11 @@ var editor = {
 			newOut = output;
 		}
 
-		var connection = editor.addConnection(newOut, newIn);
-		var newPipe = new Pipe(connection);
-		newIn.connectPipe(newPipe);
-		newOut.connectPipe(newPipe);
+        var newPipe = this.addPipe(newIn, newOut);
 
-		editor.workspace["pipes"].push(newPipe);
-		input.module.getMasterInput().detachAll();
+        input.module.getMasterInput().detachAll();
         properties.displayPipe(newPipe);
-		properties.show();
+        properties.show();
 	},
 
 	_nextId: function() {
@@ -296,9 +302,30 @@ var editor = {
         }
     },
 
-    // TODO: Implement
     _loadPipes: function(pipes) {
-        ;
+        for (var i in pipes) {
+            var outputModule = editor.workspace[pipes[i]["outputModule"]];
+            var inputModule = editor.workspace[pipes[i]["inputModule"]];
+            var outputId = pipes[i]["outputPort"];
+            var inputId = pipes[i]["inputPort"];
+
+            if (!outputModule.hasPort(outputId)) {
+                outputModule.addOutput(outputId);
+            }
+            if (!inputModule.hasPort(inputId)) {
+                inputModule.addInput(inputId);
+            }
+
+            var outputPort = outputModule.getPort(outputId);
+            var inputPort = inputModule.getPort(inputId);
+
+            editor.addPipe(inputPort, outputPort);
+        }
+
+        //transport["outputModule"] = this.outputModule.id;
+        //transport["outputPort"] = this.outputPort.id;
+        //transport["inputModule"] = this.inputModule.id;
+        //transport["inputPort"] = this.inputPort.id;
     },
 
 	load: function(lsid) {
@@ -738,6 +765,22 @@ function Module(moduleJSON) {
         }
     };
 
+    this.hasPort = function(id) {
+        for (var i = 0; i < this.inputEnds.length; i++) {
+            if (id == this.inputEnds[i].id) {
+                return true;
+            }
+        }
+
+        for (var i = 0; i < this.outputEnds.length; i++) {
+            if (id == this.outputEnds[i].id) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
 	this.getPort = function (id) {
         for (var i = 0; i < this.inputEnds.length; i++) {
             if (id == this.inputEnds[i].id) {
@@ -760,14 +803,14 @@ function Module(moduleJSON) {
             var used = this.fileInputs[i].used;
             if (!used) {
                 this.fileInputs[i].used = true;
-                return this._addInput(editor.nameToId(this.fileInputs[i].name));
+                return this.addInput(editor.nameToId(this.fileInputs[i].name));
             }
         }
     };
 
 	// TODO: Eventually replace with smarter suggestions of which endpoint to connect
 	this.suggestOutput = function (input) {
-        return this._addOutput(this.outputEnds.length);
+        return this.addOutput(this.outputEnds.length);
     };
 
 	this._createButtons = function (appendTo, baseId) {
@@ -808,7 +851,7 @@ function Module(moduleJSON) {
         this._createButtons(this.ui, this.id);
     };
 
-	this._addOutput = function (id) {
+	this.addOutput = function (id) {
         var output = new Output(this, id);
         var index = this.outputEnds.length;
         this.outputEnds[index] = output;
@@ -819,10 +862,10 @@ function Module(moduleJSON) {
         if (this.type == "module visualizer") {
             return null;
         }
-        return this._addOutput("master");
+        return this.addOutput("master");
     };
 
-	this._addInput = function (id) {
+	this.addInput = function (id) {
         var input = new Input(this, id);
         var index = this.inputEnds.length;
         this.inputEnds[index] = input;
@@ -830,7 +873,7 @@ function Module(moduleJSON) {
     };
 
 	this._addMasterInput = function () {
-        return this._addInput("master");
+        return this.addInput("master");
     };
 
 	this._removePipes = function () {
@@ -1177,6 +1220,9 @@ function Pipe(connection) {
 	};
 
     this.saveProps = function(save) {
+        this.outputPort.id = save["Output"];
+        this.outputPort._createTooltip(save["Output"]);
+
         console.log(save["Output"]);
         console.log(save["Input"]);
     };
