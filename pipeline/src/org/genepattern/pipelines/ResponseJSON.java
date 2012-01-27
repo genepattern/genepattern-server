@@ -6,17 +6,14 @@ import org.json.JSONObject;
 
 public class ResponseJSON extends JSONObject {
     public static Logger log = Logger.getLogger(ResponseJSON.class);
-    
-    private Integer counter = 0;
-    
-    public void addChild(JSONObject object) {
+
+    public void addChild(Object key, JSONObject object) {
         try {
-            this.put(counter.toString(), object);
+            this.put(key.toString(), object);
         }
         catch (JSONException e) {
             log.error("Error attaching object to ResponseJSON: " + object);
         }
-        counter++;
     }
     
     public void addMessage(String message) {

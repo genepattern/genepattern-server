@@ -1,6 +1,9 @@
 package org.genepattern.pipelines;
 
+import java.util.Vector;
+
 import org.apache.log4j.Logger;
+import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
@@ -21,6 +24,11 @@ public class ModuleJSON extends JSONObject {
     public static final String INPUTS = "inputs";
     public static final String OUTPUTS = "outputs";
     
+    public static final String KEY = "modules";
+    public static final String ID = "id";
+    public static final String TOP = "top";
+    public static final String LEFT = "left";
+    
     public ModuleJSON(TaskInfo info) {
         try {
             this.setLsid(info.getLsid());
@@ -35,6 +43,39 @@ public class ModuleJSON extends JSONObject {
         }
     }
     
+    public ModuleJSON(Integer id, JobSubmission job) {
+        try {
+            this.setId(id);
+            this.setLsid(job.getLSID());
+            this.constructInputs(job.getParameters(), job.getRuntimePrompt());
+            // TODO: Set top and left here once supported
+        }
+        catch (JSONException e) {
+            log.error("Error parsing JSON and initializing ModuleJSON from JobSubmission: " + job.getName());
+        }
+    }
+    
+    public void constructInputs(Vector<ParameterInfo> params, boolean[] prompts) throws JSONException {
+        JSONArray inputs = new JSONArray();
+        
+        for (int i = 0; i < prompts.length; i++) {
+            boolean promptWhenRun = prompts[i];
+            ParameterInfo param = params.get(i);
+            InputJSON input = new InputJSON(param, promptWhenRun);
+            inputs.put(i, input);
+        }
+        
+        this.put(INPUTS, inputs);
+    }
+    
+    public Integer getId() throws JSONException {
+        return this.getInt(ID);
+    }
+    
+    public void setId(Integer id) throws JSONException {
+        this.put(ID, id);
+    }
+    
     public String getLsid() throws JSONException {
         return this.getString(LSID);
     }
@@ -42,6 +83,7 @@ public class ModuleJSON extends JSONObject {
     public void setLsid(String lsid) throws JSONException {
         this.put(LSID, lsid);
     }
+    
     public String getName() throws JSONException {
         return this.getString(NAME);
     }
@@ -125,5 +167,18 @@ public class ModuleJSON extends JSONObject {
         }
         
         this.put(OUTPUTS, outputs);
+    }
+    
+    public static ResponseJSON createModuleList(Vector<JobSubmission> jobs) {
+        ResponseJSON listObject = new ResponseJSON();
+        Integer idCounter = 1;
+        
+        for (JobSubmission i : jobs) {
+            ModuleJSON module = new ModuleJSON(idCounter, i);
+            listObject.addChild(idCounter, module);
+            idCounter++;
+        }
+        
+        return listObject;
     }
 }

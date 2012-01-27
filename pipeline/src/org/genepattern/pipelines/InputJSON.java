@@ -18,6 +18,8 @@ public class InputJSON extends JSONObject {
     public static final String DEFAULT_VALUE = "defaultValue";
     public static final String CHOICES = "choices";
     
+    public static final String VALUE = "value";
+    
     public InputJSON(ParameterInfo param) {
         try {
             this.setName(param.getName());
@@ -31,6 +33,17 @@ public class InputJSON extends JSONObject {
         }
         catch (JSONException e) {
             log.error("Error parsing JSON and initializing InputJSON from ParameterInfo: " + param.getName());
+        }
+    }
+    
+    public InputJSON(ParameterInfo param, boolean promptWhenRun) {
+        try {
+            this.setName(param.getName());
+            this.setPromptWhenRun(promptWhenRun);
+            this.setValue(param.getValue());
+        }
+        catch (JSONException e) {
+            log.error("Error parsing JSON and initializing InputJSON from InputJSON");
         }
     }
     
@@ -119,6 +132,14 @@ public class InputJSON extends JSONObject {
     
     public void setDefaultValue(String defaultValue) throws JSONException {
         this.put(DEFAULT_VALUE, defaultValue);
+    }
+    
+    public String getValue() throws JSONException {
+        return this.getString(VALUE);
+    }
+    
+    public void setValue(String value) throws JSONException {
+        this.put(VALUE, value);
     }
     
     public JSONArray getChoices() throws JSONException {

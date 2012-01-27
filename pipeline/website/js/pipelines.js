@@ -177,11 +177,11 @@ var editor = {
     },
 
     loadModule: function(lsid, id) {
-        this._addModule(lsid, id);
+        return this._addModule(lsid, id);
     },
 
 	addModule: function(lsid) {
-        this._addModule(lsid, this._nextId());
+        return this._addModule(lsid, this._nextId());
 	},
 
     addModuleByName: function(name) {
@@ -277,13 +277,13 @@ var editor = {
     },
 
     _loadPipeline: function(pipeline) {
-        this.workspace["pipelineName"] = pipeline["Pipeline Name"];
-        this.workspace["pipelineDescription"] = pipeline["Description"];
-        this.workspace["pipelineAuthor"] = pipeline["Author"];
-        this.workspace["pipelinePrivacy"] = pipeline["Privacy"];
+        this.workspace["pipelineName"] = pipeline["pipelineName"];
+        this.workspace["pipelineDescription"] = pipeline["pipelineDescription"];
+        this.workspace["pipelineAuthor"] = pipeline["pipelineAuthor"];
+        this.workspace["pipelinePrivacy"] = pipeline["pipelinePrivacy"];
         this.workspace["pipelineVersion"] = pipeline["pipelineVersion"];
-        this.workspace["pipelineVersionComment"] = pipeline["Version Comment"];
-        this.workspace["pipelineDocumentation"] = pipeline["Documentation"];
+        this.workspace["pipelineVersionComment"] = pipeline["pipelineVersionComment"];
+        this.workspace["pipelineDocumentation"] = pipeline["pipelineDocumentation"];
         this.workspace["pipelineLsid"] = pipeline["pipelineLsid"];
         editor._setPipelineName();
     },
@@ -292,7 +292,8 @@ var editor = {
         this.removeAllModules();
         for (var i in modules) {
             // Update the idCounter as necessary
-            if (modules[i].id >= this.idCounter) { this.idCounter = modules[i].id + 1; }
+            var intId = parseInt(modules[i].id)
+            if (intId >= this.idCounter) { this.idCounter = intId + 1; }
 
             // Add each module as it is read
             var added = this.loadModule(modules[i].lsid, modules[i].id);
@@ -321,21 +322,16 @@ var editor = {
 
             editor.addPipe(inputPort, outputPort);
         }
-
-        //transport["outputModule"] = this.outputModule.id;
-        //transport["outputPort"] = this.outputPort.id;
-        //transport["inputModule"] = this.inputModule.id;
-        //transport["inputPort"] = this.inputPort.id;
     },
 
 	load: function(lsid) {
         $.ajax({
             type: "POST",
             url: "/gp/PipelineDesigner/load",
-            data: lsid,
+            data: {"lsid":lsid},
             success: function(response) {
                 var error = response["ERROR"];
-                if (error !== null) {
+                if (error !== undefined) {
                     alert(error);
                 }
                 else {
@@ -657,7 +653,8 @@ var properties = {
 
         _addTextBoxInput: function(input) {
             var required = input.required ? "*" : "";
-            this._addTextBox(input.name + required, input.value, input.description, true);
+            var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
+            this._addTextBox(input.name + required, displayValue, input.description, true);
         },
 
         displayModule: function(module) {
