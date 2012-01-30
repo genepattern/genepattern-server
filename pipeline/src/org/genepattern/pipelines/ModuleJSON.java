@@ -24,8 +24,7 @@ public class ModuleJSON extends JSONObject {
     public static final String INPUTS = "inputs";
     public static final String OUTPUTS = "outputs";
     
-    public static final String MODULES_KEY = "modules";
-    public static final String PIPES_KEY = "modules";
+    public static final String KEY = "modules";
     public static final String ID = "id";
     public static final String TOP = "top";
     public static final String LEFT = "left";
@@ -172,7 +171,7 @@ public class ModuleJSON extends JSONObject {
     
     public static ResponseJSON createModuleList(Vector<JobSubmission> jobs) {
         ResponseJSON listObject = new ResponseJSON();
-        Integer idCounter = 1;
+        Integer idCounter = 0;
         
         for (JobSubmission i : jobs) {
             ModuleJSON module = new ModuleJSON(idCounter, i);
@@ -180,11 +179,6 @@ public class ModuleJSON extends JSONObject {
             idCounter++;
         }
         
-        return listObject;
-    }
-    
-    public static ResponseJSON createPipeList(Vector<JobSubmission> jobs) {
-        ResponseJSON listObject = new ResponseJSON();
         return listObject;
     }
 }

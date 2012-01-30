@@ -310,15 +310,15 @@ var editor = {
             var outputId = pipes[i]["outputPort"];
             var inputId = pipes[i]["inputPort"];
 
-            if (!outputModule.hasPort(outputId)) {
+            if (!outputModule.hasPortByPointer(outputId)) {
                 outputModule.addOutput(outputId);
             }
-            if (!inputModule.hasPort(inputId)) {
+            if (!inputModule.hasPortByPointer(inputId)) {
                 inputModule.addInput(inputId);
             }
 
-            var outputPort = outputModule.getPort(outputId);
-            var inputPort = inputModule.getPort(inputId);
+            var outputPort = outputModule.getPortByPointer(outputId);
+            var inputPort = inputModule.getPortByPointer(inputId);
 
             editor.addPipe(inputPort, outputPort);
         }
@@ -580,7 +580,7 @@ var properties = {
             $("#" + this.inputDiv).append(hr);
         },
 
-        _addDropDown: function(labelText, values, description, pwr) {
+        _addDropDown: function(labelText, values, selected, description, pwr) {
             var label = document.createElement("div");
 
             if (pwr) {
@@ -598,6 +598,9 @@ var properties = {
                 var parts = values[i].split("=");
                 if (parts.length < 2) parts[1] = parts[0];
                 var option = document.createElement("option");
+                if (selected == parts[1]) {
+                    option.setAttribute("selected", "true");
+                }
                 option.innerHTML = this._encodeToHTML(parts[0]);
                 option.value = parts[1];
                 select.appendChild(option);
@@ -672,13 +675,17 @@ var properties = {
             this.current = pipe;
             this._setTitle(pipe.outputModule.name + " to " + pipe.inputModule.name);
             this._clearInputDiv();
-            this._addDropDown("Output", ["1st Output=1", "2nd Output=2", "3rd Output=3", "4th Output=4"].concat(pipe.outputModule.outputs), false, false);
+
+            var outSelected = pipe.outputPort.pointer;
+            var inSelected = pipe.inputPort.pointer;
+
+            this._addDropDown("Output", ["1st Output=1", "2nd Output=2", "3rd Output=3", "4th Output=4"].concat(pipe.outputModule.outputs), outSelected, false, false);
 
             var inputsToList = new Array();
             for (var i = 0; i < pipe.inputModule.fileInputs.length; i++) {
                 inputsToList[inputsToList.length] = pipe.inputModule.fileInputs[i].name;
             }
-            this._addDropDown("Input", inputsToList, false, false);
+            this._addDropDown("Input", inputsToList, inSelected, false, false);
         },
 
         displayPipeline: function() {
@@ -760,6 +767,38 @@ function Module(moduleJSON) {
                 this.inputs[i].value = value;
             }
         }
+    };
+
+    this.hasPortByPointer = function(pointer) {
+        for (var i = 0; i < this.inputEnds.length; i++) {
+            if (pointer == this.inputEnds[i].pointer) {
+                return true;
+            }
+        }
+
+        for (var i = 0; i < this.outputEnds.length; i++) {
+            if (pointer == this.outputEnds[i].pointer) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    this.getPortByPointer = function (pointer) {
+        for (var i = 0; i < this.inputEnds.length; i++) {
+            if (pointer == this.inputEnds[i].pointer) {
+                return this.inputEnds[i];
+            }
+        }
+
+        for (var i = 0; i < this.outputEnds.length; i++) {
+            if (pointer == this.outputEnds[i].pointer) {
+                return this.outputEnds[i];
+            }
+        }
+
+        console.log("Unable to find port with pointer: " + pointer + " in module " + this.id);
     };
 
     this.hasPort = function(id) {
@@ -1140,7 +1179,7 @@ function Port(module, pointer) {
 
 	this._createTooltip = function(name) {
 		this.tooltip = document.createElement("div");
-		this.tooltip.setAttribute("id", "tip_" + this.id);
+		this.tooltip.setAttribute("id", "tip_" + this.id + "_" + this.module.id);
 		this.tooltip.setAttribute("class", "tooltip");
 		if (this.master) {
 			if (this.isOutput()) {

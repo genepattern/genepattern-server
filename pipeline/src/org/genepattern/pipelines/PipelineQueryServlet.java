@@ -100,11 +100,11 @@ public class PipelineQueryServlet extends HttpServlet {
         ResponseJSON responseObject = new ResponseJSON();
         PipelineJSON pipelineObject = new PipelineJSON(pipeline, info);
         ResponseJSON modulesObject = ModuleJSON.createModuleList(pipeline.getTasks());
-        ResponseJSON pipesObject = ModuleJSON.createPipeList(pipeline.getTasks());
+        ResponseJSON pipesObject = PipeJSON.createPipeList(pipeline.getTasks());
         
         responseObject.addChild(PipelineJSON.KEY, pipelineObject);
-        responseObject.addChild(ModuleJSON.MODULES_KEY, modulesObject);
-        //responseObject.addChild(ModuleJSON.PIPES_KEY, pipesObject);
+        responseObject.addChild(ModuleJSON.KEY, modulesObject);
+        responseObject.addChild(PipeJSON.KEY, pipesObject);
         
         this.write(response, responseObject);
 	}
