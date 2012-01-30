@@ -90,6 +90,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	    PipelineModel pipeline = null;
 	    try {
             pipeline = PipelineModel.toPipelineModel((String) info.getTaskInfoAttributes().get(SERIALIZED_MODEL));
+            pipeline.setLsid(info.getLsid());
         }
         catch (Exception e) {
             sendError(response, "Exception loading pipeline");
@@ -97,11 +98,13 @@ public class PipelineQueryServlet extends HttpServlet {
         }
 
         ResponseJSON responseObject = new ResponseJSON();
-        PipelineJSON pipelineObject = new PipelineJSON(pipeline);
+        PipelineJSON pipelineObject = new PipelineJSON(pipeline, info);
         ResponseJSON modulesObject = ModuleJSON.createModuleList(pipeline.getTasks());
+        ResponseJSON pipesObject = ModuleJSON.createPipeList(pipeline.getTasks());
         
         responseObject.addChild(PipelineJSON.KEY, pipelineObject);
-        responseObject.addChild(ModuleJSON.KEY, modulesObject);
+        responseObject.addChild(ModuleJSON.MODULES_KEY, modulesObject);
+        //responseObject.addChild(ModuleJSON.PIPES_KEY, pipesObject);
         
         this.write(response, responseObject);
 	}
