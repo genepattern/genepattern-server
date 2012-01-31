@@ -353,11 +353,16 @@ var editor = {
             success: function(response) {
                 var message = response["MESSAGE"];
                 var error = response["ERROR"];
+                var newLsid = response["lsid"];
                 if (error !== undefined && error !== null) {
                     alert(error);
                 }
                 if (message !== undefined && message !== null) {
                     alert(message);
+                }
+                // Update the LSID upon successful save
+                if (newLsid !== undefined && newLsid !== null) {
+                    editor.workspace["pipelineLsid"] = newLsid;
                 }
             },
             dataType: "json"

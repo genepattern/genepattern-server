@@ -9,30 +9,20 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.axis.MessageContext;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.webapp.PipelineCreationHelper;
-import org.genepattern.server.webapp.jsf.UIBeanHelper;
-import org.genepattern.server.webservice.server.ProvenanceFinder;
-import org.genepattern.server.webservice.server.ProvenanceFinder.ProvenancePipelineResult;
-import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
-import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
-import org.genepattern.webservice.JobInfo;
-import org.genepattern.webservice.ParameterFormatConverter;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
@@ -235,12 +225,17 @@ public class PipelineQueryServlet extends HttpServlet {
         return newParams;
     }
 	
-	private void setParameter(String pName, String value, ParameterInfo[] taskParams) throws Exception {
+	private ParameterInfo setParameter(String pName, String value, ParameterInfo[] taskParams, boolean promptWhenRun) throws Exception {
         for (int i = 0; i < taskParams.length; i++) {
             ParameterInfo param = taskParams[i];
             if (pName.equalsIgnoreCase(param.getName())){
                 param.setValue(value);
-                return;
+                param.getAttributes().put("altName", param.getName());
+                param.getAttributes().put("altDescription", param.getDescription());
+                if (promptWhenRun) {
+                    param.getAttributes().put(PipelineModel.RUNTIME_PARAM, "1");
+                }
+                return param;
             }
         }
         throw new Exception("Parameter " + pName + " was not found");
@@ -250,6 +245,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	    IAdminClient adminClient = new LocalAdminClient(model.getUserID());
         Map<String, TaskInfo> taskCatalog = adminClient.getTaskCatalogByLSID();
 	    
+        int taskNum = 1;
 	    for (ModuleJSON module : modulesList) {
 	        TaskInfo taskInfo = taskCatalog.get(module.getLsid());
 	        TaskInfoAttributes tia = taskInfo.giveTaskInfoAttributes();
@@ -262,16 +258,18 @@ public class PipelineQueryServlet extends HttpServlet {
 	            boolean pwr = input.getPromptWhenRun();
 	            promptWhenRun[i] = pwr;
 	            if (pwr) {
-	                setParameter(input.getName(), "", moduleParams);
+	                ParameterInfo pInfo = setParameter(input.getName(), "", moduleParams, true);
+	                model.addInputParameter(taskInfo.getName() + taskNum + "." + input.getName(), pInfo);
 	            }
 	            else {
-	                setParameter(input.getName(), input.getValue(), moduleParams);
+	                setParameter(input.getName(), input.getValue(), moduleParams, false);
 	            }
 	        }
 	        
 	        JobSubmission js = new JobSubmission(taskInfo.getName(), taskInfo.getDescription(), tia.get(GPConstants.LSID), moduleParams, promptWhenRun, 
 	                TaskInfo.isVisualizer(tia), taskInfo);
 	        model.addTask(js);
+	        taskNum++;
 	    }
 	}
 	
@@ -356,11 +354,12 @@ public class PipelineQueryServlet extends HttpServlet {
         }
         
         // Generate a task from the pipeline model and install it
+        String newLsid = null;
         try {
             PipelineCreationHelper controller = new PipelineCreationHelper(model);
             controller.generateLSID();
-            String result = controller.generateTask();
-            System.out.println("RESULT:::::::::::::::::::: " + result);
+            newLsid = controller.generateTask();
+            System.out.println("RESULT:::::::::::::::::::: " + newLsid);
         }
         catch (TaskInstallationException e) {
             log.error("Unable to install the pipeline:" + e.getMessage(), e);
@@ -371,6 +370,7 @@ public class PipelineQueryServlet extends HttpServlet {
         // Respond to the client
         ResponseJSON message = new ResponseJSON();
         message.addMessage("Pipeline Saved");
+        message.addChild("lsid", newLsid);
         this.write(response, message);
 	}
 	

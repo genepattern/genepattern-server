@@ -16,6 +16,15 @@ public class ResponseJSON extends JSONObject {
         }
     }
     
+    public void addChild(Object key, String value) {
+        try {
+            this.put(key.toString(), value);
+        }
+        catch (JSONException e) {
+            log.error("Error attaching String to ResponseJSON: " + value);
+        }
+    }
+    
     public void addMessage(String message) {
         try {
             this.put("MESSAGE", message);
