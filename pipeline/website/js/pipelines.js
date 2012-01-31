@@ -328,7 +328,7 @@ var editor = {
         $.ajax({
             type: "POST",
             url: "/gp/PipelineDesigner/load",
-            data: {"lsid":lsid},
+            data: { "lsid" : lsid },
             success: function(response) {
                 var error = response["ERROR"];
                 if (error !== undefined) {
@@ -346,10 +346,11 @@ var editor = {
 
 	save: function() {
 		var toSend = editor._bundleForSave();
+        console.log("OK");
         $.ajax({
             type: "POST",
             url: "/gp/PipelineDesigner/save",
-            data: toSend,
+            data: { "bundle" : JSON.stringify(toSend) },
             success: function(response) {
                 var message = response["MESSAGE"];
                 var error = response["ERROR"];

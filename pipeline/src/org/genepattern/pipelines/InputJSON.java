@@ -47,6 +47,17 @@ public class InputJSON extends JSONObject {
         }
     }
     
+    public InputJSON(JSONObject param) {
+        try {
+            this.setName(param.getString(NAME));
+            this.setPromptWhenRun(param.getBoolean(PROMPT_WHEN_RUN));
+            this.setValue(param.getString(VALUE));
+        }
+        catch (JSONException e) {
+            log.error("Error parsing JSON and initializing InputJSON from ParameterInfo: " + param);
+        }
+    }
+    
     public String getName() throws JSONException {
         return this.getString(NAME);
     }

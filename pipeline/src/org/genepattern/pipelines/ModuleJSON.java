@@ -1,5 +1,6 @@
 package org.genepattern.pipelines;
 
+import java.util.Iterator;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -52,6 +53,18 @@ public class ModuleJSON extends JSONObject {
         }
         catch (JSONException e) {
             log.error("Error parsing JSON and initializing ModuleJSON from JobSubmission: " + job.getName());
+        }
+    }
+    
+    public ModuleJSON(JSONObject object) {
+        try {
+            this.setId(object.getInt(ID));
+            this.setLsid(object.getString(LSID));
+            this.constructInputs(object.getJSONArray(INPUTS));
+            this.setOutputs(object.getJSONArray(OUTPUTS));
+        }
+        catch (JSONException e) {
+            log.error("Error parsing JSON and initializing ModuleJSON from TaskInfo: " + object);
         }
     }
     
@@ -137,6 +150,15 @@ public class ModuleJSON extends JSONObject {
         this.put(INPUTS, inputs);
     }
     
+    public void constructInputs(JSONArray params) throws JSONException {
+        JSONArray inputs = new JSONArray();
+        for (int i = 0; i < params.length(); i++) {
+            InputJSON param = new InputJSON(params.getJSONObject(i));
+            inputs.put(param);
+        }
+        this.put(INPUTS, inputs);
+    }
+    
     public void constructInputs(ParameterInfo[] params) throws JSONException {
         JSONArray inputs = new JSONArray();
         
@@ -180,5 +202,23 @@ public class ModuleJSON extends JSONObject {
         }
         
         return listObject;
+    }
+    
+    public static ModuleJSON[] extract(JSONObject json) {
+        try {
+            JSONObject object = (JSONObject) json.get(ModuleJSON.KEY);
+            ModuleJSON[] modules = new ModuleJSON[object.length()];
+            int i = 0;
+            Iterator<String> keys = object.keys();
+            while (keys.hasNext()) {
+                modules[i] = new ModuleJSON((JSONObject) object.getJSONObject(keys.next()));
+                i++;
+            }
+            return modules;
+        }
+        catch (JSONException e) {
+            log.error("Unable to extract ModuleJSON from saved bundle");
+            return null;
+        }
     }
 }

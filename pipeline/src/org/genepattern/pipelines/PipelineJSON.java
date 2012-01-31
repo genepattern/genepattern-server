@@ -26,6 +26,22 @@ public class PipelineJSON extends JSONObject {
     
     public static final String KEY = "pipeline";
     
+    public PipelineJSON(JSONObject object) {
+        try {
+            this.put(NAME, object.get(NAME));
+            this.put(DESCRIPTION, object.get(DESCRIPTION));
+            this.put(AUTHOR, object.get(AUTHOR));
+            this.put(PRIVACY, object.get(PRIVACY));
+            this.put(VERSION, object.get(VERSION));
+            this.put(VERSION_COMMENT, object.get(VERSION_COMMENT));
+            this.put(DOCUMENTATION, object.get(DOCUMENTATION));
+            this.put(LSID, object.get(LSID));
+        }
+        catch (JSONException e) {
+            log.error("Unable to create PipelineJSON from generic JSONObject");
+        }
+    }
+
     public PipelineJSON(PipelineModel pipeline, TaskInfo info) {
         try {
             this.put(NAME, pipeline.getName());
@@ -40,6 +56,30 @@ public class PipelineJSON extends JSONObject {
         catch (JSONException e) {
             log.error("Error creating pipeline JSON for: " + pipeline.getName());
         }  
+    }
+    
+    public String getName() throws JSONException {
+        return this.getString(NAME);
+    }
+    
+    public String getDescription() throws JSONException {
+        return this.getString(DESCRIPTION);
+    }
+    
+    public String getAuthor() throws JSONException {
+        return this.getString(AUTHOR);
+    }
+    
+    public String getPrivacy() throws JSONException {
+        return this.getString(PRIVACY);
+    }
+    
+    public Integer getVersion() throws JSONException {
+        return this.getInt(VERSION);
+    }
+    
+    public String getLsid() throws JSONException {
+        return this.getString(LSID);
     }
     
     private String getDocumentation(PipelineModel pipeline, TaskInfo info) {
@@ -60,5 +100,27 @@ public class PipelineJSON extends JSONObject {
         String[] parts = lsid.split(":");
         String versionString = parts[parts.length - 1];
         return versionString;
+    }
+    
+    public static JSONObject parseBundle(String bundle) {
+        JSONObject pipelineJSON = null;
+        try {
+            pipelineJSON = new JSONObject(bundle);
+        }
+        catch (JSONException e) {
+            log.error("Error parsing JSON in the saved bundle");
+        }
+        return pipelineJSON;
+    }
+    
+    public static PipelineJSON extract(JSONObject json) {
+        try {
+            JSONObject object = (JSONObject) json.get(PipelineJSON.KEY);
+            return new PipelineJSON(object);
+        }
+        catch (JSONException e) {
+            log.error("Unable to extract PipelineJSON from saved bundle");
+            return null;
+        }
     }
 }
