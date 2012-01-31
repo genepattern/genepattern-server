@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.Vector;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -200,7 +201,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	}
 	
 	private String blankLsidIfNecessary(String lsid) {
-	    if (lsid.length() > 10) {
+	    if (lsid.length() < 10) {
 	        return "";
 	    }
 	    else {
@@ -216,8 +217,6 @@ public class PipelineQueryServlet extends HttpServlet {
 	    model.setPrivacy(pipelineObject.getPrivacy() == GPConstants.PRIVATE);
 	    
 	    String lsid = blankLsidIfNecessary(pipelineObject.getLsid());
-	    PipelineCreationHelper controller = new PipelineCreationHelper(model);
-	    lsid = controller.generateLSID();
 	    model.setLsid(lsid);
 	}
 	
@@ -276,8 +275,38 @@ public class PipelineQueryServlet extends HttpServlet {
 	    }
 	}
 	
-	private void setPipesInfo(PipelineModel model, PipeJSON[] pipesObject) throws JSONException {
-        
+	private int findIndexWithId(int id, List<ModuleJSON> modulesList) throws JSONException {
+	    for (int i = 0; i < modulesList.size(); i++) {
+	        if (modulesList.get(i).getId().equals(id)) {
+	            return i;
+	        }
+	    }
+	    return -1;
+	}
+	
+	private void setPipesInfo(PipelineModel model, List<ModuleJSON> modulesList, PipeJSON[] pipesObject) throws JSONException {
+        for (PipeJSON pipe : pipesObject) {
+            // Read the pipe
+            Integer outputId = pipe.getOutputModule();
+            Integer inputId = pipe.getInputModule();
+            String value = pipe.getOutputPort();
+            String param = pipe.getInputPort();
+            
+            // Find the index of input and output
+            Integer outputIndex = findIndexWithId(outputId, modulesList);
+            Integer inputIndex = findIndexWithId(inputId, modulesList);
+            
+            // Set inheriting the value on the input
+            JobSubmission inputModule = model.getTasks().get(inputIndex);
+            Vector<ParameterInfo> params = inputModule.getParameters();
+            for (ParameterInfo pi : params) {
+                if (pi.getName().equals(param)) {
+                    pi.getAttributes().put(PipelineModel.INHERIT_TASKNAME, outputIndex.toString());
+                    pi.getAttributes().put(PipelineModel.INHERIT_FILENAME, value);
+                    pi.setValue("");
+                }
+            }
+        }
     }
 	
 	public void savePipeline(HttpServletRequest request, HttpServletResponse response) {
@@ -312,36 +341,37 @@ public class PipelineQueryServlet extends HttpServlet {
         }
         
         // Build up the pipeline model to save
+        PipelineModel model = null;
         try {
-            PipelineModel model = new PipelineModel();
+            model = new PipelineModel();
             model.setUserID(username);
             setPipelineInfo(model, pipelineObject);
             setModuleInfo(model, modulesList);
-            setPipesInfo(model, pipesObject);
+            setPipesInfo(model, modulesList, pipesObject);
         }
         catch (Exception e) {
             log.error("Unable to build the pipeline model", e);
             sendError(response, "Unable to save the pipeline");
             return;
         }
-
         
-        
-        ProvenanceFinder pf = new ProvenanceFinder(username);
-        TreeSet<JobInfo> jobSet = new TreeSet<JobInfo>();
-        //JobInfo jobInfo = new JobInfo(-1, -1, null, null, null, jobParameters, UIBeanHelper.getUserId(), lsid, taskInfo.getName());
-        ProvenancePipelineResult result = pf.createProvenancePipeline(jobSet, "Testing2012");
-        result.getLsid();
-        
-        
-        
+        // Generate a task from the pipeline model and install it
         try {
-            Status status = new LocalTaskIntegratorClient(username);
-            GenePatternAnalysisTask.installNewTask("zipFilename", username, GPConstants.ACCESS_PRIVATE, status);
+            PipelineCreationHelper controller = new PipelineCreationHelper(model);
+            controller.generateLSID();
+            String result = controller.generateTask();
+            System.out.println("RESULT:::::::::::::::::::: " + result);
         }
         catch (TaskInstallationException e) {
-            log.error("Unable to install pipeline");
+            log.error("Unable to install the pipeline:" + e.getMessage(), e);
+            sendError(response, "Unable to save the pipeline");
+            return;
         }
+        
+        // Respond to the client
+        ResponseJSON message = new ResponseJSON();
+        message.addMessage("Pipeline Saved");
+        this.write(response, message);
 	}
 	
 	public void constructLibrary(HttpServletResponse response) {

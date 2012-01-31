@@ -346,7 +346,6 @@ var editor = {
 
 	save: function() {
 		var toSend = editor._bundleForSave();
-        console.log("OK");
         $.ajax({
             type: "POST",
             url: "/gp/PipelineDesigner/save",
@@ -354,10 +353,10 @@ var editor = {
             success: function(response) {
                 var message = response["MESSAGE"];
                 var error = response["ERROR"];
-                if (error !== null) {
+                if (error !== undefined && error !== null) {
                     alert(error);
                 }
-                if (message !== null) {
+                if (message !== undefined && message !== null) {
                     alert(message);
                 }
             },

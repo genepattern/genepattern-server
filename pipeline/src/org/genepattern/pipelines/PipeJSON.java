@@ -52,6 +52,14 @@ public class PipeJSON extends JSONObject {
         return this.getInt(INPUT_MODULE);
     }
     
+    public String getOutputPort() throws JSONException {
+        return this.getString(OUTPUT_PORT);
+    }
+    
+    public String getInputPort() throws JSONException {
+        return this.getString(INPUT_PORT);
+    }
+    
     public static ResponseJSON createPipeList(Vector<JobSubmission> jobs) {
         ResponseJSON listObject = new ResponseJSON();
         Integer moduleCounter = 0;
