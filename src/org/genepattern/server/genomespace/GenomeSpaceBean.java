@@ -609,6 +609,50 @@ public class GenomeSpaceBean {
     }
     
     /**
+     * Handles submission from a GenomeSpace file menu to create a directory in the targeted parent directory.
+     * Then signals the bean to rebuild the file tree next load, since the tree has changed.
+     */
+    public void createDirectory() {
+        if (!genomeSpaceEnabled) {
+            this.setMessageToUser("GenomeSpace is not enabled");
+            return;
+        }
+        
+        // Find the name of the new directory
+        String dirName = null;
+        for (Object i : UIBeanHelper.getRequest().getParameterMap().keySet()) {
+            if (((String) i).contains("dirName")) {
+                String potentialName = UIBeanHelper.getRequest().getParameter((String) i);
+                if (potentialName.length() > 0) {
+                    dirName = potentialName;
+                    break;
+                }
+            }
+        }
+        if (dirName == null || dirName.length() == 0) {
+            UIBeanHelper.setErrorMessage("Please enter a valid subdirectory name");
+            return;
+        }
+        
+        // Get the parent directory
+        String url = UIBeanHelper.getRequest().getParameter("parentUrl");
+        HttpServletRequest request = UIBeanHelper.getRequest();
+        GenomeSpaceFile parentDir = getDirectory(url);
+        
+        HttpSession httpSession = UIBeanHelper.getSession();
+        Object gsSessionObject = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
+        
+        try { 
+            GenomeSpaceClientFactory.getGenomeSpaceClient().createDirectory(gsSessionObject, dirName, parentDir);
+            forceFileRefresh(); // force a refresh
+            setMessageToUser("Created directory " + dirName);
+        }
+        catch (GenomeSpaceException e) {
+            setMessageToUser(e.getLocalizedMessage());
+        }
+    }
+    
+    /**
      * Handles submission from the GenomeSpace file menu to save a GenomeSpace file locally.
      */
     public void saveFile() {

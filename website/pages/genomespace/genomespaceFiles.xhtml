@@ -76,7 +76,7 @@ use, misuse, or functionality.
                             <rich:treeNode type="false" icon="/images/iconLeaf.gif" iconLeaf="/images/iconLeaf.gif">
                                 <h:outputLink value="#{aFile.url}">#{aFile.name}</h:outputLink>
                                 <!-- Image for popup menu -->
-								<t:graphicImage rendered="#{not aFile.directory}" value="/images/smallOptions.gif" name="Image_#{aFile.formattedId}"
+								<t:graphicImage value="/images/smallOptions.gif" name="Image_#{aFile.formattedId}"
 										onclick="pm_showMenu('menuDiv_#{aFile.formattedId}', Position.cumulativeOffset(this), 50, 50);" 
 										onmouseover="MM_swapImage('Image_#{aFile.formattedId}','','/gp/images/smallOptions2.gif',2)" 
 										onmouseout="MM_swapImgRestore();"/>
@@ -86,6 +86,11 @@ use, misuse, or functionality.
                             </rich:treeNode>
 							<rich:treeNode type="true" icon="/images/iconFolder.gif" iconLeaf="/images/iconFolder.gif">
                                 <h:outputText>#{aFile.name}</h:outputText>
+								<!-- Image for popup menu -->
+								<t:graphicImage value="/images/smallOptions.gif" name="Image_#{aFile.formattedId}"
+										onclick="pm_showMenu('menuDiv_#{aFile.formattedId}', Position.cumulativeOffset(this), 50, 50);" 
+										onmouseover="MM_swapImage('Image_#{aFile.formattedId}','','/gp/images/smallOptions2.gif',2)" 
+										onmouseout="MM_swapImgRestore();"/>
                             </rich:treeNode>
                         </rich:tree>
                         <h:outputText rendered="#{genomeSpaceBean.emptyTree}">

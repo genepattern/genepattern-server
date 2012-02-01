@@ -96,6 +96,7 @@ class GenomeSpaceClientSingleton {
             public Map<String, Set<String>> getKindToTools(Object gsSession) { return null; }
             public URL getSendToToolUrl(Object gsSession, GenomeSpaceFile file, String toolName) throws GenomeSpaceException { return null; }
             public GenomeSpaceLogin submitLogin(String env, String token) throws GenomeSpaceException { return null; }
+            public void createDirectory(Object gsSessionObject, String dirName, GenomeSpaceFile parentDir) throws GenomeSpaceException {}
         };
     }
 }

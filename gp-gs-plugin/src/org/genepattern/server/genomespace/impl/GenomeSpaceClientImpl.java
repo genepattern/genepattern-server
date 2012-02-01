@@ -273,6 +273,25 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
     }
     
     /**
+     * Creates a GenomeSpace directory with the given name in the given parent directory
+     * @throws GenomeSpaceException
+     */
+    public void createDirectory(Object gsSessionObject, String dirName, GenomeSpaceFile parentDir) throws GenomeSpaceException {
+        GsSession gsSession = null;
+        if (gsSessionObject instanceof GsSession) {
+            gsSession = (GsSession) gsSessionObject;
+        }
+        else {
+            log.error("Object other than GsSession passed into createDirectory: " + gsSessionObject);
+            return;
+        }
+        
+        DataManagerClient dmClient = gsSession.getDataManagerClient();
+        GSFileMetadata metadata = (GSFileMetadata) parentDir.getMetadata();
+        dmClient.createDirectory(metadata, dirName);
+    }
+    
+    /**
      * Lists all available conversion formats for a file given the file's metadata object
      */
     public Set<String> getAvailableFormats(Object metadataObject) {

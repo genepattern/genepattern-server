@@ -20,24 +20,12 @@
 	xmlns:rich="http://richfaces.org/rich">
 <ui:composition template="/templates/common.xhtml">
 	<ui:define name="headText">
-		<link class="component"
-			href="/gp/a4j/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/basic_classes.xcss/DATB/eAF7sqpgb-jyGdIAFrMEaw__"
-			rel="stylesheet" type="text/css" />
-		<link class="component"
-			href="/gp/a4j/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/extended_classes.xcss/DATB/eAF7sqpgb-jyGdIAFrMEaw__"
-			media="rich-extended-skinning" rel="stylesheet" type="text/css" />
-		<script
-			src="/gp/a4j/a4j/g/3_3_3.Finalorg.ajax4jsf.javascript.AjaxScript"
-			type="text/javascript"></script>
-		<script
-			src="/gp/a4j/a4j/g/3_3_3.Finalorg.ajax4jsf.javascript.PrototypeScript"
-			type="text/javascript"></script>
-		<script
-			src="/gp/a4j/a4j/g/3_3_3.Finalorg.ajax4jsf.javascript.ImageCacheScript"
-			type="text/javascript"></script>
-		<script
-			src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/browser_info.js"
-			type="text/javascript"></script>
+		<link class="component" href="/gp/a4j/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/basic_classes.xcss" rel="stylesheet" type="text/css" />
+		<link class="component" href="/gp/a4j/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/extended_classes.xcss" media="rich-extended-skinning" rel="stylesheet" type="text/css" />
+		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg.ajax4jsf.javascript.AjaxScript" type="text/javascript"></script>
+		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg.ajax4jsf.javascript.PrototypeScript" type="text/javascript"></script>
+		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg.ajax4jsf.javascript.ImageCacheScript" type="text/javascript"></script>
+		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/browser_info.js" type="text/javascript"></script>
 		<script
 			src="/gp/a4j/a4j/g/3_3_3.Finalorg/ajax4jsf/javascript/scripts/form.js"
 			type="text/javascript"></script>
@@ -469,6 +457,11 @@ function showFileInput(id) {
 	            </ui:include>
 			</t:dataList>
 			<t:dataList var="file" value="#{genomeSpaceBean.allFiles}" rowIndexVar="fileIndex">
+				<ui:include src="genomespace/fileMenu.xhtml">
+           			<ui:param name="file" value="#{file}"/>
+           		</ui:include>
+           	</t:dataList>
+           	<t:dataList var="file" value="#{genomeSpaceBean.allDirectories}" rowIndexVar="fileIndex">
 				<ui:include src="genomespace/fileMenu.xhtml">
            			<ui:param name="file" value="#{file}"/>
            		</ui:include>

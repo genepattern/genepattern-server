@@ -14,6 +14,7 @@ use, misuse, or functionality.
         <div id="menuDiv_#{file.formattedId}" style="visibility:hidden;" class="popupMenu">
             <table>
                 <tbody>
+                	<h:outputText rendered="#{not file.directory}">
                     <tr>
                         <td>
                             <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file from GenomeSpace?');" action="#{genomeSpaceBean.deleteFile}" immediate="true">
@@ -28,27 +29,51 @@ use, misuse, or functionality.
                             </h:commandLink>
                         </td>
                     </tr>
+					</h:outputText>
 					
-					<h:outputText rendered="#{not empty genomeSpaceBean.kindToTools[file.kind]}">
+					<h:outputText rendered="#{file.directory}">
+                        <tr>
+                            <td>
+                                <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <h:outputText value="Create Subdirectory" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <t:inputText id="dirName" rendered="#{file.directory}" onfocus="JavaScript:setSubdirFocus()"/>
+                                <h:commandLink value="Create" action="#{genomeSpaceBean.createDirectory}" immediate="true">
+                                    <f:param name="parentUrl" value="#{file.url}" />
+                                </h:commandLink>
+                            </td>
+                        </tr>
+                    </h:outputText>
+					
+					<h:outputText rendered="#{not empty genomeSpaceBean.kindToTools[file.kind] and not file.directory}">
                         <tr>
                             <td>
                                 <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
                             </td>
                         </tr>
                     </h:outputText>
-					<t:dataList value="#{file.availableFormats}" var="format">
-						<t:dataList value="#{genomeSpaceBean.kindToTools[format]}" var="tool">
-	                        <tr>
-	                            <td>
-	                            	<img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle"/>&#160;
-									<h:commandLink value="Send to #{tool} as #{format}" action="#{genomeSpaceBean.forwardToTool}" immediate="true">
-										<f:param value="${file.url}" name="file"/>
-										<f:param value="#{tool}" name="tool"/>
-                                	</h:commandLink>
-	                            </td>
-	                        </tr>
-	                    </t:dataList>
-					</t:dataList>
+					<h:outputText rendered="#{not file.directory}">
+						<t:dataList value="#{file.availableFormats}" var="format">
+							<t:dataList value="#{genomeSpaceBean.kindToTools[format]}" var="tool">
+		                        <tr>
+		                            <td>
+		                            	<img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle"/>&#160;
+										<h:commandLink value="Send to #{tool} as #{format}" action="#{genomeSpaceBean.forwardToTool}" immediate="true">
+											<f:param value="${file.url}" name="file"/>
+											<f:param value="#{tool}" name="tool"/>
+	                                	</h:commandLink>
+		                            </td>
+		                        </tr>
+		                    </t:dataList>
+						</t:dataList>
+					</h:outputText>
 					
 					<h:outputText rendered="#{not empty genomeSpaceBean.sendToParameters[file.kind]}">
                         <tr>
@@ -67,25 +92,27 @@ use, misuse, or functionality.
                         </tr>
                     </t:dataList>
 					
-                    <h:outputText rendered="#{not empty genomeSpaceBean.kindToModules[file.kind]}">
+                    <h:outputText rendered="#{not empty genomeSpaceBean.kindToModules[file.kind] and not file.directory}">
                         <tr>
                             <td>
                                 <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
                             </td>
                         </tr>
                     </h:outputText>
-                    <t:dataList value="#{genomeSpaceBean.kindToModules[file.kind]}" var="moduleMenuItem">
-                        <tr>
-                            <td>
-                                <h:commandLink value="#{moduleMenuItem.name}" action="#{jobsBean.loadTask}" immediate="true">
-                                    <f:param value="#{moduleMenuItem.lsid}" name="module"/>
-									<f:param value="GenomeSpace" name="source"/>
-									<f:param value="${file.name}" name="name"/>
-									<f:param value="#{file.url}" name="path"/>
-                                </h:commandLink>
-                            </td>
-                        </tr>
-                    </t:dataList>
+					<h:outputText rendered="#{not file.directory}">
+	                    <t:dataList value="#{genomeSpaceBean.kindToModules[file.kind]}" var="moduleMenuItem">
+	                        <tr>
+	                            <td>
+	                                <h:commandLink value="#{moduleMenuItem.name}" action="#{jobsBean.loadTask}" immediate="true">
+	                                    <f:param value="#{moduleMenuItem.lsid}" name="module"/>
+										<f:param value="GenomeSpace" name="source"/>
+										<f:param value="${file.name}" name="name"/>
+										<f:param value="#{file.url}" name="path"/>
+	                                </h:commandLink>
+	                            </td>
+	                        </tr>
+	                    </t:dataList>
+					</h:outputText>
                 </tbody>
             </table>
         </div>
