@@ -72,8 +72,8 @@ public class GenomeSpaceFileManager {
      */
     public static GpFilePath createFile(URL url, Object metadata) {
         if (!isGenomeSpaceFile(url)) {
-            log.error("URL is not a GenomeSpace URL in GenomeSpaceFileManager: " + url);
-            return null;
+            log.warn("URL is not a GenomeSpace URL in GenomeSpaceFileManager: " + url);
+            //return null;
         }
         
         try {
