@@ -1,5 +1,6 @@
 package org.genepattern.server.genomespace;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,13 +23,19 @@ public class GenomeSpaceReceiveBean {
     private UploadFilesBean uploadBean = null;
     private List<GSReceivedFileWrapper> receivedFiles = null;
     
-    public String getRefreshPage() {
+    public String getRefreshPage() throws IOException {
         HttpServletRequest request = UIBeanHelper.getRequest();
         String queryString = request.getQueryString();
         if (queryString != null && queryString.length() > 0) {
             blankCurrentTaskInfo();
             cleanBean();
         }
+        
+        List<GSReceivedFileWrapper> files = getReceivedFiles();
+        if (files.size() < 1) {
+            UIBeanHelper.getResponse().sendRedirect("/gp/");
+        }
+        
         return null;
     }
     
