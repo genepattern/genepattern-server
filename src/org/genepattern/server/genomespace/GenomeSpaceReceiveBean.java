@@ -55,11 +55,13 @@ public class GenomeSpaceReceiveBean {
         for (GSReceivedFileWrapper i : receivedFiles) {
             SortedSet<TaskInfo> infos = getKindToModules().get(i.getFile().getKind());
             List<SelectItem> items = new ArrayList<SelectItem>();
-            for (TaskInfo j : infos) {
-                SelectItem item = new SelectItem();
-                item.setLabel(j.getName());
-                item.setValue(j.getLsid());
-                items.add(item);
+            if (infos != null) {
+                for (TaskInfo j : infos) {
+                    SelectItem item = new SelectItem();
+                    item.setLabel(j.getName());
+                    item.setValue(j.getLsid());
+                    items.add(item);
+                }
             }
             i.setModuleSelects(items);
         }
