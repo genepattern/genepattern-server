@@ -7,6 +7,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Date;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.genepattern.server.dm.GpFilePath;
@@ -93,9 +94,11 @@ public class GenomeSpaceFileManager {
             if (metadata != null) {
                 Date lastModified = GenomeSpaceClientFactory.getGenomeSpaceClient().getModifiedFromMetadata(metadata);
                 Long length = GenomeSpaceClientFactory.getGenomeSpaceClient().getSizeFromMetadata(metadata);
+                Set<String> conversions = GenomeSpaceClientFactory.getGenomeSpaceClient().getAvailableFormats(metadata);
                 
                 file.setLastModified(lastModified);
                 file.setFileLength(length);
+                file.setConversions(conversions);
             }
             
             return file;

@@ -34,10 +34,30 @@ public class GenomeSpaceFile extends GpFilePath {
     // List of child files if this is a directory
     private Set<GenomeSpaceFile> childFiles = null;
     
+    // List of possible conversion types
+    Set<String> conversions = new HashSet<String>();
+
     private URL gsUrl = null;
     private URI gsURI = null;
     private String path;
     boolean converted = false;
+    
+    /**
+     * Returns a list of all possible file format types that this 
+     * file can be converted to through GenomeSpace
+     * @return
+     */
+    public Set<String> getConversions() {
+        return conversions;
+    }
+
+    /**
+     * Sets the list of all possible file format types that this 
+     * file can be converted to through GenomeSpace
+     */
+    public void setConversions(Set<String> conversions) {
+        this.conversions = conversions;
+    }
     
     /**
      * Returns a list of child files to this file

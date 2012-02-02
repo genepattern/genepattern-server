@@ -24,6 +24,7 @@ import java.util.Map;
 
 import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
+import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
@@ -35,7 +36,10 @@ import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.dm.GpFilePath;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.genomespace.GenomeSpaceBean;
+import org.genepattern.server.genomespace.GenomeSpaceClientFactory;
+import org.genepattern.server.genomespace.GenomeSpaceFile;
 import org.genepattern.server.genomespace.GenomeSpaceFileManager;
+import org.genepattern.server.genomespace.GenomeSpaceLoginManager;
 import org.genepattern.server.user.UserDAO;
 import org.genepattern.server.webapp.uploads.UploadFilesBean;
 import org.genepattern.server.webservice.server.dao.AnalysisDAO;
@@ -288,6 +292,7 @@ public class RunTaskBean {
             matchOutputFileSource = "GenePattern";
         String matchOutputFileDirName = (String) UIBeanHelper.getRequest().getAttribute("outputFileDirName");
         String downloadPath = (String) UIBeanHelper.getRequest().getAttribute("downloadPath");
+        String fileFormat = (String) UIBeanHelper.getRequest().getAttribute("format");
 
         String gsUrl = null;
         if ((gsb != null) && ("GENOMESPACE".equalsIgnoreCase(matchOutputFileSource))){
@@ -307,8 +312,8 @@ public class RunTaskBean {
         if (matchOutputFileSource.equalsIgnoreCase("genomespace")) {
             Map<String, List<String>> kindToInputParameters = new HashMap<String, List<String>>();
                if (taskParameters != null) {
-                   GpFilePath gsFile = GenomeSpaceFileManager.createFile(gsUrl);
-                   String gsType = gsFile.getKind();
+                   URL convertUrl = gsb.getConvertedFileUrl(gsUrl, fileFormat);
+                   String gsType = fileFormat;
                    System.out.println("GS File is a " + gsType);
                
                    for (ParameterInfo p : taskParameters) {
@@ -317,7 +322,7 @@ public class RunTaskBean {
                            for (String format: fileFormats){
                                System.out.println("format " + format);
                                if (format.equalsIgnoreCase(gsType)){
-                                   reloadValues.put(p.getName(), gsUrl);
+                                   reloadValues.put(p.getName(), convertUrl.toString());
                                    break;
                                }
                            }                           

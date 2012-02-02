@@ -94,27 +94,32 @@ use, misuse, or functionality.
                         </tr>
                     </t:dataList>
 					
-                    <h:outputText rendered="#{not empty genomeSpaceBean.kindToModules[file.kind] and not file.directory}">
-                        <tr>
-                            <td>
-                                <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
-                            </td>
-                        </tr>
-                    </h:outputText>
-					<h:outputText rendered="#{not file.directory}">
-	                    <t:dataList value="#{genomeSpaceBean.kindToModules[file.kind]}" var="moduleMenuItem">
-	                        <tr>
+					<t:dataList value="#{file.conversions}" var="format">
+						<h:outputText rendered="#{not empty genomeSpaceBean.kindToModules[format] and not file.directory}">
+							<tr>
 	                            <td>
-	                                <h:commandLink value="#{moduleMenuItem.name}" action="#{jobsBean.loadTask}" immediate="true">
-	                                    <f:param value="#{moduleMenuItem.lsid}" name="module"/>
-										<f:param value="GenomeSpace" name="source"/>
-										<f:param value="${file.name}" name="name"/>
-										<f:param value="#{file.url}" name="path"/>
-	                                </h:commandLink>
+	                                <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
 	                            </td>
-	                        </tr>
-	                    </t:dataList>
-					</h:outputText>
+                        	</tr>
+							<tr>
+	                            <td>
+	                                <h:outputText value="Sent by GenomeSpace as #{format}" />
+	                            </td>
+                        	</tr>
+							<t:dataList value="#{genomeSpaceBean.kindToModules[format]}" var="moduleMenuItem">
+		                        <tr>
+		                            <td>
+		                                <h:commandLink value="#{moduleMenuItem.name}" action="#{jobsBean.loadTask}" immediate="true">
+		                                    <f:param value="#{moduleMenuItem.lsid}" name="module"/>
+											<f:param value="GenomeSpace" name="source"/>
+											<f:param value="#{file.url}" name="path"/>
+											<f:param value="#{format}" name="format"/>
+		                                </h:commandLink>
+		                            </td>
+		                        </tr>
+	                    	</t:dataList>
+						</h:outputText>
+					</t:dataList>
                 </tbody>
             </table>
         </div>

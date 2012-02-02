@@ -313,7 +313,7 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         Set<GSDataFormat> dataFormats = metadata.getAvailableDataFormats();
         Set<String> formats = new HashSet<String>();
         for (GSDataFormat j : dataFormats) {
-            formats.add(j.getName());
+            formats.add(j.getFileExtension());
         }
         return formats;
     }
@@ -441,5 +441,40 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
         
         log.error("Unable to find a GenomeSpace tool matching the name: " + toolName);
         throw new GenomeSpaceException("Unable to find a GenomeSpace tool matching the name: " + toolName);
+    }
+    
+    /**
+     * Gets the URL to the GenomeSpace file provided the file and the given format for converting the file
+     */
+    public URL getConvertedURL(Object gsSessionObject, GenomeSpaceFile file, String formatType) throws GenomeSpaceException {
+        GsSession gsSession = null;
+        if (gsSessionObject instanceof GsSession) {
+            gsSession = (GsSession) gsSessionObject;
+        }
+        else {
+            log.error("Object other than GsSession passed into getConvertedURL(): " + gsSessionObject);
+            throw new GenomeSpaceException("Object other than GsSession passed into getConvertedURL(): " + gsSessionObject);
+        }
+        
+        // Delare necessary objects
+        DataManagerClient dmClient = gsSession.getDataManagerClient();
+        GSFileMetadata metadata = (GSFileMetadata) file.getMetadata();
+        
+        // Find the correct GSDataFormat object
+        GSDataFormat format = null;
+        for (GSDataFormat i : metadata.getAvailableDataFormats()) {
+            if (i.getFileExtension().equals(formatType)) {
+                format = i;
+            }
+        }
+        
+        // Check if the format wasn't found
+        if (format == null) {
+            log.error("Unable to find an appropriate GSDataFormat object for: " + formatType);
+            throw new GenomeSpaceException("Unable to convert the file " + file.getName() + " to: " + formatType);
+        }
+        
+        // Get the URL
+        return dmClient.getFileUrl(metadata, format);
     }
 }

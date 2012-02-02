@@ -644,7 +644,6 @@ public class GenomeSpaceBean {
         
         // Get the parent directory
         String url = UIBeanHelper.getRequest().getParameter("parentUrl");
-        HttpServletRequest request = UIBeanHelper.getRequest();
         GenomeSpaceFile parentDir = getDirectory(url);
         
         HttpSession httpSession = UIBeanHelper.getSession();
@@ -943,5 +942,19 @@ public class GenomeSpaceBean {
         Boolean openID = (Boolean) session.getAttribute(GenomeSpaceLoginManager.GS_OPENID_KEY);
         if (openID == null) openID = false;
         return openID;
+    }
+    
+    public URL getConvertedFileUrl(String fileUrl, String fileType) {
+        HttpSession httpSession = UIBeanHelper.getSession();
+        Object gsSessionObject = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
+        GenomeSpaceFile file = getFile(fileUrl); 
+        try {
+            return GenomeSpaceClientFactory.getGenomeSpaceClient().getConvertedURL(gsSessionObject, file, fileType);
+        }
+        catch (GenomeSpaceException e) {
+            log.error("GenomeSpaceException in getConvertedFileUrl(): " + e.getMessage());
+            UIBeanHelper.setErrorMessage("Unable to send file to module: " + file.getName());
+            return null;
+        }
     }
 }

@@ -30,4 +30,5 @@ public interface GenomeSpaceClient {
     public void saveFileToGenomeSpace(Object gsSessionObj, GpFilePath savedFile, GenomeSpaceFile directory) throws GenomeSpaceException;
     public Map<String, Set<String>> getKindToTools(Object gsSession);
     public URL getSendToToolUrl(Object gsSession, GenomeSpaceFile file, String toolName) throws GenomeSpaceException;
+    public URL getConvertedURL(Object gsSessionObject, GenomeSpaceFile file, String format) throws GenomeSpaceException;
 }
