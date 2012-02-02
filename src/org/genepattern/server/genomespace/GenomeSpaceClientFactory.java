@@ -90,7 +90,7 @@ class GenomeSpaceClientSingleton {
             public GenomeSpaceFile buildFileTree(Object gsSession) { return null; }
             public Date getModifiedFromMetadata(Object metadata) { return null; }
             public Long getSizeFromMetadata(Object metadata) { return null; }
-            public void deleteFile(Object gsSessionObject, GenomeSpaceFile file) throws GenomeSpaceException {}
+            public boolean deleteFile(Object gsSessionObject, GenomeSpaceFile file) throws GenomeSpaceException { return false; }
             public Set<String> getAvailableFormats(Object metadata) { return null; }
             public void saveFileToGenomeSpace(Object gsSessionObj, GpFilePath savedFile, GenomeSpaceFile directory) throws GenomeSpaceException {}
             public Map<String, Set<String>> getKindToTools(Object gsSession) { return null; }

@@ -24,7 +24,7 @@ public interface GenomeSpaceClient {
     public GenomeSpaceFile buildFileTree(Object gsSession);
     public Date getModifiedFromMetadata(Object metadata);
     public Long getSizeFromMetadata(Object metadata);
-    public void deleteFile(Object gsSessionObject, GenomeSpaceFile file) throws GenomeSpaceException;
+    public boolean deleteFile(Object gsSessionObject, GenomeSpaceFile file) throws GenomeSpaceException;
     public void createDirectory(Object gsSessionObject, String dirName, GenomeSpaceFile parentDir) throws GenomeSpaceException;
     public Set<String> getAvailableFormats(Object metadata);
     public void saveFileToGenomeSpace(Object gsSessionObj, GpFilePath savedFile, GenomeSpaceFile directory) throws GenomeSpaceException;

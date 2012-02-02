@@ -258,18 +258,24 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
     /**
      * Deletes a file from GenomeSpace given that file's GenomeSpaceFile object
      */
-    public void deleteFile(Object gsSessionObject, GenomeSpaceFile file) throws GenomeSpaceException {
+    public boolean deleteFile(Object gsSessionObject, GenomeSpaceFile file) throws GenomeSpaceException {
         GsSession gsSession = null;
         if (gsSessionObject instanceof GsSession) {
             gsSession = (GsSession) gsSessionObject;
         }
         else {
             log.error("Object other than GsSession passed into deleteFile: " + gsSessionObject);
-            return;
+            return false;
         }
 
         GSFileMetadata metadata = (GSFileMetadata) file.getMetadata();
-        gsSession.getDataManagerClient().delete(metadata);
+        try {
+            gsSession.getDataManagerClient().delete(metadata);
+        }
+        catch (Throwable t) {
+            return false;
+        }
+        return true;
     }
     
     /**

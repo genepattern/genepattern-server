@@ -14,21 +14,23 @@ use, misuse, or functionality.
         <div id="menuDiv_#{file.formattedId}" style="visibility:hidden;" class="popupMenu">
             <table>
                 <tbody>
-                	<h:outputText rendered="#{not file.directory}">
-                    <tr>
-                        <td>
-                            <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file from GenomeSpace?');" action="#{genomeSpaceBean.deleteFile}" immediate="true">
-								<f:param value="#{file.url}" name="url"/>
-                            </h:commandLink>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <h:commandLink value="Save" action="#{genomeSpaceBean.saveFile}" immediate="true">
-								<f:param value="#{file.url}" name="url"/>
-                            </h:commandLink>
-                        </td>
-                    </tr>
+                	<h:outputText>
+	                    <tr>
+	                        <td>
+	                            <h:commandLink value="Delete" onclick="return confirm('Are you sure you want to delete the selected file from GenomeSpace?');" action="#{genomeSpaceBean.deleteFile}" immediate="true">
+									<f:param value="#{file.url}" name="url"/>
+	                            </h:commandLink>
+	                        </td>
+	                    </tr>
+					</h:outputText>
+					<h:outputText rendered="#{not file.directory}">
+	                    <tr>
+	                        <td>
+	                            <h:commandLink value="Save" action="#{genomeSpaceBean.saveFile}" immediate="true">
+									<f:param value="#{file.url}" name="url"/>
+	                            </h:commandLink>
+	                        </td>
+	                    </tr>
 					</h:outputText>
 					
 					<h:outputText rendered="#{file.directory}">

@@ -595,13 +595,21 @@ public class GenomeSpaceBean {
         String url = UIBeanHelper.getRequest().getParameter("url");
         
         GenomeSpaceFile file = getFile(url);
+        if (file == null) {
+            file = getDirectory(url);
+        }
         HttpSession httpSession = UIBeanHelper.getSession();
         Object gsSessionObject = httpSession.getAttribute(GenomeSpaceLoginManager.GS_SESSION_KEY);
         
         try { 
-            GenomeSpaceClientFactory.getGenomeSpaceClient().deleteFile(gsSessionObject, file);
+            boolean success = GenomeSpaceClientFactory.getGenomeSpaceClient().deleteFile(gsSessionObject, file);
             forceFileRefresh(); // force a refresh
-            setMessageToUser("Deleted from GenomeSpace " + file.getName());
+            if (success) { 
+                setMessageToUser("Deleted from GenomeSpace " + file.getName());
+            }
+            else {
+                setMessageToUser("Unable to delete in GenomeSpace " + file.getName());
+            }
         }
         catch (GenomeSpaceException e) {
             setMessageToUser(e.getLocalizedMessage());
