@@ -126,6 +126,21 @@ public class LoginManager {
             }
         }
     }
+    
+    /**
+     * Detects if logged into GenomeSpace through OpenID, and if so will return the URL to the GenomeSpace logout page 
+     * so the user can be redirected there
+     * @param session
+     */
+    public static String handleGenomeSpaceLogout(HttpSession session) {
+        Boolean openID = (Boolean) session.getAttribute(GenomeSpaceLoginManager.GS_OPENID_KEY);
+        if (openID != null && openID) {
+            return "/gp/GenomeSpaceOpenID?logout=Logout";
+        }
+        else {
+            return null;
+        }
+    }
 
     public void addUserIdToSession(HttpServletRequest request, String gp_username) {
         HttpSession session = request.getSession();
@@ -208,6 +223,7 @@ public class LoginManager {
         UserAccountManager.instance().getAuthentication().logout(userid, request, response);
 
         HttpSession session = request.getSession();
+        String gsRedirect = LoginManager.handleGenomeSpaceLogout(session);
         if (session != null) {
             session.removeAttribute(GPConstants.USERID);
             session.invalidate();
@@ -218,6 +234,9 @@ public class LoginManager {
             String redirectTo = (String) request.getAttribute("redirectTo");
             if (redirectTo == null) {
                 redirectTo = request.getContextPath() + "/";
+            }
+            if (gsRedirect != null) {
+                redirectTo = gsRedirect;
             }
             response.sendRedirect( redirectTo );
         }
