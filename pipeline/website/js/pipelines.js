@@ -709,7 +709,7 @@ var properties = {
             this._addTextBox("Pipeline Name", editor.workspace["pipelineName"], false, false);
             this._addTextBox("Description", editor.workspace["pipelineDescription"], false, false);
             this._addTextBox("Author", editor.workspace["pipelineAuthor"], false, false);
-            this._addTextBox("Privacy", editor.workspace["pipelinePrivacy"], false, false);
+            this._addDropDown("Privacy", ["private", "public"], editor.workspace["pipelinePrivacy"], false, false);
             this._addTextBox("Version Comment", editor.workspace["pipelineVersionComment"], false, false);
             this._addTextBox("Documentation", editor.workspace["pipelineDocumentation"], false, false);
         }
@@ -1186,6 +1186,22 @@ function Port(module, pointer) {
         });
     };
 
+    this.getInput = function() {
+        if (!this.isInput()) {
+            console.log("ERROR: Attented to getInput() on a non-input port.");
+            return null;
+        }
+
+        for (var i = 0; i < this.module.fileInputs.length; i++) {
+            if (this.module.fileInputs[i].name == this.pointer) {
+                return this.module.fileInputs[i];
+            }
+        }
+
+        console.log("Unable to find the input " + this.pointer + " in getInput() for " + this.module.name);
+        return null
+    };
+
     this.setPointer = function(pointer) {
         this.pointer = pointer;
         $("#tip_point_" + this.id)[0].innerHTML = pointer;
@@ -1269,6 +1285,9 @@ function Pipe(connection) {
     };
 
 	this.remove = function() {
+        // Mark the deleted input port as no longer used
+        this.inputPort.getInput().used = false;
+
 		var deleteOutput = this.outputPort.endpoint.connections.length <= 1;
 		this.inputPort.detachAll();
 		this.inputPort.remove();
