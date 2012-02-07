@@ -72,6 +72,12 @@ body{ height:100% }
 	padding: 5px;
 }
 
+#propertiesVersionDiv {
+    float: right;
+    font-size: 12pt;
+    vertical-align: bottom;
+}
+
 #pipelinePencil {
 	height: 16px;
 }

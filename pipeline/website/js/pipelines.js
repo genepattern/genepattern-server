@@ -578,6 +578,13 @@ var properties = {
             $("#" + this.titleDiv)[0].innerHTML = this._encodeToHTML(title);
         },
 
+        _setVersion: function(version) {
+            var versionDiv = document.createElement("div");
+            versionDiv.setAttribute("id", "propertiesVersionDiv");
+            versionDiv.innerHTML = "Version " + this._encodeToHTML(version);
+            $("#" + this.titleDiv)[0].appendChild(versionDiv);
+        },
+
         _displayInputKey: function() {
             var key = document.createElement("div");
             key.innerHTML = "<em>* Required <br /> Check for Prompt When Run</em>";
@@ -669,6 +676,7 @@ var properties = {
         displayModule: function(module) {
             this.current = module;
             this._setTitle(module.name);
+            this._setVersion(module.version);
             this._clearInputDiv();
             this._displayInputKey();
             var inputs = module.inputs;

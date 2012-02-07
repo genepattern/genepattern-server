@@ -105,18 +105,18 @@ public class ModuleJSON extends JSONObject {
         this.put(NAME, name);
     }
     
-    public Integer getVersion() throws JSONException {
-        return this.getInt(VERSION);
+    public String getVersion() throws JSONException {
+        return this.getString(VERSION);
     }
     
-    public void setVersion(Integer version) throws JSONException {
+    public void setVersion(String version) throws JSONException {
         this.put(VERSION, version);
     }
     
     public void extractVersion(String lsid) throws JSONException {
         String[] parts = lsid.split(":");
         String versionString = parts[parts.length - 1];
-        this.put(VERSION, Integer.getInteger(versionString));
+        this.put(VERSION, versionString);
     }
     
     public String getType() throws JSONException {
