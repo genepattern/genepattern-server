@@ -410,7 +410,7 @@ var library = {
 			this.recent.push(name);
 			var removed = null;
 			if (this.recent.length > 10) { removed = this.recent.shift(); }
-			if (removed !== null) { $("button[name|=" + removed + "]").remove(); }
+			if (removed !== null) { $("button[name|='" + removed + "']").remove(); }
 			this._addModuleButton(name);
 		},
 
@@ -430,11 +430,12 @@ var library = {
 			modButton.innerHTML = name;
 			modButton.setAttribute("class", "libraryModuleButton");
 			modButton.setAttribute("name", name);
-			$("#" + this.div)[0].appendChild(modButton);
+            var theSpan = $("#shortcutModules")[0];
+            theSpan.insertBefore(modButton, theSpan.firstChild);
 			$(modButton).click(function() {
 				editor.addModuleByName(this.name);
 			});
-			$("button[name|=" + name + "]").button();
+			$("button[name|='" + name + "']").button();
 		},
 
 		_readModuleNames: function() {

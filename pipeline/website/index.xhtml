@@ -16,38 +16,41 @@
 			<label for="modulesDropdown" class="ui-autocomplete-input">Select Module: </label>
 			<input id="modulesDropdown" />
 			<button id="addModule" class="libraryModuleButton">Add</button>&#160;&#160;&#160;
+            <span id="shortcutModules" />
 		</div>
-        <div id="titleBar"><span id="titleSpan"></span> <img id="pipelinePencil" src="images/pencil.gif" class="pencil" alt="Edit" /></div>
+        <div id="titleBar">
+            <span id="titleSpan"></span> <img id="pipelinePencil" src="images/pencil.gif" class="pencil" alt="Edit" />
+            <div id="saveLoadDiv">
+                <input id="loadInput" type="text" />
+                <button id="loadButton" class="saveLoadButton">Load</button>
+                <button id="saveButton" class="saveLoadButton">Save</button>
+            </div>
+        </div>
 		<div id="workspace"></div>
 		<div id="properties">
 			<div id="propertiesTitle"></div>
             <div id="propertiesInput" />
             <div id="propertiesSubmit"><button id="propertiesOk">OK</button><button id="propertiesCancel">Cancel</button></div>
 		</div>
-		<script type="text/javascript">
-			// Hard-coded calls for ALL-AML Pipeline
-			function createALLAML() {
-				var a = editor.addModuleByName("PreprocessDataset");
-				var b = editor.addModuleByName("PreprocessDataset");
-				var c = editor.addModuleByName("SOMClustering");
-				var d = editor.addModuleByName("ClassNeighbors");
-				var e = editor.addModuleByName("SOMClusterViewer");
-				var f = editor.addModuleByName("GeneListSignificanceViewer");
-				var g = editor.addModuleByName("WeightedVotingXValidation");
-				var h = editor.addModuleByName("FeatureSummaryViewer");
-				var i = editor.addModuleByName("PredictionResultsViewer");
-				var j = editor.addModuleByName("WeightedVoting");
-				var k = editor.addModuleByName("PredictionResultsViewer");
-			}
-			
+		<script type="text/javascript">			
 			jsPlumb.ready(function() {
 				editor.init();
 				$.getJSON("/gp/PipelineDesigner/library", function(data) {
 					library.init(data);
-					createALLAML();
 				});
 				properties.init();
 			});
+
+            $("#loadButton").button();
+            $("#loadButton").click(function() {
+                var lsid = $("#loadInput").val();
+                editor.load(lsid);
+            });
+
+            $("#saveButton").button();
+            $("#saveButton").click(function() {
+                editor.save();
+            });
 		</script>
 	</body>
 </html>

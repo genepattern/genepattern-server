@@ -14,6 +14,7 @@ body{ height:100% }
 	padding: 5px;
 	overflow-x: hidden;
 	overflow: hidden;
+	white-space: nowrap;
 }
 
 #titleBar {
@@ -34,6 +35,16 @@ body{ height:100% }
 
 #titleSpan {
     font-size: 14pt;
+}
+
+#saveLoadDiv {
+    float: right;
+    position: relative;
+    top: -5px;
+}
+
+.saveLoadButton {
+    font-size: 8pt;
 }
 
 #workspace {
