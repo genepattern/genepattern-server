@@ -23,10 +23,10 @@ var editor = {
         pipelineDescription: "",
         pipelineAuthor: "",
         pipelinePrivacy: "private",
-        pipelineVersion: 1,
+        pipelineVersion: "1",
         pipelineVersionComment: "",
         pipelineDocumentation: "",
-        pipelineLsid: 0
+        pipelineLsid: ""
 	},
 
 	init: function() {
@@ -479,18 +479,18 @@ var library = {
             else return rawVersion;
         },
 
-        _extractBaseLsid: function(lsid) {
+        extractBaseLsid: function(lsid) {
             return lsid.substr(0, lsid.lastIndexOf(":"));
         },
 
-        _extractLsidVersion: function(lsid) {
+        extractLsidVersion: function(lsid) {
             return lsid.substr(lsid.lastIndexOf(":") + 1, lsid.length);
         },
 
         _readModuleVersions: function() {
             this.moduleVersionMap = {};
             for (var i in library.modules) {
-                var base = library._extractBaseLsid(library.modules[i].lsid);
+                var base = library.extractBaseLsid(library.modules[i].lsid);
 
                 if (this.moduleVersionMap[base] === undefined) {
                     this.moduleVersionMap[base] = new Array();
@@ -564,6 +564,8 @@ var properties = {
         PROMPT_WHEN_RUN: "PROMPT_WHEN_RUN",
         div: "properties",
         titleDiv: "propertiesTitle",
+        subtitleDiv: "propertiesSubtitle",
+        versionDiv: "propertiesVersion",
         inputDiv: "propertiesInput",
         buttonDiv: "propertiesSubmit",
         current: null,
@@ -644,7 +646,10 @@ var properties = {
             return text.replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
         },
 
-        _clearInputDiv: function() {
+        _clean: function() {
+            $("#" + this.titleDiv)[0].innerHTML = "";
+            $("#" + this.subtitleDiv)[0].innerHTML = "";
+            $("#" + this.versionDiv)[0].innerHTML = "";
             $("#" + this.inputDiv)[0].innerHTML = "";
         },
 
@@ -652,19 +657,43 @@ var properties = {
             $("#" + this.titleDiv)[0].innerHTML = this._encodeToHTML(title);
         },
 
+        _setSubtitle: function(subtitle) {
+            $("#" + this.subtitleDiv)[0].innerHTML = this._encodeToHTML(subtitle);
+        },
+
         _setVersion: function(version) {
-            var versionDiv = document.createElement("div");
-            versionDiv.setAttribute("id", "propertiesVersionDiv");
+            var versionDiv = $("#" + this.versionDiv)[0];
             versionDiv.innerHTML = "v" + this._encodeToHTML(version);
-            $("#" + this.titleDiv)[0].appendChild(versionDiv);
+        },
+
+        _setVersionDropdown: function(module) {
+            var baseLsid = library.extractBaseLsid(module.lsid)
+            var moduleArray = library.moduleVersionMap[baseLsid];
+
+            var select = document.createElement("select");
+            for (var i = 0; i < moduleArray.length; i++) {
+                var option = document.createElement("option");
+                option.setAttribute("value", moduleArray[i].version);
+                if (moduleArray[i].version == module.version) {
+                    option.setAttribute("selected", "true");
+                }
+                option.innerHTML = moduleArray[i].version;
+                select.appendChild(option);
+            }
+
+            var versionDiv = $("#" + this.versionDiv)[0];
+            versionDiv.appendChild(select);
         },
 
         _displayInputKey: function() {
             var key = document.createElement("div");
-            key.innerHTML = "<em>* Required <br /> Check for Prompt When Run</em>";
+            key.setAttribute("id", "propertiesKey")
+            var hr1 = document.createElement("hr");
+            $("#" + this.inputDiv).append(hr1);
+            key.innerHTML += "<em>Check for Prompt When Run&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;* Required</em>";
             $("#" + this.inputDiv).append(key);
-            var hr = document.createElement("hr");
-            $("#" + this.inputDiv).append(hr);
+            var hr2 = document.createElement("hr");
+            $("#" + this.inputDiv).append(hr2);
         },
 
         _addDropDown: function(labelText, values, selected, description, pwr) {
@@ -748,10 +777,11 @@ var properties = {
         },
 
         displayModule: function(module) {
+            this._clean();
             this.current = module;
             this._setTitle(module.name);
-            this._setVersion(module.version);
-            this._clearInputDiv();
+            this._setSubtitle(module.lsid);
+            this._setVersionDropdown(module);
             this._displayInputKey();
             var inputs = module.inputs;
             for (var i in inputs) {
@@ -760,9 +790,9 @@ var properties = {
         },
 
         displayPipe: function(pipe) {
+            this._clean();
             this.current = pipe;
             this._setTitle(pipe.outputModule.name + " to " + pipe.inputModule.name);
-            this._clearInputDiv();
 
             var outSelected = pipe.outputPort.pointer;
             var inSelected = pipe.inputPort.pointer;
@@ -777,9 +807,11 @@ var properties = {
         },
 
         displayPipeline: function() {
+            this._clean();
             this.current = new String("Pipeline");
             this._setTitle("Editing Pipeline");
-            this._clearInputDiv();
+            this._setVersion(editor.workspace["pipelineVersion"]);
+            this._setSubtitle(editor.workspace["pipelineLsid"].length > 0 ? editor.workspace["pipelineLsid"] : "");
             this._addTextBox("Pipeline Name", editor.workspace["pipelineName"], false, false);
             this._addTextBox("Description", editor.workspace["pipelineDescription"], false, false);
             this._addTextBox("Author", editor.workspace["pipelineAuthor"], false, false);

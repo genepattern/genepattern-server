@@ -1,4 +1,7 @@
-body{ height:100% }
+body {
+    height:100%;
+    font-family: Garamond;
+}
 
 #library {
 	position:absolute;
@@ -72,10 +75,14 @@ body{ height:100% }
 	padding: 5px;
 }
 
-#propertiesVersionDiv {
+#propertiesVersion {
     float: right;
     font-size: 12pt;
     vertical-align: bottom;
+}
+
+#propertiesKey {
+    font-size: 11pt;
 }
 
 #pipelinePencil {
@@ -96,6 +103,10 @@ body{ height:100% }
 
 #propertiesTitle {
     font-size: 18pt;
+}
+
+#propertiesSubtitle {
+    font-size: 10pt;
 }
 
 #propertiesSubmit {
