@@ -376,42 +376,28 @@ var editor = {
 var library = {
 		div: "library",			// The id of the div used by the library
 		moduleNames: [],		// A list of all module names
+        moduleVersionMap: {},    // A map of module names to an array of all module versions
 		modules: {},			// The JSON structure of all modules in the library
 		recent: [],
 
 		init: function(moduleJSON) {
 			this._readModules(moduleJSON);
+            this._readModuleVersions();
 			this._readModuleNames();
 
 			this._addModuleComboBox();
-			this._addDefaultRecent();
-
-			for (var i = 0; i < this.recent.length; i++) {
-				var name = this.recent[i];
-				this._addModuleButton(name);
-			}
 		},
 
-		_addDefaultRecent: function() {
-			this.recent = ["PreprocessDataset",
-			               "ConvertLineEndings",
-			               "HierarchicalClustering",
-			               "HierarchicalClusteringViewer",
-			               "AuDIT",
-			               "ComparativeMarkerSelection",
-			               "HeatMapViewer"];
-		},
-
-		_addRecentModule: function(name) {
+		_addRecentModule: function(lsid, value) {
 			for (var i = 0; i < this.recent.length; i++) {
-				if (this.recent[i] == name) { return }
+				if (this.recent[i] == lsid) { return }
 			}
 
-			this.recent.push(name);
+			this.recent.push(lsid);
 			var removed = null;
 			if (this.recent.length > 10) { removed = this.recent.shift(); }
 			if (removed !== null) { $("button[name|='" + removed + "']").remove(); }
-			this._addModuleButton(name);
+			this._addModuleButton(value, lsid);
 		},
 
 		_addModuleComboBox: function() {
@@ -419,29 +405,117 @@ var library = {
 			$("#addModule").button();
 
 			$("#addModule").click(function() {
-				var name = $("#modulesDropdown")[0].value;
-				var module = editor.addModuleByName(name);
-				if (module !== null) { library._addRecentModule(name); }
+				var value = $("#modulesDropdown").val();
+                var name = library._extractNameFromDropdown(value);
+                var version = library._extractVersionFromDropdown(value);
+                var lsid = library._lookupLsid(name, version);
+
+                // If unable to find the lsid give up, an error has already been reported
+                if (lsid === null) return;
+
+				var module = editor.addModule(lsid);
+				if (module !== null && module !== undefined) { library._addRecentModule(lsid, value); }
 			});
 		},
 
-		_addModuleButton: function(name) {
+		_addModuleButton: function(name, lsid) {
 			var modButton = document.createElement("button");
 			modButton.innerHTML = name;
 			modButton.setAttribute("class", "libraryModuleButton");
-			modButton.setAttribute("name", name);
+			modButton.setAttribute("name", lsid);
             var theSpan = $("#shortcutModules")[0];
             theSpan.insertBefore(modButton, theSpan.firstChild);
 			$(modButton).click(function() {
-				editor.addModuleByName(this.name);
+				editor.addModule(this.name);
 			});
-			$("button[name|='" + name + "']").button();
+			$("button[name|='" + lsid + "']").button();
 		},
+
+        _lookupLsid: function (name, version) {
+            for (var i in library.modules) {
+                var module = library.modules[i];
+
+                // Check for naming match
+                if (name == module.name) {
+                    // If version is null, assume this is the match
+                    if (version === null) {
+                        return module.lsid;
+                    }
+
+                    // If versions match, we found it!
+                    if (version == module.version) {
+                        return module.lsid;
+                    }
+                }
+            }
+
+            // If we got through the loop without finding it, report the error
+            console.log("ERROR: Could not find module name: " + name + " and version: " + version + ".");
+            return null;
+        },
+
+        _extractNameFromDropdown: function(dropdownText) {
+            var spaceIndex = dropdownText.lastIndexOf(" v");
+
+            // No space character + v found in dropdown text
+            if (spaceIndex == -1) {
+                return dropdownText;
+            }
+
+            return dropdownText.substr(0, spaceIndex);
+        },
+
+        _extractVersionFromDropdown: function(dropdownText) {
+            var spaceIndex = dropdownText.lastIndexOf(" v");
+
+            // No space character + v found in dropdown text
+            if (spaceIndex == -1) {
+                return null;
+            }
+
+            var rawVersion = dropdownText.substr(spaceIndex + 2, dropdownText.length);
+
+            if (rawVersion.length < 1)  return null;
+            else return rawVersion;
+        },
+
+        _extractBaseLsid: function(lsid) {
+            return lsid.substr(0, lsid.lastIndexOf(":"));
+        },
+
+        _extractLsidVersion: function(lsid) {
+            return lsid.substr(lsid.lastIndexOf(":") + 1, lsid.length);
+        },
+
+        _readModuleVersions: function() {
+            this.moduleVersionMap = {};
+            for (var i in library.modules) {
+                var base = library._extractBaseLsid(library.modules[i].lsid);
+
+                if (this.moduleVersionMap[base] === undefined) {
+                    this.moduleVersionMap[base] = new Array();
+                }
+
+                this.moduleVersionMap[base].push(library.modules[i]);
+            }
+        },
 
 		_readModuleNames: function() {
 			this.moduleNames = new Array();
-			for (var i in library.modules) {
-				this.moduleNames.push(library.modules[i].name);
+			for (var i in library.moduleVersionMap) {
+                var moduleArray = library.moduleVersionMap[i];
+                if (moduleArray.length == 1) {
+                    this.moduleNames.push(moduleArray[0].name);
+                }
+                else if (moduleArray.length > 1) {
+                    for (var j = 0; j < moduleArray.length; j++) {
+                        this.moduleNames.push(moduleArray[j].name + " v" + moduleArray[j].version);
+                    }
+                }
+                else {
+                    console.log("ERROR: Unacceptable length of version array in library._readModuleNames()");
+                }
+
 			}
 		},
 
@@ -581,7 +655,7 @@ var properties = {
         _setVersion: function(version) {
             var versionDiv = document.createElement("div");
             versionDiv.setAttribute("id", "propertiesVersionDiv");
-            versionDiv.innerHTML = "Version " + this._encodeToHTML(version);
+            versionDiv.innerHTML = "v" + this._encodeToHTML(version);
             $("#" + this.titleDiv)[0].appendChild(versionDiv);
         },
 
