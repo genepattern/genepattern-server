@@ -141,6 +141,28 @@ var editor = {
         return module.getPort(portId);
 	},
 
+    replaceModule: function(moduleId, lsid) {
+        var oldModule = editor.workspace[moduleId];
+        var top = oldModule.ui.style.top;
+        var left = oldModule.ui.style.left;
+
+        // Create the new module
+        var newModule = editor.addModuleAtLocation(lsid, top, left);
+
+        // Copy over parameter values from the old module to the new module as best we can
+        for (var i = 0; i < oldModule.inputs.length; i++) {
+            if (oldModule.inputs[i].name == newModule.inputs[i].name) {
+                newModule.inputs[i].value = oldModule.inputs[i].value;
+                newModule.inputs[i].promptWhenRun = oldModule.inputs[i].promptWhenRun;
+            }
+        }
+
+        // Remove the old module
+        oldModule.remove();
+
+        return newModule;
+    },
+
     removeAllModules: function() {
         for (var i in editor.workspace) {
             if (editor.workspace[i] instanceof Module) {
@@ -163,7 +185,7 @@ var editor = {
 		}
 	},
 
-    _addModule: function(lsid, id) {
+    _addModule: function(lsid, id, top, left) {
         var module = library.modules[lsid];
         if (module === null) {
             console.log("Error adding module: " + lsid);
@@ -172,17 +194,21 @@ var editor = {
         var spawn = module.spawn();
         spawn.id = id;
         this.workspace[spawn.id] = spawn;
-        spawn.add();
+        spawn.add(top, left);
         return spawn;
     },
 
     loadModule: function(lsid, id) {
-        return this._addModule(lsid, id);
+        return this._addModule(lsid, id, null, null);
     },
 
 	addModule: function(lsid) {
-        return this._addModule(lsid, this._nextId());
+        return this._addModule(lsid, this._nextId(), null, null);
 	},
+
+    addModuleAtLocation: function(lsid, top, left) {
+        return this._addModule(lsid, this._nextId(), top, left);
+    },
 
     addModuleByName: function(name) {
         var module = null;
@@ -199,7 +225,7 @@ var editor = {
         var spawn = module.spawn();
         spawn.id = this._nextId();
         this.workspace[spawn.id] = spawn;
-        spawn.add();
+        spawn.add(null, null);
         return spawn;
     },
 
@@ -673,7 +699,7 @@ var properties = {
             var select = document.createElement("select");
             for (var i = 0; i < moduleArray.length; i++) {
                 var option = document.createElement("option");
-                option.setAttribute("value", moduleArray[i].version);
+                option.setAttribute("value", module.id + "|" + moduleArray[i].lsid);
                 if (moduleArray[i].version == module.version) {
                     option.setAttribute("selected", "true");
                 }
@@ -683,6 +709,20 @@ var properties = {
 
             var versionDiv = $("#" + this.versionDiv)[0];
             versionDiv.appendChild(select);
+            $(select).change(function(event) {
+                var value = event.target.value;
+                var parts = value.split("|");
+                var doIt = confirm("This will swap out the currently edited module with another version.  Continue?");
+                if (doIt) {
+                    var newModule = editor.replaceModule(parts[0], parts[1]);
+                    properties.displayModule(newModule);
+                    properties.show();
+                }
+                else {
+                    var lsid = editor.workspace[parts[0]].lsid;
+                    $(this).val(lsid);
+                }
+            });
         },
 
         _displayInputKey: function() {
@@ -1063,11 +1103,24 @@ function Module(moduleJSON) {
         editor.removeModule(this.id);
     };
 
-	this.add = function () {
+	this.add = function (top, left) {
+        var useLayoutManager = false;
+        if (top === undefined || left === undefined || top === null || left === null) {
+            useLayoutManager = true;
+        }
+
         this._createDiv();
-        var location = editor.suggestLocation();
-        this.ui.style.top = location["top"] + "px";
-        this.ui.style.left = location["left"] + "px";
+
+        if (useLayoutManager) {
+            var location = editor.suggestLocation();
+            this.ui.style.top = location["top"] + "px";
+            this.ui.style.left = location["left"] + "px";
+        }
+        else {
+            this.ui.style.top = top;
+            this.ui.style.left = left;
+        }
+
         $("#" + editor.div)[0].appendChild(this.ui);
         this._addMasterOutput();
         this._addMasterInput();
