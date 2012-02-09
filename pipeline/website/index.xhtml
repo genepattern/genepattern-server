@@ -24,6 +24,7 @@
                 <input id="loadInput" type="text" />
                 <button id="loadButton" class="saveLoadButton">Load</button>
                 <button id="saveButton" class="saveLoadButton">Save</button>
+                <button id="revertButton" class="saveLoadButton">Revert</button>
             </div>
         </div>
 		<div id="workspace"></div>
@@ -47,11 +48,19 @@
             $("#loadButton").click(function() {
                 var lsid = $("#loadInput").val();
                 editor.load(lsid);
+                $("#revertButton").button("enable");
             });
 
             $("#saveButton").button();
             $("#saveButton").click(function() {
                 editor.save();
+                $("#revertButton").button("enable");
+            });
+
+            $("#revertButton").button({disabled: true});
+            $("#revertButton").click(function() {
+                var lsid = editor.workspace["pipelineLsid"];
+                editor.load(lsid);
             });
 		</script>
 	</body>
