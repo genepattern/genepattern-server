@@ -187,9 +187,9 @@ var editor = {
 
     _addModule: function(lsid, id, top, left) {
         var module = library.modules[lsid];
-        if (module === null) {
+        if (module === undefined || module === null) {
             console.log("Error adding module: " + lsid);
-            return;
+            return null;
         }
         var spawn = module.spawn();
         spawn.id = id;
@@ -236,24 +236,61 @@ var editor = {
 	_gridLayoutManager: function() {
 		var location = { "top": this.workspace.suggestRow * 120, "left": this.workspace.suggestCol * 270 };
 		this.workspace.suggestCol++;
-		if (this.workspace.suggestCol >= 3) {
+		if (this.workspace.suggestCol >= 4) {
 			this.workspace.suggestCol = 0;
 			this.workspace.suggestRow++;
 		}
 		return location;
 	},
 
-	suggestLocation: function() {
+    _tLayoutManager: function(module) {
+        // Determine if this is the first module in the layout
+        var firstModule = false;
+        var thisModuleId = module.id;
+        var lastModule = editor.workspace[thisModuleId - 1];
+        if (lastModule === undefined || lastModule === null) {
+            firstModule = true;
+        }
+
+        // If this is the first module, please it at the top and return
+        if (firstModule) {
+            this.workspace.suggestRow = 0;
+            this.workspace.suggestCol = 0;
+            return { "top": 0, "left": 0 };
+        }
+
+        // Determine if this module goes below or beside the last one
+        var below = true;
+        if (module.isVisualizer()) below = false;
+
+        // Update the appropriate position and then return
+        if (below) {
+            this.workspace.suggestRow++;
+            this.workspace.suggestCol = 0;
+        }
+        else {
+            this.workspace.suggestCol++;
+        }
+        return { "top": this.workspace.suggestRow * 120, "left": this.workspace.suggestCol * 270 };
+    },
+
+	suggestLocation: function(module) {
 		// Pick your layout manager
-		return this._gridLayoutManager();
+		// return this._gridLayoutManager();
+        return this._tLayoutManager(module);
 	},
 
 	smartPipeSelection: function(output, input) {
 
 	},
 
+    _spacesToPeriods: function(string) {
+        return string.replace(/ /g, ".");
+    },
+
     saveProps: function(save) {
-        this.workspace["pipelineName"] = save["Pipeline Name"];
+
+        this.workspace["pipelineName"] = this._spacesToPeriods(save["Pipeline Name"]);
         this.workspace["pipelineDescription"] = save["Description"];
         this.workspace["pipelineAuthor"] = save["Author"];
         this.workspace["pipelinePrivacy"] = save["Privacy"];
@@ -316,13 +353,23 @@ var editor = {
 
     _loadModules: function(modules) {
         this.removeAllModules();
+        var givenAlert = false;
+
         for (var i in modules) {
             // Update the idCounter as necessary
             var intId = parseInt(modules[i].id)
-            if (intId >= this.idCounter) { this.idCounter = intId + 1; }
+            if (intId >= this.workspace["idCounter"]) { this.workspace["idCounter"] = intId + 1; }
 
             // Add each module as it is read
             var added = this.loadModule(modules[i].lsid, modules[i].id);
+
+            if (added === null) {
+                if (!givenAlert) {
+                    alert("Unable to load one or more of the modules in the pipeline.");
+                    givenAlert = true;
+                }
+                continue;
+            }
 
             // Set the correct properties for the module
             added.loadProps(modules[i]);
@@ -879,6 +926,16 @@ function Module(moduleJSON) {
 	this.type = "module";
 	this.ui = null;
 
+    this.isVisualizer = function() {
+        if (this.type == "module visualizer") return true;
+        else return false;
+    };
+
+    this.isPipeline = function() {
+        if (this.type == "module pipeline") return true;
+        else return false;
+    };
+
     this._loadInputs = function(inputs) {
         if (this.inputs.length != inputs.length) {
             console.log("ERROR: Inputs lengths do not match when loading: " + this.name);
@@ -1032,8 +1089,11 @@ function Module(moduleJSON) {
         });
 
         $("#" + "del_" + this.id).click(function () {
-            var module = editor.getParentModule(this.id);
-            module.remove();
+            var confirmed = confirm("Are you sure you want to delete this module?");
+            if (confirmed) {
+                var module = editor.getParentModule(this.id);
+                module.remove();
+            }
         });
     };
 
@@ -1112,7 +1172,7 @@ function Module(moduleJSON) {
         this._createDiv();
 
         if (useLayoutManager) {
-            var location = editor.suggestLocation();
+            var location = editor.suggestLocation(this);
             this.ui.style.top = location["top"] + "px";
             this.ui.style.left = location["left"] + "px";
         }
