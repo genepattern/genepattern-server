@@ -783,14 +783,50 @@ var properties = {
             $("#" + this.inputDiv).append(hr2);
         },
 
+        _addPromptWhenRun: function(parentDiv, name, value) {
+            var checkBox = document.createElement("input");
+            checkBox.setAttribute("type", "checkbox");
+            checkBox.setAttribute("name", name);
+            checkBox.setAttribute("class", "propertyCheckBox");
+            if (value == properties.PROMPT_WHEN_RUN) {
+                checkBox.setAttribute("checked", "true");
+            }
+            parentDiv.appendChild(checkBox);
+            parentDiv.innerHTML += " ";
+        },
+
+        _addFileUpload: function(labelText, value, description, pwr) {
+            var label = document.createElement("div");
+
+            if (pwr) {
+                this._addPromptWhenRun(label, labelText, value);
+            }
+
+            label.innerHTML += this._encodeToHTML(labelText) + " ";
+            var fileUpload = document.createElement("input");
+            fileUpload.setAttribute("type", "file");
+            fileUpload.setAttribute("name", labelText);
+            //fileUpload.value = value != properties.PROMPT_WHEN_RUN ? value : "";
+            fileUpload.setAttribute("class", "propertyValue");
+            label.appendChild(fileUpload);
+            $("#" + this.inputDiv).append(label);
+
+            if (description !== null && description !== false) {
+                var desc = document.createElement("div");
+                desc.setAttribute("class", "inputDescription");
+                desc.innerHTML = this._encodeToHTML(description);
+                $("#" + this.inputDiv).append(desc);
+            }
+
+            var hr = document.createElement("hr");
+            $("#" + this.inputDiv).append(hr);
+        },
+
         _addDropDown: function(labelText, values, selected, description, pwr) {
             var label = document.createElement("div");
 
             if (pwr) {
-                var checkBox = document.createElement("input");
-                checkBox.setAttribute("type", "checkbox");
-                label.appendChild(checkBox);
-                label.innerHTML += " ";
+                this._addPromptWhenRun(label, labelText, selected);
             }
 
             label.innerHTML += this._encodeToHTML(labelText) + " ";
@@ -801,11 +837,11 @@ var properties = {
                 var parts = values[i].split("=");
                 if (parts.length < 2) parts[1] = parts[0];
                 var option = document.createElement("option");
-                if (selected == parts[1]) {
+                if (selected == parts[0]) {
                     option.setAttribute("selected", "true");
                 }
-                option.innerHTML = this._encodeToHTML(parts[0]);
-                option.value = parts[1];
+                option.innerHTML = this._encodeToHTML(parts[1]);
+                option.value = parts[0];
                 select.appendChild(option);
             }
             label.appendChild(select);
@@ -826,15 +862,7 @@ var properties = {
             var label = document.createElement("div");
 
             if (pwr) {
-                var checkBox = document.createElement("input");
-                checkBox.setAttribute("type", "checkbox");
-                checkBox.setAttribute("name", labelText);
-                checkBox.setAttribute("class", "propertyCheckBox");
-                if (value == properties.PROMPT_WHEN_RUN) {
-                    checkBox.setAttribute("checked", "true");
-                }
-                label.appendChild(checkBox);
-                label.innerHTML += " ";
+                this._addPromptWhenRun(label, labelText, value);
             }
 
             label.innerHTML += this._encodeToHTML(labelText) + " ";
@@ -857,10 +885,22 @@ var properties = {
             $("#" + this.inputDiv).append(hr);
         },
 
+        _addFileInput: function(input) {
+            var required = input.required ? "*" : "";
+            var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
+            this._addFileUpload(input.name + required, displayValue, input.description, true);
+        },
+
         _addTextBoxInput: function(input) {
             var required = input.required ? "*" : "";
             var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
             this._addTextBox(input.name + required, displayValue, input.description, true);
+        },
+
+        _addDropdownInput: function(input) {
+            var required = input.required ? "*" : "";
+            var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
+            this._addDropDown(input.name + required, input.choices, displayValue, input.description, true);
         },
 
         displayModule: function(module) {
@@ -872,7 +912,17 @@ var properties = {
             this._displayInputKey();
             var inputs = module.inputs;
             for (var i in inputs) {
-                this._addTextBoxInput(inputs[i]);
+                console.log(inputs[i]);
+                if (inputs[i].type == "java.io.File") {
+                    this._addFileInput(inputs[i]);
+                }
+                else if (inputs[i].choices.length > 0) {
+                    this._addDropdownInput(inputs[i]);
+                }
+                else {
+                    this._addTextBoxInput(inputs[i]);
+                }
+
             }
         },
 
@@ -884,7 +934,7 @@ var properties = {
             var outSelected = pipe.outputPort.pointer;
             var inSelected = pipe.inputPort.pointer;
 
-            this._addDropDown("Output", ["1st Output=1", "2nd Output=2", "3rd Output=3", "4th Output=4"].concat(pipe.outputModule.outputs), outSelected, false, false);
+            this._addDropDown("Output", ["1=1st Output", "2=2nd Output", "3=3rd Output", "4=4th Output"].concat(pipe.outputModule.outputs), outSelected, false, false);
 
             var inputsToList = new Array();
             for (var i = 0; i < pipe.inputModule.fileInputs.length; i++) {
@@ -904,7 +954,7 @@ var properties = {
             this._addTextBox("Author", editor.workspace["pipelineAuthor"], false, false);
             this._addDropDown("Privacy", ["private", "public"], editor.workspace["pipelinePrivacy"], false, false);
             this._addTextBox("Version Comment", editor.workspace["pipelineVersionComment"], false, false);
-            this._addTextBox("Documentation", editor.workspace["pipelineDocumentation"], false, false);
+            this._addFileUpload("Documentation", editor.workspace["pipelineDocumentation"], false, false);
         }
 };
 
