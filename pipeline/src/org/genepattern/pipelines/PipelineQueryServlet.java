@@ -38,6 +38,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	public static final String LIBRARY = "/library";
 	public static final String SAVE = "/save";
 	public static final String LOAD = "/load";
+	public static final String UPLOAD = "/upload";
 	
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) {
@@ -53,6 +54,9 @@ public class PipelineQueryServlet extends HttpServlet {
 		else if (LOAD.equals(action)) {
             loadPipeline(request, response);
         }
+		else if (UPLOAD.equals(action)) {
+		    uploadFile(request, response);
+		}
 		else {
 		    sendError(response, "Routing error for " + action);
 		}
@@ -92,6 +96,10 @@ public class PipelineQueryServlet extends HttpServlet {
 	    ResponseJSON error = new ResponseJSON();
 	    error.addError("ERROR: " + message);
 	    this.write(response, error);
+	}
+	
+	public void uploadFile(HttpServletRequest request, HttpServletResponse response) {
+	    System.out.println("uploadFile() called");
 	}
 	
 	public void loadPipeline(HttpServletRequest request, HttpServletResponse response) {

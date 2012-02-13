@@ -797,18 +797,34 @@ var properties = {
 
         _addFileUpload: function(labelText, value, description, pwr) {
             var label = document.createElement("div");
+            var uploadForm = document.createElement("form");
+            uploadForm.setAttribute("name", labelText + "_form");
+            uploadForm.setAttribute("action", "/gp/PipelineDesigner/upload");
+            label.appendChild(uploadForm);
 
             if (pwr) {
-                this._addPromptWhenRun(label, labelText, value);
+                this._addPromptWhenRun(uploadForm, labelText, value);
             }
 
-            label.innerHTML += this._encodeToHTML(labelText) + " ";
+            uploadForm.innerHTML += this._encodeToHTML(labelText) + " ";
             var fileUpload = document.createElement("input");
             fileUpload.setAttribute("type", "file");
             fileUpload.setAttribute("name", labelText);
-            //fileUpload.value = value != properties.PROMPT_WHEN_RUN ? value : "";
             fileUpload.setAttribute("class", "propertyValue");
-            label.appendChild(fileUpload);
+            uploadForm.appendChild(fileUpload);
+
+            // Attach the uploading and done images
+            var uploadingImg = document.createElement("img");
+            uploadingImg.setAttribute("src", "images/uploading.gif");
+            uploadingImg.setAttribute("name", labelText + "_uploading");
+            uploadingImg.setAttribute("style", "display: none;");
+            uploadForm.appendChild(uploadingImg);
+            var doneImg = document.createElement("img");
+            doneImg.setAttribute("src", "images/complete.gif");
+            doneImg.setAttribute("name", labelText + "_done");
+            doneImg.setAttribute("style", "display: none;");
+            uploadForm.appendChild(doneImg);
+
             $("#" + this.inputDiv).append(label);
 
             if (description !== null && description !== false) {
@@ -820,6 +836,24 @@ var properties = {
 
             var hr = document.createElement("hr");
             $("#" + this.inputDiv).append(hr);
+
+            // When the upload form is submitted, send to the servlet
+            $("[name|='" + labelText + "_form']").iframePostForm({
+                json : false,
+                post : function () {
+                    $("[name|='" + labelText + "_uploading']").show();
+                    $("[name|='" + labelText + "_done']").hide();
+                },
+                complete : function (response) {
+                    $("[name|='" + labelText + "_uploading']").hide();
+                    $("[name|='" + labelText + "_done']").show();
+                }
+            });
+
+            // When a file is selected for upload, begin the upload
+            $("[name|='" + labelText + "']").change(function() {
+                $("[name|='" + labelText + "_form']").submit();
+            });
         },
 
         _addDropDown: function(labelText, values, selected, description, pwr) {
@@ -912,7 +946,6 @@ var properties = {
             this._displayInputKey();
             var inputs = module.inputs;
             for (var i in inputs) {
-                console.log(inputs[i]);
                 if (inputs[i].type == "java.io.File") {
                     this._addFileInput(inputs[i]);
                 }
