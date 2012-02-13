@@ -2,7 +2,12 @@ package org.genepattern.pipelines;
 
 import static org.genepattern.util.GPConstants.SERIALIZED_MODEL;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,10 +20,21 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileItemFactory;
+import org.apache.commons.fileupload.FileUploadBase;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.RequestContext;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.genepattern.TaskInstallationException;
+import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.server.webapp.PipelineCreationHelper;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
@@ -98,8 +114,58 @@ public class PipelineQueryServlet extends HttpServlet {
 	    this.write(response, error);
 	}
 	
+	private void transferUpload(FileItem from, File to) throws IOException {
+        InputStream is = null;
+        OutputStream os = null;
+        
+        try {
+            is = from.getInputStream();
+            os = new BufferedOutputStream(new FileOutputStream(to, true));
+            final int BUFSIZE = 2048;
+            final byte buf[] = new byte[BUFSIZE];
+            int n;
+            while ((n = is.read(buf)) != -1) {
+                os.write(buf, 0, n);
+            }
+        }
+        finally {
+            is.close();
+            os.close();
+        }
+    }
+	
 	public void uploadFile(HttpServletRequest request, HttpServletResponse response) {
 	    System.out.println("uploadFile() called");
+	    
+	    RequestContext reqContext = new ServletRequestContext(request);
+        if (FileUploadBase.isMultipartContent(reqContext)) {
+            FileItemFactory factory = new DiskFileItemFactory();
+            ServletFileUpload upload = new ServletFileUpload(factory);
+            try {
+                List<FileItem> postParameters = upload.parseRequest(reqContext);
+                
+                for (FileItem i : postParameters) {
+                    // Only read the submitted files
+                    if (!i.isFormField()) {
+                        // Store in a temp directory until the pipeline is saved
+                        File tempDir = ServerConfiguration.instance().getTempDir();
+                        File uploadedFile = new File(tempDir, i.getName());
+                        transferUpload(i, uploadedFile);
+                        
+                        // Return a success response
+                        ResponseJSON message = new ResponseJSON();
+                        message.addChild("location", uploadedFile.getCanonicalPath());
+                        this.write(response, message);
+                    }
+                }
+            }
+            catch (Exception e) {
+                sendError(response, "Exception retrieving the uploaded file");
+            }
+        }
+        else {
+            sendError(response, "Unable to find uploaded file");
+        }
 	}
 	
 	public void loadPipeline(HttpServletRequest request, HttpServletResponse response) {

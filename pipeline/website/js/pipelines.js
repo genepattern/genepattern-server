@@ -16,6 +16,7 @@ var editor = {
 	workspace: {			// A map containing all the instance data of the current workspace
 		idCounter: 0, 		// Used to keep track of module instance IDs
 		pipes: [],	        // A list of all current connections in the workspace
+        files: [],          // List of all uploaded files, used when saving or uploading
 		suggestRow: 0, 		// Used by the GridLayoutManager
 		suggestCol: 0,		// Used by the GridLayoutManager
 
@@ -800,6 +801,8 @@ var properties = {
             var uploadForm = document.createElement("form");
             uploadForm.setAttribute("name", labelText + "_form");
             uploadForm.setAttribute("action", "/gp/PipelineDesigner/upload");
+            uploadForm.setAttribute("method", "POST");
+            uploadForm.setAttribute("enctype", "multipart/form-data");
             label.appendChild(uploadForm);
 
             if (pwr) {
@@ -839,7 +842,7 @@ var properties = {
 
             // When the upload form is submitted, send to the servlet
             $("[name|='" + labelText + "_form']").iframePostForm({
-                json : false,
+                json : true,
                 post : function () {
                     $("[name|='" + labelText + "_uploading']").show();
                     $("[name|='" + labelText + "_done']").hide();
@@ -847,6 +850,12 @@ var properties = {
                 complete : function (response) {
                     $("[name|='" + labelText + "_uploading']").hide();
                     $("[name|='" + labelText + "_done']").show();
+                    console.log(response);
+                    if (response.error !== undefined) {
+                        alert(response.error);
+                    }
+
+                    editor.workspace["files"].push(response.location);
                 }
             });
 

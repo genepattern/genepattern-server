@@ -452,7 +452,7 @@ public class ServerConfiguration {
         }
         
         if (configError) {
-            return getWebUploadDir();
+            return getTempDir();
         }
 
         String userUploadPath = getGPProperty(context, "user.upload.dir");
@@ -476,10 +476,10 @@ public class ServerConfiguration {
         
         //otherwise, use the web upload dir
         log.error("Unable to create user.uploads directory for '"+context.getUserId()+"', userUploadDir="+userUploadDir.getAbsolutePath());
-        return getWebUploadDir();
+        return getTempDir();
     } 
     
-    private File getWebUploadDir() {
+    public File getTempDir() {
         String str = System.getProperty("java.io.tmpdir");
         return new File(str);
     }
