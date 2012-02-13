@@ -72,10 +72,10 @@ public class PipelineHandler {
     public static void startPipeline(JobInfo pipelineJobInfo, int stopAfterTask) throws CommandExecutorException {
         if (pipelineJobInfo == null) {
             throw new CommandExecutorException("Error starting pipeline, pipelineJobInfo is null");
-        }
-        
+        }        
         log.debug("starting pipeline: "+pipelineJobInfo.getTaskName()+" ["+pipelineJobInfo.getJobNumber()+"]");
-        final boolean isInTransaction = HibernateUtil.isInTransaction();
+        final boolean isInTransaction = HibernateUtil.isInTransaction(); //for debugging
+        log.debug("isInTranscation="+isInTransaction);
         final boolean isScatterStep = isScatterStep(pipelineJobInfo);
         try {
             HibernateUtil.beginTransaction();
@@ -98,16 +98,11 @@ public class PipelineHandler {
                     JobQueueUtil.addJobToQueue( jobInfo,  JobQueue.Status.PENDING);
                 }
             }
-            if (!isInTransaction) {
-                HibernateUtil.commitTransaction();
-            }
+            HibernateUtil.commitTransaction();
         }
         catch (Throwable t) {
             HibernateUtil.rollbackTransaction();
             throw new CommandExecutorException("Error starting pipeline: "+t.getLocalizedMessage(), t);
-        }
-        finally {
-            HibernateUtil.closeCurrentSession();
         }
     }
     
