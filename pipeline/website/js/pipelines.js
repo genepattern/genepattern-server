@@ -842,15 +842,18 @@ var properties = {
 
             // When the upload form is submitted, send to the servlet
             $("[name|='" + labelText + "_form']").iframePostForm({
-                json : true,
+                json : false,
                 post : function () {
                     $("[name|='" + labelText + "_uploading']").show();
                     $("[name|='" + labelText + "_done']").hide();
                 },
                 complete : function (response) {
+                    // Work around a bug in the JSON handling of iframe-post-form
+                    response = $.parseJSON($(response)[0].innerHTML);
+
                     $("[name|='" + labelText + "_uploading']").hide();
                     $("[name|='" + labelText + "_done']").show();
-                    console.log(response);
+
                     if (response.error !== undefined) {
                         alert(response.error);
                     }

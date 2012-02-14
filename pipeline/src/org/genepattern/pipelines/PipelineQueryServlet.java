@@ -135,8 +135,6 @@ public class PipelineQueryServlet extends HttpServlet {
     }
 	
 	public void uploadFile(HttpServletRequest request, HttpServletResponse response) {
-	    System.out.println("uploadFile() called");
-	    
 	    RequestContext reqContext = new ServletRequestContext(request);
         if (FileUploadBase.isMultipartContent(reqContext)) {
             FileItemFactory factory = new DiskFileItemFactory();
