@@ -4,7 +4,9 @@ import static org.genepattern.util.GPConstants.SERIALIZED_MODEL;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,11 +33,13 @@ import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
+import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.config.ServerConfiguration;
 import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.genepattern.TaskInstallationException;
 import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.server.webapp.PipelineCreationHelper;
+import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.IAdminClient;
 import org.genepattern.server.webservice.server.local.LocalAdminClient;
 import org.genepattern.util.GPConstants;
@@ -431,11 +435,22 @@ public class PipelineQueryServlet extends HttpServlet {
             PipelineCreationHelper controller = new PipelineCreationHelper(model);
             controller.generateLSID();
             newLsid = controller.generateTask();
-            System.out.println("RESULT:::::::::::::::::::: " + newLsid);
         }
         catch (TaskInstallationException e) {
             log.error("Unable to install the pipeline:" + e.getMessage(), e);
             sendError(response, "Unable to save the pipeline");
+            return;
+        }
+        
+        // Create the new pipeline directory in taskLib and move files
+        try {
+            TaskInfo oldInfo = TaskInfoCache.instance().getTask(pipelineObject.getLsid());
+            File newDir = this.copySupportFiles(oldInfo.getName(), pipelineObject.getName(), oldInfo.getLsid(), newLsid, username);
+            this.copyNewFiles(pipelineObject.getFiles(), newDir);
+        }
+        catch (Exception e) {
+            log.error("Unable to retrieve the old taskInfo based on old lsid for: " + newLsid);
+            sendError(response, "Unable to save uploaded files for the pipeline");
             return;
         }
         
@@ -457,4 +472,48 @@ public class PipelineQueryServlet extends HttpServlet {
         
         this.write(response, listObject);
 	}
+	
+	private void copyNewFiles(List<String> files, File copyTo) throws Exception {
+	    if (copyTo == null || !copyTo.isDirectory()) {
+	        throw new Exception("Attempting to copy files to a location that is not a directory");
+	    }
+	    
+	    for (String path : files) {
+	        File file = new File(path);
+	        if (!file.exists()) {
+	            throw new Exception("Attempting to move file that does not exist: " + path);
+	        }
+
+	        // Move file to new directory
+	        boolean success = file.renameTo(new File(copyTo, file.getName()));
+	        if (!success) {
+	            throw new Exception("Unable to move file: " + file.getName());
+	        }
+	    }
+	}
+	
+	// Method copied directly from makePipeline.jsp
+    private File copySupportFiles(String oldTaskName, String newTaskName, String oldLSID, String newLSID, String userID) throws Exception {
+        String oldDir = DirectoryManager.getTaskLibDir(oldTaskName + "." + GPConstants.TASK_TYPE_PIPELINE, oldLSID, userID);
+        String newDir = DirectoryManager.getTaskLibDir(newTaskName + "." + GPConstants.TASK_TYPE_PIPELINE, newLSID, userID);
+
+        File[] oldFiles = new File(oldDir).listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return (!name.endsWith(".old") && !name.equals("version.txt"));
+            }
+        });
+        byte[] buf = new byte[100000];
+        int j;
+        for (int i = 0; oldFiles != null && i < oldFiles.length; i++) {
+            FileInputStream is = new FileInputStream(oldFiles[i]);
+            FileOutputStream os = new FileOutputStream(new File(newDir, oldFiles[i].getName()));
+            while ((j = is.read(buf, 0, buf.length)) > 0) {
+                os.write(buf, 0, j);
+            }
+            is.close();
+            os.close();
+        }
+        
+        return new File(newDir);
+    }
 }

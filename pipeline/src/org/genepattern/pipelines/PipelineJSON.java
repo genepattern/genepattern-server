@@ -1,11 +1,13 @@
 package org.genepattern.pipelines;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.PipelineModel;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoCache;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,6 +22,7 @@ public class PipelineJSON extends JSONObject {
     public static final String VERSION_COMMENT = "pipelineVersionComment";
     public static final String DOCUMENTATION = "pipelineDocumentation";
     public static final String LSID = "pipelineLsid";
+    public static final String FILES = "pipelineFiles";
     
     public static final String PRIVATE = "private";
     public static final String PUBLIC = "public";
@@ -36,6 +39,7 @@ public class PipelineJSON extends JSONObject {
             this.put(VERSION_COMMENT, object.get(VERSION_COMMENT));
             this.put(DOCUMENTATION, object.get(DOCUMENTATION));
             this.put(LSID, object.get(LSID));
+            this.put(FILES, object.get(FILES));
         }
         catch (JSONException e) {
             log.error("Unable to create PipelineJSON from generic JSONObject");
@@ -80,6 +84,17 @@ public class PipelineJSON extends JSONObject {
     
     public String getLsid() throws JSONException {
         return this.getString(LSID);
+    }
+    
+    public List<String> getFiles() throws JSONException {
+        List<String> files = new ArrayList<String>();
+        JSONArray array = this.getJSONArray(FILES);
+        
+        for (int i = 0; i < array.length(); i++) {
+            files.add(array.getString(i));
+        }
+        
+        return files;
     }
     
     private String getDocumentation(PipelineModel pipeline, TaskInfo info) {

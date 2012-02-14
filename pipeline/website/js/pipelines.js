@@ -55,6 +55,25 @@ var editor = {
         });
 	},
 
+    _cleanWorkspace: function() {
+        this.workspace = {      // A map containing all the instance data of the current workspace
+            idCounter: 0, 		// Used to keep track of module instance IDs
+            pipes: [],	        // A list of all current connections in the workspace
+            files: [],          // List of all uploaded files, used when saving or uploading
+            suggestRow: 0, 		// Used by the GridLayoutManager
+            suggestCol: 0,		// Used by the GridLayoutManager
+
+            pipelineName: "UntitledPipeline",
+            pipelineDescription: "",
+            pipelineAuthor: "",
+            pipelinePrivacy: "private",
+            pipelineVersion: "1",
+            pipelineVersionComment: "",
+            pipelineDocumentation: "",
+            pipelineLsid: ""
+        }
+    },
+
     nameToId: function (name) {
         return name.replace(/\./g, "");
     },
@@ -290,7 +309,6 @@ var editor = {
     },
 
     saveProps: function(save) {
-
         this.workspace["pipelineName"] = this._spacesToPeriods(save["Pipeline Name"]);
         this.workspace["pipelineDescription"] = save["Description"];
         this.workspace["pipelineAuthor"] = save["Author"];
@@ -310,6 +328,7 @@ var editor = {
         transport["pipelineVersionComment"] = this.workspace["pipelineVersionComment"];
         transport["pipelineDocumentation"] = this.workspace["pipelineDocumentation"];
         transport["pipelineLsid"] = this.workspace["pipelineLsid"];
+        transport["pipelineFiles"] = this.workspace["files"];
         return transport;
     },
 
@@ -398,6 +417,19 @@ var editor = {
         }
     },
 
+    extractBaseLsid: function(lsid) {
+        return lsid.substr(0, lsid.lastIndexOf(":"));
+    },
+
+    extractLsidVersion: function(lsid) {
+        return lsid.substr(lsid.lastIndexOf(":") + 1, lsid.length);
+    },
+
+    _cleanAfterSave: function() {
+        editor.workspace["pipelineVersionComment"] = "";
+        editor.workspace["files"] = [];
+    },
+
 	load: function(lsid) {
         $.ajax({
             type: "POST",
@@ -409,6 +441,7 @@ var editor = {
                     alert(error);
                 }
                 else {
+                    editor._cleanWorkspace();
                     editor._loadPipeline(response["pipeline"]);
                     editor._loadModules(response["modules"]);
                     editor._loadPipes(response["pipes"]);
@@ -437,6 +470,9 @@ var editor = {
                 // Update the LSID upon successful save
                 if (newLsid !== undefined && newLsid !== null) {
                     editor.workspace["pipelineLsid"] = newLsid;
+                    editor.workspace["pipelineVersion"] = editor.extractLsidVersion(newLsid);
+                    editor.workspace["pipelineVersionComment"] = "";
+                    editor._cleanAfterSave();
                 }
             },
             dataType: "json"
@@ -553,18 +589,10 @@ var library = {
             else return rawVersion;
         },
 
-        extractBaseLsid: function(lsid) {
-            return lsid.substr(0, lsid.lastIndexOf(":"));
-        },
-
-        extractLsidVersion: function(lsid) {
-            return lsid.substr(lsid.lastIndexOf(":") + 1, lsid.length);
-        },
-
         _readModuleVersions: function() {
             this.moduleVersionMap = {};
             for (var i in library.modules) {
-                var base = library.extractBaseLsid(library.modules[i].lsid);
+                var base = editor.extractBaseLsid(library.modules[i].lsid);
 
                 if (this.moduleVersionMap[base] === undefined) {
                     this.moduleVersionMap[base] = new Array();
@@ -741,7 +769,7 @@ var properties = {
         },
 
         _setVersionDropdown: function(module) {
-            var baseLsid = library.extractBaseLsid(module.lsid)
+            var baseLsid = editor.extractBaseLsid(module.lsid)
             var moduleArray = library.moduleVersionMap[baseLsid];
 
             var select = document.createElement("select");
