@@ -197,12 +197,12 @@ var editor = {
 
 	removePipe: function(pipe) {
 		for (var i = 0; i < this.workspace["pipes"].length; i++) {
-			if (i == pipe) {
-				alert("Got It");
+			if (this.workspace["pipes"][i] == pipe) {
 				delete editor.workspace["pipes"][i];
 				return
 			}
 		}
+        console.log("ERROR: Attempted to remove pipe not found in the workspace");
 	},
 
     _addModule: function(lsid, id, top, left) {
@@ -1274,7 +1274,7 @@ function Module(moduleJSON) {
             }
 
             if (this.inputEnds[0].isConnected()) {
-                this.inputEnds[0].pipe.remove();
+                this.inputEnds[0].removePipes();
             }
         }
 
@@ -1285,7 +1285,7 @@ function Module(moduleJSON) {
             }
 
             if (this.outputEnds[0].isConnected()) {
-                this.outputEnds[0].pipe.remove();
+                this.outputEnds[0].removePipes();
             }
         }
     };
@@ -1402,7 +1402,7 @@ function Port(module, pointer) {
 	this.type = null;
 	this.endpoint = null;
 	this.tooltip = null;
-	this.pipe = null;
+	this.pipes = [];
 
 	this.init = function () {
         // Set correct color for master port
@@ -1475,11 +1475,11 @@ function Port(module, pointer) {
     };
 
 	this.connectPipe = function (pipe) {
-        this.pipe = pipe;
+        this.pipes.push(pipe);
     };
 
 	this.isConnected = function () {
-        return this.pipe !== null;
+        return this.pipes.length > 0;
     };
 
 	this.isOutput = function () {
@@ -1490,9 +1490,15 @@ function Port(module, pointer) {
         return this.type == "input";
     };
 
+    this.removePipes = function() {
+        while (this.pipes.length > 0) {
+            this.pipes[0].remove();
+            this.pipes.shift();
+        }
+    }
+
 	this.remove = function () {
         jsPlumb.deleteEndpoint(this.endpoint);
-
         for (var i = 0; i < this.module.inputEnds.length; i++) {
             if (this.module.inputEnds[i] == this) {
                 this.module.inputEnds.splice(i, 1);
@@ -1506,6 +1512,8 @@ function Port(module, pointer) {
                 return;
             }
         }
+
+        console.log("ERROR: Attempted to remove endpoint which was not found");
     };
 
 	this.detachAll = function () {
@@ -1529,13 +1537,13 @@ function Port(module, pointer) {
 	this._addTooltipButtonCalls = function (id) {
         $("#" + "prop_" + id).click(function () {
             var port = editor.getParentPort(this);
-            properties.displayPipe(port.pipe);
+            properties.displayPipe(port.pipes[0]);
             properties.show();
         });
 
         $("#" + "del_" + id).click(function () {
             var port = editor.getParentPort(this);
-            port.pipe.remove();
+            port.removePipes();
         });
     };
 
