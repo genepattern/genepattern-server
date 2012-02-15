@@ -856,6 +856,14 @@ var properties = {
             doneImg.setAttribute("style", "display: none;");
             uploadForm.appendChild(doneImg);
 
+            // If the value has been previously set, attach the value div
+            var valueDiv = document.createElement("div");
+            valueDiv.setAttribute("class", "fileUploadValue");
+            if (value !== null && value !== "" && value !== properties.PROMPT_WHEN_RUN) {
+                valueDiv.innerHTML = "<strong>Current Value:</strong> " + value;
+            }
+            label.appendChild(valueDiv);
+
             $("#" + this.inputDiv).append(label);
 
             if (description !== null && description !== false) {
@@ -885,14 +893,16 @@ var properties = {
                     if (response.error !== undefined) {
                         alert(response.error);
                     }
-
-                    editor.workspace["files"].push(response.location);
+                    else {
+                        editor.workspace["files"].push(response.location);
+                        valueDiv.innerHTML = "<strong>Current Value:</strong> " + $("[type=file][name='" + labelText + "']").val();
+                    }
                 }
             });
 
             // When a file is selected for upload, begin the upload
-            $("[name|='" + labelText + "']").change(function() {
-                $("[name|='" + labelText + "_form']").submit();
+            $("[name='" + labelText + "'][type=file]").change(function() {
+                $("[name='" + labelText + "_form']").submit();
             });
         },
 

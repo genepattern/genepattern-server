@@ -85,6 +85,11 @@ body {
     font-size: 11pt;
 }
 
+.fileUploadValue {
+    font-size: 10pt;
+    padding-left: 50px;
+}
+
 #pipelinePencil {
 	height: 16px;
 }
