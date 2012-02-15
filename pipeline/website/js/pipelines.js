@@ -56,6 +56,12 @@ var editor = {
 	},
 
     _cleanWorkspace: function() {
+        for (var i in editor.workspace) {
+            if (editor.workspace[i] instanceof Module) {
+                editor.workspace[i].remove();
+            }
+        }
+
         this.workspace = {      // A map containing all the instance data of the current workspace
             idCounter: 0, 		// Used to keep track of module instance IDs
             pipes: [],	        // A list of all current connections in the workspace
@@ -375,13 +381,14 @@ var editor = {
         this.removeAllModules();
         var givenAlert = false;
 
-        for (var i in modules) {
+        var i = 0;
+        while (modules[i.toString()] !== undefined) {
             // Update the idCounter as necessary
-            var intId = parseInt(modules[i].id)
+            var intId = parseInt(modules[i.toString()].id)
             if (intId >= this.workspace["idCounter"]) { this.workspace["idCounter"] = intId + 1; }
 
             // Add each module as it is read
-            var added = this.loadModule(modules[i].lsid, modules[i].id);
+            var added = this.loadModule(modules[i.toString()].lsid, modules[i.toString()].id);
 
             if (added === null) {
                 if (!givenAlert) {
@@ -392,7 +399,9 @@ var editor = {
             }
 
             // Set the correct properties for the module
-            added.loadProps(modules[i]);
+            added.loadProps(modules[i.toString()]);
+
+            i++;
         }
     },
 
