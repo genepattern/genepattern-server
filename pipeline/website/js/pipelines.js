@@ -1468,6 +1468,7 @@ function Port(module, pointer) {
             paintStyle:{fillStyle:color}
         });
         this.endpoint.canvas.setAttribute("name", prefix + this.id + "_" + this.module.id);
+        this.endpoint.canvas.setAttribute("id", prefix + this.id + "_" + this.module.id);
 
         // Add tooltip
         this._createTooltip(this.pointer);
