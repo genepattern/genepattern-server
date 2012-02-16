@@ -19,11 +19,11 @@ width: 100%;
 
 .heading {
 margin: 1px;
-color: #fff;
 padding: 3px 10px;
 cursor: pointer;
 position: relative;
-background-color:#666699;
+color: #333366;
+background-color: #DFDFB9;
 }
 
 .content {
