@@ -8,9 +8,6 @@
  * Object representing the pipeline editor, containing all associated methods and properties
  */
 var editor = {
-	OUTPUT_FILE_STYLE: { isSource: true },
-	INPUT_FILE_STYLE: { isTarget: true },
-
 	div: "workspace",		// The id of the div used for pipeline editing
     titleSpan: "titleSpan", // The id of the title span of the pipeline
 	workspace: {			// A map containing all the instance data of the current workspace
@@ -1265,7 +1262,34 @@ function Module(moduleJSON) {
     };
 
 	this.addInput = function (pointer) {
-        var input = new Input(this, pointer);
+        var param = null;
+        if (typeof pointer === "string") {
+            if (pointer === "master") {
+                param = pointer;
+            }
+            else {
+                var found = false;
+                for (var i = 0; i < this.fileInputs.length; i++) {
+                    if (this.fileInputs[i].name == pointer) {
+                        param = this.fileInputs[i];
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    console.log("ERROR: Unable to find pointer in Module.inputEnds: " + pointer);
+                }
+            }
+        }
+        else if (pointer instanceof InputParam) {
+            param = pointer;
+        }
+        else {
+            console.log("ERROR: Module.addInput() called with invalid param: " + pointer);
+            return null;
+        }
+
+        var input = new Input(this, param);
         var index = this.inputEnds.length;
         this.inputEnds[index] = input;
         return input;
@@ -1403,22 +1427,23 @@ function InputParam(paramJSON) {
  * @param module - A reference to the parent module
  * @param id - The id of the port
  */
-function Port(module, pointer) {
+function Port(module, pointer, param) {
 	this.module = module;
 	this.id = Math.floor(Math.random() * 1000000000000);
     this.pointer = pointer;
 	this.master = pointer == "master";
+    this.param = param;
 	this.type = null;
 	this.endpoint = null;
 	this.tooltip = null;
 	this.pipes = [];
 
 	this.init = function () {
-        // Set correct color for master port
-        var color = "black";
-        if (this.master) {
-            color = "blue";
-        }
+        var MASTER_OUTPUT = { isSource: true, paintStyle: { fillStyle: "blue" } };
+        var OUTPUT = { isSource: true, paintStyle: { fillStyle: "black" } };
+        var MASTER_INPUT = { isTarget: true, paintStyle: { fillStyle: "blue" } };
+        var REQUIRED_INPUT = { isTarget: true, paintStyle: { fillStyle: "black", outlineColor:"black", outlineWidth: 0 } };
+        var OPTIONAL_INPUT = { isTarget: true, paintStyle: { fillStyle: "gray", outlineColor:"black", outlineWidth: 0 } };
 
         // Get correct list on module for type
         var correctList = null;
@@ -1432,10 +1457,25 @@ function Port(module, pointer) {
         // Get the correct base style
         var baseStyle = null;
         if (this.isOutput()) {
-            baseStyle = editor.OUTPUT_FILE_STYLE;
+            if (this.master) {
+                baseStyle = MASTER_OUTPUT;
+            }
+            else {
+                baseStyle = OUTPUT;
+            }
         }
         else {
-            baseStyle = editor.INPUT_FILE_STYLE;
+            if (this.master) {
+                baseStyle = MASTER_INPUT;
+            }
+            else {
+                if (this.isRequired()) {
+                    baseStyle = REQUIRED_INPUT;
+                }
+                else {
+                    baseStyle = OPTIONAL_INPUT;
+                }
+            }
         }
 
         // Get the correct endpoint name prefix
@@ -1471,10 +1511,9 @@ function Port(module, pointer) {
 
         // Create endpoint
         this.endpoint = jsPlumb.addEndpoint(this.module.id.toString(), baseStyle, {
-            anchor:posArray,
-            maxConnections:maxConn,
-            dragAllowedWhenFull:true,
-            paintStyle:{fillStyle:color}
+            anchor: posArray,
+            maxConnections: maxConn,
+            dragAllowedWhenFull: true
         });
         this.endpoint.canvas.setAttribute("name", prefix + this.id + "_" + this.module.id);
         this.endpoint.canvas.setAttribute("id", prefix + this.id + "_" + this.module.id);
@@ -1483,19 +1522,33 @@ function Port(module, pointer) {
         this._createTooltip(this.pointer);
     };
 
-	this.connectPipe = function (pipe) {
+	this.connectPipe = function(pipe) {
         this.pipes.push(pipe);
     };
 
-	this.isConnected = function () {
+    this.isRequired = function() {
+        if (this.isInput()) {
+            if (this.param === null) {
+                return false;
+            }
+            else {
+                return this.param.required;
+            }
+        }
+        else {
+            return false;
+        }
+    };
+
+	this.isConnected = function() {
         return this.pipes.length > 0;
     };
 
-	this.isOutput = function () {
+	this.isOutput = function() {
         return this.type == "output";
     };
 
-	this.isInput = function () {
+	this.isInput = function() {
         return this.type == "input";
     };
 
@@ -1606,8 +1659,18 @@ function Port(module, pointer) {
  * @param module - A reference to the parent module
  * @param pointer - The input the port is for
  */
-function Input(module, pointer) {
-	var port = new Port(module, pointer);
+function Input(module, param) {
+    var pointer = null;
+    var input = null;
+    if (param instanceof InputParam) {
+        pointer = param.name;
+        input = param;
+    }
+    else {
+        pointer = param;
+    }
+
+	var port = new Port(module, pointer, input);
 	port.type = "input";
 	port.init();
 	return port;
@@ -1619,7 +1682,7 @@ function Input(module, pointer) {
  * @param pointer - The output the port is for
  */
 function Output(module, pointer) {
-	var port = new Port(module, pointer);
+	var port = new Port(module, pointer, null);
 	port.type = "output";
 	port.init();
 	return port;
