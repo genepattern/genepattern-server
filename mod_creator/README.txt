@@ -1,0 +1,1 @@
+This directory contains the code for the Module Creator version 2.0 which is implemented using jQuery.
