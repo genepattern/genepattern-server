@@ -692,6 +692,18 @@ var properties = {
 			});
 		},
 
+        listToString: function(list) {
+            var toReturn = "";
+            for (var i = 0; i < list.length; i++) {
+                toReturn += list[i];
+                if (i !== (list.length - 1)) {
+                    toReturn += ", ";
+                }
+            }
+
+            return toReturn;
+        },
+
         saveToModel: function() {
             if (this.current instanceof Module) {
                 var save = this._bundleSave();
@@ -910,6 +922,8 @@ var properties = {
             $("[name='" + labelText + "'][type=file]").change(function() {
                 $("[name='" + labelText + "_form']").submit();
             });
+
+            return fileUpload;
         },
 
         _addDropDown: function(labelText, values, selected, description, pwr) {
@@ -946,6 +960,8 @@ var properties = {
 
             var hr = document.createElement("hr");
             $("#" + this.inputDiv).append(hr);
+
+            return select;
         },
 
         _addTextBox: function(labelText, value, description, pwr) {
@@ -973,24 +989,33 @@ var properties = {
 
             var hr = document.createElement("hr");
             $("#" + this.inputDiv).append(hr);
+
+            return inputBox;
+        },
+
+        _addTargetDiv: function(id, content) {
+            var div = document.createElement("div");
+            div.setAttribute("id", id);
+            div.innerHTML = content;
+            $("#" + this.inputDiv).append(div);
         },
 
         _addFileInput: function(input) {
             var required = input.required ? "*" : "";
             var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
-            this._addFileUpload(input.name + required, displayValue, input.description, true);
+            return this._addFileUpload(input.name + required, displayValue, input.description, true);
         },
 
         _addTextBoxInput: function(input) {
             var required = input.required ? "*" : "";
             var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
-            this._addTextBox(input.name + required, displayValue, input.description, true);
+            return this._addTextBox(input.name + required, displayValue, input.description, true);
         },
 
         _addDropdownInput: function(input) {
             var required = input.required ? "*" : "";
             var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
-            this._addDropDown(input.name + required, input.choices, displayValue, input.description, true);
+            return this._addDropDown(input.name + required, input.choices, displayValue, input.description, true);
         },
 
         displayModule: function(module) {
@@ -1023,13 +1048,29 @@ var properties = {
             var outSelected = pipe.outputPort.pointer;
             var inSelected = pipe.inputPort.pointer;
 
-            this._addDropDown("Output", ["1=1st Output", "2=2nd Output", "3=3rd Output", "4=4th Output"].concat(pipe.outputModule.outputs), outSelected, false, false);
+            this._addDropDown("Output", ["1=1st Output", "2=2nd Output", "3=3rd Output", "4=4th Output"].concat(pipe.outputModule.outputs), outSelected, properties.listToString(pipe.outputModule.outputs), false);
 
             var inputsToList = new Array();
+            var selectedInput = pipe.inputModule.fileInputs[0];
             for (var i = 0; i < pipe.inputModule.fileInputs.length; i++) {
                 inputsToList[inputsToList.length] = pipe.inputModule.fileInputs[i].name;
+                if (inSelected == pipe.inputModule.fileInputs[i].name) {
+                    selectedInput = pipe.inputModule.fileInputs[i];
+                }
             }
-            this._addDropDown("Input", inputsToList, inSelected, false, false);
+            var input = this._addDropDown("Input", inputsToList, inSelected, selectedInput.description, false);
+
+            // Display the correct description upon dropdown selection
+            $(input).change(function() {
+                var selectedInput = $(input).val();
+                for (var i = 0; i < pipe.inputModule.fileInputs.length; i++) {
+                    if (selectedInput == pipe.inputModule.fileInputs[i].name) {
+                        selectedInput = pipe.inputModule.fileInputs[i];
+                        break;
+                    }
+                }
+                $(".inputDescription").get(1).innerHTML = selectedInput.description;
+            });
         },
 
         displayPipeline: function() {
@@ -1443,7 +1484,7 @@ function Port(module, pointer, param) {
         var OUTPUT = { isSource: true, paintStyle: { fillStyle: "black" } };
         var MASTER_INPUT = { isTarget: true, paintStyle: { fillStyle: "blue" } };
         var REQUIRED_INPUT = { isTarget: true, paintStyle: { fillStyle: "black", outlineColor:"black", outlineWidth: 0 } };
-        var OPTIONAL_INPUT = { isTarget: true, paintStyle: { fillStyle: "gray", outlineColor:"black", outlineWidth: 0 } };
+        var OPTIONAL_INPUT = { isTarget: true, paintStyle: { fillStyle: "lightgray", outlineColor:"black", outlineWidth: 0 } };
 
         // Get correct list on module for type
         var correctList = null;
