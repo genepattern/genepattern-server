@@ -60,6 +60,22 @@
                     </tr>
                     <tr>
                         <td>
+                            <label>
+                                Quality Level
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <select>
+                                <option value="development">development</option>
+                                <option value="preproduction">preproduction</option>
+                                <option value="production">preproduction</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
                             <label> Privacy: </label>
                         </td>
                     </tr>
@@ -83,7 +99,7 @@
                     </tr>                                
                 </table>
             </div>
-            <p class="heading">Program Information</p>
+            <p class="heading">Details</p>
             <div class="content">
                 <fieldset>
                 <legend>Requirements</legend>
@@ -96,6 +112,7 @@
                     <tr>
                         <td>
                             <select>
+                                <option value="any">any</option>                                
                                 <option value="Alpha">Alpha</option>
                                 <option value="Intel">Intel</option>
                                 <option value="PowerPC">PowerPC</option>
@@ -110,35 +127,73 @@
                     </tr>
                     <tr>
                         <td>
+	                        <input type="checkbox" name="os" value="os" id="os" checked="checked"/>
+                            <label for="os">Any</label>
+                            
+	                        <input type="checkbox" name="os" value="os1" id="os1"/>
                             <label for="os1">Linux</label>
-	                        <input type="checkbox" name="os" value="test" id="os1"/> 
+                            
+                            <input type="checkbox" name="os" value="os2" id="os2"/>
                             <label for="os2">MacOS</label>
-                            <input type="checkbox" name="os" value="test" id="os2"/>
+                            
+                            <input type="checkbox" name="os" value="os3" id="os3"/>
                             <label for="os3">Solaris</label>
-                            <input type="checkbox" name="os" value="test" id="os3"/>
+                            
+                            <input type="checkbox" name="os" value="os4" id="os4"/>
                             <label for="os4">Tru64</label>
-                            <input type="checkbox" name="os" value="test" id="os4"/> <label for="os3">Solaris</label>
+                            
+                            <input type="checkbox" name="os" value="os5" id="os5"/>
                             <label for="os5">Windows</label>                            
-                            <input type="checkbox" name="os" value="test" id="os5"/>                                    
                         </td>
                     </tr>
-                </table>
-                </fieldset>
-                <table border="0" cellspacing="0" cellpadding="3">
                     <tr>
                         <td>
-                            <label>
-                                Quality Level
-                            </label>
+                            Language:
                         </td>
                     </tr>
                     <tr>
                         <td>
                             <select>
-                                <option value="development">development</option>
-                                <option value="preproduction">preproduction</option>
-                                <option value="production">preproduction</option>
-                            </select>
+                                <option value="any">any</option>                                
+                                <option value="C">C</option>
+                                <option value="C++">C++</option>
+                                <option value="Java">Java</option>
+                                <option value="MATLAB">MATLAB</option>
+                                <option value="Perl">Perl</option>
+                                <option value="Python">Python</option>
+                                <option value="R">R</option>
+                            </select>  
+                        
+                            <b> min. language version: </b>
+                            <input type="text" name="language" size="20"/>
+                        </td>
+                    </tr>
+                </table>
+                </fieldset>
+                <fieldset>
+                <legend>Parameters</legend>
+                <table border="0" cellspacing="0" cellpadding="3">
+                <tr>
+                    <td>
+                        Name:
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="text" name="parameter" size="25"/>
+                    </td>
+                </tr>
+                </table>
+                </fieldset>
+                <table border="0" cellspacing="0" cellpadding="3">                    
+                     <tr>
+                        <td>
+                            <label>Command line:</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <textarea cols="10" rows="4" name="description" class="commandline"/>
                         </td>
                     </tr>
                 </table>
