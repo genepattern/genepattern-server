@@ -456,9 +456,14 @@ public class GenomeSpaceClientImpl implements GenomeSpaceClient {
             throw new GenomeSpaceException("Object other than GsSession passed into getConvertedURL(): " + gsSessionObject);
         }
         
-        // Delare necessary objects
+        // Declare necessary objects
         DataManagerClient dmClient = gsSession.getDataManagerClient();
         GSFileMetadata metadata = (GSFileMetadata) file.getMetadata();
+        
+        // Handle the null formatType condition
+        if (formatType == null) {
+            formatType = file.getExtension();
+        }
         
         // Find the correct GSDataFormat object
         GSDataFormat format = null;

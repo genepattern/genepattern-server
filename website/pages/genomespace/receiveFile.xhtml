@@ -35,7 +35,7 @@ use, misuse, or functionality.
 				           onmouseout="MM_swapImgRestore();" />
 					<h:outputText rendered="#{file.file.converted}"> <em>Converted to #{file.file.kind}</em></h:outputText>
 					<ol style="margin-left:50px;">
-						<h:form>
+						<h:form target="_blank">
 							<li style="text-indent:10px;">Save a Copy: 
 								<t:selectOneMenu value="#{genomeSpaceReceiveBean.rootUploadDirectory}" id="uploadDirectory">
 									<f:selectItems value="#{genomeSpaceReceiveBean.uploadDirectories}" />
@@ -45,18 +45,21 @@ use, misuse, or functionality.
 								</h:commandButton>
 							</li>
 						</h:form>
-						<h:form>
-							<li style="text-indent:10px;">Send to Module:
-								<t:selectOneMenu id="module" forceId="true">
-									<f:selectItems value="#{file.moduleSelects}" />
-								</t:selectOneMenu>
-								<h:inputHidden id="source" value="GenomeSpace"/>
-								<h:inputHidden id="name" value="#{file.file.name}"/>
-								<h:inputHidden id="path" value="#{file.file.url}"/>
-								<h:commandButton value="Submit" action="#{genomeSpaceReceiveBean.loadTask}" immediate="true">
-								</h:commandButton>
-							</li>
-						</h:form>
+						<t:dataList value="#{file.file.conversions}" var="format">
+							<h:form target="_blank">
+								<li style="text-indent:10px;">Send to Module as #{format}:
+									<t:selectOneMenu id="module" forceId="true">
+										<f:selectItems value="#{file.moduleSelects}" />
+									</t:selectOneMenu>
+									<h:inputHidden id="source" value="GenomeSpace"/>
+									<h:inputHidden id="name" value="#{file.file.name}"/>
+									<h:inputHidden id="path" value="#{file.file.url}"/>
+									<h:inputHidden id="format" value="#{format}"/>
+									<h:commandButton value="Submit" action="#{genomeSpaceReceiveBean.loadTask}" immediate="true">
+									</h:commandButton>
+								</li>
+							</h:form>
+						</t:dataList>
 					</ol>
 				</t:div>
 				</t:dataList>

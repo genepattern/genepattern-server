@@ -21,7 +21,9 @@ public class GenomeSpaceReceiveBean {
     private static Logger log = Logger.getLogger(GenomeSpaceReceiveBean.class);
     
     private UploadFilesBean uploadBean = null;
+    private GenomeSpaceBean genomeSpaceBean = null;
     private List<GSReceivedFileWrapper> receivedFiles = null;
+    private String oldRequestString = null;
     
     public String getRefreshPage() throws IOException {
         HttpServletRequest request = UIBeanHelper.getRequest();
@@ -31,11 +33,16 @@ public class GenomeSpaceReceiveBean {
             cleanBean();
         }
         
+        if (oldRequestString != null && !oldRequestString.equals(queryString)) {
+            cleanBean();
+        }
+        
         List<GSReceivedFileWrapper> files = getReceivedFiles();
         if (files.size() < 1) {
             UIBeanHelper.getResponse().sendRedirect("/gp/");
         }
-        
+
+        oldRequestString = queryString;
         return null;
     }
     
@@ -47,10 +54,16 @@ public class GenomeSpaceReceiveBean {
         List<GSReceivedFileWrapper> received = new ArrayList<GSReceivedFileWrapper>();
         HttpServletRequest request = UIBeanHelper.getRequest();
         String filesString = request.getParameter("files");
+        
+        if (!initGenomeSpaceBean()) {
+            log.error("Unable to acquire reference to GenomeSpaceBean in GenomeSpaceReceiveBean.parseParameters()");
+            return received;
+        }
+        
         if (filesString != null) {
             String[] fileParams = filesString.split(",");
             for (String param : fileParams) {
-                GpFilePath file = GenomeSpaceFileManager.createFile(param);
+                GpFilePath file = genomeSpaceBean.getFile(param);
                 GSReceivedFileWrapper wrapped = new GSReceivedFileWrapper(file);
                 if (file != null) received.add(wrapped);
             }
@@ -85,6 +98,13 @@ public class GenomeSpaceReceiveBean {
             populateSelectItems();
         }
         return receivedFiles;
+    }
+    
+    private boolean initGenomeSpaceBean() {
+        if (genomeSpaceBean == null) {
+            genomeSpaceBean = (GenomeSpaceBean) UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
+        }
+        return genomeSpaceBean != null ? true : false;
     }
     
     private boolean initUploadBean() {
@@ -151,7 +171,7 @@ public class GenomeSpaceReceiveBean {
             }
         }
         
-        cleanBean();
+        //cleanBean();
         RunTaskBean runTaskBean = (RunTaskBean) UIBeanHelper.getManagedBean("#{runTaskBean}");
         assert runTaskBean != null;
         runTaskBean.setTask(lsid);
@@ -182,7 +202,7 @@ public class GenomeSpaceReceiveBean {
         GenomeSpaceBean genomeSpaceBean = (GenomeSpaceBean) UIBeanHelper.getManagedBean("#{genomeSpaceBean}");
         genomeSpaceBean.saveFileToUploads(fileUrl, directoryPath);
 
-        cleanBean();
+        //cleanBean();
         return "home";
     }
     
