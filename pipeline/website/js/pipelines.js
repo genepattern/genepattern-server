@@ -96,7 +96,7 @@ var editor = {
     },
 
     addDefaultPipe: function(output, input) {
-		var newIn = input.module.suggestInput();
+		var newIn = input.module.suggestInput(output);
 		// If there are no valid inputs left return null and cancel the pipe
 		if (newIn === null) {
 			output.module.getMasterOutput().detachAll();
@@ -1230,21 +1230,57 @@ function Module(moduleJSON) {
         console.log("Unable to find port with id: " + id + " in module " + this.id);
     };
 
-	// TODO: Eventually replace with smarter suggestions of which endpoint to connect
-	this.suggestInput = function () {
-        for (var i = 0; i < this.fileInputs.length; i++) {
-            var used = this.fileInputs[i].used;
-            if (!used) {
-                this.fileInputs[i].used = true;
-                return this.addInput(this.fileInputs[i].name);
+	this.suggestInput = function (outputPort) {
+        for (var i = 0; i < outputPort.module.outputs.length; i++) {
+            var output = outputPort.module.outputs[i];
+
+            for (var j = 0; j < this.fileInputs.length; j++) {
+                var input = this.fileInputs[j];
+                var used = input.used;
+
+                if (!used) {
+                    for (var k = 0; k < input.kinds.length; k++) {
+                        var kind = input.kinds[k];
+
+                        if (kind == output) {
+                            input.used = true;
+                            return this.addInput(input.name);
+                        }
+                    }
+                }
             }
         }
+
+        // Special case for modules with no output types listed
+        if (outputPort.module.outputs.length <= 0) {
+            for (var i = 0; i < this.fileInputs.length; i++) {
+                var used = this.fileInputs[i].used;
+                if (!used) {
+                    this.fileInputs[i].used = true;
+                    return this.addInput(this.fileInputs[i].name);
+                }
+            }
+        }
+
+        // No valid input found
         return null;
     };
 
-	// TODO: Eventually replace with smarter suggestions of which endpoint to connect
 	this.suggestOutput = function (input) {
-        return this.addOutput(this.outputEnds.length);
+        for (var i = 0; i < this.outputs.length; i++) {
+            var output = this.outputs[i];
+
+            for (var k = 0; k < input.param.kinds.length; k++) {
+                var kind = input.param.kinds[k];
+
+                if (kind == output) {
+                    return this.addOutput(output);
+                }
+            }
+        }
+
+        // No matched output type found, return first output
+        return this.addOutput(1);
     };
 
 	this._createButtons = function (appendTo, baseId) {
