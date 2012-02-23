@@ -1,17 +1,27 @@
 textarea {
 padding: 10px;
-width: 500px;
-font-family: Arial, 'sans-serif';
-font-size: 12px;
+width: 600px;
+font-family: Arial, sans-serif;
+font-size: 0.75em;
 }
 
 .heading {
-margin: 1px;
-padding: 3px 10px;
+margin: 0;
+padding: 0.125em 0.625em;
+font-size: 0.8125em;  
 cursor: pointer;
 position: relative;
 color: #333366;
 background-color: #DFDFB9;
+}
+
+table
+{
+    font-size: 0.8125em;
+}
+
+td {
+    padding: 3px;
 }
 
 
@@ -35,10 +45,16 @@ background-color: #DFDFB9;
 	opacity: 0.7;
 	filter: alpha(opacity=70); /* IE */
 }
+/*----------Splitbar styles end-----------*/
 
 html, body
 {
 	margin: 0;			/* Remove body margin/padding */
 	padding: 0;
 	overflow: hidden;	/* Remove scroll bars on browser window */
+}
+
+#modtitle
+{
+    font-size: 0.875em;
 }

@@ -31,8 +31,8 @@ jQuery(document).ready(function() {
     ,	south__togglerLength_closed: '100%'	// toggle-button is full-width of resizer-bar
     //	some pane-size settings
     ,	north__size:			45
-    ,	south__size:			190
-    ,	west__size:			    400
+    ,	south__size:			220
+    ,	west__size:			    380
     ,	east__size:				300
     ,	center__minWidth:		100
     ,	useStateCookie:			true

@@ -25,12 +25,144 @@
     <div id="modtitle">UntitledModule</div>    
 </div>
 
-<div class="ui-layout-west">
-    <p class="heading">Command Line</p>
-</div>
-
 <div class="ui-layout-south">
     <p class="heading">Details</p>
+    <table border="0" cellspacing="0" cellpadding="0">
+        <tr>
+            <td colspan="2">
+                <label>Description:</label>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <textarea cols="10" rows="2" name="description"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <label>Author:</label>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                 <input type="text" name="author" size="70"/>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <label>Organization:</label>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                 <input type="text" name="organization" size="70"/>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <label>Version Comment:</label>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                 <input type="text" name="comment" size="100"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label> Privacy: </label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                 <select>
+                      <option value="private">private</option>
+                     <option value="public">public</option>
+                 </select>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>
+                    Quality Level
+                </label>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <select>
+                    <option value="development">development</option>
+                    <option value="preproduction">preproduction</option>
+                    <option value="production">preproduction</option>
+                </select>
+            </td>
+        </tr>        
+        <tr>
+            <td>
+                CPU type:
+            </td>
+            <td>
+                Operating System:
+            </td>
+        <tr>
+        </tr>
+        <tr>
+            <td>
+                <select>
+                    <option value="any">any</option>
+                    <option value="Alpha">Alpha</option>
+                    <option value="Intel">Intel</option>
+                    <option value="PowerPC">PowerPC</option>
+                    <option value="Sparc">Sparc</option>
+                </select>
+            </td>        
+            <td>
+                <input type="checkbox" name="os" value="os" id="os" checked="checked"/>
+                <label for="os">Any</label>
+
+                <input type="checkbox" name="os" value="os1" id="os1"/>
+                <label for="os1">Linux</label>
+
+                <input type="checkbox" name="os" value="os2" id="os2"/>
+                <label for="os2">MacOS</label>
+
+                <input type="checkbox" name="os" value="os3" id="os3"/>
+                <label for="os3">Solaris</label>
+
+                <input type="checkbox" name="os" value="os4" id="os4"/>
+                <label for="os4">Tru64</label>
+
+                <input type="checkbox" name="os" value="os5" id="os5"/>
+                <label for="os5">Windows</label>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                Language:
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <select>
+                    <option value="any">any</option>
+                    <option value="C">C</option>
+                    <option value="C++">C++</option>
+                    <option value="Java">Java</option>
+                    <option value="MATLAB">MATLAB</option>
+                    <option value="Perl">Perl</option>
+                    <option value="Python">Python</option>
+                    <option value="R">R</option>
+                </select>
+
+                <b> min. language version: </b>
+                <input type="text" name="language" size="20"/>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="ui-layout-west">
+    <p class="heading">Command Line</p>
 </div>
 
 <div class="ui-layout-center">
