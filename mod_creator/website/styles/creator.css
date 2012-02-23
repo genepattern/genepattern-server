@@ -1,20 +1,8 @@
-body {
-color: black;
-background: white;
-width: 100%;
-}
-
 textarea {
 padding: 10px;
 width: 500px;
 font-family: Arial, 'sans-serif';
 font-size: 12px;
-}
-
-.layer1 {
-margin: 0;
-padding: 1px;
-width: 100%;
 }
 
 .heading {
@@ -26,15 +14,31 @@ color: #333366;
 background-color: #DFDFB9;
 }
 
-.content {
-padding: 3px 2px;
+
+/* Splitbar styles; these are the default class names */
+
+.vsplitbar {
+	width: 6px;
+	background: #669 url(images/vgrabber.gif) no-repeat center;
+}
+.vsplitbar:hover, .vsplitbar.active {
+	background: #c66 url(images/vgrabber.gif) no-repeat center;
+	opacity: 0.7;
+	filter: alpha(opacity=70); /* IE */
+}
+.hsplitbar {
+	height: 6px;
+	background: #669 url(images/hgrabber.gif) no-repeat center;
+}
+.hsplitbar.active, .hsplitbar:hover {
+	background: #c66 url(images/hgrabber.gif) no-repeat center;
+	opacity: 0.7;
+	filter: alpha(opacity=70); /* IE */
 }
 
-p {
-padding: 5px 0;
-width: 100%;
-}
-
-td {
-    padding: 3px;
+html, body
+{
+	margin: 0;			/* Remove body margin/padding */
+	padding: 0;
+	overflow: hidden;	/* Remove scroll bars on browser window */
 }
