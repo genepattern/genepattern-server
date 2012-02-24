@@ -1,4 +1,4 @@
-var myLayout;
+var mainLayout, westlayout;
  
 jQuery(document).ready(function() {
     //Used for editing default Module name - jQuery In Place Editor 
@@ -6,13 +6,24 @@ jQuery(document).ready(function() {
      $("#modtitle").editInPlace({
 		callback: function(unused, enteredText) { return enteredText; },
 		// url: './server.php',
-		show_buttons: true
+         bg_over: "#cff",		 
+         show_buttons: true
+	});
+
+    $("#commandtext").editInPlace({
+		callback: function(unused, enteredText) { return enteredText; },
+		// url: "./server.php",
+		bg_over: "#cff",
+		field_type: "textarea",
+		textarea_rows: "9",
+		textarea_cols: "36",
+		saving_image: "./images/ajax-loader.gif"
 	});
 
     // this layout could be created with NO OPTIONS - but showing some here just as a sample...
     // myLayout = $('body').layout(); -- syntax with No Options
 
-    myLayout = $('body').layout({
+    mainLayout = $('body').layout({
 
     //	enable showOverflow on west-pane so CSS popups will overlap north pane
         west__showOverflowOnHover: false
@@ -30,11 +41,18 @@ jQuery(document).ready(function() {
     ,	south__spacing_closed:	20		// big resizer-bar when open (zero height)
     ,	south__togglerLength_closed: '100%'	// toggle-button is full-width of resizer-bar
     //	some pane-size settings
-    ,	north__size:			45
+    ,	north__size:			40
     ,	south__size:			220
-    ,	west__size:			    380
+    ,	west__size:			    360
     ,	east__size:				300
     ,	center__minWidth:		100
     ,	useStateCookie:			true
+    });
+
+    westLayout = $('div.ui-layout-west').layout({
+            minSize:				70	// ALL panes
+        ,	center__paneSelector:	".west-center"
+        ,	south__paneSelector:	".west-south"
+        ,	south__size:			200
     });
 });

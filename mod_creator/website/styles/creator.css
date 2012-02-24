@@ -1,4 +1,4 @@
-textarea {
+.det_textarea {
 padding: 10px;
 width: 600px;
 font-family: Arial, sans-serif;
@@ -57,4 +57,22 @@ html, body
 #modtitle
 {
     font-size: 0.875em;
+}
+
+p
+{
+    font-size: 0.8125em;        
+}
+
+div.ui-layout-north
+{
+    overflow: hidden;
+}
+
+.parameters
+{
+    border-style:dotted;
+    border-width:thin;
+    border-color:#333366;
+    margin: 4px;
 }
