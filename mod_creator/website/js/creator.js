@@ -17,7 +17,7 @@ jQuery(document).ready(function() {
 		field_type: "textarea",
 		textarea_rows: "9",
 		textarea_cols: "36",
-		saving_image: "./images/ajax-loader.gif"
+		saving_image: "./styles/images/ajax-loader.gif"
 	});
 
     // this layout could be created with NO OPTIONS - but showing some here just as a sample...
@@ -60,4 +60,77 @@ jQuery(document).ready(function() {
 		$( "#parameters" ).sortable();
 		$( "#parameters" ).disableSelection();
 	});
+
+    
+    var paramDiv = jQuery("<div class='parameter'>  \
+        <table>    \
+                <tr>    \
+                    <td>   \
+                       Name: \
+                    </td>   \
+                    <td>   \
+                        Description: \
+                    </td>    \
+                    <td>        \
+                        Default Value: \
+                    </td>  \
+                    <td>   \
+                        Type: \
+                    </td> \
+               </tr>   \
+                <tr>    \
+                    <td>  \
+                        <input type='text'' name='parameter' size='25'/> \
+                    </td>   \
+                    <td>    \
+                        <textarea cols='30' rows='2'></textarea> \
+                    </td> \
+                    <td> \
+                        <input type='text' name='parameter' size='25'/> \
+                    </td>\
+                    <td> \
+                        <select>\
+                            <option value='text'>Text</option> \
+                            <option value='Numeric'>Numeric</option>  \
+                            <option value='Input File'>Input File</option>\
+                            <option value='Password'>Password</option> \
+                        </select>  \
+                    <td>\
+                </tr>  \
+                 <tr>   \
+                    <td>  \
+                        Flag: \
+                    </td>   \
+                     <td>   \
+                        Optional: \
+                    </td>      \
+                </tr>          \
+                <tr>           \
+                    <td>        \
+                        <input type='text' name='parameter' size='25'/> \
+                    </td>             \
+                    <td>  \
+                        <input type='checkbox' name='parameter' size='25'/>\
+                    </td> \
+                </tr>  \
+            </table> \
+        </div>");
+
+    $( "#addparam" )
+        .button()
+        .click(function() {
+            $('#parameters').append(paramDiv);
+        })
+        .next()
+            .button( {
+                text: false,
+                icons: {
+                    primary: "ui-icon-triangle-1-s"
+                }
+            })
+            .click(function() {
+                alert( "Could display a menu to select an action" );
+            })
+            .parent()
+                .buttonset();
 });
