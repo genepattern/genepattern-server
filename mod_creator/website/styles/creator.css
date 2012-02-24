@@ -22,6 +22,7 @@ table
 
 td {
     padding: 3px;
+    margin: 5px;
 }
 
 
@@ -69,10 +70,10 @@ div.ui-layout-north
     overflow: hidden;
 }
 
-.parameters
+.parameter
 {
     border-style:dotted;
     border-width:thin;
     border-color:#333366;
-    margin: 4px;
+    margin: 5px;
 }

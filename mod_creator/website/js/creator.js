@@ -55,4 +55,9 @@ jQuery(document).ready(function() {
         ,	south__paneSelector:	".west-south"
         ,	south__size:			200
     });
+
+    $(function() {
+		$( "#parameters" ).sortable();
+		$( "#parameters" ).disableSelection();
+	});
 });
