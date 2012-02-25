@@ -61,8 +61,9 @@ jQuery(document).ready(function() {
 		$( "#parameters" ).disableSelection();
 	});
 
-    
-    var paramDiv = jQuery("<div class='parameter'>  \
+
+    function addparameter(element) {
+        var paramDiv = jQuery("<div class='parameter'>  \
         <table>    \
                 <tr>    \
                     <td>   \
@@ -115,11 +116,16 @@ jQuery(document).ready(function() {
                 </tr>  \
             </table> \
         </div>");
+        element.append(paramDiv);
+    }
+
+
+
 
     $( "#addparam" )
         .button()
         .click(function() {
-            $('#parameters').append(paramDiv);
+           addparameter($('#parameters'));
         })
         .next()
             .button( {
@@ -129,8 +135,11 @@ jQuery(document).ready(function() {
                 }
             })
             .click(function() {
-                alert( "Could display a menu to select an action" );
+                alert( "not implemented" );
             })
             .parent()
                 .buttonset();
+
+    $('#parameters').append(paramDiv);
+    $('#parameters').append('<div> text <div>');    
 });
