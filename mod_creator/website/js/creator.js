@@ -1,5 +1,63 @@
 var mainLayout, westlayout;
- 
+
+function addparameter(element)
+{
+    var paramDiv = jQuery("<div class='parameter'>  \
+    <table>    \
+           <tr>    \
+               <td>   \
+                  Name: \
+               </td>   \
+               <td>   \
+                   Description: \
+               </td>    \
+               <td>        \
+                   Default Value: \
+               </td>  \
+               <td>   \
+                   Type: \
+               </td> \
+          </tr>   \
+           <tr>    \
+               <td>  \
+                   <input type='text'' name='parameter' size='25'/> \
+               </td>   \
+               <td>    \
+                   <textarea cols='30' rows='2'></textarea> \
+               </td> \
+               <td> \
+                   <input type='text' name='parameter' size='25'/> \
+               </td>\
+               <td> \
+                   <select>\
+                       <option value='text'>Text</option> \
+                       <option value='Numeric'>Numeric</option>  \
+                       <option value='Input File'>Input File</option>\
+                       <option value='Password'>Password</option> \
+                   </select>  \
+               <td>\
+           </tr>  \
+            <tr>   \
+               <td>  \
+                   Flag: \
+               </td>   \
+                <td>   \
+                   Optional: \
+               </td>      \
+           </tr>          \
+           <tr>           \
+               <td>        \
+                   <input type='text' name='parameter' size='25'/> \
+               </td>             \
+               <td>  \
+                   <input type='checkbox' name='parameter' size='25'/>\
+               </td> \
+           </tr>  \
+       </table> \
+    </div>");
+    element.append(paramDiv);
+}
+
 jQuery(document).ready(function() {
     //Used for editing default Module name - jQuery In Place Editor 
 
@@ -62,66 +120,6 @@ jQuery(document).ready(function() {
 	});
 
 
-    function addparameter(element) {
-        var paramDiv = jQuery("<div class='parameter'>  \
-        <table>    \
-                <tr>    \
-                    <td>   \
-                       Name: \
-                    </td>   \
-                    <td>   \
-                        Description: \
-                    </td>    \
-                    <td>        \
-                        Default Value: \
-                    </td>  \
-                    <td>   \
-                        Type: \
-                    </td> \
-               </tr>   \
-                <tr>    \
-                    <td>  \
-                        <input type='text'' name='parameter' size='25'/> \
-                    </td>   \
-                    <td>    \
-                        <textarea cols='30' rows='2'></textarea> \
-                    </td> \
-                    <td> \
-                        <input type='text' name='parameter' size='25'/> \
-                    </td>\
-                    <td> \
-                        <select>\
-                            <option value='text'>Text</option> \
-                            <option value='Numeric'>Numeric</option>  \
-                            <option value='Input File'>Input File</option>\
-                            <option value='Password'>Password</option> \
-                        </select>  \
-                    <td>\
-                </tr>  \
-                 <tr>   \
-                    <td>  \
-                        Flag: \
-                    </td>   \
-                     <td>   \
-                        Optional: \
-                    </td>      \
-                </tr>          \
-                <tr>           \
-                    <td>        \
-                        <input type='text' name='parameter' size='25'/> \
-                    </td>             \
-                    <td>  \
-                        <input type='checkbox' name='parameter' size='25'/>\
-                    </td> \
-                </tr>  \
-            </table> \
-        </div>");
-        element.append(paramDiv);
-    }
-
-
-
-
     $( "#addparam" )
         .button()
         .click(function() {
@@ -139,7 +137,5 @@ jQuery(document).ready(function() {
             })
             .parent()
                 .buttonset();
-
-    $('#parameters').append(paramDiv);
-    $('#parameters').append('<div> text <div>');    
+    $( "#parameters" ).selectable();    
 });
