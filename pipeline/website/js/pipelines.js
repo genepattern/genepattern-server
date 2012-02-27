@@ -317,7 +317,9 @@ var editor = {
         this.workspace["pipelineAuthor"] = save["Author"];
         this.workspace["pipelinePrivacy"] = save["Privacy"];
         this.workspace["pipelineVersionComment"] = save["Version Comment"];
-        this.workspace["pipelineDocumentation"] = save["Documentation"];
+        if (save["Documentation"] !== "") {
+            this.workspace["pipelineDocumentation"] = save["Documentation"];
+        }
         editor._setPipelineName();
     },
 
