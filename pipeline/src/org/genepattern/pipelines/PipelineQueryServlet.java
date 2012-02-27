@@ -445,7 +445,7 @@ public class PipelineQueryServlet extends HttpServlet {
         
         // Create the new pipeline directory in taskLib and move files
         try {
-            if (!pipelineObject.getLsid().isEmpty()) {
+            if (pipelineObject.getLsid().length() > 0) {
                 TaskInfo oldInfo = TaskInfoCache.instance().getTask(pipelineObject.getLsid());
                 File newDir = this.copySupportFiles(oldInfo.getName(), pipelineObject.getName(), oldInfo.getLsid(), newLsid, username);
                 this.copyNewFiles(pipelineObject.getFiles(), newDir);
