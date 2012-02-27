@@ -78,14 +78,19 @@ div.ui-layout-north
     margin: 5px;
 }
 
-.pcontrols
+.addcontrols
 {
     margin: 1px;
+}
+
+.pcontrols {
     font-size: 76%;
 }
+
 
 #feedback { font-size: 1.4em; }
 #parameters .ui-selecting { border-color: #333366; }
 #parameters .ui-selected { border-color: red; border-style:solid;}
 #parameters { list-style-type: none; margin: 0; padding: 0; width: 99%; }
 #parameters div.parameter { margin: 3px; padding: 0.4em; font-size: 0.9375em; height: 120px; width: 99%;}
+

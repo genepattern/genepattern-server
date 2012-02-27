@@ -5,7 +5,7 @@ function addparameter(element)
     var paramDiv = jQuery("<div class='parameter'>  \
     <table>    \
            <tr>    \
-               <td>   \
+               <td colspan='2'>   \
                   Name: \
                </td>   \
                <td>   \
@@ -14,12 +14,12 @@ function addparameter(element)
                <td>        \
                    Default Value: \
                </td>  \
-               <td>   \
-                   Type: \
-               </td> \
-          </tr>   \
-           <tr>    \
                <td>  \
+                    Flag \
+               </td       \
+           </tr>   \
+           <tr>    \
+               <td colspan='2'>  \
                    <input type='text'' name='parameter' size='25'/> \
                </td>   \
                <td>    \
@@ -28,32 +28,32 @@ function addparameter(element)
                <td> \
                    <input type='text' name='parameter' size='25'/> \
                </td>\
-               <td> \
+                <td>        \
+                   <input type='text' name='parameter' size='10'/> \
+               </td>  \
+            </tr>  \
+            <tr>               \
+                <td>  \
+                    Required: \
+                </td> \
+                <td>   \
+                   Type: \
+               </td> \
+            </tr>  \
+            <tr>               \
+                <td>  \
+                    <input type='checkbox' name='parameter' size='25'/>\
+                </td> \
+                <td> \
                    <select>\
                        <option value='text'>Text</option> \
                        <option value='Numeric'>Numeric</option>  \
                        <option value='Input File'>Input File</option>\
                        <option value='Password'>Password</option> \
                    </select>  \
-               <td>\
-           </tr>  \
-            <tr>   \
-               <td>  \
-                   Flag: \
-               </td>   \
-                <td>   \
-                   Optional: \
-               </td>      \
-           </tr>          \
-           <tr>           \
-               <td>        \
-                   <input type='text' name='parameter' size='25'/> \
-               </td>             \
-               <td>  \
-                   <input type='checkbox' name='parameter' size='25'/>\
-               </td> \
-           </tr>  \
-       </table> \
+               <td> \
+            </tr>  \
+        </table> \
     </div>");
     element.append(paramDiv);
 }
@@ -137,5 +137,12 @@ jQuery(document).ready(function() {
             })
             .parent()
                 .buttonset();
-    $( "#parameters" ).selectable();    
+    
+    $( "#deleteparam" ).button().click(function() {
+            $('.ui-selected').each(function() {
+                $(this).remove();
+            });
+        });
+
+    $( "#parameters" ).selectable();
 });
