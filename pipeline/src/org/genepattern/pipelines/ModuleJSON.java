@@ -18,6 +18,7 @@ public class ModuleJSON extends JSONObject {
     public static final String LSID = "lsid";
     public static final String NAME = "name";
     public static final String VERSION = "version";
+    public static final String WRITE = "write";
     public static final String TYPE = "type";
     public static final String TYPE_MODULE = "module";
     public static final String TYPE_VISUALIZER = "visualizer";
@@ -35,6 +36,7 @@ public class ModuleJSON extends JSONObject {
             this.setLsid(info.getLsid());
             this.setName(info.getName());
             this.extractVersion(info.getLsid());
+            this.determineWrite(info.getAccessId());
             this.determineType(info);
             this.constructInputs(info.getParameterInfoArray());
             this.constructOutputs(info.getTaskInfoAttributes());
@@ -66,6 +68,16 @@ public class ModuleJSON extends JSONObject {
         catch (JSONException e) {
             log.error("Error parsing JSON and initializing ModuleJSON from TaskInfo: " + object);
         }
+    }
+    
+    public void determineWrite(int accessid) throws JSONException {
+        if (accessid > 1) {
+            this.put(WRITE, true);
+        }
+        else {
+            this.put(WRITE, false);
+        }
+        
     }
     
     public void constructInputs(Vector<ParameterInfo> params, boolean[] prompts) throws JSONException {

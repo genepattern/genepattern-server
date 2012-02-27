@@ -678,7 +678,13 @@ var library = {
                 if (module.isPipeline()) {
                     var li = document.createElement("li");
                     li.setAttribute("name", module.lsid);
-                    li.innerHTML = module.name;
+                    if (module.write) {
+                        li.innerHTML = "<img src='images/pipe.jpeg' /> ";
+                    }
+                    else {
+                        li.innerHTML = "<img src='images/readonly.jpeg' /> ";
+                    }
+                    li.innerHTML += module.name;
                     pipelineList.appendChild(li);
                 }
             }
@@ -1135,6 +1141,7 @@ function Module(moduleJSON) {
 	this.name = moduleJSON.name;
 	this.lsid = moduleJSON.lsid;
 	this.version = moduleJSON.version;
+    this.write = moduleJSON.write;
 	this.outputs = moduleJSON.outputs;
 	this.outputEnds = [];
 	this.inputEnds = [];
