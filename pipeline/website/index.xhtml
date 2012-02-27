@@ -22,10 +22,20 @@
         <div id="titleBar">
             <span id="titleSpan"></span> <img id="pipelinePencil" src="images/pencil.gif" class="pencil" alt="Edit" />
             <div id="saveLoadDiv">
-                <input id="loadInput" type="text" />
-                <button id="loadButton" class="saveLoadButton">Load</button>
+                <!--<input id="loadInput" type="text" />-->
+                <button id="loadButton" class="saveLoadButton">Load Module</button>
                 <button id="saveButton" class="saveLoadButton">Save</button>
                 <button id="revertButton" class="saveLoadButton">Revert</button>
+            </div>
+        </div>
+        <div id="loadPipelineDialog">
+            <div id="loadPipelineHeader" >Choose Pipeline to Load</div>
+            <div id="pipelineLoadList">
+                <ol id="pipelineSelectList" />
+            </div>
+            <div id="loadPipelineButtons">
+                <button id="loadPipeline" class="saveLoadButton">Load</button>
+                <button id="cancelPipeline" class="saveLoadButton">Cancel</button>
             </div>
         </div>
 		<div id="workspace"></div>
@@ -45,10 +55,14 @@
 				properties.init();
 			});
 
+            $.data($("#loadButton")[0], "loadModuleTriggers", $("#loadButton").overlay({
+                mask: "#FFFFFF",
+                target: "#loadPipelineDialog"
+            }));
+
             $("#loadButton").button();
             $("#loadButton").click(function() {
-                var lsid = $("#loadInput").val();
-                editor.load(lsid);
+                library.displayLoadDialog();
                 $("#revertButton").button("enable");
             });
 

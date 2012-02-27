@@ -490,602 +490,639 @@ var editor = {
  * Class representing the library display at the top of the page
  */
 var library = {
-		div: "library",			// The id of the div used by the library
-		moduleNames: [],		// A list of all module names
-        moduleVersionMap: {},    // A map of module names to an array of all module versions
-		modules: {},			// The JSON structure of all modules in the library
-		recent: [],
+    div: "library",			// The id of the div used by the library
+    moduleNames: [],		// A list of all module names
+    moduleVersionMap: {},   // A map of module names to an array of all module versions
+    modules: {},			// The JSON structure of all modules in the library
+    recent: [],             // List of recently used modules
+    _loadInit: false,       // Whether the load pipeline dialog has been initialized or not
 
-		init: function(moduleJSON) {
-			this._readModules(moduleJSON);
-            this._readModuleVersions();
-			this._readModuleNames();
+    init: function(moduleJSON) {
+        this._readModules(moduleJSON);
+        this._readModuleVersions();
+        this._readModuleNames();
 
-			this._addModuleComboBox();
-		},
+        this._addModuleComboBox();
+    },
 
-		_addRecentModule: function(lsid, value) {
-			for (var i = 0; i < this.recent.length; i++) {
-				if (this.recent[i] == lsid) { return }
-			}
-
-			this.recent.push(lsid);
-			var removed = null;
-			if (this.recent.length > 10) { removed = this.recent.shift(); }
-			if (removed !== null) { $("button[name|='" + removed + "']").remove(); }
-			this._addModuleButton(value, lsid);
-		},
-
-		_addModuleComboBox: function() {
-			$("#modulesDropdown").autocomplete({ source: this.moduleNames });
-			$("#addModule").button();
-
-			$("#addModule").click(function() {
-				var value = $("#modulesDropdown").val();
-                var name = library._extractNameFromDropdown(value);
-                var version = library._extractVersionFromDropdown(value);
-                var lsid = library._lookupLsid(name, version);
-
-                // If unable to find the lsid give up, an error has already been reported
-                if (lsid === null) return;
-
-				var module = editor.addModule(lsid);
-				if (module !== null && module !== undefined) { library._addRecentModule(lsid, value); }
-			});
-		},
-
-		_addModuleButton: function(name, lsid) {
-			var modButton = document.createElement("button");
-			modButton.innerHTML = name;
-			modButton.setAttribute("class", "libraryModuleButton");
-			modButton.setAttribute("name", lsid);
-            var theSpan = $("#shortcutModules")[0];
-            theSpan.insertBefore(modButton, theSpan.firstChild);
-			$(modButton).click(function() {
-				editor.addModule(this.name);
-			});
-			$("button[name|='" + lsid + "']").button();
-		},
-
-        _lookupLsid: function (name, version) {
-            for (var i in library.modules) {
-                var module = library.modules[i];
-
-                // Check for naming match
-                if (name == module.name) {
-                    // If version is null, assume this is the match
-                    if (version === null) {
-                        return module.lsid;
-                    }
-
-                    // If versions match, we found it!
-                    if (version == module.version) {
-                        return module.lsid;
-                    }
-                }
-            }
-
-            // If we got through the loop without finding it, report the error
-            console.log("ERROR: Could not find module name: " + name + " and version: " + version + ".");
-            return null;
-        },
-
-        _extractNameFromDropdown: function(dropdownText) {
-            var spaceIndex = dropdownText.lastIndexOf(" v");
-
-            // No space character + v found in dropdown text
-            if (spaceIndex == -1) {
-                return dropdownText;
-            }
-
-            return dropdownText.substr(0, spaceIndex);
-        },
-
-        _extractVersionFromDropdown: function(dropdownText) {
-            var spaceIndex = dropdownText.lastIndexOf(" v");
-
-            // No space character + v found in dropdown text
-            if (spaceIndex == -1) {
-                return null;
-            }
-
-            var rawVersion = dropdownText.substr(spaceIndex + 2, dropdownText.length);
-
-            if (rawVersion.length < 1)  return null;
-            else return rawVersion;
-        },
-
-        _readModuleVersions: function() {
-            this.moduleVersionMap = {};
-            for (var i in library.modules) {
-                var base = editor.extractBaseLsid(library.modules[i].lsid);
-
-                if (this.moduleVersionMap[base] === undefined) {
-                    this.moduleVersionMap[base] = new Array();
-                }
-
-                this.moduleVersionMap[base].push(library.modules[i]);
-            }
-        },
-
-		_readModuleNames: function() {
-			this.moduleNames = new Array();
-			for (var i in library.moduleVersionMap) {
-                var moduleArray = library.moduleVersionMap[i];
-                if (moduleArray.length == 1) {
-                    this.moduleNames.push(moduleArray[0].name);
-                }
-                else if (moduleArray.length > 1) {
-                    for (var j = 0; j < moduleArray.length; j++) {
-                        this.moduleNames.push(moduleArray[j].name + " v" + moduleArray[j].version);
-                    }
-                }
-                else {
-                    console.log("ERROR: Unacceptable length of version array in library._readModuleNames()");
-                }
-
-			}
-		},
-
-		_readModules: function(moduleJSON) {
-			this.modules = {};
-			for (var i in moduleJSON) {
-				var module = moduleJSON[i];
-				if (module.type == "module") {
-					this.modules[module.lsid] = new Module(module);
-				}
-				else if (module.type == "visualizer") {
-					this.modules[module.lsid] = new Visualizer(module);
-				}
-				else if (module.type == "pipeline") {
-					this.modules[module.lsid] = new Pipeline(module);
-				}
-				else {
-					console.log("Error detecting module type: " + module.name);
-				}
-			}
-		},
-
-		extractFileInputs: function(inputsJSON) {
-			var files = new Array();
-			for (var i = 0; i < inputsJSON.length; i++) {
-				if (inputsJSON[i].type == "java.io.File") {
-					files[files.length] = new InputParam(inputsJSON[i]);
-				}
-			}
-			return files;
-		},
-
-        extractInputs: function(inputsJSON) {
-            var inputs = new Array();
-            for (var i = 0; i < inputsJSON.length; i++) {
-                inputs[inputs.length] = new InputParam(inputsJSON[i]);
-            }
-            return inputs;
+    _addRecentModule: function(lsid, value) {
+        for (var i = 0; i < this.recent.length; i++) {
+            if (this.recent[i] == lsid) { return }
         }
+
+        this.recent.push(lsid);
+        var removed = null;
+        if (this.recent.length > 10) { removed = this.recent.shift(); }
+        if (removed !== null) { $("button[name|='" + removed + "']").remove(); }
+        this._addModuleButton(value, lsid);
+    },
+
+    _addModuleComboBox: function() {
+        $("#modulesDropdown").autocomplete({ source: this.moduleNames });
+        $("#addModule").button();
+
+        $("#addModule").click(function() {
+            var value = $("#modulesDropdown").val();
+            var name = library._extractNameFromDropdown(value);
+            var version = library._extractVersionFromDropdown(value);
+            var lsid = library._lookupLsid(name, version);
+
+            // If unable to find the lsid give up, an error has already been reported
+            if (lsid === null) return;
+
+            var module = editor.addModule(lsid);
+            if (module !== null && module !== undefined) { library._addRecentModule(lsid, value); }
+        });
+    },
+
+    _addModuleButton: function(name, lsid) {
+        var modButton = document.createElement("button");
+        modButton.innerHTML = name;
+        modButton.setAttribute("class", "libraryModuleButton");
+        modButton.setAttribute("name", lsid);
+        var theSpan = $("#shortcutModules")[0];
+        theSpan.insertBefore(modButton, theSpan.firstChild);
+        $(modButton).click(function() {
+            editor.addModule(this.name);
+        });
+        $("button[name|='" + lsid + "']").button();
+    },
+
+    _lookupLsid: function (name, version) {
+        for (var i in library.modules) {
+            var module = library.modules[i];
+
+            // Check for naming match
+            if (name == module.name) {
+                // If version is null, assume this is the match
+                if (version === null) {
+                    return module.lsid;
+                }
+
+                // If versions match, we found it!
+                if (version == module.version) {
+                    return module.lsid;
+                }
+            }
+        }
+
+        // If we got through the loop without finding it, report the error
+        console.log("ERROR: Could not find module name: " + name + " and version: " + version + ".");
+        return null;
+    },
+
+    _extractNameFromDropdown: function(dropdownText) {
+        var spaceIndex = dropdownText.lastIndexOf(" v");
+
+        // No space character + v found in dropdown text
+        if (spaceIndex == -1) {
+            return dropdownText;
+        }
+
+        return dropdownText.substr(0, spaceIndex);
+    },
+
+    _extractVersionFromDropdown: function(dropdownText) {
+        var spaceIndex = dropdownText.lastIndexOf(" v");
+
+        // No space character + v found in dropdown text
+        if (spaceIndex == -1) {
+            return null;
+        }
+
+        var rawVersion = dropdownText.substr(spaceIndex + 2, dropdownText.length);
+
+        if (rawVersion.length < 1)  return null;
+        else return rawVersion;
+    },
+
+    _readModuleVersions: function() {
+        this.moduleVersionMap = {};
+        for (var i in library.modules) {
+            var base = editor.extractBaseLsid(library.modules[i].lsid);
+
+            if (this.moduleVersionMap[base] === undefined) {
+                this.moduleVersionMap[base] = new Array();
+            }
+
+            this.moduleVersionMap[base].push(library.modules[i]);
+        }
+    },
+
+    _readModuleNames: function() {
+        this.moduleNames = new Array();
+        for (var i in library.moduleVersionMap) {
+            var moduleArray = library.moduleVersionMap[i];
+            if (moduleArray.length == 1) {
+                this.moduleNames.push(moduleArray[0].name);
+            }
+            else if (moduleArray.length > 1) {
+                for (var j = 0; j < moduleArray.length; j++) {
+                    this.moduleNames.push(moduleArray[j].name + " v" + moduleArray[j].version);
+                }
+            }
+            else {
+                console.log("ERROR: Unacceptable length of version array in library._readModuleNames()");
+            }
+
+        }
+    },
+
+    _readModules: function(moduleJSON) {
+        this.modules = {};
+        for (var i in moduleJSON) {
+            var module = moduleJSON[i];
+            if (module.type == "module") {
+                this.modules[module.lsid] = new Module(module);
+            }
+            else if (module.type == "visualizer") {
+                this.modules[module.lsid] = new Visualizer(module);
+            }
+            else if (module.type == "pipeline") {
+                this.modules[module.lsid] = new Pipeline(module);
+            }
+            else {
+                console.log("Error detecting module type: " + module.name);
+            }
+        }
+    },
+
+    extractFileInputs: function(inputsJSON) {
+        var files = new Array();
+        for (var i = 0; i < inputsJSON.length; i++) {
+            if (inputsJSON[i].type == "java.io.File") {
+                files[files.length] = new InputParam(inputsJSON[i]);
+            }
+        }
+        return files;
+    },
+
+    extractInputs: function(inputsJSON) {
+        var inputs = new Array();
+        for (var i = 0; i < inputsJSON.length; i++) {
+            inputs[inputs.length] = new InputParam(inputsJSON[i]);
+        }
+        return inputs;
+    },
+
+    displayLoadDialog: function() {
+        if (!this._loadInit) {
+            // Get the Dialog List Div
+            var pipelineList = $("#pipelineSelectList")[0];
+
+            // Read Pipelines from List
+            for (var i in this.modules) {
+                var module = this.modules[i];
+
+                // Add Pipeline Div to List
+                if (module.isPipeline()) {
+                    var li = document.createElement("li");
+                    li.setAttribute("name", module.lsid);
+                    li.innerHTML = module.name;
+                    pipelineList.appendChild(li);
+                }
+            }
+
+            $(pipelineList).selectable();
+            $("#loadPipeline").button();
+            $("#loadPipeline").click(function() {
+                var lsid = $("#pipelineSelectList .ui-selected")[0].getAttribute("name");
+                editor.load(lsid);
+                $.data($("#loadButton")[0], "loadModuleTriggers").eq(0).overlay().close();
+            });
+            $("#cancelPipeline").button();
+            $("#cancelPipeline").click(function() {
+                $("#loadPipelineDialog").hide();
+                $.data($("#loadButton")[0], "loadModuleTriggers").eq(0).overlay().close();
+            });
+
+            // Set to initialized
+            this._loadInit = true;
+        }
+    }
 };
 
 /**
  * Class representing the properties pane
  */
 var properties = {
-        PROMPT_WHEN_RUN: "PROMPT_WHEN_RUN",
-        div: "properties",
-        titleDiv: "propertiesTitle",
-        subtitleDiv: "propertiesSubtitle",
-        versionDiv: "propertiesVersion",
-        inputDiv: "propertiesInput",
-        buttonDiv: "propertiesSubmit",
-        current: null,
+    PROMPT_WHEN_RUN: "PROMPT_WHEN_RUN",
+    div: "properties",
+    titleDiv: "propertiesTitle",
+    subtitleDiv: "propertiesSubtitle",
+    versionDiv: "propertiesVersion",
+    inputDiv: "propertiesInput",
+    buttonDiv: "propertiesSubmit",
+    current: null,
 
-		init: function() {
-			$("#propertiesOk").button();
-			$("#propertiesCancel").button();
+    init: function() {
+        $("#propertiesOk").button();
+        $("#propertiesCancel").button();
 
-			$("#propertiesOk").click(function () {
-                properties.saveToModel();
-				properties.hide();
-			});
+        $("#propertiesOk").click(function () {
+            properties.saveToModel();
+            properties.hide();
+        });
 
-			$("#propertiesCancel").click(function () {
-				properties.hide();
-			});
-		},
+        $("#propertiesCancel").click(function () {
+            properties.hide();
+        });
+    },
 
-        listToString: function(list) {
-            var toReturn = "";
-            for (var i = 0; i < list.length; i++) {
-                toReturn += list[i];
-                if (i !== (list.length - 1)) {
-                    toReturn += ", ";
-                }
+    listToString: function(list) {
+        var toReturn = "";
+        for (var i = 0; i < list.length; i++) {
+            toReturn += list[i];
+            if (i !== (list.length - 1)) {
+                toReturn += ", ";
+            }
+        }
+
+        return toReturn;
+    },
+
+    saveToModel: function() {
+        if (this.current instanceof Module) {
+            var save = this._bundleSave();
+            this.current.saveProps(save);
+        }
+        else if (this.current instanceof Pipe) {
+            var save = this._bundleSave();
+            this.current.saveProps(save);
+        }
+        else if (this.current instanceof String && this.current == "Pipeline") {
+            var save = this._bundleSave();
+            editor.saveProps(save);
+        }
+        else {
+            console.log("ERROR: Cannot determine what is being edited to save to the model");
+        }
+    },
+
+    _findCheckBox: function(checks, name) {
+        for (var i = 0; i < checks.length; i++) {
+            if (checks[i].getAttribute("name") == name) {
+                return checks[i].checked;
+            }
+        }
+        return false;
+    },
+
+    _bundleSave: function() {
+        var bundle = {};
+        var inputs = $(".propertyValue");
+        var checks = $(".propertyCheckBox");
+        for (var i = 0; i < inputs.length; i++) {
+            var name = inputs[i].getAttribute("name");
+            var checked = this._findCheckBox(checks, name);
+
+            // Removed the trailing asterisk if a required param
+            if (name.substr(-1) === "*") {
+                name = name.substr(0, name.length - 1);
             }
 
-            return toReturn;
-        },
-
-        saveToModel: function() {
-            if (this.current instanceof Module) {
-                var save = this._bundleSave();
-                this.current.saveProps(save);
-            }
-            else if (this.current instanceof Pipe) {
-                var save = this._bundleSave();
-                this.current.saveProps(save);
-            }
-            else if (this.current instanceof String && this.current == "Pipeline") {
-                var save = this._bundleSave();
-                editor.saveProps(save);
+            if (checked) {
+                bundle[name] = properties.PROMPT_WHEN_RUN;
             }
             else {
-                console.log("ERROR: Cannot determine what is being edited to save to the model");
+                bundle[name] = inputs[i].value;
             }
-        },
-
-        _findCheckBox: function(checks, name) {
-            for (var i = 0; i < checks.length; i++) {
-                if (checks[i].getAttribute("name") == name) {
-                    return checks[i].checked;
-                }
-            }
-            return false;
-        },
-
-        _bundleSave: function() {
-            var bundle = {};
-            var inputs = $(".propertyValue");
-            var checks = $(".propertyCheckBox");
-            for (var i = 0; i < inputs.length; i++) {
-                var name = inputs[i].getAttribute("name");
-                var checked = this._findCheckBox(checks, name);
-
-                // Removed the trailing asterisk if a required param
-                if (name.substr(-1) === "*") {
-                    name = name.substr(0, name.length - 1);
-                }
-
-                if (checked) {
-                    bundle[name] = properties.PROMPT_WHEN_RUN;
-                }
-                else {
-                    bundle[name] = inputs[i].value;
-                }
-            }
-            return bundle;
-        },
-
-		hide: function() {
-			$("#properties").hide("slide", { direction: "right" }, 500);
-		},
-
-		show: function() {
-			$("#properties").show("slide", { direction: "right" }, 500);
-		},
-
-        _encodeToHTML: function(text) {
-            return text.replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
-        },
-
-        _clean: function() {
-            $("#" + this.titleDiv)[0].innerHTML = "";
-            $("#" + this.subtitleDiv)[0].innerHTML = "";
-            $("#" + this.versionDiv)[0].innerHTML = "";
-            $("#" + this.inputDiv)[0].innerHTML = "";
-        },
-
-        _setTitle: function(title) {
-            $("#" + this.titleDiv)[0].innerHTML = this._encodeToHTML(title);
-        },
-
-        _setSubtitle: function(subtitle) {
-            $("#" + this.subtitleDiv)[0].innerHTML = this._encodeToHTML(subtitle);
-        },
-
-        _setVersion: function(version) {
-            var versionDiv = $("#" + this.versionDiv)[0];
-            versionDiv.innerHTML = "v" + this._encodeToHTML(version);
-        },
-
-        _setVersionDropdown: function(module) {
-            var baseLsid = editor.extractBaseLsid(module.lsid)
-            var moduleArray = library.moduleVersionMap[baseLsid];
-
-            var select = document.createElement("select");
-            for (var i = 0; i < moduleArray.length; i++) {
-                var option = document.createElement("option");
-                option.setAttribute("value", module.id + "|" + moduleArray[i].lsid);
-                if (moduleArray[i].version == module.version) {
-                    option.setAttribute("selected", "true");
-                }
-                option.innerHTML = moduleArray[i].version;
-                select.appendChild(option);
-            }
-
-            var versionDiv = $("#" + this.versionDiv)[0];
-            versionDiv.appendChild(select);
-            $(select).change(function(event) {
-                var value = event.target.value;
-                var parts = value.split("|");
-                var doIt = confirm("This will swap out the currently edited module with another version.  Continue?");
-                if (doIt) {
-                    var newModule = editor.replaceModule(parts[0], parts[1]);
-                    properties.displayModule(newModule);
-                    properties.show();
-                }
-                else {
-                    var lsid = editor.workspace[parts[0]].lsid;
-                    $(this).val(lsid);
-                }
-            });
-        },
-
-        _displayInputKey: function() {
-            var key = document.createElement("div");
-            key.setAttribute("id", "propertiesKey")
-            var hr1 = document.createElement("hr");
-            $("#" + this.inputDiv).append(hr1);
-            key.innerHTML += "<em>Check for Prompt When Run&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;* Required</em>";
-            $("#" + this.inputDiv).append(key);
-            var hr2 = document.createElement("hr");
-            $("#" + this.inputDiv).append(hr2);
-        },
-
-        _addPromptWhenRun: function(parentDiv, name, value) {
-            var checkBox = document.createElement("input");
-            checkBox.setAttribute("type", "checkbox");
-            checkBox.setAttribute("name", name);
-            checkBox.setAttribute("class", "propertyCheckBox");
-            if (value == properties.PROMPT_WHEN_RUN) {
-                checkBox.setAttribute("checked", "true");
-            }
-            parentDiv.appendChild(checkBox);
-            parentDiv.innerHTML += " ";
-        },
-
-        _addFileUpload: function(labelText, value, description, pwr) {
-            var label = document.createElement("div");
-            var uploadForm = document.createElement("form");
-            uploadForm.setAttribute("name", labelText + "_form");
-            uploadForm.setAttribute("action", "/gp/PipelineDesigner/upload");
-            uploadForm.setAttribute("method", "POST");
-            uploadForm.setAttribute("enctype", "multipart/form-data");
-            label.appendChild(uploadForm);
-
-            if (pwr) {
-                this._addPromptWhenRun(uploadForm, labelText, value);
-            }
-
-            uploadForm.innerHTML += this._encodeToHTML(labelText) + " ";
-            var fileUpload = document.createElement("input");
-            fileUpload.setAttribute("type", "file");
-            fileUpload.setAttribute("name", labelText);
-            fileUpload.setAttribute("class", "propertyValue");
-            uploadForm.appendChild(fileUpload);
-
-            // Attach the uploading and done images
-            var uploadingImg = document.createElement("img");
-            uploadingImg.setAttribute("src", "images/uploading.gif");
-            uploadingImg.setAttribute("name", labelText + "_uploading");
-            uploadingImg.setAttribute("style", "display: none;");
-            uploadForm.appendChild(uploadingImg);
-            var doneImg = document.createElement("img");
-            doneImg.setAttribute("src", "images/complete.gif");
-            doneImg.setAttribute("name", labelText + "_done");
-            doneImg.setAttribute("style", "display: none;");
-            uploadForm.appendChild(doneImg);
-
-            // If the value has been previously set, attach the value div
-            var valueDiv = document.createElement("div");
-            valueDiv.setAttribute("class", "fileUploadValue");
-            if (value !== null && value !== "" && value !== properties.PROMPT_WHEN_RUN) {
-                valueDiv.innerHTML = "<strong>Current Value:</strong> " + value;
-            }
-            label.appendChild(valueDiv);
-
-            $("#" + this.inputDiv).append(label);
-
-            if (description !== null && description !== false) {
-                var desc = document.createElement("div");
-                desc.setAttribute("class", "inputDescription");
-                desc.innerHTML = this._encodeToHTML(description);
-                $("#" + this.inputDiv).append(desc);
-            }
-
-            var hr = document.createElement("hr");
-            $("#" + this.inputDiv).append(hr);
-
-            // When the upload form is submitted, send to the servlet
-            $("[name|='" + labelText + "_form']").iframePostForm({
-                json : false,
-                post : function () {
-                    $("[name|='" + labelText + "_uploading']").show();
-                    $("[name|='" + labelText + "_done']").hide();
-                },
-                complete : function (response) {
-                    // Work around a bug in the JSON handling of iframe-post-form
-                    response = $.parseJSON($(response)[0].innerHTML);
-
-                    $("[name|='" + labelText + "_uploading']").hide();
-                    $("[name|='" + labelText + "_done']").show();
-
-                    if (response.error !== undefined) {
-                        alert(response.error);
-                    }
-                    else {
-                        editor.workspace["files"].push(response.location);
-                        valueDiv.innerHTML = "<strong>Current Value:</strong> " + $("[type=file][name='" + labelText + "']").val();
-                    }
-                }
-            });
-
-            // When a file is selected for upload, begin the upload
-            $("[name='" + labelText + "'][type=file]").change(function() {
-                $("[name='" + labelText + "_form']").submit();
-            });
-
-            return fileUpload;
-        },
-
-        _addDropDown: function(labelText, values, selected, description, pwr) {
-            var label = document.createElement("div");
-
-            if (pwr) {
-                this._addPromptWhenRun(label, labelText, selected);
-            }
-
-            label.innerHTML += this._encodeToHTML(labelText) + " ";
-            var select = document.createElement("select");
-            select.setAttribute("name", labelText);
-            select.setAttribute("class", "propertyValue");
-            for (var i = 0; i < values.length; i++) {
-                var parts = values[i].split("=");
-                if (parts.length < 2) parts[1] = parts[0];
-                var option = document.createElement("option");
-                if (selected == parts[0]) {
-                    option.setAttribute("selected", "true");
-                }
-                option.innerHTML = this._encodeToHTML(parts[1]);
-                option.value = parts[0];
-                select.appendChild(option);
-            }
-            label.appendChild(select);
-            $("#" + this.inputDiv).append(label);
-
-            if (description !== null && description !== false) {
-                var desc = document.createElement("div");
-                desc.setAttribute("class", "inputDescription");
-                desc.innerHTML = this._encodeToHTML(description);
-                $("#" + this.inputDiv).append(desc);
-            }
-
-            var hr = document.createElement("hr");
-            $("#" + this.inputDiv).append(hr);
-
-            return select;
-        },
-
-        _addTextBox: function(labelText, value, description, pwr) {
-            var label = document.createElement("div");
-
-            if (pwr) {
-                this._addPromptWhenRun(label, labelText, value);
-            }
-
-            label.innerHTML += this._encodeToHTML(labelText) + " ";
-            var inputBox = document.createElement("input");
-            inputBox.setAttribute("type", "text");
-            inputBox.setAttribute("name", labelText);
-            inputBox.value = value != properties.PROMPT_WHEN_RUN ? value : "";
-            inputBox.setAttribute("class", "propertyValue");
-            label.appendChild(inputBox);
-            $("#" + this.inputDiv).append(label);
-
-            if (description !== null && description !== false) {
-                var desc = document.createElement("div");
-                desc.setAttribute("class", "inputDescription");
-                desc.innerHTML = this._encodeToHTML(description);
-                $("#" + this.inputDiv).append(desc);
-            }
-
-            var hr = document.createElement("hr");
-            $("#" + this.inputDiv).append(hr);
-
-            return inputBox;
-        },
-
-        _addTargetDiv: function(id, content) {
-            var div = document.createElement("div");
-            div.setAttribute("id", id);
-            div.innerHTML = content;
-            $("#" + this.inputDiv).append(div);
-        },
-
-        _addFileInput: function(input) {
-            var required = input.required ? "*" : "";
-            var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
-            return this._addFileUpload(input.name + required, displayValue, input.description, true);
-        },
-
-        _addTextBoxInput: function(input) {
-            var required = input.required ? "*" : "";
-            var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
-            return this._addTextBox(input.name + required, displayValue, input.description, true);
-        },
-
-        _addDropdownInput: function(input) {
-            var required = input.required ? "*" : "";
-            var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
-            return this._addDropDown(input.name + required, input.choices, displayValue, input.description, true);
-        },
-
-        displayModule: function(module) {
-            this._clean();
-            this.current = module;
-            this._setTitle(module.name);
-            this._setSubtitle(module.lsid);
-            this._setVersionDropdown(module);
-            this._displayInputKey();
-            var inputs = module.inputs;
-            for (var i in inputs) {
-                if (inputs[i].type == "java.io.File") {
-                    this._addFileInput(inputs[i]);
-                }
-                else if (inputs[i].choices.length > 0) {
-                    this._addDropdownInput(inputs[i]);
-                }
-                else {
-                    this._addTextBoxInput(inputs[i]);
-                }
-
-            }
-        },
-
-        displayPipe: function(pipe) {
-            this._clean();
-            this.current = pipe;
-            this._setTitle(pipe.outputModule.name + " to " + pipe.inputModule.name);
-
-            var outSelected = pipe.outputPort.pointer;
-            var inSelected = pipe.inputPort.pointer;
-
-            this._addDropDown("Output", ["1=1st Output", "2=2nd Output", "3=3rd Output", "4=4th Output"].concat(pipe.outputModule.outputs), outSelected, properties.listToString(pipe.outputModule.outputs), false);
-
-            var inputsToList = new Array();
-            var selectedInput = pipe.inputModule.fileInputs[0];
-            for (var i = 0; i < pipe.inputModule.fileInputs.length; i++) {
-                inputsToList[inputsToList.length] = pipe.inputModule.fileInputs[i].name;
-                if (inSelected == pipe.inputModule.fileInputs[i].name) {
-                    selectedInput = pipe.inputModule.fileInputs[i];
-                }
-            }
-            var input = this._addDropDown("Input", inputsToList, inSelected, selectedInput.description, false);
-
-            // Display the correct description upon dropdown selection
-            $(input).change(function() {
-                var selectedInput = $(input).val();
-                for (var i = 0; i < pipe.inputModule.fileInputs.length; i++) {
-                    if (selectedInput == pipe.inputModule.fileInputs[i].name) {
-                        selectedInput = pipe.inputModule.fileInputs[i];
-                        break;
-                    }
-                }
-                $(".inputDescription").get(1).innerHTML = selectedInput.description;
-            });
-        },
-
-        displayPipeline: function() {
-            this._clean();
-            this.current = new String("Pipeline");
-            this._setTitle("Editing Pipeline");
-            this._setVersion(editor.workspace["pipelineVersion"]);
-            this._setSubtitle(editor.workspace["pipelineLsid"].length > 0 ? editor.workspace["pipelineLsid"] : "");
-            this._addTextBox("Pipeline Name", editor.workspace["pipelineName"], false, false);
-            this._addTextBox("Description", editor.workspace["pipelineDescription"], false, false);
-            this._addTextBox("Author", editor.workspace["pipelineAuthor"], false, false);
-            this._addDropDown("Privacy", ["private", "public"], editor.workspace["pipelinePrivacy"], false, false);
-            this._addTextBox("Version Comment", editor.workspace["pipelineVersionComment"], false, false);
-            this._addFileUpload("Documentation", editor.workspace["pipelineDocumentation"], false, false);
         }
+        return bundle;
+    },
+
+    hide: function() {
+        $("#properties").hide("slide", { direction: "right" }, 500);
+    },
+
+    show: function() {
+        $("#properties").show("slide", { direction: "right" }, 500);
+    },
+
+    _encodeToHTML: function(text) {
+        return text.replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+    },
+
+    _clean: function() {
+        $("#" + this.titleDiv)[0].innerHTML = "";
+        $("#" + this.subtitleDiv)[0].innerHTML = "";
+        $("#" + this.versionDiv)[0].innerHTML = "";
+        $("#" + this.inputDiv)[0].innerHTML = "";
+    },
+
+    _setTitle: function(title) {
+        $("#" + this.titleDiv)[0].innerHTML = this._encodeToHTML(title);
+    },
+
+    _setSubtitle: function(subtitle) {
+        $("#" + this.subtitleDiv)[0].innerHTML = this._encodeToHTML(subtitle);
+    },
+
+    _setVersion: function(version) {
+        var versionDiv = $("#" + this.versionDiv)[0];
+        versionDiv.innerHTML = "v" + this._encodeToHTML(version);
+    },
+
+    _setVersionDropdown: function(module) {
+        var baseLsid = editor.extractBaseLsid(module.lsid)
+        var moduleArray = library.moduleVersionMap[baseLsid];
+
+        var select = document.createElement("select");
+        for (var i = 0; i < moduleArray.length; i++) {
+            var option = document.createElement("option");
+            option.setAttribute("value", module.id + "|" + moduleArray[i].lsid);
+            if (moduleArray[i].version == module.version) {
+                option.setAttribute("selected", "true");
+            }
+            option.innerHTML = moduleArray[i].version;
+            select.appendChild(option);
+        }
+
+        var versionDiv = $("#" + this.versionDiv)[0];
+        versionDiv.appendChild(select);
+        $(select).change(function(event) {
+            var value = event.target.value;
+            var parts = value.split("|");
+            var doIt = confirm("This will swap out the currently edited module with another version.  Continue?");
+            if (doIt) {
+                var newModule = editor.replaceModule(parts[0], parts[1]);
+                properties.displayModule(newModule);
+                properties.show();
+            }
+            else {
+                var lsid = editor.workspace[parts[0]].lsid;
+                $(this).val(lsid);
+            }
+        });
+    },
+
+    _displayInputKey: function() {
+        var key = document.createElement("div");
+        key.setAttribute("id", "propertiesKey")
+        var hr1 = document.createElement("hr");
+        $("#" + this.inputDiv).append(hr1);
+        key.innerHTML += "<em>Check for Prompt When Run&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;* Required</em>";
+        $("#" + this.inputDiv).append(key);
+        var hr2 = document.createElement("hr");
+        $("#" + this.inputDiv).append(hr2);
+    },
+
+    _addPromptWhenRun: function(parentDiv, name, value) {
+        var checkBox = document.createElement("input");
+        checkBox.setAttribute("type", "checkbox");
+        checkBox.setAttribute("name", name);
+        checkBox.setAttribute("class", "propertyCheckBox");
+        if (value == properties.PROMPT_WHEN_RUN) {
+            checkBox.setAttribute("checked", "true");
+        }
+        parentDiv.appendChild(checkBox);
+        parentDiv.innerHTML += " ";
+    },
+
+    _addFileUpload: function(labelText, value, description, pwr) {
+        var label = document.createElement("div");
+        var uploadForm = document.createElement("form");
+        uploadForm.setAttribute("name", labelText + "_form");
+        uploadForm.setAttribute("action", "/gp/PipelineDesigner/upload");
+        uploadForm.setAttribute("method", "POST");
+        uploadForm.setAttribute("enctype", "multipart/form-data");
+        label.appendChild(uploadForm);
+
+        if (pwr) {
+            this._addPromptWhenRun(uploadForm, labelText, value);
+        }
+
+        uploadForm.innerHTML += this._encodeToHTML(labelText) + " ";
+        var fileUpload = document.createElement("input");
+        fileUpload.setAttribute("type", "file");
+        fileUpload.setAttribute("name", labelText);
+        fileUpload.setAttribute("class", "propertyValue");
+        uploadForm.appendChild(fileUpload);
+
+        // Attach the uploading and done images
+        var uploadingImg = document.createElement("img");
+        uploadingImg.setAttribute("src", "images/uploading.gif");
+        uploadingImg.setAttribute("name", labelText + "_uploading");
+        uploadingImg.setAttribute("style", "display: none;");
+        uploadForm.appendChild(uploadingImg);
+        var doneImg = document.createElement("img");
+        doneImg.setAttribute("src", "images/complete.gif");
+        doneImg.setAttribute("name", labelText + "_done");
+        doneImg.setAttribute("style", "display: none;");
+        uploadForm.appendChild(doneImg);
+
+        // If the value has been previously set, attach the value div
+        var valueDiv = document.createElement("div");
+        valueDiv.setAttribute("class", "fileUploadValue");
+        if (value !== null && value !== "" && value !== properties.PROMPT_WHEN_RUN) {
+            valueDiv.innerHTML = "<strong>Current Value:</strong> " + value;
+        }
+        label.appendChild(valueDiv);
+
+        $("#" + this.inputDiv).append(label);
+
+        if (description !== null && description !== false) {
+            var desc = document.createElement("div");
+            desc.setAttribute("class", "inputDescription");
+            desc.innerHTML = this._encodeToHTML(description);
+            $("#" + this.inputDiv).append(desc);
+        }
+
+        var hr = document.createElement("hr");
+        $("#" + this.inputDiv).append(hr);
+
+        // When the upload form is submitted, send to the servlet
+        $("[name|='" + labelText + "_form']").iframePostForm({
+            json : false,
+            post : function () {
+                $("[name|='" + labelText + "_uploading']").show();
+                $("[name|='" + labelText + "_done']").hide();
+            },
+            complete : function (response) {
+                // Work around a bug in the JSON handling of iframe-post-form
+                response = $.parseJSON($(response)[0].innerHTML);
+
+                $("[name|='" + labelText + "_uploading']").hide();
+                $("[name|='" + labelText + "_done']").show();
+
+                if (response.error !== undefined) {
+                    alert(response.error);
+                }
+                else {
+                    editor.workspace["files"].push(response.location);
+                    valueDiv.innerHTML = "<strong>Current Value:</strong> " + $("[type=file][name='" + labelText + "']").val();
+                }
+            }
+        });
+
+        // When a file is selected for upload, begin the upload
+        $("[name='" + labelText + "'][type=file]").change(function() {
+            $("[name='" + labelText + "_form']").submit();
+        });
+
+        return fileUpload;
+    },
+
+    _addDropDown: function(labelText, values, selected, description, pwr) {
+        var label = document.createElement("div");
+
+        if (pwr) {
+            this._addPromptWhenRun(label, labelText, selected);
+        }
+
+        label.innerHTML += this._encodeToHTML(labelText) + " ";
+        var select = document.createElement("select");
+        select.setAttribute("name", labelText);
+        select.setAttribute("class", "propertyValue");
+        for (var i = 0; i < values.length; i++) {
+            var parts = values[i].split("=");
+            if (parts.length < 2) parts[1] = parts[0];
+            var option = document.createElement("option");
+            if (selected == parts[0]) {
+                option.setAttribute("selected", "true");
+            }
+            option.innerHTML = this._encodeToHTML(parts[1]);
+            option.value = parts[0];
+            select.appendChild(option);
+        }
+        label.appendChild(select);
+        $("#" + this.inputDiv).append(label);
+
+        if (description !== null && description !== false) {
+            var desc = document.createElement("div");
+            desc.setAttribute("class", "inputDescription");
+            desc.innerHTML = this._encodeToHTML(description);
+            $("#" + this.inputDiv).append(desc);
+        }
+
+        var hr = document.createElement("hr");
+        $("#" + this.inputDiv).append(hr);
+
+        return select;
+    },
+
+    _addTextBox: function(labelText, value, description, pwr) {
+        var label = document.createElement("div");
+
+        if (pwr) {
+            this._addPromptWhenRun(label, labelText, value);
+        }
+
+        label.innerHTML += this._encodeToHTML(labelText) + " ";
+        var inputBox = document.createElement("input");
+        inputBox.setAttribute("type", "text");
+        inputBox.setAttribute("name", labelText);
+        inputBox.value = value != properties.PROMPT_WHEN_RUN ? value : "";
+        inputBox.setAttribute("class", "propertyValue");
+        label.appendChild(inputBox);
+        $("#" + this.inputDiv).append(label);
+
+        if (description !== null && description !== false) {
+            var desc = document.createElement("div");
+            desc.setAttribute("class", "inputDescription");
+            desc.innerHTML = this._encodeToHTML(description);
+            $("#" + this.inputDiv).append(desc);
+        }
+
+        var hr = document.createElement("hr");
+        $("#" + this.inputDiv).append(hr);
+
+        return inputBox;
+    },
+
+    _addTargetDiv: function(id, content) {
+        var div = document.createElement("div");
+        div.setAttribute("id", id);
+        div.innerHTML = content;
+        $("#" + this.inputDiv).append(div);
+    },
+
+    _addFileInput: function(input) {
+        var required = input.required ? "*" : "";
+        var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
+        return this._addFileUpload(input.name + required, displayValue, input.description, true);
+    },
+
+    _addTextBoxInput: function(input) {
+        var required = input.required ? "*" : "";
+        var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
+        return this._addTextBox(input.name + required, displayValue, input.description, true);
+    },
+
+    _addDropdownInput: function(input) {
+        var required = input.required ? "*" : "";
+        var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
+        return this._addDropDown(input.name + required, input.choices, displayValue, input.description, true);
+    },
+
+    displayModule: function(module) {
+        this._clean();
+        this.current = module;
+        this._setTitle(module.name);
+        this._setSubtitle(module.lsid);
+        this._setVersionDropdown(module);
+        this._displayInputKey();
+        var inputs = module.inputs;
+        for (var i in inputs) {
+            if (inputs[i].type == "java.io.File") {
+                this._addFileInput(inputs[i]);
+            }
+            else if (inputs[i].choices.length > 0) {
+                this._addDropdownInput(inputs[i]);
+            }
+            else {
+                this._addTextBoxInput(inputs[i]);
+            }
+
+        }
+    },
+
+    displayPipe: function(pipe) {
+        this._clean();
+        this.current = pipe;
+        this._setTitle(pipe.outputModule.name + " to " + pipe.inputModule.name);
+
+        var outSelected = pipe.outputPort.pointer;
+        var inSelected = pipe.inputPort.pointer;
+
+        this._addDropDown("Output", ["1=1st Output", "2=2nd Output", "3=3rd Output", "4=4th Output"].concat(pipe.outputModule.outputs), outSelected, properties.listToString(pipe.outputModule.outputs), false);
+
+        var inputsToList = new Array();
+        var selectedInput = pipe.inputModule.fileInputs[0];
+        for (var i = 0; i < pipe.inputModule.fileInputs.length; i++) {
+            inputsToList[inputsToList.length] = pipe.inputModule.fileInputs[i].name;
+            if (inSelected == pipe.inputModule.fileInputs[i].name) {
+                selectedInput = pipe.inputModule.fileInputs[i];
+            }
+        }
+        var input = this._addDropDown("Input", inputsToList, inSelected, selectedInput.description, false);
+
+        // Display the correct description upon dropdown selection
+        $(input).change(function() {
+            var selectedInput = $(input).val();
+            for (var i = 0; i < pipe.inputModule.fileInputs.length; i++) {
+                if (selectedInput == pipe.inputModule.fileInputs[i].name) {
+                    selectedInput = pipe.inputModule.fileInputs[i];
+                    break;
+                }
+            }
+            $(".inputDescription").get(1).innerHTML = selectedInput.description;
+        });
+    },
+
+    displayPipeline: function() {
+        this._clean();
+        this.current = new String("Pipeline");
+        this._setTitle("Editing Pipeline");
+        this._setVersion(editor.workspace["pipelineVersion"]);
+        this._setSubtitle(editor.workspace["pipelineLsid"].length > 0 ? editor.workspace["pipelineLsid"] : "");
+        this._addTextBox("Pipeline Name", editor.workspace["pipelineName"], false, false);
+        this._addTextBox("Description", editor.workspace["pipelineDescription"], false, false);
+        this._addTextBox("Author", editor.workspace["pipelineAuthor"], false, false);
+        this._addDropDown("Privacy", ["private", "public"], editor.workspace["pipelinePrivacy"], false, false);
+        this._addTextBox("Version Comment", editor.workspace["pipelineVersionComment"], false, false);
+        this._addFileUpload("Documentation", editor.workspace["pipelineDocumentation"], false, false);
+    }
 };
 
 /**
