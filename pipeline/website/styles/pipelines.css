@@ -173,3 +173,58 @@ body {
 	text-align: center;
 	z-index: 9000;
 }
+
+#loadPipelineDialog {
+    background-color:#fff;
+    display:none;
+    width:400px;
+    padding:15px;
+    text-align:left;
+    border:2px solid #333;
+    z-index: 10000;
+
+    opacity:0.9;
+    -moz-border-radius:6px;
+    -webkit-border-radius:6px;
+    -moz-box-shadow: 0 0 50px #ccc;
+    -webkit-box-shadow: 0 0 50px #ccc;
+}
+
+#loadPipelineHeader {
+    font-size: 14pt;
+}
+
+#loadPipelineButtons {
+    text-align: right;
+}
+
+#pipelineLoadList {
+    width: 100%;
+    height: 200px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    border-color: #666666;
+    border-width: 1px;
+    border-style: solid;
+}
+
+#pipelineSelectList .ui-selecting {
+    background: #FCF;
+}
+
+#pipelineSelectList .ui-selected {
+    background: #FCF;
+    color: black;
+}
+
+#pipelineSelectList {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+#pipelineSelectList li {
+    padding: 0.4em;
+    height: 14px;
+}
