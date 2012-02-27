@@ -611,6 +611,51 @@ var library = {
         }
     },
 
+    _higherVersion: function(verA, verB) {
+        // Handle the null case
+        if (verA == null) { return false; }
+        if (verB == null) { return true; }
+
+        // Split by periods
+        var partsA = verA.split(".");
+        var partsB = verB.split(".");
+
+        // Compare each part numerically
+        var index = 0;
+        while (index < partsA.length || index < partsB.length) {
+            // Check for the end of version strings and return appropriately
+            if (partsA.length < (index + 1) && partsB.length >= (index + 1)) {
+                return false;
+            }
+            else if (partsA.length >= (index + 1) && partsB.length < (index + 1)) {
+                return true;
+            }
+            else if (partsA.length < (index + 1) || partsB.length < (index + 1)) {
+                break;
+            }
+
+            // Convert version part to integer
+            var aInt = parseInt(partsA[index]);
+            var bInt = parseInt(partsB[index]);
+
+            // Compare integers and return
+            if (aInt > bInt) {
+                return true;
+            }
+            else if (aInt < bInt) {
+                return false;
+            }
+            // If both integers are equal, move on to the next part
+            else {
+                index++;
+            }
+        }
+
+        // Both versions are exactly the same
+        console.log("WARN: library._higherVersion() called on two versions string that are the same");
+        return false;
+    },
+
     _readModuleNames: function() {
         this.moduleNames = new Array();
         for (var i in library.moduleVersionMap) {
@@ -619,9 +664,15 @@ var library = {
                 this.moduleNames.push(moduleArray[0].name);
             }
             else if (moduleArray.length > 1) {
+                var highestModule = null;
+                var highestVersion = null;
                 for (var j = 0; j < moduleArray.length; j++) {
-                    this.moduleNames.push(moduleArray[j].name + " v" + moduleArray[j].version);
+                    if (this._higherVersion(moduleArray[j].version, highestVersion)) {
+                        highestVersion = moduleArray[j].version;
+                        highestModule = moduleArray[j];
+                    }
                 }
+                this.moduleNames.push(highestModule.name);
             }
             else {
                 console.log("ERROR: Unacceptable length of version array in library._readModuleNames()");
@@ -673,8 +724,28 @@ var library = {
             var pipelineList = $("#pipelineSelectList")[0];
 
             // Read Pipelines from List
-            for (var i in this.modules) {
-                var module = this.modules[i];
+            for (var i in library.moduleVersionMap) {
+                var moduleArray = library.moduleVersionMap[i];
+                var module = null;
+
+                if (moduleArray.length == 1) {
+                    module = moduleArray[0];
+                }
+                else if (moduleArray.length > 1) {
+                    var highestModule = null;
+                    var highestVersion = null;
+                    for (var j = 0; j < moduleArray.length; j++) {
+                        if (this._higherVersion(moduleArray[j].version, highestVersion)) {
+                            highestVersion = moduleArray[j].version;
+                            highestModule = moduleArray[j];
+                        }
+                    }
+                    module = highestModule;
+                }
+                else {
+                    console.log("ERROR: Reading module array in library.displayLoadDialog()");
+                    return;
+                }
 
                 // Add Pipeline Div to List
                 if (module.isPipeline()) {
