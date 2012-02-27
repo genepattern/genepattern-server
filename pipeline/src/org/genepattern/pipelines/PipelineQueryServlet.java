@@ -6,6 +6,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -444,9 +445,17 @@ public class PipelineQueryServlet extends HttpServlet {
         
         // Create the new pipeline directory in taskLib and move files
         try {
-            TaskInfo oldInfo = TaskInfoCache.instance().getTask(pipelineObject.getLsid());
-            File newDir = this.copySupportFiles(oldInfo.getName(), pipelineObject.getName(), oldInfo.getLsid(), newLsid, username);
-            this.copyNewFiles(pipelineObject.getFiles(), newDir);
+            if (!pipelineObject.getLsid().isEmpty()) {
+                TaskInfo oldInfo = TaskInfoCache.instance().getTask(pipelineObject.getLsid());
+                File newDir = this.copySupportFiles(oldInfo.getName(), pipelineObject.getName(), oldInfo.getLsid(), newLsid, username);
+                this.copyNewFiles(pipelineObject.getFiles(), newDir);
+                this.writePipelineDesignerFile(newDir, modulesList);
+            }
+            else {
+                File newDir = new File(DirectoryManager.getTaskLibDir(pipelineObject.getName() + "." + GPConstants.TASK_TYPE_PIPELINE, newLsid, username));
+                this.copyNewFiles(pipelineObject.getFiles(), newDir);
+                this.writePipelineDesignerFile(newDir, modulesList);
+            }
         }
         catch (Exception e) {
             log.error("Unable to retrieve the old taskInfo based on old lsid for: " + newLsid);
@@ -459,6 +468,24 @@ public class PipelineQueryServlet extends HttpServlet {
         message.addMessage("Pipeline Saved");
         message.addChild("lsid", newLsid);
         this.write(response, message);
+	}
+	
+	private void writePipelineDesignerFile(File directory, List<ModuleJSON> modules) throws JSONException {
+	    File pdFile = new File(directory, ".pipelineDesigner");
+	    try {
+            PrintWriter writer = new PrintWriter(new FileWriter(pdFile));
+            int counter = 0;
+            
+            for (ModuleJSON module : modules) {
+                writer.println(counter + " " + module.getTop() + " " + module.getLeft());
+                counter++;
+            }
+            
+            writer.close();
+        }
+        catch (IOException e) {
+            log.error("Unable to write to .pipelineDesigner");
+        }
 	}
 	
 	public void constructLibrary(HttpServletResponse response) {

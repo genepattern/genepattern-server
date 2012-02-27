@@ -63,7 +63,8 @@ public class ModuleJSON extends JSONObject {
             this.setId(object.getInt(ID));
             this.setLsid(object.getString(LSID));
             this.constructInputs(object.getJSONArray(INPUTS));
-            this.setOutputs(object.getJSONArray(OUTPUTS));
+            this.setTop(object.getString(TOP));
+            this.setLeft(object.getString(LEFT));
         }
         catch (JSONException e) {
             log.error("Error parsing JSON and initializing ModuleJSON from TaskInfo: " + object);
@@ -99,6 +100,22 @@ public class ModuleJSON extends JSONObject {
     
     public void setId(Integer id) throws JSONException {
         this.put(ID, id);
+    }
+    
+    public String getTop() throws JSONException {
+        return this.getString(TOP);
+    }
+    
+    public void setTop(String top) throws JSONException {
+        this.put(TOP, top);
+    }
+    
+    public String getLeft() throws JSONException {
+        return this.getString(LEFT);
+    }
+    
+    public void setLeft(String left) throws JSONException {
+        this.put(LEFT, left);
     }
     
     public String getLsid() throws JSONException {
