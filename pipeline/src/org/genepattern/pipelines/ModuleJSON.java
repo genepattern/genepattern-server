@@ -220,19 +220,6 @@ public class ModuleJSON extends JSONObject {
         this.put(OUTPUTS, outputs);
     }
     
-    public static ResponseJSON createModuleList(Vector<JobSubmission> jobs) {
-        ResponseJSON listObject = new ResponseJSON();
-        Integer idCounter = 0;
-        
-        for (JobSubmission i : jobs) {
-            ModuleJSON module = new ModuleJSON(idCounter, i);
-            listObject.addChild(idCounter, module);
-            idCounter++;
-        }
-        
-        return listObject;
-    }
-    
     public static ModuleJSON[] extract(JSONObject json) {
         try {
             JSONObject object = (JSONObject) json.get(ModuleJSON.KEY);

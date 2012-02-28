@@ -225,6 +225,10 @@ var editor = {
         return this._addModule(lsid, id, null, null);
     },
 
+    loadModule: function(lsid, id, top, left) {
+        return this._addModule(lsid, id, top, left);
+    },
+
 	addModule: function(lsid) {
         return this._addModule(lsid, this._nextId(), null, null);
 	},
@@ -383,11 +387,22 @@ var editor = {
         var i = 0;
         while (modules[i.toString()] !== undefined) {
             // Update the idCounter as necessary
-            var intId = parseInt(modules[i.toString()].id)
+            var module = modules[i.toString()];
+            var intId = parseInt(module.id)
             if (intId >= this.workspace["idCounter"]) { this.workspace["idCounter"] = intId + 1; }
 
+            // Set the top and left position, if available
+            var top = null;
+            var left = null;
+            if (module.top !== undefined && module.top !== null) {
+                top = module.top;
+            }
+            if (module.left !== undefined && module.left !== null) {
+                left = module.left;
+            }
+
             // Add each module as it is read
-            var added = this.loadModule(modules[i.toString()].lsid, modules[i.toString()].id);
+            var added = this.loadModule(module.lsid, module.id, top, left);
 
             if (added === null) {
                 if (!givenAlert) {
@@ -398,7 +413,7 @@ var editor = {
             }
 
             // Set the correct properties for the module
-            added.loadProps(modules[i.toString()]);
+            added.loadProps(module);
 
             i++;
         }
@@ -1247,8 +1262,6 @@ function Module(moduleJSON) {
     this.loadProps = function(props) {
         this.id = props["id"];
         this._loadInputs(props["inputs"]);
-        this.ui.style.top = props["top"];
-        this.ui.style.left = props["left"];
     };
 
     this._prepInputs = function() {

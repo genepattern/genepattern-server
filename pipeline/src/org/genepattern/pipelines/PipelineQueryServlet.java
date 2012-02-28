@@ -3,15 +3,20 @@ package org.genepattern.pipelines;
 import static org.genepattern.util.GPConstants.SERIALIZED_MODEL;
 
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -26,7 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadBase;
-import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.RequestContext;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -34,11 +38,8 @@ import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.data.pipeline.PipelineModel;
-import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.server.config.ServerConfiguration;
-import org.genepattern.server.config.ServerConfiguration.Context;
 import org.genepattern.server.genepattern.TaskInstallationException;
-import org.genepattern.server.webapp.LoginManager;
 import org.genepattern.server.webapp.PipelineCreationHelper;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.IAdminClient;
@@ -60,6 +61,8 @@ public class PipelineQueryServlet extends HttpServlet {
 	public static final String SAVE = "/save";
 	public static final String LOAD = "/load";
 	public static final String UPLOAD = "/upload";
+	
+	public static final String PIPELINE_DESIGNER_FILE = ".pipelineDesigner";
 	
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) {
@@ -192,7 +195,7 @@ public class PipelineQueryServlet extends HttpServlet {
 
         ResponseJSON responseObject = new ResponseJSON();
         PipelineJSON pipelineObject = new PipelineJSON(pipeline, info);
-        ResponseJSON modulesObject = ModuleJSON.createModuleList(pipeline.getTasks());
+        ResponseJSON modulesObject = createModuleList(pipeline);
         ResponseJSON pipesObject = PipeJSON.createPipeList(pipeline.getTasks());
         
         responseObject.addChild(PipelineJSON.KEY, pipelineObject);
@@ -471,7 +474,7 @@ public class PipelineQueryServlet extends HttpServlet {
 	}
 	
 	private void writePipelineDesignerFile(File directory, List<ModuleJSON> modules) throws JSONException {
-	    File pdFile = new File(directory, ".pipelineDesigner");
+	    File pdFile = new File(directory, PIPELINE_DESIGNER_FILE);
 	    try {
             PrintWriter writer = new PrintWriter(new FileWriter(pdFile));
             int counter = 0;
@@ -542,5 +545,85 @@ public class PipelineQueryServlet extends HttpServlet {
         }
         
         return new File(newDir);
+    }
+    
+    public static ResponseJSON createModuleList(PipelineModel pipeline) {
+        // Get the pipeline's directory of files
+        File directory = PipelineQueryServlet.getPipelineDirectory(pipeline);
+        
+        // Read the pipeline designer file and populate list for insertion into json
+        File pdFile = new File(directory, PIPELINE_DESIGNER_FILE);
+        List<String[]> fileReads = new ArrayList<String[]>();
+        if (pdFile.exists()) {
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(new DataInputStream(new FileInputStream(pdFile))));
+                String line = null;
+                Integer expected = 0;
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.trim().split(" ");
+                    if (parts[0].equals(expected.toString())) {
+                        String[] toInsert = new String[2];
+                        if (parts.length >= 2) {
+                            toInsert[0] = parts[1];
+                        }
+                        else {
+                            toInsert[0] = null;
+                        }
+                        if (parts.length >= 3) {
+                            toInsert[1] = parts[2];
+                        }
+                        else {
+                            toInsert[1] = null;
+                        }
+                        fileReads.add(toInsert);
+                        expected++;
+                    }
+                }
+            }
+            catch (Exception e) {
+                log.error("ERROR: Reading pipeline designer file on file load");
+            }
+        }
+
+        // Get the list of modules
+        Vector<JobSubmission> jobs = pipeline.getTasks();
+        ResponseJSON listObject = new ResponseJSON();
+        Integer idCounter = 0;
+        
+        for (JobSubmission i : jobs) {
+            ModuleJSON module = new ModuleJSON(idCounter, i);
+            // If the position list has been populated from the .pipelineDesigner file
+            if (idCounter < fileReads.size()) {
+                try {
+                    if (fileReads.get(idCounter)[0] != null) {
+                        module.setTop(fileReads.get(idCounter)[0]);
+                    }
+                    if (fileReads.get(idCounter)[1] != null) {
+                        module.setLeft(fileReads.get(idCounter)[1]);
+                    }
+                }
+                catch (JSONException e) {
+                    log.error("ERROR: Attaching pipeline designer location data to module");
+                }
+            }
+            listObject.addChild(idCounter, module);
+            idCounter++;
+        }
+        
+        return listObject;
+    }
+    
+    public static File getPipelineDirectory(PipelineModel pipeline) {
+        return getPipelineDirectory(pipeline.getName(), pipeline.getLsid(), pipeline.getUserID());
+    }
+    
+    public static File getPipelineDirectory(String name, String lsid, String userid) {
+        try {
+            return new File(DirectoryManager.getTaskLibDir(name + "." + GPConstants.TASK_TYPE_PIPELINE, lsid, userid));
+        }
+        catch (MalformedURLException e) {
+            log.error("ERROR: Unable to create appropriate path for pipeline directory: " + name + " " + lsid + " " + userid);
+            return null;
+        }
     }
 }
