@@ -1,28 +1,96 @@
-.det_textarea {
-padding: 10px;
-width: 600px;
-font-family: Arial, sans-serif;
-font-size: 0.75em;
+td
+{
+    font-size: 0.8125em;
+        
 }
 
-.heading {
+.det_textarea
+{
+    padding: 10px;
+    width: 600px;
+    font-family: Arial, sans-serif;
+    font-size: 0.75em;
+}
+
+#commandtext
+{
+    font-size: 0.75em;
+}
+
+.heading
+{
+    margin: 0;
+    padding: 0.125em 0.625em;
+    font-size: 0.8125em;
+    cursor: pointer;
+    position: relative;
+    color: #333366;
+    background-color: #DFDFB9;
+}
+
+ul { list-style: none inside; }
+p { font-size: 1.2em; line-height: 1.2em; margin-bottom: 1.2em; }
+a img { border: none; }
+
+
+a {
+text-decoration: none;
+outline: none;
+color: #335588;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* parameter controls drop down menu */
+#param-bar {
 margin: 0;
-padding: 0.125em 0.625em;
-font-size: 0.8125em;  
-cursor: pointer;
-position: relative;
-color: #333366;
-background-color: #DFDFB9;
+padding: 0;
+min-height: 30px;
+}
+#param-bar ul {
+font-size: 76%;
+display: none;
+position: absolute;
+top: 39px;
+left: 11px;
+width: 161px;
+border: 1px solid #ccc;
+background: white;
+padding: 10px 0 0 0;
+}
+#param-bar ul li {
+float: none;
+padding: 0; margin: 0;
+height: 100%;
+}
+#param-bar ul li:hover {
+background: none;
+
+}
+#param-bar ul li a {
+    display: block;
+    float: none;
+    /*margin-left: -5px; */
+    padding: 0; margin: 0;
+    width: 161px;
+}
+#param-bar ul li a:hover {
+    background: #d9f0b7;
+    margin: 0;
 }
 
+/* --------------- */
 table
 {
     font-size: 0.8125em;
+    margin: 0;
 }
 
 td {
-    padding: 2px;
-    margin: 2px;
+    padding: 1px;
+    margin: 0;
 }
 
 
@@ -57,7 +125,7 @@ html, body
 
 #modtitle
 {
-    font-size: 0.875em;
+    font-size: 0.9375em;
 }
 
 p
@@ -83,14 +151,30 @@ div.ui-layout-north
     margin: 1px;
 }
 
-.pcontrols {
-    font-size: 76%;
+.pcontrols
+{
+    margin: 0;
+	padding: 0;
 }
 
+.pcontrols button
+{
+    font-size: 70%;
+}
 
-#feedback { font-size: 1.4em; }
+.parameter table
+{
+    margin-left: 5px;
+}
+
+.parameter td
+{
+    padding: 0;
+}
+
 #parameters .ui-selecting { border-color: #333366; }
 #parameters .ui-selected { border-color: red; border-style:solid;}
+#parameters .ui-unselected { border-color: green; border-style:dotted;}   
 #parameters { list-style-type: none; margin: 0; padding: 0; width: 99%; }
-#parameters div.parameter { margin: 3px; padding: 0.4em; font-size: 0.9375em; height: 120px; width: 99%;}
-
+#parameters div.parameter { margin: 3px; padding: 0; font-size: 1em; height: 100%; width: 100%;}
+  

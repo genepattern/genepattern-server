@@ -1,9 +1,9 @@
 var mainLayout, westlayout;
 
-function addparameter(element)
+function addparameter()
 {
     var paramDiv = jQuery("<div class='parameter'>  \
-    <table>    \
+        <table>    \
            <tr>    \
                <td colspan='2'>   \
                   Name: \
@@ -15,7 +15,7 @@ function addparameter(element)
                    Default Value: \
                </td>  \
                <td>  \
-                    Flag \
+                    Flag: \
                </td       \
            </tr>   \
            <tr>    \
@@ -26,15 +26,15 @@ function addparameter(element)
                    <textarea cols='30' rows='2'></textarea> \
                </td> \
                <td> \
-                   <input type='text' name='parameter' size='25'/> \
+                   <input type='text' name='parameter' size='16'/> \
                </td>\
                 <td>        \
-                   <input type='text' name='parameter' size='10'/> \
+                   <input type='text' name='parameter' size='7'/> \
                </td>  \
             </tr>  \
             <tr>               \
                 <td>  \
-                    Required: \
+                    Optional: \
                 </td> \
                 <td>   \
                    Type: \
@@ -55,7 +55,7 @@ function addparameter(element)
             </tr>  \
         </table> \
     </div>");
-    element.append(paramDiv);
+    $('#parameters').append(paramDiv);
 }
 
 jQuery(document).ready(function() {
@@ -64,18 +64,14 @@ jQuery(document).ready(function() {
      $("#modtitle").editInPlace({
 		callback: function(unused, enteredText) { return enteredText; },
 		// url: './server.php',
-         bg_over: "#cff",		 
+         bg_over: "none",		 
          show_buttons: true
 	});
 
     $("#commandtext").editInPlace({
 		callback: function(unused, enteredText) { return enteredText; },
 		// url: "./server.php",
-		bg_over: "#cff",
-		field_type: "textarea",
-		textarea_rows: "9",
-		textarea_cols: "36",
-		saving_image: "./styles/images/ajax-loader.gif"
+		bg_over: "#cff"
 	});
 
     // this layout could be created with NO OPTIONS - but showing some here just as a sample...
@@ -108,10 +104,10 @@ jQuery(document).ready(function() {
     });
 
     westLayout = $('div.ui-layout-west').layout({
-            minSize:				70	// ALL panes
+            minSize:				80	// ALL panes
         ,	center__paneSelector:	".west-center"
         ,	south__paneSelector:	".west-south"
-        ,	south__size:			200
+        ,	south__size:			130
     });
 
     $(function() {
@@ -123,7 +119,7 @@ jQuery(document).ready(function() {
     $( "#addparam" )
         .button()
         .click(function() {
-           addparameter($('#parameters'));
+           addparameter();
         })
         .next()
             .button( {
@@ -133,16 +129,43 @@ jQuery(document).ready(function() {
                 }
             })
             .click(function() {
-                alert( "not implemented" );
+                var hidden = $("#param-bar").children("ul").is(":hidden");
+
+				$("#param-bar>ul").hide();
+
+				if (hidden) {
+					$("#param-bar")
+						.children("ul").toggle();
+					}
             })
             .parent()
-                .buttonset();
-    
+                .buttonset();    
+
     $( "#deleteparam" ).button().click(function() {
             $('.ui-selected').each(function() {
                 $(this).remove();
             });
         });
 
-    $( "#parameters" ).selectable();
+    $("#param-bar ul li #addone").click(function()
+    {
+            $("#param-bar ul").hide();
+            addparameter();
+    });
+
+     $("#param-bar ul li #addmultiple").click(function()
+    {
+            $("#param-bar ul").hide();
+            alert("Not implemented");
+    });
+
+    /*$( "#parameters" ).selectable({
+        filter: 'div',
+        start: function (event, ui) {
+            if ($(ui.selected).hasClass('ui-selected')) {
+                $(ui.selected).removeClass('ui-selected');
+                // do unselected stuff
+            }
+        }
+    });*/
 });
