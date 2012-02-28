@@ -40,7 +40,7 @@ function addparameter()
                    Type: \
                </td> \
                 <td colspan='2'>   \
-                   Choice \
+                   Choice: \
                </td> \
             </tr>  \
             <tr>               \
@@ -64,19 +64,39 @@ function addparameter()
     $('#parameters').append(paramDiv);
 
     $(".parameter").click(function() {
-        if (!$(this).hasClass("ui-selected")) {
-        $(this).addClass("ui-selected").siblings().removeClass("ui-selected");
+        if (!$(this).hasClass("ui-selected"))
+        {
+            $(this).addClass("ui-selected").siblings().removeClass("ui-selected");
         }
+        /*else
+        {
+            $(this).removeClass("ui-selected");
+        } */
     });
 }
 
-/* append a command line argument the list */
+/* append a command line argument to the list */
 function addtocommandline(text)
 {
     var item = "<li class='commanditem'>" +
                  text +
                 "</li>";
-    $('#commandlist').append($(item));
+    var ctext = $('#commandlist').text();
+    
+    if(ctext.indexOf(text) < 0)
+    {
+        $('#commandlist').append($(item));
+    }
+
+    $(".commanditem").click(function() {
+        if (!$(this).hasClass("ui-selected")) {
+            $(this).addClass("ui-selected").siblings().removeClass("ui-selected");
+        }
+        else
+        {
+            $(this).removeClass("ui-selected");   
+        }
+    });
 }
 
 jQuery(document).ready(function() {
@@ -89,11 +109,7 @@ jQuery(document).ready(function() {
          show_buttons: true
 	});
 
-    $(".commanditem").editInPlace({
-		callback: function(unused, enteredText) { return enteredText; },
-		// url: "./server.php",
-		bg_over: "#cff"
-	});
+
 
     // this layout could be created with NO OPTIONS - but showing some here just as a sample...
     // myLayout = $('body').layout(); -- syntax with No Options
@@ -181,8 +197,6 @@ jQuery(document).ready(function() {
 
     $('#parameters').focusout(function()
     {
-        $('.commanditem').remove();
-
         $('.parameter').each(function() {
             var pname = $(this).find("input[name='p_name']").val();
             var pflag = $(this).find("input[name='p_flag']").val();
