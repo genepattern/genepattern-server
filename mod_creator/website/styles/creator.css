@@ -12,9 +12,14 @@ td
     font-size: 0.75em;
 }
 
-#commandtext
+#commandlist
+{
+    padding: 0;
+}
+.commanditem
 {
     font-size: 0.75em;
+    margin: 0;   
 }
 
 .heading
@@ -174,7 +179,6 @@ div.ui-layout-north
 
 #parameters .ui-selecting { border-color: #333366; }
 #parameters .ui-selected { border-color: red; border-style:solid;}
-#parameters .ui-unselected { border-color: green; border-style:dotted;}   
 #parameters { list-style-type: none; margin: 0; padding: 0; width: 99%; }
 #parameters div.parameter { margin: 3px; padding: 0; font-size: 1em; height: 100%; width: 100%;}
   

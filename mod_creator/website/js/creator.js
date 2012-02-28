@@ -2,7 +2,7 @@ var mainLayout, westlayout;
 
 function addparameter()
 {
-    var paramDiv = jQuery("<div class='parameter'>  \
+    var paramDiv = $("<div class='parameter'>  \
         <table>    \
            <tr>    \
                <td colspan='2'>   \
@@ -20,16 +20,16 @@ function addparameter()
            </tr>   \
            <tr>    \
                <td colspan='2'>  \
-                   <input type='text'' name='parameter' size='25'/> \
+                   <input type='text' name='p_name' size='25'/> \
                </td>   \
                <td>    \
-                   <textarea cols='30' rows='2'></textarea> \
+                   <textarea cols='30' name='p_description' rows='2'></textarea> \
                </td> \
                <td> \
-                   <input type='text' name='parameter' size='16'/> \
+                   <input type='text' name='p_defaultvalue' size='16'/> \
                </td>\
                 <td>        \
-                   <input type='text' name='parameter' size='7'/> \
+                   <input type='text' name='p_flag' size='7'/> \
                </td>  \
             </tr>  \
             <tr>               \
@@ -39,23 +39,44 @@ function addparameter()
                 <td>   \
                    Type: \
                </td> \
+                <td colspan='2'>   \
+                   Choice \
+               </td> \
             </tr>  \
             <tr>               \
                 <td>  \
-                    <input type='checkbox' name='parameter' size='25'/>\
+                    <input type='checkbox' name='p_optional' size='25'/>\
                 </td> \
                 <td> \
-                   <select>\
+                   <select name='p_type'>\
                        <option value='text'>Text</option> \
                        <option value='Numeric'>Numeric</option>  \
                        <option value='Input File'>Input File</option>\
                        <option value='Password'>Password</option> \
                    </select>  \
-               <td> \
+               </td> \
+                <td>  \
+                    <input type='text' name='p_choice' size='25'/>\
+                </td> \
             </tr>  \
         </table> \
     </div>");
     $('#parameters').append(paramDiv);
+
+    $(".parameter").click(function() {
+        if (!$(this).hasClass("ui-selected")) {
+        $(this).addClass("ui-selected").siblings().removeClass("ui-selected");
+        }
+    });
+}
+
+/* append a command line argument the list */
+function addtocommandline(text)
+{
+    var item = "<li class='commanditem'>" +
+                 text +
+                "</li>";
+    $('#commandlist').append($(item));
 }
 
 jQuery(document).ready(function() {
@@ -68,7 +89,7 @@ jQuery(document).ready(function() {
          show_buttons: true
 	});
 
-    $("#commandtext").editInPlace({
+    $(".commanditem").editInPlace({
 		callback: function(unused, enteredText) { return enteredText; },
 		// url: "./server.php",
 		bg_over: "#cff"
@@ -112,7 +133,9 @@ jQuery(document).ready(function() {
 
     $(function() {
 		$( "#parameters" ).sortable();
+        $( "#commandlist" ).sortable();
 		$( "#parameters" ).disableSelection();
+
 	});
 
 
@@ -130,9 +153,6 @@ jQuery(document).ready(function() {
             })
             .click(function() {
                 var hidden = $("#param-bar").children("ul").is(":hidden");
-
-				$("#param-bar>ul").hide();
-
 				if (hidden) {
 					$("#param-bar")
 						.children("ul").toggle();
@@ -153,10 +173,23 @@ jQuery(document).ready(function() {
             addparameter();
     });
 
-     $("#param-bar ul li #addmultiple").click(function()
+    $("#param-bar ul li #addmultiple").click(function()
     {
             $("#param-bar ul").hide();
             alert("Not implemented");
+    });
+
+    $('#parameters').focusout(function()
+    {
+        $('.commanditem').remove();
+
+        $('.parameter').each(function() {
+            var pname = $(this).find("input[name='p_name']").val();
+            var pflag = $(this).find("input[name='p_flag']").val();
+
+            var argument = pflag + " " + pname;
+            addtocommandline(argument);
+        });
     });
 
     /*$( "#parameters" ).selectable({
