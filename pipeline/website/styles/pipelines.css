@@ -158,8 +158,12 @@ body {
 	border-color: #0000FF;
 }
 
-.ui-selected {
+.module.ui-selected {
 	border-color: #FF0000;
+}
+
+._jsPlumb_connector.ui-selected path {
+    stroke: red;
 }
 
 .tooltip {

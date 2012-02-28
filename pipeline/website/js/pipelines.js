@@ -814,11 +814,13 @@ var properties = {
         $("#propertiesCancel").button();
 
         $("#propertiesOk").click(function () {
+            properties._deselectOldSelection();
             properties.saveToModel();
             properties.hide();
         });
 
         $("#propertiesCancel").click(function () {
+            properties._deselectOldSelection();
             properties.hide();
         });
     },
@@ -1149,9 +1151,25 @@ var properties = {
         return this._addDropDown(input.name + required, input.choices, displayValue, input.description, true);
     },
 
+    _deselectOldSelection: function() {
+        if (this.current instanceof Module) {
+            this.current.deselect();
+        }
+        if (this.current instanceof Pipe) {
+            this.current.deselect();
+        }
+    },
+
     displayModule: function(module) {
+        // Clean the old selection
+        this._deselectOldSelection();
         this._clean();
+
+        // Set the new selection
         this.current = module;
+        module.select();
+
+        // Build the new display
         this._setTitle(module.name);
         this._setSubtitle(module.lsid);
         this._setVersionDropdown(module);
@@ -1172,10 +1190,16 @@ var properties = {
     },
 
     displayPipe: function(pipe) {
+        // Clean the old selection
+        this._deselectOldSelection();
         this._clean();
+
+        // Set the new selection
         this.current = pipe;
         this._setTitle(pipe.outputModule.name + " to " + pipe.inputModule.name);
+        pipe.select();
 
+        // Build the new display
         var outSelected = pipe.outputPort.pointer;
         var inSelected = pipe.inputPort.pointer;
 
@@ -1205,7 +1229,10 @@ var properties = {
     },
 
     displayPipeline: function() {
+        // Clean the old selection
+        this._deselectOldSelection();
         this._clean();
+
         this.current = new String("Pipeline");
         this._setTitle("Editing Pipeline");
         this._setVersion(editor.workspace["pipelineVersion"]);
@@ -1441,6 +1468,14 @@ function Module(moduleJSON) {
                 module.remove();
             }
         });
+    };
+
+    this.select = function() {
+        $(this.ui).addClass("ui-selected");
+    };
+
+    this.deselect = function() {
+        $(this.ui).removeClass("ui-selected");
     };
 
 	this._createDiv = function () {
@@ -1919,6 +1954,18 @@ function Pipe(connection) {
         this.ui = connection.canvas;
     };
 	this._init(connection);
+
+    this.select = function() {
+        // Hack to get around jquery's inability to set class on SVG elements
+        this.ui.setAttribute("class", this.ui.getAttribute("class") + "ui-selected");
+        //$(this.ui).addClass("ui-selected");
+    };
+
+    this.deselect = function() {
+        // Hack to get around jquery's inability to set class on SVG elements
+        this.ui.setAttribute("class", "_jsPlumb_connector ");
+        //$(this.ui).removeClass("ui-selected");
+    };
 
 	this.toMaster = function () {
         return this.inputPort.master;
