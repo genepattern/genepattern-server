@@ -11,11 +11,10 @@
     <link  type="text/css" rel="stylesheet" media="screen" href="styles/creator.css" />
     <link  type="text/css" rel="stylesheet" media="screen" href="styles/themes/base/jquery.ui.all.css" />
 
-	<!-- LAYOUT v 1.2.0 -->
 	<script type="text/javascript" src="js/jquery-1.7.1.js"></script>
 	<script type="text/javascript" src="js/jquery-ui-1.8.17.custom.min.js"></script>
 	<<script type="text/javascript" src="js/jquery.layout-1.2.0.js"></script>
-    <script  type="text/javascript" src="js/jquery.jeditable.mini.js"></script> 
+    <script  type="text/javascript" src="js/jquery.jeditable.mini.js"></script>
     <script type="text/javascript" src="js/jquery.editinplace.js"></script>
     <script type="text/javascript" src="js/creator.js"></script>
 </head>
@@ -23,7 +22,7 @@
 
 
 <div class="ui-layout-north">
-    <div id="modtitle"><a href="">UntitledModule</a></div>    
+    <div id="modtitle"><a href="">UntitledModule</a></div>
 </div>
 
 <div class="ui-layout-south">
@@ -97,7 +96,7 @@
                     <option value="production">preproduction</option>
                 </select>
             </td>
-        </tr>        
+        </tr>
         <tr>
             <td>
                 CPU type:
@@ -116,7 +115,7 @@
                     <option value="PowerPC">PowerPC</option>
                     <option value="Sparc">Sparc</option>
                 </select>
-            </td>        
+            </td>
             <td>
                 <input type="checkbox" name="os" value="os" id="os" checked="checked"/>
                 <label for="os">Any</label>
@@ -163,12 +162,31 @@
 </div>
 
 <div class="ui-layout-west">
-   <div class="west-center">
-        <p class="heading">Command Line</p> 
-        <ul id="commandlist"></ul>
+    <div class="west-center">
+        <p class="heading">Command Line</p>
+        <span id="commandtype">
+            Type:
+            <select>
+                <option value="java">Java</option>
+                <option value="R">R</option>
+                <option value="perl">Perl</option>
+                <option value="custom">Custom</option>
+            </select>
+        </span>
+        <!--<span id="commandpreview">
+            <button>Preview Commandline</button>          
+        </span>-->
+        <div id='commandtextarea'>
+            <textarea cols='40' rows='5' name='cmdtext'></textarea>
+        </div>
+        <ol id="commandlist"></ol>
     </div>
     <div class="west-south">
         <p class="heading">Support Files</p>
+    </div>
+
+    <div id="addparamdialog">
+        How many parameters: <input type="text" id="multiparam"/>              
     </div>
 </div>
 

@@ -76,14 +76,27 @@ function addparameter()
 }
 
 /* append a command line argument to the list */
-function addtocommandline(text)
-{
+function addtocommandline(flag, name)
+{   
+    var ctext = $('#commandlist').text();
+
+    var text = flag + " " + name;
+
     var item = "<li class='commanditem'>" +
                  text +
                 "</li>";
-    var ctext = $('#commandlist').text();
-    
-    if(ctext.indexOf(text) < 0)
+    if(ctext.indexOf(name) >= 0 && ctext.indexOf(text) < 0)
+    {
+        $('#commandlist').children().each(function()
+        {
+            if($(this).text().indexOf(name) >= 0)
+            {
+                $(this).replaceWith($(item));                          
+            }
+        });
+    }
+
+    else if(ctext.indexOf(text) < 0)
     {
         $('#commandlist').append($(item));
     }
@@ -192,8 +205,30 @@ jQuery(document).ready(function() {
     $("#param-bar ul li #addmultiple").click(function()
     {
             $("#param-bar ul").hide();
-            alert("Not implemented");
+            $( "#addparamdialog" ).dialog("open");
+            //alert("Not implemented");
     });
+
+    $( "#addparamdialog" ).dialog({
+        autoOpen: false,
+        height: 180,
+        width: 220,
+        buttons: {
+                "OK": function() {
+                    var numparams = $("#multiparam").val();
+                    for(i=0;i<numparams;i++)
+                    {
+                        addparameter();
+                    }
+                        $( this ).dialog( "close" );
+                },
+                "Cancel": function() {
+                    $( this ).dialog( "close" );
+                }
+        },
+        resizable: false
+        });
+		
 
     $('#parameters').focusout(function()
     {
@@ -201,18 +236,34 @@ jQuery(document).ready(function() {
             var pname = $(this).find("input[name='p_name']").val();
             var pflag = $(this).find("input[name='p_flag']").val();
 
-            var argument = pflag + " " + pname;
-            addtocommandline(argument);
+            if(pname != "")
+            {
+                addtocommandline(pflag, pname);
+            }
         });
     });
 
-    /*$( "#parameters" ).selectable({
-        filter: 'div',
-        start: function (event, ui) {
-            if ($(ui.selected).hasClass('ui-selected')) {
-                $(ui.selected).removeClass('ui-selected');
-                // do unselected stuff
-            }
-        }
-    });*/
+   /* $('#commandpreview').children().button()
+            .click(function()
+    {        
+        var cmd_args = $('#commandlist').text();
+
+       // $("#dialog").children().remove();
+       // $("#dialog").append($('<p>'+cmd_args +'</p>'));
+
+       // $( "#dialog" ).dialog(); 
+        //$("#commandtextarea").children().remove();
+        //$("#commandtextarea textarea").append(cmd_args);
+
+    //  var cmdtextarea = "<div id='commandtextarea'> \
+     //       <textarea cols='40' rows='5' name='cmdtext'></textarea> \
+      //  </div>";
+
+        $(".west-center").append($(cmdtextarea));
+
+         $("#commandtextarea").toggle();
+         $("#commandtextarea textarea").attr("value", cmd_args);
+    });   */
+
+    $("#commandtextarea").hide();
 });

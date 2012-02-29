@@ -1,3 +1,9 @@
+#commandtype
+{
+    font-size: 0.75em;
+
+}
+
 td
 {
     font-size: 0.8125em;
@@ -19,7 +25,7 @@ td
 .commanditem
 {
     font-size: 0.75em;
-    margin: 0;   
+    margin-left: 20px;   
 }
 
 .heading
@@ -197,3 +203,21 @@ div.ui-layout-north
 {
     border-color: red; border-style:solid; border-width:thin;
 }
+
+#commandpreview button
+{
+    font-size: 70%;
+}
+
+/*.ui-dialog .ui-dialog-titlebar
+{
+    height: 12px;
+    font-size: 0.75em;
+} */
+
+
+#addparamdialog
+{
+    font-size: 0.8125em;    
+}
+
