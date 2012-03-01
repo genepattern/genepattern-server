@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.faces.model.SelectItem;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -421,6 +422,22 @@ public class GenomeSpaceBean {
         return allDirectories;
     }
     
+    /*
+     * Get a list of SelectItem objects corresponding to the GenomeSpace directories
+     */
+    public List<SelectItem> getAllDirectorySelects() throws Exception {
+        List<GenomeSpaceFile> directories = getAllDirectories();      
+        List<SelectItem> selectItems = new ArrayList<SelectItem>();
+
+        for (GenomeSpaceFile dir : directories) {
+            SelectItem item = new SelectItem();
+            item.setLabel(dir.getRelativePath());
+            item.setValue(dir.getUrl().toString());
+            selectItems.add(item);
+        }
+        return selectItems;
+    }
+    
     /**
      * Determines whether the GenomeSpace file free is empty
      * @return
@@ -698,8 +715,22 @@ public class GenomeSpaceBean {
      * @return JSF navigation rule for where to go next
      */
     public String sendFileToGenomeSpace() {
-        String fileToSend = UIBeanHelper.getRequest().getParameter("file");
-        String directoryTarget = UIBeanHelper.getRequest().getParameter("directory");
+        String directoryTarget = null;
+        for (Object i : UIBeanHelper.getRequest().getParameterMap().keySet()) {
+            if (((String) i).contains("saveToGenomepace")) {
+                String potentialName = UIBeanHelper.getRequest().getParameter((String) i);
+                if (potentialName.length() > 0) {
+                    directoryTarget = potentialName;
+                    break;
+                }
+            }
+        }
+        if (directoryTarget == null || directoryTarget.length() == 0) {
+            UIBeanHelper.setErrorMessage("Please enter a valid GenomeSpace directory");
+            return HOME_NAVIGATION_KEY;
+        }
+
+        String fileToSend = UIBeanHelper.getRequest().getParameter("fileToSave");
         
         if (fileToSend == null || directoryTarget == null) {
             log.error("Error saving a file to GenomeSpace: " + fileToSend + " " + directoryTarget);

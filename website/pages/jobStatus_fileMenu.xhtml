@@ -62,20 +62,16 @@
                                 <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
                             </td>
                         </tr>
-                        <t:dataList value="#{genomeSpaceBean.allDirectories}" var="gsDir">
-                            <tr>
-                                <td>
-                                    <img src="/gp/pages/genomespace/genomespace_icon.gif" height="14px" width="14px" border="0" style="vertical-align:middle"/>&#160;
-									<h:commandLink value="#{gsDir.relativePath}" action="#{genomeSpaceBean.sendFileToGenomeSpace}" immediate="true">
-										<f:param name="jobNumber" value="#{jobStatusBean.jobInfo.jobNumber}" />
-										<f:param name="jobMenuNumber" value="#{jobOnMenu.jobNumber}" />
-										<f:param value="#{gsDir.url}" name="directory" />
-										<f:param value="#{outputFile.value}" name="file" />
-										<f:param value="true" name="resultFile" />
-                                	</h:commandLink>
-                                </td>
-                            </tr>
-                        </t:dataList>
+						<tr>
+							<td>
+								<t:selectOneMenu id="saveToGenomepace">
+									<f:selectItems value="#{genomeSpaceBean.allDirectorySelects}" />
+								</t:selectOneMenu>
+								<h:commandLink value="Save" action="#{genomeSpaceBean.sendFileToGenomeSpace}" immediate="true">
+                                    <f:param name="fileToSave" value="#{outputFile.value}" />
+                                </h:commandLink>
+							</td>
+						</tr>
                     </h:outputText>
 					<!--  END GENOMESPACE ADDITION  -->
           <tr>
