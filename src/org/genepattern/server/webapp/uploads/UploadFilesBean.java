@@ -37,8 +37,12 @@ import org.genepattern.server.webservice.server.dao.AdminDAO;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.richfaces.component.UITree;
+import org.richfaces.component.html.HtmlTreeNode;
+import org.richfaces.component.state.TreeState;
+import org.richfaces.event.NodeExpandedEvent;
 import org.richfaces.model.TreeNode;
 import org.richfaces.model.TreeNodeImpl;
+import org.richfaces.model.TreeRowKey;
 
 /**
  * Backing bean for displaying user uploaded files and their associated popup menus.
@@ -76,6 +80,15 @@ public class UploadFilesBean {
     private String currentTaskLsid = null;
     private TaskInfo currentTaskInfo = null;
     private Map<String,SortedSet<TaskInfo>> kindToTaskInfo;
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Boolean> getTreeNodesExpanded() {
+        if (UIBeanHelper.getSession().getAttribute("treeNodesExpanded") == null) {
+            UIBeanHelper.getSession().setAttribute("treeNodesExpanded", new HashMap<String, Boolean>()); 
+        }
+        
+        return (Map<String, Boolean>) UIBeanHelper.getSession().getAttribute("treeNodesExpanded");
+    }
     
     public Map<String, SortedSet<TaskInfo>> getKindToTaskInfo() {
         return kindToTaskInfo;
@@ -147,7 +160,31 @@ public class UploadFilesBean {
     }
     
     public boolean openTreeNode(UITree tree) {
-        return true;
+        Object key = tree.getRowKey();
+        Boolean expanded = getTreeNodesExpanded().get(key.toString());
+        if (expanded == null) {
+            expanded = true;
+        }
+        return expanded;
+    }
+    
+    /**
+     * Event to call when a node of the file tree is expanded or collapsed
+     * @param event
+     */
+    @SuppressWarnings("rawtypes")
+    public void updateExpand(NodeExpandedEvent event) {
+        Object source = event.getSource();
+        if (source instanceof HtmlTreeNode) {
+            UITree tree = ((HtmlTreeNode) source).getUITree();
+            if (tree == null) {
+                return;
+            }
+            
+            Object rowKey = tree.getRowKey();
+            TreeState state = (TreeState) tree.getComponentState();      
+            getTreeNodesExpanded().put(rowKey.toString(), state.isExpanded((TreeRowKey) rowKey));
+        }
     }
     
     /**
