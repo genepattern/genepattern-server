@@ -75,31 +75,38 @@ function addparameter()
     });
 }
 
-/* append a command line argument to the list */
-function addtocommandline(flag, name)
-{   
+function addtocommandline(flag, name, prevflag, prevname)
+{
     var ctext = $('#commandlist').text();
 
-    var text = flag + " " + name;
+    var text;
+
+    if(flag != "" && name != "");
+    {
+        text = flag + " " + name;;
+    }
 
     var item = "<li class='commanditem'>" +
                  text +
                 "</li>";
-    if(ctext.indexOf(name) >= 0 && ctext.indexOf(text) < 0)
-    {
-        $('#commandlist').children().each(function()
-        {
-            if($(this).text().indexOf(name) >= 0)
-            {
-                $(this).replaceWith($(item));                          
-            }
-        });
-    }
+    var  prevtext = prevflag + " " + prevname;
+    var found = false;
 
-    else if(ctext.indexOf(text) < 0)
+    $('#commandlist').children().each(function()
+    {
+        if($(this).text() ==  prevtext)
+        {
+            $(this).replaceWith($(item));
+            found = true;
+        }
+    });
+
+
+    if(!found && text != "")
     {
         $('#commandlist').append($(item));
     }
+
 
     $(".commanditem").click(function() {
         if (!$(this).hasClass("ui-selected")) {
@@ -107,10 +114,11 @@ function addtocommandline(flag, name)
         }
         else
         {
-            $(this).removeClass("ui-selected");   
+            $(this).removeClass("ui-selected");
         }
     });
 }
+
 
 jQuery(document).ready(function() {
     //Used for editing default Module name - jQuery In Place Editor 
@@ -211,8 +219,8 @@ jQuery(document).ready(function() {
 
     $( "#addparamdialog" ).dialog({
         autoOpen: false,
-        height: 180,
-        width: 220,
+        height: 185,
+        width: 240,
         buttons: {
                 "OK": function() {
                     var numparams = $("#multiparam").val();
@@ -227,21 +235,25 @@ jQuery(document).ready(function() {
                 }
         },
         resizable: false
-        });
-		
+    });
+
 
     $('#parameters').focusout(function()
     {
         $('.parameter').each(function() {
-            var pname = $(this).find("input[name='p_name']").val();
-            var pflag = $(this).find("input[name='p_flag']").val();
+            var pname_newval = $(this).find("input[name='p_name']").val();
+            var pflag_newval = $(this).find("input[name='p_flag']").val();
 
-            if(pname != "")
-            {
-                addtocommandline(pflag, pname);
-            }
+            var pname_oldval = $(this).find("input[name='p_name']").data('oldVal');
+            var pflag_oldval = $(this).find("input[name='p_flag']").data('oldVal');
+
+
+            $(this).find("input[name='p_name']").data('oldVal',  pname_newval );
+            $(this).find("input[name='p_flag']").data('oldVal',  pflag_newval );
+
+            addtocommandline(pflag_newval, pname_newval, pflag_oldval, pname_oldval);           
         });
-    });
+    });     
 
    /* $('#commandpreview').children().button()
             .click(function()
