@@ -207,17 +207,24 @@ div.ui-layout-north
 #commandpreview button
 {
     font-size: 70%;
+    float: right;
 }
 
-/*.ui-dialog .ui-dialog-titlebar
+.ui-dialog .ui-dialog-titlebar
 {
     height: 12px;
     font-size: 0.75em;
-} */
+} 
 
 
 #addparamdialog
 {
     font-size: 0.8125em;    
+}
+
+.ui-dialog .ui-dialog-buttonpane button
+{
+    font-size: 0.75em;
+            
 }
 
