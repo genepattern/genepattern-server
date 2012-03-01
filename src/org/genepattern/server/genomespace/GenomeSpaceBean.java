@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +36,12 @@ import org.genepattern.util.SemanticUtil;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.webservice.TaskInfo;
 import org.richfaces.component.UITree;
+import org.richfaces.component.html.HtmlTreeNode;
+import org.richfaces.component.state.TreeState;
+import org.richfaces.event.NodeExpandedEvent;
 import org.richfaces.model.TreeNode;
 import org.richfaces.model.TreeNodeImpl;
+import org.richfaces.model.TreeRowKey;
 
 /**
  * This bean handles the information necessary for logging into GenomeSpace
@@ -61,6 +66,7 @@ public class GenomeSpaceBean {
     private List<GenomeSpaceFile> allFiles = null;
     private List<GenomeSpaceFile> allDirectories = null;
     private Map<String, Set<String>> kindToTools = null;
+    private Map<String, Boolean> treeNodesExpanded = new HashMap<String, Boolean>();
 
     /**
      * Determine whether GenomeSpace is enabled when the bean is created.  This makes sure that GenomeSpace
@@ -332,7 +338,31 @@ public class GenomeSpaceBean {
      * Determines whether the file tree should be expanded by default
      */
     public boolean openTreeNode(UITree tree) {
-        return true;
+        Object key = tree.getRowKey();
+        Boolean expanded = treeNodesExpanded.get(key.toString());
+        if (expanded == null) {
+            expanded = true;
+        }
+        return expanded;
+    }
+    
+    /**
+     * Event to call when a node of the file tree is expanded or collapsed
+     * @param event
+     */
+    @SuppressWarnings("rawtypes")
+    public void updateExpand(NodeExpandedEvent event) {
+        Object source = event.getSource();
+        if (source instanceof HtmlTreeNode) {
+            UITree tree = ((HtmlTreeNode) source).getUITree();
+            if (tree == null) {
+                return;
+            }
+            
+            Object rowKey = tree.getRowKey();
+            TreeState state = (TreeState) tree.getComponentState();      
+            treeNodesExpanded.put(rowKey.toString(), state.isExpanded((TreeRowKey) rowKey));
+        }
     }
     
     /**
