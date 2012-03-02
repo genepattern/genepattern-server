@@ -12,93 +12,93 @@
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:t="http://myfaces.apache.org/tomahawk"
-	xmlns:c="http://java.sun.com/jstl/core"
-	xmlns:rich="http://richfaces.org/rich">
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:t="http://myfaces.apache.org/tomahawk"
+    xmlns:c="http://java.sun.com/jstl/core"
+    xmlns:rich="http://richfaces.org/rich">
 <ui:composition template="/templates/common.xhtml">
-	<ui:define name="headText">
-		<link class="component" href="/gp/a4j/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/basic_classes.xcss" rel="stylesheet" type="text/css" />
-		<link class="component" href="/gp/a4j/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/extended_classes.xcss" media="rich-extended-skinning" rel="stylesheet" type="text/css" />
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg.ajax4jsf.javascript.AjaxScript" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg.ajax4jsf.javascript.PrototypeScript" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg.ajax4jsf.javascript.ImageCacheScript" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/browser_info.js" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/ajax4jsf/javascript/scripts/form.js" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalscripts/tabPanel.js" type="text/javascript"></script>
-		<link class="component" href="/gp/a4j/a4j/s/3_3_3.Finalcss/tabPanel.xcss/DATB/eAF7sqpgb-jyGdIAFrMEaw__" rel="stylesheet" type="text/css" />
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/jquery/jquery.js" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/jquery.utils.js" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/json/json-mini.js" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg.ajax4jsf.javascript.DnDScript" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/utils.js" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/json/json-dom.js" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/dnd/dnd-common.js" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/dnd/dnd-draggable.js" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/dnd/dnd-dropzone.js" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/form.js" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/events.js" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/tree.js" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/tree-selection.js" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/tree-item.js" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/tree-item-dnd.js" type="text/javascript"></script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/drag-indicator.js" type="text/javascript"></script>
-		<link class="component" href="/gp/a4j/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/dragIndicator.xcss/DATB/eAF7sqpgb-jyGdIAFrMEaw__" rel="stylesheet" type="text/css" />
-		<link class="component" href="/gp/a4j/a4j/s/3_3_3.Finalcss/tree.xcss/DATB/eAF7sqpgb-jyGdIAFrMEaw__" rel="stylesheet" type="text/css" />
-		<script type="text/javascript">window.RICH_FACES_EXTENDED_SKINNING_ON=true;</script>
-		<script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/skinning.js" type="text/javascript"></script>
-		<link href="/gp/css/style.css" rel="stylesheet" type="text/css" />
-		<link href="/gp/css/jobSharing.css" rel="stylesheet" type="text/css" />
-		<link href="/gp/css/protocols.css" rel="stylesheet" type="text/css" />
-		<link href="/gp/css/style-jobresults.css" rel="stylesheet" type="text/css" />
-		<link href="/gp/css/popupMenu.css" rel="stylesheet" type="text/css" />
-		<link href="/gp/css/style-jobresults.css" rel="stylesheet" type="text/css" />
-		<link href="/gp/skin/favicon.ico" rel="shortcut icon" />
+    <ui:define name="headText">
+        <link class="component" href="/gp/a4j/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/basic_classes.xcss" rel="stylesheet" type="text/css" />
+        <link class="component" href="/gp/a4j/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/extended_classes.xcss" media="rich-extended-skinning" rel="stylesheet" type="text/css" />
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg.ajax4jsf.javascript.AjaxScript" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg.ajax4jsf.javascript.PrototypeScript" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg.ajax4jsf.javascript.ImageCacheScript" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/browser_info.js" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg/ajax4jsf/javascript/scripts/form.js" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalscripts/tabPanel.js" type="text/javascript"></script>
+        <link class="component" href="/gp/a4j/a4j/s/3_3_3.Finalcss/tabPanel.xcss/DATB/eAF7sqpgb-jyGdIAFrMEaw__" rel="stylesheet" type="text/css" />
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/jquery/jquery.js" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/jquery.utils.js" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/json/json-mini.js" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg.ajax4jsf.javascript.DnDScript" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/utils.js" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/json/json-dom.js" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/dnd/dnd-common.js" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/dnd/dnd-draggable.js" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/dnd/dnd-dropzone.js" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/form.js" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/events.js" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/tree.js" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/tree-selection.js" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/tree-item.js" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/tree-item-dnd.js" type="text/javascript"></script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/drag-indicator.js" type="text/javascript"></script>
+        <link class="component" href="/gp/a4j/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/dragIndicator.xcss/DATB/eAF7sqpgb-jyGdIAFrMEaw__" rel="stylesheet" type="text/css" />
+        <link class="component" href="/gp/a4j/a4j/s/3_3_3.Finalcss/tree.xcss/DATB/eAF7sqpgb-jyGdIAFrMEaw__" rel="stylesheet" type="text/css" />
+        <script type="text/javascript">window.RICH_FACES_EXTENDED_SKINNING_ON=true;</script>
+        <script src="/gp/a4j/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/skinning.js" type="text/javascript"></script>
+        <link href="/gp/css/style.css" rel="stylesheet" type="text/css" />
+        <link href="/gp/css/jobSharing.css" rel="stylesheet" type="text/css" />
+        <link href="/gp/css/protocols.css" rel="stylesheet" type="text/css" />
+        <link href="/gp/css/style-jobresults.css" rel="stylesheet" type="text/css" />
+        <link href="/gp/css/popupMenu.css" rel="stylesheet" type="text/css" />
+        <link href="/gp/css/style-jobresults.css" rel="stylesheet" type="text/css" />
+        <link href="/gp/skin/favicon.ico" rel="shortcut icon" />
 
-		<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js" />
-		<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/moduleChooser.js" />
-		<script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/lytebox/lytebox.js" />
-		<link href="#{facesContext.externalContext.requestContextPath}/lytebox/lytebox.css" rel="stylesheet" type="text/css" />
-		<script type="text/javascript" language="javascript">
+        <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/prototype.js" />
+        <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/js/moduleChooser.js" />
+        <script type="text/javascript" src="#{facesContext.externalContext.requestContextPath}/lytebox/lytebox.js" />
+        <link href="#{facesContext.externalContext.requestContextPath}/lytebox/lytebox.css" rel="stylesheet" type="text/css" />
+        <script type="text/javascript" language="javascript">
       
         <h:outputText>
-			var requiredIds = new Array();
-			var requiredNames = new Array();
-		</h:outputText>
+            var requiredIds = new Array();
+            var requiredNames = new Array();
+        </h:outputText>
         <t:dataList value="#{runTaskBean.parameters}" var="p">
-        	<h:outputText rendered="#{!p.optional}">
-				requiredIds.push('#{p.name}');
-    			requiredNames.push('#{p.displayName}');
-			</h:outputText>
+            <h:outputText rendered="#{!p.optional}">
+                requiredIds.push('#{p.name}');
+                requiredNames.push('#{p.displayName}');
+            </h:outputText>
         </t:dataList>
 
-		/* <![CDATA[ */
+        /* <![CDATA[ */
 
-		function setServerFileValue(parameterName, file) {
-			myLytebox.end();
-			setInputField(parameterName, file);
-		}
+        function setServerFileValue(parameterName, file) {
+            myLytebox.end();
+            setInputField(parameterName, file);
+        }
 
-		function callManagedBean(elExpression, parameters) {
-	        var opt = {
-		        method: 'post',
-		        postBody: parameters + '&el=' + elExpression,
-		        onSuccess: receiveResponse,
-		        onFailure: function(t) {
-		            alert('Error ' + t.status + ' -- ' + t.statusText);
-		        }
-        	}
-        	new  Ajax.Request('#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax',opt);
-		}
+        function callManagedBean(elExpression, parameters) {
+            var opt = {
+                method: 'post',
+                postBody: parameters + '&el=' + elExpression,
+                onSuccess: receiveResponse,
+                onFailure: function(t) {
+                    alert('Error ' + t.status + ' -- ' + t.statusText);
+                }
+            }
+            new  Ajax.Request('#{facesContext.externalContext.requestContextPath}/anyThingAtAll.ajax',opt);
+        }
 
       // The callback function - receive response from server
       function receiveResponse( req) {
 
         if (req.readyState == 4) {
           if (req.status == 200) { // only if "OK"
-            	showCode(req.responseText);
+                showCode(req.responseText);
           }
 
         }
@@ -109,7 +109,7 @@
 
         if (req.readyState == 4) {
           if (req.status == 200) { // only if "OK"
-            	showCode(req.responseText);
+                showCode(req.responseText);
           }
 
         }
@@ -117,61 +117,61 @@
 
     var showDescriptions = #{runTaskBean.showParameterDescriptions};
     function toggleDescriptions() {
-    	var elements= document.getElementsByClassName("parameter_description");
+        var elements= document.getElementsByClassName("parameter_description");
 
-    	showDescriptions = !showDescriptions;
-    	var display = "none";
-    	if(showDescriptions) {
-    		display = "";
-    	}
-		for(var i = 0; i < elements.length; i++) {
-			var e = elements[i];
-			e.style.display=display;
-		}
+        showDescriptions = !showDescriptions;
+        var display = "none";
+        if(showDescriptions) {
+            display = "";
+        }
+        for(var i = 0; i < elements.length; i++) {
+            var e = elements[i];
+            e.style.display=display;
+        }
 
-    	var params = 'value=' + showDescriptions;
-		callManagedBean("runTaskBean.updateShowParameterDescriptions", params);
+        var params = 'value=' + showDescriptions;
+        callManagedBean("runTaskBean.updateShowParameterDescriptions", params);
     }
 
-	function closeCode() {
-		Element.hide($('codeDiv'));
-	}
+    function closeCode() {
+        Element.hide($('codeDiv'));
+    }
 
-	function showCode(code) {
-		var txt = new String(code).escapeHTML() + "<br /><br />";
-		Element.update('codeDiv', txt);
-     	Element.show($('codeDiv'));
+    function showCode(code) {
+        var txt = new String(code).escapeHTML() + "<br /><br />";
+        Element.update('codeDiv', txt);
+         Element.show($('codeDiv'));
 
-	}
+    }
 
 
 function exportPipeline(lsid, title) {
-	var width = 250;
-	var height = 200;
-	var exportWindow = window.open('#{facesContext.externalContext.requestContextPath}/askInclude.jsp?name=' +
-		    lsid +
-		    '&title=' + title,
-		    'export',
-		    'alwaysRaised=yes,height=' + height + ',width=' + width + ',menubar=no,location=no,resizable=yes,scrollbars=yes,directories=no,status=no,toolbar=no');
-	exportWindow.focus();
+    var width = 250;
+    var height = 200;
+    var exportWindow = window.open('#{facesContext.externalContext.requestContextPath}/askInclude.jsp?name=' +
+            lsid +
+            '&title=' + title,
+            'export',
+            'alwaysRaised=yes,height=' + height + ',width=' + width + ',menubar=no,location=no,resizable=yes,scrollbars=yes,directories=no,status=no,toolbar=no');
+    exportWindow.focus();
 }
 
 function viewCode() {
-	var language = $F('gp_languageSelector');
-	if(language=='- Language -') {
-		window.alert('Please select a language');
-		return false;
-	}
-	var form = $('taskForm');
+    var language = $F('gp_languageSelector');
+    if(language=='- Language -') {
+        window.alert('Please select a language');
+        return false;
+    }
+    var form = $('taskForm');
 
-	var params = 'language=' + language;
-	for(var i = 0; i < form.elements.length; i++) {
-		var e = form.elements[i];
-		if(e.name!='gp_languageSelector') {
-			params += "&" + e.name + "=" + e.value;
-		}
-	}
-	callManagedBean("jobsBean.taskCode", params);
+    var params = 'language=' + language;
+    for(var i = 0; i < form.elements.length; i++) {
+        var e = form.elements[i];
+        if(e.name!='gp_languageSelector') {
+            params += "&" + e.name + "=" + e.value;
+        }
+    }
+    callManagedBean("jobsBean.taskCode", params);
 
 }
 
@@ -179,24 +179,24 @@ function viewCode() {
 // elementId input parameter id.
 // value value to set field to.
 function setInputField(elementId, value) {
-	var urlInput = $(elementId + "_url");
-	urlInput.value = value;
-	Element.hide($(elementId + "_div_file"));
-  	Element.show($(elementId + "_div_url"));
-  	var urlRadio =  $(elementId  + '_cb_url');
-  	urlRadio.checked = true;
+    var urlInput = $(elementId + "_url");
+    urlInput.value = value;
+    Element.hide($(elementId + "_div_file"));
+      Element.show($(elementId + "_div_url"));
+      var urlRadio =  $(elementId  + '_cb_url');
+      urlRadio.checked = true;
 }
 
 function checkBatch(elementId) {
-	var inputBatch = $(elementId + "_batch");
-	inputBatch.checked = true;
+    var inputBatch = $(elementId + "_batch");
+    inputBatch.checked = true;
 }
 
 function validateForm() {
         var error = false;
 
-		var messageString = "<ul style=\"font-weight:bold; color:red;\">";
-		var numErrors = 0;
+        var messageString = "<ul style=\"font-weight:bold; color:red;\">";
+        var numErrors = 0;
         for(var i = 0; i < requiredIds.length; i++) {
             var elementId = requiredIds[i];
             var displayName = requiredNames[i];
@@ -208,48 +208,48 @@ function validateForm() {
             var validate = true;
             var urlInput = null;
             if (type == "text" || type == "textarea") {
-            	value = e.value;
+                value = e.value;
             } else if(type=='file') {
-	        	urlInput = $(elementId + "_url");
-				if ($(elementId + "_div_multifile") !== null){
-					if (Element.visible($(elementId + "_div_multifile"))) {					
-						value = $(elementId + "_multifile").value;
-					}
-				} else if(Element.visible($(elementId + "_div_url"))) {
-            		value = urlInput.value;
-            	} else {
-            		value = e.value;
-            	}
+                urlInput = $(elementId + "_url");
+                if ($(elementId + "_div_multifile") !== null){
+                    if (Element.visible($(elementId + "_div_multifile"))) {                    
+                        value = $(elementId + "_multifile").value;
+                    }
+                } else if(Element.visible($(elementId + "_div_url"))) {
+                    value = urlInput.value;
+                } else {
+                    value = e.value;
+                }
             } else {
-            	validate = false;
+                validate = false;
             }
 
             if (validate && (value == null || value == "")) {
-               	numErrors++;
-               	messageString += "<li>" +  displayName + "</li>";
-            	e.className = "error";
-            	if(urlInput!=null) {
-         			urlInput.className = "error";
-         		}
+                   numErrors++;
+                   messageString += "<li>" +  displayName + "</li>";
+                e.className = "error";
+                if(urlInput!=null) {
+                     urlInput.className = "error";
+                 }
             } else {
-         		e.className = "";
-         		if(urlInput!=null) {
-         			urlInput.className = "";
-         		}
+                 e.className = "";
+                 if(urlInput!=null) {
+                     urlInput.className = "";
+                 }
             }
         }
 
-		var d = $("errorMessageDiv");
-		var t = $("errorMessageContent");
-		if (numErrors > 0) {
-			if(numErrors != 1) {
-				Element.update('errorMessageHeader', "Please provide values for the following parameters:");
-			} else {
-				Element.update('errorMessageHeader', "Please provide a value for the following parameter:");
-			}
-        	d.style.display = "block";
-   			messageString += "</ul>";
-         	Element.update('errorMessageContent', messageString);
+        var d = $("errorMessageDiv");
+        var t = $("errorMessageContent");
+        if (numErrors > 0) {
+            if(numErrors != 1) {
+                Element.update('errorMessageHeader', "Please provide values for the following parameters:");
+            } else {
+                Element.update('errorMessageHeader', "Please provide a value for the following parameter:");
+            }
+            d.style.display = "block";
+               messageString += "</ul>";
+             Element.update('errorMessageContent', messageString);
         }
         return numErrors == 0;
     }
@@ -257,13 +257,13 @@ function validateForm() {
 
 
 function showUrlInput(id) {
-	Element.hide(id + "_div_file");
-	Element.show(id + "_div_url");
+    Element.hide(id + "_div_file");
+    Element.show(id + "_div_url");
 }
 
 function showFileInput(id) {
-	Element.show(id + "_div_file");
-	Element.hide(id + "_div_url");
+    Element.show(id + "_div_file");
+    Element.hide(id + "_div_url");
 
 }
 
@@ -272,152 +272,152 @@ function showFileInput(id) {
 /* ]]> */
 
 </script>
-	</ui:define>
-	<ui:define name="pageTitle">
-	  GenePattern
-	  <h:outputText rendered="#{!empty runTaskBean.lsid}"> - #{runTaskBean.name}</h:outputText>
-	</ui:define>
+    </ui:define>
+    <ui:define name="pageTitle">
+      GenePattern
+      <h:outputText rendered="#{!empty runTaskBean.lsid}"> - #{runTaskBean.name}</h:outputText>
+    </ui:define>
 
-	<ui:define name="leftPanel">
-		<td width="242" valign="top" class="tasks" id="tasks"><ui:include
-			src="moduleChooser.xhtml" /></td>
-	</ui:define>
+    <ui:define name="leftPanel">
+        <td width="242" valign="top" class="tasks" id="tasks"><ui:include
+            src="moduleChooser.xhtml" /></td>
+    </ui:define>
 
-	<ui:define name="rightPanel">
+    <ui:define name="rightPanel">
 
-		<td width="203" valign="top" class="recentjobs" id="recentjobs">
+        <td width="203" valign="top" class="recentjobs" id="recentjobs">
 
-		<style>
+        <style>
 .rich-tabpanel-content {
-	border-width: 1px 1px 1px 1px;
-	border-color: #dfdfb9;
-	background-color: #ebebce;
+    border-width: 1px 1px 1px 1px;
+    border-color: #dfdfb9;
+    background-color: #ebebce;
 }
 
 .rich-panel-header {
-	background-image: none;
-	background-color: transparent;
+    background-image: none;
+    background-color: transparent;
 }
 
 .rich-tab-inactive {
-	background-color: #dfdfb9;
-	cursor: pointer;
-	font-weight: bold;
-	font-size: 11px;
-	line-height: 15px;
-	color: #666633;
-	text-decoration: none;
-	background-image: none;
-	border-color: #dfdfb9;
+    background-color: #dfdfb9;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 11px;
+    line-height: 15px;
+    color: #666633;
+    text-decoration: none;
+    background-image: none;
+    border-color: #dfdfb9;
 }
 
 .rich-tab-active {
-	background-color: #ebebce;
-	font-weight: bold;
-	font-size: 11px;
-	line-height: 15px;
-	color: #666633;
-	text-decoration: none;
-	background-image: none;
-	border-color: #dfdfb9;
+    background-color: #ebebce;
+    font-weight: bold;
+    font-size: 11px;
+    line-height: 15px;
+    color: #666633;
+    text-decoration: none;
+    background-image: none;
+    border-color: #dfdfb9;
 }
 </style>
-		<h:outputText>
-			<rich:tabPanel width="280" switchType="ajax" selectedTab="#{uploadFilesBean.selectedTab}">
-				<rich:tab label="Recent Jobs" id="recentJobs" immediate="true">
-					<ui:include src="/pages/recentJobs.xhtml" />
-				</rich:tab>
-				<rich:tab label="Uploads" id="uploads" immediate="true">
-					<ui:include src="/pages/uploads/uploadedFiles.xhtml" />
-				</rich:tab>
-				<rich:tab label="GenomeSpace" rendered="#{genomeSpaceBean.loggedIn}" id="genomeSpace">
-					<ui:include src="/pages/genomespace/genomespaceFiles.xhtml" />
-				</rich:tab>
-			</rich:tabPanel>
-		</h:outputText></td>
-	</ui:define>
+        <h:outputText>
+            <rich:tabPanel width="280" switchType="ajax" selectedTab="#{uploadFilesBean.selectedTab}">
+                <rich:tab label="Recent Jobs" id="recentJobs" immediate="true">
+                    <ui:include src="/pages/recentJobs.xhtml" />
+                </rich:tab>
+                <rich:tab label="Uploads" id="uploads" immediate="true">
+                    <ui:include src="/pages/uploads/uploadedFiles.xhtml" />
+                </rich:tab>
+                <rich:tab label="GenomeSpace" rendered="#{genomeSpaceBean.loggedIn}" id="genomeSpace">
+                    <ui:include src="/pages/genomespace/genomespaceFiles.xhtml" />
+                </rich:tab>
+            </rich:tabPanel>
+        </h:outputText></td>
+    </ui:define>
 
-	<ui:define name="body">
-		<!-- Error messages -->
-		<div id="errorMessageDiv" style="display: none;">
-		<div id="errorMessage" />
-		</div>
-		<t:div rendered="#{!empty runTaskBean.lsid}">
-			<ui:include src="runTaskForm.xhtml" />
-		</t:div>
+    <ui:define name="body">
+        <!-- Error messages -->
+        <div id="errorMessageDiv" style="display: none;">
+        <div id="errorMessage" />
+        </div>
+        <t:div rendered="#{!empty runTaskBean.lsid}">
+            <ui:include src="runTaskForm.xhtml" />
+        </t:div>
 
 
-		<t:div rendered="#{empty runTaskBean.lsid}">
-			<f:subview rendered="#{empty runTaskBean.splashPage}">
-				<ui:include src="splashpage.xhtml" />
-			</f:subview>
-			<f:subview rendered="#{runTaskBean.splashPage == 'resources'}">
-				<ui:include src="splashpageResources.xhtml" />
-			</f:subview>
-			<f:subview rendered="#{runTaskBean.splashPage == 'downloads'}">
-				<ui:include src="splashpageDownloads.xhtml" />
-			</f:subview>
-			<f:subview rendered="#{runTaskBean.splashPage == 'help'}">
-				<ui:include src="splashpageHelp.xhtml" />
-			</f:subview>
-		</t:div>
-	</ui:define>
+        <t:div rendered="#{empty runTaskBean.lsid}">
+            <f:subview rendered="#{empty runTaskBean.splashPage}">
+                <ui:include src="splashpage.xhtml" />
+            </f:subview>
+            <f:subview rendered="#{runTaskBean.splashPage == 'resources'}">
+                <ui:include src="splashpageResources.xhtml" />
+            </f:subview>
+            <f:subview rendered="#{runTaskBean.splashPage == 'downloads'}">
+                <ui:include src="splashpageDownloads.xhtml" />
+            </f:subview>
+            <f:subview rendered="#{runTaskBean.splashPage == 'help'}">
+                <ui:include src="splashpageHelp.xhtml" />
+            </f:subview>
+        </t:div>
+    </ui:define>
 
-	<!-- Popup menu  -->
-	<ui:define name="popupMenus">
-		<h:form>
-			<div id="versionPopupMenu" style="visibility: hidden;"
-				class="popupMenu">
-			<table>
-				<tbody>
-					<t:dataList value="#{runTaskBean.versions}" var="version">
-						<tr>
-							<td><h:outputLink
-								value="#{facesContext.externalContext.requestContextPath}/pages/index.jsf"> #{version}
-					  <f:param value="#{runTaskBean.lsidNoVersion}:#{version}"
-									name="lsid" />
-							</h:outputLink></td>
-						</tr>
-					</t:dataList>
-				</tbody>
-			</table>
-			</div>
-		</h:form>
-		<h:form>
-			<f:param />
-			<t:dataList var="jobInfo" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
-				<ui:include src="jobsMenu.xhtml">
-					<ui:param name="job" value="#{jobInfo}" />
-				</ui:include>
-				<t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}" rowIndexVar="paramIndex">
-					<ui:include src="jobFileMenu.xhtml">
-						<ui:param name="job" value="#{jobInfo}" />
-						<ui:param name="fileInfo" value="#{fileInfo}" />
-					</ui:include>
-				</t:dataList>
-			</t:dataList>
-			<t:dataList var="aFile" value="#{uploadFilesBean.files}" rowIndexVar="dirIndex">
-				<ui:include src="uploads/uploadFileMenu.xhtml">
-	            	<ui:param name="aFile" value="#{aFile}"/>
-	            </ui:include>
-			</t:dataList>
-			<t:dataList var="aFile" value="#{uploadFilesBean.directories}" rowIndexVar="dirIndex">
-				<ui:include src="uploads/uploadFileMenu.xhtml">
-	            	<ui:param name="aFile" value="#{aFile}"/>
-	            </ui:include>
-			</t:dataList>
-			<t:dataList var="file" value="#{genomeSpaceBean.allFiles}" rowIndexVar="fileIndex">
-				<ui:include src="genomespace/fileMenu.xhtml">
-           			<ui:param name="file" value="#{file}"/>
-           		</ui:include>
-           	</t:dataList>
-           	<t:dataList var="file" value="#{genomeSpaceBean.allDirectories}" rowIndexVar="fileIndex">
-				<ui:include src="genomespace/fileMenu.xhtml">
-           			<ui:param name="file" value="#{file}"/>
-           		</ui:include>
-           	</t:dataList>
-		</h:form>
-	</ui:define>
+    <!-- Popup menu  -->
+    <ui:define name="popupMenus">
+        <h:form>
+            <div id="versionPopupMenu" style="visibility: hidden;"
+                class="popupMenu">
+            <table>
+                <tbody>
+                    <t:dataList value="#{runTaskBean.versions}" var="version">
+                        <tr>
+                            <td><h:outputLink
+                                value="#{facesContext.externalContext.requestContextPath}/pages/index.jsf"> #{version}
+                      <f:param value="#{runTaskBean.lsidNoVersion}:#{version}"
+                                    name="lsid" />
+                            </h:outputLink></td>
+                        </tr>
+                    </t:dataList>
+                </tbody>
+            </table>
+            </div>
+        </h:form>
+        <h:form>
+            <f:param />
+            <t:dataList var="jobInfo" value="#{jobsBean.recentJobs}" rowIndexVar="jobIndex">
+                <ui:include src="jobsMenu.xhtml">
+                    <ui:param name="job" value="#{jobInfo}" />
+                </ui:include>
+                <t:dataList var="fileInfo" value="#{jobInfo.allFileInfos}" rowIndexVar="paramIndex">
+                    <ui:include src="jobFileMenu.xhtml">
+                        <ui:param name="job" value="#{jobInfo}" />
+                        <ui:param name="fileInfo" value="#{fileInfo}" />
+                    </ui:include>
+                </t:dataList>
+            </t:dataList>
+            <t:dataList var="aFile" value="#{uploadFilesBean.files}" rowIndexVar="dirIndex">
+                <ui:include src="uploads/uploadFileMenu.xhtml">
+                    <ui:param name="aFile" value="#{aFile}"/>
+                </ui:include>
+            </t:dataList>
+            <t:dataList var="aFile" value="#{uploadFilesBean.directories}" rowIndexVar="dirIndex">
+                <ui:include src="uploads/uploadFileMenu.xhtml">
+                    <ui:param name="aFile" value="#{aFile}"/>
+                </ui:include>
+            </t:dataList>
+            <t:dataList var="file" value="#{genomeSpaceBean.allFiles}" rowIndexVar="fileIndex">
+                <ui:include src="genomespace/fileMenu.xhtml">
+                       <ui:param name="file" value="#{file}"/>
+                   </ui:include>
+               </t:dataList>
+               <t:dataList var="file" value="#{genomeSpaceBean.allDirectories}" rowIndexVar="fileIndex">
+                <ui:include src="genomespace/fileMenu.xhtml">
+                       <ui:param name="file" value="#{file}"/>
+                   </ui:include>
+               </t:dataList>
+        </h:form>
+    </ui:define>
 
 </ui:composition>
 </html>
