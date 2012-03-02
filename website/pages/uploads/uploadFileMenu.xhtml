@@ -67,16 +67,16 @@ use, misuse, or functionality.
 								<h:outputText>Save to GenomeSpace</h:outputText>
 							</td>
 						</tr>
-						<tr>
-							<td>
+							<tr>
+								<td>
 								<t:selectOneMenu id="saveToGenomepace">
 									<f:selectItems value="#{genomeSpaceBean.allDirectorySelects}" />
 								</t:selectOneMenu>
 								<h:commandLink value="Save" action="#{genomeSpaceBean.sendFileToGenomeSpace}" immediate="true">
                                     <f:param name="fileToSave" value="#{aFile.file.relativePath}" />
-                                </h:commandLink>
-							</td>
-						</tr>
+		                            </h:commandLink>
+								</td>
+							</tr>
                     </h:outputText>
                     <h:outputText rendered="#{not empty aFile.sendToParameters or (aFile.directory and not empty aFile.sendToBatch)}">
                         <tr>
