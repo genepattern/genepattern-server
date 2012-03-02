@@ -75,49 +75,88 @@ function addparameter()
     });
 }
 
-function addtocommandline(flag, name, prevflag, prevname)
+function addtocommandline(flag, name, prevflag, prevname, delimiter)
 {
     var ctext = $('#commandlist').text();
 
-    var text;
+    var text = "";
 
-    if(flag != "" && name != "");
+    if (flag == "" && name == "" && prevflag ==undefined && prevname == undefined)
     {
-        text = flag + " " + name;;
+        return;
     }
 
-    var item = "<li class='commanditem'>" +
+    //construct new parameter value
+    if(name != "")
+    {
+        text = name;
+    }
+
+    if(flag != "")
+    {
+        text = flag + delimiter + text;
+    }
+
+    var item = $("<li class='commanditem'>" +
                  text +
-                "</li>";
-    var  prevtext = prevflag + " " + prevname;
+                "</li>");
+
+    //construct prev parameter value
+    var  prevtext = "";
+    if(prevname != "")
+    {
+        prevtext = prevname;
+    }
+
+    if(prevflag != "")
+    {
+        prevtext = prevflag + delimiter + prevtext;
+    }
+    
+    //if no change in value do nothing
+    if(prevtext == text)
+    {
+        return;
+    }
+
+    //look for child with matching old parameter value and replace with new parameter value
     var found = false;
 
     $('#commandlist').children().each(function()
     {
         if($(this).text() ==  prevtext)
         {
-            $(this).replaceWith($(item));
+            if(text != "")
+            {
+                $(this).replaceWith(item);
+            }
+            else
+            {
+                $(this).remove();
+            }
             found = true;
         }
     });
 
-
+    // if old parameter value was not found then this must be a new parameter so insert it into list
     if(!found && text != "")
     {
-        $('#commandlist').append($(item));
-    }
+        $('#commandlist').append(item);
+            //add ability to select new parameter in list
+            item.click(function() {
+            if (!$(this).hasClass("ui-selected"))
+            {
+                $(this).addClass("ui-selected").siblings().removeClass("ui-selected");
+            }
+            else
+            {
+                $(this).removeClass("ui-selected");
+            }
+        });
 
-
-    $(".commanditem").click(function() {
-        if (!$(this).hasClass("ui-selected")) {
-            $(this).addClass("ui-selected").siblings().removeClass("ui-selected");
-        }
-        else
-        {
-            $(this).removeClass("ui-selected");
-        }
-    });
+    }   
 }
+
 
 
 jQuery(document).ready(function() {
@@ -214,7 +253,6 @@ jQuery(document).ready(function() {
     {
             $("#param-bar ul").hide();
             $( "#addparamdialog" ).dialog("open");
-            //alert("Not implemented");
     });
 
     $( "#addparamdialog" ).dialog({
@@ -241,17 +279,21 @@ jQuery(document).ready(function() {
     $('#parameters').focusout(function()
     {
         $('.parameter').each(function() {
-            var pname_newval = $(this).find("input[name='p_name']").val();
-            var pflag_newval = $(this).find("input[name='p_flag']").val();
 
-            var pname_oldval = $(this).find("input[name='p_name']").data('oldVal');
-            var pflag_oldval = $(this).find("input[name='p_flag']").data('oldVal');
+            var pelement = $(this).find("input[name='p_name']");
+            var felement = $(this).find("input[name='p_flag']");
+            var pname_newval = pelement.val();
+            var pflag_newval = felement.val();
 
+            var pname_oldval = pelement.data('oldVal');
+            var pflag_oldval = felement.data('oldVal');
 
-            $(this).find("input[name='p_name']").data('oldVal',  pname_newval );
-            $(this).find("input[name='p_flag']").data('oldVal',  pflag_newval );
+            pelement.data('oldVal',  pname_newval );
+            felement.data('oldVal',  pflag_newval );
 
-            addtocommandline(pflag_newval, pname_newval, pflag_oldval, pname_oldval);           
+            var delimiter = " ";
+
+            addtocommandline(pflag_newval, pname_newval, pflag_oldval, pname_oldval,delimiter);
         });
     });     
 

@@ -197,7 +197,7 @@ div.ui-layout-north
     padding: 0;
     width: 99%;
 }
-#parameters div.parameter { margin: 3px; padding: 0; font-size: 1em; height: 100%; width: 100%;}
+#parameters div.parameter { margin: 3px; padding: 0; font-size: 1em; width: 99.5%;}
   
 #commandlist .ui-selected
 {
@@ -216,7 +216,6 @@ div.ui-layout-north
     font-size: 0.75em;
 } 
 
-
 #addparamdialog
 {
     font-size: 0.8125em;    
@@ -228,3 +227,32 @@ div.ui-layout-north
             
 }
 
+#parameters
+{
+    overflow: auto;
+    height: 87%;
+    margin: 3px;
+}
+
+.pcontrols
+{
+    width: 100%;
+    margin: 0;
+    background-color: #98AFC7;
+}
+
+.ui-layout-center
+{
+    padding: 0;
+    overflow: hidden;
+}
+
+.ui-layout-west, .ui-layout-south, .west-center, .west-south
+{
+    padding: 0;
+}
+
+.content
+{
+    margin: 6px;
+}

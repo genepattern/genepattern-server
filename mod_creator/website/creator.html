@@ -27,179 +27,186 @@
 
 <div class="ui-layout-south">
     <p class="heading">Details</p>
-    <table border="0" cellspacing="0" cellpadding="0">
-        <tr>
-            <td colspan="2">
-                <label>Description:</label>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <textarea class="det_textarea" cols="10" rows="2" name="description"></textarea>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <label>Author:</label>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                 <input type="text" name="author" size="70"/>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <label>Organization:</label>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                 <input type="text" name="organization" size="70"/>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <label>Version Comment:</label>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                 <input type="text" name="comment" size="100"/>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <label> Privacy: </label>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                 <select>
-                      <option value="private">private</option>
-                     <option value="public">public</option>
-                 </select>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <label>
-                    Quality Level
-                </label>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <select>
-                    <option value="development">development</option>
-                    <option value="preproduction">preproduction</option>
-                    <option value="production">preproduction</option>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                CPU type:
-            </td>
-            <td>
-                Operating System:
-            </td>
-        <tr>
-        </tr>
-        <tr>
-            <td>
-                <select>
-                    <option value="any">any</option>
-                    <option value="Alpha">Alpha</option>
-                    <option value="Intel">Intel</option>
-                    <option value="PowerPC">PowerPC</option>
-                    <option value="Sparc">Sparc</option>
-                </select>
-            </td>
-            <td>
-                <input type="checkbox" name="os" value="os" id="os" checked="checked"/>
-                <label for="os">Any</label>
+    <div class ="content">
+        <table border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                <td colspan="2">
+                    <label>Description:</label>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <textarea class="det_textarea" cols="10" rows="2" name="description"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <label>Author:</label>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                     <input type="text" name="author" size="70"/>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <label>Organization:</label>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                     <input type="text" name="organization" size="70"/>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <label>Version Comment:</label>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                     <input type="text" name="comment" size="100"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label> Privacy: </label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                     <select>
+                          <option value="private">private</option>
+                         <option value="public">public</option>
+                     </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label>
+                        Quality Level
+                    </label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <select>
+                        <option value="development">development</option>
+                        <option value="preproduction">preproduction</option>
+                        <option value="production">preproduction</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    CPU type:
+                </td>
+                <td>
+                    Operating System:
+                </td>
+            <tr>
+            </tr>
+            <tr>
+                <td>
+                    <select>
+                        <option value="any">any</option>
+                        <option value="Alpha">Alpha</option>
+                        <option value="Intel">Intel</option>
+                        <option value="PowerPC">PowerPC</option>
+                        <option value="Sparc">Sparc</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="checkbox" name="os" value="os" id="os" checked="checked"/>
+                    <label for="os">Any</label>
 
-                <input type="checkbox" name="os" value="os1" id="os1"/>
-                <label for="os1">Linux</label>
+                    <input type="checkbox" name="os" value="os1" id="os1"/>
+                    <label for="os1">Linux</label>
 
-                <input type="checkbox" name="os" value="os2" id="os2"/>
-                <label for="os2">MacOS</label>
+                    <input type="checkbox" name="os" value="os2" id="os2"/>
+                    <label for="os2">MacOS</label>
 
-                <input type="checkbox" name="os" value="os3" id="os3"/>
-                <label for="os3">Solaris</label>
+                    <input type="checkbox" name="os" value="os3" id="os3"/>
+                    <label for="os3">Solaris</label>
 
-                <input type="checkbox" name="os" value="os4" id="os4"/>
-                <label for="os4">Tru64</label>
+                    <input type="checkbox" name="os" value="os4" id="os4"/>
+                    <label for="os4">Tru64</label>
 
-                <input type="checkbox" name="os" value="os5" id="os5"/>
-                <label for="os5">Windows</label>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                Language:
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <select>
-                    <option value="any">any</option>
-                    <option value="C">C</option>
-                    <option value="C++">C++</option>
-                    <option value="Java">Java</option>
-                    <option value="MATLAB">MATLAB</option>
-                    <option value="Perl">Perl</option>
-                    <option value="Python">Python</option>
-                    <option value="R">R</option>
-                </select>
+                    <input type="checkbox" name="os" value="os5" id="os5"/>
+                    <label for="os5">Windows</label>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    Language:
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <select>
+                        <option value="any">any</option>
+                        <option value="C">C</option>
+                        <option value="C++">C++</option>
+                        <option value="Java">Java</option>
+                        <option value="MATLAB">MATLAB</option>
+                        <option value="Perl">Perl</option>
+                        <option value="Python">Python</option>
+                        <option value="R">R</option>
+                    </select>
 
-                <b> min. language version: </b>
-                <input type="text" name="language" size="20"/>
-            </td>
-        </tr>
-    </table>
+                    <b> min. language version: </b>
+                    <input type="text" name="language" size="20"/>
+                </td>
+            </tr>
+        </table>
+    </div>
 </div>
 
 <div class="ui-layout-west">
     <div class="west-center">
         <p class="heading">Command Line</p>
-        <span id="commandtype">
-            Type:
-            <select>
-                <option value="java">Java</option>
-                <option value="R">R</option>
-                <option value="perl">Perl</option>
-                <option value="custom">Custom</option>
-            </select>
-        </span>
-        <!--<span id="commandpreview">
-            <button>Preview Commandline</button>          
-        </span>-->
-        <div id='commandtextarea'>
-            <textarea cols='40' rows='5' name='cmdtext'></textarea>
+        <div class="content">
+            <span id="commandtype">
+                Type:
+                <select>
+                    <option value="java">Java</option>
+                    <option value="R">R</option>
+                    <option value="perl">Perl</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </span>
+            <!--<span id="commandpreview">
+                <button>Preview Commandline</button>
+            </span>-->
+            <div id='commandtextarea'>
+                <textarea cols='40' rows='5' name='cmdtext'></textarea>
+            </div>
+            <ol id="commandlist"></ol>
         </div>
-        <ol id="commandlist"></ol>
     </div>
     <div class="west-south">
         <p class="heading">Support Files</p>
+        <div class="content">
+        </div>    
     </div>
 
     <div id="addparamdialog" title="Add parameters">
-        How many parameters: <input type="text" id="multiparam"/>              
+        How many parameters: <input type="text" id="multiparam"/>
     </div>
 </div>
 
 <div class="ui-layout-center">
     <p class="heading">Parameters</p>
     <div class="pcontrols">
+
         <span class="addcontrols" >
             <button id="addparam">Add</button>
             <button id="paramselect">Add one or more parameters</button>
         </span>
 
         <button id="deleteparam">Delete</button>
-		<span id="param-bar">
+        <span id="param-bar">
             <ul>
                 <li><a href="#" id="addone">Add</a></li>
                 <li><a href="#" id="addmultiple">Add multiple parameters</a></li>
