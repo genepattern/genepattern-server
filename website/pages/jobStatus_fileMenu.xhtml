@@ -12,16 +12,16 @@
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" 
-	xmlns:ui="http://java.sun.com/jsf/facelets" 
-	xmlns:h="http://java.sun.com/jsf/html" 
-	xmlns:a4j="http://richfaces.org/a4j"
-	xmlns:f="http://java.sun.com/jsf/core" 
-	xmlns:t="http://myfaces.apache.org/tomahawk" 
-	xmlns:c="http://java.sun.com/jstl/core">
-	
+    xmlns:ui="http://java.sun.com/jsf/facelets" 
+    xmlns:h="http://java.sun.com/jsf/html" 
+    xmlns:a4j="http://richfaces.org/a4j"
+    xmlns:f="http://java.sun.com/jsf/core" 
+    xmlns:t="http://myfaces.apache.org/tomahawk" 
+    xmlns:c="http://java.sun.com/jstl/core">
+    
   <ui:composition>
-  	
-  	
+      
+      
     <div id="menuDiv_#{outputFile.valueId}"  style="visibility:hidden;" class="popupMenu">
      
       <table>
@@ -49,31 +49,31 @@
           <tr>
             <td>
               <h:commandLink value="Create Pipeline" actionListener="#{jobsMenuBean.createPipeline}" immediate="true" rendered="#{not isInputFile}">
-             	 <f:param value="#{jobStatusBean.jobInfo.jobNumber}" name="jobNumber"/>
+                  <f:param value="#{jobStatusBean.jobInfo.jobNumber}" name="jobNumber"/>
                  <f:param value="#{jobOnMenu.jobNumber}" name="jobMenuNumber"/>
               
               </h:commandLink>
             </td>
           </tr>
-					<!--  GENOMESPACE ADDITION  -->
+                    <!--  GENOMESPACE ADDITION  -->
                     <h:outputText rendered="#{genomeSpaceBean.loggedIn}">
                         <tr>
                             <td>
                                 <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
                             </td>
                         </tr>
-						<tr>
-							<td>
-								<t:selectOneMenu id="saveToGenomepace">
-									<f:selectItems value="#{genomeSpaceBean.allDirectorySelects}" />
-								</t:selectOneMenu>
-								<h:commandLink value="Save" action="#{genomeSpaceBean.sendFileToGenomeSpace}" immediate="true">
+                        <tr>
+                            <td>
+                                <t:selectOneMenu id="saveToGenomepace">
+                                    <f:selectItems value="#{genomeSpaceBean.allDirectorySelects}" />
+                                </t:selectOneMenu>
+                                <h:commandLink value="Save" action="#{genomeSpaceBean.sendFileToGenomeSpace}" immediate="true">
                                     <f:param name="fileToSave" value="#{outputFile.value}" />
                                 </h:commandLink>
-							</td>
-						</tr>
+                            </td>
+                        </tr>
                     </h:outputText>
-					<!--  END GENOMESPACE ADDITION  -->
+                    <!--  END GENOMESPACE ADDITION  -->
           <tr>
             <td>
               <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
@@ -92,11 +92,11 @@
             </tr>
           </t:dataList>
           <h:outputText rendered="#{!empty fileInfo.moduleInputParameters}">
-          	<tr>
-            	<td>
-              	<img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
-            	</td>
-          	</tr>
+              <tr>
+                <td>
+                  <img src="#{facesContext.externalContext.requestContextPath}/images/divider-pix2.gif" width="100%" height="1"/>
+                </td>
+              </tr>
           </h:outputText>
           
           <t:dataList  var="moduleMenuItem" value="#{outputFile.moduleMenuItems}">
