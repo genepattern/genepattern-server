@@ -15,7 +15,7 @@ function addparameter()
                    Default Value: \
                </td>  \
                <td>  \
-                    Flag: \
+                    Optional: \
                </td       \
            </tr>   \
            <tr>    \
@@ -28,24 +28,32 @@ function addparameter()
                <td> \
                    <input type='text' name='p_defaultvalue' size='16'/> \
                </td>\
-                <td>        \
-                   <input type='text' name='p_flag' size='7'/> \
-               </td>  \
+               <td>  \
+                    <input type='checkbox' name='p_optional' size='25'/>\
+                </td> \
             </tr>  \
             <tr>               \
                 <td>  \
-                    Optional: \
+                    Flag: \
+                </td> \
+                <td>  \
+                    Flag Delimiter: \
                 </td> \
                 <td>   \
                    Type: \
                </td> \
-                <td colspan='2'>   \
-                   Choice: \
-               </td> \
             </tr>  \
             <tr>               \
-                <td>  \
-                    <input type='checkbox' name='p_optional' size='25'/>\
+                <td>        \
+                   <input type='text' name='p_flag' size='7'/> \
+                </td>  \
+                <td> \
+                   <select name='p_delimiter'>\
+                       <option value='space'>Space</option> \
+                       <option value='none'>None</option>  \
+                       <option value='equals'>=</option>\
+                       <option value='Other'>Other</option> \
+                   </select>  \
                 </td> \
                 <td> \
                    <select name='p_type'>\
@@ -53,17 +61,16 @@ function addparameter()
                        <option value='Numeric'>Numeric</option>  \
                        <option value='Input File'>Input File</option>\
                        <option value='Password'>Password</option> \
+                       <option value='Choice'>Choice</option> \
                    </select>  \
-               </td> \
-                <td>  \
-                    <input type='text' name='p_choice' size='25'/>\
                 </td> \
             </tr>  \
         </table> \
     </div>");
     $('#parameters').append(paramDiv);
 
-    $(".parameter").click(function() {
+    paramDiv.click(function()
+    {
         if (!$(this).hasClass("ui-selected"))
         {
             $(this).addClass("ui-selected").siblings().removeClass("ui-selected");
@@ -158,7 +165,6 @@ function addtocommandline(flag, name, prevflag, prevname, delimiter)
 }
 
 
-
 jQuery(document).ready(function() {
     //Used for editing default Module name - jQuery In Place Editor 
 
@@ -168,8 +174,6 @@ jQuery(document).ready(function() {
          bg_over: "none",		 
          show_buttons: true
 	});
-
-
 
     // this layout could be created with NO OPTIONS - but showing some here just as a sample...
     // myLayout = $('body').layout(); -- syntax with No Options
@@ -295,29 +299,28 @@ jQuery(document).ready(function() {
 
             addtocommandline(pflag_newval, pname_newval, pflag_oldval, pname_oldval,delimiter);
         });
-    });     
+    });
 
-   /* $('#commandpreview').children().button()
-            .click(function()
-    {        
+    $('#commandpreview').children().button().click(function()
+    {
         var cmd_args = $('#commandlist').text();
 
-       // $("#dialog").children().remove();
-       // $("#dialog").append($('<p>'+cmd_args +'</p>'));
+        // $("#dialog").children().remove();
+        // $("#dialog").append($('<p>'+cmd_args +'</p>'));
 
-       // $( "#dialog" ).dialog(); 
+        // $( "#dialog" ).dialog();
         //$("#commandtextarea").children().remove();
         //$("#commandtextarea textarea").append(cmd_args);
 
-    //  var cmdtextarea = "<div id='commandtextarea'> \
-     //       <textarea cols='40' rows='5' name='cmdtext'></textarea> \
-      //  </div>";
+       // var cmdtextarea = "<div id='commandtextarea'> \
+       //     <textarea cols='40' rows='5' name='cmdtext'></textarea> \
+       // </div>";
 
-        $(".west-center").append($(cmdtextarea));
+        //$(".west-center").append($(cmdtextarea));
 
-         $("#commandtextarea").toggle();
-         $("#commandtextarea textarea").attr("value", cmd_args);
-    });   */
+        $("#commandtextarea textarea").attr("value", cmd_args);
+        $("#commandtextarea").toggle();
+    });
 
     $("#commandtextarea").hide();
 });

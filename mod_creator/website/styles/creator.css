@@ -256,3 +256,9 @@ div.ui-layout-north
 {
     margin: 6px;
 }
+
+#commandtextarea
+{
+    margin: 2px;
+    padding: 2px;
+}
