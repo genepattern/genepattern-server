@@ -510,6 +510,7 @@ var library = {
     div: "library",			// The id of the div used by the library
     moduleNames: [],		// A list of all module names
     moduleVersionMap: {},   // A map of module names to an array of all module versions
+    moduleCategoryMap: {},  // A map of all module categories to an array of modules in that category
     modules: {},			// The JSON structure of all modules in the library
     recent: [],             // List of recently used modules
     _loadInit: false,       // Whether the load pipeline dialog has been initialized or not
@@ -518,8 +519,10 @@ var library = {
         this._readModules(moduleJSON);
         this._readModuleVersions();
         this._readModuleNames();
+        this._readModuleCategories();
 
         this._addModuleComboBox();
+        this._addCategoryModules();
     },
 
     _addRecentModule: function(lsid, value) {
@@ -534,9 +537,53 @@ var library = {
         this._addModuleButton(value, lsid);
     },
 
+    _concatNameForDisplay: function(name, length) {
+        var concatName = name.substring(0, length);
+        if (concatName !== name) {
+            concatName += "...";
+        }
+
+        return concatName;
+    },
+
+    _addCategoryModules: function() {
+        for (var cat in library.moduleCategoryMap) {
+            var catDiv = document.createElement("div");
+            catDiv.setAttribute("class", "categoryHeader");
+            catDiv.innerHTML = properties._encodeToHTML(cat);
+
+            for (var i = 0; i < library.moduleCategoryMap[cat].length; i++) {
+                var module = library.moduleCategoryMap[cat][i];
+                var modDiv = document.createElement("div");
+                modDiv.setAttribute("class", "moduleBullet");
+                modDiv.setAttribute("name", module.lsid);
+                modDiv.innerHTML = "<a href='#' onclick='return false;'>" + properties._encodeToHTML(this._concatNameForDisplay(module.name, 32)) + "</a>";
+                $(modDiv).click(function() {
+                    var lsid = $(this)[0].getAttribute("name");
+
+                    // If unable to find the lsid give up, an error has already been reported
+                    if (lsid === null) return;
+
+                    var module = editor.addModule(lsid);
+                });
+                catDiv.appendChild(modDiv);
+            }
+
+            $("#categoryModules").append(catDiv);
+        }
+    },
+
     _addModuleComboBox: function() {
         $("#modulesDropdown").autocomplete({ source: this.moduleNames });
         $("#addModule").button();
+
+        $("#modulesDropdown").keyup(function(event) {
+            if (event.keyCode == 13) {
+                if (event.preventDefault) event.preventDefault();
+                if (event.stopPropagation) event.stopPropagation();
+                $("#addModule").click();
+            }
+        });
 
         $("#addModule").click(function() {
             var value = $("#modulesDropdown").val();
@@ -548,7 +595,6 @@ var library = {
             if (lsid === null) return;
 
             var module = editor.addModule(lsid);
-            if (module !== null && module !== undefined) { library._addRecentModule(lsid, value); }
         });
     },
 
@@ -669,6 +715,21 @@ var library = {
         // Both versions are exactly the same
         console.log("WARN: library._higherVersion() called on two versions string that are the same");
         return false;
+    },
+
+    _addModuleToCategoryMap: function(module) {
+        if (this.moduleCategoryMap[module.category] === undefined || this.moduleCategoryMap[module.category] === null) {
+            this.moduleCategoryMap[module.category] = new Array();
+        }
+
+        this.moduleCategoryMap[module.category].push(module);
+    },
+
+    _readModuleCategories: function() {
+        for (var i in library.moduleVersionMap) {
+            var moduleArray = library.moduleVersionMap[i];
+            this._addModuleToCategoryMap(moduleArray[0])
+        }
     },
 
     _readModuleNames: function() {
@@ -1256,6 +1317,7 @@ function Module(moduleJSON) {
 	this.name = moduleJSON.name;
 	this.lsid = moduleJSON.lsid;
 	this.version = moduleJSON.version;
+    this.category = moduleJSON.category;
     this.write = moduleJSON.write;
 	this.outputs = moduleJSON.outputs;
 	this.outputEnds = [];

@@ -20,6 +20,7 @@ public class ModuleJSON extends JSONObject {
     public static final String VERSION = "version";
     public static final String WRITE = "write";
     public static final String TYPE = "type";
+    public static final String CATEGORY = "category";
     public static final String TYPE_MODULE = "module";
     public static final String TYPE_VISUALIZER = "visualizer";
     public static final String TYPE_PIPELINE = "pipeline";
@@ -38,6 +39,7 @@ public class ModuleJSON extends JSONObject {
             this.extractVersion(info.getLsid());
             this.determineWrite(info.getAccessId());
             this.determineType(info);
+            this.setCategory(info.getTaskInfoAttributes().get("taskType"));
             this.constructInputs(info.getParameterInfoArray());
             this.constructOutputs(info.getTaskInfoAttributes());
         }
@@ -92,6 +94,14 @@ public class ModuleJSON extends JSONObject {
         }
         
         this.put(INPUTS, inputs);
+    }
+    
+    public String getCategory() throws JSONException {
+        return this.getString(CATEGORY);
+    }
+    
+    public void setCategory(String category) throws JSONException {
+        this.put(CATEGORY, category);
     }
     
     public Integer getId() throws JSONException {
