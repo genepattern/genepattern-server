@@ -25,7 +25,8 @@
     <div id="modtitle"><a href="">UntitledModule</a></div>
 </div>
 
-<div class="ui-layout-south">
+
+<div class="ui-layout-center">
     <p class="heading">Details</p>
     <div class ="content">
         <table border="0" cellspacing="0" cellpadding="0">
@@ -35,7 +36,7 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="5">
                     <textarea class="det_textarea" cols="10" rows="2" name="description"></textarea>
                 </td>
             </tr>
@@ -45,7 +46,7 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="5">
                      <input type="text" name="author" size="70"/>
                 </td>
             </tr>
@@ -55,7 +56,7 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="5">
                      <input type="text" name="organization" size="70"/>
                 </td>
             </tr>
@@ -65,32 +66,22 @@
                 </td>
             </tr>
             <tr>
-                <td colspan="2">
+                <td colspan="5">
                      <input type="text" name="comment" size="100"/>
                 </td>
             </tr>
             <tr>
                 <td>
                     <label> Privacy: </label>
-                </td>
-            </tr>
-            <tr>
-                <td>
                      <select>
                           <option value="private">private</option>
                          <option value="public">public</option>
                      </select>
                 </td>
-            </tr>
-            <tr>
                 <td>
                     <label>
-                        Quality Level
+                        Quality Level:
                     </label>
-                </td>
-            </tr>
-            <tr>
-                <td>
                     <select>
                         <option value="development">development</option>
                         <option value="preproduction">preproduction</option>
@@ -101,14 +92,6 @@
             <tr>
                 <td>
                     CPU type:
-                </td>
-                <td>
-                    Operating System:
-                </td>
-            <tr>
-            </tr>
-            <tr>
-                <td>
                     <select>
                         <option value="any">any</option>
                         <option value="Alpha">Alpha</option>
@@ -118,6 +101,7 @@
                     </select>
                 </td>
                 <td>
+                    Operating System:
                     <input type="checkbox" name="os" value="os" id="os" checked="checked"/>
                     <label for="os">Any</label>
 
@@ -139,11 +123,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    Language:
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
+                    Language:   
                     <select>
                         <option value="any">any</option>
                         <option value="C">C</option>
@@ -161,59 +141,69 @@
             </tr>
         </table>
     </div>
-</div>
-
-<div class="ui-layout-west">
-    <div class="west-center">
-        <p class="heading">Command Line</p>
-        <div class="content">
-            <span id="commandtype">
-                Type:
-                <select>
-                    <option value="java">Java</option>
-                    <option value="R">R</option>
-                    <option value="perl">Perl</option>
-                    <option value="custom">Custom</option>
-                </select>
-            </span>
-            <span id="commandpreview">
-                <button>Show Commandline</button>
-            </span>
-            <div id='commandtextarea'>
-                <textarea cols='40' rows='5' name='cmdtext'></textarea>
-            </div>
-            <ol id="commandlist"></ol>
-        </div>
-    </div>
-    <div class="west-south">
-        <p class="heading">Support Files</p>
-        <div class="content">
-        </div>    
+    
+    <p class="heading">Support Files</p>
+    <div class="content">
     </div>
 
-    <div id="addparamdialog" title="Add parameters">
-        How many parameters: <input type="text" id="multiparam"/>
-    </div>
-</div>
-
-<div class="ui-layout-center">
-    <p class="heading">Parameters</p>
-    <div class="pcontrols">
-
-        <span class="addcontrols" >
-            <button id="addparam">Add</button>
-            <button id="paramselect">Add one or more parameters</button>
+    <p class="heading">Command Line</p>
+    <div class="content">
+        <span id="commandtype">
+            Type:
+            <select>
+                <option value="java">Java</option>
+                <option value="R">R</option>
+                <option value="perl">Perl</option>
+                <option value="custom">Custom</option>
+            </select>
         </span>
+        <span id="commandpreview">
+            <button>Show Commandline</button>
+        </span>
+        <div id='commandtextarea'>
+            <textarea cols='80' rows='5' name='cmdtext'></textarea>
+        </div>
+        <ol id="commandlist"></ol>
+    </div>
+    
+    <p class="heading">Parameters</p>
+    <div class="content" style="position: relative">
+        <div class="pcontrols">
+            <span class="addcontrols" >
+                <button id="addparam">Add</button>
+                <button id="paramselect">Add one or more parameters</button>
+            </span>
 
-        <button id="deleteparam">Delete</button>
+            <button id="deleteparam">Delete</button>
+
+        </div>
         <span id="param-bar">
             <ul>
                 <li><a href="#" id="addone">Add</a></li>
                 <li><a href="#" id="addmultiple">Add multiple parameters</a></li>
             </ul>
         </span>
+        
+        <div id="parameters"></div>
+    </div>   
+
+    <div id="addparamdialog" title="Add parameters">
+        How many parameters: <input type="text" id="multiparam"/>
     </div>
-    <div id="parameters"></div>
+
+    <div id="editchoicedialog" title="Edit Choice List">
+        <div>
+            <button>Add</button>
+            <button>Delete</button>            
+        </div>
+
+        <table>
+            <tr>
+                <th>Display Name</th>
+                <th>Value</th>
+            </tr>
+        </table>
+    </div>
 </div>
 </body>
 </html>

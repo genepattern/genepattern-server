@@ -1,69 +1,48 @@
-var mainLayout, westlayout;
+var mainLayout;
 
 function addparameter()
 {
     var paramDiv = $("<div class='parameter'>  \
         <table>    \
            <tr>    \
-               <td colspan='2'>   \
-                  Name: \
+               <td>   \
+                  <b>Name:</b>  \
+               </td>  \
+               <td>  \
+                   <input type='text' name='p_name' size='25'/> \
                </td>   \
                <td>   \
                    Description: \
+               </td> \
+               <td colspan='3'>  \
+                   <textarea cols='30' name='p_description' rows='3'></textarea> \
                </td>    \
                <td>        \
-                   Default Value: \
+                   Default Value: <input type='text' name='p_defaultvalue' size='16'/> \
                </td>  \
                <td>  \
-                    Optional: \
-               </td       \
+                    Optional: <input type='checkbox' name='p_optional' size='25'/>\
+               </td>       \
            </tr>   \
-           <tr>    \
-               <td colspan='2'>  \
-                   <input type='text' name='p_name' size='25'/> \
-               </td>   \
-               <td>    \
-                   <textarea cols='30' name='p_description' rows='2'></textarea> \
-               </td> \
-               <td> \
-                   <input type='text' name='p_defaultvalue' size='16'/> \
-               </td>\
-               <td>  \
-                    <input type='checkbox' name='p_optional' size='25'/>\
-                </td> \
-            </tr>  \
             <tr>               \
                 <td>  \
                     Flag: \
                 </td> \
-                <td>  \
-                    Flag Delimiter: \
+                <td> \
+                    <input type='text' name='p_flag' size='7'/> \
                 </td> \
+                <td> \
+                     <b>Type:</b> \
+                </td>     \
                 <td>   \
-                   Type: \
-               </td> \
-            </tr>  \
-            <tr>               \
-                <td>        \
-                   <input type='text' name='p_flag' size='7'/> \
-                </td>  \
-                <td> \
-                   <select name='p_delimiter'>\
-                       <option value='space'>Space</option> \
-                       <option value='none'>None</option>  \
-                       <option value='equals'>=</option>\
-                       <option value='Other'>Other</option> \
-                   </select>  \
-                </td> \
-                <td> \
-                   <select name='p_type'>\
+                    <select name='p_type'>\
                        <option value='text'>Text</option> \
                        <option value='Numeric'>Numeric</option>  \
                        <option value='Input File'>Input File</option>\
                        <option value='Password'>Password</option> \
                        <option value='Choice'>Choice</option> \
                    </select>  \
-                </td> \
+               </td> \
             </tr>  \
         </table> \
     </div>");
@@ -79,6 +58,31 @@ function addparameter()
         {
             $(this).removeClass("ui-selected");
         } */
+    });
+
+    $("select[name='p_type']").change(function()
+    {
+        var value = $(this).val();
+        if(value == "Choice")
+        {
+            var editChoiceLink = $("<td><a href=''> edit choice</a></td>");
+            //var editChoiceLink = $("<a href=''> edit choice</a>");
+
+            editChoiceLink.click(function()
+            {
+                $( "#editchoicedialog" ).dialog("open");
+            });
+
+            $(this).parent().parent().append(editChoiceLink);
+            //$(this).parent().append(editChoiceLink);
+        }
+        else
+        {
+            if($(this).parent().next().text().contains("edit"))
+            {
+                $(this).parent().next().remove();
+            }
+        }
     });
 }
 
@@ -164,8 +168,16 @@ function addtocommandline(flag, name, prevflag, prevname, delimiter)
     }   
 }
 
-
 jQuery(document).ready(function() {
+
+    $(".heading").click(function()
+    {
+        $(this).next(".content").slideToggle(340);
+    });
+
+    $(".content").show();
+
+    
     //Used for editing default Module name - jQuery In Place Editor 
 
      $("#modtitle").editInPlace({
@@ -192,23 +204,12 @@ jQuery(document).ready(function() {
     ,	north__slidable:		false	// OVERRIDE the pane-default of 'slidable=true'
     ,	north__spacing_open:	0		// no resizer-bar when open (zero height)
     ,	north__spacing_closed:	20		// big resizer-bar when open (zero height)
-    ,	south__resizable:		true	// OVERRIDE the pane-default of 'resizable=true'
-    ,	south__spacing_closed:	20		// big resizer-bar when open (zero height)
-    ,	south__togglerLength_closed: '100%'	// toggle-button is full-width of resizer-bar
-    //	some pane-size settings
+    //some pane-size settings
     ,	north__size:			40
-    ,	south__size:			220
     ,	west__size:			    360
     ,	east__size:				300
     ,	center__minWidth:		100
     ,	useStateCookie:			true
-    });
-
-    westLayout = $('div.ui-layout-west').layout({
-            minSize:				80	// ALL panes
-        ,	center__paneSelector:	".west-center"
-        ,	south__paneSelector:	".west-south"
-        ,	south__size:			130
     });
 
     $(function() {
@@ -217,7 +218,6 @@ jQuery(document).ready(function() {
 		$( "#parameters" ).disableSelection();
 
 	});
-
 
     $( "#addparam" )
         .button()
@@ -232,31 +232,28 @@ jQuery(document).ready(function() {
                 }
             })
             .click(function() {
-                var hidden = $("#param-bar").children("ul").is(":hidden");
-				if (hidden) {
-					$("#param-bar")
-						.children("ul").toggle();
-					}
+                $("#param-bar")
+                    .children("ul").toggle();
             })
             .parent()
                 .buttonset();    
 
     $( "#deleteparam" ).button().click(function() {
-            $('.ui-selected').each(function() {
-                $(this).remove();
-            });
+        $('.ui-selected').each(function() {
+            $(this).remove();
         });
+    });
 
     $("#param-bar ul li #addone").click(function()
     {
-            $("#param-bar ul").hide();
-            addparameter();
+        $("#param-bar ul").hide();
+        addparameter();
     });
 
     $("#param-bar ul li #addmultiple").click(function()
     {
-            $("#param-bar ul").hide();
-            $( "#addparamdialog" ).dialog("open");
+        $("#param-bar ul").hide();
+        $( "#addparamdialog" ).dialog("open");
     });
 
     $( "#addparamdialog" ).dialog({
@@ -323,4 +320,21 @@ jQuery(document).ready(function() {
     });
 
     $("#commandtextarea").hide();
+
+$( "#editchoicedialog" ).dialog({
+        autoOpen: false,
+        height: 340,
+        width: 280,
+        buttons: {
+                "OK": function() {
+                    
+                        $( this ).dialog( "close" );
+                },
+                "Cancel": function() {
+                    $( this ).dialog( "close" );
+                }
+        },
+        resizable: false
+    });
+
 });
