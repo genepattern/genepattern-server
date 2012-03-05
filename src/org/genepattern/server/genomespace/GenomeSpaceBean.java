@@ -8,6 +8,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -59,7 +61,7 @@ public class GenomeSpaceBean {
     private boolean loginFailed = false;
     private boolean tokenExpired = false;
     private String genomeSpaceUsername = null;
-    private Map<String, Set<TaskInfo>> kindToModules = null;
+    private Map<String, List<TaskInfo>> kindToModules = null;
     private String currentTaskLsid = null;
     private TaskInfo currentTaskInfo = null;
     private TreeNode<GenomeSpaceFile> fileTree = null;
@@ -294,12 +296,24 @@ public class GenomeSpaceBean {
      * This set is iterated over in the JSF for different files.
      * @return
      */
-    public Map<String, Set<TaskInfo>> getKindToModules() {
+    public Map<String, List<TaskInfo>> getKindToModules() {
         if (kindToModules == null) {
             // Attain a copy of the kindToModules map
             TaskInfo[] moduleArray = new AdminDAO().getLatestTasks(UIBeanHelper.getUserId());
             List<TaskInfo> allModules = Arrays.asList(moduleArray);
-            kindToModules = SemanticUtil.getKindToModulesMap(allModules);
+            Map<String, Set<TaskInfo>> baseMap = SemanticUtil.getKindToModulesMap(allModules);
+            kindToModules = new HashMap<String, List<TaskInfo>>();
+            
+            for (Map.Entry<String, Set<TaskInfo>> i : baseMap.entrySet()) {
+                List<TaskInfo> list = new ArrayList<TaskInfo>();
+                list.addAll(i.getValue());
+                Collections.sort(list, new Comparator<TaskInfo>() {
+                    public int compare(TaskInfo a, TaskInfo b) {
+                        return String.CASE_INSENSITIVE_ORDER.compare(a.getName(), b.getName());
+                    }
+                });
+                kindToModules.put(i.getKey(), list);
+            }
         }
         
         return kindToModules;
