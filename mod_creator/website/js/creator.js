@@ -73,10 +73,86 @@ function addparameter()
                 var editChoiceList = $("<td><input type='text' name='choicelist' size='30' readonly='readonly'/></td>");
                 var editChoiceLink = $("<td> <a href=''>edit choice</a></td>");
 
-                editChoiceLink.click(function()
+                editChoiceLink.children(a).click(function()
                 {
-                    $( "#editchoicedialog" ).dialog("open");
-                    $(this).data("editing", true);
+                    var choices = $(this).parent().prev().children().val();
+
+                    $( "#editchoicedialog" ).dialog({
+                        autoOpen: true,
+                        height: 500,
+                        width: 360,
+                        create: function()
+                        {
+                            $(this).find("tr td").remove();
+
+                            var result = choices.split(';');
+
+                            for(i=0;i<result.length;i++)
+                            {
+                                var rowdata = result[i].split("=");
+
+                                if(rowdata.length > 1)
+                                {
+                                    var trow = $("<tr><td> <input type='text' name='choicen' size='15' value='"
+                                                + rowdata[0] +"'/> </td>" +
+                                            "<td> <input type='text' name='choicev' size='15'value='" 
+                                             + rowdata[1] + "'/> </td>" +
+                                            "<td> <button> X </button></td></tr>");
+
+                                    trow.find("button").button().click(function()
+                                    {
+                                        $(this).parent().parent().remove();
+                                    });
+
+                                    $(this).find("table").append(trow);
+                                }
+                            }
+                        },
+                        buttons: {
+                                "OK": function() {
+                                    var choicelist = "";
+                                    $(this).find("tr").each(function()
+                                    {
+                                        var dvalue = $(this).find("td input[name='choicen']").val();
+                                        var value = $(this).find("td input[name='choicev']").val();
+
+
+                                        if((dvalue == undefined && value == undefined)
+                                           || (dvalue == "" && value==""))
+                                        {
+                                            return;
+                                        }
+
+                                        if(choicelist != "")
+                                        {
+                                            choicelist += ";";
+                                        }
+                                        choicelist += dvalue + "=" + value;
+                                    });
+
+                                    $("input[name='choicelist']").each(function()
+                                    {
+                                        var editedParameter  =  $(this).parent().next().data('editing');
+                                        if(editedParameter)
+                                        {
+                                            $(this).val(choicelist);
+                                            $(this).parent().next().data('editing', false);
+                                        }
+                                    });
+
+                                    $( this ).dialog( "destroy" );
+                                },
+                                "Cancel": function() {
+                                    var choiceListElement = $("input[name='choicelist']");
+                                    choiceListElement.parent().next().data('editing', false);
+                                    $( this ).dialog( "destroy" );
+                                }
+                        },
+                        resizable: true
+                    });
+
+
+                    $(this).parent().data("editing", true);
                 });
 
                 $(this).parent().parent().append(editChoiceList);
@@ -344,65 +420,19 @@ jQuery(document).ready(function() {
 
     $("#commandtextarea").hide();
 
-    $( "#editchoicedialog" ).dialog({
-        autoOpen: false,
-        height: 500,
-        width: 360,
-        buttons: {
-                "OK": function() {
-                    var choicelist = "";
-                    $($(this)).find("tr").each(function()
-                    {
-                        var dvalue = $(this).find("td input[name='choicen']").val();
-                        var value = $(this).find("td input[name='choicev']").val();
-
-
-                        if(dvalue == undefined && value == undefined)
-                        {
-                            return;
-                        }
-
-                        if(choicelist != "")
-                        {
-                            choicelist += ";";
-                        }
-                        choicelist += dvalue + "=" + value;
-                    });
-
-                    $("input[name='choicelist']").each(function()
-                    {
-                        var editedParameter  =  $(this).parent().next().data('editing');
-                        if(editedParameter)
-                        {
-                            $(this).val(choicelist);
-                            $(this).parent().next().data('editing', false);
-                        }
-                    });
-
-                    $( this ).dialog( "close" );
-                },
-                "Cancel": function() {
-                    var choiceListElement = $("input[name='choicelist']");                    
-                    choiceListElement.parent().next().data('editing', false);
-                    $( this ).dialog( "close" );
-                }
-        },
-        resizable: true
-    });
-
     $( "#choiceadd" )
         .button()
         .click(function() {
-            var choicerow = "<tr><td> <input type='text' name='choicen' size='15'/></td>" +
-                            "<td> <input type='text' name='choicev' size='15'/></td></tr>";
-            $(this).parent().next("table").append($(choicerow));     
-     });
+            var choicerow = $("<tr><td> <input type='text' name='choicen' size='15'/></td>" +
+                            "<td> <input type='text' name='choicev' size='15'/></td>" +
+                            "<td> <button> X </button></td></tr>");
+            choicerow.find("button").button().click(function()
+            {
+                $(this).parent().parent().remove();
+            });
 
-    $( "#choicedelete" )
-        .button()
-        .click(function() {
-           alert("delete");
-    });
+            $(this).parent().next("table").append(choicerow);
+     });
 
     $(window).resize(function()
     {
