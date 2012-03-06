@@ -201,7 +201,7 @@ var editor = {
 	removePipe: function(pipe) {
 		for (var i = 0; i < this.workspace["pipes"].length; i++) {
 			if (this.workspace["pipes"][i] == pipe) {
-				delete editor.workspace["pipes"][i];
+                editor.workspace["pipes"].splice(i, 1);
 				return
 			}
 		}
