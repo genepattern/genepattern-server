@@ -165,9 +165,9 @@
         </div>
         <ol id="commandlist"></ol>
     </div>
-    
+
     <p class="heading">Parameters</p>
-    <div class="content" style="position: relative">
+    <div class="content">
         <div class="pcontrols">
             <span class="addcontrols" >
                 <button id="addparam">Add</button>
@@ -175,7 +175,6 @@
             </span>
 
             <button id="deleteparam">Delete</button>
-
         </div>
         <span id="param-bar">
             <ul>
@@ -183,27 +182,25 @@
                 <li><a href="#" id="addmultiple">Add multiple parameters</a></li>
             </ul>
         </span>
-        
         <div id="parameters"></div>
-    </div>   
+    </div>
+</div>
+<div id="addparamdialog" title="Add parameters">
+    How many parameters: <input type="text" id="multiparam"/>
+</div>
 
-    <div id="addparamdialog" title="Add parameters">
-        How many parameters: <input type="text" id="multiparam"/>
+<div id="editchoicedialog" title="Edit Choice List">
+    <div>
+        <button id="choiceadd">+</button>
+        <button id="choicedelete">-</button>
     </div>
 
-    <div id="editchoicedialog" title="Edit Choice List">
-        <div>
-            <button>Add</button>
-            <button>Delete</button>            
-        </div>
-
-        <table>
-            <tr>
-                <th>Display Name</th>
-                <th>Value</th>
-            </tr>
-        </table>
-    </div>
+    <table>
+        <tr>
+            <th>Display Value</th>
+            <th>Value</th>
+        </tr>
+    </table>
 </div>
 </body>
 </html>

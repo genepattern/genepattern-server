@@ -36,6 +36,7 @@ td
     position: relative;
     color: #333366;
     background-color: #DFDFB9;
+    padding: 3px;
 }
 
 ul { list-style: none inside; }
@@ -189,18 +190,28 @@ div.ui-layout-north
 {
     border-color: #333366;
 }
+
 #parameters .ui-selected
 {
     border-color: red; border-style:solid;
 }
+
 #parameters
 {
     list-style-type: none;
     margin: 0;
     padding: 0;
-    width: 99%;
+    /*width: 99%; */
+
+    overflow: auto;
+    height: 370px;
+    margin: 3px;
 }
-#parameters div.parameter { margin: 3px; padding: 0; font-size: 0.8125em; width: 99.5%;}
+
+#parameters div.parameter
+{
+    margin: 3px; padding: 0; font-size: 1em; width: 99.5%;
+}
   
 #commandlist .ui-selected
 {
@@ -224,17 +235,15 @@ div.ui-layout-north
     font-size: 0.8125em;    
 }
 
+#editchoicedialog button
+{
+    font-size: 0.75em;
+}
+
 .ui-dialog .ui-dialog-buttonpane button
 {
     font-size: 0.75em;
             
-}
-
-#parameters
-{
-    overflow: auto;
-    height: 370px;
-    margin: 3px;
 }
 
 .pcontrols
@@ -265,11 +274,16 @@ div.ui-layout-north
 padding: 3px 2px;
 }
 
-#editchoicedialog td
+/*#editchoicedialog td
 {
     border-style:solid;
-    border-width:2px;
-    padding: 2px;
+    border-width:1px;
+    padding: 1px;
+} */
+
+.parameter
+{
+    width: 100%;
 }
 
 

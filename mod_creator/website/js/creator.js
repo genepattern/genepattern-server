@@ -8,14 +8,14 @@ function addparameter()
                <td>   \
                   <b>Name:</b>  \
                </td>  \
-               <td>  \
-                   <input type='text' name='p_name' size='25'/> \
+               <td colspan='2'>  \
+                   <input type='text' name='p_name' size='28'/> \
                </td>   \
                <td>   \
                    Description: \
                </td> \
-               <td colspan='3'>  \
-                   <textarea cols='30' name='p_description' rows='3'></textarea> \
+               <td colspan='9'>  \
+                   <textarea cols='50' name='p_description' rows='3'></textarea> \
                </td>    \
                <td>        \
                    Default Value: <input type='text' name='p_defaultvalue' size='16'/> \
@@ -30,6 +30,9 @@ function addparameter()
                 </td> \
                 <td> \
                     <input type='text' name='p_flag' size='7'/> \
+                </td> \
+                <td> \
+                    <input type='checkbox' name='p_flag' size='7' checked='true'> insert space after flag</input> \
                 </td> \
                 <td> \
                      <b>Type:</b> \
@@ -65,22 +68,27 @@ function addparameter()
         var value = $(this).val();
         if(value == "Choice")
         {
-            var editChoiceLink = $("<td><a href=''> edit choice</a></td>");
-            //var editChoiceLink = $("<a href=''> edit choice</a>");
-
-            editChoiceLink.click(function()
+            if($(this).parent().next().next().text().indexOf("edit") == -1)
             {
-                $( "#editchoicedialog" ).dialog("open");
-            });
+                var editChoiceList = $("<td><input type='text' name='choicelist' size='30' readonly='readonly'/></td>");
+                var editChoiceLink = $("<td> <a href=''>edit choice</a></td>");
 
-            $(this).parent().parent().append(editChoiceLink);
-            //$(this).parent().append(editChoiceLink);
+                editChoiceLink.click(function()
+                {
+                    $( "#editchoicedialog" ).dialog("open");
+                    $(this).data("editing", true);
+                });
+
+                $(this).parent().parent().append(editChoiceList);
+                $(this).parent().parent().append(editChoiceLink);
+            }
         }
         else
         {
-            if($(this).parent().next().text().contains("edit"))
+            if($(this).parent().next().next().text().indexOf("edit") != -1)
             {
                 $(this).parent().next().remove();
+                $(this).parent().next().remove();                
             }
         }
     });
@@ -164,7 +172,6 @@ function addtocommandline(flag, name, prevflag, prevname, delimiter)
                 $(this).removeClass("ui-selected");
             }
         });
-
     }   
 }
 
@@ -173,6 +180,22 @@ jQuery(document).ready(function() {
     $(".heading").click(function()
     {
         $(this).next(".content").slideToggle(340);
+
+        /*var visible = $(this).next(".content").is(":visible");
+        alert($(this).next(".content").html());
+        if($(this).next(".content").is(":visible").length > 0)
+        {
+            alert("visible");
+
+           var image = $("<img src='css/images/1330981073_1downarrow1.png' alt='some_text' width='11' height='11'/>");
+           $(this).prepend(image);
+        }
+        else
+        {
+            alert("hidden");
+            var image = $("<img src='css/images/1330981073_1collapsearrow1.png' alt='some_text' width='11' height='11'/>");
+           $(this).prepend(image);
+        }  */
     });
 
     $(".content").show();
@@ -321,20 +344,68 @@ jQuery(document).ready(function() {
 
     $("#commandtextarea").hide();
 
-$( "#editchoicedialog" ).dialog({
+    $( "#editchoicedialog" ).dialog({
         autoOpen: false,
-        height: 340,
-        width: 280,
+        height: 500,
+        width: 360,
         buttons: {
                 "OK": function() {
-                    
-                        $( this ).dialog( "close" );
+                    var choicelist = "";
+                    $($(this)).find("tr").each(function()
+                    {
+                        var dvalue = $(this).find("td input[name='choicen']").val();
+                        var value = $(this).find("td input[name='choicev']").val();
+
+
+                        if(dvalue == undefined && value == undefined)
+                        {
+                            return;
+                        }
+
+                        if(choicelist != "")
+                        {
+                            choicelist += ";";
+                        }
+                        choicelist += dvalue + "=" + value;
+                    });
+
+                    $("input[name='choicelist']").each(function()
+                    {
+                        var editedParameter  =  $(this).parent().next().data('editing');
+                        if(editedParameter)
+                        {
+                            $(this).val(choicelist);
+                            $(this).parent().next().data('editing', false);
+                        }
+                    });
+
+                    $( this ).dialog( "close" );
                 },
                 "Cancel": function() {
+                    var choiceListElement = $("input[name='choicelist']");                    
+                    choiceListElement.parent().next().data('editing', false);
                     $( this ).dialog( "close" );
                 }
         },
-        resizable: false
+        resizable: true
     });
 
+    $( "#choiceadd" )
+        .button()
+        .click(function() {
+            var choicerow = "<tr><td> <input type='text' name='choicen' size='15'/></td>" +
+                            "<td> <input type='text' name='choicev' size='15'/></td></tr>";
+            $(this).parent().next("table").append($(choicerow));     
+     });
+
+    $( "#choicedelete" )
+        .button()
+        .click(function() {
+           alert("delete");
+    });
+
+    $(window).resize(function()
+    {
+        $("#parameters").resize();    
+    });
 });
