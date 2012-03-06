@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -340,5 +342,35 @@ public class TaskInfoCache {
         if (enableCache) {
             removeFromCache(taskId);
         }
+    }
+    
+    /**
+     * Get the set of module categories <pre>taskInfoAttributes.get('taskType')</pre> for all installed modules in this GP server.
+     * 
+     */
+    public SortedSet<String> getAllCategories() {
+        SortedSet<String> categories = new TreeSet<String>(new Comparator<String>() {
+            // sort categories alphabetically, ignoring case
+            public int compare(String arg0, String arg1) {
+                String arg0tl = arg0.toLowerCase();
+                String arg1tl = arg1.toLowerCase();
+                int rval = arg0tl.compareTo(arg1tl);
+                if (rval == 0) {
+                    rval = arg0.compareTo(arg1);
+                }
+                return rval;
+            }
+        });
+        TaskInfo[] taskInfos = getAllTasks();
+        for(TaskInfo ti : taskInfos) {
+            String taskType = ti.getTaskInfoAttributes().get("taskType");
+            if (taskType == null || taskType.trim().length() == 0) {
+                //ignore null and blank
+            }
+            else {
+                categories.add(taskType); 
+            }
+        }
+        return Collections.unmodifiableSortedSet(categories);
     }
 }
