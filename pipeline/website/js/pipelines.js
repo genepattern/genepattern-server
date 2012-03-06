@@ -1954,7 +1954,7 @@ function Port(module, pointer, param) {
 		}
 		$("#" + editor.div)[0].appendChild(this.tooltip);
 		if (!this.master && this.isInput()) { this._addTooltipButtonCalls(this.tooltip.getAttribute("id")); }
-		$("#" + this.endpoint.canvas.id).tooltip({"tip": "#" + this.tooltip.id, "offset": [-70, 0]});
+		$("#" + this.endpoint.canvas.id).tooltip({"tip": "#" + this.tooltip.id, "offset": [-30, -195]});
 	};
 }
 
