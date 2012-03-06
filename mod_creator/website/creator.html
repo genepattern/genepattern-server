@@ -70,6 +70,13 @@
                      <input type="text" name="comment" size="100"/>
                 </td>
             </tr>
+            <tr >
+                <td colspan="2">
+                    <label>Module Category: </label>                                      
+                    <input type="text" name="category" size="22"/>
+                    <button id="addcategory">New</button>
+                </td>
+            </tr>
             <tr>
                 <td>
                     <label> Privacy: </label>
@@ -185,6 +192,8 @@
         <div id="parameters"></div>
     </div>
 </div>
+
+<!-- dialogs -->
 <div id="addparamdialog" title="Add parameters">
     How many parameters: <input type="text" id="multiparam"/>
 </div>
@@ -201,5 +210,10 @@
         </tr>
     </table>
 </div>
+
+<div id="addmodcategorydialog" title="Add Module Category">
+    Enter new module category: <input type="text" id="newcategoryname"/>
+</div>
+
 </body>
 </html>

@@ -432,10 +432,27 @@ jQuery(document).ready(function() {
             });
 
             $(this).parent().next("table").append(choicerow);
+    });
+
+    $( "#addmodcategorydialog" ).dialog({
+            autoOpen: false,
+            height: 190,
+            width: 340,
+            buttons: {
+                    "OK": function() {
+                            alert("not implemented");
+                            $( this ).dialog( "close" );
+                    },
+                    "Cancel": function() {
+                        alert("not implemented");                        
+                        $( this ).dialog( "close" );
+                    }
+            },
+            resizable: false
      });
 
-    $(window).resize(function()
+    $("#addcategory").click(function()
     {
-        $("#parameters").resize();    
+       $( "#addmodcategorydialog" ).dialog("open");           
     });
 });
