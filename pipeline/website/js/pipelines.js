@@ -174,7 +174,7 @@ var editor = {
 
         // Copy over parameter values from the old module to the new module as best we can
         for (var i = 0; i < oldModule.inputs.length; i++) {
-            if (oldModule.inputs[i].name == newModule.inputs[i].name) {
+            if (i < newModule.inputs.length && oldModule.inputs[i].name == newModule.inputs[i].name) {
                 newModule.inputs[i].value = oldModule.inputs[i].value;
                 newModule.inputs[i].promptWhenRun = oldModule.inputs[i].promptWhenRun;
             }
@@ -537,7 +537,7 @@ var library = {
         this._addModuleButton(value, lsid);
     },
 
-    _concatNameForDisplay: function(name, length) {
+    concatNameForDisplay: function(name, length) {
         var concatName = name.substring(0, length);
         if (concatName !== name) {
             concatName += "...";
@@ -557,7 +557,7 @@ var library = {
                 var modDiv = document.createElement("div");
                 modDiv.setAttribute("class", "moduleBullet");
                 modDiv.setAttribute("name", module.lsid);
-                modDiv.innerHTML = "<a href='#' onclick='return false;'>" + properties._encodeToHTML(this._concatNameForDisplay(module.name, 32)) + "</a>";
+                modDiv.innerHTML = "<a href='#' onclick='return false;'>" + properties._encodeToHTML(this.concatNameForDisplay(module.name, 32)) + "</a>";
                 $(modDiv).click(function() {
                     var lsid = $(this)[0].getAttribute("name");
 
@@ -1547,7 +1547,7 @@ function Module(moduleJSON) {
             this.ui.setAttribute("id", this.id);
         }
         this.ui.setAttribute("name", this.name);
-        this.ui.innerHTML = "<br /><br />" + this.name + "<br />";
+        this.ui.innerHTML = "<br /><br />" + library.concatNameForDisplay(this.name, 28) + "<br />";
         this._createButtons(this.ui, this.id);
     };
 
