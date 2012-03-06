@@ -59,14 +59,14 @@ a:hover {
 margin: 0;
 padding: 0;
 min-height: 30px;
-    positon: relative;
+position: relative;
 }
 #param-bar ul {
 font-size: 76%;
 display: none;
 position: absolute;
-top: 30px;
-left: 2px;
+top: 0;
+left: 1px;
 width: 161px;
 border: 1px solid #ccc;
 background: white;
@@ -273,18 +273,5 @@ div.ui-layout-north
 .content {
 padding: 3px 2px;
 }
-
-/*#editchoicedialog td
-{
-    border-style:solid;
-    border-width:1px;
-    padding: 1px;
-} */
-
-.parameter
-{
-    width: 100%;
-}
-
 
 
