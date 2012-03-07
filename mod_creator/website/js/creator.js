@@ -32,7 +32,7 @@ function addparameter()
                     <input type='text' name='p_flag' size='7'/> \
                 </td> \
                 <td> \
-                    <input type='checkbox' name='p_flag' size='7' checked='true'> insert space after flag</input> \
+                    <input type='checkbox' name='p_flagspace' size='7' checked='true'> insert space after flag</input> \
                 </td> \
                 <td> \
                      <b>Type:</b> \
@@ -70,7 +70,7 @@ function addparameter()
         {
             if($(this).parent().next().next().text().indexOf("edit") == -1)
             {
-                var editChoiceList = $("<td><input type='text' name='choicelist' size='30' readonly='readonly'/></td>");
+                var editChoiceList = $("<td><input type='text' name='choicelist' size='30'/></td>");
                 var editChoiceLink = $("<td> <a href=''>edit choice</a></td>");
 
                 editChoiceLink.children(a).click(function()
@@ -170,10 +170,8 @@ function addparameter()
     });
 }
 
-function addtocommandline(flag, name, prevflag, prevname, delimiter)
+function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimiter)
 {
-    var ctext = $('#commandlist').text();
-
     var text = "";
 
     if (flag == "" && name == "" && prevflag ==undefined && prevname == undefined)
@@ -184,7 +182,7 @@ function addtocommandline(flag, name, prevflag, prevname, delimiter)
     //construct new parameter value
     if(name != "")
     {
-        text = name;
+        text = "&lt;" + name + "&gt;";
     }
 
     if(flag != "")
@@ -200,12 +198,12 @@ function addtocommandline(flag, name, prevflag, prevname, delimiter)
     var  prevtext = "";
     if(prevname != "")
     {
-        prevtext = prevname;
+        prevtext = "&lt;" + prevname + "&gt;";
     }
 
     if(prevflag != "")
     {
-        prevtext = prevflag + delimiter + prevtext;
+        prevtext = prevflag + prevdelimiter + prevtext;
     }
     
     //if no change in value do nothing
@@ -219,7 +217,9 @@ function addtocommandline(flag, name, prevflag, prevname, delimiter)
 
     $('#commandlist').children().each(function()
     {
-        if($(this).text() ==  prevtext)
+
+        //decode the prevtext string first and compare it 
+        if($(this).text() ==  $('<div/>').html(prevtext).text())
         {
             if(text != "")
             {
@@ -248,7 +248,23 @@ function addtocommandline(flag, name, prevflag, prevname, delimiter)
                 $(this).removeClass("ui-selected");
             }
         });
-    }   
+    }
+
+    //update the cmd line text area
+    //var cmd_args = $('#commandlist').text();
+    var cmd_args="";
+    $('#commandlist').children('li').each(function()
+    {
+        var val = $(this).text();
+        if(cmd_args != "")
+        {
+            //add space between arguments;
+            cmd_args += " ";
+        }
+        cmd_args += val;
+    });
+
+    $("#commandtextarea textarea").attr("value", cmd_args);
 }
 
 jQuery(document).ready(function() {
@@ -375,50 +391,45 @@ jQuery(document).ready(function() {
         resizable: false
     });
 
-
-    $('#parameters').focusout(function()
+    $("input[name='p_flagspace'], input[name='p_name'], input[name='p_flag']").live("change", function()
     {
-        $('.parameter').each(function() {
+        var paramentParent = $(this).parents(".parameter");
+        var pelement = paramentParent.find("input[name='p_name']");
+        var felement = paramentParent.find("input[name='p_flag']");
+        var pname_newval = pelement.val();
+        var pflag_newval = felement.val();
 
-            var pelement = $(this).find("input[name='p_name']");
-            var felement = $(this).find("input[name='p_flag']");
-            var pname_newval = pelement.val();
-            var pflag_newval = felement.val();
+        var pname_oldval = pelement.data('oldVal');
+        var pflag_oldval = felement.data('oldVal');
 
-            var pname_oldval = pelement.data('oldVal');
-            var pflag_oldval = felement.data('oldVal');
+        pelement.data('oldVal',  pname_newval );
+        felement.data('oldVal',  pflag_newval );
 
-            pelement.data('oldVal',  pname_newval );
-            felement.data('oldVal',  pflag_newval );
 
-            var delimiter = " ";
+        var delement = paramentParent.find("input[name='p_flagspace']");
+        var prevdelimiter = delement.data('oldVal');
 
-            addtocommandline(pflag_newval, pname_newval, pflag_oldval, pname_oldval,delimiter);
-        });
+        var delimiter = "";
+
+        var addspace = delement.is(':checked');
+        if(addspace)
+        {
+           delimiter = " ";
+        }
+
+        delement.data('oldVal',  delimiter);
+
+        addtocommandline(pflag_newval, pname_newval, delimiter, pflag_oldval, pname_oldval, prevdelimiter);
+
     });
 
     $('#commandpreview').children().button().click(function()
     {
         var cmd_args = $('#commandlist').text();
 
-        // $("#dialog").children().remove();
-        // $("#dialog").append($('<p>'+cmd_args +'</p>'));
-
-        // $( "#dialog" ).dialog();
-        //$("#commandtextarea").children().remove();
-        //$("#commandtextarea textarea").append(cmd_args);
-
-       // var cmdtextarea = "<div id='commandtextarea'> \
-       //     <textarea cols='40' rows='5' name='cmdtext'></textarea> \
-       // </div>";
-
-        //$(".west-center").append($(cmdtextarea));
-
         $("#commandtextarea textarea").attr("value", cmd_args);
         $("#commandtextarea").toggle();
     });
-
-    $("#commandtextarea").hide();
 
     $( "#choiceadd" )
         .button()
@@ -454,5 +465,22 @@ jQuery(document).ready(function() {
     $("#addcategory").click(function()
     {
        $( "#addmodcategorydialog" ).dialog("open");           
+    });
+
+    $("#viewparameter").button().click(function()
+    {
+         $( "#clistdialog" ).dialog("open");            
+    });
+
+    $( "#clistdialog" ).dialog({
+        autoOpen: false,
+        height: 440,
+        width: 340,
+        buttons: {
+                "OK": function() {
+                    $( this ).dialog( "close" );
+                }
+        },
+        resizable: true
     });
 });

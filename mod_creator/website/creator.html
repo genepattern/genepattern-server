@@ -158,19 +158,24 @@
         <span id="commandtype">
             Type:
             <select>
+                <option value="custom">Custom</option>                
                 <option value="java">Java</option>
                 <option value="R">R</option>
                 <option value="perl">Perl</option>
-                <option value="custom">Custom</option>
             </select>
         </span>
-        <span id="commandpreview">
-            <button>Show Commandline</button>
-        </span>
-        <div id='commandtextarea'>
-            <textarea cols='80' rows='5' name='cmdtext'></textarea>
+        <div id="commandinfo">
+
+            <!--<span id="commandpreview">
+                <button>Show Commandline</button>
+            </span> -->
+            <div id='commandtextarea'>
+                <textarea name='cmdtext'></textarea>
+            </div>
+            <button id="viewparameter">View Argument List</button>
+            
         </div>
-        <ol id="commandlist"></ol>
+        <div class="clear"></div>
     </div>
 
     <p class="heading">Parameters</p>
@@ -194,7 +199,7 @@
 </div>
 
 <!-- dialogs -->
-<div id="addparamdialog" title="Add parameters">
+<div id="addparamdialog" title="Add parameters" class="dialog">
     How many parameters: <input type="text" id="multiparam"/>
 </div>
 
@@ -211,8 +216,12 @@
     </table>
 </div>
 
-<div id="addmodcategorydialog" title="Add Module Category">
+<div id="addmodcategorydialog" title="Add Module Category" class="dialog">
     Enter new module category: <input type="text" id="newcategoryname"/>
+</div>
+
+<div id="clistdialog" title="Commandline Argument List">
+    <ol id="commandlist"></ol>
 </div>
 
 </body>

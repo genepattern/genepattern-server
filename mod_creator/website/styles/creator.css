@@ -20,18 +20,12 @@ td
 
 #commandlist
 {
-    padding: 0;
-}
-.commanditem
-{
-    font-size: 0.75em;
-    margin-left: 20px;   
+    margin-left: 1px;
 }
 
 .heading
 {
     margin: 0;
-    padding: 0.125em 0.625em;
     font-size: 0.8125em;
     position: relative;
     color: #333366;
@@ -199,7 +193,6 @@ div.ui-layout-north
 #parameters
 {
     list-style-type: none;
-    margin: 0;
     padding: 0;
     /*width: 99%; */
 
@@ -212,7 +205,7 @@ div.ui-layout-north
 {
     margin: 3px; padding: 0; font-size: 1em; width: 99.5%;
 }
-  
+
 #commandlist .ui-selected
 {
     border-color: red; border-style:solid; border-width:thin;
@@ -224,13 +217,30 @@ div.ui-layout-north
     float: right;
 }
 
+#commandtype
+{
+    float: left;
+    width: 15%;
+}
+
+#commandinfo
+{
+    float: right;
+    width: 80%;
+}
+
+.clear
+{
+    clear: both;    
+}
+
 .ui-dialog .ui-dialog-titlebar
 {
     height: 12px;
     font-size: 0.75em;
 } 
 
-#addparamdialog
+.dialog
 {
     font-size: 0.8125em;    
 }
@@ -264,14 +274,19 @@ div.ui-layout-north
     padding: 0;
 }
 
-#commandtextarea
+#commandtextarea textarea
 {
     margin: 2px;
     padding: 2px;
+    width: 760px;
+    height: 60px;
 }
 
 .content {
 padding: 3px 2px;
 }
 
-
+#viewparameter
+{
+    font-size: 0.8125em;
+}
