@@ -538,12 +538,17 @@ var library = {
     },
 
     concatNameForDisplay: function(name, length) {
-        var concatName = name.substring(0, length);
-        if (concatName !== name) {
-            concatName += "...";
+        var toRemove = name.length - length;
+
+        // No need to concatenate
+        if (toRemove < 1) {
+            return name;
         }
 
-        return concatName;
+        var firstPart = name.substring(0, length / 2);
+        var lastPart = name.substring(name.length - (length / 2));
+
+        return firstPart + "..." + lastPart;
     },
 
     _addCategoryModules: function() {
@@ -776,11 +781,11 @@ var library = {
         }
     },
 
-    extractFileInputs: function(inputsJSON) {
+    extractFileInputs: function(inputs) {
         var files = new Array();
-        for (var i = 0; i < inputsJSON.length; i++) {
-            if (inputsJSON[i].type == "java.io.File") {
-                files[files.length] = new InputParam(inputsJSON[i]);
+        for (var i = 0; i < inputs.length; i++) {
+            if (inputs[i].type == "java.io.File") {
+                files[files.length] = inputs[i];
             }
         }
         return files;
@@ -1024,11 +1029,16 @@ var properties = {
         $("#" + this.inputDiv).append(hr2);
     },
 
-    _addPromptWhenRun: function(parentDiv, name, value) {
+    _addPromptWhenRun: function(parentDiv, name, value, disabled) {
+        if (disabled === undefined) { disabled = false; }
+
         var checkBox = document.createElement("input");
         checkBox.setAttribute("type", "checkbox");
         checkBox.setAttribute("name", name);
         checkBox.setAttribute("class", "propertyCheckBox");
+        if (disabled) {
+            checkBox.setAttribute("disabled", disabled);
+        }
         if (value == properties.PROMPT_WHEN_RUN) {
             checkBox.setAttribute("checked", "true");
         }
@@ -1036,7 +1046,7 @@ var properties = {
         parentDiv.innerHTML += " ";
     },
 
-    _addFileUpload: function(labelText, value, description, pwr) {
+    _addFileUpload: function(labelText, value, description, pwr, disabled) {
         var label = document.createElement("div");
         var uploadForm = document.createElement("form");
         uploadForm.setAttribute("name", labelText + "_form");
@@ -1046,7 +1056,7 @@ var properties = {
         label.appendChild(uploadForm);
 
         if (pwr) {
-            this._addPromptWhenRun(uploadForm, labelText, value);
+            this._addPromptWhenRun(uploadForm, labelText, value, disabled);
         }
 
         uploadForm.innerHTML += this._encodeToHTML(labelText) + " ";
@@ -1054,6 +1064,9 @@ var properties = {
         fileUpload.setAttribute("type", "file");
         fileUpload.setAttribute("name", labelText);
         fileUpload.setAttribute("class", "propertyValue");
+        if (disabled !== undefined && disabled) {
+            fileUpload.setAttribute("disabled", "true");
+        }
         uploadForm.appendChild(fileUpload);
 
         // Attach the uploading and done images
@@ -1197,7 +1210,12 @@ var properties = {
     _addFileInput: function(input) {
         var required = input.required ? "*" : "";
         var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
-        return this._addFileUpload(input.name + required, displayValue, input.description, true);
+        var disabled = false;
+        if (input.port !== null) {
+            displayValue = "Receiving output <strong>" + input.port.pointer + "</strong> from <strong>" + input.port.module.name + "</strong>";
+            disabled = true;
+        }
+        return this._addFileUpload(input.name + required, displayValue, input.description, true, disabled);
     },
 
     _addTextBoxInput: function(input) {
@@ -1303,7 +1321,7 @@ var properties = {
         this._addTextBox("Author", editor.workspace["pipelineAuthor"], false, false);
         this._addDropDown("Privacy", ["private", "public"], editor.workspace["pipelinePrivacy"], false, false);
         this._addTextBox("Version Comment", editor.workspace["pipelineVersionComment"], false, false);
-        this._addFileUpload("Documentation", editor.workspace["pipelineDocumentation"], false, false);
+        this._addFileUpload("Documentation", editor.workspace["pipelineDocumentation"], false, false, false);
     }
 };
 
@@ -1323,7 +1341,7 @@ function Module(moduleJSON) {
 	this.outputEnds = [];
 	this.inputEnds = [];
 	this.inputs = library.extractInputs(moduleJSON.inputs);
-	this.fileInputs = library.extractFileInputs(moduleJSON.inputs);
+	this.fileInputs = library.extractFileInputs(this.inputs);
 	this.type = "module";
 	this.ui = null;
 
@@ -1462,8 +1480,9 @@ function Module(moduleJSON) {
                         var kind = input.kinds[k];
 
                         if (kind == output) {
-                            input.used = true;
-                            return this.addInput(input.name);
+                            var inputPort = this.addInput(input.name);
+                            input.makeUsed(inputPort);
+                            return inputPort;
                         }
                     }
                 }
@@ -1475,8 +1494,9 @@ function Module(moduleJSON) {
             for (var i = 0; i < this.fileInputs.length; i++) {
                 var used = this.fileInputs[i].used;
                 if (!used) {
-                    this.fileInputs[i].used = true;
-                    return this.addInput(this.fileInputs[i].name);
+                    var inputPort = this.addInput(this.fileInputs[i].name);
+                    this.fileInputs[i].makeUsed(inputPort);
+                    return inputPort;
                 }
             }
         }
@@ -1707,7 +1727,18 @@ function InputParam(paramJSON) {
     this.defaultValue = paramJSON.defaultValue;
     this.choices = paramJSON.choices;
     this.used = false;
+    this.port = null;
     this.value = this.defaultValue;
+
+    this.makeUsed = function(port) {
+        this.used = true;
+        this.port = port;
+    };
+
+    this.makeUnused = function() {
+        this.used = false;
+        this.port = null;
+    };
 
     this.prepTransport = function() {
         var transport = {};
@@ -2035,7 +2066,7 @@ function Pipe(connection) {
 
 	this.remove = function() {
         // Mark the deleted input port as no longer used
-        this.inputPort.getInput().used = false;
+        this.inputPort.getInput().makeUnused();
 
 		var deleteOutput = this.outputPort.endpoint.connections.length <= 1;
 		this.inputPort.detachAll();
