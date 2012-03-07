@@ -31,6 +31,7 @@ td
     color: #333366;
     background-color: #DFDFB9;
     padding: 3px;
+    cursor: pointer;    
 }
 
 ul { list-style: none inside; }
