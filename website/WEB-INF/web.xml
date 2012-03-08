@@ -482,6 +482,26 @@
   <servlet-name>JobConfigurationServlet</servlet-name>
   <url-pattern>/rest/JobConfiguration</url-pattern>
  </servlet-mapping>
+ 
+ <!-- support for GenePattern API -->
+ <filter>
+  <filter-name>ApiFilter</filter-name>
+  <filter-class>org.genepattern.server.api.ApiAuthenticationFilter</filter-class>
+ </filter>
+ <filter-mapping>
+  <filter-name>ApiFilter</filter-name>
+  <url-pattern>/api/*</url-pattern>
+ </filter-mapping>
+
+ <servlet>
+  <display-name>AdminServlet</display-name>
+  <servlet-name>AdminServlet</servlet-name>
+  <servlet-class>org.genepattern.server.api.admin.AdminServlet</servlet-class>
+ </servlet>
+ <servlet-mapping>
+   <servlet-name>AdminServlet</servlet-name>
+   <url-pattern>/api/admin/*</url-pattern>
+ </servlet-mapping>
 
  <welcome-file-list>
   <welcome-file>/index.jsp</welcome-file>
