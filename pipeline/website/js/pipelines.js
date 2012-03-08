@@ -562,7 +562,7 @@ var library = {
                 var modDiv = document.createElement("div");
                 modDiv.setAttribute("class", "moduleBullet");
                 modDiv.setAttribute("name", module.lsid);
-                modDiv.innerHTML = "<a href='#' onclick='return false;'>" + properties._encodeToHTML(this.concatNameForDisplay(module.name, 32)) + "</a>";
+                modDiv.innerHTML = "<a href='#' onclick='return false;'>" + properties._encodeToHTML(this.concatNameForDisplay(module.name, 22)) + "</a>";
                 $(modDiv).click(function() {
                     var lsid = $(this)[0].getAttribute("name");
 
@@ -1567,7 +1567,7 @@ function Module(moduleJSON) {
             this.ui.setAttribute("id", this.id);
         }
         this.ui.setAttribute("name", this.name);
-        this.ui.innerHTML = "<br /><br />" + library.concatNameForDisplay(this.name, 28) + "<br />";
+        this.ui.innerHTML = "<br /><br />" + library.concatNameForDisplay(this.name, 24) + "<br />";
         this._createButtons(this.ui, this.id);
     };
 
@@ -1985,7 +1985,7 @@ function Port(module, pointer, param) {
 		}
 		$("#" + editor.div)[0].appendChild(this.tooltip);
 		if (!this.master && this.isInput()) { this._addTooltipButtonCalls(this.tooltip.getAttribute("id")); }
-		$("#" + this.endpoint.canvas.id).tooltip({"tip": "#" + this.tooltip.id, "offset": [-30, -195]});
+		$("#" + this.endpoint.canvas.id).tooltip({"tip": "#" + this.tooltip.id, "offset": [-100, -195]});
 	};
 }
 

@@ -1,17 +1,17 @@
-body {
-    font-family: Garamond;
+#topband {
+    z-index: 3000;
 }
 
 #library {
 	position:absolute;
 	z-index: 3000; 
-	top: 32px;
+	top: 5px;
 	left: 0px;
 	width: 175px;
     min-height: 100%;
-    background-color: #FFFFCC;
+    background-color: #DFDFB9;
     border-style: solid;
-    border-color: #FFFF00;
+    border-color: #CCCC99;
 	border-width: 2px;
 	padding: 5px;
 }
@@ -25,28 +25,14 @@ body {
     font-size: 8pt;
     font-weight: normal;
     padding-left: 10px;
-    color: black;
 }
 
 .moduleBullet:hover {
-    background-color: #FFFF00;
-}
-
-a {
-    text-decoration: none;
-}
-
-a:visited {
-    color: black;
+    background-color: #CCCC99;
 }
 
 a:hover {
-    color: black;
     text-decoration: underline;
-}
-
-a:active {
-    color: black;
 }
 
 .ui-autocomplete-input {
@@ -56,21 +42,25 @@ a:active {
 #titleBar {
     position:absolute;
     z-index: 3001;
-    top: 0px;
+    top: 47px;
     left: 0px;
     width: 99%;
     height: 20px;
-    background-color: #FFCCFF;
+    background-color: #666699;
     border-style: solid;
-    border-color: #FF00FF;
-    border-width: 2px;
+    border-color: #FFFFFF;
+    border-width: 1px;
     padding: 5px;
     overflow-x: hidden;
     overflow: hidden;
 }
 
 #titleSpan {
-    font-size: 14pt;
+    color: #FFFFFF;
+    font-size: 11px;
+    line-height: 21px;
+    font-weight: bold;
+    text-indent: 77px;
 }
 
 #saveLoadDiv {
@@ -99,9 +89,9 @@ a:active {
 	right: 0px;
     min-height: 100%;
 	width: 400px;
-	background-color: #FFDDAA;
-	border-style: solid;
-	border-color: #EECC99;
+    background-color: #DFDFB9;
+    border-style: solid;
+    border-color: #CCCC99;
 	border-width: 2px;
 	padding: 5px;
 }
@@ -138,11 +128,13 @@ a:active {
 }
 
 #propertiesTitle {
-    font-size: 18pt;
+    font-size: 14pt;
+    line-height: 30px;
 }
 
 #propertiesSubtitle {
-    font-size: 10pt;
+    font-size: 7pt;
+    line-height: 24px;
 }
 
 #propertiesSubmit {
@@ -177,6 +169,7 @@ a:active {
 	border-color: #00FF00;
 	border-width: 2px;
 	background-color: #CCFFCC;
+    font-size: 14px;
 }
 
 .pipeline {
@@ -227,6 +220,7 @@ a:active {
 
 #loadPipelineHeader {
     font-size: 14pt;
+    line-height: 30px;
 }
 
 #loadPipelineButtons {
@@ -244,11 +238,11 @@ a:active {
 }
 
 #pipelineSelectList .ui-selecting {
-    background: #FCF;
+    background: #CCCC99;
 }
 
 #pipelineSelectList .ui-selected {
-    background: #FCF;
+    background: #CCCC99;
     color: black;
 }
 
