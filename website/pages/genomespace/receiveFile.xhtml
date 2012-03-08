@@ -45,7 +45,7 @@ use, misuse, or functionality.
 							<h:form target="_blank">
 								<li style="text-indent:10px;">Send to Module as #{format}:
 									<t:selectOneMenu id="module" forceId="true">
-										<f:selectItems value="#{file.moduleSelects}" />
+										<f:selectItems value="#{file.moduleSelects[format]}" />
 									</t:selectOneMenu>
 									<h:inputHidden id="source" value="GenomeSpace"/>
 									<h:inputHidden id="name" value="#{file.file.name}"/>

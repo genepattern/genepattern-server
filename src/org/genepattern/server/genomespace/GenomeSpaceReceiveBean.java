@@ -2,6 +2,7 @@ package org.genepattern.server.genomespace;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -73,17 +74,19 @@ public class GenomeSpaceReceiveBean {
     
     private void populateSelectItems() {
         for (GSReceivedFileWrapper i : receivedFiles) {
-            SortedSet<TaskInfo> infos = getKindToModules().get(i.getFile().getKind());
-            List<SelectItem> items = new ArrayList<SelectItem>();
-            if (infos != null) {
-                for (TaskInfo j : infos) {
-                    SelectItem item = new SelectItem();
-                    item.setLabel(j.getName());
-                    item.setValue(j.getLsid());
-                    items.add(item);
+            for (String format : ((GenomeSpaceFile) i.getFile()).getConversions()) {
+                SortedSet<TaskInfo> infos = getKindToModules().get(format);
+                List<SelectItem> items = new ArrayList<SelectItem>();
+                if (infos != null) {
+                    for (TaskInfo j : infos) {
+                        SelectItem item = new SelectItem();
+                        item.setLabel(j.getName());
+                        item.setValue(j.getLsid());
+                        items.add(item);
+                    }
                 }
+                i.setModuleSelects(format, items);
             }
-            i.setModuleSelects(items);
         }
     }
     
@@ -208,7 +211,7 @@ public class GenomeSpaceReceiveBean {
     
     public class GSReceivedFileWrapper {
         private GpFilePath file = null;
-        private List<SelectItem> moduleSelects = null;
+        public Map<String, List<SelectItem>> moduleSelects = new HashMap<String, List<SelectItem>>();
         
         public GSReceivedFileWrapper(GpFilePath file) {
             this.file = file;
@@ -218,14 +221,16 @@ public class GenomeSpaceReceiveBean {
             return file;
         }
         
-        public List<SelectItem> getModuleSelects() {
+        public Map<String, List<SelectItem>> getModuleSelects() {
             return moduleSelects;
         }
         
-        public void setModuleSelects(List<SelectItem> moduleSelects) {
-            this.moduleSelects = moduleSelects;
+        public List<SelectItem> getModuleSelects(String extension) {
+            return moduleSelects.get(extension);
         }
         
-        
+        public void setModuleSelects(String extension, List<SelectItem> moduleSelects) {
+            this.moduleSelects.put(extension, moduleSelects);
+        }
     }
 }

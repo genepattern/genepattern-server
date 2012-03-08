@@ -577,7 +577,10 @@ public class GenomeSpaceBean {
                 log.error("Error getting url in getFile() from " + i.getName());
                 continue;
             }
-            if (url.equals(iUrl)) {
+            if (url.getPath().equals(iUrl.getPath())) {
+                if (url.getQuery() != null) {
+                    return (GenomeSpaceFile) GenomeSpaceFileManager.createFile(url, i.getMetadata());
+                }
                 return i;
             }
         }
