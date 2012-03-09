@@ -1085,7 +1085,7 @@ var properties = {
         var valueDiv = document.createElement("div");
         valueDiv.setAttribute("class", "fileUploadValue");
         if (value !== null && value !== "" && value !== properties.PROMPT_WHEN_RUN) {
-            valueDiv.innerHTML = "<strong>Current Value:</strong> " + value;
+            valueDiv.innerHTML = "<strong>Current Value:</strong> " + properties._encodeToHTML(value);
         }
         label.appendChild(valueDiv);
 
