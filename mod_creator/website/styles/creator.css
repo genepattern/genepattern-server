@@ -31,7 +31,8 @@ td
     color: #333366;
     background-color: #DFDFB9;
     padding: 3px;
-    cursor: pointer;    
+    cursor: pointer;
+    font-weight:bold;
 }
 
 ul { list-style: none inside; }
@@ -134,7 +135,10 @@ html, body
 
 #modtitle
 {
-    font-size: 0.9375em;
+    font-size: 1em;
+    float: left;
+    cursor: pointer;
+    color: #4863A0;
 }
 
 p
@@ -290,4 +294,12 @@ padding: 3px 2px;
 #viewparameter
 {
     font-size: 0.8125em;
+}
+
+#modcontrols
+{
+    float: right;
+    font-size: 0.6875em;
+    margin: 0;
+    padding: 0;
 }
