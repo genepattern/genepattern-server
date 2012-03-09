@@ -264,13 +264,41 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
         cmd_args += val;
     });
 
-    $("#commandtextarea textarea").attr("value", cmd_args);
+    var cmdline = $("#commandtextarea textarea").data("type") + " " + cmd_args;
+    $("#commandtextarea textarea").attr("value", cmdline);
+}
+
+function updatemodulecategories()
+{
+    $.ajax({
+        type: "POST",
+        url: "/gp/ModuleCreator/categories",
+        success: function(response) {
+            var error = response["ERROR"];
+            if (error !== undefined) {
+                alert(error);
+            }
+            else {
+                var categories = response["categories"];
+                categories = categories.substring(1, categories.length-1);
+
+                var result = categories.split(", ");
+                var mcat = $("select[name='category']");
+
+                for(i=0;i < result.length;i++)
+                {
+                    mcat.append($("<option>" + result[i] + "</option>"));                        
+                }
+            }
+        },
+        dataType: "json"
+    });
 }
 
 jQuery(document).ready(function() {
 
     $(".heading").click(function()
-    {
+    {        
         $(this).next(".content").slideToggle(340);
 
         /*var visible = $(this).next(".content").is(":visible");
@@ -320,7 +348,7 @@ jQuery(document).ready(function() {
     ,	north__spacing_open:	0		// no resizer-bar when open (zero height)
     ,	north__spacing_closed:	20		// big resizer-bar when open (zero height)
     //some pane-size settings
-    ,	north__size:			40
+    ,	north__size:			45
     ,	west__size:			    360
     ,	east__size:				300
     ,	center__minWidth:		100
@@ -451,8 +479,10 @@ jQuery(document).ready(function() {
             width: 340,
             buttons: {
                     "OK": function() {
-                            alert("not implemented");
-                            $( this ).dialog( "close" );
+                        var category = $("#newcategoryname").val();
+                        var newcategory = $("<option>" +category + "</option>");
+                        $("select[name='category']").append(newcategory);
+                        $( this ).dialog( "close" );
                     },
                     "Cancel": function() {
                         alert("not implemented");                        
@@ -483,4 +513,29 @@ jQuery(document).ready(function() {
         },
         resizable: true
     });
+
+    $('#savebtn').button();
+
+    $("select[name='c_type']").change(function()
+    {
+        var cmdlinetext = $("#commandtextarea textarea").val();
+        var type = $(this).val();
+
+        var prev_cmd = $("#commandtextarea textarea").data("type");
+
+        cmdlinetext = cmdlinetext.replace(prev_cmd, "");
+        if(type == "java")
+        {
+            cmdlinetext = "<java>" + cmdlinetext;
+        }
+        else if(type == "perl")
+        {
+            cmdlinetext = "<perl>" + cmdlinetext;
+        }
+
+        $("#commandtextarea textarea").data("type", "<" + type +">");
+        $("#commandtextarea textarea").attr("value", cmdlinetext);
+    });
+
+    updatemodulecategories();   
 });

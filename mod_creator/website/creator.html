@@ -20,11 +20,13 @@
 </head>
 <body>
 
-
 <div class="ui-layout-north">
-    <div id="modtitle"><a href="">UntitledModule</a></div>
+    <div id="modtitle">UntitledModule</div>
+    <div id="modcontrols">
+        <button id="savebtn">Save</button>
+    </div>
+    <div class="clear"></div>
 </div>
-
 
 <div class="ui-layout-center">
     <p class="heading">Details</p>
@@ -73,7 +75,7 @@
             <tr >
                 <td colspan="2">
                     <label>Module Category: </label>                                      
-                    <input type="text" name="category" size="22"/>
+                    <select name="category"></select>
                     <button id="addcategory">New</button>
                 </td>
             </tr>
@@ -109,22 +111,22 @@
                 </td>
                 <td>
                     Operating System:
-                    <input type="checkbox" name="os" value="os" id="os" checked="checked"/>
+                    <input type="radio" name="os" value="os" id="os" checked="checked"/>
                     <label for="os">Any</label>
 
-                    <input type="checkbox" name="os" value="os1" id="os1"/>
+                    <input type="radio" name="os" value="os1" id="os1"/>
                     <label for="os1">Linux</label>
 
-                    <input type="checkbox" name="os" value="os2" id="os2"/>
+                    <input type="radio" name="os" value="os2" id="os2"/>
                     <label for="os2">MacOS</label>
 
-                    <input type="checkbox" name="os" value="os3" id="os3"/>
+                    <input type="radio" name="os" value="os3" id="os3"/>
                     <label for="os3">Solaris</label>
 
-                    <input type="checkbox" name="os" value="os4" id="os4"/>
+                    <input type="radio" name="os" value="os4" id="os4"/>
                     <label for="os4">Tru64</label>
 
-                    <input type="checkbox" name="os" value="os5" id="os5"/>
+                    <input type="radio" name="os" value="os5" id="os5"/>
                     <label for="os5">Windows</label>
                 </td>
             </tr>
@@ -157,10 +159,10 @@
     <div class="content">
         <span id="commandtype">
             Type:
-            <select>
+            <select name="c_type">
                 <option value="custom">Custom</option>                
                 <option value="java">Java</option>
-                <option value="R">R</option>
+              <!--  <option value="R">R</option>  -->
                 <option value="perl">Perl</option>
             </select>
         </span>
