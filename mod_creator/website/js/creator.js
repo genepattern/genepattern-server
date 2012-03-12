@@ -264,8 +264,43 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
         cmd_args += val;
     });
 
-    var cmdline = $("#commandtextarea textarea").data("type") + " " + cmd_args;
+    var cmdline = cmd_args;
+    var cmdtype = $("#commandtextarea textarea").data("type");
+    if(cmdtype != undefined)
+        cmdline = cmdtype + " " + cmdline; 
     $("#commandtextarea textarea").attr("value", cmdline);
+}
+
+//update the specific parameter div
+function updateparameter(parameter)
+{
+    var pelement = parameter.find("input[name='p_name']");
+    var felement = parameter.find("input[name='p_flag']");
+    var pname_newval = pelement.val();
+    var pflag_newval = felement.val();
+
+    var pname_oldval = pelement.data('oldVal');
+    var pflag_oldval = felement.data('oldVal');
+
+    pelement.data('oldVal',  pname_newval );
+    felement.data('oldVal',  pflag_newval );
+
+
+    var delement = parameter.find("input[name='p_flagspace']");
+    var prevdelimiter = delement.data('oldVal');
+
+    var delimiter = "";
+
+    var addspace = delement.is(':checked');
+    if(addspace)
+    {
+       delimiter = " ";
+    }
+
+    delement.data('oldVal',  delimiter);
+
+    addtocommandline(pflag_newval, pname_newval, delimiter, pflag_oldval, pname_oldval, prevdelimiter);
+
 }
 
 function updatemodulecategories()
@@ -382,7 +417,16 @@ jQuery(document).ready(function() {
                 .buttonset();    
 
     $( "#deleteparam" ).button().click(function() {
-        $('.ui-selected').each(function() {
+        $('.ui-selected').each(function()
+        {
+            //alert($(this).html());
+            var pelement = $(this).find("input[name='p_name']");
+            var felement = $(this).find("input[name='p_flag']");
+            pelement.val("");
+            felement.val("");
+            
+            updateparameter($(this));
+
             $(this).remove();
         });
     });
@@ -421,35 +465,10 @@ jQuery(document).ready(function() {
 
     $("input[name='p_flagspace'], input[name='p_name'], input[name='p_flag']").live("change", function()
     {
-        var paramentParent = $(this).parents(".parameter");
-        var pelement = paramentParent.find("input[name='p_name']");
-        var felement = paramentParent.find("input[name='p_flag']");
-        var pname_newval = pelement.val();
-        var pflag_newval = felement.val();
-
-        var pname_oldval = pelement.data('oldVal');
-        var pflag_oldval = felement.data('oldVal');
-
-        pelement.data('oldVal',  pname_newval );
-        felement.data('oldVal',  pflag_newval );
-
-
-        var delement = paramentParent.find("input[name='p_flagspace']");
-        var prevdelimiter = delement.data('oldVal');
-
-        var delimiter = "";
-
-        var addspace = delement.is(':checked');
-        if(addspace)
-        {
-           delimiter = " ";
-        }
-
-        delement.data('oldVal',  delimiter);
-
-        addtocommandline(pflag_newval, pname_newval, delimiter, pflag_oldval, pname_oldval, prevdelimiter);
-
+        var parameterParent = $(this).parents(".parameter");
+        updateparameter(parameterParent);
     });
+
 
     $('#commandpreview').children().button().click(function()
     {
@@ -514,7 +533,11 @@ jQuery(document).ready(function() {
         resizable: true
     });
 
-    $('#savebtn').button();
+    $('#savebtn').button().click(function()
+    {
+        alert("not implemented");
+    });
+
 
     $("select[name='c_type']").change(function()
     {
@@ -532,10 +555,50 @@ jQuery(document).ready(function() {
         {
             cmdlinetext = "<perl>" + cmdlinetext;
         }
+       
 
         $("#commandtextarea textarea").data("type", "<" + type +">");
         $("#commandtextarea textarea").attr("value", cmdlinetext);
     });
 
-    updatemodulecategories();   
+    updatemodulecategories();
+
+    $("input[name='supportfiles[]']").change(function(){
+        $in=$(this);
+
+        for (var i = 0; i < this.files.length; i++)
+        {
+            var file = this.files[i];
+
+            var sfilelist="";
+            if(file.name == undefined)
+            {
+                sfilelist = $("<li>" + $(this).val() + "</li>");
+
+            }
+            else
+            {
+                sfilelist = $("<li>" + file.name + "</li>");
+            }
+            var delbutton = $("<button>x</button>&nbsp;");
+            delbutton.button().click(function()
+            {
+                $(this).parent().remove();
+            });
+
+
+            if($(this).find(sfilelist).length > 0 )
+            {
+                alert("File already exists");
+                return;
+            }
+            sfilelist.prepend(delbutton);
+            $("#uploadedfiles").append(sfilelist);
+
+            if(file.name == undefined)
+            {
+                break;
+            }
+        }
+    });
 });

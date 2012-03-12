@@ -10,12 +10,18 @@
 	<link type="text/css" rel="stylesheet" href="styles/layout-default-latest.css" />
     <link  type="text/css" rel="stylesheet" media="screen" href="styles/creator.css" />
     <link  type="text/css" rel="stylesheet" media="screen" href="styles/themes/base/jquery.ui.all.css" />
+    <!--<link rel="stylesheet" href="http://blueimp.github.com/cdn/css/bootstrap.min.css">  -->
+    <link rel="stylesheet" href="../uploadtest/css/jquery.fileupload-ui.css">
+
+    <script type="text/javascript" src="../website/js/jquery-1.7.1.js"></script>
+
 
 	<script type="text/javascript" src="js/jquery-1.7.1.js"></script>
 	<script type="text/javascript" src="js/jquery-ui-1.8.17.custom.min.js"></script>
 	<<script type="text/javascript" src="js/jquery.layout-1.2.0.js"></script>
     <script  type="text/javascript" src="js/jquery.jeditable.mini.js"></script>
     <script type="text/javascript" src="js/jquery.editinplace.js"></script>
+    <script type="text/javascript" src='js/jquery.MultiFile-1.47.js'  language="javascript"></script>    
     <script type="text/javascript" src="js/creator.js"></script>
 </head>
 <body>
@@ -152,7 +158,21 @@
     </div>
     
     <p class="heading">Support Files</p>
-    <div class="content">
+    <div  class="content" height="300">
+        <div class="row fileupload-buttonbar">
+            <div class="span7">
+                <!-- The fileinput-button span is used to style the file input field as button -->
+                <span class="btn btn-success fileinput-button">
+                    <span><i class="icon-plus"></i> Add files...</span>
+                    <input type="file" name="supportfiles[]" multiple="multiple">
+                </span>
+            </div>
+        </div>
+        <div class="clear"></div>
+        <div id="uploadcontent">
+            <ul id="uploadedfiles"> 
+            </ul>
+        </div>
     </div>
 
     <p class="heading">Command Line</p>
