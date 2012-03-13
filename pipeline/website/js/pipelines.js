@@ -82,7 +82,7 @@ var editor = {
     },
 
     _setPipelineName: function() {
-        $("#" + this.titleSpan)[0].innerHTML = this.workspace["pipelineName"];
+        $("#" + this.titleSpan)[0].innerHTML = this.workspace["pipelineName"] + " v" + this.workspace["pipelineVersion"];
     },
 
     addPipe: function(newIn, newOut) {
@@ -409,6 +409,7 @@ var editor = {
                     alert("Unable to load one or more of the modules in the pipeline.");
                     givenAlert = true;
                 }
+                i++;
                 continue;
             }
 
@@ -760,6 +761,13 @@ var library = {
             }
 
         }
+
+        // Sort alphabetically
+        library.moduleNames = $(library.moduleNames).sort(function(a, b) {
+            var compA = a.toUpperCase();
+            var compB = b.toUpperCase();
+            return (compA < compB) ? -1 : (compA > compB) ? 1 : 0;
+        });
     },
 
     _readModules: function(moduleJSON) {
@@ -800,6 +808,7 @@ var library = {
     },
 
     displayLoadDialog: function() {
+        var moduleList = new Array();
         if (!this._loadInit) {
             // Get the Dialog List Div
             var pipelineList = $("#pipelineSelectList")[0];
@@ -827,6 +836,20 @@ var library = {
                     console.log("ERROR: Reading module array in library.displayLoadDialog()");
                     return;
                 }
+
+                // Add to list
+                moduleList.push(module);
+            }
+
+            // Sort the list
+            moduleList = $(moduleList).sort(function(a, b) {
+                var compA = a.name.toUpperCase();
+                var compB = b.name.toUpperCase();
+                return (compA < compB) ? -1 : (compA > compB) ? 1 : 0;
+            });
+
+            for (var i = 0; i < moduleList.length; i++) {
+                var module = moduleList[i];
 
                 // Add Pipeline Div to List
                 if (module.isPipeline()) {
