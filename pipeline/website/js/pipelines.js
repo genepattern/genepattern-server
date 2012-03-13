@@ -1565,18 +1565,43 @@ function Module(moduleJSON) {
     };
 
 	this._createButtons = function (appendTo, baseId) {
+        var fileIcon = document.createElement("img");
+        fileIcon.setAttribute("id", "file_" + this.id);
+        fileIcon.setAttribute("src", "images/file.gif");
+        fileIcon.setAttribute("class", "fileButton");
+        fileIcon.setAttribute("alt", "Embedded File");
+        fileIcon.style.display = "none";
+        appendTo.appendChild(fileIcon);
+
         var propertiesButton = document.createElement("img");
         propertiesButton.setAttribute("id", "prop_" + baseId);
         propertiesButton.setAttribute("src", "images/pencil.gif");
         propertiesButton.setAttribute("class", "propertiesButton");
+        propertiesButton.setAttribute("alt", "Edit Properties");
         appendTo.appendChild(propertiesButton);
 
         var deleteButton = document.createElement("img");
         deleteButton.setAttribute("id", "del_" + baseId);
         deleteButton.setAttribute("src", "images/delete.gif");
         deleteButton.setAttribute("class", "deleteButton");
+        deleteButton.setAttribute("alt", "Delete Module");
         appendTo.appendChild(deleteButton);
 
+        var alertIcon = document.createElement("img");
+        alertIcon.setAttribute("id", "alert_" + this.id);
+        alertIcon.setAttribute("src", "images/alert.gif");
+        alertIcon.setAttribute("class", "alertButton");
+        alertIcon.setAttribute("alt", "Module Alert");
+        alertIcon.style.display = "none";
+        appendTo.appendChild(alertIcon);
+
+        var errorIcon = document.createElement("img");
+        errorIcon.setAttribute("id", "error_" + this.id);
+        errorIcon.setAttribute("src", "images/error.gif");
+        errorIcon.setAttribute("class", "errorButton");
+        errorIcon.setAttribute("alt", "Module Error");
+        errorIcon.style.display = "none";
+        appendTo.appendChild(errorIcon);
     };
 
 	this._addModuleButtonCalls = function () {
@@ -1602,7 +1627,42 @@ function Module(moduleJSON) {
         $(this.ui).removeClass("ui-selected");
     };
 
-	this._createDiv = function () {
+    this._createIconSpace = function(parentDiv, baseId) {
+        var iconDiv = document.createElement("div");
+        iconDiv.setAttribute("id", "icons_" + baseId);
+        iconDiv.setAttribute("class", "iconSpace");
+        parentDiv.appendChild(iconDiv);
+        return iconDiv;
+    };
+
+    this.toggleFileIcon = function() {
+        if ($("#file_" + this.id).is(":visible")) {
+            $("#file_" + this.id).hide();
+        }
+        else {
+            $("#file_" + this.id).show();
+        }
+    }
+
+    this.toggleErrorIcon = function() {
+        if ($("#error_" + this.id).is(":visible")) {
+            $("#error_" + this.id).hide();
+        }
+        else {
+            $("#error_" + this.id).show();
+        }
+    }
+
+    this.toggleAlertIcon = function() {
+        if ($("#alert_" + this.id).is(":visible")) {
+            $("#alert_" + this.id).hide();
+        }
+        else {
+            $("#alert_" + this.id).show();
+        }
+    }
+
+	this._createDiv = function() {
         this.ui = document.createElement("div");
         this.ui.setAttribute("class", this.type);
         if (this.id !== null) {
@@ -1610,7 +1670,8 @@ function Module(moduleJSON) {
         }
         this.ui.setAttribute("name", this.name);
         this.ui.innerHTML = "<br /><br />" + library.concatNameForDisplay(this.name, 24) + "<br />";
-        this._createButtons(this.ui, this.id);
+        var iconDiv = this._createIconSpace(this.ui, this.id);
+        this._createButtons(iconDiv, this.id);
     };
 
 	this.addOutput = function (pointer) {
