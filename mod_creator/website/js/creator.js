@@ -345,50 +345,38 @@ function updatemodulecategories()
     });
 }
 
+function addsectioncollapseimages()
+{
+    var imagecollapse = $("<img class='imgcollapse' src='styles/images/section_collapsearrow.png' alt='some_text' width='11' height='11'/>");
+    var imageexpand = $("<img class='imgexpand' src='styles/images/section_expandarrow.png' alt='some_text' width='11' height='11'/>");
+
+    $(".heading").prepend(imageexpand);    
+    $(".heading").prepend(imagecollapse);
+
+    $(".heading").children(".imgcollapse").toggle();
+
+    $(".heading").next(".content").data("visible", true);    
+}
 
 jQuery(document).ready(function() {
 
-
+     addsectioncollapseimages();
 
     $(".heading").click(function()
-    {        
-        $(this).next(".content").slideToggle(340);
-
+    {
         var visible = $(this).next(".content").data("visible");
-       /* if(visible == undefined)
+        //if first time then content is visible
+        if(visible == undefined)
         {
-            $(this).next(".content").data("visible", false);
+            visible = true;
         }
-        else if (visible == true)
-        {
-            $(this).next(".content").data("visible", false);
-            var image = $("<img src='css/images/1330981073_1collapsearrow1.png' alt='some_text' width='11' height='11'/>");
-            $(this).prepend(image);                   
-        }
-        else
-        {
-            $(this).next(".content").data("visible", true);
-            var image = $("<img src='css/images/1330981073_1downarrow1.png' alt='some_text' width='11' height='11'/>");
-            $(this).prepend(image);
-        } */
 
-        //alert($(this).next(".content").html());
-
-
-        /*if($(this).next(".content").is(":visible").length > 0)
-        /*if($(this).next(".content").is(":visible").length > 0)
-        {
-            alert("visible");
-
-           var image = $("<img src='css/images/1330981073_1downarrow1.png' alt='some_text' width='11' height='11'/>");
-           $(this).prepend(image);
-        }
-        else
-        {
-            alert("hidden");
-            var image = $("<img src='css/images/1330981073_1collapsearrow1.png' alt='some_text' width='11' height='11'/>");
-           $(this).prepend(image);
-        }  */
+        $(this).next(".content").slideToggle(340);
+        $(this).children(".imgcollapse:first").toggle();
+        $(this).children(".imgexpand:first").toggle();
+        
+        //visibilty has changed to the opposite
+        $(this).next(".content").data("visible", !visible);
     });
 
     $(".content").show();
