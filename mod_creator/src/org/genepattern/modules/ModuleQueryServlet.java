@@ -3,6 +3,7 @@ package org.genepattern.modules;
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.util.GPConstants;
@@ -141,17 +142,103 @@ public class ModuleQueryServlet extends HttpServlet
         }
 
         ResponseJSON message = new ResponseJSON();
-        message.addChild("categories", categories.toString());
+        if(categories != null)
+        {
+            message.addChild("categories", categories.toString());
+        }
+        else
+        {
+            message.addChild("categories", "");
+        }
         this.write(response, message);
+    }
+
+    public SortedSet<String> getFileFormats()
+    {
+        SortedSet<String> fileFormats = new TreeSet<String>(new Comparator<String>() {
+            // sort categories alphabetically, ignoring case
+            public int compare(String arg0, String arg1) {
+                String arg0tl = arg0.toLowerCase();
+                String arg1tl = arg1.toLowerCase();
+                int rval = arg0tl.compareTo(arg1tl);
+                if (rval == 0) {
+                    rval = arg0.compareTo(arg1);
+                }
+                return rval;
+            }
+        });
+
+        for (TaskInfo ti : TaskInfoCache.instance().getAllTasks()) {
+            String fileFormat = ti.getTaskInfoAttributes().get("fileFormat");
+            if (fileFormat == null || fileFormat.trim().length() == 0) {
+                //ignore null and blank
+            }
+            else
+            {
+                if(fileFormat.indexOf(";") != -1)
+                {
+                    String[] result = fileFormat.split(";");
+                    for(String f : result)
+                    {
+                        fileFormats.add(f);
+                    }
+                }
+                else
+                {
+                    fileFormats.add(fileFormat);
+                }
+
+            }
+
+            ParameterInfo[] pInfoArray = ti.getParameterInfoArray();
+            if(pInfoArray == null)
+            {
+                continue;
+            }
+            for(ParameterInfo pi : pInfoArray)
+            {
+                String pFileFormat = (String)pi.getAttributes().get("fileFormat");
+
+                if (!(pFileFormat == null || pFileFormat.trim().length() == 0))
+                {
+                    if(pFileFormat.indexOf(";") != -1)
+                    {
+                        String[] result = pFileFormat.split(";");
+                        for(String f : result)
+                        {
+                            fileFormats.add(f);
+                        }
+                    }
+                    else
+                        fileFormats.add(pFileFormat);
+                }
+            }
+        }
+        return Collections.unmodifiableSortedSet(fileFormats);
     }
 
     public void getOutputFileFormats(HttpServletResponse response)
     {
         SortedSet<String> fileFormats = null;
-
+        try
+        {
+            fileFormats = getFileFormats();
+        }
+        catch (Throwable t)
+        {
+            log.error("Error listing categories from TaskInfoCache: "+t.getLocalizedMessage());
+        }
 
         ResponseJSON message = new ResponseJSON();
-        message.addChild("fileFormats", fileFormats.toString());
+
+        if(fileFormats != null)
+        {
+            message.addChild("fileformats", fileFormats.toString());
+        }
+        else
+        {
+            message.addChild("fileformats", "");
+        }
         this.write(response, message);
     }
 
@@ -204,7 +291,7 @@ public class ModuleQueryServlet extends HttpServlet
 	        return;
 	    }
 
-        String bundle = (String) request.getParameter("bundle");
+        String bundle = request.getParameter("bundle");
 	    if (bundle == null) {
 	        log.error("Unable to retrieved the saved module");
 	        sendError(response, "Unable to save the module");

@@ -345,6 +345,33 @@ function updatemodulecategories()
     });
 }
 
+function updatefileformats()
+{
+    $.ajax({
+        type: "POST",
+        url: "/gp/ModuleCreator/fileformats",
+        success: function(response) {
+            var error = response["ERROR"];
+            if (error !== undefined) {
+                alert(error);
+            }
+            else {
+                var fileformats = response["fileformats"];
+                fileformats = fileformats.substring(1, fileformats.length-1);
+
+                var result = fileformats.split(", ");
+                var mcat = $("select[name='fileformat']");
+
+                for(i=0;i < result.length;i++)
+                {
+                    mcat.append($("<option>" + result[i] + "</option>"));
+                }
+            }
+        },
+        dataType: "json"
+    });
+}
+
 function addsectioncollapseimages()
 {
     var imagecollapse = $("<img class='imgcollapse' src='styles/images/section_collapsearrow.png' alt='some_text' width='11' height='11'/>");
@@ -360,7 +387,9 @@ function addsectioncollapseimages()
 
 jQuery(document).ready(function() {
 
-     addsectioncollapseimages();
+    addsectioncollapseimages();
+    updatemodulecategories();
+    updatefileformats();
 
     $(".heading").click(function()
     {
@@ -684,8 +713,6 @@ jQuery(document).ready(function() {
         $("#commandtextarea textarea").data("type", "<" + type +">");
         $("#commandtextarea textarea").attr("value", cmdlinetext);
     });
-
-    updatemodulecategories();
 
     $("input[name='supportfiles']").change(function()
     {
