@@ -252,7 +252,7 @@ div.ui-layout-north
 .ui-layout-center
 {
     padding: 0;
-    overflow: hidden;
+    overflow: auto;
 }
 
 .ui-layout-west, .ui-layout-south, .west-center, .west-south
@@ -356,9 +356,13 @@ padding: 3px 2px;
 
 #uploadedfiles button
 {
-    font-size: 57%;
+    font-size: 55%;
     margin-right: 3px;
 }
 
+#uploadcontent
+{
+    font-size: 0.75em;
+}
 
 

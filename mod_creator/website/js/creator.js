@@ -77,7 +77,7 @@ function addparameter()
                 var editChoiceList = $("<td><input type='text' name='choicelist' size='40'/></td>");
                 var editChoiceLink = $("<td> <a href=''>edit choice</a></td>");
 
-                editChoiceLink.children(a).click(function()
+                editChoiceLink.click(function()
                 {
                     var choices = $(this).parent().prev().children().val();
 
@@ -91,6 +91,17 @@ function addparameter()
 
                             var result = choices.split(';');
 
+                            if(result == null || result.length < 0)
+                            {
+                                var trowdef = "<tr><td> <input type='text' name='choicen' size='15'/> </td>" +
+                                     "<td> <input type='text' name='choicev' size='15'/> </td>" +
+                                     "<td> <button> X </button></td></tr>";
+
+                                $(this).find("table").append(trowdef);
+                                $(this).find("table").append(trowdef);
+                                return;
+                            }
+                            
                             for(i=0;i<result.length;i++)
                             {
                                 var rowdata = result[i].split("=");
@@ -541,6 +552,31 @@ jQuery(document).ready(function() {
        $( "#addmodcategorydialog" ).dialog("open");           
     });
 
+
+    $( "#addfileformatdialog" ).dialog({
+            autoOpen: false,
+            height: 220,
+            width: 440,
+            buttons: {
+                    "OK": function() {
+                        var fileformat = $("#newfileformat").val();
+                        var newfileformat = $("<option>" + fileformat + "</option>");
+                        $("select[name='fileformat']").append(newfileformat);
+                        $( this ).dialog( "close" );
+                    },
+                    "Cancel": function() {
+                        $( this ).dialog( "close" );
+                    }
+            },
+            resizable: false
+    });
+
+
+    $("#addfileformat").click(function()
+    {
+       $( "#addfileformatdialog" ).dialog("open");           
+    });
+
     $("#viewparameter").button().click(function()
     {
          $( "#clistdialog" ).dialog("open");            
@@ -560,9 +596,7 @@ jQuery(document).ready(function() {
 
     $('#savebtn').button().click(function()
     {
-        alert("not fully implemented");
-
-        for(i=0;i < uploadedfiles.length;i++)
+        /*for(i=0;i < uploadedfiles.length;i++)
         {
             var fileuploadform = $('<form action="/gp/ModuleCreator/upload" method="post" ' +
                                  'enctype="multipart/form-data" class="fileuploadform"> </form>');
@@ -602,7 +636,51 @@ jQuery(document).ready(function() {
             });
 
             fileuploadform.submit();
-        }
+        }          */
+
+        /*var modname = $('#modtitle').text();
+        var description = $('textarea[name="description"]').val();
+        var author = $('input[name="author"]').val();
+        var privacy = $('select[name="privacy"] option:selected').val();
+        var quality = $('select[name="quality"] option:selected').val();
+        var version = $('input[name="comment"]').val();
+        var os = $('input[name=os]:checked').val();
+        var tasktype = $("select[name='category'] option:selected").val();
+        var cpu = $("select[name='cpu'] option:selected").val();
+        var commandLine = $('textarea[name="cmdtext"]').val();
+
+        alert("privacy: " + privacy);
+
+        var json = {};
+        json["module"] = {"name": modname, "description": description,
+            "author": author, "privacy": "\""+privacy+"\"", "quality": quality,
+            "cpuType": cpu, "taskType": tasktype, "version": version,
+            "os": os, "commandLine": commandLine};
+
+        //json["parameters"]= getParametersJSON();
+
+        $.ajax({
+            type: "POST",
+            url: "/gp/ModuleCreator/save",
+            data: { "bundle" : JSON.stringify(json) },
+            success: function(response) {
+                var message = response["MESSAGE"];
+                var error = response["ERROR"];
+                var newLsid = response["lsid"];
+                if (error !== undefined && error !== null) {
+                    alert(error);
+                }
+                if (message !== undefined && message !== null) {
+                    alert(message);
+                }
+                // Update the LSID upon successful save
+                if (newLsid !== undefined && newLsid !== null) {
+                    alert(newLsid);
+                    module_editor["lsid"] = newLsid;
+                }
+            },
+            dataType: "json"
+        }); */
     });
 
 
@@ -674,8 +752,8 @@ function uploadfiles(element)
 			else
 			{
 				//cancel request
-				//return false;
-                alert("canceled");
+  				//return false;
+              alert("canceled");
 			}
 		},
 		complete : function (response)

@@ -77,14 +77,16 @@
             <tr >
                 <td colspan="2">
                     <label>Module Category: </label>                                      
-                    <select name="category"></select>
+                    <select name="category">
+                        <option value=""> Uncategorized</option>
+                    </select>
                     <button id="addcategory">New</button>
                 </td>
             </tr>
             <tr>
                 <td>
                     <label> Privacy: </label>
-                     <select>
+                     <select name="privacy">
                           <option value="private">private</option>
                          <option value="public">public</option>
                      </select>
@@ -93,7 +95,7 @@
                     <label>
                         Quality Level:
                     </label>
-                    <select>
+                    <select name="quality">
                         <option value="development">development</option>
                         <option value="preproduction">preproduction</option>
                         <option value="production">preproduction</option>
@@ -103,7 +105,7 @@
             <tr>
                 <td>
                     CPU type:
-                    <select>
+                    <select name="cpu">
                         <option value="any">any</option>
                         <option value="Alpha">Alpha</option>
                         <option value="Intel">Intel</option>
@@ -113,22 +115,22 @@
                 </td>
                 <td>
                     Operating System:
-                    <input type="radio" name="os" value="os" id="os" checked="checked"/>
+                    <input type="radio" name="os" value="any" id="os" checked="checked"/>
                     <label for="os">Any</label>
 
-                    <input type="radio" name="os" value="os1" id="os1"/>
+                    <input type="radio" name="os" value="linux" id="os1"/>
                     <label for="os1">Linux</label>
 
-                    <input type="radio" name="os" value="os2" id="os2"/>
+                    <input type="radio" name="os" value="mac" id="os2"/>
                     <label for="os2">MacOS</label>
 
-                    <input type="radio" name="os" value="os3" id="os3"/>
+                    <input type="radio" name="os" value="solaris" id="os3"/>
                     <label for="os3">Solaris</label>
 
-                    <input type="radio" name="os" value="os4" id="os4"/>
+                    <input type="radio" name="os" value="tru64" id="os4"/>
                     <label for="os4">Tru64</label>
 
-                    <input type="radio" name="os" value="os5" id="os5"/>
+                    <input type="radio" name="os" value="windows" id="os5"/>
                     <label for="os5">Windows</label>
                 </td>
             </tr>
@@ -150,13 +152,20 @@
                     <input type="text" name="language" size="20"/>
                 </td>
             </tr>
+            <tr>
+                <td> Output File Formats: </td>
+                <td>
+                    <select multiple="multiple" name="fileformat"></select>
+                    <button id="addfileformat">New</button>                    
+                </td>
+            </tr>
         </table>
     </div>
     
     <p class="heading">Support Files</p>
     <div  class="content" height="300">
         <div class="row fileupload-buttonbar">
-            <div class="span7">
+            <div>
                 <!-- The fileinput-button span is used to style the file input field as button -->
                 <span class="btn btn-success fileinput-button">
                     <span><i class="icon-plus"></i> Add files...</span>
@@ -183,10 +192,6 @@
             </select>
         </span>
         <div id="commandinfo">
-
-            <!--<span id="commandpreview">
-                <button>Show Commandline</button>
-            </span> -->
             <div id='commandtextarea'>
                 <textarea name='cmdtext'></textarea>
             </div>
@@ -236,6 +241,10 @@
 
 <div id="addmodcategorydialog" title="Add Module Category" class="dialog">
     Enter new module category: <input type="text" id="newcategoryname"/>
+</div>
+
+<div id="addfileformatdialog" title="Add Output File Format" class="dialog">
+    Enter new output file format: <input type="text" id="newfileformat"/>
 </div>
 
 <div id="clistdialog" title="Commandline Argument List">
