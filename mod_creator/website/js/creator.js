@@ -75,7 +75,7 @@ function addparameter()
             if($(this).parent().next().next().text().indexOf("edit") == -1)
             {
                 var editChoiceList = $("<td><input type='text' name='choicelist' size='40'/></td>");
-                var editChoiceLink = $("<td> <a href=''>edit choice</a></td>");
+                var editChoiceLink = $("<td> <a href='#'>edit choice</a></td>");
 
                 editChoiceLink.click(function()
                 {
@@ -90,15 +90,29 @@ function addparameter()
                             $(this).find("tr td").remove();
 
                             var result = choices.split(';');
-
-                            if(result == null || result.length < 0)
+                            if(result == null || result == "" || result.length <= 0)
                             {
-                                var trowdef = "<tr><td> <input type='text' name='choicen' size='15'/> </td>" +
+                                //start with two rows of data
+                                var trowdef = $("<tr><td> <input type='text' name='choicen' size='15'/> </td>" +
                                      "<td> <input type='text' name='choicev' size='15'/> </td>" +
-                                     "<td> <button> X </button></td></tr>";
+                                     "<td> <button> X </button></td></tr>");
+
+                                trowdef.find("button").button().click(function()
+                                {
+                                        $(this).parent().parent().remove();
+                                });
+
+                                var trowdef2 = $("<tr><td> <input type='text' name='choicen' size='15'/> </td>" +
+                                     "<td> <input type='text' name='choicev' size='15'/> </td>" +
+                                     "<td> <button> X </button></td></tr>");
+
+                                trowdef2.find("button").button().click(function()
+                                {
+                                        $(this).parent().parent().remove();
+                                });
 
                                 $(this).find("table").append(trowdef);
-                                $(this).find("table").append(trowdef);
+                                $(this).find("table").append(trowdef2);
                                 return;
                             }
                             
