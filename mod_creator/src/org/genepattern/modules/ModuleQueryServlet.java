@@ -2,7 +2,10 @@ package org.genepattern.modules;
 
 import org.genepattern.webservice.TaskInfoCache;
 import org.genepattern.webservice.TaskInfo;
-import org.genepattern.server.config.ServerConfiguration;
+import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.server.genepattern.GenePatternAnalysisTask;
+import org.genepattern.server.webservice.server.Status;
+import org.genepattern.util.GPConstants;
 import org.apache.log4j.Logger;
 import org.apache.commons.fileupload.RequestContext;
 import org.apache.commons.fileupload.FileUploadBase;
@@ -11,6 +14,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.json.JSONObject;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -26,7 +30,9 @@ public class ModuleQueryServlet extends HttpServlet
     public static Logger log = Logger.getLogger(ModuleQueryServlet.class);
 
     public static final String MODULE_CATEGORIES = "/categories";
+    public static final String OUTPUT_FILE_FORMATS = "/fileformats";
     public static final String UPLOAD = "/upload";
+    public static final String SAVE = "/save";
     
 
     public void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -38,6 +44,13 @@ public class ModuleQueryServlet extends HttpServlet
         {
             getModuleCategories(response);
         }
+        if (OUTPUT_FILE_FORMATS.equals(action)) 
+        {
+            getOutputFileFormats(response);
+        }
+        else if (SAVE.equals(action)) {
+		    saveModule(request, response);
+		}
         else if (UPLOAD.equals(action))
         {
 		    uploadFile(request, response);
@@ -132,6 +145,16 @@ public class ModuleQueryServlet extends HttpServlet
         this.write(response, message);
     }
 
+    public void getOutputFileFormats(HttpServletResponse response)
+    {
+        SortedSet<String> fileFormats = null;
+
+
+        ResponseJSON message = new ResponseJSON();
+        message.addChild("fileFormats", fileFormats.toString());
+        this.write(response, message);
+    }
+
     public void uploadFile(HttpServletRequest request, HttpServletResponse response)
     {
 	    RequestContext reqContext = new ServletRequestContext(request);
@@ -172,6 +195,65 @@ public class ModuleQueryServlet extends HttpServlet
             sendError(response, "Unable to find uploaded file");
         }
 	}
+
+    public void saveModule(HttpServletRequest request, HttpServletResponse response)
+    {
+	    String username = (String) request.getSession().getAttribute("userid");
+	    if (username == null) {
+	        sendError(response, "No GenePattern session found.  Please log in.");
+	        return;
+	    }
+
+        String bundle = (String) request.getParameter("bundle");
+	    if (bundle == null) {
+	        log.error("Unable to retrieved the saved module");
+	        sendError(response, "Unable to save the module");
+	        return;
+	    }
+
+        try
+        {
+            JSONObject moduleJSON = ModuleJSON.parseBundle(bundle);
+	        ModuleJSON moduleObject = ModuleJSON.extract(moduleJSON);
+            String name = moduleObject.getName();
+            String description = moduleObject.getDescription();
+
+            TaskInfoAttributes tia = new TaskInfoAttributes();
+            Iterator<String> infoKeys = moduleObject.keys();
+            while(infoKeys.hasNext())
+            {
+                String key = infoKeys.next();
+
+                //omit module name and description from taskinfoattributes
+                if(!key.equals(ModuleJSON.NAME) && !key.equals(ModuleJSON.DESCRIPTION))
+                {
+                    tia.put(key, moduleObject.get(key));
+                }
+            }
+
+            String newLsid = GenePatternAnalysisTask.installNewTask(name, description, null, tia, username, GPConstants.ACCESS_PRIVATE,
+            new Status() {
+                    public void beginProgress(String string) {
+                    }
+                    public void continueProgress(int percent) {
+                    }
+                    public void endProgress() {
+                    }
+                    public void statusMessage(String message) {
+                    }
+            });
+
+            ResponseJSON message = new ResponseJSON();
+            message.addMessage("Module Saved");
+            message.addChild("lsid", newLsid);
+            this.write(response, message);
+        }
+        catch(Exception e)
+        {
+            log.error(e);
+            sendError(response, "Exception saving the module.");                   
+        }
+    }
 
     private void transferUpload(FileItem from, File to) throws IOException {
         InputStream is = null;
