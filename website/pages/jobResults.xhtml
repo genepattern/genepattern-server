@@ -86,7 +86,7 @@
 
     function toggleJobCheckboxes(jobNo)
     {
-      var jobCheckboxDiv = $("cb_job_" + jobNo);
+      var jobCheckboxDiv = pt("cb_job_" + jobNo);
       var jobCheckbox = jobCheckboxDiv.getElementsByTagName("input")[0];
       var isChecked = jobCheckbox.checked;
       var rowIds = fileRows[jobNo];
@@ -108,7 +108,7 @@
       var isChecked = maincheckbox.checked;
       for(var i=0; i<jobNumbers.length; i++) {
         var jobNo = jobNumbers[i];
-        var jobCheckboxDiv = $("cb_job_" + jobNo);
+        var jobCheckboxDiv = pt("cb_job_" + jobNo);
         var jobCheckbox = jobCheckboxDiv.getElementsByTagName("input")[0];
         jobCheckbox.checked = isChecked;
         toggleJobCheckboxes(jobNumbers[i]);
@@ -116,7 +116,7 @@
     }
 
     function toggleVisibility(jobNo) {
-      var hiddenField = $("expansion_state_" + jobNo);
+      var hiddenField = pt("expansion_state_" + jobNo);
       if(hiddenField.value == "false")
       {
         showCategory(jobNo);
@@ -128,7 +128,7 @@
     }
 
     function hideCategory( jobNo ) {
-      $("expansion_state_" + jobNo).value = "false";
+      pt("expansion_state_" + jobNo).value = "false";
 
       var downArrow = document.getElementById(jobNo + "_expanded_img");
       var rightArrow = document.getElementById(jobNo + "_collapsed_img");
@@ -145,7 +145,7 @@
     }
 
     function showCategory( jobNo ) {
-      $("expansion_state_" + jobNo).value = "true";
+      pt("expansion_state_" + jobNo).value = "true";
 
       var downArrow = document.getElementById(jobNo + "_expanded_img");
       var rightArrow = document.getElementById(jobNo + "_collapsed_img");

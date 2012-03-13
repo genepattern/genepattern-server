@@ -36,7 +36,7 @@
     	var isChecked = node.checked;
     	var cbIds = checkboxes[lsidNoVersion]
     	for (var i=0; i<cbIds.length; i++) {
-    		$(cbIds[i]).checked = isChecked;
+    		pt(cbIds[i]).checked = isChecked;
     	}
     }
 
@@ -47,7 +47,7 @@
          var taskCheckboxes = document.getElementsByName("selectedTasks");
 	     for (var i=0; i<taskCheckboxes.length; i++)
 	     {
-	         var cb = $(taskCheckboxes[i]);
+	         var cb = pt(taskCheckboxes[i]);
 	         if(!cb.disabled)
 	         {
 	          	cb.checked = isChecked;
@@ -57,7 +57,7 @@
          var versionCheckboxes = document.getElementsByName("selectedVersions");
 	     for (var i=0; i<versionCheckboxes.length; i++)
 	     {
-	         var cb = $(versionCheckboxes[i]);
+	         var cb = pt(versionCheckboxes[i]);
 	         if(!cb.disabled)
 	         {
 	          	cb.checked = isChecked;

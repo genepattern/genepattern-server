@@ -70,7 +70,7 @@
        for(var i=0; i<objArray.length; i++) {
          var installStatus = objArray[i];
          var lsid = installStatus.lsid;
-         var cb = $("cb_" + lsid);
+         var cb = pt("cb_" + lsid);
          if(installStatus.status == "success") {
            if(cb != null) {
              cb.src="#{facesContext.externalContext.requestContextPath}/images/checkbox.gif";
@@ -102,7 +102,7 @@
       if(complete == true) {
         Element.update("progress_indicator", " complete")
         stopPolling();
-        var buttonPane = $("button_pane");
+        var buttonPane = pt("button_pane");
         if(buttonPane != null) { 
           Element.show(buttonPane);
         }

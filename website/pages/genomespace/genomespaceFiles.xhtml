@@ -32,27 +32,27 @@ use, misuse, or functionality.
                 }
                 
                 function toggleJobVisibility(jobNo) {
-                	var d = $(jobNo + "_div");
-                 	var downArrow = $(jobNo + "_expanded_img");
-                   	var rightArrow = $(jobNo + "_collapsed_img");
+                	var d = pt(jobNo + "_div");
+                 	var downArrow = pt(jobNo + "_expanded_img");
+                   	var rightArrow = pt(jobNo + "_collapsed_img");
                    	var style = "none";
                    	if(d.style.display == "inline") {
                 		d.style.display = "none";
                       	downArrow.style.display = "none";
                 		rightArrow.style.display = "inline";
-                		// $("expansion_state_" + jobNo).value = "false";
+                		// pt("expansion_state_" + jobNo).value = "false";
                 	} else {
                 		style = "inline";
                       	d.style.display = "inline";
                       	downArrow.style.display = "inline";
                 		rightArrow.style.display = "none";
-                		// $("expansion_state_" + jobNo).value = "true";
+                		// pt("expansion_state_" + jobNo).value = "true";
                 	} 
                 	
                 	var childJobs = jobIdToChildJobs[jobNo];
                 	if(childJobs!=null) {
                 		for(var i=0; i<childJobs.length; i++) {
-                			$(childJobs[i]).style.display = style;
+                			pt(childJobs[i]).style.display = style;
                 		}
                 	}
                 }

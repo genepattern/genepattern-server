@@ -24,11 +24,11 @@
       /* <![CDATA[ */
       function onLoad()
       {
-        var e = $("form1:zipfile");
+        var e = pt("form1:zipfile");
         e.required = 1;
         e.err = "Missing file";
 
-		e = $("url");
+		e = pt("url");
         e.required = 1;
         e.err = "Missing URL";
       }

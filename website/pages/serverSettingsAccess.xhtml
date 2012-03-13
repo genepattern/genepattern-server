@@ -25,16 +25,16 @@
 		for (var i=0; i<specified.length; i++) {
 			specified[i].style.display=(v == "Specified")? '':'none';
 		}
-		var firstOption = $("selectClientMode").options[0];
+		var firstOption = pt("selectClientMode").options[0];
 		var resetOptions = ( v=="Specified" && firstOption!= null && (firstOption.value=="Any" || firstOption.value=="Local") );
 
 		if (resetOptions) {
-			$("clientMode").value = "";
-			$("selectClientMode").options[0] = null;
-			$("save").disabled=true;
-			$("remove").disabled=true;
+			pt("clientMode").value = "";
+			pt("selectClientMode").options[0] = null;
+			pt("save").disabled=true;
+			pt("remove").disabled=true;
 		}else {
-			$("save").disabled=false;
+			pt("save").disabled=false;
 		}
 	  }
 	  /* ]]> */
@@ -62,7 +62,7 @@
       <tr valign="top" class="specified" style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}">
         <td width="20%">Allowed ip addresses:</td>
         <td width="55%" >
-          <t:selectOneListbox id="selectClientMode" style="width:50%" size="3" value="#{serverSettingsBean.specifiedClientMode}" onclick="$(clientMode).value=this.value">
+          <t:selectOneListbox id="selectClientMode" style="width:50%" size="3" value="#{serverSettingsBean.specifiedClientMode}" onclick="pt(clientMode).value=this.value">
             <f:attribute name="forceId" value="true"/>
   			<f:selectItems value="#{serverSettingsBean.specifiedClientModes}" />
 		  </t:selectOneListbox>
@@ -74,7 +74,7 @@
       <tr valign="top" class="specified" style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}">
         <td width="20%">Enter an ip address:</td>
         <td width="55%">
-          <t:inputText id="clientMode" style="width:49%" size="40" value="#{serverSettingsBean.specifiedClientMode}" onkeydown="$(save).disabled=false; $(remove).disabled=false" >
+          <t:inputText id="clientMode" style="width:49%" size="40" value="#{serverSettingsBean.specifiedClientMode}" onkeydown="pt(save).disabled=false; pt(remove).disabled=false" >
             <f:attribute name="forceId" value="true"/>
           </t:inputText>
         </td>
@@ -93,7 +93,7 @@
 	      </h:commandButton>
 	      &#160;
 	      <t:commandButton id="remove" styleClass="specified" value="Remove" actionListener="#{serverSettingsBean.removeSpecifiedClientMode}"
-          	style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}" onkeyup="$(clientMode).value=''" >
+          	style="#{(serverSettingsBean.currentClientMode eq 'Specified') ? 'display:' : 'display:none;'}" onkeyup="pt(clientMode).value=''" >
             <f:attribute name="forceId" value="true"/>
           </t:commandButton>
         </td>
