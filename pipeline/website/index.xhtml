@@ -108,6 +108,7 @@
 				editor.init();
 				$.getJSON("/gp/PipelineDesigner/library", function(data) {
 					library.init(data);
+                    editor.loadPipelineIfAsked();
 				});
 				properties.init();
 			});

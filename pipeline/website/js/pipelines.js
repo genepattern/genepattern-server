@@ -52,6 +52,22 @@ var editor = {
         });
 	},
 
+    loadPipelineIfAsked: function() {
+        var lsid = editor._loadGetLsid();
+        if (lsid !== null) {
+            editor.load(lsid);
+        }
+    },
+
+    _loadGetLsid: function() {
+        var lsid = "lsid";
+        var regexS = "[\\?&]" + lsid + "=([^&#]*)";
+        var regex = new RegExp(regexS);
+        var results = regex.exec(window.location.search);
+        if (results == null) { return null; }
+        else { return decodeURIComponent(results[1].replace(/\+/g, " ")); }
+    },
+
     _cleanWorkspace: function() {
         for (var i in editor.workspace) {
             if (editor.workspace[i] instanceof Module) {
@@ -571,6 +587,9 @@ var library = {
                     if (lsid === null) return;
 
                     var module = editor.addModule(lsid);
+
+                    // Scroll page to new module
+                    $("html, body").animate({ scrollTop: module.ui.style.top }, "slow");
                 });
                 catDiv.appendChild(modDiv);
             }
@@ -1922,6 +1941,7 @@ function Port(module, pointer, param) {
         for (var i = 0; i < this.module.inputEnds.length; i++) {
             if (this.module.inputEnds[i] == this) {
                 this.module.inputEnds.splice(i, 1);
+                $(this.tooltip).remove();
                 return;
             }
         }
@@ -1929,6 +1949,7 @@ function Port(module, pointer, param) {
         for (var i = 0; i < this.module.outputEnds.length; i++) {
             if (this.module.outputEnds[i] == this) {
                 this.module.outputEnds.splice(i, 1);
+                $(this.tooltip).remove();
                 return;
             }
         }
