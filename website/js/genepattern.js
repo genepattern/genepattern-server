@@ -82,7 +82,7 @@ function ajaxEmailResponse( req ) {
     // The form parameters as a string.
     
     function getFormParameters(formId) {
-        var form = $(formId);
+        var form = pt(formId);
         if(form == null) {
             alert("Form " + formId + " not found.");
         }

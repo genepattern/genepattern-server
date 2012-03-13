@@ -5,7 +5,7 @@ function getContext() {
 }
 
 function toggleSuiteCheckboxes(id) {
-    var jobCheckboxDiv = $("cb_job_" + id);
+    var jobCheckboxDiv = "cb_job_" + id);
     var jobCheckbox = jobCheckboxDiv.getElementsByTagName("input")[0];
     var isChecked = jobCheckbox.checked;
     var rowIds = fileRows[id];

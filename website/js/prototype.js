@@ -1007,7 +1007,7 @@ Object.extend(Object.extend(Ajax.Updater.prototype, Ajax.Request.prototype), {
 
     if (!this.options.evalScripts) response = response.stripScripts();
 
-    if (receiver = $(receiver)) {
+    if (receiver = pt(receiver)) {
       if (this.options.insertion)
         new this.options.insertion(receiver, response);
       else
@@ -1063,10 +1063,10 @@ Ajax.PeriodicalUpdater.prototype = Object.extend(new Ajax.Base(), {
     this.updater = new Ajax.Updater(this.container, this.url, this.options);
   }
 });
-function $(element) {
+function pt(element) {
   if (arguments.length > 1) {
     for (var i = 0, elements = [], length = arguments.length; i < length; i++)
-      elements.push($(arguments[i]));
+      elements.push(pt(arguments[i]));
     return elements;
   }
   if (typeof element == 'string')
@@ -1077,7 +1077,7 @@ function $(element) {
 if (Prototype.BrowserFeatures.XPath) {
   document._getElementsByXPath = function(expression, parentElement) {
     var results = [];
-    var query = document.evaluate(expression, $(parentElement) || document,
+    var query = document.evaluate(expression, pt(parentElement) || document,
       null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     for (var i = 0, length = query.snapshotLength; i < length; i++)
       results.push(query.snapshotItem(i));
@@ -1090,7 +1090,7 @@ document.getElementsByClassName = function(className, parentElement) {
     var q = ".//*[contains(concat(' ', @class, ' '), ' " + className + " ')]";
     return document._getElementsByXPath(q, parentElement);
   } else {
-    var children = ($(parentElement) || document.body).getElementsByTagName('*');
+    var children = (pt(parentElement) || document.body).getElementsByTagName('*');
     var elements = [], child;
     for (var i = 0, length = children.length; i < length; i++) {
       child = children[i];
@@ -1140,40 +1140,40 @@ Element.extend.cache = {
 
 Element.Methods = {
   visible: function(element) {
-    return $(element).style.display != 'none';
+    return pt(element).style.display != 'none';
   },
 
   toggle: function(element) {
-    element = $(element);
+    element = pt(element);
     Element[Element.visible(element) ? 'hide' : 'show'](element);
     return element;
   },
 
   hide: function(element) {
-    $(element).style.display = 'none';
+    pt(element).style.display = 'none';
     return element;
   },
 
   show: function(element) {
-    $(element).style.display = '';
+    pt(element).style.display = '';
     return element;
   },
 
   remove: function(element) {
-    element = $(element);
+    element = pt(element);
     element.parentNode.removeChild(element);
     return element;
   },
 
   update: function(element, html) {
     html = typeof html == 'undefined' ? '' : html.toString();
-    $(element).innerHTML = html.stripScripts();
+    pt(element).innerHTML = html.stripScripts();
     setTimeout(function() {html.evalScripts()}, 10);
     return element;
   },
 
   replace: function(element, html) {
-    element = $(element);
+    element = pt(element);
     html = typeof html == 'undefined' ? '' : html.toString();
     if (element.outerHTML) {
       element.outerHTML = html.stripScripts();
@@ -1188,7 +1188,7 @@ Element.Methods = {
   },
 
   inspect: function(element) {
-    element = $(element);
+    element = pt(element);
     var result = '<' + element.tagName.toLowerCase();
     $H({'id': 'id', 'className': 'class'}).each(function(pair) {
       var property = pair.first(), attribute = pair.last();
@@ -1199,7 +1199,7 @@ Element.Methods = {
   },
 
   recursivelyCollect: function(element, property) {
-    element = $(element);
+    element = pt(element);
     var elements = [];
     while (element = element[property])
       if (element.nodeType == 1)
@@ -1208,57 +1208,57 @@ Element.Methods = {
   },
 
   ancestors: function(element) {
-    return $(element).recursivelyCollect('parentNode');
+    return pt(element).recursivelyCollect('parentNode');
   },
 
   descendants: function(element) {
-    return $A($(element).getElementsByTagName('*'));
+    return $A(pt(element).getElementsByTagName('*'));
   },
 
   immediateDescendants: function(element) {
-    if (!(element = $(element).firstChild)) return [];
+    if (!(element = pt(element).firstChild)) return [];
     while (element && element.nodeType != 1) element = element.nextSibling;
-    if (element) return [element].concat($(element).nextSiblings());
+    if (element) return [element].concat(pt(element).nextSiblings());
     return [];
   },
 
   previousSiblings: function(element) {
-    return $(element).recursivelyCollect('previousSibling');
+    return pt(element).recursivelyCollect('previousSibling');
   },
 
   nextSiblings: function(element) {
-    return $(element).recursivelyCollect('nextSibling');
+    return pt(element).recursivelyCollect('nextSibling');
   },
 
   siblings: function(element) {
-    element = $(element);
+    element = pt(element);
     return element.previousSiblings().reverse().concat(element.nextSiblings());
   },
 
   match: function(element, selector) {
     if (typeof selector == 'string')
       selector = new Selector(selector);
-    return selector.match($(element));
+    return selector.match(pt(element));
   },
 
   up: function(element, expression, index) {
-    return Selector.findElement($(element).ancestors(), expression, index);
+    return Selector.findElement(pt(element).ancestors(), expression, index);
   },
 
   down: function(element, expression, index) {
-    return Selector.findElement($(element).descendants(), expression, index);
+    return Selector.findElement(pt(element).descendants(), expression, index);
   },
 
   previous: function(element, expression, index) {
-    return Selector.findElement($(element).previousSiblings(), expression, index);
+    return Selector.findElement(pt(element).previousSiblings(), expression, index);
   },
 
   next: function(element, expression, index) {
-    return Selector.findElement($(element).nextSiblings(), expression, index);
+    return Selector.findElement(pt(element).nextSiblings(), expression, index);
   },
 
   getElementsBySelector: function() {
-    var args = $A(arguments), element = $(args.shift());
+    var args = $A(arguments), element = pt(args.shift());
     return Selector.findChildElements(element, args);
   },
 
@@ -1267,7 +1267,7 @@ Element.Methods = {
   },
 
   readAttribute: function(element, name) {
-    element = $(element);
+    element = pt(element);
     if (document.all && !window.opera) {
       var t = Element._attributeTranslations;
       if (t.values[name]) return t.values[name](element, name);
@@ -1279,11 +1279,11 @@ Element.Methods = {
   },
 
   getHeight: function(element) {
-    return $(element).getDimensions().height;
+    return pt(element).getDimensions().height;
   },
 
   getWidth: function(element) {
-    return $(element).getDimensions().width;
+    return pt(element).getDimensions().width;
   },
 
   classNames: function(element) {
@@ -1291,7 +1291,7 @@ Element.Methods = {
   },
 
   hasClassName: function(element, className) {
-    if (!(element = $(element))) return;
+    if (!(element = pt(element))) return;
     var elementClassName = element.className;
     if (elementClassName.length == 0) return false;
     if (elementClassName == className ||
@@ -1301,19 +1301,19 @@ Element.Methods = {
   },
 
   addClassName: function(element, className) {
-    if (!(element = $(element))) return;
+    if (!(element = pt(element))) return;
     Element.classNames(element).add(className);
     return element;
   },
 
   removeClassName: function(element, className) {
-    if (!(element = $(element))) return;
+    if (!(element = pt(element))) return;
     Element.classNames(element).remove(className);
     return element;
   },
 
   toggleClassName: function(element, className) {
-    if (!(element = $(element))) return;
+    if (!(element = pt(element))) return;
     Element.classNames(element)[element.hasClassName(className) ? 'remove' : 'add'](className);
     return element;
   },
@@ -1330,7 +1330,7 @@ Element.Methods = {
 
   // removes whitespace-only text node children
   cleanWhitespace: function(element) {
-    element = $(element);
+    element = pt(element);
     var node = element.firstChild;
     while (node) {
       var nextNode = node.nextSibling;
@@ -1342,25 +1342,25 @@ Element.Methods = {
   },
 
   empty: function(element) {
-    return $(element).innerHTML.match(/^\s*$/);
+    return pt(element).innerHTML.match(/^\s*$/);
   },
 
   descendantOf: function(element, ancestor) {
-    element = $(element), ancestor = $(ancestor);
+    element = pt(element), ancestor = pt(ancestor);
     while (element = element.parentNode)
       if (element == ancestor) return true;
     return false;
   },
 
   scrollTo: function(element) {
-    element = $(element);
+    element = pt(element);
     var pos = Position.cumulativeOffset(element);
     window.scrollTo(pos[0], pos[1]);
     return element;
   },
 
   getStyle: function(element, style) {
-    element = $(element);
+    element = pt(element);
     if (['float','cssFloat'].include(style))
       style = (typeof element.style.styleFloat != 'undefined' ? 'styleFloat' : 'cssFloat');
     style = style.camelize();
@@ -1389,7 +1389,7 @@ Element.Methods = {
   },
 
   setStyle: function(element, style) {
-    element = $(element);
+    element = pt(element);
     for (var name in style) {
       var value = style[name];
       if(name == 'opacity') {
@@ -1414,8 +1414,8 @@ Element.Methods = {
   },
 
   getDimensions: function(element) {
-    element = $(element);
-    var display = $(element).getStyle('display');
+    element = pt(element);
+    var display = pt(element).getStyle('display');
     if (display != 'none' && display != null) // Safari bug
       return {width: element.offsetWidth, height: element.offsetHeight};
 
@@ -1437,7 +1437,7 @@ Element.Methods = {
   },
 
   makePositioned: function(element) {
-    element = $(element);
+    element = pt(element);
     var pos = Element.getStyle(element, 'position');
     if (pos == 'static' || !pos) {
       element._madePositioned = true;
@@ -1453,7 +1453,7 @@ Element.Methods = {
   },
 
   undoPositioned: function(element) {
-    element = $(element);
+    element = pt(element);
     if (element._madePositioned) {
       element._madePositioned = undefined;
       element.style.position =
@@ -1466,7 +1466,7 @@ Element.Methods = {
   },
 
   makeClipping: function(element) {
-    element = $(element);
+    element = pt(element);
     if (element._overflow) return element;
     element._overflow = element.style.overflow || 'auto';
     if ((Element.getStyle(element, 'overflow') || 'visible') != 'hidden')
@@ -1475,7 +1475,7 @@ Element.Methods = {
   },
 
   undoClipping: function(element) {
-    element = $(element);
+    element = pt(element);
     if (!element._overflow) return element;
     element.style.overflow = element._overflow == 'auto' ? '' : element._overflow;
     element._overflow = null;
@@ -1506,7 +1506,7 @@ Element._attributeTranslations.values = {
   },
 
   _flag: function(element, attribute) {
-    return $(element).hasAttribute(attribute) ? attribute : null;
+    return pt(element).hasAttribute(attribute) ? attribute : null;
   },
 
   style: function(element) {
@@ -1532,14 +1532,14 @@ Element.Methods.Simulated = {
   hasAttribute: function(element, attribute) {
     var t = Element._attributeTranslations;
     attribute = t.names[attribute] || attribute;
-    return $(element).getAttributeNode(attribute).specified;
+    return pt(element).getAttributeNode(attribute).specified;
   }
 };
 
 // IE is missing .innerHTML support for TABLE-related elements
 if (document.all && !window.opera){
   Element.Methods.update = function(element, html) {
-    element = $(element);
+    element = pt(element);
     html = typeof html == 'undefined' ? '' : html.toString();
     var tagName = element.tagName.toUpperCase();
     if (['THEAD','TBODY','TR','TD'].include(tagName)) {
@@ -1620,7 +1620,7 @@ Abstract.Insertion = function(adjacency) {
 
 Abstract.Insertion.prototype = {
   initialize: function(element, content) {
-    this.element = $(element);
+    this.element = pt(element);
     this.content = content.stripScripts();
 
     if (this.adjacency && this.element.insertAdjacentHTML) {
@@ -1712,7 +1712,7 @@ Insertion.After.prototype = Object.extend(new Abstract.Insertion('afterEnd'), {
 Element.ClassNames = Class.create();
 Element.ClassNames.prototype = {
   initialize: function(element) {
-    this.element = $(element);
+    this.element = pt(element);
   },
 
   _each: function(iterator) {
@@ -1817,14 +1817,14 @@ Selector.prototype = {
 
   compileMatcher: function() {
     this.match = new Function('element', 'if (!element.tagName) return false; \
-      element = $(element); \
+      element = pt(element); \
       return ' + this.buildMatchExpression());
   },
 
   findElements: function(scope) {
     var element;
 
-    if (element = $(this.params.id))
+    if (element = pt(this.params.id))
       if (this.match(element))
         if (!scope || Element.childOf(element, scope))
           return [element];
@@ -1867,19 +1867,19 @@ Object.extend(Selector, {
   }
 });
 
-function $$() {
+function $pt() {
   return Selector.findChildElements(document, $A(arguments));
 }
 var Form = {
   reset: function(form) {
-    $(form).reset();
+    pt(form).reset();
     return form;
   },
 
   serializeElements: function(elements, getHash) {
     var data = elements.inject({}, function(result, element) {
       if (!element.disabled && element.name) {
-        var key = element.name, value = $(element).getValue();
+        var key = element.name, value = pt(element).getValue();
         if (value != undefined) {
           if (result[key]) {
             if (result[key].constructor != Array) result[key] = [result[key]];
@@ -1901,7 +1901,7 @@ Form.Methods = {
   },
 
   getElements: function(form) {
-    return $A($(form).getElementsByTagName('*')).inject([],
+    return $A(pt(form).getElementsByTagName('*')).inject([],
       function(elements, child) {
         if (Form.Element.Serializers[child.tagName.toLowerCase()])
           elements.push(Element.extend(child));
@@ -1911,7 +1911,7 @@ Form.Methods = {
   },
 
   getInputs: function(form, typeName, name) {
-    form = $(form);
+    form = pt(form);
     var inputs = form.getElementsByTagName('input');
 
     if (!typeName && !name) return $A(inputs).map(Element.extend);
@@ -1927,7 +1927,7 @@ Form.Methods = {
   },
 
   disable: function(form) {
-    form = $(form);
+    form = pt(form);
     form.getElements().each(function(element) {
       element.blur();
       element.disabled = 'true';
@@ -1936,7 +1936,7 @@ Form.Methods = {
   },
 
   enable: function(form) {
-    form = $(form);
+    form = pt(form);
     form.getElements().each(function(element) {
       element.disabled = '';
     });
@@ -1944,14 +1944,14 @@ Form.Methods = {
   },
 
   findFirstElement: function(form) {
-    return $(form).getElements().find(function(element) {
+    return pt(form).getElements().find(function(element) {
       return element.type != 'hidden' && !element.disabled &&
         ['input', 'select', 'textarea'].include(element.tagName.toLowerCase());
     });
   },
 
   focusFirstElement: function(form) {
-    form = $(form);
+    form = pt(form);
     form.findFirstElement().activate();
     return form;
   }
@@ -1963,19 +1963,19 @@ Object.extend(Form, Form.Methods);
 
 Form.Element = {
   focus: function(element) {
-    $(element).focus();
+    pt(element).focus();
     return element;
   },
 
   select: function(element) {
-    $(element).select();
+    pt(element).select();
     return element;
   }
 }
 
 Form.Element.Methods = {
   serialize: function(element) {
-    element = $(element);
+    element = pt(element);
     if (!element.disabled && element.name) {
       var value = element.getValue();
       if (value != undefined) {
@@ -1988,22 +1988,22 @@ Form.Element.Methods = {
   },
 
   getValue: function(element) {
-    element = $(element);
+    element = pt(element);
     var method = element.tagName.toLowerCase();
     return Form.Element.Serializers[method](element);
   },
 
   clear: function(element) {
-    $(element).value = '';
+    pt(element).value = '';
     return element;
   },
 
   present: function(element) {
-    return $(element).value != '';
+    return pt(element).value != '';
   },
 
   activate: function(element) {
-    element = $(element);
+    element = pt(element);
     element.focus();
     if (element.select && ( element.tagName.toLowerCase() != 'input' ||
       !['button', 'reset', 'submit'].include(element.type) ) )
@@ -2012,13 +2012,13 @@ Form.Element.Methods = {
   },
 
   disable: function(element) {
-    element = $(element);
+    element = pt(element);
     element.disabled = true;
     return element;
   },
 
   enable: function(element) {
-    element = $(element);
+    element = pt(element);
     element.blur();
     element.disabled = false;
     return element;
@@ -2083,7 +2083,7 @@ Abstract.TimedObserver = function() {}
 Abstract.TimedObserver.prototype = {
   initialize: function(element, frequency, callback) {
     this.frequency = frequency;
-    this.element   = $(element);
+    this.element   = pt(element);
     this.callback  = callback;
 
     this.lastValue = this.getValue();
@@ -2124,7 +2124,7 @@ Form.Observer.prototype = Object.extend(new Abstract.TimedObserver(), {
 Abstract.EventObserver = function() {}
 Abstract.EventObserver.prototype = {
   initialize: function(element, callback) {
-    this.element  = $(element);
+    this.element  = pt(element);
     this.callback = callback;
 
     this.lastValue = this.getValue();
@@ -2255,7 +2255,7 @@ Object.extend(Event, {
   },
 
   observe: function(element, name, observer, useCapture) {
-    element = $(element);
+    element = pt(element);
     useCapture = useCapture || false;
 
     if (name == 'keypress' &&
@@ -2267,7 +2267,7 @@ Object.extend(Event, {
   },
 
   stopObserving: function(element, name, observer, useCapture) {
-    element = $(element);
+    element = pt(element);
     useCapture = useCapture || false;
 
     if (name == 'keypress' &&
@@ -2427,11 +2427,11 @@ var Position = {
     }, arguments[2] || {})
 
     // find page position of source
-    source = $(source);
+    source = pt(source);
     var p = Position.page(source);
 
     // find coordinate system to use
-    target = $(target);
+    target = pt(target);
     var delta = [0, 0];
     var parent = null;
     // delta [0,0] will do fine with position: fixed elements,
@@ -2455,7 +2455,7 @@ var Position = {
   },
 
   absolutize: function(element) {
-    element = $(element);
+    element = pt(element);
     if (element.style.position == 'absolute') return;
     Position.prepare();
 
@@ -2478,7 +2478,7 @@ var Position = {
   },
 
   relativize: function(element) {
-    element = $(element);
+    element = pt(element);
     if (element.style.position == 'relative') return;
     Position.prepare();
 

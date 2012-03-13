@@ -35,7 +35,7 @@ function pm_showMenu(id, pos, horizOffset, vertOffset) {
    var width = cDim.w; //  f_clientWidth();
    var height = cDim.h; //  f_clientHeight();
 
-   var style = $(id).style;
+   var style = pt(id).style;
    style.width = 'auto';
    style.height = 'auto';
 
@@ -50,7 +50,7 @@ function pm_showMenu(id, pos, horizOffset, vertOffset) {
       }
       //always use top align
       var menuTop = pos[1] - vertOffset; //inital guess for the location of the popup menu
-      var menuBottom = menuTop + $(id).scrollHeight;
+      var menuBottom = menuTop + pt(id).scrollHeight;
       var screenBottom = f_scrollTop() + height;
       //check to see if the menu extends beyond the bottom of the display area
       if (menuBottom > screenBottom) {
@@ -69,11 +69,11 @@ function pm_showMenu(id, pos, horizOffset, vertOffset) {
 
 
 function pm_hideMenu(id) {
-  var menu = $(id);
+  var menu = pt(id);
   if(menu != null) {
-    $(id).style.visibility = "hidden";
-    $(id).style.width = '10px';
-    $(id).style.height = '10px';
+    pt(id).style.visibility = "hidden";
+    pt(id).style.width = '10px';
+    pt(id).style.height = '10px';
 
     pm_currentId = null;
   }
