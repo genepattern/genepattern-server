@@ -84,7 +84,7 @@ function mmLoadMenus() {
 //GENOMESPACE MENU
   window.mm_menu_genomespaceloggedin = new Menu("root",158,18,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   mm_menu_genomespaceloggedin.addMenuItem("Logout","location=contextRoot + '/pages/genomespace/signon.jsf'");
-  mm_menu_genomespaceloggedin.addMenuItem("GenomeSpace UI","window.open('https://identity.genomespace.org/gsui/gsui.jnlp', '_blank')");
+  mm_menu_genomespaceloggedin.addMenuItem("GenomeSpace UI","window.open('https://gsui.genomespace.org/jsui/', '_blank')");
   mm_menu_genomespaceloggedin.addMenuItem("About","window.open('http://www.genomespace.org/', '_blank')");
   mm_menu_genomespaceloggedin.hideOnMouseOut=true;
   mm_menu_genomespaceloggedin.bgColor='#CCCC66';
