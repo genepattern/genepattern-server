@@ -1,4 +1,5 @@
 var mainLayout;
+var uploadedfiles= new Array();
 
 function addparameter()
 {
@@ -14,7 +15,7 @@ function addparameter()
                <td>   \
                    Description: \
                </td> \
-               <td colspan='9'>  \
+               <td colspan='3'>  \
                    <textarea cols='50' name='p_description' rows='3'></textarea> \
                </td>    \
                <td>        \
@@ -46,6 +47,9 @@ function addparameter()
                        <option value='Choice'>Choice</option> \
                    </select>  \
                </td> \
+               <td>   \
+                    <input type='checkbox' name='p_invisible' size='7'> visible only on command line</input> \
+               </td> \
             </tr>  \
         </table> \
     </div>");
@@ -70,7 +74,7 @@ function addparameter()
         {
             if($(this).parent().next().next().text().indexOf("edit") == -1)
             {
-                var editChoiceList = $("<td><input type='text' name='choicelist' size='30'/></td>");
+                var editChoiceList = $("<td><input type='text' name='choicelist' size='40'/></td>");
                 var editChoiceLink = $("<td> <a href=''>edit choice</a></td>");
 
                 editChoiceLink.children(a).click(function()
@@ -155,8 +159,8 @@ function addparameter()
                     $(this).parent().data("editing", true);
                 });
 
-                $(this).parent().parent().append(editChoiceList);
-                $(this).parent().parent().append(editChoiceLink);
+                $(this).parent().after(editChoiceLink);                
+                $(this).parent().after(editChoiceList);
             }
         }
         else
@@ -330,15 +334,38 @@ function updatemodulecategories()
     });
 }
 
+
 jQuery(document).ready(function() {
+
+
 
     $(".heading").click(function()
     {        
         $(this).next(".content").slideToggle(340);
 
-        /*var visible = $(this).next(".content").is(":visible");
-        alert($(this).next(".content").html());
-        if($(this).next(".content").is(":visible").length > 0)
+        var visible = $(this).next(".content").data("visible");
+       /* if(visible == undefined)
+        {
+            $(this).next(".content").data("visible", false);
+        }
+        else if (visible == true)
+        {
+            $(this).next(".content").data("visible", false);
+            var image = $("<img src='css/images/1330981073_1collapsearrow1.png' alt='some_text' width='11' height='11'/>");
+            $(this).prepend(image);                   
+        }
+        else
+        {
+            $(this).next(".content").data("visible", true);
+            var image = $("<img src='css/images/1330981073_1downarrow1.png' alt='some_text' width='11' height='11'/>");
+            $(this).prepend(image);
+        } */
+
+        //alert($(this).next(".content").html());
+
+
+        /*if($(this).next(".content").is(":visible").length > 0)
+        /*if($(this).next(".content").is(":visible").length > 0)
         {
             alert("visible");
 
@@ -419,7 +446,6 @@ jQuery(document).ready(function() {
     $( "#deleteparam" ).button().click(function() {
         $('.ui-selected').each(function()
         {
-            //alert($(this).html());
             var pelement = $(this).find("input[name='p_name']");
             var felement = $(this).find("input[name='p_flag']");
             pelement.val("");
@@ -504,7 +530,6 @@ jQuery(document).ready(function() {
                         $( this ).dialog( "close" );
                     },
                     "Cancel": function() {
-                        alert("not implemented");                        
                         $( this ).dialog( "close" );
                     }
             },
@@ -535,7 +560,49 @@ jQuery(document).ready(function() {
 
     $('#savebtn').button().click(function()
     {
-        alert("not implemented");
+        alert("not fully implemented");
+
+        for(i=0;i < uploadedfiles.length;i++)
+        {
+            var fileuploadform = $('<form action="/gp/ModuleCreator/upload" method="post" ' +
+                                 'enctype="multipart/form-data" class="fileuploadform"> </form>');
+
+            fileuploadform.append(uploadedfiles[i]);
+
+            //alert("file form html: " + fileuploadform.html());
+
+            //uploadfiles(fileuploadform);
+            fileuploadform.iframePostForm
+            ({
+                json : false,
+                post : function ()
+                {
+                    if ($(this).find('input[type=file]').val().length)
+                    {
+                        alert("uploading file: " + $(this).find('input[type=file]').val());
+                    }
+                    else
+                    {
+                        //cancel request
+                        //return false;
+                        alert("canceled");
+                    }
+                },
+                complete : function (response)
+                {
+                    if (response.error !== undefined)
+                    {
+                        alert(response.error);
+                    }
+                    else
+                    {
+                        alert("alert success uploading file: " + response);
+                    }
+                }
+            });
+
+            fileuploadform.submit();
+        }
     });
 
 
@@ -563,31 +630,21 @@ jQuery(document).ready(function() {
 
     updatemodulecategories();
 
-    $("input[name='supportfiles[]']").change(function(){
-        $in=$(this);
-
+    $("input[name='supportfiles']").change(function()
+    {
         for (var i = 0; i < this.files.length; i++)
         {
             var file = this.files[i];
 
-            var sfilelist="";
-            if(file.name == undefined)
-            {
-                sfilelist = $("<li>" + $(this).val() + "</li>");
+            var sfilelist = $("<li>" + $(this).val() + "</li>");
 
-            }
-            else
-            {
-                sfilelist = $("<li>" + file.name + "</li>");
-            }
             var delbutton = $("<button>x</button>&nbsp;");
             delbutton.button().click(function()
             {
                 $(this).parent().remove();
             });
 
-
-            if($(this).find(sfilelist).length > 0 )
+            if($("#uploadedfiles").find(sfilelist).length > 0 )
             {
                 alert("File already exists");
                 return;
@@ -595,10 +652,43 @@ jQuery(document).ready(function() {
             sfilelist.prepend(delbutton);
             $("#uploadedfiles").append(sfilelist);
 
-            if(file.name == undefined)
-            {
-                break;
-            }
+            uploadedfiles.push($(this));
         }
     });
+
 });
+
+
+function uploadfiles(element)
+{
+    element.iframePostForm
+	({
+		json : false,
+		post : function ()
+		{
+            alert("starting");
+			if ($('input[type=file]').val().length)
+			{
+			    alert("uploading file: " + $('input[type=file]').val());
+			}
+			else
+			{
+				//cancel request
+				//return false;
+                alert("canceled");
+			}
+		},
+		complete : function (response)
+		{
+
+			if (!response.success)
+			{
+				alert("error uploading file");
+			}
+			else
+			{
+                alert("alert success uploading file");
+			}
+		}
+	});
+}

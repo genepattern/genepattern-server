@@ -135,6 +135,11 @@ div.ui-layout-north
     margin: 5px;
 }
 
+.parameter table td
+{
+    padding: 2px;
+}
+
 .addcontrols
 {
     margin: 1px;
