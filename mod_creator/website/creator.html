@@ -23,7 +23,9 @@
 <body>
 
 <div class="ui-layout-north">
-    <div id="modtitle">UntitledModule</div>
+    <div id="modtitle">
+        Name*: <input type="text" name="title" size="50"/>
+    </div>
     <div id="modcontrols">
         <button id="savebtn">Save</button>
     </div>
@@ -240,11 +242,13 @@
 </div>
 
 <div id="addmodcategorydialog" title="Add Module Category" class="dialog">
-    Enter new module category: <input type="text" id="newcategoryname"/>
+    <h6> Enter new module category:  </h6>
+    <input type="text" id="newcategoryname"/>
 </div>
 
 <div id="addfileformatdialog" title="Add Output File Format" class="dialog">
-    Enter new output file format: <input type="text" id="newfileformat"/>
+    <h6>Enter new output file format: </h6>
+    <input type="text" id="newfileformat"/>
 </div>
 
 <div id="clistdialog" title="Commandline Argument List">

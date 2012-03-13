@@ -7,7 +7,7 @@ function addparameter()
         <table>    \
            <tr>    \
                <td>   \
-                  <b>Name:</b>  \
+                  Name*:  \
                </td>  \
                <td colspan='2'>  \
                    <input type='text' name='p_name' size='28'/> \
@@ -36,7 +36,7 @@ function addparameter()
                     <input type='checkbox' name='p_flagspace' size='7' checked='true'> insert space after flag</input> \
                 </td> \
                 <td> \
-                     <b>Type:</b> \
+                     Type*: \
                 </td>     \
                 <td>   \
                     <select name='p_type'>\
@@ -393,15 +393,6 @@ jQuery(document).ready(function() {
 
     $(".content").show();
 
-    
-    //Used for editing default Module name - jQuery In Place Editor 
-
-     $("#modtitle").editInPlace({
-		callback: function(unused, enteredText) { return enteredText; },
-		// url: './server.php',
-         bg_over: "none",		 
-         show_buttons: true
-	});
 
     // this layout could be created with NO OPTIONS - but showing some here just as a sample...
     // myLayout = $('body').layout(); -- syntax with No Options
