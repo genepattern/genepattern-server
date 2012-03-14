@@ -811,7 +811,7 @@ var library = {
     extractFileInputs: function(inputs) {
         var files = new Array();
         for (var i = 0; i < inputs.length; i++) {
-            if (inputs[i].type == "java.io.File") {
+            if (inputs[i].isFile()) {
                 files[files.length] = inputs[i];
             }
         }
@@ -1297,7 +1297,7 @@ var properties = {
         this._displayInputKey();
         var inputs = module.inputs;
         for (var i in inputs) {
-            if (inputs[i].type == "java.io.File") {
+            if (inputs[i].isFile()) {
                 this._addFileInput(inputs[i]);
             }
             else if (inputs[i].choices.length > 0) {
@@ -1403,9 +1403,16 @@ function Module(moduleJSON) {
             return;
         }
 
+        var showFileIcon = false;
         for (var i = 0; i < this.inputs.length; i++) {
             this.inputs[i].loadProps(inputs[i]);
+
+            // Set the file icon if necessary
+            if (inputs[i].value !== "" && this.inputs[i].isFile()) {
+                showFileIcon = true;
+            }
         }
+        this.toggleFileIcon(showFileIcon);
     };
 
     this.loadProps = function(props) {
@@ -1432,6 +1439,7 @@ function Module(moduleJSON) {
     };
 
     this.saveProps = function(save) {
+        var showFileIcon = false;
         for (var i = 0; i < this.inputs.length; i++) {
             var value = save[this.inputs[i].name];
             if (value === null) continue;
@@ -1440,9 +1448,15 @@ function Module(moduleJSON) {
                 this.inputs[i].value = properties.PROMPT_WHEN_RUN;
             }
             else {
+                this.inputs[i].promptWhenRun = false;
                 this.inputs[i].value = value;
+                // Set the file icon if necessary
+                if (value !== "" && this.inputs[i].isFile()) {
+                    showFileIcon = true;
+                }
             }
         }
+        this.toggleFileIcon(showFileIcon);
     };
 
     this.hasPortByPointer = function(pointer) {
@@ -1635,12 +1649,20 @@ function Module(moduleJSON) {
         return iconDiv;
     };
 
-    this.toggleFileIcon = function() {
-        if ($("#file_" + this.id).is(":visible")) {
-            $("#file_" + this.id).hide();
+    this.toggleFileIcon = function(show) {
+        if (show === undefined) {
+            if ($("#file_" + this.id).is(":visible")) {
+                $("#file_" + this.id).hide();
+            }
+            else {
+                $("#file_" + this.id).show();
+            }
+        }
+        else if (show) {
+            $("#file_" + this.id).show();
         }
         else {
-            $("#file_" + this.id).show();
+            $("#file_" + this.id).hide();
         }
     }
 
@@ -1832,6 +1854,10 @@ function InputParam(paramJSON) {
     this.used = false;
     this.port = null;
     this.value = this.defaultValue;
+
+    this.isFile = function() {
+        return this.type === "java.io.File";
+    };
 
     this.makeUsed = function(port) {
         this.used = true;
