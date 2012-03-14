@@ -234,6 +234,7 @@ var editor = {
         spawn.id = id;
         this.workspace[spawn.id] = spawn;
         spawn.add(top, left);
+        spawn.checkForWarnings();
         return spawn;
     },
 
@@ -453,6 +454,9 @@ var editor = {
             var outputPort = outputModule.getPortByPointer(outputId);
             var inputPort = inputModule.getPortByPointer(inputId);
 
+            // Mark the input param as used
+            inputModule.getInputByName(inputId).makeUsed(inputPort);
+
             editor.addPipe(inputPort, outputPort);
         }
     },
@@ -470,6 +474,17 @@ var editor = {
         editor.workspace["files"] = [];
     },
 
+    _validatePipeline: function() {
+        for (var i in editor.workspace) {
+            var module = editor.workspace[i];
+
+            // Only perform on modules
+            if (module instanceof Module) {
+                module.checkForWarnings();
+            }
+        }
+    },
+
 	load: function(lsid) {
         $.ajax({
             type: "POST",
@@ -485,6 +500,7 @@ var editor = {
                     editor._loadPipeline(response["pipeline"]);
                     editor._loadModules(response["modules"]);
                     editor._loadPipes(response["pipes"]);
+                    editor._validatePipeline();
                 }
             },
             dataType: "json"
@@ -1387,6 +1403,17 @@ function Module(moduleJSON) {
 	this.type = "module";
 	this.ui = null;
 
+    this.getInputByName = function(name) {
+        for (var i = 0; i < this.inputs.length; i++) {
+            if (this.inputs[i].name === name) {
+                return this.inputs[i];
+            }
+        }
+
+        console.log("ERROR: Was unable to find an input in " + this.name + " named: " + name);
+        return null;
+    };
+
     this.isVisualizer = function() {
         if (this.type == "module visualizer") return true;
         else return false;
@@ -1457,6 +1484,19 @@ function Module(moduleJSON) {
             }
         }
         this.toggleFileIcon(showFileIcon);
+        this.checkForWarnings();
+    };
+
+    this.checkForWarnings = function() {
+        // Mark the error flag if there is a missing required param
+        var showErrorIcon = false;
+        for (var i = 0; i < this.inputs.length; i++) {
+            var input = this.inputs[i];
+            if (input.required && input.value === "" && !input.used) {
+                showErrorIcon = true;
+            }
+        }
+        this.toggleErrorIcon(showErrorIcon);
     };
 
     this.hasPortByPointer = function(pointer) {
@@ -1666,12 +1706,20 @@ function Module(moduleJSON) {
         }
     }
 
-    this.toggleErrorIcon = function() {
-        if ($("#error_" + this.id).is(":visible")) {
-            $("#error_" + this.id).hide();
+    this.toggleErrorIcon = function(show) {
+        if (show === undefined) {
+            if ($("#error_" + this.id).is(":visible")) {
+                $("#error_" + this.id).hide();
+            }
+            else {
+                $("#error_" + this.id).show();
+            }
+        }
+        else if (show) {
+            $("#error_" + this.id).show();
         }
         else {
-            $("#error_" + this.id).show();
+            $("#error_" + this.id).hide();
         }
     }
 
