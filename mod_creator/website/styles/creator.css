@@ -261,7 +261,8 @@ div.ui-layout-north
 }
 
 .content {
-padding: 3px 2px;
+    padding: 3px 2px;
+    margin-left: 15px;
 }
 
 #viewparameter
@@ -357,4 +358,8 @@ padding: 3px 2px;
     font-size: 0.75em;
 }
 
+.ui-multiselect
+{
+    font-size: 0.75em;
+}
 

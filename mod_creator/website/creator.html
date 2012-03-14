@@ -8,6 +8,7 @@
 	<title>Create GenePattern Module</title>
 
 	<link type="text/css" rel="stylesheet" href="styles/layout-default-latest.css" />
+    <link  type="text/css" rel="stylesheet" media="screen" href="styles/jquery.multiselect.css" />    
     <link  type="text/css" rel="stylesheet" media="screen" href="styles/creator.css" />
     <link  type="text/css" rel="stylesheet" media="screen" href="styles/themes/base/jquery.ui.all.css" />
 
@@ -19,6 +20,7 @@
     <script type="text/javascript" src="js/jquery.editinplace.js"></script>
     <script type="text/javascript" src='js/jquery.MultiFile-1.47.js'  language="javascript"></script>    
     <script type="text/javascript" src="js/creator.js"></script>
+    <script type="text/javascript" src="js/jquery.multiselect.js"></script>
 </head>
 <body>
 
@@ -233,6 +235,19 @@
 <div id="editchoicedialog" title="Edit Choice List">
     <div>
         <button id="choiceadd">+</button>
+    </div>
+
+    <table>
+        <tr>
+            <th>Display Value</th>
+            <th>Value</th>
+        </tr>
+    </table>
+</div>
+
+<div id="editfileformatdialog" title="Edit Choice List">
+    <div>
+        <select id="fileformatadd"></select>
     </div>
 
     <table>

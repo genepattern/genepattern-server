@@ -38,7 +38,7 @@ function addparameter()
                 <td> \
                      Type*: \
                 </td>     \
-                <td>   \
+                <td colspan='2'>   \
                     <select name='p_type'>\
                        <option value='text'>Text</option> \
                        <option value='Numeric'>Numeric</option>  \
@@ -69,17 +69,26 @@ function addparameter()
 
     $("select[name='p_type']").change(function()
     {
+        var tSelect = $(this);
         var value = $(this).val();
-        if(value == "Choice")
+
+        if(tSelect.data("editing") != value)
         {
-            if($(this).parent().next().next().text().indexOf("edit") == -1)
+            if(!tSelect.parent().next().children().is("input[name='p_invisible']"))
             {
+                $(this).parent().next().remove();
+            }
+
+            if(value == "Choice")
+            {
+                //check for duplicate calls to this function
+
                 var editChoiceList = $("<td><input type='text' name='choicelist' size='40'/></td>");
-                var editChoiceLink = $("<td> <a href='#'>edit choice</a></td>");
+                var editChoiceLink = $("<a href='#'>edit choice</a>");
 
                 editChoiceLink.click(function()
                 {
-                    var choices = $(this).parent().prev().children().val();
+                    var choices = $(this).prev().val();
 
                     $( "#editchoicedialog" ).dialog({
                         autoOpen: true,
@@ -91,123 +100,6 @@ function addparameter()
 
                             var result = choices.split(';');
                             if(result == null || result == "" || result.length < 0)
-                            {
-                                //start with two rows of data
-                                var trowdef = $("<tr><td> <input type='text' name='choicen' size='15'/> </td>" +
-                                     "<td> <input type='text' name='choicev' size='15'/> </td>" +
-                                     "<td> <button> X </button></td></tr>");
-
-                                trowdef.find("button").button().click(function()
-                                {
-                                        $(this).parent().parent().remove();
-                                });
-
-                                var trowdef2 = $("<tr><td> <input type='text' name='choicen' size='15'/> </td>" +
-                                     "<td> <input type='text' name='choicev' size='15'/> </td>" +
-                                     "<td> <button> X </button></td></tr>");
-
-                                trowdef2.find("button").button().click(function()
-                                {
-                                        $(this).parent().parent().remove();
-                                });
-
-                                $(this).find("table").append(trowdef);
-                                $(this).find("table").append(trowdef2);
-                                return;
-                            }
-                            
-                            for(i=0;i<result.length;i++)
-                            {
-                                var rowdata = result[i].split("=");
-
-                                if(rowdata.length > 1)
-                                {
-                                    var trow = $("<tr><td> <input type='text' name='choicen' size='15' value='"
-                                                + rowdata[0] +"'/> </td>" +
-                                            "<td> <input type='text' name='choicev' size='15'value='" 
-                                             + rowdata[1] + "'/> </td>" +
-                                            "<td> <button> X </button></td></tr>");
-
-                                    trow.find("button").button().click(function()
-                                    {
-                                        $(this).parent().parent().remove();
-                                    });
-
-                                    $(this).find("table").append(trow);
-                                }
-                            }
-                        },
-                        buttons: {
-                                "OK": function() {
-                                    var choicelist = "";
-                                    $(this).find("tr").each(function()
-                                    {
-                                        var dvalue = $(this).find("td input[name='choicen']").val();
-                                        var value = $(this).find("td input[name='choicev']").val();
-
-                                        alert("dvalue: " + dvalue);
-                                        if((dvalue == undefined && value == undefined)
-                                           || (dvalue == "" && value==""))
-                                        {
-                                            return;
-                                        }
-
-                                        if(choicelist != "")
-                                        {
-                                            choicelist += ";";
-                                        }
-                                        choicelist += dvalue + "=" + value;
-                                    });
-
-                                    $("input[name='choicelist']").each(function()
-                                    {
-                                        var editedParameter = $(this).parent().next().data('editing');
-                                        if(editedParameter)
-                                        {
-                                            $(this).val(choicelist);
-                                            $(this).parent().next().data('editing', false);
-                                        }
-                                    });
-
-                                    $( this ).dialog( "destroy" );
-                                },
-                                "Cancel": function() {
-                                    var choiceListElement = $("input[name='choicelist']");
-                                    choiceListElement.parent().next().data('editing', false);
-                                    $( this ).dialog( "destroy" );
-                                }
-                        },
-                        resizable: true
-                    });
-
-                    $(this).data("editing", true);
-                });
-
-                $(this).parent().after(editChoiceLink);                
-                $(this).parent().after(editChoiceList);
-            }
-        }
-        else if(value == "InputFile")
-        {
-            if($(this).parent().next().next().text().indexOf("edit") == -1)
-            {
-                var editChoiceList = $("<td><input type='text' name='choicelist' size='40'/></td>");
-                var editChoiceLink = $("<td> <a href='#'>edit choice</a></td>");
-
-                editChoiceLink.click(function()
-                {
-                    var choices = $(this).parent().prev().children().val();
-
-                    $( "#editchoicedialog" ).dialog({
-                        autoOpen: true,
-                        height: 500,
-                        width: 360,
-                        create: function()
-                        {
-                            $(this).find("tr td").remove();
-
-                            var result = choices.split(';');
-                            if(result == null || result == "" || result.length <= 0)
                             {
                                 //start with two rows of data
                                 var trowdef = $("<tr><td> <input type='text' name='choicen' size='15'/> </td>" +
@@ -262,7 +154,6 @@ function addparameter()
                                         var dvalue = $(this).find("td input[name='choicen']").val();
                                         var value = $(this).find("td input[name='choicev']").val();
 
-                                         alert("dvalue: " + dvalue);
                                         if((dvalue == undefined && value == undefined)
                                            || (dvalue == "" && value==""))
                                         {
@@ -276,41 +167,70 @@ function addparameter()
                                         choicelist += dvalue + "=" + value;
                                     });
 
-                                    $("input[name='choicelist']").each(function()
+                                    tSelect.find("input[name='choicelist']").each(function()
                                     {
-                                        var editedParameter=$(this).parent().next().data('editing');
-                                        alert("editing: " + editedParameter());
-                                        if(editedParameter)
-                                        {
-                                            $(this).val(choicelist);
-                                            $(this).parent().next().data('editing', false);
-                                        }
+                                        $(this).val(choicelist);
+                                        tSelect.data('editing', "Choice");
                                     });
 
                                     $( this ).dialog( "destroy" );
                                 },
                                 "Cancel": function() {
-                                    var choiceListElement = $("input[name='choicelist']");
-                                    choiceListElement.parent().next().data('editing', false);
+                                        var choiceListElement = $("input[name='choicelist']");
+                                        choiceListElement.parent().next().data('editing', false);
                                     $( this ).dialog( "destroy" );
                                 }
                         },
                         resizable: true
                     });
-
-
-                    $(this).parent().data("editing", true);
                 });
+
+                tSelect.data("editing", "Choice");
+
+                $(this).parent().after(editChoiceList);
+                editChoiceList.append(editChoiceLink);
             }
-        }
-        else
-        {
-            if($(this).parent().next().next().text().indexOf("edit") != -1)
+            else if(value == "Input File")
             {
-                $(this).parent().next().remove();
-                $(this).parent().next().remove();                
+
+                var fileFormatList = $('<select multiple="multiple" name="fileformat"></select>');
+                var fileFormatButton = $('<button id="addinputfileformat">New</button>');
+
+                fileFormatButton.click(function()
+                {
+                    $( "#addfileformatdialog" ).dialog("open");                
+                });
+
+                $('select[name="fileformat"]').children("option").each(function()
+                {
+                    fileFormatList.append($(this).clone());
+                });
+
+                var fileFormatTD = $("<td></td>");
+                $(this).parent().after(fileFormatTD);
+                fileFormatTD.hide();
+                fileFormatTD.append(fileFormatList);
+                fileFormatTD.append(fileFormatButton);
+
+                fileFormatTD.show();
+                fileFormatList.multiselect({
+                    header: false,
+                    selectedList: 4 // 0-based index
+                });
+
+                tSelect.data("editing", "Input File");
+            }
+            else
+            {
+                tSelect.data('editing', "");                   
             }
         }
+        
+    });
+
+    $("select[name='p_format']").multiselect({
+        header: false,
+        selectedList: 4 // 0-based index
     });
 }
 
@@ -495,6 +415,8 @@ function updatefileformats()
                 {
                     mcat.append($("<option>" + result[i] + "</option>"));
                 }
+
+                $("select[name='fileformat']").multiselect('refresh');
             }
         },
         dataType: "json"
@@ -698,7 +620,12 @@ jQuery(document).ready(function() {
                     "OK": function() {
                         var fileformat = $("#newfileformat").val();
                         var newfileformat = $("<option>" + fileformat + "</option>");
-                        $("select[name='fileformat']").append(newfileformat);
+                        $("select[name='fileformat']").each(function()
+                        {
+                            $(this).append(newfileformat);
+                            $(this).multiselect("refresh");
+                        });
+
                         $( this ).dialog( "close" );
                     },
                     "Cancel": function() {
@@ -869,6 +796,10 @@ jQuery(document).ready(function() {
         }
     });
 
+    $("select[name='fileformat']").multiselect({
+        header: false,
+        selectedList: 4 // 0-based index
+    });
 });
 
 
