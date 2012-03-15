@@ -26,8 +26,8 @@
 
 <div class="ui-layout-north">
     <div>
-        <span id="modtitle">
-            Name*: <input type="text" name="title" size="50"/>
+        <span>
+            Name*: <input type="text" id="modtitle" name="title" size="50"/>
         </span>
         <span id="modcontrols">
             <button id="savebtn">Save</button>
@@ -42,7 +42,7 @@
         <table border="0" cellspacing="0" cellpadding="0">
             <tr>
                 <td colspan="2">
-                    <label>Description:</label>
+                    Description:
                 </td>
             </tr>
             <tr>
@@ -52,7 +52,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <label>Author:</label>
+                    Author:
                 </td>
             </tr>
             <tr>
@@ -62,7 +62,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <label>Organization:</label>
+                    Organization:
                 </td>
             </tr>
             <tr>
@@ -72,7 +72,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    <label>Version Comment:</label>
+                    Version Comment:
                 </td>
             </tr>
             <tr>
@@ -82,7 +82,7 @@
             </tr>
             <tr >
                 <td colspan="2">
-                    <label>Module Category: </label>                                      
+                    Module Category:
                     <select name="category">
                         <option value=""> Uncategorized</option>
                     </select>
@@ -91,16 +91,14 @@
             </tr>
             <tr>
                 <td>
-                    <label> Privacy: </label>
+                     Privacy:
                      <select name="privacy">
                           <option value="private">private</option>
                          <option value="public">public</option>
                      </select>
                 </td>
                 <td>
-                    <label>
-                        Quality Level:
-                    </label>
+                     Quality Level:
                     <select name="quality">
                         <option value="development">development</option>
                         <option value="preproduction">preproduction</option>
@@ -200,6 +198,9 @@
         <div id="commandinfo">
             <div id='commandtextarea'>
                 <textarea name='cmdtext'></textarea>
+                <a href='createhelp.jsp#Command' target='help'>
+                    <img border='0' src='styles/images/help2.jpg'/>
+                </a>
             </div>
             <button id="viewparameter">View Argument List</button>
             

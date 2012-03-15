@@ -36,10 +36,9 @@ public class ModuleJSON extends JSONObject {
             this.put(AUTHOR, object.get(AUTHOR));
             this.put(PRIVACY, object.get(PRIVACY));
             this.put(VERSION_COMMENT, object.get(VERSION_COMMENT));
-            this.put(CATEGORY, object.get(CATEGORY));                        
+            this.put(CATEGORY, object.get(CATEGORY));
+            this.put(QUALITY, object.get(QUALITY));
             this.put(CPU, object.get(CPU));
-
-
             this.put(OS, object.get(OS));
             this.put(COMMAND_LINE, object.get(COMMAND_LINE));
 

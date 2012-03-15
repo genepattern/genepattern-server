@@ -1,5 +1,5 @@
 var mainLayout;
-var uploadedfiles= new Array();
+var uploadedfiles= [];
 
 function addparameter()
 {
@@ -16,7 +16,7 @@ function addparameter()
                    Description: \
                </td> \
                <td colspan='3'>  \
-                   <textarea cols='50' name='p_description' rows='3'></textarea> \
+                   <textarea cols='60' name='p_description' rows='3'></textarea> \
                </td>    \
                <td>        \
                    Default Value: <input type='text' name='p_defaultvalue' size='16'/> \
@@ -72,7 +72,7 @@ function addparameter()
         var tSelect = $(this);
         var value = $(this).val();
 
-        if(tSelect.data("editing") != value)
+        if(tSelect.data("editing") !== value)
         {
             if(!tSelect.parent().next().children().is("input[name='p_invisible']"))
             {
@@ -81,8 +81,7 @@ function addparameter()
 
             if(value == "Choice")
             {
-                //check for duplicate calls to this function
-
+                //added as a workaround - check for duplicate calls to this function
                 var editChoiceList = $("<td><input type='text' name='choicelist' size='40'/></td>");
                 var editChoiceLink = $("<a href='#'>edit choice</a>");
 
@@ -160,7 +159,7 @@ function addparameter()
                                             return;
                                         }
 
-                                        if(choicelist != "")
+                                        if(choicelist !== "")
                                         {
                                             choicelist += ";";
                                         }
@@ -244,12 +243,12 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
     }
 
     //construct new parameter value
-    if(name != "")
+    if(name !== "")
     {
         text = "&lt;" + name + "&gt;";
     }
 
-    if(flag != "")
+    if(flag !== "")
     {
         text = flag + delimiter + text;
     }
@@ -260,12 +259,12 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
 
     //construct prev parameter value
     var  prevtext = "";
-    if(prevname != "")
+    if(prevname !== "")
     {
         prevtext = "&lt;" + prevname + "&gt;";
     }
 
-    if(prevflag != "")
+    if(prevflag !== "")
     {
         prevtext = prevflag + prevdelimiter + prevtext;
     }
@@ -285,7 +284,7 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
         //decode the prevtext string first and compare it 
         if($(this).text() ==  $('<div/>').html(prevtext).text())
         {
-            if(text != "")
+            if(text !== "")
             {
                 $(this).replaceWith(item);
             }
@@ -298,7 +297,7 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
     });
 
     // if old parameter value was not found then this must be a new parameter so insert it into list
-    if(!found && text != "")
+    if(!found && text !== "")
     {
         $('#commandlist').append(item);
             //add ability to select new parameter in list
@@ -320,7 +319,7 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
     $('#commandlist').children('li').each(function()
     {
         var val = $(this).text();
-        if(cmd_args != "")
+        if(cmd_args !== "")
         {
             //add space between arguments;
             cmd_args += " ";
@@ -330,7 +329,7 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
 
     var cmdline = cmd_args;
     var cmdtype = $("#commandtextarea textarea").data("type");
-    if(cmdtype != undefined)
+    if(cmdtype !== undefined)
         cmdline = cmdtype + " " + cmdline; 
     $("#commandtextarea textarea").attr("value", cmdline);
 }
@@ -435,6 +434,32 @@ function addsectioncollapseimages()
 
     $(".heading").next(".content").data("visible", true);    
 }
+
+/*function getParametersJSON()
+{
+    var parameters = [];
+
+    $(".parameters").each(function()
+    {
+        /*p1_MODE=IN
+        p1_TYPE=FILE
+        p1_default_value=
+        p1_description=input filename - .res, .gct, .odf
+        p1_fileFormat=res;gct;Dataset
+        p1_name=input.filename
+        p1_optional=
+        p1_prefix_when_specified=
+        p1_type=java.io.File
+        p1_value=
+
+        var pname = $(this).find('input[name="p_name"').val();
+        var type = $(this).find('select[name="p_type"] option:selected').val();
+        var default_val = $(this).find('select[name="p_defaultvalue"] option:selected').val(); 
+        var optional = $(this).find('input[name="p_optional"]').val();         
+    });
+    
+    return parameters;
+}                 */
 
 jQuery(document).ready(function() {
 
@@ -702,7 +727,7 @@ jQuery(document).ready(function() {
             fileuploadform.submit();
         }          */
 
-        /*var modname = $('#modtitle').text();
+        var modname = $('#modtitle').val();
         var description = $('textarea[name="description"]').val();
         var author = $('input[name="author"]').val();
         var privacy = $('select[name="privacy"] option:selected').val();
@@ -712,8 +737,6 @@ jQuery(document).ready(function() {
         var tasktype = $("select[name='category'] option:selected").val();
         var cpu = $("select[name='cpu'] option:selected").val();
         var commandLine = $('textarea[name="cmdtext"]').val();
-
-        alert("privacy: " + privacy);
 
         var json = {};
         json["module"] = {"name": modname, "description": description,
@@ -739,12 +762,11 @@ jQuery(document).ready(function() {
                 }
                 // Update the LSID upon successful save
                 if (newLsid !== undefined && newLsid !== null) {
-                    alert(newLsid);
                     module_editor["lsid"] = newLsid;
                 }
             },
             dataType: "json"
-        }); */
+        }); 
     });
 
 

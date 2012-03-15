@@ -318,7 +318,8 @@ public class ModuleQueryServlet extends HttpServlet
                 }
             }
 
-            String newLsid = GenePatternAnalysisTask.installNewTask(name, description, null, tia, username, GPConstants.ACCESS_PRIVATE,
+            ParameterInfo[] pInfo = new ParameterInfo[0];
+            String newLsid = GenePatternAnalysisTask.installNewTask(name, description, pInfo, tia, username, GPConstants.ACCESS_PRIVATE,
             new Status() {
                     public void beginProgress(String string) {
                     }
