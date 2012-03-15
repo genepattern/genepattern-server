@@ -1,5 +1,10 @@
 var mainLayout;
-var uploadedfiles= [];
+
+var module_editor = {
+    lsid: "",
+    uploadedfiles: [],
+    supportfileinputs: []
+};
 
 function addparameter()
 {
@@ -685,47 +690,41 @@ jQuery(document).ready(function() {
 
     $('#savebtn').button().click(function()
     {
-        /*for(i=0;i < uploadedfiles.length;i++)
+        for(i=0;i < module_editor.supportfileinputs.length;i++)
         {
             var fileuploadform = $('<form action="/gp/ModuleCreator/upload" method="post" ' +
                                  'enctype="multipart/form-data" class="fileuploadform"> </form>');
 
-            fileuploadform.append(uploadedfiles[i]);
+            fileuploadform.append(module_editor.supportfileinputs[i]);
 
-            //alert("file form html: " + fileuploadform.html());
-
-            //uploadfiles(fileuploadform);
             fileuploadform.iframePostForm
             ({
                 json : false,
                 post : function ()
                 {
-                    if ($(this).find('input[type=file]').val().length)
-                    {
-                        alert("uploading file: " + $(this).find('input[type=file]').val());
-                    }
-                    else
+                    //if file is not empty then upload
+                    if (!$(this).find('input[type=file]').val().length)
                     {
                         //cancel request
-                        //return false;
-                        alert("canceled");
+                        return false;
                     }
                 },
                 complete : function (response)
                 {
+                    response = $.parseJSON($(response)[0].innerHTML);                    
                     if (response.error !== undefined)
                     {
                         alert(response.error);
                     }
                     else
                     {
-                        alert("alert success uploading file: " + response);
+                        module_editor["uploadedfiles"].push(response.location);
                     }
                 }
             });
 
             fileuploadform.submit();
-        }          */
+        }
 
         var modname = $('#modtitle').val();
         var description = $('textarea[name="description"]').val();
@@ -792,30 +791,54 @@ jQuery(document).ready(function() {
         $("#commandtextarea textarea").attr("value", cmdlinetext);
     });
 
-    $("input[name='supportfiles']").change(function()
+    $(".supportfile").live("change", function()
     {
-        for (var i = 0; i < this.files.length; i++)
+        var file = $(this).val();
+        var sfilelist = $("<li>" + file + "</li>");
+
+        var delbutton = $("<button>x</button>&nbsp;");
+        delbutton.button().click(function()
         {
-            var file = this.files[i];
-
-            var sfilelist = $("<li>" + $(this).val() + "</li>");
-
-            var delbutton = $("<button>x</button>&nbsp;");
-            delbutton.button().click(function()
+            var index;
+            for(i=0;i<module_editor.supportfileinputs.length;i++)
             {
-                $(this).parent().remove();
-            });
-
-            if($("#uploadedfiles").find(sfilelist).length > 0 )
-            {
-                alert("File already exists");
-                return;
+                var value1 = module_editor.supportfileinputs[i].val();
+                var value2 = $(this).parent().text();
+                if(value1 === value2)
+                {
+                    index = i;
+                }
             }
-            sfilelist.prepend(delbutton);
-            $("#uploadedfiles").append(sfilelist);
 
-            uploadedfiles.push($(this));
+            module_editor.supportfileinputs.splice(index,1);
+            $(this).parent().remove();
+        });
+
+        sfilelist.prepend(delbutton);
+
+        var exists = false;
+        $("#supportfileslist").children().each(function()
+        {
+            var value = $(this).text();
+            if(value === sfilelist.text())
+            {
+                exists = true;
+            }          
+        });
+
+        if(exists)
+        {
+            alert("File " + file + " already exists");            
+            return;
         }
+
+        $("#supportfileslist").append(sfilelist);
+
+        $(this).attr('name', "name" + module_editor.supportfileinputs.length);  
+        var parent = $(this).parent();
+        parent.append('<input type="file" class="supportfile">');
+        $(this).detach();
+        module_editor.supportfileinputs.push($(this));
     });
 
     $("select[name='fileformat']").multiselect({
@@ -823,38 +846,3 @@ jQuery(document).ready(function() {
         selectedList: 4 // 0-based index
     });
 });
-
-
-function uploadfiles(element)
-{
-    element.iframePostForm
-	({
-		json : false,
-		post : function ()
-		{
-            alert("starting");
-			if ($('input[type=file]').val().length)
-			{
-			    alert("uploading file: " + $('input[type=file]').val());
-			}
-			else
-			{
-				//cancel request
-  				//return false;
-              alert("canceled");
-			}
-		},
-		complete : function (response)
-		{
-
-			if (!response.success)
-			{
-				alert("error uploading file");
-			}
-			else
-			{
-                alert("alert success uploading file");
-			}
-		}
-	});
-}
