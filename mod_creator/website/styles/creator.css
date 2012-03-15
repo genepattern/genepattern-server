@@ -341,13 +341,13 @@ div.ui-layout-north
     min-height: 40px;
 }
 
-#uploadedfiles
+#supportfileslist
 {
     list-style-type:none;
     padding: 3px;
 }
 
-#uploadedfiles button
+#supportfileslist button
 {
     font-size: 55%;
     margin-right: 3px;
