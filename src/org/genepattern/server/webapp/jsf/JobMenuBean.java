@@ -74,7 +74,7 @@ public class JobMenuBean {
                 return;
             }
             UIBeanHelper.getResponse().sendRedirect(
-                    UIBeanHelper.getRequest().getContextPath() + "/pipelineDesigner.jsp?name=" + UIBeanHelper.encode(lsid) + message);
+                    UIBeanHelper.getRequest().getContextPath() + "/pipeline/index.jsf?lsid=" + UIBeanHelper.encode(lsid) + message);
         }
         catch (WebServiceException wse) {
             log.error("Error creating pipeline.", wse);

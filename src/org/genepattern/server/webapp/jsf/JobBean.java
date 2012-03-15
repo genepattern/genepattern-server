@@ -171,7 +171,7 @@ public class JobBean {
                 UIBeanHelper.setErrorMessage("Unable to create pipeline.");
                 return;
             }
-            UIBeanHelper.getResponse().sendRedirect(UIBeanHelper.getRequest().getContextPath() + "/pipelineDesigner.jsp?name=" + UIBeanHelper.encode(lsid) + message);
+            UIBeanHelper.getResponse().sendRedirect(UIBeanHelper.getRequest().getContextPath() + "/pipeline/index.jsf?lsid=" + UIBeanHelper.encode(lsid) + message);
         }
         catch (WebServiceException wse) {
             log.error("Error creating pipeline.", wse);

@@ -748,7 +748,7 @@ public class JobResultsServlet extends HttpServlet implements Servlet {
                 UIBeanHelper.setErrorMessage("Unable to create pipeline.");
                 return;
             }
-            response.sendRedirect(request.getContextPath() + "/pipelineDesigner.jsp?name=" + UIBeanHelper.encode(lsid));
+            response.sendRedirect(request.getContextPath() + "/pipeline/index.jsf?lsid=" + UIBeanHelper.encode(lsid));
         } 
         catch (WebServiceException wse) {
             log.error("Error creating pipeline.", wse);

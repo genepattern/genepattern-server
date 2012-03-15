@@ -295,8 +295,8 @@ public class HTMLPipelineView {
         if (taskInfo != null) {
             writer.write(" - " + taskInfo.getName() + " version ");
             writer
-            .write("<select name=\"notused\" onchange=\"javascript:window.location='pipelineDesigner.jsp?"
-                    + GPConstants.NAME
+            .write("<select name=\"notused\" onchange=\"javascript:window.location='pipeline/index.jsf?"
+                    + "lsid"
                     + "=' + this.options[this.selectedIndex].value\" style=\"font-weight: bold; font-size: medium; outline-style: none;\">\n");
             writer.write(versionSelector(taskInfo));
             writer.write("</select>\n");
