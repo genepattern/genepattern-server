@@ -1,0 +1,283 @@
+#topband {
+    z-index: 3000;
+}
+
+#library {
+	position:absolute;
+	z-index: 3000; 
+	top: 5px;
+	left: 0px;
+	width: 175px;
+    min-height: 100%;
+    background-color: #DFDFB9;
+    border-style: solid;
+    border-color: #CCCC99;
+	border-width: 2px;
+	padding: 5px;
+}
+
+.categoryHeader {
+    font-size: 10pt;
+    font-weight: bold;
+}
+
+.moduleBullet {
+    font-size: 8pt;
+    font-weight: normal;
+    padding-left: 10px;
+}
+
+.moduleBullet:hover {
+    background-color: #CCCC99;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.ui-autocomplete-input {
+    font-size: 8pt;
+}
+
+#titleBar {
+    position:absolute;
+    z-index: 3001;
+    top: 47px;
+    left: 0px;
+    width: 99%;
+    height: 20px;
+    background-color: #666699;
+    border-style: solid;
+    border-color: #FFFFFF;
+    border-width: 1px;
+    padding: 5px;
+    overflow-x: hidden;
+    overflow: hidden;
+}
+
+#titleSpan {
+    color: #FFFFFF;
+    font-size: 10pt;
+    line-height: 21px;
+    font-weight: bold;
+    text-indent: 77px;
+}
+
+#saveLoadDiv {
+    float: right;
+    position: relative;
+    top: -5px;
+}
+
+.saveLoadButton {
+    font-size: 8pt;
+}
+
+#workspace {
+	display: block;
+	position: absolute;
+    top: 40px;
+    left: 195px;
+	padding-left: 10px;
+}
+
+#properties {
+	display: none;
+	position: absolute;
+	z-index: 4000;
+    top: 0px;
+	right: 0px;
+    min-height: 100%;
+	width: 400px;
+    background-color: #EBEBCE;
+    border-style: solid;
+    border-color: #CCCC99;
+	border-width: 2px;
+	padding: 5px;
+}
+
+#propertiesVersion {
+    float: right;
+    font-size: 12pt;
+    vertical-align: bottom;
+}
+
+#propertiesKey {
+    font-size: 11pt;
+}
+
+.fileUploadValue {
+    font-size: 10pt;
+    padding-left: 50px;
+}
+
+#pipelinePencil {
+	height: 16px;
+}
+
+._jsPlumb_endpoint {
+	z-index: 1999;
+}
+
+.libraryModuleButton {
+	font-size: 8pt;
+}
+
+.inputDescription {
+    font-size: 8pt;
+}
+
+#propertiesTitle {
+    font-size: 14pt;
+    line-height: 30px;
+}
+
+#propertiesSubtitle {
+    font-size: 7pt;
+    line-height: 24px;
+}
+
+#propertiesSubmit {
+    text-align: right;
+}
+
+.propertiesButton {
+	border-style: solid;
+	border-width: 0px;
+	border-color: #999999;
+	padding: 5px;
+	height: 16px;
+}
+
+.deleteButton {
+	border-style: solid;
+	border-width: 0px;
+	border-color: #999999;
+	padding: 5px;
+	height: 16px;
+}
+
+.fileButton {
+    border-style: solid;
+    border-width: 0px;
+    border-color: #999999;
+    padding: 5px;
+    height: 16px;
+}
+
+.alertButton {
+    border-style: solid;
+    border-width: 0px;
+    border-color: #999999;
+    padding: 5px;
+    height: 16px;
+}
+
+.errorButton {
+    border-style: solid;
+    border-width: 0px;
+    border-color: #999999;
+    padding: 5px;
+    height: 16px;
+}
+
+.module {
+	position: absolute;
+	z-index: 2000; 
+	height: 100px;
+	width: 250px;
+	text-align: center;
+	opacity:0.8; 
+	filter:alpha(opacity=80); 
+	border-style: solid;
+	border-color: #00FF00;
+	border-width: 2px;
+	background-color: #CCFFCC;
+    font-size: 14px;
+}
+
+.pipeline {
+	background-color: #FFDDCC;
+	border-color: #FF9900;
+}
+
+.visualizer {
+	background-color: #CCCCFF;
+	border-color: #0000FF;
+}
+
+.module.ui-selected {
+	border-color: #FF0000;
+}
+
+._jsPlumb_connector.ui-selected path {
+    stroke: red;
+}
+
+.tooltip {
+	display:none;
+	background:transparent url(../images/black_arrow.png);
+	font-size:13px;
+	height:70px;
+	width:160px;
+	padding:25px;
+	color:#000000;
+	text-align: center;
+	z-index: 9000;
+}
+
+#loadPipelineDialog {
+    background-color:#fff;
+    display:none;
+    width:400px;
+    padding:15px;
+    text-align:left;
+    border:2px solid #333;
+    z-index: 10000;
+
+    opacity:0.9;
+    -moz-border-radius:6px;
+    -webkit-border-radius:6px;
+    -moz-box-shadow: 0 0 50px #ccc;
+    -webkit-box-shadow: 0 0 50px #ccc;
+}
+
+#loadPipelineHeader {
+    font-size: 14pt;
+    line-height: 30px;
+}
+
+#loadPipelineButtons {
+    text-align: right;
+}
+
+#pipelineLoadList {
+    width: 100%;
+    height: 200px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    border-color: #666666;
+    border-width: 1px;
+    border-style: solid;
+}
+
+#pipelineSelectList .ui-selecting {
+    background: #CCCC99;
+}
+
+#pipelineSelectList .ui-selected {
+    background: #CCCC99;
+    color: black;
+}
+
+#pipelineSelectList {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+#pipelineSelectList li {
+    padding: 0.4em;
+    height: 14px;
+}
