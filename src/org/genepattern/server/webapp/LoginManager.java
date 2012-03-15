@@ -70,7 +70,16 @@ public class LoginManager {
         String gp_username = null;
         gp_username = handleGenomeSpaceAuthentication(request, response);
         if (gp_username == null) {
+            log.debug("authenticating from HTTP request...");
             gp_username = UserAccountManager.instance().getAuthentication().authenticate(request, response);
+            if (log.isDebugEnabled()) {
+                if (gp_username == null) {
+                    log.debug("not authenticated (IAuthenticationPlugin.authenticate returned null)");
+                }
+                else {
+                    log.debug("authenticated user='"+gp_username+"'");
+                }
+            }
         }
         if (gp_username == null) {
             return;
@@ -220,6 +229,7 @@ public class LoginManager {
     throws IOException
     {
         String userid = getUserIdFromSession(request);
+        log.debug("logging out, userid="+userid);
         UserAccountManager.instance().getAuthentication().logout(userid, request, response);
 
         HttpSession session = request.getSession();

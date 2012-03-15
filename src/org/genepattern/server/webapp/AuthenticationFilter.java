@@ -158,6 +158,7 @@ public class AuthenticationFilter implements Filter {
             request.getSession().setAttribute("origin", targetURL);
 
             //second, request authentication, by default a redirect to the webapp's login page
+            log.debug("requesting authentication for HTTP request");
             UserAccountManager.instance().getAuthentication().requestAuthentication(request, response);
         }
     }

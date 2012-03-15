@@ -956,7 +956,16 @@ public class GenomeSpaceBean {
         HttpSession session = UIBeanHelper.getSession();
         
         try {
+            log.debug("authenticating from HTTP request...");
             String gpUsername = UserAccountManager.instance().getAuthentication().authenticate(request, response);
+            if (log.isDebugEnabled()) {
+                if (gpUsername == null) {
+                    log.debug("not authenticated (IAuthenticationPlugin.authenticate returned null)");
+                }
+                else {
+                    log.debug("authenticated user='"+gpUsername+"'");
+                }
+            }
             if (gpUsername == null) {
                 throw new AuthenticationException(AuthenticationException.Type.INVALID_USERNAME, "Username was null");
             }

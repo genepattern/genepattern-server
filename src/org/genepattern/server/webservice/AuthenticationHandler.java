@@ -66,12 +66,14 @@ public class AuthenticationHandler extends GenePatternHandlerBase {
         boolean authenticated = false;
         byte[] credentials = password != null ? password.getBytes() : null;
         try {
+            log.debug("authenticating username="+username);
             authenticated = UserAccountManager.instance().getAuthentication().authenticate(username, credentials);
         }
         catch (AuthenticationException e) {
             //skip exception, special case for pipelines
             authenticated = false;
         }
+        log.debug("authenticated="+authenticated);
         
         //special case for pipelines
         if (!authenticated) {

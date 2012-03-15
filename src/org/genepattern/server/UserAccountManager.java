@@ -346,10 +346,13 @@ public class UserAccountManager {
     }
     
     private void loadAuthentication(String customAuthenticationClass) {
+        log.debug("loading IAuthenticationPlugin, customAuthenticationClass="+customAuthenticationClass);
         if (customAuthenticationClass == null) {
+            log.debug("initializing default ...");
             this.authentication = new DefaultGenePatternAuthentication();
         }
         else {
+            log.debug("initializing custom ...");
             try {
                 this.authentication = (IAuthenticationPlugin) Class.forName(customAuthenticationClass).newInstance();
             } 
@@ -357,6 +360,12 @@ public class UserAccountManager {
                 log.error("Failed to load custom authentication class: "+customAuthenticationClass, e);
                 this.authentication = new NoAuthentication(e);
             } 
+        }
+        if (this.authentication == null) {
+            log.error("this.authentication==null");
+        }
+        else {
+            log.debug("authentication.class="+this.authentication.getClass().getCanonicalName());
         }
     }
     

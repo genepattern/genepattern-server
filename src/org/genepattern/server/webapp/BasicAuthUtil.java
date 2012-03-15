@@ -62,7 +62,9 @@ public class BasicAuthUtil {
         }
 
         //if we are here, check the authorization header ...
+        log.debug("authenticating userIdFromAuthorizationHeader="+userIdFromAuthorizationHeader);
         boolean authenticated = UserAccountManager.instance().getAuthentication().authenticate(userIdFromAuthorizationHeader, password);        
+        log.debug("authenticated="+authenticated);
         if (authenticated) {
             LoginManager.instance().addUserIdToSession(req, userIdFromAuthorizationHeader);
             return userIdFromAuthorizationHeader;
