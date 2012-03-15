@@ -244,6 +244,12 @@ public class ModuleQueryServlet extends HttpServlet
 
     public void uploadFile(HttpServletRequest request, HttpServletResponse response)
     {
+        String username = (String) request.getSession().getAttribute("userid");
+        if (username == null) {
+           sendError(response, "No GenePattern session found.  Please log in.");
+           return;
+        }
+
 	    RequestContext reqContext = new ServletRequestContext(request);
         if (FileUploadBase.isMultipartContent(reqContext)) {
             FileItemFactory factory = new DiskFileItemFactory();
