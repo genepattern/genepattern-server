@@ -324,8 +324,16 @@ public class ModuleQueryServlet extends HttpServlet
                 }
             }
 
+            //parse out privacy info
+            int privacy = GPConstants.ACCESS_PRIVATE;
+            if(moduleObject.get(ModuleJSON.PRIVACY) != null
+                    && !((String)moduleObject.get(ModuleJSON.PRIVACY)).equalsIgnoreCase("private"))
+            {
+                privacy = GPConstants.ACCESS_PUBLIC;
+            }
+
             ParameterInfo[] pInfo = new ParameterInfo[0];
-            String newLsid = GenePatternAnalysisTask.installNewTask(name, description, pInfo, tia, username, GPConstants.ACCESS_PRIVATE,
+            String newLsid = GenePatternAnalysisTask.installNewTask(name, description, pInfo, tia, username, privacy,
             new Status() {
                     public void beginProgress(String string) {
                     }

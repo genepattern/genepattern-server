@@ -20,12 +20,12 @@ public class ModuleJSON extends JSONObject {
     public static final String PRIVACY = "privacy";
     public static final String QUALITY = "quality";
     public static final String VERSION_COMMENT = "version";
-    public static final String LSID = "lsid";
+    public static final String LSID = "LSID";
     public static final String CATEGORY = "taskType";
     public static final String CPU = "cpuType";
     public static final String OS = "os";
     public static final String COMMAND_LINE = "commandLine";    
-    public static final String FILES = "supportFiles";
+    public static final String SUPPORTFILES = "supportFiles";
 
     public static final String KEY = "module";
 
@@ -41,9 +41,8 @@ public class ModuleJSON extends JSONObject {
             this.put(CPU, object.get(CPU));
             this.put(OS, object.get(OS));
             this.put(COMMAND_LINE, object.get(COMMAND_LINE));
-
-            //this.put(LSID, object.get(LSID));
-            //this.put(FILES, object.get(FILES));
+            this.put(LSID, object.get(LSID));
+            this.put(SUPPORTFILES, object.get(SUPPORTFILES));
         }
         catch (JSONException e) {
             log.error(e);

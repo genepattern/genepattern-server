@@ -718,7 +718,7 @@ jQuery(document).ready(function() {
                     }
                     else
                     {
-                        module_editor["uploadedfiles"].push(response.location);
+                        module_editor.uploadedfiles.push(response.location);
                     }
                 }
             });
@@ -736,12 +736,14 @@ jQuery(document).ready(function() {
         var tasktype = $("select[name='category'] option:selected").val();
         var cpu = $("select[name='cpu'] option:selected").val();
         var commandLine = $('textarea[name="cmdtext"]').val();
+        var lsid = module_editor.lsid;
+        var supportFiles = ""; //module_editor.uploadedfiles;
 
         var json = {};
         json["module"] = {"name": modname, "description": description,
-            "author": author, "privacy": "\""+privacy+"\"", "quality": quality,
+            "author": author, "privacy": privacy, "quality": quality,
             "cpuType": cpu, "taskType": tasktype, "version": version,
-            "os": os, "commandLine": commandLine};
+            "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles};
 
         //json["parameters"]= getParametersJSON();
 
@@ -761,7 +763,8 @@ jQuery(document).ready(function() {
                 }
                 // Update the LSID upon successful save
                 if (newLsid !== undefined && newLsid !== null) {
-                    module_editor["lsid"] = newLsid;
+                    module_editor.lsid = newLsid;
+                    $("#lsid").empty().append("LSID: " + newLsid);
                 }
             },
             dataType: "json"
