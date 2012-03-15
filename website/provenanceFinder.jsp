@@ -51,7 +51,7 @@ out.println("Pipe = " + pipename);
 ProvenanceFinder pf = new ProvenanceFinder(userID);
 String lsid = pf.createProvenancePipeline(filename, pipename);
 
-response.sendRedirect("pipelineDesigner.jsp?name="+lsid);
+response.sendRedirect("pipeline/index.jsf?lsid="+lsid);
 %>
 
 

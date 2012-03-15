@@ -597,7 +597,7 @@ try {
       	out.println(model.getName() + " version " + new org.genepattern.util.LSID(model.getLsid()).getVersion()  + " has been saved.<br><br>");
 		new File(dir, model.getName() + ".r").delete();
 		if (requestParameters.getProperty("cmd").equals(CLONE)) {
-			response.sendRedirect("pipelineDesigner.jsp?" + GPConstants.NAME + "=" + lsid);
+			response.sendRedirect("pipeline/index.jsf?lsid=" + lsid);
 			return;
 		}
 

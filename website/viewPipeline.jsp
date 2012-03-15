@@ -158,7 +158,7 @@ try {
 
 } catch(Exception e){e.printStackTrace(System.out);}
 if(showEdit) {
-	String editURL = "pipelineDesigner.jsp?name=" + pipelineName;
+	String editURL = "pipeline/index.jsf?lsid=" + pipelineName;
 	out.println("  <input type=\"button\" value=\"Edit\" name=\"edit\" class=\"little\" onclick=\"window.location='" + editURL + "'\"; />");
 }
 

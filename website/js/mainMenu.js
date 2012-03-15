@@ -6,7 +6,7 @@ function mmLoadMenus() {
 
   window.mm_menu_tasks = new Menu("root",140,16,"Verdana, Arial, Helvetica, sans-serif",10,"#FFFFFF","#9999FF","#333366","#000033","left","middle",3,0,500,-5,7,true,true,true,3,true,false);
   if(createPublicPipelineAllowed || createPrivatePipelineAllowed) {
-  	mm_menu_tasks.addMenuItem("New&nbsp;Pipeline","location=contextRoot + '/pipelineDesigner.jsp'");
+  	mm_menu_tasks.addMenuItem("New&nbsp;Pipeline","location=contextRoot + '/pipeline/index.jsf'");
   }
 
   if(createTaskAllowed) {

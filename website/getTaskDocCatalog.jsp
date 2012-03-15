@@ -172,7 +172,7 @@ function toggleVersions(divname) {
 		%>
 			<tr>
 			<td valign="top"><div id="<%=firstName%>" style="display:none"><%= indent %>
-				<font size='-2'><a name="<%= ti.getName() %>" href="<%= !isPipeline ? "addTask.jsp" : "pipelineDesigner.jsp" %>?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1" style="white-space: nowrap;"><%= ti.getName() %> (<%= lsid.getVersion() %>)</a></font></div></td>
+				<font size='-2'><a name="<%= ti.getName() %>" href="<%= !isPipeline ? "addTask.jsp" : "pipeline/index.jsf" %>?lsid=<%= lsid.toString() %>&view=1" style="white-space: nowrap;"><%= ti.getName() %> (<%= lsid.getVersion() %>)</a></font></div></td>
 			<td valign="top"><div id="<%=firstName%>" style="display:none"><%= StringUtils.htmlEncode(description) %>
 			<br>
 		<%
@@ -191,7 +191,7 @@ function toggleVersions(divname) {
 		%>
 			<tr>
 			<td valign="top"><%= indent %>
-				<a name="<%= ti.getName() %>" href="<%= !isPipeline ? "addTask.jsp" : "pipelineDesigner.jsp" %>?<%= GPConstants.NAME %>=<%= lsid.toString() %>&view=1" style="white-space: nowrap;"><%= ti.getName() %> (<%= lsid.getVersion() %>)<a/>
+				<a name="<%= ti.getName() %>" href="<%= !isPipeline ? "addTask.jsp" : "pipeline/index.jsf" %>?lsid=<%= lsid.toString() %>&view=1" style="white-space: nowrap;"><%= ti.getName() %> (<%= lsid.getVersion() %>)<a/>
 		<%
 			if (versions.length > 1){
 		%>

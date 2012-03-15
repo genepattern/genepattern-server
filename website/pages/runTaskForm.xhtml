@@ -100,7 +100,7 @@ use, misuse, or functionality.
                             <h:outputText rendered="#{runTaskBean.pipeline}">
                                 <a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160;<a onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');" href="#">export</a>&#160;|&#160;
                                 <h:outputText rendered="#{runTaskBean.editAllowed}">
-                                    <a href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>&#160;|&#160;
+                                    <a href="#{facesContext.externalContext.requestContextPath}/pipeline/index.jsf?lsid=#{runTaskBean.lsid}">edit</a>&#160;|&#160;
                                 </h:outputText>
                             </h:outputText>
                             <h:outputText rendered="#{!runTaskBean.pipeline}">
@@ -231,7 +231,7 @@ use, misuse, or functionality.
                                 <h:outputText rendered="#{runTaskBean.pipeline}">
                                     <a href="#{facesContext.externalContext.requestContextPath}/viewPipeline.jsp?name=#{runTaskBean.lsid}">properties</a>&#160;|&#160;<a onclick="exportPipeline('#{runTaskBean.lsid}', '#{runTaskBean.name}');" href="#">export</a>&#160;|&#160;
                                     <h:outputText rendered="#{runTaskBean.editAllowed}">
-                                        <a href="#{facesContext.externalContext.requestContextPath}/pipelineDesigner.jsp?name=#{runTaskBean.lsid}">edit</a>&#160;|&#160;
+                                        <a href="#{facesContext.externalContext.requestContextPath}/pipeline/index.jsf?lsid=#{runTaskBean.lsid}">edit</a>&#160;|&#160;
                                     </h:outputText>
                                 </h:outputText>
                                 <h:outputText rendered="#{!runTaskBean.pipeline}">

@@ -542,7 +542,7 @@ function addNewFileType(name, desc){
 	 	}
 		if (isPipeline) {
 	%>
-		<a href="pipelineDesigner.jsp?<%= GPConstants.NAME %>=<%= tia.get(GPConstants.LSID) %>">pipeline designer</a>
+		<a href="pipeline/index.jsf?lsid=<%= tia.get(GPConstants.LSID) %>">pipeline designer</a>
 		<input name="<%= PipelineModel.PIPELINE_MODEL %>" type="hidden" value="<%= StringUtils.htmlEncode(tia.get(PipelineModel.PIPELINE_MODEL)) %>">
 	<%
 		}
