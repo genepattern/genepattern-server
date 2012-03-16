@@ -3,6 +3,8 @@ package org.genepattern.modules;
 import org.json.JSONObject;
 import org.json.JSONException;
 import org.apache.log4j.Logger;
+import org.genepattern.webservice.TaskInfo;
+import org.genepattern.webservice.TaskInfoAttributes;
 
 /**
  * Created by IntelliJ IDEA.
@@ -22,6 +24,7 @@ public class ModuleJSON extends JSONObject {
     public static final String VERSION_COMMENT = "version";
     public static final String LSID = "LSID";
     public static final String CATEGORY = "taskType";
+    public static final String LANGUAGE = "language";    
     public static final String CPU = "cpuType";
     public static final String OS = "os";
     public static final String COMMAND_LINE = "commandLine";    
@@ -38,6 +41,7 @@ public class ModuleJSON extends JSONObject {
             this.put(VERSION_COMMENT, object.get(VERSION_COMMENT));
             this.put(CATEGORY, object.get(CATEGORY));
             this.put(QUALITY, object.get(QUALITY));
+            this.put(LANGUAGE, object.get(LANGUAGE));            
             this.put(CPU, object.get(CPU));
             this.put(OS, object.get(OS));
             this.put(COMMAND_LINE, object.get(COMMAND_LINE));
@@ -50,16 +54,40 @@ public class ModuleJSON extends JSONObject {
         }
     }
 
+    public ModuleJSON(TaskInfo taskInfo)
+    {
+        try
+        {
+            TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
+            this.put(NAME, taskInfo.getName());
+            this.put(DESCRIPTION, taskInfo.getDescription());
+            this.put(AUTHOR, tia.get(AUTHOR));
+            this.put(PRIVACY, tia.get(PRIVACY));
+            this.put(VERSION_COMMENT, tia.get(VERSION_COMMENT));
+            this.put(CATEGORY, tia.get(CATEGORY));
+            this.put(QUALITY, tia.get(QUALITY));
+            this.put(LANGUAGE, tia.get(LANGUAGE));                        
+            this.put(CPU, tia.get(CPU));
+            this.put(OS, tia.get(OS));
+            this.put(COMMAND_LINE, tia.get(COMMAND_LINE));
+            this.put(LSID, tia.get(LSID));
+        }
+        catch (JSONException e) {
+            log.error(e);
+            log.error("Error creating module JSON for: " + taskInfo.getName());
+        }
+    }
+
     public static JSONObject parseBundle(String bundle)
     {
-        JSONObject pipelineJSON = null;
+        JSONObject moduleJSON = null;
         try {
-            pipelineJSON = new JSONObject(bundle);
+            moduleJSON = new JSONObject(bundle);
         }
         catch (JSONException e) {
             log.error("Error parsing JSON in the saved bundle");
         }
-        return pipelineJSON;
+        return moduleJSON;
     }
 
     public static ModuleJSON extract(JSONObject json) {
