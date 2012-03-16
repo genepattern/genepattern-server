@@ -556,6 +556,20 @@ var library = {
         this._addCategoryModules();
     },
 
+    getHighestVersion: function(lsid) {
+        var baseLsid = editor.extractBaseLsid(lsid);
+        var versionArray = library.moduleVersionMap[baseLsid];
+        var highestModule = null;
+        var highestVersion = null;
+        for (var i = 0; i < versionArray.length; i++) {
+            if (this._higherVersion(versionArray[i].version, highestVersion)) {
+                highestVersion = versionArray[i].version;
+                highestModule = versionArray[i];
+            }
+        }
+        return highestModule;
+    },
+
     _addRecentModule: function(lsid, value) {
         for (var i = 0; i < this.recent.length; i++) {
             if (this.recent[i] == lsid) { return }
@@ -849,24 +863,9 @@ var library = {
 
             // Read Pipelines from List
             for (var i in library.moduleVersionMap) {
-                var moduleArray = library.moduleVersionMap[i];
-                var module = null;
+                var module = library.getHighestVersion(i + ":fakeVersion");
 
-                if (moduleArray.length == 1) {
-                    module = moduleArray[0];
-                }
-                else if (moduleArray.length > 1) {
-                    var highestModule = null;
-                    var highestVersion = null;
-                    for (var j = 0; j < moduleArray.length; j++) {
-                        if (this._higherVersion(moduleArray[j].version, highestVersion)) {
-                            highestVersion = moduleArray[j].version;
-                            highestModule = moduleArray[j];
-                        }
-                    }
-                    module = highestModule;
-                }
-                else {
+                if (module === null || module === undefined) {
                     console.log("ERROR: Reading module array in library.displayLoadDialog()");
                     return;
                 }
@@ -1419,6 +1418,12 @@ function Module(moduleJSON) {
 	this.ui = null;
     this.alerts = {};
 
+    this.isHighestVersion = function() {
+        var highest = library.getHighestVersion(this.lsid);
+        if (highest.lsid === this.lsid) { return true; }
+        else { return false }
+    };
+
     this.getInputByName = function(name) {
         for (var i = 0; i < this.inputs.length; i++) {
             if (this.inputs[i].name === name) {
@@ -1506,8 +1511,10 @@ function Module(moduleJSON) {
     this.checkForWarnings = function() {
         this.alerts = {};
 
-        // Mark the error flag if there is a missing required param
         var showErrorIcon = false;
+        var showAlertIcon = false;
+
+        // Mark the error flag if there is a missing required param
         for (var i = 0; i < this.inputs.length; i++) {
             var input = this.inputs[i];
             if (input.required && input.value === "" && !input.used) {
@@ -1515,7 +1522,18 @@ function Module(moduleJSON) {
                 this.alerts[input.name] = new Alert(input.name, "ERROR", "Required parameter " + input.name + " is not set!");
             }
         }
+
+        // Check to see if the module is the latest version
+        if (!this.isHighestVersion()) {
+            showAlertIcon = true;
+            this.alerts[input.name] = new Alert("version", "WARNING", "This module is version " + this.version + " which is not the latest version.");
+        }
+
+        // Display icons if appropriate
         this.toggleErrorIcon(showErrorIcon);
+        if (!showErrorIcon) {
+            this.toggleAlertIcon(showAlertIcon);
+        }
     };
 
     this.hasPortByPointer = function(pointer) {
@@ -1764,12 +1782,20 @@ function Module(moduleJSON) {
         }
     }
 
-    this.toggleAlertIcon = function() {
-        if ($("#alert_" + this.id).is(":visible")) {
-            $("#alert_" + this.id).hide();
+    this.toggleAlertIcon = function(show) {
+        if (show === undefined) {
+            if ($("#alert_" + this.id).is(":visible")) {
+                $("#alert_" + this.id).hide();
+            }
+            else {
+                $("#alert_" + this.id).show();
+            }
+        }
+        else if (show) {
+            $("#alert_" + this.id).show();
         }
         else {
-            $("#alert_" + this.id).show();
+            $("#alert_" + this.id).hide();
         }
     }
 
