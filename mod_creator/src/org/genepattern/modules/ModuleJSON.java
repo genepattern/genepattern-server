@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.apache.log4j.Logger;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
+import org.genepattern.util.GPConstants;
 
 /**
  * Created by IntelliJ IDEA.
@@ -27,7 +28,8 @@ public class ModuleJSON extends JSONObject {
     public static final String LANGUAGE = "language";    
     public static final String CPU = "cpuType";
     public static final String OS = "os";
-    public static final String COMMAND_LINE = "commandLine";    
+    public static final String COMMAND_LINE = "commandLine";
+    public static final String FILEFORMAT = "fileformat";    
     public static final String SUPPORTFILES = "supportFiles";
 
     public static final String KEY = "module";
@@ -61,16 +63,17 @@ public class ModuleJSON extends JSONObject {
             TaskInfoAttributes tia = taskInfo.getTaskInfoAttributes();
             this.put(NAME, taskInfo.getName());
             this.put(DESCRIPTION, taskInfo.getDescription());
-            this.put(AUTHOR, tia.get(AUTHOR));
-            this.put(PRIVACY, tia.get(PRIVACY));
-            this.put(VERSION_COMMENT, tia.get(VERSION_COMMENT));
-            this.put(CATEGORY, tia.get(CATEGORY));
-            this.put(QUALITY, tia.get(QUALITY));
-            this.put(LANGUAGE, tia.get(LANGUAGE));                        
-            this.put(CPU, tia.get(CPU));
-            this.put(OS, tia.get(OS));
-            this.put(COMMAND_LINE, tia.get(COMMAND_LINE));
-            this.put(LSID, tia.get(LSID));
+            this.put(AUTHOR, tia.get(GPConstants.AUTHOR));
+            this.put(PRIVACY, tia.get(GPConstants.PRIVACY));
+            this.put(VERSION_COMMENT, tia.get(GPConstants.VERSION));
+            this.put(CATEGORY, tia.get(GPConstants.TASK_TYPE));
+            this.put(QUALITY, tia.get(GPConstants.QUALITY));
+            this.put(LANGUAGE, tia.get(GPConstants.LANGUAGE));
+            this.put(FILEFORMAT, tia.get(GPConstants.FILE_FORMAT));
+            this.put(CPU, tia.get(GPConstants.CPU_TYPE));
+            this.put(OS, tia.get(GPConstants.OS));
+            this.put(COMMAND_LINE, tia.get(GPConstants.COMMAND_LINE));
+            this.put(LSID, tia.get(GPConstants.LSID));
         }
         catch (JSONException e) {
             log.error(e);
