@@ -6,6 +6,34 @@ var module_editor = {
     supportfileinputs: []
 };
 
+var Request = {
+ 	parameter: function(name) {
+ 		return this.parameters()[name];
+ 	},
+
+ 	parameters: function() {
+ 		var result = {};
+ 		var url = window.location.href;
+ 		var parameters = url.slice(url.indexOf('?') + 1).split('&');
+
+ 		for(var i = 0;  i < parameters.length; i++) {
+ 			var parameter = parameters[i].split('=');
+ 			result[parameter[0]] = parameter[1];
+ 		}
+ 		return result;
+ 	}
+};
+
+function editModule()
+{
+    var lsid = Request.parameter('lsid');
+
+    if(lsid !== undefined && lsid !== null && lsid.length > 0)
+    {
+        loadModule(lsid);
+    }
+}
+
 function addparameter()
 {
     var paramDiv = $("<div class='parameter'>  \
@@ -440,37 +468,97 @@ function addsectioncollapseimages()
     $(".heading").next(".content").data("visible", true);    
 }
 
-/*function getParametersJSON()
+function loadModuleInfo(module)
+{
+    $('#modtitle').val(module["name"]);
+    $('textarea[name="description"]').val(module["description"]);
+    $('input[name="author"]').val(module["author"]);
+    $('select[name="privacy"]').val(module["privacy"]);
+    $('select[name="quality"]').val(module["quality"]);
+    $('input[name="comment"]').val(module["version"]);
+    $('select[name=language]').val(module["language"]);
+    $('input[name=os]').val(module["os"]);    
+    $("select[name='category']").val(module["taskType"]);
+    $("select[name='cpu']").val(module["cpuType"]);
+    $('textarea[name="cmdtext"]').val(module["commandLine"]);
+
+    module_editor.lsid = module["LSID"];
+    $("#lsid").empty().append("LSID: " + module_editor.lsid);
+}
+
+function loadModule(taskId)
+{
+     $.ajax({
+            type: "POST",
+            url: "/gp/ModuleCreator/load",
+            data: { "lsid" : taskId },
+            success: function(response) {
+                var message = response["MESSAGE"];
+                var error = response["ERROR"];
+                var module = response["module"];
+                if (error !== undefined && error !== null) {
+                    alert(error);
+                }
+                if (message !== undefined && message !== null) {
+                    alert(message);
+                }
+                loadModuleInfo(response["module"]);               
+            },
+            dataType: "json"
+        });
+}
+
+function getParametersJSON()
 {
     var parameters = [];
 
-    $(".parameters").each(function()
+    $(".parameter").each(function()
     {
-        /*p1_MODE=IN
-        p1_TYPE=FILE
-        p1_default_value=
-        p1_description=input filename - .res, .gct, .odf
-        p1_fileFormat=res;gct;Dataset
-        p1_name=input.filename
-        p1_optional=
-        p1_prefix_when_specified=
-        p1_type=java.io.File
-        p1_value=
+        var pname = $(this).find("input[name='p_name']").val();
+        var description = $(this).find("textarea[name='p_description']").val();
+        description = "\"" + description + "\"";
+        var type = $(this).find("select[name='p_type'] option:selected").val();
+        var default_val = $(this).find("input[name='p_defaultvalue']").val(); 
+        var optional = $(this).find('input[name="p_optional"]').is(':checked') ? "on" : "";
+        var fileformat = "";
+        var value = "";
+        var mode = "";
+        var prefix = "";
 
-        var pname = $(this).find('input[name="p_name"').val();
-        var type = $(this).find('select[name="p_type"] option:selected').val();
-        var default_val = $(this).find('select[name="p_defaultvalue"] option:selected').val(); 
-        var optional = $(this).find('input[name="p_optional"]').val();         
+        //this is an input file type
+        if($(this).find('input[name="fileformat"]').length > 0)
+        {
+            mode = "IN";
+            type = "FILE";
+        }
+
+        //this is a choice type
+        if($(this).find('input[name="choicelist"]').length > 0)
+        {
+            value = $(this).find('input[name="choicelist"]').val();
+        }
+
+        var parameter = {
+            "name": pname, "description": description, "type": type,
+            "dvalue": default_val, "optional": optional,
+            "fileformat": fileformat, "mode": mode, "value": value,
+            "prefix": prefix
+        };
+
+        parameters.push(parameter);
     });
-    
-    return parameters;
-}                 */
+
+    return(parameters);
+}
 
 jQuery(document).ready(function() {
 
     addsectioncollapseimages();
     updatemodulecategories();
     updatefileformats();
+
+    //check if this is a request to edit an existing module
+    editModule();
 
     $(".heading").click(function()
     {
@@ -731,6 +819,7 @@ jQuery(document).ready(function() {
         var author = $('input[name="author"]').val();
         var privacy = $('select[name="privacy"] option:selected').val();
         var quality = $('select[name="quality"] option:selected').val();
+        var language = $('select[name="language"] option:selected').val();
         var version = $('input[name="comment"]').val();
         var os = $('input[name=os]:checked').val();
         var tasktype = $("select[name='category'] option:selected").val();
@@ -742,10 +831,10 @@ jQuery(document).ready(function() {
         var json = {};
         json["module"] = {"name": modname, "description": description,
             "author": author, "privacy": privacy, "quality": quality,
-            "cpuType": cpu, "taskType": tasktype, "version": version,
+            "language": language, "cpuType": cpu, "taskType": tasktype, "version": version,
             "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles};
 
-        //json["parameters"]= getParametersJSON();
+        json["parameters"]= getParametersJSON();
 
         $.ajax({
             type: "POST",
