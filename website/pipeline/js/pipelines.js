@@ -1384,6 +1384,21 @@ var properties = {
 };
 
 /**
+ * Class representing an alert of which  the user should be made aware.
+ * @param key - Something to key the alert off of
+ * @param level - The level of the alert set by a constant on this object
+ * @param message - A message to display to the user
+ */
+function Alert(key, level, message) {
+    this.ERROR = "ERROR";
+    this.WARNING = "WARNING";
+
+    this.key = key;
+    this.level = level;
+    this.message = message;
+}
+
+/**
  * Class representing an available normal module for use in the editor
  * @param moduleJSON - A JSON representation of the module
  */
@@ -1402,6 +1417,7 @@ function Module(moduleJSON) {
 	this.fileInputs = library.extractFileInputs(this.inputs);
 	this.type = "module";
 	this.ui = null;
+    this.alerts = {};
 
     this.getInputByName = function(name) {
         for (var i = 0; i < this.inputs.length; i++) {
@@ -1488,12 +1504,15 @@ function Module(moduleJSON) {
     };
 
     this.checkForWarnings = function() {
+        this.alerts = {};
+
         // Mark the error flag if there is a missing required param
         var showErrorIcon = false;
         for (var i = 0; i < this.inputs.length; i++) {
             var input = this.inputs[i];
             if (input.required && input.value === "" && !input.used) {
                 showErrorIcon = true;
+                this.alerts[input.name] = new Alert(input.name, "ERROR", "Required parameter " + input.name + " is not set!");
             }
         }
         this.toggleErrorIcon(showErrorIcon);
@@ -1671,6 +1690,28 @@ function Module(moduleJSON) {
                 module.remove();
             }
         });
+
+        var alertFunc = function () {
+            var module = editor.getParentModule(this.id);
+            var alert = document.createElement("div");
+            var list = document.createElement("ul");
+
+            for (var i in module.alerts) {
+                var item = document.createElement("li");
+                item.innerHTML = "<strong>" + module.alerts[i].level + ":</strong> " + module.alerts[i].message;
+                list.appendChild(item);
+            }
+            alert.appendChild(list);
+
+            $(alert).dialog({
+                modal: true,
+                width: 400,
+                title: "Module Errors & Alerts"
+            });
+        };
+
+        $("#" + "error_" + this.id).click(alertFunc);
+        $("#" + "alert_" + this.id).click(alertFunc);
     };
 
     this.select = function() {
