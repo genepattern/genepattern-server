@@ -1535,6 +1535,9 @@ function Module(moduleJSON) {
         if (!showErrorIcon) {
             this.toggleAlertIcon(showAlertIcon);
         }
+        else {
+            this.toggleAlertIcon(false);
+        }
     };
 
     this.hasPortByPointer = function(pointer) {
