@@ -34,6 +34,8 @@ public class ModuleQueryServlet extends HttpServlet
     public static final String OUTPUT_FILE_FORMATS = "/fileformats";
     public static final String UPLOAD = "/upload";
     public static final String SAVE = "/save";
+    public static final String LOAD = "/load";
+
     
 
     public void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -49,6 +51,9 @@ public class ModuleQueryServlet extends HttpServlet
         {
             getOutputFileFormats(response);
         }
+        else if (LOAD.equals(action)) {
+		    loadModule(request, response);
+		}
         else if (SAVE.equals(action)) {
 		    saveModule(request, response);
 		}
@@ -332,7 +337,31 @@ public class ModuleQueryServlet extends HttpServlet
                 privacy = GPConstants.ACCESS_PUBLIC;
             }
 
-            ParameterInfo[] pInfo = new ParameterInfo[0];
+            ParametersJSON[] parameters = ParametersJSON.extract(moduleJSON);
+            ParameterInfo[] pInfo = new ParameterInfo[parameters.length];
+
+            for(int i =0; i< parameters.length;i++)
+            {
+                ParametersJSON  parameterJSON = parameters[i];
+                ParameterInfo parameter = new ParameterInfo();
+                parameter.setName(parameterJSON.getName());
+                parameter.setDescription(parameterJSON.getDescription());
+
+                HashMap attributes = new HashMap();
+                attributes.put(GPConstants.PARAM_INFO_DEFAULT_VALUE[0], parameterJSON.getDefaultValue());
+                if(parameterJSON.getType().equalsIgnoreCase("text"))
+                {
+                    attributes.put(GPConstants.PARAM_INFO_TYPE[0], GPConstants.PARAM_INFO_TYPE_TEXT);
+                }
+
+                if(parameterJSON.isOptional())
+                {
+                    attributes.put(GPConstants.PARAM_INFO_OPTIONAL[0], GPConstants.PARAM_INFO_OPTIONAL[1]);
+                }
+                parameter.setAttributes(attributes);
+                pInfo[i] = parameter;
+            }
+
             String newLsid = GenePatternAnalysisTask.installNewTask(name, description, pInfo, tia, username, privacy,
             new Status() {
                     public void beginProgress(String string) {
@@ -385,5 +414,22 @@ public class ModuleQueryServlet extends HttpServlet
 
         }
     }
+
+    public void loadModule(HttpServletRequest request, HttpServletResponse response) {
+	    String lsid = request.getParameter("lsid");
+
+	    if (lsid == null) {
+	        sendError(response, "No lsid received");
+	        return;
+	    }
+
+	    TaskInfo taskInfo = TaskInfoCache.instance().getTask(lsid);
+
+        ResponseJSON responseObject = new ResponseJSON();
+        ModuleJSON moduleObject = new ModuleJSON(taskInfo);
+
+        responseObject.addChild(ModuleJSON.KEY, moduleObject);
+        this.write(response, responseObject);
+	}
 
 }
