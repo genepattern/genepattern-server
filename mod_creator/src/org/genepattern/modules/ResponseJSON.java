@@ -2,6 +2,7 @@ package org.genepattern.modules;
 
 import org.json.JSONObject;
 import org.json.JSONException;
+import org.json.JSONArray;
 import org.apache.log4j.Logger;
 
 /**
@@ -10,6 +11,15 @@ import org.apache.log4j.Logger;
 
 public class ResponseJSON extends JSONObject {
     public static Logger log = Logger.getLogger(ResponseJSON.class);
+
+    public void addChild(Object key, JSONArray object) {
+        try {
+            this.put(key.toString(), object);
+        }
+        catch (JSONException e) {
+            log.error("Error attaching object to ResponseJSON: " + object);
+        }
+    }
 
     public void addChild(Object key, JSONObject object) {
         try {
