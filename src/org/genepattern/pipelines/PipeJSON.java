@@ -6,7 +6,6 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.genepattern.data.pipeline.JobSubmission;
 import org.genepattern.webservice.ParameterInfo;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -60,6 +59,7 @@ public class PipeJSON extends JSONObject {
         return this.getString(INPUT_PORT);
     }
     
+    @SuppressWarnings("unchecked")
     public static ResponseJSON createPipeList(Vector<JobSubmission> jobs) {
         ResponseJSON listObject = new ResponseJSON();
         Integer moduleCounter = 0;
@@ -83,6 +83,7 @@ public class PipeJSON extends JSONObject {
         return listObject;
     }
     
+    @SuppressWarnings("unchecked")
     public static PipeJSON[] extract(JSONObject json) {
         try {
             JSONObject object = (JSONObject) json.get(PipeJSON.KEY);

@@ -141,7 +141,8 @@ public class PipelineQueryServlet extends HttpServlet {
         }
     }
 	
-	public void uploadFile(HttpServletRequest request, HttpServletResponse response) {
+	@SuppressWarnings("unchecked")
+    public void uploadFile(HttpServletRequest request, HttpServletResponse response) {
 	    RequestContext reqContext = new ServletRequestContext(request);
         if (FileUploadBase.isMultipartContent(reqContext)) {
             FileItemFactory factory = new DiskFileItemFactory();
@@ -153,8 +154,11 @@ public class PipelineQueryServlet extends HttpServlet {
                     // Only read the submitted files
                     if (!i.isFormField()) {
                         // Store in a temp directory until the pipeline is saved
+                        String username = (String) request.getSession().getAttribute("userid");
                         File tempDir = ServerConfiguration.instance().getTempDir();
-                        File uploadedFile = new File(tempDir, i.getName());
+                        File userTempDir = new File(tempDir, username);
+                        userTempDir.mkdir();
+                        File uploadedFile = new File(userTempDir, i.getName());
                         transferUpload(i, uploadedFile);
                         
                         // Return a success response
@@ -289,7 +293,8 @@ public class PipelineQueryServlet extends HttpServlet {
 	    model.setLsid(lsid);
 	}
 	
-	private ParameterInfo[] copyModuleParams(ParameterInfo[] taskParams) throws WebServiceException {
+	@SuppressWarnings("rawtypes")
+    private ParameterInfo[] copyModuleParams(ParameterInfo[] taskParams) throws WebServiceException {
         ParameterInfo[] newParams = new ParameterInfo[taskParams.length];
 
         for (int i = 0; i < taskParams.length; i++) {
@@ -304,7 +309,8 @@ public class PipelineQueryServlet extends HttpServlet {
         return newParams;
     }
 	
-	private ParameterInfo setParameter(String pName, String value, ParameterInfo[] taskParams, boolean promptWhenRun) throws Exception {
+	@SuppressWarnings("unchecked")
+    private ParameterInfo setParameter(String pName, String value, ParameterInfo[] taskParams, boolean promptWhenRun) throws Exception {
         for (int i = 0; i < taskParams.length; i++) {
             ParameterInfo param = taskParams[i];
             if (pName.equalsIgnoreCase(param.getName())){
@@ -361,7 +367,8 @@ public class PipelineQueryServlet extends HttpServlet {
 	    return -1;
 	}
 	
-	private void setPipesInfo(PipelineModel model, List<ModuleJSON> modulesList, PipeJSON[] pipesObject) throws JSONException {
+	@SuppressWarnings("unchecked")
+    private void setPipesInfo(PipelineModel model, List<ModuleJSON> modulesList, PipeJSON[] pipesObject) throws JSONException {
         for (PipeJSON pipe : pipesObject) {
             // Read the pipe
             Integer outputId = pipe.getOutputModule();

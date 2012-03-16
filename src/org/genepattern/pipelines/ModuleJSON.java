@@ -48,6 +48,7 @@ public class ModuleJSON extends JSONObject {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public ModuleJSON(Integer id, JobSubmission job) {
         try {
             this.setId(id);
@@ -230,6 +231,7 @@ public class ModuleJSON extends JSONObject {
         this.put(OUTPUTS, outputs);
     }
     
+    @SuppressWarnings("unchecked")
     public static ModuleJSON[] extract(JSONObject json) {
         try {
             JSONObject object = (JSONObject) json.get(ModuleJSON.KEY);
