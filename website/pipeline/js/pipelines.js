@@ -131,8 +131,6 @@ var editor = {
         var newPipe = this.addPipe(newIn, newOut);
 
         input.module.getMasterInput().detachAll();
-        properties.displayPipe(newPipe);
-        properties.show();
 	},
 
 	_nextId: function() {
@@ -796,9 +794,10 @@ var library = {
             }
 
         }
+    },
 
-        // Sort alphabetically
-        library.moduleNames = $(library.moduleNames).sort(function(a, b) {
+    _sortAlphabetically : function(stringArray) {
+        return $(stringArray).sort(function(a, b) {
             var compA = a.toUpperCase();
             var compB = b.toUpperCase();
             return (compA < compB) ? -1 : (compA > compB) ? 1 : 0;
@@ -906,17 +905,18 @@ var library = {
             $("#loadPipeline").click(function() {
                 var lsid = $("#pipelineSelectList .ui-selected")[0].getAttribute("name");
                 editor.load(lsid);
-                $.data($("#loadButton")[0], "loadModuleTriggers").eq(0).overlay().close();
+                $("#loadPipelineDialog").dialog("close");
             });
             $("#cancelPipeline").button();
             $("#cancelPipeline").click(function() {
-                $("#loadPipelineDialog").hide();
-                $.data($("#loadButton")[0], "loadModuleTriggers").eq(0).overlay().close();
+                $("#loadPipelineDialog").dialog("close");
             });
 
             // Set to initialized
             this._loadInit = true;
         }
+
+        $("#loadPipelineDialog").dialog("open");
     }
 };
 

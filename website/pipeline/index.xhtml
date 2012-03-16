@@ -113,10 +113,12 @@
 				properties.init();
 			});
 
-            $.data($("#loadButton")[0], "loadModuleTriggers", $("#loadButton").overlay({
-                mask: "#FFFFFF",
-                target: "#loadPipelineDialog"
-            }));
+            $("#loadPipelineDialog").dialog({
+                autoOpen: false,
+                modal: true,
+                width: 400,
+                title: "Choose Pipeline to Load"
+            });
 
             $("#loadButton").button();
             $("#loadButton").click(function() {
