@@ -671,12 +671,12 @@ var library = {
             // Check for naming match
             if (name == module.name) {
                 // If version is null, assume this is the match
-                if (version === null) {
-                    return module.lsid;
+                if (version === null || version === undefined) {
+                    return library.getHighestVersion(module.lsid).lsid;
                 }
 
                 // If versions match, we found it!
-                if (version == module.version) {
+                if (version === module.version) {
                     return module.lsid;
                 }
             }
@@ -1065,6 +1065,7 @@ var properties = {
             var doIt = confirm("This will swap out the currently edited module with another version.  Continue?");
             if (doIt) {
                 var newModule = editor.replaceModule(parts[0], parts[1]);
+                newModule.checkForWarnings();
                 properties.displayModule(newModule);
                 properties.show();
             }
