@@ -40,7 +40,7 @@
     <p class="heading">Details</p>
     <div class ="content">
         <table border="0" cellspacing="0" cellpadding="0">
-            <tr><td id="lsid"></td></tr>
+            <tr><td id="lsid" colspan="3"></td></tr>
             <tr>
                 <td colspan="2">
                     Description:
@@ -136,7 +136,7 @@
             <tr>
                 <td colspan="2">
                     Language:   
-                    <select>
+                    <select name="language">
                         <option value="any">any</option>
                         <option value="C">C</option>
                         <option value="C++">C++</option>
@@ -152,8 +152,8 @@
                 </td>
             </tr>
             <tr>
-                <td> Output File Formats: </td>
-                <td>
+                <td colspan="3">
+                    Output File Formats:         
                     <select multiple="multiple" name="fileformat"></select>
                     <button id="addfileformat">New</button>                    
                 </td>
