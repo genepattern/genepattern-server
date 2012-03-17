@@ -16,6 +16,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -415,7 +416,21 @@ public class ModuleQueryServlet extends HttpServlet
         }
     }
 
-    public void loadModule(HttpServletRequest request, HttpServletResponse response) {
+    private JSONArray getParameterList(ParameterInfo[] pArray)
+    {
+        JSONArray parametersObject = new JSONArray();
+
+        for(int i =0;i < pArray.length;i++)
+        {
+            ParametersJSON parameter = new ParametersJSON(pArray[i]);
+            parametersObject.put(parameter);
+        }
+
+        return parametersObject;
+    }
+
+    public void loadModule(HttpServletRequest request, HttpServletResponse response)
+    {
 	    String lsid = request.getParameter("lsid");
 
 	    if (lsid == null) {
@@ -423,13 +438,22 @@ public class ModuleQueryServlet extends HttpServlet
 	        return;
 	    }
 
-	    TaskInfo taskInfo = TaskInfoCache.instance().getTask(lsid);
+        try
+        {
+            TaskInfo taskInfo = TaskInfoCache.instance().getTask(lsid);
 
-        ResponseJSON responseObject = new ResponseJSON();
-        ModuleJSON moduleObject = new ModuleJSON(taskInfo);
+            ResponseJSON responseObject = new ResponseJSON();
+            ModuleJSON moduleObject = new ModuleJSON(taskInfo);
+            responseObject.addChild(ModuleJSON.KEY, moduleObject);
 
-        responseObject.addChild(ModuleJSON.KEY, moduleObject);
-        this.write(response, responseObject);
+            JSONArray parametersObject = getParameterList(taskInfo.getParameterInfoArray());
+            responseObject.addChild(ParametersJSON.KEY, parametersObject);
+            this.write(response, responseObject);
+        }
+        catch(Exception e)
+        {
+            log.error(e);
+            sendError(response, "Error: while loading the module with lsid: " + lsid);
+        }
 	}
-
 }

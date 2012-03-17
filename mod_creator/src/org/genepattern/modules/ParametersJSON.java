@@ -4,6 +4,10 @@ import org.json.JSONObject;
 import org.json.JSONException;
 import org.json.JSONArray;
 import org.apache.log4j.Logger;
+import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.util.GPConstants;
+
+import java.util.HashMap;
 
 /**
  * Created by IntelliJ IDEA.
@@ -46,7 +50,28 @@ public class ParametersJSON extends JSONObject {
     }
 
 
-    public boolean isOptional() throws JSONException {
+    public ParametersJSON(ParameterInfo pInfo)
+    {
+        try {
+            HashMap pAttrs = pInfo.getAttributes();
+
+            this.put(NAME, pInfo.getName());
+            this.put(DESCRIPTION, pInfo.getDescription());
+            this.put(TYPE, pAttrs.get(GPConstants.PARAM_INFO_TYPE[0]));
+            this.put(MODE, pAttrs.get(ParameterInfo.MODE));
+            this.put(FILEFORMAT, pAttrs.get(GPConstants.FILE_FORMAT));
+            this.put(DEFAULT_VALUE, pInfo.getDefaultValue());
+            this.put(PREFIX, pAttrs.get(GPConstants.PARAM_INFO_PREFIX[0]));
+            this.put(OPTIONAL, pAttrs.get(GPConstants.PARAM_INFO_OPTIONAL[0]));
+           // this.put(VALUE, object.get(VALUE));
+        }
+        catch (Exception e) {
+            log.error("Error creating parameter JSON from from ParameterInfo object");
+        }
+    }
+
+    public boolean isOptional() throws JSONException
+    {
         if(this.getString(OPTIONAL).equalsIgnoreCase("on"))
         {
            return true;
