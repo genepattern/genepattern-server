@@ -24,6 +24,55 @@ var Request = {
  	}
 };
 
+function saveModule()
+{
+    var modname = $('#modtitle').val();
+    var description = $('textarea[name="description"]').val();
+    var author = $('input[name="author"]').val();
+    var privacy = $('select[name="privacy"] option:selected').val();
+    var quality = $('select[name="quality"] option:selected').val();
+    var language = $('select[name="language"] option:selected').val();
+    var version = $('input[name="comment"]').val();
+    var os = $('input[name=os]:checked').val();
+    var tasktype = $("select[name='category'] option:selected").val();
+    var cpu = $("select[name='cpu'] option:selected").val();
+    var commandLine = $('textarea[name="cmdtext"]').val();
+    var lsid = module_editor.lsid;
+    var supportFiles = module_editor.uploadedfiles;
+
+    var json = {};
+    json["module"] = {"name": modname, "description": description,
+        "author": author, "privacy": privacy, "quality": quality,
+        "language": language, "cpuType": cpu, "taskType": tasktype, "version": version,
+        "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles};
+
+    json["parameters"] = getParametersJSON();
+
+    $.ajax({
+        type: "POST",
+        url: "/gp/ModuleCreator/save",
+        data: { "bundle" : JSON.stringify(json) },
+        success: function(response) {
+            var message = response["MESSAGE"];
+            var error = response["ERROR"];
+            var newLsid = response["lsid"];
+            if (error !== undefined && error !== null) {
+                alert(error);
+            }
+            if (message !== undefined && message !== null) {
+                alert(message);
+            }
+            // Update the LSID upon successful save
+            if (newLsid !== undefined && newLsid !== null) {
+                module_editor.lsid = newLsid;
+                $("#lsid").empty().append("LSID: " + newLsid);
+                module_editor.uploadedfiles = [];
+            }
+        },
+        dataType: "json"
+    });
+}
+
 function editModule()
 {
     var lsid = Request.parameter('lsid');
@@ -1027,58 +1076,22 @@ jQuery(document).ready(function() {
                     }
                     else
                     {
-                        module_editor.uploadedfiles.push(response.location);
+
+                        if(jQuery.inArray(response.location, module_editor.uploadedfiles) == -1)
+                        {
+                            module_editor.uploadedfiles.push(response.location);
+                        }
+
+                        if(module_editor.supportfileinputs.length == module_editor.uploadedfiles.length)
+                        {
+                            saveModule();
+                        }
                     }
                 }
             });
 
             fileuploadform.submit();
         }
-
-        var modname = $('#modtitle').val();
-        var description = $('textarea[name="description"]').val();
-        var author = $('input[name="author"]').val();
-        var privacy = $('select[name="privacy"] option:selected').val();
-        var quality = $('select[name="quality"] option:selected').val();
-        var language = $('select[name="language"] option:selected').val();
-        var version = $('input[name="comment"]').val();
-        var os = $('input[name=os]:checked').val();
-        var tasktype = $("select[name='category'] option:selected").val();
-        var cpu = $("select[name='cpu'] option:selected").val();
-        var commandLine = $('textarea[name="cmdtext"]').val();
-        var lsid = module_editor.lsid;
-        var supportFiles = module_editor.uploadedfiles;
-        
-        var json = {};
-        json["module"] = {"name": modname, "description": description,
-            "author": author, "privacy": privacy, "quality": quality,
-            "language": language, "cpuType": cpu, "taskType": tasktype, "version": version,
-            "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles};
-
-        json["parameters"] = getParametersJSON();
-
-        $.ajax({
-            type: "POST",
-            url: "/gp/ModuleCreator/save",
-            data: { "bundle" : JSON.stringify(json) },
-            success: function(response) {
-                var message = response["MESSAGE"];
-                var error = response["ERROR"];
-                var newLsid = response["lsid"];
-                if (error !== undefined && error !== null) {
-                    alert(error);
-                }
-                if (message !== undefined && message !== null) {
-                    alert(message);
-                }
-                // Update the LSID upon successful save
-                if (newLsid !== undefined && newLsid !== null) {
-                    module_editor.lsid = newLsid;
-                    $("#lsid").empty().append("LSID: " + newLsid);
-                }
-            },
-            dataType: "json"
-        }); 
     });
 
 
