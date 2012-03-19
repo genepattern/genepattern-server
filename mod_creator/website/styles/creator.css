@@ -363,3 +363,12 @@ div.ui-layout-north
     font-size: 0.75em;
 }
 
+.delparam button 
+{
+    font-size: 55%;
+}
+
+#param-bar ul
+{
+    z-index: 500;
+}
