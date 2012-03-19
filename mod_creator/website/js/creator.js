@@ -486,8 +486,17 @@ function addsectioncollapseimages()
     $(".heading").next(".content").data("visible", true);    
 }
 
+
+function htmlEncode(value)
+{
+  return $('<div/>').text(value).html();
+}
+
 function loadModuleInfo(module)
 {
+    module_editor.lsid = module["LSID"];
+    $("#lsid").empty().append("LSID: " + module_editor.lsid);
+
     if(module["name"] !== undefined)
     {
         $('#modtitle').val(module["name"]);
@@ -578,8 +587,43 @@ function loadModuleInfo(module)
     } */
 
     //alert("module file format: " + module["fileformat"]);
-    module_editor.lsid = module["LSID"];
-    $("#lsid").empty().append("LSID: " + module_editor.lsid);
+
+
+    var supportFilesList = module.supportFiles;
+    if(supportFilesList !== undefined && supportFilesList != null)
+    {
+        var currentFilesDiv = $("<div id=currentfiles><div>");
+        currentFilesDiv.append("Current Files: ");
+
+        $("#supportfilecontent").prepend(currentFilesDiv);
+
+        var currentFilesSelect = $("<select name='currentfiles'><select>");
+        supportFilesList = supportFilesList.split(";");
+        for(s=0;s<supportFilesList.length;s++)
+        {
+            var currentFileURL = "<a href=\"../../getFile.jsp?task=" + module_editor.lsid + "&file=" + encodeURI(supportFilesList[s]) + "\" target=\"new\">" + htmlEncode(supportFilesList[s]) + "</a> ";
+            currentFilesDiv.append(currentFileURL);
+            
+            var option = $("<option>" + supportFilesList[s] +"</option>");
+            currentFilesSelect.append(option);
+        }
+
+        currentFilesDiv.append("<br>");
+        
+        currentFilesDiv.append(currentFilesSelect);
+        currentFilesSelect.multiselect({
+            header: false,
+            selectedList: 1 // 0-based index
+        });
+
+        var delButton = $("<button>delete</button>").button().click(function()
+        {
+            var selectedVals = $("select[name='currentfiles']").val();
+        });
+
+        currentFilesDiv.append(delButton);
+        currentFilesDiv.append("<br><br>");        
+    }
 }
 
 function loadParameterInfo(parameters)

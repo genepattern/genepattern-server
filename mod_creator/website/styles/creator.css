@@ -67,7 +67,9 @@ border: 1px solid #ccc;
 background: white;
 padding: 0 0 0 5px;
 margin: 0;
+z-index: 500;
 }
+
 #param-bar ul li {
 float: none;
 padding: 0; margin: 0;
@@ -371,4 +373,9 @@ div.ui-layout-north
 #param-bar ul
 {
     z-index: 500;
+}
+
+#currentfiles button 
+{
+    font-size: 65%;
 }
