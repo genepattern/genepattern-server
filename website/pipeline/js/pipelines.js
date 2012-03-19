@@ -52,6 +52,16 @@ var editor = {
         });
 	},
 
+    updateProgressBar: function(setToValue) {
+        if (setToValue === undefined || setToValue == null) {
+            var progressSoFar = $("#loadingEditorProgressBar").progressbar("value");
+            $("#loadingEditorProgressBar").progressbar({ value: progressSoFar + 10 });
+        }
+        else {
+            $("#loadingEditorProgressBar").progressbar({ value: setToValue });
+        }
+    },
+
     loadPipelineIfAsked: function() {
         var lsid = editor._loadGetLsid();
         if (lsid !== null) {
@@ -112,7 +122,18 @@ var editor = {
     },
 
     addDefaultPipe: function(output, input) {
+        // If the pipe was drawn to the same module or a module upstream, cancel the pipe
+        if (output.module === input.module) {
+            output.module.getMasterOutput().detachAll();
+            return;
+        }
+        if (output.module.isUpstream(input.module)) {
+            output.module.getMasterOutput().detachAll();
+            return;
+        }
+
 		var newIn = input.module.suggestInput(output);
+
 		// If there are no valid inputs left return null and cancel the pipe
 		if (newIn === null) {
 			output.module.getMasterOutput().detachAll();
@@ -1440,6 +1461,42 @@ function Module(moduleJSON) {
 	this.type = "module";
 	this.ui = null;
     this.alerts = {};
+
+    this.getInputModules = function() {
+        var inputModules = new Array();
+        for (var i = 0; i < this.inputEnds.length; i++) {
+            var port = this.inputEnds[i];
+            if (port.isConnected()) {
+                var module = port.pipes[0].outputModule;
+                // Only add the module to the list if it's not already in the list
+                for (var j = 0; j < inputModules.length; j++) {
+                    if (inputModules[j] === module) {
+                        continue;
+                    }
+                }
+                inputModules.push(module);
+            }
+        }
+
+        return inputModules;
+    };
+
+    this.isUpstream = function(module) {
+        var isUpstream = false;
+        var upstreamModules = this.getInputModules();
+        for (var i = 0; i < upstreamModules.length; i++) {
+            if (upstreamModules[i] === module) {
+                isUpstream = true;
+                break;
+            }
+            if (upstreamModules[i].isUpstream(module)) {
+                isUpstream = true;
+                break;
+            }
+        }
+
+        return isUpstream;
+    };
 
     this.isHighestVersion = function() {
         var highest = library.getHighestVersion(this.lsid);

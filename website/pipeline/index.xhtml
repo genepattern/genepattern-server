@@ -111,16 +111,6 @@
             <div id="propertiesSubmit"><button id="propertiesOk">OK</button><button id="propertiesCancel">Cancel</button></div>
 		</div>
 		<script type="text/javascript">
-            function updateProgressBar(setToValue) {
-                if (setToValue === undefined || setToValue == null) {
-                    var progressSoFar = $("#loadingEditorProgressBar").progressbar("value");
-                    $("#loadingEditorProgressBar").progressbar({ value: progressSoFar + 10 });
-                }
-                else {
-                    $("#loadingEditorProgressBar").progressbar({ value: setToValue });
-                }
-            }
-
             $("#loadingEditorDialog").dialog({
                 autoOpen: true,
                 modal: true,
@@ -128,26 +118,12 @@
                 title: "Please Stand by While Pipeline Designer Loads",
                 beforeClose: function() { return false; }
             });
+
             $("#loadingEditorProgressBar").progressbar({
                 complete: function(event, ui) {
                     $("#loadingEditorDialog").dialog("destroy");
                 }
             });
-
-			jsPlumb.ready(function() {
-                updateProgressBar();
-				editor.init();
-                updateProgressBar();
-				$.getJSON("/gp/PipelineDesigner/library", function(data) {
-                    updateProgressBar();
-					library.init(data);
-                    updateProgressBar();
-                    editor.loadPipelineIfAsked();
-                    updateProgressBar(100);
-				});
-				properties.init();
-                updateProgressBar();
-			});
 
             $("#loadPipelineDialog").dialog({
                 autoOpen: false,
@@ -176,7 +152,22 @@
                 var lsid = editor.workspace["pipelineLsid"];
                 editor.load(lsid);
             });
-            updateProgressBar();
+            editor.updateProgressBar();
+
+            jsPlumb.ready(function() {
+                editor.updateProgressBar();
+                editor.init();
+                editor.updateProgressBar();
+                $.getJSON("/gp/PipelineDesigner/library", function(data) {
+                    editor.updateProgressBar();
+                    library.init(data);
+                    editor.updateProgressBar();
+                    editor.loadPipelineIfAsked();
+                    editor.updateProgressBar(100);
+                });
+                properties.init();
+                editor.updateProgressBar();
+            });
 		</script>
 	</body>
 </html>
