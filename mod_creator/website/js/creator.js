@@ -77,6 +77,7 @@ function addparameter()
                        <option value='text'>Text</option> \
                        <option value='Numeric'>Numeric</option>  \
                        <option value='Input File'>Input File</option>\
+                           <option value='Directory'>Directory</option>\
                        <option value='Password'>Password</option> \
                        <option value='Choice'>Choice</option> \
                    </select>  \
@@ -713,7 +714,6 @@ function getParametersJSON()
     {
         var pname = $(this).find("input[name='p_name']").val();
         var description = $(this).find("textarea[name='p_description']").val();
-        description = "\"" + description + "\"";
         var type = $(this).find("select[name='p_type'] option:selected").val();
         var default_val = $(this).find("input[name='p_defaultvalue']").val(); 
         var optional = $(this).find('input[name="p_optional"]').is(':checked') ? "on" : "";
@@ -723,10 +723,22 @@ function getParametersJSON()
         var prefix = "";
 
         //this is an input file type
-        if($(this).find('input[name="fileformat"]').length > 0)
+        if(type === "Input File")
         {
             mode = "IN";
             type = "FILE";
+        }
+        else if(type === "Directory")
+        {
+            type = "DIRECTORY";
+        }
+        else if(type === "Password")
+        {
+            type = "PASSWORD";
+        }
+        else
+        {
+            type = "TEXT";
         }
 
         //this is a choice type
@@ -746,10 +758,11 @@ function getParametersJSON()
             }
         }
 
+
         var parameter = {
-            "name": pname, "description": description, "type": type,
+            "name": pname, "description": description, "TYPE": type,
             "dvalue": default_val, "optional": optional,
-            "fileformat": fileformat, "mode": mode, "value": value,
+            "fileformat": fileformat, "MODE": mode, "value": value,
             "prefix": prefix
         };
 
@@ -1043,7 +1056,7 @@ jQuery(document).ready(function() {
             "language": language, "cpuType": cpu, "taskType": tasktype, "version": version,
             "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles};
 
-        json["parameters"]= getParametersJSON();
+        json["parameters"] = getParametersJSON();
 
         $.ajax({
             type: "POST",
