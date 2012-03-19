@@ -735,6 +735,17 @@ function getParametersJSON()
             value = $(this).find('input[name="choicelist"]').val();
         }
 
+        if($(this).find('input[name="p_prefix"]').is(":checked"))
+        {
+            prefix = $(this).find('input[name="p_flag"]').val();
+
+            //check to see if a space should be added after the flag
+            if($(this).find('input[name="p_flagspace"]').is(":checked"))
+            {
+                prefix += " ";    
+            }
+        }
+
         var parameter = {
             "name": pname, "description": description, "type": type,
             "dvalue": default_val, "optional": optional,
@@ -876,7 +887,8 @@ jQuery(document).ready(function() {
 
     $("input[name='p_flagspace'], input[name='p_name'], input[name='p_flag']").live("change", function()
     {
-        var parameterParent = $(this).parent(".parameter");
+        var parameterParent = $(this).parents(".parameter");
+
         updateparameter(parameterParent);
     });
 
