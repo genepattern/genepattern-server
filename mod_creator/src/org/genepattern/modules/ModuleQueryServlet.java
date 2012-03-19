@@ -6,6 +6,7 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.Status;
+import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.apache.log4j.Logger;
 import org.apache.commons.fileupload.RequestContext;
@@ -431,6 +432,12 @@ public class ModuleQueryServlet extends HttpServlet
 
     public void loadModule(HttpServletRequest request, HttpServletResponse response)
     {
+        String username = (String) request.getSession().getAttribute("userid");
+	    if (username == null) {
+	        sendError(response, "No GenePattern session found.  Please log in.");
+	        return;
+	    }
+
 	    String lsid = request.getParameter("lsid");
 
 	    if (lsid == null) {
@@ -443,7 +450,12 @@ public class ModuleQueryServlet extends HttpServlet
             TaskInfo taskInfo = TaskInfoCache.instance().getTask(lsid);
 
             ResponseJSON responseObject = new ResponseJSON();
-            ModuleJSON moduleObject = new ModuleJSON(taskInfo);
+
+            LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
+            File[] allFiles = taskIntegratorClient.getAllFiles(taskInfo);
+
+            ModuleJSON moduleObject = new ModuleJSON(taskInfo, allFiles);
+
             responseObject.addChild(ModuleJSON.KEY, moduleObject);
 
             JSONArray parametersObject = getParameterList(taskInfo.getParameterInfoArray());

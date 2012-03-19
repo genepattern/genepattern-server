@@ -7,6 +7,8 @@ import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.util.GPConstants;
 
+import java.io.File;
+
 /**
  * Created by IntelliJ IDEA.
  * User: nazaire
@@ -56,7 +58,7 @@ public class ModuleJSON extends JSONObject {
         }
     }
 
-    public ModuleJSON(TaskInfo taskInfo)
+    public ModuleJSON(TaskInfo taskInfo, File[] supportFiles)
     {
         try
         {
@@ -74,6 +76,22 @@ public class ModuleJSON extends JSONObject {
             this.put(OS, tia.get(GPConstants.OS));
             this.put(COMMAND_LINE, tia.get(GPConstants.COMMAND_LINE));
             this.put(LSID, tia.get(GPConstants.LSID));
+
+            String supportFileNames="";
+            if(supportFiles != null)
+            {
+                for(int i=0;i<supportFiles.length;i++)
+                {
+                    supportFileNames+=supportFiles[i].getName();
+
+                    //append ; separator between each file name
+                    if(i+1 < supportFiles.length)
+                    {
+                        supportFileNames+=";";
+                    }
+                }
+            }
+            this.put(SUPPORTFILES, supportFileNames);
         }
         catch (JSONException e) {
             log.error(e);
