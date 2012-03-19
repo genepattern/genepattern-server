@@ -26,7 +26,8 @@
         <div id="titleBar">
             <span id="titleSpan"></span> <img id="pipelinePencil" src="images/pencil.gif" class="pencil" alt="Edit" />
             <div id="saveLoadDiv">
-                <button id="loadButton" class="saveLoadButton">Load Pipeline</button>
+                <button id="newButton" class="saveLoadButton">New</button>
+                <button id="loadButton" class="saveLoadButton">Load</button>
                 <button id="saveButton" class="saveLoadButton">Save</button>
                 <button id="revertButton" class="saveLoadButton">Revert</button>
             </div>
@@ -120,19 +121,22 @@
                 title: "Choose Pipeline to Load"
             });
 
+            $("#newButton").button();
+            $("#newButton").click(function() {
+                editor.load(null);
+            });
+
             $("#loadButton").button();
             $("#loadButton").click(function() {
                 library.displayLoadDialog();
-                $("#revertButton").button("enable");
             });
 
             $("#saveButton").button();
             $("#saveButton").click(function() {
                 editor.save();
-                $("#revertButton").button("enable");
             });
 
-            $("#revertButton").button({disabled: true});
+            $("#revertButton").button();
             $("#revertButton").click(function() {
                 var lsid = editor.workspace["pipelineLsid"];
                 editor.load(lsid);

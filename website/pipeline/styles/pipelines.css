@@ -147,6 +147,7 @@ a:hover {
 	border-color: #999999;
 	padding: 5px;
 	height: 16px;
+    cursor: pointer;
 }
 
 .deleteButton {
@@ -155,6 +156,7 @@ a:hover {
 	border-color: #999999;
 	padding: 5px;
 	height: 16px;
+    cursor: pointer;
 }
 
 .fileButton {
@@ -171,6 +173,7 @@ a:hover {
     border-color: #999999;
     padding: 5px;
     height: 16px;
+    cursor: pointer;
 }
 
 .errorButton {
@@ -179,6 +182,7 @@ a:hover {
     border-color: #999999;
     padding: 5px;
     height: 16px;
+    cursor: pointer;
 }
 
 .module {

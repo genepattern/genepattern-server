@@ -484,6 +484,11 @@ var editor = {
     },
 
 	load: function(lsid) {
+        if (lsid === undefined || lsid === null || lsid === "") {
+            editor._cleanWorkspace();
+            return;
+        }
+
         $.ajax({
             type: "POST",
             url: "/gp/PipelineDesigner/load",
@@ -506,6 +511,11 @@ var editor = {
 	},
 
 	save: function() {
+        if (editor.hasErrors()) {
+            alert("The pipeline being edited has errors.  Please fix the errors before saving.");
+            return;
+        }
+
 		var toSend = editor._bundleForSave();
         $.ajax({
             type: "POST",
@@ -531,7 +541,19 @@ var editor = {
             },
             dataType: "json"
         });
-	}
+	},
+
+    hasErrors: function() {
+        for (var i in editor.workspace) {
+            if (editor.workspace[i] instanceof Module) {
+                if (editor.workspace[i].hasError()) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 };
 
 /**
@@ -1498,7 +1520,10 @@ function Module(moduleJSON) {
             }
             else {
                 this.inputs[i].promptWhenRun = false;
-                this.inputs[i].value = value;
+                if (!(this.inputs[i].isFile() && value === "")) {
+                    this.inputs[i].value = value;
+                    showFileIcon = true;
+                }
                 // Set the file icon if necessary
                 if (value !== "" && this.inputs[i].isFile()) {
                     showFileIcon = true;
@@ -1728,7 +1753,11 @@ function Module(moduleJSON) {
             $(alert).dialog({
                 modal: true,
                 width: 400,
-                title: "Module Errors & Alerts"
+                title: "Module Errors & Alerts",
+                close: function(event) {
+                    $(this).dialog("destroy");
+                    $(this).remove();
+                }
             });
         };
 
@@ -1768,6 +1797,15 @@ function Module(moduleJSON) {
             $("#file_" + this.id).hide();
         }
     }
+
+    this.hasError = function() {
+        if ($("#error_" + this.id).is(":visible")) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    };
 
     this.toggleErrorIcon = function(show) {
         if (show === undefined) {
