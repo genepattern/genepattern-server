@@ -2,6 +2,7 @@ package org.genepattern.modules;
 
 import org.json.JSONObject;
 import org.json.JSONException;
+import org.json.JSONArray;
 import org.apache.log4j.Logger;
 import org.genepattern.webservice.TaskInfo;
 import org.genepattern.webservice.TaskInfoAttributes;
@@ -35,6 +36,8 @@ public class ModuleJSON extends JSONObject {
     public static final String SUPPORTFILES = "supportFiles";
 
     public static final String KEY = "module";
+
+    private String[] supportFiles;
 
     public ModuleJSON(JSONObject object) {
         try {
@@ -144,5 +147,23 @@ public class ModuleJSON extends JSONObject {
 
     public void setName(String name) throws JSONException {
         this.put(NAME, name);
+    }
+
+    public String[] getSupportFiles()throws JSONException
+    {
+        if(supportFiles == null)
+        {
+            JSONArray files = (JSONArray)this.get(SUPPORTFILES);
+            if(files != null)
+            {
+                supportFiles = new String[files.length()];
+                for(int i=0; i < files.length();i++)
+                {
+                    supportFiles[i] = (String)files.get(i);
+                }
+            }
+        }
+
+        return supportFiles;
     }
 }

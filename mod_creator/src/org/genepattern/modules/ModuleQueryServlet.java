@@ -6,6 +6,7 @@ import org.genepattern.webservice.TaskInfoAttributes;
 import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.Status;
+import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
 import org.genepattern.util.GPConstants;
 import org.apache.log4j.Logger;
@@ -327,7 +328,8 @@ public class ModuleQueryServlet extends HttpServlet
                 String key = infoKeys.next();
 
                 //omit module name and description from taskinfoattributes
-                if(!key.equals(ModuleJSON.NAME) && !key.equals(ModuleJSON.DESCRIPTION))
+                if(!key.equals(ModuleJSON.NAME) && !key.equals(ModuleJSON.DESCRIPTION)
+                        && !key.equals(ModuleJSON.SUPPORTFILES))
                 {
                     tia.put(key, moduleObject.get(key));
                 }
@@ -390,6 +392,22 @@ public class ModuleQueryServlet extends HttpServlet
                     }
             });
 
+            //copy support files from temp to the module taskLib
+            String[] supportFiles = moduleObject.getSupportFiles();
+            TaskInfo taskInfo = TaskInfoCache.instance().getTask(newLsid);
+
+            String taskLibDir = DirectoryManager.getTaskLibDir(taskInfo.getName(), newLsid, username);
+
+            if(taskLibDir != null)
+            {
+                moveSupportFiles(supportFiles, new File(taskLibDir));
+            }
+            else
+            {
+                sendError(response, "Unable to copy support files");
+                return;
+            }
+
             ResponseJSON message = new ResponseJSON();
             message.addMessage("Module Saved");
             message.addChild("lsid", newLsid);
@@ -400,6 +418,25 @@ public class ModuleQueryServlet extends HttpServlet
             e.printStackTrace();
             log.error(e);
             sendError(response, "Exception saving the module.");
+        }
+    }
+
+    private void moveSupportFiles(String[] files, File copyTo) throws Exception {
+        if (copyTo == null || !copyTo.isDirectory()) {
+            throw new Exception("Attempting to copy files to a location that is not a directory");
+        }
+
+        for (String path : files) {
+            File file = new File(path);
+            if (!file.exists()) {
+                throw new Exception("Attempting to move file that does not exist: " + path);
+            }
+
+            // Move file to new directory
+            boolean success = file.renameTo(new File(copyTo, file.getName()));
+            if (!success) {
+                throw new Exception("Unable to move file: " + file.getName());
+            }
         }
     }
 
