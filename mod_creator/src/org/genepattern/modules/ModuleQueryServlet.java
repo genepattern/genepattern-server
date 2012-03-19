@@ -319,6 +319,8 @@ public class ModuleQueryServlet extends HttpServlet
             String description = moduleObject.getDescription();
 
             TaskInfoAttributes tia = new TaskInfoAttributes();
+            tia.put(GPConstants.USERID, username);
+
             Iterator<String> infoKeys = moduleObject.keys();
             while(infoKeys.hasNext())
             {
@@ -360,6 +362,15 @@ public class ModuleQueryServlet extends HttpServlet
                 {
                     attributes.put(GPConstants.PARAM_INFO_OPTIONAL[0], GPConstants.PARAM_INFO_OPTIONAL[1]);
                 }
+                else
+                {
+                    attributes.put(GPConstants.PARAM_INFO_OPTIONAL[0], "");    
+                }
+
+                String defaultValue = parameterJSON.getDefaultValue();
+                attributes.put(GPConstants.PARAM_INFO_DEFAULT_VALUE[0], defaultValue);
+
+
                 parameter.setAttributes(attributes);
                 pInfo[i] = parameter;
             }
@@ -383,8 +394,9 @@ public class ModuleQueryServlet extends HttpServlet
         }
         catch(Exception e)
         {
+            e.printStackTrace();
             log.error(e);
-            sendError(response, "Exception saving the module.");                   
+            sendError(response, "Exception saving the module.");
         }
     }
 

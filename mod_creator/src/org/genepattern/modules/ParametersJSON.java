@@ -10,6 +10,7 @@ import org.genepattern.util.GPConstants;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Iterator;
+import java.io.File;
 
 /**
  * Created by IntelliJ IDEA.
@@ -25,8 +26,10 @@ public class ParametersJSON extends JSONObject {
 
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
-    public static final String TYPE = "type";
-    public static final String MODE = "mode";
+    public static final String TYPE = "TYPE";
+    public static final String MODE = "MODE";
+    //parameter type i.e. java.lang.String - different from TYPE above
+    public static final String type = "type";
     public static final String DEFAULT_VALUE = "dvalue";
     public static final String OPTIONAL = "optional";
     public static final String FILEFORMAT = "fileformat";
@@ -46,6 +49,14 @@ public class ParametersJSON extends JSONObject {
             this.put(OPTIONAL, object.get(OPTIONAL));
             this.put(PREFIX, object.get(PREFIX));
             this.put(VALUE, object.get(VALUE));
+
+            String typeString = String.class.getName();
+            if(TYPE.equals("FILE"))
+            {
+                typeString = File.class.getName();
+            }
+
+            this.put(type, typeString);
         }
         catch (Exception e) {
             log.error("object: " + object);
