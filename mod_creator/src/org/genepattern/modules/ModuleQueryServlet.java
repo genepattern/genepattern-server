@@ -95,7 +95,7 @@ public class ModuleQueryServlet extends HttpServlet
             writer.flush();
         }
         catch (IOException e) {
-            log.error("Error writing to the response in PipelineQueryServlet: " + content);
+            log.error("Error writing to the response in ModuleQueryServlet: " + content);
             e.printStackTrace();
         }
         finally {
@@ -341,6 +341,7 @@ public class ModuleQueryServlet extends HttpServlet
                 privacy = GPConstants.ACCESS_PUBLIC;
             }
 
+            //--------------------------Parameter Information---------------------------------------------
             ParametersJSON[] parameters = ParametersJSON.extract(moduleJSON);
             ParameterInfo[] pInfo = new ParameterInfo[parameters.length];
 
@@ -371,6 +372,8 @@ public class ModuleQueryServlet extends HttpServlet
                 attributes.put(GPConstants.PARAM_INFO_DEFAULT_VALUE[0], defaultValue);
 
 
+                parameter.setValue(parameterJSON.getChoices());
+                
                 parameter.setAttributes(attributes);
                 pInfo[i] = parameter;
             }

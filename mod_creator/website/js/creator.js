@@ -216,7 +216,6 @@ function addparameter()
 
                                     tSelect.parent().parent().find("input[name='choicelist']").each(function()
                                     {
-                                        alert("choice list: "  + choicelist);
                                         $(this).val(choicelist);
                                         tSelect.data('editing', "Choice");
                                     });
@@ -742,9 +741,11 @@ function getParametersJSON()
         }
 
         //this is a choice type
+        var choices = "";
+
         if($(this).find('input[name="choicelist"]').length > 0)
         {
-            value = $(this).find('input[name="choicelist"]').val();
+            choices = $(this).find('input[name="choicelist"]').val();
         }
 
         if($(this).find('input[name="p_prefix"]').is(":checked"))
@@ -758,12 +759,10 @@ function getParametersJSON()
             }
         }
 
-
         var parameter = {
-            "name": pname, "description": description, "TYPE": type,
+            "name": pname, "choices": choices, "description": description, "TYPE": type,
             "dvalue": default_val, "optional": optional,
-            "fileformat": fileformat, "MODE": mode, "value": value,
-            "prefix": prefix
+            "fileformat": fileformat, "MODE": mode, "value": value, "prefix": prefix
         };
 
         parameters.push(parameter);

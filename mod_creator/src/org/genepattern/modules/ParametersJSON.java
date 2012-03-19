@@ -49,6 +49,7 @@ public class ParametersJSON extends JSONObject {
             this.put(OPTIONAL, object.get(OPTIONAL));
             this.put(PREFIX, object.get(PREFIX));
             this.put(VALUE, object.get(VALUE));
+            this.put(CHOICES, object.get(CHOICES));
 
             String typeString = String.class.getName();
             if(TYPE.equals("FILE"))
@@ -113,12 +114,12 @@ public class ParametersJSON extends JSONObject {
         return false;
     }
 
-    public String getValue() throws JSONException {
-       return this.getString(VALUE);
+    public String getChoices() throws JSONException {
+       return this.getString(CHOICES);
     }
 
-    public void setValue(String value) throws JSONException {
-       this.put(VALUE, value);
+    public void setChoices(String value) throws JSONException {
+       this.put(CHOICES, value);
     }
 
     public String getFileFormats() throws JSONException {
