@@ -1638,6 +1638,13 @@ function Module(moduleJSON) {
                 var used = input.used;
 
                 if (!used) {
+                    // Special case for modules with no input types listed
+                    if (input.kinds.length == 0) {
+                        var inputPort = this.addInput(input.name);
+                        input.makeUsed(inputPort);
+                        return inputPort;
+                    }
+
                     for (var k = 0; k < input.kinds.length; k++) {
                         var kind = input.kinds[k];
 
