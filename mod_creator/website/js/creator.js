@@ -213,7 +213,6 @@ function addparameter()
                                         choicelist += dvalue + "=" + value;
                                     });
 
-                                    alert("input " + choicelist);
                                     tSelect.parent().parent().find("input[name='choicelist']").each(function()
                                     {
                                         alert("choice list: "  + choicelist);
@@ -587,7 +586,6 @@ function loadParameterInfo(parameters)
 {
     for(i=0; i < parameters.length;i++)
     {
-        alert("i: " + i);
         var newParameter = addparameter();
         newParameter.find("input[name='p_name']").val(parameters[i].name);
         newParameter.find("textarea[name='p_description']").val(parameters[i].description);
