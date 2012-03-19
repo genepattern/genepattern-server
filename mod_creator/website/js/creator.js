@@ -37,6 +37,7 @@ function editModule()
 function addparameter()
 {
     var paramDiv = $("<div class='parameter'>  \
+        <span class='delparam'> <button >x</button> </span> \
         <table>    \
            <tr>    \
                <td>   \
@@ -81,7 +82,7 @@ function addparameter()
                    </select>  \
                </td> \
                <td>   \
-                    <input type='checkbox' name='p_invisible' size='7'> visible only on command line</input> \
+                    <input type='checkbox' name='p_prefix' size='7'> prefix when specified </input> \
                </td> \
             </tr>  \
         </table> \
@@ -90,14 +91,27 @@ function addparameter()
 
     paramDiv.click(function()
     {
-        if (!$(this).hasClass("ui-selected"))
+       /* if (!$(this).hasClass("ui-selected"))
         {
             $(this).addClass("ui-selected").siblings().removeClass("ui-selected");
-        }
+        } */
         /*else
         {
             $(this).removeClass("ui-selected");
         } */
+    });
+
+    $(".delparam button").button().click(function()
+    {
+        alert("delparam");
+        var pelement = $(this).parent().parent().find("input[name='p_name']");
+        var felement = $(this).parent().parent().find("input[name='p_flag']");
+        pelement.val("");
+        felement.val("");
+
+        updateparameter($(this).parent().parent());
+
+        $(this).parent().parent().remove();
     });
 
     $("select[name='p_type']").change(function()
@@ -107,7 +121,7 @@ function addparameter()
 
         if(tSelect.data("editing") !== value)
         {
-            if(!tSelect.parent().next().children().is("input[name='p_invisible']"))
+            if(!tSelect.parent().next().children().is("input[name='p_prefix']"))
             {
                 $(this).parent().next().remove();
             }
@@ -199,8 +213,10 @@ function addparameter()
                                         choicelist += dvalue + "=" + value;
                                     });
 
-                                    tSelect.find("input[name='choicelist']").each(function()
+                                    alert("input " + choicelist);
+                                    tSelect.parent().parent().find("input[name='choicelist']").each(function()
                                     {
+                                        alert("choice list: "  + choicelist);
                                         $(this).val(choicelist);
                                         tSelect.data('editing', "Choice");
                                     });
@@ -233,6 +249,7 @@ function addparameter()
                     $( "#addfileformatdialog" ).dialog("open");                
                 });
 
+                //copy option values from the modules output file format list that was generated earlier
                 $('select[name="fileformat"]').children("option").each(function()
                 {
                     fileFormatList.append($(this).clone());
@@ -264,6 +281,8 @@ function addparameter()
         header: false,
         selectedList: 4 // 0-based index
     });
+
+    return paramDiv;
 }
 
 function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimiter)
@@ -335,14 +354,14 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
         $('#commandlist').append(item);
             //add ability to select new parameter in list
             item.click(function() {
-            if (!$(this).hasClass("ui-selected"))
+           /* if (!$(this).hasClass("ui-selected"))
             {
                 $(this).addClass("ui-selected").siblings().removeClass("ui-selected");
             }
             else
             {
                 $(this).removeClass("ui-selected");
-            }
+            } */
         });
     }
 
@@ -470,20 +489,155 @@ function addsectioncollapseimages()
 
 function loadModuleInfo(module)
 {
-    $('#modtitle').val(module["name"]);
-    $('textarea[name="description"]').val(module["description"]);
-    $('input[name="author"]').val(module["author"]);
-    $('select[name="privacy"]').val(module["privacy"]);
-    $('select[name="quality"]').val(module["quality"]);
-    $('input[name="comment"]').val(module["version"]);
-    $('select[name=language]').val(module["language"]);
-    $('input[name=os]').val(module["os"]);    
-    $("select[name='category']").val(module["taskType"]);
-    $("select[name='cpu']").val(module["cpuType"]);
-    $('textarea[name="cmdtext"]').val(module["commandLine"]);
+    if(module["name"] !== undefined)
+    {
+        $('#modtitle').val(module["name"]);
+    }
+    if(module["description"] !== undefined)
+    {
+        $('textarea[name="description"]').val(module["description"]);
+    }
+    if(module["author"] !== undefined)
+    {
+        $('input[name="author"]').val(module["author"]);
+    }
 
+    if(module["privacy"] !== undefined)
+    {
+        $('select[name="privacy"]').val(module["privacy"]);
+    }
+
+    if(module["quality"] !== undefined)
+    {
+        $('select[name="quality"]').val(module["quality"]);
+    }
+
+    if(module["version"] !== undefined)
+    {
+        $('input[name="comment"]').val(module["version"]);
+    }
+
+    if(module["language"] !== undefined)
+    {
+        $('select[name="language"]').val(module["language"]);
+        $("select[name='c_type']").val(module["language"]);
+    }
+
+    if(module["os"] !== undefined)
+    {
+        $('input[name=os]').val(module["os"]);
+    }
+
+    if(module["taskType"] !== undefined)
+    {
+        $("select[name='category']").val(module["taskType"]);
+    }
+
+    if(module["cpuType"] !== undefined)
+    {
+        $("select[name='cpu']").val(module["cpuType"]);
+    }
+
+    if(module["commandLine"] !== undefined)
+    {
+        $('textarea[name="cmdtext"]').val(module["commandLine"]);
+
+        var cmdtype = $("select[name='c_type']").val();
+        if(cmdtype === "Custom")
+        {
+            if(module["commandLine"].indexOf("<java>") != -1 &&
+                    module["commandLine"].indexOf("<java>") < 1)
+            {
+                $("select[name='c_type']").val("Java");
+            }
+            if(module["commandLine"].indexOf("<perl>") != -1 &&
+                    module["commandLine"].indexOf("<perl>") < 1)
+            {
+                $("select[name='c_type']").val("Perl");
+            }
+        }
+    }
+
+
+    /*if(module["fileformat"] !== undefined)
+    {
+        var fileformats = module["fileformat"];
+        fileformats = fileformats.split(";");
+
+        for(i=0; i < fileformats.length;i++)
+        {
+            //var newfileformat = $("<option>" + fileformats[i] + "</option>");
+            var vals = $("select[name='fileformat']").val();
+            vals.push(fileformats[i]);
+            $("select[value='fileformat']").val(vals);
+
+            //alert("selection" + $("select[value='" + fileformats[i] + "']").html());
+            //$("select[name='fileformat', value='" + fileformats[i] + "']").attr('selected', true);
+
+            $(this).multiselect("refresh");
+        }
+    } */
+
+    //alert("module file format: " + module["fileformat"]);
     module_editor.lsid = module["LSID"];
     $("#lsid").empty().append("LSID: " + module_editor.lsid);
+}
+
+function loadParameterInfo(parameters)
+{
+    for(i=0; i < parameters.length;i++)
+    {
+        alert("i: " + i);
+        var newParameter = addparameter();
+        newParameter.find("input[name='p_name']").val(parameters[i].name);
+        newParameter.find("textarea[name='p_description']").val(parameters[i].description);
+        newParameter.find("input[name='p_defaultvalue']").val(parameters[i].dvalue);
+        var optional = parameters[i].optional;
+        var prefix = parameters[i].prefix;
+
+        if(optional === "on")
+        {
+            newParameter.find("input[name='p_optional']").attr('checked', true);
+        }
+
+        if(prefix !== undefined && prefix !== null && prefix.length > 0)
+        {
+            newParameter.find("input[name='p_prefix']").attr('checked', true);
+        } 
+
+       /* var fileformat = parameters[i].fileformat;
+        if(fileformat !== undefined && fileformat.length > 0)
+        {
+            newParameter.find("select[name='p_type']").val("Input File");
+            newParameter.find("select[name='p_type']").trigger("change");
+            
+            var fileformatlist = fileformat.split(";");
+            var vals = [];
+            //for(p=0; p<fileformatlist.length; p++)
+            //{
+            //    vals[p] = fileformatlist[p];
+            //} 
+
+            //newParameter.find("select[name='fileformat']").val(vals);
+
+            //alert(fileformatlist);
+
+            //newParameter.find("select[name='fileformat']").multiselect('refresh');
+        }*/
+
+        //alert("choices1: " + parameters[i].choices);
+        //var choices = parameters[i].choices;
+        ////if(choices !== undefined && choices !== null && choices.length > 0)
+        ////{
+         ////   newParameter.find("select[name='p_type']").val("Choice");
+         ////   newParameter.find("select[name='p_type']").trigger("change");
+
+         ////   newParameter.find('input[name="choicelist"]').val(parameters[i].choices);
+            //alert("alert choices val:" + newParameter.find('input[name="choicelist"]').val());
+       //// }
+
+        //updateparameter(newParameter);
+    }
 }
 
 function loadModule(taskId)
@@ -502,7 +656,8 @@ function loadModule(taskId)
                 if (message !== undefined && message !== null) {
                     alert(message);
                 }
-                loadModuleInfo(response["module"]);               
+                loadModuleInfo(response["module"]);
+                loadParameterInfo(response["parameters"]);
             },
             dataType: "json"
         });
@@ -631,7 +786,7 @@ jQuery(document).ready(function() {
             .parent()
                 .buttonset();    
 
-    $( "#deleteparam" ).button().click(function() {
+    /*$( "#deleteparam" ).button().click(function() {
         $('.ui-selected').each(function()
         {
             var pelement = $(this).find("input[name='p_name']");
@@ -643,7 +798,7 @@ jQuery(document).ready(function() {
 
             $(this).remove();
         });
-    });
+    }); */
 
     $("#param-bar ul li #addone").click(function()
     {
@@ -679,7 +834,7 @@ jQuery(document).ready(function() {
 
     $("input[name='p_flagspace'], input[name='p_name'], input[name='p_flag']").live("change", function()
     {
-        var parameterParent = $(this).parents(".parameter");
+        var parameterParent = $(this).parent(".parameter");
         updateparameter(parameterParent);
     });
 
@@ -826,8 +981,8 @@ jQuery(document).ready(function() {
         var cpu = $("select[name='cpu'] option:selected").val();
         var commandLine = $('textarea[name="cmdtext"]').val();
         var lsid = module_editor.lsid;
-        var supportFiles = ""; //module_editor.uploadedfiles;
-
+        var supportFiles = module_editor.uploadedfiles;
+        
         var json = {};
         json["module"] = {"name": modname, "description": description,
             "author": author, "privacy": privacy, "quality": quality,
