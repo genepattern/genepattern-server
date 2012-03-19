@@ -28,7 +28,8 @@ public class ModuleJSON extends JSONObject {
     public static final String VERSION_COMMENT = "version";
     public static final String LSID = "LSID";
     public static final String CATEGORY = "taskType";
-    public static final String LANGUAGE = "language";    
+    public static final String LANGUAGE = "language";
+    public static final String JVM_LEVEL = "JVMLevel";        
     public static final String CPU = "cpuType";
     public static final String OS = "os";
     public static final String COMMAND_LINE = "commandLine";
@@ -48,7 +49,8 @@ public class ModuleJSON extends JSONObject {
             this.put(VERSION_COMMENT, object.get(VERSION_COMMENT));
             this.put(CATEGORY, object.get(CATEGORY));
             this.put(QUALITY, object.get(QUALITY));
-            this.put(LANGUAGE, object.get(LANGUAGE));            
+            this.put(LANGUAGE, object.get(LANGUAGE));
+            this.put(JVM_LEVEL, object.get(JVM_LEVEL));
             this.put(CPU, object.get(CPU));
             this.put(OS, object.get(OS));
             this.put(COMMAND_LINE, object.get(COMMAND_LINE));

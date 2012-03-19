@@ -32,18 +32,19 @@ function saveModule()
     var privacy = $('select[name="privacy"] option:selected').val();
     var quality = $('select[name="quality"] option:selected').val();
     var language = $('select[name="language"] option:selected').val();
-    var version = $('input[name="comment"]').val();
+    var lang_version = $('input[name="lang_version"]').val();    
     var os = $('input[name=os]:checked').val();
     var tasktype = $("select[name='category'] option:selected").val();
     var cpu = $("select[name='cpu'] option:selected").val();
     var commandLine = $('textarea[name="cmdtext"]').val();
     var lsid = module_editor.lsid;
     var supportFiles = module_editor.uploadedfiles;
+    var version = $('input[name="comment"]').val();
 
     var json = {};
     json["module"] = {"name": modname, "description": description,
         "author": author, "privacy": privacy, "quality": quality,
-        "language": language, "cpuType": cpu, "taskType": tasktype, "version": version,
+        "language": language, "JVMLevel": lang_version, "cpuType": cpu, "taskType": tasktype, "version": version,
         "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles};
 
     json["parameters"] = getParametersJSON();
@@ -153,7 +154,6 @@ function addparameter()
 
     $(".delparam button").button().click(function()
     {
-        alert("delparam");
         var pelement = $(this).parent().parent().find("input[name='p_name']");
         var felement = $(this).parent().parent().find("input[name='p_flag']");
         pelement.val("");
@@ -1048,49 +1048,57 @@ jQuery(document).ready(function() {
 
     $('#savebtn').button().click(function()
     {
-        for(i=0;i < module_editor.supportfileinputs.length;i++)
+        //if no support files need to be upload then do this
+        if(module_editor.supportfileinputs.length == 0)
         {
-            var fileuploadform = $('<form action="/gp/ModuleCreator/upload" method="post" ' +
-                                 'enctype="multipart/form-data" class="fileuploadform"> </form>');
+            saveModule();
+        }
+        else
+        {
+            for(i=0;i < module_editor.supportfileinputs.length;i++)
+            {
+                var fileuploadform = $('<form action="/gp/ModuleCreator/upload" method="post" ' +
+                                     'enctype="multipart/form-data" class="fileuploadform"> </form>');
 
-            fileuploadform.append(module_editor.supportfileinputs[i]);
+                fileuploadform.append(module_editor.supportfileinputs[i]);
 
-            fileuploadform.iframePostForm
-            ({
-                json : false,
-                post : function ()
-                {
-                    //if file is not empty then upload
-                    if (!$(this).find('input[type=file]').val().length)
+                fileuploadform.iframePostForm
+                ({
+                    json : false,
+                    post : function ()
                     {
-                        //cancel request
-                        return false;
-                    }
-                },
-                complete : function (response)
-                {
-                    response = $.parseJSON($(response)[0].innerHTML);                    
-                    if (response.error !== undefined)
-                    {
-                        alert(response.error);
-                    }
-                    else
-                    {
-
-                        if(jQuery.inArray(response.location, module_editor.uploadedfiles) == -1)
+                        //if file is not empty then upload
+                        if (!$(this).find('input[type=file]').val().length)
                         {
-                            module_editor.uploadedfiles.push(response.location);
+                            //cancel request
+                            return false;
                         }
-
-                        if(module_editor.supportfileinputs.length == module_editor.uploadedfiles.length)
+                    },
+                    complete : function (response)
+                    {
+                        response = $.parseJSON($(response)[0].innerHTML);
+                        if (response.error !== undefined)
                         {
-                            saveModule();
+                            alert(response.error);
+                        }
+                        else
+                        {
+
+                            if(jQuery.inArray(response.location, module_editor.uploadedfiles) == -1)
+                            {
+                                module_editor.uploadedfiles.push(response.location);
+                            }
+
+                            if(module_editor.supportfileinputs.length == module_editor.uploadedfiles.length)
+                            {
+                                saveModule();
+                            }
                         }
                     }
-                }
-            });
+                });
 
-            fileuploadform.submit();
+                fileuploadform.submit();
+            }
         }
     });
 
@@ -1099,6 +1107,7 @@ jQuery(document).ready(function() {
     {
         var cmdlinetext = $("#commandtextarea textarea").val();
         var type = $(this).val();
+        type = type.toLowerCase();
 
         var prev_cmd = $("#commandtextarea textarea").data("type");
 
