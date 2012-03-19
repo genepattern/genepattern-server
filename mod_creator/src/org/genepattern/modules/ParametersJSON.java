@@ -8,6 +8,8 @@ import org.genepattern.webservice.ParameterInfo;
 import org.genepattern.util.GPConstants;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Iterator;
 
 /**
  * Created by IntelliJ IDEA.
@@ -30,6 +32,8 @@ public class ParametersJSON extends JSONObject {
     public static final String FILEFORMAT = "fileformat";
     public static final String PREFIX = "prefix";
     public static final String VALUE = "value";
+    public static final String CHOICES = "choices";
+
 
     public ParametersJSON(JSONObject object) {
         try {
@@ -63,7 +67,25 @@ public class ParametersJSON extends JSONObject {
             this.put(DEFAULT_VALUE, pInfo.getDefaultValue());
             this.put(PREFIX, pAttrs.get(GPConstants.PARAM_INFO_PREFIX[0]));
             this.put(OPTIONAL, pAttrs.get(GPConstants.PARAM_INFO_OPTIONAL[0]));
-           // this.put(VALUE, object.get(VALUE));
+
+            Map choicesMap = pInfo.getChoices();
+            String choices = "";
+            if(choicesMap != null && choicesMap.size() > 0)
+            {
+                Iterator<String> it = choicesMap.keySet().iterator();
+                while(it.hasNext())
+                {
+                    String key = it.next();
+                    choices += key + "=" + choicesMap.get(key);
+                    if(it.hasNext())
+                    {
+                        choices += ";";
+                    }
+                }
+            }
+            this.put(CHOICES, choices);
+
+            // this.put(VALUE, object.get(VALUE));
         }
         catch (Exception e) {
             log.error("Error creating parameter JSON from from ParameterInfo object");
