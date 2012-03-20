@@ -3,7 +3,8 @@ var mainLayout;
 var module_editor = {
     lsid: "",
     uploadedfiles: [],
-    supportfileinputs: []
+    supportfileinputs: [],
+    filesToDelete: []
 };
 
 var Request = {
@@ -40,12 +41,14 @@ function saveModule()
     var lsid = module_editor.lsid;
     var supportFiles = module_editor.uploadedfiles;
     var version = $('input[name="comment"]').val();
+    var filesToDelete = module_editor.filesToDelete;
 
     var json = {};
     json["module"] = {"name": modname, "description": description,
         "author": author, "privacy": privacy, "quality": quality,
         "language": language, "JVMLevel": lang_version, "cpuType": cpu, "taskType": tasktype, "version": version,
-        "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles};
+        "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles,
+        "filesToDelete": filesToDelete};
 
     json["parameters"] = getParametersJSON();
 
@@ -823,6 +826,12 @@ function loadModuleInfo(module)
         var delButton = $("<button>delete</button>").button().click(function()
         {
             var selectedVals = $("select[name='currentfiles']").val();
+            //alert('selected vals: ' + $("select[name='currentfiles']").val());
+           // if(selectedVals.length > 1)
+           // for(v=0; v < selectedVals.length; v++)
+           // {
+                module_editor.filesToDelete.push(selectedVals[v]);
+            //}
         });
 
         currentFilesDiv.append(delButton);
@@ -1176,7 +1185,16 @@ jQuery(document).ready(function() {
 
     $("#viewparameter").button().click(function()
     {
-         $( "#clistdialog" ).dialog("open");            
+        var listing = [];
+
+        $("#commandlist").children("li").each(function()
+        {
+            listing.push($(this).text());
+        });
+
+        $("#commandlist").data("prevlisting", listing);
+
+        $( "#clistdialog" ).dialog("open");
     });
 
     $( "#clistdialog" ).dialog({
@@ -1184,7 +1202,33 @@ jQuery(document).ready(function() {
         height: 440,
         width: 340,
         buttons: {
-                "OK": function() {
+                "OK": function()
+                {
+                    var prev = $("#commandlist").data("prevlisting");
+
+                    var cur = [];
+                    $("#commandlist").children("li").each(function()
+                    {
+                        cur.push($(this).text());
+                    });
+
+                    //Reorder the parameters in the command line                    
+                    if(prev !== cur)
+                    {
+                        var cmdline = $("#commandtextarea textarea").val();
+
+                        for(p=0; p <prev.length; p++)
+                        {
+                            cmdline = cmdline.replace(prev[p], "+++" + p + "***");
+                        }
+
+                        for(p=0;p<prev.length;p++)
+                        {
+                            cmdline = cmdline.replace("+++" + p + "***", cur[p]);
+                        }
+                    }
+
+                    $("#commandtextarea textarea").val(cmdline);
                     $( this ).dialog( "close" );
                 }
         },
