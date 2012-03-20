@@ -508,14 +508,14 @@ function updatefileformats()
                 fileformats = fileformats.substring(1, fileformats.length-1);
 
                 var result = fileformats.split(", ");
-                var mcat = $("select[name='fileformat']");
+                var mcat = $("select[name='mod_fileformat']");
 
                 for(i=0;i < result.length;i++)
                 {
                     mcat.append($("<option>" + result[i] + "</option>"));
                 }
 
-                $("select[name='fileformat']").multiselect('refresh');
+                $("select[name='mod_fileformat']").multiselect('refresh');
             }
         },
         dataType: "json"
@@ -615,28 +615,13 @@ function loadModuleInfo(module)
         }
     }
 
-
-    /*if(module["fileformat"] !== undefined)
+    if(module["fileformat"] !== undefined)
     {
         var fileformats = module["fileformat"];
         fileformats = fileformats.split(";");
-
-        for(i=0; i < fileformats.length;i++)
-        {
-            //var newfileformat = $("<option>" + fileformats[i] + "</option>");
-            var vals = $("select[name='fileformat']").val();
-            vals.push(fileformats[i]);
-            $("select[value='fileformat']").val(vals);
-
-            //alert("selection" + $("select[value='" + fileformats[i] + "']").html());
-            //$("select[name='fileformat', value='" + fileformats[i] + "']").attr('selected', true);
-
-            $(this).multiselect("refresh");
-        }
-    } */
-
-    //alert("module file format: " + module["fileformat"]);
-
+        $("select[name='mod_fileformat']").val(fileformats);
+        $("select[name='mod_fileformat']").multiselect("refresh");
+    }
 
     var supportFilesList = module.supportFiles;
     if(supportFilesList !== undefined && supportFilesList != null)
@@ -1076,6 +1061,7 @@ jQuery(document).ready(function() {
                     },
                     complete : function (response)
                     {
+                        // Work around a bug in the JSON handling of iframe-post-form
                         response = $.parseJSON($(response)[0].innerHTML);
                         if (response.error !== undefined)
                         {
@@ -1083,7 +1069,6 @@ jQuery(document).ready(function() {
                         }
                         else
                         {
-
                             if(jQuery.inArray(response.location, module_editor.uploadedfiles) == -1)
                             {
                                 module_editor.uploadedfiles.push(response.location);
@@ -1176,7 +1161,7 @@ jQuery(document).ready(function() {
         module_editor.supportfileinputs.push($(this));
     });
 
-    $("select[name='fileformat']").multiselect({
+    $("select[name='mod_fileformat']").multiselect({
         header: false,
         selectedList: 4 // 0-based index
     });
