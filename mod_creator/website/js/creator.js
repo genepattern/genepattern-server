@@ -44,6 +44,8 @@ function saveModule()
     var tasktype = $("select[name='category'] option:selected").val();
     var cpu = $("select[name='cpu'] option:selected").val();
     var commandLine = $('textarea[name="cmdtext"]').val();
+    var fileFormats = $('select[name="mod_fileformat"]').val();
+
     if(commandLine == undefined || commandLine == null || commandLine.length < 1)
     {
         alert("A command line must be specified");
@@ -60,7 +62,7 @@ function saveModule()
         "author": author, "privacy": privacy, "quality": quality,
         "language": language, "JVMLevel": lang_version, "cpuType": cpu, "taskType": tasktype, "version": version,
         "os": os, "commandLine": commandLine, "LSID": lsid, "supportFiles": supportFiles,
-        "filesToDelete": filesToDelete};
+        "filesToDelete": filesToDelete, "fileformat": fileFormats};
 
     json["parameters"] = getParametersJSON();
 

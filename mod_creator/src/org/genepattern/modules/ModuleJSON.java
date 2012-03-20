@@ -37,9 +37,11 @@ public class ModuleJSON extends JSONObject {
     public static final String SUPPORTFILES = "supportFiles";
     public static final String FILESTODELETE = "filesToDelete";
 
+
     public static final String KEY = "module";
 
     private String[] supportFiles;
+    private String fileFormats;
 
     //list of files that were in previous version of module that
     // were deleted in this updated version
@@ -62,7 +64,8 @@ public class ModuleJSON extends JSONObject {
             this.put(COMMAND_LINE, object.get(COMMAND_LINE));
             this.put(LSID, object.get(LSID));
             this.put(SUPPORTFILES, object.get(SUPPORTFILES));
-            this.put(FILESTODELETE, object.get(FILESTODELETE));            
+            this.put(FILESTODELETE, object.get(FILESTODELETE));
+            this.put(FILEFORMAT, object.get(FILEFORMAT));
         }
         catch (JSONException e) {
             log.error(e);
@@ -158,6 +161,27 @@ public class ModuleJSON extends JSONObject {
         this.put(NAME, name);
     }
 
+    public String getFileFormats()throws JSONException
+    {
+        if(fileFormats == null)
+        {
+            JSONArray files = (JSONArray)this.get(FILEFORMAT);
+            if(files != null)
+            {
+                fileFormats = "";
+                for(int i=0; i < files.length();i++)
+                {
+                    fileFormats += (String)files.get(i);
+                    if(i+1 < files.length())
+                    {
+                        fileFormats += GPConstants.PARAM_INFO_CHOICE_DELIMITER;
+                    }
+                }
+            }
+        }
+        return fileFormats;
+    }
+    
     public String[] getRemovedFiles()throws JSONException
     {
         if(removedFiles == null)

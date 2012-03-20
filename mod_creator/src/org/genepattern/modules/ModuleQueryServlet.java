@@ -326,11 +326,14 @@ public class ModuleQueryServlet extends HttpServlet
 
                 //omit module name and description from taskinfoattributes
                 if(!key.equals(ModuleJSON.NAME) && !key.equals(ModuleJSON.DESCRIPTION)
-                        && !key.equals(ModuleJSON.SUPPORTFILES) && !key.equals(ModuleJSON.FILESTODELETE))
+                        && !key.equals(ModuleJSON.SUPPORTFILES) && !key.equals(ModuleJSON.FILESTODELETE)
+                        && !key.equals(ModuleJSON.FILEFORMAT))
                 {
                     tia.put(key, moduleObject.get(key));
                 }
             }
+
+            tia.put(GPConstants.FILE_FORMAT, moduleObject.getFileFormats());
 
             //parse out privacy info
             int privacy = GPConstants.ACCESS_PRIVATE;
