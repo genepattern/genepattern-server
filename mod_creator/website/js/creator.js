@@ -833,7 +833,7 @@ function loadModuleInfo(module)
             currentFilesSelect.append(option);
         }
 
-        currentFilesDiv.find("a").css("font-size", "0.8125em");
+        currentFilesDiv.css("font-size", "0.8125em");
 
         currentFilesDiv.append("<br>");
         
@@ -858,7 +858,9 @@ function loadModuleInfo(module)
                 currentFilesDiv.find("p").remove();
                 currentFilesDiv.append("<p> Marked for deletion: " + deletionfiles + "</p>");
             }
+            currentFilesDiv.find("p").css("font-size", "0.9375em");            
         });
+        
         delButton.css("margin", "3px");
         currentFilesDiv.append(delButton);
         currentFilesDiv.append("<br><br>");
@@ -888,6 +890,20 @@ function loadParameterInfo(parameters)
         }
 
         var pfileformat = parameters[i].fileformat;
+
+        var type = parameters[i].type;
+        if(type == null || type == "")
+        {
+            newParameter.find("select[name='p_type']").val("Input File");
+            changeParameterType(newParameter.find("select[name='p_type']"));                                   
+        }
+
+        if(type == null || type == "java.lang.Integer" || type == "java.lang.Float")
+        {
+            newParameter.find("select[name='p_type']").val("Numeric");
+            changeParameterType(newParameter.find("select[name='p_type']"));
+        }
+        
         if(pfileformat !== undefined && pfileformat != null && pfileformat.length > 0)
         {
             newParameter.find("select[name='p_type']").val("Input File");

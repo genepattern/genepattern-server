@@ -70,10 +70,10 @@ public class ParametersJSON extends JSONObject {
     {
         try {
             HashMap pAttrs = pInfo.getAttributes();
-
             this.put(NAME, pInfo.getName());
             this.put(DESCRIPTION, pInfo.getDescription());
-            this.put(TYPE, pAttrs.get(GPConstants.PARAM_INFO_TYPE[0]));
+            this.put(type, pAttrs.get(GPConstants.PARAM_INFO_TYPE[0]));
+            this.put(TYPE, pAttrs.get(ParameterInfo.TYPE));            
             this.put(MODE, pAttrs.get(ParameterInfo.MODE));
             this.put(FILEFORMAT, pAttrs.get(GPConstants.FILE_FORMAT));
             this.put(DEFAULT_VALUE, pInfo.getDefaultValue());
@@ -96,8 +96,6 @@ public class ParametersJSON extends JSONObject {
                 }
             }
             this.put(CHOICES, choices);
-
-            // this.put(VALUE, object.get(VALUE));
         }
         catch (Exception e) {
             log.error("Error creating parameter JSON from from ParameterInfo object");
