@@ -28,6 +28,12 @@ var Request = {
 function saveModule()
 {
     var modname = $('#modtitle').val();
+    if(modname == undefined || modname == null || modname.length < 1)
+    {
+        alert("A module name must be specified");
+        return;
+    }
+
     var description = $('textarea[name="description"]').val();
     var author = $('input[name="author"]').val();
     var privacy = $('select[name="privacy"] option:selected').val();
@@ -38,6 +44,12 @@ function saveModule()
     var tasktype = $("select[name='category'] option:selected").val();
     var cpu = $("select[name='cpu'] option:selected").val();
     var commandLine = $('textarea[name="cmdtext"]').val();
+    if(commandLine == undefined || commandLine == null || commandLine.length < 1)
+    {
+        alert("A command line must be specified");
+        return;
+    }
+
     var lsid = module_editor.lsid;
     var supportFiles = module_editor.uploadedfiles;
     var version = $('input[name="comment"]').val();
@@ -371,7 +383,7 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
     {
         prevtext = prevflag + prevdelimiter + prevtext;
     }
-    
+
     //if no change in value do nothing
     if(prevtext == text)
     {
@@ -383,8 +395,7 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
 
     $('#commandlist').children().each(function()
     {
-
-        //decode the prevtext string first and compare it 
+        //decode the prevtext string first and compare it
         if($(this).text() ==  $('<div/>').html(prevtext).text())
         {
             if(text !== "")
@@ -438,7 +449,6 @@ function updateparameter(parameter)
     pelement.val(pelementval);
     
     var pname_newval = pelement.val();
-
     var pflag_newval = felement.val();
     if(parameter.find("input[name='p_prefix'").is(":checked"))
     {
@@ -466,7 +476,6 @@ function updateparameter(parameter)
     delement.data('oldVal',  delimiter);
 
     addtocommandline(pflag_newval, pname_newval, delimiter, pflag_oldval, pname_oldval, prevdelimiter);
-
 }
 
 function changeParameterType(element)
@@ -804,7 +813,7 @@ function loadModuleInfo(module)
 
         $("#supportfilecontent").prepend(currentFilesDiv);
 
-        var currentFilesSelect = $("<select name='currentfiles'><select>");
+        var currentFilesSelect = $("<select name='currentfiles' multiple='multiple'><select>");
         supportFilesList = supportFilesList.split(";");
         for(s=0;s<supportFilesList.length;s++)
         {
@@ -823,19 +832,27 @@ function loadModuleInfo(module)
             selectedList: 1 // 0-based index
         });
 
-        var delButton = $("<button>delete</button>").button().click(function()
+        var delButton = $("<button>Mark for deletion</button>").button().click(function()
         {
             var selectedVals = $("select[name='currentfiles']").val();
-            //alert('selected vals: ' + $("select[name='currentfiles']").val());
-           // if(selectedVals.length > 1)
-           // for(v=0; v < selectedVals.length; v++)
-           // {
+            alert("selected vals length" + selectedVals.length);
+            for(v=0; v < selectedVals.length; v++)
+            {
                 module_editor.filesToDelete.push(selectedVals[v]);
-            //}
-        });
+            }
 
+            var deletionfiles = module_editor.filesToDelete;
+
+            if(deletionfiles !== null && deletionfiles !== "")
+            {
+                $("#removedlist").clear();
+                $("#removedlist").append("<span>"+ deletionfiles + "</span");
+            }
+        });
+        delButton.css("margin", "3px");
         currentFilesDiv.append(delButton);
-        currentFilesDiv.append("<br><br>");        
+        currentFilesDiv.append("<div id='removedlist'></div>");
+        currentFilesDiv.append("<br>");
     }
 }
 
@@ -859,7 +876,7 @@ function loadParameterInfo(parameters)
         {
             newParameter.find("input[name='p_prefix']").attr('checked', true);
             newParameter.find("input[name='p_flag']").val(prefix);
-        } 
+        }
 
         var pfileformat = parameters[i].fileformat;
         if(pfileformat !== undefined && pfileformat != null && pfileformat.length > 0)
@@ -911,9 +928,11 @@ function loadModule(taskId)
 function getParametersJSON()
 {
     var parameters = [];
-
+    var parameterNames = [];
+    var pnum = 0;
     $(".parameter").each(function()
     {
+        pnum = pnum +1;
         var pname = $(this).find("input[name='p_name']").val();
         var description = $(this).find("textarea[name='p_description']").val();
         var type = $(this).find("select[name='p_type'] option:selected").val();
@@ -924,6 +943,11 @@ function getParametersJSON()
         var mode = "";
         var prefix = "";
 
+        if(pname == undefined || pname == null || pname.length < 1)
+        {
+            alert("A parameter name must be specified for parameter number " + pnum);
+            return;
+        }
         //this is an input file type
         if(type === "Input File")
         {
