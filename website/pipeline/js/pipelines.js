@@ -556,10 +556,30 @@ var editor = {
                     editor.workspace["pipelineVersionComment"] = "";
                     editor._cleanAfterSave();
                 }
+                // Add new version to the modules map
+                // TODO: Add in this funtionality in a way that works
+                //if (newLsid !== undefined && newLsid !== null) {
+                //    var baseLsid = editor.extractBaseLsid(newLsid);
+                //    library.moduleVersionMap[baseLsid].push(editor.bundleAsModule());
+                //    library.loadInit = false;
+                //}
             },
             dataType: "json"
         });
 	},
+
+    bundleAsModule: function() {
+        var moduleJSON = {
+            name: editor.workspace["pipelineName"],
+            lsid: editor.workspace["pipelineLsid"],
+            version: editor.workspace["pipelineVersion"],
+            category: "pipeline",
+            write: true,
+            outputs: [],
+            inputs: []
+        };
+        return new Pipeline(moduleJSON);
+    },
 
     hasErrors: function() {
         for (var i in editor.workspace) {
@@ -584,7 +604,7 @@ var library = {
     moduleCategoryMap: {},  // A map of all module categories to an array of modules in that category
     modules: {},			// The JSON structure of all modules in the library
     recent: [],             // List of recently used modules
-    _loadInit: false,       // Whether the load pipeline dialog has been initialized or not
+    loadInit: false,       // Whether the load pipeline dialog has been initialized or not
 
     init: function(moduleJSON) {
         this._readModules(moduleJSON);
@@ -897,9 +917,10 @@ var library = {
 
     displayLoadDialog: function() {
         var moduleList = new Array();
-        if (!this._loadInit) {
+        if (!this.loadInit) {
             // Get the Dialog List Div
             var pipelineList = $("#pipelineSelectList")[0];
+            $("#pipelineSelectList").children().remove();
 
             // Read Pipelines from List
             for (var i in library.moduleVersionMap) {
@@ -952,7 +973,7 @@ var library = {
             });
 
             // Set to initialized
-            this._loadInit = true;
+            this.loadInit = true;
         }
 
         $("#loadPipelineDialog").dialog("open");
@@ -1619,7 +1640,7 @@ function Module(moduleJSON) {
         // Mark the error flag if there is a missing required param
         for (var i = 0; i < this.inputs.length; i++) {
             var input = this.inputs[i];
-            if (input.required && input.value === "" && !input.used) {
+            if (input.required && input.value === "" && !input.used && input.promptWhenRun !== true) {
                 showErrorIcon = true;
                 this.alerts[input.name] = new Alert(input.name, "ERROR", "Required parameter " + input.name + " is not set!");
             }
