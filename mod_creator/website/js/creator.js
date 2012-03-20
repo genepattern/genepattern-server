@@ -290,6 +290,7 @@ function addparameter()
                                     tSelect.parent().parent().find("input[name='choicelist']").each(function()
                                     {
                                         $(this).val(choicelist);
+                                        $(this).data("prevVal", choicelist);
                                         tSelect.data('editing', "Choice");
                                     });
 
@@ -309,6 +310,18 @@ function addparameter()
 
                 $(this).parent().after(editChoiceList);
                 editChoiceList.append(editChoiceLink);
+
+                $("input[name='choicelist']").change(function()
+                {
+                    var prevVal = $(this).data("prevVal");
+                    var curVal = $(this).val();
+                    if(prevVal !== curVal)
+                    {
+                        $(this).val(prevVal);
+                        alert("The choice cannot be edited from here. Please use the edit choice link.");
+                    }
+                });
+
             }
             else if(value == "Input File")
             {
@@ -922,6 +935,8 @@ function loadParameterInfo(parameters)
             newParameter.find("select[name='p_type']").trigger("change");
 
             newParameter.find('input[name="choicelist"]').val(choices);
+            newParameter.find('input[name="choicelist"]').data("prevVal", choices);            
+
         }
 
         updateparameter(newParameter);
