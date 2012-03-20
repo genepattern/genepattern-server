@@ -87,6 +87,8 @@ function saveModule()
         },
         dataType: "json"
     });
+
+    module_editor.filesToDelete = [];
 }
 
 function editModule()
@@ -835,23 +837,21 @@ function loadModuleInfo(module)
         var delButton = $("<button>Mark for deletion</button>").button().click(function()
         {
             var selectedVals = $("select[name='currentfiles']").val();
-            alert("selected vals length" + selectedVals.length);
+            module_editor.filesToDelete = [];
             for(v=0; v < selectedVals.length; v++)
             {
                 module_editor.filesToDelete.push(selectedVals[v]);
             }
 
             var deletionfiles = module_editor.filesToDelete;
-
             if(deletionfiles !== null && deletionfiles !== "")
             {
-                $("#removedlist").clear();
-                $("#removedlist").append("<span>"+ deletionfiles + "</span");
+                currentFilesDiv.find("p").remove();
+                currentFilesDiv.append("<p> Marked for deletion: " + deletionfiles + "</p>");
             }
         });
         delButton.css("margin", "3px");
         currentFilesDiv.append(delButton);
-        currentFilesDiv.append("<div id='removedlist'></div>");
         currentFilesDiv.append("<br>");
     }
 }
