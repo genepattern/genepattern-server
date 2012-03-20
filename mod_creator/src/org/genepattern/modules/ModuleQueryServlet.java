@@ -1,9 +1,6 @@
 package org.genepattern.modules;
 
-import org.genepattern.webservice.TaskInfoCache;
-import org.genepattern.webservice.TaskInfo;
-import org.genepattern.webservice.TaskInfoAttributes;
-import org.genepattern.webservice.ParameterInfo;
+import org.genepattern.webservice.*;
 import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.DirectoryManager;
@@ -329,7 +326,7 @@ public class ModuleQueryServlet extends HttpServlet
 
                 //omit module name and description from taskinfoattributes
                 if(!key.equals(ModuleJSON.NAME) && !key.equals(ModuleJSON.DESCRIPTION)
-                        && !key.equals(ModuleJSON.SUPPORTFILES))
+                        && !key.equals(ModuleJSON.SUPPORTFILES) && !key.equals(ModuleJSON.FILESTODELETE))
                 {
                     tia.put(key, moduleObject.get(key));
                 }
@@ -380,19 +377,44 @@ public class ModuleQueryServlet extends HttpServlet
                 pInfo[i] = parameter;
             }
 
-            String newLsid = GenePatternAnalysisTask.installNewTask(name, description, pInfo, tia, username, privacy,
-            new Status() {
-                    public void beginProgress(String string) {
-                    }
-                    public void continueProgress(int percent) {
-                    }
-                    public void endProgress() {
-                    }
-                    public void statusMessage(String message) {
-                    }
-            });
+            String newLsid = null;
+            if(moduleObject.getLsid() == null || moduleObject.getLsid().equals(""))
+            {
+                newLsid = GenePatternAnalysisTask.installNewTask(name, description, pInfo, tia, username, privacy,
+                    new Status() {
+                        public void beginProgress(String string) {
+                        }
+                        public void continueProgress(int percent) {
+                        }
+                        public void endProgress() {
+                        }
+                        public void statusMessage(String message) {
+                        }
+                });
+            }
+            else
+            {
+                //we are modifying a task
+                LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
+                javax.activation.DataHandler[] supportFiles = null;
+                String[] supportFileNames = null;
+                try {
+                      supportFiles = taskIntegratorClient.getSupportFiles(moduleObject.getLsid());
+                      supportFileNames = taskIntegratorClient.getSupportFileNames(moduleObject.getLsid());
+                } catch(WebServiceException wse) {
+                }
 
+                newLsid = taskIntegratorClient.modifyTask(privacy,
+                    moduleObject.getName(),
+                    moduleObject.getDescription(),
+                    pInfo,
+                    tia,
+                    supportFiles,
+                    supportFileNames);
+            }
             //copy support files from temp to the module taskLib
+            String[] filesToDelete = moduleObject.getRemovedFiles();
+
             String[] supportFiles = moduleObject.getSupportFiles();
             TaskInfo taskInfo = TaskInfoCache.instance().getTask(newLsid);
 
@@ -400,6 +422,7 @@ public class ModuleQueryServlet extends HttpServlet
 
             if(taskLibDir != null)
             {
+                deleteRemovedFiles(filesToDelete, new File(taskLibDir));
                 moveSupportFiles(supportFiles, new File(taskLibDir));
             }
             else
@@ -421,6 +444,27 @@ public class ModuleQueryServlet extends HttpServlet
         }
     }
 
+    private void deleteRemovedFiles(String[] files, File copyTo) throws Exception
+    {
+        if (copyTo == null || !copyTo.isDirectory()) {
+            throw new Exception("Attempting to remove files from a location that is not a directory");
+        }
+
+        for (String path : files)
+        {
+            File file = new File(copyTo, path);
+            if (!file.exists()) {
+                throw new Exception("Attempting to delete a file that does not exist: " + path);
+            }
+
+            //Delete file from directory
+            boolean success = file.delete();
+            if (!success) {
+                throw new Exception("Unable to delete file: " + file.getName());
+            }
+        }
+    }
+
     private void moveSupportFiles(String[] files, File copyTo) throws Exception {
         if (copyTo == null || !copyTo.isDirectory()) {
             throw new Exception("Attempting to copy files to a location that is not a directory");
@@ -429,7 +473,7 @@ public class ModuleQueryServlet extends HttpServlet
         for (String path : files) {
             File file = new File(path);
             if (!file.exists()) {
-                throw new Exception("Attempting to move file that does not exist: " + path);
+                throw new Exception("Attempting to move a file that does not exist: " + path);
             }
 
             // Move file to new directory

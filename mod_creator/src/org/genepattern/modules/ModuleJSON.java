@@ -35,10 +35,16 @@ public class ModuleJSON extends JSONObject {
     public static final String COMMAND_LINE = "commandLine";
     public static final String FILEFORMAT = "fileformat";    
     public static final String SUPPORTFILES = "supportFiles";
+    public static final String FILESTODELETE = "filesToDelete";
 
     public static final String KEY = "module";
 
     private String[] supportFiles;
+
+    //list of files that were in previous version of module that
+    // were deleted in this updated version
+    private String[] removedFiles;
+
 
     public ModuleJSON(JSONObject object) {
         try {
@@ -56,6 +62,7 @@ public class ModuleJSON extends JSONObject {
             this.put(COMMAND_LINE, object.get(COMMAND_LINE));
             this.put(LSID, object.get(LSID));
             this.put(SUPPORTFILES, object.get(SUPPORTFILES));
+            this.put(FILESTODELETE, object.get(FILESTODELETE));            
         }
         catch (JSONException e) {
             log.error(e);
@@ -149,6 +156,24 @@ public class ModuleJSON extends JSONObject {
 
     public void setName(String name) throws JSONException {
         this.put(NAME, name);
+    }
+
+    public String[] getRemovedFiles()throws JSONException
+    {
+        if(removedFiles == null)
+        {
+            JSONArray files = (JSONArray)this.get(FILESTODELETE);
+            if(files != null)
+            {
+                removedFiles = new String[files.length()];
+                for(int i=0; i < files.length();i++)
+                {
+                    removedFiles[i] = (String)files.get(i);
+                }
+            }
+        }
+
+        return removedFiles;
     }
 
     public String[] getSupportFiles()throws JSONException
