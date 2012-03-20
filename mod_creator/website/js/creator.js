@@ -164,7 +164,7 @@ function addparameter()
         $(this).parent().parent().remove();
     });
 
-    $("select[name='p_type']").change(function()
+    $("select[name='p_type']").live("change", function()
     {
         var tSelect = $(this);
         var value = $(this).val();
@@ -400,22 +400,11 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
     if(!found && text !== "")
     {
         $('#commandlist').append(item);
-            //add ability to select new parameter in list
-            item.click(function() {
-           /* if (!$(this).hasClass("ui-selected"))
-            {
-                $(this).addClass("ui-selected").siblings().removeClass("ui-selected");
-            }
-            else
-            {
-                $(this).removeClass("ui-selected");
-            } */
-        });
     }
 
     //update the cmd line text area
-    //var cmd_args = $('#commandlist').text();
     var cmd_args="";
+    var cmdline= $("#commandtextarea textarea").val();    
     $('#commandlist').children('li').each(function()
     {
         var val = $(this).text();
@@ -424,14 +413,16 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
             //add space between arguments;
             cmd_args += " ";
         }
-        cmd_args += val;
+
+        if(cmdline.indexOf(val) == -1)
+        {
+            cmd_args += val;
+        }
     });
 
-    var cmdline = cmd_args;
-    var cmdtype = $("#commandtextarea textarea").data("type");
-    if(cmdtype !== undefined)
-        cmdline = cmdtype + " " + cmdline; 
-    $("#commandtextarea textarea").attr("value", cmdline);
+
+    cmdline = cmdline + cmd_args;
+    $("#commandtextarea textarea").val(cmdline);
 }
 
 //update the specific parameter div
@@ -440,7 +431,12 @@ function updateparameter(parameter)
     var pelement = parameter.find("input[name='p_name']");
     var felement = parameter.find("input[name='p_flag']");
     var pname_newval = pelement.val();
+
     var pflag_newval = felement.val();
+    if(parameter.find("input[name='p_prefix'").is(":checked"))
+    {
+        pflag_newval = "";
+    }
 
     var pname_oldval = pelement.data('oldVal');
     var pflag_oldval = felement.data('oldVal');
@@ -464,6 +460,165 @@ function updateparameter(parameter)
 
     addtocommandline(pflag_newval, pname_newval, delimiter, pflag_oldval, pname_oldval, prevdelimiter);
 
+}
+
+function changeParameterType(element)
+{
+    var value = element.val();
+
+    if(element.data("editing") !== value)
+    {
+        if(!element.parent().next().children().is("input[name='p_prefix']"))
+        {
+            element.parent().next().remove();
+        }
+
+        if(value == "Choice")
+        {
+            //added as a workaround - check for duplicate calls to this function
+            var editChoiceList = $("<td><input type='text' name='choicelist' size='40'/></td>");
+            var editChoiceLink = $("<a href='#'>edit choice</a>");
+
+            editChoiceLink.click(function()
+            {
+                var choices = $(this).prev().val();
+
+                $( "#editchoicedialog" ).dialog({
+                    autoOpen: true,
+                    height: 500,
+                    width: 360,
+                    create: function()
+                    {
+                        $(this).find("tr td").remove();
+
+                        var result = choices.split(';');
+                        if(result == null || result == "" || result.length < 0)
+                        {
+                            //start with two rows of data
+                            var trowdef = $("<tr><td> <input type='text' name='choicen' size='15'/> </td>" +
+                                 "<td> <input type='text' name='choicev' size='15'/> </td>" +
+                                 "<td> <button> X </button></td></tr>");
+
+                            trowdef.find("button").button().click(function()
+                            {
+                                    $(this).parent().parent().remove();
+                            });
+
+                            var trowdef2 = $("<tr><td> <input type='text' name='choicen' size='15'/> </td>" +
+                                 "<td> <input type='text' name='choicev' size='15'/> </td>" +
+                                 "<td> <button> X </button></td></tr>");
+
+                            trowdef2.find("button").button().click(function()
+                            {
+                                    $(this).parent().parent().remove();
+                            });
+
+                            $(this).find("table").append(trowdef);
+                            $(this).find("table").append(trowdef2);
+                            return;
+                        }
+
+                        for(i=0;i<result.length;i++)
+                        {
+                            var rowdata = result[i].split("=");
+
+                            if(rowdata.length > 1)
+                            {
+                                var trow = $("<tr><td> <input type='text' name='choicen' size='15' value='"
+                                            + rowdata[0] +"'/> </td>" +
+                                        "<td> <input type='text' name='choicev' size='15'value='"
+                                         + rowdata[1] + "'/> </td>" +
+                                        "<td> <button> X </button></td></tr>");
+
+                                trow.find("button").button().click(function()
+                                {
+                                    $(this).parent().parent().remove();
+                                });
+
+                                $(this).find("table").append(trow);
+                            }
+                        }
+                    },
+                    buttons: {
+                            "OK": function() {
+                                var choicelist = "";
+                                $(this).find("tr").each(function()
+                                {
+                                    var dvalue = $(this).find("td input[name='choicen']").val();
+                                    var value = $(this).find("td input[name='choicev']").val();
+
+                                    if((dvalue == undefined && value == undefined)
+                                       || (dvalue == "" && value==""))
+                                    {
+                                        return;
+                                    }
+
+                                    if(choicelist !== "")
+                                    {
+                                        choicelist += ";";
+                                    }
+                                    choicelist += dvalue + "=" + value;
+                                });
+
+                                element.parent().parent().find("input[name='choicelist']").each(function()
+                                {
+                                    $(this).val(choicelist);
+                                    element.data('editing', "Choice");
+                                });
+
+                                $( this ).dialog( "destroy" );
+                            },
+                            "Cancel": function() {
+                                    var choiceListElement = $("input[name='choicelist']");
+                                    choiceListElement.parent().next().data('editing', false);
+                                $( this ).dialog( "destroy" );
+                            }
+                    },
+                    resizable: true
+                });
+            });
+
+            element.data("editing", "Choice");
+
+            element.parent().after(editChoiceList);
+            editChoiceList.append(editChoiceLink);
+        }
+        else if(value == "Input File")
+        {
+            var fileFormatList = $('<select multiple="multiple" name="fileformat"></select>');
+            var fileFormatButton = $('<button id="addinputfileformat">New</button>');
+
+            fileFormatButton.click(function()
+            {
+                $( "#addfileformatdialog" ).dialog("open");
+            });
+
+            //copy option values from the modules output file format list that was generated earlier
+            $('select[name="mod_fileformat"]').children("option").each(function()
+            {
+                fileFormatList.append("<option>" + $(this).val() + "</option>");
+            });
+
+            var fileFormatTD = $("<td></td>");
+            element.parent().after(fileFormatTD);
+
+            //hide TD so that default select appearance does not appear in UI
+            fileFormatTD.hide();
+            fileFormatTD.append(fileFormatList);
+            fileFormatTD.append(fileFormatButton);
+            fileFormatTD.show();
+            fileFormatList.multiselect({
+                header: false,
+                selectedList: 4 // 0-based index
+            });
+
+            element.data("editing", "Input File");
+        }
+        else
+        {
+            element.data('editing', "");
+        }
+    }
 }
 
 function updatemodulecategories()
@@ -583,7 +738,10 @@ function loadModuleInfo(module)
             $('select[name="language"]').val("any");
         }
 
-        $("select[name='c_type']").val(module["language"]);
+        if(module["language"] == "Java" || module["language"] == "Perl")
+        {
+            $("select[name='c_type']").val(module["language"]);
+        }
     }
 
     if(module["os"] !== undefined)
@@ -606,17 +764,19 @@ function loadModuleInfo(module)
         $('textarea[name="cmdtext"]').val(module["commandLine"]);
 
         var cmdtype = $("select[name='c_type']").val();
-        if(cmdtype === "Custom")
+        if(cmdtype === "Custom" || cmdtype == null)
         {
             if(module["commandLine"].indexOf("<java>") != -1 &&
                     module["commandLine"].indexOf("<java>") < 1)
             {
                 $("select[name='c_type']").val("Java");
+                $("#commandtextarea textarea").data("type", "<java>");                
             }
             if(module["commandLine"].indexOf("<perl>") != -1 &&
                     module["commandLine"].indexOf("<perl>") < 1)
             {
                 $("select[name='c_type']").val("Perl");
+                $("#commandtextarea textarea").data("type", "<perl>");
             }
         }
     }
@@ -685,27 +845,19 @@ function loadParameterInfo(parameters)
         if(prefix !== undefined && prefix !== null && prefix.length > 0)
         {
             newParameter.find("input[name='p_prefix']").attr('checked', true);
+            newParameter.find("input[name='p_flag']").val(prefix);
         } 
 
-       /* var fileformat = parameters[i].fileformat;
-        if(fileformat !== undefined && fileformat.length > 0)
+        var pfileformat = parameters[i].fileformat;
+        if(pfileformat !== undefined && pfileformat != null && pfileformat.length > 0)
         {
             newParameter.find("select[name='p_type']").val("Input File");
-            newParameter.find("select[name='p_type']").trigger("change");
+            changeParameterType(newParameter.find("select[name='p_type']"));
             
-            var fileformatlist = fileformat.split(";");
-            var vals = [];
-            //for(p=0; p<fileformatlist.length; p++)
-            //{
-            //    vals[p] = fileformatlist[p];
-            //} 
-
-            //newParameter.find("select[name='fileformat']").val(vals);
-
-            //alert(fileformatlist);
-
-            //newParameter.find("select[name='fileformat']").multiselect('refresh');
-        }*/
+            var pfileformatlist = pfileformat.split(";");
+            newParameter.find("select[name='fileformat']").val(pfileformatlist);
+            newParameter.find("select[name='fileformat']").multiselect('refresh');
+        }
 
         var choices = parameters[i].choices;
         if(choices !== undefined && choices !== null && choices.length > 0)
@@ -1112,7 +1264,7 @@ jQuery(document).ready(function() {
        
 
         $("#commandtextarea textarea").data("type", "<" + type +">");
-        $("#commandtextarea textarea").attr("value", cmdlinetext);
+        $("#commandtextarea textarea").val(cmdlinetext);
     });
 
     $(".supportfile").live("change", function()
