@@ -344,10 +344,6 @@ var editor = {
         return this._tLayoutManager(module);
 	},
 
-	smartPipeSelection: function(output, input) {
-
-	},
-
     _spacesToPeriods: function(string) {
         return string.replace(/ /g, ".");
     },
@@ -1146,6 +1142,7 @@ var properties = {
         }
         parentDiv.appendChild(checkBox);
         parentDiv.innerHTML += " ";
+        return checkBox;
     },
 
     _addFileUpload: function(labelText, value, description, pwr, disabled) {
@@ -1158,7 +1155,7 @@ var properties = {
         label.appendChild(uploadForm);
 
         if (pwr) {
-            this._addPromptWhenRun(uploadForm, labelText, value, disabled);
+            var checkBox = this._addPromptWhenRun(uploadForm, labelText, value, !pwr && disabled);
         }
 
         uploadForm.innerHTML += this._encodeToHTML(labelText) + " ";
@@ -1231,6 +1228,18 @@ var properties = {
         $("[name='" + labelText + "'][type=file]").change(function() {
             $("[name='" + labelText + "_form']").submit();
         });
+
+        // When the prompt when run checkbox is checked, enable or disable upload
+        if (checkBox !== undefined && checkBox !== null) {
+            $(".propertyCheckBox[type='checkbox'][name='" + labelText + "']").change(function() {
+                if ($(this).is(":checked")) {
+                    $(".propertyValue[type='file'][name='" + labelText + "']")[0].setAttribute("disabled", "true");
+                }
+                else {
+                    $(".propertyValue[type='file'][name='" + labelText + "']")[0].removeAttribute("disabled");
+                }
+            });
+        }
 
         return fileUpload;
     },
@@ -1315,6 +1324,9 @@ var properties = {
         var disabled = false;
         if (input.port !== null) {
             displayValue = "Receiving output " + input.port.pointer + " from " + input.port.module.name;
+            disabled = true;
+        }
+        if (input.promptWhenRun) {
             disabled = true;
         }
         return this._addFileUpload(input.name + required, displayValue, input.description, true, disabled);
