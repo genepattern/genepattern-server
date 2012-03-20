@@ -152,6 +152,7 @@ var editor = {
         var newPipe = this.addPipe(newIn, newOut);
 
         input.module.getMasterInput().detachAll();
+        input.module.checkForWarnings();
 	},
 
 	_nextId: function() {
@@ -1313,7 +1314,7 @@ var properties = {
         var displayValue = input.promptWhenRun ? properties.PROMPT_WHEN_RUN : input.value;
         var disabled = false;
         if (input.port !== null) {
-            displayValue = "Receiving output <strong>" + input.port.pointer + "</strong> from <strong>" + input.port.module.name + "</strong>";
+            displayValue = "Receiving output " + input.port.pointer + " from " + input.port.module.name;
             disabled = true;
         }
         return this._addFileUpload(input.name + required, displayValue, input.description, true, disabled);
@@ -1579,11 +1580,17 @@ function Module(moduleJSON) {
                 this.inputs[i].promptWhenRun = false;
                 if (!(this.inputs[i].isFile() && value === "")) {
                     this.inputs[i].value = value;
-                    showFileIcon = true;
                 }
                 // Set the file icon if necessary
                 if (value !== "" && this.inputs[i].isFile()) {
+                    this.inputs[i].value = value;
                     showFileIcon = true;
+                }
+                if (value === "" && this.inputs[i].isFile() && this.inputs[i].value !== "" && this.inputs[i].value !== properties.PROMPT_WHEN_RUN) {
+                    showFileIcon = true;
+                }
+                if (this.inputs[i].isFile() && value === "" && this.inputs[i].value === properties.PROMPT_WHEN_RUN) {
+                    this.inputs[i].value = value;
                 }
             }
         }
