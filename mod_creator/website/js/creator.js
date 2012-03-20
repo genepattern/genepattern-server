@@ -403,13 +403,13 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
     var found = false;
 
     var cmdline= $("#commandtextarea textarea").val();
-
+    var decodedPrevText = $('<div/>').html(prevtext).text();
+   
     var decodedText = $('<div/>').html(text).text();
 
     $('#commandlist').children().each(function()
     {
         //decode the prevtext string first and compare it
-        var decodedPrevText = $('<div/>').html(prevtext).text();
         if($(this).text() ==  decodedPrevText)
         {
             if(text !== "")
@@ -432,9 +432,14 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
     if(!found && text !== "")
     {
         $('#commandlist').append(item);
-        cmdline += " " + decodedText;
-        alert("append cmdline: " + cmdline);
-        $("#commandtextarea textarea").val(cmdline);        
+
+        //if argument is already in command which will occur if this is
+        // a module edit
+        if(cmdline.indexOf(decodedText) == -1)
+        {
+            cmdline += " " + decodedText;
+            $("#commandtextarea textarea").val(cmdline);
+        }
     }
 }
 
