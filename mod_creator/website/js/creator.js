@@ -758,9 +758,15 @@ function loadModuleInfo(module)
             $('select[name="language"]').val("any");
         }
 
-        if(module["language"] == "Java" || module["language"] == "Perl")
+        if(module["language"] == "Java")
         {
             $("select[name='c_type']").val(module["language"]);
+            $("#commandtextarea textarea").data("type", "<java>");
+        }
+        if(module["language"] == "Perl")
+        {
+            $("select[name='c_type']").val(module["language"]);
+            $("#commandtextarea textarea").data("type", "<perl>");
         }
     }
 
