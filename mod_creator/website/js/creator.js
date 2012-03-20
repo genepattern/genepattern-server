@@ -430,6 +430,10 @@ function updateparameter(parameter)
 {
     var pelement = parameter.find("input[name='p_name']");
     var felement = parameter.find("input[name='p_flag']");
+
+    var pelementval = pelement.val().replace(" ", ".");
+    pelement.val(pelementval);
+    
     var pname_newval = pelement.val();
 
     var pflag_newval = felement.val();
@@ -1321,4 +1325,6 @@ jQuery(document).ready(function() {
         header: false,
         selectedList: 4 // 0-based index
     });
+
+    $("#helpbtn").button();
 });
