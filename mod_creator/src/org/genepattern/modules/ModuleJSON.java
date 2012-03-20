@@ -165,10 +165,11 @@ public class ModuleJSON extends JSONObject {
     {
         if(fileFormats == null)
         {
+            fileFormats = "";
+
             JSONArray files = (JSONArray)this.get(FILEFORMAT);
             if(files != null)
             {
-                fileFormats = "";
                 for(int i=0; i < files.length();i++)
                 {
                     fileFormats += (String)files.get(i);

@@ -46,6 +46,11 @@ function saveModule()
     var commandLine = $('textarea[name="cmdtext"]').val();
     var fileFormats = $('select[name="mod_fileformat"]').val();
 
+    if(fileFormats == null)
+    {
+        fileFormats = [];
+    }
+
     if(commandLine == undefined || commandLine == null || commandLine.length < 1)
     {
         alert("A command line must be specified");
@@ -828,6 +833,8 @@ function loadModuleInfo(module)
             currentFilesSelect.append(option);
         }
 
+        currentFilesDiv.find("a").css("font-size", "0.8125em");
+
         currentFilesDiv.append("<br>");
         
         currentFilesDiv.append(currentFilesSelect);
@@ -854,7 +861,7 @@ function loadModuleInfo(module)
         });
         delButton.css("margin", "3px");
         currentFilesDiv.append(delButton);
-        currentFilesDiv.append("<br>");
+        currentFilesDiv.append("<br><br>");
     }
 }
 
