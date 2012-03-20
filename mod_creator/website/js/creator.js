@@ -577,6 +577,12 @@ function loadModuleInfo(module)
     if(module["language"] !== undefined)
     {
         $('select[name="language"]').val(module["language"]);
+
+        if($('select[name="language"]').val() == null)
+        {
+            $('select[name="language"]').val("any");
+        }
+
         $("select[name='c_type']").val(module["language"]);
     }
 
@@ -701,18 +707,16 @@ function loadParameterInfo(parameters)
             //newParameter.find("select[name='fileformat']").multiselect('refresh');
         }*/
 
-        //alert("choices1: " + parameters[i].choices);
-        //var choices = parameters[i].choices;
-        ////if(choices !== undefined && choices !== null && choices.length > 0)
-        ////{
-         ////   newParameter.find("select[name='p_type']").val("Choice");
-         ////   newParameter.find("select[name='p_type']").trigger("change");
+        var choices = parameters[i].choices;
+        if(choices !== undefined && choices !== null && choices.length > 0)
+        {
+            newParameter.find("select[name='p_type']").val("Choice");
+            newParameter.find("select[name='p_type']").trigger("change");
 
-         ////   newParameter.find('input[name="choicelist"]').val(parameters[i].choices);
-            //alert("alert choices val:" + newParameter.find('input[name="choicelist"]').val());
-       //// }
+            newParameter.find('input[name="choicelist"]').val(choices);
+        }
 
-        //updateparameter(newParameter);
+        updateparameter(newParameter);
     }
 }
 
