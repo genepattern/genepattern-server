@@ -1,3 +1,14 @@
+/*
+ The Broad Institute
+ SOFTWARE COPYRIGHT NOTICE AGREEMENT
+ This software and its documentation are copyright (2003-2012) by the
+ Broad Institute. All rights are reserved.
+
+ This software is supplied without any warranty or guaranteed support
+ whatsoever. The Broad Institute cannot be responsible for its
+ use, misuse, or functionality.
+*/
+
 package org.genepattern.modules;
 
 import org.json.JSONObject;
@@ -11,11 +22,8 @@ import org.genepattern.util.GPConstants;
 import java.io.File;
 
 /**
- * Created by IntelliJ IDEA.
  * User: nazaire
  * Date: Mar 12, 2012
- * Time: 11:08:54 PM
- * To change this template use File | Settings | File Templates.
  */
 public class ModuleJSON extends JSONObject {
     public static Logger log = Logger.getLogger(ModuleJSON.class);

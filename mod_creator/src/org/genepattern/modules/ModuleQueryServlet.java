@@ -1,3 +1,14 @@
+/*
+ The Broad Institute
+ SOFTWARE COPYRIGHT NOTICE AGREEMENT
+ This software and its documentation are copyright (2003-2012) by the
+ Broad Institute. All rights are reserved.
+
+ This software is supplied without any warranty or guaranteed support
+ whatsoever. The Broad Institute cannot be responsible for its
+ use, misuse, or functionality.
+*/
+
 package org.genepattern.modules;
 
 import org.genepattern.webservice.*;
