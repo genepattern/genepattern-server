@@ -402,10 +402,15 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
     //look for child with matching old parameter value and replace with new parameter value
     var found = false;
 
+    var cmdline= $("#commandtextarea textarea").val();
+
+    var decodedText = $('<div/>').html(text).text();
+
     $('#commandlist').children().each(function()
     {
         //decode the prevtext string first and compare it
-        if($(this).text() ==  $('<div/>').html(prevtext).text())
+        var decodedPrevText = $('<div/>').html(prevtext).text();
+        if($(this).text() ==  decodedPrevText)
         {
             if(text !== "")
             {
@@ -416,36 +421,21 @@ function addtocommandline(flag, name, delimiter, prevflag, prevname, prevdelimit
                 $(this).remove();
             }
             found = true;
+            cmdline = cmdline.replace(decodedPrevText, decodedText);                            
+            $("#commandtextarea textarea").val(cmdline);
+
         }
     });
 
-    // if old parameter value was not found then this must be a new parameter so insert it into list
+    // if old parameter value was not found then this must be a new parameter so
+    // insert it into parameter list
     if(!found && text !== "")
     {
         $('#commandlist').append(item);
+        cmdline += " " + decodedText;
+        alert("append cmdline: " + cmdline);
+        $("#commandtextarea textarea").val(cmdline);        
     }
-
-    //update the cmd line text area
-    var cmd_args="";
-    var cmdline= $("#commandtextarea textarea").val();    
-    $('#commandlist').children('li').each(function()
-    {
-        var val = $(this).text();
-        if(cmd_args !== "")
-        {
-            //add space between arguments;
-            cmd_args += " ";
-        }
-
-        if(cmdline.indexOf(val) == -1)
-        {
-            cmd_args += val;
-        }
-    });
-
-
-    cmdline = cmdline + cmd_args;
-    $("#commandtextarea textarea").val(cmdline);
 }
 
 //update the specific parameter div
@@ -833,7 +823,7 @@ function loadModuleInfo(module)
             currentFilesSelect.append(option);
         }
 
-        currentFilesDiv.css("font-size", "0.8125em");
+        currentFilesDiv.css("font-size", "0.725em");
 
         currentFilesDiv.append("<br>");
         
@@ -858,7 +848,7 @@ function loadModuleInfo(module)
                 currentFilesDiv.find("p").remove();
                 currentFilesDiv.append("<p> Marked for deletion: " + deletionfiles + "</p>");
             }
-            currentFilesDiv.find("p").css("font-size", "0.9375em");            
+            currentFilesDiv.find("p").css("font-size", "1em");            
         });
         
         delButton.css("margin", "3px");
