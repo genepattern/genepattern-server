@@ -568,6 +568,7 @@ public class ModuleQueryServlet extends HttpServlet
             File[] allFiles = taskIntegratorClient.getAllFiles(taskInfo);
             
             ModuleJSON moduleObject = new ModuleJSON(taskInfo, allFiles);
+            moduleObject.put("lsidVersions", new JSONArray(getModuleVersions(lsid)));
 
             responseObject.addChild(ModuleJSON.KEY, moduleObject);
 
@@ -587,7 +588,8 @@ public class ModuleQueryServlet extends HttpServlet
         TaskInfo taskInfo = null;
         try
         {
-            TaskInfoCache.instance().getTask(taskLSID);
+            taskInfo = TaskInfoCache.instance().getTask(taskLSID);
+            return taskInfo;
         }
         catch(TaskLSIDNotFoundException e)
         {
@@ -628,4 +630,25 @@ public class ModuleQueryServlet extends HttpServlet
 
         return taskInfo;
     }
+
+    private ArrayList getModuleVersions(String taskLSID) throws Exception
+    {
+        String taskNoLSIDVersion = new LSID(taskLSID).toStringNoVersion();
+
+        ArrayList moduleVersions = new ArrayList();
+        TaskInfo[] tasks = TaskInfoCache.instance().getAllTasks();
+        for(int i=0;i<tasks.length;i++)
+        {
+            TaskInfoAttributes tia = tasks[i].giveTaskInfoAttributes();
+            String lsidString = tia.get(GPConstants.LSID);
+            LSID lsid = new LSID(lsidString);
+            String lsidNoVersion = lsid.toStringNoVersion();
+            if(taskNoLSIDVersion.equals(lsidNoVersion))
+            {
+                moduleVersions.add(lsidString);
+            }
+        }
+
+        return moduleVersions;
     }
+}
