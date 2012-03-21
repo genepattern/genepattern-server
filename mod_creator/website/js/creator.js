@@ -749,10 +749,35 @@ function loadModuleInfo(module)
     {
         $('#modtitle').val(module["name"]);
     }
+
+    if(module["lsidVersions"] !== undefined)
+    {
+        var modVersionLsidList = module["lsidVersions"];
+        for(v =0;v<modVersionLsidList.length;v++)
+        {
+            var versionnum = modVersionLsidList[v];
+            var index = versionnum.lastIndexOf(":");
+            if(index == -1)
+            {
+                alert("An error occurred while loading module versions.\nInvalid lsid: " + moduleVersionLsidList[v]);
+            }
+            var version = versionnum.substring(index+1, versionnum.length);
+            var modversion = "<option value='" + versionnum + "'>" + version + "</option>";
+            $('select[name="modversion"]').append(modversion);
+        }
+        $('select[name="modversion"]').change(function()
+        {
+            var editLocation = "creator.html?lsid=" + $(this).val();
+            window.open(editLocation, '_self');
+        });
+        $('select[name="modversion"]').val(module["LSID"]);
+    }
+
     if(module["description"] !== undefined)
     {
         $('textarea[name="description"]').val(module["description"]);
     }
+
     if(module["author"] !== undefined)
     {
         $('input[name="author"]').val(module["author"]);
