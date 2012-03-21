@@ -26,8 +26,8 @@
         <div id="titleBar">
             <span id="titleSpan"></span> <img id="pipelinePencil" src="images/pencil.gif" class="pencil" alt="Edit" />
             <div id="saveLoadDiv">
-                <button id="newButton" class="saveLoadButton">New</button>
-                <button id="loadButton" class="saveLoadButton">Load</button>
+                <!-- <button id="newButton" class="saveLoadButton">New</button>
+                <button id="loadButton" class="saveLoadButton">Load</button> -->
                 <button id="saveButton" class="saveLoadButton">Save</button>
                 <button id="revertButton" class="saveLoadButton">Revert</button>
             </div>
@@ -125,22 +125,22 @@
                 }
             });
 
-            $("#loadPipelineDialog").dialog({
-                autoOpen: false,
-                modal: true,
-                width: 400,
-                title: "Choose Pipeline to Load"
-            });
-
-            $("#newButton").button();
-            $("#newButton").click(function() {
-                editor.load(null);
-            });
-
-            $("#loadButton").button();
-            $("#loadButton").click(function() {
-                library.displayLoadDialog();
-            });
+//            $("#loadPipelineDialog").dialog({
+//                autoOpen: false,
+//                modal: true,
+//                width: 400,
+//                title: "Choose Pipeline to Load"
+//            });
+//
+//            $("#newButton").button();
+//            $("#newButton").click(function() {
+//                editor.load(null);
+//            });
+//
+//            $("#loadButton").button();
+//            $("#loadButton").click(function() {
+//                library.displayLoadDialog();
+//            });
 
             $("#saveButton").button();
             $("#saveButton").click(function() {

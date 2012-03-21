@@ -504,6 +504,7 @@ var editor = {
 	load: function(lsid) {
         if (lsid === undefined || lsid === null || lsid === "") {
             editor._cleanWorkspace();
+            editor._setPipelineName();
             return;
         }
 
