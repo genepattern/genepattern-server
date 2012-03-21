@@ -17,7 +17,7 @@ var editor = {
 		suggestRow: 0, 		// Used by the GridLayoutManager
 		suggestCol: 0,		// Used by the GridLayoutManager
 
-        pipelineName: "UntitledPipeline",
+        pipelineName: "UntitledPipeline" + Math.floor(Math.random() * 10000),
         pipelineDescription: "",
         pipelineAuthor: "",
         pipelinePrivacy: "private",
@@ -92,7 +92,7 @@ var editor = {
             suggestRow: 0, 		// Used by the GridLayoutManager
             suggestCol: 0,		// Used by the GridLayoutManager
 
-            pipelineName: "UntitledPipeline",
+            pipelineName: "UntitledPipeline" + Math.floor(Math.random() * 10000),
             pipelineDescription: "",
             pipelineAuthor: "",
             pipelinePrivacy: "private",
