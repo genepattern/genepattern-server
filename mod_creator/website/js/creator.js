@@ -896,19 +896,24 @@ function loadModuleInfo(module)
         var delButton = $("<button>Mark for deletion</button>").button().click(function()
         {
             var selectedVals = $("select[name='currentfiles']").val();
-            module_editor.filesToDelete = [];
-            for(v=0; v < selectedVals.length; v++)
-            {
-                module_editor.filesToDelete.push(selectedVals[v]);
-            }
+            currentFilesDiv.find("p").remove();
 
-            var deletionfiles = module_editor.filesToDelete;
-            if(deletionfiles !== null && deletionfiles !== "")
+            module_editor.filesToDelete = [];
+            if(selectedVals !== null)
             {
-                currentFilesDiv.find("p").remove();
-                currentFilesDiv.append("<p> Marked for deletion: " + deletionfiles + "</p>");
+                for(v=0; v < selectedVals.length; v++)
+                {
+                    module_editor.filesToDelete.push(selectedVals[v]);
+                }
+
+                var deletionfiles = module_editor.filesToDelete;
+
+                if(deletionfiles !== null && deletionfiles !== "")
+                {
+                    currentFilesDiv.append("<p> Marked for deletion: " + deletionfiles + "</p>");
+                }
+                currentFilesDiv.find("p").css("font-size", "1em");
             }
-            currentFilesDiv.find("p").css("font-size", "1em");            
         });
         
         delButton.css("margin", "3px");
