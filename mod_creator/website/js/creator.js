@@ -329,7 +329,7 @@ function addparameter()
                     if(prevVal !== curVal)
                     {
                         $(this).val(prevVal);
-                        alert("The choice cannot be edited from here. Please use the edit choice link.");
+                        alert("The list of choices cannot be edited from here. Please use the edit choice link.");
                     }
                 });
 
@@ -478,7 +478,7 @@ function updateparameter(parameter)
     
     var pname_newval = pelement.val();
     var pflag_newval = felement.val();
-    if(parameter.find("input[name='p_prefix'").is(":checked"))
+    if(parameter.find("input[name='p_prefix']").attr('checked'))
     {
         pflag_newval = "";
     }
@@ -980,7 +980,6 @@ function loadModule(taskId)
 function getParametersJSON()
 {
     var parameters = [];
-    var parameterNames = [];
     var pnum = 0;
     $(".parameter").each(function()
     {
@@ -1176,7 +1175,7 @@ jQuery(document).ready(function() {
         resizable: false
     });
 
-    $("input[name='p_flagspace'], input[name='p_name'], input[name='p_flag']").live("change", function()
+    $("input[name='p_flagspace'], input[name='p_name'], input[name='p_flag'], input[name='p_prefix']").live("change", function()
     {
         var parameterParent = $(this).parents(".parameter");
 

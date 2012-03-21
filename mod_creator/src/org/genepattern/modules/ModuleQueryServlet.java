@@ -381,6 +381,7 @@ public class ModuleQueryServlet extends HttpServlet
                     attributes.put(GPConstants.PARAM_INFO_OPTIONAL[0], "");    
                 }
 
+                attributes.put(GPConstants.PARAM_INFO_PREFIX[0], parameterJSON.getPrefix());
                 String defaultValue = parameterJSON.getDefaultValue();
                 attributes.put(GPConstants.PARAM_INFO_DEFAULT_VALUE[0], defaultValue);
 

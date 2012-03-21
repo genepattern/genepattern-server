@@ -120,6 +120,10 @@ public class ParametersJSON extends JSONObject {
         return false;
     }
 
+    public String getPrefix() throws JSONException {
+          return this.getString(PREFIX);
+    }
+
     public String getChoices() throws JSONException {
        return this.getString(CHOICES);
     }
