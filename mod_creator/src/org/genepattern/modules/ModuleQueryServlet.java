@@ -16,7 +16,9 @@ import org.genepattern.server.genepattern.GenePatternAnalysisTask;
 import org.genepattern.server.webservice.server.Status;
 import org.genepattern.server.webservice.server.DirectoryManager;
 import org.genepattern.server.webservice.server.local.LocalTaskIntegratorClient;
+import org.genepattern.server.TaskLSIDNotFoundException;
 import org.genepattern.util.GPConstants;
+import org.genepattern.util.LSID;
 import org.apache.log4j.Logger;
 import org.apache.commons.fileupload.RequestContext;
 import org.apache.commons.fileupload.FileUploadBase;
@@ -558,13 +560,13 @@ public class ModuleQueryServlet extends HttpServlet
 
         try
         {
-            TaskInfo taskInfo = TaskInfoCache.instance().getTask(lsid);
+            TaskInfo taskInfo = getTaskInfo(lsid);
 
             ResponseJSON responseObject = new ResponseJSON();
 
             LocalTaskIntegratorClient taskIntegratorClient = new LocalTaskIntegratorClient(username);
             File[] allFiles = taskIntegratorClient.getAllFiles(taskInfo);
-
+            
             ModuleJSON moduleObject = new ModuleJSON(taskInfo, allFiles);
 
             responseObject.addChild(ModuleJSON.KEY, moduleObject);
@@ -579,4 +581,51 @@ public class ModuleQueryServlet extends HttpServlet
             sendError(response, "Error: while loading the module with lsid: " + lsid);
         }
 	}
-}
+
+    private TaskInfo getTaskInfo(String taskLSID) throws Exception
+    {
+        TaskInfo taskInfo = null;
+        try
+        {
+            TaskInfoCache.instance().getTask(taskLSID);
+        }
+        catch(TaskLSIDNotFoundException e)
+        {
+            // do nothing check with lsid
+        }
+
+        String taskNoLSIDVersion = new LSID(taskLSID).toStringNoVersion();
+        SortedSet<String> moduleVersions = new TreeSet<String>(new Comparator<String>() {
+            // sort categories alphabetically, ignoring case
+            public int compare(String arg0, String arg1) {
+                String arg0tl = arg0.toLowerCase();
+                String arg1tl = arg1.toLowerCase();
+                int rval = arg0tl.compareTo(arg1tl);
+                if (rval == 0) {
+                    rval = arg0.compareTo(arg1);
+                }
+                return rval;
+            }
+        });
+
+        TaskInfo[] tasks = TaskInfoCache.instance().getAllTasks();
+        for(int i=0;i<tasks.length;i++)
+        {
+            TaskInfoAttributes tia = tasks[i].giveTaskInfoAttributes();
+            String lsidString = tia.get(GPConstants.LSID);
+            LSID lsid = new LSID(lsidString);
+            String lsidNoVersion = lsid.toStringNoVersion();
+            if(taskNoLSIDVersion.equals(lsidNoVersion))
+            {
+                moduleVersions.add(lsidString);
+            }
+        }
+
+        if(moduleVersions.size() > 0)
+        {
+            taskInfo = TaskInfoCache.instance().getTask(moduleVersions.first());
+        }
+
+        return taskInfo;
+    }
+    }
