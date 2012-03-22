@@ -864,8 +864,8 @@ var library = {
 
     _readModuleCategories: function() {
         for (var i in library.moduleVersionMap) {
-            var moduleArray = library.moduleVersionMap[i];
-            this._addModuleToCategoryMap(moduleArray[0])
+            var module = library.getHighestVersion(i + ":fakeVersion");
+            this._addModuleToCategoryMap(module)
         }
     },
 
