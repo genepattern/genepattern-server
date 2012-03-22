@@ -101,6 +101,7 @@ function saveModule()
                 module_editor.lsid = newLsid;
                 $("#lsid").empty().append("LSID: " + newLsid);
                 module_editor.uploadedfiles = [];
+                window.open("../../pages/index.jsf?lsid=" + newLsid, '_self');
             }
         },
         dataType: "json"
