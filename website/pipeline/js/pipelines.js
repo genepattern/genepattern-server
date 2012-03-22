@@ -8,6 +8,7 @@
  * Object representing the pipeline editor, containing all associated methods and properties
  */
 var editor = {
+    USE_BETA_OPTIONS: false,
 	div: "workspace",		// The id of the div used for pipeline editing
     titleSpan: "titleSpan", // The id of the title span of the pipeline
 	workspace: {			// A map containing all the instance data of the current workspace
@@ -1441,7 +1442,13 @@ var properties = {
         var outSelected = pipe.outputPort.pointer;
         var inSelected = pipe.inputPort.pointer;
 
-        this._addDropDown("Output", ["1=1st Output", "2=2nd Output", "3=3rd Output", "4=4th Output"].concat(pipe.outputModule.outputs), outSelected, properties.listToString(pipe.outputModule.outputs), false);
+        var outputOptions = ["1=1st Output", "2=2nd Output", "3=3rd Output", "4=4th Output"];
+        outputOptions = outputOptions.concat(pipe.outputModule.outputs);
+        if (editor.USE_BETA_OPTIONS) {
+            outputOptions = outputOptions.concat(["?scatter&amp;filter&#061;*=Scatter Each Output", "?filelist&amp;filter&#061;*=File List of All Outputs"])
+        }
+
+        this._addDropDown("Output", outputOptions, outSelected, properties.listToString(pipe.outputModule.outputs), false);
 
         var inputsToList = new Array();
         var selectedInput = pipe.inputModule.fileInputs[0];
