@@ -499,6 +499,27 @@ var editor = {
                 module.checkForWarnings();
             }
         }
+
+        // Provide an alert if this is not the most recent version of the pipeline
+        if (!editor._mostRecentVersion()) {
+            alert("The pipeline you are editing is not the most recent version of the pipeline available.");
+        }
+    },
+
+    _mostRecentVersion: function() {
+        var highest = library.getHighestVersion(editor.workspace["pipelineLsid"]);
+        if (highest !== null) {
+            // Check for equal versions
+            if (highest.version === editor.workspace["pipelineVersion"]) {
+                return true;
+            }
+            else {
+                return library.higherVersion(editor.workspace["pipelineVersion"], highest.version);
+            }
+        }
+        else {
+            return true;
+        }
     },
 
 	load: function(lsid) {
@@ -620,10 +641,12 @@ var library = {
     getHighestVersion: function(lsid) {
         var baseLsid = editor.extractBaseLsid(lsid);
         var versionArray = library.moduleVersionMap[baseLsid];
+        // Handle the case of there being no version available
+        if (versionArray === undefined || versionArray === null) { return null; }
         var highestModule = null;
         var highestVersion = null;
         for (var i = 0; i < versionArray.length; i++) {
-            if (this._higherVersion(versionArray[i].version, highestVersion)) {
+            if (this.higherVersion(versionArray[i].version, highestVersion)) {
                 highestVersion = versionArray[i].version;
                 highestModule = versionArray[i];
             }
@@ -786,7 +809,7 @@ var library = {
         }
     },
 
-    _higherVersion: function(verA, verB) {
+    higherVersion: function(verA, verB) {
         // Handle the null case
         if (verA == null) { return false; }
         if (verB == null) { return true; }
@@ -857,7 +880,7 @@ var library = {
                 var highestModule = null;
                 var highestVersion = null;
                 for (var j = 0; j < moduleArray.length; j++) {
-                    if (this._higherVersion(moduleArray[j].version, highestVersion)) {
+                    if (this.higherVersion(moduleArray[j].version, highestVersion)) {
                         highestVersion = moduleArray[j].version;
                         highestModule = moduleArray[j];
                     }
@@ -1650,7 +1673,7 @@ function Module(moduleJSON) {
         // Check to see if the module is the latest version
         if (!this.isHighestVersion()) {
             showAlertIcon = true;
-            this.alerts[input.name] = new Alert("version", "WARNING", "This module is version " + this.version + " which is not the latest version.");
+            this.alerts[this.name] = new Alert("version", "WARNING", "This module is version " + this.version + " which is not the latest version.");
         }
 
         // Display icons if appropriate
