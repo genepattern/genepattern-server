@@ -296,7 +296,7 @@ function addparameter()
                                         {
                                             choicelist += ";";
                                         }
-                                        choicelist += dvalue + "=" + value;
+                                        choicelist += value + "=" + dvalue;
                                     });
 
                                     tSelect.parent().parent().find("input[name='choicelist']").each(function()
