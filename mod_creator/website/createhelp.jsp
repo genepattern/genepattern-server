@@ -315,21 +315,35 @@ Some parameters are not required on the command line.  These parameters, when le
 is invoked, result in nothing being added to the command line for that parameter.
 
 
+<h4>Flag</h4>
+
+Some parameters need to have extra text prefixing them on the command line when they are specified.
+For example, you might need to write &quot;-F <i>filename</i>&quot; to pass in a filename.
+The prefix text &quot;-F&quot; would be specified here.
+
+<h4>Insert space after flag</h4>
+
+Wheher a space should be inserted between the flag and the parameter. If checked then a space wil be added after the flag.
+If unchecked then no space will be added after the flag.<br><br>
+
+example (with space): <span class="example">-F <i>inputfile</i></span>
+<br>
+example (without space): <span class="example">-F<i>inputfile</i></span>
+
+
 <h4>Prefix when specified</h4>
 
-Some optional parameters need to have extra text prefixing them on the command line when they are specified.
+Some optional parameters need to have extra text or flags prefixing them on the command line when they are specified.
 For example, you might need to write &quot;-F <i>filename</i>&quot; to pass in a filename.  However, if the
-filename is optional, you would not necessarily want to specify &quot;-F&quot;.  The solution to this problem is to
-set the prefix to &quot;-F&nbsp;&quot; (note that the ending space is included).  If the optional filename is
-provided, then the prefix is added in too.<br><br>
+filename is optional, you would not necessarily want to specify &quot;-F&quot; if no filename is provided.  The solution to this problem is to
+check the prefix when specified box.  If the optional filename is provided, then the flag is added in too otherwise the flag is omitted.<br><br>
 
-example: <span class="example">-F&nbsp;</span>
 
 <h4>Type</h4>
 
 Declaration of the type of an input parameter allows the client to make a smarter presentation of the input to the
 user.  (As of <%=messages.get("ApplicationName")%> 1.2, all parameters are being treated as either text or input file types).  Parameter type
-choices are: text, integer, floating point, and input file.
+choices are: text, numeric, password, choice, directory, and input file.
 
 <br><br>
 <form>
@@ -337,7 +351,7 @@ ConsensusClustering example: <select><option>text</option><option>integer</optio
 </form>
 
 <h4>File Format</h4>
-When you select a parameter type of input file, a drop-down list of file formats appears in the file format column. Select the valid file format(s) for this parameter. To select multiple file formats, use CTRL-click. If your module requires an input file format not included in the list, scroll back to the Output Description field and click New to add that format to the list.
+When you select a parameter type of input file, a drop-down list of file formats appears in the file format column. Select the valid file format(s) for this parameter. If your module requires an input file format not included in the list, scroll back to the Output Description field and click New to add that format to the list.
 
 <br>
 </body>
