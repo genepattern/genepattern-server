@@ -474,6 +474,12 @@ function updateparameter(parameter)
     var pelement = parameter.find("input[name='p_name']");
     var felement = parameter.find("input[name='p_flag']");
 
+    //check for duplicate parameter names
+    $("input[name='p_name']").each(function()
+    {
+
+    });
+    
     var pelementval = pelement.val().replace(" ", ".");
     pelement.val(pelementval);
     
@@ -934,7 +940,7 @@ function loadParameterInfo(parameters)
         var optional = parameters[i].optional;
         var prefix = parameters[i].prefix;
 
-        if(optional === "on")
+        if(optional === "checkbox")
         {
             newParameter.find("input[name='p_optional']").attr('checked', true);
         }
